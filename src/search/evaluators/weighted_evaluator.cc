@@ -12,12 +12,9 @@ using namespace std;
 
 namespace weighted_evaluator {
 WeightedEvaluator::WeightedEvaluator(const Options &opts)
-    : evaluator(opts.get<shared_ptr<Evaluator>>("eval")),
+    : Evaluator(opts),
+      evaluator(opts.get<shared_ptr<Evaluator>>("eval")),
       w(opts.get<int>("weight")) {
-}
-
-WeightedEvaluator::WeightedEvaluator(const shared_ptr<Evaluator> &eval, int weight)
-    : evaluator(eval), w(weight) {
 }
 
 WeightedEvaluator::~WeightedEvaluator() {
@@ -50,6 +47,8 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
         "Multiplies the value of the evaluator with the given weight.");
     parser.add_option<shared_ptr<Evaluator>>("eval", "evaluator");
     parser.add_option<int>("weight", "weight");
+    add_evaluator_options_to_parser(parser);
+
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

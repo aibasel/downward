@@ -12,14 +12,14 @@ import xmlrpc.client as xmlrpclib
 
 import markup
 
-
 # How many seconds to wait after a failed requests. Will be doubled after each failed request.
 # Don't lower this below ~5, or we may get locked out for an hour.
 sleep_time = 10
 
 BOT_USERNAME = "XmlRpcBot"
-PASSWORD_FILE = ".downward-xmlrpc.secret" # relative to this source file or in the home directory
-WIKI_URL = "http://www.fast-downward.org"
+ENV_VAR_PASSWORD = "DOWNWARD_AUTODOC_PASSWORD"
+PASSWORD = os.environ.get(ENV_VAR_PASSWORD)
+WIKI_URL = "https://www.fast-downward.org"
 DOC_PREFIX = "Doc/"
 
 # a list of characters allowed to be used in doc titles
@@ -28,30 +28,21 @@ TITLE_WHITE_LIST = r"[\w\+-]" # match 'word characters' (including '_'), '+', an
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 REPO_ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--build", default="release")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
-def read_password():
-    path = join(dirname(__file__), PASSWORD_FILE)
-    if not os.path.exists(path):
-        path = os.path.expanduser(join('~', PASSWORD_FILE))
-    try:
-        with open(path) as password_file:
-            return password_file.read().strip()
-    except OSError:
-        logging.critical("Could not find password file %s!\nIs it present?"
-            % PASSWORD_FILE)
-        sys.exit(1)
 
 def connect():
-    wiki = xmlrpclib.ServerProxy(WIKI_URL + "?action=xmlrpc2", allow_none=True)
-    auth_token = wiki.getAuthToken(BOT_USERNAME, read_password())
+    wiki = xmlrpclib.ServerProxy(f"{WIKI_URL}?action=xmlrpc2", allow_none=True)
+    auth_token = wiki.getAuthToken(BOT_USERNAME, PASSWORD)
     multi_call = xmlrpclib.MultiCall(wiki)
     multi_call.applyAuthToken(auth_token)
     return multi_call
+
 
 def get_all_titles_from_wiki():
     multi_call = connect()
@@ -59,6 +50,7 @@ def get_all_titles_from_wiki():
     response = list(multi_call())
     assert(response[0] == 'SUCCESS' and len(response) == 2)
     return response[1]
+
 
 def get_pages_from_wiki(titles):
     multi_call = connect()
@@ -68,11 +60,13 @@ def get_pages_from_wiki(titles):
     assert(response[0] == 'SUCCESS')
     return dict(zip(titles, response[1:]))
 
+
 def send_pages(pages):
     multi_call = connect()
     for page_name, page_text in pages:
         multi_call.putPage(page_name, page_text)
     return multi_call()
+
 
 def attempt(func, *args):
     global sleep_time
@@ -80,23 +74,24 @@ def attempt(func, *args):
         result = func(*args)
     except xmlrpclib.Fault as error:
         # This usually means the page content did not change.
-        logging.exception("Error: %s\nShould not happen anymore." % error)
+        logging.exception(f"Error: {error}\nShould not happen anymore.")
         sys.exit(1)
     except xmlrpclib.ProtocolError as err:
-        logging.warning("Error: %s\n"
-            "Will retry after %s seconds." % (err.errcode, sleep_time))
+        logging.warning(f"Error: {err.errcode}\n"
+                        f"Will retry after {sleep_time} seconds.")
         # Retry after sleeping.
         time.sleep(sleep_time)
         sleep_time *= 2
         return attempt(func, *args)
     except Exception:
-        logging.exception("Unexpected error: %s" % sys.exc_info()[0])
+        logging.exception(f"Unexpected error: {sys.exc_info()[0]}")
         sys.exit(1)
     else:
         for entry in result:
             logging.info(repr(entry))
-        logging.info("Call to %s successful." % func.__name__)
+        logging.info(f"Call to {func.__name__} successful.")
         return result
+
 
 def insert_wiki_links(text, titles):
     def make_link(m, prefix=''):
@@ -124,8 +119,10 @@ def insert_wiki_links(text, titles):
         text = re.sub(re_link % key, make_link, text)
     return text
 
+
 def build_planner(build):
     subprocess.check_call([sys.executable, "build.py", build, "downward"], cwd=REPO_ROOT_DIR)
+
 
 def get_pages_from_planner(build):
     out = subprocess.check_output(
@@ -141,6 +138,7 @@ def get_pages_from_planner(build):
         rendered_text = document.render("moin").strip()
         pages[DOC_PREFIX + title] = rendered_text
     return pages
+
 
 def get_changed_pages(old_doc_pages, new_doc_pages, all_titles):
     def add_page(title, text):
@@ -162,8 +160,12 @@ def get_changed_pages(old_doc_pages, new_doc_pages, all_titles):
     add_page(overview_title, overview_text)
     return changed_pages
 
+
 if __name__ == '__main__':
     args = parse_args()
+    if not args.dry_run and PASSWORD is None:
+        logging.critical(f"{ENV_VAR_PASSWORD} not set.")
+        sys.exit(1)
     logging.info("building planner...")
     build_planner(args.build)
     logging.info("getting new pages from planner...")

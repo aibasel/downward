@@ -34,7 +34,7 @@ class MergeScoringFunctionTotalOrder : public MergeScoringFunction {
     std::vector<std::pair<int, int>> merge_candidate_order;
 protected:
     virtual std::string name() const override;
-    virtual void dump_function_specific_options() const override;
+    virtual void dump_function_specific_options(utils::LogProxy &log) const override;
 public:
     explicit MergeScoringFunctionTotalOrder(const options::Options &options);
     virtual ~MergeScoringFunctionTotalOrder() override = default;

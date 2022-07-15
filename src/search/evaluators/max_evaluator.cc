@@ -9,7 +9,7 @@ using namespace std;
 
 namespace max_evaluator {
 MaxEvaluator::MaxEvaluator(const Options &opts)
-    : CombiningEvaluator(opts.get_list<shared_ptr<Evaluator>>("evals")) {
+    : CombiningEvaluator(opts) {
 }
 
 MaxEvaluator::~MaxEvaluator() {
@@ -28,9 +28,7 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
     parser.document_synopsis(
         "Max evaluator",
         "Calculates the maximum of the sub-evaluators.");
-    parser.add_list_option<shared_ptr<Evaluator>>(
-        "evals",
-        "at least one evaluator");
+    combining_evaluator::add_combining_evaluator_options_to_parser(parser);
 
     Options opts = parser.parse();
 

@@ -1,5 +1,5 @@
 {
-   Suppression file for GCC 5 (see http://issues.fast-downward.org/issue703)
+   Suppression file for GCC 5 (see https://issues.fast-downward.org/issue703)
    Memcheck:Leak
    match-leak-kinds: reachable
    fun:malloc

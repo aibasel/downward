@@ -29,7 +29,7 @@
       }
 
       virtual void notify_service_destroyed(const Star *star) {
-          utils::g_log << star->name << " is going supernova!\n";
+          utils::g_log << star->name << " is going supernova!" << endl;
       }
   }
 */

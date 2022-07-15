@@ -1,5 +1,6 @@
 #include "landmark_count_heuristic.h"
 
+#include "landmark.h"
 #include "landmark_cost_assignment.h"
 #include "landmark_factory.h"
 #include "landmark_status_manager.h"
@@ -37,7 +38,9 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
           (!task_properties::has_axioms(task_proxy) &&
            (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
       successor_generator(nullptr) {
-    utils::g_log << "Initializing landmarks count heuristic..." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Initializing landmark count heuristic..." << endl;
+    }
 
     /*
       Actually, we should like to test if this is the root task or a
@@ -52,13 +55,14 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
+    utils::Timer lm_graph_timer;
+    if (log.is_at_least_normal()) {
+        log << "Generating landmark graph..." << endl;
+    }
     shared_ptr<LandmarkFactory> lm_graph_factory = opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
-    lgraph = lm_graph_factory->compute_lm_graph(task);
-    bool reasonable_orders = lm_graph_factory->use_reasonable_orders();
-    lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 
     if (admissible) {
-        if (reasonable_orders) {
+        if (lm_graph_factory->computes_reasonable_orders()) {
             cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
             utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
         } else if (task_properties::has_axioms(task_proxy)) {
@@ -69,6 +73,21 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
             cerr << "conditional effects not supported by the landmark generation method" << endl;
             utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
         }
+    }
+
+    lgraph = lm_graph_factory->compute_lm_graph(task);
+    if (log.is_at_least_normal()) {
+        log << "Landmark graph generation time: " << lm_graph_timer << endl;
+        log << "Landmark graph contains " << lgraph->get_num_landmarks()
+            << " landmarks, of which " << lgraph->get_num_disjunctive_landmarks()
+            << " are disjunctive and " << lgraph->get_num_conjunctive_landmarks()
+            << " are conjunctive." << endl;
+        log << "Landmark graph contains " << lgraph->get_num_edges()
+            << " orderings." << endl;
+    }
+    lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
+
+    if (admissible) {
         if (opts.get<bool>("optimal")) {
             lm_cost_assignment = utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
@@ -109,15 +128,13 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
         return static_cast<int>(ceil(h_val - epsilon));
     } else {
         int h = 0;
-        for (auto &lm : lgraph->get_nodes()) {
-            switch (lm_status_manager->get_landmark_status(
-                        lm->get_id())) {
-            case lm_reached:
-                break;
-            case lm_not_reached:
-            case lm_needed_again:
-                h += lm->cost;
-                break;
+        for (int id = 0; id < lgraph->get_num_landmarks(); ++id) {
+            landmark_status status =
+                lm_status_manager->get_landmark_status(id);
+            if (status == lm_not_reached || status == lm_needed_again) {
+                int cost = lgraph->get_node(id)->get_landmark().cost;
+                assert(cost < numeric_limits<int>::max());
+                h += cost;
             }
         }
         return h;
@@ -134,7 +151,7 @@ int LandmarkCountHeuristic::compute_heuristic(const State &ancestor_state) {
 
     if (use_preferred_operators) {
         BitsetView landmark_info = lm_status_manager->get_reached_landmarks(ancestor_state);
-        LandmarkSet reached_lms = convert_to_landmark_set(landmark_info);
+        LandmarkNodeSet reached_lms = convert_to_landmark_set(landmark_info);
         generate_helpful_actions(state, reached_lms);
     }
 
@@ -142,7 +159,7 @@ int LandmarkCountHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 bool LandmarkCountHeuristic::check_node_orders_disobeyed(const LandmarkNode &node,
-                                                         const LandmarkSet &reached) const {
+                                                         const LandmarkNodeSet &reached) const {
     for (const auto &parent : node.parents) {
         if (reached.count(parent.first) == 0) {
             return true;
@@ -151,8 +168,8 @@ bool LandmarkCountHeuristic::check_node_orders_disobeyed(const LandmarkNode &nod
     return false;
 }
 
-bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
-                                                      const LandmarkSet &reached) {
+bool LandmarkCountHeuristic::generate_helpful_actions(
+    const State &state, const LandmarkNodeSet &reached) {
     /* Find actions that achieve new landmark leaves. If no such action exist,
      return false. If a simple landmark can be achieved, return only operators
      that achieve simple landmarks, else return operators that achieve
@@ -170,9 +187,9 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
             if (!does_fire(effect, state))
                 continue;
             FactProxy fact_proxy = effect.get_fact();
-            LandmarkNode *lm_p = lgraph->get_landmark(fact_proxy.get_pair());
-            if (lm_p != 0 && landmark_is_interesting(state, reached, *lm_p)) {
-                if (lm_p->disjunctive) {
+            LandmarkNode *lm_node = lgraph->get_node(fact_proxy.get_pair());
+            if (lm_node && landmark_is_interesting(state, reached, *lm_node)) {
+                if (lm_node->get_landmark().disjunctive) {
                     ha_disj.push_back(op_id);
                 } else {
                     ha_simple.push_back(op_id);
@@ -197,28 +214,29 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state,
 }
 
 bool LandmarkCountHeuristic::landmark_is_interesting(
-    const State &state, const LandmarkSet &reached, LandmarkNode &lm) const {
+    const State &state, const LandmarkNodeSet &reached, LandmarkNode &lm_node) const {
     /* A landmark is interesting if it hasn't been reached before and
      its parents have all been reached, or if all landmarks have been
      reached before, the LM is a goal, and it's not true at moment */
 
     int num_reached = reached.size();
     if (num_reached != lgraph->get_num_landmarks()) {
-        if (reached.find(&lm) != reached.end())
+        if (reached.find(&lm_node) != reached.end())
             return false;
         else
-            return !check_node_orders_disobeyed(lm, reached);
+            return !check_node_orders_disobeyed(lm_node, reached);
     }
-    return lm.is_true_in_goal && !lm.is_true_in_state(state);
+    const Landmark &landmark = lm_node.get_landmark();
+    return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
 }
 
 void LandmarkCountHeuristic::notify_initial_state(const State &initial_state) {
-    lm_status_manager->set_landmarks_for_initial_state(initial_state);
+    lm_status_manager->process_initial_state(initial_state, log);
 }
 
 void LandmarkCountHeuristic::notify_state_transition(
     const State &parent_state, OperatorID op_id, const State &state) {
-    lm_status_manager->update_reached_lms(parent_state, op_id, state);
+    lm_status_manager->process_state_transition(parent_state, op_id, state);
     if (cache_evaluator_values) {
         /* TODO:  It may be more efficient to check that the reached landmark
            set has actually changed and only then mark the h value as dirty. */
@@ -230,16 +248,19 @@ bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
     return dead_ends_reliable;
 }
 
-// This function exists purely so we don't have to change all the
-// functions in this class that use LandmarkSets for the reached LMs
-// (HACK).
-LandmarkSet LandmarkCountHeuristic::convert_to_landmark_set(
+/*
+  This function exists purely so we don't have to change all the
+  functions in this class that use LandmarkSets for the reached LMs (HACK).
+*/
+LandmarkNodeSet LandmarkCountHeuristic::convert_to_landmark_set(
     const BitsetView &landmark_bitset) {
-    LandmarkSet landmark_set;
-    for (int i = 0; i < landmark_bitset.size(); ++i)
-        if (landmark_bitset.test(i))
-            landmark_set.insert(lgraph->get_landmark(i));
-    return landmark_set;
+    LandmarkNodeSet landmark_node_set;
+    for (int i = 0; i < landmark_bitset.size(); ++i) {
+        if (landmark_bitset.test(i)) {
+            landmark_node_set.insert(lgraph->get_node(i));
+        }
+    }
+    return landmark_node_set;
 }
 
 

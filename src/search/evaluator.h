@@ -3,20 +3,28 @@
 
 #include "evaluation_result.h"
 
+#include "../utils/logging.h"
+
 #include <set>
 
 class EvaluationContext;
 class State;
+
+namespace options {
+class OptionParser;
+class Options;
+}
 
 class Evaluator {
     const std::string description;
     const bool use_for_reporting_minima;
     const bool use_for_boosting;
     const bool use_for_counting_evaluations;
-
+protected:
+    mutable utils::LogProxy log;
 public:
-    Evaluator(
-        const std::string &description = "<none>",
+    explicit Evaluator(
+        const options::Options &opts,
         bool use_for_reporting_minima = false,
         bool use_for_boosting = false,
         bool use_for_counting_evaluations = false);
@@ -92,5 +100,7 @@ public:
     */
     virtual int get_cached_estimate(const State &state) const;
 };
+
+extern void add_evaluator_options_to_parser(options::OptionParser &parser);
 
 #endif

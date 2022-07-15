@@ -16,7 +16,9 @@ namespace blind_search_heuristic {
 BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
     : Heuristic(opts),
       min_operator_cost(task_properties::get_min_operator_cost(task_proxy)) {
-    utils::g_log << "Initializing blind search heuristic..." << endl;
+    if (log.is_at_least_normal()) {
+        log << "Initializing blind search heuristic..." << endl;
+    }
 }
 
 BlindSearchHeuristic::~BlindSearchHeuristic() {

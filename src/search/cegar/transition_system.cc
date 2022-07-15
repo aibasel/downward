@@ -324,19 +324,21 @@ int TransitionSystem::get_num_loops() const {
     return num_loops;
 }
 
-void TransitionSystem::print_statistics() const {
-    int total_incoming_transitions = 0;
-    int total_outgoing_transitions = 0;
-    int total_loops = 0;
-    for (int state_id = 0; state_id < get_num_states(); ++state_id) {
-        total_incoming_transitions += incoming[state_id].size();
-        total_outgoing_transitions += outgoing[state_id].size();
-        total_loops += loops[state_id].size();
+void TransitionSystem::print_statistics(utils::LogProxy &log) const {
+    if (log.is_at_least_normal()) {
+        int total_incoming_transitions = 0;
+        int total_outgoing_transitions = 0;
+        int total_loops = 0;
+        for (int state_id = 0; state_id < get_num_states(); ++state_id) {
+            total_incoming_transitions += incoming[state_id].size();
+            total_outgoing_transitions += outgoing[state_id].size();
+            total_loops += loops[state_id].size();
+        }
+        assert(total_outgoing_transitions == total_incoming_transitions);
+        assert(get_num_loops() == total_loops);
+        assert(get_num_non_loops() == total_outgoing_transitions);
+        log << "Looping transitions: " << total_loops << endl;
+        log << "Non-looping transitions: " << total_outgoing_transitions << endl;
     }
-    assert(total_outgoing_transitions == total_incoming_transitions);
-    assert(get_num_loops() == total_loops);
-    assert(get_num_non_loops() == total_outgoing_transitions);
-    utils::g_log << "Looping transitions: " << total_loops << endl;
-    utils::g_log << "Non-looping transitions: " << total_outgoing_transitions << endl;
 }
 }

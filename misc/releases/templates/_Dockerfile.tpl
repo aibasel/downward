@@ -56,7 +56,7 @@ RUN wget http://www.coin-or.org/download/source/Osi/$OSI_VERSION.tgz && \
 # Install Fast Downward.
 WORKDIR /workspace/downward/
 RUN git clone --depth 1 --branch TAG https://github.com/aibasel/downward.git . && \
-    ./build.py && \
+    ./build.py release debug && \
     strip --strip-all builds/release/bin/downward
 
 
@@ -74,6 +74,7 @@ WORKDIR /workspace/downward/
 # Copy the relevant files from the previous docker build into this build.
 COPY --from=builder /workspace/downward/fast-downward.py .
 COPY --from=builder /workspace/downward/builds/release/bin/ ./builds/release/bin/
+COPY --from=builder /workspace/downward/builds/debug/bin/ ./builds/debug/bin/
 COPY --from=builder /workspace/downward/driver ./driver
 COPY --from=builder /opt/soplex /opt/soplex
 COPY --from=builder /opt/osi /opt/osi

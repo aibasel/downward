@@ -18,7 +18,7 @@ StubbornSetsAtomCentric::StubbornSetsAtomCentric(const options::Options &opts)
 
 void StubbornSetsAtomCentric::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
-    utils::g_log << "pruning method: atom-centric stubborn sets" << endl;
+    log << "pruning method: atom-centric stubborn sets" << endl;
 
     TaskProxy task_proxy(*task);
 
@@ -259,8 +259,7 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf",
             "Proceedings of the 13th Annual Symposium on Combinatorial Search "
             "(SoCS 2020)",
-            // TODO: add page numbers.
-            "",
+            "57-65",
             "AAAI Press",
             "2020"));
     parser.add_option<bool>(
@@ -290,7 +289,7 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "breaking ties.",
         "quick_skip",
         strategies_docs);
-    stubborn_sets::add_pruning_options(parser);
+    add_pruning_options_to_parser(parser);
 
     Options opts = parser.parse();
 

@@ -21,7 +21,8 @@ DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
     : optimizer(opts),
       max_num_heuristics(opts.get<int>("max_num_heuristics")),
       num_samples(opts.get<int>("num_samples")),
-      rng(utils::parse_rng_from_options(opts)) {
+      rng(utils::parse_rng_from_options(opts)),
+      log(utils::get_log_from_options(opts)) {
 }
 
 SamplesToFunctionsMap
@@ -46,10 +47,12 @@ DiversePotentialHeuristics::filter_samples_and_compute_functions(
             ++num_dead_ends;
         }
     }
-    utils::g_log << "Time for filtering dead ends: " << filtering_timer << endl;
-    utils::g_log << "Duplicate samples: " << num_duplicates << endl;
-    utils::g_log << "Dead end samples: " << num_dead_ends << endl;
-    utils::g_log << "Unique non-dead-end samples: " << samples_to_functions.size() << endl;
+    if (log.is_at_least_normal()) {
+        log << "Time for filtering dead ends: " << filtering_timer << endl;
+        log << "Duplicate samples: " << num_duplicates << endl;
+        log << "Dead end samples: " << num_dead_ends << endl;
+        log << "Unique non-dead-end samples: " << samples_to_functions.size() << endl;
+    }
     assert(num_duplicates + num_dead_ends + samples_to_functions.size() == samples.size());
     return samples_to_functions;
 }
@@ -86,16 +89,20 @@ DiversePotentialHeuristics::find_function_and_remove_covered_samples(
     size_t last_num_samples = samples_to_functions.size();
     remove_covered_samples(*function, samples_to_functions);
     if (samples_to_functions.size() == last_num_samples) {
-        utils::g_log << "No sample removed -> Use arbitrary precomputed function."
-                     << endl;
+        if (log.is_at_least_verbose()) {
+            log << "No sample removed -> Use arbitrary precomputed function."
+                << endl;
+        }
         function = move(samples_to_functions.begin()->second);
         // The move operation invalidated the entry, remove it.
         samples_to_functions.erase(samples_to_functions.begin());
         remove_covered_samples(*function, samples_to_functions);
     }
-    utils::g_log << "Removed " << last_num_samples - samples_to_functions.size()
-                 << " samples. " << samples_to_functions.size() << " remaining."
-                 << endl;
+    if (log.is_at_least_verbose()) {
+        log << "Removed " << last_num_samples - samples_to_functions.size()
+            << " samples. " << samples_to_functions.size() << " remaining."
+            << endl;
+    }
     return function;
 }
 
@@ -104,11 +111,15 @@ void DiversePotentialHeuristics::cover_samples(
     utils::Timer covering_timer;
     while (!samples_to_functions.empty() &&
            static_cast<int>(diverse_functions.size()) < max_num_heuristics) {
-        utils::g_log << "Find heuristic #" << diverse_functions.size() + 1 << endl;
+        if (log.is_at_least_verbose()) {
+            log << "Find heuristic #" << diverse_functions.size() + 1 << endl;
+        }
         diverse_functions.push_back(
             find_function_and_remove_covered_samples(samples_to_functions));
     }
-    utils::g_log << "Time for covering samples: " << covering_timer << endl;
+    if (log.is_at_least_normal()) {
+        log << "Time for covering samples: " << covering_timer << endl;
+    }
 }
 
 vector<unique_ptr<PotentialFunction>>
@@ -127,8 +138,10 @@ DiversePotentialHeuristics::find_functions() {
     // Iteratively cover samples.
     cover_samples(samples_to_functions);
 
-    utils::g_log << "Potential heuristics: " << diverse_functions.size() << endl;
-    utils::g_log << "Initialization of potential heuristics: " << init_timer << endl;
+    if (log.is_at_least_normal()) {
+        log << "Potential heuristics: " << diverse_functions.size() << endl;
+        log << "Initialization of potential heuristics: " << init_timer << endl;
+    }
 
     return move(diverse_functions);
 }
@@ -149,6 +162,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         Bounds("0", "infinity"));
     prepare_parser_for_admissible_potentials(parser);
     utils::add_rng_options(parser);
+    utils::add_log_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

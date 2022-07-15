@@ -117,16 +117,17 @@ int MergeTreeNode::compute_num_internal_nodes() const {
     }
 }
 
-void MergeTreeNode::inorder(int offset, int current_indentation) const {
+void MergeTreeNode::inorder(
+    int offset, int current_indentation, utils::LogProxy &log) const {
     if (right_child) {
-        right_child->inorder(offset, current_indentation + offset);
+        right_child->inorder(offset, current_indentation + offset, log);
     }
     for (int i = 0; i < current_indentation; ++i) {
-        utils::g_log << " ";
+        log << " ";
     }
-    utils::g_log << ts_index << endl;
+    log << ts_index << endl;
     if (left_child) {
-        left_child->inorder(offset, current_indentation + offset);
+        left_child->inorder(offset, current_indentation + offset, log);
     }
 }
 
@@ -206,7 +207,7 @@ void MergeTree::update(pair<int, int> merge, int new_index) {
             surviving_node = second_parent;
             removed_node = first_parent;
         } else if (update_option == UpdateOption::USE_RANDOM) {
-            int random = (*rng)(2);
+            int random = rng->random(2);
             surviving_node = (random == 0 ? first_parent : second_parent);
             removed_node = (random == 0 ? second_parent : first_parent);
         } else {
@@ -283,9 +284,10 @@ void MergeTree::update(pair<int, int> merge, int new_index) {
     }
 }
 
-void MergeTree::inorder_traversal(int indentation_offset) const {
-    utils::g_log << "Merge tree, read from left to right (90° rotated tree): "
-                 << endl;
-    return root->inorder(indentation_offset, 0);
+void MergeTree::inorder_traversal(
+    int indentation_offset, utils::LogProxy &log) const {
+    log << "Merge tree, read from left to right (90° rotated tree): "
+        << endl;
+    return root->inorder(indentation_offset, 0, log);
 }
 }

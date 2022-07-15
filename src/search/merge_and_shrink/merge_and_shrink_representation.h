@@ -6,6 +6,10 @@
 
 class State;
 
+namespace utils {
+class LogProxy;
+}
+
 namespace merge_and_shrink {
 class Distances;
 class MergeAndShrinkRepresentation {
@@ -32,7 +36,7 @@ public:
     /* Return true iff the represented function is total, i.e., does not map
        to PRUNED_STATE. */
     virtual bool is_total() const = 0;
-    virtual void dump() const = 0;
+    virtual void dump(utils::LogProxy &log) const = 0;
 };
 
 
@@ -49,7 +53,7 @@ public:
         const std::vector<int> &abstraction_mapping) override;
     virtual int get_value(const State &state) const override;
     virtual bool is_total() const override;
-    virtual void dump() const override;
+    virtual void dump(utils::LogProxy &log) const override;
 };
 
 
@@ -68,7 +72,7 @@ public:
         const std::vector<int> &abstraction_mapping) override;
     virtual int get_value(const State &state) const override;
     virtual bool is_total() const override;
-    virtual void dump() const override;
+    virtual void dump(utils::LogProxy &log) const override;
 };
 }
 

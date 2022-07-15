@@ -15,8 +15,8 @@ class Options;
 }
 
 namespace utils {
+class LogProxy;
 class RandomNumberGenerator;
-enum class Verbosity;
 }
 
 namespace merge_and_shrink {
@@ -69,8 +69,9 @@ class LabelReduction {
         const equivalence_relation::EquivalenceRelation &relation,
         const FactoredTransitionSystem &fts,
         std::vector<std::pair<int, std::vector<int>>> &label_mapping,
-        utils::Verbosity verbosity) const;
-    equivalence_relation::EquivalenceRelation compute_combinable_equivalence_relation(
+        utils::LogProxy &log) const;
+    equivalence_relation::EquivalenceRelation
+    compute_combinable_equivalence_relation(
         int ts_index,
         const FactoredTransitionSystem &fts) const;
 public:
@@ -79,8 +80,8 @@ public:
     bool reduce(
         const std::pair<int, int> &next_merge,
         FactoredTransitionSystem &fts,
-        utils::Verbosity verbosity) const;
-    void dump_options() const;
+        utils::LogProxy &log) const;
+    void dump_options(utils::LogProxy &log) const;
     bool reduce_before_shrinking() const {
         return lr_before_shrinking;
     }

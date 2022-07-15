@@ -3,6 +3,7 @@
 #ifdef USE_LP
 #include "lp_solver.h"
 
+#include "../utils/language.h"
 #include "../utils/system.h"
 
 #ifdef __GNUG__
@@ -54,6 +55,7 @@ static const string CPLEX_WARNING_WRITE_MPS_ROWS = "CPX0000  Default row    name
 static const string CPLEX_ERROR_OOM = "CPX0000  CPLEX Error  1001: Out of memory.";
 static const string CPLEX_ERROR_OOM_PRE = "CPX0000  Insufficient memory for presolve.";
 static const string CPLEX_ERROR_OOM_DEVEX = "CPX0000  Not enough memory for devex.";
+static const string CPLEX_ERROR_OOM_MIP = "CPX0000  Warning: MIP starts not constructed because of out-of-memory status.";
 static const string COIN_CPLEX_ERROR_OOM = "returned error 1001";
 
 /*
@@ -84,7 +86,8 @@ public:
             CoinMessageHandler::checkSeverity();
         } else if (messageBuffer_ == CPLEX_ERROR_OOM ||
                    messageBuffer_ == CPLEX_ERROR_OOM_PRE ||
-                   messageBuffer_ == CPLEX_ERROR_OOM_DEVEX) {
+                   messageBuffer_ == CPLEX_ERROR_OOM_DEVEX ||
+                   messageBuffer_ == CPLEX_ERROR_OOM_MIP) {
             utils::exit_with(ExitCode::SEARCH_OUT_OF_MEMORY);
         } else {
             utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
@@ -143,6 +146,19 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
         cerr << "You must build the planner with the " << missing_symbol << " symbol defined" << endl;
         utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
     }
+}
+
+void set_mip_gap(OsiSolverInterface *lp_solver, double relative_gap) {
+#ifdef COIN_HAS_CPX
+    auto *cpx_solver = dynamic_cast<OsiCpxSolverInterface *>(lp_solver);
+    if (cpx_solver) {
+        CPXsetdblparam(cpx_solver->getEnvironmentPtr(),
+                       CPXPARAM_MIP_Tolerances_MIPGap, relative_gap);
+    }
+#else
+    utils::unused_variable(lp_solver);
+    utils::unused_variable(relative_gap);
+#endif
 }
 
 NO_RETURN

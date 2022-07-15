@@ -8,6 +8,10 @@
 #include <cstddef>
 #include <vector>
 
+namespace utils {
+class LogProxy;
+}
+
 namespace pdbs {
 /*
   Successor Generator for abstract operators.
@@ -22,20 +26,20 @@ class MatchTree {
     struct Node;
     // See PatternDatabase for documentation on pattern and hash_multipliers.
     Pattern pattern;
-    std::vector<size_t> hash_multipliers;
+    std::vector<int> hash_multipliers;
     Node *root;
     void insert_recursive(int op_id,
                           const std::vector<FactPair> &regression_preconditions,
                           int pre_index,
                           Node **edge_from_parent);
     void get_applicable_operator_ids_recursive(
-        Node *node, size_t state_index, std::vector<int> &operator_ids) const;
-    void dump_recursive(Node *node) const;
+        Node *node, int state_index, std::vector<int> &operator_ids) const;
+    void dump_recursive(Node *node, utils::LogProxy &log) const;
 public:
     // Initialize an empty match tree.
     MatchTree(const TaskProxy &task_proxy,
               const Pattern &pattern,
-              const std::vector<size_t> &hash_multipliers);
+              const std::vector<int> &hash_multipliers);
     ~MatchTree();
     /* Insert an abstract operator into the match tree, creating or
        enlarging it. */
@@ -47,8 +51,8 @@ public:
       pairs).
     */
     void get_applicable_operator_ids(
-        size_t state_index, std::vector<int> &operator_ids) const;
-    void dump() const;
+        int state_index, std::vector<int> &operator_ids) const;
+    void dump(utils::LogProxy &log) const;
 };
 }
 

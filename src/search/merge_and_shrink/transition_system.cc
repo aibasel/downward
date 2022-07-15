@@ -106,10 +106,10 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
     const GlobalLabels &global_labels,
     const TransitionSystem &ts1,
     const TransitionSystem &ts2,
-    utils::Verbosity verbosity) {
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << "Merging " << ts1.get_description() << " and "
-                     << ts2.get_description() << endl;
+    utils::LogProxy &log) {
+    if (log.is_at_least_verbose()) {
+        log << "Merging " << ts1.get_description() << " and "
+            << ts2.get_description() << endl;
     }
 
     assert(ts1.init_state != PRUNED_STATE && ts2.init_state != PRUNED_STATE);
@@ -307,14 +307,14 @@ void TransitionSystem::compute_locally_equivalent_labels() {
 void TransitionSystem::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
     const vector<int> &abstraction_mapping,
-    utils::Verbosity verbosity) {
+    utils::LogProxy &log) {
     assert(is_valid());
 
     int new_num_states = state_equivalence_relation.size();
     assert(new_num_states < num_states);
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << tag() << "applying abstraction (" << get_size()
-                     << " to " << new_num_states << " states)" << endl;
+    if (log.is_at_least_verbose()) {
+        log << tag() << "applying abstraction (" << get_size()
+            << " to " << new_num_states << " states)" << endl;
     }
 
     vector<bool> new_goal_states(new_num_states, false);
@@ -363,8 +363,8 @@ void TransitionSystem::apply_abstraction(
 
     num_states = new_num_states;
     init_state = abstraction_mapping[init_state];
-    if (verbosity >= utils::Verbosity::VERBOSE && init_state == PRUNED_STATE) {
-        utils::g_log << tag() << "initial state pruned; task unsolvable" << endl;
+    if (log.is_at_least_verbose() && init_state == PRUNED_STATE) {
+        log << tag() << "initial state pruned; task unsolvable" << endl;
     }
 
     assert(is_valid());
@@ -574,60 +574,65 @@ string TransitionSystem::get_description() const {
     return s.str();
 }
 
-void TransitionSystem::dump_dot_graph() const {
+void TransitionSystem::dump_dot_graph(utils::LogProxy &log) const {
     assert(is_valid());
-    utils::g_log << "digraph transition_system";
-    for (size_t i = 0; i < incorporated_variables.size(); ++i)
-        utils::g_log << "_" << incorporated_variables[i];
-    utils::g_log << " {" << endl;
-    utils::g_log << "    node [shape = none] start;" << endl;
-    for (int i = 0; i < num_states; ++i) {
-        bool is_init = (i == init_state);
-        bool is_goal = goal_states[i];
-        utils::g_log << "    node [shape = " << (is_goal ? "doublecircle" : "circle")
-                     << "] node" << i << ";" << endl;
-        if (is_init)
-            utils::g_log << "    start -> node" << i << ";" << endl;
-    }
-    for (const LocalLabelInfo &local_label_info : *this) {
-        const LabelGroup &label_group = local_label_info.get_label_group();
-        const vector<Transition> &transitions = local_label_info.get_transitions();
-        for (const Transition &transition : transitions) {
-            int src = transition.src;
-            int target = transition.target;
-            utils::g_log << "    node" << src << " -> node" << target << " [label = ";
-            for (size_t i = 0; i < label_group.size(); ++i) {
-                if (i != 0)
-                    utils::g_log << "_";
-                utils::g_log << "x" << label_group[i];
+    if (log.is_at_least_debug()) {
+        log << "digraph transition_system";
+        for (size_t i = 0; i < incorporated_variables.size(); ++i)
+            log << "_" << incorporated_variables[i];
+        log << " {" << endl;
+        log << "    node [shape = none] start;" << endl;
+        for (int i = 0; i < num_states; ++i) {
+            bool is_init = (i == init_state);
+            bool is_goal = goal_states[i];
+            log << "    node [shape = " << (is_goal ? "doublecircle" : "circle")
+                << "] node" << i << ";" << endl;
+            if (is_init)
+                log << "    start -> node" << i << ";" << endl;
+        }
+        for (const LocalLabelInfo &local_label_info : *this) {
+            const LabelGroup &label_group = local_label_info.get_label_group();
+            const vector<Transition> &transitions = local_label_info.get_transitions();
+            for (const Transition &transition : transitions) {
+                int src = transition.src;
+                int target = transition.target;
+                log << "    node" << src << " -> node" << target << " [label = ";
+                for (size_t i = 0; i < label_group.size(); ++i) {
+                    if (i != 0)
+                        log << "_";
+                    log << "x" << label_group[i];
+                }
+                log << "];" << endl;
             }
-            utils::g_log << "];" << endl;
         }
-    }
-    utils::g_log << "}" << endl;
-}
-
-void TransitionSystem::dump_labels_and_transitions() const {
-    utils::g_log << tag() << "transitions" << endl;
-    for (const LocalLabelInfo &local_label_info : *this) {
-        const LabelGroup &label_group = local_label_info.get_label_group();
-        utils::g_log << "labels: " << label_group << endl;
-        utils::g_log << "transitions: ";
-        const vector<Transition> &transitions = local_label_info.get_transitions();
-        for (size_t i = 0; i < transitions.size(); ++i) {
-            int src = transitions[i].src;
-            int target = transitions[i].target;
-            if (i != 0)
-                utils::g_log << ",";
-            utils::g_log << src << " -> " << target;
-        }
-        utils::g_log << endl;
-        utils::g_log << "cost: " << local_label_info.cost << endl;
+        log << "}" << endl;
     }
 }
 
-void TransitionSystem::statistics() const {
-    utils::g_log << tag() << get_size() << " states, "
-                 << compute_total_transitions() << " arcs " << endl;
+void TransitionSystem::dump_labels_and_transitions(utils::LogProxy &log) const {
+    if (log.is_at_least_debug()) {
+        log << tag() << "transitions" << endl;
+        for (const LocalLabelInfo &local_label_info : *this) {
+            const LabelGroup &label_group = local_label_info.get_label_group();
+            log << "labels: " << label_group << endl;
+            log << "transitions: ";
+            const vector<Transition> &transitions = local_label_info.get_transitions();
+            for (size_t i = 0; i < transitions.size(); ++i) {
+                int src = transitions[i].src;
+                int target = transitions[i].target;
+                if (i != 0)
+                    log << ",";
+                log << src << " -> " << target;
+            }
+            utils::g_log << "cost: " << local_label_info.cost << endl;
+        }
+    }
+}
+
+void TransitionSystem::statistics(utils::LogProxy &log) const {
+    if (log.is_at_least_verbose()) {
+        log << tag() << get_size() << " states, "
+            << compute_total_transitions() << " arcs " << endl;
+    }
 }
 }

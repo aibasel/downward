@@ -3,11 +3,9 @@
 
 #include "merge_scoring_function.h"
 
-#include <memory>
+#include "../utils/logging.h"
 
-namespace options {
-class Options;
-}
+#include <memory>
 
 namespace merge_and_shrink {
 class ShrinkStrategy;
@@ -16,6 +14,7 @@ class MergeScoringFunctionMIASM : public MergeScoringFunction {
     const int max_states;
     const int max_states_before_merge;
     const int shrink_threshold_before_merge;
+    utils::LogProxy silent_log;
 protected:
     virtual std::string name() const override;
 public:

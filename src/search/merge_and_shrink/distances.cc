@@ -165,7 +165,7 @@ void Distances::compute_goal_distances_general_cost() {
 void Distances::compute_distances(
     bool compute_init_distances,
     bool compute_goal_distances,
-    utils::Verbosity verbosity) {
+    utils::LogProxy &log) {
     assert(compute_init_distances || compute_goal_distances);
     /*
       This method does the following:
@@ -194,14 +194,14 @@ void Distances::compute_distances(
         assert(init_distances.empty() && goal_distances.empty());
     }
 
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << transition_system.tag();
+    if (log.is_at_least_verbose()) {
+        log << transition_system.tag();
     }
 
     int num_states = get_num_states();
     if (num_states == 0) {
-        if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "empty transition system, no distances to compute" << endl;
+        if (log.is_at_least_verbose()) {
+            log << "empty transition system, no distances to compute" << endl;
         }
         init_distances_computed = true;
         goal_distances_computed = true;
@@ -214,20 +214,20 @@ void Distances::compute_distances(
     if (compute_goal_distances) {
         goal_distances.resize(num_states, INF);
     }
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << "computing ";
+    if (log.is_at_least_verbose()) {
+        log << "computing ";
         if (compute_init_distances && compute_goal_distances) {
-            utils::g_log << "init and goal";
+            log << "init and goal";
         } else if (compute_init_distances) {
-            utils::g_log << "init";
+            log << "init";
         } else if (compute_goal_distances) {
-            utils::g_log << "goal";
+            log << "goal";
         }
-        utils::g_log << " distances using ";
+        log << " distances using ";
     }
     if (is_unit_cost()) {
-        if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "unit-cost";
+        if (log.is_at_least_verbose()) {
+            log << "unit-cost";
         }
         if (compute_init_distances) {
             compute_init_distances_unit_cost();
@@ -236,8 +236,8 @@ void Distances::compute_distances(
             compute_goal_distances_unit_cost();
         }
     } else {
-        if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << "general-cost";
+        if (log.is_at_least_verbose()) {
+            log << "general-cost";
         }
         if (compute_init_distances) {
             compute_init_distances_general_cost();
@@ -246,8 +246,8 @@ void Distances::compute_distances(
             compute_goal_distances_general_cost();
         }
     }
-    if (verbosity >= utils::Verbosity::VERBOSE) {
-        utils::g_log << " algorithm" << endl;
+    if (log.is_at_least_verbose()) {
+        log << " algorithm" << endl;
     }
 
     if (compute_init_distances) {
@@ -262,7 +262,7 @@ void Distances::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
     bool compute_init_distances,
     bool compute_goal_distances,
-    utils::Verbosity verbosity) {
+    utils::LogProxy &log) {
     if (compute_init_distances) {
         assert(are_init_distances_computed());
         assert(state_equivalence_relation.size() < init_distances.size());
@@ -322,51 +322,55 @@ void Distances::apply_abstraction(
     }
 
     if (must_recompute) {
-        if (verbosity >= utils::Verbosity::VERBOSE) {
-            utils::g_log << transition_system.tag()
-                         << "simplification was not f-preserving!" << endl;
+        if (log.is_at_least_verbose()) {
+            log << transition_system.tag()
+                << "simplification was not f-preserving!" << endl;
         }
         clear_distances();
         compute_distances(
-            compute_init_distances, compute_goal_distances, verbosity);
+            compute_init_distances, compute_goal_distances, log);
     } else {
         init_distances = move(new_init_distances);
         goal_distances = move(new_goal_distances);
     }
 }
 
-void Distances::dump() const {
-    if (are_init_distances_computed()) {
-        utils::g_log << "Init distances: ";
-        for (size_t i = 0; i < init_distances.size(); ++i) {
-            utils::g_log << i << ": " << init_distances[i];
-            if (i != init_distances.size() - 1) {
-                utils::g_log << ", ";
+void Distances::dump(utils::LogProxy &log) const {
+    if (log.is_at_least_debug()) {
+        if (are_init_distances_computed()) {
+            log << "Init distances: ";
+            for (size_t i = 0; i < init_distances.size(); ++i) {
+                log << i << ": " << init_distances[i];
+                if (i != init_distances.size() - 1) {
+                    log << ", ";
+                }
             }
+            log << endl;
         }
-        utils::g_log << endl;
-    }
-    if (are_goal_distances_computed()) {
-        utils::g_log << "Goal distances: ";
-        for (size_t i = 0; i < goal_distances.size(); ++i) {
-            utils::g_log << i << ": " << goal_distances[i] << ", ";
-            if (i != goal_distances.size() - 1) {
-                utils::g_log << ", ";
+        if (are_goal_distances_computed()) {
+            log << "Goal distances: ";
+            for (size_t i = 0; i < goal_distances.size(); ++i) {
+                log << i << ": " << goal_distances[i] << ", ";
+                if (i != goal_distances.size() - 1) {
+                    log << ", ";
+                }
             }
+            log << endl;
         }
-        utils::g_log << endl;
     }
 }
 
-void Distances::statistics() const {
-    utils::g_log << transition_system.tag();
-    if (!are_goal_distances_computed()) {
-        utils::g_log << "goal distances not computed";
-    } else if (transition_system.is_solvable(*this)) {
-        utils::g_log << "init h=" << get_goal_distance(transition_system.get_init_state());
-    } else {
-        utils::g_log << "transition system is unsolvable";
+void Distances::statistics(utils::LogProxy &log) const {
+    if (log.is_at_least_verbose()) {
+        log << transition_system.tag();
+        if (!are_goal_distances_computed()) {
+            log << "goal distances not computed";
+        } else if (transition_system.is_solvable(*this)) {
+            log << "init h=" << get_goal_distance(transition_system.get_init_state());
+        } else {
+            log << "transition system is unsolvable";
+        }
+        log << endl;
     }
-    utils::g_log << endl;
 }
 }

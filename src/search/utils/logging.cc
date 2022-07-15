@@ -12,7 +12,17 @@
 using namespace std;
 
 namespace utils {
-void add_verbosity_option_to_parser(options::OptionParser &parser) {
+/*
+  NOTE: When adding more options to Log, make sure to adapt the if block in
+  get_log_from_options below to test for *all* default values used for
+  global_log here. Also add the options to dump_options().
+*/
+
+static shared_ptr<Log> global_log = make_shared<Log>(Verbosity::NORMAL);
+
+LogProxy g_log(global_log);
+
+void add_log_options_to_parser(options::OptionParser &parser) {
     vector<string> verbosity_levels;
     vector<string> verbosity_level_docs;
     verbosity_levels.push_back("silent");
@@ -26,13 +36,28 @@ void add_verbosity_option_to_parser(options::OptionParser &parser) {
         "full output");
     verbosity_levels.push_back("debug");
     verbosity_level_docs.push_back(
-        "like full with additional debug output");
+        "like verbose with additional debug output");
     parser.add_enum_option<Verbosity>(
         "verbosity",
         verbosity_levels,
         "Option to specify the verbosity level.",
         "normal",
         verbosity_level_docs);
+}
+
+LogProxy get_log_from_options(const options::Options &options) {
+    /* NOTE: We return (a proxy to) the global log if all options match the
+       default values of the global log. */
+    if (options.get<Verbosity>("verbosity") == Verbosity::NORMAL) {
+        return LogProxy(global_log);
+    }
+    return LogProxy(make_shared<Log>(options.get<Verbosity>("verbosity")));
+}
+
+LogProxy get_silent_log() {
+    options::Options opts;
+    opts.set<utils::Verbosity>("verbosity", utils::Verbosity::SILENT);
+    return utils::get_log_from_options(opts);
 }
 
 class MemoryTracer {
@@ -103,6 +128,4 @@ TraceBlock::~TraceBlock() {
 void trace(const string &msg) {
     _tracer.print_trace_message(msg);
 }
-
-Log g_log;
 }

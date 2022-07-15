@@ -8,6 +8,11 @@
 #include <utility>
 #include <vector>
 
+namespace utils {
+class LogProxy;
+class RandomNumberGenerator;
+}
+
 namespace pdbs {
 class AbstractOperator {
     /*
@@ -18,6 +23,7 @@ class AbstractOperator {
       change (as number) the abstract operator implies on a given
       abstract state.
     */
+    int concrete_op_id;
 
     int cost;
 
@@ -31,7 +37,7 @@ class AbstractOperator {
       Effect of the operator during regression search on a given
       abstract state number.
     */
-    std::size_t hash_effect;
+    int hash_effect;
 public:
     /*
       Abstract operators are built from concrete operators. The
@@ -43,7 +49,8 @@ public:
                      const std::vector<FactPair> &preconditions,
                      const std::vector<FactPair> &effects,
                      int cost,
-                     const std::vector<std::size_t> &hash_multipliers);
+                     const std::vector<int> &hash_multipliers,
+                     int concrete_op_id);
     ~AbstractOperator();
 
     /*
@@ -58,7 +65,11 @@ public:
       Returns the effect of the abstract operator in form of a value
       change (+ or -) to an abstract state index
     */
-    std::size_t get_hash_effect() const {return hash_effect;}
+    int get_hash_effect() const {return hash_effect;}
+
+    int get_concrete_op_id() const {
+        return concrete_op_id;
+    }
 
     /*
       Returns the cost of the abstract operator (same as the cost of
@@ -66,7 +77,8 @@ public:
     */
     int get_cost() const {return cost;}
     void dump(const Pattern &pattern,
-              const VariablesProxy &variables) const;
+              const VariablesProxy &variables,
+              utils::LogProxy &log) const;
 };
 
 // Implements a single pattern database
@@ -74,7 +86,7 @@ class PatternDatabase {
     Pattern pattern;
 
     // size of the PDB
-    std::size_t num_states;
+    int num_states;
 
     /*
       final h-values for abstract-states.
@@ -82,8 +94,11 @@ class PatternDatabase {
     */
     std::vector<int> distances;
 
+    std::vector<int> generating_op_ids;
+    std::vector<std::vector<OperatorID>> wildcard_plan;
+
     // multipliers for each variable for perfect hash function
-    std::vector<std::size_t> hash_multipliers;
+    std::vector<int> hash_multipliers;
 
     /*
       Recursive method; called by build_abstract_operators. In the case
@@ -99,6 +114,7 @@ class PatternDatabase {
         std::vector<FactPair> &eff_pairs,
         const std::vector<FactPair> &effects_without_pre,
         const VariablesProxy &variables,
+        int concrete_op_id,
         std::vector<AbstractOperator> &operators);
 
     /*
@@ -122,7 +138,10 @@ class PatternDatabase {
     */
     void create_pdb(
         const TaskProxy &task_proxy,
-        const std::vector<int> &operator_costs = std::vector<int>());
+        const std::vector<int> &operator_costs,
+        bool compute_plan,
+        const std::shared_ptr<utils::RandomNumberGenerator> &rng,
+        bool compute_wildcard_plan);
 
     /*
       For a given abstract state (given as index), the according values
@@ -131,7 +150,7 @@ class PatternDatabase {
       state is a goal state.
     */
     bool is_goal_state(
-        std::size_t state_index,
+        int state_index,
         const std::vector<FactPair> &abstract_goals,
         const VariablesProxy &variables) const;
 
@@ -140,23 +159,29 @@ class PatternDatabase {
       according abstract state. This is only used for table lookup
       (distances) during search.
     */
-    std::size_t hash_index(const std::vector<int> &state) const;
+    int hash_index(const std::vector<int> &state) const;
 public:
     /*
       Important: It is assumed that the pattern (passed via Options) is
       sorted, contains no duplicates and is small enough so that the
       number of abstract states is below numeric_limits<int>::max()
       Parameters:
-       dump:           If set to true, prints the construction time.
        operator_costs: Can specify individual operator costs for each
        operator. This is useful for action cost partitioning. If left
        empty, default operator costs are used.
+       compute_plan: if true, compute an optimal plan when computing
+       distances of the PDB. This requires a RNG object passed via rng.
+       compute_wildcard_plan: when computing a plan (see compute_plan), compute
+       a wildcard plan, i.e., a sequence of parallel operators inducing an
+       optimal plan. Otherwise, compute a simple plan (a sequence of operators).
     */
     PatternDatabase(
         const TaskProxy &task_proxy,
         const Pattern &pattern,
-        bool dump = false,
-        const std::vector<int> &operator_costs = std::vector<int>());
+        const std::vector<int> &operator_costs = std::vector<int>(),
+        bool compute_plan = false,
+        const std::shared_ptr<utils::RandomNumberGenerator> &rng = nullptr,
+        bool compute_wildcard_plan = false);
     ~PatternDatabase() = default;
 
     int get_value(const std::vector<int> &state) const;
@@ -170,6 +195,10 @@ public:
     int get_size() const {
         return num_states;
     }
+
+    std::vector<std::vector<OperatorID>> && extract_wildcard_plan() {
+        return std::move(wildcard_plan);
+    };
 
     /*
       Returns the average h-value over all states, where dead-ends are

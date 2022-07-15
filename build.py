@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
 
 import errno
-import glob
 import multiprocessing
 import os
 import subprocess
 import sys
 
-CONFIGS = {}
-script_dir = os.path.dirname(__file__)
-for config_file in sorted(glob.glob(os.path.join(script_dir, "*build_configs.py"))):
-    with open(config_file) as f:
-        config_file_content = f.read()
-        exec(config_file_content, globals(), CONFIGS)
+import build_configs
 
+CONFIGS = {config: params for config, params in build_configs.__dict__.items()
+           if not config.startswith("_")}
 DEFAULT_CONFIG_NAME = CONFIGS.pop("DEFAULT")
 DEBUG_CONFIG_NAME = CONFIGS.pop("DEBUG")
 
@@ -103,7 +99,7 @@ def try_run(cmd, cwd):
     except OSError as exc:
         if exc.errno == errno.ENOENT:
             print("Could not find '%s' on your PATH. For installation instructions, "
-                  "see http://www.fast-downward.org/ObtainingAndRunningFastDownward." %
+                  "see https://www.fast-downward.org/ObtainingAndRunningFastDownward." %
                   cmd[0])
             sys.exit(1)
         else:

@@ -9,6 +9,10 @@ namespace domain_transition_graph {
 struct ValueTransitionLabel;
 }
 
+namespace utils {
+class LogProxy;
+}
+
 namespace cg_heuristic {
 class CGCache {
     TaskProxy task_proxy;
@@ -22,7 +26,7 @@ class CGCache {
 public:
     static const int NOT_COMPUTED = -2;
 
-    CGCache(const TaskProxy &task_proxy, int max_cache_size);
+    CGCache(const TaskProxy &task_proxy, int max_cache_size, utils::LogProxy &log);
     ~CGCache();
 
     bool is_cached(int var) const {

@@ -1,5 +1,7 @@
 #include "landmark_graph.h"
 
+#include "landmark.h"
+
 #include "../utils/memory.h"
 
 #include <cassert>
@@ -11,25 +13,6 @@
 using namespace std;
 
 namespace landmarks {
-bool LandmarkNode::is_true_in_state(const State &state) const {
-    if (disjunctive) {
-        for (const FactPair &fact : facts) {
-            if (state[fact.var].get_value() == fact.value) {
-                return true;
-            }
-        }
-        return false;
-    } else {
-        // conjunctive or simple
-        for (const FactPair &fact : facts) {
-            if (state[fact.var].get_value() != fact.value) {
-                return false;
-            }
-        }
-        return true;
-    }
-}
-
 LandmarkGraph::LandmarkGraph()
     : num_conjunctive_landmarks(0), num_disjunctive_landmarks(0) {
 }
@@ -41,11 +24,11 @@ int LandmarkGraph::get_num_edges() const {
     return total;
 }
 
-LandmarkNode *LandmarkGraph::get_landmark(int i) const {
+LandmarkNode *LandmarkGraph::get_node(int i) const {
     return nodes[i].get();
 }
 
-LandmarkNode *LandmarkGraph::get_landmark(const FactPair &fact) const {
+LandmarkNode *LandmarkGraph::get_node(const FactPair &fact) const {
     /* Return pointer to landmark node that corresponds to the given fact,
        or nullptr if no such landmark exists. */
     LandmarkNode *node_p = nullptr;
@@ -118,43 +101,25 @@ bool LandmarkGraph::contains_landmark(const FactPair &lm) const {
     return contains_simple_landmark(lm) || contains_disjunctive_landmark(lm);
 }
 
-LandmarkNode &LandmarkGraph::add_simple_landmark(const FactPair &lm) {
-    assert(!contains_landmark(lm));
-    vector<FactPair> facts{lm};
-    unique_ptr<LandmarkNode> new_node =
-        utils::make_unique_ptr<LandmarkNode>(facts, false, false);
-    LandmarkNode *new_node_p = new_node.get();
-    nodes.push_back(move(new_node));
-    simple_landmarks_to_nodes.emplace(lm, new_node_p);
-    return *new_node_p;
-}
-
-LandmarkNode &LandmarkGraph::add_disjunctive_landmark(const set<FactPair> &lm) {
-    assert(all_of(lm.begin(), lm.end(), [&](const FactPair &lm_fact) {
+LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark) {
+    assert(all_of(landmark.facts.begin(), landmark.facts.end(), [&](const FactPair &lm_fact) {
                       return !contains_landmark(lm_fact);
                   }));
-    vector<FactPair> facts(lm.begin(), lm.end());
     unique_ptr<LandmarkNode> new_node =
-        utils::make_unique_ptr<LandmarkNode>(facts, true, false);
+        utils::make_unique_ptr<LandmarkNode>(move(landmark));
     LandmarkNode *new_node_p = new_node.get();
+    const Landmark &lm = new_node->get_landmark();
     nodes.push_back(move(new_node));
-    for (const FactPair &lm_fact : lm) {
-        disjunctive_landmarks_to_nodes.emplace(lm_fact, new_node_p);
+    if (lm.disjunctive) {
+        for (const FactPair &lm_fact : lm.facts) {
+            disjunctive_landmarks_to_nodes.emplace(lm_fact, new_node_p);
+        }
+        ++num_disjunctive_landmarks;
+    } else if (lm.conjunctive) {
+        ++num_conjunctive_landmarks;
+    } else {
+        simple_landmarks_to_nodes.emplace(lm.facts.front(), new_node_p);
     }
-    ++num_disjunctive_landmarks;
-    return *new_node_p;
-}
-
-LandmarkNode &LandmarkGraph::add_conjunctive_landmark(const set<FactPair> &lm) {
-    assert(all_of(lm.begin(), lm.end(), [&](const FactPair &lm_fact) {
-                      return !contains_landmark(lm_fact);
-                  }));
-    vector<FactPair> facts(lm.begin(), lm.end());
-    unique_ptr<LandmarkNode> new_node =
-        utils::make_unique_ptr<LandmarkNode>(facts, false, true);
-    LandmarkNode *new_node_p = new_node.get();
-    nodes.push_back(move(new_node));
-    ++num_conjunctive_landmarks;
     return *new_node_p;
 }
 
@@ -169,39 +134,40 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
         child_node.parents.erase(node);
         assert(child_node.parents.find(node) == child_node.parents.end());
     }
-    if (node->disjunctive) {
+    const Landmark &landmark = node->get_landmark();
+    if (landmark.disjunctive) {
         --num_disjunctive_landmarks;
-        for (const FactPair &lm_fact : node->facts) {
+        for (const FactPair &lm_fact : landmark.facts) {
             disjunctive_landmarks_to_nodes.erase(lm_fact);
         }
-    } else if (node->conjunctive) {
+    } else if (landmark.conjunctive) {
         --num_conjunctive_landmarks;
     } else {
-        simple_landmarks_to_nodes.erase(node->facts[0]);
+        simple_landmarks_to_nodes.erase(landmark.facts[0]);
     }
 }
 
+void LandmarkGraph::remove_node(LandmarkNode *node) {
+    remove_node_occurrences(node);
+    auto it = find_if(nodes.begin(), nodes.end(),
+                      [&node](unique_ptr<LandmarkNode> &n) {
+                          return n.get() == node;
+                      });
+    assert(it != nodes.end());
+    nodes.erase(it);
+}
+
 void LandmarkGraph::remove_node_if(
-    const function<bool (const LandmarkNode &)> &remove_node) {
+    const function<bool (const LandmarkNode &)> &remove_node_condition) {
     for (auto &node : nodes) {
-        if (remove_node(*node)) {
+        if (remove_node_condition(*node)) {
             remove_node_occurrences(node.get());
         }
     }
     nodes.erase(remove_if(nodes.begin(), nodes.end(),
-                          [&remove_node](const unique_ptr<LandmarkNode> &node) {
-                              return remove_node(*node);
+                          [&remove_node_condition](const unique_ptr<LandmarkNode> &node) {
+                              return remove_node_condition(*node);
                           }), nodes.end());
-}
-
-LandmarkNode &LandmarkGraph::replace_disjunctive_by_simple_landmark(const FactPair &lm) {
-    LandmarkNode &node = get_disjunctive_landmark(lm);
-    node.disjunctive = false;
-    for (const FactPair &lm_fact : node.facts)
-        // TODO: shouldn't this decrease num_disjunctive_landmarks?
-        disjunctive_landmarks_to_nodes.erase(lm_fact);
-    simple_landmarks_to_nodes.emplace(lm, &node);
-    return node;
 }
 
 void LandmarkGraph::set_landmark_ids() {

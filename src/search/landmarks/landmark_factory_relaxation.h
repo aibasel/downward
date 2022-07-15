@@ -8,40 +8,46 @@ class Exploration;
 
 class LandmarkFactoryRelaxation : public LandmarkFactory {
 protected:
-    explicit LandmarkFactoryRelaxation(const options::Options &opts)
-        : LandmarkFactory(opts) {}
+    explicit LandmarkFactoryRelaxation(const options::Options &opts);
 
-    bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
-                               bool level_out,
-                               const LandmarkNode *exclude,
-                               bool compute_lvl_op = false) const;
-    bool relaxed_task_solvable(const TaskProxy &task_proxy, Exploration &exploration,
-                               std::vector<std::vector<int>> &lvl_var,
-                               std::vector<utils::HashMap<FactPair, int>> &lvl_op,
-                               bool level_out,
-                               const LandmarkNode *exclude,
-                               bool compute_lvl_op = false) const;
+    /*
+      Test whether the relaxed planning task is solvable without
+      achieving the excluded landmark.
+    */
+    bool relaxed_task_solvable(const TaskProxy &task_proxy,
+                               Exploration &exploration,
+                               const Landmark &exclude) const;
+    /*
+      Compute for each fact whether it is relaxed reachable without
+      achieving the excluded landmark.
+    */
+    std::vector<std::vector<bool>> compute_relaxed_reachability(
+        Exploration &exploration, const Landmark &exclude) const;
 
 private:
     void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
 
     virtual void generate_relaxed_landmarks(const std::shared_ptr<AbstractTask> &task,
                                             Exploration &exploration) = 0;
-    void generate(const TaskProxy &task_proxy, Exploration &exploration);
-
-    // TODO: this is duplicated here and in LandmarkFactoryHM
-    void discard_noncausal_landmarks(const TaskProxy &task_proxy,
-                                     Exploration &exploration);
-    // TODO: this is duplicated here and in LandmarkFactoryHM
-    bool is_causal_landmark(const TaskProxy &task_proxy,
-                            Exploration &exploration,
-                            const LandmarkNode &landmark) const;
+    void postprocess(const TaskProxy &task_proxy, Exploration &exploration);
 
     void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration);
-    bool achieves_non_conditional(const OperatorProxy &o,
-                                  const LandmarkNode *lmp) const;
-    void add_operator_and_propositions_to_list(
-        const OperatorProxy &op, std::vector<utils::HashMap<FactPair, int>> &lvl_op) const;
+
+protected:
+    /*
+      The method discard_noncausal_landmarks assumes the graph has no
+      conjunctive landmarks, and will not process conjunctive landmarks
+      correctly.
+    */
+    void discard_noncausal_landmarks(const TaskProxy &task_proxy,
+                                     Exploration &exploration);
+    /*
+      A landmark is causal if it is a goal or it is a precondition of an
+      action that must be applied in order to reach the goal.
+    */
+    bool is_causal_landmark(const TaskProxy &task_proxy,
+                            Exploration &exploration,
+                            const Landmark &landmark) const;
 };
 }
 
