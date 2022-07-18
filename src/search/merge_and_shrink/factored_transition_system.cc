@@ -112,9 +112,9 @@ void FactoredTransitionSystem::apply_label_mapping(
     const vector<pair<int, vector<int>>> &label_mapping,
     int combinable_index) {
     assert_all_components_valid();
-    for (const auto &mapped_pair : label_mapping) {
-        assert(mapped_pair.first == global_labels->get_size());
-        const vector<int> &old_labels = mapped_pair.second;
+    for (const auto &entry : label_mapping) {
+        assert(entry.first == global_labels->get_size());
+        const vector<int> &old_labels = entry.second;
         global_labels->reduce_labels(old_labels);
     }
     for (size_t i = 0; i < transition_systems.size(); ++i) {
