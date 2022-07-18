@@ -32,14 +32,18 @@ public:
 /*
   This class serves both as a container class to handle the set of all global
   labels and to perform label reduction on this set.
+
+  Labels are identified via integers indexing label_costs, which store their
+  costs. When using label reductions, reduced labels are set to -1 in label
+  costs.
 */
 class GlobalLabels {
     std::vector<int> label_costs;
-    int max_num_labels; // the maximum number of labels that can be created
+    int max_num_labels; // The maximum number of labels that can be created.
+    int num_active_labels; // The current number of active (non-reduced) labels.
 public:
     GlobalLabels(std::vector<int> &&label_costs, int max_num_labels);
     void reduce_labels(const std::vector<int> &old_labels);
-    int get_num_active_labels() const;
     int get_label_cost(int label) const;
     void dump_labels() const;
 
@@ -49,6 +53,10 @@ public:
 
     int get_max_num_labels() const {
         return max_num_labels;
+    }
+
+    int get_num_active_labels() const {
+        return num_active_labels;
     }
 
     GlobalLabelsConstIterator begin() const {

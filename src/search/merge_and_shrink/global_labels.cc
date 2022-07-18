@@ -33,7 +33,8 @@ void GlobalLabelsConstIterator::operator++() {
 
 GlobalLabels::GlobalLabels(vector<int> &&label_costs, int max_num_labels)
     : label_costs(move(label_costs)),
-      max_num_labels(max_num_labels) {
+      max_num_labels(max_num_labels),
+      num_active_labels(this->label_costs.size()) {
 }
 
 void GlobalLabels::reduce_labels(const vector<int> &old_labels) {
@@ -53,16 +54,8 @@ void GlobalLabels::reduce_labels(const vector<int> &old_labels) {
         label_costs[old_label] = -1;
     }
     label_costs.push_back(new_label_cost);
-}
-
-int GlobalLabels::get_num_active_labels() const {
-    int result = 0;
-    for (int label_cost : label_costs) {
-        if (label_cost != -1) {
-            ++result;
-        }
-    }
-    return result;
+    num_active_labels -= old_labels.size();
+    ++num_active_labels;
 }
 
 int GlobalLabels::get_label_cost(int label) const {
