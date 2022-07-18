@@ -394,14 +394,13 @@ void TransitionSystem::apply_label_reduction(
             const vector<int> &old_labels = mapping.second;
             assert(old_labels.size() >= 2);
             unordered_set<int> seen_local_labels;
-            // TODO: consider using vector and sort and make unique once at the end.
-            set<Transition> new_label_transitions;
+            vector<Transition> new_label_transitions;
             for (int old_label : old_labels) {
                 int old_local_label = global_label_to_local_label[old_label];
                 if (seen_local_labels.insert(old_local_label).second) {
                     affected_local_labels.insert(old_local_label);
                     const vector<Transition> &transitions = local_label_infos[old_local_label].get_transitions();
-                    new_label_transitions.insert(transitions.begin(), transitions.end());
+                    new_label_transitions.insert(new_label_transitions.end(), transitions.begin(), transitions.end());
                 }
 
                 LabelGroup &label_group = local_label_infos[old_local_label].label_group;
@@ -409,8 +408,7 @@ void TransitionSystem::apply_label_reduction(
                 // Reset (for consistency only, old labels are never accessed).
                 global_label_to_local_label[old_label] = -1;
             }
-            vector<Transition> new_transitions(
-                new_label_transitions.begin(), new_label_transitions.end());
+            utils::sort_unique(new_label_transitions);
 
             int new_label = mapping.first;
             int new_local_label = local_label_infos.size();
@@ -418,7 +416,7 @@ void TransitionSystem::apply_label_reduction(
             int new_cost = global_labels.get_label_cost(new_label);
 
             LabelGroup new_label_group = {new_label};
-            local_label_infos.emplace_back(move(new_label_group), move(new_transitions), new_cost);
+            local_label_infos.emplace_back(move(new_label_group), move(new_label_transitions), new_cost);
         }
 
         // Update all affected local labels.
