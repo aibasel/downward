@@ -16,6 +16,7 @@ class StubbornSetsActionCentric : public stubborn_sets::StubbornSets {
     virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
     virtual void compute_stubborn_set(const State &state) override;
 protected:
+    explicit StubbornSetsActionCentric(const options::Options &opts);
     bool can_disable(int op1_no, int op2_no) const;
     bool can_conflict(int op1_no, int op2_no) const;
 

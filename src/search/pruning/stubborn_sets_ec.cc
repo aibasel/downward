@@ -105,7 +105,7 @@ static void get_conflicting_vars(const vector<FactPair> &facts1,
 }
 
 StubbornSetsEC::StubbornSetsEC(const options::Options &opts)
-    : StubbornSets(opts) {
+    : StubbornSetsActionCentric(opts) {
 }
 
 void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {

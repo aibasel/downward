@@ -11,7 +11,7 @@ using namespace std;
 
 namespace stubborn_sets_simple {
 StubbornSetsSimple::StubbornSetsSimple(const options::Options &opts)
-    : StubbornSets(opts) {
+    : StubbornSetsActionCentric(opts) {
 }
 
 void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {

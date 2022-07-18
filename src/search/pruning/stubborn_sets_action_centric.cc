@@ -3,6 +3,9 @@
 using namespace std;
 
 namespace stubborn_sets {
+StubbornSetsActionCentric::StubbornSetsActionCentric(const options::Options &opts)
+    : StubbornSets(opts) {
+}
 // Relies on both fact sets being sorted by variable.
 static bool contain_conflicting_fact(const vector<FactPair> &facts1,
                                      const vector<FactPair> &facts2) {
