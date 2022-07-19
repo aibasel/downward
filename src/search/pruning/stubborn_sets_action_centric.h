@@ -12,6 +12,7 @@ class StubbornSetsActionCentric : public stubborn_sets::StubbornSets {
       of the operators in the queue).
     */
     std::vector<int> stubborn_queue;
+
     virtual void initialize_stubborn_set(const State &state) = 0;
     virtual void handle_stubborn_operator(const State &state, int op_no) = 0;
     virtual void compute_stubborn_set(const State &state) override;
