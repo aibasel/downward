@@ -38,7 +38,6 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
           admissible ||
           (!task_properties::has_axioms(task_proxy) &&
            (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
-      derived_landmark_cost(opts.get<int>("derived_lm_cost")),
       successor_generator(nullptr) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark count heuristic..." << endl;
@@ -129,12 +128,20 @@ void LandmarkCountHeuristic::compute_landmark_costs() {
        *min_first_achiever_costs* and *min_possible_achiever_costs*
        at index i corresponds to the entry for the landmark node with ID i.
     */
+
+    /*
+       For derived landmarks, we overapproximate that all operators are achievers.
+       Since we do not want to explicitly store all operators in the achiever
+       vector, we instead just compute the minimum cost over all operators and
+       use this cost for all derived landmarks.
+    */
+    int min_operator_cost = task_properties::get_min_operator_cost(task_proxy);
     min_first_achiever_costs.reserve(lgraph->get_num_landmarks());
     min_possible_achiever_costs.reserve(lgraph->get_num_landmarks());
     for (auto &node : lgraph->get_nodes()) {
         if (node->get_landmark().is_derived) {
-            min_first_achiever_costs.push_back(derived_landmark_cost);
-            min_possible_achiever_costs.push_back(derived_landmark_cost);
+            min_first_achiever_costs.push_back(min_operator_cost);
+            min_possible_achiever_costs.push_back(min_operator_cost);
         } else {
             int min_first_achiever_cost = get_min_cost_of_achievers(
                 node->get_landmark().first_achievers, task_proxy);
@@ -416,16 +423,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
                             "(see OptionCaveats#Using_preferred_operators_"
                             "with_the_lmcount_heuristic)", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
-    /*
-       While a default value of "0" would be more intuitive, we set the default
-       of *derived_lm_cost* to "1" because it performs better empirically.
-    */
-    parser.add_option<int>("derived_lm_cost",
-                           "the cost to use for derived landmarks (only "
-                           "applicable when admissible=false, since the "
-                           "admissible lmcount heuristic does not support "
-                           "axioms)",
-                           "1", Bounds("0", "1"));
     lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 
@@ -436,8 +433,8 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
                          "better to focus on distance from goal "
                          "(i.e. length of the plan) rather than cost."
                          "In experiments we achieved the best performance using"
-                         "options 'transform=adapt_costs(one)' and "
-                         "'derived_lm_cost=1'.");
+                         "the option 'transform=adapt_costs(one)' to enforce "
+                         "unit costs.");
     Options opts = parser.parse();
 
     if (parser.dry_run())
