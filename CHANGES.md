@@ -20,6 +20,15 @@ after the corresponding tracker issues.
   To this end, the verbosity parameter was added to the pruning module.
   <https://issues.fast-downward.org/issue1058>
 
+- landmarks: Landmark costs for lmcount in the inadmissible settings are now
+  always based on the cost of their achievers, and the cost for derived
+  landmarks can now be set with a new option 'derived_lm_cost' (either 0 or 1,
+  with 1 being the default).
+  When using lmcount in satisficing search where we do not care about cost,
+  experiments show that using 'transform=adapt_costs(ONE)' and
+  'derived_lm_cost=1' performs best, since a plan is usually found faster if we
+  focus on its length rather than its cost.
+  <https://issues.fast-downward.org/issue1009>
 
 ## Fast Downward 22.06
 
