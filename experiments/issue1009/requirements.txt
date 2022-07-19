@@ -3,7 +3,7 @@ fonttools==4.34.4
 kiwisolver==1.4.3
 lab==7.1
 matplotlib==3.5.2
-numpy==1.21.6
+numpy==1.22.0
 packaging==21.3
 Pillow==9.2.0
 pyparsing==3.0.9
