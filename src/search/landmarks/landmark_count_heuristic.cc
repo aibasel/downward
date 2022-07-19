@@ -117,7 +117,7 @@ int LandmarkCountHeuristic::get_min_cost_of_achievers(const set<int> &achievers,
     int min_cost = numeric_limits<int>::max();
     for (int operator_or_axiom_id : achievers) {
         min_cost = min(min_cost, get_operator_or_axiom(
-                           task_proxy, operator_or_axiom_id).get_cost());
+            task_proxy, operator_or_axiom_id).get_cost());
     }
     return min_cost;
 }
@@ -132,11 +132,6 @@ void LandmarkCountHeuristic::compute_landmark_costs() {
     min_first_achiever_costs.reserve(lgraph->get_num_landmarks());
     min_possible_achiever_costs.reserve(lgraph->get_num_landmarks());
     for (auto &node : lgraph->get_nodes()) {
-        /*
-           Currently derived landmarks are unsupported in the admissible
-           case and ignored in the inadmissible case. We ensure the latter
-           by setting minimum achiever costs to 0.
-        */
         if (node->get_landmark().is_derived) {
             min_first_achiever_costs.push_back(derived_landmark_cost);
             min_possible_achiever_costs.push_back(derived_landmark_cost);
@@ -421,8 +416,15 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
                             "(see OptionCaveats#Using_preferred_operators_"
                             "with_the_lmcount_heuristic)", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
+    /*
+       While a default value of "0" would be more intuitive, we set the default
+       of *derived_lm_cost* to "1" because it performs better empirically.
+    */
     parser.add_option<int>("derived_lm_cost",
-                           "the cost to use for derived landmarks",
+                           "the cost to use for derived landmarks (only "
+                           "applicable when admissible=false, since the "
+                           "admissible lmcount heuristic does not support "
+                           "axioms)",
                            "1", Bounds("0", "1"));
     lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
