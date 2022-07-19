@@ -20,6 +20,8 @@ after the corresponding tracker issues.
   To this end, the verbosity parameter was added to the pruning module.
   <https://issues.fast-downward.org/issue1058>
 
+- We clean up the internal structure of stubborn set pruning.
+  <https://issues.fast-downward.org/issue1059>
 
 ## Fast Downward 22.06
 
