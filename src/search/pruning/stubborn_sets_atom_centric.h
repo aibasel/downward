@@ -52,7 +52,6 @@ class StubbornSetsAtomCentric : public stubborn_sets::StubbornSets {
     virtual void compute_stubborn_set(const State &state) override;
 public:
     explicit StubbornSetsAtomCentric(const options::Options &opts);
-
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 };
 }

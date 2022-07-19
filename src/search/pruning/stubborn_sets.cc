@@ -3,10 +3,6 @@
 #include "../option_parser.h"
 
 #include "../task_utils/task_properties.h"
-#include "../utils/logging.h"
-
-#include <algorithm>
-#include <cassert>
 
 using namespace std;
 

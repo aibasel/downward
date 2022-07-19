@@ -27,7 +27,6 @@ protected:
                                           int op_no) override;
 public:
     explicit StubbornSetsSimple(const options::Options &opts);
-
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 };
 }

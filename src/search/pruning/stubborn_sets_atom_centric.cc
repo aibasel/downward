@@ -3,9 +3,7 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include "../utils/logging.h"
 #include "../utils/markup.h"
-#include "../utils/memory.h"
 
 using namespace std;
 
