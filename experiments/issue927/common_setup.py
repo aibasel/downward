@@ -301,7 +301,7 @@ class IssueExperiment(FastDownwardExperiment):
         self.add_step(
             'publish-absolute-report', subprocess.call, ['publish', outfile])
 
-    def add_comparison_table_step(self, **kwargs):
+    def add_comparison_table_step(self, revision_pairs=[], **kwargs):
         """Add a step that makes pairwise revision comparisons.
 
         Create comparative reports for all pairs of Fast Downward
@@ -319,7 +319,9 @@ class IssueExperiment(FastDownwardExperiment):
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
 
         def make_comparison_tables():
-            for rev1, rev2 in itertools.combinations(self._revisions, 2):
+            if not revision_pairs:
+                revision_pairs = [(rev1, rev2) in itertools.combinations(self._revisions, 2)]
+            for rev1, rev2 in revision_pairs:
                 compared_configs = []
                 for config in self._configs:
                     config_nick = config.nick
