@@ -1,12 +1,12 @@
 #ifndef PRUNING_STUBBORN_SETS_SIMPLE_H
 #define PRUNING_STUBBORN_SETS_SIMPLE_H
 
-#include "stubborn_sets.h"
+#include "stubborn_sets_action_centric.h"
 
 namespace stubborn_sets_simple {
 /* Implementation of simple instantiation of strong stubborn sets.
    Disjunctive action landmarks are computed trivially.*/
-class StubbornSetsSimple : public stubborn_sets::StubbornSets {
+class StubbornSetsSimple : public stubborn_sets::StubbornSetsActionCentric {
     /* interference_relation[op1_no] contains all operator indices
        of operators that interfere with op1. */
     std::vector<std::vector<int>> interference_relation;
@@ -27,7 +27,6 @@ protected:
                                           int op_no) override;
 public:
     explicit StubbornSetsSimple(const options::Options &opts);
-
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 };
 }

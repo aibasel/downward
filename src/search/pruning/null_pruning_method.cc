@@ -3,8 +3,6 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include "../utils/logging.h"
-
 using namespace std;
 
 namespace null_pruning_method {

@@ -3,15 +3,13 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include "../utils/logging.h"
 #include "../utils/markup.h"
-
 
 using namespace std;
 
 namespace stubborn_sets_simple {
 StubbornSetsSimple::StubbornSetsSimple(const options::Options &opts)
-    : StubbornSets(opts) {
+    : StubbornSetsActionCentric(opts) {
 }
 
 void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {
@@ -43,14 +41,14 @@ const vector<int> &StubbornSetsSimple::get_interfering_operators(int op1_no) {
 // Add all operators that achieve the fact (var, value) to stubborn set.
 void StubbornSetsSimple::add_necessary_enabling_set(const FactPair &fact) {
     for (int op_no : achievers[fact.var][fact.value]) {
-        mark_as_stubborn(op_no);
+        enqueue_stubborn_operator(op_no);
     }
 }
 
 // Add all operators that interfere with op.
 void StubbornSetsSimple::add_interfering(int op_no) {
     for (int interferer_no : get_interfering_operators(op_no)) {
-        mark_as_stubborn(interferer_no);
+        enqueue_stubborn_operator(interferer_no);
     }
 }
 

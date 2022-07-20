@@ -30,6 +30,9 @@ after the corresponding tracker issues.
   focus on its length rather than its cost.
   <https://issues.fast-downward.org/issue1009>
 
+- We cleaned up the internal structure of stubborn set pruning.
+  <https://issues.fast-downward.org/issue1059>
+
 ## Fast Downward 22.06
 
 Released on June 16, 2022.

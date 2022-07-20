@@ -336,6 +336,15 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
+    NAME STUBBORN_SETS_ACTION_CENTRIC
+    HELP "Base class for all action-centric stubborn set partial order reduction methods"
+    SOURCES
+        pruning/stubborn_sets_action_centric
+    DEPENDS STUBBORN_SETS
+    DEPENDENCY_ONLY
+)
+
+fast_downward_plugin(
     NAME STUBBORN_SETS_ATOM_CENTRIC
     HELP "Atom-centric stubborn sets"
     SOURCES
@@ -348,7 +357,7 @@ fast_downward_plugin(
     HELP "Stubborn sets simple"
     SOURCES
         pruning/stubborn_sets_simple
-    DEPENDS STUBBORN_SETS
+    DEPENDS STUBBORN_SETS_ACTION_CENTRIC
 )
 
 fast_downward_plugin(
@@ -356,7 +365,7 @@ fast_downward_plugin(
     HELP "Stubborn set method that dominates expansion core"
     SOURCES
         pruning/stubborn_sets_ec
-    DEPENDS STUBBORN_SETS TASK_PROPERTIES
+    DEPENDS STUBBORN_SETS_ACTION_CENTRIC TASK_PROPERTIES
 )
 
 fast_downward_plugin(
