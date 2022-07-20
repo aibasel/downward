@@ -25,12 +25,6 @@ ostream &operator<<(ostream &os, const Transition &trans) {
     return os;
 }
 
-// Sorts the given set of transitions and removes duplicates.
-static void normalize_given_transitions(vector<Transition> &transitions) {
-    sort(transitions.begin(), transitions.end());
-    transitions.erase(unique(transitions.begin(), transitions.end()), transitions.end());
-}
-
 void LocalLabelInfo::add_label(int label, int label_cost) {
     label_group.push_back(label);
     cost = min(cost, label_cost);
@@ -320,7 +314,7 @@ void TransitionSystem::apply_abstraction(
                 if (src != PRUNED_STATE && target != PRUNED_STATE)
                     new_transitions.emplace_back(src, target);
             }
-            normalize_given_transitions(new_transitions);
+            utils::sort_unique(new_transitions);
             transitions = move(new_transitions);
         }
     }
