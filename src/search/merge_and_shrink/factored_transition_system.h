@@ -16,7 +16,7 @@ namespace merge_and_shrink {
 class Distances;
 class FactoredTransitionSystem;
 class MergeAndShrinkRepresentation;
-class GlobalLabels;
+class Labels;
 class TransitionSystem;
 
 class FTSConstIterator {
@@ -60,7 +60,7 @@ public:
   interface that this class shows to the outside world.
 */
 class FactoredTransitionSystem {
-    std::unique_ptr<GlobalLabels> global_labels;
+    std::unique_ptr<Labels> labels;
     // Entries with nullptr have been merged.
     std::vector<std::unique_ptr<TransitionSystem>> transition_systems;
     std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> mas_representations;
@@ -85,7 +85,7 @@ class FactoredTransitionSystem {
     void assert_all_components_valid() const;
 public:
     FactoredTransitionSystem(
-        std::unique_ptr<GlobalLabels> global_labels,
+        std::unique_ptr<Labels> labels,
         std::vector<std::unique_ptr<TransitionSystem>> &&transition_systems,
         std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
         std::vector<std::unique_ptr<Distances>> &&distances,
@@ -185,8 +185,8 @@ public:
     }
 
     // Used by LabelReduction and MergeScoringFunctionDFP
-    const GlobalLabels &get_labels() const {
-        return *global_labels;
+    const Labels &get_labels() const {
+        return *labels;
     }
 
     // The following methods are used for iterating over the FTS

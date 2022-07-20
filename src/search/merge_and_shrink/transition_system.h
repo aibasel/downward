@@ -15,7 +15,7 @@ class LogProxy;
 
 namespace merge_and_shrink {
 class Distances;
-class GlobalLabels;
+class Labels;
 
 struct Transition {
     int src;
@@ -93,15 +93,15 @@ private:
     const int num_variables;
     std::vector<int> incorporated_variables;
 
-    const GlobalLabels &global_labels;
+    const Labels &labels;
     /*
       All locally equivalent labels are grouped together, and their
       transitions are only stored once for every such group. Each such group
       is represented by a local label (LocalLabelInfo). Local labels can be
-      mapped back to the set of global labels they represent. Their cost is
-      the minimum cost of all represented global labels.
+      mapped back to the set of labels they represent. Their cost is
+      the minimum cost of all represented labels.
     */
-    std::vector<int> global_label_to_local_label;
+    std::vector<int> label_to_local_label;
     std::vector<LocalLabelInfo> local_label_infos;
 
     int num_states;
@@ -125,8 +125,8 @@ private:
     */
     bool are_transitions_sorted_unique() const;
     /*
-      The mapping global_label_to_local_label is consistent with the mapping
-      local_label_to_global_labels.
+      The mapping label_to_local_label is consistent with the mapping
+      local_label_to_labels.
     */
     bool is_label_mapping_consistent() const;
     void dump_label_mapping() const;
@@ -134,8 +134,8 @@ public:
     TransitionSystem(
         int num_variables,
         std::vector<int> &&incorporated_variables,
-        const GlobalLabels &global_labels,
-        std::vector<int> &&global_label_to_local_label,
+        const Labels &labels,
+        std::vector<int> &&label_to_local_label,
         std::vector<LocalLabelInfo> &&local_label_infos,
         int num_states,
         std::vector<bool> &&goal_states,
@@ -149,7 +149,7 @@ public:
       (It is a bug to merge an unsolvable transition system.)
     */
     static std::unique_ptr<TransitionSystem> merge(
-        const GlobalLabels &global_labels,
+        const Labels &labels,
         const TransitionSystem &ts1,
         const TransitionSystem &ts2,
         utils::LogProxy &log);

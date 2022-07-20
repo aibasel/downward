@@ -12,32 +12,32 @@
 using namespace std;
 
 namespace merge_and_shrink {
-GlobalLabelsConstIterator::GlobalLabelsConstIterator(
+LabelsConstIterator::LabelsConstIterator(
     const vector<int> &label_costs, bool end)
     : label_costs(label_costs),
       current_index(end ? label_costs.size() : 0) {
     next_valid_index();
 }
 
-void GlobalLabelsConstIterator::next_valid_index() {
+void LabelsConstIterator::next_valid_index() {
     while (current_index < label_costs.size()
            && label_costs[current_index] == -1) {
         ++current_index;
     }
 }
 
-void GlobalLabelsConstIterator::operator++() {
+void LabelsConstIterator::operator++() {
     ++current_index;
     next_valid_index();
 }
 
-GlobalLabels::GlobalLabels(vector<int> &&label_costs, int max_num_labels)
+Labels::Labels(vector<int> &&label_costs, int max_num_labels)
     : label_costs(move(label_costs)),
       max_num_labels(max_num_labels),
       num_active_labels(this->label_costs.size()) {
 }
 
-void GlobalLabels::reduce_labels(const vector<int> &old_labels) {
+void Labels::reduce_labels(const vector<int> &old_labels) {
     /*
       Even though we currently only support exact label reductions where
       reduced labels are of equal cost, to support non-exact label reductions,
@@ -58,12 +58,12 @@ void GlobalLabels::reduce_labels(const vector<int> &old_labels) {
     ++num_active_labels;
 }
 
-int GlobalLabels::get_label_cost(int label) const {
+int Labels::get_label_cost(int label) const {
     assert(label_costs[label] != -1);
     return label_costs[label];
 }
 
-void GlobalLabels::dump_labels() const {
+void Labels::dump_labels() const {
     utils::g_log << "active labels:" << endl;
     for (size_t label = 0; label < label_costs.size(); ++label) {
         if (label_costs[label] != -1) {

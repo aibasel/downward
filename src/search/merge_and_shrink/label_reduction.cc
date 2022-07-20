@@ -63,15 +63,15 @@ void LabelReduction::compute_label_mapping(
     const FactoredTransitionSystem &fts,
     vector<pair<int, vector<int>>> &label_mapping,
     utils::LogProxy &log) const {
-    const GlobalLabels &global_labels = fts.get_labels();
-    int next_new_label = global_labels.get_size();
+    const Labels &labels = fts.get_labels();
+    int next_new_label = labels.get_size();
     int num_labels = 0;
     int num_labels_after_reduction = 0;
     for (const equivalence_relation::Block &block : relation) {
         unordered_map<int, vector<int>> cost_to_equivalent_labels;
         for (int label : block) {
             assert(label < next_new_label);
-            int cost = global_labels.get_label_cost(label);
+            int cost = labels.get_label_cost(label);
             cost_to_equivalent_labels[cost].push_back(label);
             ++num_labels;
         }
@@ -111,14 +111,14 @@ LabelReduction::compute_combinable_equivalence_relation(
     */
 
     // Create the equivalence relation where all labels are equivalent.
-    const GlobalLabels &global_labels = fts.get_labels();
-    int num_labels = global_labels.get_num_active_labels();
-    vector<int> labels;
-    labels.reserve(num_labels);
-    for (int label : global_labels) {
-        labels.push_back(label);
+    const Labels &labels = fts.get_labels();
+    int num_labels = labels.get_num_active_labels();
+    vector<int> all_active_labels;
+    all_active_labels.reserve(num_labels);
+    for (int label : labels) {
+        all_active_labels.push_back(label);
     }
-    equivalence_relation::EquivalenceRelation relation(labels);
+    equivalence_relation::EquivalenceRelation relation(all_active_labels);
 
     for (int index : fts) {
         if (index != ts_index) {
