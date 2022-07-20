@@ -318,9 +318,9 @@ class IssueExperiment(FastDownwardExperiment):
         """
         kwargs.setdefault("attributes", self.DEFAULT_TABLE_ATTRIBUTES)
 
+        if not revision_pairs:
+            revision_pairs = [(rev1, rev2) in itertools.combinations(self._revisions, 2)]
         def make_comparison_tables():
-            if not revision_pairs:
-                revision_pairs = [(rev1, rev2) in itertools.combinations(self._revisions, 2)]
             for rev1, rev2 in revision_pairs:
                 compared_configs = []
                 for config in self._configs:
