@@ -48,7 +48,7 @@ def get_all_titles_from_wiki():
     multi_call = connect()
     multi_call.getAllPages()
     response = list(multi_call())
-    assert(response[0] == 'SUCCESS' and len(response) == 2)
+    assert response[0] == 'SUCCESS' and len(response) == 2
     return response[1]
 
 
@@ -57,7 +57,7 @@ def get_pages_from_wiki(titles):
     for title in titles:
         multi_call.getPage(title)
     response = list(multi_call())
-    assert(response[0] == 'SUCCESS')
+    assert response[0] == 'SUCCESS'
     return dict(zip(titles, response[1:]))
 
 
