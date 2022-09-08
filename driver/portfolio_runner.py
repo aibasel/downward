@@ -83,11 +83,12 @@ def compute_run_time(timeout, configs, pos):
     print("remaining time: {}".format(remaining_time))
     relative_time = configs[pos][0]
     remaining_relative_time = sum(config[0] for config in configs[pos:])
-    print("config {}: relative time {}, remaining {}".format(
-          pos, relative_time, remaining_relative_time))
     # For the last config we have relative_time == remaining_relative_time, so
     # we use all of the remaining time at the end.
-    return int(remaining_time * relative_time / remaining_relative_time)
+    limit = int(remaining_time * relative_time / remaining_relative_time)
+    print("config {}: relative time {}, remaining {}, limit {}s".format(
+          pos, relative_time, remaining_relative_time, limit))
+    return limit
 
 
 def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
@@ -171,6 +172,8 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
 def run_opt(configs, executable, sas_file, plan_manager, timeout, memory):
     for pos, (relative_time, args) in enumerate(configs):
         run_time = compute_run_time(timeout, configs, pos)
+        if run_time <= 0:
+            return
         exitcode = run_search(executable, args, sas_file, plan_manager,
                               run_time, memory)
         yield exitcode
