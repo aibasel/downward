@@ -87,7 +87,7 @@ def compute_run_time(timeout, configs, pos):
           pos, relative_time, remaining_relative_time))
     # For the last config we have relative_time == remaining_relative_time, so
     # we use all of the remaining time at the end.
-    return remaining_time * relative_time / remaining_relative_time
+    return int(remaining_time * relative_time / remaining_relative_time)
 
 
 def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,

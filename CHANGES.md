@@ -35,6 +35,10 @@ after the corresponding tracker issues.
   stubborn set pruning.
   <https://issues.fast-downward.org/issue1059>
 
+- driver: we fixed a bug where using the option --overall-time-limit or a
+  portfolio caused the driver to crash with Python 3.10.
+  <https://issues.fast-downward.org/issue1064>
+
 ## Fast Downward 22.06
 
 Released on June 16, 2022.

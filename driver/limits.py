@@ -80,7 +80,7 @@ def get_time_limit(component_limit, overall_limit):
         except NotImplementedError:
             returncodes.exit_with_driver_unsupported_error(CANNOT_LIMIT_TIME_MSG)
         else:
-            remaining_time = max(0, overall_limit - elapsed_time)
+            remaining_time = max(0, int(overall_limit - elapsed_time))
             if limit is None or remaining_time < limit:
                 limit = remaining_time
     return limit

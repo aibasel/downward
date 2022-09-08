@@ -36,6 +36,8 @@ def _get_preexec_function(time_limit, memory_limit):
                 fail(err, returncodes.DRIVER_CRITICAL_ERROR)
             except ValueError as err:
                 fail(err, returncodes.DRIVER_INPUT_ERROR)
+            except TypeError as err:
+                fail(err, returncodes.DRIVER_CRITICAL_ERROR)
 
         _try_or_exit(lambda: limits.set_time_limit(time_limit), "Setting time limit")
         _try_or_exit(lambda: limits.set_memory_limit(memory_limit), "Setting memory limit")
