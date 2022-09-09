@@ -83,12 +83,9 @@ def compute_run_time(timeout, configs, pos):
     print("remaining time: {}".format(remaining_time))
     relative_time = configs[pos][0]
     remaining_relative_time = sum(config[0] for config in configs[pos:])
-    # For the last config we have relative_time == remaining_relative_time, so
-    # we use all of the remaining time at the end.
-    limit = int(remaining_time * relative_time / remaining_relative_time)
-    print("config {}: relative time {}, remaining {}, limit {}s".format(
-          pos, relative_time, remaining_relative_time, limit))
-    return limit
+    print("config {}: relative time {}, remaining {}".format(
+          pos, relative_time, remaining_relative_time))
+    return limits.round_time_limit(remaining_time * relative_time / remaining_relative_time)
 
 
 def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
