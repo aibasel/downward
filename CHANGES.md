@@ -35,6 +35,10 @@ after the corresponding tracker issues.
   stubborn set pruning.
   <https://issues.fast-downward.org/issue1059>
 
+- post-hoc optimization constraints: a bug leading to a segfault was fixed by 
+  retrieving patterns before deleting the pattern generator
+  <https://issues.fast-downward.org/issue1061>
+
 ## Fast Downward 22.06
 
 Released on June 16, 2022.
