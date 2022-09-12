@@ -35,8 +35,9 @@ after the corresponding tracker issues.
   stubborn set pruning.
   <https://issues.fast-downward.org/issue1059>
 
-- post-hoc optimization constraints: a bug leading to a segfault was fixed by 
-  retrieving patterns before deleting the pattern generator
+- post-hoc optimization constraints (pho_constraints): Fix a bug that could 
+  cause crashes (segmentation faults) when using post-hoc optimization 
+  constraints.
   <https://issues.fast-downward.org/issue1061>
 
 ## Fast Downward 22.06
