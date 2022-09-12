@@ -39,6 +39,12 @@ after the corresponding tracker issues.
   portfolio caused the driver to crash with Python 3.10.
   <https://issues.fast-downward.org/issue1064>
 
+- post-hoc optimization constraints (pho_constraints): Fix a bug that could 
+  cause crashes (segmentation faults) when using post-hoc optimization 
+  constraints.
+  <https://issues.fast-downward.org/issue1061>
+
+
 ## Fast Downward 22.06
 
 Released on June 16, 2022.
