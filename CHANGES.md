@@ -9,6 +9,12 @@ For more details, check the repository history
 (<https://issues.fast-downward.org>). Repository branches are named
 after the corresponding tracker issues.
 
+## Fast Downward 22.06.1
+
+- driver: we fixed a bug where using the option --overall-time-limit or a
+  portfolio caused the driver to crash with Python 3.10.
+  <https://issues.fast-downward.org/issue1064>
+
 ## Fast Downward 22.06
 
 Released on June 16, 2022.
