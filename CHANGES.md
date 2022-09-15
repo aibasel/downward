@@ -11,15 +11,19 @@ after the corresponding tracker issues.
 
 ## Fast Downward 22.06.1
 
-- driver: we fixed a bug where using the option --overall-time-limit or a
-  portfolio caused the driver to crash with Python 3.10.
+Released on September 15, 2022.
+
+This is a bugfix release fixing two serious bugs in Fast Downward
+22.06:
+
+- Driver configurations relying on certain kinds of time limits (using
+  the `--overall-time-limit` option or portfolios) crashed when using
+  Python 3.10.
   <https://issues.fast-downward.org/issue1064>
 
-- post-hoc optimization constraints (pho_constraints): Fix a bug that could 
-  cause crashes (segmentation faults) when using post-hoc optimization 
-  constraints.
+- Using post-hoc optimization constraints (`pho_constraints`) caused
+  crashes (segmentation faults) or other undefined behavior.
   <https://issues.fast-downward.org/issue1061>
-
 
 ## Fast Downward 22.06
 
