@@ -23,14 +23,14 @@ def parse_pddl_file(type, filename):
 
 def open(domain_filename=None, task_filename=None):
     if domain_filename is None or task_filename is None:
-        import options
-        # importing options triggers parsing the problem and domain file names
+        # Importing options triggers parsing the problem and domain file names
         # as arguments from the command line. We don't import unconditionally
         # at the head of this file because open is exposed in __init__.py
         # and as a result importing anything of the pddl_parser package in
         # external code would then trigger this arg parse.
-        task_filename = task_filename or options.task
+        import options
         domain_filename = domain_filename or options.domain
+        task_filename = task_filename or options.task
 
     domain_pddl = parse_pddl_file("domain", domain_filename)
     task_pddl = parse_pddl_file("task", task_filename)
