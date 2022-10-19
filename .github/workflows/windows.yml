@@ -57,7 +57,7 @@ jobs:
           cd zlib
 
           echo "Set up zlib include directory"
-          move ../zlib-1.2.12 include
+          move ../zlib-1.2.13 include
 
           echo "Compile zlib library"
           cd include
