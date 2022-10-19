@@ -19,7 +19,7 @@ env:
 
   CPLEX_URL: "${{ secrets.CPLEX129_WINDOWS_URL }}"
   OSI_URL: "https://www.coin-or.org/download/source/Osi/Osi-0.107.9.tgz"
-  ZLIB_URL: "https://www.zlib.net/zlib1212.zip"
+  ZLIB_URL: "https://www.zlib.net/zlib1213.zip"
 
 
 jobs:
