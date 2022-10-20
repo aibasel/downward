@@ -32,7 +32,7 @@ jobs:
         platform:
           - {os: "windows-2022", vc: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
           - {os: "windows-2019", vc: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
-        python-version: [3.6]
+        python-version: [3.8]
     steps:
       - name: Clone repository
         uses: actions/checkout@master

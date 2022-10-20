@@ -19,20 +19,24 @@ jobs:
     runs-on: ${{ matrix.ubuntu-version }}
     strategy:
       matrix:
-        ubuntu-version: [ubuntu-18.04, ubuntu-20.04]
+        ubuntu-version: [ubuntu-20.04, ubuntu-22.04]
         compiler-version:
           - {cc: gcc, cxx: g++}
-          - {cc: gcc-10, cxx: g++-10}
+          - {cc: gcc-12, cxx: g++-12}
           - {cc: clang, cxx: clang++}
-          - {cc: clang-11, cxx: clang++-11}
-        python-version: [3.6]
+# For Ubuntu 22.04 we do not have to explicitly include the newest Clang
+# because it happens to be the default version.
+#           - {cc: clang-14, cxx: clang++-14}
+        python-version: [3.8]
         # Unfortunately, we couldn't figure out a way to name the
         # compiler versions so that we don't have to copy them here.
         exclude:
-          - ubuntu-version: ubuntu-18.04
-            compiler-version: {cc: gcc-10, cxx: g++-10}
-          - ubuntu-version: ubuntu-18.04
-            compiler-version: {cc: clang-11, cxx: clang++-11}
+          - ubuntu-version: ubuntu-20.04
+            compiler-version: {cc: gcc-12, cxx: g++-12}
+# If we explicitly include the newest Clang above, we need to exclude
+# it here for the older Ubuntu version.
+#          - ubuntu-version: ubuntu-20.04
+#            compiler-version: {cc: clang-14, cxx: clang++-14}
     env:
       CC: ${{ matrix.compiler-version.cc }}
       CXX: ${{ matrix.compiler-version.cxx }}
@@ -146,8 +150,8 @@ jobs:
     strategy:
       matrix:
         version:
-          - {ubuntu: ubuntu-18.04, python: 3.6}
-          - {ubuntu: ubuntu-20.04, python: 3.8}
+          - {ubuntu: ubuntu-20.04, python: '3.8'}
+          - {ubuntu: ubuntu-22.04, python: '3.10'}
     env:
       CPLEX_URL: ${{ secrets.CPLEX129_LINUX_URL }}
       SOPLEX_URL: ${{ secrets.SOPLEX311_URL }}
