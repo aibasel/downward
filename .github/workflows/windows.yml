@@ -19,7 +19,7 @@ env:
 
   CPLEX_URL: "${{ secrets.CPLEX129_WINDOWS_URL }}"
   OSI_URL: "https://www.coin-or.org/download/source/Osi/Osi-0.107.9.tgz"
-  ZLIB_URL: "https://www.zlib.net/zlib1212.zip"
+  ZLIB_URL: "https://www.zlib.net/zlib1213.zip"
 
 
 jobs:
@@ -57,7 +57,7 @@ jobs:
           cd zlib
 
           echo "Set up zlib include directory"
-          move ../zlib-1.2.12 include
+          move ../zlib-1.2.13 include
 
           echo "Compile zlib library"
           cd include

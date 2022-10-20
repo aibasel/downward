@@ -3,18 +3,20 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include "../utils/logging.h"
 #include "../utils/markup.h"
-
 
 using namespace std;
 
 namespace stubborn_sets_simple {
+StubbornSetsSimple::StubbornSetsSimple(const options::Options &opts)
+    : StubbornSetsActionCentric(opts) {
+}
+
 void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {
     StubbornSets::initialize(task);
     interference_relation.resize(num_operators);
     interference_relation_computed.resize(num_operators, false);
-    utils::g_log << "pruning method: stubborn sets simple" << endl;
+    log << "pruning method: stubborn sets simple" << endl;
 }
 
 const vector<int> &StubbornSetsSimple::get_interfering_operators(int op1_no) {
@@ -39,14 +41,14 @@ const vector<int> &StubbornSetsSimple::get_interfering_operators(int op1_no) {
 // Add all operators that achieve the fact (var, value) to stubborn set.
 void StubbornSetsSimple::add_necessary_enabling_set(const FactPair &fact) {
     for (int op_no : achievers[fact.var][fact.value]) {
-        mark_as_stubborn(op_no);
+        enqueue_stubborn_operator(op_no);
     }
 }
 
 // Add all operators that interfere with op.
 void StubbornSetsSimple::add_interfering(int op_no) {
     for (int interferer_no : get_interfering_operators(op_no)) {
-        mark_as_stubborn(interferer_no);
+        enqueue_stubborn_operator(interferer_no);
     }
 }
 
@@ -99,12 +101,14 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "323-331",
             "AAAI Press",
             "2014"));
+    add_pruning_options_to_parser(parser);
 
+    Options opts = parser.parse();
     if (parser.dry_run()) {
         return nullptr;
     }
 
-    return make_shared<StubbornSetsSimple>();
+    return make_shared<StubbornSetsSimple>(opts);
 }
 
 static Plugin<PruningMethod> _plugin("stubborn_sets_simple", _parse);

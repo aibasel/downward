@@ -3,13 +3,12 @@
 #include "../option_parser.h"
 #include "../plugin.h"
 
-#include "../utils/logging.h"
-
 using namespace std;
 
 namespace limited_pruning {
 LimitedPruning::LimitedPruning(const Options &opts)
-    : pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")),
+    : PruningMethod(opts),
+      pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")),
       min_required_pruning_ratio(opts.get<double>("min_required_pruning_ratio")),
       num_expansions_before_checking_pruning_ratio(
           opts.get<int>("expansions_before_checking_pruning_ratio")),
@@ -20,7 +19,7 @@ LimitedPruning::LimitedPruning(const Options &opts)
 void LimitedPruning::initialize(const shared_ptr<AbstractTask> &task) {
     PruningMethod::initialize(task);
     pruning_method->initialize(task);
-    utils::g_log << "pruning method: limited" << endl;
+    log << "pruning method: limited" << endl;
 }
 
 void LimitedPruning::prune(
@@ -33,11 +32,15 @@ void LimitedPruning::prune(
         double pruning_ratio = (num_successors_before_pruning == 0) ? 1. : 1. - (
             static_cast<double>(num_successors_after_pruning) /
             static_cast<double>(num_successors_before_pruning));
-        utils::g_log << "Pruning ratio after " << num_expansions_before_checking_pruning_ratio
-                     << " calls: " << pruning_ratio << endl;
+        if (log.is_at_least_normal()) {
+            log << "Pruning ratio after " << num_expansions_before_checking_pruning_ratio
+                << " calls: " << pruning_ratio << endl;
+        }
         if (pruning_ratio < min_required_pruning_ratio) {
-            utils::g_log << "-- pruning ratio is lower than minimum pruning ratio ("
-                         << min_required_pruning_ratio << ") -> switching off pruning" << endl;
+            if (log.is_at_least_normal()) {
+                log << "-- pruning ratio is lower than minimum pruning ratio ("
+                    << min_required_pruning_ratio << ") -> switching off pruning" << endl;
+            }
             is_pruning_disabled = true;
         }
     }
@@ -74,6 +77,7 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "number of expansions before deciding whether to disable pruning",
         "1000",
         Bounds("0", "infinity"));
+    add_pruning_options_to_parser(parser);
 
     Options opts = parser.parse();
     if (parser.dry_run()) {

@@ -31,7 +31,7 @@ class Action:
         for eff in self.effects:
             eff.dump()
         print("Cost:")
-        if(self.cost):
+        if self.cost:
             self.cost.dump()
         else:
             print("  None")

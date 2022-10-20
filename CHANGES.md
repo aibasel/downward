@@ -11,9 +11,39 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
-- driver: skip __pycache__ directory when collection portfolio aliases
+- search and pruning module, for users: Fix performance regression
+  introduced in issue1042 due to always measuring time spent in
+  pruning methods. This is now only done in verbose verbosity level.
+  To this end, the verbosity parameter was added to the pruning module.
+  <https://issues.fast-downward.org/issue1058>
+
+- landmarks: Landmark costs for lmcount in the inadmissible settings are now
+  always based on the cost of their achievers, and the cost for derived
+  landmarks can now be set with a new option 'derived_lm_cost' (either 0 or 1,
+  with 1 being the default).
+  When using lmcount in satisficing search where we do not care about cost,
+  experiments show that using 'transform=adapt_costs(ONE)' and
+  'derived_lm_cost=1' performs best, since a plan is usually found faster if we
+  focus on its length rather than its cost.
+  <https://issues.fast-downward.org/issue1009>
+
+- driver, for developers: skip __pycache__ directory when collection portfolio
+  aliases
   <https://issues.fast-downward.org/issue1055>
-  
+
+- pruning module, for developers: we cleaned up the internal structure of
+  stubborn set pruning.
+  <https://issues.fast-downward.org/issue1059>
+
+- driver: we fixed a bug where using the option --overall-time-limit or a
+  portfolio caused the driver to crash with Python 3.10.
+  <https://issues.fast-downward.org/issue1064>
+
+- post-hoc optimization constraints (pho_constraints): Fix a bug that could 
+  cause crashes (segmentation faults) when using post-hoc optimization 
+  constraints.
+  <https://issues.fast-downward.org/issue1061>
+
 
 ## Fast Downward 22.06
 

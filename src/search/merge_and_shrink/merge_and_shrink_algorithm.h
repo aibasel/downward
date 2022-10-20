@@ -62,6 +62,12 @@ public:
 
 extern void add_merge_and_shrink_algorithm_options_to_parser(options::OptionParser &parser);
 extern void add_transition_system_size_limit_options_to_parser(options::OptionParser &parser);
+/*
+  TODO: this expects that utils::add_log_options_to_parser has been called
+  for the OptionParser object responsible for creating the passed in Options
+  object. The reason is that this method may print a warning depending on the
+  verbosity level of the logger.
+*/
 extern void handle_shrink_limit_options_defaults(options::Options &opts);
 }
 

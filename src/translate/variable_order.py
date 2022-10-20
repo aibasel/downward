@@ -69,7 +69,7 @@ class CausalGraph:
 
     def get_strongly_connected_components(self):
         unweighted_graph = [[] for _ in range(self.num_variables)]
-        assert(len(self.weighted_graph) <= self.num_variables)
+        assert len(self.weighted_graph) <= self.num_variables
         for source, target_weights in self.weighted_graph.items():
             unweighted_graph[source] = sorted(target_weights.keys())
         return sccs.get_sccs_adjacency_list(unweighted_graph)
