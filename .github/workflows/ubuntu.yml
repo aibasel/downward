@@ -24,8 +24,8 @@ jobs:
           - {cc: gcc, cxx: g++}
           - {cc: gcc-12, cxx: g++-12}
           - {cc: clang, cxx: clang++}
-# For ubuntu 22.04 we do not have to explicitly include the newest clang
-# because it happens to be the default version
+# For Ubuntu 22.04 we do not have to explicitly include the newest Clang
+# because it happens to be the default version.
 #           - {cc: clang-14, cxx: clang++-14}
         python-version: [3.8]
         # Unfortunately, we couldn't figure out a way to name the
@@ -33,8 +33,8 @@ jobs:
         exclude:
           - ubuntu-version: ubuntu-20.04
             compiler-version: {cc: gcc-12, cxx: g++-12}
-# If we explicitly include the newest clang above, we need to exclude
-# it here for the older ubuntu version
+# If we explicitly include the newest Clang above, we need to exclude
+# it here for the older Ubuntu version.
 #          - ubuntu-version: ubuntu-20.04
 #            compiler-version: {cc: clang-14, cxx: clang++-14}
     env:
