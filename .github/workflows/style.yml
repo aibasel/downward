@@ -10,7 +10,7 @@ on:
 jobs:
   style:
     name: Test code style
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Clone repository
         uses: actions/checkout@master
@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip3 install tox
-          sudo apt-get -y install clang-tidy-8
+          sudo apt-get -y install clang-tidy-12
 
       - name: Install uncrustify
         run: |
