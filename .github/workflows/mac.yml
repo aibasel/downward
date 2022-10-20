@@ -11,7 +11,12 @@ jobs:
   test:
     name: Compile and test planner
     timeout-minutes: 60
-    runs-on: macos-11
+    runs-on: ${{ matrix.version.macos }}
+    strategy:
+      matrix:
+        version:
+          - {macos: macos-11, python: '3.8'}
+          - {macos: macos-12, python: '3.10'}
     steps:
       - name: Clone repository
         uses: actions/checkout@master
@@ -19,7 +24,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@master
         with:
-          python-version: 3.8
+          python-version: ${{ matrix.version.python }}
 
       - name: Compile planner
         run: |

@@ -19,7 +19,8 @@ This version of Fast Downward has been tested with the following software versio
 | ------------ | ------ | ---------------------------------------------------------------- | ----- |
 | Ubuntu 22.04 | 3.10   | GCC 11, GCC 12, Clang 14                                         | 3.22  |
 | Ubuntu 20.04 | 3.8    | GCC 9, GCC 10, Clang 10, Clang 11                                | 3.16  |
-| macOS 11     | 3.8    | AppleClang 12                                                    | 3.19  |
+| macOS 12     | 3.10   | AppleClang 14                                                    | 3.24  |
+| macOS 11     | 3.8    | AppleClang 13                                                    | 3.24  |
 | Windows 10   | 3.8    | Visual Studio Enterprise 2019 (MSVC 19.29) and 2022 (MSVC 19.31) | 3.22  |
 
 We test LP support with CPLEX 12.9, SoPlex 3.1.1 and Osi 0.107.9.
