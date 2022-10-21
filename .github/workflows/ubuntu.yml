@@ -25,7 +25,7 @@ jobs:
           - {cc: gcc-10, cxx: g++-10}
           - {cc: gcc-12, cxx: g++-12}
           - {cc: clang, cxx: clang++}
-           - {cc: clang-11, cxx: clang++-11}
+          - {cc: clang-11, cxx: clang++-11}
 # For Ubuntu 22.04 we do not have to explicitly include the newest Clang
 # because it happens to be the default version.
 #           - {cc: clang-14, cxx: clang++-14}
