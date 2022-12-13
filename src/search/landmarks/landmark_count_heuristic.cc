@@ -282,8 +282,8 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
                are reached. */
             return all_of(lm_node.parents.begin(), lm_node.parents.end(),
                           [&](const pair<LandmarkNode *, EdgeType> &parent) {
-                return reached.test(parent.first->get_id());
-            });
+                              return reached.test(parent.first->get_id());
+                          });
         }
     }
 }
@@ -413,8 +413,8 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "use optimal (LP-based) cost sharing "
         "(only makes sense with ``admissible=true``)", "false");
     parser.add_option<bool>("pref", "identify preferred operators "
-                                    "(see OptionCaveats#Using_preferred_operators_"
-                                    "with_the_lmcount_heuristic)", "false");
+                            "(see OptionCaveats#Using_preferred_operators_"
+                            "with_the_lmcount_heuristic)", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
     lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
