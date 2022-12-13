@@ -15,8 +15,6 @@ class LandmarkGraph;
 class LandmarkNode;
 class LandmarkStatusManager;
 
-using LandmarkNodeSet = std::unordered_set<const LandmarkNode *>;
-
 class LandmarkCountHeuristic : public Heuristic {
     std::shared_ptr<LandmarkGraph> lgraph;
     const bool use_preferred_operators;
@@ -40,17 +38,12 @@ class LandmarkCountHeuristic : public Heuristic {
     int get_heuristic_value(const State &ancestor_state);
 
     bool check_node_orders_disobeyed(
-        const LandmarkNode &node, const LandmarkNodeSet &reached) const;
-
-    void add_node_children(LandmarkNode &node,
-                           const LandmarkNodeSet &reached) const;
+        const LandmarkNode &node, const BitsetView &reached) const;
 
     bool landmark_is_interesting(
-        const State &state, const LandmarkNodeSet &reached, LandmarkNode &lm_node) const;
+        const State &state, const BitsetView &reached, LandmarkNode &lm_node) const;
     bool generate_helpful_actions(
-        const State &state, const LandmarkNodeSet &reached);
-
-    LandmarkNodeSet convert_to_landmark_set(const BitsetView &landmark_bitset);
+        const State &state, const BitsetView &reached);
 
     int get_min_cost_of_achievers(const std::set<int> &achievers,
                                   const TaskProxy &task_proxy);

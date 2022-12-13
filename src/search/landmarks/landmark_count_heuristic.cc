@@ -199,18 +199,18 @@ int LandmarkCountHeuristic::compute_heuristic(const State &ancestor_state) {
     int h = get_heuristic_value(ancestor_state);
 
     if (use_preferred_operators) {
-        BitsetView landmark_info = lm_status_manager->get_reached_landmarks(ancestor_state);
-        LandmarkNodeSet reached_lms = convert_to_landmark_set(landmark_info);
+        BitsetView reached_lms =
+            lm_status_manager->get_reached_landmarks(ancestor_state);
         generate_helpful_actions(state, reached_lms);
     }
 
     return h;
 }
 
-bool LandmarkCountHeuristic::check_node_orders_disobeyed(const LandmarkNode &node,
-                                                         const LandmarkNodeSet &reached) const {
+bool LandmarkCountHeuristic::check_node_orders_disobeyed(
+    const LandmarkNode &node, const BitsetView &reached) const {
     for (const auto &parent : node.parents) {
-        if (reached.count(parent.first) == 0) {
+        if (!reached.test(parent.first->get_id())) {
             return true;
         }
     }
@@ -218,11 +218,13 @@ bool LandmarkCountHeuristic::check_node_orders_disobeyed(const LandmarkNode &nod
 }
 
 bool LandmarkCountHeuristic::generate_helpful_actions(
-    const State &state, const LandmarkNodeSet &reached) {
-    /* Find actions that achieve new landmark leaves. If no such action exist,
-     return false. If a simple landmark can be achieved, return only operators
-     that achieve simple landmarks, else return operators that achieve
-     disjunctive landmarks */
+    const State &state, const BitsetView &reached) {
+    /*
+      Find actions that achieve new landmark leaves. If no such action exist,
+      return false. If a simple landmark can be achieved, return only operators
+      that achieve simple landmarks, else return operators that achieve
+      disjunctive landmarks.
+    */
     assert(successor_generator);
     vector<OperatorID> applicable_operators;
     successor_generator->generate_applicable_ops(state, applicable_operators);
@@ -263,20 +265,31 @@ bool LandmarkCountHeuristic::generate_helpful_actions(
 }
 
 bool LandmarkCountHeuristic::landmark_is_interesting(
-    const State &state, const LandmarkNodeSet &reached, LandmarkNode &lm_node) const {
-    /* A landmark is interesting if it hasn't been reached before and
-     its parents have all been reached, or if all landmarks have been
-     reached before, the LM is a goal, and it's not true at moment */
+    const State &state, const BitsetView &reached,
+    LandmarkNode &lm_node) const {
+    /*
+      A landmark is interesting if it hasn't been reached before and
+      its parents have all been reached, or if all landmarks have been
+      reached before, the LM is a goal, and it's not true at moment.
+    */
 
-    int num_reached = reached.size();
-    if (num_reached != lgraph->get_num_landmarks()) {
-        if (reached.find(&lm_node) != reached.end())
+    bool all_reached = true;
+    for (int i = 0; i < reached.size(); ++i) {
+        if (!reached.test(i)) {
+            all_reached = false;
+            break;
+        }
+    }
+
+    if (all_reached) {
+        const Landmark &landmark = lm_node.get_landmark();
+        return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
+    } else {
+        if (reached.test(lm_node.get_id()))
             return false;
         else
             return !check_node_orders_disobeyed(lm_node, reached);
     }
-    const Landmark &landmark = lm_node.get_landmark();
-    return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
 }
 
 void LandmarkCountHeuristic::notify_initial_state(const State &initial_state) {
@@ -296,22 +309,6 @@ void LandmarkCountHeuristic::notify_state_transition(
 bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
     return dead_ends_reliable;
 }
-
-/*
-  This function exists purely so we don't have to change all the
-  functions in this class that use LandmarkSets for the reached LMs (HACK).
-*/
-LandmarkNodeSet LandmarkCountHeuristic::convert_to_landmark_set(
-    const BitsetView &landmark_bitset) {
-    LandmarkNodeSet landmark_node_set;
-    for (int i = 0; i < landmark_bitset.size(); ++i) {
-        if (landmark_bitset.test(i)) {
-            landmark_node_set.insert(lgraph->get_node(i));
-        }
-    }
-    return landmark_node_set;
-}
-
 
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     parser.document_synopsis(
@@ -420,8 +417,8 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "use optimal (LP-based) cost sharing "
         "(only makes sense with ``admissible=true``)", "false");
     parser.add_option<bool>("pref", "identify preferred operators "
-                            "(see OptionCaveats#Using_preferred_operators_"
-                            "with_the_lmcount_heuristic)", "false");
+                                    "(see OptionCaveats#Using_preferred_operators_"
+                                    "with_the_lmcount_heuristic)", "false");
     parser.add_option<bool>("alm", "use action landmarks", "true");
     lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
