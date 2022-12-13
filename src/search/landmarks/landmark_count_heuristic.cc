@@ -207,16 +207,6 @@ int LandmarkCountHeuristic::compute_heuristic(const State &ancestor_state) {
     return h;
 }
 
-bool LandmarkCountHeuristic::check_node_orders_disobeyed(
-    const LandmarkNode &node, const BitsetView &reached) const {
-    for (const auto &parent : node.parents) {
-        if (!reached.test(parent.first->get_id())) {
-            return true;
-        }
-    }
-    return false;
-}
-
 bool LandmarkCountHeuristic::generate_helpful_actions(
     const State &state, const BitsetView &reached) {
     /*
@@ -285,10 +275,16 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
         const Landmark &landmark = lm_node.get_landmark();
         return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
     } else {
-        if (reached.test(lm_node.get_id()))
+        if (reached.test(lm_node.get_id())) {
             return false;
-        else
-            return !check_node_orders_disobeyed(lm_node, reached);
+        } else {
+            /* An unreached landmark is interesting if all its parents
+               are reached. */
+            return all_of(lm_node.parents.begin(), lm_node.parents.end(),
+                          [&](const pair<LandmarkNode *, EdgeType> &parent) {
+                return reached.test(parent.first->get_id());
+            });
+        }
     }
 }
 
