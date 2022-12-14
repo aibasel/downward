@@ -14,7 +14,7 @@ BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = [
     # "641d70b36",  # base
     "b5d8fddcf",  # v1
-    "8705a47d1",  # v2
+    "1b66e6032",  # v2
 ]
 CONFIGS = [
     IssueConfig("lama-pref",
