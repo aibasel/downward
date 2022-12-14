@@ -199,16 +199,13 @@ int LandmarkCountHeuristic::compute_heuristic(const State &ancestor_state) {
     int h = get_heuristic_value(ancestor_state);
 
     if (use_preferred_operators) {
-        BitsetView reached_lms =
-            lm_status_manager->get_reached_landmarks(ancestor_state);
-        generate_helpful_actions(state, reached_lms);
+        generate_helpful_actions(state);
     }
 
     return h;
 }
 
-bool LandmarkCountHeuristic::generate_helpful_actions(
-    const State &state, const BitsetView &reached) {
+bool LandmarkCountHeuristic::generate_helpful_actions(const State &state) {
     /*
       Find actions that achieve new landmark leaves. If no such action exist,
       return false. If a simple landmark can be achieved, return only operators
@@ -229,7 +226,7 @@ bool LandmarkCountHeuristic::generate_helpful_actions(
                 continue;
             FactProxy fact_proxy = effect.get_fact();
             LandmarkNode *lm_node = lgraph->get_node(fact_proxy.get_pair());
-            if (lm_node && landmark_is_interesting(state, reached, *lm_node)) {
+            if (lm_node && landmark_is_interesting(state, *lm_node)) {
                 if (lm_node->get_landmark().disjunctive) {
                     ha_disj.push_back(op_id);
                 } else {
@@ -255,34 +252,34 @@ bool LandmarkCountHeuristic::generate_helpful_actions(
 }
 
 bool LandmarkCountHeuristic::landmark_is_interesting(
-    const State &state, const BitsetView &reached,
-    LandmarkNode &lm_node) const {
+    const State &state, LandmarkNode &lm_node) const {
     /*
       A landmark is interesting if it hasn't been reached before and
       its parents have all been reached, or if all landmarks have been
       reached before, the LM is a goal, and it's not true at moment.
     */
 
-    bool all_reached = true;
-    for (int i = 0; i < reached.size(); ++i) {
-        if (!reached.test(i)) {
-            all_reached = false;
-            break;
-        }
-    }
+    const vector<unique_ptr<LandmarkNode>> &lm_nodes = lgraph->get_nodes();
+    bool all_reached = all_of(lm_nodes.begin(), lm_nodes.end(),
+                              [&](const unique_ptr<LandmarkNode> &lm_node) {
+                                  return lm_status_manager->get_landmark_status(
+                                      lm_node->get_id());
+                              });
 
     if (all_reached) {
         const Landmark &landmark = lm_node.get_landmark();
         return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
     } else {
-        if (reached.test(lm_node.get_id())) {
+        if (lm_status_manager->get_landmark_status(lm_node.get_id())
+            != lm_not_reached) {
             return false;
         } else {
             /* An unreached landmark is interesting if all its parents
                are reached. */
             return all_of(lm_node.parents.begin(), lm_node.parents.end(),
                           [&](const pair<LandmarkNode *, EdgeType> &parent) {
-                              return reached.test(parent.first->get_id());
+                              return lm_status_manager->get_landmark_status(
+                                  parent.first->get_id()) != lm_not_reached;
                           });
         }
     }
