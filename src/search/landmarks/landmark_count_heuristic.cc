@@ -156,11 +156,13 @@ void LandmarkCountHeuristic::compute_landmark_costs() {
 int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
     double epsilon = 0.01;
 
-    // Need explicit test to see if state is a goal state. The landmark
-    // heuristic may compute h != 0 for a goal state if landmarks are
-    // achieved before their parents in the landmarks graph (because
-    // they do not get counted as reached in that case). However, we
-    // must return 0 for a goal state.
+    /*
+      Need explicit test to see if state is a goal state. The landmark
+      heuristic may compute h != 0 for a goal state if landmarks are
+      achieved before their parents in the landmarks graph (because
+      they do not get counted as reached in that case). However, we
+      must return 0 for a goal state.
+    */
 
     lm_status_manager->update_lm_status(ancestor_state);
 
@@ -262,24 +264,23 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
     const vector<unique_ptr<LandmarkNode>> &lm_nodes = lgraph->get_nodes();
     bool all_reached = all_of(lm_nodes.begin(), lm_nodes.end(),
                               [&](const unique_ptr<LandmarkNode> &lm_node) {
-                                  return lm_status_manager->get_landmark_status(
-                                      lm_node->get_id());
+                                  int id = lm_node->get_id();
+                                  return lm_status_manager->is_reached(id);
                               });
 
     if (all_reached) {
         const Landmark &landmark = lm_node.get_landmark();
         return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
     } else {
-        if (lm_status_manager->get_landmark_status(lm_node.get_id())
-            != lm_not_reached) {
+        if (lm_status_manager->is_reached(lm_node.get_id())) {
             return false;
         } else {
             /* An unreached landmark is interesting if all its parents
                are reached. */
             return all_of(lm_node.parents.begin(), lm_node.parents.end(),
                           [&](const pair<LandmarkNode *, EdgeType> &parent) {
-                              return lm_status_manager->get_landmark_status(
-                                  parent.first->get_id()) != lm_not_reached;
+                              int parent_id = parent.first->get_id();
+                              return lm_status_manager->is_reached(parent_id);
                           });
         }
     }
