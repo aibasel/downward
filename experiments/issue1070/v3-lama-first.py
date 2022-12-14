@@ -13,7 +13,7 @@ REPO_DIR = os.environ["DOWNWARD_REPO"]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = [
     "issue1070-v1",
-    "issue1070-v2",
+    "issue1070-v3",
 ]
 CONFIGS = [
     IssueConfig("lama-first-pref",

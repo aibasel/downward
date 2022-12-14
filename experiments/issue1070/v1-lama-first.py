@@ -12,8 +12,8 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_DIR = os.environ["DOWNWARD_REPO"]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = [
-    "641d70b36",  # base
-    "b5d8fddcf",  # v1
+    "issue1070-base",
+    "issue1070-v1",
 ]
 CONFIGS = [
     IssueConfig("lama-first-pref",
