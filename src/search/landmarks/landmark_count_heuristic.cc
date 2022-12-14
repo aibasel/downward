@@ -254,35 +254,47 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state) {
 }
 
 bool LandmarkCountHeuristic::landmark_is_interesting(
-    const State &state, LandmarkNode &lm_node) const {
+    const State &/*state*/, LandmarkNode &lm_node) const {
     /*
       A landmark is interesting if it hasn't been reached before and
       its parents have all been reached, or if all landmarks have been
       reached before, the LM is a goal, and it's not true at moment.
     */
 
-    const vector<unique_ptr<LandmarkNode>> &lm_nodes = lgraph->get_nodes();
-    bool all_reached = all_of(lm_nodes.begin(), lm_nodes.end(),
-                              [&](const unique_ptr<LandmarkNode> &lm_node) {
-                                  int id = lm_node->get_id();
-                                  return lm_status_manager->is_reached(id);
-                              });
+    landmark_status status =
+        lm_status_manager->get_landmark_status(lm_node.get_id());
 
-    if (all_reached) {
-        const Landmark &landmark = lm_node.get_landmark();
-        return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
-    } else {
-        if (lm_status_manager->is_reached(lm_node.get_id())) {
-            return false;
-        } else {
-            /* An unreached landmark is interesting if all its parents
-               are reached. */
-            return all_of(lm_node.parents.begin(), lm_node.parents.end(),
-                          [&](const pair<LandmarkNode *, EdgeType> &parent) {
-                              int parent_id = parent.first->get_id();
-                              return lm_status_manager->is_reached(parent_id);
-                          });
-        }
+    switch(status) {
+    case lm_reached:
+        return false;
+    case lm_not_reached:
+        // An unreached landmark is interesting if all its parents are reached.
+    case lm_needed_again:
+        /*
+          TODO: Note that today, landmarks can only become needed-again after
+           they have been reached (in LAMA terms: accepted). This is only
+           possible if all their parents have been reached themselves, making
+           the following check seem unnecessary, because *return true* always
+           seems like the better option. However, this ought to change once we
+           incorporate the landmark progression theory from our (unpublished)
+           paper (see also issue1036). According to that theory, landmarks are
+           always accepted when first reached, independent of the status of
+           their parents. Due to reasonable orderings, they can then also become
+           needed-again even if not all their parents are reached. Then, we
+           should also consider them interesting only after all their parents
+           are reached, because the definition of reasonable orderings tells us
+           that reaching them earlier requires us to make them false to reach
+           their (reasonable) parents but also requires them to be reached again
+           after all their (reasonable) parents have been reached (or at the
+           same time).
+        */
+        return all_of(lm_node.parents.begin(), lm_node.parents.end(),
+                      [&](const pair<LandmarkNode *, EdgeType> &parent) {
+                          int parent_id = parent.first->get_id();
+                          return lm_status_manager->is_reached(parent_id);
+                      });
+    default:
+        return false;
     }
 }
 
