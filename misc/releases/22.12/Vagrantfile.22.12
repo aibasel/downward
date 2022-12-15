@@ -1,0 +1,119 @@
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  # For a complete reference of vagrant options see https://docs.vagrantup.com.
+
+  config.vm.box = "ubuntu/bionic64"
+
+  # To compile the planner with support for CPLEX or SoPlex, download the 64-bit
+  # Linux installers of CPLEX 12.9 and/or SoPlex 3.1.1 and set the environment
+  # variable DOWNWARD_LP_INSTALLERS to an absolute path containing them before
+  # provisioning the VM.
+  provision_env = {}
+  if !ENV["DOWNWARD_LP_INSTALLERS"].nil?
+      cplex_installer = ENV["DOWNWARD_LP_INSTALLERS"] + "/cplex_studio129.linux-x86-64.bin"
+      soplex_installer = ENV["DOWNWARD_LP_INSTALLERS"] + "/soplex-3.1.1.tgz"
+      if File.exists?(cplex_installer) ||  File.exists?(soplex_installer)
+          config.vm.synced_folder ENV["DOWNWARD_LP_INSTALLERS"], "/lp", :mount_options => ["ro"]
+          provision_env["CPLEX_INSTALLER"] = "/lp/" + File.basename(cplex_installer)
+          provision_env["SOPLEX_INSTALLER"] = "/lp/" + File.basename(soplex_installer)
+      end
+  end
+
+  config.vm.provision "shell", env: provision_env, inline: <<-SHELL
+
+    apt-get update && apt-get install --no-install-recommends -y \
+        ca-certificates \
+        cmake           \
+        default-jre     \
+        g++             \
+        git             \
+        libgmp3-dev     \
+        make            \
+        python3         \
+        unzip           \
+        wget            \
+        zlib1g-dev
+
+    OSI_LD_FLAGS=""
+    OSI_CONFIG_OPTIONS=()
+    if [ -f "$CPLEX_INSTALLER" ]; then
+        # Set environment variables for CPLEX.
+        cat > /etc/profile.d/downward-cplex.sh <<- EOM
+			export DOWNWARD_CPLEX_ROOT="/opt/ibm/ILOG/CPLEX_Studio129/cplex"
+		EOM
+        source /etc/profile.d/downward-cplex.sh
+
+        # Install CPLEX.
+        $CPLEX_INSTALLER -DLICENSE_ACCEPTED=TRUE -i silent
+
+        # Prepare configuration of OSI.
+        OSI_LD_FLAGS="$OSI_LD_FLAGS -L$DOWNWARD_CPLEX_ROOT/bin/x86-64_linux"
+        OSI_CONFIG_OPTIONS+=(
+            "--with-cplex-incdir=$DOWNWARD_CPLEX_ROOT/include/ilcplex"
+            "--with-cplex-lib=-lcplex1290 -lm")
+    fi
+
+    if [ -f "$SOPLEX_INSTALLER" ]; then
+        # Set environment variables for SoPlex.
+        cat > /etc/profile.d/downward-soplex.sh <<- EOM
+			export DOWNWARD_SOPLEX_ROOT="/opt/soplex"
+		EOM
+        source /etc/profile.d/downward-soplex.sh
+
+        # Install SoPlex.
+        tar xvzf $SOPLEX_INSTALLER
+        pushd $(basename $SOPLEX_INSTALLER .tgz)
+        mkdir build
+        cd build
+        cmake -DCMAKE_INSTALL_PREFIX="$DOWNWARD_SOPLEX_ROOT" ..
+        make
+        make install
+        popd
+
+        # Prepare configuration of OSI.
+        OSI_LD_FLAGS="$OSI_LD_FLAGS -L$DOWNWARD_SOPLEX_ROOT/lib"
+        OSI_CONFIG_OPTIONS+=(
+            "--with-soplex-incdir=$DOWNWARD_SOPLEX_ROOT/include"
+            "--with-soplex-lib=-lsoplex")
+    fi
+
+    if [ -f "$CPLEX_INSTALLER" ] || [ -f "$SOPLEX_INSTALLER" ]; then
+        # Set environment variables for OSI.
+        cat > /etc/profile.d/downward-osi.sh <<- EOM
+            export DOWNWARD_COIN_ROOT="/opt/osi"
+		EOM
+        source /etc/profile.d/downward-osi.sh
+
+        # Install OSI.
+        OSI_VERSION="Osi-0.107.9"
+        wget http://www.coin-or.org/download/source/Osi/$OSI_VERSION.tgz
+        tar xvzf $OSI_VERSION.tgz
+        pushd $OSI_VERSION
+        mkdir $DOWNWARD_COIN_ROOT
+
+        ./configure CC="gcc"  CFLAGS="-pthread -Wno-long-long" \
+                    CXX="g++" CXXFLAGS="-pthread -Wno-long-long" \
+                    LDFLAGS="$OSI_LD_FLAGS" \
+                    --without-lapack --enable-static=no \
+                    --prefix="$DOWNWARD_COIN_ROOT" \
+                    --disable-bzlib \
+                    "${OSI_CONFIG_OPTIONS[@]}"
+        make
+        make install
+        popd
+        rm -rf $OSI_VERSION $OSI_VERSION.tgz
+    fi
+
+    cd /home/vagrant
+
+    if ! [ -e downward ] ; then
+        git clone --branch release-22.12.0 https://github.com/aibasel/downward.git downward
+        ./downward/build.py release debug
+        chown -R vagrant.vagrant downward
+    fi
+
+  SHELL
+end
