@@ -254,7 +254,7 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state) {
 }
 
 bool LandmarkCountHeuristic::landmark_is_interesting(
-    const State &/*state*/, LandmarkNode &lm_node) const {
+    const State & /*state*/, LandmarkNode &lm_node) const {
     /*
       A landmark is interesting if it hasn't been reached before and
       its parents have all been reached, or if all landmarks have been
@@ -264,11 +264,11 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
     landmark_status status =
         lm_status_manager->get_landmark_status(lm_node.get_id());
 
-    switch(status) {
+    switch (status) {
     case lm_reached:
         return false;
     case lm_not_reached:
-        // An unreached landmark is interesting if all its parents are reached.
+    // An unreached landmark is interesting if all its parents are reached.
     case lm_needed_again:
         /*
           TODO: Note that today, landmarks can only become needed-again after
