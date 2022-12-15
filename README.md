@@ -44,11 +44,11 @@ contributing, and finally by last name.
 - 2010-2011, 2013-2022 Silvan Sievers
 - 2012-2022 Florian Pommerening
 - 2013, 2015-2022 Salomé Eriksson
+- 2015, 2021-2022 Thomas Keller
 - 2018-2022 Patrick Ferber
 - 2021-2022 Clemens Büchner
 - 2021-2022 Dominik Drexler
 - 2022 Remo Christen
-- 2015, 2021 Thomas Keller
 - 2016-2020 Cedric Geissmann
 - 2017-2020 Guillem Francès
 - 2018-2020 Augusto B. Corrêa
