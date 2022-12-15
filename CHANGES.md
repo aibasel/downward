@@ -9,39 +9,94 @@ For more details, check the repository history
 (<https://issues.fast-downward.org>). Repository branches are named
 after the corresponding tracker issues.
 
-## Changes since the last release
+## Fast Downward 22.12
 
-- search and pruning module, for users: Fix performance regression
-  introduced in issue1042 due to always measuring time spent in
-  pruning methods. This is now only done in verbose verbosity level.
-  To this end, the verbosity parameter was added to the pruning module.
+Released on December 15, 2022.
+
+Highlights:
+
+- We now test more recent versions of Ubuntu Linux (22.04 and 20.04),
+  macOS (11 and 12) and Python (3.8 and 3.10).
+
+- Most search algorithms are now faster. We fixed a performance
+  problem related to state pruning, which also affected search
+  configurations that did not explicitly select a pruning method.
+
+- All landmark factories now respect action costs. Previously, this
+  was only the case when using admissible landmark heuristic or when
+  using the `lm_rhw` landmark factory. Note that ignoring action costs
+  (i.e., the old behaviour for landmark factories other than `lm_rhw`)
+  often finds plans faster and is still possible with the
+  `adapt_costs` transformation.
+
+Details:
+
+- driver: Planner time is now logged in a consistent format.
+  Previously, it would sometimes be logged in scientific notation.
+
+- driver, for developers: Skip __pycache__ directory when collecting
+  portfolios.
+  <https://issues.fast-downward.org/issue1057>
+
+- translator: Allow importing pddl_parser without parsing arguments
+  from command line.
+  <https://issues.fast-downward.org/issue1068>
+
+- pruning methods: Fix a performance regression caused by spending too
+  much time measuring elapsed time. This is now only done at verbosity
+  level `verbose` or higher. Verbosity level parameter added to all
+  pruning methods.
   <https://issues.fast-downward.org/issue1058>
+  Note that most search algorithms in Fast Downward always use a
+  pruning method (a trivial method pruning nothing is used by default)
+  and were therefore affected by this performance problem.
 
-- landmarks: Landmark costs for lmcount in the inadmissible settings are now
-  always based on the cost of their achievers, and the cost for derived
-  landmarks can now be set with a new option 'derived_lm_cost' (either 0 or 1,
-  with 1 being the default).
-  When using lmcount in satisficing search where we do not care about cost,
-  experiments show that using 'transform=adapt_costs(ONE)' and
-  'derived_lm_cost=1' performs best, since a plan is usually found faster if we
-  focus on its length rather than its cost.
-  <https://issues.fast-downward.org/issue1009>
-
-- driver, for developers: skip __pycache__ directory when collection portfolio
-  aliases
-  <https://issues.fast-downward.org/issue1055>
-
-- pruning module, for developers: we cleaned up the internal structure of
-  stubborn set pruning.
+- pruning methods, for developers: We cleaned up the internal
+  structure of stubborn set pruning.
   <https://issues.fast-downward.org/issue1059>
 
-- driver: we fixed a bug where using the option --overall-time-limit or a
-  portfolio caused the driver to crash with Python 3.10.
+- landmarks: All landmark factories are now sensitive to action costs.
+  <https://issues.fast-downward.org/issue1009>
+  When using the `lmcount` heuristic in inadmissible mode (option
+  `admissible=false`), previously only the `lm_rhw` landmark factory
+  considered action costs. Now, all landmark factories do. (This was
+  already the case with `admissible=true`.)
+  Experiments show that ignoring action costs is often beneficial when
+  we are more interested in planner speed or coverage than plan
+  quality. This can be achieved by using the option
+  `transform=adapt_costs(ONE)`.
+
+- landmarks: Reduce verbosity of h^m landmarks.
+  The `lm_hm` landmark factory is now less verbose by default. Use
+  verbosity level `verbose` or higher to enable the previous output.
+
+- infrastructure: Update tested OS versions and clang-tidy version.
+  <https://issues.fast-downward.org/issue1067>
+  - The tested Ubuntu versions are now 22.04 and 20.04.
+  - The tested macOS versions are now macOS 11 and macOS 12.
+  - The tested Windows version remains Windows 10.
+  - We now test Python 3.10 (Ubuntu 22.04, macOS 12)
+    and Python 3.8 (Ubuntu 20.04, macOS11, Windows 10).
+  - We now use clang-tidy-12.
+   See `README.md` for details.
+
+- infrastructure: Update delete-artifact version number in GitHub
+  action, update zlib version in Windows build.
+
+## Fast Downward 22.06.1
+
+Released on September 15, 2022.
+
+This is a bugfix release fixing two serious bugs in Fast Downward
+22.06:
+
+- Driver configurations relying on certain kinds of time limits (using
+  the `--overall-time-limit` option or portfolios) crashed when using
+  Python 3.10.
   <https://issues.fast-downward.org/issue1064>
 
-- post-hoc optimization constraints (pho_constraints): Fix a bug that could 
-  cause crashes (segmentation faults) when using post-hoc optimization 
-  constraints.
+- Using post-hoc optimization constraints (`pho_constraints`) caused
+  crashes (segmentation faults) or other undefined behavior.
   <https://issues.fast-downward.org/issue1061>
 
 
