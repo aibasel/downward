@@ -258,7 +258,7 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
     /*
       A landmark is interesting if it hasn't been reached before and
       its parents have all been reached, or if all landmarks have been
-      reached before, the LM is a goal, and it's not true at moment.
+      reached before, the LM is a goal, and it's not true at the moment.
     */
 
     landmark_status status =
