@@ -11,7 +11,13 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
-- none so far
+- landmarks: The `lmcount` heuristic now prefers operators that achieve
+  *any* landmark that has to be achieved in the future, not only those
+  that have not yet been accepted. This speeds up the first iteration
+  of LAMA with preferred operators and leads to an increased coverage
+  on the IPC benchmarks, but does not affect other statistics (e.g., 
+  plan quality) significantly. (Holds also for the full anytime LAMA.)
+  <https://issues.fast-downward.org/issue1070>
 
 ## Fast Downward 22.12
 
