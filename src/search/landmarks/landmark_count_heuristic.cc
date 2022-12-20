@@ -256,43 +256,39 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state) {
 bool LandmarkCountHeuristic::landmark_is_interesting(
     const State & /*state*/, LandmarkNode &lm_node) const {
     /*
-      A landmark is interesting if it hasn't been reached before and
-      its parents have all been reached, or if all landmarks have been
-      reached before, the LM is a goal, and it's not true at the moment.
+      A landmark is interesting if it has to be achieved in the future and all
+      its parents have been reached.
+
+      TODO: Note that today, landmarks can only become needed-again after they
+       have been reached (in LAMA terms: accepted). This is only possible if all
+       their parents have been reached themselves. In that case, checking
+       whether all parents are reached in the switch case below seems
+       unnecessary, because *return true* sounds like the better option.
+       However, this ought to change once we incorporate the landmark
+       progression theory from our (unpublished) paper (see also issue1036).
+       According to that theory, landmarks are always accepted when first
+       reached, independent of the status of their parents. Due to reasonable
+       orderings, they can then also become needed-again even if not all their
+       parents are reached. Then, we should also consider them interesting only
+       after all their parents are reached, because the definition of reasonable
+       orderings tells us that reaching them earlier requires us to make them
+       false to reach their (reasonable) parents but also requires them to be
+       reached again after all their (reasonable) parents have been reached (or
+       at the same time).
     */
 
     landmark_status status =
         lm_status_manager->get_landmark_status(lm_node.get_id());
 
     switch (status) {
-    case lm_reached:
-        return false;
     case lm_not_reached:
-    // An unreached landmark is interesting if all its parents are reached.
     case lm_needed_again:
-        /*
-          TODO: Note that today, landmarks can only become needed-again after
-           they have been reached (in LAMA terms: accepted). This is only
-           possible if all their parents have been reached themselves, making
-           the following check seem unnecessary, because *return true* always
-           seems like the better option. However, this ought to change once we
-           incorporate the landmark progression theory from our (unpublished)
-           paper (see also issue1036). According to that theory, landmarks are
-           always accepted when first reached, independent of the status of
-           their parents. Due to reasonable orderings, they can then also become
-           needed-again even if not all their parents are reached. Then, we
-           should also consider them interesting only after all their parents
-           are reached, because the definition of reasonable orderings tells us
-           that reaching them earlier requires us to make them false to reach
-           their (reasonable) parents but also requires them to be reached again
-           after all their (reasonable) parents have been reached (or at the
-           same time).
-        */
         return all_of(lm_node.parents.begin(), lm_node.parents.end(),
                       [&](const pair<LandmarkNode *, EdgeType> &parent) {
                           int parent_id = parent.first->get_id();
                           return lm_status_manager->is_reached(parent_id);
                       });
+    case lm_reached:
     default:
         return false;
     }
