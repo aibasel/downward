@@ -201,24 +201,28 @@ int LandmarkCountHeuristic::compute_heuristic(const State &ancestor_state) {
     int h = get_heuristic_value(ancestor_state);
 
     if (use_preferred_operators) {
-        generate_helpful_actions(state);
+        generate_preferred_operators(state);
     }
 
     return h;
 }
 
-bool LandmarkCountHeuristic::generate_helpful_actions(const State &state) {
+void LandmarkCountHeuristic::generate_preferred_operators(const State &state) {
     /*
-      Find actions that achieve new landmark leaves. If no such action exist,
-      return false. If a simple landmark can be achieved, return only operators
-      that achieve simple landmarks, else return operators that achieve
-      disjunctive landmarks.
+      Find operators that achieve landmark leaves. If a simple landmark can be
+      achieved, prefer only operators that achieve simple landmarks. Otherwise,
+      prefer operators that achieve disjunctive landmarks, or don't prefer any
+      operators if no such landmarks exist at all.
+
+      TODO: Conjunctive landmarks are ignored in *lgraph->get_node(...)*, so
+       they are ignored when computing preferred operators. We consider this
+       a bug and want to fix it in issue1072.
     */
     assert(successor_generator);
     vector<OperatorID> applicable_operators;
     successor_generator->generate_applicable_ops(state, applicable_operators);
-    vector<OperatorID> ha_simple;
-    vector<OperatorID> ha_disj;
+    vector<OperatorID> preferred_operators_simple;
+    vector<OperatorID> preferred_operators_disjunctive;
 
     for (OperatorID op_id : applicable_operators) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
@@ -230,27 +234,24 @@ bool LandmarkCountHeuristic::generate_helpful_actions(const State &state) {
             LandmarkNode *lm_node = lgraph->get_node(fact_proxy.get_pair());
             if (lm_node && landmark_is_interesting(state, *lm_node)) {
                 if (lm_node->get_landmark().disjunctive) {
-                    ha_disj.push_back(op_id);
+                    preferred_operators_disjunctive.push_back(op_id);
                 } else {
-                    ha_simple.push_back(op_id);
+                    preferred_operators_simple.push_back(op_id);
                 }
             }
         }
     }
-    if (ha_disj.empty() && ha_simple.empty())
-        return false;
 
     OperatorsProxy operators = task_proxy.get_operators();
-    if (ha_simple.empty()) {
-        for (OperatorID op_id : ha_disj) {
+    if (preferred_operators_simple.empty()) {
+        for (OperatorID op_id : preferred_operators_disjunctive) {
             set_preferred(operators[op_id]);
         }
     } else {
-        for (OperatorID op_id : ha_simple) {
+        for (OperatorID op_id : preferred_operators_simple) {
             set_preferred(operators[op_id]);
         }
     }
-    return true;
 }
 
 bool LandmarkCountHeuristic::landmark_is_interesting(
@@ -279,18 +280,15 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
 
     landmark_status status =
         lm_status_manager->get_landmark_status(lm_node.get_id());
-
-    switch (status) {
-    case lm_not_reached:
-    case lm_needed_again:
-        return all_of(lm_node.parents.begin(), lm_node.parents.end(),
-                      [&](const pair<LandmarkNode *, EdgeType> &parent) {
-                          int parent_id = parent.first->get_id();
-                          return lm_status_manager->is_reached(parent_id);
-                      });
-    case lm_reached:
-    default:
+    if (status == lm_reached) {
         return false;
+    } else {
+        for (const auto &parent : lm_node.parents) {
+            if (!lm_status_manager->is_reached(parent.first->get_id())) {
+                return false;
+            }
+        }
+        return true;
     }
 }
 

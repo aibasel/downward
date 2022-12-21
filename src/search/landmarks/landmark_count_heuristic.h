@@ -39,7 +39,7 @@ class LandmarkCountHeuristic : public Heuristic {
 
     bool landmark_is_interesting(
         const State &state, LandmarkNode &lm_node) const;
-    bool generate_helpful_actions(const State &state);
+    void generate_preferred_operators(const State &state);
 
     int get_min_cost_of_achievers(const std::set<int> &achievers,
                                   const TaskProxy &task_proxy);
