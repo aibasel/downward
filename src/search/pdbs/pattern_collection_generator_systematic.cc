@@ -3,10 +3,9 @@
 #include "utils.h"
 #include "validation.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/causal_graph.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
@@ -48,7 +47,7 @@ static void compute_union_pattern(
 
 
 PatternCollectionGeneratorSystematic::PatternCollectionGeneratorSystematic(
-    const Options &opts)
+    const plugins::Options &opts)
     : PatternCollectionGenerator(opts),
       max_pattern_size(opts.get<int>("pattern_max_size")),
       only_interesting_patterns(opts.get<bool>("only_interesting_patterns")) {

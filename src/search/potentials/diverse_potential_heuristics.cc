@@ -4,9 +4,7 @@
 #include "potential_max_heuristic.h"
 #include "util.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -17,7 +15,7 @@
 using namespace std;
 
 namespace potentials {
-DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
+DiversePotentialHeuristics::DiversePotentialHeuristics(const plugins::Options &opts)
     : optimizer(opts),
       max_num_heuristics(opts.get<int>("max_num_heuristics")),
       num_samples(opts.get<int>("num_samples")),

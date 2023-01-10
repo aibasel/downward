@@ -1,13 +1,9 @@
 #include "pho_constraints.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
 #include "../lp/lp_solver.h"
-
 #include "../pdbs/pattern_database.h"
 #include "../pdbs/pattern_generator.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/markup.h"
 
 #include <cassert>
@@ -18,7 +14,7 @@
 using namespace std;
 
 namespace operator_counting {
-PhOConstraints::PhOConstraints(const Options &opts)
+PhOConstraints::PhOConstraints(const plugins::Options &opts)
     : pattern_generator(
           opts.get<shared_ptr<pdbs::PatternCollectionGenerator>>("patterns")) {
 }

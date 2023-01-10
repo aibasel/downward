@@ -1,5 +1,5 @@
-#ifndef OPTIONS_PLUGIN_H
-#define OPTIONS_PLUGIN_H
+#ifndef PLUGINS_PLUGIN_H
+#define PLUGINS_PLUGIN_H
 
 #include "doc_utils.h"
 #include "option_parser.h"
@@ -18,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-namespace options {
+namespace plugins {
 class Registry;
 
 /*
@@ -91,5 +91,14 @@ public:
     Plugin(const Plugin<T> &other) = delete;
 };
 }
+
+using plugins::Plugin;
+using plugins::PluginGroupPlugin;
+using plugins::PluginTypePlugin;
+using plugins::Bounds;
+using plugins::OptionParser;
+using plugins::OptionParserError;
+using plugins::Options;
+using plugins::ParseError;
 
 #endif

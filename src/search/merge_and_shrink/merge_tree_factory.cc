@@ -2,9 +2,7 @@
 
 #include "merge_tree.h"
 
-#include "../options/option_parser.h"
-#include "../options/plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/rng_options.h"
 #include "../utils/system.h"
@@ -14,7 +12,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeTreeFactory::MergeTreeFactory(const options::Options &options)
+MergeTreeFactory::MergeTreeFactory(const plugins::Options &options)
     : rng(utils::parse_rng_from_options(options)),
       update_option(options.get<UpdateOption>("update_option")) {
 }
@@ -47,7 +45,7 @@ unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
-void MergeTreeFactory::add_options_to_parser(options::OptionParser &parser) {
+void MergeTreeFactory::add_options_to_parser(plugins::OptionParser &parser) {
     utils::add_rng_options(parser);
     vector<string> update_option;
     update_option.push_back("use_first");
@@ -66,7 +64,7 @@ void MergeTreeFactory::add_options_to_parser(options::OptionParser &parser) {
         "use_random");
 }
 
-static options::PluginTypePlugin<MergeTreeFactory> _type_plugin(
+static plugins::PluginTypePlugin<MergeTreeFactory> _type_plugin(
     "MergeTree",
     "This page describes the available merge trees that can be used to "
     "precompute a merge strategy, either for the entire task or a given "

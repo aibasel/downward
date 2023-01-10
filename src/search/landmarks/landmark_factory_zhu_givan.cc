@@ -4,10 +4,9 @@
 #include "landmark_graph.h"
 #include "util.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <iostream>
@@ -17,7 +16,7 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const Options &opts)
+LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const plugins::Options &opts)
     : LandmarkFactoryRelaxation(opts),
       use_orders(opts.get<bool>("use_orders")) {
 }

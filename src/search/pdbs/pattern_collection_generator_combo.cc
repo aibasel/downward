@@ -4,10 +4,9 @@
 #include "utils.h"
 #include "validation.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/timer.h"
 
@@ -19,7 +18,7 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(
-    const Options &opts)
+    const plugins::Options &opts)
     : PatternCollectionGenerator(opts), opts(opts) {
 }
 

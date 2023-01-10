@@ -6,11 +6,10 @@
 #include "transition_system.h"
 #include "types.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
 #include "../algorithms/equivalence_relation.h"
+#include "../plugins/plugin.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
@@ -27,7 +26,7 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
-LabelReduction::LabelReduction(const Options &options)
+LabelReduction::LabelReduction(const plugins::Options &options)
     : lr_before_shrinking(options.get<bool>("before_shrinking")),
       lr_before_merging(options.get<bool>("before_merging")),
       lr_method(options.get<LabelReductionMethod>("method")),

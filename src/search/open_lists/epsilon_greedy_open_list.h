@@ -2,8 +2,8 @@
 #define OPEN_LISTS_EPSILON_GREEDY_OPEN_LIST_H
 
 #include "../open_list_factory.h"
-#include "../option_parser_util.h"
 
+#include "../plugins/options.h"
 
 /*
     Epsilon-greedy open list based on Valenzano et al. (ICAPS 2014).
@@ -44,9 +44,9 @@
 
 namespace epsilon_greedy_open_list {
 class EpsilonGreedyOpenListFactory : public OpenListFactory {
-    Options options;
+    plugins::Options options;
 public:
-    explicit EpsilonGreedyOpenListFactory(const Options &options);
+    explicit EpsilonGreedyOpenListFactory(const plugins::Options &options);
     virtual ~EpsilonGreedyOpenListFactory() override = default;
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;

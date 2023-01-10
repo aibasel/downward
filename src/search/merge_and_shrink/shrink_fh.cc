@@ -4,9 +4,7 @@
 #include "factored_transition_system.h"
 #include "transition_system.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
@@ -21,7 +19,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-ShrinkFH::ShrinkFH(const Options &opts)
+ShrinkFH::ShrinkFH(const plugins::Options &opts)
     : ShrinkBucketBased(opts),
       f_start(opts.get<HighLow>("shrink_f")),
       h_start(opts.get<HighLow>("shrink_h")) {

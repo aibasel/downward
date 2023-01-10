@@ -3,10 +3,9 @@
 #include "pattern_information.h"
 #include "utils.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/variable_order_finder.h"
 #include "../utils/logging.h"
 #include "../utils/math.h"
@@ -17,7 +16,7 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorGreedy::PatternGeneratorGreedy(const Options &opts)
+PatternGeneratorGreedy::PatternGeneratorGreedy(const plugins::Options &opts)
     : PatternGenerator(opts), max_states(opts.get<int>("max_states")) {
 }
 

@@ -1,18 +1,18 @@
 #include "state_equation_constraints.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
 #include "../lp/lp_solver.h"
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
+
+#include <limits>
 
 using namespace std;
 
 namespace operator_counting {
 StateEquationConstraints::StateEquationConstraints(
-    const options::Options &opts)
+    const plugins::Options &opts)
     : log(utils::get_log_from_options(opts)) {
 }
 
@@ -160,7 +160,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     if (parser.dry_run())
         return nullptr;
 
-    options::Options opts = parser.parse();
+    plugins::Options opts = parser.parse();
     return make_shared<StateEquationConstraints>(opts);
 }
 

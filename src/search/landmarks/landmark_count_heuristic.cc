@@ -6,11 +6,10 @@
 #include "landmark_status_manager.h"
 #include "util.h"
 
-#include "../option_parser.h"
 #include "../per_state_bitset.h"
-#include "../plugin.h"
 
 #include "../lp/lp_solver.h"
+#include "../plugins/plugin.h"
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
 #include "../tasks/cost_adapted_task.h"
@@ -28,7 +27,7 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
+LandmarkCountHeuristic::LandmarkCountHeuristic(const plugins::Options &opts)
     : Heuristic(opts),
       use_preferred_operators(opts.get<bool>("pref")),
       conditional_effects_supported(

@@ -3,9 +3,7 @@
 #include "landmark.h"
 #include "landmark_graph.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <set>
@@ -16,7 +14,7 @@ using utils::ExitCode;
 namespace landmarks {
 class LandmarkNode;
 
-LandmarkFactoryMerged::LandmarkFactoryMerged(const Options &opts)
+LandmarkFactoryMerged::LandmarkFactoryMerged(const plugins::Options &opts)
     : LandmarkFactory(opts),
       lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")) {
 }

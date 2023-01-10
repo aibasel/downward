@@ -2,9 +2,8 @@
 
 #include "../evaluator.h"
 #include "../open_list.h"
-#include "../option_parser.h"
-#include "../plugin.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/collections.h"
 #include "../utils/markup.h"
 #include "../utils/memory.h"
@@ -46,7 +45,7 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit EpsilonGreedyOpenList(const Options &opts);
+    explicit EpsilonGreedyOpenList(const plugins::Options &opts);
     virtual ~EpsilonGreedyOpenList() override = default;
 
     virtual Entry remove_min() override;
@@ -82,7 +81,7 @@ void EpsilonGreedyOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(const Options &opts)
+EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(const plugins::Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
       rng(utils::parse_rng_from_options(opts)),
       evaluator(opts.get<shared_ptr<Evaluator>>("eval")),
@@ -137,7 +136,7 @@ void EpsilonGreedyOpenList<Entry>::clear() {
 }
 
 EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
-    const Options &options)
+    const plugins::Options &options)
     : options(options) {
 }
 

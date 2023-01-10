@@ -4,8 +4,8 @@
 #include "potential_optimizer.h"
 
 #include "../heuristic.h"
-#include "../option_parser.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/sampling.h"
 #include "../utils/markup.h"
 

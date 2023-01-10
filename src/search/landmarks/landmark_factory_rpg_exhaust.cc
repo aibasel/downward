@@ -3,10 +3,9 @@
 #include "landmark.h"
 #include "landmark_graph.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <vector>
@@ -17,7 +16,7 @@ namespace landmarks {
    that are inferred later.) It's thus best to combine this landmark generation
    method with others, don't use it by itself. */
 
-LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const Options &opts)
+LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const plugins::Options &opts)
     : LandmarkFactoryRelaxation(opts),
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")) {
 }

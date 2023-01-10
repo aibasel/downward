@@ -2,10 +2,9 @@
 
 #include "lm_cut_landmarks.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 #include "../utils/memory.h"
@@ -15,7 +14,7 @@
 using namespace std;
 
 namespace lm_cut_heuristic {
-LandmarkCutHeuristic::LandmarkCutHeuristic(const Options &opts)
+LandmarkCutHeuristic::LandmarkCutHeuristic(const plugins::Options &opts)
     : Heuristic(opts),
       landmark_generator(utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy)) {
     if (log.is_at_least_normal()) {

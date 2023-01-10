@@ -1,7 +1,6 @@
 #include "ff_heuristic.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
@@ -12,7 +11,7 @@ using namespace std;
 
 namespace ff_heuristic {
 // construction and destruction
-FFHeuristic::FFHeuristic(const Options &opts)
+FFHeuristic::FFHeuristic(const plugins::Options &opts)
     : AdditiveHeuristic(opts),
       relaxed_plan(task_proxy.get_operators().size(), false) {
     if (log.is_at_least_normal()) {

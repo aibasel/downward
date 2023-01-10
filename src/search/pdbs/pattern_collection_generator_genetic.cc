@@ -4,10 +4,9 @@
 #include "validation.h"
 #include "zero_one_pdbs.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/causal_graph.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
@@ -26,7 +25,7 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(
-    const Options &opts)
+    const plugins::Options &opts)
     : PatternCollectionGenerator(opts),
       pdb_max_size(opts.get<int>("pdb_max_size")),
       num_collections(opts.get<int>("num_collections")),

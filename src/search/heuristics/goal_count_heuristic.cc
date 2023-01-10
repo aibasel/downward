@@ -1,7 +1,6 @@
 #include "goal_count_heuristic.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 #include "../utils/logging.h"
 
@@ -9,7 +8,7 @@
 using namespace std;
 
 namespace goal_count_heuristic {
-GoalCountHeuristic::GoalCountHeuristic(const Options &opts)
+GoalCountHeuristic::GoalCountHeuristic(const plugins::Options &opts)
     : Heuristic(opts) {
     if (log.is_at_least_normal()) {
         log << "Initializing goal count heuristic..." << endl;

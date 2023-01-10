@@ -1,5 +1,5 @@
-#ifndef OPTIONS_DOC_PRINTER_H
-#define OPTIONS_DOC_PRINTER_H
+#ifndef PLUGINS_DOC_PRINTER_H
+#define PLUGINS_DOC_PRINTER_H
 
 #include "registries.h"
 
@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace options {
+namespace plugins {
 struct PluginInfo;
 class Registry;
 

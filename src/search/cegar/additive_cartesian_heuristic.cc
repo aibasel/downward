@@ -5,9 +5,7 @@
 #include "types.h"
 #include "utils.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"
@@ -19,7 +17,7 @@ using namespace std;
 
 namespace cegar {
 static vector<CartesianHeuristicFunction> generate_heuristic_functions(
-    const options::Options &opts, utils::LogProxy &log) {
+    const plugins::Options &opts, utils::LogProxy &log) {
     if (log.is_at_least_normal()) {
         log << "Initializing additive Cartesian heuristic..." << endl;
     }
@@ -41,7 +39,7 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
 }
 
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
-    const options::Options &opts)
+    const plugins::Options &opts)
     : Heuristic(opts),
       heuristic_functions(generate_heuristic_functions(opts, log)) {
 }

@@ -2,8 +2,7 @@
 
 #include "../evaluation_context.h"
 #include "../evaluation_result.h"
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 #include <cstdlib>
 #include <sstream>
@@ -11,7 +10,7 @@
 using namespace std;
 
 namespace weighted_evaluator {
-WeightedEvaluator::WeightedEvaluator(const Options &opts)
+WeightedEvaluator::WeightedEvaluator(const plugins::Options &opts)
     : Evaluator(opts),
       evaluator(opts.get<shared_ptr<Evaluator>>("eval")),
       w(opts.get<int>("weight")) {

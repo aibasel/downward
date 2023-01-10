@@ -7,11 +7,8 @@
 #include "transition_system.h"
 #include "types.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
-
 #include "../utils/markup.h"
 #include "../utils/system.h"
 
@@ -23,7 +20,7 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
-MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
+MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const plugins::Options &opts)
     : Heuristic(opts) {
     log << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(opts);
@@ -125,7 +122,7 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &ancestor_state) {
     return heuristic;
 }
 
-static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
+static shared_ptr<Heuristic> _parse(plugins::OptionParser &parser) {
     parser.document_synopsis(
         "Merge-and-shrink heuristic",
         "This heuristic implements the algorithm described in the following "
@@ -217,7 +214,7 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
 
     Heuristic::add_options_to_parser(parser);
     add_merge_and_shrink_algorithm_options_to_parser(parser);
-    options::Options opts = parser.parse();
+    plugins::Options opts = parser.parse();
     if (parser.help_mode()) {
         return nullptr;
     }
@@ -231,5 +228,5 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
     }
 }
 
-static options::Plugin<Evaluator> _plugin("merge_and_shrink", _parse);
+static plugins::Plugin<Evaluator> _plugin("merge_and_shrink", _parse);
 }

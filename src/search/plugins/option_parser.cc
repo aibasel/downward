@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace options {
+namespace plugins {
 const string OptionParser::NONE = "<none>";
 
 

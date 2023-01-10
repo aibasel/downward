@@ -5,7 +5,7 @@
 
 #include <vector>
 
-namespace options {
+namespace plugins {
 class Options;
 }
 
@@ -46,7 +46,7 @@ protected:
         const Distances &distances) const override;
 
 public:
-    explicit ShrinkFH(const options::Options &opts);
+    explicit ShrinkFH(const plugins::Options &opts);
     virtual ~ShrinkFH() override = default;
 
     virtual bool requires_init_distances() const override {

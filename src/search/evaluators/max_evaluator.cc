@@ -1,14 +1,13 @@
 #include "max_evaluator.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 #include <cassert>
 
 using namespace std;
 
 namespace max_evaluator {
-MaxEvaluator::MaxEvaluator(const Options &opts)
+MaxEvaluator::MaxEvaluator(const plugins::Options &opts)
     : CombiningEvaluator(opts) {
 }
 

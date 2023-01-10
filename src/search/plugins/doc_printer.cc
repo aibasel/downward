@@ -10,7 +10,7 @@
 
 using namespace std;
 
-namespace options {
+namespace plugins {
 static bool is_call(const string &s) {
     return s.find("(") != string::npos;
 }

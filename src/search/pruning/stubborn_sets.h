@@ -2,7 +2,6 @@
 #define PRUNING_STUBBORN_SETS_H
 
 #include "../pruning_method.h"
-
 #include "../task_proxy.h"
 
 namespace stubborn_sets {
@@ -55,7 +54,7 @@ protected:
 
     virtual void compute_stubborn_set(const State &state) = 0;
 public:
-    explicit StubbornSets(const options::Options &opts);
+    explicit StubbornSets(const plugins::Options &opts);
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 };
 

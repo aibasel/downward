@@ -2,10 +2,9 @@
 
 #include "pattern_information.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <iostream>
@@ -13,7 +12,7 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorManual::PatternGeneratorManual(const Options &opts)
+PatternGeneratorManual::PatternGeneratorManual(const plugins::Options &opts)
     : PatternGenerator(opts), pattern(opts.get_list<int>("pattern")) {
 }
 

@@ -3,9 +3,7 @@
 #include "cegar.h"
 #include "utils.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/rng_options.h"
 
@@ -13,7 +11,7 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorDisjointCegar::PatternCollectionGeneratorDisjointCegar(
-    const options::Options &opts)
+    const plugins::Options &opts)
     : PatternCollectionGenerator(opts),
       max_pdb_size(opts.get<int>("max_pdb_size")),
       max_collection_size(opts.get<int>("max_collection_size")),
@@ -44,7 +42,7 @@ PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::compute_pa
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(
-    options::OptionParser &parser) {
+    plugins::OptionParser &parser) {
     parser.document_synopsis(
         "Disjoint CEGAR",
         "This pattern collection generator uses the CEGAR algorithm to "

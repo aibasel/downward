@@ -23,7 +23,7 @@ class PatternCollectionGeneratorDisjointCegar : public PatternCollectionGenerato
     virtual PatternCollectionInformation compute_patterns(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
-    explicit PatternCollectionGeneratorDisjointCegar(const options::Options &opts);
+    explicit PatternCollectionGeneratorDisjointCegar(const plugins::Options &opts);
 };
 }
 

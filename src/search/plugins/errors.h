@@ -1,5 +1,5 @@
-#ifndef OPTIONS_ERRORS_H
-#define OPTIONS_ERRORS_H
+#ifndef PLUGINS_ERRORS_H
+#define PLUGINS_ERRORS_H
 
 #include "parse_tree.h"
 
@@ -13,12 +13,12 @@
         (std::cerr << "Critical error in file " << __FILE__ \
                    << ", line " << __LINE__ << ": " << std::endl \
                    << (msg) << std::endl), \
-        (std::cerr << options::get_demangling_hint(type_name) << std::endl), \
+        (std::cerr << plugins::get_demangling_hint(type_name) << std::endl), \
         (abort()), \
         (void)0 \
     )
 
-namespace options {
+namespace plugins {
 class OptionParserError : public utils::Exception {
     std::string msg;
 public:

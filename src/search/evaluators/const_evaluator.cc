@@ -1,12 +1,11 @@
 #include "const_evaluator.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 using namespace std;
 
 namespace const_evaluator {
-ConstEvaluator::ConstEvaluator(const Options &opts)
+ConstEvaluator::ConstEvaluator(const plugins::Options &opts)
     : Evaluator(opts), value(opts.get<int>("value")) {
 }
 

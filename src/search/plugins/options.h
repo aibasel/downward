@@ -1,5 +1,5 @@
-#ifndef OPTIONS_OPTIONS_H
-#define OPTIONS_OPTIONS_H
+#ifndef PLUGINS_OPTIONS_H
+#define PLUGINS_OPTIONS_H
 
 #include "any.h"
 #include "errors.h"
@@ -11,7 +11,7 @@
 #include <typeinfo>
 #include <unordered_map>
 
-namespace options {
+namespace plugins {
 // Wrapper for unordered_map<string, Any>.
 class Options {
     std::unordered_map<std::string, Any> storage;

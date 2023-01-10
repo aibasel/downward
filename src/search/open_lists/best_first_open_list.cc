@@ -2,9 +2,8 @@
 
 #include "../evaluator.h"
 #include "../open_list.h"
-#include "../option_parser.h"
-#include "../plugin.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/memory.h"
 
 #include <cassert>
@@ -28,7 +27,7 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit BestFirstOpenList(const Options &opts);
+    explicit BestFirstOpenList(const plugins::Options &opts);
     BestFirstOpenList(const shared_ptr<Evaluator> &eval, bool preferred_only);
     virtual ~BestFirstOpenList() override = default;
 
@@ -44,7 +43,7 @@ public:
 
 
 template<class Entry>
-BestFirstOpenList<Entry>::BestFirstOpenList(const Options &opts)
+BestFirstOpenList<Entry>::BestFirstOpenList(const plugins::Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
       size(0),
       evaluator(opts.get<shared_ptr<Evaluator>>("eval")) {
@@ -111,7 +110,7 @@ bool BestFirstOpenList<Entry>::is_reliable_dead_end(
 }
 
 BestFirstOpenListFactory::BestFirstOpenListFactory(
-    const Options &options)
+    const plugins::Options &options)
     : options(options) {
 }
 

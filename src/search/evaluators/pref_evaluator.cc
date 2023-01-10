@@ -2,13 +2,12 @@
 
 #include "../evaluation_context.h"
 #include "../evaluation_result.h"
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 using namespace std;
 
 namespace pref_evaluator {
-PrefEvaluator::PrefEvaluator(const options::Options &opts)
+PrefEvaluator::PrefEvaluator(const plugins::Options &opts)
     : Evaluator(opts) {
 }
 

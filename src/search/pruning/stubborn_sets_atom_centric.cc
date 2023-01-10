@@ -1,14 +1,15 @@
 #include "stubborn_sets_atom_centric.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
+
+#include <limits>
 
 using namespace std;
 
 namespace stubborn_sets_atom_centric {
-StubbornSetsAtomCentric::StubbornSetsAtomCentric(const options::Options &opts)
+StubbornSetsAtomCentric::StubbornSetsAtomCentric(const plugins::Options &opts)
     : StubbornSets(opts),
       use_sibling_shortcut(opts.get<bool>("use_sibling_shortcut")),
       atom_selection_strategy(opts.get<AtomSelectionStrategy>("atom_selection_strategy")) {

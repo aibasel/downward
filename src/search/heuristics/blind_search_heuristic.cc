@@ -1,7 +1,6 @@
 #include "blind_search_heuristic.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
@@ -13,7 +12,7 @@
 using namespace std;
 
 namespace blind_search_heuristic {
-BlindSearchHeuristic::BlindSearchHeuristic(const Options &opts)
+BlindSearchHeuristic::BlindSearchHeuristic(const plugins::Options &opts)
     : Heuristic(opts),
       min_operator_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {

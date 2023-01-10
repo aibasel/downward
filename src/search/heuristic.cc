@@ -2,9 +2,8 @@
 
 #include "evaluation_context.h"
 #include "evaluation_result.h"
-#include "option_parser.h"
-#include "plugin.h"
 
+#include "plugins/plugin.h"
 #include "task_utils/task_properties.h"
 #include "tasks/cost_adapted_task.h"
 #include "tasks/root_task.h"
@@ -15,7 +14,7 @@
 
 using namespace std;
 
-Heuristic::Heuristic(const Options &opts)
+Heuristic::Heuristic(const plugins::Options &opts)
     : Evaluator(opts, true, true, true),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_evaluator_values(opts.get<bool>("cache_estimates")),

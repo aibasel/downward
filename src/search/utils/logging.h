@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace options {
+namespace plugins {
 class OptionParser;
 class Options;
 }
@@ -128,8 +128,8 @@ public:
 */
 extern LogProxy g_log;
 
-extern void add_log_options_to_parser(options::OptionParser &parser);
-extern LogProxy get_log_from_options(const options::Options &options);
+extern void add_log_options_to_parser(plugins::OptionParser &parser);
+extern LogProxy get_log_from_options(const plugins::Options &options);
 extern LogProxy get_silent_log();
 
 class TraceBlock {

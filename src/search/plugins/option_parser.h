@@ -1,5 +1,5 @@
-#ifndef OPTIONS_OPTION_PARSER_H
-#define OPTIONS_OPTION_PARSER_H
+#ifndef PLUGINS_OPTION_PARSER_H
+#define PLUGINS_OPTION_PARSER_H
 
 #include "doc_utils.h"
 #include "options.h"
@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-namespace options {
+namespace plugins {
 /*
   The OptionParser stores a parse tree and an Options object. By
   calling addArgument, the parse tree is partially parsed, and the

@@ -138,7 +138,7 @@ class LandmarkFactoryHM : public LandmarkFactory {
     void print_proposition(const VariablesProxy &variables, const FactPair &fluent) const;
 
 public:
-    explicit LandmarkFactoryHM(const options::Options &opts);
+    explicit LandmarkFactoryHM(const plugins::Options &opts);
 
     virtual bool computes_reasonable_orders() const override;
     virtual bool supports_conditional_effects() const override;

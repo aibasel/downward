@@ -2,9 +2,8 @@
 
 #include "../evaluator.h"
 #include "../open_list.h"
-#include "../option_parser.h"
-#include "../plugin.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/memory.h"
 
 #include <cassert>
@@ -38,7 +37,7 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit TieBreakingOpenList(const Options &opts);
+    explicit TieBreakingOpenList(const plugins::Options &opts);
     virtual ~TieBreakingOpenList() override = default;
 
     virtual Entry remove_min() override;
@@ -53,7 +52,7 @@ public:
 
 
 template<class Entry>
-TieBreakingOpenList<Entry>::TieBreakingOpenList(const Options &opts)
+TieBreakingOpenList<Entry>::TieBreakingOpenList(const plugins::Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
       size(0), evaluators(opts.get_list<shared_ptr<Evaluator>>("evals")),
       allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
@@ -138,7 +137,7 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
     return false;
 }
 
-TieBreakingOpenListFactory::TieBreakingOpenListFactory(const Options &options)
+TieBreakingOpenListFactory::TieBreakingOpenListFactory(const plugins::Options &options)
     : options(options) {
 }
 

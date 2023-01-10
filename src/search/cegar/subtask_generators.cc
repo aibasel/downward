@@ -3,11 +3,9 @@
 #include "utils.h"
 #include "utils_landmarks.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
 #include "../heuristics/additive_heuristic.h"
 #include "../landmarks/landmark_graph.h"
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../tasks/domain_abstracted_task_factory.h"
 #include "../tasks/modified_goals_task.h"
@@ -96,7 +94,7 @@ static Facts filter_and_order_facts(
 }
 
 
-TaskDuplicator::TaskDuplicator(const Options &opts)
+TaskDuplicator::TaskDuplicator(const plugins::Options &opts)
     : num_copies(opts.get<int>("copies")) {
 }
 
@@ -110,7 +108,7 @@ SharedTasks TaskDuplicator::get_subtasks(
     return subtasks;
 }
 
-GoalDecomposition::GoalDecomposition(const Options &opts)
+GoalDecomposition::GoalDecomposition(const plugins::Options &opts)
     : fact_order(opts.get<FactOrder>("order")),
       rng(utils::parse_rng_from_options(opts)) {
 }
@@ -130,7 +128,7 @@ SharedTasks GoalDecomposition::get_subtasks(
 }
 
 
-LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
+LandmarkDecomposition::LandmarkDecomposition(const plugins::Options &opts)
     : fact_order(opts.get<FactOrder>("order")),
       combine_facts(opts.get<bool>("combine_facts")),
       rng(utils::parse_rng_from_options(opts)) {

@@ -60,14 +60,11 @@ fast_downward_plugin(
         open_list_factory
         operator_cost
         operator_id
-        option_parser
-        option_parser_util
         per_state_array
         per_state_bitset
         per_state_information
         per_task_information
         plan_manager
-        plugin
         pruning_method
         search_engine
         search_node_info
@@ -87,19 +84,19 @@ fast_downward_plugin(
     NAME OPTIONS
     HELP "Option parsing and plugin definition"
     SOURCES
-        options/any
-        options/bounds
-        options/doc_printer
-        options/doc_utils
-        options/errors
-        options/option_parser
-        options/options
-        options/parse_tree
-        options/predefinitions
-        options/plugin
-        options/raw_registry
-        options/registries
-        options/type_namer
+        plugins/any
+        plugins/bounds
+        plugins/doc_printer
+        plugins/doc_utils
+        plugins/errors
+        plugins/option_parser
+        plugins/options
+        plugins/parse_tree
+        plugins/predefinitions
+        plugins/plugin
+        plugins/raw_registry
+        plugins/registries
+        plugins/type_namer
     CORE_PLUGIN
 )
 

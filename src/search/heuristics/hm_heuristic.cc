@@ -1,7 +1,6 @@
 #include "hm_heuristic.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
@@ -13,7 +12,7 @@
 using namespace std;
 
 namespace hm_heuristic {
-HMHeuristic::HMHeuristic(const Options &opts)
+HMHeuristic::HMHeuristic(const plugins::Options &opts)
     : Heuristic(opts),
       m(opts.get<int>("m")),
       has_cond_effects(task_properties::has_conditional_effects(task_proxy)),

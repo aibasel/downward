@@ -1,10 +1,10 @@
-#ifndef OPTIONS_BOUNDS_H
-#define OPTIONS_BOUNDS_H
+#ifndef PLUGINS_BOUNDS_H
+#define PLUGINS_BOUNDS_H
 
 #include <ostream>
 #include <string>
 
-namespace options {
+namespace plugins {
 struct Bounds {
     std::string min;
     std::string max;

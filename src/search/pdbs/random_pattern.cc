@@ -1,11 +1,11 @@
 #include "random_pattern.h"
 
-#include "../option_parser.h"
-
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
+#include "../utils/math.h"
 #include "../utils/rng.h"
 
 #include <algorithm>
@@ -70,7 +70,7 @@ Pattern generate_random_pattern(
 }
 
 void add_random_pattern_implementation_notes_to_parser(
-    options::OptionParser &parser) {
+    plugins::OptionParser &parser) {
     parser.document_note(
         "Short description of the random pattern algorithm",
         "The random pattern algorithm computes a pattern for a given planning "
@@ -92,7 +92,7 @@ void add_random_pattern_implementation_notes_to_parser(
         true);
 }
 
-void add_random_pattern_bidirectional_option_to_parser(options::OptionParser &parser) {
+void add_random_pattern_bidirectional_option_to_parser(plugins::OptionParser &parser) {
     parser.add_option<bool>(
         "bidirectional",
         "this option decides if the causal graph is considered to be "

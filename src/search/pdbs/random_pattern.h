@@ -7,7 +7,7 @@
 
 class TaskProxy;
 
-namespace options {
+namespace plugins {
 class OptionParser;
 }
 
@@ -34,9 +34,9 @@ extern Pattern generate_random_pattern(
     std::vector<std::vector<int>> &cg_neighbors);
 
 extern void add_random_pattern_implementation_notes_to_parser(
-    options::OptionParser &parser);
+    plugins::OptionParser &parser);
 extern void add_random_pattern_bidirectional_option_to_parser(
-    options::OptionParser &parser);
+    plugins::OptionParser &parser);
 }
 
 #endif

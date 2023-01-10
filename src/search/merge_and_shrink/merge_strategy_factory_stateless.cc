@@ -3,17 +3,14 @@
 #include "merge_selector.h"
 #include "merge_strategy_stateless.h"
 
-#include "../options/option_parser.h"
-#include "../options/options.h"
-#include "../options/plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/memory.h"
 
 using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
-    options::Options &options)
+    const plugins::Options &options)
     : MergeStrategyFactory(options),
       merge_selector(options.get<shared_ptr<MergeSelector>>("merge_selector")) {
 }
@@ -43,7 +40,7 @@ bool MergeStrategyFactoryStateless::requires_goal_distances() const {
     return merge_selector->requires_goal_distances();
 }
 
-static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
+static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
     parser.document_synopsis(
         "Stateless merge strategy",
         "This merge strategy has a merge selector, which computes the next "
@@ -68,12 +65,12 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
 
     add_merge_strategy_options_to_parser(parser);
 
-    options::Options opts = parser.parse();
+    plugins::Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
     else
         return make_shared<MergeStrategyFactoryStateless>(opts);
 }
 
-static options::Plugin<MergeStrategyFactory> _plugin("merge_stateless", _parse);
+static plugins::Plugin<MergeStrategyFactory> _plugin("merge_stateless", _parse);
 }

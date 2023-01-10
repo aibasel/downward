@@ -2,13 +2,13 @@
 
 #include "../evaluation_context.h"
 #include "../evaluation_result.h"
-#include "../option_parser.h"
+
+#include "../plugins/plugin.h"
 
 using namespace std;
 
 namespace combining_evaluator {
-CombiningEvaluator::CombiningEvaluator(
-    const options::Options &opts)
+CombiningEvaluator::CombiningEvaluator(const plugins::Options &opts)
     : Evaluator(opts),
       subevaluators(opts.get_list<shared_ptr<Evaluator>>("evals")) {
     all_dead_ends_are_reliable = true;
@@ -52,7 +52,7 @@ void CombiningEvaluator::get_path_dependent_evaluators(
     for (auto &subevaluator : subevaluators)
         subevaluator->get_path_dependent_evaluators(evals);
 }
-void add_combining_evaluator_options_to_parser(options::OptionParser &parser) {
+void add_combining_evaluator_options_to_parser(plugins::OptionParser &parser) {
     parser.add_list_option<shared_ptr<Evaluator>>(
         "evals", "at least one evaluator");
     add_evaluator_options_to_parser(parser);

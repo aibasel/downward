@@ -2,8 +2,7 @@
 
 #include "lp_internals.h"
 
-#include "../option_parser.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/system.h"
 

@@ -8,7 +8,7 @@
 
 class TaskProxy;
 
-namespace options {
+namespace plugins {
 class Options;
 }
 
@@ -23,7 +23,7 @@ protected:
     virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options() const = 0;
 public:
-    explicit MergeStrategyFactory(const options::Options &options);
+    explicit MergeStrategyFactory(const plugins::Options &options);
     virtual ~MergeStrategyFactory() = default;
     void dump_options() const;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
@@ -33,7 +33,7 @@ public:
     virtual bool requires_goal_distances() const = 0;
 };
 
-extern void add_merge_strategy_options_to_parser(options::OptionParser &parser);
+extern void add_merge_strategy_options_to_parser(plugins::OptionParser &parser);
 }
 
 #endif

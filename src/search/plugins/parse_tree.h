@@ -1,5 +1,5 @@
-#ifndef OPTIONS_PARSE_TREE_H
-#define OPTIONS_PARSE_TREE_H
+#ifndef PLUGINS_PARSE_TREE_H
+#define PLUGINS_PARSE_TREE_H
 
 #include <iostream>
 #include <string>
@@ -7,7 +7,7 @@
 #include <tree.hh>
 #include <tree_util.hh>
 
-namespace options {
+namespace plugins {
 struct ParseNode {
     std::string value;
     std::string key;

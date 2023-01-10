@@ -5,15 +5,13 @@
 
 #include "util.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 
 using namespace std;
 namespace landmarks {
-LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(const Options &opts)
+LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(const plugins::Options &opts)
     : LandmarkFactory(opts),
       lm_factory(opts.get<shared_ptr<LandmarkFactory>>("lm_factory")) {
 }

@@ -1,5 +1,5 @@
-#ifndef OPTIONS_RAW_REGISTRY_H
-#define OPTIONS_RAW_REGISTRY_H
+#ifndef PLUGINS_RAW_REGISTRY_H
+#define PLUGINS_RAW_REGISTRY_H
 
 #include "any.h"
 #include "doc_utils.h"
@@ -7,7 +7,7 @@
 #include <vector>
 
 
-namespace options {
+namespace plugins {
 struct RawPluginInfo {
     std::string key;
     Any factory;

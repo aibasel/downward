@@ -2,9 +2,8 @@
 
 #include "../evaluator.h"
 #include "../open_list.h"
-#include "../option_parser.h"
-#include "../plugin.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/hash.h"
 #include "../utils/memory.h"
 #include "../utils/rng.h"
@@ -44,7 +43,7 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit ParetoOpenList(const Options &opts);
+    explicit ParetoOpenList(const plugins::Options &opts);
     virtual ~ParetoOpenList() override = default;
 
     virtual Entry remove_min() override;
@@ -60,7 +59,7 @@ public:
 };
 
 template<class Entry>
-ParetoOpenList<Entry>::ParetoOpenList(const Options &opts)
+ParetoOpenList<Entry>::ParetoOpenList(const plugins::Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
       rng(utils::parse_rng_from_options(opts)),
       state_uniform_selection(opts.get<bool>("state_uniform_selection")),
@@ -222,7 +221,7 @@ bool ParetoOpenList<Entry>::is_reliable_dead_end(
 }
 
 ParetoOpenListFactory::ParetoOpenListFactory(
-    const Options &options)
+    const plugins::Options &options)
     : options(options) {
 }
 

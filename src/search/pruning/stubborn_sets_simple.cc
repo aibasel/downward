@@ -1,14 +1,13 @@
 #include "stubborn_sets_simple.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 using namespace std;
 
 namespace stubborn_sets_simple {
-StubbornSetsSimple::StubbornSetsSimple(const options::Options &opts)
+StubbornSetsSimple::StubbornSetsSimple(const plugins::Options &opts)
     : StubbornSetsActionCentric(opts) {
 }
 

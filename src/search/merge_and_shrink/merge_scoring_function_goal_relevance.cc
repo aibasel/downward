@@ -4,8 +4,7 @@
 #include "transition_system.h"
 #include "utils.h"
 
-#include "../options/option_parser.h"
-#include "../options/plugin.h"
+#include "../plugins/plugin.h"
 
 using namespace std;
 
@@ -40,7 +39,7 @@ string MergeScoringFunctionGoalRelevance::name() const {
     return "goal relevance";
 }
 
-static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
+static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
     parser.document_synopsis(
         "Goal relevance scoring",
         "This scoring function assigns a merge candidate a value of 0 iff at "
@@ -53,5 +52,5 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     return make_shared<MergeScoringFunctionGoalRelevance>();
 }
 
-static options::Plugin<MergeScoringFunction> _plugin("goal_relevance", _parse);
+static plugins::Plugin<MergeScoringFunction> _plugin("goal_relevance", _parse);
 }

@@ -12,7 +12,7 @@ class LPConstraint;
 struct LPVariable;
 }
 
-namespace options {
+namespace plugins {
 class Options;
 }
 
@@ -63,7 +63,7 @@ class DeleteRelaxationConstraints : public ConstraintGenerator {
         const TaskProxy &task_proxy, LPVariables &variables);
     void create_constraints(const TaskProxy &task_proxy, lp::LinearProgram &lp);
 public:
-    explicit DeleteRelaxationConstraints(const options::Options &opts);
+    explicit DeleteRelaxationConstraints(const plugins::Options &opts);
 
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task,

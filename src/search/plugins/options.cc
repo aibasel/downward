@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace options {
+namespace plugins {
 Options::Options(bool help_mode)
     : unparsed_config("<missing>"),
       help_mode(help_mode) {

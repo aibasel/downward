@@ -3,9 +3,7 @@
 #include "potential_optimizer.h"
 #include "util.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -43,7 +41,7 @@ static void optimize_for_samples(
   sets of samples.
 */
 static vector<unique_ptr<PotentialFunction>> create_sample_based_potential_functions(
-    const Options &opts) {
+    const plugins::Options &opts) {
     vector<unique_ptr<PotentialFunction>> functions;
     PotentialOptimizer optimizer(opts);
     shared_ptr<utils::RandomNumberGenerator> rng(utils::parse_rng_from_options(opts));

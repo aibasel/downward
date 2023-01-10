@@ -2,13 +2,12 @@
 
 #include "../evaluation_context.h"
 #include "../evaluation_result.h"
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 using namespace std;
 
 namespace g_evaluator {
-GEvaluator::GEvaluator(const options::Options &opts)
+GEvaluator::GEvaluator(const plugins::Options &opts)
     : Evaluator(opts) {
 }
 

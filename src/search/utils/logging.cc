@@ -3,7 +3,7 @@
 #include "system.h"
 #include "timer.h"
 
-#include "../option_parser.h"
+#include "../plugins/plugin.h"
 
 #include <iomanip>
 #include <iostream>
@@ -22,7 +22,7 @@ static shared_ptr<Log> global_log = make_shared<Log>(Verbosity::NORMAL);
 
 LogProxy g_log(global_log);
 
-void add_log_options_to_parser(options::OptionParser &parser) {
+void add_log_options_to_parser(plugins::OptionParser &parser) {
     vector<string> verbosity_levels;
     vector<string> verbosity_level_docs;
     verbosity_levels.push_back("silent");
@@ -45,7 +45,7 @@ void add_log_options_to_parser(options::OptionParser &parser) {
         verbosity_level_docs);
 }
 
-LogProxy get_log_from_options(const options::Options &options) {
+LogProxy get_log_from_options(const plugins::Options &options) {
     /* NOTE: We return (a proxy to) the global log if all options match the
        default values of the global log. */
     if (options.get<Verbosity>("verbosity") == Verbosity::NORMAL) {
@@ -55,7 +55,7 @@ LogProxy get_log_from_options(const options::Options &options) {
 }
 
 LogProxy get_silent_log() {
-    options::Options opts;
+    plugins::Options opts;
     opts.set<utils::Verbosity>("verbosity", utils::Verbosity::SILENT);
     return utils::get_log_from_options(opts);
 }

@@ -6,9 +6,7 @@
 #include "labels.h"
 #include "transition_system.h"
 
-#include "../options/option_parser.h"
-#include "../options/plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/markup.h"
 
 #include <cassert>
@@ -103,7 +101,7 @@ string MergeScoringFunctionDFP::name() const {
     return "dfp";
 }
 
-static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
+static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
     parser.document_synopsis(
         "DFP scoring",
         "This scoring function computes the 'DFP' score as descrdibed in the "
@@ -136,5 +134,5 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     return make_shared<MergeScoringFunctionDFP>();
 }
 
-static options::Plugin<MergeScoringFunction> _plugin("dfp", _parse);
+static plugins::Plugin<MergeScoringFunction> _plugin("dfp", _parse);
 }

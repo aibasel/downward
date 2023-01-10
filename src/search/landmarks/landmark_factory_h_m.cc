@@ -4,9 +4,8 @@
 #include "landmark.h"
 
 #include "../abstract_task.h"
-#include "../option_parser.h"
-#include "../plugin.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
@@ -569,7 +568,7 @@ bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
         variables[fact2.var].get_fact(fact2.value));
 }
 
-LandmarkFactoryHM::LandmarkFactoryHM(const options::Options &opts)
+LandmarkFactoryHM::LandmarkFactoryHM(const plugins::Options &opts)
     : LandmarkFactory(opts),
       m_(opts.get<int>("m")),
       conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),

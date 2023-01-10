@@ -5,10 +5,7 @@
 
 #include "../task_proxy.h"
 
-#include "../options/option_parser.h"
-#include "../options/options.h"
-#include "../options/plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"
@@ -20,7 +17,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
-    const options::Options &options)
+    const plugins::Options &options)
     : atomic_ts_order(options.get<AtomicTSOrder>("atomic_ts_order")),
       product_ts_order(options.get<ProductTSOrder>("product_ts_order")),
       atomic_before_product(options.get<bool>("atomic_before_product")),
@@ -158,7 +155,7 @@ void MergeScoringFunctionTotalOrder::dump_function_specific_options(utils::LogPr
 }
 
 void MergeScoringFunctionTotalOrder::add_options_to_parser(
-    options::OptionParser &parser) {
+    plugins::OptionParser &parser) {
     vector<string> atomic_ts_order;
     vector<string> atomic_ts_order_documentation;
     atomic_ts_order.push_back("reverse_level");
@@ -202,7 +199,7 @@ void MergeScoringFunctionTotalOrder::add_options_to_parser(
     utils::add_rng_options(parser);
 }
 
-static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
+static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
     parser.document_synopsis(
         "Total order",
         "This scoring function computes a total order on the merge candidates, "
@@ -225,12 +222,12 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
         "reverse level/level (independently of the other options).");
     MergeScoringFunctionTotalOrder::add_options_to_parser(parser);
 
-    options::Options options = parser.parse();
+    plugins::Options options = parser.parse();
     if (parser.dry_run())
         return nullptr;
     else
         return make_shared<MergeScoringFunctionTotalOrder>(options);
 }
 
-static options::Plugin<MergeScoringFunction> _plugin("total_order", _parse);
+static plugins::Plugin<MergeScoringFunction> _plugin("total_order", _parse);
 }

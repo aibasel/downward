@@ -3,9 +3,7 @@
 #include "potential_optimizer.h"
 #include "util.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/system.h"
 
 using namespace std;
@@ -17,7 +15,7 @@ enum class OptimizeFor {
 };
 
 static unique_ptr<PotentialFunction> create_potential_function(
-    const Options &opts, OptimizeFor opt_func) {
+    const plugins::Options &opts, OptimizeFor opt_func) {
     PotentialOptimizer optimizer(opts);
     const AbstractTask &task = *opts.get<shared_ptr<AbstractTask>>("transform");
     TaskProxy task_proxy(task);

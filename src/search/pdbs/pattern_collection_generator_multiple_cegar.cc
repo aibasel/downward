@@ -4,16 +4,14 @@
 #include "pattern_database.h"
 #include "utils.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar(
-    options::Options &opts)
+    const plugins::Options &opts)
     : PatternCollectionGeneratorMultiple(opts),
       use_wildcard_plans(opts.get<bool>("use_wildcard_plans")) {
 }
@@ -41,7 +39,7 @@ PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
         move(blacklisted_variables));
 }
 
-static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &parser) {
+static shared_ptr<PatternCollectionGenerator> _parse(plugins::OptionParser &parser) {
     parser.document_synopsis(
         "Multiple CEGAR",
         "This pattern collection generator implements the multiple CEGAR "

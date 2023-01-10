@@ -6,10 +6,7 @@
 
 #include "../task_proxy.h"
 
-#include "../options/option_parser.h"
-#include "../options/options.h"
-#include "../options/plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -20,7 +17,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeTreeFactoryLinear::MergeTreeFactoryLinear(const options::Options &options)
+MergeTreeFactoryLinear::MergeTreeFactoryLinear(const plugins::Options &options)
     : MergeTreeFactory(options),
       variable_order_type(
           options.get<variable_order_finder::VariableOrderType>("variable_order")),
@@ -112,7 +109,7 @@ void MergeTreeFactoryLinear::dump_tree_specific_options(utils::LogProxy &log) co
 }
 
 void MergeTreeFactoryLinear::add_options_to_parser(
-    options::OptionParser &parser) {
+    plugins::OptionParser &parser) {
     MergeTreeFactory::add_options_to_parser(parser);
     vector<string> merge_strategies;
     merge_strategies.push_back("CG_GOAL_LEVEL");
@@ -127,7 +124,7 @@ void MergeTreeFactoryLinear::add_options_to_parser(
         "CG_GOAL_LEVEL");
 }
 
-static shared_ptr<MergeTreeFactory> _parse(options::OptionParser &parser) {
+static shared_ptr<MergeTreeFactory> _parse(plugins::OptionParser &parser) {
     MergeTreeFactoryLinear::add_options_to_parser(parser);
     parser.document_synopsis(
         "Linear merge trees",
@@ -141,12 +138,12 @@ static shared_ptr<MergeTreeFactory> _parse(options::OptionParser &parser) {
             "176-183",
             "AAAI Press",
             "2007"));
-    options::Options opts = parser.parse();
+    plugins::Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
     else
         return make_shared<MergeTreeFactoryLinear>(opts);
 }
 
-static options::Plugin<MergeTreeFactory> _plugin("linear", _parse);
+static plugins::Plugin<MergeTreeFactory> _plugin("linear", _parse);
 }

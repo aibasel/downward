@@ -7,10 +7,7 @@
 #include "transition_system.h"
 #include "merge_scoring_function_miasm_utils.h"
 
-#include "../options/option_parser.h"
-#include "../options/options.h"
-#include "../options/plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 
@@ -18,7 +15,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
-    const options::Options &options)
+    const plugins::Options &options)
     : shrink_strategy(options.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
       max_states(options.get<int>("max_states")),
       max_states_before_merge(options.get<int>("max_states_before_merge")),
@@ -74,7 +71,7 @@ string MergeScoringFunctionMIASM::name() const {
     return "miasm";
 }
 
-static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
+static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
     parser.document_synopsis(
         "MIASM",
         "This scoring function favors merging transition systems such that in "
@@ -130,7 +127,7 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     // TODO: this is only necessary for handle_shrink_limit_options_defaults.
     utils::add_log_options_to_parser(parser);
 
-    options::Options options = parser.parse();
+    plugins::Options options = parser.parse();
     if (parser.help_mode()) {
         return nullptr;
     }
@@ -144,5 +141,5 @@ static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
     }
 }
 
-static options::Plugin<MergeScoringFunction> _plugin("sf_miasm", _parse);
+static plugins::Plugin<MergeScoringFunction> _plugin("sf_miasm", _parse);
 }

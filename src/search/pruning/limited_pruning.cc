@@ -1,12 +1,12 @@
 #include "limited_pruning.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
+#include "../utils/logging.h"
 
 using namespace std;
 
 namespace limited_pruning {
-LimitedPruning::LimitedPruning(const Options &opts)
+LimitedPruning::LimitedPruning(const plugins::Options &opts)
     : PruningMethod(opts),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")),
       min_required_pruning_ratio(opts.get<double>("min_required_pruning_ratio")),

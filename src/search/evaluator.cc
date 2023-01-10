@@ -1,8 +1,7 @@
 #include "evaluator.h"
 
-#include "option_parser.h"
-#include "plugin.h"
-
+#include "plugins/plugin.h"
+#include "utils/logging.h"
 #include "utils/system.h"
 
 #include <cassert>
@@ -10,7 +9,7 @@
 using namespace std;
 
 
-Evaluator::Evaluator(const options::Options &opts,
+Evaluator::Evaluator(const plugins::Options &opts,
                      bool use_for_reporting_minima,
                      bool use_for_boosting,
                      bool use_for_counting_evaluations)
@@ -75,7 +74,7 @@ int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
 }
 
-void add_evaluator_options_to_parser(options::OptionParser &parser) {
+void add_evaluator_options_to_parser(plugins::OptionParser &parser) {
     utils::add_log_options_to_parser(parser);
 }
 

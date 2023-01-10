@@ -10,7 +10,7 @@ namespace equivalence_relation {
 class EquivalenceRelation;
 }
 
-namespace options {
+namespace plugins {
 class Options;
 }
 
@@ -75,7 +75,7 @@ class LabelReduction {
         int ts_index,
         const FactoredTransitionSystem &fts) const;
 public:
-    explicit LabelReduction(const options::Options &options);
+    explicit LabelReduction(const plugins::Options &options);
     void initialize(const TaskProxy &task_proxy);
     bool reduce(
         const std::pair<int, int> &next_merge,

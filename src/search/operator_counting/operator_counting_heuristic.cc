@@ -2,9 +2,7 @@
 
 #include "constraint_generator.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/markup.h"
 
 #include <cmath>
@@ -12,7 +10,7 @@
 using namespace std;
 
 namespace operator_counting {
-OperatorCountingHeuristic::OperatorCountingHeuristic(const Options &opts)
+OperatorCountingHeuristic::OperatorCountingHeuristic(const plugins::Options &opts)
     : Heuristic(opts),
       constraint_generators(
           opts.get_list<shared_ptr<ConstraintGenerator>>("constraint_generators")),

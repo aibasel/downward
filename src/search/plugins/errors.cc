@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace options {
+namespace plugins {
 OptionParserError::OptionParserError(const string &msg)
     : msg(msg) {
 }

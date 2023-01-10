@@ -18,7 +18,7 @@ class PatternCollectionGeneratorMultipleRandom : public PatternCollectionGenerat
         const FactPair &goal,
         std::unordered_set<int> &&blacklisted_variables) override;
 public:
-    explicit PatternCollectionGeneratorMultipleRandom(options::Options &opts);
+    explicit PatternCollectionGeneratorMultipleRandom(const plugins::Options &opts);
 };
 }
 

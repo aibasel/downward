@@ -1,10 +1,9 @@
 #include "delete_relaxation_constraints.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
 #include "../lp/lp_solver.h"
+#include "../plugins/plugin.h"
 #include "../utils/markup.h"
 
 #include <cassert>
@@ -22,7 +21,7 @@ void add_lp_variables(int count, LPVariables &variables, vector<int> &indices,
 }
 
 
-DeleteRelaxationConstraints::DeleteRelaxationConstraints(const Options &opts)
+DeleteRelaxationConstraints::DeleteRelaxationConstraints(const plugins::Options &opts)
     : use_time_vars(opts.get<bool>("use_time_vars")),
       use_integer_vars(opts.get<bool>("use_integer_vars")) {
 }

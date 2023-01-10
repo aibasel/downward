@@ -1,5 +1,5 @@
-#ifndef OPTIONS_ANY_H
-#define OPTIONS_ANY_H
+#ifndef PLUGINS_ANY_H
+#define PLUGINS_ANY_H
 
 #include "../utils/memory.h"
 
@@ -21,7 +21,7 @@
   require adding lots of files.
 */
 
-namespace options {
+namespace plugins {
 class Any {
     class Placeholder {
 public:

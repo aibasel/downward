@@ -1,8 +1,7 @@
 #include "stubborn_sets_ec.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 #include <cassert>
@@ -103,7 +102,7 @@ static void get_conflicting_vars(const vector<FactPair> &facts1,
     }
 }
 
-StubbornSetsEC::StubbornSetsEC(const options::Options &opts)
+StubbornSetsEC::StubbornSetsEC(const plugins::Options &opts)
     : StubbornSetsActionCentric(opts) {
 }
 

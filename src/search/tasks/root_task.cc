@@ -1,9 +1,8 @@
 #include "root_task.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../state_registry.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/collections.h"
 #include "../utils/timer.h"
 

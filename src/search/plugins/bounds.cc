@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace options {
+namespace plugins {
 Bounds::Bounds(const string &min, const string &max)
     : min(min), max(max) {
 }

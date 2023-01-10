@@ -1,4 +1,4 @@
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 namespace pdbs {
 static PluginGroupPlugin _plugin(

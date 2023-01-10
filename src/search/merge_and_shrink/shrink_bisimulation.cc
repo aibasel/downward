@@ -5,9 +5,7 @@
 #include "label_equivalence_relation.h"
 #include "transition_system.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
@@ -96,7 +94,7 @@ struct Signature {
 };
 
 
-ShrinkBisimulation::ShrinkBisimulation(const Options &opts)
+ShrinkBisimulation::ShrinkBisimulation(const plugins::Options &opts)
     : greedy(opts.get<bool>("greedy")),
       at_limit(opts.get<AtLimit>("at_limit")) {
 }

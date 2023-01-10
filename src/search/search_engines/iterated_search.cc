@@ -1,8 +1,6 @@
 #include "iterated_search.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <iostream>
@@ -10,8 +8,9 @@
 using namespace std;
 
 namespace iterated_search {
-IteratedSearch::IteratedSearch(const Options &opts, options::Registry &registry,
-                               const options::Predefinitions &predefinitions)
+using plugins::ParseTree;
+IteratedSearch::IteratedSearch(const plugins::Options &opts, plugins::Registry &registry,
+                               const plugins::Predefinitions &predefinitions)
     : SearchEngine(opts),
       engine_configs(opts.get_list<ParseTree>("engine_configs")),
       registry(registry),

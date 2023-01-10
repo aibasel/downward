@@ -3,10 +3,9 @@
 #include "random_pattern.h"
 #include "utils.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <vector>
@@ -15,7 +14,7 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorMultipleRandom::PatternCollectionGeneratorMultipleRandom(
-    options::Options &opts)
+    const plugins::Options &opts)
     : PatternCollectionGeneratorMultiple(opts),
       bidirectional(opts.get<bool>("bidirectional")) {
 }
@@ -52,7 +51,7 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
     return result;
 }
 
-static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &parser) {
+static shared_ptr<PatternCollectionGenerator> _parse(plugins::OptionParser &parser) {
     parser.document_synopsis(
         "Multiple Random Patterns",
         "This pattern collection generator implements the 'multiple "

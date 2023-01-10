@@ -1,9 +1,8 @@
 #include "cost_adapted_task.h"
 
 #include "../operator_cost.h"
-#include "../option_parser.h"
-#include "../plugin.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../tasks/root_task.h"
 #include "../utils/system.h"

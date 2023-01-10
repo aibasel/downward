@@ -1,8 +1,6 @@
 #include "max_heuristic.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <cassert>
@@ -24,7 +22,7 @@ namespace max_heuristic {
  */
 
 // construction and destruction
-HSPMaxHeuristic::HSPMaxHeuristic(const Options &opts)
+HSPMaxHeuristic::HSPMaxHeuristic(const plugins::Options &opts)
     : RelaxationHeuristic(opts) {
     if (log.is_at_least_normal()) {
         log << "Initializing HSP max heuristic..." << endl;

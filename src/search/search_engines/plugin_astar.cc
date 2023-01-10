@@ -1,8 +1,7 @@
 #include "eager_search.h"
 #include "search_common.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 using namespace std;
 

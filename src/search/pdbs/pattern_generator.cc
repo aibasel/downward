@@ -2,12 +2,12 @@
 
 #include "utils.h"
 
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 using namespace std;
 
 namespace pdbs {
-PatternCollectionGenerator::PatternCollectionGenerator(const options::Options &opts)
+PatternCollectionGenerator::PatternCollectionGenerator(const plugins::Options &opts)
     : log(utils::get_log_from_options(opts)) {
 }
 
@@ -23,7 +23,7 @@ PatternCollectionInformation PatternCollectionGenerator::generate(
     return pci;
 }
 
-PatternGenerator::PatternGenerator(const options::Options &opts)
+PatternGenerator::PatternGenerator(const plugins::Options &opts)
     : log(utils::get_log_from_options(opts)) {
 }
 
@@ -42,7 +42,7 @@ PatternInformation PatternGenerator::generate(
     return pattern_info;
 }
 
-void add_generator_options_to_parser(options::OptionParser &parser) {
+void add_generator_options_to_parser(plugins::OptionParser &parser) {
     utils::add_log_options_to_parser(parser);
 }
 

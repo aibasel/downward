@@ -3,8 +3,7 @@
 
 #include "../pruning_method.h"
 
-namespace options {
-class OptionParser;
+namespace plugins {
 class Options;
 }
 
@@ -19,7 +18,7 @@ class LimitedPruning : public PruningMethod {
     virtual void prune(
         const State &state, std::vector<OperatorID> &op_ids) override;
 public:
-    explicit LimitedPruning(const options::Options &opts);
+    explicit LimitedPruning(const plugins::Options &opts);
     virtual void initialize(const std::shared_ptr<AbstractTask> &) override;
 };
 }

@@ -2,9 +2,8 @@
 
 #include "../evaluator.h"
 #include "../open_list.h"
-#include "../option_parser.h"
-#include "../plugin.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/collections.h"
 #include "../utils/hash.h"
 #include "../utils/markup.h"
@@ -34,7 +33,7 @@ protected:
         EvaluationContext &eval_context, const Entry &entry) override;
 
 public:
-    explicit TypeBasedOpenList(const Options &opts);
+    explicit TypeBasedOpenList(const plugins::Options &opts);
     virtual ~TypeBasedOpenList() override = default;
 
     virtual Entry remove_min() override;
@@ -68,7 +67,7 @@ void TypeBasedOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-TypeBasedOpenList<Entry>::TypeBasedOpenList(const Options &opts)
+TypeBasedOpenList<Entry>::TypeBasedOpenList(const plugins::Options &opts)
     : rng(utils::parse_rng_from_options(opts)),
       evaluators(opts.get_list<shared_ptr<Evaluator>>("evaluators")) {
 }
@@ -136,7 +135,7 @@ void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
 }
 
 TypeBasedOpenListFactory::TypeBasedOpenListFactory(
-    const Options &options)
+    const plugins::Options &options)
     : options(options) {
 }
 

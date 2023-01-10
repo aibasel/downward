@@ -6,9 +6,7 @@
 #include "utils.h"
 #include "validation.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../task_utils/causal_graph.h"
 #include "../task_utils/sampling.h"
 #include "../task_utils/task_properties.h"
@@ -113,7 +111,7 @@ static vector<vector<int>> compute_relevant_neighbours(const TaskProxy &task_pro
 }
 
 
-PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(const Options &opts)
+PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(const plugins::Options &opts)
     : PatternCollectionGenerator(opts),
       pdb_max_size(opts.get<int>("pdb_max_size")),
       collection_max_size(opts.get<int>("collection_max_size")),

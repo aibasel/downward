@@ -8,9 +8,7 @@
 #include "../task_proxy.h"
 
 #include "../algorithms/sccs.h"
-#include "../options/option_parser.h"
-#include "../options/options.h"
-#include "../options/plugin.h"
+#include "../plugins/plugin.h"
 #include "../task_utils/causal_graph.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
@@ -31,7 +29,7 @@ bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &rhs) {
     return lhs.size() > rhs.size();
 }
 
-MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const options::Options &options)
+MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const plugins::Options &options)
     : MergeStrategyFactory(options),
       order_of_sccs(options.get<OrderOfSCCs>("order_of_sccs")),
       merge_tree_factory(nullptr),
@@ -166,7 +164,7 @@ string MergeStrategyFactorySCCs::name() const {
     return "sccs";
 }
 
-static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
+static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
     parser.document_synopsis(
         "Merge strategy SSCs",
         "This merge strategy implements the algorithm described in the paper "
@@ -205,16 +203,16 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
         "merge_tree",
         "the fallback merge strategy to use if a precomputed strategy should "
         "be used.",
-        options::OptionParser::NONE);
+        plugins::OptionParser::NONE);
     parser.add_option<shared_ptr<MergeSelector>>(
         "merge_selector",
         "the fallback merge strategy to use if a stateless strategy should "
         "be used.",
-        options::OptionParser::NONE);
+        plugins::OptionParser::NONE);
 
     add_merge_strategy_options_to_parser(parser);
 
-    options::Options options = parser.parse();
+    plugins::Options options = parser.parse();
     if (parser.help_mode()) {
         return nullptr;
     } else if (parser.dry_run()) {
@@ -231,5 +229,5 @@ static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
     }
 }
 
-static options::Plugin<MergeStrategyFactory> _plugin("merge_sccs", _parse);
+static plugins::Plugin<MergeStrategyFactory> _plugin("merge_sccs", _parse);
 }

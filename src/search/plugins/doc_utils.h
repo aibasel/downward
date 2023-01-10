@@ -1,5 +1,5 @@
-#ifndef OPTIONS_DOC_UTILS_H
-#define OPTIONS_DOC_UTILS_H
+#ifndef PLUGINS_DOC_UTILS_H
+#define PLUGINS_DOC_UTILS_H
 
 #include "bounds.h"
 
@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-namespace options {
+namespace plugins {
 class OptionParser;
 class Predefinitions;
 class Registry;

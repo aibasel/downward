@@ -5,7 +5,7 @@
 
 using namespace std;
 
-namespace options {
+namespace plugins {
 PluginTypeInfo::PluginTypeInfo(
     const type_index &type,
     const string &type_name,

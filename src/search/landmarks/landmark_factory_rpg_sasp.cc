@@ -4,10 +4,9 @@
 #include "landmark_graph.h"
 #include "util.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/system.h"
 
@@ -18,7 +17,7 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
+LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const plugins::Options &opts)
     : LandmarkFactoryRelaxation(opts),
       disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
       use_orders(opts.get<bool>("use_orders")),

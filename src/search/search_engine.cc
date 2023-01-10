@@ -2,10 +2,9 @@
 
 #include "evaluation_context.h"
 #include "evaluator.h"
-#include "option_parser.h"
-#include "plugin.h"
 
 #include "algorithms/ordered_set.h"
+#include "plugins/plugin.h"
 #include "task_utils/successor_generator.h"
 #include "task_utils/task_properties.h"
 #include "tasks/root_task.h"
@@ -41,7 +40,7 @@ successor_generator::SuccessorGenerator &get_successor_generator(
     return successor_generator;
 }
 
-SearchEngine::SearchEngine(const Options &opts)
+SearchEngine::SearchEngine(const plugins::Options &opts)
     : status(IN_PROGRESS),
       solution_found(false),
       task(tasks::g_root_task),

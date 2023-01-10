@@ -3,9 +3,7 @@
 #include "cg_cache.h"
 #include "domain_transition_graph.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 
@@ -18,7 +16,7 @@ using namespace std;
 using namespace domain_transition_graph;
 
 namespace cg_heuristic {
-CGHeuristic::CGHeuristic(const Options &opts)
+CGHeuristic::CGHeuristic(const plugins::Options &opts)
     : Heuristic(opts),
       cache_hits(0),
       cache_misses(0),

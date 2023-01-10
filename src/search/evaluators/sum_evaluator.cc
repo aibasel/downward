@@ -1,7 +1,6 @@
 #include "sum_evaluator.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 #include <cassert>
 #include <limits>
@@ -9,7 +8,7 @@
 using namespace std;
 
 namespace sum_evaluator {
-SumEvaluator::SumEvaluator(const Options &opts)
+SumEvaluator::SumEvaluator(const plugins::Options &opts)
     : CombiningEvaluator(opts) {
 }
 
