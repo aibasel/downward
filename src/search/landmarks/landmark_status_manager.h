@@ -53,10 +53,6 @@ public:
         assert(static_cast<int>(id) < lm_graph.get_num_landmarks());
         return lm_status[id];
     }
-
-    bool is_reached(int id) const {
-        return lm_status[id] != lm_not_reached;
-    }
 };
 }
 

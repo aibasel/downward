@@ -156,14 +156,6 @@ void LandmarkCountHeuristic::compute_landmark_costs() {
 int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
     double epsilon = 0.01;
 
-    /*
-      Need explicit test to see if state is a goal state. The landmark
-      heuristic may compute h != 0 for a goal state if landmarks are
-      achieved before their parents in the landmarks graph (because
-      they do not get counted as reached in that case). However, we
-      must return 0 for a goal state.
-    */
-
     lm_status_manager->update_lm_status(ancestor_state);
 
     if (admissible) {
@@ -195,19 +187,29 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
 int LandmarkCountHeuristic::compute_heuristic(const State &ancestor_state) {
     State state = convert_ancestor_state(ancestor_state);
 
+    /*
+      Need explicit test to see if state is a goal state. The landmark
+      heuristic may compute h != 0 for a goal state if landmarks are
+      achieved before their parents in the landmarks graph (because
+      they do not get counted as reached in that case). However, we
+      must return 0 for a goal state.
+    */
     if (task_properties::is_goal_state(task_proxy, state))
         return 0;
 
     int h = get_heuristic_value(ancestor_state);
 
     if (use_preferred_operators) {
-        generate_preferred_operators(state);
+        BitsetView reached_lms =
+            lm_status_manager->get_reached_landmarks(ancestor_state);
+        generate_preferred_operators(state, reached_lms);
     }
 
     return h;
 }
 
-void LandmarkCountHeuristic::generate_preferred_operators(const State &state) {
+void LandmarkCountHeuristic::generate_preferred_operators(
+    const State &state, const BitsetView &reached) {
     /*
       Find operators that achieve landmark leaves. If a simple landmark can be
       achieved, prefer only operators that achieve simple landmarks. Otherwise,
@@ -232,7 +234,7 @@ void LandmarkCountHeuristic::generate_preferred_operators(const State &state) {
                 continue;
             FactProxy fact_proxy = effect.get_fact();
             LandmarkNode *lm_node = lgraph->get_node(fact_proxy.get_pair());
-            if (lm_node && landmark_is_interesting(state, *lm_node)) {
+            if (lm_node && landmark_is_interesting(state, reached, *lm_node)) {
                 if (lm_node->get_landmark().disjunctive) {
                     preferred_operators_disjunctive.push_back(op_id);
                 } else {
@@ -255,36 +257,30 @@ void LandmarkCountHeuristic::generate_preferred_operators(const State &state) {
 }
 
 bool LandmarkCountHeuristic::landmark_is_interesting(
-    const State & /*state*/, LandmarkNode &lm_node) const {
+    const State &state, const BitsetView &reached,
+    LandmarkNode &lm_node) const {
     /*
-      A landmark is interesting if it has to be achieved in the future and all
-      its parents have been reached.
-
-      TODO: Note that today, landmarks can only become needed-again after they
-       have been reached (in LAMA terms: accepted). This is only possible if all
-       their parents have been reached themselves. In that case, checking
-       whether all parents are reached in the switch case below seems
-       unnecessary, because *return true* sounds like the better option.
-       However, this ought to change once we incorporate the landmark
-       progression theory from our (unpublished) paper (see also issue1036).
-       According to that theory, landmarks are always accepted when first
-       reached, independent of the status of their parents. Due to reasonable
-       orderings, they can then also become needed-again even if not all their
-       parents are reached. Then, we should also consider them interesting only
-       after all their parents are reached, because the definition of reasonable
-       orderings tells us that reaching them earlier requires us to make them
-       false to reach their (reasonable) parents but also requires them to be
-       reached again after all their (reasonable) parents have been reached (or
-       at the same time).
+      A landmark is interesting if it hasn't been reached before and
+      its parents have all been reached, or if all landmarks have been
+      reached before, the LM is a goal, and it's not true at moment.
     */
 
-    landmark_status status =
-        lm_status_manager->get_landmark_status(lm_node.get_id());
-    if (status == lm_reached) {
+    bool all_reached = true;
+    for (int i = 0; i < reached.size(); ++i) {
+        if (!reached.test(i)) {
+            all_reached = false;
+            break;
+        }
+    }
+
+    if (all_reached) {
+        const Landmark &landmark = lm_node.get_landmark();
+        return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
+    } else if (reached.test(lm_node.get_id())) {
         return false;
     } else {
         for (const auto &parent : lm_node.parents) {
-            if (!lm_status_manager->is_reached(parent.first->get_id())) {
+            if (reached.test(parent.first->get_id())) {
                 return false;
             }
         }
