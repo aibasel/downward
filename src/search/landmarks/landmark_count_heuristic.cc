@@ -226,6 +226,14 @@ void LandmarkCountHeuristic::generate_preferred_operators(
     vector<OperatorID> preferred_operators_simple;
     vector<OperatorID> preferred_operators_disjunctive;
 
+    bool all_landmarks_reached = true;
+    for (int i = 0; i < reached.size(); ++i) {
+        if (!reached.test(i)) {
+            all_landmarks_reached = false;
+            break;
+        }
+    }
+
     for (OperatorID op_id : applicable_operators) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
         EffectsProxy effects = op.get_effects();
@@ -234,7 +242,8 @@ void LandmarkCountHeuristic::generate_preferred_operators(
                 continue;
             FactProxy fact_proxy = effect.get_fact();
             LandmarkNode *lm_node = lgraph->get_node(fact_proxy.get_pair());
-            if (lm_node && landmark_is_interesting(state, reached, *lm_node)) {
+            if (lm_node && landmark_is_interesting(
+                    state, reached, *lm_node, all_landmarks_reached)) {
                 if (lm_node->get_landmark().disjunctive) {
                     preferred_operators_disjunctive.push_back(op_id);
                 } else {
@@ -258,22 +267,14 @@ void LandmarkCountHeuristic::generate_preferred_operators(
 
 bool LandmarkCountHeuristic::landmark_is_interesting(
     const State &state, const BitsetView &reached,
-    LandmarkNode &lm_node) const {
+    LandmarkNode &lm_node, bool all_lms_reached) const {
     /*
       A landmark is interesting if it hasn't been reached before and
       its parents have all been reached, or if all landmarks have been
       reached before, the LM is a goal, and it's not true at moment.
     */
 
-    bool all_reached = true;
-    for (int i = 0; i < reached.size(); ++i) {
-        if (!reached.test(i)) {
-            all_reached = false;
-            break;
-        }
-    }
-
-    if (all_reached) {
+    if (all_lms_reached) {
         const Landmark &landmark = lm_node.get_landmark();
         return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
     } else if (reached.test(lm_node.get_id())) {

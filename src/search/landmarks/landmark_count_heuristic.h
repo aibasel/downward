@@ -37,8 +37,9 @@ class LandmarkCountHeuristic : public Heuristic {
 
     int get_heuristic_value(const State &ancestor_state);
 
-    bool landmark_is_interesting(const State &state, const BitsetView &reached,
-                                 LandmarkNode &lm_node) const;
+    bool landmark_is_interesting(
+        const State &state, const BitsetView &reached,
+        LandmarkNode &lm_node, bool all_lms_reached) const;
     void generate_preferred_operators(
         const State &state, const BitsetView &reached);
 
