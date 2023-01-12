@@ -281,9 +281,9 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
         return false;
     } else {
         return all_of(lm_node.parents.begin(), lm_node.parents.end(),
-                      [&](const pair<LandmarkNode *, EdgeType> parent){
-            return reached.test(parent.first->get_id());
-        });
+                      [&](const pair<LandmarkNode *, EdgeType> parent) {
+                          return reached.test(parent.first->get_id());
+                      });
     }
 }
 
