@@ -280,12 +280,10 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
     } else if (reached.test(lm_node.get_id())) {
         return false;
     } else {
-        for (const auto &parent : lm_node.parents) {
-            if (reached.test(parent.first->get_id())) {
-                return false;
-            }
-        }
-        return true;
+        return all_of(lm_node.parents.begin(), lm_node.parents.end(),
+                      [&](const pair<LandmarkNode *, EdgeType> parent){
+            return reached.test(parent.first->get_id());
+        });
     }
 }
 
