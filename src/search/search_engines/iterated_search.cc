@@ -181,9 +181,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
             "will be saved between iterations.");
     }
     Options opts = parser.parse();
-
     opts.verify_list_non_empty<ParseTree>("engine_configs");
-
     if (parser.help_mode()) {
         return nullptr;
     } else if (parser.dry_run()) {

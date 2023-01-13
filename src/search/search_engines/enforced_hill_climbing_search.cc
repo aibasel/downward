@@ -290,7 +290,6 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         SearchEngine::add_options_to_parser(parser);
     }
     Options opts = parser.parse();
-
     if (parser.dry_run())
         return nullptr;
     else

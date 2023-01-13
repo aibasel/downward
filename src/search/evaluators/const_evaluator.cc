@@ -29,7 +29,6 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
         add_evaluator_options_to_parser(parser);
     }
     Options opts = parser.parse();
-
     if (parser.dry_run())
         return nullptr;
     else

@@ -224,9 +224,7 @@ static shared_ptr<Heuristic> _parse(plugins::OptionParser &parser) {
     if (parser.help_mode()) {
         return nullptr;
     }
-
     handle_shrink_limit_options_defaults(opts);
-
     if (parser.dry_run()) {
         return nullptr;
     } else {

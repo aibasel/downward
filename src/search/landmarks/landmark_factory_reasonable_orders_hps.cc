@@ -401,7 +401,6 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
             "supported if subcomponent supports them");
     }
     Options opts = parser.parse();
-
     if (parser.dry_run())
         return nullptr;
     else

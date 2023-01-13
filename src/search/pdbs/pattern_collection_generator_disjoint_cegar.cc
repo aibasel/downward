@@ -83,7 +83,6 @@ static shared_ptr<PatternCollectionGenerator> _parse(
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
-
     return make_shared<PatternCollectionGeneratorDisjointCegar>(opts);
 }
 

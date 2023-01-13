@@ -436,7 +436,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "yes (if enabled; see ``pref`` option)");
     }
     Options opts = parser.parse();
-
     if (parser.dry_run())
         return nullptr;
     else

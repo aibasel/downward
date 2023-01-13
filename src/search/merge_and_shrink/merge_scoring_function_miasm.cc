@@ -133,9 +133,7 @@ static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
     if (parser.help_mode()) {
         return nullptr;
     }
-
     handle_shrink_limit_options_defaults(options);
-
     if (parser.dry_run()) {
         return nullptr;
     } else {

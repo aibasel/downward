@@ -109,6 +109,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         // TODO: prefer operators that are non-zero in the solution.
         parser.document_property("preferred operators", "no");
     }
+
     Options opts = parser.parse();
     if (parser.help_mode())
         return nullptr;

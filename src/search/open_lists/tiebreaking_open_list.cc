@@ -163,6 +163,7 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
             "allow unsafe pruning when the main evaluator regards a state a dead end",
             "true");
     }
+
     Options opts = parser.parse();
     opts.verify_list_non_empty<shared_ptr<Evaluator>>("evals");
     if (parser.dry_run())

@@ -174,9 +174,7 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
             "supported if all components support them");
     }
     Options opts = parser.parse();
-
     opts.verify_list_non_empty<shared_ptr<LandmarkFactory>>("lm_factories");
-
     if (parser.dry_run())
         return nullptr;
     else

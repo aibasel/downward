@@ -132,7 +132,6 @@ static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
     }
     if (parser.dry_run())
         return nullptr;
-
     return make_shared<MergeScoringFunctionDFP>();
 }
 

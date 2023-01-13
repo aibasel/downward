@@ -174,6 +174,7 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
             "Evaluators used to determine the bucket for each entry.");
         utils::add_rng_options(parser);
     }
+
     Options opts = parser.parse();
     opts.verify_list_non_empty<shared_ptr<Evaluator>>("evaluators");
     if (parser.dry_run())

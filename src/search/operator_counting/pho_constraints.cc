@@ -85,7 +85,6 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
-
     return make_shared<PhOConstraints>(opts);
 }
 

@@ -160,7 +160,6 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
     }
     if (parser.dry_run())
         return nullptr;
-
     plugins::Options opts = parser.parse();
     return make_shared<StateEquationConstraints>(opts);
 }

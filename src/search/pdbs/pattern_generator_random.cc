@@ -78,7 +78,6 @@ static shared_ptr<PatternGenerator> _parse(plugins::OptionParser &parser) {
     if (parser.dry_run()) {
         return nullptr;
     }
-
     return make_shared<PatternGeneratorRandom>(opts);
 }
 

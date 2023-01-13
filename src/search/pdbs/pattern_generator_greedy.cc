@@ -61,7 +61,6 @@ static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
-
     return make_shared<PatternGeneratorGreedy>(opts);
 }
 

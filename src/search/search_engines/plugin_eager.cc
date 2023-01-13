@@ -27,12 +27,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
         eager_search::add_options_to_parser(parser);
     }
     Options opts = parser.parse();
-
     shared_ptr<eager_search::EagerSearch> engine;
     if (!parser.dry_run()) {
         engine = make_shared<eager_search::EagerSearch>(opts);
     }
-
     return engine;
 }
 

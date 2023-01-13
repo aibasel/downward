@@ -34,9 +34,7 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
         combining_evaluator::add_combining_evaluator_options_to_parser(parser);
     }
     Options opts = parser.parse();
-
     opts.verify_list_non_empty<shared_ptr<Evaluator>>("evals");
-
     if (parser.dry_run())
         return nullptr;
     else

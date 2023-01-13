@@ -71,6 +71,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
                 "AAAI Press",
                 "2013"));
     }
+
     if (parser.dry_run())
         return nullptr;
     return make_shared<LMCutConstraints>();

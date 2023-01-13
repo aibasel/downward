@@ -76,7 +76,6 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
             "ignored, i.e. not supported");
     }
     Options opts = parser.parse();
-
     if (parser.dry_run())
         return nullptr;
     else

@@ -655,7 +655,6 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
             "supported");
     }
     Options opts = parser.parse();
-
     if (parser.dry_run())
         return nullptr;
     else

@@ -156,6 +156,7 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
             "to preferred successors",
             "0");
     }
+
     Options opts = parser.parse();
     opts.verify_list_non_empty<shared_ptr<OpenListFactory>>("sublists");
     if (parser.dry_run())

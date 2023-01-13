@@ -354,8 +354,8 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
         // Add random_seed option.
         utils::add_rng_options(parser);
     }
-    Options opts = parser.parse();
 
+    Options opts = parser.parse();
     if (parser.help_mode()) {
         return nullptr;
     } else if (parser.dry_run()) {

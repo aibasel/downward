@@ -280,7 +280,6 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
             "use_integer_vars=true)], use_integer_operator_counts=true))\n}}}\n");
     }
     Options opts = parser.parse();
-
     if (parser.dry_run())
         return nullptr;
     return make_shared<DeleteRelaxationConstraints>(opts);

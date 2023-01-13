@@ -107,7 +107,6 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     if (parser.dry_run()) {
         return nullptr;
     }
-
     return make_shared<StubbornSetsSimple>(opts);
 }
 

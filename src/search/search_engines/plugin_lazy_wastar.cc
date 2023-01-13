@@ -75,9 +75,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
             true);
     }
     Options opts = parser.parse();
-
     opts.verify_list_non_empty<shared_ptr<Evaluator>>("evals");
-
     shared_ptr<lazy_search::LazySearch> engine;
     if (!parser.dry_run()) {
         opts.set("open", search_common::create_wastar_open_list_factory(opts));

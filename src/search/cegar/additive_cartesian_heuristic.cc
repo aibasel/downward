@@ -139,10 +139,8 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         parser.document_property("preferred operators", "no");
    }
     Options opts = parser.parse();
-
     if (parser.dry_run())
         return nullptr;
-
     return make_shared<AdditiveCartesianHeuristic>(opts);
 }
 

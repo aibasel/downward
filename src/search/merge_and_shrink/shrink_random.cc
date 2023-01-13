@@ -42,7 +42,6 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     Options opts = parser.parse();
     if (parser.help_mode())
         return nullptr;
-
     if (parser.dry_run())
         return nullptr;
     else
