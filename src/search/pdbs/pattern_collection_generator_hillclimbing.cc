@@ -556,9 +556,10 @@ void add_hillclimbing_options(OptionParser &parser) {
 
 void check_hillclimbing_options(
     OptionParser &parser, const Options &opts) {
-    if (opts.get<int>("min_improvement") > opts.get<int>("num_samples"))
-        parser.error("minimum improvement must not be higher than number of "
-                     "samples");
+    if (opts.get<int>("min_improvement") > opts.get<int>("num_samples")) {
+        parser.error(
+            "Minimum improvement must not be higher than number of samples");
+    }
 }
 
 static basic_string<char> paper_references() {

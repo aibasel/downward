@@ -322,10 +322,12 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
                 "AAAI Press",
                 "2014"));
 
-        parser.add_option<bool>("before_shrinking",
-                                "apply label reduction before shrinking");
-        parser.add_option<bool>("before_merging",
-                                "apply label reduction before merging");
+        parser.add_option<bool>(
+            "before_shrinking",
+            "apply label reduction before shrinking");
+        parser.add_option<bool>(
+            "before_merging",
+            "apply label reduction before merging");
 
         parser.add_enum_option<LabelReductionMethod>(
             "method",
