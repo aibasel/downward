@@ -7,14 +7,17 @@ using namespace std;
 
 namespace plugin_lazy {
 static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
-    parser.document_synopsis("Lazy best-first search", "");
-    parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
-    parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
-    parser.add_list_option<shared_ptr<Evaluator>>(
-        "preferred",
-        "use preferred operators of these evaluators", "[]");
-    SearchEngine::add_succ_order_options(parser);
-    SearchEngine::add_options_to_parser(parser);
+    {
+        parser.document_synopsis("Lazy best-first search", "");
+
+        parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
+        parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
+        parser.add_list_option<shared_ptr<Evaluator>>(
+            "preferred",
+            "use preferred operators of these evaluators", "[]");
+        SearchEngine::add_succ_order_options(parser);
+        SearchEngine::add_options_to_parser(parser);
+    }
     Options opts = parser.parse();
 
     shared_ptr<lazy_search::LazySearch> engine;

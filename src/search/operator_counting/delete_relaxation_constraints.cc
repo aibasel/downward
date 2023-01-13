@@ -237,47 +237,48 @@ bool DeleteRelaxationConstraints::update_constraints(
 }
 
 static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Delete relaxation constraints",
-        "Operator-counting constraints based on the delete relaxation. By "
-        "default the constraints encode an easy-to-compute relaxation of h^+^. "
-        "With the right settings, these constraints can be used to compute the "
-        "optimal delete-relaxation heuristic h^+^ (see example below). "
-        "For details, see" + utils::format_journal_reference(
-            {"Tatsuya Imai", "Alex Fukunaga"},
-            "On a practical, integer-linear programming model for delete-free"
-            "tasks and its use as a heuristic for cost-optimal planning",
-            "https://www.jair.org/index.php/jair/article/download/10972/26119/",
-            "Journal of Artificial Intelligence Research",
-            "54",
-            "631-677",
-            "2015"));
+    {
+        parser.document_synopsis(
+            "Delete relaxation constraints",
+            "Operator-counting constraints based on the delete relaxation. By "
+            "default the constraints encode an easy-to-compute relaxation of h^+^. "
+            "With the right settings, these constraints can be used to compute the "
+            "optimal delete-relaxation heuristic h^+^ (see example below). "
+            "For details, see" + utils::format_journal_reference(
+                {"Tatsuya Imai", "Alex Fukunaga"},
+                "On a practical, integer-linear programming model for delete-free"
+                "tasks and its use as a heuristic for cost-optimal planning",
+                "https://www.jair.org/index.php/jair/article/download/10972/26119/",
+                "Journal of Artificial Intelligence Research",
+                "54",
+                "631-677",
+                "2015"));
 
-    parser.document_note(
-        "Example",
-        "To compute the optimal delete-relaxation heuristic h^+^, use\n"
-        "{{{\noperatorcounting([delete_relaxation_constraints(use_time_vars=true, "
-        "use_integer_vars=true)], use_integer_operator_counts=true))\n}}}\n");
+        parser.add_option<bool>(
+            "use_time_vars",
+            "use variables for time steps. With these additional variables the "
+            "constraints enforce an order between the selected operators. Leaving "
+            "this off (default) corresponds to the time relaxation by Imai and "
+            "Fukunaga. Switching it on, can increase the heuristic value but will "
+            "increase the size of the constraints which has a strong impact on "
+            "runtime. Constraints involving time variables use a big-M encoding, "
+            "so they are more useful if used with integer variables.",
+            "false");
+        parser.add_option<bool>(
+            "use_integer_vars",
+            "restrict auxiliary variables to integer values. These variables "
+            "encode whether operators are used, facts are reached, which operator "
+            "first achieves which fact, and in which order the operators are used. "
+            "Restricting them to integers generally improves the heuristic value "
+            "at the cost of increased runtime.",
+            "false");
 
-    parser.add_option<bool>(
-        "use_time_vars",
-        "use variables for time steps. With these additional variables the "
-        "constraints enforce an order between the selected operators. Leaving "
-        "this off (default) corresponds to the time relaxation by Imai and "
-        "Fukunaga. Switching it on, can increase the heuristic value but will "
-        "increase the size of the constraints which has a strong impact on "
-        "runtime. Constraints involving time variables use a big-M encoding, "
-        "so they are more useful if used with integer variables.",
-        "false");
-    parser.add_option<bool>(
-        "use_integer_vars",
-        "restrict auxiliary variables to integer values. These variables "
-        "encode whether operators are used, facts are reached, which operator "
-        "first achieves which fact, and in which order the operators are used. "
-        "Restricting them to integers generally improves the heuristic value "
-        "at the cost of increased runtime.",
-        "false");
-
+        parser.document_note(
+            "Example",
+            "To compute the optimal delete-relaxation heuristic h^+^, use\n"
+            "{{{\noperatorcounting([delete_relaxation_constraints(use_time_vars=true, "
+            "use_integer_vars=true)], use_integer_operator_counts=true))\n}}}\n");
+    }
     Options opts = parser.parse();
 
     if (parser.dry_run())

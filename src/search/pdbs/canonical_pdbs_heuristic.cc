@@ -89,31 +89,32 @@ void add_canonical_pdbs_options_to_parser(plugins::OptionParser &parser) {
 }
 
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Canonical PDB",
-        "The canonical pattern database heuristic is calculated as follows. "
-        "For a given pattern collection C, the value of the "
-        "canonical heuristic function is the maximum over all "
-        "maximal additive subsets A in C, where the value for one subset "
-        "S in A is the sum of the heuristic values for all patterns in S "
-        "for a given state.");
-    parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional effects", "not supported");
-    parser.document_language_support("axioms", "not supported");
-    parser.document_property("admissible", "yes");
-    parser.document_property("consistent", "yes");
-    parser.document_property("safe", "yes");
-    parser.document_property("preferred operators", "no");
+    {
+        parser.document_synopsis(
+            "Canonical PDB",
+            "The canonical pattern database heuristic is calculated as follows. "
+            "For a given pattern collection C, the value of the "
+            "canonical heuristic function is the maximum over all "
+            "maximal additive subsets A in C, where the value for one subset "
+            "S in A is the sum of the heuristic values for all patterns in S "
+            "for a given state.");
 
-    parser.add_option<shared_ptr<PatternCollectionGenerator>>(
-        "patterns",
-        "pattern generation method",
-        "systematic(1)");
+        parser.add_option<shared_ptr<PatternCollectionGenerator>>(
+            "patterns",
+            "pattern generation method",
+            "systematic(1)");
+        add_canonical_pdbs_options_to_parser(parser);
+        Heuristic::add_options_to_parser(parser);
 
-    add_canonical_pdbs_options_to_parser(parser);
+        parser.document_language_support("action costs", "supported");
+        parser.document_language_support("conditional effects", "not supported");
+        parser.document_language_support("axioms", "not supported");
 
-    Heuristic::add_options_to_parser(parser);
-
+        parser.document_property("admissible", "yes");
+        parser.document_property("consistent", "yes");
+        parser.document_property("safe", "yes");
+        parser.document_property("preferred operators", "no");
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

@@ -62,17 +62,20 @@ bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
 }
 
 static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Exhaustive Landmarks",
-        "Exhaustively checks for each fact if it is a landmark."
-        "This check is done using relaxed planning.");
-    add_landmark_factory_options_to_parser(parser);
-    add_only_causal_landmarks_option_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Exhaustive Landmarks",
+            "Exhaustively checks for each fact if it is a landmark."
+            "This check is done using relaxed planning.");
 
+        add_landmark_factory_options_to_parser(parser);
+        add_only_causal_landmarks_option_to_parser(parser);
+
+        parser.document_language_support(
+            "conditional_effects",
+            "ignored, i.e. not supported");
+    }
     Options opts = parser.parse();
-
-    parser.document_language_support("conditional_effects",
-                                     "ignored, i.e. not supported");
 
     if (parser.dry_run())
         return nullptr;

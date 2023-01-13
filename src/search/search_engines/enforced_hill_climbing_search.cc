@@ -272,21 +272,24 @@ void EnforcedHillClimbingSearch::print_statistics() const {
 }
 
 static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
-    parser.document_synopsis("Lazy enforced hill-climbing", "");
-    parser.add_option<shared_ptr<Evaluator>>("h", "heuristic");
-    vector<string> preferred_usages;
-    preferred_usages.push_back("PRUNE_BY_PREFERRED");
-    preferred_usages.push_back("RANK_PREFERRED_FIRST");
-    parser.add_enum_option<PreferredUsage>(
-        "preferred_usage",
-        preferred_usages,
-        "preferred operator usage",
-        "PRUNE_BY_PREFERRED");
-    parser.add_list_option<shared_ptr<Evaluator>>(
-        "preferred",
-        "use preferred operators of these evaluators",
-        "[]");
-    SearchEngine::add_options_to_parser(parser);
+    {
+        parser.document_synopsis("Lazy enforced hill-climbing", "");
+
+        parser.add_option<shared_ptr<Evaluator>>("h", "heuristic");
+        vector<string> preferred_usages;
+        preferred_usages.push_back("PRUNE_BY_PREFERRED");
+        preferred_usages.push_back("RANK_PREFERRED_FIRST");
+        parser.add_enum_option<PreferredUsage>(
+            "preferred_usage",
+            preferred_usages,
+            "preferred operator usage",
+            "PRUNE_BY_PREFERRED");
+        parser.add_list_option<shared_ptr<Evaluator>>(
+            "preferred",
+            "use preferred operators of these evaluators",
+            "[]");
+        SearchEngine::add_options_to_parser(parser);
+    }
     Options opts = parser.parse();
 
     if (parser.dry_run())

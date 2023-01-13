@@ -28,10 +28,6 @@ using utils::ExitCode;
 
 namespace lp {
 void add_lp_solver_option_to_parser(OptionParser &parser) {
-    parser.document_note(
-        "Note",
-        "to use an LP solver, you must build the planner with LP support. "
-        "See LPBuildInstructions.");
     vector<string> lp_solvers;
     vector<string> lp_solvers_doc;
     lp_solvers.push_back("CLP");
@@ -48,6 +44,11 @@ void add_lp_solver_option_to_parser(OptionParser &parser) {
         "external solver that should be used to solve linear programs",
         "CPLEX",
         lp_solvers_doc);
+
+    parser.document_note(
+        "Note",
+        "to use an LP solver, you must build the planner with LP support. "
+        "See LPBuildInstructions.");
 }
 
 LPConstraint::LPConstraint(double lower_bound, double upper_bound)

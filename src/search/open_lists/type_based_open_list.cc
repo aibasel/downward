@@ -150,29 +150,30 @@ TypeBasedOpenListFactory::create_edge_open_list() {
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Type-based open list",
-        "Uses multiple evaluators to assign entries to buckets. "
-        "All entries in a bucket have the same evaluator values. "
-        "When retrieving an entry, a bucket is chosen uniformly at "
-        "random and one of the contained entries is selected "
-        "uniformly randomly. "
-        "The algorithm is based on" + utils::format_conference_reference(
-            {"Fan Xie", "Martin Mueller", "Robert Holte", "Tatsuya Imai"},
-            "Type-Based Exploration with Multiple Search Queues for"
-            " Satisficing Planning",
-            "http://www.aaai.org/ocs/index.php/AAAI/AAAI14/paper/view/8472/8705",
-            "Proceedings of the Twenty-Eigth AAAI Conference Conference"
-            " on Artificial Intelligence (AAAI 2014)",
-            "2395-2401",
-            "AAAI Press",
-            "2014"));
-    parser.add_list_option<shared_ptr<Evaluator>>(
-        "evaluators",
-        "Evaluators used to determine the bucket for each entry.");
+    {
+        parser.document_synopsis(
+            "Type-based open list",
+            "Uses multiple evaluators to assign entries to buckets. "
+            "All entries in a bucket have the same evaluator values. "
+            "When retrieving an entry, a bucket is chosen uniformly at "
+            "random and one of the contained entries is selected "
+            "uniformly randomly. "
+            "The algorithm is based on" + utils::format_conference_reference(
+                {"Fan Xie", "Martin Mueller", "Robert Holte", "Tatsuya Imai"},
+                "Type-Based Exploration with Multiple Search Queues for"
+                " Satisficing Planning",
+                "http://www.aaai.org/ocs/index.php/AAAI/AAAI14/paper/view/8472/8705",
+                "Proceedings of the Twenty-Eigth AAAI Conference Conference"
+                " on Artificial Intelligence (AAAI 2014)",
+                "2395-2401",
+                "AAAI Press",
+                "2014"));
 
-    utils::add_rng_options(parser);
-
+        parser.add_list_option<shared_ptr<Evaluator>>(
+            "evaluators",
+            "Evaluators used to determine the bucket for each entry.");
+        utils::add_rng_options(parser);
+    }
     Options opts = parser.parse();
     opts.verify_list_non_empty<shared_ptr<Evaluator>>("evaluators");
     if (parser.dry_run())

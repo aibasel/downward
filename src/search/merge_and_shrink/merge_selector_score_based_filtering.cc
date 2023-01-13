@@ -105,15 +105,17 @@ bool MergeSelectorScoreBasedFiltering::requires_goal_distances() const {
 }
 
 static shared_ptr<MergeSelector>_parse(plugins::OptionParser &parser) {
-    parser.document_synopsis(
-        "Score based filtering merge selector",
-        "This merge selector has a list of scoring functions, which are used "
-        "iteratively to compute scores for merge candidates, keeping the best "
-        "ones (with minimal scores) until only one is left.");
-    parser.add_list_option<shared_ptr<MergeScoringFunction>>(
-        "scoring_functions",
-        "The list of scoring functions used to compute scores for candidates.");
+    {
+        parser.document_synopsis(
+            "Score based filtering merge selector",
+            "This merge selector has a list of scoring functions, which are used "
+            "iteratively to compute scores for merge candidates, keeping the best "
+            "ones (with minimal scores) until only one is left.");
 
+        parser.add_list_option<shared_ptr<MergeScoringFunction>>(
+            "scoring_functions",
+            "The list of scoring functions used to compute scores for candidates.");
+    }
     plugins::Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

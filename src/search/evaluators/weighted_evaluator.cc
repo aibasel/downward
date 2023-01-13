@@ -41,12 +41,15 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
 }
 
 static shared_ptr<Evaluator> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Weighted evaluator",
-        "Multiplies the value of the evaluator with the given weight.");
-    parser.add_option<shared_ptr<Evaluator>>("eval", "evaluator");
-    parser.add_option<int>("weight", "weight");
-    add_evaluator_options_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Weighted evaluator",
+            "Multiplies the value of the evaluator with the given weight.");
+
+        parser.add_option<shared_ptr<Evaluator>>("eval", "evaluator");
+        parser.add_option<int>("weight", "weight");
+        add_evaluator_options_to_parser(parser);
+    }
 
     Options opts = parser.parse();
     if (parser.dry_run())

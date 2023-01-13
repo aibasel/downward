@@ -145,22 +145,25 @@ DiversePotentialHeuristics::find_functions() {
 }
 
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Diverse potential heuristics",
-        get_admissible_potentials_reference());
-    parser.add_option<int>(
-        "num_samples",
-        "Number of states to sample",
-        "1000",
-        plugins::Bounds("0", "infinity"));
-    parser.add_option<int>(
-        "max_num_heuristics",
-        "maximum number of potential heuristics",
-        "infinity",
-        plugins::Bounds("0", "infinity"));
-    prepare_parser_for_admissible_potentials(parser);
-    utils::add_rng_options(parser);
-    utils::add_log_options_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Diverse potential heuristics",
+            get_admissible_potentials_reference());
+
+        parser.add_option<int>(
+            "num_samples",
+            "Number of states to sample",
+            "1000",
+            plugins::Bounds("0", "infinity"));
+        parser.add_option<int>(
+            "max_num_heuristics",
+            "maximum number of potential heuristics",
+            "infinity",
+            plugins::Bounds("0", "infinity"));
+        prepare_parser_for_admissible_potentials(parser);
+        utils::add_rng_options(parser);
+        utils::add_log_options_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

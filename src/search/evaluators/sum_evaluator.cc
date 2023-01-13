@@ -26,10 +26,13 @@ int SumEvaluator::combine_values(const vector<int> &values) {
 }
 
 static shared_ptr<Evaluator> _parse(OptionParser &parser) {
-    parser.document_synopsis("Sum evaluator",
-                             "Calculates the sum of the sub-evaluators.");
-    combining_evaluator::add_combining_evaluator_options_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Sum evaluator",
+            "Calculates the sum of the sub-evaluators.");
 
+        combining_evaluator::add_combining_evaluator_options_to_parser(parser);
+    }
     Options opts = parser.parse();
 
     opts.verify_list_non_empty<shared_ptr<Evaluator>>("evals");

@@ -43,40 +43,43 @@ PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::compute_pa
 
 static shared_ptr<PatternCollectionGenerator> _parse(
     plugins::OptionParser &parser) {
-    parser.document_synopsis(
-        "Disjoint CEGAR",
-        "This pattern collection generator uses the CEGAR algorithm to "
-        "compute a pattern for the planning task. See below "
-        "for a description of the algorithm and some implementation notes. "
-        "The original algorithm (called single CEGAR) is described in the "
-        "paper " + get_rovner_et_al_reference());
-    add_cegar_implementation_notes_to_parser(parser);
-    // TODO: these options could be move to the base class; see issue1022.
-    parser.add_option<int>(
-        "max_pdb_size",
-        "maximum number of states per pattern database (ignored for the "
-        "initial collection consisting of a singleton pattern for each goal "
-        "variable)",
-        "1000000",
-        plugins::Bounds("1", "infinity"));
-    parser.add_option<int>(
-        "max_collection_size",
-        "maximum number of states in the pattern collection (ignored for the "
-        "initial collection consisting of a singleton pattern for each goal "
-        "variable)",
-        "10000000",
-        plugins::Bounds("1", "infinity"));
-    parser.add_option<double>(
-        "max_time",
-        "maximum time in seconds for this pattern collection generator "
-        "(ignored for computing the initial collection consisting of a "
-        "singleton pattern for each goal variable)",
-        "infinity",
-        plugins::Bounds("0.0", "infinity"));
-    add_cegar_wildcard_option_to_parser(parser);
-    add_generator_options_to_parser(parser);
-    utils::add_rng_options(parser);
+    {
+        parser.document_synopsis(
+            "Disjoint CEGAR",
+            "This pattern collection generator uses the CEGAR algorithm to "
+            "compute a pattern for the planning task. See below "
+            "for a description of the algorithm and some implementation notes. "
+            "The original algorithm (called single CEGAR) is described in the "
+            "paper " + get_rovner_et_al_reference());
 
+        // TODO: these options could be move to the base class; see issue1022.
+        parser.add_option<int>(
+            "max_pdb_size",
+            "maximum number of states per pattern database (ignored for the "
+            "initial collection consisting of a singleton pattern for each goal "
+            "variable)",
+            "1000000",
+            plugins::Bounds("1", "infinity"));
+        parser.add_option<int>(
+            "max_collection_size",
+            "maximum number of states in the pattern collection (ignored for the "
+            "initial collection consisting of a singleton pattern for each goal "
+            "variable)",
+            "10000000",
+            plugins::Bounds("1", "infinity"));
+        parser.add_option<double>(
+            "max_time",
+            "maximum time in seconds for this pattern collection generator "
+            "(ignored for computing the initial collection consisting of a "
+            "singleton pattern for each goal variable)",
+            "infinity",
+            plugins::Bounds("0.0", "infinity"));
+        add_cegar_wildcard_option_to_parser(parser);
+        add_generator_options_to_parser(parser);
+        utils::add_rng_options(parser);
+
+        add_cegar_implementation_notes_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

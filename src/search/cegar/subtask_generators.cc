@@ -168,19 +168,6 @@ SharedTasks LandmarkDecomposition::get_subtasks(
     return subtasks;
 }
 
-static shared_ptr<SubtaskGenerator> _parse_original(OptionParser &parser) {
-    parser.add_option<int>(
-        "copies",
-        "number of task copies",
-        "1",
-        plugins::Bounds("1", "infinity"));
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<TaskDuplicator>(opts);
-}
-
 static void add_fact_order_option(OptionParser &parser) {
     vector<string> fact_orders;
     fact_orders.push_back("ORIGINAL");
@@ -195,8 +182,28 @@ static void add_fact_order_option(OptionParser &parser) {
     utils::add_rng_options(parser);
 }
 
+static shared_ptr<SubtaskGenerator> _parse_original(OptionParser &parser) {
+    {
+        parser.add_option<int>(
+            "copies",
+            "number of task copies",
+            "1",
+            plugins::Bounds("1", "infinity"));
+    }
+    Options opts = parser.parse();
+    if (parser.dry_run())
+        return nullptr;
+    else
+        return make_shared<TaskDuplicator>(opts);
+}
+
+static Plugin<SubtaskGenerator> _plugin_original(
+    "original", _parse_original);
+
 static shared_ptr<SubtaskGenerator> _parse_goals(OptionParser &parser) {
-    add_fact_order_option(parser);
+    {
+        add_fact_order_option(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
@@ -204,12 +211,17 @@ static shared_ptr<SubtaskGenerator> _parse_goals(OptionParser &parser) {
         return make_shared<GoalDecomposition>(opts);
 }
 
+static Plugin<SubtaskGenerator> _plugin_goals(
+    "goals", _parse_goals);
+
 static shared_ptr<SubtaskGenerator> _parse_landmarks(OptionParser &parser) {
-    add_fact_order_option(parser);
-    parser.add_option<bool>(
-        "combine_facts",
-        "combine landmark facts with domain abstraction",
-        "true");
+    {
+        add_fact_order_option(parser);
+        parser.add_option<bool>(
+            "combine_facts",
+            "combine landmark facts with domain abstraction",
+            "true");
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
@@ -217,12 +229,9 @@ static shared_ptr<SubtaskGenerator> _parse_landmarks(OptionParser &parser) {
         return make_shared<LandmarkDecomposition>(opts);
 }
 
-static Plugin<SubtaskGenerator> _plugin_original(
-    "original", _parse_original);
-static Plugin<SubtaskGenerator> _plugin_goals(
-    "goals", _parse_goals);
 static Plugin<SubtaskGenerator> _plugin_landmarks(
     "landmarks", _parse_landmarks);
+
 
 static PluginTypePlugin<SubtaskGenerator> _type_plugin(
     "SubtaskGenerator",

@@ -16,12 +16,14 @@ void NullPruningMethod::initialize(const shared_ptr<AbstractTask> &task) {
 }
 
 static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "No pruning",
-        "This is a skeleton method that does not perform any pruning, i.e., "
-        "all applicable operators are applied in all expanded states. ");
-    add_pruning_options_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "No pruning",
+            "This is a skeleton method that does not perform any pruning, i.e., "
+            "all applicable operators are applied in all expanded states. ");
 
+        add_pruning_options_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run()) {
         return nullptr;

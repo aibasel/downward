@@ -25,10 +25,13 @@ EvaluationResult PrefEvaluator::compute_result(
 }
 
 static shared_ptr<Evaluator> _parse(OptionParser &parser) {
-    parser.document_synopsis("Preference evaluator",
-                             "Returns 0 if preferred is true and 1 otherwise.");
-    add_evaluator_options_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Preference evaluator",
+            "Returns 0 if preferred is true and 1 otherwise.");
 
+        add_evaluator_options_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

@@ -16,15 +16,18 @@ EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
 }
 
 static shared_ptr<Evaluator> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Constant evaluator",
-        "Returns a constant value.");
-    parser.add_option<int>(
-        "value",
-        "the constant value",
-        "1",
-        plugins::Bounds("0", "infinity"));
-    add_evaluator_options_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Constant evaluator",
+            "Returns a constant value.");
+
+        parser.add_option<int>(
+            "value",
+            "the constant value",
+            "1",
+            plugins::Bounds("0", "infinity"));
+        add_evaluator_options_to_parser(parser);
+    }
     Options opts = parser.parse();
 
     if (parser.dry_run())

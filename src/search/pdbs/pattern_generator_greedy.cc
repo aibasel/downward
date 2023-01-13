@@ -50,13 +50,14 @@ PatternInformation PatternGeneratorGreedy::compute_pattern(const shared_ptr<Abst
 }
 
 static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
-    parser.add_option<int>(
-        "max_states",
-        "maximal number of abstract states in the pattern database.",
-        "1000000",
-        plugins::Bounds("1", "infinity"));
-    add_generator_options_to_parser(parser);
-
+    {
+        parser.add_option<int>(
+            "max_states",
+            "maximal number of abstract states in the pattern database.",
+            "1000000",
+            plugins::Bounds("1", "infinity"));
+        add_generator_options_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

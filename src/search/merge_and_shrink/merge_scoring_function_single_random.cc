@@ -47,12 +47,14 @@ void MergeScoringFunctionSingleRandom::dump_function_specific_options(
 }
 
 static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
-    parser.document_synopsis(
-        "Single random",
-        "This scoring function assigns exactly one merge candidate a score of "
-        "0, chosen randomly, and infinity to all others.");
+    {
+        parser.document_synopsis(
+            "Single random",
+            "This scoring function assigns exactly one merge candidate a score of "
+            "0, chosen randomly, and infinity to all others.");
+    
     utils::add_rng_options(parser);
-
+    }
     plugins::Options options = parser.parse();
     if (parser.dry_run())
         return nullptr;

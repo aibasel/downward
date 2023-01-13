@@ -39,16 +39,20 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis("Landmark-cut heuristic", "");
-    parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional effects", "not supported");
-    parser.document_language_support("axioms", "not supported");
-    parser.document_property("admissible", "yes");
-    parser.document_property("consistent", "no");
-    parser.document_property("safe", "yes");
-    parser.document_property("preferred operators", "no");
+    {
+        parser.document_synopsis("Landmark-cut heuristic", "");
 
-    Heuristic::add_options_to_parser(parser);
+        Heuristic::add_options_to_parser(parser);
+
+        parser.document_language_support("action costs", "supported");
+        parser.document_language_support("conditional effects", "not supported");
+        parser.document_language_support("axioms", "not supported");
+
+        parser.document_property("admissible", "yes");
+        parser.document_property("consistent", "no");
+        parser.document_property("safe", "yes");
+        parser.document_property("preferred operators", "no");
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

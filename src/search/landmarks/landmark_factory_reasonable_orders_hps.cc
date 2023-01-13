@@ -377,27 +377,30 @@ bool LandmarkFactoryReasonableOrdersHPS::supports_conditional_effects() const {
     return lm_factory->supports_conditional_effects();
 }
 
-
 static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "HPS Orders",
-        "Adds reasonable orders and obedient reasonable orders "
-        "described in the following paper" +
-        utils::format_journal_reference(
-            {"Jörg Hoffmann", "Julie Porteous", "Laura Sebastia"},
-            "Ordered Landmarks in Planning",
-            "https://jair.org/index.php/jair/article/view/10390/24882",
-            "Journal of Artificial Intelligence Research",
-            "22",
-            "215-278",
-            "2004"));
-    parser.add_option<shared_ptr<LandmarkFactory>>("lm_factory");
-    add_landmark_factory_options_to_parser(parser);
-    Options opts = parser.parse();
+    {
+        parser.document_synopsis(
+            "HPS Orders",
+            "Adds reasonable orders and obedient reasonable orders "
+            "described in the following paper" +
+            utils::format_journal_reference(
+                {"Jörg Hoffmann", "Julie Porteous", "Laura Sebastia"},
+                "Ordered Landmarks in Planning",
+                "https://jair.org/index.php/jair/article/view/10390/24882",
+                "Journal of Artificial Intelligence Research",
+                "22",
+                "215-278",
+                "2004"));
 
-    // TODO: correct?
-    parser.document_language_support("conditional_effects",
-                                     "supported if subcomponent supports them");
+        parser.add_option<shared_ptr<LandmarkFactory>>("lm_factory");
+        add_landmark_factory_options_to_parser(parser);
+
+        // TODO: correct?
+        parser.document_language_support(
+            "conditional_effects",
+            "supported if subcomponent supports them");
+    }
+    Options opts = parser.parse();
 
     if (parser.dry_run())
         return nullptr;

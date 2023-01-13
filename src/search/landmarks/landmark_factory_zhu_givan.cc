@@ -309,18 +309,21 @@ bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
 }
 
 static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Zhu/Givan Landmarks",
-        "The landmark generation method introduced by "
-        "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
-    add_landmark_factory_options_to_parser(parser);
-    add_use_orders_option_to_parser(parser);
-    Options opts = parser.parse();
+    {
+        parser.document_synopsis(
+            "Zhu/Givan Landmarks",
+            "The landmark generation method introduced by "
+            "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
 
-    // TODO: Make sure that conditional effects are indeed supported.
-    parser.document_language_support("conditional_effects",
-                                     "We think they are supported, but this "
-                                     "is not 100% sure.");
+        add_landmark_factory_options_to_parser(parser);
+        add_use_orders_option_to_parser(parser);
+
+        // TODO: Make sure that conditional effects are indeed supported.
+        parser.document_language_support(
+            "conditional_effects",
+            "We think they are supported, but this is not 100% sure.");
+    }
+    Options opts = parser.parse();
 
     if (parser.dry_run())
         return nullptr;

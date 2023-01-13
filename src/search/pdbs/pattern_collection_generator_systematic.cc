@@ -285,32 +285,33 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::compute_patte
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Systematically generated patterns",
-        "Generates all (interesting) patterns with up to pattern_max_size "
-        "variables. "
-        "For details, see" + utils::format_conference_reference(
-            {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
-            "Getting the Most Out of Pattern Databases for Classical Planning",
-            "https://ai.dmi.unibas.ch/papers/pommerening-et-al-ijcai2013.pdf",
-            "Proceedings of the Twenty-Third International Joint"
-            " Conference on Artificial Intelligence (IJCAI 2013)",
-            "2357-2364",
-            "AAAI Press",
-            "2013"));
+    {
+        parser.document_synopsis(
+            "Systematically generated patterns",
+            "Generates all (interesting) patterns with up to pattern_max_size "
+            "variables. "
+            "For details, see" + utils::format_conference_reference(
+                {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
+                "Getting the Most Out of Pattern Databases for Classical Planning",
+                "https://ai.dmi.unibas.ch/papers/pommerening-et-al-ijcai2013.pdf",
+                "Proceedings of the Twenty-Third International Joint"
+                " Conference on Artificial Intelligence (IJCAI 2013)",
+                "2357-2364",
+                "AAAI Press",
+                "2013"));
 
-    parser.add_option<int>(
-        "pattern_max_size",
-        "max number of variables per pattern",
-        "1",
-        plugins::Bounds("1", "infinity"));
-    parser.add_option<bool>(
-        "only_interesting_patterns",
-        "Only consider the union of two disjoint patterns if the union has "
-        "more information than the individual patterns.",
-        "true");
-    add_generator_options_to_parser(parser);
-
+        parser.add_option<int>(
+            "pattern_max_size",
+            "max number of variables per pattern",
+            "1",
+            plugins::Bounds("1", "infinity"));
+        parser.add_option<bool>(
+            "only_interesting_patterns",
+            "Only consider the union of two disjoint patterns if the union has "
+            "more information than the individual patterns.",
+            "true");
+        add_generator_options_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

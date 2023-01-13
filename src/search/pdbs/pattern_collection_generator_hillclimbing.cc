@@ -586,13 +586,14 @@ static basic_string<char> paper_references() {
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Hill climbing",
-        "This algorithm uses hill climbing to generate patterns "
-        "optimized for the Evaluator#Canonical_PDB heuristic. It it described "
-        "in the following paper:" + paper_references());
-    add_hillclimbing_options(parser);
-
+    {
+        parser.document_synopsis(
+            "Hill climbing",
+            "This algorithm uses hill climbing to generate patterns "
+            "optimized for the Evaluator#Canonical_PDB heuristic. It it described "
+            "in the following paper:" + paper_references());
+        add_hillclimbing_options(parser);
+    }
     Options opts = parser.parse();
     if (parser.help_mode())
         return nullptr;
@@ -604,68 +605,70 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
     return make_shared<PatternCollectionGeneratorHillclimbing>(opts);
 }
 
+static Plugin<PatternCollectionGenerator> _plugin("hillclimbing", _parse);
+
 static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
-    parser.document_synopsis(
-        "iPDB",
-        "This approach is a combination of using the Evaluator#Canonical_PDB "
-        "heuristic over patterns computed with the "
-        "PatternCollectionGenerator#hillclimbing algorithm for pattern "
-        "generation. It is a short-hand for the command-line option "
-        "{{{cpdbs(hillclimbing())}}}. "
-        "Both the heuristic and the pattern generation algorithm are described "
-        "in the following paper:" + paper_references() +
-        "See also Evaluator#Canonical_PDB and "
-        "PatternCollectionGenerator#Hill_climbing for more details.");
+    {
+        parser.document_synopsis(
+            "iPDB",
+            "This approach is a combination of using the Evaluator#Canonical_PDB "
+            "heuristic over patterns computed with the "
+            "PatternCollectionGenerator#hillclimbing algorithm for pattern "
+            "generation. It is a short-hand for the command-line option "
+            "{{{cpdbs(hillclimbing())}}}. "
+            "Both the heuristic and the pattern generation algorithm are described "
+            "in the following paper:" + paper_references() +
+            "See also Evaluator#Canonical_PDB and "
+            "PatternCollectionGenerator#Hill_climbing for more details.");
 
-    parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional effects", "not supported");
-    parser.document_language_support("axioms", "not supported");
-    parser.document_property("admissible", "yes");
-    parser.document_property("consistent", "yes");
-    parser.document_property("safe", "yes");
-    parser.document_property("preferred operators", "no");
+        add_hillclimbing_options(parser);
+        /*
+          Add, possibly among others, the options for dominance pruning.
 
-    add_hillclimbing_options(parser);
+          Note that using dominance pruning during hill climbing could lead to fewer
+          discovered patterns and pattern collections. A dominated pattern
+          (or pattern collection) might no longer be dominated after more patterns
+          are added. We thus only use dominance pruning on the resulting collection.
+        */
+        add_canonical_pdbs_options_to_parser(parser);
+        Heuristic::add_options_to_parser(parser);
 
-    /*
-      Add, possibly among others, the options for dominance pruning.
+        parser.document_language_support("action costs", "supported");
+        parser.document_language_support("conditional effects", "not supported");
+        parser.document_language_support("axioms", "not supported");
 
-      Note that using dominance pruning during hill climbing could lead to fewer
-      discovered patterns and pattern collections. A dominated pattern
-      (or pattern collection) might no longer be dominated after more patterns
-      are added. We thus only use dominance pruning on the resulting collection.
-    */
-    add_canonical_pdbs_options_to_parser(parser);
-
-    Heuristic::add_options_to_parser(parser);
-
-    Options opts = parser.parse();
+        parser.document_property("admissible", "yes");
+        parser.document_property("consistent", "yes");
+        parser.document_property("safe", "yes");
+        parser.document_property("preferred operators", "no");
+    }
+    Options options = parser.parse();
     if (parser.help_mode())
         return nullptr;
 
-    check_hillclimbing_options(parser, opts);
+    {
+        check_hillclimbing_options(parser, options);
+        if (parser.dry_run())
+            return nullptr;
 
-    if (parser.dry_run())
-        return nullptr;
+        shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =
+            make_shared<PatternCollectionGeneratorHillclimbing>(options);
 
-    shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =
-        make_shared<PatternCollectionGeneratorHillclimbing>(opts);
+        plugins::Options heuristic_opts;
+        heuristic_opts.set<utils::Verbosity>(
+            "verbosity", options.get<utils::Verbosity>("verbosity"));
+        heuristic_opts.set<shared_ptr<AbstractTask>>(
+            "transform", options.get<shared_ptr<AbstractTask>>("transform"));
+        heuristic_opts.set<bool>(
+            "cache_estimates", options.get<bool>("cache_estimates"));
+        heuristic_opts.set<shared_ptr<PatternCollectionGenerator>>(
+            "patterns", pgh);
+        heuristic_opts.set<double>(
+            "max_time_dominance_pruning", options.get<double>("max_time_dominance_pruning"));
 
-    Options heuristic_opts;
-    heuristic_opts.set<utils::Verbosity>(
-        "verbosity", opts.get<utils::Verbosity>("verbosity"));
-    heuristic_opts.set<shared_ptr<AbstractTask>>(
-        "transform", opts.get<shared_ptr<AbstractTask>>("transform"));
-    heuristic_opts.set<bool>(
-        "cache_estimates", opts.get<bool>("cache_estimates"));
-    heuristic_opts.set<shared_ptr<PatternCollectionGenerator>>(
-        "patterns", pgh);
-    heuristic_opts.set<double>(
-        "max_time_dominance_pruning", opts.get<double>("max_time_dominance_pruning"));
-
-    return make_shared<CanonicalPDBsHeuristic>(heuristic_opts);
+        return make_shared<CanonicalPDBsHeuristic>(heuristic_opts);
+    }
 }
 
 static Plugin<Evaluator> _plugin_ipdb("ipdb", _parse_ipdb, "heuristics_pdb");
-static Plugin<PatternCollectionGenerator> _plugin("hillclimbing", _parse);
 }

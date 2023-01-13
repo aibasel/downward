@@ -40,19 +40,22 @@ PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(plugins::OptionParser &parser) {
-    parser.document_synopsis(
-        "Multiple CEGAR",
-        "This pattern collection generator implements the multiple CEGAR "
-        "algorithm described in the paper" + get_rovner_et_al_reference() +
-        "It is an instantiation of the 'multiple algorithm framework'. "
-        "To compute a pattern in each iteration, it uses the CEGAR algorithm "
-        "restricted to a single goal variable. See below for descriptions of "
-        "the algorithms.");
-    add_cegar_implementation_notes_to_parser(parser);
-    add_multiple_algorithm_implementation_notes_to_parser(parser);
-    add_multiple_options_to_parser(parser);
-    add_cegar_wildcard_option_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Multiple CEGAR",
+            "This pattern collection generator implements the multiple CEGAR "
+            "algorithm described in the paper" + get_rovner_et_al_reference() +
+            "It is an instantiation of the 'multiple algorithm framework'. "
+            "To compute a pattern in each iteration, it uses the CEGAR algorithm "
+            "restricted to a single goal variable. See below for descriptions of "
+            "the algorithms.");
 
+        add_multiple_options_to_parser(parser);
+        add_cegar_wildcard_option_to_parser(parser);
+
+        add_cegar_implementation_notes_to_parser(parser);
+        add_multiple_algorithm_implementation_notes_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run()) {
         return nullptr;

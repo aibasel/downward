@@ -146,20 +146,24 @@ void AdditiveHeuristic::compute_heuristic_for_cegar(const State &state) {
 }
 
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis("Additive heuristic", "");
-    parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional effects", "supported");
-    parser.document_language_support(
-        "axioms",
-        "supported (in the sense that the planner won't complain -- "
-        "handling of axioms might be very stupid "
-        "and even render the heuristic unsafe)");
-    parser.document_property("admissible", "no");
-    parser.document_property("consistent", "no");
-    parser.document_property("safe", "yes for tasks without axioms");
-    parser.document_property("preferred operators", "yes");
+    {
+        parser.document_synopsis("Additive heuristic", "");
 
-    Heuristic::add_options_to_parser(parser);
+        Heuristic::add_options_to_parser(parser);
+
+        parser.document_language_support("action costs", "supported");
+        parser.document_language_support("conditional effects", "supported");
+        parser.document_language_support(
+            "axioms",
+            "supported (in the sense that the planner won't complain -- "
+            "handling of axioms might be very stupid "
+            "and even render the heuristic unsafe)");
+
+        parser.document_property("admissible", "no");
+        parser.document_property("consistent", "no");
+        parser.document_property("safe", "yes for tasks without axioms");
+        parser.document_property("preferred operators", "yes");
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

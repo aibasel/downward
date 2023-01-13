@@ -41,30 +41,32 @@ bool MergeStrategyFactoryStateless::requires_goal_distances() const {
 }
 
 static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
-    parser.document_synopsis(
-        "Stateless merge strategy",
-        "This merge strategy has a merge selector, which computes the next "
-        "merge only depending on the current state of the factored transition "
-        "system, not requiring any additional information.");
-    parser.document_note(
-        "Note",
-        "Examples include the DFP merge strategy, which can be obtained using:\n"
-        "{{{\n"
-        "merge_strategy=merge_stateless(merge_selector=score_based_filtering("
-        "scoring_functions=[goal_relevance,dfp,total_order(<order_option>))]))"
-        "\n}}}\n"
-        "and the (dynamic/score-based) MIASM strategy, which can be obtained "
-        "using:\n"
-        "{{{\n"
-        "merge_strategy=merge_stateless(merge_selector=score_based_filtering("
-        "scoring_functions=[sf_miasm(<shrinking_options>),total_order(<order_option>)]"
-        "\n}}}");
-    parser.add_option<shared_ptr<MergeSelector>>(
-        "merge_selector",
-        "The merge selector to be used.");
+    {
+        parser.document_synopsis(
+            "Stateless merge strategy",
+            "This merge strategy has a merge selector, which computes the next "
+            "merge only depending on the current state of the factored transition "
+            "system, not requiring any additional information.");
 
-    add_merge_strategy_options_to_parser(parser);
+        parser.add_option<shared_ptr<MergeSelector>>(
+            "merge_selector",
+            "The merge selector to be used.");
+        add_merge_strategy_options_to_parser(parser);
 
+        parser.document_note(
+            "Note",
+            "Examples include the DFP merge strategy, which can be obtained using:\n"
+            "{{{\n"
+            "merge_strategy=merge_stateless(merge_selector=score_based_filtering("
+            "scoring_functions=[goal_relevance,dfp,total_order(<order_option>))]))"
+            "\n}}}\n"
+            "and the (dynamic/score-based) MIASM strategy, which can be obtained "
+            "using:\n"
+            "{{{\n"
+            "merge_strategy=merge_stateless(merge_selector=score_based_filtering("
+            "scoring_functions=[sf_miasm(<shrinking_options>),total_order(<order_option>)]"
+            "\n}}}");
+    }
     plugins::Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

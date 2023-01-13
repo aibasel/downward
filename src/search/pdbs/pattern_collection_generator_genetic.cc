@@ -298,92 +298,94 @@ PatternCollectionInformation PatternCollectionGeneratorGenetic::compute_patterns
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Genetic Algorithm Patterns",
-        "The following paper describes the automated creation of pattern "
-        "databases with a genetic algorithm. Pattern collections are initially "
-        "created with a bin-packing algorithm. The genetic algorithm is used "
-        "to optimize the pattern collections with an objective function that "
-        "estimates the mean heuristic value of the the pattern collections. "
-        "Pattern collections with higher mean heuristic estimates are more "
-        "likely selected for the next generation." + utils::format_conference_reference(
-            {"Stefan Edelkamp"},
-            "Automated Creation of Pattern Database Search Heuristics",
-            "http://www.springerlink.com/content/20613345434608x1/",
-            "Proceedings of the 4th Workshop on Model Checking and Artificial"
-            " Intelligence (!MoChArt 2006)",
-            "35-50",
-            "AAAI Press",
-            "2007"));
-    parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional effects", "not supported");
-    parser.document_language_support("axioms", "not supported");
-    parser.document_note(
-        "Note",
-        "This pattern generation method uses the "
-        "zero/one pattern database heuristic.");
-    parser.document_note(
-        "Implementation Notes",
-        "The standard genetic algorithm procedure as described in the paper is "
-        "implemented in Fast Downward. The implementation is close to the "
-        "paper.\n\n"
-        " * Initialization<<BR>>"
-        "In Fast Downward bin-packing with the next-fit strategy is used. A "
-        "bin corresponds to a pattern which contains variables up to "
-        "``pdb_max_size``. With this method each variable occurs exactly in "
-        "one pattern of a collection. There are ``num_collections`` "
-        "collections created.\n"
-        " * Mutation<<BR>>"
-        "With probability ``mutation_probability`` a bit is flipped meaning "
-        "that either a variable is added to a pattern or deleted from a "
-        "pattern.\n"
-        " * Recombination<<BR>>"
-        "Recombination isn't implemented in Fast Downward. In the paper "
-        "recombination is described but not used.\n"
-        " * Evaluation<<BR>>"
-        "For each pattern collection the mean heuristic value is computed. For "
-        "a single pattern database the mean heuristic value is the sum of all "
-        "pattern database entries divided through the number of entries. "
-        "Entries with infinite heuristic values are ignored in this "
-        "calculation. The sum of these individual mean heuristic values yield "
-        "the mean heuristic value of the collection.\n"
-        " * Selection<<BR>>"
-        "The higher the mean heuristic value of a pattern collection is, the "
-        "more likely this pattern collection should be selected for the next "
-        "generation. Therefore the mean heuristic values are normalized and "
-        "converted into probabilities and Roulette Wheel Selection is used.\n",
-        true);
+    {
+        parser.document_synopsis(
+            "Genetic Algorithm Patterns",
+            "The following paper describes the automated creation of pattern "
+            "databases with a genetic algorithm. Pattern collections are initially "
+            "created with a bin-packing algorithm. The genetic algorithm is used "
+            "to optimize the pattern collections with an objective function that "
+            "estimates the mean heuristic value of the the pattern collections. "
+            "Pattern collections with higher mean heuristic estimates are more "
+            "likely selected for the next generation." + utils::format_conference_reference(
+                {"Stefan Edelkamp"},
+                "Automated Creation of Pattern Database Search Heuristics",
+                "http://www.springerlink.com/content/20613345434608x1/",
+                "Proceedings of the 4th Workshop on Model Checking and Artificial"
+                " Intelligence (!MoChArt 2006)",
+                "35-50",
+                "AAAI Press",
+                "2007"));
 
-    parser.add_option<int>(
-        "pdb_max_size",
-        "maximal number of states per pattern database ",
-        "50000",
-        plugins::Bounds("1", "infinity"));
-    parser.add_option<int>(
-        "num_collections",
-        "number of pattern collections to maintain in the genetic "
-        "algorithm (population size)",
-        "5",
-        plugins::Bounds("1", "infinity"));
-    parser.add_option<int>(
-        "num_episodes",
-        "number of episodes for the genetic algorithm",
-        "30",
-        plugins::Bounds("0", "infinity"));
-    parser.add_option<double>(
-        "mutation_probability",
-        "probability for flipping a bit in the genetic algorithm",
-        "0.01",
-        plugins::Bounds("0.0", "1.0"));
-    parser.add_option<bool>(
-        "disjoint",
-        "consider a pattern collection invalid (giving it very low "
-        "fitness) if its patterns are not disjoint",
-        "false");
+        parser.add_option<int>(
+            "pdb_max_size",
+            "maximal number of states per pattern database ",
+            "50000",
+            plugins::Bounds("1", "infinity"));
+        parser.add_option<int>(
+            "num_collections",
+            "number of pattern collections to maintain in the genetic "
+            "algorithm (population size)",
+            "5",
+            plugins::Bounds("1", "infinity"));
+        parser.add_option<int>(
+            "num_episodes",
+            "number of episodes for the genetic algorithm",
+            "30",
+            plugins::Bounds("0", "infinity"));
+        parser.add_option<double>(
+            "mutation_probability",
+            "probability for flipping a bit in the genetic algorithm",
+            "0.01",
+            plugins::Bounds("0.0", "1.0"));
+        parser.add_option<bool>(
+            "disjoint",
+            "consider a pattern collection invalid (giving it very low "
+            "fitness) if its patterns are not disjoint",
+            "false");
+        utils::add_rng_options(parser);
+        add_generator_options_to_parser(parser);
 
-    utils::add_rng_options(parser);
-    add_generator_options_to_parser(parser);
+        parser.document_note(
+            "Note",
+            "This pattern generation method uses the "
+            "zero/one pattern database heuristic.");
+        parser.document_note(
+            "Implementation Notes",
+            "The standard genetic algorithm procedure as described in the paper is "
+            "implemented in Fast Downward. The implementation is close to the "
+            "paper.\n\n"
+            " * Initialization<<BR>>"
+            "In Fast Downward bin-packing with the next-fit strategy is used. A "
+            "bin corresponds to a pattern which contains variables up to "
+            "``pdb_max_size``. With this method each variable occurs exactly in "
+            "one pattern of a collection. There are ``num_collections`` "
+            "collections created.\n"
+            " * Mutation<<BR>>"
+            "With probability ``mutation_probability`` a bit is flipped meaning "
+            "that either a variable is added to a pattern or deleted from a "
+            "pattern.\n"
+            " * Recombination<<BR>>"
+            "Recombination isn't implemented in Fast Downward. In the paper "
+            "recombination is described but not used.\n"
+            " * Evaluation<<BR>>"
+            "For each pattern collection the mean heuristic value is computed. For "
+            "a single pattern database the mean heuristic value is the sum of all "
+            "pattern database entries divided through the number of entries. "
+            "Entries with infinite heuristic values are ignored in this "
+            "calculation. The sum of these individual mean heuristic values yield "
+            "the mean heuristic value of the collection.\n"
+            " * Selection<<BR>>"
+            "The higher the mean heuristic value of a pattern collection is, the "
+            "more likely this pattern collection should be selected for the next "
+            "generation. Therefore the mean heuristic values are normalized and "
+            "converted into probabilities and Roulette Wheel Selection is used.\n",
+            true);
 
+        parser.document_language_support("action costs", "supported");
+        parser.document_language_support("conditional effects", "not supported");
+        parser.document_language_support("axioms", "not supported");
+   }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

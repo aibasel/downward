@@ -142,17 +142,20 @@ AlternationOpenListFactory::create_edge_open_list() {
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
-    parser.document_synopsis("Alternation open list",
-                             "alternates between several open lists.");
-    parser.add_list_option<shared_ptr<OpenListFactory>>(
-        "sublists",
-        "open lists between which this one alternates");
-    parser.add_option<int>(
-        "boost",
-        "boost value for contained open lists that are restricted "
-        "to preferred successors",
-        "0");
+    {
+        parser.document_synopsis(
+            "Alternation open list",
+            "alternates between several open lists.");
 
+        parser.add_list_option<shared_ptr<OpenListFactory>>(
+            "sublists",
+            "open lists between which this one alternates");
+        parser.add_option<int>(
+            "boost",
+            "boost value for contained open lists that are restricted "
+            "to preferred successors",
+            "0");
+    }
     Options opts = parser.parse();
     opts.verify_list_non_empty<shared_ptr<OpenListFactory>>("sublists");
     if (parser.dry_run())

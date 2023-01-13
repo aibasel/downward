@@ -242,54 +242,55 @@ void StubbornSetsAtomCentric::handle_stubborn_operator(const State &state, int o
     }
 }
 
-
 static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Atom-centric stubborn sets",
-        "Stubborn sets are a state pruning method which computes a subset "
-        "of applicable actions in each state such that completeness and "
-        "optimality of the overall search is preserved. Previous stubborn set "
-        "implementations mainly track information about actions. In contrast, "
-        "this implementation focuses on atomic propositions (atoms), which "
-        "often speeds up the computation on IPC benchmarks. For details, see" +
-        utils::format_conference_reference(
-            {"Gabriele Roeger", "Malte Helmert", "Jendrik Seipp", "Silvan Sievers"},
-            "An Atom-Centric Perspective on Stubborn Sets",
-            "https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf",
-            "Proceedings of the 13th Annual Symposium on Combinatorial Search "
-            "(SoCS 2020)",
-            "57-65",
-            "AAAI Press",
-            "2020"));
-    parser.add_option<bool>(
-        "use_sibling_shortcut",
-        "use variable-based marking in addition to atom-based marking",
-        "true");
-    vector<string> strategies;
-    vector<string> strategies_docs;
-    strategies.push_back("fast_downward");
-    strategies_docs.push_back(
-        "select the atom (v, d) with the variable v that comes first in the Fast "
-        "Downward variable ordering (which is based on the causal graph)");
-    strategies.push_back("quick_skip");
-    strategies_docs.push_back(
-        "if possible, select an unsatisfied atom whose producers are already marked");
-    strategies.push_back("static_small");
-    strategies_docs.push_back("select the atom achieved by the fewest number of actions");
-    strategies.push_back("dynamic_small");
-    strategies_docs.push_back(
-        "select the atom achieved by the fewest number of actions that are not "
-        "yet part of the stubborn set");
-    parser.add_enum_option<AtomSelectionStrategy>(
-        "atom_selection_strategy",
-        strategies,
-        "Strategy for selecting unsatisfied atoms from action preconditions or "
-        "the goal atoms. All strategies use the fast_downward strategy for "
-        "breaking ties.",
-        "quick_skip",
-        strategies_docs);
-    add_pruning_options_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Atom-centric stubborn sets",
+            "Stubborn sets are a state pruning method which computes a subset "
+            "of applicable actions in each state such that completeness and "
+            "optimality of the overall search is preserved. Previous stubborn set "
+            "implementations mainly track information about actions. In contrast, "
+            "this implementation focuses on atomic propositions (atoms), which "
+            "often speeds up the computation on IPC benchmarks. For details, see" +
+            utils::format_conference_reference(
+                {"Gabriele Roeger", "Malte Helmert", "Jendrik Seipp", "Silvan Sievers"},
+                "An Atom-Centric Perspective on Stubborn Sets",
+                "https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf",
+                "Proceedings of the 13th Annual Symposium on Combinatorial Search "
+                "(SoCS 2020)",
+                "57-65",
+                "AAAI Press",
+                "2020"));
 
+        parser.add_option<bool>(
+            "use_sibling_shortcut",
+            "use variable-based marking in addition to atom-based marking",
+            "true");
+        vector<string> strategies;
+        vector<string> strategies_docs;
+        strategies.push_back("fast_downward");
+        strategies_docs.push_back(
+            "select the atom (v, d) with the variable v that comes first in the Fast "
+            "Downward variable ordering (which is based on the causal graph)");
+        strategies.push_back("quick_skip");
+        strategies_docs.push_back(
+            "if possible, select an unsatisfied atom whose producers are already marked");
+        strategies.push_back("static_small");
+        strategies_docs.push_back("select the atom achieved by the fewest number of actions");
+        strategies.push_back("dynamic_small");
+        strategies_docs.push_back(
+            "select the atom achieved by the fewest number of actions that are not "
+            "yet part of the stubborn set");
+        parser.add_enum_option<AtomSelectionStrategy>(
+            "atom_selection_strategy",
+            strategies,
+            "Strategy for selecting unsatisfied atoms from action preconditions or "
+            "the goal atoms. All strategies use the fast_downward strategy for "
+            "breaking ties.",
+            "quick_skip",
+            strategies_docs);
+        add_pruning_options_to_parser(parser);
+    }
     Options opts = parser.parse();
 
     if (parser.dry_run()) {

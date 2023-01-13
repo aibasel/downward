@@ -48,13 +48,14 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::compute_patterns(
 }
 
 static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
-    parser.add_option<int>(
-        "max_states",
-        "maximum abstraction size for combo strategy",
-        "1000000",
-        plugins::Bounds("1", "infinity"));
-    add_generator_options_to_parser(parser);
-
+    {
+        parser.add_option<int>(
+            "max_states",
+            "maximum abstraction size for combo strategy",
+            "1000000",
+            plugins::Bounds("1", "infinity"));
+        add_generator_options_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

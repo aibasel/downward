@@ -53,22 +53,24 @@ static vector<unique_ptr<PotentialFunction>> create_sample_based_potential_funct
 }
 
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Sample-based potential heuristics",
-        "Maximum over multiple potential heuristics optimized for samples. " +
-        get_admissible_potentials_reference());
-    parser.add_option<int>(
-        "num_heuristics",
-        "number of potential heuristics",
-        "1",
-        plugins::Bounds("0", "infinity"));
-    parser.add_option<int>(
-        "num_samples",
-        "Number of states to sample",
-        "1000",
-        plugins::Bounds("0", "infinity"));
-    prepare_parser_for_admissible_potentials(parser);
-    utils::add_rng_options(parser);
+    {
+        parser.document_synopsis(
+            "Sample-based potential heuristics",
+            "Maximum over multiple potential heuristics optimized for samples. " +
+            get_admissible_potentials_reference());
+        parser.add_option<int>(
+            "num_heuristics",
+            "number of potential heuristics",
+            "1",
+            plugins::Bounds("0", "infinity"));
+        parser.add_option<int>(
+            "num_samples",
+            "Number of states to sample",
+            "1000",
+            plugins::Bounds("0", "infinity"));
+        prepare_parser_for_admissible_potentials(parser);
+        utils::add_rng_options(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
