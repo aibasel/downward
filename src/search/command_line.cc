@@ -57,8 +57,8 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
             if (is_last)
                 throw ArgError("missing argument after --search");
             ++i;
-            plugins::OptionParser parser(sanitize_arg_string(args[i]), registry,
-                                predefinitions, dry_run);
+            plugins::OptionParser parser(
+                sanitize_arg_string(args[i]), registry, predefinitions, dry_run);
             engine = parser.start_parsing<shared_ptr<SearchEngine>>();
         } else if (arg == "--help" && dry_run) {
             cout << "Help:" << endl;

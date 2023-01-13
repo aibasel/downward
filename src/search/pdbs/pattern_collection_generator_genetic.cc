@@ -385,7 +385,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         parser.document_language_support("action costs", "supported");
         parser.document_language_support("conditional effects", "not supported");
         parser.document_language_support("axioms", "not supported");
-   }
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

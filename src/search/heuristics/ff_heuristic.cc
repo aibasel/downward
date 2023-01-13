@@ -87,7 +87,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         parser.document_property("consistent", "no");
         parser.document_property("safe", "yes for tasks without axioms");
         parser.document_property("preferred operators", "yes");
-
     }
     Options opts = parser.parse();
     if (parser.dry_run())

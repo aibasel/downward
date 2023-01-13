@@ -148,11 +148,11 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
             "continue_on_fail",
             "continue search after no solution found",
             "false");
-    parser.add_option<bool>(
+        parser.add_option<bool>(
             "continue_on_solve",
             "continue search after solution found",
             "true");
-    SearchEngine::add_options_to_parser(parser);
+        SearchEngine::add_options_to_parser(parser);
 
         parser.document_note(
             "Note 1",

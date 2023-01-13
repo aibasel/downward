@@ -52,8 +52,8 @@ static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
             "Single random",
             "This scoring function assigns exactly one merge candidate a score of "
             "0, chosen randomly, and infinity to all others.");
-    
-    utils::add_rng_options(parser);
+
+        utils::add_rng_options(parser);
     }
     plugins::Options options = parser.parse();
     if (parser.dry_run())
