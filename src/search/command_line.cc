@@ -149,10 +149,9 @@ shared_ptr<SearchEngine> parse_cmd_line(
     return parse_cmd_line_aux(args, registry, dry_run);
 }
 
-
-string usage(const string &progname) {
-    return "usage: \n" +
-           progname + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
+string usage() {
+    return "usage: \n" + g_program_name +
+           " [OPTIONS] --search SEARCH < OUTPUT\n\n"
            "* SEARCH (SearchEngine): configuration of the search algorithm\n"
            "* OUTPUT (filename): translator output\n\n"
            "Options:\n"
@@ -173,3 +172,5 @@ string usage(const string &progname) {
            "    Start enumerating plan files with COUNTER+1, i.e. FILENAME.COUNTER+1\n\n"
            "See https://www.fast-downward.org for details.";
 }
+
+std::string g_program_name;

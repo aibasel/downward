@@ -17,8 +17,10 @@ using utils::ExitCode;
 int main(int argc, const char **argv) {
     utils::register_event_handlers();
 
+    g_program_name = argv[0];
+
     if (argc < 2) {
-        utils::g_log << usage(argv[0]) << endl;
+        utils::g_log << usage() << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
@@ -41,11 +43,11 @@ int main(int argc, const char **argv) {
         engine = parse_cmd_line(argc, argv, registry, false, unit_cost);
     } catch (const ArgError &error) {
         error.print();
-        usage(argv[0]);
+        usage();
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     } catch (const plugins::OptionParserError &error) {
         error.print();
-        usage(argv[0]);
+        usage();
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     } catch (const plugins::ParseError &error) {
         error.print();
