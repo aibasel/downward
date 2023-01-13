@@ -6,15 +6,6 @@
 using namespace std;
 
 namespace utils {
-StringOperationError::StringOperationError(const string &msg)
-    : msg(msg) {
-}
-
-void StringOperationError::print() const {
-    cerr << msg << endl;
-}
-
-
 void lstrip(string &s) {
     s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
                                    return !isspace(ch);

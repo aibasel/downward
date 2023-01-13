@@ -20,16 +20,14 @@
 
 namespace plugins {
 class OptionParserError : public utils::Exception {
-    std::string msg;
 public:
-    explicit OptionParserError(const std::string &msg);
+    using Exception::Exception;
 
     virtual void print() const override;
 };
 
 
 class ParseError : public utils::Exception {
-    std::string msg;
     ParseTree parse_tree;
     std::string substring;
 public:

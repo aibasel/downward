@@ -14,14 +14,9 @@
 
 using namespace std;
 
-ArgError::ArgError(const string &msg)
-    : msg(msg) {
-}
-
 void ArgError::print() const {
     cerr << "argument error: " << msg << endl;
 }
-
 
 static string sanitize_arg_string(string s) {
     // Convert newlines to spaces.

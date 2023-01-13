@@ -13,9 +13,8 @@ class Registry;
 class SearchEngine;
 
 class ArgError : public utils::Exception {
-    std::string msg;
 public:
-    explicit ArgError(const std::string &msg);
+    using Exception::Exception;
 
     virtual void print() const override;
 };

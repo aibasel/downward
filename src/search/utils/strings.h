@@ -7,12 +7,9 @@
 #include <string>
 
 namespace utils {
-class StringOperationError : public utils::Exception {
-    std::string msg;
+class StringOperationError : public Exception {
 public:
-    explicit StringOperationError(const std::string &msg);
-
-    virtual void print() const override;
+    using Exception::Exception;
 };
 
 extern void lstrip(std::string &s);
