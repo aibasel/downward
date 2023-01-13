@@ -93,7 +93,7 @@ def check_search_code_with_clang_tidy():
         print("Failed to run clang-tidy-12. Is it on the PATH?")
         print("Output:", err.stdout)
         return False
-    errors = re.findall(r"^(.*:\d+:\d+: (?:warning|error): .*)$", output, flags=re.M)
+    errors = re.findall(r"^(.*:\d+:\d+: .*(?:warning|error): .*)$", output, flags=re.M)
     for error in errors:
         print(error)
     if errors:
