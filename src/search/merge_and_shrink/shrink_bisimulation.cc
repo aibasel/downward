@@ -398,8 +398,9 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
 
         parser.add_option<bool>("greedy", "use greedy bisimulation", "false");
         parser.add_enum_option<AtLimit>(
-            "at_limit", _enum_data_at_limit(),
-            "what to do when the size limit is hit", "RETURN");
+            "at_limit",
+            _enum_data_at_limit(),
+            "what to do when the size limit is hit", "return");
 
         parser.document_note(
             "shrink_bisimulation(greedy=true)",
@@ -438,10 +439,11 @@ static Plugin<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);
 
 static vector<pair<string, string>> _enum_data_at_limit() {
     return {
-        {"RETURN",
-         ""},
-        {"USE_UP",
-         ""}
+        {"return",
+         "stop without refining the equivalence class further"},
+        {"use_up",
+         "continue refining the equivalence class until "
+         "the size limit is hit"}
     };
 }
 }

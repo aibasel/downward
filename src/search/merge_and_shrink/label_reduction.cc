@@ -337,7 +337,7 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
             "options reduce_labels_before_shrinking or "
             "reduce_labels_before_merging in order to use "
             "the chosen label reduction configuration.",
-            "ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT");
+            "all_transition_systems_with_fixpoint");
 
         parser.add_enum_option<LabelReductionSystemOrder>(
             "system_order",
@@ -348,7 +348,7 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
             "all_transition_systems and "
             "all_transition_systems_with_fixpoint for the option "
             "label_reduction_method.",
-            "RANDOM");
+            "random");
         // Add random_seed option.
         utils::add_rng_options(parser);
     }
@@ -378,13 +378,13 @@ static PluginTypePlugin<LabelReduction> _type_plugin(
 
 static vector<pair<string, string>> _enum_data_label_reduction_method() {
     return {
-        {"TWO_TRANSITION_SYSTEMS",
+        {"two_transition_systems",
          "compute the 'combinable relation' only for the two transition "
          "systems being merged next"},
-        {"ALL_TRANSITION_SYSTEMS",
+        {"all_transition_systems",
          "compute the 'combinable relation' for labels once for every "
-         "transition  system and reduce labels"},
-        {"ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT",
+         "transition system and reduce labels"},
+        {"all_transition_systems_with_fixpoint",
          "keep computing the 'combinable relation' for labels iteratively "
          "for all transition systems until no more labels can be reduced"}
     };
@@ -392,12 +392,12 @@ static vector<pair<string, string>> _enum_data_label_reduction_method() {
 
 static vector<pair<string, string>> _enum_data_label_reduction_system_order() {
     return {
-        {"REGULAR",
+        {"regular",
          "transition systems are considered in the order given in the planner "
          "input if atomic and in the order of their creation if composite."},
-        {"REVERSE",
-         "inverse of REGULAR"},
-        {"RANDOM",
+        {"reverse",
+         "inverse of regular"},
+        {"random",
          "random order"}
     };
 }

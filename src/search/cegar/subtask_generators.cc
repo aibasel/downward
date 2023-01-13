@@ -175,7 +175,7 @@ static void add_fact_order_option(OptionParser &parser) {
         "order",
         _enum_data_fact_order(),
         "ordering of goal or landmark facts",
-        "HADD_DOWN");
+        "hadd_down");
     utils::add_rng_options(parser);
 }
 
@@ -236,10 +236,10 @@ static PluginTypePlugin<SubtaskGenerator> _type_plugin(
 
 static vector<pair<string, string>> _enum_data_fact_order() {
     return {
-        {"ORIGINAL", ""},
-        {"RANDOM", ""},
-        {"HADD_UP", ""},
-        {"HADD_DOWN", ""}
+        {"original", "according to their (internal) variable index"},
+        {"random", "according to a random permutation"},
+        {"hadd_up", "according to their h^add value, lowest first"},
+        {"hadd_down", "according to their h^add value, highest first "}
     };
 }
 }

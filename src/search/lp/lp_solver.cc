@@ -34,7 +34,7 @@ void add_lp_solver_option_to_parser(OptionParser &parser) {
         "lpsolver",
         _enum_data_lp_solver_type(),
         "external solver that should be used to solve linear programs",
-        "CPLEX");
+        "cplex");
 
     parser.document_note(
         "Note",
@@ -499,10 +499,10 @@ void LPSolver::print_statistics() const {
 
 static vector<pair<string, string>> _enum_data_lp_solver_type() {
     return {
-        {"CLP", "default LP solver shipped with the COIN library"},
-        {"CPLEX", "commercial solver by IBM"},
-        {"GUROBI", "commercial solver"},
-        {"SOPLEX", "open source solver by ZIB"}
+        {"clp", "default LP solver shipped with the COIN library"},
+        {"cplex", "commercial solver by IBM"},
+        {"gurobi", "commercial solver"},
+        {"soplex", "open source solver by ZIB"}
     };
 }
 }

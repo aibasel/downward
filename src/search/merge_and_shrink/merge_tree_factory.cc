@@ -54,11 +54,7 @@ void MergeTreeFactory::add_options_to_parser(plugins::OptionParser &parser) {
         _enum_data_update_option(),
         "When the merge tree is used within another merge strategy, how "
         "should it be updated when a merge different to a merge from the "
-        "tree is performed: choose among use_first, use_second, and "
-        "use_random to choose which node of the tree should survive and "
-        "represent the new merged index. Specify use_first (use_second) to "
-        "let the node represententing the index that would have been merged "
-        "earlier (later) survive. use_random chooses a random node.",
+        "tree is performed.",
         "use_random");
 }
 
@@ -74,11 +70,11 @@ static plugins::PluginTypePlugin<MergeTreeFactory> _type_plugin(
 static vector<pair<string, string>> _enum_data_update_option() {
     return {
         {"use_first",
-         ""},
+         "the node representing the index that would have been merged earlier survives"},
         {"use_second",
-         ""},
+         "the node representing the index that would have been merged later survives"},
         {"use_random",
-         ""}
+         "a random node (of the above two) survives"}
     };
 }
 }

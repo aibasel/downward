@@ -228,8 +228,7 @@ static vector<pair<string, string>> _enum_data_atomic_ts_order() {
 static vector<pair<string, string>> _enum_data_product_ts_order() {
     return {
         {"old_to_new",
-         "consider composite transition systems from most recent to oldest, "
-         "that is in decreasing index order"},
+         "consider composite transition systems from oldest to most recent"},
         {"new_to_old",
          "opposite of old_to_new"},
         {"random",

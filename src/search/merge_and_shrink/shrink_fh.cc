@@ -208,13 +208,23 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
 
         ShrinkBucketBased::add_options_to_parser(parser);
         parser.add_enum_option<ShrinkFH::HighLow>(
-            "shrink_f", _enum_data_high_low(),
-            "prefer shrinking states with high or low f values",
-            "HIGH");
+            "shrink_f",
+            _enum_data_high_low(),
+            "in which direction the f based shrink priority is ordered",
+            "high");
         parser.add_enum_option<ShrinkFH::HighLow>(
-            "shrink_h", _enum_data_high_low(),
-            "prefer shrinking states with high or low h values",
-            "LOW");
+            "shrink_h",
+            _enum_data_high_low(),
+            "in which direction the h based shrink priority is ordered",
+            "low");
+
+        parser.document_note(
+            "Note",
+            "The strategy first partitions all states according to their "
+            "combination of f- and g-values. These partitions are then sorted, "
+            "first according to their f-value, then according to their h-value "
+            "(increasing or decreasing, depending on the chosen options). "
+            "States sorted last are shrinked together until reaching max_states.");
 
         parser.document_note(
             "shrink_fh()",
@@ -249,10 +259,10 @@ static Plugin<ShrinkStrategy> _plugin("shrink_fh", _parse);
 
 static vector<pair<string, string>> _enum_data_high_low() {
     return {
-        {"HIGH",
-         ""},
-        {"LOW",
-         ""}
+        {"high",
+         "prefer shrinking states with high value"},
+        {"low",
+         "prefer shrinking states with low value"}
     };
 }
 }

@@ -191,12 +191,7 @@ static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
         parser.add_enum_option<OrderOfSCCs>(
             "order_of_sccs",
             _enum_data_order_of_sccs(),
-            "choose an ordering of the SCCs: topological/reverse_topological or "
-            "decreasing/increasing in the size of the SCCs. The former two options "
-            "refer to the directed graph where each obtained SCC is a "
-            "'supervertex'. For the latter two options, the tie-breaking is to "
-            "use the topological order according to that same graph of SCC "
-            "supervertices.",
+            "how the SCCs should be ordered",
             "topological");
         parser.add_option<shared_ptr<MergeTreeFactory>>(
             "merge_tree",
@@ -232,13 +227,15 @@ static plugins::Plugin<MergeStrategyFactory> _plugin("merge_sccs", _parse);
 static vector<pair<string, string>> _enum_data_order_of_sccs() {
     return {
         {"topological",
-         ""},
+         "according to the topological ordering of the directed graph "
+         "where each obtained SCC is a 'supervertex'"},
         {"reverse_topological",
-         ""},
+         "according to the reverse topological ordering of the directed "
+         "graph where each obtained SCC is a 'supervertex'"},
         {"decreasing",
-         ""},
+         "biggest SCCs first, using 'topological' as tie-breaker"},
         {"increasing",
-         ""}
+         "smallest SCCs first, using 'topological' as tie-breaker"}
     };
 }
 }

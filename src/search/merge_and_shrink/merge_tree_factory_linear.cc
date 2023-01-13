@@ -114,9 +114,10 @@ void MergeTreeFactoryLinear::add_options_to_parser(
     plugins::OptionParser &parser) {
     MergeTreeFactory::add_options_to_parser(parser);
     parser.add_enum_option<variable_order_finder::VariableOrderType>(
-        "variable_order", _enum_data_variable_order_type(),
+        "variable_order",
+        _enum_data_variable_order_type(),
         "the order in which atomic transition systems are merged",
-        "CG_GOAL_LEVEL");
+        "cg_goal_level");
 }
 
 static shared_ptr<MergeTreeFactory> _parse(plugins::OptionParser &parser) {
@@ -147,18 +148,24 @@ static plugins::Plugin<MergeTreeFactory> _plugin("linear", _parse);
 
 static vector<pair<string, string>> _enum_data_variable_order_type() {
     return {
-        {"CG_GOAL_LEVEL",
-         ""},
-        {"CG_GOAL_RANDOM",
-         ""},
-        {"GOAL_CG_LEVEL",
-         ""},
-        {"RANDOM",
-         ""},
-        {"LEVEL",
-         ""},
-        {"REVERSE_LEVEL",
-         ""}
+        {"cg_goal_level",
+         "variables are prioritized first if they have an arc to a previously "
+         "added variable, second if their goal value is defined "
+         "and third according to their level in the causal graph"},
+        {"cg_goal_random",
+         "variables are prioritized first if they have an arc to a previously "
+         "added variable, second if their goal value is defined "
+         "and third randomly"},
+        {"goal_cg_level",
+         "variables are prioritized first if their goal value is defined, "
+         "second if they have an arc to a previously added variable, "
+         "and third according to their level in the causal graph"},
+        {"random",
+         "variables are ordered randomly"},
+        {"level",
+         "variables are ordered according to their level in the causal graph"},
+        {"reverse_level",
+         "variables are ordered reverse to their level in the causal graph"}
     };
 }
 }

@@ -118,7 +118,10 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "infinity",
             plugins::Bounds("0.0", "infinity"));
         parser.add_enum_option<PickSplit>(
-            "pick", _enum_data_pick_split(), "split-selection strategy", "MAX_REFINED");
+            "pick",
+            _enum_data_pick_split(),
+            "how to choose on which variable to split the flaw state",
+            "max_refined");
         parser.add_option<bool>(
             "use_general_costs",
             "allow negative costs in cost partitioning",
@@ -147,20 +150,30 @@ static Plugin<Evaluator> _plugin("cegar", _parse);
 
 static vector<pair<string, string>> _enum_data_pick_split() {
     return {
-        {"RANDOM",
-         ""},
-        {"MIN_UNWANTED",
-         ""},
-        {"MAX_UNWANTED",
-         ""},
-        {"MIN_REFINED",
-         ""},
-        {"MAX_REFINED",
-         ""},
-        {"MIN_HADD",
-         ""},
-        {"MAX_HADD",
-         ""}
+        {"random",
+         "select a random variable (among all eligible variables)"},
+        {"min_unwanted",
+         "select an eligible variable which has the least unwanted values "
+         "(number of values of v that land in the abstract state whose "
+         "h-value will probably be raised) in the flaw state"},
+        {"max_unwanted",
+         "select an eligible variable which has the most unwanted values "
+         "(number of values of v that land in the abstract state whose "
+         "h-value will probably be raised) in the flaw state"},
+        {"min_refined",
+         "select an eligible variable which is the least refined "
+         "(-1 * (remaining_values(v) / original_domain_size(v))) "
+         "in the flaw state"},
+        {"max_refined",
+         "select an eligible variable which is the most refined "
+         "(-1 * (remaining_values(v) / original_domain_size(v))) "
+         "in the flaw state"},
+        {"min_hadd",
+         "select an eligible variable with minimal h^add(s_0) value "
+         "over all facts that need to be removed from the flaw state"},
+        {"max_hadd",
+         "select an eligible variable with maximal h^add(s_0) value "
+         "over all facts that need to be removed from the flaw state"}
     };
 }
 }

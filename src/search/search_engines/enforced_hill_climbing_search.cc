@@ -282,7 +282,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
             "preferred_usage",
             _enum_data_preferred_usage(),
             "preferred operator usage",
-            "PRUNE_BY_PREFERRED");
+            "prune_by_preferred");
         parser.add_list_option<shared_ptr<Evaluator>>(
             "preferred",
             "use preferred operators of these evaluators",
@@ -301,10 +301,11 @@ static Plugin<SearchEngine> _plugin("ehc", _parse);
 
 static vector<pair<string, string>> _enum_data_preferred_usage() {
     return {
-        {"PRUNE_BY_PREFERRED",
-         ""},
-        {"RANK_PREFERRED_FIRST",
-         ""}
+        {"prune_by_preferred",
+         "prune successors achieved by non-preferred operators"},
+        {"rank_preferred_first",
+         "first insert successors achieved by preferred operators, "
+         "then those by non-preferred operators"}
     };
 }
 }

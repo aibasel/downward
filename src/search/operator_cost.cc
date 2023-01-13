@@ -41,14 +41,14 @@ void add_cost_type_option_to_parser(OptionParser &parser) {
         "Operator cost adjustment type. "
         "No matter what this setting is, axioms will always be considered "
         "as actions of cost 0 by the heuristics that treat axioms as actions.",
-        "NORMAL");
+        "normal");
 }
 
 static vector<pair<string, string>> _enum_data_operator_cost() {
     return {
-        {"NORMAL", "all actions are accounted for with their real cost"},
-        {"ONE", "all actions are accounted for as unit cost"},
-        {"PLUSONE", "all actions are accounted for as their real cost + 1 "
+        {"normal", "all actions are accounted for with their real cost"},
+        {"one", "all actions are accounted for as unit cost"},
+        {"plusone", "all actions are accounted for as their real cost + 1 "
          "(except if all actions have original cost 1, "
          "in which case cost 1 is used). "
          "This is the behaviour known for the heuristics of the LAMA planner. "
