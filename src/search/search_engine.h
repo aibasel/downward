@@ -31,6 +31,7 @@ class SuccessorGenerator;
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchEngine {
+    std::string description;
     SearchStatus status;
     bool solution_found;
     Plan plan;
@@ -71,6 +72,7 @@ public:
     void set_bound(int b) {bound = b;}
     int get_bound() {return bound;}
     PlanManager &get_plan_manager() {return plan_manager;}
+    std::string get_description() {return description;}
 
     /* The following three methods should become functions as they
        do not require access to private/protected class members. */
