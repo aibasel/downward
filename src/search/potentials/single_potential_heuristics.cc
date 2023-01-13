@@ -32,25 +32,20 @@ static unique_ptr<PotentialFunction> create_potential_function(
     return optimizer.get_potential_function();
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser, OptimizeFor opt_func) {
-    {
-        prepare_parser_for_admissible_potentials(parser);
-    }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-
-    return make_shared<PotentialHeuristic>(
-        opts, create_potential_function(opts, opt_func));
-}
-
 static shared_ptr<Heuristic> _parse_initial_state_potential(OptionParser &parser) {
     {
         parser.document_synopsis(
             "Potential heuristic optimized for initial state",
             get_admissible_potentials_reference());
+
+        prepare_parser_for_admissible_potentials(parser);
     }
-    return _parse(parser, OptimizeFor::INITIAL_STATE);
+
+    Options opts = parser.parse();
+    if (parser.dry_run())
+        return nullptr;
+    return make_shared<PotentialHeuristic>(
+        opts, create_potential_function(opts, OptimizeFor::INITIAL_STATE));
 }
 
 static Plugin<Evaluator> _plugin_initial_state(
@@ -61,8 +56,15 @@ static shared_ptr<Heuristic> _parse_all_states_potential(OptionParser &parser) {
         parser.document_synopsis(
             "Potential heuristic optimized for all states",
             get_admissible_potentials_reference());
+
+        prepare_parser_for_admissible_potentials(parser);
     }
-    return _parse(parser, OptimizeFor::ALL_STATES);
+
+    Options opts = parser.parse();
+    if (parser.dry_run())
+        return nullptr;
+    return make_shared<PotentialHeuristic>(
+        opts, create_potential_function(opts, OptimizeFor::ALL_STATES));
 }
 
 static Plugin<Evaluator> _plugin_all_states(
