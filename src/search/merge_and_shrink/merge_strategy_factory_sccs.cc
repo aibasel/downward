@@ -164,6 +164,8 @@ string MergeStrategyFactorySCCs::name() const {
     return "sccs";
 }
 
+static vector<pair<string, string>> _enum_data_order_of_sccs();
+
 static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
     {
         parser.document_synopsis(
@@ -186,14 +188,9 @@ static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
             "the final abstraction, again using the specified fallback merge "
             "strategy and the configurable order of the SCCs.");
 
-        vector<string> order_of_sccs;
-        order_of_sccs.push_back("topological");
-        order_of_sccs.push_back("reverse_topological");
-        order_of_sccs.push_back("decreasing");
-        order_of_sccs.push_back("increasing");
         parser.add_enum_option<OrderOfSCCs>(
             "order_of_sccs",
-            order_of_sccs,
+            _enum_data_order_of_sccs(),
             "choose an ordering of the SCCs: topological/reverse_topological or "
             "decreasing/increasing in the size of the SCCs. The former two options "
             "refer to the directed graph where each obtained SCC is a "
@@ -231,4 +228,17 @@ static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
 }
 
 static plugins::Plugin<MergeStrategyFactory> _plugin("merge_sccs", _parse);
+
+static vector<pair<string, string>> _enum_data_order_of_sccs() {
+    return {
+        {"topological",
+         ""},
+        {"reverse_topological",
+         ""},
+        {"decreasing",
+         ""},
+        {"increasing",
+         ""}
+    };
+}
 }

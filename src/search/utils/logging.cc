@@ -22,27 +22,14 @@ static shared_ptr<Log> global_log = make_shared<Log>(Verbosity::NORMAL);
 
 LogProxy g_log(global_log);
 
+static vector<pair<string, string>> _enum_data_verbosity();
+
 void add_log_options_to_parser(plugins::OptionParser &parser) {
-    vector<string> verbosity_levels;
-    vector<string> verbosity_level_docs;
-    verbosity_levels.push_back("silent");
-    verbosity_level_docs.push_back(
-        "only the most basic output");
-    verbosity_levels.push_back("normal");
-    verbosity_level_docs.push_back(
-        "relevant information to monitor progress");
-    verbosity_levels.push_back("verbose");
-    verbosity_level_docs.push_back(
-        "full output");
-    verbosity_levels.push_back("debug");
-    verbosity_level_docs.push_back(
-        "like verbose with additional debug output");
     parser.add_enum_option<Verbosity>(
         "verbosity",
-        verbosity_levels,
+        _enum_data_verbosity(),
         "Option to specify the verbosity level.",
-        "normal",
-        verbosity_level_docs);
+        "normal");
 }
 
 LogProxy get_log_from_options(const plugins::Options &options) {
@@ -127,5 +114,14 @@ TraceBlock::~TraceBlock() {
 
 void trace(const string &msg) {
     _tracer.print_trace_message(msg);
+}
+
+static vector<pair<string, string>> _enum_data_verbosity() {
+    return {
+        {"silent", "only the most basic output"},
+        {"normal", "relevant information to monitor progress"},
+        {"verbose", "full output"},
+        {"debug", "like verbose with additional debug output"}
+    };
 }
 }

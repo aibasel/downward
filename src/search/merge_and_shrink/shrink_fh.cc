@@ -189,6 +189,8 @@ void ShrinkFH::dump_strategy_specific_options(utils::LogProxy &log) const {
     }
 }
 
+static vector<pair<string, string>> _enum_data_high_low();
+
 static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
     {
         parser.document_synopsis(
@@ -205,15 +207,12 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
                 "2007"));
 
         ShrinkBucketBased::add_options_to_parser(parser);
-        vector<string> high_low;
-        high_low.push_back("HIGH");
-        high_low.push_back("LOW");
         parser.add_enum_option<ShrinkFH::HighLow>(
-            "shrink_f", high_low,
+            "shrink_f", _enum_data_high_low(),
             "prefer shrinking states with high or low f values",
             "HIGH");
         parser.add_enum_option<ShrinkFH::HighLow>(
-            "shrink_h", high_low,
+            "shrink_h", _enum_data_high_low(),
             "prefer shrinking states with high or low h values",
             "LOW");
 
@@ -247,4 +246,13 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
 }
 
 static Plugin<ShrinkStrategy> _plugin("shrink_fh", _parse);
+
+static vector<pair<string, string>> _enum_data_high_low() {
+    return {
+        {"HIGH",
+         ""},
+        {"LOW",
+         ""}
+    };
+}
 }

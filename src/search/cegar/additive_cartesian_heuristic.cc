@@ -58,6 +58,8 @@ int AdditiveCartesianHeuristic::compute_heuristic(const State &ancestor_state) {
     return sum_h;
 }
 
+static vector<pair<string, string>> _enum_data_pick_split();
+
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
     {
         parser.document_synopsis(
@@ -115,16 +117,8 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "maximum time in seconds for building abstractions",
             "infinity",
             plugins::Bounds("0.0", "infinity"));
-        vector<string> pick_strategies;
-        pick_strategies.push_back("RANDOM");
-        pick_strategies.push_back("MIN_UNWANTED");
-        pick_strategies.push_back("MAX_UNWANTED");
-        pick_strategies.push_back("MIN_REFINED");
-        pick_strategies.push_back("MAX_REFINED");
-        pick_strategies.push_back("MIN_HADD");
-        pick_strategies.push_back("MAX_HADD");
         parser.add_enum_option<PickSplit>(
-            "pick", pick_strategies, "split-selection strategy", "MAX_REFINED");
+            "pick", _enum_data_pick_split(), "split-selection strategy", "MAX_REFINED");
         parser.add_option<bool>(
             "use_general_costs",
             "allow negative costs in cost partitioning",
@@ -150,4 +144,23 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
 }
 
 static Plugin<Evaluator> _plugin("cegar", _parse);
+
+static vector<pair<string, string>> _enum_data_pick_split() {
+    return {
+        {"RANDOM",
+         ""},
+        {"MIN_UNWANTED",
+         ""},
+        {"MAX_UNWANTED",
+         ""},
+        {"MIN_REFINED",
+         ""},
+        {"MAX_REFINED",
+         ""},
+        {"MIN_HADD",
+         ""},
+        {"MAX_HADD",
+         ""}
+    };
+}
 }

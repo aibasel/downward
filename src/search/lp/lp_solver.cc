@@ -27,23 +27,14 @@ using namespace std;
 using utils::ExitCode;
 
 namespace lp {
+static vector<pair<string, string>> _enum_data_lp_solver_type();
+
 void add_lp_solver_option_to_parser(OptionParser &parser) {
-    vector<string> lp_solvers;
-    vector<string> lp_solvers_doc;
-    lp_solvers.push_back("CLP");
-    lp_solvers_doc.push_back("default LP solver shipped with the COIN library");
-    lp_solvers.push_back("CPLEX");
-    lp_solvers_doc.push_back("commercial solver by IBM");
-    lp_solvers.push_back("GUROBI");
-    lp_solvers_doc.push_back("commercial solver");
-    lp_solvers.push_back("SOPLEX");
-    lp_solvers_doc.push_back("open source solver by ZIB");
     parser.add_enum_option<LPSolverType>(
         "lpsolver",
-        lp_solvers,
+        _enum_data_lp_solver_type(),
         "external solver that should be used to solve linear programs",
-        "CPLEX",
-        lp_solvers_doc);
+        "CPLEX");
 
     parser.document_note(
         "Note",
@@ -505,4 +496,13 @@ void LPSolver::print_statistics() const {
 }
 
 #endif
+
+static vector<pair<string, string>> _enum_data_lp_solver_type() {
+    return {
+        {"CLP", "default LP solver shipped with the COIN library"},
+        {"CPLEX", "commercial solver by IBM"},
+        {"GUROBI", "commercial solver"},
+        {"SOPLEX", "open source solver by ZIB"}
+    };
+}
 }

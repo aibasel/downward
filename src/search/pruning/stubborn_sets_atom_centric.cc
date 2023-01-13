@@ -242,6 +242,8 @@ void StubbornSetsAtomCentric::handle_stubborn_operator(const State &state, int o
     }
 }
 
+static vector<pair<string, string>> _enum_data_atom_selection_strategy();
+
 static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
     {
         parser.document_synopsis(
@@ -266,29 +268,13 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
             "use_sibling_shortcut",
             "use variable-based marking in addition to atom-based marking",
             "true");
-        vector<string> strategies;
-        vector<string> strategies_docs;
-        strategies.push_back("fast_downward");
-        strategies_docs.push_back(
-            "select the atom (v, d) with the variable v that comes first in the Fast "
-            "Downward variable ordering (which is based on the causal graph)");
-        strategies.push_back("quick_skip");
-        strategies_docs.push_back(
-            "if possible, select an unsatisfied atom whose producers are already marked");
-        strategies.push_back("static_small");
-        strategies_docs.push_back("select the atom achieved by the fewest number of actions");
-        strategies.push_back("dynamic_small");
-        strategies_docs.push_back(
-            "select the atom achieved by the fewest number of actions that are not "
-            "yet part of the stubborn set");
         parser.add_enum_option<AtomSelectionStrategy>(
             "atom_selection_strategy",
-            strategies,
+            _enum_data_atom_selection_strategy(),
             "Strategy for selecting unsatisfied atoms from action preconditions or "
             "the goal atoms. All strategies use the fast_downward strategy for "
             "breaking ties.",
-            "quick_skip",
-            strategies_docs);
+            "quick_skip");
         add_pruning_options_to_parser(parser);
     }
     Options opts = parser.parse();
@@ -301,4 +287,19 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
 }
 
 static Plugin<PruningMethod> _plugin("atom_centric_stubborn_sets", _parse);
+
+static vector<pair<string, string>> _enum_data_atom_selection_strategy() {
+    return {
+        {"fast_downward",
+         "select the atom (v, d) with the variable v that comes first in the Fast "
+         "Downward variable ordering (which is based on the causal graph)"},
+        {"quick_skip",
+         "if possible, select an unsatisfied atom whose producers are already marked"},
+        {"static_small",
+         "select the atom achieved by the fewest number of actions"},
+        {"dynamic_small",
+         "select the atom achieved by the fewest number of actions that are not "
+         "yet part of the stubborn set"}
+    };
+}
 }

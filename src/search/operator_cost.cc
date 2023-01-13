@@ -32,29 +32,27 @@ int get_adjusted_action_cost(const OperatorProxy &op, OperatorCost cost_type, bo
         return get_adjusted_action_cost(op.get_cost(), cost_type, is_unit_cost);
 }
 
+static vector<pair<string, string>> _enum_data_operator_cost();
+
 void add_cost_type_option_to_parser(OptionParser &parser) {
-    vector<string> cost_types;
-    vector<string> cost_types_doc;
-    cost_types.push_back("NORMAL");
-    cost_types_doc.push_back(
-        "all actions are accounted for with their real cost");
-    cost_types.push_back("ONE");
-    cost_types_doc.push_back(
-        "all actions are accounted for as unit cost");
-    cost_types.push_back("PLUSONE");
-    cost_types_doc.push_back(
-        "all actions are accounted for as their real cost + 1 "
-        "(except if all actions have original cost 1, "
-        "in which case cost 1 is used). "
-        "This is the behaviour known for the heuristics of the LAMA planner. "
-        "This is intended to be used by the heuristics, not search engines, "
-        "but is supported for both.");
     parser.add_enum_option<OperatorCost>(
         "cost_type",
-        cost_types,
+        _enum_data_operator_cost(),
         "Operator cost adjustment type. "
         "No matter what this setting is, axioms will always be considered "
         "as actions of cost 0 by the heuristics that treat axioms as actions.",
-        "NORMAL",
-        cost_types_doc);
+        "NORMAL");
+}
+
+static vector<pair<string, string>> _enum_data_operator_cost() {
+    return {
+        {"NORMAL", "all actions are accounted for with their real cost"},
+        {"ONE", "all actions are accounted for as unit cost"},
+        {"PLUSONE", "all actions are accounted for as their real cost + 1 "
+         "(except if all actions have original cost 1, "
+         "in which case cost 1 is used). "
+         "This is the behaviour known for the heuristics of the LAMA planner. "
+         "This is intended to be used by the heuristics, not search engines, "
+         "but is supported for both."}
+    };
 }

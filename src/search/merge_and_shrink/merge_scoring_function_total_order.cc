@@ -154,42 +154,24 @@ void MergeScoringFunctionTotalOrder::dump_function_specific_options(utils::LogPr
     }
 }
 
+static vector<pair<string, string>> _enum_data_atomic_ts_order();
+static vector<pair<string, string>> _enum_data_product_ts_order();
+
 void MergeScoringFunctionTotalOrder::add_options_to_parser(
     plugins::OptionParser &parser) {
-    vector<string> atomic_ts_order;
-    vector<string> atomic_ts_order_documentation;
-    atomic_ts_order.push_back("reverse_level");
-    atomic_ts_order_documentation.push_back(
-        "the variable order of Fast Downward");
-    atomic_ts_order.push_back("level");
-    atomic_ts_order_documentation.push_back("opposite of reverse_level");
-    atomic_ts_order.push_back("random");
-    atomic_ts_order_documentation.push_back("a randomized order");
     parser.add_enum_option<AtomicTSOrder>(
         "atomic_ts_order",
-        atomic_ts_order,
+        _enum_data_atomic_ts_order(),
         "The order in which atomic transition systems are considered when "
         "considering pairs of potential merges.",
-        "reverse_level",
-        atomic_ts_order_documentation);
+        "reverse_level");
 
-    vector<string> product_ts_order;
-    vector<string> product_ts_order_documentation;
-    product_ts_order.push_back("old_to_new");
-    product_ts_order_documentation.push_back(
-        "consider composite transition systems from most recent to oldest, "
-        "that is in decreasing index order");
-    product_ts_order.push_back("new_to_old");
-    product_ts_order_documentation.push_back("opposite of old_to_new");
-    product_ts_order.push_back("random");
-    product_ts_order_documentation.push_back("a randomized order");
     parser.add_enum_option<ProductTSOrder>(
         "product_ts_order",
-        product_ts_order,
+        _enum_data_product_ts_order(),
         "The order in which product transition systems are considered when "
         "considering pairs of potential merges.",
-        "new_to_old",
-        product_ts_order_documentation);
+        "new_to_old");
 
     parser.add_option<bool>(
         "atomic_before_product",
@@ -231,4 +213,27 @@ static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
 }
 
 static plugins::Plugin<MergeScoringFunction> _plugin("total_order", _parse);
+
+static vector<pair<string, string>> _enum_data_atomic_ts_order() {
+    return {
+        {"reverse_level",
+         "the variable order of Fast Downward"},
+        {"level",
+         "opposite of reverse_level"},
+        {"random",
+         "a randomized order"}
+    };
+}
+
+static vector<pair<string, string>> _enum_data_product_ts_order() {
+    return {
+        {"old_to_new",
+         "consider composite transition systems from most recent to oldest, "
+         "that is in decreasing index order"},
+        {"new_to_old",
+         "opposite of old_to_new"},
+        {"random",
+         "a randomized order"}
+    };
+}
 }

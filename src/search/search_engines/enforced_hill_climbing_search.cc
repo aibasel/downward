@@ -271,17 +271,16 @@ void EnforcedHillClimbingSearch::print_statistics() const {
     }
 }
 
+static vector<pair<string, string>> _enum_data_preferred_usage();
+
 static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
     {
         parser.document_synopsis("Lazy enforced hill-climbing", "");
 
         parser.add_option<shared_ptr<Evaluator>>("h", "heuristic");
-        vector<string> preferred_usages;
-        preferred_usages.push_back("PRUNE_BY_PREFERRED");
-        preferred_usages.push_back("RANK_PREFERRED_FIRST");
         parser.add_enum_option<PreferredUsage>(
             "preferred_usage",
-            preferred_usages,
+            _enum_data_preferred_usage(),
             "preferred operator usage",
             "PRUNE_BY_PREFERRED");
         parser.add_list_option<shared_ptr<Evaluator>>(
@@ -299,4 +298,13 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
 }
 
 static Plugin<SearchEngine> _plugin("ehc", _parse);
+
+static vector<pair<string, string>> _enum_data_preferred_usage() {
+    return {
+        {"PRUNE_BY_PREFERRED",
+         ""},
+        {"RANK_PREFERRED_FIRST",
+         ""}
+    };
+}
 }

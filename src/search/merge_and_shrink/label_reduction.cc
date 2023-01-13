@@ -303,6 +303,9 @@ void LabelReduction::dump_options(utils::LogProxy &log) const {
     }
 }
 
+static vector<pair<string, string>> _enum_data_label_reduction_method();
+static vector<pair<string, string>> _enum_data_label_reduction_system_order();
+
 static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
     {
         parser.document_synopsis(
@@ -324,23 +327,9 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
         parser.add_option<bool>("before_merging",
                                 "apply label reduction before merging");
 
-        vector<string> label_reduction_method;
-        vector<string> label_reduction_method_doc;
-        label_reduction_method.push_back("TWO_TRANSITION_SYSTEMS");
-        label_reduction_method_doc.push_back(
-            "compute the 'combinable relation' only for the two transition "
-            "systems being merged next");
-        label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS");
-        label_reduction_method_doc.push_back(
-            "compute the 'combinable relation' for labels once for every "
-            "transition  system and reduce labels");
-        label_reduction_method.push_back("ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT");
-        label_reduction_method_doc.push_back(
-            "keep computing the 'combinable relation' for labels iteratively "
-            "for all transition systems until no more labels can be reduced");
         parser.add_enum_option<LabelReductionMethod>(
             "method",
-            label_reduction_method,
+            _enum_data_label_reduction_method(),
             "Label reduction method. See the AAAI14 paper by "
             "Sievers et al. for explanation of the default label "
             "reduction method and the 'combinable relation' ."
@@ -348,32 +337,18 @@ static shared_ptr<LabelReduction>_parse(OptionParser &parser) {
             "options reduce_labels_before_shrinking or "
             "reduce_labels_before_merging in order to use "
             "the chosen label reduction configuration.",
-            "ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT",
-            label_reduction_method_doc);
+            "ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT");
 
-        vector<string> label_reduction_system_order;
-        vector<string> label_reduction_system_order_doc;
-        label_reduction_system_order.push_back("REGULAR");
-        label_reduction_system_order_doc.push_back(
-            "transition systems are considered in the order given in the planner "
-            "input if atomic and in the order of their creation if composite.");
-        label_reduction_system_order.push_back("REVERSE");
-        label_reduction_system_order_doc.push_back(
-            "inverse of REGULAR");
-        label_reduction_system_order.push_back("RANDOM");
-        label_reduction_system_order_doc.push_back(
-            "random order");
         parser.add_enum_option<LabelReductionSystemOrder>(
             "system_order",
-            label_reduction_system_order,
+            _enum_data_label_reduction_system_order(),
             "Order of transition systems for the label reduction "
             "methods that iterate over the set of all transition "
             "systems. Only useful for the choices "
             "all_transition_systems and "
             "all_transition_systems_with_fixpoint for the option "
             "label_reduction_method.",
-            "RANDOM",
-            label_reduction_system_order_doc);
+            "RANDOM");
         // Add random_seed option.
         utils::add_rng_options(parser);
     }
@@ -400,4 +375,30 @@ static Plugin<LabelReduction> _plugin("exact", _parse);
 static PluginTypePlugin<LabelReduction> _type_plugin(
     "LabelReduction",
     "This page describes the current single 'option' for label reduction.");
+
+static vector<pair<string, string>> _enum_data_label_reduction_method() {
+    return {
+        {"TWO_TRANSITION_SYSTEMS",
+         "compute the 'combinable relation' only for the two transition "
+         "systems being merged next"},
+        {"ALL_TRANSITION_SYSTEMS",
+         "compute the 'combinable relation' for labels once for every "
+         "transition  system and reduce labels"},
+        {"ALL_TRANSITION_SYSTEMS_WITH_FIXPOINT",
+         "keep computing the 'combinable relation' for labels iteratively "
+         "for all transition systems until no more labels can be reduced"}
+    };
+}
+
+static vector<pair<string, string>> _enum_data_label_reduction_system_order() {
+    return {
+        {"REGULAR",
+         "transition systems are considered in the order given in the planner "
+         "input if atomic and in the order of their creation if composite."},
+        {"REVERSE",
+         "inverse of REGULAR"},
+        {"RANDOM",
+         "random order"}
+    };
+}
 }

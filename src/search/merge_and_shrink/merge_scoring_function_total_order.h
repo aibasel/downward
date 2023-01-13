@@ -15,18 +15,20 @@ class RandomNumberGenerator;
 }
 
 namespace merge_and_shrink {
+enum class AtomicTSOrder {
+    REVERSE_LEVEL,
+    LEVEL,
+    RANDOM
+};
+
+enum class ProductTSOrder {
+    OLD_TO_NEW,
+    NEW_TO_OLD,
+    RANDOM
+};
+
 class MergeScoringFunctionTotalOrder : public MergeScoringFunction {
-    enum class AtomicTSOrder {
-        REVERSE_LEVEL,
-        LEVEL,
-        RANDOM
-    };
     AtomicTSOrder atomic_ts_order;
-    enum class ProductTSOrder {
-        OLD_TO_NEW,
-        NEW_TO_OLD,
-        RANDOM
-    };
     ProductTSOrder product_ts_order;
     bool atomic_before_product;
     int random_seed; // only for dump options

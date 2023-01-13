@@ -108,18 +108,13 @@ void MergeTreeFactoryLinear::dump_tree_specific_options(utils::LogProxy &log) co
     }
 }
 
+static vector<pair<string, string>> _enum_data_variable_order_type();
+
 void MergeTreeFactoryLinear::add_options_to_parser(
     plugins::OptionParser &parser) {
     MergeTreeFactory::add_options_to_parser(parser);
-    vector<string> merge_strategies;
-    merge_strategies.push_back("CG_GOAL_LEVEL");
-    merge_strategies.push_back("CG_GOAL_RANDOM");
-    merge_strategies.push_back("GOAL_CG_LEVEL");
-    merge_strategies.push_back("RANDOM");
-    merge_strategies.push_back("LEVEL");
-    merge_strategies.push_back("REVERSE_LEVEL");
     parser.add_enum_option<variable_order_finder::VariableOrderType>(
-        "variable_order", merge_strategies,
+        "variable_order", _enum_data_variable_order_type(),
         "the order in which atomic transition systems are merged",
         "CG_GOAL_LEVEL");
 }
@@ -149,4 +144,21 @@ static shared_ptr<MergeTreeFactory> _parse(plugins::OptionParser &parser) {
 }
 
 static plugins::Plugin<MergeTreeFactory> _plugin("linear", _parse);
+
+static vector<pair<string, string>> _enum_data_variable_order_type() {
+    return {
+        {"CG_GOAL_LEVEL",
+         ""},
+        {"CG_GOAL_RANDOM",
+         ""},
+        {"GOAL_CG_LEVEL",
+         ""},
+        {"RANDOM",
+         ""},
+        {"LEVEL",
+         ""},
+        {"REVERSE_LEVEL",
+         ""}
+    };
+}
 }

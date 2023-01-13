@@ -168,15 +168,12 @@ SharedTasks LandmarkDecomposition::get_subtasks(
     return subtasks;
 }
 
+static vector<pair<string, string>> _enum_data_fact_order();
+
 static void add_fact_order_option(OptionParser &parser) {
-    vector<string> fact_orders;
-    fact_orders.push_back("ORIGINAL");
-    fact_orders.push_back("RANDOM");
-    fact_orders.push_back("HADD_UP");
-    fact_orders.push_back("HADD_DOWN");
     parser.add_enum_option<FactOrder>(
         "order",
-        fact_orders,
+        _enum_data_fact_order(),
         "ordering of goal or landmark facts",
         "HADD_DOWN");
     utils::add_rng_options(parser);
@@ -236,4 +233,13 @@ static Plugin<SubtaskGenerator> _plugin_landmarks(
 static PluginTypePlugin<SubtaskGenerator> _type_plugin(
     "SubtaskGenerator",
     "Subtask generator (used by the CEGAR heuristic).");
+
+static vector<pair<string, string>> _enum_data_fact_order() {
+    return {
+        {"ORIGINAL", ""},
+        {"RANDOM", ""},
+        {"HADD_UP", ""},
+        {"HADD_DOWN", ""}
+    };
+}
 }

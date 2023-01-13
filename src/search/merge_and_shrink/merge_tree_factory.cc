@@ -45,15 +45,13 @@ unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
+static vector<pair<string, string>> _enum_data_update_option();
+
 void MergeTreeFactory::add_options_to_parser(plugins::OptionParser &parser) {
     utils::add_rng_options(parser);
-    vector<string> update_option;
-    update_option.push_back("use_first");
-    update_option.push_back("use_second");
-    update_option.push_back("use_random");
     parser.add_enum_option<UpdateOption>(
         "update_option",
-        update_option,
+        _enum_data_update_option(),
         "When the merge tree is used within another merge strategy, how "
         "should it be updated when a merge different to a merge from the "
         "tree is performed: choose among use_first, use_second, and "
@@ -72,4 +70,15 @@ static plugins::PluginTypePlugin<MergeTreeFactory> _type_plugin(
     "Merge trees are typically used in the merge strategy of type "
     "'precomputed', but they can also be used as fallback merge strategies in "
     "'combined' merge strategies.");
+
+static vector<pair<string, string>> _enum_data_update_option() {
+    return {
+        {"use_first",
+         ""},
+        {"use_second",
+         ""},
+        {"use_random",
+         ""}
+    };
+}
 }
