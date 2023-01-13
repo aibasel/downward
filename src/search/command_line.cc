@@ -58,6 +58,8 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
         string arg = sanitize_arg_string(args[i]);
         bool is_last = (i == args.size() - 1);
         if (arg == "--search") {
+            if (engine)
+                throw ArgError("multiple --search arguments defined");
             if (is_last)
                 throw ArgError("missing argument after --search");
             ++i;
@@ -126,7 +128,6 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
     }
     return engine;
 }
-
 
 shared_ptr<SearchEngine> parse_cmd_line(
     int argc, const char **argv, plugins::Registry &registry, bool dry_run, bool is_unit_cost) {
