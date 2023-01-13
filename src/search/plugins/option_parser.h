@@ -430,16 +430,15 @@ void OptionParser::add_list_option(
 template<typename T>
 void predefine_plugin(const std::string &arg, Registry &registry,
                       Predefinitions &predefinitions, bool dry_run) {
-    std::pair<std::string, std::string> predefinition;
-    try {
-        predefinition = utils::split(arg, "=");
-    } catch (utils::StringOperationError &) {
+    std::vector<std::string> predefinition;
+    predefinition = utils::split(arg, "=", 1);
+    if (predefinition.size() != 2) {
         throw OptionParserError("Predefinition error: Predefinition has to be "
                                 "of the form [name]=[definition].");
     }
 
-    std::string key = predefinition.first;
-    std::string value = predefinition.second;
+    std::string key = predefinition[0];
+    std::string value = predefinition[1];
     utils::strip(key);
     utils::strip(value);
 

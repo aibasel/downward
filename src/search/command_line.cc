@@ -22,8 +22,7 @@ static string sanitize_arg_string(string s) {
     // Convert newlines to spaces.
     replace(s.begin(), s.end(), '\n', ' ');
     // Convert string to lower case.
-    transform(s.begin(), s.end(), s.begin(), ::tolower);
-    return s;
+    return utils::tolower(s);
 }
 
 static int parse_int_arg(const string &name, const string &value) {
