@@ -40,11 +40,11 @@ public:
             : held(value) {
         }
 
-        virtual std::unique_ptr<Placeholder> clone() const {
+        virtual std::unique_ptr<Placeholder> clone() const override {
             return utils::make_unique_ptr<Holder<ValueType>>(held);
         }
 
-        virtual const std::type_info &type() const {
+        virtual const std::type_info &type() const override {
             return typeid(ValueType);
         }
     };
