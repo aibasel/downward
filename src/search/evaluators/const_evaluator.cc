@@ -23,7 +23,7 @@ static shared_ptr<Evaluator> _parse(OptionParser &parser) {
         "value",
         "the constant value",
         "1",
-        Bounds("0", "infinity"));
+        plugins::Bounds("0", "infinity"));
     add_evaluator_options_to_parser(parser);
     Options opts = parser.parse();
 

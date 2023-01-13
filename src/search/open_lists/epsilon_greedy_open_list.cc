@@ -174,7 +174,7 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
         "epsilon",
         "probability for choosing the next entry randomly",
         "0.2",
-        Bounds("0.0", "1.0"));
+        plugins::Bounds("0.0", "1.0"));
 
     utils::add_rng_options(parser);
 

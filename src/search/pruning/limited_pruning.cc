@@ -71,12 +71,12 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
         "disable pruning if the pruning ratio is lower than this value after"
         " 'expansions_before_checking_pruning_ratio' expansions",
         "0.2",
-        Bounds("0.0", "1.0"));
+        plugins::Bounds("0.0", "1.0"));
     parser.add_option<int>(
         "expansions_before_checking_pruning_ratio",
         "number of expansions before deciding whether to disable pruning",
         "1000",
-        Bounds("0", "infinity"));
+        plugins::Bounds("0", "infinity"));
     add_pruning_options_to_parser(parser);
 
     Options opts = parser.parse();

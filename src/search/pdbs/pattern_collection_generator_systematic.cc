@@ -303,7 +303,7 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
         "pattern_max_size",
         "max number of variables per pattern",
         "1",
-        Bounds("1", "infinity"));
+        plugins::Bounds("1", "infinity"));
     parser.add_option<bool>(
         "only_interesting_patterns",
         "Only consider the union of two disjoint patterns if the union has "

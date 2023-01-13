@@ -109,18 +109,18 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "max_states",
         "maximum sum of abstract states over all abstractions",
         "infinity",
-        Bounds("1", "infinity"));
+        plugins::Bounds("1", "infinity"));
     parser.add_option<int>(
         "max_transitions",
         "maximum sum of real transitions (excluding self-loops) over "
         " all abstractions",
         "1M",
-        Bounds("0", "infinity"));
+        plugins::Bounds("0", "infinity"));
     parser.add_option<double>(
         "max_time",
         "maximum time in seconds for building abstractions",
         "infinity",
-        Bounds("0.0", "infinity"));
+        plugins::Bounds("0.0", "infinity"));
     vector<string> pick_strategies;
     pick_strategies.push_back("RANDOM");
     pick_strategies.push_back("MIN_UNWANTED");

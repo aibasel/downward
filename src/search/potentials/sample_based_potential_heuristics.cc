@@ -61,12 +61,12 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "num_heuristics",
         "number of potential heuristics",
         "1",
-        Bounds("0", "infinity"));
+        plugins::Bounds("0", "infinity"));
     parser.add_option<int>(
         "num_samples",
         "Number of states to sample",
         "1000",
-        Bounds("0", "infinity"));
+        plugins::Bounds("0", "infinity"));
     prepare_parser_for_admissible_potentials(parser);
     utils::add_rng_options(parser);
     Options opts = parser.parse();

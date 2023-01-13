@@ -56,12 +56,12 @@ static shared_ptr<PatternGenerator> _parse(plugins::OptionParser &parser) {
         "maximum number of states in the final pattern database (possibly "
         "ignored by a singleton pattern consisting of a single goal variable)",
         "1000000",
-        Bounds("1", "infinity"));
+        plugins::Bounds("1", "infinity"));
     parser.add_option<double>(
         "max_time",
         "maximum time in seconds for the pattern generation",
         "infinity",
-        Bounds("0.0", "infinity"));
+        plugins::Bounds("0.0", "infinity"));
     add_cegar_wildcard_option_to_parser(parser);
     add_generator_options_to_parser(parser);
     utils::add_rng_options(parser);

@@ -522,25 +522,25 @@ void add_hillclimbing_options(OptionParser &parser) {
         "pdb_max_size",
         "maximal number of states per pattern database ",
         "2000000",
-        Bounds("1", "infinity"));
+        plugins::Bounds("1", "infinity"));
     parser.add_option<int>(
         "collection_max_size",
         "maximal number of states in the pattern collection",
         "20000000",
-        Bounds("1", "infinity"));
+        plugins::Bounds("1", "infinity"));
     parser.add_option<int>(
         "num_samples",
         "number of samples (random states) on which to evaluate each "
         "candidate pattern collection",
         "1000",
-        Bounds("1", "infinity"));
+        plugins::Bounds("1", "infinity"));
     parser.add_option<int>(
         "min_improvement",
         "minimum number of samples on which a candidate pattern "
         "collection must improve on the current one to be considered "
         "as the next pattern collection ",
         "10",
-        Bounds("1", "infinity"));
+        plugins::Bounds("1", "infinity"));
     parser.add_option<double>(
         "max_time",
         "maximum time in seconds for improving the initial pattern "
@@ -549,7 +549,7 @@ void add_hillclimbing_options(OptionParser &parser) {
         "climbing. Use max_time_dominance_pruning to limit the time "
         "spent for pruning dominated patterns.",
         "infinity",
-        Bounds("0.0", "infinity"));
+        plugins::Bounds("0.0", "infinity"));
     utils::add_rng_options(parser);
     add_generator_options_to_parser(parser);
 }

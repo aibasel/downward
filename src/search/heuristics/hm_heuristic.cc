@@ -280,7 +280,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
                              "effects or axioms");
     parser.document_property("preferred operators", "no");
 
-    parser.add_option<int>("m", "subset size", "2", Bounds("1", "infinity"));
+    parser.add_option<int>("m", "subset size", "2", plugins::Bounds("1", "infinity"));
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
     if (parser.dry_run())

@@ -95,7 +95,6 @@ public:
 using plugins::Plugin;
 using plugins::PluginGroupPlugin;
 using plugins::PluginTypePlugin;
-using plugins::Bounds;
 using plugins::OptionParser;
 using plugins::OptionParserError;
 using plugins::Options;

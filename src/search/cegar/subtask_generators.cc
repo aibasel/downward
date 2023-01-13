@@ -173,7 +173,7 @@ static shared_ptr<SubtaskGenerator> _parse_original(OptionParser &parser) {
         "copies",
         "number of task copies",
         "1",
-        Bounds("1", "infinity"));
+        plugins::Bounds("1", "infinity"));
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

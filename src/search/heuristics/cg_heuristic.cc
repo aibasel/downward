@@ -303,7 +303,7 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         "max_cache_size",
         "maximum number of cached entries per variable (set to 0 to disable cache)",
         "1000000",
-        Bounds("0", "infinity"));
+        plugins::Bounds("0", "infinity"));
 
     Heuristic::add_options_to_parser(parser);
     Options opts = parser.parse();
