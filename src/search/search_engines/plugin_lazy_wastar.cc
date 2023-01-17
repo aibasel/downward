@@ -19,7 +19,8 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
             "evaluators");
         parser.add_list_option<shared_ptr<Evaluator>>(
             "preferred",
-            "use preferred operators of these evaluators", "[]");
+            "use preferred operators of these evaluators",
+            "[]");
         parser.add_option<bool>(
             "reopen_closed",
             "reopen closed nodes",

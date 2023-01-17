@@ -73,7 +73,7 @@ public:
     template<typename T>
     void add_enum_option(
         const std::string &key,
-        const std::vector<std::pair<std::string, std::string>> &documented_names,
+        const std::vector<std::pair<std::string, std::string>> &enum_info,
         const std::string &help = "",
         const std::string &default_value = "");
 
@@ -355,23 +355,23 @@ void OptionParser::add_option(
 template<typename T>
 void OptionParser::add_enum_option(
     const std::string &key,
-    const std::vector<std::pair<std::string, std::string>> &documented_names,
+    const std::vector<std::pair<std::string, std::string>> &enum_info,
     const std::string &help,
     const std::string &default_value) {
     if (help_mode_) {
         std::string enum_descr = "{";
-        for (size_t i = 0; i < documented_names.size(); ++i) {
-            enum_descr += documented_names[i].first;
-            if (i != documented_names.size() - 1) {
+        for (size_t i = 0; i < enum_info.size(); ++i) {
+            enum_descr += enum_info[i].first;
+            if (i != enum_info.size() - 1) {
                 enum_descr += ", ";
             }
         }
         enum_descr += "}";
 
         ValueExplanations value_explanations;
-        for (size_t i = 0; i < documented_names.size(); ++i) {
-            value_explanations.emplace_back(documented_names[i].first,
-                                            documented_names[i].second);
+        for (size_t i = 0; i < enum_info.size(); ++i) {
+            value_explanations.emplace_back(enum_info[i].first,
+                                            enum_info[i].second);
         }
 
         registry.add_plugin_info_arg(
@@ -393,14 +393,14 @@ void OptionParser::add_enum_option(
     std::istringstream stream(value);
     int choice;
     if (!(stream >> choice).fail()) {
-        int max_choice = documented_names.size();
+        int max_choice = enum_info.size();
         if (choice > max_choice) {
             error("invalid enum argument " + value + " for option " + key);
         }
         opts.set<T>(key, static_cast<T>(choice));
     } else {
         // ... otherwise map the string to its position in the enumeration vector.
-        auto it = find_if(documented_names.begin(), documented_names.end(),
+        auto it = find_if(enum_info.begin(), enum_info.end(),
                           [&](const std::pair<std::string, std::string> &name_and_doc) {
                               const std::string &name = name_and_doc.first;
                               if (name.size() != value.size())
@@ -412,10 +412,10 @@ void OptionParser::add_enum_option(
                               }
                               return true;
                           });
-        if (it == documented_names.end()) {
+        if (it == enum_info.end()) {
             error("invalid enum argument " + value + " for option " + key);
         }
-        opts.set<T>(key, static_cast<T>(it - documented_names.begin()));
+        opts.set<T>(key, static_cast<T>(it - enum_info.begin()));
     }
 }
 

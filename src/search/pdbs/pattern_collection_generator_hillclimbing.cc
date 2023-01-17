@@ -623,7 +623,6 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
         add_hillclimbing_options(parser);
         /*
           Add, possibly among others, the options for dominance pruning.
-
           Note that using dominance pruning during hill climbing could lead to fewer
           discovered patterns and pattern collections. A dominated pattern
           (or pattern collection) might no longer be dominated after more patterns

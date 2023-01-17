@@ -277,7 +277,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         parser.document_property(
             "admissible",
             "yes for tasks without conditional effects or axioms");
-
         parser.document_property(
             "consistent",
             "yes for tasks without conditional effects or axioms");
