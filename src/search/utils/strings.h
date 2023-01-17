@@ -37,5 +37,7 @@ std::string join(const Collection &collection, const std::string &delimiter) {
     }
     return oss.str();
 }
+
+extern bool is_alpha_numeric(const std::string &s);
 }
 #endif

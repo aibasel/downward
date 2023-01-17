@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cctype>
 #include <iostream>
 
 using namespace std;
@@ -46,5 +47,12 @@ vector<string> split(const string &s, const string &separator, int max_splits) {
     }
     sections.push_back(s.substr(curr_pos, s.size() - curr_pos));
     return sections;
+}
+
+bool is_alpha_numeric(const string &s) {
+    auto it = find_if(s.begin(), s.end(), [](char const &c) {
+                          return !isalnum(c);
+                      });
+    return it == s.end();
 }
 }
