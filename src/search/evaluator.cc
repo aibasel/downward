@@ -10,11 +10,10 @@ using namespace std;
 
 
 Evaluator::Evaluator(const plugins::Options &opts,
-                     const string &description,
                      bool use_for_reporting_minima,
                      bool use_for_boosting,
                      bool use_for_counting_evaluations)
-    : description(description),
+    : description(opts.get_unparsed_config()),
       use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
