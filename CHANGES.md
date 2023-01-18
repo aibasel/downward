@@ -11,7 +11,13 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
-- none so far
+- landmarks: Refactor the computation of preferred operators in the
+  `lmcount` heuristic. The change affects configurations based on
+  LAMA that use preferred operators. While the semantics of the code did
+  not change, the new version is slightly faster and can solve more 
+  tasks and/or improves plan quality in an anytime configuration within 
+  the same time limit.
+  <https://issues.fast-downward.org/issue1070>
 
 ## Fast Downward 22.12
 
