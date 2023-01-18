@@ -15,7 +15,7 @@
 
 class TaskProxy;
 
-namespace options {
+namespace plugins {
 class OptionParser;
 class Options;
 }
@@ -46,7 +46,7 @@ public:
     }
 
 protected:
-    explicit LandmarkFactory(const options::Options &opts);
+    explicit LandmarkFactory(const plugins::Options &opts);
     mutable utils::LogProxy log;
     std::shared_ptr<LandmarkGraph> lm_graph;
     bool achievers_calculated = false;
@@ -78,9 +78,9 @@ private:
     void generate_operators_lookups(const TaskProxy &task_proxy);
 };
 
-extern void add_landmark_factory_options_to_parser(options::OptionParser &parser);
-extern void add_use_orders_option_to_parser(options::OptionParser &parser);
-extern void add_only_causal_landmarks_option_to_parser(options::OptionParser &parser);
+extern void add_landmark_factory_options_to_parser(plugins::OptionParser &parser);
+extern void add_use_orders_option_to_parser(plugins::OptionParser &parser);
+extern void add_only_causal_landmarks_option_to_parser(plugins::OptionParser &parser);
 }
 
 #endif

@@ -12,7 +12,7 @@
 
 using namespace std;
 
-namespace options {
+namespace plugins {
 static void print_initialization_errors_and_exit(const vector<string> &errors) {
     throw OptionParserError("\n" + utils::join(errors, "\n") + "\n" + get_demangling_hint("[TYPE]"));
 }

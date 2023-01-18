@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace options {
+namespace plugins {
 class OptionParser;
 class Options;
 }
@@ -15,18 +15,20 @@ class RandomNumberGenerator;
 }
 
 namespace merge_and_shrink {
+enum class AtomicTSOrder {
+    REVERSE_LEVEL,
+    LEVEL,
+    RANDOM
+};
+
+enum class ProductTSOrder {
+    OLD_TO_NEW,
+    NEW_TO_OLD,
+    RANDOM
+};
+
 class MergeScoringFunctionTotalOrder : public MergeScoringFunction {
-    enum class AtomicTSOrder {
-        REVERSE_LEVEL,
-        LEVEL,
-        RANDOM
-    };
     AtomicTSOrder atomic_ts_order;
-    enum class ProductTSOrder {
-        OLD_TO_NEW,
-        NEW_TO_OLD,
-        RANDOM
-    };
     ProductTSOrder product_ts_order;
     bool atomic_before_product;
     int random_seed; // only for dump options
@@ -36,13 +38,13 @@ protected:
     virtual std::string name() const override;
     virtual void dump_function_specific_options(utils::LogProxy &log) const override;
 public:
-    explicit MergeScoringFunctionTotalOrder(const options::Options &options);
+    explicit MergeScoringFunctionTotalOrder(const plugins::Options &options);
     virtual ~MergeScoringFunctionTotalOrder() override = default;
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;
     virtual void initialize(const TaskProxy &task_proxy) override;
-    static void add_options_to_parser(options::OptionParser &parser);
+    static void add_options_to_parser(plugins::OptionParser &parser);
 
     virtual bool requires_init_distances() const override {
         return false;

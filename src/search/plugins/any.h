@@ -1,5 +1,5 @@
-#ifndef OPTIONS_ANY_H
-#define OPTIONS_ANY_H
+#ifndef PLUGINS_ANY_H
+#define PLUGINS_ANY_H
 
 #include "../utils/memory.h"
 
@@ -21,7 +21,7 @@
   require adding lots of files.
 */
 
-namespace options {
+namespace plugins {
 class Any {
     class Placeholder {
 public:
@@ -40,11 +40,11 @@ public:
             : held(value) {
         }
 
-        virtual std::unique_ptr<Placeholder> clone() const {
+        virtual std::unique_ptr<Placeholder> clone() const override {
             return utils::make_unique_ptr<Holder<ValueType>>(held);
         }
 
-        virtual const std::type_info &type() const {
+        virtual const std::type_info &type() const override {
             return typeid(ValueType);
         }
     };

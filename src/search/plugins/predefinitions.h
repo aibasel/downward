@@ -1,5 +1,5 @@
-#ifndef OPTIONS_PREDEFINITIONS_H
-#define OPTIONS_PREDEFINITIONS_H
+#ifndef PLUGINS_PREDEFINITIONS_H
+#define PLUGINS_PREDEFINITIONS_H
 
 #include "any.h"
 #include "errors.h"
@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace options {
+namespace plugins {
 class Predefinitions {
     std::unordered_map<std::string, std::pair<std::type_index, Any>> predefined;
 public:

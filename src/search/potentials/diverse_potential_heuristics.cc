@@ -4,9 +4,7 @@
 #include "potential_max_heuristic.h"
 #include "util.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -17,7 +15,7 @@
 using namespace std;
 
 namespace potentials {
-DiversePotentialHeuristics::DiversePotentialHeuristics(const Options &opts)
+DiversePotentialHeuristics::DiversePotentialHeuristics(const plugins::Options &opts)
     : optimizer(opts),
       max_num_heuristics(opts.get<int>("max_num_heuristics")),
       num_samples(opts.get<int>("num_samples")),
@@ -147,22 +145,25 @@ DiversePotentialHeuristics::find_functions() {
 }
 
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Diverse potential heuristics",
-        get_admissible_potentials_reference());
-    parser.add_option<int>(
-        "num_samples",
-        "Number of states to sample",
-        "1000",
-        Bounds("0", "infinity"));
-    parser.add_option<int>(
-        "max_num_heuristics",
-        "maximum number of potential heuristics",
-        "infinity",
-        Bounds("0", "infinity"));
-    prepare_parser_for_admissible_potentials(parser);
-    utils::add_rng_options(parser);
-    utils::add_log_options_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Diverse potential heuristics",
+            get_admissible_potentials_reference());
+
+        parser.add_option<int>(
+            "num_samples",
+            "Number of states to sample",
+            "1000",
+            plugins::Bounds("0", "infinity"));
+        parser.add_option<int>(
+            "max_num_heuristics",
+            "maximum number of potential heuristics",
+            "infinity",
+            plugins::Bounds("0", "infinity"));
+        prepare_parser_for_admissible_potentials(parser);
+        utils::add_rng_options(parser);
+        utils::add_log_options_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

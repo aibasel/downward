@@ -10,7 +10,7 @@
 class Evaluator;
 class PruningMethod;
 
-namespace options {
+namespace plugins {
 class OptionParser;
 class Options;
 }
@@ -37,7 +37,7 @@ protected:
     virtual SearchStatus step() override;
 
 public:
-    explicit EagerSearch(const options::Options &opts);
+    explicit EagerSearch(const plugins::Options &opts);
     virtual ~EagerSearch() = default;
 
     virtual void print_statistics() const override;
@@ -45,7 +45,7 @@ public:
     void dump_search_space() const;
 };
 
-extern void add_options_to_parser(options::OptionParser &parser);
+extern void add_options_to_parser(plugins::OptionParser &parser);
 }
 
 #endif

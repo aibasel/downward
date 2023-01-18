@@ -6,7 +6,7 @@
 #include <set>
 #include <unordered_set>
 
-namespace options {
+namespace plugins {
 class OptionParser;
 }
 
@@ -72,13 +72,13 @@ class PatternCollectionGeneratorMultiple : public PatternCollectionGenerator {
     virtual PatternCollectionInformation compute_patterns(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
-    explicit PatternCollectionGeneratorMultiple(options::Options &opts);
+    explicit PatternCollectionGeneratorMultiple(const plugins::Options &opts);
     virtual ~PatternCollectionGeneratorMultiple() override = default;
 };
 
 extern void add_multiple_algorithm_implementation_notes_to_parser(
-    options::OptionParser &parser);
-extern void add_multiple_options_to_parser(options::OptionParser &parser);
+    plugins::OptionParser &parser);
+extern void add_multiple_options_to_parser(plugins::OptionParser &parser);
 }
 
 #endif

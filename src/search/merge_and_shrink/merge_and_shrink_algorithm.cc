@@ -13,11 +13,8 @@
 #include "types.h"
 #include "utils.h"
 
-#include "../options/option_parser.h"
-#include "../options/options.h"
-
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
-
 #include "../utils/countdown_timer.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"
@@ -26,14 +23,13 @@
 
 #include <cassert>
 #include <iostream>
+#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
 
 using namespace std;
-using options::Bounds;
-using options::OptionParser;
-using options::Options;
+using plugins::Bounds;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
@@ -41,7 +37,7 @@ static void log_progress(const utils::Timer &timer, string msg, utils::LogProxy 
     log << "M&S algorithm timer: " << timer << " (" << msg << ")" << endl;
 }
 
-MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(const Options &opts) :
+MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(const plugins::Options &opts) :
     merge_strategy_factory(opts.get<shared_ptr<MergeStrategyFactory>>("merge_strategy")),
     shrink_strategy(opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
     label_reduction(opts.get<shared_ptr<LabelReduction>>("label_reduction", nullptr)),
@@ -475,7 +471,7 @@ void add_transition_system_size_limit_options_to_parser(OptionParser &parser) {
         Bounds("-1", "infinity"));
 }
 
-void handle_shrink_limit_options_defaults(Options &opts) {
+void handle_shrink_limit_options_defaults(plugins::Options &opts) {
     int max_states = opts.get<int>("max_states");
     int max_states_before_merge = opts.get<int>("max_states_before_merge");
     int threshold = opts.get<int>("threshold_before_merge");

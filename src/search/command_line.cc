@@ -1,12 +1,12 @@
 #include "command_line.h"
 
-#include "option_parser.h"
 #include "plan_manager.h"
 #include "search_engine.h"
 
-#include "options/doc_printer.h"
-#include "options/predefinitions.h"
-#include "options/registries.h"
+#include "plugins/doc_printer.h"
+#include "plugins/option_parser.h"
+#include "plugins/predefinitions.h"
+#include "plugins/registries.h"
 #include "utils/strings.h"
 
 #include <algorithm>
@@ -14,21 +14,15 @@
 
 using namespace std;
 
-ArgError::ArgError(const string &msg)
-    : msg(msg) {
-}
-
 void ArgError::print() const {
     cerr << "argument error: " << msg << endl;
 }
-
 
 static string sanitize_arg_string(string s) {
     // Convert newlines to spaces.
     replace(s.begin(), s.end(), '\n', ' ');
     // Convert string to lower case.
-    transform(s.begin(), s.end(), s.begin(), ::tolower);
-    return s;
+    return utils::tolower(s);
 }
 
 static int parse_int_arg(const string &name, const string &value) {
@@ -42,11 +36,11 @@ static int parse_int_arg(const string &name, const string &value) {
 }
 
 static shared_ptr<SearchEngine> parse_cmd_line_aux(
-    const vector<string> &args, options::Registry &registry, bool dry_run) {
+    const vector<string> &args, plugins::Registry &registry, bool dry_run) {
     string plan_filename = "sas_plan";
     int num_previously_generated_plans = 0;
     bool is_part_of_anytime_portfolio = false;
-    options::Predefinitions predefinitions;
+    plugins::Predefinitions predefinitions;
 
     shared_ptr<SearchEngine> engine;
     /*
@@ -58,11 +52,13 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
         string arg = sanitize_arg_string(args[i]);
         bool is_last = (i == args.size() - 1);
         if (arg == "--search") {
+            if (engine)
+                throw ArgError("multiple --search arguments defined");
             if (is_last)
                 throw ArgError("missing argument after --search");
             ++i;
-            OptionParser parser(sanitize_arg_string(args[i]), registry,
-                                predefinitions, dry_run);
+            plugins::OptionParser parser(
+                sanitize_arg_string(args[i]), registry, predefinitions, dry_run);
             engine = parser.start_parsing<shared_ptr<SearchEngine>>();
         } else if (arg == "--help" && dry_run) {
             cout << "Help:" << endl;
@@ -76,12 +72,12 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
                     plugin_names.push_back(help_arg);
                 }
             }
-            unique_ptr<options::DocPrinter> doc_printer;
+            unique_ptr<plugins::DocPrinter> doc_printer;
             if (txt2tags)
-                doc_printer = utils::make_unique_ptr<options::Txt2TagsPrinter>(
+                doc_printer = utils::make_unique_ptr<plugins::Txt2TagsPrinter>(
                     cout, registry);
             else
-                doc_printer = utils::make_unique_ptr<options::PlainPrinter>(
+                doc_printer = utils::make_unique_ptr<plugins::PlainPrinter>(
                     cout, registry);
             if (plugin_names.empty()) {
                 doc_printer->print_all();
@@ -127,9 +123,8 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
     return engine;
 }
 
-
 shared_ptr<SearchEngine> parse_cmd_line(
-    int argc, const char **argv, options::Registry &registry, bool dry_run, bool is_unit_cost) {
+    int argc, const char **argv, plugins::Registry &registry, bool dry_run, bool is_unit_cost) {
     vector<string> args;
     bool active = true;
     for (int i = 1; i < argc; ++i) {
@@ -149,10 +144,9 @@ shared_ptr<SearchEngine> parse_cmd_line(
     return parse_cmd_line_aux(args, registry, dry_run);
 }
 
-
-string usage(const string &progname) {
-    return "usage: \n" +
-           progname + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
+string usage() {
+    return "usage: \n" + g_program_name +
+           " [OPTIONS] --search SEARCH < OUTPUT\n\n"
            "* SEARCH (SearchEngine): configuration of the search algorithm\n"
            "* OUTPUT (filename): translator output\n\n"
            "Options:\n"
@@ -173,3 +167,5 @@ string usage(const string &progname) {
            "    Start enumerating plan files with COUNTER+1, i.e. FILENAME.COUNTER+1\n\n"
            "See https://www.fast-downward.org for details.";
 }
+
+std::string g_program_name;

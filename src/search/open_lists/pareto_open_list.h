@@ -2,13 +2,14 @@
 #define OPEN_LISTS_PARETO_OPEN_LIST_H
 
 #include "../open_list_factory.h"
-#include "../option_parser_util.h"
+
+#include "../plugins/options.h"
 
 namespace pareto_open_list {
 class ParetoOpenListFactory : public OpenListFactory {
-    Options options;
+    plugins::Options options;
 public:
-    explicit ParetoOpenListFactory(const Options &options);
+    explicit ParetoOpenListFactory(const plugins::Options &options);
     virtual ~ParetoOpenListFactory() override = default;
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;

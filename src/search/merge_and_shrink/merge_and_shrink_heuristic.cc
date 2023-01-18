@@ -7,11 +7,8 @@
 #include "transition_system.h"
 #include "types.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
-
 #include "../utils/markup.h"
 #include "../utils/system.h"
 
@@ -23,7 +20,7 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
-MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const options::Options &opts)
+MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(const plugins::Options &opts)
     : Heuristic(opts) {
     log << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(opts);
@@ -125,105 +122,109 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &ancestor_state) {
     return heuristic;
 }
 
-static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
-    parser.document_synopsis(
-        "Merge-and-shrink heuristic",
-        "This heuristic implements the algorithm described in the following "
-        "paper:" + utils::format_conference_reference(
-            {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
-            "Generalized Label Reduction for Merge-and-Shrink Heuristics",
-            "https://ai.dmi.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
-            "Proceedings of the 28th AAAI Conference on Artificial"
-            " Intelligence (AAAI 2014)",
-            "2358-2366",
-            "AAAI Press",
-            "2014") + "\n" +
-        "For a more exhaustive description of merge-and-shrink, see the journal "
-        "paper" + utils::format_journal_reference(
-            {"Silvan Sievers", "Malte Helmert"},
-            "Merge-and-Shrink: A Compositional Theory of Transformations "
-            "of Factored Transition Systems",
-            "https://ai.dmi.unibas.ch/papers/sievers-helmert-jair2021.pdf",
-            "Journal of Artificial Intelligence Research",
-            "71",
-            "781-883",
-            "2021") + "\n" +
-        "The following paper describes how to improve the DFP merge strategy "
-        "with tie-breaking, and presents two new merge strategies (dyn-MIASM "
-        "and SCC-DFP):" + utils::format_conference_reference(
-            {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
-            "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
-            "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
-            "Proceedings of the 26th International Conference on Automated "
-            "Planning and Scheduling (ICAPS 2016)",
-            "294-298",
-            "AAAI Press",
-            "2016") + "\n" +
-        "Details of the algorithms and the implementation are described in the "
-        "paper" + utils::format_conference_reference(
-            {"Silvan Sievers"},
-            "Merge-and-Shrink Heuristics for Classical Planning: Efficient "
-            "Implementation and Partial Abstractions",
-            "https://ai.dmi.unibas.ch/papers/sievers-socs2018.pdf",
-            "Proceedings of the 11th Annual Symposium on Combinatorial Search "
-            "(SoCS 2018)",
-            "90-98",
-            "AAAI Press",
-            "2018")
-        );
-    parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional effects", "supported (but see note)");
-    parser.document_language_support("axioms", "not supported");
-    parser.document_property("admissible", "yes (but see note)");
-    parser.document_property("consistent", "yes (but see note)");
-    parser.document_property("safe", "yes");
-    parser.document_property("preferred operators", "no");
-    parser.document_note(
-        "Note",
-        "Conditional effects are supported directly. Note, however, that "
-        "for tasks that are not factored (in the sense of the JACM 2014 "
-        "merge-and-shrink paper), the atomic transition systems on which "
-        "merge-and-shrink heuristics are based are nondeterministic, "
-        "which can lead to poor heuristics even when only perfect shrinking "
-        "is performed.");
-    parser.document_note(
-        "Note",
-        "When pruning unreachable states, admissibility and consistency is "
-        "only guaranteed for reachable states and transitions between "
-        "reachable states. While this does not impact regular A* search which "
-        "will never encounter any unreachable state, it impacts techniques "
-        "like symmetry-based pruning: a reachable state which is mapped to an "
-        "unreachable symmetric state (which hence is pruned) would falsely be "
-        "considered a dead-end and also be pruned, thus violating optimality "
-        "of the search.");
-    parser.document_note(
-        "Note",
-        "When using a time limit on the main loop of the merge-and-shrink "
-        "algorithm, the heuristic will compute the maximum over all heuristics "
-        "induced by the remaining factors if terminating the merge-and-shrink "
-        "algorithm early. Exception: if there is an unsolvable factor, it will "
-        "be used as the exclusive heuristic since the problem is unsolvable.");
-    parser.document_note(
-        "Note",
-        "A currently recommended good configuration uses bisimulation "
-        "based shrinking, the merge strategy SCC-DFP, and the appropriate "
-        "label reduction setting (max_states has been altered to be between "
-        "10k and 200k in the literature):\n"
-        "{{{\nmerge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
-        "merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector="
-        "score_based_filtering(scoring_functions=[goal_relevance,dfp,"
-        "total_order])),label_reduction=exact(before_shrinking=true,"
-        "before_merging=false),max_states=50k,threshold_before_merge=1)\n}}}\n");
+static shared_ptr<Heuristic> _parse(plugins::OptionParser &parser) {
+    {
+        parser.document_synopsis(
+            "Merge-and-shrink heuristic",
+            "This heuristic implements the algorithm described in the following "
+            "paper:" + utils::format_conference_reference(
+                {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
+                "Generalized Label Reduction for Merge-and-Shrink Heuristics",
+                "https://ai.dmi.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
+                "Proceedings of the 28th AAAI Conference on Artificial"
+                " Intelligence (AAAI 2014)",
+                "2358-2366",
+                "AAAI Press",
+                "2014") + "\n" +
+            "For a more exhaustive description of merge-and-shrink, see the journal "
+            "paper" + utils::format_journal_reference(
+                {"Silvan Sievers", "Malte Helmert"},
+                "Merge-and-Shrink: A Compositional Theory of Transformations "
+                "of Factored Transition Systems",
+                "https://ai.dmi.unibas.ch/papers/sievers-helmert-jair2021.pdf",
+                "Journal of Artificial Intelligence Research",
+                "71",
+                "781-883",
+                "2021") + "\n" +
+            "The following paper describes how to improve the DFP merge strategy "
+            "with tie-breaking, and presents two new merge strategies (dyn-MIASM "
+            "and SCC-DFP):" + utils::format_conference_reference(
+                {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
+                "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
+                "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
+                "Proceedings of the 26th International Conference on Automated "
+                "Planning and Scheduling (ICAPS 2016)",
+                "294-298",
+                "AAAI Press",
+                "2016") + "\n" +
+            "Details of the algorithms and the implementation are described in the "
+            "paper" + utils::format_conference_reference(
+                {"Silvan Sievers"},
+                "Merge-and-Shrink Heuristics for Classical Planning: Efficient "
+                "Implementation and Partial Abstractions",
+                "https://ai.dmi.unibas.ch/papers/sievers-socs2018.pdf",
+                "Proceedings of the 11th Annual Symposium on Combinatorial Search "
+                "(SoCS 2018)",
+                "90-98",
+                "AAAI Press",
+                "2018")
+            );
 
-    Heuristic::add_options_to_parser(parser);
-    add_merge_and_shrink_algorithm_options_to_parser(parser);
-    options::Options opts = parser.parse();
+        Heuristic::add_options_to_parser(parser);
+        add_merge_and_shrink_algorithm_options_to_parser(parser);
+
+        parser.document_note(
+            "Note",
+            "Conditional effects are supported directly. Note, however, that "
+            "for tasks that are not factored (in the sense of the JACM 2014 "
+            "merge-and-shrink paper), the atomic transition systems on which "
+            "merge-and-shrink heuristics are based are nondeterministic, "
+            "which can lead to poor heuristics even when only perfect shrinking "
+            "is performed.");
+        parser.document_note(
+            "Note",
+            "When pruning unreachable states, admissibility and consistency is "
+            "only guaranteed for reachable states and transitions between "
+            "reachable states. While this does not impact regular A* search which "
+            "will never encounter any unreachable state, it impacts techniques "
+            "like symmetry-based pruning: a reachable state which is mapped to an "
+            "unreachable symmetric state (which hence is pruned) would falsely be "
+            "considered a dead-end and also be pruned, thus violating optimality "
+            "of the search.");
+        parser.document_note(
+            "Note",
+            "When using a time limit on the main loop of the merge-and-shrink "
+            "algorithm, the heuristic will compute the maximum over all heuristics "
+            "induced by the remaining factors if terminating the merge-and-shrink "
+            "algorithm early. Exception: if there is an unsolvable factor, it will "
+            "be used as the exclusive heuristic since the problem is unsolvable.");
+        parser.document_note(
+            "Note",
+            "A currently recommended good configuration uses bisimulation "
+            "based shrinking, the merge strategy SCC-DFP, and the appropriate "
+            "label reduction setting (max_states has been altered to be between "
+            "10k and 200k in the literature):\n"
+            "{{{\nmerge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
+            "merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector="
+            "score_based_filtering(scoring_functions=[goal_relevance,dfp,"
+            "total_order])),label_reduction=exact(before_shrinking=true,"
+            "before_merging=false),max_states=50k,threshold_before_merge=1)\n}}}\n");
+
+        parser.document_language_support("action costs", "supported");
+        parser.document_language_support("conditional effects", "supported (but see note)");
+        parser.document_language_support("axioms", "not supported");
+
+        parser.document_property("admissible", "yes (but see note)");
+        parser.document_property("consistent", "yes (but see note)");
+        parser.document_property("safe", "yes");
+        parser.document_property("preferred operators", "no");
+    }
+
+    plugins::Options opts = parser.parse();
     if (parser.help_mode()) {
         return nullptr;
     }
-
     handle_shrink_limit_options_defaults(opts);
-
     if (parser.dry_run()) {
         return nullptr;
     } else {
@@ -231,5 +232,5 @@ static shared_ptr<Heuristic> _parse(options::OptionParser &parser) {
     }
 }
 
-static options::Plugin<Evaluator> _plugin("merge_and_shrink", _parse);
+static plugins::Plugin<Evaluator> _plugin("merge_and_shrink", _parse);
 }

@@ -3,10 +3,9 @@
 #include "pattern_information.h"
 #include "utils.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/variable_order_finder.h"
 #include "../utils/logging.h"
 #include "../utils/math.h"
@@ -17,7 +16,7 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorGreedy::PatternGeneratorGreedy(const Options &opts)
+PatternGeneratorGreedy::PatternGeneratorGreedy(const plugins::Options &opts)
     : PatternGenerator(opts), max_states(opts.get<int>("max_states")) {
 }
 
@@ -51,17 +50,17 @@ PatternInformation PatternGeneratorGreedy::compute_pattern(const shared_ptr<Abst
 }
 
 static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
-    parser.add_option<int>(
-        "max_states",
-        "maximal number of abstract states in the pattern database.",
-        "1000000",
-        Bounds("1", "infinity"));
-    add_generator_options_to_parser(parser);
-
+    {
+        parser.add_option<int>(
+            "max_states",
+            "maximal number of abstract states in the pattern database.",
+            "1000000",
+            plugins::Bounds("1", "infinity"));
+        add_generator_options_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
-
     return make_shared<PatternGeneratorGreedy>(opts);
 }
 

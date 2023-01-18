@@ -2,19 +2,14 @@
 
 using namespace std;
 
-namespace options {
-OptionParserError::OptionParserError(const string &msg)
-    : msg(msg) {
-}
-
+namespace plugins {
 void OptionParserError::print() const {
     cerr << "option parser error: " << msg << endl;
 }
 
-
 ParseError::ParseError(
     const string &msg, const ParseTree &parse_tree, const string &substring)
-    : msg(msg),
+    : utils::Exception(msg),
       parse_tree(parse_tree),
       substring(substring) {
 }

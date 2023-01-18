@@ -2,8 +2,7 @@
 
 #include "../evaluation_context.h"
 #include "../evaluation_result.h"
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 #include <cstdlib>
 #include <sstream>
@@ -11,7 +10,7 @@
 using namespace std;
 
 namespace weighted_evaluator {
-WeightedEvaluator::WeightedEvaluator(const Options &opts)
+WeightedEvaluator::WeightedEvaluator(const plugins::Options &opts)
     : Evaluator(opts),
       evaluator(opts.get<shared_ptr<Evaluator>>("eval")),
       w(opts.get<int>("weight")) {
@@ -42,13 +41,15 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
 }
 
 static shared_ptr<Evaluator> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Weighted evaluator",
-        "Multiplies the value of the evaluator with the given weight.");
-    parser.add_option<shared_ptr<Evaluator>>("eval", "evaluator");
-    parser.add_option<int>("weight", "weight");
-    add_evaluator_options_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Weighted evaluator",
+            "Multiplies the value of the evaluator with the given weight.");
 
+        parser.add_option<shared_ptr<Evaluator>>("eval", "evaluator");
+        parser.add_option<int>("weight", "weight");
+        add_evaluator_options_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;

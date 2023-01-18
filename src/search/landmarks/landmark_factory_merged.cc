@@ -3,9 +3,7 @@
 #include "landmark.h"
 #include "landmark_graph.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <set>
@@ -16,7 +14,7 @@ using utils::ExitCode;
 namespace landmarks {
 class LandmarkNode;
 
-LandmarkFactoryMerged::LandmarkFactoryMerged(const Options &opts)
+LandmarkFactoryMerged::LandmarkFactoryMerged(const plugins::Options &opts)
     : LandmarkFactory(opts),
       lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")) {
 }
@@ -155,26 +153,28 @@ bool LandmarkFactoryMerged::supports_conditional_effects() const {
 }
 
 static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Merged Landmarks",
-        "Merges the landmarks and orderings from the parameter landmarks");
-    parser.document_note(
-        "Precedence",
-        "Fact landmarks take precedence over disjunctive landmarks, "
-        "orderings take precedence in the usual manner "
-        "(gn > nat > reas > o_reas). ");
-    parser.document_note(
-        "Note",
-        "Does not currently support conjunctive landmarks");
-    parser.add_list_option<shared_ptr<LandmarkFactory>>("lm_factories");
-    add_landmark_factory_options_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Merged Landmarks",
+            "Merges the landmarks and orderings from the parameter landmarks");
+
+        parser.add_list_option<shared_ptr<LandmarkFactory>>("lm_factories");
+        add_landmark_factory_options_to_parser(parser);
+
+        parser.document_note(
+            "Precedence",
+            "Fact landmarks take precedence over disjunctive landmarks, "
+            "orderings take precedence in the usual manner "
+            "(gn > nat > reas > o_reas). ");
+        parser.document_note(
+            "Note",
+            "Does not currently support conjunctive landmarks");
+        parser.document_language_support(
+            "conditional_effects",
+            "supported if all components support them");
+    }
     Options opts = parser.parse();
-
     opts.verify_list_non_empty<shared_ptr<LandmarkFactory>>("lm_factories");
-
-    parser.document_language_support("conditional_effects",
-                                     "supported if all components support them");
-
     if (parser.dry_run())
         return nullptr;
     else

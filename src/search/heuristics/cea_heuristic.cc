@@ -2,8 +2,7 @@
 
 #include "domain_transition_graph.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
@@ -410,7 +409,7 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(
 }
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
-    const Options &opts)
+    const plugins::Options &opts)
     : Heuristic(opts),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
@@ -445,22 +444,25 @@ bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
 }
 
 static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis("Context-enhanced additive heuristic", "");
-    parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional effects", "supported");
-    parser.document_language_support(
-        "axioms",
-        "supported (in the sense that the planner won't complain -- "
-        "handling of axioms might be very stupid "
-        "and even render the heuristic unsafe)");
-    parser.document_property("admissible", "no");
-    parser.document_property("consistent", "no");
-    parser.document_property("safe", "no");
-    parser.document_property("preferred operators", "yes");
+    {
+        parser.document_synopsis("Context-enhanced additive heuristic", "");
 
-    Heuristic::add_options_to_parser(parser);
+        Heuristic::add_options_to_parser(parser);
+
+        parser.document_language_support("action costs", "supported");
+        parser.document_language_support("conditional effects", "supported");
+        parser.document_language_support(
+            "axioms",
+            "supported (in the sense that the planner won't complain -- "
+            "handling of axioms might be very stupid "
+            "and even render the heuristic unsafe)");
+
+        parser.document_property("admissible", "no");
+        parser.document_property("consistent", "no");
+        parser.document_property("safe", "no");
+        parser.document_property("preferred operators", "yes");
+    }
     Options opts = parser.parse();
-
     if (parser.dry_run())
         return nullptr;
     else

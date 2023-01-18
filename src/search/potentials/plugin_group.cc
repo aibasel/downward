@@ -1,4 +1,4 @@
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 namespace potentials {
 static PluginGroupPlugin _plugin(

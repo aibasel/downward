@@ -2,7 +2,7 @@
 
 using namespace std;
 
-namespace options {
+namespace plugins {
 RawPluginInfo::RawPluginInfo(
     const string &key,
     const Any &factory,

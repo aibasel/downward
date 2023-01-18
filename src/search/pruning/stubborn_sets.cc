@@ -1,13 +1,12 @@
 #include "stubborn_sets.h"
 
-#include "../option_parser.h"
-
 #include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
 
 using namespace std;
 
 namespace stubborn_sets {
-StubbornSets::StubbornSets(const Options &opts)
+StubbornSets::StubbornSets(const plugins::Options &opts)
     : PruningMethod(opts),
       num_operators(-1) {
 }

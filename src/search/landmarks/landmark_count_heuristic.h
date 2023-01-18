@@ -49,7 +49,7 @@ class LandmarkCountHeuristic : public Heuristic {
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    explicit LandmarkCountHeuristic(const options::Options &opts);
+    explicit LandmarkCountHeuristic(const plugins::Options &opts);
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) override {

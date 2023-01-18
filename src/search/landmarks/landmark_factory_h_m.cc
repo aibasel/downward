@@ -4,9 +4,8 @@
 #include "landmark.h"
 
 #include "../abstract_task.h"
-#include "../option_parser.h"
-#include "../plugin.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
@@ -569,7 +568,7 @@ bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
         variables[fact2.var].get_fact(fact2.value));
 }
 
-LandmarkFactoryHM::LandmarkFactoryHM(const options::Options &opts)
+LandmarkFactoryHM::LandmarkFactoryHM(const plugins::Options &opts)
     : LandmarkFactory(opts),
       m_(opts.get<int>("m")),
       conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
@@ -1019,25 +1018,28 @@ bool LandmarkFactoryHM::supports_conditional_effects() const {
 }
 
 static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "h^m Landmarks",
-        "The landmark generation method introduced by "
-        "Keyder, Richter & Helmert (ECAI 2010).");
-    parser.add_option<int>(
-        "m", "subset size (if unsure, use the default of 2)", "2");
-    parser.add_option<bool>(
-        "conjunctive_landmarks",
-        "keep conjunctive landmarks",
-        "true");
-    add_landmark_factory_options_to_parser(parser);
-    add_use_orders_option_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "h^m Landmarks",
+            "The landmark generation method introduced by "
+            "Keyder, Richter & Helmert (ECAI 2010).");
+
+        parser.add_option<int>(
+            "m", "subset size (if unsure, use the default of 2)", "2");
+        parser.add_option<bool>(
+            "conjunctive_landmarks",
+            "keep conjunctive landmarks",
+            "true");
+        add_landmark_factory_options_to_parser(parser);
+        add_use_orders_option_to_parser(parser);
+
+        parser.document_language_support(
+            "conditional_effects",
+            "ignored, i.e. not supported");
+    }
     Options opts = parser.parse();
     if (parser.help_mode())
         return nullptr;
-
-    parser.document_language_support("conditional_effects",
-                                     "ignored, i.e. not supported");
-
     if (parser.dry_run())
         return nullptr;
     else

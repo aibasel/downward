@@ -1,14 +1,13 @@
 #include "stubborn_sets_simple.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
+#include "../utils/logging.h"
 #include "../utils/markup.h"
 
 using namespace std;
 
 namespace stubborn_sets_simple {
-StubbornSetsSimple::StubbornSetsSimple(const options::Options &opts)
+StubbornSetsSimple::StubbornSetsSimple(const plugins::Options &opts)
     : StubbornSetsActionCentric(opts) {
 }
 
@@ -75,39 +74,39 @@ void StubbornSetsSimple::handle_stubborn_operator(const State &state,
 }
 
 static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Stubborn sets simple",
-        "Stubborn sets represent a state pruning method which computes a subset "
-        "of applicable operators in each state such that completeness and "
-        "optimality of the overall search is preserved. As stubborn sets rely "
-        "on several design choices, there are different variants thereof. "
-        "The variant 'StubbornSetsSimple' resolves the design choices in a "
-        "straight-forward way. For details, see the following papers: "
-        + utils::format_conference_reference(
-            {"Yusra Alkhazraji", "Martin Wehrle", "Robert Mattmueller", "Malte Helmert"},
-            "A Stubborn Set Algorithm for Optimal Planning",
-            "https://ai.dmi.unibas.ch/papers/alkhazraji-et-al-ecai2012.pdf",
-            "Proceedings of the 20th European Conference on Artificial Intelligence "
-            "(ECAI 2012)",
-            "891-892",
-            "IOS Press",
-            "2012")
-        + utils::format_conference_reference(
-            {"Martin Wehrle", "Malte Helmert"},
-            "Efficient Stubborn Sets: Generalized Algorithms and Selection Strategies",
-            "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7922/8042",
-            "Proceedings of the 24th International Conference on Automated Planning "
-            " and Scheduling (ICAPS 2014)",
-            "323-331",
-            "AAAI Press",
-            "2014"));
-    add_pruning_options_to_parser(parser);
-
+    {
+        parser.document_synopsis(
+            "Stubborn sets simple",
+            "Stubborn sets represent a state pruning method which computes a subset "
+            "of applicable operators in each state such that completeness and "
+            "optimality of the overall search is preserved. As stubborn sets rely "
+            "on several design choices, there are different variants thereof. "
+            "The variant 'StubbornSetsSimple' resolves the design choices in a "
+            "straight-forward way. For details, see the following papers: "
+            + utils::format_conference_reference(
+                {"Yusra Alkhazraji", "Martin Wehrle", "Robert Mattmueller", "Malte Helmert"},
+                "A Stubborn Set Algorithm for Optimal Planning",
+                "https://ai.dmi.unibas.ch/papers/alkhazraji-et-al-ecai2012.pdf",
+                "Proceedings of the 20th European Conference on Artificial Intelligence "
+                "(ECAI 2012)",
+                "891-892",
+                "IOS Press",
+                "2012")
+            + utils::format_conference_reference(
+                {"Martin Wehrle", "Malte Helmert"},
+                "Efficient Stubborn Sets: Generalized Algorithms and Selection Strategies",
+                "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7922/8042",
+                "Proceedings of the 24th International Conference on Automated Planning "
+                " and Scheduling (ICAPS 2014)",
+                "323-331",
+                "AAAI Press",
+                "2014"));
+        add_pruning_options_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run()) {
         return nullptr;
     }
-
     return make_shared<StubbornSetsSimple>(opts);
 }
 

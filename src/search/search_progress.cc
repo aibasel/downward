@@ -3,7 +3,7 @@
 #include "evaluation_context.h"
 #include "evaluator.h"
 
-#include "../utils/logging.h"
+#include "utils/logging.h"
 
 #include <iostream>
 #include <string>

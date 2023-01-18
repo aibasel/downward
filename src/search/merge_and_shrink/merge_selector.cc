@@ -2,8 +2,7 @@
 
 #include "factored_transition_system.h"
 
-#include "../options/plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <cassert>
@@ -50,7 +49,7 @@ void MergeSelector::dump_options(utils::LogProxy &log) const {
     }
 }
 
-static options::PluginTypePlugin<MergeSelector> _type_plugin(
+static plugins::PluginTypePlugin<MergeSelector> _type_plugin(
     "MergeSelector",
     "This page describes the available merge selectors. They are used to "
     "compute the next merge purely based on the state of the given factored "

@@ -1,9 +1,8 @@
 #include "cost_adapted_task.h"
 
 #include "../operator_cost.h"
-#include "../option_parser.h"
-#include "../plugin.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../tasks/root_task.h"
 #include "../utils/system.h"
@@ -28,12 +27,14 @@ int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
     return get_adjusted_action_cost(op, cost_type, parent_is_unit_cost);
 }
 
-
 static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Cost-adapted task",
-        "A cost-adapting transformation of the root task.");
-    add_cost_type_option_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Cost-adapted task",
+            "A cost-adapting transformation of the root task.");
+
+        add_cost_type_option_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run()) {
         return nullptr;

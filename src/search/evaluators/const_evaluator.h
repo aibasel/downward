@@ -3,7 +3,7 @@
 
 #include "../evaluator.h"
 
-namespace options {
+namespace plugins {
 class Options;
 }
 
@@ -16,7 +16,7 @@ protected:
         EvaluationContext &eval_context) override;
 
 public:
-    explicit ConstEvaluator(const options::Options &opts);
+    explicit ConstEvaluator(const plugins::Options &opts);
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &) override {}
     virtual ~ConstEvaluator() override = default;

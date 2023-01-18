@@ -1,9 +1,8 @@
 #include "alternation_open_list.h"
 
 #include "../open_list.h"
-#include "../option_parser.h"
-#include "../plugin.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/memory.h"
 #include "../utils/system.h"
 
@@ -26,7 +25,7 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit AlternationOpenList(const Options &opts);
+    explicit AlternationOpenList(const plugins::Options &opts);
     virtual ~AlternationOpenList() override = default;
 
     virtual Entry remove_min() override;
@@ -43,7 +42,7 @@ public:
 
 
 template<class Entry>
-AlternationOpenList<Entry>::AlternationOpenList(const Options &opts)
+AlternationOpenList<Entry>::AlternationOpenList(const plugins::Options &opts)
     : boost_amount(opts.get<int>("boost")) {
     vector<shared_ptr<OpenListFactory>> open_list_factories(
         opts.get_list<shared_ptr<OpenListFactory>>("sublists"));
@@ -128,7 +127,7 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
 }
 
 
-AlternationOpenListFactory::AlternationOpenListFactory(const Options &options)
+AlternationOpenListFactory::AlternationOpenListFactory(const plugins::Options &options)
     : options(options) {
 }
 
@@ -143,16 +142,20 @@ AlternationOpenListFactory::create_edge_open_list() {
 }
 
 static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
-    parser.document_synopsis("Alternation open list",
-                             "alternates between several open lists.");
-    parser.add_list_option<shared_ptr<OpenListFactory>>(
-        "sublists",
-        "open lists between which this one alternates");
-    parser.add_option<int>(
-        "boost",
-        "boost value for contained open lists that are restricted "
-        "to preferred successors",
-        "0");
+    {
+        parser.document_synopsis(
+            "Alternation open list",
+            "alternates between several open lists.");
+
+        parser.add_list_option<shared_ptr<OpenListFactory>>(
+            "sublists",
+            "open lists between which this one alternates");
+        parser.add_option<int>(
+            "boost",
+            "boost value for contained open lists that are restricted "
+            "to preferred successors",
+            "0");
+    }
 
     Options opts = parser.parse();
     opts.verify_list_non_empty<shared_ptr<OpenListFactory>>("sublists");

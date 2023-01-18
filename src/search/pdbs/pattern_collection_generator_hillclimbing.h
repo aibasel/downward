@@ -132,7 +132,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     virtual PatternCollectionInformation compute_patterns(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
-    explicit PatternCollectionGeneratorHillclimbing(const options::Options &opts);
+    explicit PatternCollectionGeneratorHillclimbing(const plugins::Options &opts);
     virtual ~PatternCollectionGeneratorHillclimbing() = default;
 };
 }

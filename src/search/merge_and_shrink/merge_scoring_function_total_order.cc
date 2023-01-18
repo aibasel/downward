@@ -5,10 +5,7 @@
 
 #include "../task_proxy.h"
 
-#include "../options/option_parser.h"
-#include "../options/options.h"
-#include "../options/plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"
@@ -20,7 +17,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
-    const options::Options &options)
+    const plugins::Options &options)
     : atomic_ts_order(options.get<AtomicTSOrder>("atomic_ts_order")),
       product_ts_order(options.get<ProductTSOrder>("product_ts_order")),
       atomic_before_product(options.get<bool>("atomic_before_product")),
@@ -157,42 +154,24 @@ void MergeScoringFunctionTotalOrder::dump_function_specific_options(utils::LogPr
     }
 }
 
+static vector<pair<string, string>> _enum_data_atomic_ts_order();
+static vector<pair<string, string>> _enum_data_product_ts_order();
+
 void MergeScoringFunctionTotalOrder::add_options_to_parser(
-    options::OptionParser &parser) {
-    vector<string> atomic_ts_order;
-    vector<string> atomic_ts_order_documentation;
-    atomic_ts_order.push_back("reverse_level");
-    atomic_ts_order_documentation.push_back(
-        "the variable order of Fast Downward");
-    atomic_ts_order.push_back("level");
-    atomic_ts_order_documentation.push_back("opposite of reverse_level");
-    atomic_ts_order.push_back("random");
-    atomic_ts_order_documentation.push_back("a randomized order");
+    plugins::OptionParser &parser) {
     parser.add_enum_option<AtomicTSOrder>(
         "atomic_ts_order",
-        atomic_ts_order,
+        _enum_data_atomic_ts_order(),
         "The order in which atomic transition systems are considered when "
         "considering pairs of potential merges.",
-        "reverse_level",
-        atomic_ts_order_documentation);
+        "reverse_level");
 
-    vector<string> product_ts_order;
-    vector<string> product_ts_order_documentation;
-    product_ts_order.push_back("old_to_new");
-    product_ts_order_documentation.push_back(
-        "consider composite transition systems from most recent to oldest, "
-        "that is in decreasing index order");
-    product_ts_order.push_back("new_to_old");
-    product_ts_order_documentation.push_back("opposite of old_to_new");
-    product_ts_order.push_back("random");
-    product_ts_order_documentation.push_back("a randomized order");
     parser.add_enum_option<ProductTSOrder>(
         "product_ts_order",
-        product_ts_order,
+        _enum_data_product_ts_order(),
         "The order in which product transition systems are considered when "
         "considering pairs of potential merges.",
-        "new_to_old",
-        product_ts_order_documentation);
+        "new_to_old");
 
     parser.add_option<bool>(
         "atomic_before_product",
@@ -202,35 +181,58 @@ void MergeScoringFunctionTotalOrder::add_options_to_parser(
     utils::add_rng_options(parser);
 }
 
-static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
-    parser.document_synopsis(
-        "Total order",
-        "This scoring function computes a total order on the merge candidates, "
-        "based on the specified options. The score for each merge candidate "
-        "correponds to its position in the order. This scoring function is "
-        "mainly intended as tie-breaking, and has been introduced in the "
-        "following paper:"
-        + utils::format_conference_reference(
-            {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
-            "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
-            "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
-            "Proceedings of the 26th International Conference on Automated "
-            "Planning and Scheduling (ICAPS 2016)",
-            "294-298",
-            "AAAI Press",
-            "2016") +
-        "Furthermore, using the atomic_ts_order option, this scoring function, "
-        "if used alone in a score based filtering merge selector, can be used "
-        "to emulate the corresponding (precomputed) linear merge strategies "
-        "reverse level/level (independently of the other options).");
-    MergeScoringFunctionTotalOrder::add_options_to_parser(parser);
-
-    options::Options options = parser.parse();
+static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
+    {
+        parser.document_synopsis(
+            "Total order",
+            "This scoring function computes a total order on the merge candidates, "
+            "based on the specified options. The score for each merge candidate "
+            "correponds to its position in the order. This scoring function is "
+            "mainly intended as tie-breaking, and has been introduced in the "
+            "following paper:"
+            + utils::format_conference_reference(
+                {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
+                "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
+                "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
+                "Proceedings of the 26th International Conference on Automated "
+                "Planning and Scheduling (ICAPS 2016)",
+                "294-298",
+                "AAAI Press",
+                "2016") +
+            "Furthermore, using the atomic_ts_order option, this scoring function, "
+            "if used alone in a score based filtering merge selector, can be used "
+            "to emulate the corresponding (precomputed) linear merge strategies "
+            "reverse level/level (independently of the other options).");
+        MergeScoringFunctionTotalOrder::add_options_to_parser(parser);
+    }
+    plugins::Options options = parser.parse();
     if (parser.dry_run())
         return nullptr;
     else
         return make_shared<MergeScoringFunctionTotalOrder>(options);
 }
 
-static options::Plugin<MergeScoringFunction> _plugin("total_order", _parse);
+static plugins::Plugin<MergeScoringFunction> _plugin("total_order", _parse);
+
+static vector<pair<string, string>> _enum_data_atomic_ts_order() {
+    return {
+        {"reverse_level",
+         "the variable order of Fast Downward"},
+        {"level",
+         "opposite of reverse_level"},
+        {"random",
+         "a randomized order"}
+    };
+}
+
+static vector<pair<string, string>> _enum_data_product_ts_order() {
+    return {
+        {"old_to_new",
+         "consider composite transition systems from oldest to most recent"},
+        {"new_to_old",
+         "opposite of old_to_new"},
+        {"random",
+         "a randomized order"}
+    };
+}
 }

@@ -1,11 +1,11 @@
 #include "command_line.h"
-#include "option_parser.h"
 #include "search_engine.h"
 
-#include "options/registries.h"
+#include "plugins/errors.h"
+#include "plugins/registries.h"
 #include "tasks/root_task.h"
 #include "task_utils/task_properties.h"
-#include "../utils/logging.h"
+#include "utils/logging.h"
 #include "utils/system.h"
 #include "utils/timer.h"
 
@@ -17,8 +17,10 @@ using utils::ExitCode;
 int main(int argc, const char **argv) {
     utils::register_event_handlers();
 
+    g_program_name = argv[0];
+
     if (argc < 2) {
-        utils::g_log << usage(argv[0]) << endl;
+        utils::g_log << usage() << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
@@ -36,18 +38,18 @@ int main(int argc, const char **argv) {
     // The command line is parsed twice: once in dry-run mode, to
     // check for simple input errors, and then in normal mode.
     try {
-        options::Registry registry(*options::RawRegistry::instance());
+        plugins::Registry registry(*plugins::RawRegistry::instance());
         parse_cmd_line(argc, argv, registry, true, unit_cost);
         engine = parse_cmd_line(argc, argv, registry, false, unit_cost);
     } catch (const ArgError &error) {
         error.print();
-        usage(argv[0]);
+        usage();
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    } catch (const OptionParserError &error) {
+    } catch (const plugins::OptionParserError &error) {
         error.print();
-        usage(argv[0]);
+        usage();
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    } catch (const ParseError &error) {
+    } catch (const plugins::ParseError &error) {
         error.print();
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }

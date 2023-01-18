@@ -4,8 +4,8 @@
 #include "potential_optimizer.h"
 
 #include "../heuristic.h"
-#include "../option_parser.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/sampling.h"
 #include "../utils/markup.h"
 
@@ -61,7 +61,7 @@ void prepare_parser_for_admissible_potentials(OptionParser &parser) {
         "while using very low weights limits the choice of potential "
         "heuristics. For details, see the ICAPS paper cited above.",
         "1e8",
-        Bounds("0.0", "infinity"));
+        plugins::Bounds("0.0", "infinity"));
     lp::add_lp_solver_option_to_parser(parser);
     Heuristic::add_options_to_parser(parser);
 }

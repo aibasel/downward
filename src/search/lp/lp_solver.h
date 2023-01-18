@@ -27,7 +27,7 @@
 class CoinPackedVectorBase;
 class OsiSolverInterface;
 
-namespace options {
+namespace plugins {
 class OptionParser;
 }
 
@@ -40,7 +40,7 @@ enum class LPObjectiveSense {
     MAXIMIZE, MINIMIZE
 };
 
-void add_lp_solver_option_to_parser(options::OptionParser &parser);
+void add_lp_solver_option_to_parser(plugins::OptionParser &parser);
 
 class LinearProgram;
 

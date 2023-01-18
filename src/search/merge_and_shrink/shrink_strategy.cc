@@ -3,7 +3,7 @@
 #include "factored_transition_system.h"
 #include "transition_system.h"
 
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 #include "../utils/logging.h"
 

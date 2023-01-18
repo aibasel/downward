@@ -2,8 +2,7 @@
 
 #include "potential_function.h"
 
-#include "../option_parser.h"
-
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/memory.h"
@@ -20,7 +19,7 @@ static int get_undefined_value(VariableProxy var) {
     return var.get_domain_size();
 }
 
-PotentialOptimizer::PotentialOptimizer(const Options &opts)
+PotentialOptimizer::PotentialOptimizer(const plugins::Options &opts)
     : task(opts.get<shared_ptr<AbstractTask>>("transform")),
       task_proxy(*task),
       lp_solver(opts.get<lp::LPSolverType>("lpsolver")),

@@ -1,7 +1,8 @@
 #include "abstract_task.h"
 
 #include "per_task_information.h"
-#include "plugin.h"
+
+#include "plugins/plugin.h"
 
 #include <iostream>
 

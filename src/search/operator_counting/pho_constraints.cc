@@ -1,13 +1,9 @@
 #include "pho_constraints.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
 #include "../lp/lp_solver.h"
-
 #include "../pdbs/pattern_database.h"
 #include "../pdbs/pattern_generator.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/markup.h"
 
 #include <cassert>
@@ -18,7 +14,7 @@
 using namespace std;
 
 namespace operator_counting {
-PhOConstraints::PhOConstraints(const Options &opts)
+PhOConstraints::PhOConstraints(const plugins::Options &opts)
     : pattern_generator(
           opts.get<shared_ptr<pdbs::PatternCollectionGenerator>>("patterns")) {
 }
@@ -66,29 +62,29 @@ bool PhOConstraints::update_constraints(const State &state,
 }
 
 static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Posthoc optimization constraints",
-        "The generator will compute a PDB for each pattern and add the"
-        " constraint h(s) <= sum_{o in relevant(h)} Count_o. For details,"
-        " see" + utils::format_conference_reference(
-            {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
-            "Getting the Most Out of Pattern Databases for Classical Planning",
-            "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf",
-            "Proceedings of the Twenty-Third International Joint"
-            " Conference on Artificial Intelligence (IJCAI 2013)",
-            "2357-2364",
-            "AAAI Press",
-            "2013"));
+    {
+        parser.document_synopsis(
+            "Posthoc optimization constraints",
+            "The generator will compute a PDB for each pattern and add the"
+            " constraint h(s) <= sum_{o in relevant(h)} Count_o. For details,"
+            " see" + utils::format_conference_reference(
+                {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
+                "Getting the Most Out of Pattern Databases for Classical Planning",
+                "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf",
+                "Proceedings of the Twenty-Third International Joint"
+                " Conference on Artificial Intelligence (IJCAI 2013)",
+                "2357-2364",
+                "AAAI Press",
+                "2013"));
 
-    parser.add_option<shared_ptr<pdbs::PatternCollectionGenerator>>(
-        "patterns",
-        "pattern generation method",
-        "systematic(2)");
-
+        parser.add_option<shared_ptr<pdbs::PatternCollectionGenerator>>(
+            "patterns",
+            "pattern generation method",
+            "systematic(2)");
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
-
     return make_shared<PhOConstraints>(opts);
 }
 

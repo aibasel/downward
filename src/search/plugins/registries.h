@@ -1,5 +1,5 @@
-#ifndef OPTIONS_REGISTRIES_H
-#define OPTIONS_REGISTRIES_H
+#ifndef PLUGINS_REGISTRIES_H
+#define PLUGINS_REGISTRIES_H
 
 #include "any.h"
 #include "doc_utils.h"
@@ -12,7 +12,7 @@
 #include <vector>
 
 
-namespace options {
+namespace plugins {
 class OptionParser;
 class Predefinitions;
 

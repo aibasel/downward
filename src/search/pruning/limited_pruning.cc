@@ -1,12 +1,12 @@
 #include "limited_pruning.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
+#include "../utils/logging.h"
 
 using namespace std;
 
 namespace limited_pruning {
-LimitedPruning::LimitedPruning(const Options &opts)
+LimitedPruning::LimitedPruning(const plugins::Options &opts)
     : PruningMethod(opts),
       pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")),
       min_required_pruning_ratio(opts.get<double>("min_required_pruning_ratio")),
@@ -50,40 +50,42 @@ void LimitedPruning::prune(
 }
 
 static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Limited pruning",
-        "Limited pruning applies another pruning method and switches it off "
-        "after a fixed number of expansions if the pruning ratio is below a "
-        "given value. The pruning ratio is the sum of all pruned operators "
-        "divided by the sum of all operators before pruning, considering all "
-        "previous expansions.");
-    parser.add_option<shared_ptr<PruningMethod>>(
-        "pruning",
-        "the underlying pruning method to be applied");
-    parser.document_note(
-        "Example",
-        "To use atom centric stubborn sets and limit them, use\n"
-        "{{{\npruning=limited_pruning(pruning=atom_centric_stubborn_sets(),"
-        "min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000)\n}}}\n"
-        "in an eager search such as astar.");
-    parser.add_option<double>(
-        "min_required_pruning_ratio",
-        "disable pruning if the pruning ratio is lower than this value after"
-        " 'expansions_before_checking_pruning_ratio' expansions",
-        "0.2",
-        Bounds("0.0", "1.0"));
-    parser.add_option<int>(
-        "expansions_before_checking_pruning_ratio",
-        "number of expansions before deciding whether to disable pruning",
-        "1000",
-        Bounds("0", "infinity"));
-    add_pruning_options_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Limited pruning",
+            "Limited pruning applies another pruning method and switches it off "
+            "after a fixed number of expansions if the pruning ratio is below a "
+            "given value. The pruning ratio is the sum of all pruned operators "
+            "divided by the sum of all operators before pruning, considering all "
+            "previous expansions.");
 
+        parser.add_option<shared_ptr<PruningMethod>>(
+            "pruning",
+            "the underlying pruning method to be applied");
+        parser.add_option<double>(
+            "min_required_pruning_ratio",
+            "disable pruning if the pruning ratio is lower than this value after"
+            " 'expansions_before_checking_pruning_ratio' expansions",
+            "0.2",
+            plugins::Bounds("0.0", "1.0"));
+        parser.add_option<int>(
+            "expansions_before_checking_pruning_ratio",
+            "number of expansions before deciding whether to disable pruning",
+            "1000",
+            plugins::Bounds("0", "infinity"));
+        add_pruning_options_to_parser(parser);
+
+        parser.document_note(
+            "Example",
+            "To use atom centric stubborn sets and limit them, use\n"
+            "{{{\npruning=limited_pruning(pruning=atom_centric_stubborn_sets(),"
+            "min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000)\n}}}\n"
+            "in an eager search such as astar.");
+    }
     Options opts = parser.parse();
     if (parser.dry_run()) {
         return nullptr;
     }
-
     return make_shared<LimitedPruning>(opts);
 }
 

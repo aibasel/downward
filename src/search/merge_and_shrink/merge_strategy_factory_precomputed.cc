@@ -4,17 +4,14 @@
 #include "merge_tree_factory.h"
 #include "merge_tree.h"
 
-#include "../options/option_parser.h"
-#include "../options/options.h"
-#include "../options/plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/memory.h"
 
 using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyFactoryPrecomputed::MergeStrategyFactoryPrecomputed(
-    options::Options &options)
+    const plugins::Options &options)
     : MergeStrategyFactory(options),
       merge_tree_factory(options.get<shared_ptr<MergeTreeFactory>>("merge_tree")) {
 }
@@ -44,34 +41,36 @@ void MergeStrategyFactoryPrecomputed::dump_strategy_specific_options() const {
     }
 }
 
-static shared_ptr<MergeStrategyFactory>_parse(options::OptionParser &parser) {
-    parser.document_synopsis(
-        "Precomputed merge strategy",
-        "This merge strategy has a precomputed merge tree. Note that this "
-        "merge strategy does not take into account the current state of "
-        "the factored transition system. This also means that this merge "
-        "strategy relies on the factored transition system being synchronized "
-        "with this merge tree, i.e. all merges are performed exactly as given "
-        "by the merge tree.");
-    parser.document_note(
-        "Note",
-        "An example of a precomputed merge startegy is a linear merge strategy, "
-        "which can be obtained using:\n"
-        "{{{\n"
-        "merge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))"
-        "\n}}}");
-    parser.add_option<shared_ptr<MergeTreeFactory>>(
-        "merge_tree",
-        "The precomputed merge tree.");
+static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
+    {
+        parser.document_synopsis(
+            "Precomputed merge strategy",
+            "This merge strategy has a precomputed merge tree. Note that this "
+            "merge strategy does not take into account the current state of "
+            "the factored transition system. This also means that this merge "
+            "strategy relies on the factored transition system being synchronized "
+            "with this merge tree, i.e. all merges are performed exactly as given "
+            "by the merge tree.");
 
-    add_merge_strategy_options_to_parser(parser);
+        parser.add_option<shared_ptr<MergeTreeFactory>>(
+            "merge_tree",
+            "The precomputed merge tree.");
+        add_merge_strategy_options_to_parser(parser);
 
-    options::Options opts = parser.parse();
+        parser.document_note(
+            "Note",
+            "An example of a precomputed merge startegy is a linear merge strategy, "
+            "which can be obtained using:\n"
+            "{{{\n"
+            "merge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))"
+            "\n}}}");
+    }
+    plugins::Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
     else
         return make_shared<MergeStrategyFactoryPrecomputed>(opts);
 }
 
-static options::Plugin<MergeStrategyFactory> _plugin("merge_precomputed", _parse);
+static plugins::Plugin<MergeStrategyFactory> _plugin("merge_precomputed", _parse);
 }

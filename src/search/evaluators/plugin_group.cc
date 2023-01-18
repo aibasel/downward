@@ -1,4 +1,4 @@
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 namespace evaluators_plugin_group {
 static PluginGroupPlugin _plugin(

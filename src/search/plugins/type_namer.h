@@ -1,5 +1,5 @@
-#ifndef OPTIONS_TYPE_NAMER_H
-#define OPTIONS_TYPE_NAMER_H
+#ifndef PLUGINS_TYPE_NAMER_H
+#define PLUGINS_TYPE_NAMER_H
 
 #include "parse_tree.h"
 #include "registries.h"
@@ -8,7 +8,7 @@
 #include <string>
 #include <typeindex>
 
-namespace options {
+namespace plugins {
 /*
   TypeNamer prints out names of types.
 

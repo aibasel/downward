@@ -18,7 +18,7 @@ class PatternGeneratorCEGAR : public PatternGenerator {
     virtual PatternInformation compute_pattern(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
-    explicit PatternGeneratorCEGAR(options::Options &opts);
+    explicit PatternGeneratorCEGAR(const plugins::Options &opts);
 };
 }
 

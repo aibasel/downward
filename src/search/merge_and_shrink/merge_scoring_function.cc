@@ -1,7 +1,6 @@
 #include "merge_scoring_function.h"
 
-#include "../options/plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <iostream>
@@ -21,7 +20,7 @@ void MergeScoringFunction::dump_options(utils::LogProxy &log) const {
     }
 }
 
-static options::PluginTypePlugin<MergeScoringFunction> _type_plugin(
+static plugins::PluginTypePlugin<MergeScoringFunction> _type_plugin(
     "MergeScoringFunction",
     "This page describes various merge scoring functions. A scoring function, "
     "given a list of merge candidates and a factored transition system, "

@@ -17,7 +17,7 @@ class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGenerato
         const FactPair &goal,
         std::unordered_set<int> &&blacklisted_variables) override;
 public:
-    explicit PatternCollectionGeneratorMultipleCegar(options::Options &opts);
+    explicit PatternCollectionGeneratorMultipleCegar(const plugins::Options &opts);
 };
 }
 

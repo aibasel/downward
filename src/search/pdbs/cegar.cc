@@ -3,13 +3,13 @@
 #include "types.h"
 #include "utils.h"
 
-#include "../option_parser.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
-
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
+#include "../utils/math.h"
 #include "../utils/rng.h"
 
 #include <limits>
@@ -715,7 +715,7 @@ PatternInformation generate_pattern_with_cegar(
     return result;
 }
 
-void add_cegar_implementation_notes_to_parser(options::OptionParser &parser) {
+void add_cegar_implementation_notes_to_parser(plugins::OptionParser &parser) {
     parser.document_note(
         "Short description of the CEGAR algorithm",
         "The CEGAR algorithm computes a pattern collection for a given planning "
@@ -779,7 +779,7 @@ void add_cegar_implementation_notes_to_parser(options::OptionParser &parser) {
         true);
 }
 
-void add_cegar_wildcard_option_to_parser(options::OptionParser &parser) {
+void add_cegar_wildcard_option_to_parser(plugins::OptionParser &parser) {
     parser.add_option<bool>(
         "use_wildcard_plans",
         "if true, compute wildcard plans which are sequences of sets of "

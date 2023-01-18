@@ -6,7 +6,7 @@
 namespace g_evaluator {
 class GEvaluator : public Evaluator {
 public:
-    explicit GEvaluator(const options::Options &opts);
+    explicit GEvaluator(const plugins::Options &opts);
     virtual ~GEvaluator() override = default;
 
     virtual EvaluationResult compute_result(

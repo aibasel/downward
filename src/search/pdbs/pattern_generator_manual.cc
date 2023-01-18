@@ -2,10 +2,9 @@
 
 #include "pattern_information.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <iostream>
@@ -13,7 +12,7 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorManual::PatternGeneratorManual(const Options &opts)
+PatternGeneratorManual::PatternGeneratorManual(const plugins::Options &opts)
     : PatternGenerator(opts), pattern(opts.get_list<int>("pattern")) {
 }
 
@@ -31,16 +30,16 @@ PatternInformation PatternGeneratorManual::compute_pattern(
 }
 
 static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
-    parser.add_list_option<int>(
-        "pattern",
-        "list of variable numbers of the planning task that should be used as "
-        "pattern.");
-    add_generator_options_to_parser(parser);
-
+    {
+        parser.add_list_option<int>(
+            "pattern",
+            "list of variable numbers of the planning task that should be used as "
+            "pattern.");
+        add_generator_options_to_parser(parser);
+    }
     Options opts = parser.parse();
     if (parser.dry_run())
         return nullptr;
-
     return make_shared<PatternGeneratorManual>(opts);
 }
 

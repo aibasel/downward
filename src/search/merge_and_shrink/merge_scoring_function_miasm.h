@@ -18,7 +18,7 @@ class MergeScoringFunctionMIASM : public MergeScoringFunction {
 protected:
     virtual std::string name() const override;
 public:
-    explicit MergeScoringFunctionMIASM(const options::Options &options);
+    explicit MergeScoringFunctionMIASM(const plugins::Options &options);
     virtual ~MergeScoringFunctionMIASM() override = default;
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,

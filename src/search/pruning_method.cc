@@ -1,8 +1,6 @@
 #include "pruning_method.h"
 
-#include "option_parser.h"
-#include "plugin.h"
-
+#include "plugins/plugin.h"
 #include "task_utils/task_properties.h"
 
 #include "utils/logging.h"
@@ -11,7 +9,7 @@
 
 using namespace std;
 
-PruningMethod::PruningMethod(const options::Options &opts)
+PruningMethod::PruningMethod(const plugins::Options &opts)
     : timer(false),
       log(utils::get_log_from_options(opts)),
       task(nullptr) {
@@ -60,7 +58,7 @@ void PruningMethod::print_statistics() const {
     }
 }
 
-void add_pruning_options_to_parser(options::OptionParser &parser) {
+void add_pruning_options_to_parser(plugins::OptionParser &parser) {
     utils::add_log_options_to_parser(parser);
     parser.document_note(
         "Note on verbosity parameter",

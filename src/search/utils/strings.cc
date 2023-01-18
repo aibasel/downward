@@ -1,20 +1,13 @@
 #include "strings.h"
 
 #include <algorithm>
+#include <cassert>
+#include <cctype>
 #include <iostream>
 
 using namespace std;
 
 namespace utils {
-StringOperationError::StringOperationError(const string &msg)
-    : msg(msg) {
-}
-
-void StringOperationError::print() const {
-    cerr << msg << endl;
-}
-
-
 void lstrip(string &s) {
     s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
                                    return !isspace(ch);
@@ -36,13 +29,30 @@ bool startswith(const string &s, const string &prefix) {
     return s.compare(0, prefix.size(), prefix) == 0;
 }
 
-pair<string, string> split(const string &s, const string &separator) {
-    int split_pos = s.find(separator);
-    if (split_pos == -1) {
-        throw StringOperationError("separator not found");
+string tolower(string s) {
+    transform(s.begin(), s.end(), s.begin(), ::tolower);
+    return s;
+}
+
+vector<string> split(const string &s, const string &separator, int max_splits) {
+    assert(max_splits >= -1);
+    vector<string> sections;
+    int curr_pos = 0;
+    int next_pos = s.find(separator);
+    while (max_splits != 0 && next_pos != -1) {
+        sections.push_back(s.substr(curr_pos, next_pos - curr_pos));
+        curr_pos = next_pos + 1;
+        next_pos = s.find(separator, curr_pos);
+        --max_splits;
     }
-    string lhs = s.substr(0, split_pos);
-    string rhs = s.substr(split_pos + 1);
-    return make_pair(lhs, rhs);
+    sections.push_back(s.substr(curr_pos, s.size() - curr_pos));
+    return sections;
+}
+
+bool is_alpha_numeric(const string &s) {
+    auto it = find_if(s.begin(), s.end(), [](char const &c) {
+                          return !isalnum(c);
+                      });
+    return it == s.end();
 }
 }

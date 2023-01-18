@@ -8,7 +8,7 @@ class Exploration;
 
 class LandmarkFactoryRelaxation : public LandmarkFactory {
 protected:
-    explicit LandmarkFactoryRelaxation(const options::Options &opts);
+    explicit LandmarkFactoryRelaxation(const plugins::Options &opts);
 
     /*
       Test whether the relaxed planning task is solvable without

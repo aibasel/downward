@@ -3,10 +3,9 @@
 #include "landmark.h"
 #include "landmark_graph.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <vector>
@@ -17,7 +16,7 @@ namespace landmarks {
    that are inferred later.) It's thus best to combine this landmark generation
    method with others, don't use it by itself. */
 
-LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const Options &opts)
+LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const plugins::Options &opts)
     : LandmarkFactoryRelaxation(opts),
       only_causal_landmarks(opts.get<bool>("only_causal_landmarks")) {
 }
@@ -63,18 +62,20 @@ bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
 }
 
 static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Exhaustive Landmarks",
-        "Exhaustively checks for each fact if it is a landmark."
-        "This check is done using relaxed planning.");
-    add_landmark_factory_options_to_parser(parser);
-    add_only_causal_landmarks_option_to_parser(parser);
+    {
+        parser.document_synopsis(
+            "Exhaustive Landmarks",
+            "Exhaustively checks for each fact if it is a landmark."
+            "This check is done using relaxed planning.");
 
+        add_landmark_factory_options_to_parser(parser);
+        add_only_causal_landmarks_option_to_parser(parser);
+
+        parser.document_language_support(
+            "conditional_effects",
+            "ignored, i.e. not supported");
+    }
     Options opts = parser.parse();
-
-    parser.document_language_support("conditional_effects",
-                                     "ignored, i.e. not supported");
-
     if (parser.dry_run())
         return nullptr;
     else
