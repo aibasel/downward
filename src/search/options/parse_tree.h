@@ -12,10 +12,7 @@ struct ParseNode {
     std::string value;
     std::string key;
 
-    ParseNode()
-        : value(""),
-          key("") {
-    }
+    ParseNode() = default;
 
     ParseNode(const std::string &value, const std::string &key = "")
         : value(value),
