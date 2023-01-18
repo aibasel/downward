@@ -11,6 +11,10 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
+- option parser: We improved the documentation of enum values and did
+  some internal changes to the order in which options are defined.
+  <https://issues.fast-downward.org/issue1073>
+
 - landmarks: Refactor the computation of preferred operators in the
   `lmcount` heuristic. The change affects configurations based on
   LAMA that use preferred operators. While the semantics of the code did
