@@ -108,22 +108,19 @@ void MergeTreeFactoryLinear::dump_tree_specific_options(utils::LogProxy &log) co
     }
 }
 
-static vector<pair<string, string>> _enum_data_variable_order_type();
-
-void MergeTreeFactoryLinear::add_options_to_parser(
-    plugins::OptionParser &parser) {
-    MergeTreeFactory::add_options_to_parser(parser);
-    parser.add_enum_option<variable_order_finder::VariableOrderType>(
+void MergeTreeFactoryLinear::add_options_to_feature(plugins::Feature &feature) {
+    MergeTreeFactory::add_options_to_feature(feature);
+    feature.add_option<variable_order_finder::VariableOrderType>(
         "variable_order",
-        _enum_data_variable_order_type(),
         "the order in which atomic transition systems are merged",
         "cg_goal_level");
 }
 
-static shared_ptr<MergeTreeFactory> _parse(plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Linear merge trees",
+class MergeTreeFactoryLinearFeature : public plugins::TypedFeature<MergeTreeFactory, MergeTreeFactoryLinear> {
+public:
+    MergeTreeFactoryLinearFeature() : TypedFeature("linear") {
+        document_title("Linear merge trees");
+        document_synopsis(
             "These merge trees implement several linear merge orders, which "
             "are described in the paper:" + utils::format_conference_reference(
                 {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
@@ -135,19 +132,13 @@ static shared_ptr<MergeTreeFactory> _parse(plugins::OptionParser &parser) {
                 "AAAI Press",
                 "2007"));
 
-        MergeTreeFactoryLinear::add_options_to_parser(parser);
+        MergeTreeFactoryLinear::add_options_to_feature(*this);
     }
-    plugins::Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<MergeTreeFactoryLinear>(opts);
-}
+};
 
-static plugins::Plugin<MergeTreeFactory> _plugin("linear", _parse);
+static plugins::FeaturePlugin<MergeTreeFactoryLinearFeature> _plugin;
 
-static vector<pair<string, string>> _enum_data_variable_order_type() {
-    return {
+static plugins::TypedEnumPlugin<variable_order_finder::VariableOrderType> _enum_plugin({
         {"cg_goal_level",
          "variables are prioritized first if they have an arc to a previously "
          "added variable, second if their goal value is defined "
@@ -166,6 +157,5 @@ static vector<pair<string, string>> _enum_data_variable_order_type() {
          "variables are ordered according to their level in the causal graph"},
         {"reverse_level",
          "variables are ordered reverse to their level in the causal graph"}
-    };
-}
+    });
 }

@@ -22,12 +22,9 @@ static shared_ptr<Log> global_log = make_shared<Log>(Verbosity::NORMAL);
 
 LogProxy g_log(global_log);
 
-static vector<pair<string, string>> _enum_data_verbosity();
-
-void add_log_options_to_parser(plugins::OptionParser &parser) {
-    parser.add_enum_option<Verbosity>(
+void add_log_options_to_feature(plugins::Feature &feature) {
+    feature.add_option<Verbosity>(
         "verbosity",
-        _enum_data_verbosity(),
         "Option to specify the verbosity level.",
         "normal");
 }
@@ -116,12 +113,10 @@ void trace(const string &msg) {
     _tracer.print_trace_message(msg);
 }
 
-static vector<pair<string, string>> _enum_data_verbosity() {
-    return {
+static plugins::TypedEnumPlugin<Verbosity> _enum_plugin({
         {"silent", "only the most basic output"},
         {"normal", "relevant information to monitor progress"},
         {"verbose", "full output"},
         {"debug", "like verbose with additional debug output"}
-    };
-}
+    });
 }

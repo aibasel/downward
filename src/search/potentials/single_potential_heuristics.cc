@@ -32,41 +32,37 @@ static unique_ptr<PotentialFunction> create_potential_function(
     return optimizer.get_potential_function();
 }
 
-static shared_ptr<Heuristic> _parse_initial_state_potential(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Potential heuristic optimized for initial state",
-            get_admissible_potentials_reference());
+class InitialStatePotentialHeuristicFeature : public plugins::TypedFeature<Evaluator, PotentialHeuristic> {
+public:
+    InitialStatePotentialHeuristicFeature() : TypedFeature("initial_state_potential") {
+        document_subcategory("heuristics_potentials");
+        document_title("Potential heuristic optimized for initial state");
+        document_synopsis(get_admissible_potentials_reference());
 
-        prepare_parser_for_admissible_potentials(parser);
+        prepare_parser_for_admissible_potentials(*this);
     }
 
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<PotentialHeuristic>(
-        opts, create_potential_function(opts, OptimizeFor::INITIAL_STATE));
-}
+    virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &options, const plugins::ConstructContext &) const override {
+        return make_shared<PotentialHeuristic>(options, create_potential_function(options, OptimizeFor::INITIAL_STATE));
+    }
+};
 
-static Plugin<Evaluator> _plugin_initial_state(
-    "initial_state_potential", _parse_initial_state_potential, "heuristics_potentials");
+static plugins::FeaturePlugin<InitialStatePotentialHeuristicFeature> _plugin_initial_state;
 
-static shared_ptr<Heuristic> _parse_all_states_potential(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Potential heuristic optimized for all states",
-            get_admissible_potentials_reference());
+class AllStatesPotentialHeuristicFeature : public plugins::TypedFeature<Evaluator, PotentialHeuristic> {
+public:
+    AllStatesPotentialHeuristicFeature() : TypedFeature("all_states_potential") {
+        document_subcategory("heuristics_potentials");
+        document_title("Potential heuristic optimized for all states");
+        document_synopsis(get_admissible_potentials_reference());
 
-        prepare_parser_for_admissible_potentials(parser);
+        prepare_parser_for_admissible_potentials(*this);
     }
 
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<PotentialHeuristic>(
-        opts, create_potential_function(opts, OptimizeFor::ALL_STATES));
-}
+    virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &options, const plugins::ConstructContext &) const override {
+        return make_shared<PotentialHeuristic>(options, create_potential_function(options, OptimizeFor::ALL_STATES));
+    }
+};
 
-static Plugin<Evaluator> _plugin_all_states(
-    "all_states_potential", _parse_all_states_potential, "heuristics_potentials");
+static plugins::FeaturePlugin<AllStatesPotentialHeuristicFeature> _plugin_all_states;
 }

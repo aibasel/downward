@@ -8,8 +8,8 @@
 class TaskProxy;
 
 namespace plugins {
-class OptionParser;
 class Options;
+class Feature;
 }
 
 namespace utils {
@@ -44,7 +44,7 @@ public:
     virtual bool requires_init_distances() const = 0;
     virtual bool requires_goal_distances() const = 0;
     // Derived classes must call this method in their parsing methods.
-    static void add_options_to_parser(plugins::OptionParser &parser);
+    static void add_options_to_feature(plugins::Feature &feature);
 };
 }
 

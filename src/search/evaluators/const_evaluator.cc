@@ -15,25 +15,21 @@ EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
     return result;
 }
 
-static shared_ptr<Evaluator> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Constant evaluator",
-            "Returns a constant value.");
+class ConstEvaluatorFeature : public plugins::TypedFeature<Evaluator, ConstEvaluator> {
+public:
+    ConstEvaluatorFeature() : TypedFeature("const") {
+        document_subcategory("evaluators_basic");
+        document_title("Constant evaluator");
+        document_synopsis("Returns a constant value.");
 
-        parser.add_option<int>(
+        add_option<int>(
             "value",
             "the constant value",
             "1",
             plugins::Bounds("0", "infinity"));
-        add_evaluator_options_to_parser(parser);
+        add_evaluator_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<ConstEvaluator>(opts);
-}
+};
 
-static Plugin<Evaluator> _plugin("const", _parse, "evaluators_basic");
+static plugins::FeaturePlugin<ConstEvaluatorFeature> _plugin;
 }

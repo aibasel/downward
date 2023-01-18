@@ -324,10 +324,11 @@ void StubbornSetsEC::handle_stubborn_operator(const State &state, int op_no) {
     }
 }
 
-static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "StubbornSetsEC",
+class StubbornSetsECFeature : public plugins::TypedFeature<PruningMethod, StubbornSetsEC> {
+public:
+    StubbornSetsECFeature() : TypedFeature("stubborn_sets_ec") {
+        document_title("StubbornSetsEC");
+        document_synopsis(
             "Stubborn sets represent a state pruning method which computes a subset "
             "of applicable operators in each state such that completeness and "
             "optimality of the overall search is preserved. As stubborn sets rely "
@@ -343,14 +344,9 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
                 "251-259",
                 "AAAI Press",
                 "2013"));
-        add_pruning_options_to_parser(parser);
+        add_pruning_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run()) {
-        return nullptr;
-    }
-    return make_shared<StubbornSetsEC>(opts);
-}
+};
 
-static Plugin<PruningMethod> _plugin("stubborn_sets_ec", _parse);
+static plugins::FeaturePlugin<StubbornSetsECFeature> _plugin;
 }

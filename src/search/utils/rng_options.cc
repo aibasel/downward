@@ -7,8 +7,8 @@
 using namespace std;
 
 namespace utils {
-void add_rng_options(plugins::OptionParser &parser) {
-    parser.add_option<int>(
+void add_rng_options(plugins::Feature &feature) {
+    feature.add_option<int>(
         "random_seed",
         "Set to -1 (default) to use the global random number generator. "
         "Set to any other value to use a local random number generator with "

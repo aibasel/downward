@@ -168,78 +168,63 @@ SharedTasks LandmarkDecomposition::get_subtasks(
     return subtasks;
 }
 
-static vector<pair<string, string>> _enum_data_fact_order();
-
-static void add_fact_order_option(OptionParser &parser) {
-    parser.add_enum_option<FactOrder>(
+static void add_fact_order_option(plugins::Feature &feature) {
+    feature.add_option<FactOrder>(
         "order",
-        _enum_data_fact_order(),
         "ordering of goal or landmark facts",
         "hadd_down");
-    utils::add_rng_options(parser);
+    utils::add_rng_options(feature);
 }
 
-static shared_ptr<SubtaskGenerator> _parse_original(OptionParser &parser) {
-    {
-        parser.add_option<int>(
+class TaskDuplicatorFeature : public plugins::TypedFeature<SubtaskGenerator, TaskDuplicator> {
+public:
+    TaskDuplicatorFeature() : TypedFeature("original") {
+        add_option<int>(
             "copies",
             "number of task copies",
             "1",
             plugins::Bounds("1", "infinity"));
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<TaskDuplicator>(opts);
-}
+};
 
-static Plugin<SubtaskGenerator> _plugin_original(
-    "original", _parse_original);
+static plugins::FeaturePlugin<TaskDuplicatorFeature> _plugin_original;
 
-static shared_ptr<SubtaskGenerator> _parse_goals(OptionParser &parser) {
-    {
-        add_fact_order_option(parser);
+class GoalDecompositionFeature : public plugins::TypedFeature<SubtaskGenerator, GoalDecomposition> {
+public:
+    GoalDecompositionFeature() : TypedFeature("goals") {
+        add_fact_order_option(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<GoalDecomposition>(opts);
-}
+};
 
-static Plugin<SubtaskGenerator> _plugin_goals(
-    "goals", _parse_goals);
+static plugins::FeaturePlugin<GoalDecompositionFeature> _plugin_goals;
 
-static shared_ptr<SubtaskGenerator> _parse_landmarks(OptionParser &parser) {
-    {
-        add_fact_order_option(parser);
-        parser.add_option<bool>(
+
+class LandmarkDecompositionFeature : public plugins::TypedFeature<SubtaskGenerator, LandmarkDecomposition> {
+public:
+    LandmarkDecompositionFeature() : TypedFeature("landmarks") {
+        add_fact_order_option(*this);
+        add_option<bool>(
             "combine_facts",
             "combine landmark facts with domain abstraction",
             "true");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<LandmarkDecomposition>(opts);
+};
+
+static plugins::FeaturePlugin<LandmarkDecompositionFeature> _plugin_landmarks;
+
+
+static class SubtaskGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<SubtaskGenerator> {
+public:
+    SubtaskGeneratorCategoryPlugin() : TypedCategoryPlugin("SubtaskGenerator") {
+        document_synopsis("Subtask generator (used by the CEGAR heuristic).");
+    }
 }
+_category_plugin;
 
-static Plugin<SubtaskGenerator> _plugin_landmarks(
-    "landmarks", _parse_landmarks);
-
-
-static PluginTypePlugin<SubtaskGenerator> _type_plugin(
-    "SubtaskGenerator",
-    "Subtask generator (used by the CEGAR heuristic).");
-
-static vector<pair<string, string>> _enum_data_fact_order() {
-    return {
+static plugins::TypedEnumPlugin<FactOrder> _enum_plugin({
         {"original", "according to their (internal) variable index"},
         {"random", "according to a random permutation"},
         {"hadd_up", "according to their h^add value, lowest first"},
         {"hadd_down", "according to their h^add value, highest first "}
-    };
-}
+    });
 }

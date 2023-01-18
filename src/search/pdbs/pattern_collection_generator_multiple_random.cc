@@ -51,10 +51,11 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
     return result;
 }
 
-static shared_ptr<PatternCollectionGenerator> _parse(plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Multiple Random Patterns",
+class PatternCollectionGeneratorMultipleRandomFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorMultipleRandom> {
+public:
+    PatternCollectionGeneratorMultipleRandomFeature() : TypedFeature("random_patterns") {
+        document_title("Multiple Random Patterns");
+        document_synopsis(
             "This pattern collection generator implements the 'multiple "
             "randomized causal graph' (mRCG) algorithm described in experiments of "
             "the paper" + get_rovner_et_al_reference() +
@@ -63,18 +64,13 @@ static shared_ptr<PatternCollectionGenerator> _parse(plugins::OptionParser &pars
             "pattern algorithm, called 'single randomized causal graph' (sRCG) "
             "in the paper. See below for descriptions of the algorithms.");
 
-        add_multiple_options_to_parser(parser);
-        add_random_pattern_bidirectional_option_to_parser(parser);
+        add_multiple_options_to_feature(*this);
+        add_random_pattern_bidirectional_option_to_feature(*this);
 
-        add_random_pattern_implementation_notes_to_parser(parser);
-        add_multiple_algorithm_implementation_notes_to_parser(parser);
+        add_random_pattern_implementation_notes_to_feature(*this);
+        add_multiple_algorithm_implementation_notes_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run()) {
-        return nullptr;
-    }
-    return make_shared<PatternCollectionGeneratorMultipleRandom>(opts);
-}
+};
 
-static Plugin<PatternCollectionGenerator> _plugin("random_patterns", _parse);
+static plugins::FeaturePlugin<PatternCollectionGeneratorMultipleRandomFeature> _plugin;
 }

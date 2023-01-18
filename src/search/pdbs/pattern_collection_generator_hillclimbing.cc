@@ -458,17 +458,17 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::compute_pat
     return current_pdbs->get_pattern_collection_information(log);
 }
 
-void add_hillclimbing_options(OptionParser &parser) {
-    parser.document_note(
+void add_hillclimbing_options(plugins::Feature &feature) {
+    feature.document_note(
         "Note",
         "The pattern collection created by the algorithm will always contain "
         "all patterns consisting of a single goal variable, even if this "
         "violates the pdb_max_size or collection_max_size limits.");
-    parser.document_note(
+    feature.document_note(
         "Note",
         "This pattern generation method generates patterns optimized "
         "for use with the canonical pattern database heuristic.");
-    parser.document_note(
+    feature.document_note(
         "Implementation Notes",
         "The following will very briefly describe the algorithm and explain "
         "the differences between the original implementation from 2007 and the "
@@ -518,30 +518,30 @@ void add_hillclimbing_options(OptionParser &parser) {
         "implementation as described in the paper.",
         true);
 
-    parser.add_option<int>(
+    feature.add_option<int>(
         "pdb_max_size",
         "maximal number of states per pattern database ",
         "2000000",
         plugins::Bounds("1", "infinity"));
-    parser.add_option<int>(
+    feature.add_option<int>(
         "collection_max_size",
         "maximal number of states in the pattern collection",
         "20000000",
         plugins::Bounds("1", "infinity"));
-    parser.add_option<int>(
+    feature.add_option<int>(
         "num_samples",
         "number of samples (random states) on which to evaluate each "
         "candidate pattern collection",
         "1000",
         plugins::Bounds("1", "infinity"));
-    parser.add_option<int>(
+    feature.add_option<int>(
         "min_improvement",
         "minimum number of samples on which a candidate pattern "
         "collection must improve on the current one to be considered "
         "as the next pattern collection ",
         "10",
         plugins::Bounds("1", "infinity"));
-    parser.add_option<double>(
+    feature.add_option<double>(
         "max_time",
         "maximum time in seconds for improving the initial pattern "
         "collection via hill climbing. If set to 0, no hill climbing "
@@ -550,14 +550,14 @@ void add_hillclimbing_options(OptionParser &parser) {
         "spent for pruning dominated patterns.",
         "infinity",
         plugins::Bounds("0.0", "infinity"));
-    utils::add_rng_options(parser);
-    add_generator_options_to_parser(parser);
+    utils::add_rng_options(feature);
+    add_generator_options_to_feature(feature);
 }
 
 void check_hillclimbing_options(
-    OptionParser &parser, const Options &opts) {
+    const plugins::Options &opts, const plugins::ConstructContext &context) {
     if (opts.get<int>("min_improvement") > opts.get<int>("num_samples")) {
-        parser.error(
+        context.construction_error(
             "Minimum improvement must not be higher than number of samples");
     }
 }
@@ -586,30 +586,31 @@ static basic_string<char> paper_references() {
         "2012");
 }
 
-static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Hill climbing",
+class PatternCollectionGeneratorHillclimbingFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorHillclimbing> {
+public:
+    PatternCollectionGeneratorHillclimbingFeature() : TypedFeature("hillclimbing") {
+        document_title("Hill climbing");
+        document_synopsis(
             "This algorithm uses hill climbing to generate patterns "
             "optimized for the Evaluator#Canonical_PDB heuristic. It it described "
             "in the following paper:" + paper_references());
-        add_hillclimbing_options(parser);
+        add_hillclimbing_options(*this);
     }
-    Options opts = parser.parse();
-    if (parser.help_mode())
-        return nullptr;
-    check_hillclimbing_options(parser, opts);
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<PatternCollectionGeneratorHillclimbing>(opts);
-}
 
-static Plugin<PatternCollectionGenerator> _plugin("hillclimbing", _parse);
+    virtual shared_ptr<PatternCollectionGeneratorHillclimbing> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+        check_hillclimbing_options(options, context);
+        return make_shared<PatternCollectionGeneratorHillclimbing>(options);
+    }
+};
 
-static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "iPDB",
+static plugins::FeaturePlugin<PatternCollectionGeneratorHillclimbingFeature> _plugin;
+
+class IPDBFeature : public plugins::TypedFeature<Evaluator, CanonicalPDBsHeuristic> {
+public:
+    IPDBFeature() : TypedFeature("ipdb") {
+        document_subcategory("heuristics_pdb");
+        document_title("iPDB");
+        document_synopsis(
             "This approach is a combination of using the Evaluator#Canonical_PDB "
             "heuristic over patterns computed with the "
             "PatternCollectionGenerator#hillclimbing algorithm for pattern "
@@ -620,7 +621,7 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
             "See also Evaluator#Canonical_PDB and "
             "PatternCollectionGenerator#Hill_climbing for more details.");
 
-        add_hillclimbing_options(parser);
+        add_hillclimbing_options(*this);
         /*
           Add, possibly among others, the options for dominance pruning.
           Note that using dominance pruning during hill climbing could lead to fewer
@@ -628,26 +629,21 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
           (or pattern collection) might no longer be dominated after more patterns
           are added. We thus only use dominance pruning on the resulting collection.
         */
-        add_canonical_pdbs_options_to_parser(parser);
-        Heuristic::add_options_to_parser(parser);
+        add_canonical_pdbs_options_to_feature(*this);
+        Heuristic::add_options_to_feature(*this);
 
-        parser.document_language_support("action costs", "supported");
-        parser.document_language_support("conditional effects", "not supported");
-        parser.document_language_support("axioms", "not supported");
+        document_language_support("action costs", "supported");
+        document_language_support("conditional effects", "not supported");
+        document_language_support("axioms", "not supported");
 
-        parser.document_property("admissible", "yes");
-        parser.document_property("consistent", "yes");
-        parser.document_property("safe", "yes");
-        parser.document_property("preferred operators", "no");
+        document_property("admissible", "yes");
+        document_property("consistent", "yes");
+        document_property("safe", "yes");
+        document_property("preferred operators", "no");
     }
-    Options options = parser.parse();
-    if (parser.help_mode())
-        return nullptr;
 
-    {
-        check_hillclimbing_options(parser, options);
-        if (parser.dry_run())
-            return nullptr;
+    virtual shared_ptr<CanonicalPDBsHeuristic> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+        check_hillclimbing_options(options, context);
 
         shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =
             make_shared<PatternCollectionGeneratorHillclimbing>(options);
@@ -666,7 +662,7 @@ static shared_ptr<Heuristic> _parse_ipdb(OptionParser &parser) {
 
         return make_shared<CanonicalPDBsHeuristic>(heuristic_opts);
     }
-}
+};
 
-static Plugin<Evaluator> _plugin_ipdb("ipdb", _parse_ipdb, "heuristics_pdb");
+static plugins::FeaturePlugin<IPDBFeature> _plugin_ipdb;
 }

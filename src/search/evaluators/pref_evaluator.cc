@@ -24,20 +24,16 @@ EvaluationResult PrefEvaluator::compute_result(
     return result;
 }
 
-static shared_ptr<Evaluator> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Preference evaluator",
-            "Returns 0 if preferred is true and 1 otherwise.");
+class PrefEvaluatorFeature : public plugins::TypedFeature<Evaluator, PrefEvaluator> {
+public:
+    PrefEvaluatorFeature() : TypedFeature("pref") {
+        document_subcategory("evaluators_basic");
+        document_title("Preference evaluator");
+        document_synopsis("Returns 0 if preferred is true and 1 otherwise.");
 
-        add_evaluator_options_to_parser(parser);
+        add_evaluator_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<PrefEvaluator>(opts);
-}
+};
 
-static Plugin<Evaluator> _plugin("pref", _parse, "evaluators_basic");
+static plugins::FeaturePlugin<PrefEvaluatorFeature> _plugin;
 }

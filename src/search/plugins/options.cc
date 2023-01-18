@@ -3,9 +3,7 @@
 using namespace std;
 
 namespace plugins {
-Options::Options(bool help_mode)
-    : unparsed_config("<missing>"),
-      help_mode(help_mode) {
+Options::Options() {
 }
 
 bool Options::contains(const string &key) const {

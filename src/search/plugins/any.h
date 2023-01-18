@@ -1,6 +1,7 @@
 #ifndef PLUGINS_ANY_H
 #define PLUGINS_ANY_H
 
+#include "../utils/language.h"
 #include "../utils/memory.h"
 
 #include <algorithm>
@@ -28,6 +29,7 @@ public:
         virtual ~Placeholder() {}
         virtual std::unique_ptr<Placeholder> clone() const = 0;
         virtual const std::type_info &type() const = 0;
+        virtual std::string type_name() const = 0;
     };
 
     template<typename ValueType>
@@ -46,6 +48,10 @@ public:
 
         virtual const std::type_info &type() const override {
             return typeid(ValueType);
+        }
+
+        virtual std::string type_name() const override {
+            return utils::get_type_name<ValueType>();
         }
     };
 
@@ -88,6 +94,10 @@ public:
 
     const std::type_info &type() const {
         return content ? content->type() : typeid(void);
+    }
+
+    std::string type_name() const {
+        return content ? content->type_name() : "<empty>";
     }
 };
 

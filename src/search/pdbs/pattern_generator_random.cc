@@ -47,39 +47,35 @@ PatternInformation PatternGeneratorRandom::compute_pattern(
     return PatternInformation(task_proxy, pattern, log);
 }
 
-static shared_ptr<PatternGenerator> _parse(plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Random Pattern",
+class PatternGeneratorRandomFeature : public plugins::TypedFeature<PatternGenerator, PatternGeneratorRandom> {
+public:
+    PatternGeneratorRandomFeature() : TypedFeature("random_pattern") {
+        document_title("Random Pattern");
+        document_synopsis(
             "This pattern generator implements the 'single randomized "
             "causal graph' algorithm described in experiments of the the paper"
             + get_rovner_et_al_reference() +
             "See below for a description of the algorithm and some implementation "
             "notes.");
 
-        parser.add_option<int>(
+        add_option<int>(
             "max_pdb_size",
             "maximum number of states in the final pattern database (possibly "
             "ignored by a singleton pattern consisting of a single goal variable)",
             "1000000",
             plugins::Bounds("1", "infinity"));
-        parser.add_option<double>(
+        add_option<double>(
             "max_time",
             "maximum time in seconds for the pattern generation",
             "infinity",
             plugins::Bounds("0.0", "infinity"));
-        add_random_pattern_bidirectional_option_to_parser(parser);
-        add_generator_options_to_parser(parser);
-        utils::add_rng_options(parser);
+        add_random_pattern_bidirectional_option_to_feature(*this);
+        add_generator_options_to_feature(*this);
+        utils::add_rng_options(*this);
 
-        add_random_pattern_implementation_notes_to_parser(parser);
+        add_random_pattern_implementation_notes_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run()) {
-        return nullptr;
-    }
-    return make_shared<PatternGeneratorRandom>(opts);
-}
+};
 
-static Plugin<PatternGenerator> _plugin("random_pattern", _parse);
+static plugins::FeaturePlugin<PatternGeneratorRandomFeature> _plugin;
 }

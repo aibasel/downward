@@ -45,36 +45,36 @@ unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
-static vector<pair<string, string>> _enum_data_update_option();
-
-void MergeTreeFactory::add_options_to_parser(plugins::OptionParser &parser) {
-    utils::add_rng_options(parser);
-    parser.add_enum_option<UpdateOption>(
+void MergeTreeFactory::add_options_to_feature(plugins::Feature &feature) {
+    utils::add_rng_options(feature);
+    feature.add_option<UpdateOption>(
         "update_option",
-        _enum_data_update_option(),
         "When the merge tree is used within another merge strategy, how "
         "should it be updated when a merge different to a merge from the "
         "tree is performed.",
         "use_random");
 }
 
-static plugins::PluginTypePlugin<MergeTreeFactory> _type_plugin(
-    "MergeTree",
-    "This page describes the available merge trees that can be used to "
-    "precompute a merge strategy, either for the entire task or a given "
-    "subset of transition systems of a given factored transition system.\n"
-    "Merge trees are typically used in the merge strategy of type "
-    "'precomputed', but they can also be used as fallback merge strategies in "
-    "'combined' merge strategies.");
+static class MergeTreeFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<MergeTreeFactory> {
+public:
+    MergeTreeFactoryCategoryPlugin() : TypedCategoryPlugin("MergeTree") {
+        document_synopsis(
+            "This page describes the available merge trees that can be used to "
+            "precompute a merge strategy, either for the entire task or a given "
+            "subset of transition systems of a given factored transition system.\n"
+            "Merge trees are typically used in the merge strategy of type "
+            "'precomputed', but they can also be used as fallback merge strategies in "
+            "'combined' merge strategies.");
+    }
+}
+_category_plugin;
 
-static vector<pair<string, string>> _enum_data_update_option() {
-    return {
+static plugins::TypedEnumPlugin<UpdateOption> _enum_plugin({
         {"use_first",
          "the node representing the index that would have been merged earlier survives"},
         {"use_second",
          "the node representing the index that would have been merged later survives"},
         {"use_random",
          "a random node (of the above two) survives"}
-    };
-}
+    });
 }

@@ -13,8 +13,8 @@
 class AbstractTask;
 
 namespace plugins {
-class OptionParser;
 class Options;
+class Feature;
 }
 
 namespace utils {
@@ -49,7 +49,7 @@ public:
     PatternInformation generate(const std::shared_ptr<AbstractTask> &task);
 };
 
-extern void add_generator_options_to_parser(plugins::OptionParser &parser);
+extern void add_generator_options_to_feature(plugins::Feature &feature);
 }
 
 #endif

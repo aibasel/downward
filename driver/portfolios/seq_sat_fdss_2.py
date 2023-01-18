@@ -1,38 +1,41 @@
+import re
+
 OPTIMAL = False
+REGEX_SEARCH = re.compile(r".*((eager_greedy|lazy_greedy)\(.*\))\)")
 
 CONFIGS = [
     # eager_greedy_ff
-    (330, ["--evaluator", "h=ff(transform=H_COST_TRANSFORM)",
-          "--search",
-          "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
+    (330, ["--search",
+          "let(h, ff(transform=H_COST_TRANSFORM),"
+          "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # lazy_greedy_ff
-    (411, ["--evaluator", "h=ff(transform=H_COST_TRANSFORM)",
-          "--search",
-          "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
+    (411, ["--search",
+          "let(h, ff(transform=H_COST_TRANSFORM),"
+          "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # eager_greedy_cea
-    (213, ["--evaluator", "h=cea(transform=H_COST_TRANSFORM)",
-          "--search",
-          "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
+    (213, ["--search",
+          "let(h, cea(transform=H_COST_TRANSFORM),"
+          "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # lazy_greedy_cea
-    (57, ["--evaluator", "h=cea(transform=H_COST_TRANSFORM)",
-          "--search",
-          "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
+    (57, ["--search",
+          "let(h, cea(transform=H_COST_TRANSFORM),"
+          "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # eager_greedy_add
-    (204, ["--evaluator", "h=add(transform=H_COST_TRANSFORM)",
-          "--search",
-          "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
+    (204, ["--search",
+          "let(h, add(transform=H_COST_TRANSFORM),"
+          "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # eager_greedy_cg
-    (208, ["--evaluator", "h=cg(transform=H_COST_TRANSFORM)",
-          "--search",
-          "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
+    (208, ["--search",
+          "let(h, cg(transform=H_COST_TRANSFORM),"
+          "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # lazy_greedy_cg
-    (109, ["--evaluator", "h=cg(transform=H_COST_TRANSFORM)",
-          "--search",
-          "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
+    (109, ["--search",
+          "let(h, cg(transform=H_COST_TRANSFORM),"
+          "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # lazy_greedy_add
-    (63, ["--evaluator", "h=add(transform=H_COST_TRANSFORM)",
-          "--search",
-          "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND)"]),
+    (63, ["--search",
+          "let(h, add(transform=H_COST_TRANSFORM),"
+          "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
      ]
 
 def FINAL_CONFIG_BUILDER(successful_args):
@@ -40,7 +43,7 @@ def FINAL_CONFIG_BUILDER(successful_args):
     new_args = list(successful_args)
     for pos, arg in enumerate(successful_args):
         if arg == "--search":
-            orig_search = successful_args[pos + 1]
+            orig_search = REGEX_SEARCH.match(successful_args[pos + 1]).group(1)
             sub_searches = []
             for weight in (5, 3, 2, 1):
                 if orig_search.startswith("lazy"):
@@ -51,7 +54,8 @@ def FINAL_CONFIG_BUILDER(successful_args):
                         "eager(single(sum([g(),weight(h,%d)])),preferred=[h],cost_type=S_COST_TYPE)" % weight
                 sub_searches.append(sub_search)
             sub_search_string = ",".join(sub_searches)
-            new_search = "iterated([%s],bound=BOUND,repeat_last=true)" % sub_search_string
+            iterated_search = "iterated([%s],bound=BOUND,repeat_last=true)" % sub_search_string
+            new_search = successful_args[pos + 1].replace(orig_search, iterated_search)
             new_args[pos + 1] = new_search
             break
     return new_args

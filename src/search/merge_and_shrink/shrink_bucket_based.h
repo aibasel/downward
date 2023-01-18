@@ -7,8 +7,8 @@
 #include <vector>
 
 namespace plugins {
-class OptionParser;
 class Options;
+class Feature;
 }
 
 namespace utils {
@@ -58,7 +58,7 @@ public:
         const Distances &distances,
         int target_size,
         utils::LogProxy &log) const override;
-    static void add_options_to_parser(plugins::OptionParser &parser);
+    static void add_options_to_feature(plugins::Feature &feature);
 };
 }
 

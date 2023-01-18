@@ -144,34 +144,34 @@ DiversePotentialHeuristics::find_functions() {
     return move(diverse_functions);
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Diverse potential heuristics",
+class DiversePotentialMaxHeuristicFeature : public plugins::TypedFeature<Evaluator, PotentialMaxHeuristic> {
+public:
+    DiversePotentialMaxHeuristicFeature() : TypedFeature("diverse_potentials") {
+        document_subcategory("heuristics_potentials");
+        document_title("Diverse potential heuristics");
+        document_synopsis(
             get_admissible_potentials_reference());
 
-        parser.add_option<int>(
+        add_option<int>(
             "num_samples",
             "Number of states to sample",
             "1000",
             plugins::Bounds("0", "infinity"));
-        parser.add_option<int>(
+        add_option<int>(
             "max_num_heuristics",
             "maximum number of potential heuristics",
             "infinity",
             plugins::Bounds("0", "infinity"));
-        prepare_parser_for_admissible_potentials(parser);
-        utils::add_rng_options(parser);
-        utils::add_log_options_to_parser(parser);
+        prepare_parser_for_admissible_potentials(*this);
+        utils::add_rng_options(*this);
+        utils::add_log_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
 
-    DiversePotentialHeuristics factory(opts);
-    return make_shared<PotentialMaxHeuristic>(opts, factory.find_functions());
-}
+    virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &options, const plugins::ConstructContext &) const override {
+        DiversePotentialHeuristics factory(options);
+        return make_shared<PotentialMaxHeuristic>(options, factory.find_functions());
+    }
+};
 
-static Plugin<Evaluator> _plugin(
-    "diverse_potentials", _parse, "heuristics_potentials");
+static plugins::FeaturePlugin<DiversePotentialMaxHeuristicFeature> _plugin;
 }

@@ -6,20 +6,22 @@
 using namespace std;
 
 namespace plugin_eager_greedy {
-static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis("Greedy search (eager)", "");
+class EagerGreedySearchFeature : public plugins::TypedFeature<SearchEngine, eager_search::EagerSearch> {
+public:
+    EagerGreedySearchFeature() : TypedFeature("eager_greedy") {
+        document_title("Greedy search (eager)");
+        document_synopsis("");
 
-        parser.add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
-        parser.add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
+        add_list_option<shared_ptr<Evaluator>>(
             "preferred",
             "use preferred operators of these evaluators", "[]");
-        parser.add_option<int>(
+        add_option<int>(
             "boost",
             "boost value for preferred operator open lists", "0");
-        eager_search::add_options_to_parser(parser);
+        eager_search::add_options_to_feature(*this);
 
-        parser.document_note(
+        document_note(
             "Open list",
             "In most cases, eager greedy best first search uses "
             "an alternation open list with one queue for each evaluator. "
@@ -29,10 +31,10 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
             "If only one evaluator and no preferred operator evaluator is used, "
             "the search does not use an alternation open list but a "
             "standard open list with only one queue.");
-        parser.document_note(
+        document_note(
             "Closed nodes",
             "Closed node are not re-opened");
-        parser.document_note(
+        document_note(
             "Equivalent statements using general eager search",
             "\n```\n--evaluator h2=eval2\n"
             "--search eager_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
@@ -57,19 +59,18 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
             "is equivalent to\n"
             "```\n--search eager(single(eval1))\n```\n", true);
     }
-    Options opts = parser.parse();
-    opts.verify_list_non_empty<shared_ptr<Evaluator>>("evals");
 
-    shared_ptr<eager_search::EagerSearch> engine;
-    if (!parser.dry_run()) {
-        opts.set("open", search_common::create_greedy_open_list_factory(opts));
-        opts.set("reopen_closed", false);
+    virtual shared_ptr<eager_search::EagerSearch> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+        context.verify_list_non_empty<shared_ptr<Evaluator>>(options, "evals");
+        plugins::Options options_copy(options);
+        options_copy.set("open", search_common::create_greedy_open_list_factory(options_copy));
+        options_copy.set("reopen_closed", false);
         shared_ptr<Evaluator> evaluator = nullptr;
-        opts.set("f_eval", evaluator);
-        engine = make_shared<eager_search::EagerSearch>(opts);
-    }
-    return engine;
-}
+        options_copy.set("f_eval", evaluator);
 
-static Plugin<SearchEngine> _plugin("eager_greedy", _parse);
+        return make_shared<eager_search::EagerSearch>(options_copy);
+    }
+};
+
+static plugins::FeaturePlugin<EagerGreedySearchFeature> _plugin;
 }

@@ -308,27 +308,23 @@ bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
     return true;
 }
 
-static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Zhu/Givan Landmarks",
+class LandmarkFactoryZhuGivanFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryZhuGivan> {
+public:
+    LandmarkFactoryZhuGivanFeature() : TypedFeature("lm_zg") {
+        document_title("Zhu/Givan Landmarks");
+        document_synopsis(
             "The landmark generation method introduced by "
             "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
 
-        add_landmark_factory_options_to_parser(parser);
-        add_use_orders_option_to_parser(parser);
+        add_landmark_factory_options_to_feature(*this);
+        add_use_orders_option_to_feature(*this);
 
         // TODO: Make sure that conditional effects are indeed supported.
-        parser.document_language_support(
+        document_language_support(
             "conditional_effects",
             "We think they are supported, but this is not 100% sure.");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<LandmarkFactoryZhuGivan>(opts);
-}
+};
 
-static Plugin<LandmarkFactory> _plugin("lm_zg", _parse);
+static plugins::FeaturePlugin<LandmarkFactoryZhuGivanFeature> _plugin;
 }

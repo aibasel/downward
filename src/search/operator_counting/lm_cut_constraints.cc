@@ -43,10 +43,11 @@ bool LMCutConstraints::update_constraints(const State &state,
     }
 }
 
-static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "LM-cut landmark constraints",
+class LMCutConstraintsFeature : public plugins::TypedFeature<ConstraintGenerator, LMCutConstraints> {
+public:
+    LMCutConstraintsFeature() : TypedFeature("lmcut_constraints") {
+        document_title("LM-cut landmark constraints");
+        document_synopsis(
             "Computes a set of landmarks in each state using the LM-cut method. "
             "For each landmark L the constraint sum_{o in L} Count_o >= 1 is added "
             "to the operator-counting LP temporarily. After the heuristic value "
@@ -72,10 +73,10 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
                 "2013"));
     }
 
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<LMCutConstraints>();
-}
+    virtual shared_ptr<LMCutConstraints> create_component(const plugins::Options &, const plugins::ConstructContext &) const override {
+        return make_shared<LMCutConstraints>();
+    }
+};
 
-static Plugin<ConstraintGenerator> _plugin("lmcut_constraints", _parse);
+static plugins::FeaturePlugin<LMCutConstraintsFeature> _plugin;
 }

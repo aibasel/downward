@@ -94,13 +94,6 @@ branches are Malte Helmert, Gabi Röger and Silvia Richter.
 
 ## License
 
-The following directory is not part of Fast Downward as covered by
-this license:
-
-- ./src/search/ext
-
-For the rest, the following license applies:
-
 ```
 Fast Downward is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

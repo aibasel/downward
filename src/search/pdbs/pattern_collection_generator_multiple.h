@@ -7,7 +7,7 @@
 #include <unordered_set>
 
 namespace plugins {
-class OptionParser;
+class Feature;
 }
 
 namespace utils {
@@ -76,9 +76,9 @@ public:
     virtual ~PatternCollectionGeneratorMultiple() override = default;
 };
 
-extern void add_multiple_algorithm_implementation_notes_to_parser(
-    plugins::OptionParser &parser);
-extern void add_multiple_options_to_parser(plugins::OptionParser &parser);
+extern void add_multiple_algorithm_implementation_notes_to_feature(
+    plugins::Feature &feature);
+extern void add_multiple_options_to_feature(plugins::Feature &feature);
 }
 
 #endif

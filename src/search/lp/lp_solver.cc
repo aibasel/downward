@@ -27,16 +27,13 @@ using namespace std;
 using utils::ExitCode;
 
 namespace lp {
-static vector<pair<string, string>> _enum_data_lp_solver_type();
-
-void add_lp_solver_option_to_parser(OptionParser &parser) {
-    parser.add_enum_option<LPSolverType>(
+void add_lp_solver_option_to_feature(plugins::Feature &feature) {
+    feature.add_option<LPSolverType>(
         "lpsolver",
-        _enum_data_lp_solver_type(),
         "external solver that should be used to solve linear programs",
         "cplex");
 
-    parser.document_note(
+    feature.document_note(
         "Note",
         "to use an LP solver, you must build the planner with LP support. "
         "See LPBuildInstructions.");
@@ -497,12 +494,10 @@ void LPSolver::print_statistics() const {
 
 #endif
 
-static vector<pair<string, string>> _enum_data_lp_solver_type() {
-    return {
+static plugins::TypedEnumPlugin<LPSolverType> _enum_plugin({
         {"clp", "default LP solver shipped with the COIN library"},
         {"cplex", "commercial solver by IBM"},
         {"gurobi", "commercial solver"},
         {"soplex", "open source solver by ZIB"}
-    };
-}
+    });
 }

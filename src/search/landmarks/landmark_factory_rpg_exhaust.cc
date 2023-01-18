@@ -61,26 +61,22 @@ bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
     return false;
 }
 
-static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Exhaustive Landmarks",
+class LandmarkFactoryRpgExhaustFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgExhaust> {
+public:
+    LandmarkFactoryRpgExhaustFeature() : TypedFeature("lm_exhaust") {
+        document_title("Exhaustive Landmarks");
+        document_synopsis(
             "Exhaustively checks for each fact if it is a landmark."
             "This check is done using relaxed planning.");
 
-        add_landmark_factory_options_to_parser(parser);
-        add_only_causal_landmarks_option_to_parser(parser);
+        add_landmark_factory_options_to_feature(*this);
+        add_only_causal_landmarks_option_to_feature(*this);
 
-        parser.document_language_support(
+        document_language_support(
             "conditional_effects",
             "ignored, i.e. not supported");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<LandmarkFactoryRpgExhaust>(opts);
-}
+};
 
-static Plugin<LandmarkFactory> _plugin("lm_exhaust", _parse);
+static plugins::FeaturePlugin<LandmarkFactoryRpgExhaustFeature> _plugin;
 }

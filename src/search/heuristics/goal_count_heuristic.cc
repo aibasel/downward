@@ -28,28 +28,23 @@ int GoalCountHeuristic::compute_heuristic(const State &ancestor_state) {
     return unsatisfied_goal_count;
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis("Goal count heuristic", "");
+class GoalCountHeuristicFeature : public plugins::TypedFeature<Evaluator, GoalCountHeuristic> {
+public:
+    GoalCountHeuristicFeature() : TypedFeature("goalcount") {
+        document_title("Goal count heuristic");
 
-        Heuristic::add_options_to_parser(parser);
+        Heuristic::add_options_to_feature(*this);
 
-        parser.document_language_support("action costs", "ignored by design");
-        parser.document_language_support("conditional effects", "supported");
-        parser.document_language_support("axioms", "supported");
+        document_language_support("action costs", "ignored by design");
+        document_language_support("conditional effects", "supported");
+        document_language_support("axioms", "supported");
 
-        parser.document_property("admissible", "no");
-        parser.document_property("consistent", "no");
-        parser.document_property("safe", "yes");
-        parser.document_property("preferred operators", "no");
+        document_property("admissible", "no");
+        document_property("consistent", "no");
+        document_property("safe", "yes");
+        document_property("preferred operators", "no");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<GoalCountHeuristic>(opts);
-}
+};
 
-
-static Plugin<Evaluator> _plugin("goalcount", _parse);
+static plugins::FeaturePlugin<GoalCountHeuristicFeature> _plugin;
 }

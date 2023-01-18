@@ -122,10 +122,11 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &ancestor_state) {
     return heuristic;
 }
 
-static shared_ptr<Heuristic> _parse(plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Merge-and-shrink heuristic",
+class MergeAndShrinkHeuristicFeature : public plugins::TypedFeature<Evaluator, MergeAndShrinkHeuristic> {
+public:
+    MergeAndShrinkHeuristicFeature() : TypedFeature("merge_and_shrink") {
+        document_title("Merge-and-shrink heuristic");
+        document_synopsis(
             "This heuristic implements the algorithm described in the following "
             "paper:" + utils::format_conference_reference(
                 {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
@@ -170,10 +171,10 @@ static shared_ptr<Heuristic> _parse(plugins::OptionParser &parser) {
                 "2018")
             );
 
-        Heuristic::add_options_to_parser(parser);
-        add_merge_and_shrink_algorithm_options_to_parser(parser);
+        Heuristic::add_options_to_feature(*this);
+        add_merge_and_shrink_algorithm_options_to_feature(*this);
 
-        parser.document_note(
+        document_note(
             "Note",
             "Conditional effects are supported directly. Note, however, that "
             "for tasks that are not factored (in the sense of the JACM 2014 "
@@ -181,7 +182,7 @@ static shared_ptr<Heuristic> _parse(plugins::OptionParser &parser) {
             "merge-and-shrink heuristics are based are nondeterministic, "
             "which can lead to poor heuristics even when only perfect shrinking "
             "is performed.");
-        parser.document_note(
+        document_note(
             "Note",
             "When pruning unreachable states, admissibility and consistency is "
             "only guaranteed for reachable states and transitions between "
@@ -191,14 +192,14 @@ static shared_ptr<Heuristic> _parse(plugins::OptionParser &parser) {
             "unreachable symmetric state (which hence is pruned) would falsely be "
             "considered a dead-end and also be pruned, thus violating optimality "
             "of the search.");
-        parser.document_note(
+        document_note(
             "Note",
             "When using a time limit on the main loop of the merge-and-shrink "
             "algorithm, the heuristic will compute the maximum over all heuristics "
             "induced by the remaining factors if terminating the merge-and-shrink "
             "algorithm early. Exception: if there is an unsolvable factor, it will "
             "be used as the exclusive heuristic since the problem is unsolvable.");
-        parser.document_note(
+        document_note(
             "Note",
             "A currently recommended good configuration uses bisimulation "
             "based shrinking, the merge strategy SCC-DFP, and the appropriate "
@@ -210,27 +211,22 @@ static shared_ptr<Heuristic> _parse(plugins::OptionParser &parser) {
             "total_order])),label_reduction=exact(before_shrinking=true,"
             "before_merging=false),max_states=50k,threshold_before_merge=1)\n}}}\n");
 
-        parser.document_language_support("action costs", "supported");
-        parser.document_language_support("conditional effects", "supported (but see note)");
-        parser.document_language_support("axioms", "not supported");
+        document_language_support("action costs", "supported");
+        document_language_support("conditional effects", "supported (but see note)");
+        document_language_support("axioms", "not supported");
 
-        parser.document_property("admissible", "yes (but see note)");
-        parser.document_property("consistent", "yes (but see note)");
-        parser.document_property("safe", "yes");
-        parser.document_property("preferred operators", "no");
+        document_property("admissible", "yes (but see note)");
+        document_property("consistent", "yes (but see note)");
+        document_property("safe", "yes");
+        document_property("preferred operators", "no");
     }
 
-    plugins::Options opts = parser.parse();
-    if (parser.help_mode()) {
-        return nullptr;
+    virtual shared_ptr<MergeAndShrinkHeuristic> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+        plugins::Options options_copy(options);
+        handle_shrink_limit_options_defaults(options_copy, context);
+        return make_shared<MergeAndShrinkHeuristic>(options_copy);
     }
-    handle_shrink_limit_options_defaults(opts);
-    if (parser.dry_run()) {
-        return nullptr;
-    } else {
-        return make_shared<MergeAndShrinkHeuristic>(opts);
-    }
-}
+};
 
-static plugins::Plugin<Evaluator> _plugin("merge_and_shrink", _parse);
+static plugins::FeaturePlugin<MergeAndShrinkHeuristicFeature> _plugin;
 }

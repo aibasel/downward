@@ -286,31 +286,35 @@ void LandmarkFactory::generate_operators_lookups(const TaskProxy &task_proxy) {
     }
 }
 
-void add_landmark_factory_options_to_parser(plugins::OptionParser &parser) {
-    utils::add_log_options_to_parser(parser);
+void add_landmark_factory_options_to_feature(plugins::Feature &feature) {
+    utils::add_log_options_to_feature(feature);
 }
 
-void add_use_orders_option_to_parser(OptionParser &parser) {
-    parser.add_option<bool>(
+void add_use_orders_option_to_feature(plugins::Feature &feature) {
+    feature.add_option<bool>(
         "use_orders",
         "use orders between landmarks",
         "true");
 }
 
-void add_only_causal_landmarks_option_to_parser(
-    OptionParser &parser) {
-    parser.add_option<bool>(
+void add_only_causal_landmarks_option_to_feature(
+    plugins::Feature &feature) {
+    feature.add_option<bool>(
         "only_causal_landmarks",
         "keep only causal landmarks",
         "false");
 }
 
-
-static PluginTypePlugin<LandmarkFactory> _type_plugin(
-    "LandmarkFactory",
-    "A landmark factory specification is either a newly created "
-    "instance or a landmark factory that has been defined previously. "
-    "This page describes how one can specify a new landmark factory instance. "
-    "For re-using landmark factories, see OptionSyntax#Landmark_Predefinitions.",
-    "landmarks");
+static class LandmarkFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<LandmarkFactory> {
+public:
+    LandmarkFactoryCategoryPlugin() : TypedCategoryPlugin("LandmarkFactory") {
+        document_synopsis(
+            "A landmark factory specification is either a newly created "
+            "instance or a landmark factory that has been defined previously. "
+            "This page describes how one can specify a new landmark factory instance. "
+            "For re-using landmark factories, see OptionSyntax#Landmark_Predefinitions.");
+        allow_variable_binding();
+    }
+}
+_category_plugin;
 }

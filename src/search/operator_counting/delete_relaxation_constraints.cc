@@ -236,10 +236,11 @@ bool DeleteRelaxationConstraints::update_constraints(
     return false;
 }
 
-static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Delete relaxation constraints",
+class DeleteRelaxationConstraintsFeature : public plugins::TypedFeature<ConstraintGenerator, DeleteRelaxationConstraints> {
+public:
+    DeleteRelaxationConstraintsFeature() : TypedFeature("delete_relaxation_constraints") {
+        document_title("Delete relaxation constraints");
+        document_synopsis(
             "Operator-counting constraints based on the delete relaxation. By "
             "default the constraints encode an easy-to-compute relaxation of h^+^. "
             "With the right settings, these constraints can be used to compute the "
@@ -254,7 +255,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
                 "631-677",
                 "2015"));
 
-        parser.add_option<bool>(
+        add_option<bool>(
             "use_time_vars",
             "use variables for time steps. With these additional variables the "
             "constraints enforce an order between the selected operators. Leaving "
@@ -264,7 +265,7 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
             "runtime. Constraints involving time variables use a big-M encoding, "
             "so they are more useful if used with integer variables.",
             "false");
-        parser.add_option<bool>(
+        add_option<bool>(
             "use_integer_vars",
             "restrict auxiliary variables to integer values. These variables "
             "encode whether operators are used, facts are reached, which operator "
@@ -273,17 +274,13 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
             "at the cost of increased runtime.",
             "false");
 
-        parser.document_note(
+        document_note(
             "Example",
             "To compute the optimal delete-relaxation heuristic h^+^, use\n"
             "{{{\noperatorcounting([delete_relaxation_constraints(use_time_vars=true, "
             "use_integer_vars=true)], use_integer_operator_counts=true))\n}}}\n");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<DeleteRelaxationConstraints>(opts);
-}
+};
 
-static Plugin<ConstraintGenerator> _plugin("delete_relaxation_constraints", _parse);
+static plugins::FeaturePlugin<DeleteRelaxationConstraintsFeature> _plugin;
 }

@@ -73,10 +73,11 @@ void StubbornSetsSimple::handle_stubborn_operator(const State &state,
     }
 }
 
-static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Stubborn sets simple",
+class StubbornSetsSimpleFeature : public plugins::TypedFeature<PruningMethod, StubbornSetsSimple> {
+public:
+    StubbornSetsSimpleFeature() : TypedFeature("stubborn_sets_simple") {
+        document_title("Stubborn sets simple");
+        document_synopsis(
             "Stubborn sets represent a state pruning method which computes a subset "
             "of applicable operators in each state such that completeness and "
             "optimality of the overall search is preserved. As stubborn sets rely "
@@ -101,14 +102,9 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
                 "323-331",
                 "AAAI Press",
                 "2014"));
-        add_pruning_options_to_parser(parser);
+        add_pruning_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run()) {
-        return nullptr;
-    }
-    return make_shared<StubbornSetsSimple>(opts);
-}
+};
 
-static Plugin<PruningMethod> _plugin("stubborn_sets_simple", _parse);
+static plugins::FeaturePlugin<StubbornSetsSimpleFeature> _plugin;
 }

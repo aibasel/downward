@@ -4,7 +4,7 @@
 #include <memory>
 
 namespace plugins {
-class OptionParser;
+class Feature;
 class Options;
 }
 
@@ -12,7 +12,7 @@ namespace utils {
 class RandomNumberGenerator;
 
 // Add random_seed option to parser.
-extern void add_rng_options(plugins::OptionParser &parser);
+extern void add_rng_options(plugins::Feature &feature);
 
 /*
   Return an RNG based on the given options, which can either be the global

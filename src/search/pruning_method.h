@@ -17,8 +17,8 @@ class LimitedPruning;
 }
 
 namespace plugins {
-class OptionParser;
 class Options;
+class Feature;
 }
 
 class PruningMethod {
@@ -40,6 +40,6 @@ public:
     virtual void print_statistics() const;
 };
 
-extern void add_pruning_options_to_parser(plugins::OptionParser &parser);
+extern void add_pruning_options_to_feature(plugins::Feature &feature);
 
 #endif

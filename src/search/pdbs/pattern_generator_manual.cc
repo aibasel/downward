@@ -29,19 +29,16 @@ PatternInformation PatternGeneratorManual::compute_pattern(
     return pattern_info;
 }
 
-static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
-    {
-        parser.add_list_option<int>(
+class PatternGeneratorManualFeature : public plugins::TypedFeature<PatternGenerator, PatternGeneratorManual> {
+public:
+    PatternGeneratorManualFeature() : TypedFeature("manual_pattern") {
+        add_list_option<int>(
             "pattern",
             "list of variable numbers of the planning task that should be used as "
             "pattern.");
-        add_generator_options_to_parser(parser);
+        add_generator_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<PatternGeneratorManual>(opts);
-}
+};
 
-static Plugin<PatternGenerator> _plugin("manual_pattern", _parse);
+static plugins::FeaturePlugin<PatternGeneratorManualFeature> _plugin;
 }

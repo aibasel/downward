@@ -11,8 +11,7 @@ class Evaluator;
 class PruningMethod;
 
 namespace plugins {
-class OptionParser;
-class Options;
+class Feature;
 }
 
 namespace eager_search {
@@ -45,7 +44,7 @@ public:
     void dump_search_space() const;
 };
 
-extern void add_options_to_parser(plugins::OptionParser &parser);
+extern void add_options_to_feature(plugins::Feature &feature);
 }
 
 #endif

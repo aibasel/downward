@@ -61,10 +61,11 @@ bool PhOConstraints::update_constraints(const State &state,
     return false;
 }
 
-static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Posthoc optimization constraints",
+class PhOConstraintsFeature : public plugins::TypedFeature<ConstraintGenerator, PhOConstraints> {
+public:
+    PhOConstraintsFeature() : TypedFeature("pho_constraints") {
+        document_title("Posthoc optimization constraints");
+        document_synopsis(
             "The generator will compute a PDB for each pattern and add the"
             " constraint h(s) <= sum_{o in relevant(h)} Count_o. For details,"
             " see" + utils::format_conference_reference(
@@ -77,16 +78,12 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
                 "AAAI Press",
                 "2013"));
 
-        parser.add_option<shared_ptr<pdbs::PatternCollectionGenerator>>(
+        add_option<shared_ptr<pdbs::PatternCollectionGenerator>>(
             "patterns",
             "pattern generation method",
             "systematic(2)");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<PhOConstraints>(opts);
-}
+};
 
-static Plugin<ConstraintGenerator> _plugin("pho_constraints", _parse);
+static plugins::FeaturePlugin<PhOConstraintsFeature> _plugin;
 }

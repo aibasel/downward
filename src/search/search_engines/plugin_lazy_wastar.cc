@@ -8,32 +8,33 @@ using namespace std;
 namespace plugin_lazy_wastar {
 static const string DEFAULT_LAZY_BOOST = "1000";
 
-static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "(Weighted) A* search (lazy)",
+class LazyWAstarSearchFeature : public plugins::TypedFeature<SearchEngine, lazy_search::LazySearch> {
+public:
+    LazyWAstarSearchFeature() : TypedFeature("lazy_wastar") {
+        document_title("(Weighted) A* search (lazy)");
+        document_synopsis(
             "Weighted A* is a special case of lazy best first search.");
 
-        parser.add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<Evaluator>>(
             "evals",
             "evaluators");
-        parser.add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<Evaluator>>(
             "preferred",
             "use preferred operators of these evaluators",
             "[]");
-        parser.add_option<bool>(
+        add_option<bool>(
             "reopen_closed",
             "reopen closed nodes",
             "true");
-        parser.add_option<int>(
+        add_option<int>(
             "boost",
             "boost value for preferred operator open lists",
             DEFAULT_LAZY_BOOST);
-        parser.add_option<int>("w", "evaluator weight", "1");
-        SearchEngine::add_succ_order_options(parser);
-        SearchEngine::add_options_to_parser(parser);
+        add_option<int>("w", "evaluator weight", "1");
+        SearchEngine::add_succ_order_options(*this);
+        SearchEngine::add_options_to_feature(*this);
 
-        parser.document_note(
+        document_note(
             "Open lists",
             "In the general case, it uses an alternation open list "
             "with one queue for each evaluator h that ranks the nodes "
@@ -43,7 +44,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
             "In the special case with only one evaluator and no preferred "
             "operator evaluators, it uses a single queue that "
             "is ranked by g + w * h. ");
-        parser.document_note(
+        document_note(
             "Equivalent statements using general lazy search",
             "\n```\n--evaluator h1=eval1\n"
             "--search lazy_wastar([h1, eval2], w=2, preferred=h1,\n"
@@ -75,18 +76,18 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
             "```\n--search lazy(single(sum([g(), weight(eval1, 2)])), reopen_closed=true)\n```\n",
             true);
     }
-    Options opts = parser.parse();
-    opts.verify_list_non_empty<shared_ptr<Evaluator>>("evals");
-    shared_ptr<lazy_search::LazySearch> engine;
-    if (!parser.dry_run()) {
-        opts.set("open", search_common::create_wastar_open_list_factory(opts));
-        engine = make_shared<lazy_search::LazySearch>(opts);
-        // TODO: The following two lines look fishy. See similar comment in _parse.
-        vector<shared_ptr<Evaluator>> preferred_list = opts.get_list<shared_ptr<Evaluator>>("preferred");
-        engine->set_preferred_operator_evaluators(preferred_list);
-    }
-    return engine;
-}
 
-static Plugin<SearchEngine> _plugin("lazy_wastar", _parse);
+    virtual shared_ptr<lazy_search::LazySearch> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+        context.verify_list_non_empty<shared_ptr<Evaluator>>(options, "evals");
+        plugins::Options options_copy(options);
+        options_copy.set("open", search_common::create_wastar_open_list_factory(options_copy));
+        shared_ptr<lazy_search::LazySearch> engine = make_shared<lazy_search::LazySearch>(options_copy);
+        // TODO: The following two lines look fishy. See similar comment in _parse.
+        vector<shared_ptr<Evaluator>> preferred_list = options_copy.get_list<shared_ptr<Evaluator>>("preferred");
+        engine->set_preferred_operator_evaluators(preferred_list);
+        return engine;
+    }
+};
+
+static plugins::FeaturePlugin<LazyWAstarSearchFeature> _plugin;
 }

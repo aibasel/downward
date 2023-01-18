@@ -10,6 +10,7 @@ class TaskProxy;
 
 namespace plugins {
 class Options;
+class Feature;
 }
 
 namespace merge_and_shrink {
@@ -33,7 +34,7 @@ public:
     virtual bool requires_goal_distances() const = 0;
 };
 
-extern void add_merge_strategy_options_to_parser(plugins::OptionParser &parser);
+extern void add_merge_strategy_options_to_feature(plugins::Feature &feature);
 }
 
 #endif

@@ -10,12 +10,12 @@
 #include <vector>
 
 namespace plugins {
-class OptionParser;
 class Options;
+class Feature;
 }
 
 namespace utils {
-// See add_log_options_to_parser for documentation.
+// See add_log_options_to_feature for documentation.
 enum class Verbosity {
     SILENT,
     NORMAL,
@@ -128,7 +128,7 @@ public:
 */
 extern LogProxy g_log;
 
-extern void add_log_options_to_parser(plugins::OptionParser &parser);
+extern void add_log_options_to_feature(plugins::Feature &feature);
 extern LogProxy get_log_from_options(const plugins::Options &options);
 extern LogProxy get_silent_log();
 

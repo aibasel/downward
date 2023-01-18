@@ -3,75 +3,125 @@
 #include "plan_manager.h"
 #include "search_engine.h"
 
+#include "parser/errors.h"
+#include "parser/lexical_analyzer.h"
+#include "parser/syntax_analyzer.h"
+#include "plugins/any.h"
 #include "plugins/doc_printer.h"
-#include "plugins/option_parser.h"
-#include "plugins/predefinitions.h"
-#include "plugins/registries.h"
+#include "plugins/plugin.h"
+#include "utils/logging.h"
 #include "utils/strings.h"
 
 #include <algorithm>
+#include <sstream>
 #include <vector>
 
 using namespace std;
 
-void ArgError::print() const {
-    cerr << "argument error: " << msg << endl;
+NO_RETURN
+static void input_error(const string &msg) {
+    utils::g_log << msg << endl
+                 << usage() << endl;
+    utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
 }
 
-static string sanitize_arg_string(string s) {
-    // Convert newlines to spaces.
-    replace(s.begin(), s.end(), '\n', ' ');
-    // Convert string to lower case.
-    return utils::tolower(s);
-}
 
 static int parse_int_arg(const string &name, const string &value) {
     try {
         return stoi(value);
     } catch (invalid_argument &) {
-        throw ArgError("argument for " + name + " must be an integer");
+        input_error("argument for " + name + " must be an integer");
     } catch (out_of_range &) {
-        throw ArgError("argument for " + name + " is out of range");
+        input_error("argument for " + name + " is out of range");
     }
 }
 
-static shared_ptr<SearchEngine> parse_cmd_line_aux(
-    const vector<string> &args, plugins::Registry &registry, bool dry_run) {
+static vector<string> replace_old_style_predefinitions(const vector<string> &args) {
+    vector<string> new_args;
+    int num_predefinitions = 0;
+    bool has_search_argument = false;
+    ostringstream new_search_argument;
+
+    for (size_t i = 0; i < args.size(); ++i) {
+        string arg = args[i];
+        bool is_last = (i == args.size() - 1);
+
+        if (arg == "--evaluator" || arg == "--heuristic" || arg == "--landmarks") {
+            if (has_search_argument)
+                input_error("predefinitions are forbidden after the '--search' argument");
+            if (is_last)
+                input_error("missing argument after " + arg);
+            ++i;
+            vector<string> predefinition = utils::split(args[i], "=", 1);
+            if (predefinition.size() < 2)
+                input_error("predefinition expects format 'key=definition'");
+            string key = predefinition[0];
+            string definition = predefinition[1];
+            if (!utils::is_alpha_numeric(key))
+                input_error("predefinition key has to be alphanumeric: '" + key + "'");
+            new_search_argument << "let(" << key << "," << definition << ",";
+            num_predefinitions++;
+        } else if (arg == "--search") {
+            if (has_search_argument)
+                input_error("at most one '--search' argument may be specified");
+            if (is_last)
+                input_error("missing argument after --search");
+            ++i;
+            arg = args[i];
+            new_args.push_back("--search");
+            new_search_argument << arg << string(num_predefinitions, ')');
+            new_args.push_back(new_search_argument.str());
+            has_search_argument = true;
+        } else {
+            new_args.push_back(arg);
+        }
+    }
+    if (!has_search_argument && num_predefinitions > 0)
+        input_error("predefinitions require a '--search' argument");
+
+    return new_args;
+}
+
+static shared_ptr<SearchEngine> parse_cmd_line_aux(const vector<string> &args) {
     string plan_filename = "sas_plan";
     int num_previously_generated_plans = 0;
     bool is_part_of_anytime_portfolio = false;
-    plugins::Predefinitions predefinitions;
 
-    shared_ptr<SearchEngine> engine;
-    /*
-      Note that we don’t sanitize all arguments beforehand because filenames should remain as-is
-      (no conversion to lower-case, no conversion of newlines to spaces).
-    */
+    using SearchPtr = shared_ptr<SearchEngine>;
+    SearchPtr engine = nullptr;
     // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
-        string arg = sanitize_arg_string(args[i]);
+        string arg = args[i];
         bool is_last = (i == args.size() - 1);
         if (arg == "--search") {
             if (engine)
-                throw ArgError("multiple --search arguments defined");
+                input_error("multiple --search arguments defined");
             if (is_last)
-                throw ArgError("missing argument after --search");
+                input_error("missing argument after --search");
             ++i;
-            plugins::OptionParser parser(
-                sanitize_arg_string(args[i]), registry, predefinitions, dry_run);
-            engine = parser.start_parsing<shared_ptr<SearchEngine>>();
-        } else if (arg == "--help" && dry_run) {
+            string search_arg = args[i];
+            try {
+                parser::TokenStream tokens = parser::split_tokens(search_arg);
+                parser::ASTNodePtr parsed = parser::parse(tokens);
+                parser::DecoratedASTNodePtr decorated = parsed->decorate();
+                plugins::Any constructed = decorated->construct();
+                engine = plugins::any_cast<SearchPtr>(constructed);
+            } catch (const parser::ParserError &e) {
+                input_error(e.get_message());
+            }
+        } else if (arg == "--help") {
             cout << "Help:" << endl;
             bool txt2tags = false;
             vector<string> plugin_names;
             for (size_t j = i + 1; j < args.size(); ++j) {
-                string help_arg = sanitize_arg_string(args[j]);
+                string help_arg = args[j];
                 if (help_arg == "--txt2tags") {
                     txt2tags = true;
                 } else {
                     plugin_names.push_back(help_arg);
                 }
             }
+            plugins::Registry registry = plugins::RawRegistry::instance()->construct_registry();
             unique_ptr<plugins::DocPrinter> doc_printer;
             if (txt2tags)
                 doc_printer = utils::make_unique_ptr<plugins::Txt2TagsPrinter>(
@@ -83,34 +133,26 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
                 doc_printer->print_all();
             } else {
                 for (const string &name : plugin_names) {
-                    doc_printer->print_plugin(name);
+                    doc_printer->print_feature(name);
                 }
             }
             cout << "Help output finished." << endl;
             exit(0);
         } else if (arg == "--internal-plan-file") {
             if (is_last)
-                throw ArgError("missing argument after --internal-plan-file");
+                input_error("missing argument after --internal-plan-file");
             ++i;
             plan_filename = args[i];
         } else if (arg == "--internal-previous-portfolio-plans") {
             if (is_last)
-                throw ArgError("missing argument after --internal-previous-portfolio-plans");
+                input_error("missing argument after --internal-previous-portfolio-plans");
             ++i;
             is_part_of_anytime_portfolio = true;
             num_previously_generated_plans = parse_int_arg(arg, args[i]);
             if (num_previously_generated_plans < 0)
-                throw ArgError("argument for --internal-previous-portfolio-plans must be positive");
-        } else if (utils::startswith(arg, "--") &&
-                   registry.is_predefinition(arg.substr(2))) {
-            if (is_last)
-                throw ArgError("missing argument after " + arg);
-            ++i;
-            registry.handle_predefinition(arg.substr(2),
-                                          sanitize_arg_string(args[i]),
-                                          predefinitions, dry_run);
+                input_error("argument for --internal-previous-portfolio-plans must be positive");
         } else {
-            throw ArgError("unknown option " + arg);
+            input_error("unknown option " + arg);
         }
     }
 
@@ -124,11 +166,11 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(
 }
 
 shared_ptr<SearchEngine> parse_cmd_line(
-    int argc, const char **argv, plugins::Registry &registry, bool dry_run, bool is_unit_cost) {
+    int argc, const char **argv, bool is_unit_cost) {
     vector<string> args;
     bool active = true;
     for (int i = 1; i < argc; ++i) {
-        string arg = sanitize_arg_string(argv[i]);
+        string arg = argv[i];
 
         if (arg == "--if-unit-cost") {
             active = is_unit_cost;
@@ -137,11 +179,11 @@ shared_ptr<SearchEngine> parse_cmd_line(
         } else if (arg == "--always") {
             active = true;
         } else if (active) {
-            // We use the unsanitized arguments because sanitizing is inappropriate for things like filenames.
-            args.push_back(argv[i]);
+            args.push_back(arg);
         }
     }
-    return parse_cmd_line_aux(args, registry, dry_run);
+    args = replace_old_style_predefinitions(args);
+    return parse_cmd_line_aux(args);
 }
 
 string usage() {
@@ -153,12 +195,6 @@ string usage() {
            "--help [NAME]\n"
            "    Prints help for all heuristics, open lists, etc. called NAME.\n"
            "    Without parameter: prints help for everything available\n"
-           "--landmarks LANDMARKS_PREDEFINITION\n"
-           "    Predefines a set of landmarks that can afterwards be referenced\n"
-           "    by the name that is specified in the definition.\n"
-           "--evaluator EVALUATOR_PREDEFINITION\n"
-           "    Predefines an evaluator that can afterwards be referenced\n"
-           "    by the name that is specified in the definition.\n"
            "--internal-plan-file FILENAME\n"
            "    Plan will be output to a file called FILENAME\n\n"
            "--internal-previous-portfolio-plans COUNTER\n"
@@ -168,4 +204,4 @@ string usage() {
            "See https://www.fast-downward.org for details.";
 }
 
-std::string g_program_name;
+string g_program_name;

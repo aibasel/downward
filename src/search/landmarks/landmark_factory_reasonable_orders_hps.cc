@@ -377,10 +377,11 @@ bool LandmarkFactoryReasonableOrdersHPS::supports_conditional_effects() const {
     return lm_factory->supports_conditional_effects();
 }
 
-static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "HPS Orders",
+class LandmarkFactoryReasonableOrdersHPSFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryReasonableOrdersHPS> {
+public:
+    LandmarkFactoryReasonableOrdersHPSFeature() : TypedFeature("lm_reasonable_orders_hps") {
+        document_title("HPS Orders");
+        document_synopsis(
             "Adds reasonable orders and obedient reasonable orders "
             "described in the following paper" +
             utils::format_journal_reference(
@@ -392,20 +393,15 @@ static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
                 "215-278",
                 "2004"));
 
-        parser.add_option<shared_ptr<LandmarkFactory>>("lm_factory");
-        add_landmark_factory_options_to_parser(parser);
+        add_option<shared_ptr<LandmarkFactory>>("lm_factory");
+        add_landmark_factory_options_to_feature(*this);
 
         // TODO: correct?
-        parser.document_language_support(
+        document_language_support(
             "conditional_effects",
             "supported if subcomponent supports them");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<LandmarkFactoryReasonableOrdersHPS>(opts);
-}
+};
 
-static Plugin<LandmarkFactory> _plugin("lm_reasonable_orders_hps", _parse);
+static plugins::FeaturePlugin<LandmarkFactoryReasonableOrdersHPSFeature> _plugin;
 }

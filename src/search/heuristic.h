@@ -14,7 +14,7 @@
 class TaskProxy;
 
 namespace plugins {
-class OptionParser;
+class Feature;
 class Options;
 }
 
@@ -80,7 +80,7 @@ public:
         std::set<Evaluator *> & /*evals*/) override {
     }
 
-    static void add_options_to_parser(plugins::OptionParser &parser);
+    static void add_options_to_feature(plugins::Feature &feature);
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;

@@ -149,10 +149,11 @@ TypeBasedOpenListFactory::create_edge_open_list() {
     return utils::make_unique_ptr<TypeBasedOpenList<EdgeOpenListEntry>>(options);
 }
 
-static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Type-based open list",
+class TypeBasedOpenListFeature : public plugins::TypedFeature<OpenListFactory, TypeBasedOpenListFactory> {
+public:
+    TypeBasedOpenListFeature() : TypedFeature("type_based") {
+        document_title("Type-based open list");
+        document_synopsis(
             "Uses multiple evaluators to assign entries to buckets. "
             "All entries in a bucket have the same evaluator values. "
             "When retrieving an entry, a bucket is chosen uniformly at "
@@ -169,19 +170,17 @@ static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
                 "AAAI Press",
                 "2014"));
 
-        parser.add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<Evaluator>>(
             "evaluators",
             "Evaluators used to determine the bucket for each entry.");
-        utils::add_rng_options(parser);
+        utils::add_rng_options(*this);
     }
 
-    Options opts = parser.parse();
-    opts.verify_list_non_empty<shared_ptr<Evaluator>>("evaluators");
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<TypeBasedOpenListFactory>(opts);
-}
+    virtual shared_ptr<TypeBasedOpenListFactory> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+        context.verify_list_non_empty<shared_ptr<Evaluator>>(options, "evaluators");
+        return make_shared<TypeBasedOpenListFactory>(options);
+    }
+};
 
-static Plugin<OpenListFactory> _plugin("type_based", _parse);
+static plugins::FeaturePlugin<TypeBasedOpenListFeature> _plugin;
 }

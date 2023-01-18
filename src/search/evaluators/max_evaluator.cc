@@ -23,20 +23,21 @@ int MaxEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
-static shared_ptr<Evaluator> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Max evaluator",
+class MaxEvaluatorFeature : public plugins::TypedFeature<Evaluator, MaxEvaluator> {
+public:
+    MaxEvaluatorFeature() : TypedFeature("max") {
+        document_subcategory("evaluators_basic");
+        document_title("Max evaluator");
+        document_synopsis(
             "Calculates the maximum of the sub-evaluators.");
-        combining_evaluator::add_combining_evaluator_options_to_parser(parser);
+        combining_evaluator::add_combining_evaluator_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    opts.verify_list_non_empty<shared_ptr<Evaluator>>("evals");
-    if (parser.dry_run()) {
-        return nullptr;
-    }
-    return make_shared<MaxEvaluator>(opts);
-}
 
-static Plugin<Evaluator> plugin("max", _parse, "evaluators_basic");
+    virtual shared_ptr<MaxEvaluator> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+        context.verify_list_non_empty<shared_ptr<Evaluator>>(options, "evals");
+        return make_shared<MaxEvaluator>(options);
+    }
+};
+
+static plugins::FeaturePlugin<MaxEvaluatorFeature> _plugin;
 }

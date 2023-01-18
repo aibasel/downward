@@ -49,20 +49,17 @@ PatternInformation PatternGeneratorGreedy::compute_pattern(const shared_ptr<Abst
     return PatternInformation(task_proxy, move(pattern), log);
 }
 
-static shared_ptr<PatternGenerator> _parse(OptionParser &parser) {
-    {
-        parser.add_option<int>(
+class PatternGeneratorGreedyFeature : public plugins::TypedFeature<PatternGenerator, PatternGeneratorGreedy> {
+public:
+    PatternGeneratorGreedyFeature() : TypedFeature("greedy") {
+        add_option<int>(
             "max_states",
             "maximal number of abstract states in the pattern database.",
             "1000000",
             plugins::Bounds("1", "infinity"));
-        add_generator_options_to_parser(parser);
+        add_generator_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<PatternGeneratorGreedy>(opts);
-}
+};
 
-static Plugin<PatternGenerator> _plugin("greedy", _parse);
+static plugins::FeaturePlugin<PatternGeneratorGreedyFeature> _plugin;
 }

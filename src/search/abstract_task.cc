@@ -15,7 +15,11 @@ ostream &operator<<(ostream &os, const FactPair &fact_pair) {
     return os;
 }
 
-static PluginTypePlugin<AbstractTask> _type_plugin(
-    "AbstractTask",
-    // TODO: Replace empty string by synopsis for the wiki page.
-    "");
+static class AbstractTaskCategoryPlugin : public plugins::TypedCategoryPlugin<AbstractTask> {
+public:
+    AbstractTaskCategoryPlugin() : TypedCategoryPlugin("AbstractTask") {
+        // TODO: Replace empty string by synopsis for the wiki page.
+        document_synopsis("");
+    }
+}
+_category_plugin;

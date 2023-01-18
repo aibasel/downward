@@ -154,37 +154,33 @@ void MergeScoringFunctionTotalOrder::dump_function_specific_options(utils::LogPr
     }
 }
 
-static vector<pair<string, string>> _enum_data_atomic_ts_order();
-static vector<pair<string, string>> _enum_data_product_ts_order();
-
-void MergeScoringFunctionTotalOrder::add_options_to_parser(
-    plugins::OptionParser &parser) {
-    parser.add_enum_option<AtomicTSOrder>(
+void MergeScoringFunctionTotalOrder::add_options_to_feature(
+    plugins::Feature &feature) {
+    feature.add_option<AtomicTSOrder>(
         "atomic_ts_order",
-        _enum_data_atomic_ts_order(),
         "The order in which atomic transition systems are considered when "
         "considering pairs of potential merges.",
         "reverse_level");
 
-    parser.add_enum_option<ProductTSOrder>(
+    feature.add_option<ProductTSOrder>(
         "product_ts_order",
-        _enum_data_product_ts_order(),
         "The order in which product transition systems are considered when "
         "considering pairs of potential merges.",
         "new_to_old");
 
-    parser.add_option<bool>(
+    feature.add_option<bool>(
         "atomic_before_product",
         "Consider atomic transition systems before composite ones iff true.",
         "false");
 
-    utils::add_rng_options(parser);
+    utils::add_rng_options(feature);
 }
 
-static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Total order",
+class MergeScoringFunctionTotalOrderFeature : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionTotalOrder> {
+public:
+    MergeScoringFunctionTotalOrderFeature() : TypedFeature("total_order") {
+        document_title("Total order");
+        document_synopsis(
             "This scoring function computes a total order on the merge candidates, "
             "based on the specified options. The score for each merge candidate "
             "correponds to its position in the order. This scoring function is "
@@ -203,36 +199,27 @@ static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
             "if used alone in a score based filtering merge selector, can be used "
             "to emulate the corresponding (precomputed) linear merge strategies "
             "reverse level/level (independently of the other options).");
-        MergeScoringFunctionTotalOrder::add_options_to_parser(parser);
+        MergeScoringFunctionTotalOrder::add_options_to_feature(*this);
     }
-    plugins::Options options = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<MergeScoringFunctionTotalOrder>(options);
-}
+};
 
-static plugins::Plugin<MergeScoringFunction> _plugin("total_order", _parse);
+static plugins::FeaturePlugin<MergeScoringFunctionTotalOrderFeature> _plugin;
 
-static vector<pair<string, string>> _enum_data_atomic_ts_order() {
-    return {
+static plugins::TypedEnumPlugin<AtomicTSOrder> _atomic_ts_order_enum_plugin({
         {"reverse_level",
          "the variable order of Fast Downward"},
         {"level",
          "opposite of reverse_level"},
         {"random",
          "a randomized order"}
-    };
-}
+    });
 
-static vector<pair<string, string>> _enum_data_product_ts_order() {
-    return {
+static plugins::TypedEnumPlugin<ProductTSOrder> _product_ts_order_enum_plugin({
         {"old_to_new",
          "consider composite transition systems from oldest to most recent"},
         {"new_to_old",
          "opposite of old_to_new"},
         {"random",
          "a randomized order"}
-    };
-}
+    });
 }

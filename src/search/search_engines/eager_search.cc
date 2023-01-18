@@ -6,7 +6,6 @@
 #include "../pruning_method.h"
 
 #include "../algorithms/ordered_set.h"
-#include "../plugins/option_parser.h"
 #include "../plugins/options.h"
 #include "../task_utils/successor_generator.h"
 #include "../utils/logging.h"
@@ -308,8 +307,8 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     }
 }
 
-void add_options_to_parser(plugins::OptionParser &parser) {
-    SearchEngine::add_pruning_option(parser);
-    SearchEngine::add_options_to_parser(parser);
+void add_options_to_feature(plugins::Feature &feature) {
+    SearchEngine::add_pruning_option(feature);
+    SearchEngine::add_options_to_feature(feature);
 }
 }

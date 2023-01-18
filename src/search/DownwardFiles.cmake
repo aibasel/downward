@@ -81,22 +81,33 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME OPTIONS
-    HELP "Option parsing and plugin definition"
+    NAME PLUGINS
+    HELP "Plugin definition"
     SOURCES
         plugins/any
         plugins/bounds
+        plugins/construct_context
         plugins/doc_printer
-        plugins/doc_utils
-        plugins/errors
-        plugins/option_parser
         plugins/options
-        plugins/parse_tree
-        plugins/predefinitions
         plugins/plugin
+        plugins/plugin_info
         plugins/raw_registry
-        plugins/registries
-        plugins/type_namer
+        plugins/registry
+        plugins/registry_types
+        plugins/types
+    CORE_PLUGIN
+)
+
+fast_downward_plugin(
+    NAME PARSER
+    HELP "Option parsing"
+    SOURCES
+        parser/abstract_syntax_tree
+        parser/decorated_abstract_syntax_tree
+        parser/errors
+        parser/lexical_analyzer
+        parser/syntax_analyzer
+        parser/token_stream
     CORE_PLUGIN
 )
 
@@ -246,10 +257,10 @@ fast_downward_plugin(
 )
 
 fast_downward_plugin(
-    NAME EVALUATORS_PLUGIN_GROUP
-    HELP "Plugin group for basic evaluators"
+    NAME EVALUATORS_SUBCATEGORY
+    HELP "Subcategory plugin for basic evaluators"
     SOURCES
-        evaluators/plugin_group
+        evaluators/subcategory
 )
 
 fast_downward_plugin(
@@ -257,7 +268,7 @@ fast_downward_plugin(
     HELP "The constant evaluator"
     SOURCES
         evaluators/const_evaluator
-    DEPENDS EVALUATORS_PLUGIN_GROUP
+    DEPENDS EVALUATORS_SUBCATEGORY
 )
 
 fast_downward_plugin(
@@ -265,7 +276,7 @@ fast_downward_plugin(
     HELP "The g-evaluator"
     SOURCES
         evaluators/g_evaluator
-    DEPENDS EVALUATORS_PLUGIN_GROUP
+    DEPENDS EVALUATORS_SUBCATEGORY
 )
 
 fast_downward_plugin(
@@ -281,7 +292,7 @@ fast_downward_plugin(
     HELP "The max evaluator"
     SOURCES
         evaluators/max_evaluator
-    DEPENDS COMBINING_EVALUATOR EVALUATORS_PLUGIN_GROUP
+    DEPENDS COMBINING_EVALUATOR EVALUATORS_SUBCATEGORY
 )
 
 fast_downward_plugin(
@@ -289,7 +300,7 @@ fast_downward_plugin(
     HELP "The pref evaluator"
     SOURCES
         evaluators/pref_evaluator
-    DEPENDS EVALUATORS_PLUGIN_GROUP
+    DEPENDS EVALUATORS_SUBCATEGORY
 )
 
 fast_downward_plugin(
@@ -297,7 +308,7 @@ fast_downward_plugin(
     HELP "The weighted evaluator"
     SOURCES
         evaluators/weighted_evaluator
-    DEPENDS EVALUATORS_PLUGIN_GROUP
+    DEPENDS EVALUATORS_SUBCATEGORY
 )
 
 fast_downward_plugin(
@@ -305,7 +316,7 @@ fast_downward_plugin(
     HELP "The sum evaluator"
     SOURCES
         evaluators/sum_evaluator
-    DEPENDS COMBINING_EVALUATOR EVALUATORS_PLUGIN_GROUP
+    DEPENDS COMBINING_EVALUATOR EVALUATORS_SUBCATEGORY
 )
 
 fast_downward_plugin(
@@ -760,8 +771,8 @@ fast_downward_plugin(
         pdbs/pattern_generator
         pdbs/pattern_information
         pdbs/pdb_heuristic
-        pdbs/plugin_group
         pdbs/random_pattern
+        pdbs/subcategory
         pdbs/types
         pdbs/utils
         pdbs/validation
@@ -775,13 +786,13 @@ fast_downward_plugin(
     HELP "Plugin containing the code for potential heuristics"
     SOURCES
         potentials/diverse_potential_heuristics
-        potentials/plugin_group
         potentials/potential_function
         potentials/potential_heuristic
         potentials/potential_max_heuristic
         potentials/potential_optimizer
         potentials/sample_based_potential_heuristics
         potentials/single_potential_heuristics
+        potentials/subcategory
         potentials/util
     DEPENDS LP_SOLVER SAMPLING SUCCESSOR_GENERATOR TASK_PROPERTIES
 )

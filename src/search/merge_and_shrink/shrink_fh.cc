@@ -189,12 +189,11 @@ void ShrinkFH::dump_strategy_specific_options(utils::LogProxy &log) const {
     }
 }
 
-static vector<pair<string, string>> _enum_data_high_low();
-
-static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "f-preserving shrink strategy",
+class ShrinkFHFeature : public plugins::TypedFeature<ShrinkStrategy, ShrinkFH> {
+public:
+    ShrinkFHFeature() : TypedFeature("shrink_fh") {
+        document_title("f-preserving shrink strategy");
+        document_synopsis(
             "This shrink strategy implements the algorithm described in"
             " the paper:" + utils::format_conference_reference(
                 {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
@@ -206,19 +205,17 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
                 "AAAI Press",
                 "2007"));
 
-        ShrinkBucketBased::add_options_to_parser(parser);
-        parser.add_enum_option<ShrinkFH::HighLow>(
+        ShrinkBucketBased::add_options_to_feature(*this);
+        add_option<ShrinkFH::HighLow>(
             "shrink_f",
-            _enum_data_high_low(),
             "in which direction the f based shrink priority is ordered",
             "high");
-        parser.add_enum_option<ShrinkFH::HighLow>(
+        add_option<ShrinkFH::HighLow>(
             "shrink_h",
-            _enum_data_high_low(),
             "in which direction the h based shrink priority is ordered",
             "low");
 
-        parser.document_note(
+        document_note(
             "Note",
             "The strategy first partitions all states according to their "
             "combination of f- and g-values. These partitions are then sorted, "
@@ -226,7 +223,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
             "(increasing or decreasing, depending on the chosen options). "
             "States sorted last are shrinked together until reaching max_states.");
 
-        parser.document_note(
+        document_note(
             "shrink_fh()",
             "Combine this with the merge-and-shrink option max_states=N (where N "
             "is a numerical parameter for which sensible values include 1000, "
@@ -245,23 +242,14 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
             "approach for partitioning states rather than the more efficient "
             "vector-based approach.");
     }
-    Options opts = parser.parse();
-    if (parser.help_mode())
-        return nullptr;
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<ShrinkFH>(opts);
-}
+};
 
-static Plugin<ShrinkStrategy> _plugin("shrink_fh", _parse);
+static plugins::FeaturePlugin<ShrinkFHFeature> _plugin;
 
-static vector<pair<string, string>> _enum_data_high_low() {
-    return {
+static plugins::TypedEnumPlugin<ShrinkFH::HighLow> _enum_plugin({
         {"high",
          "prefer shrinking states with high value"},
         {"low",
          "prefer shrinking states with low value"}
-    };
-}
+    });
 }

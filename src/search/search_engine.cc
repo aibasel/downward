@@ -119,13 +119,13 @@ int SearchEngine::get_adjusted_cost(const OperatorProxy &op) const {
     return get_adjusted_action_cost(op, cost_type, is_unit_cost);
 }
 
-/* TODO: merge this into add_options_to_parser when all search
+/* TODO: merge this into add_options_to_feature when all search
          engines support pruning.
 
    Method doesn't belong here because it's only useful for certain derived classes.
    TODO: Figure out where it belongs and move it there. */
-void SearchEngine::add_pruning_option(OptionParser &parser) {
-    parser.add_option<shared_ptr<PruningMethod>>(
+void SearchEngine::add_pruning_option(plugins::Feature &feature) {
+    feature.add_option<shared_ptr<PruningMethod>>(
         "pruning",
         "Pruning methods can prune or reorder the set of applicable operators in "
         "each state and thereby influence the number and order of successor states "
@@ -133,13 +133,13 @@ void SearchEngine::add_pruning_option(OptionParser &parser) {
         "null()");
 }
 
-void SearchEngine::add_options_to_parser(OptionParser &parser) {
-    ::add_cost_type_option_to_parser(parser);
-    parser.add_option<int>(
+void SearchEngine::add_options_to_feature(plugins::Feature &feature) {
+    ::add_cost_type_option_to_feature(feature);
+    feature.add_option<int>(
         "bound",
         "exclusive depth bound on g-values. Cutoffs are always performed according to "
         "the real cost, regardless of the cost_type parameter", "infinity");
-    parser.add_option<double>(
+    feature.add_option<double>(
         "max_time",
         "maximum time in seconds the search is allowed to run for. The "
         "timeout is only checked after each complete search step "
@@ -148,27 +148,27 @@ void SearchEngine::add_options_to_parser(OptionParser &parser) {
         "experiments. Timed-out searches are treated as failed searches, "
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
-    utils::add_log_options_to_parser(parser);
+    utils::add_log_options_to_feature(feature);
 }
 
 /* Method doesn't belong here because it's only useful for certain derived classes.
    TODO: Figure out where it belongs and move it there. */
-void SearchEngine::add_succ_order_options(OptionParser &parser) {
+void SearchEngine::add_succ_order_options(plugins::Feature &feature) {
     vector<string> options;
-    parser.add_option<bool>(
+    feature.add_option<bool>(
         "randomize_successors",
         "randomize the order in which successors are generated",
         "false");
-    parser.add_option<bool>(
+    feature.add_option<bool>(
         "preferred_successors_first",
         "consider preferred operators first",
         "false");
-    parser.document_note(
+    feature.document_note(
         "Successor ordering",
         "When using randomize_successors=true and "
         "preferred_successors_first=true, randomization happens before "
         "preferred operators are moved to the front.");
-    utils::add_rng_options(parser);
+    utils::add_rng_options(feature);
 }
 
 void print_initial_evaluator_values(
@@ -182,10 +182,14 @@ void print_initial_evaluator_values(
         );
 }
 
-static PluginTypePlugin<SearchEngine> _type_plugin(
-    "SearchEngine",
-    // TODO: Replace empty string by synopsis for the wiki page.
-    "");
+static class SearchEngineCategoryPlugin : public plugins::TypedCategoryPlugin<SearchEngine> {
+public:
+    SearchEngineCategoryPlugin() : TypedCategoryPlugin("SearchEngine") {
+        // TODO: Replace add synopsis for the wiki page.
+        // document_synopsis("...");
+    }
+}
+_category_plugin;
 
 void collect_preferred_operators(
     EvaluationContext &eval_context,

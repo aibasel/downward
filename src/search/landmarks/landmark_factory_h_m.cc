@@ -1017,34 +1017,29 @@ bool LandmarkFactoryHM::supports_conditional_effects() const {
     return false;
 }
 
-static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "h^m Landmarks",
+class LandmarkFactoryHMFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryHM> {
+public:
+    LandmarkFactoryHMFeature() : TypedFeature("lm_hm") {
+        // document_group("");
+        document_title("h^m Landmarks");
+        document_synopsis(
             "The landmark generation method introduced by "
             "Keyder, Richter & Helmert (ECAI 2010).");
 
-        parser.add_option<int>(
+        add_option<int>(
             "m", "subset size (if unsure, use the default of 2)", "2");
-        parser.add_option<bool>(
+        add_option<bool>(
             "conjunctive_landmarks",
             "keep conjunctive landmarks",
             "true");
-        add_landmark_factory_options_to_parser(parser);
-        add_use_orders_option_to_parser(parser);
+        add_landmark_factory_options_to_feature(*this);
+        add_use_orders_option_to_feature(*this);
 
-        parser.document_language_support(
+        document_language_support(
             "conditional_effects",
             "ignored, i.e. not supported");
     }
-    Options opts = parser.parse();
-    if (parser.help_mode())
-        return nullptr;
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<LandmarkFactoryHM>(opts);
-}
+};
 
-static Plugin<LandmarkFactory> _plugin("lm_hm", _parse);
+static plugins::FeaturePlugin<LandmarkFactoryHMFeature> _plugin;
 }

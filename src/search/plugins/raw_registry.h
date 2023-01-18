@@ -1,57 +1,31 @@
 #ifndef PLUGINS_RAW_REGISTRY_H
 #define PLUGINS_RAW_REGISTRY_H
 
-#include "any.h"
-#include "doc_utils.h"
+#include "registry_types.h"
 
+#include <typeindex>
 #include <vector>
 
-
 namespace plugins {
-struct RawPluginInfo {
-    std::string key;
-    Any factory;
-    std::string group;
-    PluginTypeNameGetter type_name_factory;
-    DocFactory doc_factory;
-    std::type_index type;
-
-    RawPluginInfo(
-        const std::string &key,
-        const Any &factory,
-        const std::string &group,
-        const PluginTypeNameGetter &type_name_factory,
-        const DocFactory &doc_factory,
-        const std::type_index &type);
-};
-
-
 class RawRegistry {
-    std::vector<PluginTypeInfo> plugin_types;
-    std::vector<PluginGroupInfo> plugin_groups;
-    std::vector<RawPluginInfo> plugins;
+    std::vector<const CategoryPlugin *> category_plugins;
+    std::vector<const SubcategoryPlugin *> subcategory_plugins;
+    std::vector<const EnumPlugin *> enum_plugins;
+    std::vector<const Plugin *> plugins;
 
+    FeatureTypes collect_types(std::vector<std::string> &errors) const;
+    void validate_category_names(std::vector<std::string> &errors) const;
+    SubcategoryPlugins collect_subcategory_plugins(std::vector<std::string> &errors) const;
+    Features collect_features(
+        const SubcategoryPlugins &subcategory_plugins,
+        std::vector<std::string> &errors) const;
 public:
-    void insert_plugin_type_data(
-        std::type_index type, const std::string &type_name,
-        const std::string &documentation, const std::string &predefinition_key,
-        const std::string &alias,
-        const PredefinitionFunction &predefinition_function);
+    void insert_category_plugin(const CategoryPlugin &category_plugin);
+    void insert_subcategory_plugin(const SubcategoryPlugin &subcategory_plugin);
+    void insert_enum_plugin(const EnumPlugin &enum_plugin);
+    void insert_plugin(const Plugin &plugin);
 
-    void insert_plugin_group_data(
-        const std::string &group_id, const std::string &doc_title);
-
-    void insert_plugin_data(
-        const std::string &key,
-        const Any &factory,
-        const std::string &group,
-        PluginTypeNameGetter &type_name_factory,
-        DocFactory &doc_factory,
-        std::type_index &type);
-
-    const std::vector<PluginTypeInfo> &get_plugin_type_data() const;
-    const std::vector<PluginGroupInfo> &get_plugin_group_data() const;
-    const std::vector<RawPluginInfo> &get_plugin_data() const;
+    Registry construct_registry() const;
 
     static RawRegistry *instance() {
         static RawRegistry instance_;

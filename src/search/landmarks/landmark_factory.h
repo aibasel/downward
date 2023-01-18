@@ -16,8 +16,8 @@
 class TaskProxy;
 
 namespace plugins {
-class OptionParser;
 class Options;
+class Feature;
 }
 
 namespace landmarks {
@@ -78,9 +78,9 @@ private:
     void generate_operators_lookups(const TaskProxy &task_proxy);
 };
 
-extern void add_landmark_factory_options_to_parser(plugins::OptionParser &parser);
-extern void add_use_orders_option_to_parser(plugins::OptionParser &parser);
-extern void add_only_causal_landmarks_option_to_parser(plugins::OptionParser &parser);
+extern void add_landmark_factory_options_to_feature(plugins::Feature &feature);
+extern void add_use_orders_option_to_feature(plugins::Feature &feature);
+extern void add_only_causal_landmarks_option_to_feature(plugins::Feature &feature);
 }
 
 #endif

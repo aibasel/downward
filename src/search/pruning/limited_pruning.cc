@@ -49,45 +49,41 @@ void LimitedPruning::prune(
     pruning_method->prune(state, op_ids);
 }
 
-static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Limited pruning",
+class LimitedPruningFeature : public plugins::TypedFeature<PruningMethod, LimitedPruning> {
+public:
+    LimitedPruningFeature() : TypedFeature("limited_pruning") {
+        document_title("Limited pruning");
+        document_synopsis(
             "Limited pruning applies another pruning method and switches it off "
             "after a fixed number of expansions if the pruning ratio is below a "
             "given value. The pruning ratio is the sum of all pruned operators "
             "divided by the sum of all operators before pruning, considering all "
             "previous expansions.");
 
-        parser.add_option<shared_ptr<PruningMethod>>(
+        add_option<shared_ptr<PruningMethod>>(
             "pruning",
             "the underlying pruning method to be applied");
-        parser.add_option<double>(
+        add_option<double>(
             "min_required_pruning_ratio",
             "disable pruning if the pruning ratio is lower than this value after"
             " 'expansions_before_checking_pruning_ratio' expansions",
             "0.2",
             plugins::Bounds("0.0", "1.0"));
-        parser.add_option<int>(
+        add_option<int>(
             "expansions_before_checking_pruning_ratio",
             "number of expansions before deciding whether to disable pruning",
             "1000",
             plugins::Bounds("0", "infinity"));
-        add_pruning_options_to_parser(parser);
+        add_pruning_options_to_feature(*this);
 
-        parser.document_note(
+        document_note(
             "Example",
             "To use atom centric stubborn sets and limit them, use\n"
             "{{{\npruning=limited_pruning(pruning=atom_centric_stubborn_sets(),"
             "min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000)\n}}}\n"
             "in an eager search such as astar.");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run()) {
-        return nullptr;
-    }
-    return make_shared<LimitedPruning>(opts);
-}
+};
 
-static Plugin<PruningMethod> _plugin("limited_pruning", _parse);
+static plugins::FeaturePlugin<LimitedPruningFeature> _plugin;
 }

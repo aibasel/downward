@@ -56,10 +56,11 @@ int OperatorCountingHeuristic::compute_heuristic(const State &ancestor_state) {
     return result;
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Operator-counting heuristic",
+class OperatorCountingHeuristicFeature : public plugins::TypedFeature<Evaluator, OperatorCountingHeuristic> {
+public:
+    OperatorCountingHeuristicFeature() : TypedFeature("operatorcounting") {
+        document_title("Operator-counting heuristic");
+        document_synopsis(
             "An operator-counting heuristic computes a linear program (LP) in each "
             "state. The LP has one variable Count_o for each operator o that "
             "represents how often the operator is used in a plan. Operator-"
@@ -78,10 +79,10 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
                 "AAAI Press",
                 "2014"));
 
-        parser.add_list_option<shared_ptr<ConstraintGenerator>>(
+        add_list_option<shared_ptr<ConstraintGenerator>>(
             "constraint_generators",
             "methods that generate constraints over operator-counting variables");
-        parser.add_option<bool>(
+        add_option<bool>(
             "use_integer_operator_counts",
             "restrict operator-counting variables to integer values. Computing the "
             "heuristic with integer variables can produce higher values but "
@@ -89,36 +90,34 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "computationally expensive. Turning this option on can thus drastically "
             "increase the runtime.",
             "false");
-        lp::add_lp_solver_option_to_parser(parser);
-        Heuristic::add_options_to_parser(parser);
+        lp::add_lp_solver_option_to_feature(*this);
+        Heuristic::add_options_to_feature(*this);
 
-        parser.document_language_support("action costs", "supported");
-        parser.document_language_support(
+        document_language_support("action costs", "supported");
+        document_language_support(
             "conditional effects",
             "not supported (the heuristic supports them in theory, but none of "
             "the currently implemented constraint generators do)");
-        parser.document_language_support(
+        document_language_support(
             "axioms",
             "not supported (the heuristic supports them in theory, but none of "
             "the currently implemented constraint generators do)");
-        parser.document_property("admissible", "yes");
-        parser.document_property(
+
+        document_property("admissible", "yes");
+        document_property(
             "consistent",
             "yes, if all constraint generators represent consistent heuristics");
-        parser.document_property("safe", "yes");
+        document_property("safe", "yes");
         // TODO: prefer operators that are non-zero in the solution.
-        parser.document_property("preferred operators", "no");
+        document_property("preferred operators", "no");
     }
 
-    Options opts = parser.parse();
-    if (parser.help_mode())
-        return nullptr;
-    opts.verify_list_non_empty<shared_ptr<ConstraintGenerator>>(
-        "constraint_generators");
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<OperatorCountingHeuristic>(opts);
-}
+    virtual shared_ptr<OperatorCountingHeuristic> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+        context.verify_list_non_empty<shared_ptr<ConstraintGenerator>>(
+            options, "constraint_generators");
+        return make_shared<OperatorCountingHeuristic>(options);
+    }
+};
 
-static Plugin<Evaluator> _plugin("operatorcounting", _parse);
+static plugins::FeaturePlugin<OperatorCountingHeuristicFeature> _plugin;
 }

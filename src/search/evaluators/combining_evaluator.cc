@@ -52,9 +52,9 @@ void CombiningEvaluator::get_path_dependent_evaluators(
     for (auto &subevaluator : subevaluators)
         subevaluator->get_path_dependent_evaluators(evals);
 }
-void add_combining_evaluator_options_to_parser(plugins::OptionParser &parser) {
-    parser.add_list_option<shared_ptr<Evaluator>>(
+void add_combining_evaluator_options_to_feature(plugins::Feature &feature) {
+    feature.add_list_option<shared_ptr<Evaluator>>(
         "evals", "at least one evaluator");
-    add_evaluator_options_to_parser(parser);
+    add_evaluator_options_to_feature(feature);
 }
 }

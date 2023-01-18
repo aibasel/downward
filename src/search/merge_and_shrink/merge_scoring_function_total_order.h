@@ -6,8 +6,8 @@
 #include <memory>
 
 namespace plugins {
-class OptionParser;
 class Options;
+class Feature;
 }
 
 namespace utils {
@@ -44,7 +44,7 @@ public:
         const FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;
     virtual void initialize(const TaskProxy &task_proxy) override;
-    static void add_options_to_parser(plugins::OptionParser &parser);
+    static void add_options_to_feature(plugins::Feature &feature);
 
     virtual bool requires_init_distances() const override {
         return false;
