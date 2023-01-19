@@ -20,7 +20,6 @@ namespace parser {
 class DecorateContext {
     const plugins::Registry registry;
     unordered_map<string, const plugins::Type *> variables;
-    unordered_set<string> used_variables;
 
     Traceback traceback;
 public:
@@ -49,24 +48,14 @@ public:
 
     void remove_variable(const string &name) {
         variables.erase(name);
-        used_variables.erase(name);
-    }
-
-    void mark_variable_used(const string &name) {
-        used_variables.insert(name);
     }
 
     bool has_variable(const string &name) const {
         return variables.count(name);
     }
 
-    bool has_used_variable(const string &name) const {
-        return used_variables.count(name);
-    }
-
     const plugins::Type &get_variable_type(const string &name) {
         assert(has_variable(name));
-        used_variables.insert(name);
         return *variables[name];
     }
 
@@ -126,9 +115,6 @@ DecoratedASTNodePtr LetNode::decorate(DecorateContext &context) const {
     context.push_layer("Check expression.");
     context.add_variable(variable_name, var_type);
     DecoratedASTNodePtr decorated_nested_value = nested_value->decorate(context);
-    if (!context.has_used_variable(variable_name)) {
-        context.parser_error("Predefined variable '" + variable_name + "' is unused.");
-    }
     context.remove_variable(variable_name);
     context.pop_layer();
 
@@ -449,7 +435,6 @@ DecoratedASTNodePtr LiteralNode::decorate(DecorateContext &context) const {
         }
         string variable_name = value.content;
         context.pop_layer();
-        context.mark_variable_used(value.content);
         return utils::make_unique_ptr<VariableNode>(variable_name);
     }
 
