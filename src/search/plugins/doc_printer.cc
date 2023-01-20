@@ -132,7 +132,7 @@ void Txt2TagsPrinter::print_arguments(const Feature &feature) const {
         os << "): " << arg_info.help << endl;
         if (arg_type.is_enum_type()) {
             for (const pair<string, string> &explanation :
-                    arg_type.get_documented_enum_values()) {
+                 arg_type.get_documented_enum_values()) {
                 os << " - ``" << explanation.first << "``: "
                    << explanation.second << endl;
             }
@@ -235,7 +235,7 @@ void PlainPrinter::print_arguments(const Feature &feature) const {
         const Type &arg_type = arg_info.type;
         if (arg_type.is_enum_type()) {
             for (const pair<string, string> &explanation :
-                    arg_type.get_documented_enum_values()) {
+                 arg_type.get_documented_enum_values()) {
                 os << " - " << explanation.first << ": "
                    << explanation.second << endl;
             }
