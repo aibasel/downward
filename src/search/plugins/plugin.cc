@@ -78,7 +78,8 @@ Plugin::Plugin() {
 
 CategoryPlugin::CategoryPlugin(
     type_index pointer_type, const string &class_name, const string &category_name)
-    : pointer_type(pointer_type), class_name(class_name), category_name(category_name), can_be_bound_to_variable(false) {
+    : pointer_type(pointer_type), class_name(class_name),
+      category_name(category_name), can_be_bound_to_variable(false) {
     RawRegistry::instance()->insert_category_plugin(*this);
 }
 
@@ -110,7 +111,8 @@ void CategoryPlugin::allow_variable_binding() {
     can_be_bound_to_variable = true;
 }
 
-SubcategoryPlugin::SubcategoryPlugin(const string &subcategory) : subcategory_name(subcategory) {
+SubcategoryPlugin::SubcategoryPlugin(const string &subcategory)
+    : subcategory_name(subcategory) {
     RawRegistry::instance()->insert_subcategory_plugin(*this);
 }
 

@@ -259,21 +259,26 @@ void FunctionCallNode::collect_positional_arguments(
 
         ostringstream message;
         message << "Too many parameters specified!" << endl
-                << "Allowed parameters: " << utils::join(allowed_keys, ", ") << endl
-                << "Given positional parameters: " << utils::join(given_positional_keys, ", ") << endl
-                << "Given keyword parameters: " << utils::join(given_keyword_keys, ", ") << endl;
+                << "Allowed parameters: " << utils::join(allowed_keys, ", ")
+                << endl
+                << "Given positional parameters: "
+                << utils::join(given_positional_keys, ", ") << endl
+                << "Given keyword parameters: "
+                << utils::join(given_keyword_keys, ", ") << endl;
         context.parser_error(message.str());
     }
 
     for (int i = 0; i < num_pos_args; ++i) {
         const ASTNode &arg = *positional_arguments[i];
         const plugins::ArgumentInfo &arg_info = argument_infos[i];
-        context.push_layer("Checking the " + to_string(i + 1) + ". positional argument (" + arg_info.key + ")");
+        context.push_layer("Checking the " + to_string(i + 1) +
+                           ". positional argument (" + arg_info.key + ")");
         bool success = collect_argument(arg, arg_info, context, arguments);
         if (!success) {
             ostringstream message;
-            message << "The argument '" << arg_info.key << "' is defined by the "
-                    << (i + 1) << ". positional argument and by a keyword argument."
+            message << "The argument '" << arg_info.key
+                    << "' is defined by the " << (i + 1)
+                    << ". positional argument and by a keyword argument."
                     << endl;
             context.parser_error(message.str());
         }
@@ -325,7 +330,8 @@ DecoratedASTNodePtr FunctionCallNode::decorate(DecorateContext &context) const {
         arguments.push_back(move(key_and_arg.second));
     }
     context.pop_layer();
-    return utils::make_unique_ptr<DecoratedFunctionCallNode>(feature, move(arguments), unparsed_config);
+    return utils::make_unique_ptr<DecoratedFunctionCallNode>(feature, move(arguments),
+                                                             unparsed_config);
 }
 
 void FunctionCallNode::dump(string indent) const {
@@ -452,7 +458,8 @@ DecoratedASTNodePtr LiteralNode::decorate(DecorateContext &context) const {
         context.pop_layer();
         return utils::make_unique_ptr<SymbolNode>(value.content);
     default:
-        ABORT("LiteralNode has unexpected token type '" + token_type_name(value.type) + "'.");
+        ABORT("LiteralNode has unexpected token type '" +
+              token_type_name(value.type) + "'.");
     }
 }
 
@@ -475,7 +482,8 @@ const plugins::Type &LiteralNode::get_type(DecorateContext &context) const {
         }
         return plugins::TypeRegistry::SYMBOL_TYPE;
     default:
-        ABORT("LiteralNode has unexpected token type '" + token_type_name(value.type) + "'.");
+        ABORT("LiteralNode has unexpected token type '" +
+              token_type_name(value.type) + "'.");
     }
 }
 }

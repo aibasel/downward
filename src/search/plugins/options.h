@@ -34,7 +34,8 @@ struct OptionsAnyCaster {
 };
 
 template<typename ValueType>
-struct OptionsAnyCaster<ValueType, typename std::enable_if<std::is_enum<ValueType>::value>::type> {
+struct OptionsAnyCaster<
+    ValueType, typename std::enable_if<std::is_enum<ValueType>::value>::type> {
     static ValueType cast(const Any &operand) {
         // Enums set within the code (options.set()) are already the right ValueType...
         if (operand.type() == typeid(ValueType)) {

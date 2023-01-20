@@ -75,7 +75,8 @@ vector<LazyValue> LazyValue::construct_lazy_list() {
     elements.reserve(list_node->get_elements().size());
     int elem = 1;
     for (const DecoratedASTNodePtr &element : list_node->get_elements()) {
-        context.push_layer("Create LazyValue for " + to_string(elem) + ". list element");
+        context.push_layer("Create LazyValue for " + to_string(elem) +
+                           ". list element");
         elements.emplace_back(LazyValue(*element, context));
         context.pop_layer();
         elem++;
@@ -89,7 +90,8 @@ plugins::Any DecoratedASTNode::construct() const {
     return construct(context);
 }
 
-FunctionArgument::FunctionArgument(const string &key, DecoratedASTNodePtr value, bool lazy_construction)
+FunctionArgument::FunctionArgument(const string &key, DecoratedASTNodePtr value,
+                                   bool lazy_construction)
     : key(key), value(move(value)), lazy_construction(lazy_construction) {
 }
 
@@ -151,7 +153,8 @@ DecoratedFunctionCallNode::DecoratedFunctionCallNode(
 }
 
 plugins::Any DecoratedFunctionCallNode::construct(ConstructContext &context) const {
-    context.push_layer("Constructing feature '" + feature->get_key() + "': " + unparsed_config);
+    context.push_layer("Constructing feature '" + feature->get_key() + "': " +
+                       unparsed_config);
     plugins::Options opts;
     opts.set_unparsed_config(unparsed_config);
     for (const FunctionArgument &arg : arguments) {
@@ -347,7 +350,8 @@ plugins::Any ConvertNode::construct(ConstructContext &context) const {
 
     context.push_layer("Converting constructed value from '" + from_type.name() +
                        "' to '" + to_type.name() + "'");
-    plugins::Any converted_value = plugins::convert(constructed_value, from_type, to_type, context);
+    plugins::Any converted_value = plugins::convert(constructed_value, from_type,
+                                                    to_type, context);
     context.pop_layer();
 
     context.pop_layer();
@@ -366,7 +370,8 @@ CheckBoundsNode::CheckBoundsNode(
 }
 
 template<typename T>
-static bool satisfies_bounds(const plugins::Any &v_, const plugins::Any &min_, const plugins::Any &max_) {
+static bool satisfies_bounds(const plugins::Any &v_, const plugins::Any &min_,
+                             const plugins::Any &max_) {
     T v = plugins::any_cast<T>(v_);
     T min = plugins::any_cast<T>(min_);
     T max = plugins::any_cast<T>(max_);
@@ -423,7 +428,8 @@ void CheckBoundsNode::dump(string indent) const {
 
 // We are keeping all copy functionality together because it should be removed soon.
 FunctionArgument::FunctionArgument(const FunctionArgument &other)
-    : key(other.key), value(other.value->clone()), lazy_construction(other.lazy_construction) {
+    : key(other.key), value(other.value->clone()),
+      lazy_construction(other.lazy_construction) {
 }
 
 DecoratedLetNode::DecoratedLetNode(const DecoratedLetNode &other)
@@ -440,8 +446,10 @@ unique_ptr<DecoratedASTNode> DecoratedLetNode::clone() const {
     return utils::make_unique_ptr<DecoratedLetNode>(*this);
 }
 
-DecoratedFunctionCallNode::DecoratedFunctionCallNode(const DecoratedFunctionCallNode &other)
-    : feature(other.feature), arguments(other.arguments), unparsed_config(other.unparsed_config) {
+DecoratedFunctionCallNode::DecoratedFunctionCallNode(
+    const DecoratedFunctionCallNode &other)
+    : feature(other.feature), arguments(other.arguments),
+      unparsed_config(other.unparsed_config) {
 }
 
 shared_ptr<DecoratedASTNode> DecoratedFunctionCallNode::clone_shared() const {
@@ -528,7 +536,8 @@ shared_ptr<DecoratedASTNode> SymbolNode::clone_shared() const {
 }
 
 ConvertNode::ConvertNode(const ConvertNode &other)
-    : value(other.value->clone()), from_type(other.from_type), to_type(other.to_type) {
+    : value(other.value->clone()), from_type(other.from_type),
+      to_type(other.to_type) {
 }
 
 unique_ptr<DecoratedASTNode> ConvertNode::clone() const {
@@ -540,7 +549,8 @@ shared_ptr<DecoratedASTNode> ConvertNode::clone_shared() const {
 }
 
 CheckBoundsNode::CheckBoundsNode(const CheckBoundsNode &other)
-    : value(other.value->clone()), min_value(other.min_value->clone()), max_value(other.max_value->clone()) {
+    : value(other.value->clone()), min_value(other.min_value->clone()),
+      max_value(other.max_value->clone()) {
 }
 
 unique_ptr<DecoratedASTNode> CheckBoundsNode::clone() const {

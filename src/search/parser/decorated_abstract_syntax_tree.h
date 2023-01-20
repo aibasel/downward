@@ -69,7 +69,8 @@ class FunctionArgument {
     // TODO: This is here only for the iterated search. Once we switch to builders, we won't need it any more.
     bool lazy_construction;
 public:
-    FunctionArgument(const std::string &key, DecoratedASTNodePtr value, bool lazy_construction);
+    FunctionArgument(const std::string &key, DecoratedASTNodePtr value,
+                     bool lazy_construction);
 
     std::string get_key() const;
     const DecoratedASTNode &get_value() const;
@@ -228,7 +229,8 @@ class CheckBoundsNode : public DecoratedASTNode {
     DecoratedASTNodePtr min_value;
     DecoratedASTNodePtr max_value;
 public:
-    CheckBoundsNode(DecoratedASTNodePtr value, DecoratedASTNodePtr min_value, DecoratedASTNodePtr max_value);
+    CheckBoundsNode(DecoratedASTNodePtr value, DecoratedASTNodePtr min_value,
+                    DecoratedASTNodePtr max_value);
 
     plugins::Any construct(ConstructContext &context) const override;
     void dump(std::string indent) const override;

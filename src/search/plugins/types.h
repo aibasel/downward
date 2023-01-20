@@ -156,7 +156,8 @@ class TypeRegistry {
     };
 
     std::unordered_map<std::type_index, std::unique_ptr<Type>> registered_types;
-    std::unordered_map<const Type *, std::unique_ptr<ListType>, SemanticHash, SemanticEqual> registered_list_types;
+    std::unordered_map<const Type *, std::unique_ptr<ListType>,
+                       SemanticHash, SemanticEqual> registered_list_types;
     template<typename T>
     void insert_basic_type();
     const Type &get_nonlist_type(std::type_index type) const;
@@ -195,7 +196,8 @@ const Type &TypeRegistry::get_type() {
     return TypeOf<T>::value(*this);
 }
 
-extern Any convert(const Any &value, const Type &from_type, const Type &to_type, ConstructContext &context);
+extern Any convert(const Any &value, const Type &from_type, const Type &to_type,
+                   ConstructContext &context);
 }
 
 #endif

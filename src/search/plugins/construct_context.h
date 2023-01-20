@@ -27,7 +27,8 @@ public:
     virtual void construction_warning(const std::string &message) const = 0;
 
     template<typename T>
-    void verify_list_non_empty(const plugins::Options &opts, const std::string &key) const {
+    void verify_list_non_empty(const plugins::Options &opts,
+                               const std::string &key) const {
         std::vector<T> list = opts.get_list<T>(key);
         if (list.empty()) {
             construction_error("List argument '" + key + "' has to be non-empty.");

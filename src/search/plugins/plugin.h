@@ -76,7 +76,8 @@ template<typename Constructed>
 class FeatureWithDefault : public Feature {
 protected:
     using Feature::Feature;
-    virtual std::shared_ptr<Constructed> create_component(const Options &options, const ConstructContext &) const {
+    virtual std::shared_ptr<Constructed> create_component(
+        const Options &options, const ConstructContext &) const {
         return std::make_shared<Constructed>(options);
     }
 };
@@ -85,7 +86,8 @@ template<typename Constructed>
 class FeatureWithoutDefault : public Feature {
 protected:
     using Feature::Feature;
-    virtual std::shared_ptr<Constructed> create_component(const Options &, const ConstructContext &) const = 0;
+    virtual std::shared_ptr<Constructed> create_component(
+        const Options &, const ConstructContext &) const = 0;
 };
 
 template<typename Constructed>
@@ -181,7 +183,9 @@ template<typename T>
 class TypedCategoryPlugin : public CategoryPlugin {
 public:
     TypedCategoryPlugin(const std::string &category_name)
-        : CategoryPlugin(typeid(std::shared_ptr<T>), utils::get_type_name<std::shared_ptr<T>>(), category_name) {
+        : CategoryPlugin(typeid(std::shared_ptr<T>),
+                         utils::get_type_name<std::shared_ptr<T>>(),
+                         category_name) {
     }
 };
 
@@ -229,7 +233,8 @@ void Feature::add_option(
     const std::string &default_value,
     const Bounds &bounds,
     bool lazy_construction) {
-    arguments.emplace_back(key, help, TypeRegistry::instance()->get_type<T>(), default_value, bounds, lazy_construction);
+    arguments.emplace_back(key, help, TypeRegistry::instance()->get_type<T>(),
+                           default_value, bounds, lazy_construction);
 }
 
 template<typename T>
@@ -238,7 +243,8 @@ void Feature::add_list_option(
     const std::string &help,
     const std::string &default_value,
     bool lazy_construction) {
-    add_option<std::vector<T>>(key, help, default_value, Bounds::unlimited(), lazy_construction);
+    add_option<std::vector<T>>(key, help, default_value, Bounds::unlimited(),
+                               lazy_construction);
 }
 }
 

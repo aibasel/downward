@@ -13,7 +13,8 @@ class Registry;
 
 class DocPrinter {
     virtual void print_category(const FeatureType &type) const;
-    virtual void print_subcategory(const std::string &subcategory_name, const std::vector<const Feature *> &plugins) const;
+    virtual void print_subcategory(const std::string &subcategory_name,
+                                   const std::vector<const Feature *> &plugins) const;
     virtual void print_feature(const Feature &plugin) const;
 
 protected:
@@ -27,7 +28,8 @@ protected:
     virtual void print_language_features(const Feature &plugin) const = 0;
     virtual void print_properties(const Feature &plugin) const = 0;
     virtual void print_category_header(const std::string &category_name) const = 0;
-    virtual void print_category_synopsis(const std::string &synopsis, bool supports_variable_binding) const = 0;
+    virtual void print_category_synopsis(const std::string &synopsis,
+                                         bool supports_variable_binding) const = 0;
     virtual void print_category_footer() const = 0;
 
 public:
@@ -48,7 +50,8 @@ protected:
     virtual void print_language_features(const Feature &plugin) const override;
     virtual void print_properties(const Feature &plugin) const override;
     virtual void print_category_header(const std::string &category_name) const override;
-    virtual void print_category_synopsis(const std::string &synopsis, bool supports_variable_binding) const override;
+    virtual void print_category_synopsis(const std::string &synopsis,
+                                         bool supports_variable_binding) const override;
     virtual void print_category_footer() const override;
 
 public:
@@ -68,7 +71,8 @@ protected:
     virtual void print_language_features(const Feature &plugin) const override;
     virtual void print_properties(const Feature &plugin) const override;
     virtual void print_category_header(const std::string &category_name) const override;
-    virtual void print_category_synopsis(const std::string &synopsis, bool supports_variable_binding) const override;
+    virtual void print_category_synopsis(const std::string &synopsis,
+                                         bool supports_variable_binding) const override;
     virtual void print_category_footer() const override;
 
 public:

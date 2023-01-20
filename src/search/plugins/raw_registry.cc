@@ -99,7 +99,8 @@ SubcategoryPlugins RawRegistry::collect_subcategory_plugins(
 
     for (const SubcategoryPlugin *subcategory_plugin : subcategory_plugins) {
         ++occurrences[subcategory_plugin->get_subcategory_name()];
-        subcategory_plugin_map.emplace(subcategory_plugin->get_subcategory_name(), subcategory_plugin);
+        subcategory_plugin_map.emplace(subcategory_plugin->get_subcategory_name(),
+                                       subcategory_plugin);
     }
 
     for (auto &item : occurrences) {
@@ -145,8 +146,8 @@ Features RawRegistry::collect_features(
         if (!subcategory.empty() && !subcategory_plugins.count(subcategory)) {
             const Type &type = feature.get_type();
             errors.push_back(
-                "Missing SubcategoryPlugin '" + subcategory + "' for Plugin '" + key +
-                "' of type " + type.name());
+                "Missing SubcategoryPlugin '" + subcategory + "' for Plugin '" +
+                key + "' of type " + type.name());
         }
     }
 

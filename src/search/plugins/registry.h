@@ -13,8 +13,8 @@ class Registry {
     /*
       List of FeatureType* for types of all features in use.
 
-      The FeatureType objects contains the documentation of those types and is used to
-      generate the complete help output.
+      The FeatureType objects contains the documentation of those types and is
+      used to generate the complete help output.
     */
     FeatureTypes feature_types;
 

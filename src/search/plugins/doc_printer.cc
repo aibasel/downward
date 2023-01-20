@@ -131,7 +131,8 @@ void Txt2TagsPrinter::print_arguments(const Feature &feature) const {
             os << " \"\"" << arg_info.bounds << "\"\"";
         os << "): " << arg_info.help << endl;
         if (arg_type.is_enum_type()) {
-            for (const pair<string, string> &explanation : arg_type.get_documented_enum_values()) {
+            for (const pair<string, string> &explanation :
+                    arg_type.get_documented_enum_values()) {
                 os << " - ``" << explanation.first << "``: "
                    << explanation.second << endl;
             }
@@ -172,7 +173,8 @@ void Txt2TagsPrinter::print_category_header(const string &category_name) const {
     os << ">>>>CATEGORY: " << category_name << "<<<<" << endl;
 }
 
-void Txt2TagsPrinter::print_category_synopsis(const string &synopsis, bool supports_variable_binding) const {
+void Txt2TagsPrinter::print_category_synopsis(const string &synopsis,
+                                              bool supports_variable_binding) const {
     if (!synopsis.empty()) {
         os << synopsis << endl;
     }
@@ -232,7 +234,8 @@ void PlainPrinter::print_arguments(const Feature &feature) const {
         os << "): " << arg_info.help << endl;
         const Type &arg_type = arg_info.type;
         if (arg_type.is_enum_type()) {
-            for (const pair<string, string> &explanation : arg_type.get_documented_enum_values()) {
+            for (const pair<string, string> &explanation :
+                    arg_type.get_documented_enum_values()) {
                 os << " - " << explanation.first << ": "
                    << explanation.second << endl;
             }
@@ -275,7 +278,8 @@ void PlainPrinter::print_category_header(const string &category_name) const {
     os << "Help for " << category_name << endl << endl;
 }
 
-void PlainPrinter::print_category_synopsis(const string &synopsis, bool supports_variable_binding) const {
+void PlainPrinter::print_category_synopsis(const string &synopsis,
+                                           bool supports_variable_binding) const {
     if (print_all && !synopsis.empty()) {
         os << synopsis << endl;
     }

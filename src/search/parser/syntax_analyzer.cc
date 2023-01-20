@@ -136,7 +136,8 @@ static void parse_sequence(
     }
 }
 
-static ASTNodePtr parse_function(TokenStream &tokens, SyntaxAnalyzerTraceback &traceback) {
+static ASTNodePtr parse_function(TokenStream &tokens,
+                                 SyntaxAnalyzerTraceback &traceback) {
     traceback.push("Reading plugin name");
     int start = tokens.get_position();
     Token name_token = tokens.pop(TokenType::IDENTIFIER);
@@ -197,7 +198,8 @@ static vector<TokenType> PARSE_NODE_TOKEN_TYPES = {
     TokenType::LET, TokenType::IDENTIFIER, TokenType::BOOLEAN,
     TokenType::INTEGER, TokenType::FLOAT, TokenType::OPENING_BRACKET};
 
-static ASTNodePtr parse_node(TokenStream &tokens, SyntaxAnalyzerTraceback &traceback) {
+static ASTNodePtr parse_node(TokenStream &tokens,
+                             SyntaxAnalyzerTraceback &traceback) {
     Token token = tokens.peek();
     if (find(PARSE_NODE_TOKEN_TYPES.begin(),
              PARSE_NODE_TOKEN_TYPES.end(),
