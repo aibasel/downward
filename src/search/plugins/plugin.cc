@@ -23,17 +23,17 @@ void Feature::document_synopsis(const string &note) {
 
 void Feature::document_property(
     const string &property, const string &note) {
-    properties.push_back({property, note});
+    properties.emplace_back(property, note);
 }
 
 void Feature::document_language_support(
     const string &feature, const string &note) {
-    language_support.push_back({feature, note});
+    language_support.emplace_back(feature, note);
 }
 
 void Feature::document_note(
     const string &name, const string &note, bool long_text) {
-    notes.push_back({name, note, long_text});
+    notes.emplace_back(name, note, long_text);
 }
 
 const Type &Feature::get_type() const {
@@ -110,7 +110,7 @@ void CategoryPlugin::allow_variable_binding() {
     can_be_bound_to_variable = true;
 }
 
-SubcategoryPlugin::SubcategoryPlugin(const string &subcategory) : subcategory(subcategory) {
+SubcategoryPlugin::SubcategoryPlugin(const string &subcategory) : subcategory_name(subcategory) {
     RawRegistry::instance()->insert_subcategory_plugin(*this);
 }
 
@@ -122,8 +122,8 @@ void SubcategoryPlugin::document_synopsis(const string &synopsis) {
     this->synopsis = synopsis;
 }
 
-string SubcategoryPlugin::get_subcategory() const {
-    return subcategory;
+string SubcategoryPlugin::get_subcategory_name() const {
+    return subcategory_name;
 }
 
 string SubcategoryPlugin::get_title() const {

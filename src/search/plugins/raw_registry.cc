@@ -98,8 +98,8 @@ SubcategoryPlugins RawRegistry::collect_subcategory_plugins(
     unordered_map<string, int> occurrences;
 
     for (const SubcategoryPlugin *subcategory_plugin : subcategory_plugins) {
-        ++occurrences[subcategory_plugin->get_subcategory()];
-        subcategory_plugin_map.emplace(subcategory_plugin->get_subcategory(), subcategory_plugin);
+        ++occurrences[subcategory_plugin->get_subcategory_name()];
+        subcategory_plugin_map.emplace(subcategory_plugin->get_subcategory_name(), subcategory_plugin);
     }
 
     for (auto &item : occurrences) {

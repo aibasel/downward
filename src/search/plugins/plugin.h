@@ -129,15 +129,15 @@ public:
 };
 
 /*
-  The type plugin class contains meta-information for a given
-  type of feature (e.g. "SearchEngine" or "MergeStrategyFactory").
+  The CategoryPlugin class contains meta-information for a given
+  category of feature (e.g. "SearchEngine" or "MergeStrategyFactory").
 */
 class CategoryPlugin {
     std::type_index pointer_type;
     std::string class_name;
 
     /*
-      The type name should be "user-friendly". It is for example used
+      The category name should be "user-friendly". It is for example used
       as the name of the wiki page that documents this feature type.
       It follows wiki conventions (e.g. "Heuristic", "SearchEngine",
       "ShrinkStrategy").
@@ -151,8 +151,8 @@ class CategoryPlugin {
     std::string synopsis;
 
     /*
-      TODO: Currently, we do not support variable binding of all types, so
-      variables can only be used for types explicitly marked. This might
+      TODO: Currently, we do not support variable binding of all categories, so
+      variables can only be used for categories explicitly marked. This might
       change once we fix the component interaction (issue559). If all feature
       types can be bound to variables, we can probably get rid of this flag and
       related code in CategoryPlugin, TypedCategoryPlugin, RawRegistry,
@@ -165,7 +165,7 @@ public:
         const std::string &class_name,
         const std::string &category_name);
     virtual ~CategoryPlugin() = default;
-    CategoryPlugin(const CategoryPlugin &other) = delete;
+    CategoryPlugin(const CategoryPlugin &) = delete;
 
     void document_synopsis(const std::string &synopsis);
     void allow_variable_binding();
@@ -186,7 +186,7 @@ public:
 };
 
 class SubcategoryPlugin {
-    std::string subcategory;
+    std::string subcategory_name;
     std::string title;
     std::string synopsis;
 public:
@@ -195,7 +195,7 @@ public:
     void document_title(const std::string &title);
     void document_synopsis(const std::string &synopsis);
 
-    std::string get_subcategory() const;
+    std::string get_subcategory_name() const;
     std::string get_title() const;
     std::string get_synopsis() const;
 };
