@@ -82,7 +82,7 @@ public:
     explicit ListNode(std::vector<ASTNodePtr> &&elements);
     DecoratedASTNodePtr decorate(DecorateContext &context) const override;
     void dump(std::string indent) const override;
-    const plugins::Type *check_consistent_element_type(DecorateContext &context) const;
+    const plugins::Type *get_common_element_type(DecorateContext &context) const;
     const plugins::Type &get_type(DecorateContext &context) const override;
 };
 

@@ -287,7 +287,8 @@ plugins::Any IntLiteralNode::construct(ConstructContext &context) const {
     // Reserve highest value for "infinity".
     int max_int = numeric_limits<int>::max() - 1;
     if (!utils::is_product_within_limits(x, factor, min_int, max_int)) {
-        context.construction_error("Integer constant too large: '" + value + "'");
+        context.construction_error(
+            "Absolute value of integer constant too large: '" + value + "'");
     }
     context.pop_layer();
     return x * factor;

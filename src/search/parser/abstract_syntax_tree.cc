@@ -42,7 +42,8 @@ public:
 
     void add_variable(const string &name, const plugins::Type &type) {
         if (has_variable(name))
-            parser_error("Shadowing variables is not allowed: " + name);
+            parser_error("Variable '" + name + "' is already defined in the "
+                         "current scope. Shadowing variables is not supported.");
         variables.insert({name, &type});
     }
 
@@ -97,9 +98,6 @@ LetNode::LetNode(const string &variable_name, ASTNodePtr variable_definition,
 
 DecoratedASTNodePtr LetNode::decorate(DecorateContext &context) const {
     context.push_layer("Let: " + variable_name);
-    if (context.has_variable(variable_name)) {
-        context.parser_error("Variable is already defined in the current scope.");
-    }
     const plugins::Type &var_type = variable_definition->get_type(context);
     if (!var_type.supports_variable_binding()) {
         context.parser_error(
@@ -365,7 +363,7 @@ DecoratedASTNodePtr ListNode::decorate(DecorateContext &context) const {
     context.push_layer("Check list.");
     vector<DecoratedASTNodePtr> decorated_elements;
     if (!elements.empty()) {
-        const plugins::Type *common_element_type = check_consistent_element_type(context);
+        const plugins::Type *common_element_type = get_common_element_type(context);
         if (!common_element_type) {
             vector<string> element_type_names;
             element_type_names.reserve(elements.size());
@@ -401,31 +399,31 @@ void ListNode::dump(string indent) const {
     }
 }
 
-const plugins::Type *ListNode::check_consistent_element_type(
+const plugins::Type *ListNode::get_common_element_type(
     DecorateContext &context) const {
-    const plugins::Type *nested_type = nullptr;
+    const plugins::Type *common_element_type = nullptr;
     for (const ASTNodePtr &element : elements) {
         const plugins::Type *element_type = &element->get_type(context);
-        if ((!nested_type)
-            || (!element_type->can_convert_into(*nested_type) &&
-                nested_type->can_convert_into(*element_type))) {
-            nested_type = element_type;
-        } else if (!element_type->can_convert_into(*nested_type)) {
+        if ((!common_element_type)
+            || (!element_type->can_convert_into(*common_element_type) &&
+                common_element_type->can_convert_into(*element_type))) {
+            common_element_type = element_type;
+        } else if (!element_type->can_convert_into(*common_element_type)) {
             return nullptr;
         }
     }
-    return nested_type;
+    return common_element_type;
 }
 
 const plugins::Type &ListNode::get_type(DecorateContext &context) const {
     if (elements.empty()) {
         return plugins::TypeRegistry::EMPTY_LIST_TYPE;
     } else {
-        const plugins::Type *nested_type = check_consistent_element_type(context);
-        if (!nested_type)
+        const plugins::Type *element_type = get_common_element_type(context);
+        if (!element_type)
             context.parser_error("List elements cannot be converted to common type.");
         assert(nested_type);
-        return plugins::TypeRegistry::instance()->create_list_type(*nested_type);
+        return plugins::TypeRegistry::instance()->create_list_type(*element_type);
     }
 }
 
