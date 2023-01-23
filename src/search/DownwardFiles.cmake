@@ -711,6 +711,7 @@ fast_downward_plugin(
         landmarks/exploration
         landmarks/landmark
         landmarks/landmark_cost_assignment
+        landmarks/landmark_cost_partitioning_heuristic
         landmarks/landmark_count_heuristic
         landmarks/landmark_factory
         landmarks/landmark_factory_h_m
