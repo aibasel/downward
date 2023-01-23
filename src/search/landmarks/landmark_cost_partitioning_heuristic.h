@@ -19,21 +19,10 @@ class LandmarkCostPartitioningHeuristic : public Heuristic {
     std::shared_ptr<LandmarkGraph> lgraph;
     const bool use_preferred_operators;
     const bool conditional_effects_supported;
-    const bool admissible;
-    const bool dead_ends_reliable;
 
     std::unique_ptr<LandmarkStatusManager> lm_status_manager;
     std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
     std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;
-
-    /*
-      TODO: The following vectors are only used in the non-admissible case. This
-       is bad design, but given this is already the case for
-       *lm_cost_assignment* above, this is just another indicator to change this
-       in the future.
-    */
-    std::vector<int> min_first_achiever_costs;
-    std::vector<int> min_possible_achiever_costs;
 
     int get_heuristic_value(const State &ancestor_state);
 
@@ -42,10 +31,6 @@ class LandmarkCostPartitioningHeuristic : public Heuristic {
         LandmarkNode &lm_node, bool all_lms_reached) const;
     void generate_preferred_operators(
         const State &state, const BitsetView &reached);
-
-    int get_min_cost_of_achievers(const std::set<int> &achievers,
-                                  const TaskProxy &task_proxy);
-    void compute_landmark_costs();
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
