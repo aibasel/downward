@@ -16,12 +16,9 @@ public:
 class Traceback {
     std::vector<std::string> stack;
 public:
-    explicit Traceback() = default;
-    virtual ~Traceback() = default;
-
-    virtual void push(const std::string &layer);
+    void push(const std::string &layer);
     void pop();
-    virtual std::string str() const;
+    std::string str() const;
 };
 
 class ParserError : public utils::Exception {
