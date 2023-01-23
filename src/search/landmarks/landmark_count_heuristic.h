@@ -19,19 +19,11 @@ class LandmarkCountHeuristic : public Heuristic {
     std::shared_ptr<LandmarkGraph> lgraph;
     const bool use_preferred_operators;
     const bool conditional_effects_supported;
-    const bool admissible;
     const bool dead_ends_reliable;
 
     std::unique_ptr<LandmarkStatusManager> lm_status_manager;
-    std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
     std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;
 
-    /*
-      TODO: The following vectors are only used in the non-admissible case. This
-       is bad design, but given this is already the case for
-       *lm_cost_assignment* above, this is just another indicator to change this
-       in the future.
-    */
     std::vector<int> min_first_achiever_costs;
     std::vector<int> min_possible_achiever_costs;
 

@@ -8,18 +8,13 @@
 
 #include "../per_state_bitset.h"
 
-#include "../lp/lp_solver.h"
 #include "../plugins/plugin.h"
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
 #include "../tasks/cost_adapted_task.h"
 #include "../tasks/root_task.h"
-#include "../utils/logging.h"
 #include "../utils/markup.h"
-#include "../utils/memory.h"
-#include "../utils/system.h"
 
-#include <cmath>
 #include <limits>
 #include <unordered_map>
 
@@ -32,11 +27,9 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const plugins::Options &opts)
       use_preferred_operators(opts.get<bool>("pref")),
       conditional_effects_supported(
           opts.get<shared_ptr<LandmarkFactory>>("lm_factory")->supports_conditional_effects()),
-      admissible(opts.get<bool>("admissible")),
-      dead_ends_reliable(
-          admissible ||
-          (!task_properties::has_axioms(task_proxy) &&
-           (!task_properties::has_conditional_effects(task_proxy) || conditional_effects_supported))),
+      dead_ends_reliable((!task_properties::has_axioms(task_proxy) &&
+                          (!task_properties::has_conditional_effects(task_proxy)
+                           || conditional_effects_supported))),
       successor_generator(nullptr) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark count heuristic..." << endl;
@@ -61,20 +54,6 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const plugins::Options &opts)
     }
     shared_ptr<LandmarkFactory> lm_graph_factory = opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
 
-    if (admissible) {
-        if (lm_graph_factory->computes_reasonable_orders()) {
-            cerr << "Reasonable orderings should not be used for admissible heuristics" << endl;
-            utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-        } else if (task_properties::has_axioms(task_proxy)) {
-            cerr << "cost partitioning does not support axioms" << endl;
-            utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
-        } else if (task_properties::has_conditional_effects(task_proxy) &&
-                   !conditional_effects_supported) {
-            cerr << "conditional effects not supported by the landmark generation method" << endl;
-            utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
-        }
-    }
-
     lgraph = lm_graph_factory->compute_lm_graph(task);
     assert(lm_graph_factory->achievers_are_calculated());
     if (log.is_at_least_normal()) {
@@ -88,20 +67,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const plugins::Options &opts)
     }
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(*lgraph);
 
-    if (admissible) {
-        if (opts.get<bool>("optimal")) {
-            lm_cost_assignment = utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
-                task_properties::get_operator_costs(task_proxy),
-                *lgraph, opts.get<lp::LPSolverType>("lpsolver"));
-        } else {
-            lm_cost_assignment = utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
-                task_properties::get_operator_costs(task_proxy),
-                *lgraph, opts.get<bool>("alm"));
-        }
-    } else {
-        lm_cost_assignment = nullptr;
-        compute_landmark_costs();
-    }
+    compute_landmark_costs();
 
     if (use_preferred_operators) {
         /* Ideally, we should reuse the successor generator of the main task in cases
@@ -153,34 +119,22 @@ void LandmarkCountHeuristic::compute_landmark_costs() {
 }
 
 int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
-    double epsilon = 0.01;
-
     lm_status_manager->update_lm_status(ancestor_state);
 
-    if (admissible) {
-        double h_val = lm_cost_assignment->cost_sharing_h_value(
-            *lm_status_manager);
-        if (h_val == numeric_limits<double>::max()) {
-            return DEAD_END;
-        } else {
-            return static_cast<int>(ceil(h_val - epsilon));
+    int h = 0;
+    for (int id = 0; id < lgraph->get_num_landmarks(); ++id) {
+        landmark_status status = lm_status_manager->get_landmark_status(id);
+        if (status == lm_not_reached) {
+            if (min_first_achiever_costs[id] == numeric_limits<int>::max())
+                return DEAD_END;
+            h += min_first_achiever_costs[id];
+        } else if (status == lm_needed_again) {
+            if (min_possible_achiever_costs[id] == numeric_limits<int>::max())
+                return DEAD_END;
+            h += min_possible_achiever_costs[id];
         }
-    } else {
-        int h = 0;
-        for (int id = 0; id < lgraph->get_num_landmarks(); ++id) {
-            landmark_status status = lm_status_manager->get_landmark_status(id);
-            if (status == lm_not_reached) {
-                if (min_first_achiever_costs[id] == numeric_limits<int>::max())
-                    return DEAD_END;
-                h += min_first_achiever_costs[id];
-            } else if (status == lm_needed_again) {
-                if (min_possible_achiever_costs[id] == numeric_limits<int>::max())
-                    return DEAD_END;
-                h += min_possible_achiever_costs[id];
-            }
-        }
-        return h;
     }
+    return h;
 }
 
 int LandmarkCountHeuristic::compute_heuristic(const State &ancestor_state) {
@@ -309,7 +263,7 @@ public:
     LandmarkCountHeuristicFeature() : TypedFeature("lmcount") {
         document_title("Landmark-count heuristic");
         document_synopsis(
-            "For the inadmissible variant see the papers" +
+            "See the papers" +
             utils::format_conference_reference(
                 {"Silvia Richter", "Malte Helmert", "Matthias Westphal"},
                 "Landmarks Revisited",
@@ -327,26 +281,6 @@ public:
                 "Journal of Artificial Intelligence Research",
                 "39",
                 "127-177",
-                "2010") +
-            "For the admissible variant see the papers" +
-            utils::format_conference_reference(
-                {"Erez Karpas", "Carmel Domshlak"},
-                "Cost-Optimal Planning with Landmarks",
-                "https://www.ijcai.org/Proceedings/09/Papers/288.pdf",
-                "Proceedings of the 21st International Joint Conference on "
-                "Artificial Intelligence (IJCAI 2009)",
-                "1728-1733",
-                "AAAI Press",
-                "2009") +
-            "and" +
-            utils::format_conference_reference(
-                {"Emil Keyder and Silvia Richter and Malte Helmert"},
-                "Sound and Complete Landmarks for And/Or Graphs",
-                "https://ai.dmi.unibas.ch/papers/keyder-et-al-ecai2010.pdf",
-                "Proceedings of the 19th European Conference on Artificial "
-                "Intelligence (ECAI 2010)",
-                "335-340",
-                "IOS Press",
                 "2010"));
 
         add_option<shared_ptr<LandmarkFactory>>(
@@ -354,18 +288,11 @@ public:
             "the set of landmarks to use for this heuristic. "
             "The set of landmarks can be specified here, "
             "or predefined (see LandmarkFactory).");
-        add_option<bool>("admissible", "get admissible estimate", "false");
-        add_option<bool>(
-            "optimal",
-            "use optimal (LP-based) cost sharing "
-            "(only makes sense with ``admissible=true``)", "false");
         add_option<bool>(
             "pref",
-            "identify preferred operators (see OptionCaveats#Using_preferred_operators_"
-            "with_the_lmcount_heuristic)",
+            "identify preferred operators (see OptionCaveats#"
+            "Using_preferred_operators_with_the_lmcount_heuristic)",
             "false");
-        add_option<bool>("alm", "use action landmarks", "true");
-        lp::add_lp_solver_option_to_feature(*this);
         Heuristic::add_options_to_feature(*this);
 
         document_note(
@@ -413,21 +340,12 @@ public:
             "supported");
         document_language_support(
             "conditional_effects",
-            "supported if the LandmarkFactory supports them; otherwise ignored "
-            "with ``admissible=false`` and not allowed with ``admissible=true``");
-        document_language_support(
-            "axioms",
-            "ignored with ``admissible=false``; not allowed with ``admissible=true``");
+            "supported if the LandmarkFactory supports them; otherwise "
+            "ignored");
+        document_language_support("axioms", "ignored");
 
-
-        document_property(
-            "admissible",
-            "yes if ``admissible=true``");
-        // TODO: this was "yes with admissible=true and optimal cost
-        // partitioning; otherwise no" before.
-        document_property(
-            "consistent",
-            "complicated; needs further thought");
+        document_property("admissible", "no");
+        document_property("consistent", "no");
         document_property(
             "safe",
             "yes except on tasks with axioms or on tasks with "
