@@ -90,6 +90,11 @@ static ASTNodePtr parse_let(TokenStream &tokens, SyntaxAnalyzerContext &context)
     }
     {
         utils::TraceBlock block(context, "Parsing comma after variable definition.");
+        // TODO: The exception thrown by TokenStream does not include in its message the
+        // current context and once it is catched, the traceBlocks have been destructed.
+        // Options:
+        //   1. Wrap pop calls and catch the exception and retrhow a new exception
+        //   2. pass context in here.
         tokens.pop(TokenType::COMMA);
     }
     {
