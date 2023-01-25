@@ -28,7 +28,7 @@ shared_ptr<SearchEngine> IteratedSearch::get_search_engine(
     shared_ptr<SearchEngine> engine;
     try{
         engine = engine_config.construct<shared_ptr<SearchEngine>>();
-    } catch (const parser::ParserError &e) {
+    } catch (const utils::ContextError &e) {
         cerr << "Delayed construction of LazyValue failed" << endl;
         cerr << e.get_message() << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
@@ -185,7 +185,7 @@ public:
             "will be saved between iterations.");
     }
 
-    virtual shared_ptr<IteratedSearch> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+    virtual shared_ptr<IteratedSearch> create_component(const plugins::Options &options, const utils::Context &context) const override {
         plugins::Options options_copy(options);
         /*
           The options entry 'engine_configs' is a LazyValue representing a list
@@ -201,7 +201,7 @@ public:
         vector<parser::LazyValue> engine_configs =
             options.get<parser::LazyValue>("engine_configs").construct_lazy_list();
         options_copy.set("engine_configs", engine_configs);
-        context.verify_list_non_empty<parser::LazyValue>(options_copy, "engine_configs");
+        plugins::verify_list_non_empty<parser::LazyValue>(context, options_copy, "engine_configs");
         return make_shared<IteratedSearch>(options_copy);
     }
 };

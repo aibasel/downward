@@ -1,6 +1,7 @@
 #ifndef UTILS_LOGGING_H
 #define UTILS_LOGGING_H
 
+#include "exceptions.h"
 #include "system.h"
 #include "timer.h"
 
@@ -132,10 +133,35 @@ extern void add_log_options_to_feature(plugins::Feature &feature);
 extern LogProxy get_log_from_options(const plugins::Options &options);
 extern LogProxy get_silent_log();
 
+class ContextError : public utils::Exception {
+public:
+    explicit ContextError(const std::string &msg);
+};
+
+class Context {
+protected:
+    static const int INDENT_AMOUNT = 2; // TODO: Why not directly the string?
+    std::vector<std::string> block_stack;
+
+public:
+    explicit Context() = default;
+    virtual ~Context();
+    virtual std::string decorate_block_name(const std::string &block_name) const;
+    void enter_block(const std::string &block_name);
+    void leave_block(const std::string &block_name);
+    std::string str() const;
+
+    NO_RETURN
+    virtual void error(const std::string &message) const;
+    virtual void warn(const std::string &message) const;
+
+};
+
 class TraceBlock {
+    Context &context;
     std::string block_name;
 public:
-    explicit TraceBlock(const std::string &block_name);
+    explicit TraceBlock(Context &context, const std::string &block_name);
     ~TraceBlock();
 };
 

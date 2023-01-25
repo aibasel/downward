@@ -132,7 +132,7 @@ public:
             "before_merging=false),max_states=50000,threshold_before_merge=1)\n}}}");
     }
 
-    virtual shared_ptr<MergeScoringFunctionDFP> create_component(const plugins::Options &, const plugins::ConstructContext &) const override {
+    virtual shared_ptr<MergeScoringFunctionDFP> create_component(const plugins::Options &, const utils::Context &) const override {
         return make_shared<MergeScoringFunctionDFP>();
     }
 };

@@ -63,7 +63,7 @@ public:
 
 extern void add_merge_and_shrink_algorithm_options_to_feature(plugins::Feature &feature);
 extern void add_transition_system_size_limit_options_to_feature(plugins::Feature &feature);
-extern void handle_shrink_limit_options_defaults(plugins::Options &opts, const plugins::ConstructContext &context);
+extern void handle_shrink_limit_options_defaults(plugins::Options &opts, const utils::Context &context);
 }
 
 #endif

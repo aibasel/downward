@@ -102,11 +102,18 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(const vector<string> &args) {
             string search_arg = args[i];
             try {
                 parser::TokenStream tokens = parser::split_tokens(search_arg);
+                utils::g_log << "Tokens parsed." << endl;
                 parser::ASTNodePtr parsed = parser::parse(tokens);
+                utils::g_log << "Syntax analyzed." << endl;
                 parser::DecoratedASTNodePtr decorated = parsed->decorate();
+                utils::g_log << "Semantic analyzed." << endl;
                 plugins::Any constructed = decorated->construct();
+                utils::g_log << "Objects constructed." << endl;
                 engine = plugins::any_cast<SearchPtr>(constructed);
+                utils::g_log << "Parsing completed." << endl;
             } catch (const parser::ParserError &e) {
+                input_error(e.get_message());
+            } catch (const utils::ContextError &e) {
                 input_error(e.get_message());
             }
         } else if (arg == "--help") {

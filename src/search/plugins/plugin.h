@@ -2,7 +2,6 @@
 #define PLUGINS_PLUGIN_H
 
 #include "any.h"
-#include "construct_context.h"
 #include "options.h"
 #include "plugin_info.h"
 #include "raw_registry.h"
@@ -14,6 +13,10 @@
 #include <typeindex>
 #include <type_traits>
 #include <vector>
+
+namespace utils {
+class Context;
+}
 
 namespace plugins {
 class Feature {
@@ -31,7 +34,7 @@ public:
     virtual ~Feature() = default;
     Feature(const Feature &) = delete;
 
-    virtual Any construct(const Options &opts, const ConstructContext &context) const = 0;
+    virtual Any construct(const Options &opts, const utils::Context &context) const = 0;
 
     /* Add option with default value. Use def_val=ArgumentInfo::NO_DEFAULT for
        optional parameters without default values. */
@@ -77,7 +80,7 @@ class FeatureWithDefault : public Feature {
 protected:
     using Feature::Feature;
     virtual std::shared_ptr<Constructed> create_component(
-        const Options &options, const ConstructContext &) const {
+        const Options &options, const utils::Context &) const {
         return std::make_shared<Constructed>(options);
     }
 };
@@ -87,7 +90,7 @@ class FeatureWithoutDefault : public Feature {
 protected:
     using Feature::Feature;
     virtual std::shared_ptr<Constructed> create_component(
-        const Options &, const ConstructContext &) const = 0;
+        const Options &, const utils::Context &) const = 0;
 };
 
 template<typename Constructed>
@@ -106,7 +109,7 @@ public:
         : FeatureAuto<Constructed>(TypeRegistry::instance()->get_type<BasePtr>(), key) {
     }
 
-    Any construct(const Options &options, const ConstructContext &context) const override {
+    Any construct(const Options &options, const utils::Context &context) const override {
         std::shared_ptr<Base> ptr = this->create_component(options, context);
         return Any(ptr);
     }

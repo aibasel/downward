@@ -48,8 +48,6 @@ TokenStream split_tokens(const string &text) {
     auto start = text.begin();
     auto end = text.end();
 
-    Traceback traceback;
-    traceback.push("Start Splitting Tokens.");
     while (start != end) {
         bool has_match = false;
         smatch match;
@@ -66,6 +64,7 @@ TokenStream split_tokens(const string &text) {
         }
         if (!has_match) {
             ostringstream error;
+            error << "Splitting Tokens." << endl;
             error << "Unable to recognize next token:" << endl;
             int distance_to_error = start - text.begin();
             for (const string &line : utils::split(text, "\n")) {
@@ -80,7 +79,8 @@ TokenStream split_tokens(const string &text) {
             }
             string message = error.str();
             utils::rstrip(message);
-            throw ParserError(message, traceback);
+            // TODO: Which error to use?
+            throw ParserError(message);
         }
     }
     return TokenStream(move(tokens));

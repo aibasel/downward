@@ -2,7 +2,6 @@
 
 #include "errors.h"
 
-#include "../plugins/construct_context.h"
 #include "../plugins/options.h"
 #include "../plugins/types.h"
 #include "../utils/logging.h"
@@ -14,23 +13,6 @@
 using namespace std;
 
 namespace parser {
-void ConstructContext::push_layer(const string &layer) {
-    traceback.push(layer);
-}
-
-void ConstructContext::pop_layer() {
-    traceback.pop();
-}
-
-NO_RETURN
-void ConstructContext::construction_error(const string &message) const {
-    throw ParserError(message, traceback);
-}
-
-void ConstructContext::construction_warning(const string &message) const {
-    utils::g_log << traceback.str() << endl << message;
-}
-
 void ConstructContext::set_variable(const string &name, const plugins::Any &value) {
     variables[name] = value;
 }
@@ -58,15 +40,16 @@ LazyValue::LazyValue(const LazyValue &other)
 
 plugins::Any LazyValue::construct_any() const {
     ConstructContext clean_context = context;
-    clean_context.push_layer("Delayed construction of LazyValue");
+    utils::TraceBlock block(clean_context, "Delayed construction of LazyValue");
     return node->construct(clean_context);
 }
 
 vector<LazyValue> LazyValue::construct_lazy_list() {
+    utils::TraceBlock block(context, "Delayed construction of a list");
     const DecoratedListNode *list_node =
         dynamic_cast<const DecoratedListNode *>(node.get());
     if (!list_node) {
-        context.construction_error(
+        context.error(
             "Delayed construction of a list failed because the parsed element "
             "was no list.");
     }
@@ -75,10 +58,10 @@ vector<LazyValue> LazyValue::construct_lazy_list() {
     elements.reserve(list_node->get_elements().size());
     int elem = 1;
     for (const DecoratedASTNodePtr &element : list_node->get_elements()) {
-        context.push_layer("Create LazyValue for " + to_string(elem) +
-                           ". list element");
+        utils::TraceBlock(context,
+                          "Create LazyValue for " + to_string(elem) +
+                          ". list element");
         elements.emplace_back(LazyValue(*element, context));
-        context.pop_layer();
         elem++;
     }
     return elements;
@@ -86,7 +69,7 @@ vector<LazyValue> LazyValue::construct_lazy_list() {
 
 plugins::Any DecoratedASTNode::construct() const {
     ConstructContext context;
-    context.push_layer("Constructing parsed object");
+    utils::TraceBlock block(context, "Constructing parsed object");
     return construct(context);
 }
 
@@ -122,19 +105,17 @@ DecoratedLetNode::DecoratedLetNode(
 }
 
 plugins::Any DecoratedLetNode::construct(ConstructContext &context) const {
-    context.push_layer("Constructing let-expression");
-
-    context.push_layer("Constructing variable '" + variable_name + "'");
-    plugins::Any variable_value = variable_definition->construct(context);
-    context.pop_layer();
-
-    context.push_layer("Constructing nested value");
-    context.set_variable(variable_name, variable_value);
-    plugins::Any result = nested_value->construct(context);
-    context.remove_variable(variable_name);
-    context.pop_layer();
-
-    context.pop_layer();
+    plugins::Any variable_value, result;
+    utils::TraceBlock block(context, "Constructing let-expression");
+    {
+        utils::TraceBlock block(context, "Constructing variable '" + variable_name + "'");
+        variable_value = variable_definition->construct(context);
+    }{
+        utils::TraceBlock block(context, "Constructing nested value");
+        context.set_variable(variable_name, variable_value);
+        result = nested_value->construct(context);
+        context.remove_variable(variable_name);
+    }
     return result;
 }
 
@@ -153,20 +134,18 @@ DecoratedFunctionCallNode::DecoratedFunctionCallNode(
 }
 
 plugins::Any DecoratedFunctionCallNode::construct(ConstructContext &context) const {
-    context.push_layer("Constructing feature '" + feature->get_key() + "': " +
-                       unparsed_config);
+    utils::TraceBlock block(context, "Constructing feature '" + feature->get_key() + "': " +
+                            unparsed_config);
     plugins::Options opts;
     opts.set_unparsed_config(unparsed_config);
     for (const FunctionArgument &arg : arguments) {
-        context.push_layer("Constructing argument '" + arg.get_key() + "'");
+        utils::TraceBlock block(context, "Constructing argument '" + arg.get_key() + "'");
         if (arg.is_lazily_constructed()) {
             opts.set(arg.get_key(), LazyValue(arg.get_value(), context));
         } else {
             opts.set(arg.get_key(), arg.get_value().construct(context));
         }
-        context.pop_layer();
     }
-    context.pop_layer();
     return feature->construct(opts, context);
 }
 
@@ -185,16 +164,14 @@ DecoratedListNode::DecoratedListNode(vector<DecoratedASTNodePtr> &&elements)
 }
 
 plugins::Any DecoratedListNode::construct(ConstructContext &context) const {
-    context.push_layer("Constructing list");
+    utils::TraceBlock block(context, "Constructing list");
     vector<plugins::Any> result;
     int i = 0;
     for (const DecoratedASTNodePtr &element : elements) {
-        context.push_layer("Constructing element " + to_string(i));
+        utils::TraceBlock block(context, "Constructing element " + to_string(i));
         result.push_back(element->construct(context));
-        context.pop_layer();
         ++i;
     }
-    context.pop_layer();
     return result;
 }
 
@@ -211,11 +188,10 @@ VariableNode::VariableNode(const string &name)
 }
 
 plugins::Any VariableNode::construct(ConstructContext &context) const {
-    context.push_layer("Looking up variable '" + name + "'");
+    utils::TraceBlock block(context, "Looking up variable '" + name + "'");
     if (!context.has_variable(name)) {
-        context.construction_error("Variable '" + name + "' is not defined.");
+        context.error("Variable '" + name + "' is not defined.");
     }
-    context.pop_layer();
     return context.get_variable(name);
 }
 
@@ -228,14 +204,13 @@ BoolLiteralNode::BoolLiteralNode(const string &value)
 }
 
 plugins::Any BoolLiteralNode::construct(ConstructContext &context) const {
-    context.push_layer("Constructing bool value from '" + value + "'");
+    utils::TraceBlock block(context, "Constructing bool value from '" + value + "'");
     istringstream stream(value);
     bool x;
     if ((stream >> boolalpha >> x).fail()) {
         ABORT("Could not parse bool constant '" + value + "'"
               " (this should have been caught before constructing this node).");
     }
-    context.pop_layer();
     return x;
 }
 
@@ -248,12 +223,11 @@ IntLiteralNode::IntLiteralNode(const string &value)
 }
 
 plugins::Any IntLiteralNode::construct(ConstructContext &context) const {
-    context.push_layer("Constructing int value from '" + value + "'");
+    utils::TraceBlock block(context, "Constructing int value from '" + value + "'");
     if (value.empty()) {
         ABORT("Empty value in int constant '" + value + "'"
               " (this should have been caught before constructing this node).");
     } else if (value == "infinity") {
-        context.pop_layer();
         return numeric_limits<int>::max();
     }
 
@@ -287,10 +261,9 @@ plugins::Any IntLiteralNode::construct(ConstructContext &context) const {
     // Reserve highest value for "infinity".
     int max_int = numeric_limits<int>::max() - 1;
     if (!utils::is_product_within_limits(x, factor, min_int, max_int)) {
-        context.construction_error(
+        context.error(
             "Absolute value of integer constant too large: '" + value + "'");
     }
-    context.pop_layer();
     return x * factor;
 }
 
@@ -303,9 +276,8 @@ FloatLiteralNode::FloatLiteralNode(const string &value)
 }
 
 plugins::Any FloatLiteralNode::construct(ConstructContext &context) const {
-    context.push_layer("Constructing float value from '" + value + "'");
+    utils::TraceBlock block(context, "Constructing float value from '" + value + "'");
     if (value == "infinity") {
-        context.pop_layer();
         return numeric_limits<double>::infinity();
     } else {
         istringstream stream(value);
@@ -315,7 +287,6 @@ plugins::Any FloatLiteralNode::construct(ConstructContext &context) const {
             ABORT("Could not parse double constant '" + value + "'"
                   " (this should have been caught before constructing this node).");
         }
-        context.pop_layer();
         return x;
     }
 }
@@ -343,19 +314,18 @@ ConvertNode::ConvertNode(
 }
 
 plugins::Any ConvertNode::construct(ConstructContext &context) const {
-    context.push_layer("Constructing value that requires conversion");
-
-    context.push_layer("Constructing value of type '" + from_type.name() + "'");
-    plugins::Any constructed_value = value->construct(context);
-    context.pop_layer();
-
-    context.push_layer("Converting constructed value from '" + from_type.name() +
-                       "' to '" + to_type.name() + "'");
-    plugins::Any converted_value = plugins::convert(constructed_value, from_type,
-                                                    to_type, context);
-    context.pop_layer();
-
-    context.pop_layer();
+    plugins::Any constructed_value, converted_value;
+    utils::TraceBlock block(context, "Constructing value that requires conversion");
+    {
+        utils::TraceBlock block(
+                context, "Constructing value of type '" + from_type.name() + "'");
+        constructed_value = value->construct(context);
+    }{
+        utils::TraceBlock block(context, "Converting constructed value from '" + from_type.name() +
+                                         "' to '" + to_type.name() + "'");
+        converted_value = plugins::convert(constructed_value, from_type,
+                                                        to_type, context);
+    }
     return converted_value;
 }
 
@@ -380,43 +350,41 @@ static bool satisfies_bounds(const plugins::Any &v_, const plugins::Any &min_,
 }
 
 plugins::Any CheckBoundsNode::construct(ConstructContext &context) const {
-    context.push_layer("Constructing value with bounds");
-
-    context.push_layer("Constructing value");
-    plugins::Any v = value->construct(context);
-    context.pop_layer();
-
-    context.push_layer("Constructing lower bound");
-    plugins::Any min = min_value->construct(context);
-    context.pop_layer();
-
-    context.push_layer("Constructing upper bound");
-    plugins::Any max = max_value->construct(context);
-    context.pop_layer();
-
-    context.push_layer("Checking bounds");
-    const type_info &type = v.type();
-    if (min.type() != type || max.type() != type) {
-        ABORT("Types of bounds (" +
-              string(min.type().name()) + ", " + max.type().name() +
-              ") do not match type of value (" + type.name() + ")" +
-              " (this should have been caught before constructing this node).");
+    plugins::Any v, min, max;
+    utils::TraceBlock block(context, "Constructing value with bounds");
+    {
+        utils::TraceBlock block(context, "Constructing value");
+        v = value->construct(context);
+    }{
+        utils::TraceBlock block(context, "Constructing lower bound");
+        min = min_value->construct(context);
     }
-
-    bool bounds_satisfied = true;
-    if (type == typeid(int)) {
-        bounds_satisfied = satisfies_bounds<int>(v, min, max);
-    } else if (type == typeid(double)) {
-        bounds_satisfied = satisfies_bounds<double>(v, min, max);
-    } else {
-        ABORT("Bounds are only supported for arguments of type int or double.");
+    {
+        utils::TraceBlock block(context, "Constructing upper bound");
+        max = max_value->construct(context);
     }
-    if (!bounds_satisfied) {
-        context.construction_error("Value is not in bounds.");
-    }
-    context.pop_layer();
+    {
+        utils::TraceBlock block(context, "Checking bounds");
+        const type_info &type = v.type();
+        if (min.type() != type || max.type() != type) {
+            ABORT("Types of bounds (" +
+                  string(min.type().name()) + ", " + max.type().name() +
+                  ") do not match type of value (" + type.name() + ")" +
+                  " (this should have been caught before constructing this node).");
+        }
 
-    context.pop_layer();
+        bool bounds_satisfied = true;
+        if (type == typeid(int)) {
+            bounds_satisfied = satisfies_bounds<int>(v, min, max);
+        } else if (type == typeid(double)) {
+            bounds_satisfied = satisfies_bounds<double>(v, min, max);
+        } else {
+            ABORT("Bounds are only supported for arguments of type int or double.");
+        }
+        if (!bounds_satisfied) {
+            context.error("Value is not in bounds.");
+        }
+    }
     return v;
 }
 

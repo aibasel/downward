@@ -167,8 +167,8 @@ public:
             "true");
     }
 
-    virtual shared_ptr<TieBreakingOpenListFactory> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
-        context.verify_list_non_empty<shared_ptr<Evaluator>>(options, "evals");
+    virtual shared_ptr<TieBreakingOpenListFactory> create_component(const plugins::Options &options, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, options, "evals");
         return make_shared<TieBreakingOpenListFactory>(options);
     }
 };

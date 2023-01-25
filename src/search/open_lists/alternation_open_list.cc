@@ -158,8 +158,8 @@ public:
             "0");
     }
 
-    virtual shared_ptr<AlternationOpenListFactory> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
-        context.verify_list_non_empty<shared_ptr<OpenListFactory>>(options, "sublists");
+    virtual shared_ptr<AlternationOpenListFactory> create_component(const plugins::Options &options, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<OpenListFactory>>(context, options, "sublists");
         return make_shared<AlternationOpenListFactory>(options);
     }
 };

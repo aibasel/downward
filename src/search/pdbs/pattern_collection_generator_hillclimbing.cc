@@ -555,9 +555,9 @@ void add_hillclimbing_options(plugins::Feature &feature) {
 }
 
 void check_hillclimbing_options(
-    const plugins::Options &opts, const plugins::ConstructContext &context) {
+    const plugins::Options &opts, const utils::Context &context) {
     if (opts.get<int>("min_improvement") > opts.get<int>("num_samples")) {
-        context.construction_error(
+        context.error(
             "Minimum improvement must not be higher than number of samples");
     }
 }
@@ -597,7 +597,7 @@ public:
         add_hillclimbing_options(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorHillclimbing> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+    virtual shared_ptr<PatternCollectionGeneratorHillclimbing> create_component(const plugins::Options &options, const utils::Context &context) const override {
         check_hillclimbing_options(options, context);
         return make_shared<PatternCollectionGeneratorHillclimbing>(options);
     }
@@ -642,7 +642,7 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<CanonicalPDBsHeuristic> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+    virtual shared_ptr<CanonicalPDBsHeuristic> create_component(const plugins::Options &options, const utils::Context &context) const override {
         check_hillclimbing_options(options, context);
 
         shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =

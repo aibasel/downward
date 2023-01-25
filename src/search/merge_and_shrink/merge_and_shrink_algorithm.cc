@@ -471,7 +471,7 @@ void add_transition_system_size_limit_options_to_feature(plugins::Feature &featu
         Bounds("-1", "infinity"));
 }
 
-void handle_shrink_limit_options_defaults(plugins::Options &opts, const plugins::ConstructContext &context) {
+void handle_shrink_limit_options_defaults(plugins::Options &opts, const utils::Context &context) {
     int max_states = opts.get<int>("max_states");
     int max_states_before_merge = opts.get<int>("max_states_before_merge");
     int threshold = opts.get<int>("threshold_before_merge");
@@ -495,27 +495,27 @@ void handle_shrink_limit_options_defaults(plugins::Options &opts, const plugins:
     }
 
     if (max_states_before_merge > max_states) {
-        context.construction_warning(
+        context.warn(
             "warning: max_states_before_merge exceeds max_states, correcting.");
         max_states_before_merge = max_states;
     }
 
     if (max_states < 1) {
-        context.construction_error("Transition system size must be at least 1");
+        context.error("Transition system size must be at least 1");
     }
 
     if (max_states_before_merge < 1) {
-        context.construction_error("Transition system size before merge must be at least 1");
+        context.error("Transition system size before merge must be at least 1");
     }
 
     if (threshold == -1) {
         threshold = max_states;
     }
     if (threshold < 1) {
-        context.construction_error("Threshold must be at least 1");
+        context.error("Threshold must be at least 1");
     }
     if (threshold > max_states) {
-        context.construction_warning(
+        context.warn(
             "warning: threshold exceeds max_states, correcting");
         threshold = max_states;
     }

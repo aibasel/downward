@@ -3,7 +3,6 @@
 #include "../plugins/plugin.h"
 
 #include <cassert>
-#include <limits>
 
 using namespace std;
 
@@ -35,8 +34,8 @@ public:
         combining_evaluator::add_combining_evaluator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<SumEvaluator> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
-        context.verify_list_non_empty<shared_ptr<Evaluator>>(options, "evals");
+    virtual shared_ptr<SumEvaluator> create_component(const plugins::Options &options, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, options, "evals");
         return make_shared<SumEvaluator>(options);
     }
 };

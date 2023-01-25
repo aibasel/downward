@@ -129,7 +129,7 @@ public:
             "prune_irrelevant_states=true}}} (the default).");
     }
 
-    virtual shared_ptr<MergeScoringFunctionMIASM> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+    virtual shared_ptr<MergeScoringFunctionMIASM> create_component(const plugins::Options &options, const utils::Context &context) const override {
         plugins::Options options_copy(options);
         handle_shrink_limit_options_defaults(options_copy, context);
         return make_shared<MergeScoringFunctionMIASM>(options_copy);

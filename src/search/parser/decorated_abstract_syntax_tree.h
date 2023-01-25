@@ -5,6 +5,7 @@
 
 #include "../plugins/any.h"
 #include "../plugins/plugin.h"
+#include "../utils/logging.h"
 
 #include <memory>
 #include <string>
@@ -16,15 +17,9 @@ class Options;
 
 namespace parser {
 // TODO: if we can get rid of lazy values, this class could be moved to the cc file.
-class ConstructContext : public plugins::ConstructContext {
+class ConstructContext : public utils::Context {
     std::unordered_map<std::string, plugins::Any> variables;
-    Traceback traceback;
 public:
-    void push_layer(const std::string &layer);
-    void pop_layer();
-    NO_RETURN
-    virtual void construction_error(const std::string &message) const override;
-    virtual void construction_warning(const std::string &message) const override;
     void set_variable(const std::string &name, const plugins::Any &value);
     void remove_variable(const std::string &name);
     bool has_variable(const std::string &name) const;

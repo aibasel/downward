@@ -42,7 +42,7 @@ public:
         prepare_parser_for_admissible_potentials(*this);
     }
 
-    virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &options, const plugins::ConstructContext &) const override {
+    virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
         return make_shared<PotentialHeuristic>(options, create_potential_function(options, OptimizeFor::INITIAL_STATE));
     }
 };
@@ -59,7 +59,7 @@ public:
         prepare_parser_for_admissible_potentials(*this);
     }
 
-    virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &options, const plugins::ConstructContext &) const override {
+    virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
         return make_shared<PotentialHeuristic>(options, create_potential_function(options, OptimizeFor::ALL_STATES));
     }
 };

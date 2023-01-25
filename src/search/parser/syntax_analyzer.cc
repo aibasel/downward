@@ -3,36 +3,36 @@
 #include "errors.h"
 #include "token_stream.h"
 
+#include "../utils/logging.h"
+
 #include <functional>
 #include <unordered_set>
 
 using namespace std;
 
 namespace parser {
-class SyntaxAnalyzerContext {
-    Traceback traceback;
+class SyntaxAnalyzerContext : public utils::Context {
     const TokenStream &tokens;
     const int lookahead;
+
 public:
     SyntaxAnalyzerContext(TokenStream &tokens, int lookahead)
         : tokens(tokens),
           lookahead(lookahead) {
     }
 
-    void push_layer(const string &layer) {
+    virtual string decorate_block_name(const std::string &block_name) const override {
+        ostringstream decorated_block_name;
         int pos = tokens.get_position();
-        string message = layer + ": " + tokens.str(pos, pos + lookahead);
+        decorated_block_name << block_name << ": "
+                             << tokens.str(pos, pos + lookahead);
         if (pos + lookahead < tokens.size())
-            message += " ...";
-        traceback.push(message);
-    }
-
-    void pop_layer() {
-        traceback.pop();
+            decorated_block_name << " ...";
+        return decorated_block_name.str();
     }
 
     NO_RETURN
-    void parser_error(const string &message) const {
+    virtual void error(const string &message) const override {
         ostringstream message_with_tokens;
         string all_tokens = tokens.str(0, tokens.size());
         string remaining_tokens = tokens.str(tokens.get_position(), tokens.size());
@@ -40,7 +40,7 @@ public:
                             << string(all_tokens.size() - remaining_tokens.size(), ' ')
                             << "^" << endl
                             << message;
-        throw ParserError(message_with_tokens.str(), traceback);
+        throw utils::ContextError(message_with_tokens.str());
     }
 };
 
@@ -56,13 +56,13 @@ static void parse_argument(TokenStream &tokens,
         string argument_name = tokens.pop().content;
         tokens.pop(TokenType::EQUALS);
         if (keyword_arguments.count(argument_name)) {
-            context.parser_error("Multiple definitions of the same keyword "
+            context.error("Multiple definitions of the same keyword "
                                  "argument '" + argument_name + "'.");
         }
         keyword_arguments[argument_name] = parse_node(tokens, context);
     } else {
         if (!keyword_arguments.empty()) {
-            context.parser_error("Positional arguments have to be defined before "
+            context.error("Positional arguments have to be defined before "
                                  "any keyword arguments.");
         }
         positional_arguments.push_back(parse_node(tokens, context));
@@ -70,95 +70,92 @@ static void parse_argument(TokenStream &tokens,
 }
 
 static ASTNodePtr parse_let(TokenStream &tokens, SyntaxAnalyzerContext &context) {
-    context.push_layer("Let");
+    string variable_name;
+    ASTNodePtr variable_definition;
+    ASTNodePtr nested_value;
+    utils::TraceBlock block(context, "Parsing Let");
     tokens.pop(TokenType::LET);
     tokens.pop(TokenType::OPENING_PARENTHESIS);
-
-    context.push_layer("Parsing variable name");
-    string variable_name = tokens.pop(TokenType::IDENTIFIER).content;
-    context.pop_layer();
-    context.push_layer("Found variable name '" + variable_name + "'");
-
-    context.push_layer("Expecting separation of variable name and definition");
-    tokens.pop(TokenType::COMMA);
-    context.pop_layer();
-
-    context.push_layer("Parsing variable definition");
-    ASTNodePtr variable_definition = parse_node(tokens, context);
-    context.pop_layer();
-
-    context.push_layer("Expecting separation of variable definition and expression");
-    tokens.pop(TokenType::COMMA);
-    context.pop_layer();
-
-    context.push_layer("Parsing expression");
-    ASTNodePtr nested_value = parse_node(tokens, context);
-    context.pop_layer();
-
-    context.push_layer("Expecting closing of let");
+    {
+        utils::TraceBlock block(context, "Parsing variable name");
+        variable_name = tokens.pop(TokenType::IDENTIFIER).content;
+    }{
+        utils::TraceBlock block(context, "Parsing comma after variable name.");
+        tokens.pop(TokenType::COMMA);
+    }{
+        utils::TraceBlock block(context, "Parsing variable definition");
+        variable_definition = parse_node(tokens, context);
+    }{
+        utils::TraceBlock block(context, "Parsing comma after variable definition.");
+        tokens.pop(TokenType::COMMA);
+    }
+    {
+        utils::TraceBlock block(context, "Parsing nested expression of let");
+        nested_value = parse_node(tokens, context);
+    }
     tokens.pop(TokenType::CLOSING_PARENTHESIS);
-    context.pop_layer();
-    context.pop_layer();
-    context.pop_layer();
     return utils::make_unique_ptr<LetNode>(
-        variable_name, move(variable_definition), move(nested_value));
+            variable_name, move(variable_definition), move(nested_value));
 }
 
 static void parse_sequence(
     TokenStream &tokens, SyntaxAnalyzerContext &context,
-    TokenType terminal_token, function<void(void)> func) {
-    context.push_layer("Parsing arguments");
+    TokenType terminal_token, const function<void(void)>& func) {
+    utils::TraceBlock block(context, "Parsing sequence");
     int num_argument = 1;
     while (tokens.peek().type != terminal_token) {
-        context.pop_layer();
-
-        context.push_layer(to_string(num_argument) + ". argument");
-        func();
-        context.pop_layer();
-
-        context.push_layer(
-            "Parsed " + to_string(num_argument++) + ". argument");
-        TokenType next_type = tokens.peek().type;
-        if (next_type != TokenType::COMMA &&
-            next_type != terminal_token) {
-            context.parser_error(
-                "Read unexpected token type '" +
-                token_type_name(next_type) + "'. Expected token types '" +
-                token_type_name(terminal_token) + "' or '" +
-                token_type_name(TokenType::COMMA));
-        } else if (next_type == TokenType::COMMA) {
-            if (tokens.peek(1).type == terminal_token) {
-                context.parser_error("Trailing commas are forbidden.");
-            } else {
+        {
+            utils::TraceBlock block(context, "Parsing " + to_string(num_argument) + ". argument");
+            func();
+        }{
+            utils::TraceBlock block(context, "Parsing token after " + to_string(num_argument) + ". argument");
+            TokenType next_type = tokens.peek().type;
+            if (next_type == terminal_token) {
+                return;
+            } else if (next_type == TokenType::COMMA) {
                 tokens.pop();
+                if (tokens.peek().type == terminal_token) {
+                    context.error("Trailing commas are forbidden.");
+                }
+            } else {
+                context.error(
+                        "Read unexpected token type '" +
+                        token_type_name(next_type) + "'. Expected token types '" +
+                        token_type_name(terminal_token) + "' or '" +
+                        token_type_name(TokenType::COMMA));
             }
         }
+        num_argument++;
     }
 }
 
 static ASTNodePtr parse_function(TokenStream &tokens,
                                  SyntaxAnalyzerContext &context) {
-    context.push_layer("Reading plugin name");
-    int start = tokens.get_position();
-    Token name_token = tokens.pop(TokenType::IDENTIFIER);
-    string name = name_token.content;
-    context.pop_layer();
-
-    context.push_layer("Plugin '" + name + "'");
+    int initial_token_stream_index = tokens.get_position();
+    string plugin_name;
     vector<ASTNodePtr> positional_arguments;
     unordered_map<string, ASTNodePtr> keyword_arguments;
-    auto callback = [&]() -> void {
+    utils::TraceBlock block(context, "Parsing plugin");
+    {
+        utils::TraceBlock block(context, "Parsing plugin name");
+        Token name_token = tokens.pop(TokenType::IDENTIFIER);
+        plugin_name = name_token.content;
+    }{
+        utils::TraceBlock block(context, "Parsing opening parenthesis after plugin name");
+        tokens.pop(TokenType::OPENING_PARENTHESIS);
+    }{
+        utils::TraceBlock block(context, "Parsing plugin arguments");
+        auto callback = [&]() -> void {
             parse_argument(tokens, positional_arguments, keyword_arguments, context);
         };
-    tokens.pop(TokenType::OPENING_PARENTHESIS);
-    parse_sequence(tokens, context, TokenType::CLOSING_PARENTHESIS, callback);
-    tokens.pop(TokenType::CLOSING_PARENTHESIS);
-    context.pop_layer();
-    context.pop_layer();
-
-    string unparsed_config = tokens.str(start, tokens.get_position());
+        parse_sequence(tokens, context, TokenType::CLOSING_PARENTHESIS, callback);
+    }{
+        utils::TraceBlock block(context, "Parsing closing parenthesis after plugin arguments");
+        tokens.pop(TokenType::CLOSING_PARENTHESIS);
+    }
+    string unparsed_config = tokens.str(initial_token_stream_index, tokens.get_position());
     return utils::make_unique_ptr<FunctionCallNode>(
-        name, move(positional_arguments), move(keyword_arguments), unparsed_config);
+        plugin_name, move(positional_arguments), move(keyword_arguments), unparsed_config);
 }
 
 static unordered_set<TokenType> literal_tokens {
@@ -169,28 +166,32 @@ static unordered_set<TokenType> literal_tokens {
 };
 
 static ASTNodePtr parse_literal(TokenStream &tokens, SyntaxAnalyzerContext &context) {
-    context.push_layer("Literal");
+    utils::TraceBlock block(context, "Parsing Literal");
     Token token = tokens.pop();
     if (!literal_tokens.count(token.type)) {
         ostringstream message;
         message << "Token " << token << " cannot be parsed as literal";
-        context.parser_error(message.str());
+        context.error(message.str());
     }
-    context.pop_layer();
     return utils::make_unique_ptr<LiteralNode>(token);
 }
 
 static ASTNodePtr parse_list(TokenStream &tokens, SyntaxAnalyzerContext &context) {
-    context.push_layer("List");
     vector<ASTNodePtr> elements;
-    auto callback = [&]() -> void {
+    utils::TraceBlock block(context, "Parsing List");
+    {
+        utils::TraceBlock block(context, "Parsing opening bracket");
+        tokens.pop(TokenType::OPENING_BRACKET);
+    }{
+        utils::TraceBlock block(context, "Parsing list arguments");
+        auto callback = [&]() -> void {
             elements.push_back(parse_node(tokens, context));
         };
-    tokens.pop(TokenType::OPENING_BRACKET);
-    parse_sequence(tokens, context, TokenType::CLOSING_BRACKET, callback);
-    tokens.pop(TokenType::CLOSING_BRACKET);
-    context.pop_layer();
-    context.pop_layer();
+        parse_sequence(tokens, context, TokenType::CLOSING_BRACKET, callback);
+    }{
+        utils::TraceBlock block(context, "Parsing closing bracket");
+        tokens.pop(TokenType::CLOSING_BRACKET);
+    }
     return utils::make_unique_ptr<ListNode>(move(elements));
 }
 
@@ -200,6 +201,7 @@ static vector<TokenType> PARSE_NODE_TOKEN_TYPES = {
 
 static ASTNodePtr parse_node(TokenStream &tokens,
                              SyntaxAnalyzerContext &context) {
+    utils::TraceBlock block(context, "Identify node type");
     Token token = tokens.peek();
     if (find(PARSE_NODE_TOKEN_TYPES.begin(),
              PARSE_NODE_TOKEN_TYPES.end(),
@@ -208,7 +210,7 @@ static ASTNodePtr parse_node(TokenStream &tokens,
         message << "Unexpected token '" << token
                 << "'. Expected any of the following token types: "
                 << utils::join(PARSE_NODE_TOKEN_TYPES, ", ");
-        context.parser_error(message.str());
+        context.error(message.str());
     }
 
     switch (token.type) {
@@ -234,22 +236,21 @@ static ASTNodePtr parse_node(TokenStream &tokens,
 
 ASTNodePtr parse(TokenStream &tokens) {
     SyntaxAnalyzerContext context(tokens, 10);
-    context.push_layer("Start Syntactical Parsing");
+    utils::TraceBlock block(context, "Start Syntactical Parsing");
     if (!tokens.has_tokens(1)) {
-        context.parser_error("Input is empty");
+        context.error("Input is empty");
     }
     ASTNodePtr node;
     try {
         node = parse_node(tokens, context);
     } catch (TokenStreamError &error) {
-        context.parser_error(error.get_message());
+        context.error(error.get_message());
     }
     if (tokens.has_tokens(1)) {
-        context.parser_error(
+        context.error(
             "Syntax analysis terminated with unparsed tokens: " +
             tokens.str(tokens.get_position(), tokens.size()));
     }
-    context.pop_layer();
     return node;
 }
 }

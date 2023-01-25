@@ -221,7 +221,7 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<MergeAndShrinkHeuristic> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+    virtual shared_ptr<MergeAndShrinkHeuristic> create_component(const plugins::Options &options, const utils::Context &context) const override {
         plugins::Options options_copy(options);
         handle_shrink_limit_options_defaults(options_copy, context);
         return make_shared<MergeAndShrinkHeuristic>(options_copy);

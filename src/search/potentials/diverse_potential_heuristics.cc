@@ -167,7 +167,7 @@ public:
         utils::add_log_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &options, const plugins::ConstructContext &) const override {
+    virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
         DiversePotentialHeuristics factory(options);
         return make_shared<PotentialMaxHeuristic>(options, factory.find_functions());
     }

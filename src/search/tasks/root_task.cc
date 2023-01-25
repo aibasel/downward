@@ -502,7 +502,7 @@ public:
     RootTaskFeature() : TypedFeature("no_transform") {
     }
 
-    virtual shared_ptr<AbstractTask> create_component(const plugins::Options &, const plugins::ConstructContext &) const override {
+    virtual shared_ptr<AbstractTask> create_component(const plugins::Options &, const utils::Context &) const override {
         return g_root_task;
     }
 };

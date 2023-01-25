@@ -351,11 +351,11 @@ public:
         utils::add_rng_options(*this);
     }
 
-    virtual shared_ptr<LabelReduction> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+    virtual shared_ptr<LabelReduction> create_component(const plugins::Options &options, const utils::Context &context) const override {
         bool lr_before_shrinking = options.get<bool>("before_shrinking");
         bool lr_before_merging = options.get<bool>("before_merging");
         if (!lr_before_shrinking && !lr_before_merging) {
-            context.construction_error(
+            context.error(
                 "Please turn on at least one of the options "
                 "before_shrinking or before_merging!");
         }

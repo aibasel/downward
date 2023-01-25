@@ -2,7 +2,6 @@
 #define PLUGINS_TYPES_H
 
 #include "any.h"
-#include "construct_context.h"
 #include "registry_types.h"
 
 #include "../utils/language.h"
@@ -16,6 +15,10 @@
 #include <typeindex>
 #include <unordered_map>
 #include <vector>
+
+namespace utils {
+class Context;
+}
 
 namespace plugins {
 class CategoryPlugin;
@@ -39,7 +42,7 @@ public:
     virtual const Type &get_nested_type() const;
 
     virtual bool is_enum_type() const;
-    virtual int get_enum_index(const std::string &, ConstructContext &) const;
+    virtual int get_enum_index(const std::string &, utils::Context &) const;
     virtual const EnumInfo &get_documented_enum_values() const;
 
     virtual bool is_symbol_type() const;
@@ -112,7 +115,7 @@ public:
     EnumType(std::type_index type, const EnumInfo &documented_values);
     virtual bool operator==(const Type &other) const override;
     virtual bool is_enum_type() const override;
-    virtual int get_enum_index(const std::string &value, ConstructContext &context) const override;
+    virtual int get_enum_index(const std::string &value, utils::Context &context) const override;
     virtual const EnumInfo &get_documented_enum_values() const override;
     virtual std::string name() const override;
     virtual size_t get_hash() const override;
@@ -197,7 +200,7 @@ const Type &TypeRegistry::get_type() {
 }
 
 extern Any convert(const Any &value, const Type &from_type, const Type &to_type,
-                   ConstructContext &context);
+                   utils::Context &context);
 }
 
 #endif

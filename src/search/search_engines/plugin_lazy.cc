@@ -21,7 +21,7 @@ public:
         SearchEngine::add_options_to_feature(*this);
     }
 
-    virtual shared_ptr<lazy_search::LazySearch> create_component(const plugins::Options &options, const plugins::ConstructContext &) const override {
+    virtual shared_ptr<lazy_search::LazySearch> create_component(const plugins::Options &options, const utils::Context &) const override {
         shared_ptr<lazy_search::LazySearch> engine = make_shared<lazy_search::LazySearch>(options);
         /*
           TODO: The following two lines look fishy. If they serve a

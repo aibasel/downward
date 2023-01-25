@@ -4,7 +4,6 @@
 #include "landmark_graph.h"
 
 #include "../plugins/plugin.h"
-#include "../utils/logging.h"
 
 #include <set>
 
@@ -176,8 +175,8 @@ public:
             "supported if all components support them");
     }
 
-    virtual shared_ptr<LandmarkFactoryMerged> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
-        context.verify_list_non_empty<shared_ptr<LandmarkFactory>>(options, "lm_factories");
+    virtual shared_ptr<LandmarkFactoryMerged> create_component(const plugins::Options &options, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<LandmarkFactory>>(context, options, "lm_factories");
         return make_shared<LandmarkFactoryMerged>(options);
     }
 };

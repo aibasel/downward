@@ -204,11 +204,11 @@ public:
         add_merge_strategy_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeStrategyFactorySCCs> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
+    virtual shared_ptr<MergeStrategyFactorySCCs> create_component(const plugins::Options &options, const utils::Context &context) const override {
         bool merge_tree = options.contains("merge_tree");
         bool merge_selector = options.contains("merge_selector");
         if ((merge_tree && merge_selector) || (!merge_tree && !merge_selector)) {
-            context.construction_error(
+            context.error(
                 "You have to specify exactly one of the options merge_tree "
                 "and merge_selector!");
         }

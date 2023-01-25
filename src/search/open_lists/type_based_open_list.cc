@@ -176,8 +176,8 @@ public:
         utils::add_rng_options(*this);
     }
 
-    virtual shared_ptr<TypeBasedOpenListFactory> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
-        context.verify_list_non_empty<shared_ptr<Evaluator>>(options, "evaluators");
+    virtual shared_ptr<TypeBasedOpenListFactory> create_component(const plugins::Options &options, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, options, "evaluators");
         return make_shared<TypeBasedOpenListFactory>(options);
     }
 };

@@ -77,8 +77,8 @@ public:
             true);
     }
 
-    virtual shared_ptr<lazy_search::LazySearch> create_component(const plugins::Options &options, const plugins::ConstructContext &context) const override {
-        context.verify_list_non_empty<shared_ptr<Evaluator>>(options, "evals");
+    virtual shared_ptr<lazy_search::LazySearch> create_component(const plugins::Options &options, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, options, "evals");
         plugins::Options options_copy(options);
         options_copy.set("open", search_common::create_wastar_open_list_factory(options_copy));
         shared_ptr<lazy_search::LazySearch> engine = make_shared<lazy_search::LazySearch>(options_copy);

@@ -50,7 +50,7 @@ bool Type::is_enum_type() const {
     return false;
 }
 
-int Type::get_enum_index(const string &, ConstructContext &) const {
+int Type::get_enum_index(const string &, utils::Context &) const {
     ABORT("Used Type::get_enum_index on a type that does not support it.");
 }
 
@@ -201,14 +201,14 @@ bool EnumType::is_enum_type() const {
     return true;
 }
 
-int EnumType::get_enum_index(const string &value, ConstructContext &context) const {
+int EnumType::get_enum_index(const string &value, utils::Context &context) const {
     auto it = find(values.begin(), values.end(), value);
     int enum_index = static_cast<int>(it - values.begin());
     if (enum_index >= static_cast<int>(values.size())) {
         ostringstream message;
         message << "Invalid enum value: " << value << endl
                 << "Options: " << utils::join(values, ", ");
-        context.construction_error(message.str());
+        context.error(message.str());
     }
     return enum_index;
 }
@@ -250,7 +250,7 @@ size_t SymbolType::get_hash() const {
     return hash<type_index>()(typeid(SymbolType));
 }
 
-Any convert(const Any &value, const Type &from_type, const Type &to_type, ConstructContext &context) {
+Any convert(const Any &value, const Type &from_type, const Type &to_type, utils::Context &context) {
     if (from_type == to_type) {
         return value;
     } else if (from_type.is_basic_type() && from_type.get_basic_type_index() == typeid(int)

@@ -86,7 +86,6 @@ fast_downward_plugin(
     SOURCES
         plugins/any
         plugins/bounds
-        plugins/construct_context
         plugins/doc_printer
         plugins/options
         plugins/plugin

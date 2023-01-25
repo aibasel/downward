@@ -13,17 +13,9 @@ public:
     explicit TokenStreamError(const std::string &msg);
 };
 
-class Traceback {
-    std::vector<std::string> stack;
-public:
-    void push(const std::string &layer);
-    void pop();
-    std::string str() const;
-};
-
 class ParserError : public utils::Exception {
 public:
-    explicit ParserError(const std::string &msg, const Traceback &traceback);
+    explicit ParserError(const std::string &msg);
 };
 }
 

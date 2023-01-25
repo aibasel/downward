@@ -74,7 +74,7 @@ public:
         utils::add_rng_options(*this);
     }
 
-    virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &options, const plugins::ConstructContext &) const override {
+    virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
         return make_shared<PotentialMaxHeuristic>(
             options, create_sample_based_potential_functions(options));
     }

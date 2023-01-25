@@ -44,7 +44,7 @@ public:
             "is **not** equivalent to\n```\n--search astar(h())\n```\n");
     }
 
-    virtual shared_ptr<eager_search::EagerSearch> create_component(const plugins::Options &options, const plugins::ConstructContext &) const override {
+    virtual shared_ptr<eager_search::EagerSearch> create_component(const plugins::Options &options, const utils::Context &) const override {
         plugins::Options options_copy(options);
         options_copy.set("open", search_common::create_wastar_open_list_factory(options));
         return make_shared<eager_search::EagerSearch>(options_copy);
