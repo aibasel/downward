@@ -58,7 +58,7 @@ public:
 
 static MemoryContext _tracer;
 
-ContextError::ContextError(const std::string &msg)
+ContextError::ContextError(const string &msg)
     : Exception(msg) {
 }
 
@@ -107,7 +107,7 @@ void Context::error(const string &message) const {
     throw ContextError(str() + "\n\n" + message);
 }
 
-void Context::warn(const std::string &message) const {
+void Context::warn(const string &message) const {
     utils::g_log << str() << endl << endl << message;
 }
 

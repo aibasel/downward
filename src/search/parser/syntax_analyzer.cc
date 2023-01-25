@@ -21,7 +21,7 @@ public:
           lookahead(lookahead) {
     }
 
-    virtual string decorate_block_name(const std::string &block_name) const override {
+    virtual string decorate_block_name(const string &block_name) const override {
         ostringstream decorated_block_name;
         int pos = tokens.get_position();
         decorated_block_name << block_name << ": "
@@ -40,7 +40,7 @@ public:
                             << string(all_tokens.size() - remaining_tokens.size(), ' ')
                             << "^" << endl
                             << message;
-        throw utils::ContextError(message_with_tokens.str());
+        throw utils::ContextError(str() + "\n\n" + message_with_tokens.str());
     }
 };
 

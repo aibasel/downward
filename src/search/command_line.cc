@@ -20,8 +20,7 @@ using namespace std;
 
 NO_RETURN
 static void input_error(const string &msg) {
-    utils::g_log << msg << endl
-                 << usage() << endl;
+    utils::g_log << msg << endl;
     utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
 }
 
