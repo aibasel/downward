@@ -98,7 +98,7 @@ string Context::str() const {
         message << indent.str() << "Empty";
     } else {
         message << indent.str()
-                << utils::join(block_stack,"\n" + indent.str() + "-> ");
+                << utils::join(block_stack, "\n" + indent.str() + "-> ");
     }
     return message.str();
 }

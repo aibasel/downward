@@ -17,7 +17,7 @@
 using namespace std;
 
 namespace parser {
-class DecorateContext : public utils::Context{
+class DecorateContext : public utils::Context {
     const plugins::Registry registry;
     unordered_map<string, const plugins::Type *> variables;
 
@@ -86,7 +86,7 @@ LetNode::LetNode(const string &variable_name, ASTNodePtr variable_definition,
 DecoratedASTNodePtr LetNode::decorate(DecorateContext &context) const {
     DecoratedASTNodePtr decorated_definition;
     DecoratedASTNodePtr decorated_nested_value;
-    utils::TraceBlock block(context,"Checking Let: " + variable_name);
+    utils::TraceBlock block(context, "Checking Let: " + variable_name);
     const plugins::Type &var_type = variable_definition->get_type(context);
     if (!var_type.supports_variable_binding()) {
         context.error(
@@ -96,8 +96,9 @@ DecoratedASTNodePtr LetNode::decorate(DecorateContext &context) const {
     {
         utils::TraceBlock block(context, "Check variable definition");
         decorated_definition = variable_definition->decorate(context);
-    }{
-        utils::TraceBlock block(context,"Check nested expression.");
+    }
+    {
+        utils::TraceBlock block(context, "Check nested expression.");
         context.add_variable(variable_name, var_type);
         decorated_nested_value = nested_value->decorate(context);
         context.remove_variable(variable_name);
@@ -136,7 +137,7 @@ static DecoratedASTNodePtr decorate_and_convert(
     DecoratedASTNodePtr decorated_node = node.decorate(context);
 
     if (node_type != target_type) {
-        utils::TraceBlock block(context,"Adding casting node");
+        utils::TraceBlock block(context, "Adding casting node");
         if (node_type.can_convert_into(target_type)) {
             return utils::make_unique_ptr<ConvertNode>(
                 move(decorated_node), node_type, target_type);
@@ -168,12 +169,13 @@ bool FunctionCallNode::collect_argument(
             utils::TraceBlock block(context, "Handling lower bound");
             ASTNodePtr min_node = parse_ast_node(arg_info.bounds.min, context);
             decorated_min_node = decorate_and_convert(
-                    *min_node, arg_info.type, context);
-        }{
+                *min_node, arg_info.type, context);
+        }
+        {
             utils::TraceBlock block(context, "Handling upper bound");
             ASTNodePtr max_node = parse_ast_node(arg_info.bounds.max, context);
             decorated_max_node = decorate_and_convert(
-                    *max_node, arg_info.type, context);
+                *max_node, arg_info.type, context);
         }
         decorated_arg = utils::make_unique_ptr<CheckBoundsNode>(
             move(decorated_arg), move(decorated_min_node), move(decorated_max_node));
@@ -194,7 +196,7 @@ void FunctionCallNode::collect_keyword_arguments(
     for (const auto &key_and_arg : keyword_arguments) {
         const string &key = key_and_arg.first;
         const ASTNode &arg = *key_and_arg.second;
-        utils::TraceBlock block(context,"Checking the keyword argument '" + key + "'.");
+        utils::TraceBlock block(context, "Checking the keyword argument '" + key + "'.");
         if (!argument_infos_by_key.count(key)) {
             vector<string> valid_keys = get_keys<string>(argument_infos_by_key);
             ostringstream message;
@@ -252,9 +254,9 @@ void FunctionCallNode::collect_positional_arguments(
         const ASTNode &arg = *positional_arguments[i];
         const plugins::ArgumentInfo &arg_info = argument_infos[i];
         utils::TraceBlock block(
-                context,
-                "Checking the " + to_string(i + 1) +
-                ". positional argument (" + arg_info.key + ")");
+            context,
+            "Checking the " + to_string(i + 1) +
+            ". positional argument (" + arg_info.key + ")");
         bool success = collect_argument(arg, arg_info, context, arguments);
         if (!success) {
             ostringstream message;
@@ -274,7 +276,7 @@ void FunctionCallNode::collect_default_values(
     for (const plugins::ArgumentInfo &arg_info : argument_infos) {
         const string &key = arg_info.key;
         if (!arguments.count(key)) {
-            utils::TraceBlock block(context,"Checking the default for argument '" + key + "'.");
+            utils::TraceBlock block(context, "Checking the default for argument '" + key + "'.");
             if (arg_info.has_default()) {
                 ASTNodePtr arg;
                 {
@@ -294,7 +296,7 @@ void FunctionCallNode::collect_default_values(
 }
 
 DecoratedASTNodePtr FunctionCallNode::decorate(DecorateContext &context) const {
-    utils::TraceBlock block(context,"Checking Plugin: " + name);
+    utils::TraceBlock block(context, "Checking Plugin: " + name);
     const plugins::Registry &registry = context.get_registry();
     if (!registry.has_feature(name)) {
         context.error("Plugin '" + name + "' is not defined.");
@@ -343,7 +345,7 @@ ListNode::ListNode(vector<ASTNodePtr> &&elements)
 }
 
 DecoratedASTNodePtr ListNode::decorate(DecorateContext &context) const {
-    utils::TraceBlock block(context,"Checking list");
+    utils::TraceBlock block(context, "Checking list");
     vector<DecoratedASTNodePtr> decorated_elements;
     if (!elements.empty()) {
         const plugins::Type *common_element_type = get_common_element_type(context);
@@ -355,7 +357,7 @@ DecoratedASTNodePtr ListNode::decorate(DecorateContext &context) const {
                 element_type_names.push_back(element_type.name());
             }
             context.error("List contains elements of different types: ["
-                                 + utils::join(element_type_names, ", ") + "].");
+                          + utils::join(element_type_names, ", ") + "].");
         }
         for (size_t i = 0; i < elements.size(); i++) {
             utils::TraceBlock block(context, "Checking " + to_string(i) + ". element");
@@ -412,7 +414,7 @@ LiteralNode::LiteralNode(Token value)
 }
 
 DecoratedASTNodePtr LiteralNode::decorate(DecorateContext &context) const {
-    utils::TraceBlock block(context,"Checking Literal: " + value.content);
+    utils::TraceBlock block(context, "Checking Literal: " + value.content);
     if (context.has_variable(value.content)) {
         if (value.type != TokenType::IDENTIFIER) {
             ABORT("A non-identifier token was defined as variable.");

@@ -57,13 +57,13 @@ static void parse_argument(TokenStream &tokens,
         tokens.pop(TokenType::EQUALS);
         if (keyword_arguments.count(argument_name)) {
             context.error("Multiple definitions of the same keyword "
-                                 "argument '" + argument_name + "'.");
+                          "argument '" + argument_name + "'.");
         }
         keyword_arguments[argument_name] = parse_node(tokens, context);
     } else {
         if (!keyword_arguments.empty()) {
             context.error("Positional arguments have to be defined before "
-                                 "any keyword arguments.");
+                          "any keyword arguments.");
         }
         positional_arguments.push_back(parse_node(tokens, context));
     }
@@ -79,13 +79,16 @@ static ASTNodePtr parse_let(TokenStream &tokens, SyntaxAnalyzerContext &context)
     {
         utils::TraceBlock block(context, "Parsing variable name");
         variable_name = tokens.pop(TokenType::IDENTIFIER).content;
-    }{
+    }
+    {
         utils::TraceBlock block(context, "Parsing comma after variable name.");
         tokens.pop(TokenType::COMMA);
-    }{
+    }
+    {
         utils::TraceBlock block(context, "Parsing variable definition");
         variable_definition = parse_node(tokens, context);
-    }{
+    }
+    {
         utils::TraceBlock block(context, "Parsing comma after variable definition.");
         tokens.pop(TokenType::COMMA);
     }
@@ -95,19 +98,20 @@ static ASTNodePtr parse_let(TokenStream &tokens, SyntaxAnalyzerContext &context)
     }
     tokens.pop(TokenType::CLOSING_PARENTHESIS);
     return utils::make_unique_ptr<LetNode>(
-            variable_name, move(variable_definition), move(nested_value));
+        variable_name, move(variable_definition), move(nested_value));
 }
 
 static void parse_sequence(
     TokenStream &tokens, SyntaxAnalyzerContext &context,
-    TokenType terminal_token, const function<void(void)>& func) {
+    TokenType terminal_token, const function<void(void)> &func) {
     utils::TraceBlock block(context, "Parsing sequence");
     int num_argument = 1;
     while (tokens.peek().type != terminal_token) {
         {
             utils::TraceBlock block(context, "Parsing " + to_string(num_argument) + ". argument");
             func();
-        }{
+        }
+        {
             utils::TraceBlock block(context, "Parsing token after " + to_string(num_argument) + ". argument");
             TokenType next_type = tokens.peek().type;
             if (next_type == terminal_token) {
@@ -119,10 +123,10 @@ static void parse_sequence(
                 }
             } else {
                 context.error(
-                        "Read unexpected token type '" +
-                        token_type_name(next_type) + "'. Expected token types '" +
-                        token_type_name(terminal_token) + "' or '" +
-                        token_type_name(TokenType::COMMA));
+                    "Read unexpected token type '" +
+                    token_type_name(next_type) + "'. Expected token types '" +
+                    token_type_name(terminal_token) + "' or '" +
+                    token_type_name(TokenType::COMMA));
             }
         }
         num_argument++;
@@ -140,16 +144,19 @@ static ASTNodePtr parse_function(TokenStream &tokens,
         utils::TraceBlock block(context, "Parsing plugin name");
         Token name_token = tokens.pop(TokenType::IDENTIFIER);
         plugin_name = name_token.content;
-    }{
+    }
+    {
         utils::TraceBlock block(context, "Parsing opening parenthesis after plugin name");
         tokens.pop(TokenType::OPENING_PARENTHESIS);
-    }{
+    }
+    {
         utils::TraceBlock block(context, "Parsing plugin arguments");
         auto callback = [&]() -> void {
-            parse_argument(tokens, positional_arguments, keyword_arguments, context);
-        };
+                parse_argument(tokens, positional_arguments, keyword_arguments, context);
+            };
         parse_sequence(tokens, context, TokenType::CLOSING_PARENTHESIS, callback);
-    }{
+    }
+    {
         utils::TraceBlock block(context, "Parsing closing parenthesis after plugin arguments");
         tokens.pop(TokenType::CLOSING_PARENTHESIS);
     }
@@ -182,13 +189,15 @@ static ASTNodePtr parse_list(TokenStream &tokens, SyntaxAnalyzerContext &context
     {
         utils::TraceBlock block(context, "Parsing opening bracket");
         tokens.pop(TokenType::OPENING_BRACKET);
-    }{
+    }
+    {
         utils::TraceBlock block(context, "Parsing list arguments");
         auto callback = [&]() -> void {
-            elements.push_back(parse_node(tokens, context));
-        };
+                elements.push_back(parse_node(tokens, context));
+            };
         parse_sequence(tokens, context, TokenType::CLOSING_BRACKET, callback);
-    }{
+    }
+    {
         utils::TraceBlock block(context, "Parsing closing bracket");
         tokens.pop(TokenType::CLOSING_BRACKET);
     }

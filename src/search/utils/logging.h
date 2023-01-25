@@ -156,7 +156,6 @@ public:
     NO_RETURN
     virtual void error(const std::string &message) const;
     virtual void warn(const std::string &message) const;
-
 };
 
 class TraceBlock {

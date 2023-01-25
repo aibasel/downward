@@ -110,7 +110,8 @@ plugins::Any DecoratedLetNode::construct(ConstructContext &context) const {
     {
         utils::TraceBlock block(context, "Constructing variable '" + variable_name + "'");
         variable_value = variable_definition->construct(context);
-    }{
+    }
+    {
         utils::TraceBlock block(context, "Constructing nested value");
         context.set_variable(variable_name, variable_value);
         result = nested_value->construct(context);
@@ -318,13 +319,14 @@ plugins::Any ConvertNode::construct(ConstructContext &context) const {
     utils::TraceBlock block(context, "Constructing value that requires conversion");
     {
         utils::TraceBlock block(
-                context, "Constructing value of type '" + from_type.name() + "'");
+            context, "Constructing value of type '" + from_type.name() + "'");
         constructed_value = value->construct(context);
-    }{
+    }
+    {
         utils::TraceBlock block(context, "Converting constructed value from '" + from_type.name() +
-                                         "' to '" + to_type.name() + "'");
+                                "' to '" + to_type.name() + "'");
         converted_value = plugins::convert(constructed_value, from_type,
-                                                        to_type, context);
+                                           to_type, context);
     }
     return converted_value;
 }
@@ -355,7 +357,8 @@ plugins::Any CheckBoundsNode::construct(ConstructContext &context) const {
     {
         utils::TraceBlock block(context, "Constructing value");
         v = value->construct(context);
-    }{
+    }
+    {
         utils::TraceBlock block(context, "Constructing lower bound");
         min = min_value->construct(context);
     }
