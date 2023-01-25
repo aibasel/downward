@@ -15,10 +15,8 @@ using utils::ExitCode;
 int main(int argc, const char **argv) {
     utils::register_event_handlers();
 
-    g_program_name = argv[0];
-
     if (argc < 2) {
-        utils::g_log << usage() << endl;
+        utils::g_log << usage(argv[0]) << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 

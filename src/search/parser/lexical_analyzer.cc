@@ -1,8 +1,8 @@
 #include "lexical_analyzer.h"
 
-#include "errors.h"
 #include "token_stream.h"
 
+#include "../utils/logging.h"
 #include "../utils/strings.h"
 
 #include <regex>
@@ -44,6 +44,9 @@ static const vector<pair<TokenType, regex>> token_type_expressions =
 
 
 TokenStream split_tokens(const string &text) {
+    utils::Context context;
+    utils::TraceBlock block(context, "Splitting Tokens.");
+
     vector<Token> tokens;
     auto start = text.begin();
     auto end = text.end();
@@ -64,7 +67,6 @@ TokenStream split_tokens(const string &text) {
         }
         if (!has_match) {
             ostringstream error;
-            error << "Splitting Tokens." << endl;
             error << "Unable to recognize next token:" << endl;
             int distance_to_error = start - text.begin();
             for (const string &line : utils::split(text, "\n")) {
@@ -79,8 +81,7 @@ TokenStream split_tokens(const string &text) {
             }
             string message = error.str();
             utils::rstrip(message);
-            // TODO: Which error to use?
-            throw ParserError(message);
+            context.error(message);
         }
     }
     return TokenStream(move(tokens));

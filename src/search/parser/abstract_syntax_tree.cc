@@ -1,6 +1,5 @@
 #include "abstract_syntax_tree.h"
 
-#include "errors.h"
 #include "lexical_analyzer.h"
 #include "syntax_analyzer.h"
 #include "token_stream.h"
@@ -59,16 +58,9 @@ static vector<T> get_keys(const unordered_map<T, K> &map) {
     return keys;
 }
 
-static ASTNodePtr parse_ast_node(const string &definition, DecorateContext &context) {
-    ASTNodePtr node = nullptr;
-    try {
-        TokenStream tokens = split_tokens(definition);
-        node = parse(tokens);
-        // TODO: Parser error only used in splut_tokens. Might want to get rid of it.
-    }  catch (ParserError &e) {
-        context.error(e.get_message());
-    }
-    return node;
+static ASTNodePtr parse_ast_node(const string &definition, DecorateContext &) {
+    TokenStream tokens = split_tokens(definition);
+    return parse(tokens);
 }
 
 DecoratedASTNodePtr ASTNode::decorate() const {
@@ -84,8 +76,6 @@ LetNode::LetNode(const string &variable_name, ASTNodePtr variable_definition,
 }
 
 DecoratedASTNodePtr LetNode::decorate(DecorateContext &context) const {
-    DecoratedASTNodePtr decorated_definition;
-    DecoratedASTNodePtr decorated_nested_value;
     utils::TraceBlock block(context, "Checking Let: " + variable_name);
     const plugins::Type &var_type = variable_definition->get_type(context);
     if (!var_type.supports_variable_binding()) {
@@ -93,10 +83,12 @@ DecoratedASTNodePtr LetNode::decorate(DecorateContext &context) const {
             "The value of variable '" + variable_name +
             "' is not permitted to be assigned to a variable.");
     }
+    DecoratedASTNodePtr decorated_definition;
     {
         utils::TraceBlock block(context, "Check variable definition");
         decorated_definition = variable_definition->decorate(context);
     }
+    DecoratedASTNodePtr decorated_nested_value;
     {
         utils::TraceBlock block(context, "Check nested expression.");
         context.add_variable(variable_name, var_type);
@@ -164,13 +156,14 @@ bool FunctionCallNode::collect_argument(
         arg, arg_info.type, context);
 
     if (arg_info.bounds.has_bound()) {
-        DecoratedASTNodePtr decorated_min_node, decorated_max_node;
+        DecoratedASTNodePtr decorated_min_node;
         {
             utils::TraceBlock block(context, "Handling lower bound");
             ASTNodePtr min_node = parse_ast_node(arg_info.bounds.min, context);
             decorated_min_node = decorate_and_convert(
                 *min_node, arg_info.type, context);
         }
+        DecoratedASTNodePtr decorated_max_node;
         {
             utils::TraceBlock block(context, "Handling upper bound");
             ASTNodePtr max_node = parse_ast_node(arg_info.bounds.max, context);

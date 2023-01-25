@@ -1,7 +1,5 @@
 #include "decorated_abstract_syntax_tree.h"
 
-#include "errors.h"
-
 #include "../plugins/options.h"
 #include "../plugins/types.h"
 #include "../utils/logging.h"
@@ -105,12 +103,13 @@ DecoratedLetNode::DecoratedLetNode(
 }
 
 plugins::Any DecoratedLetNode::construct(ConstructContext &context) const {
-    plugins::Any variable_value, result;
     utils::TraceBlock block(context, "Constructing let-expression");
+    plugins::Any variable_value;
     {
         utils::TraceBlock block(context, "Constructing variable '" + variable_name + "'");
         variable_value = variable_definition->construct(context);
     }
+    plugins::Any result;
     {
         utils::TraceBlock block(context, "Constructing nested value");
         context.set_variable(variable_name, variable_value);
@@ -315,13 +314,14 @@ ConvertNode::ConvertNode(
 }
 
 plugins::Any ConvertNode::construct(ConstructContext &context) const {
-    plugins::Any constructed_value, converted_value;
     utils::TraceBlock block(context, "Constructing value that requires conversion");
+    plugins::Any constructed_value;
     {
         utils::TraceBlock block(
             context, "Constructing value of type '" + from_type.name() + "'");
         constructed_value = value->construct(context);
     }
+    plugins::Any converted_value;
     {
         utils::TraceBlock block(context, "Converting constructed value from '" + from_type.name() +
                                 "' to '" + to_type.name() + "'");
@@ -352,16 +352,18 @@ static bool satisfies_bounds(const plugins::Any &v_, const plugins::Any &min_,
 }
 
 plugins::Any CheckBoundsNode::construct(ConstructContext &context) const {
-    plugins::Any v, min, max;
     utils::TraceBlock block(context, "Constructing value with bounds");
+    plugins::Any v;
     {
         utils::TraceBlock block(context, "Constructing value");
         v = value->construct(context);
     }
+    plugins::Any min;
     {
         utils::TraceBlock block(context, "Constructing lower bound");
         min = min_value->construct(context);
     }
+    plugins::Any max;
     {
         utils::TraceBlock block(context, "Constructing upper bound");
         max = max_value->construct(context);

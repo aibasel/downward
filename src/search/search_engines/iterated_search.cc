@@ -1,6 +1,5 @@
 #include "iterated_search.h"
 
-#include "../parser/errors.h"
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
 

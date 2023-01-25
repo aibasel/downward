@@ -1,8 +1,6 @@
 #ifndef PARSER_DECORATED_ABSTRACT_SYNTAX_TREE_H
 #define PARSER_DECORATED_ABSTRACT_SYNTAX_TREE_H
 
-#include "errors.h"
-
 #include "../plugins/any.h"
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"

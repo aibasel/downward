@@ -119,7 +119,7 @@ public:
     const std::string &get_unparsed_config() const;
     void set_unparsed_config(const std::string &config);
 };
-// TODO: Where should this live?
+
 template<typename T>
 void verify_list_non_empty(const utils::Context &context,
                            const plugins::Options &opts,

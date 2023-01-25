@@ -4,6 +4,10 @@
 #include <string>
 #include <vector>
 
+namespace utils {
+class Context;
+}
+
 namespace parser {
 enum class TokenType {
     OPENING_PARENTHESIS,
@@ -33,9 +37,9 @@ public:
     explicit TokenStream(std::vector<Token> &&tokens);
 
     bool has_tokens(int n) const;
-    Token peek(int n = 0) const;
-    Token pop();
-    Token pop(TokenType expected_type);
+    Token peek(const utils::Context &context, int n = 0) const;
+    Token pop(const utils::Context &context);
+    Token pop(const utils::Context &context, TokenType expected_type);
 
     int get_position() const;
     int size() const;

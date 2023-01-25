@@ -140,7 +140,7 @@ public:
 
 class Context {
 protected:
-    static const int INDENT_AMOUNT = 2; // TODO: Why not directly the string?
+    static const std::string INDENT;
     size_t initial_stack_size = 0;  // TODO: Can be removed once we got rid of LazyValues
     std::vector<std::string> block_stack;
 
@@ -158,6 +158,16 @@ public:
     virtual void warn(const std::string &message) const;
 };
 
+class MemoryContext : public Context {
+    // The following constants affect the formatting of output.
+    static const int MEM_FIELD_WIDTH = 7;
+    static const int TIME_FIELD_WIDTH = 7;
+public:
+    virtual std::string decorate_block_name(const std::string &block_name) const override;
+};
+
+extern MemoryContext _memory_context;
+
 class TraceBlock {
     Context &context;
     std::string block_name;
@@ -166,7 +176,7 @@ public:
     ~TraceBlock();
 };
 
-extern void trace(const std::string &msg = "");
+extern void trace_memory(const std::string &msg = "");
 }
 
 namespace std {

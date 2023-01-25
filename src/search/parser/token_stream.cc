@@ -1,8 +1,7 @@
 #include "token_stream.h"
 
-#include "errors.h"
-
 #include "../utils/collections.h"
+#include "../utils/logging.h"
 #include "../utils/strings.h"
 #include "../utils/system.h"
 
@@ -25,35 +24,35 @@ bool TokenStream::has_tokens(int n) const {
     return utils::in_bounds(pos + n - 1, tokens);
 }
 
-Token TokenStream::peek(int n) const {
+Token TokenStream::peek(const utils::Context &context, int n) const {
     if (!has_tokens(n + 1)) {
         ostringstream message;
         message << (n + 1) << " token(s) required, but "
                 << (tokens.size() - pos) << " remain.";
-        throw TokenStreamError(message.str());
+        context.error(message.str());
     }
     return tokens[pos + n];
 }
 
-Token TokenStream::pop() {
+Token TokenStream::pop(const utils::Context &context) {
     if (!has_tokens(1)) {
-        throw TokenStreamError("Input stream exhausted.");
+        context.error("Input stream exhausted.");
     }
     return tokens[pos++];
 }
 
-Token TokenStream::pop(TokenType expected_type) {
+Token TokenStream::pop(const utils::Context &context, TokenType expected_type) {
     if (!has_tokens(1)) {
-        throw TokenStreamError(
-                  "Input stream exhausted while expecting token of type '" +
-                  token_type_name(expected_type) + "'.");
+        context.error(
+            "Input stream exhausted while expecting token of type '" +
+            token_type_name(expected_type) + "'.");
     }
-    Token token = pop();
+    Token token = pop(context);
     if (token.type != expected_type) {
         ostringstream message;
         message << "Got token " << token << ". Expected token of type '"
                 << expected_type << "'.";
-        throw TokenStreamError(message.str());
+        context.error(message.str());
     }
     return token;
 }

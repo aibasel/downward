@@ -103,7 +103,6 @@ fast_downward_plugin(
     SOURCES
         parser/abstract_syntax_tree
         parser/decorated_abstract_syntax_tree
-        parser/errors
         parser/lexical_analyzer
         parser/syntax_analyzer
         parser/token_stream

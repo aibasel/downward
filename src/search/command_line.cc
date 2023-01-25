@@ -3,7 +3,6 @@
 #include "plan_manager.h"
 #include "search_engine.h"
 
-#include "parser/errors.h"
 #include "parser/lexical_analyzer.h"
 #include "parser/syntax_analyzer.h"
 #include "plugins/any.h"
@@ -105,8 +104,6 @@ static shared_ptr<SearchEngine> parse_cmd_line_aux(const vector<string> &args) {
                 parser::DecoratedASTNodePtr decorated = parsed->decorate();
                 plugins::Any constructed = decorated->construct();
                 engine = plugins::any_cast<SearchPtr>(constructed);
-            } catch (const parser::ParserError &e) {
-                input_error(e.get_message());
             } catch (const utils::ContextError &e) {
                 input_error(e.get_message());
             }
@@ -187,9 +184,10 @@ shared_ptr<SearchEngine> parse_cmd_line(
     return parse_cmd_line_aux(args);
 }
 
-string usage() {
-    return "usage: \n" + g_program_name +
-           " [OPTIONS] --search SEARCH < OUTPUT\n\n"
+
+string usage(const string &progname) {
+    return "usage: \n" +
+           progname + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
            "* SEARCH (SearchEngine): configuration of the search algorithm\n"
            "* OUTPUT (filename): translator output\n\n"
            "Options:\n"
@@ -204,5 +202,3 @@ string usage() {
            "    Start enumerating plan files with COUNTER+1, i.e. FILENAME.COUNTER+1\n\n"
            "See https://www.fast-downward.org for details.";
 }
-
-string g_program_name;

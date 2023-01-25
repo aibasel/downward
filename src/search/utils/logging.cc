@@ -44,23 +44,11 @@ LogProxy get_silent_log() {
     return utils::get_log_from_options(opts);
 }
 
-class MemoryContext : public Context {
-    // The following constants affect the formatting of output.
-    static const int MEM_FIELD_WIDTH = 7;
-    static const int TIME_FIELD_WIDTH = 7;
-public:
-    // TODO: necessary?
-//    MemoryContext();
-//    ~MemoryContext();
-
-    virtual string decorate_block_name(const string &block_name) const override;
-};
-
-static MemoryContext _tracer;
-
 ContextError::ContextError(const string &msg)
     : Exception(msg) {
 }
+
+const string Context::INDENT = "  ";
 
 Context::Context(const Context &context)
     : initial_stack_size(context.block_stack.size()),
@@ -70,7 +58,7 @@ Context::Context(const Context &context)
 Context::~Context() {
     if (block_stack.size() > initial_stack_size) {
         cerr << str() << endl;
-        ABORT("The context was destructed with an non-empty stack.");
+        ABORT("A context was destructed with an non-empty stack.");
     }
 }
 
@@ -83,22 +71,23 @@ void Context::enter_block(const string &block_name) {
 }
 
 void Context::leave_block(const string &block_name) {
-    if (block_stack.empty() || block_stack.back() != block_name)
-        ABORT("oops!");
+    if (block_stack.empty() || block_stack.back() != block_name) {
+        cerr << str() << endl;
+        ABORT("Tried to pop a block '" + block_name +
+              "' from an empty stack or the block to remove "
+              "is not on the top of the stack.");
+    }
     block_stack.pop_back();
 }
 
 string Context::str() const {
     ostringstream message;
-    ostringstream indent;
-    for (size_t i = 0; i < block_stack.size() * INDENT_AMOUNT; ++i)
-        indent << ' ';
     message << "Traceback:" << endl;
     if (block_stack.empty()) {
-        message << indent.str() << "Empty";
+        message << INDENT << "Empty";
     } else {
-        message << indent.str()
-                << utils::join(block_stack, "\n" + indent.str() + "-> ");
+        message << INDENT
+                << utils::join(block_stack, "\n" + INDENT + "-> ");
     }
     return message.str();
 }
@@ -111,32 +100,31 @@ void Context::warn(const string &message) const {
     utils::g_log << str() << endl << endl << message;
 }
 
-string MemoryContext::decorate_block_name(const string &msg) const {
-    ostringstream decorated_msg;
-    decorated_msg << "[TRACE] "
-                  << setw(TIME_FIELD_WIDTH) << g_timer << " "
-                  << setw(MEM_FIELD_WIDTH) << get_peak_memory_in_kb() << " KB";
-    for (size_t i = 0; i < block_stack.size() * INDENT_AMOUNT; ++i)
-        decorated_msg << ' ';
-    decorated_msg << ' ' << msg << endl;
-    return decorated_msg.str();
-}
-
-
 TraceBlock::TraceBlock(Context &context, const string &block_name)
     : context(context),
       block_name(context.decorate_block_name(block_name)) {
     context.enter_block(this->block_name);
 }
 
-
 TraceBlock::~TraceBlock() {
     context.leave_block(block_name);
 }
 
+MemoryContext _memory_context;
 
-void trace(const string &msg) {
-    g_log << _tracer.decorate_block_name(msg);
+string MemoryContext::decorate_block_name(const string &msg) const {
+    ostringstream decorated_msg;
+    decorated_msg << "[TRACE] "
+                  << setw(TIME_FIELD_WIDTH) << g_timer << " "
+                  << setw(MEM_FIELD_WIDTH) << get_peak_memory_in_kb() << " KB";
+    for (size_t i = 0; i < block_stack.size(); ++i)
+        decorated_msg << INDENT;
+    decorated_msg << ' ' << msg << endl;
+    return decorated_msg.str();
+}
+
+void trace_memory(const string &msg) {
+    g_log << _memory_context.decorate_block_name(msg);
 }
 
 static plugins::TypedEnumPlugin<Verbosity> _enum_plugin({
