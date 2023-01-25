@@ -141,10 +141,12 @@ public:
 class Context {
 protected:
     static const int INDENT_AMOUNT = 2; // TODO: Why not directly the string?
+    size_t initial_stack_size = 0;  // TODO: Can be removed once we got rid of LazyValues
     std::vector<std::string> block_stack;
 
 public:
     explicit Context() = default;
+    Context(const Context &context);
     virtual ~Context();
     virtual std::string decorate_block_name(const std::string &block_name) const;
     void enter_block(const std::string &block_name);

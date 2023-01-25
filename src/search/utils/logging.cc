@@ -62,9 +62,16 @@ ContextError::ContextError(const std::string &msg)
     : Exception(msg) {
 }
 
+Context::Context(const Context &context)
+    : initial_stack_size(context.block_stack.size()),
+      block_stack(context.block_stack) {
+}
+
 Context::~Context() {
-    if (!block_stack.empty())
+    if (block_stack.size() > initial_stack_size) {
+        cerr << str() << endl;
         ABORT("The context was destructed with an non-empty stack.");
+    }
 }
 
 string Context::decorate_block_name(const string &block_name) const {
@@ -120,7 +127,6 @@ TraceBlock::TraceBlock(Context &context, const string &block_name)
     : context(context),
       block_name(context.decorate_block_name(block_name)) {
     context.enter_block(this->block_name);
-    cout << "@@@@@@@@@@@@@" << this->block_name << endl;
 }
 
 
