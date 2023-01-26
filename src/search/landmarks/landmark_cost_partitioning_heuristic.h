@@ -1,7 +1,7 @@
 #ifndef LANDMARKS_LANDMARK_COST_PARTITIONING_HEURISTIC_H
 #define LANDMARKS_LANDMARK_COST_PARTITIONING_HEURISTIC_H
 
-#include "../heuristic.h"
+#include "landmark_heuristic.h"
 
 class BitsetView;
 
@@ -15,7 +15,7 @@ class LandmarkGraph;
 class LandmarkNode;
 class LandmarkStatusManager;
 
-class LandmarkCostPartitioningHeuristic : public Heuristic {
+class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
     std::shared_ptr<LandmarkGraph> lgraph;
     const bool use_preferred_operators;
     const bool conditional_effects_supported;

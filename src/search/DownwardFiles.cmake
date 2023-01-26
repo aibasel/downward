@@ -722,6 +722,7 @@ fast_downward_plugin(
         landmarks/landmark_factory_rpg_sasp
         landmarks/landmark_factory_zhu_givan
         landmarks/landmark_graph
+        landmarks/landmark_heuristic
         landmarks/landmark_status_manager
         landmarks/util
     DEPENDS LP_SOLVER PRIORITY_QUEUES SUCCESSOR_GENERATOR TASK_PROPERTIES

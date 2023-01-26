@@ -23,7 +23,7 @@ using utils::ExitCode;
 
 namespace landmarks {
 LandmarkCountHeuristic::LandmarkCountHeuristic(const plugins::Options &opts)
-    : Heuristic(opts),
+    : LandmarkHeuristic(opts),
       use_preferred_operators(opts.get<bool>("pref")),
       conditional_effects_supported(
           opts.get<shared_ptr<LandmarkFactory>>("lm_factory")->supports_conditional_effects()),

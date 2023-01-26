@@ -24,7 +24,7 @@ using utils::ExitCode;
 
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(const plugins::Options &opts)
-    : Heuristic(opts),
+    : LandmarkHeuristic(opts),
       use_preferred_operators(opts.get<bool>("pref")),
       conditional_effects_supported(
           opts.get<shared_ptr<LandmarkFactory>>("lm_factory")->supports_conditional_effects()),
@@ -338,5 +338,5 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         return make_shared<LandmarkCostPartitioningHeuristic>(opts);
 }
 
-static Plugin<Evaluator> _plugin("lmcount", _parse);
+static Plugin<Evaluator> _plugin("lmcp", _parse);
 }
