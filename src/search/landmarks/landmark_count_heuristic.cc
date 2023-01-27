@@ -39,17 +39,17 @@ int LandmarkCountHeuristic::get_min_cost_of_achievers(
 
 void LandmarkCountHeuristic::compute_landmark_costs() {
     /*
-       This function runs under the assumption that landmark node IDs go
-       from 0 to the number of landmarks - 1, therefore the entry in
-       *min_first_achiever_costs* and *min_possible_achiever_costs*
-       at index i corresponds to the entry for the landmark node with ID i.
+      This function runs under the assumption that landmark node IDs go
+      from 0 to the number of landmarks - 1, therefore the entry in
+      *min_first_achiever_costs* and *min_possible_achiever_costs*
+      at index i corresponds to the entry for the landmark node with ID i.
     */
 
     /*
-       For derived landmarks, we overapproximate that all operators are
-       achievers. Since we do not want to explicitly store all operators
-       in the achiever vector, we instead just compute the minimum cost
-       over all operators and use this cost for all derived landmarks.
+      For derived landmarks, we overapproximate that all operators are
+      achievers. Since we do not want to explicitly store all operators
+      in the achiever vector, we instead just compute the minimum cost
+      over all operators and use this cost for all derived landmarks.
     */
     int min_operator_cost = task_properties::get_min_operator_cost(task_proxy);
     min_first_achiever_costs.reserve(lm_graph->get_num_landmarks());
@@ -132,46 +132,14 @@ public:
         LandmarkHeuristic::add_options_to_feature(*this);
 
         document_note(
-            "Optimal search",
-            "When using landmarks for optimal search (``admissible=true``), "
-            "you probably also want to add this heuristic as a lazy_evaluator "
-            "in the A* algorithm to improve heuristic estimates.");
-        document_note(
-            "Note",
-            "To use ``optimal=true``, you must build the planner with LP support. "
-            "See LPBuildInstructions.");
-        document_note(
-            "Differences to the literature",
-            "This heuristic differs from the description in the literature "
-            "(see references above) in the set of preferred operators "
-            "computed. The original implementation described in the literature "
-            "computes two kinds of preferred operators:\n\n"
-            "+ If there is an applicable operator that reaches a landmark, all "
-            "such operators are preferred.\n"
-            "+ If no such operators exist, perform an FF-style relaxed "
-            "exploration towards the nearest landmarks (according to the "
-            "landmark orderings) and use the preferred operators of this "
-            "exploration.\n\n\n"
-            "Our implementation of the heuristic only considers preferred "
-            "operators of the first type and does not include the second type. "
-            "The rationale for this change is that it reduces code complexity "
-            "and helps more cleanly separate landmark-based and FF-based "
-            "computations in LAMA-like planner configurations. In our "
-            "experiments, only considering preferred operators of the first "
-            "type reduces performance when using the heuristic and its "
-            "preferred operators in isolation but improves performance when "
-            "using this heuristic in conjunction with the FF heuristic, as in "
-            "LAMA-like planner configurations.");
-        document_note(
             "Note on performance for satisficing planning",
             "The cost of a landmark is based on the cost of the "
-            "operators that achieve it. For satisficing search "
-            "this can be counterproductive since it is often "
-            "better to focus on distance from goal "
-            "(i.e. length of the plan) rather than cost."
-            "In experiments we achieved the best performance using"
-            "the option 'transform=adapt_costs(one)' to enforce "
-            "unit costs.");
+            "operators that achieve it. For satisficing search this "
+            "can be counterproductive since it is often better to "
+            "focus on distance from goal (i.e. length of the plan) "
+            "rather than cost. In experiments we achieved the best "
+            "performance usingthe option 'transform=adapt_costs(one)' "
+            "to enforce unit costs.");
 
         document_language_support(
             "action costs",

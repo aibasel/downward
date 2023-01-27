@@ -110,8 +110,8 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
         LandmarkHeuristic::add_options_to_parser(parser);
         parser.add_option<bool>(
             "optimal",
-            "use optimal (LP-based) cost sharing "
-            "(only makes sense with ``admissible=true``)", "false");
+            "use optimal (LP-based) cost sharing",
+            "false");
         parser.add_option<bool>("alm", "use action landmarks", "true");
         lp::add_lp_solver_option_to_parser(parser);
 
@@ -123,29 +123,6 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "Note",
             "To use ``optimal=true``, you must build the planner with LP "
             "support. See LPBuildInstructions.");
-        // TODO: is the note below relevant for the only-admissible case?
-        parser.document_note(
-            "Differences to the literature",
-            "This heuristic differs from the description in the literature "
-            "(see references above) in the set of preferred operators "
-            "computed. The original implementation described in the literature "
-            "computes two kinds of preferred operators:\n\n"
-            "+ If there is an applicable operator that reaches a landmark, all "
-            "such operators are preferred.\n"
-            "+ If no such operators exist, perform an FF-style relaxed "
-            "exploration towards the nearest landmarks (according to the "
-            "landmark orderings) and use the preferred operators of this "
-            "exploration.\n\n\n"
-            "Our implementation of the heuristic only considers preferred "
-            "operators of the first type and does not include the second type. "
-            "The rationale for this change is that it reduces code complexity "
-            "and helps more cleanly separate landmark-based and FF-based "
-            "computations in LAMA-like planner configurations. In our "
-            "experiments, only considering preferred operators of the first "
-            "type reduces performance when using the heuristic and its "
-            "preferred operators in isolation but improves performance when "
-            "using this heuristic in conjunction with the FF heuristic, as in "
-            "LAMA-like planner configurations.");
 
         parser.document_language_support(
             "action costs",
