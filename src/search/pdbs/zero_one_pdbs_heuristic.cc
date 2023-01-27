@@ -35,10 +35,12 @@ int ZeroOnePDBsHeuristic::compute_heuristic(const State &ancestor_state) {
     return h;
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Zero-One PDB",
+class ZeroOnePDBsHeuristicFeature : public plugins::TypedFeature<Evaluator, ZeroOnePDBsHeuristic> {
+public:
+    ZeroOnePDBsHeuristicFeature() : TypedFeature("zopdbs") {
+        document_subcategory("heuristics_pdb");
+        document_title("Zero-One PDB");
+        document_synopsis(
             "The zero/one pattern database heuristic is simply the sum of the "
             "heuristic values of all patterns in the pattern collection. In contrast "
             "to the canonical pattern database heuristic, there is no need to check "
@@ -49,26 +51,22 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
             "into account for one pattern (the first one which it affects) and set "
             "to zero for all other affected patterns.");
 
-        parser.add_option<shared_ptr<PatternCollectionGenerator>>(
+        add_option<shared_ptr<PatternCollectionGenerator>>(
             "patterns",
             "pattern generation method",
             "systematic(1)");
-        Heuristic::add_options_to_parser(parser);
+        Heuristic::add_options_to_feature(*this);
 
-        parser.document_language_support("action costs", "supported");
-        parser.document_language_support("conditional effects", "not supported");
-        parser.document_language_support("axioms", "not supported");
+        document_language_support("action costs", "supported");
+        document_language_support("conditional effects", "not supported");
+        document_language_support("axioms", "not supported");
 
-        parser.document_property("admissible", "yes");
-        parser.document_property("consistent", "yes");
-        parser.document_property("safe", "yes");
-        parser.document_property("preferred operators", "no");
+        document_property("admissible", "yes");
+        document_property("consistent", "yes");
+        document_property("safe", "yes");
+        document_property("preferred operators", "no");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<ZeroOnePDBsHeuristic>(opts);
-}
+};
 
-static Plugin<Evaluator> _plugin("zopdbs", _parse, "heuristics_pdb");
+static plugins::FeaturePlugin<ZeroOnePDBsHeuristicFeature> _plugin;
 }

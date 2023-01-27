@@ -40,20 +40,21 @@ bool MergeStrategyFactoryStateless::requires_goal_distances() const {
     return merge_selector->requires_goal_distances();
 }
 
-static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Stateless merge strategy",
+class MergeStrategyFactoryStatelessFeature : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactoryStateless> {
+public:
+    MergeStrategyFactoryStatelessFeature() : TypedFeature("merge_stateless") {
+        document_title("Stateless merge strategy");
+        document_synopsis(
             "This merge strategy has a merge selector, which computes the next "
             "merge only depending on the current state of the factored transition "
             "system, not requiring any additional information.");
 
-        parser.add_option<shared_ptr<MergeSelector>>(
+        add_option<shared_ptr<MergeSelector>>(
             "merge_selector",
             "The merge selector to be used.");
-        add_merge_strategy_options_to_parser(parser);
+        add_merge_strategy_options_to_feature(*this);
 
-        parser.document_note(
+        document_note(
             "Note",
             "Examples include the DFP merge strategy, which can be obtained using:\n"
             "{{{\n"
@@ -67,12 +68,7 @@ static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
             "scoring_functions=[sf_miasm(<shrinking_options>),total_order(<order_option>)]"
             "\n}}}");
     }
-    plugins::Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<MergeStrategyFactoryStateless>(opts);
-}
+};
 
-static plugins::Plugin<MergeStrategyFactory> _plugin("merge_stateless", _parse);
+static plugins::FeaturePlugin<MergeStrategyFactoryStatelessFeature> _plugin;
 }

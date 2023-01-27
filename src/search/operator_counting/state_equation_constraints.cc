@@ -119,10 +119,11 @@ bool StateEquationConstraints::update_constraints(const State &state,
     return false;
 }
 
-static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "State equation constraints",
+class StateEquationConstraintsFeature : public plugins::TypedFeature<ConstraintGenerator, StateEquationConstraints> {
+public:
+    StateEquationConstraintsFeature() : TypedFeature("state_equation_constraints") {
+        document_title("State equation constraints");
+        document_synopsis(
             "For each fact, a permanent constraint is added that considers the net "
             "change of the fact, i.e., the total number of times the fact is added "
             "minus the total number of times is removed. The bounds of each "
@@ -156,13 +157,10 @@ static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
                 "AAAI Press",
                 "2014"));
 
-        utils::add_log_options_to_parser(parser);
+        utils::add_log_options_to_feature(*this);
     }
-    if (parser.dry_run())
-        return nullptr;
-    plugins::Options opts = parser.parse();
-    return make_shared<StateEquationConstraints>(opts);
-}
+};
 
-static Plugin<ConstraintGenerator> _plugin("state_equation_constraints", _parse);
+
+static plugins::FeaturePlugin<StateEquationConstraintsFeature> _plugin;
 }

@@ -34,7 +34,7 @@ public:
         return false;
     }
 
-    static void add_options_to_parser(plugins::OptionParser &parser);
+    static void add_options_to_feature(plugins::Feature &feature);
 };
 }
 

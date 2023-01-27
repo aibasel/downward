@@ -443,31 +443,27 @@ bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
     return false;
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis("Context-enhanced additive heuristic", "");
+class ContextEnhancedAdditiveHeuristicFeature : public plugins::TypedFeature<Evaluator, ContextEnhancedAdditiveHeuristic> {
+public:
+    ContextEnhancedAdditiveHeuristicFeature() : TypedFeature("cea") {
+        document_title("Context-enhanced additive heuristic");
 
-        Heuristic::add_options_to_parser(parser);
+        Heuristic::add_options_to_feature(*this);
 
-        parser.document_language_support("action costs", "supported");
-        parser.document_language_support("conditional effects", "supported");
-        parser.document_language_support(
+        document_language_support("action costs", "supported");
+        document_language_support("conditional effects", "supported");
+        document_language_support(
             "axioms",
             "supported (in the sense that the planner won't complain -- "
             "handling of axioms might be very stupid "
             "and even render the heuristic unsafe)");
 
-        parser.document_property("admissible", "no");
-        parser.document_property("consistent", "no");
-        parser.document_property("safe", "no");
-        parser.document_property("preferred operators", "yes");
+        document_property("admissible", "no");
+        document_property("consistent", "no");
+        document_property("safe", "no");
+        document_property("preferred operators", "yes");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<ContextEnhancedAdditiveHeuristic>(opts);
-}
+};
 
-static Plugin<Evaluator> _plugin("cea", _parse);
+static plugins::FeaturePlugin<ContextEnhancedAdditiveHeuristicFeature> _plugin;
 }

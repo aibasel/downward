@@ -39,10 +39,11 @@ PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
         move(blacklisted_variables));
 }
 
-static shared_ptr<PatternCollectionGenerator> _parse(plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Multiple CEGAR",
+class PatternCollectionGeneratorMultipleCegarFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorMultipleCegar> {
+public:
+    PatternCollectionGeneratorMultipleCegarFeature() : TypedFeature("multiple_cegar") {
+        document_title("Multiple CEGAR");
+        document_synopsis(
             "This pattern collection generator implements the multiple CEGAR "
             "algorithm described in the paper" + get_rovner_et_al_reference() +
             "It is an instantiation of the 'multiple algorithm framework'. "
@@ -50,18 +51,13 @@ static shared_ptr<PatternCollectionGenerator> _parse(plugins::OptionParser &pars
             "restricted to a single goal variable. See below for descriptions of "
             "the algorithms.");
 
-        add_multiple_options_to_parser(parser);
-        add_cegar_wildcard_option_to_parser(parser);
+        add_multiple_options_to_feature(*this);
+        add_cegar_wildcard_option_to_feature(*this);
 
-        add_cegar_implementation_notes_to_parser(parser);
-        add_multiple_algorithm_implementation_notes_to_parser(parser);
+        add_cegar_implementation_notes_to_feature(*this);
+        add_multiple_algorithm_implementation_notes_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run()) {
-        return nullptr;
-    }
-    return make_shared<PatternCollectionGeneratorMultipleCegar>(opts);
-}
+};
 
-static Plugin<PatternCollectionGenerator> _plugin("multiple_cegar", _parse);
+static plugins::FeaturePlugin<PatternCollectionGeneratorMultipleCegarFeature> _plugin;
 }

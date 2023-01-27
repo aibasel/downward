@@ -33,20 +33,15 @@ string ShrinkRandom::name() const {
     return "random";
 }
 
-static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
-    {
-        parser.document_synopsis("Random", "");
+class ShrinkRandomFeature : public plugins::TypedFeature<ShrinkStrategy, ShrinkRandom> {
+public:
+    ShrinkRandomFeature() : TypedFeature("shrink_random") {
+        document_title("Random");
+        document_synopsis("");
 
-        ShrinkBucketBased::add_options_to_parser(parser);
+        ShrinkBucketBased::add_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.help_mode())
-        return nullptr;
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<ShrinkRandom>(opts);
-}
+};
 
-static Plugin<ShrinkStrategy> _plugin("shrink_random", _parse);
+static plugins::FeaturePlugin<ShrinkRandomFeature> _plugin;
 }

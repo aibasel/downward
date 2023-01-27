@@ -263,34 +263,30 @@ void HMHeuristic::dump_table() const {
     }
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis("h^m heuristic", "");
+class HMHeuristicFeature : public plugins::TypedFeature<Evaluator, HMHeuristic> {
+public:
+    HMHeuristicFeature() : TypedFeature("hm") {
+        document_title("h^m heuristic");
 
-        parser.add_option<int>("m", "subset size", "2", plugins::Bounds("1", "infinity"));
-        Heuristic::add_options_to_parser(parser);
+        add_option<int>("m", "subset size", "2", plugins::Bounds("1", "infinity"));
+        Heuristic::add_options_to_feature(*this);
 
-        parser.document_language_support("action costs", "supported");
-        parser.document_language_support("conditional effects", "ignored");
-        parser.document_language_support("axioms", "ignored");
+        document_language_support("action costs", "supported");
+        document_language_support("conditional effects", "ignored");
+        document_language_support("axioms", "ignored");
 
-        parser.document_property(
+        document_property(
             "admissible",
             "yes for tasks without conditional effects or axioms");
-        parser.document_property(
+        document_property(
             "consistent",
             "yes for tasks without conditional effects or axioms");
-        parser.document_property(
+        document_property(
             "safe",
             "yes for tasks without conditional effects or axioms");
-        parser.document_property("preferred operators", "no");
+        document_property("preferred operators", "no");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<HMHeuristic>(opts);
-}
+};
 
-static Plugin<Evaluator> _plugin("hm", _parse);
+static plugins::FeaturePlugin<HMHeuristicFeature> _plugin;
 }

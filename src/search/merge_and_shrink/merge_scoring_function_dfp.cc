@@ -101,10 +101,11 @@ string MergeScoringFunctionDFP::name() const {
     return "dfp";
 }
 
-static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "DFP scoring",
+class MergeScoringFunctionDFPFeature : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionDFP> {
+public:
+    MergeScoringFunctionDFPFeature() : TypedFeature("dfp") {
+        document_title("DFP scoring");
+        document_synopsis(
             "This scoring function computes the 'DFP' score as descrdibed in the "
             "paper \"Directed model checking with distance-preserving abstractions\" "
             "by Draeger, Finkbeiner and Podelski (SPIN 2006), adapted to planning in "
@@ -118,7 +119,7 @@ static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
                 "AAAI Press",
                 "2014"));
 
-        parser.document_note(
+        document_note(
             "Note",
             "To obtain the configurations called DFP-B-50K described in the paper, "
             "use the following configuration of the merge-and-shrink heuristic "
@@ -130,10 +131,11 @@ static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
             "greedy=false),label_reduction=exact(before_shrinking=true,"
             "before_merging=false),max_states=50000,threshold_before_merge=1)\n}}}");
     }
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<MergeScoringFunctionDFP>();
-}
 
-static plugins::Plugin<MergeScoringFunction> _plugin("dfp", _parse);
+    virtual shared_ptr<MergeScoringFunctionDFP> create_component(const plugins::Options &, const utils::Context &) const override {
+        return make_shared<MergeScoringFunctionDFP>();
+    }
+};
+
+static plugins::FeaturePlugin<MergeScoringFunctionDFPFeature> _plugin;
 }

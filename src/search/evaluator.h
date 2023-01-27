@@ -11,7 +11,6 @@ class EvaluationContext;
 class State;
 
 namespace plugins {
-class OptionParser;
 class Options;
 }
 
@@ -101,6 +100,6 @@ public:
     virtual int get_cached_estimate(const State &state) const;
 };
 
-extern void add_evaluator_options_to_parser(plugins::OptionParser &parser);
+extern void add_evaluator_options_to_feature(plugins::Feature &feature);
 
 #endif

@@ -15,8 +15,8 @@ ShrinkBucketBased::ShrinkBucketBased(const plugins::Options &opts)
     : rng(utils::parse_rng_from_options(opts)) {
 }
 
-void ShrinkBucketBased::add_options_to_parser(plugins::OptionParser &parser) {
-    utils::add_rng_options(parser);
+void ShrinkBucketBased::add_options_to_feature(plugins::Feature &feature) {
+    utils::add_rng_options(feature);
 }
 
 StateEquivalenceRelation ShrinkBucketBased::compute_abstraction(

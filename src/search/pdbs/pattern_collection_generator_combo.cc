@@ -47,20 +47,17 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::compute_patterns(
     return pci;
 }
 
-static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
-    {
-        parser.add_option<int>(
+class PatternCollectionGeneratorComboFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorCombo> {
+public:
+    PatternCollectionGeneratorComboFeature() : TypedFeature("combo") {
+        add_option<int>(
             "max_states",
             "maximum abstraction size for combo strategy",
             "1000000",
             plugins::Bounds("1", "infinity"));
-        add_generator_options_to_parser(parser);
+        add_generator_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<PatternCollectionGeneratorCombo>(opts);
-}
+};
 
-static Plugin<PatternCollectionGenerator> _plugin("combo", _parse);
+static plugins::FeaturePlugin<PatternCollectionGeneratorComboFeature> _plugin;
 }

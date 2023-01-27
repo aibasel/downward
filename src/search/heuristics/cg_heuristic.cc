@@ -285,37 +285,32 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     }
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis("Causal graph heuristic", "");
+class CGHeuristicFeature : public plugins::TypedFeature<Evaluator, CGHeuristic> {
+public:
+    CGHeuristicFeature() : TypedFeature("cg") {
+        document_title("Causal graph heuristic");
 
-        parser.add_option<int>(
+        add_option<int>(
             "max_cache_size",
             "maximum number of cached entries per variable (set to 0 to disable cache)",
             "1000000",
             plugins::Bounds("0", "infinity"));
-        Heuristic::add_options_to_parser(parser);
+        Heuristic::add_options_to_feature(*this);
 
-        parser.document_language_support("action costs", "supported");
-        parser.document_language_support("conditional effects", "supported");
-        parser.document_language_support(
+        document_language_support("action costs", "supported");
+        document_language_support("conditional effects", "supported");
+        document_language_support(
             "axioms",
             "supported (in the sense that the planner won't complain -- "
             "handling of axioms might be very stupid "
             "and even render the heuristic unsafe)");
 
-        parser.document_property("admissible", "no");
-        parser.document_property("consistent", "no");
-        parser.document_property("safe", "no");
-        parser.document_property("preferred operators", "yes");
+        document_property("admissible", "no");
+        document_property("consistent", "no");
+        document_property("safe", "no");
+        document_property("preferred operators", "yes");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<CGHeuristic>(opts);
-}
+};
 
-
-static Plugin<Evaluator> _plugin("cg", _parse);
+static plugins::FeaturePlugin<CGHeuristicFeature> _plugin;
 }

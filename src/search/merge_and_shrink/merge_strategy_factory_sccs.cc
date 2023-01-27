@@ -164,12 +164,11 @@ string MergeStrategyFactorySCCs::name() const {
     return "sccs";
 }
 
-static vector<pair<string, string>> _enum_data_order_of_sccs();
-
-static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Merge strategy SSCs",
+class MergeStrategyFactorySCCsFeature : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactorySCCs> {
+public:
+    MergeStrategyFactorySCCsFeature() : TypedFeature("merge_sccs") {
+        document_title("Merge strategy SSCs");
+        document_synopsis(
             "This merge strategy implements the algorithm described in the paper "
             + utils::format_conference_reference(
                 {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
@@ -188,44 +187,38 @@ static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
             "the final abstraction, again using the specified fallback merge "
             "strategy and the configurable order of the SCCs.");
 
-        parser.add_enum_option<OrderOfSCCs>(
+        add_option<OrderOfSCCs>(
             "order_of_sccs",
-            _enum_data_order_of_sccs(),
             "how the SCCs should be ordered",
             "topological");
-        parser.add_option<shared_ptr<MergeTreeFactory>>(
+        add_option<shared_ptr<MergeTreeFactory>>(
             "merge_tree",
             "the fallback merge strategy to use if a precomputed strategy should "
             "be used.",
-            plugins::OptionParser::NONE);
-        parser.add_option<shared_ptr<MergeSelector>>(
+            plugins::ArgumentInfo::NO_DEFAULT);
+        add_option<shared_ptr<MergeSelector>>(
             "merge_selector",
             "the fallback merge strategy to use if a stateless strategy should "
             "be used.",
-            plugins::OptionParser::NONE);
-        add_merge_strategy_options_to_parser(parser);
+            plugins::ArgumentInfo::NO_DEFAULT);
+        add_merge_strategy_options_to_feature(*this);
     }
-    plugins::Options options = parser.parse();
-    if (parser.help_mode()) {
-        return nullptr;
-    } else if (parser.dry_run()) {
+
+    virtual shared_ptr<MergeStrategyFactorySCCs> create_component(const plugins::Options &options, const utils::Context &context) const override {
         bool merge_tree = options.contains("merge_tree");
         bool merge_selector = options.contains("merge_selector");
         if ((merge_tree && merge_selector) || (!merge_tree && !merge_selector)) {
-            cerr << "You have to specify exactly one of the options merge_tree "
-                "and merge_selector!" << endl;
-            utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+            context.error(
+                "You have to specify exactly one of the options merge_tree "
+                "and merge_selector!");
         }
-        return nullptr;
-    } else {
         return make_shared<MergeStrategyFactorySCCs>(options);
     }
-}
+};
 
-static plugins::Plugin<MergeStrategyFactory> _plugin("merge_sccs", _parse);
+static plugins::FeaturePlugin<MergeStrategyFactorySCCsFeature> _plugin;
 
-static vector<pair<string, string>> _enum_data_order_of_sccs() {
-    return {
+static plugins::TypedEnumPlugin<OrderOfSCCs> _enum_plugin({
         {"topological",
          "according to the topological ordering of the directed graph "
          "where each obtained SCC is a 'supervertex'"},
@@ -236,6 +229,5 @@ static vector<pair<string, string>> _enum_data_order_of_sccs() {
          "biggest SCCs first, using 'topological' as tie-breaker"},
         {"increasing",
          "smallest SCCs first, using 'topological' as tie-breaker"}
-    };
-}
+    });
 }

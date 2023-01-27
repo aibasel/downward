@@ -378,12 +378,11 @@ void ShrinkBisimulation::dump_strategy_specific_options(utils::LogProxy &log) co
     }
 }
 
-static vector<pair<string, string>> _enum_data_at_limit();
-
-static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Bismulation based shrink strategy",
+class ShrinkBisimulationFeature : public plugins::TypedFeature<ShrinkStrategy, ShrinkBisimulation> {
+public:
+    ShrinkBisimulationFeature() : TypedFeature("shrink_bisimulation") {
+        document_title("Bismulation based shrink strategy");
+        document_synopsis(
             "This shrink strategy implements the algorithm described in"
             " the paper:" + utils::format_conference_reference(
                 {"Raz Nissim", "Joerg Hoffmann", "Malte Helmert"},
@@ -396,13 +395,12 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
                 "AAAI Press",
                 "2011"));
 
-        parser.add_option<bool>("greedy", "use greedy bisimulation", "false");
-        parser.add_enum_option<AtLimit>(
+        add_option<bool>("greedy", "use greedy bisimulation", "false");
+        add_option<AtLimit>(
             "at_limit",
-            _enum_data_at_limit(),
             "what to do when the size limit is hit", "return");
 
-        parser.document_note(
+        document_note(
             "shrink_bisimulation(greedy=true)",
             "Combine this with the merge-and-shrink options max_states=infinity "
             "and threshold_before_merge=1 and with the linear merge strategy "
@@ -412,7 +410,7 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
             "with label reduction, this strategy performed best when used with "
             "label reduction before shrinking (and no label reduction before "
             "merging).");
-        parser.document_note(
+        document_note(
             "shrink_bisimulation(greedy=false)",
             "Combine this with the merge-and-shrink option max_states=N (where N "
             "is a numerical parameter for which sensible values include 1000, "
@@ -424,24 +422,15 @@ static shared_ptr<ShrinkStrategy>_parse(OptionParser &parser) {
             "label reduction before shrinking (and no label reduction before "
             "merging).");
     }
-    Options opts = parser.parse();
-    if (parser.help_mode())
-        return nullptr;
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<ShrinkBisimulation>(opts);
-}
+};
 
-static Plugin<ShrinkStrategy> _plugin("shrink_bisimulation", _parse);
+static plugins::FeaturePlugin<ShrinkBisimulationFeature> _plugin;
 
-static vector<pair<string, string>> _enum_data_at_limit() {
-    return {
+static plugins::TypedEnumPlugin<AtLimit> _enum_plugin({
         {"return",
          "stop without refining the equivalence class further"},
         {"use_up",
          "continue refining the equivalence class until "
          "the size limit is hit"}
-    };
-}
+    });
 }

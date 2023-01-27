@@ -16,7 +16,7 @@ Bounds Bounds::unlimited() {
 }
 
 ostream &operator<<(ostream &out, const Bounds &bounds) {
-    if (!bounds.min.empty() || !bounds.max.empty())
+    if (bounds.has_bound())
         out << "[" << bounds.min << ", " << bounds.max << "]";
     return out;
 }

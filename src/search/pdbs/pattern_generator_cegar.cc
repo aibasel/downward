@@ -42,39 +42,35 @@ PatternInformation PatternGeneratorCEGAR::compute_pattern(
         goals[0]);
 }
 
-static shared_ptr<PatternGenerator> _parse(plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "CEGAR",
+class PatternGeneratorCEGARFeature : public plugins::TypedFeature<PatternGenerator, PatternGeneratorCEGAR> {
+public:
+    PatternGeneratorCEGARFeature() : TypedFeature("cegar_pattern") {
+        document_title("CEGAR");
+        document_synopsis(
             "This pattern generator uses the CEGAR algorithm restricted to a "
             "random single goal of the task to compute a pattern. See below "
             "for a description of the algorithm and some implementation notes. "
             "The original algorithm (called single CEGAR) is described in the "
             "paper " + get_rovner_et_al_reference());
 
-        parser.add_option<int>(
+        add_option<int>(
             "max_pdb_size",
             "maximum number of states in the final pattern database (possibly "
             "ignored by a singleton pattern consisting of a single goal variable)",
             "1000000",
             plugins::Bounds("1", "infinity"));
-        parser.add_option<double>(
+        add_option<double>(
             "max_time",
             "maximum time in seconds for the pattern generation",
             "infinity",
             plugins::Bounds("0.0", "infinity"));
-        add_cegar_wildcard_option_to_parser(parser);
-        add_generator_options_to_parser(parser);
-        utils::add_rng_options(parser);
+        add_cegar_wildcard_option_to_feature(*this);
+        add_generator_options_to_feature(*this);
+        utils::add_rng_options(*this);
 
-        add_cegar_implementation_notes_to_parser(parser);
+        add_cegar_implementation_notes_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run()) {
-        return nullptr;
-    }
-    return make_shared<PatternGeneratorCEGAR>(opts);
-}
+};
 
-static Plugin<PatternGenerator> _plugin("cegar_pattern", _parse);
+static plugins::FeaturePlugin<PatternGeneratorCEGARFeature> _plugin;
 }

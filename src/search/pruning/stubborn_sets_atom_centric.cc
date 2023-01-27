@@ -242,12 +242,11 @@ void StubbornSetsAtomCentric::handle_stubborn_operator(const State &state, int o
     }
 }
 
-static vector<pair<string, string>> _enum_data_atom_selection_strategy();
-
-static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Atom-centric stubborn sets",
+class StubbornSetsAtomCentricFeature : public plugins::TypedFeature<PruningMethod, StubbornSetsAtomCentric> {
+public:
+    StubbornSetsAtomCentricFeature() : TypedFeature("atom_centric_stubborn_sets") {
+        document_title("Atom-centric stubborn sets");
+        document_synopsis(
             "Stubborn sets are a state pruning method which computes a subset "
             "of applicable actions in each state such that completeness and "
             "optimality of the overall search is preserved. Previous stubborn set "
@@ -264,30 +263,23 @@ static shared_ptr<PruningMethod> _parse(OptionParser &parser) {
                 "AAAI Press",
                 "2020"));
 
-        parser.add_option<bool>(
+        add_option<bool>(
             "use_sibling_shortcut",
             "use variable-based marking in addition to atom-based marking",
             "true");
-        parser.add_enum_option<AtomSelectionStrategy>(
+        add_option<AtomSelectionStrategy>(
             "atom_selection_strategy",
-            _enum_data_atom_selection_strategy(),
             "Strategy for selecting unsatisfied atoms from action preconditions or "
             "the goal atoms. All strategies use the fast_downward strategy for "
             "breaking ties.",
             "quick_skip");
-        add_pruning_options_to_parser(parser);
+        add_pruning_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run()) {
-        return nullptr;
-    }
-    return make_shared<StubbornSetsAtomCentric>(opts);
-}
+};
 
-static Plugin<PruningMethod> _plugin("atom_centric_stubborn_sets", _parse);
+static plugins::FeaturePlugin<StubbornSetsAtomCentricFeature> _plugin;
 
-static vector<pair<string, string>> _enum_data_atom_selection_strategy() {
-    return {
+static plugins::TypedEnumPlugin<AtomSelectionStrategy> _enum_plugin({
         {"fast_downward",
          "select the atom (v, d) with the variable v that comes first in the Fast "
          "Downward variable ordering (which is based on the causal graph)"},
@@ -298,6 +290,5 @@ static vector<pair<string, string>> _enum_data_atom_selection_strategy() {
         {"dynamic_small",
          "select the atom achieved by the fewest number of actions that are not "
          "yet part of the stubborn set"}
-    };
-}
+    });
 }

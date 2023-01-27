@@ -32,27 +32,22 @@ int get_adjusted_action_cost(const OperatorProxy &op, OperatorCost cost_type, bo
         return get_adjusted_action_cost(op.get_cost(), cost_type, is_unit_cost);
 }
 
-static vector<pair<string, string>> _enum_data_operator_cost();
-
-void add_cost_type_option_to_parser(OptionParser &parser) {
-    parser.add_enum_option<OperatorCost>(
+void add_cost_type_option_to_feature(plugins::Feature &feature) {
+    feature.add_option<OperatorCost>(
         "cost_type",
-        _enum_data_operator_cost(),
         "Operator cost adjustment type. "
         "No matter what this setting is, axioms will always be considered "
         "as actions of cost 0 by the heuristics that treat axioms as actions.",
         "normal");
 }
 
-static vector<pair<string, string>> _enum_data_operator_cost() {
-    return {
-        {"normal", "all actions are accounted for with their real cost"},
-        {"one", "all actions are accounted for as unit cost"},
-        {"plusone", "all actions are accounted for as their real cost + 1 "
-         "(except if all actions have original cost 1, "
-         "in which case cost 1 is used). "
-         "This is the behaviour known for the heuristics of the LAMA planner. "
-         "This is intended to be used by the heuristics, not search engines, "
-         "but is supported for both."}
-    };
-}
+static plugins::TypedEnumPlugin<OperatorCost> _enum_plugin({
+    {"normal", "all actions are accounted for with their real cost"},
+    {"one", "all actions are accounted for as unit cost"},
+    {"plusone", "all actions are accounted for as their real cost + 1 "
+     "(except if all actions have original cost 1, "
+     "in which case cost 1 is used). "
+     "This is the behaviour known for the heuristics of the LAMA planner. "
+     "This is intended to be used by the heuristics, not search engines, "
+     "but is supported for both."}
+});

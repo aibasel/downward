@@ -19,12 +19,17 @@ void MergeStrategyFactory::dump_options() const {
     }
 }
 
-void add_merge_strategy_options_to_parser(plugins::OptionParser &parser) {
-    utils::add_log_options_to_parser(parser);
+void add_merge_strategy_options_to_feature(plugins::Feature &feature) {
+    utils::add_log_options_to_feature(feature);
 }
 
-static plugins::PluginTypePlugin<MergeStrategyFactory> _type_plugin(
-    "MergeStrategy",
-    "This page describes the various merge strategies supported "
-    "by the planner.");
+static class MergeStrategyFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<MergeStrategyFactory> {
+public:
+    MergeStrategyFactoryCategoryPlugin() : TypedCategoryPlugin("MergeStrategy") {
+        document_synopsis(
+            "This page describes the various merge strategies supported "
+            "by the planner.");
+    }
+}
+_category_plugin;
 }

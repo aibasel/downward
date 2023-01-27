@@ -41,11 +41,11 @@ PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::compute_pa
         move(goals));
 }
 
-static shared_ptr<PatternCollectionGenerator> _parse(
-    plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Disjoint CEGAR",
+class PatternCollectionGeneratorDisjointCegarFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorDisjointCegar> {
+public:
+    PatternCollectionGeneratorDisjointCegarFeature() : TypedFeature("disjoint_cegar") {
+        document_title("Disjoint CEGAR");
+        document_synopsis(
             "This pattern collection generator uses the CEGAR algorithm to "
             "compute a pattern for the planning task. See below "
             "for a description of the algorithm and some implementation notes. "
@@ -53,38 +53,34 @@ static shared_ptr<PatternCollectionGenerator> _parse(
             "paper " + get_rovner_et_al_reference());
 
         // TODO: these options could be move to the base class; see issue1022.
-        parser.add_option<int>(
+        add_option<int>(
             "max_pdb_size",
             "maximum number of states per pattern database (ignored for the "
             "initial collection consisting of a singleton pattern for each goal "
             "variable)",
             "1000000",
             plugins::Bounds("1", "infinity"));
-        parser.add_option<int>(
+        add_option<int>(
             "max_collection_size",
             "maximum number of states in the pattern collection (ignored for the "
             "initial collection consisting of a singleton pattern for each goal "
             "variable)",
             "10000000",
             plugins::Bounds("1", "infinity"));
-        parser.add_option<double>(
+        add_option<double>(
             "max_time",
             "maximum time in seconds for this pattern collection generator "
             "(ignored for computing the initial collection consisting of a "
             "singleton pattern for each goal variable)",
             "infinity",
             plugins::Bounds("0.0", "infinity"));
-        add_cegar_wildcard_option_to_parser(parser);
-        add_generator_options_to_parser(parser);
-        utils::add_rng_options(parser);
+        add_cegar_wildcard_option_to_feature(*this);
+        add_generator_options_to_feature(*this);
+        utils::add_rng_options(*this);
 
-        add_cegar_implementation_notes_to_parser(parser);
+        add_cegar_implementation_notes_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<PatternCollectionGeneratorDisjointCegar>(opts);
-}
+};
 
-static Plugin<PatternCollectionGenerator> _plugin("disjoint_cegar", _parse);
+static plugins::FeaturePlugin<PatternCollectionGeneratorDisjointCegarFeature> _plugin;
 }

@@ -52,32 +52,33 @@ static vector<unique_ptr<PotentialFunction>> create_sample_based_potential_funct
     return functions;
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Sample-based potential heuristics",
+class SampleBasedPotentialMaxHeuristicFeature : public plugins::TypedFeature<Evaluator, PotentialMaxHeuristic> {
+public:
+    SampleBasedPotentialMaxHeuristicFeature() : TypedFeature("sample_based_potentials") {
+        document_subcategory("heuristics_potentials");
+        document_title("Sample-based potential heuristics");
+        document_synopsis(
             "Maximum over multiple potential heuristics optimized for samples. " +
             get_admissible_potentials_reference());
-        parser.add_option<int>(
+        add_option<int>(
             "num_heuristics",
             "number of potential heuristics",
             "1",
             plugins::Bounds("0", "infinity"));
-        parser.add_option<int>(
+        add_option<int>(
             "num_samples",
             "Number of states to sample",
             "1000",
             plugins::Bounds("0", "infinity"));
-        prepare_parser_for_admissible_potentials(parser);
-        utils::add_rng_options(parser);
+        prepare_parser_for_admissible_potentials(*this);
+        utils::add_rng_options(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<PotentialMaxHeuristic>(
-        opts, create_sample_based_potential_functions(opts));
-}
 
-static Plugin<Evaluator> _plugin(
-    "sample_based_potentials", _parse, "heuristics_potentials");
+    virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
+        return make_shared<PotentialMaxHeuristic>(
+            options, create_sample_based_potential_functions(options));
+    }
+};
+
+static plugins::FeaturePlugin<SampleBasedPotentialMaxHeuristicFeature> _plugin;
 }

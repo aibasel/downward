@@ -58,12 +58,12 @@ int AdditiveCartesianHeuristic::compute_heuristic(const State &ancestor_state) {
     return sum_h;
 }
 
-static vector<pair<string, string>> _enum_data_pick_split();
-
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Additive CEGAR heuristic",
+class AdditiveCartesianHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, AdditiveCartesianHeuristic> {
+public:
+    AdditiveCartesianHeuristicFeature() : TypedFeature("cegar") {
+        document_title("Additive CEGAR heuristic");
+        document_synopsis(
             "See the paper introducing Counterexample-guided Abstraction "
             "Refinement (CEGAR) for classical planning:" +
             utils::format_conference_reference(
@@ -97,57 +97,51 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
                 "535-577",
                 "2018"));
 
-        parser.add_list_option<shared_ptr<SubtaskGenerator>>(
+        add_list_option<shared_ptr<SubtaskGenerator>>(
             "subtasks",
             "subtask generators",
             "[landmarks(),goals()]");
-        parser.add_option<int>(
+        add_option<int>(
             "max_states",
             "maximum sum of abstract states over all abstractions",
             "infinity",
             plugins::Bounds("1", "infinity"));
-        parser.add_option<int>(
+        add_option<int>(
             "max_transitions",
             "maximum sum of real transitions (excluding self-loops) over "
             " all abstractions",
             "1M",
             plugins::Bounds("0", "infinity"));
-        parser.add_option<double>(
+        add_option<double>(
             "max_time",
             "maximum time in seconds for building abstractions",
             "infinity",
             plugins::Bounds("0.0", "infinity"));
-        parser.add_enum_option<PickSplit>(
+        add_option<PickSplit>(
             "pick",
-            _enum_data_pick_split(),
             "how to choose on which variable to split the flaw state",
             "max_refined");
-        parser.add_option<bool>(
+        add_option<bool>(
             "use_general_costs",
             "allow negative costs in cost partitioning",
             "true");
-        Heuristic::add_options_to_parser(parser);
-        utils::add_rng_options(parser);
+        Heuristic::add_options_to_feature(*this);
+        utils::add_rng_options(*this);
 
-        parser.document_language_support("action costs", "supported");
-        parser.document_language_support("conditional effects", "not supported");
-        parser.document_language_support("axioms", "not supported");
+        document_language_support("action costs", "supported");
+        document_language_support("conditional effects", "not supported");
+        document_language_support("axioms", "not supported");
 
-        parser.document_property("admissible", "yes");
-        parser.document_property("consistent", "yes");
-        parser.document_property("safe", "yes");
-        parser.document_property("preferred operators", "no");
+        document_property("admissible", "yes");
+        document_property("consistent", "yes");
+        document_property("safe", "yes");
+        document_property("preferred operators", "no");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<AdditiveCartesianHeuristic>(opts);
-}
+};
 
-static Plugin<Evaluator> _plugin("cegar", _parse);
+static plugins::FeaturePlugin<AdditiveCartesianHeuristicFeature> _plugin;
 
-static vector<pair<string, string>> _enum_data_pick_split() {
-    return {
+static plugins::TypedEnumPlugin<PickSplit> _enum_plugin({
         {"random",
          "select a random variable (among all eligible variables)"},
         {"min_unwanted",
@@ -172,6 +166,5 @@ static vector<pair<string, string>> _enum_data_pick_split() {
         {"max_hadd",
          "select an eligible variable with maximal h^add(s_0) value "
          "over all facts that need to be removed from the flaw state"}
-    };
-}
+    });
 }

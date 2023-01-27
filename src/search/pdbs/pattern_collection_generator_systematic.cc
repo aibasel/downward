@@ -284,10 +284,11 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::compute_patte
     return PatternCollectionInformation(task_proxy, patterns, log);
 }
 
-static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Systematically generated patterns",
+class PatternCollectionGeneratorSystematicFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorSystematic> {
+public:
+    PatternCollectionGeneratorSystematicFeature() : TypedFeature("systematic") {
+        document_title("Systematically generated patterns");
+        document_synopsis(
             "Generates all (interesting) patterns with up to pattern_max_size "
             "variables. "
             "For details, see" + utils::format_conference_reference(
@@ -300,23 +301,19 @@ static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
                 "AAAI Press",
                 "2013"));
 
-        parser.add_option<int>(
+        add_option<int>(
             "pattern_max_size",
             "max number of variables per pattern",
             "1",
             plugins::Bounds("1", "infinity"));
-        parser.add_option<bool>(
+        add_option<bool>(
             "only_interesting_patterns",
             "Only consider the union of two disjoint patterns if the union has "
             "more information than the individual patterns.",
             "true");
-        add_generator_options_to_parser(parser);
+        add_generator_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<PatternCollectionGeneratorSystematic>(opts);
-}
+};
 
-static Plugin<PatternCollectionGenerator> _plugin("systematic", _parse);
+static plugins::FeaturePlugin<PatternCollectionGeneratorSystematicFeature> _plugin;
 }

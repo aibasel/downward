@@ -46,21 +46,17 @@ void MergeScoringFunctionSingleRandom::dump_function_specific_options(
     }
 }
 
-static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Single random",
+class MergeScoringFunctionSingleRandomFeature : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionSingleRandom> {
+public:
+    MergeScoringFunctionSingleRandomFeature() : TypedFeature("single_random") {
+        document_title("Single random");
+        document_synopsis(
             "This scoring function assigns exactly one merge candidate a score of "
             "0, chosen randomly, and infinity to all others.");
 
-        utils::add_rng_options(parser);
+        utils::add_rng_options(*this);
     }
-    plugins::Options options = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<MergeScoringFunctionSingleRandom>(options);
-}
+};
 
-static plugins::Plugin<MergeScoringFunction> _plugin("single_random", _parse);
+static plugins::FeaturePlugin<MergeScoringFunctionSingleRandomFeature> _plugin;
 }

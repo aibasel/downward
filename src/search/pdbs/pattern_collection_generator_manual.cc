@@ -30,19 +30,16 @@ PatternCollectionInformation PatternCollectionGeneratorManual::compute_patterns(
     return PatternCollectionInformation(task_proxy, patterns, log);
 }
 
-static shared_ptr<PatternCollectionGenerator> _parse(OptionParser &parser) {
-    {
-        parser.add_list_option<Pattern>(
+class PatternCollectionGeneratorManualFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorManual> {
+public:
+    PatternCollectionGeneratorManualFeature() : TypedFeature("manual_patterns") {
+        add_list_option<Pattern>(
             "patterns",
             "list of patterns (which are lists of variable numbers of the planning "
             "task).");
-        add_generator_options_to_parser(parser);
+        add_generator_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<PatternCollectionGeneratorManual>(opts);
-}
+};
 
-static Plugin<PatternCollectionGenerator> _plugin("manual_patterns", _parse);
+static plugins::FeaturePlugin<PatternCollectionGeneratorManualFeature> _plugin;
 }

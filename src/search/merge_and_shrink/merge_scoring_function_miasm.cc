@@ -71,10 +71,11 @@ string MergeScoringFunctionMIASM::name() const {
     return "miasm";
 }
 
-static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "MIASM",
+class MergeScoringFunctionMIASMFeature : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionMIASM> {
+public:
+    MergeScoringFunctionMIASMFeature() : TypedFeature("sf_miasm") {
+        document_title("MIASM");
+        document_synopsis(
             "This scoring function favors merging transition systems such that in "
             "their product, there are many dead states, which can then be pruned "
             "without sacrificing information. In particular, the score it assigns "
@@ -97,15 +98,13 @@ static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
 
         // TODO: use shrink strategy and limit options from MergeAndShrinkHeuristic
         // instead of having the identical options here again.
-        parser.add_option<shared_ptr<ShrinkStrategy>>(
+        add_option<shared_ptr<ShrinkStrategy>>(
             "shrink_strategy",
             "We recommend setting this to match the shrink strategy configuration "
             "given to {{{merge_and_shrink}}}, see note below.");
-        add_transition_system_size_limit_options_to_parser(parser);
-        // TODO: this is only necessary for handle_shrink_limit_options_defaults.
-        utils::add_log_options_to_parser(parser);
+        add_transition_system_size_limit_options_to_feature(*this);
 
-        parser.document_note(
+        document_note(
             "Note",
             "To obtain the configurations called dyn-MIASM described in the paper, "
             "use the following configuration of the merge-and-shrink heuristic "
@@ -118,7 +117,7 @@ static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
             "shrink_strategy=shrink_bisimulation(greedy=false),label_reduction="
             "exact(before_shrinking=true,before_merging=false),max_states=50000,"
             "threshold_before_merge=1)\n}}}");
-        parser.document_note(
+        document_note(
             "Note",
             "Unless you know what you are doing, we recommend using the same "
             "options related to shrinking for {{{sf_miasm}}} as for {{{"
@@ -129,17 +128,13 @@ static shared_ptr<MergeScoringFunction>_parse(plugins::OptionParser &parser) {
             "use full pruning, i.e. {{{prune_unreachable_states=true}}} and {{{"
             "prune_irrelevant_states=true}}} (the default).");
     }
-    plugins::Options options = parser.parse();
-    if (parser.help_mode()) {
-        return nullptr;
-    }
-    handle_shrink_limit_options_defaults(options);
-    if (parser.dry_run()) {
-        return nullptr;
-    } else {
-        return make_shared<MergeScoringFunctionMIASM>(options);
-    }
-}
 
-static plugins::Plugin<MergeScoringFunction> _plugin("sf_miasm", _parse);
+    virtual shared_ptr<MergeScoringFunctionMIASM> create_component(const plugins::Options &options, const utils::Context &context) const override {
+        plugins::Options options_copy(options);
+        handle_shrink_limit_options_defaults(options_copy, context);
+        return make_shared<MergeScoringFunctionMIASM>(options_copy);
+    }
+};
+
+static plugins::FeaturePlugin<MergeScoringFunctionMIASMFeature> _plugin;
 }

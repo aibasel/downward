@@ -41,10 +41,11 @@ void MergeStrategyFactoryPrecomputed::dump_strategy_specific_options() const {
     }
 }
 
-static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Precomputed merge strategy",
+class MergeStrategyFactoryPrecomputedFeature : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactoryPrecomputed> {
+public:
+    MergeStrategyFactoryPrecomputedFeature() : TypedFeature("merge_precomputed") {
+        document_title("Precomputed merge strategy");
+        document_synopsis(
             "This merge strategy has a precomputed merge tree. Note that this "
             "merge strategy does not take into account the current state of "
             "the factored transition system. This also means that this merge "
@@ -52,12 +53,12 @@ static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
             "with this merge tree, i.e. all merges are performed exactly as given "
             "by the merge tree.");
 
-        parser.add_option<shared_ptr<MergeTreeFactory>>(
+        add_option<shared_ptr<MergeTreeFactory>>(
             "merge_tree",
             "The precomputed merge tree.");
-        add_merge_strategy_options_to_parser(parser);
+        add_merge_strategy_options_to_feature(*this);
 
-        parser.document_note(
+        document_note(
             "Note",
             "An example of a precomputed merge startegy is a linear merge strategy, "
             "which can be obtained using:\n"
@@ -65,12 +66,7 @@ static shared_ptr<MergeStrategyFactory>_parse(plugins::OptionParser &parser) {
             "merge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))"
             "\n}}}");
     }
-    plugins::Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<MergeStrategyFactoryPrecomputed>(opts);
-}
+};
 
-static plugins::Plugin<MergeStrategyFactory> _plugin("merge_precomputed", _parse);
+static plugins::FeaturePlugin<MergeStrategyFactoryPrecomputedFeature> _plugin;
 }

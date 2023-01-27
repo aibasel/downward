@@ -145,31 +145,27 @@ void AdditiveHeuristic::compute_heuristic_for_cegar(const State &state) {
     compute_heuristic(state);
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis("Additive heuristic", "");
+class AdditiveHeuristicFeature : public plugins::TypedFeature<Evaluator, AdditiveHeuristic> {
+public:
+    AdditiveHeuristicFeature() : TypedFeature("add") {
+        document_title("Additive heuristic");
 
-        Heuristic::add_options_to_parser(parser);
+        Heuristic::add_options_to_feature(*this);
 
-        parser.document_language_support("action costs", "supported");
-        parser.document_language_support("conditional effects", "supported");
-        parser.document_language_support(
+        document_language_support("action costs", "supported");
+        document_language_support("conditional effects", "supported");
+        document_language_support(
             "axioms",
             "supported (in the sense that the planner won't complain -- "
             "handling of axioms might be very stupid "
             "and even render the heuristic unsafe)");
 
-        parser.document_property("admissible", "no");
-        parser.document_property("consistent", "no");
-        parser.document_property("safe", "yes for tasks without axioms");
-        parser.document_property("preferred operators", "yes");
+        document_property("admissible", "no");
+        document_property("consistent", "no");
+        document_property("safe", "yes for tasks without axioms");
+        document_property("preferred operators", "yes");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<AdditiveHeuristic>(opts);
-}
+};
 
-static Plugin<Evaluator> _plugin("add", _parse);
+static plugins::FeaturePlugin<AdditiveHeuristicFeature> _plugin;
 }

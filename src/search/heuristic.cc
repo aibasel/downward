@@ -33,14 +33,14 @@ State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
     return task_proxy.convert_ancestor_state(ancestor_state);
 }
 
-void Heuristic::add_options_to_parser(OptionParser &parser) {
-    add_evaluator_options_to_parser(parser);
-    parser.add_option<shared_ptr<AbstractTask>>(
+void Heuristic::add_options_to_feature(plugins::Feature &feature) {
+    add_evaluator_options_to_feature(feature);
+    feature.add_option<shared_ptr<AbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic."
         " Currently, adapt_costs() and no_transform() are available.",
         "no_transform()");
-    parser.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
+    feature.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
 }
 
 EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {

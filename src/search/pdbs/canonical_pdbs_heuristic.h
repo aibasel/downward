@@ -6,7 +6,7 @@
 #include "../heuristic.h"
 
 namespace plugins {
-class OptionParser;
+class Feature;
 }
 
 namespace pdbs {
@@ -22,7 +22,7 @@ public:
     virtual ~CanonicalPDBsHeuristic() = default;
 };
 
-void add_canonical_pdbs_options_to_parser(plugins::OptionParser &parser);
+void add_canonical_pdbs_options_to_feature(plugins::Feature &feature);
 }
 
 #endif

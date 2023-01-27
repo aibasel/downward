@@ -4,7 +4,6 @@
 #include "landmark_graph.h"
 
 #include "../plugins/plugin.h"
-#include "../utils/logging.h"
 
 #include <set>
 
@@ -152,34 +151,35 @@ bool LandmarkFactoryMerged::supports_conditional_effects() const {
     return true;
 }
 
-static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Merged Landmarks",
+class LandmarkFactoryMergedFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryMerged> {
+public:
+    LandmarkFactoryMergedFeature() : TypedFeature("lm_merged") {
+        document_title("Merged Landmarks");
+        document_synopsis(
             "Merges the landmarks and orderings from the parameter landmarks");
 
-        parser.add_list_option<shared_ptr<LandmarkFactory>>("lm_factories");
-        add_landmark_factory_options_to_parser(parser);
+        add_list_option<shared_ptr<LandmarkFactory>>("lm_factories");
+        add_landmark_factory_options_to_feature(*this);
 
-        parser.document_note(
+        document_note(
             "Precedence",
             "Fact landmarks take precedence over disjunctive landmarks, "
             "orderings take precedence in the usual manner "
             "(gn > nat > reas > o_reas). ");
-        parser.document_note(
+        document_note(
             "Note",
             "Does not currently support conjunctive landmarks");
-        parser.document_language_support(
+
+        document_language_support(
             "conditional_effects",
             "supported if all components support them");
     }
-    Options opts = parser.parse();
-    opts.verify_list_non_empty<shared_ptr<LandmarkFactory>>("lm_factories");
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<LandmarkFactoryMerged>(opts);
-}
 
-static Plugin<LandmarkFactory> _plugin("lm_merged", _parse);
+    virtual shared_ptr<LandmarkFactoryMerged> create_component(const plugins::Options &options, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<LandmarkFactory>>(context, options, "lm_factories");
+        return make_shared<LandmarkFactoryMerged>(options);
+    }
+};
+
+static plugins::FeaturePlugin<LandmarkFactoryMergedFeature> _plugin;
 }

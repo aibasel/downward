@@ -271,40 +271,32 @@ void EnforcedHillClimbingSearch::print_statistics() const {
     }
 }
 
-static vector<pair<string, string>> _enum_data_preferred_usage();
+class EnforcedHillClimbingSearchFeature : public plugins::TypedFeature<SearchEngine, EnforcedHillClimbingSearch> {
+public:
+    EnforcedHillClimbingSearchFeature() : TypedFeature("ehc") {
+        document_title("Lazy enforced hill-climbing");
+        document_synopsis("");
 
-static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis("Lazy enforced hill-climbing", "");
-
-        parser.add_option<shared_ptr<Evaluator>>("h", "heuristic");
-        parser.add_enum_option<PreferredUsage>(
+        add_option<shared_ptr<Evaluator>>("h", "heuristic");
+        add_option<PreferredUsage>(
             "preferred_usage",
-            _enum_data_preferred_usage(),
             "preferred operator usage",
             "prune_by_preferred");
-        parser.add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<Evaluator>>(
             "preferred",
             "use preferred operators of these evaluators",
             "[]");
-        SearchEngine::add_options_to_parser(parser);
+        SearchEngine::add_options_to_feature(*this);
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<EnforcedHillClimbingSearch>(opts);
-}
+};
 
-static Plugin<SearchEngine> _plugin("ehc", _parse);
+static plugins::FeaturePlugin<EnforcedHillClimbingSearchFeature> _plugin;
 
-static vector<pair<string, string>> _enum_data_preferred_usage() {
-    return {
+static plugins::TypedEnumPlugin<PreferredUsage> _enum_plugin({
         {"prune_by_preferred",
          "prune successors achieved by non-preferred operators"},
         {"rank_preferred_first",
          "first insert successors achieved by preferred operators, "
          "then those by non-preferred operators"}
-    };
-}
+    });
 }

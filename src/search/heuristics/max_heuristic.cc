@@ -98,32 +98,27 @@ int HSPMaxHeuristic::compute_heuristic(const State &ancestor_state) {
     return total_cost;
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis("Max heuristic", "");
+class HSPMaxHeuristicFeature : public plugins::TypedFeature<Evaluator, HSPMaxHeuristic> {
+public:
+    HSPMaxHeuristicFeature() : TypedFeature("hmax") {
+        document_title("Max heuristic");
 
-        Heuristic::add_options_to_parser(parser);
+        Heuristic::add_options_to_feature(*this);
 
-        parser.document_language_support("action costs", "supported");
-        parser.document_language_support("conditional effects", "supported");
-        parser.document_language_support(
+        document_language_support("action costs", "supported");
+        document_language_support("conditional effects", "supported");
+        document_language_support(
             "axioms",
             "supported (in the sense that the planner won't complain -- "
             "handling of axioms might be very stupid "
             "and even render the heuristic unsafe)");
 
-        parser.document_property("admissible", "yes for tasks without axioms");
-        parser.document_property("consistent", "yes for tasks without axioms");
-        parser.document_property("safe", "yes for tasks without axioms");
-        parser.document_property("preferred operators", "no");
+        document_property("admissible", "yes for tasks without axioms");
+        document_property("consistent", "yes for tasks without axioms");
+        document_property("safe", "yes for tasks without axioms");
+        document_property("preferred operators", "no");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<HSPMaxHeuristic>(opts);
-}
+};
 
-
-static Plugin<Evaluator> _plugin("hmax", _parse);
+static plugins::FeaturePlugin<HSPMaxHeuristicFeature> _plugin;
 }

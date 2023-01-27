@@ -3,23 +3,15 @@
 
 #include "../search_engine.h"
 
-#include "../plugins/plugin.h"
-#include "../plugins/predefinitions.h"
-#include "../plugins/registries.h"
+#include "../parser/decorated_abstract_syntax_tree.h"
 
-namespace plugins {
-class Options;
-}
+#include <memory>
+#include <vector>
 
 namespace iterated_search {
 class IteratedSearch : public SearchEngine {
-    const std::vector<plugins::ParseTree> engine_configs;
-    /*
-      We need to copy the registry and predefinitions here since they live
-      longer than the objects referenced in the constructor.
-    */
-    plugins::Registry registry;
-    plugins::Predefinitions predefinitions;
+    std::vector<parser::LazyValue> engine_configs;
+
     bool pass_bound;
     bool repeat_last_phase;
     bool continue_on_fail;
@@ -37,8 +29,7 @@ class IteratedSearch : public SearchEngine {
     virtual SearchStatus step() override;
 
 public:
-    IteratedSearch(const plugins::Options &opts, plugins::Registry &registry,
-                   const plugins::Predefinitions &predefinitions);
+    IteratedSearch(const plugins::Options &opts);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;

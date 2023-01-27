@@ -1,8 +1,6 @@
 #include "command_line.h"
 #include "search_engine.h"
 
-#include "plugins/errors.h"
-#include "plugins/registries.h"
 #include "tasks/root_task.h"
 #include "task_utils/task_properties.h"
 #include "utils/logging.h"
@@ -17,10 +15,8 @@ using utils::ExitCode;
 int main(int argc, const char **argv) {
     utils::register_event_handlers();
 
-    g_program_name = argv[0];
-
     if (argc < 2) {
-        utils::g_log << usage() << endl;
+        utils::g_log << usage(argv[0]) << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 
@@ -33,26 +29,8 @@ int main(int argc, const char **argv) {
         unit_cost = task_properties::is_unit_cost(task_proxy);
     }
 
-    shared_ptr<SearchEngine> engine;
+    shared_ptr<SearchEngine> engine = parse_cmd_line(argc, argv, unit_cost);
 
-    // The command line is parsed twice: once in dry-run mode, to
-    // check for simple input errors, and then in normal mode.
-    try {
-        plugins::Registry registry(*plugins::RawRegistry::instance());
-        parse_cmd_line(argc, argv, registry, true, unit_cost);
-        engine = parse_cmd_line(argc, argv, registry, false, unit_cost);
-    } catch (const ArgError &error) {
-        error.print();
-        usage();
-        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    } catch (const plugins::OptionParserError &error) {
-        error.print();
-        usage();
-        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    } catch (const plugins::ParseError &error) {
-        error.print();
-        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    }
 
     utils::Timer search_timer;
     engine->search();

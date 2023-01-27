@@ -43,8 +43,8 @@ public:
         std::set<Evaluator *> &evals) override;
 };
 
-extern void add_combining_evaluator_options_to_parser(
-    plugins::OptionParser &parser);
+extern void add_combining_evaluator_options_to_feature(
+    plugins::Feature &feature);
 }
 
 #endif

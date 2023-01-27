@@ -635,31 +635,27 @@ bool LandmarkFactoryRpgSasp::supports_conditional_effects() const {
     return true;
 }
 
-static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "RHW Landmarks",
+class LandmarkFactoryRpgSaspFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgSasp> {
+public:
+    LandmarkFactoryRpgSaspFeature() : TypedFeature("lm_rhw") {
+        document_title("RHW Landmarks");
+        document_synopsis(
             "The landmark generation method introduced by "
             "Richter, Helmert and Westphal (AAAI 2008).");
 
-        parser.add_option<bool>(
+        add_option<bool>(
             "disjunctive_landmarks",
             "keep disjunctive landmarks",
             "true");
-        add_landmark_factory_options_to_parser(parser);
-        add_use_orders_option_to_parser(parser);
-        add_only_causal_landmarks_option_to_parser(parser);
+        add_landmark_factory_options_to_feature(*this);
+        add_use_orders_option_to_feature(*this);
+        add_only_causal_landmarks_option_to_feature(*this);
 
-        parser.document_language_support(
+        document_language_support(
             "conditional_effects",
             "supported");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<LandmarkFactoryRpgSasp>(opts);
-}
+};
 
-static Plugin<LandmarkFactory> _plugin("lm_rhw", _parse);
+static plugins::FeaturePlugin<LandmarkFactoryRpgSaspFeature> _plugin;
 }

@@ -8,30 +8,32 @@ using namespace std;
 namespace plugin_lazy_greedy {
 static const string DEFAULT_LAZY_BOOST = "1000";
 
-static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis("Greedy search (lazy)", "");
+class LazyGreedySearchFeature : public plugins::TypedFeature<SearchEngine, lazy_search::LazySearch> {
+public:
+    LazyGreedySearchFeature() : TypedFeature("lazy_greedy") {
+        document_title("Greedy search (lazy)");
+        document_synopsis("");
 
-        parser.add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<Evaluator>>(
             "evals",
             "evaluators");
-        parser.add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<Evaluator>>(
             "preferred",
             "use preferred operators of these evaluators",
             "[]");
-        parser.add_option<bool>(
+        add_option<bool>(
             "reopen_closed",
             "reopen closed nodes",
             "false");
-        parser.add_option<int>(
+        add_option<int>(
             "boost",
             "boost value for alternation queues that are restricted "
             "to preferred operator nodes",
             DEFAULT_LAZY_BOOST);
-        SearchEngine::add_succ_order_options(parser);
-        SearchEngine::add_options_to_parser(parser);
+        SearchEngine::add_succ_order_options(*this);
+        SearchEngine::add_options_to_feature(*this);
 
-        parser.document_note(
+        document_note(
             "Open lists",
             "In most cases, lazy greedy best first search uses "
             "an alternation open list with one queue for each evaluator. "
@@ -41,7 +43,7 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
             "If only one evaluator and no preferred operator evaluator is used, "
             "the search does not use an alternation open list "
             "but a standard open list with only one queue.");
-        parser.document_note(
+        document_note(
             "Equivalent statements using general lazy search",
             "\n```\n--evaluator h2=eval2\n"
             "--search lazy_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
@@ -66,18 +68,17 @@ static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
             "```\n--search lazy(single(eval1))\n```\n",
             true);
     }
-    Options opts = parser.parse();
 
-    shared_ptr<lazy_search::LazySearch> engine;
-    if (!parser.dry_run()) {
-        opts.set("open", search_common::create_greedy_open_list_factory(opts));
-        engine = make_shared<lazy_search::LazySearch>(opts);
+    virtual shared_ptr<lazy_search::LazySearch> create_component(const plugins::Options &options, const utils::Context &) const override {
+        plugins::Options options_copy(options);
+        options_copy.set("open", search_common::create_greedy_open_list_factory(options));
+        shared_ptr<lazy_search::LazySearch> engine = make_shared<lazy_search::LazySearch>(options_copy);
         // TODO: The following two lines look fishy. See similar comment in _parse.
-        vector<shared_ptr<Evaluator>> preferred_list = opts.get_list<shared_ptr<Evaluator>>("preferred");
+        vector<shared_ptr<Evaluator>> preferred_list = options_copy.get_list<shared_ptr<Evaluator>>("preferred");
         engine->set_preferred_operator_evaluators(preferred_list);
+        return engine;
     }
-    return engine;
-}
+};
 
-static Plugin<SearchEngine> _plugin("lazy_greedy", _parse);
+static plugins::FeaturePlugin<LazyGreedySearchFeature> _plugin;
 }

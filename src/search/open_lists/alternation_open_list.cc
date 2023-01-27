@@ -141,29 +141,28 @@ AlternationOpenListFactory::create_edge_open_list() {
     return utils::make_unique_ptr<AlternationOpenList<EdgeOpenListEntry>>(options);
 }
 
-static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Alternation open list",
+class AlternationOpenListFeature : public plugins::TypedFeature<OpenListFactory, AlternationOpenListFactory> {
+public:
+    AlternationOpenListFeature() : TypedFeature("alt") {
+        document_title("Alternation open list");
+        document_synopsis(
             "alternates between several open lists.");
 
-        parser.add_list_option<shared_ptr<OpenListFactory>>(
+        add_list_option<shared_ptr<OpenListFactory>>(
             "sublists",
             "open lists between which this one alternates");
-        parser.add_option<int>(
+        add_option<int>(
             "boost",
             "boost value for contained open lists that are restricted "
             "to preferred successors",
             "0");
     }
 
-    Options opts = parser.parse();
-    opts.verify_list_non_empty<shared_ptr<OpenListFactory>>("sublists");
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<AlternationOpenListFactory>(opts);
-}
+    virtual shared_ptr<AlternationOpenListFactory> create_component(const plugins::Options &options, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<OpenListFactory>>(context, options, "sublists");
+        return make_shared<AlternationOpenListFactory>(options);
+    }
+};
 
-static Plugin<OpenListFactory> _plugin("alt", _parse);
+static plugins::FeaturePlugin<AlternationOpenListFeature> _plugin;
 }

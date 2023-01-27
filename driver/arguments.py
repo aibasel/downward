@@ -73,6 +73,12 @@ EXAMPLES = [
      ["--validate",
       "misc/tests/benchmarks/gripper/prob01.pddl",
       "--search", '"astar(cegar())"']),
+    ("Predefine an evaluator (new style):",
+     ["misc/tests/benchmarks/gripper/prob01.pddl",
+      "--search", '"let(hff, ff(), eager_greedy([hff], preferred=[hff]))"']),
+    ("Predefine an evaluator (old style):",
+     ["misc/tests/benchmarks/gripper/prob01.pddl",
+      "--evaluator", '"hff=ff()"', "--search", '"eager_greedy([hff], preferred=[hff])"']),
 ]
 
 EPILOG = """component options:
