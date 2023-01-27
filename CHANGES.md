@@ -11,9 +11,19 @@ after the corresponding tracker issues.
 
 ## Changes since the last release
 
-- option parser: We improved the documentation of enum values and did
-  some internal changes to the order in which options are defined.
+- option parser: We implemented a new way of defining features and
+  parsing them from the command line. The new parser now supports
+  defining variables for features (heuristics and landmark graphs so
+  far) within the option string. For example
+    `let(h, lmcut(), astar(h))`.
+  This change to the parser was an important stepping stone towards
+  solving a more general problem about how components interact.
+  Details of the new parser are described in a blog article. While
+  working on this, we also improved the existing documentation of enum
+  values.
+  <https://www.fast-downward.org/ForDevelopers/Blog/TheNewOptionParser>
   <https://issues.fast-downward.org/issue1073>
+  <https://issues.fast-downward.org/issue1040>
 
 - landmarks: Refactor the computation of preferred operators in the
   `lmcount` heuristic. The change affects configurations based on
