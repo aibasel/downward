@@ -179,21 +179,20 @@ void LandmarkHeuristic::notify_state_transition(
     }
 }
 
-void LandmarkHeuristic::add_options_to_parser(
-    plugins::OptionParser &parser) {
-    Heuristic::add_options_to_parser(parser);
-    parser.add_option<shared_ptr<LandmarkFactory>>(
+void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
+    Heuristic::add_options_to_feature(feature);
+    feature.add_option<shared_ptr<LandmarkFactory>>(
         "lm_factory",
         "the set of landmarks to use for this heuristic. "
         "The set of landmarks can be specified here, "
         "or predefined (see LandmarkFactory).");
-    parser.add_option<bool>(
+    feature.add_option<bool>(
         "pref",
         "identify preferred operators (see OptionCaveats#"
         "Using_preferred_operators_with_the_lmcount_heuristic)",
         "false");
 
-    parser.document_note(
+    feature.document_note(
         "Preferred operators",
         "Computing preferred operators based on landmarks was first suggested "
         "in the LAMA planner "/* TODO: references? */". The original "

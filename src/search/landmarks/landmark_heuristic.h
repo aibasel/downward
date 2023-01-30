@@ -52,7 +52,7 @@ public:
         evals.insert(this);
     }
 
-    static void add_options_to_parser(plugins::OptionParser &parser);
+    static void add_options_to_feature(plugins::Feature &feature);
 
     virtual void notify_initial_state(const State &initial_state) override;
     virtual void notify_state_transition(const State &parent_state,

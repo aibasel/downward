@@ -82,10 +82,11 @@ bool LandmarkCostPartitioningHeuristic::dead_ends_are_reliable() const {
     return true;
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    {
-        parser.document_synopsis(
-            "Landmark cost partitioning heuristic",
+class LandmarkCostPartitioningHeuristicFeature : public plugins::TypedFeature<Evaluator, LandmarkCostPartitioningHeuristic> {
+public:
+    LandmarkCostPartitioningHeuristicFeature() : TypedFeature("lmcp") {
+        document_title("Landmark cost partitioning heuristic");
+        document_synopsis(
             "See the papers" +
             utils::format_conference_reference(
                 {"Erez Karpas", "Carmel Domshlak"},
@@ -107,57 +108,52 @@ static shared_ptr<Heuristic> _parse(OptionParser &parser) {
                 "IOS Press",
                 "2010"));
 
-        LandmarkHeuristic::add_options_to_parser(parser);
-        parser.add_option<bool>(
+        LandmarkHeuristic::add_options_to_feature(*this);
+        add_option<bool>(
             "optimal",
             "use optimal (LP-based) cost sharing",
             "false");
-        parser.add_option<bool>("alm", "use action landmarks", "true");
-        lp::add_lp_solver_option_to_parser(parser);
+        add_option<bool>("alm", "use action landmarks", "true");
+        lp::add_lp_solver_option_to_feature(*this);
 
-        parser.document_note(
+        document_note(
             "Optimal search",
             "You probably also want to add this heuristic as a lazy_evaluator "
             "in the A* algorithm to improve heuristic estimates.");
-        parser.document_note(
+        document_note(
             "Note",
             "To use ``optimal=true``, you must build the planner with LP "
             "support. See LPBuildInstructions.");
 
-        parser.document_language_support(
+        document_language_support(
             "action costs",
             "supported");
-        parser.document_language_support(
+        document_language_support(
             "conditional_effects",
             "not supported");
-        parser.document_language_support(
+        document_language_support(
             "axioms",
             "not allowed");
 
-        parser.document_property(
+        document_property(
             "admissible",
             "yes");
         /* TODO: This was "yes with admissible=true and optimal cost
             partitioning; otherwise no" before. Can we answer this now that
             the heuristic only cares about admissible? */
-        parser.document_property(
+        document_property(
             "consistent",
             "complicated; needs further thought");
-        parser.document_property(
+        document_property(
             "safe",
             "yes except on tasks with axioms or on tasks with "
             "conditional effects when using a LandmarkFactory "
             "not supporting them");
-        parser.document_property(
+        document_property(
             "preferred operators",
             "yes (if enabled; see ``pref`` option)");
     }
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<LandmarkCostPartitioningHeuristic>(opts);
-}
+};
 
-static Plugin<Evaluator> _plugin("lmcp", _parse);
+static plugins::FeaturePlugin<LandmarkCostPartitioningHeuristicFeature> _plugin;
 }
