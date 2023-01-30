@@ -33,9 +33,9 @@ CanonicalPDBs get_canonical_pdbs_from_options(
       for dominance pruning time.
     */
     TaskProxy task_proxy(*task);
-    shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs(*task);
+    shared_ptr<PDBCollection> pdbs = pattern_collection_info.get_pdbs(task_proxy);
     shared_ptr<vector<PatternClique>> pattern_cliques =
-        pattern_collection_info.get_pattern_cliques(*task);
+        pattern_collection_info.get_pattern_cliques(task_proxy);
 
     double max_time_dominance_pruning = opts.get<double>("max_time_dominance_pruning");
     if (max_time_dominance_pruning > 0.0) {
@@ -59,7 +59,7 @@ CanonicalPDBs get_canonical_pdbs_from_options(
     }
 
     dump_pattern_collection_generation_statistics(
-        "Canonical PDB heuristic", timer(), pattern_collection_info, log);
+        task_proxy, "Canonical PDB heuristic", timer(), pattern_collection_info, log);
     return CanonicalPDBs(pdbs, pattern_cliques);
 }
 

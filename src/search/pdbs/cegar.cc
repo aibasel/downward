@@ -648,6 +648,7 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
     if (log.is_at_least_normal()) {
         log << "CEGAR number of iterations: " << iteration << endl;
         dump_pattern_collection_generation_statistics(
+            task_proxy,
             "CEGAR",
             timer.get_elapsed_time(),
             pattern_collection_information,
@@ -708,7 +709,8 @@ PatternInformation generate_pattern_with_cegar(
     }
 
     Pattern &pattern = new_patterns->front();
-    shared_ptr<PDBCollection> new_pdbs = collection_info.get_pdbs();
+    TaskProxy task_proxy(*task);
+    shared_ptr<PDBCollection> new_pdbs = collection_info.get_pdbs(task_proxy);
     shared_ptr<PatternDatabase> &pdb = new_pdbs->front();
     PatternInformation result(TaskProxy(*task), move(pattern), log);
     result.set_pdb(pdb);

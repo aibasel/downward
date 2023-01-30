@@ -52,6 +52,7 @@ class PatternCollectionGeneratorMultiple : public PatternCollectionGenerator {
     std::unordered_set<int> get_blacklisted_variables(
         std::vector<int> &non_goal_variables);
     void handle_generated_pattern(
+        const TaskProxy &task_proxy,
         PatternInformation &&pattern_info,
         std::set<Pattern> &generated_patterns,
         std::shared_ptr<PDBCollection> &generated_pdbs,

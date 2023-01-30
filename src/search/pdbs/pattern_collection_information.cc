@@ -77,7 +77,8 @@ void PatternCollectionInformation::create_pdbs_if_missing(
     }
 }
 
-void PatternCollectionInformation::create_pattern_cliques_if_missing() {
+void PatternCollectionInformation::create_pattern_cliques_if_missing(
+    const TaskProxy &task_proxy) {
     if (!pattern_cliques) {
         utils::Timer timer;
         if (log.is_at_least_normal()) {
@@ -114,8 +115,9 @@ shared_ptr<PDBCollection> PatternCollectionInformation::get_pdbs(
     return pdbs;
 }
 
-shared_ptr<vector<PatternClique>> PatternCollectionInformation::get_pattern_cliques() {
-    create_pattern_cliques_if_missing();
+shared_ptr<vector<PatternClique>> PatternCollectionInformation::get_pattern_cliques(
+    const TaskProxy &task_proxy) {
+    create_pattern_cliques_if_missing(task_proxy);
     return pattern_cliques;
 }
 }

@@ -17,6 +17,10 @@ PatternInformation::PatternInformation(
     validate_and_normalize_pattern(task_proxy, this->pattern, log);
 }
 
+bool PatternInformation::information_is_valid() const {
+    return !pdb || pdb->get_pattern() == pattern;
+}
+
 void PatternInformation::create_pdb_if_missing(const TaskProxy &task_proxy) {
     if (!pdb) {
         pdb = make_shared<PatternDatabase>(task_proxy, pattern);

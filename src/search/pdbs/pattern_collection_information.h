@@ -5,6 +5,8 @@
 
 #include <memory>
 
+class TaskProxy;
+
 namespace utils {
 class LogProxy;
 }
