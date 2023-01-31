@@ -12,7 +12,7 @@ def configs_optimal_core():
             "astar(ipdb())"],
         "bjolp": [
             "--evaluator",
-            "lmc=lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true)",
+            "lmc=lmcp(lm_merged([lm_rhw(),lm_hm(m=1)]))",
             "--search",
             "astar(lmc,lazy_evaluator=lmc)"],
         "astar_lmcut": [

@@ -135,7 +135,7 @@ ALIASES["lama-first"] = [
 
 ALIASES["seq-opt-bjolp"] = [
     "--search",
-    "let(lmc, lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true),"
+    "let(lmc, lmcp(lm_merged([lm_rhw(),lm_hm(m=1)])),"
     "astar(lmc,lazy_evaluator=lmc))"]
 
 ALIASES["seq-opt-lmcut"] = [
