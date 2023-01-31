@@ -9,7 +9,7 @@ class LabelsConstIterator {
     const std::vector<int> &label_costs;
     std::size_t current_index;
 
-    void next_valid_index();
+    void advance_to_next_valid_index();
 public:
     LabelsConstIterator(const std::vector<int> &label_costs, bool end);
     void operator++();

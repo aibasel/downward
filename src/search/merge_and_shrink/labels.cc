@@ -16,10 +16,10 @@ LabelsConstIterator::LabelsConstIterator(
     const vector<int> &label_costs, bool end)
     : label_costs(label_costs),
       current_index(end ? label_costs.size() : 0) {
-    next_valid_index();
+    advance_to_next_valid_index();
 }
 
-void LabelsConstIterator::next_valid_index() {
+void LabelsConstIterator::advance_to_next_valid_index() {
     while (current_index < label_costs.size()
            && label_costs[current_index] == -1) {
         ++current_index;
@@ -28,7 +28,7 @@ void LabelsConstIterator::next_valid_index() {
 
 void LabelsConstIterator::operator++() {
     ++current_index;
-    next_valid_index();
+    advance_to_next_valid_index();
 }
 
 Labels::Labels(vector<int> &&label_costs, int max_num_labels)
