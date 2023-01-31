@@ -81,7 +81,6 @@ PatternDatabaseFactory::PatternDatabaseFactory(
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan)
     : pattern(pattern) {
-
     create_pdb(task_proxy, operator_costs, compute_plan, rng, compute_wildcard_plan);
 }
 
