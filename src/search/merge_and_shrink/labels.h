@@ -31,9 +31,9 @@ public:
   This class serves both as a container class to handle the set of all
   labels and to perform label reduction on this set.
 
-  Labels are identified via integers indexing label_costs, which store their
-  costs. When using label reductions, reduced labels are set to -1 in label
-  costs.
+  Labels are identified via integers indexing label_costs, which stores their
+  costs. When using label reductions, labels that become inactive are set to
+  -1 in label_costs.
 */
 class Labels {
     std::vector<int> label_costs;
