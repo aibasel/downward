@@ -44,14 +44,4 @@ double PatternDatabase::compute_mean_finite_h() const {
         return sum / size;
     }
 }
-
-bool PatternDatabase::is_operator_relevant(const OperatorProxy &op) const {
-    for (EffectProxy effect : op.get_effects()) {
-        int var_id = effect.get_fact().get_variable().get_id();
-        if (binary_search(pattern.begin(), pattern.end(), var_id)) {
-            return true;
-        }
-    }
-    return false;
-}
 }

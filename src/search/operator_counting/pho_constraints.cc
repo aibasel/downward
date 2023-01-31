@@ -1,9 +1,13 @@
 #include "pho_constraints.h"
 
 #include "../lp/lp_solver.h"
+
+#include "../plugins/plugin.h"
+
 #include "../pdbs/pattern_database.h"
 #include "../pdbs/pattern_generator.h"
-#include "../plugins/plugin.h"
+#include "../pdbs/utils.h"
+
 #include "../utils/markup.h"
 
 #include <cassert>
@@ -39,7 +43,7 @@ void PhOConstraints::initialize_constraints(
         constraints.emplace_back(0, lp.get_infinity());
         lp::LPConstraint &constraint = constraints.back();
         for (OperatorProxy op : task_proxy.get_operators()) {
-            if (pdb->is_operator_relevant(op)) {
+            if (pdbs::is_operator_relevant(pdb->get_pattern(), op)) {
                 constraint.insert(op.get_id(), op.get_cost());
             }
         }

@@ -2,6 +2,7 @@
 
 #include "pattern_database.h"
 #include "pattern_database_factory.h"
+#include "utils.h"
 
 #include "../task_proxy.h"
 
@@ -31,7 +32,7 @@ ZeroOnePDBs::ZeroOnePDBs(
         /* Set cost of relevant operators to 0 for further iterations
            (action cost partitioning). */
         for (OperatorProxy op : operators) {
-            if (pdb->is_operator_relevant(op))
+            if (is_operator_relevant(pdb->get_pattern(), op))
                 remaining_operator_costs[op.get_id()] = 0;
         }
 
