@@ -75,9 +75,8 @@ void LabelReduction::compute_label_mapping(
             cost_to_equivalent_labels[cost].push_back(label);
             ++num_labels;
         }
-        for (auto it = cost_to_equivalent_labels.begin();
-             it != cost_to_equivalent_labels.end(); ++it) {
-            const vector<int> &equivalent_labels = it->second;
+        for (const pair<int, const vector<int> &> entry : cost_to_equivalent_labels) {
+            const vector<int> &equivalent_labels = entry.second;
             if (equivalent_labels.size() > 1) {
                 if (log.is_at_least_debug()) {
                     log << "Reducing labels "
