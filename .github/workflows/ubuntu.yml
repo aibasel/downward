@@ -21,10 +21,10 @@ jobs:
       matrix:
         version:
           - {ubuntu: 'ubuntu-20.04', python: 3.8, cc: gcc-10, cxx: g++-10, tests: true}
-          - {ubuntu: 'ubuntu-20.04', python: 3.8, cc: clang-12, cx: clang++-12, tests: false}
+          - {ubuntu: 'ubuntu-20.04', python: 3.8, cc: clang-12, cxx: clang++-12, tests: false}
           - {ubuntu: 'ubuntu-22.04', python: 3.8, cc: gcc-11, cxx: g++-11, tests: false}
           - {ubuntu: 'ubuntu-22.04', python: 3.8, cc: gcc-12, cxx: g++-12, tests: true}
-          - {ubuntu: 'ubuntu-22.04', python: 3.8, cc: clang-14, cx: clang++-14, tests: false}
+          - {ubuntu: 'ubuntu-22.04', python: 3.8, cc: clang-14, cxx: clang++-14, tests: false}
     env:
       CC: ${{ matrix.version.cc }}
       CXX: ${{ matrix.version.cxx }}
