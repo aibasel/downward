@@ -376,12 +376,11 @@ void TransitionSystem::apply_label_reduction(
         }
     } else {
         /*
-          Go over all label reductions (given by label_mapping). For each
-          reduction, go over the reduced labels to combine their transitions
-          into the transitions of the new label. Also remember the affected
-          local labels. Furthermore, remove the reduced labels from their
-          local labels. Add the new label together with its transitions as
-          a new local label.
+          Iterate over the label mapping. For each new label, go over the
+          reduced labels to combine their transitions into the transitions
+          of the new label. Also remember the affected local labels.
+          Furthermore, remove the reduced labels from their local labels.
+          Add the new label together with its transitions as a new local label.
         */
         unordered_set<int> affected_local_labels;
         for (const pair<int, vector<int>> &mapping: label_mapping) {
