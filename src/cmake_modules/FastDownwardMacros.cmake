@@ -16,7 +16,8 @@ macro(fast_downward_set_compiler_flags)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wnon-virtual-dtor")
 
-        if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 12
+        if (CMAKE_COMPILER_IS_GNUCXX
+            AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 12
             AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13)
             ## We ignore the warning "restrict" because of a bug in GCC 12:
             ## https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105651
