@@ -9,8 +9,8 @@ namespace pdbs {
 PatternDatabase::PatternDatabase(
     Pattern &&pattern,
     int num_states,
-    std::vector<int> &&distances,
-    std::vector<int> &&hash_multipliers)
+    vector<int> &&distances,
+    vector<int> &&hash_multipliers)
     : pattern(move(pattern)),
       num_states(num_states),
       distances(move(distances)),

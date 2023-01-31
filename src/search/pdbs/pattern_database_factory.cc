@@ -366,7 +366,7 @@ int PatternDatabaseFactory::hash_index(const vector<int> &state) const {
     return index;
 }
 
-std::shared_ptr<PatternDatabase> PatternDatabaseFactory::extract_pdb() {
+shared_ptr<PatternDatabase> PatternDatabaseFactory::extract_pdb() {
     return make_shared<PatternDatabase>(
         move(pattern),
         num_states,
