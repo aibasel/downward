@@ -38,8 +38,8 @@ bool Distances::is_unit_cost() const {
       that the actual shortest-path algorithms (e.g.
       compute_goal_distances_general_cost) do.
     */
-    for (const LocalLabelInfo &local_labe_info : transition_system) {
-        if (local_labe_info.get_cost() != 1)
+    for (const LocalLabelInfo &local_label_info : transition_system) {
+        if (local_label_info.get_cost() != 1)
             return false;
     }
     return true;
