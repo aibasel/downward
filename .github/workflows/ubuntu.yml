@@ -16,33 +16,18 @@ jobs:
   compile:
     name: Compile planner
     timeout-minutes: 60
-    runs-on: ${{ matrix.ubuntu-version }}
+    runs-on: ${{ matrix.version.ubuntu }}
     strategy:
       matrix:
-        ubuntu-version: [ubuntu-20.04, ubuntu-22.04]
-        compiler-version:
-          - {cc: gcc-10, cxx: g++-10}
-          - {cc: gcc-11, cxx: g++-11}
-          - {cc: gcc-12, cxx: g++-12}
-          - {cc: clang-12, cxx: clang++-12}
-          - {cc: clang-14, cxx: clang++-14}
-        python-version: [3.8]
-        # Unfortunately, we couldn't figure out a way to name the
-        # compiler versions so that we don't have to copy them here.
-        exclude:
-          - ubuntu-version: ubuntu-20.04
-            compiler-version: {cc: gcc-11, cxx: g++-11}
-          - ubuntu-version: ubuntu-20.04
-            compiler-version: {cc: gcc-12, cxx: g++-12}
-          - ubuntu-version: ubuntu-20.04
-            compiler-version: {cc: clang-14, cxx: clang++-14}
-          - ubuntu-version: ubuntu-22.04
-            compiler-version: {cc: gcc-10, cxx: g++-10}
-          - ubuntu-version: ubuntu-22.04
-            compiler-version: {cc: clang-12, cxx: clang-12}
+        version:
+          - {ubuntu: 'ubuntu-20.04', python: 3.8, cc: gcc-10, cxx: g++-10, tests: true}
+          - {ubuntu: 'ubuntu-20.04', python: 3.8, cc: clang-12, cx: clang++-12, tests: false}
+          - {ubuntu: 'ubuntu-22.04', python: 3.8, cc: gcc-11, cxx: g++-11, tests: false}
+          - {ubuntu: 'ubuntu-22.04', python: 3.8, cc: gcc-12, cxx: g++-12, tests: true}
+          - {ubuntu: 'ubuntu-22.04', python: 3.8, cc: clang-14, cx: clang++-14, tests: false}
     env:
-      CC: ${{ matrix.compiler-version.cc }}
-      CXX: ${{ matrix.compiler-version.cxx }}
+      CC: ${{ matrix.version.cc }}
+      CXX: ${{ matrix.version.cxx }}
       CPLEX_URL: ${{ secrets.CPLEX129_LINUX_URL }}
       SOPLEX_URL: ${{ secrets.SOPLEX311_URL }}
       DOWNWARD_CPLEX_ROOT: /home/runner/lib/ibm/ILOG/CPLEX_Studio129/cplex
@@ -55,11 +40,11 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@master
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: ${{ matrix.version.python }}
 
       - name: Install dependencies
         run: |
-          sudo apt-get -y install zlib1g-dev libgmp3-dev ${{ matrix.compiler-version.cc }}
+          sudo apt-get -y install zlib1g-dev libgmp3-dev ${{ matrix.version.cc }}
           mkdir /home/runner/lib
 
       # In 22.04 g++-12 is not automatically installed when gcc-12 gets
@@ -67,9 +52,9 @@ jobs:
       # install for any value of cxx because there is no separate package for
       # clang++.
       - name: Install CXX
-        if: startsWith(matrix.compiler-version.cxx, 'g++-')
+        if: startsWith(matrix.version.cxx, 'g++-')
         run: |
-          sudo apt-get -y install ${{ matrix.compiler-version.cxx }}
+          sudo apt-get -y install ${{ matrix.version.cxx }}
 
       # We only want to set up Osi if both LP solvers are set, hence
       # we execute the following three steps only if both secrets
@@ -130,7 +115,7 @@ jobs:
       - name: Archive required files
         # We only run tests on one compiler version per Ubuntu version, so we
         # only need to archive that one.
-        if: ${{ (matrix.ubuntu-version == 'ubuntu-20.04' && matrix.compiler-version.cc == 'gcc-10') || (matrix.ubuntu-version == 'ubuntu-22.04' && matrix.compiler-version.cc == 'gcc-12') }}
+        if: ${{ matrix.version.tests }}
         # We determined the dynamically-linked libraries using ldd. We
         # archive the entire lib directory of Osi because we need all
         # 4 large library files and several file links to these.
@@ -147,7 +132,7 @@ jobs:
           tar cfz archive.tar.gz --directory /home/runner ${libs} --directory ${GITHUB_WORKSPACE} fast-downward.py driver misc builds/debug/bin/ builds/release/bin/
 
       - name: Upload archive
-        if: ${{ (matrix.ubuntu-version == 'ubuntu-20.04' && matrix.compiler-version.cc == 'gcc-10') || (matrix.ubuntu-version == 'ubuntu-22.04' && matrix.compiler-version.cc == 'gcc-12') }}
+        if: ${{ matrix.version.tests }}
         uses: actions/upload-artifact@master
         with:
           name: compiled-planner-${{ matrix.ubuntu-version }}
