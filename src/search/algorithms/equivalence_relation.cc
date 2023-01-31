@@ -1,5 +1,7 @@
 #include "equivalence_relation.h"
 
+#include "../utils/system.h"
+
 using namespace std;
 
 namespace equivalence_relation {

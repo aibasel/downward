@@ -1,8 +1,6 @@
 #ifndef ALGORITHMS_EQUIVALENCE_RELATION_H
 #define ALGORITHMS_EQUIVALENCE_RELATION_H
 
-#include "../utils/system.h"
-
 #include <algorithm>
 #include <list>
 #include <unordered_map>
