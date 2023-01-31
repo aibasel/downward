@@ -81,27 +81,7 @@ PatternDatabaseFactory::PatternDatabaseFactory(
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan)
     : pattern(pattern) {
-    task_properties::verify_no_axioms(task_proxy);
-    task_properties::verify_no_conditional_effects(task_proxy);
-    assert(operator_costs.empty() ||
-           operator_costs.size() == task_proxy.get_operators().size());
-    assert(utils::is_sorted_unique(pattern));
 
-    utils::Timer timer;
-    hash_multipliers.reserve(pattern.size());
-    num_states = 1;
-    for (int pattern_var_id : pattern) {
-        hash_multipliers.push_back(num_states);
-        VariableProxy var = task_proxy.get_variables()[pattern_var_id];
-        if (utils::is_product_within_limit(num_states, var.get_domain_size(),
-                                           numeric_limits<int>::max())) {
-            num_states *= var.get_domain_size();
-        } else {
-            cerr << "Given pattern is too large! (Overflow occured): " << endl;
-            cerr << pattern << endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-        }
-    }
     create_pdb(task_proxy, operator_costs, compute_plan, rng, compute_wildcard_plan);
 }
 
@@ -199,6 +179,28 @@ void PatternDatabaseFactory::create_pdb(
     const TaskProxy &task_proxy, const vector<int> &operator_costs,
     bool compute_plan, const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan) {
+    task_properties::verify_no_axioms(task_proxy);
+    task_properties::verify_no_conditional_effects(task_proxy);
+    assert(operator_costs.empty() ||
+           operator_costs.size() == task_proxy.get_operators().size());
+    assert(utils::is_sorted_unique(pattern));
+
+    utils::Timer timer;
+    hash_multipliers.reserve(pattern.size());
+    num_states = 1;
+    for (int pattern_var_id : pattern) {
+        hash_multipliers.push_back(num_states);
+        VariableProxy var = task_proxy.get_variables()[pattern_var_id];
+        if (utils::is_product_within_limit(num_states, var.get_domain_size(),
+                                           numeric_limits<int>::max())) {
+            num_states *= var.get_domain_size();
+        } else {
+            cerr << "Given pattern is too large! (Overflow occured): " << endl;
+            cerr << pattern << endl;
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        }
+    }
+
     VariablesProxy variables = task_proxy.get_variables();
     vector<int> variable_to_index(variables.size(), -1);
     for (size_t i = 0; i < pattern.size(); ++i) {
@@ -378,10 +380,20 @@ shared_ptr<PatternDatabase> compute_pdb(
     const TaskProxy &task_proxy,
     const Pattern &pattern,
     const vector<int> &operator_costs,
-    bool compute_plan,
+    const shared_ptr<utils::RandomNumberGenerator> &rng) {
+    PatternDatabaseFactory pdb_factory(task_proxy, pattern, operator_costs, false, rng);
+    return pdb_factory.extract_pdb();
+}
+
+shared_ptr<PatternDatabase> compute_pdb_and_plan(
+    const TaskProxy &task_proxy,
+    const Pattern &pattern,
+    vector<vector<OperatorID>> &wildcard_plan,
+    const vector<int> &operator_costs,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan) {
-    PatternDatabaseFactory pdb_factory(task_proxy, pattern, operator_costs, compute_plan, rng, compute_wildcard_plan);
+    PatternDatabaseFactory pdb_factory(task_proxy, pattern, operator_costs, true, rng, compute_wildcard_plan);
+    wildcard_plan = pdb_factory.extract_wildcard_plan();
     return pdb_factory.extract_pdb();
 }
 }

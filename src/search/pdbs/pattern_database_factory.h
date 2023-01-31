@@ -81,7 +81,6 @@ public:
               utils::LogProxy &log) const;
 };
 
-// Implements a single pattern database
 class PatternDatabaseFactory {
     Pattern pattern;
 
@@ -205,7 +204,13 @@ extern std::shared_ptr<PatternDatabase> compute_pdb(
     const TaskProxy &task_proxy,
     const Pattern &pattern,
     const std::vector<int> &operator_costs = std::vector<int>(),
-    bool compute_plan = false,
+    const std::shared_ptr<utils::RandomNumberGenerator> &rng = nullptr);
+
+extern std::shared_ptr<PatternDatabase> compute_pdb_and_plan(
+    const TaskProxy &task_proxy,
+    const Pattern &pattern,
+    std::vector<std::vector<OperatorID>> &wildcard_plan,
+    const std::vector<int> &operator_costs = std::vector<int>(),
     const std::shared_ptr<utils::RandomNumberGenerator> &rng = nullptr,
     bool compute_wildcard_plan = false);
 }

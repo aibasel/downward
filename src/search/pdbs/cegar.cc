@@ -226,11 +226,9 @@ bool CEGAR::time_limit_reached(
 
 unique_ptr<PatternInfo> CEGAR::compute_pattern_info(Pattern &&pattern) const {
     vector<int> op_cost;
-    bool compute_plan = true;
-    PatternDatabaseFactory pdb_factory(
-        task_proxy, pattern, op_cost, compute_plan, rng, use_wildcard_plans);
-    shared_ptr<PatternDatabase> pdb = pdb_factory.extract_pdb();
-    vector<vector<OperatorID>> plan = pdb_factory.extract_wildcard_plan();
+    vector<vector<OperatorID>> plan;
+    shared_ptr<PatternDatabase> pdb = compute_pdb_and_plan(
+        task_proxy, pattern, plan, op_cost, rng, use_wildcard_plans);
 
     bool unsolvable = false;
     State initial_state = task_proxy.get_initial_state();
