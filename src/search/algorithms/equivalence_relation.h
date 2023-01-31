@@ -80,7 +80,10 @@ public:
 
     /*
       Refining a relation with a block X is equivalent to splitting every block B
-      into two blocks (B \cap X) and (B \setminus X).
+      into two blocks (B \cap X) and (B \setminus X). After refining, two items A
+      and B are in the same block if and only if they were in the same block
+      before and they are in one block in the other relation. The amortized
+      runtime is linear in the number of elements specified in other.
     */
     void refine(const std::vector<int> &block);
 };
