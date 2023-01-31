@@ -109,10 +109,10 @@ private:
     int init_state;
 
     /*
-      Check if two or more local labels are locally equivalent to each other,
+      Check if two or more local labels are equivalent to each other,
       and if so, merge them and store their transitions only once.
     */
-    void compute_locally_equivalent_labels();
+    void compute_equivalent_local_labels();
 
     // Statistics and output
     int compute_total_transitions() const;

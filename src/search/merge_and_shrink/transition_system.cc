@@ -230,7 +230,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         );
 }
 
-void TransitionSystem::compute_locally_equivalent_labels() {
+void TransitionSystem::compute_equivalent_local_labels() {
     /*
       Compare every group of labels and their transitions to all others and
       merge two groups whenever the transitions are the same.
@@ -319,7 +319,7 @@ void TransitionSystem::apply_abstraction(
         }
     }
 
-    compute_locally_equivalent_labels();
+    compute_equivalent_local_labels();
 
     num_states = new_num_states;
     init_state = abstraction_mapping[init_state];
@@ -431,7 +431,7 @@ void TransitionSystem::apply_label_reduction(
             }
         }
 
-        compute_locally_equivalent_labels();
+        compute_equivalent_local_labels();
     }
 
     assert(is_valid());
