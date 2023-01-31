@@ -45,8 +45,7 @@ void Labels::reduce_labels(const vector<int> &old_labels) {
       labels reduced to it to satisfy admissibility.
     */
     int new_label_cost = INF;
-    for (size_t i = 0; i < old_labels.size(); ++i) {
-        int old_label = old_labels[i];
+    for (int old_label : old_labels) {
         int cost = get_label_cost(old_label);
         if (cost < new_label_cost) {
             new_label_cost = cost;
