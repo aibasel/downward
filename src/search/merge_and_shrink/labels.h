@@ -15,7 +15,7 @@ public:
     LabelsConstIterator &operator++();
 
     int operator*() const {
-        return int(current_index);
+        return static_cast<int>(current_index);
     }
 
     bool operator==(const LabelsConstIterator &rhs) const {
