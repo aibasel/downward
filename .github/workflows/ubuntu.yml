@@ -128,9 +128,9 @@ jobs:
           ./build.py
 
       - name: Archive required files
-        # We only run tests on the version compiled with gcc, so we
+        # We only run tests on one compiler version per Ubuntu version, so we
         # only need to archive that one.
-        if: ${{ matrix.compiler-version.cc == 'gcc' }}
+        if: ${{ (matrix.ubuntu-version == 'ubuntu-20.04' && matrix.compiler-version.cc == 'gcc-10') || (matrix.ubuntu-version == 'ubuntu-22.04' && matrix.compiler-version.cc == 'gcc-12') }}
         # We determined the dynamically-linked libraries using ldd. We
         # archive the entire lib directory of Osi because we need all
         # 4 large library files and several file links to these.
@@ -147,7 +147,7 @@ jobs:
           tar cfz archive.tar.gz --directory /home/runner ${libs} --directory ${GITHUB_WORKSPACE} fast-downward.py driver misc builds/debug/bin/ builds/release/bin/
 
       - name: Upload archive
-        if: ${{ matrix.compiler-version.cc == 'gcc' }}
+        if: ${{ (matrix.ubuntu-version == 'ubuntu-20.04' && matrix.compiler-version.cc == 'gcc-10') || (matrix.ubuntu-version == 'ubuntu-22.04' && matrix.compiler-version.cc == 'gcc-12') }}
         uses: actions/upload-artifact@master
         with:
           name: compiled-planner-${{ matrix.ubuntu-version }}
@@ -158,7 +158,7 @@ jobs:
   test:
     name: Test planner
     runs-on: ${{ matrix.version.ubuntu }}
-    needs: compile # TODO: this only depends on the compile step with gcc
+    needs: compile # TODO: this only depends on the compile step with the gcc version we test
     strategy:
       matrix:
         version:
