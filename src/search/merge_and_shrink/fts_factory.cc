@@ -150,7 +150,7 @@ void FTSFactory::initialize_transition_system_data(const Labels &labels) {
         ts_data.num_variables = variables.size();
         ts_data.incorporated_variables.push_back(var.get_id());
         ts_data.label_to_local_label.resize(labels.get_max_num_labels(), -1);
-        ts_data.relevant_labels.resize(labels.get_size(), false);
+        ts_data.relevant_labels.resize(labels.get_num_total_labels(), false);
         build_state_data(var);
     }
 }

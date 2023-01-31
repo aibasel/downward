@@ -64,7 +64,7 @@ void LabelReduction::compute_label_mapping(
     vector<pair<int, vector<int>>> &label_mapping,
     utils::LogProxy &log) const {
     const Labels &labels = fts.get_labels();
-    int next_new_label = labels.get_size();
+    int next_new_label = labels.get_num_total_labels();
     int num_labels = 0;
     int num_labels_after_reduction = 0;
     for (const equivalence_relation::Block &block : relation) {
