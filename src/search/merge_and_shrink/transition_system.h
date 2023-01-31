@@ -118,7 +118,6 @@ private:
     int compute_total_transitions() const;
     std::string get_description() const;
 
-    // Consistency
     /*
       The transitions for every group of locally equivalent labels are
       sorted (by source, by target) and there are no duplicates.
