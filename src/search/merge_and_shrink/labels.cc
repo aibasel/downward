@@ -26,9 +26,10 @@ void LabelsConstIterator::advance_to_next_valid_index() {
     }
 }
 
-void LabelsConstIterator::operator++() {
+LabelsConstIterator &LabelsConstIterator::operator++() {
     ++current_index;
     advance_to_next_valid_index();
+    return *this;
 }
 
 Labels::Labels(vector<int> &&label_costs, int max_num_labels)
