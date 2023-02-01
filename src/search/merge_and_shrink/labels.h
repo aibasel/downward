@@ -5,25 +5,38 @@
 #include <vector>
 
 namespace merge_and_shrink {
+/*
+  Iterator class for Labels.
+
+  The iterator provides the *index* into label_costs of Labels, which is the
+  ID of the label.
+
+  Implementation note: to avoid keeping a reference to label_costs, this class
+  stores the current position (curr_pos) in addition to the iterator (it) which
+  are always incremented in parallel.
+*/
 class LabelsConstIterator {
-    const std::vector<int> &label_costs;
-    std::size_t current_index;
+    const std::vector<int>::const_iterator end_it;
+    std::vector<int>::const_iterator it;
+    std::size_t current_pos;
 
     void advance_to_next_valid_index();
 public:
-    LabelsConstIterator(const std::vector<int> &label_costs, bool end);
+    LabelsConstIterator(
+        const std::vector<int> &label_costs,
+        std::vector<int>::const_iterator it);
     LabelsConstIterator &operator++();
 
     int operator*() const {
-        return static_cast<int>(current_index);
+        return static_cast<int>(current_pos);
     }
 
     bool operator==(const LabelsConstIterator &rhs) const {
-        return current_index == rhs.current_index;
+        return it == rhs.it;
     }
 
     bool operator!=(const LabelsConstIterator &rhs) const {
-        return current_index != rhs.current_index;
+        return it != rhs.it;
     }
 };
 
@@ -59,11 +72,11 @@ public:
     }
 
     LabelsConstIterator begin() const {
-        return LabelsConstIterator(label_costs, false);
+        return LabelsConstIterator(label_costs, label_costs.begin());
     }
 
     LabelsConstIterator end() const {
-        return LabelsConstIterator(label_costs, true);
+        return LabelsConstIterator(label_costs, label_costs.end());
     }
 };
 }

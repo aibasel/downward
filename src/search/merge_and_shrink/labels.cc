@@ -13,21 +13,22 @@ using namespace std;
 
 namespace merge_and_shrink {
 LabelsConstIterator::LabelsConstIterator(
-    const vector<int> &label_costs, bool end)
-    : label_costs(label_costs),
-      current_index(end ? label_costs.size() : 0) {
+    const vector<int> &label_costs,
+    vector<int>::const_iterator it)
+    : end_it(label_costs.end()), it(it), current_pos(distance(label_costs.begin(), it)) {
     advance_to_next_valid_index();
 }
 
 void LabelsConstIterator::advance_to_next_valid_index() {
-    while (current_index < label_costs.size()
-           && label_costs[current_index] == -1) {
-        ++current_index;
+    while (it != end_it && *it == -1) {
+        ++it;
+        ++current_pos;
     }
 }
 
 LabelsConstIterator &LabelsConstIterator::operator++() {
-    ++current_index;
+    ++it;
+    ++current_pos;
     advance_to_next_valid_index();
     return *this;
 }
