@@ -13,7 +13,6 @@
 #include <limits>
 
 using namespace std;
-using utils::ExitCode;
 
 namespace landmarks {
 LandmarkCountHeuristic::LandmarkCountHeuristic(const plugins::Options &opts)
@@ -138,7 +137,7 @@ public:
             "can be counterproductive since it is often better to "
             "focus on distance from goal (i.e. length of the plan) "
             "rather than cost. In experiments we achieved the best "
-            "performance usingthe option 'transform=adapt_costs(one)' "
+            "performance using the option 'transform=adapt_costs(one)' "
             "to enforce unit costs.");
 
         document_language_support(

@@ -10,7 +10,6 @@ class SuccessorGenerator;
 }
 
 namespace landmarks {
-class LandmarkFactory;
 class LandmarkGraph;
 class LandmarkNode;
 class LandmarkStatusManager;

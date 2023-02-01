@@ -43,10 +43,6 @@ LandmarkHeuristic::LandmarkHeuristic(const plugins::Options &opts)
     shared_ptr<LandmarkFactory> lm_graph_factory =
         opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
 
-    /* TODO: Admissible case checks here that no reasonable orderings
-        are computed. In the long term, they should allow computing
-        reasonable orderings, though. */
-
     lm_graph = lm_graph_factory->compute_lm_graph(task);
     assert(lm_graph_factory->achievers_are_calculated());
     if (log.is_at_least_normal()) {

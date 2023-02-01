@@ -13,7 +13,6 @@
 #include <limits>
 
 using namespace std;
-using utils::ExitCode;
 
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
@@ -27,30 +26,23 @@ LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
       TODO: The landmark graph is already constructed by the base class for
        *LandmarkHeuristic*. The only reason why we get the landmark factory from
        the options again is to check whether it produces reasonable orderings.
-       This could also be done by checking the landmark graph itself whether it
-       has any reasonable orderings at all.
-
-       In any case, doing this check only here means the landmark graph was
-       already computed by the base class, which would not be necessary if we
-       could ask the factory first, whether it computes reasonable orderings in
-       the first place. Since this all happens in the constructor anyway and we
-       abort if reasonable orderings are present, I don't think this is a big
-       issue, though.
+       The check for reasonable orders can be removed once landmark progression
+       correctly handles them (issue1036).
     */
     shared_ptr<LandmarkFactory> lm_graph_factory =
         opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
     if (lm_graph_factory->computes_reasonable_orders()) {
         cerr << "Reasonable orderings should not be used for "
              << "admissible heuristics" << endl;
-        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     } else if (task_properties::has_axioms(task_proxy)) {
         cerr << "cost partitioning does not support axioms" << endl;
-        utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     } else if (task_properties::has_conditional_effects(task_proxy) &&
                !conditional_effects_supported) {
         cerr << "conditional effects not supported by the landmark "
              << "generation method" << endl;
-        utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
     if (opts.get<bool>("optimal")) {
