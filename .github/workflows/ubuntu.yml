@@ -20,11 +20,11 @@ jobs:
     strategy:
       matrix:
         version:
-          - {ubuntu: 'ubuntu-20.04', python: 3.8, cc: gcc-10, cxx: g++-10, run_tox_tests: true}
-          - {ubuntu: 'ubuntu-20.04', python: 3.8, cc: clang-12, cxx: clang++-12, run_tox_tests: false}
-          - {ubuntu: 'ubuntu-22.04', python: 3.8, cc: gcc-11, cxx: g++-11, run_tox_tests: false}
-          - {ubuntu: 'ubuntu-22.04', python: 3.10, cc: gcc-12, cxx: g++-12, run_tox_tests: true}
-          - {ubuntu: 'ubuntu-22.04', python: 3.10, cc: clang-14, cxx: clang++-14, run_tox_tests: false}
+          - {ubuntu: 'ubuntu-20.04', python: '3.8', cc: gcc-10, cxx: g++-10, run_tox_tests: true}
+          - {ubuntu: 'ubuntu-20.04', python: '3.8', cc: clang-12, cxx: clang++-12, run_tox_tests: false}
+          - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: gcc-11, cxx: g++-11, run_tox_tests: false}
+          - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: gcc-12, cxx: g++-12, run_tox_tests: true}
+          - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: clang-14, cxx: clang++-14, run_tox_tests: false}
     env:
       CC: ${{ matrix.version.cc }}
       CXX: ${{ matrix.version.cxx }}
