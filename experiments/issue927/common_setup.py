@@ -14,6 +14,7 @@ from downward.reports.absolute import AbsoluteReport
 from downward.reports.compare import ComparativeReport
 from downward.reports.scatter import ScatterPlotReport
 
+import archive
 
 def parse_args():
     ARGPARSER.add_argument(
@@ -120,19 +121,9 @@ def get_data_dir():
     return os.path.join(get_script_dir(), "data", get_experiment_name())
 
 
-def get_repo_base():
-    """Get base directory of the repository, as an absolute path.
-
-    Search upwards in the directory tree from the main script until a
-    directory with a subdirectory named ".git" is found.
-
-    Abort if the repo base cannot be found."""
-    path = os.path.abspath(get_script_dir())
-    while os.path.dirname(path) != path:
-        if os.path.exists(os.path.join(path, ".git")):
-            return path
-        path = os.path.dirname(path)
-    sys.exit("repo base could not be found")
+def is_repo_base(path):
+    """Check if the given path points to a Git repository."""
+    return os.path.exists(os.path.join(path, ".git"))
 
 
 def is_running_on_cluster():
@@ -210,7 +201,7 @@ class IssueExperiment(FastDownwardExperiment):
         "run_dir",
         ]
 
-    def __init__(self, revisions=None, configs=None, path=None, **kwargs):
+    def __init__(self, repo_base, revisions=None, configs=None, path=None, **kwargs):
         """
 
         You can either specify both *revisions* and *configs* or none
@@ -245,6 +236,9 @@ class IssueExperiment(FastDownwardExperiment):
 
         """
 
+        if not is_repo_base(repo_base):
+            sys.exit(f"repo base '{repo_base}' could not be found or does not contain a git repository.")
+
         path = path or get_data_dir()
 
         FastDownwardExperiment.__init__(self, path=path, **kwargs)
@@ -257,7 +251,7 @@ class IssueExperiment(FastDownwardExperiment):
             for config in configs:
                 self.add_algorithm(
                     get_algo_nick(rev, config.nick),
-                    get_repo_base(),
+                    repo_base,
                     rev,
                     config.component_options,
                     build_options=config.build_options,
@@ -298,8 +292,6 @@ class IssueExperiment(FastDownwardExperiment):
             self.eval_dir,
             get_experiment_name() + "." + report.output_format)
         self.add_report(report, outfile=outfile)
-        self.add_step(
-            'publish-absolute-report', subprocess.call, ['publish', outfile])
 
     def add_comparison_table_step(self, revision_pairs=[], **kwargs):
         """Add a step that makes pairwise revision comparisons.
@@ -336,18 +328,9 @@ class IssueExperiment(FastDownwardExperiment):
                         self.name, rev1, rev2, report.output_format))
                 report(self.eval_dir, outfile)
 
-        def publish_comparison_tables():
-            for rev1, rev2 in itertools.combinations(self._revisions, 2):
-                outfile = os.path.join(
-                    self.eval_dir,
-                    "%s-%s-%s-compare.html" % (self.name, rev1, rev2))
-                subprocess.call(["publish", outfile])
-
         self.add_step("make-comparison-tables", make_comparison_tables)
-        self.add_step(
-            "publish-comparison-tables", publish_comparison_tables)
 
-    def add_scatter_plot_step(self, relative=False, attributes=None):
+    def add_scatter_plot_step(self, relative=False, attributes=None, additional=[]):
         """Add step creating (relative) scatter plots for all revision pairs.
 
         Create a scatter plot for each combination of attribute,
@@ -394,3 +377,6 @@ class IssueExperiment(FastDownwardExperiment):
                 make_scatter_plot(nick1, rev1, rev2, attribute, config_nick2=nick2)
 
         self.add_step(step_name, make_scatter_plots)
+
+    def add_archive_step(self, archive_path):
+        archive.add_archive_step(self, archive_path)

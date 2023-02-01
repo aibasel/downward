@@ -12,8 +12,9 @@ from downward.reports.compare import ComparativeReport
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
 
+ARCHIVE_PATH = "ai/downward/issue000"
 DIR = os.path.dirname(os.path.abspath(__file__))
-SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
+REPO_DIR = os.environ["DOWNWARD_REPO"]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
 REVISIONS = ["issue927-base-v4", "issue927-v20"]
 BUILDS = ["debug"]
@@ -49,6 +50,7 @@ if common_setup.is_test_run():
     ENVIRONMENT = LocalEnvironment(processes=4)
 
 exp = IssueExperiment(
+    REPO_DIR,
     revisions=REVISIONS,
     configs=CONFIGS,
     environment=ENVIRONMENT,
@@ -96,5 +98,7 @@ attributes = exp.DEFAULT_TABLE_ATTRIBUTES
 attributes.extend(extra_attributes)
 
 exp.add_comparison_table_step(attributes=attributes)
+
+exp.add_archive_step(ARCHIVE_PATH)
 
 exp.run_steps()
