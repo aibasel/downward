@@ -135,7 +135,7 @@ jobs:
         if: ${{ matrix.version.tests }}
         uses: actions/upload-artifact@master
         with:
-          name: compiled-planner-${{ matrix.ubuntu-version }}
+          name: compiled-planner-${{ matrix.version.ubuntu }}
           path: archive.tar.gz
           retention-days: 1
 
