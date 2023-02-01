@@ -67,7 +67,7 @@ LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
 }
 
 int LandmarkCostPartitioningHeuristic::get_heuristic_value(
-    const State &/*state*/) {
+    const State & /*state*/) {
     double epsilon = 0.01;
 
     double h_val = lm_cost_assignment->cost_sharing_h_value(*lm_status_manager);

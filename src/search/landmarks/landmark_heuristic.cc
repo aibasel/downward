@@ -195,7 +195,7 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
     feature.document_note(
         "Preferred operators",
         "Computing preferred operators based on landmarks was first suggested "
-        "in the LAMA planner "/* TODO: references? */". The original "
+        "in the LAMA planner " /* TODO: references? */ ". The original "
         "implementation described in the literature computes two kinds of "
         "preferred operators:\n\n"
         "+ If there is an applicable operator that reaches a landmark, all "
