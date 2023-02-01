@@ -20,11 +20,11 @@ jobs:
     strategy:
       matrix:
         version:
-          - {ubuntu: 'ubuntu-20.04', python: 3.8, cc: gcc-10, cxx: g++-10, tests: true}
-          - {ubuntu: 'ubuntu-20.04', python: 3.8, cc: clang-12, cxx: clang++-12, tests: false}
-          - {ubuntu: 'ubuntu-22.04', python: 3.8, cc: gcc-11, cxx: g++-11, tests: false}
-          - {ubuntu: 'ubuntu-22.04', python: 3.8, cc: gcc-12, cxx: g++-12, tests: true}
-          - {ubuntu: 'ubuntu-22.04', python: 3.8, cc: clang-14, cxx: clang++-14, tests: false}
+          - {ubuntu: 'ubuntu-20.04', python: 3.8, cc: gcc-10, cxx: g++-10, run_tox_tests: true}
+          - {ubuntu: 'ubuntu-20.04', python: 3.8, cc: clang-12, cxx: clang++-12, run_tox_tests: false}
+          - {ubuntu: 'ubuntu-22.04', python: 3.8, cc: gcc-11, cxx: g++-11, run_tox_tests: false}
+          - {ubuntu: 'ubuntu-22.04', python: 3.10, cc: gcc-12, cxx: g++-12, run_tox_tests: true}
+          - {ubuntu: 'ubuntu-22.04', python: 3.10, cc: clang-14, cxx: clang++-14, run_tox_tests: false}
     env:
       CC: ${{ matrix.version.cc }}
       CXX: ${{ matrix.version.cxx }}
@@ -115,7 +115,7 @@ jobs:
       - name: Archive required files
         # We only run tests on one compiler version per Ubuntu version, so we
         # only need to archive that one.
-        if: ${{ matrix.version.tests }}
+        if: ${{ matrix.version.run_tox_tests }}
         # We determined the dynamically-linked libraries using ldd. We
         # archive the entire lib directory of Osi because we need all
         # 4 large library files and several file links to these.
@@ -132,7 +132,7 @@ jobs:
           tar cfz archive.tar.gz --directory /home/runner ${libs} --directory ${GITHUB_WORKSPACE} fast-downward.py driver misc builds/debug/bin/ builds/release/bin/
 
       - name: Upload archive
-        if: ${{ matrix.version.tests }}
+        if: ${{ matrix.version.run_tox_tests }}
         uses: actions/upload-artifact@master
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
@@ -140,7 +140,7 @@ jobs:
           retention-days: 1
 
 
-  test:
+  run_tox_tests:
     name: Test planner
     runs-on: ${{ matrix.version.ubuntu }}
     needs: compile # TODO: this only depends on the compile step with the gcc version we test
