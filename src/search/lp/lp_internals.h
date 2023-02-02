@@ -16,10 +16,10 @@
 class CoinError;
 class OsiSolverInterface;
 
+class SolverInterface;
+
 namespace lp {
 enum class LPSolverType;
-
-std::unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type);
 
 /*
   The MIP gap is an error tolerance on solutions for MIPs. It corresponds to the

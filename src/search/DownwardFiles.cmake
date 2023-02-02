@@ -478,6 +478,7 @@ fast_downward_plugin(
     SOURCES
         lp/lp_internals
         lp/lp_solver
+        lp/solver_interface
     DEPENDS NAMED_VECTOR
     DEPENDENCY_ONLY
 )
