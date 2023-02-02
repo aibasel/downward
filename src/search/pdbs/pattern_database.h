@@ -35,7 +35,6 @@ public:
         int num_states,
         std::vector<int> &&distances,
         std::vector<int> &&hash_multipliers);
-    ~PatternDatabase() = default;
 
     int get_value(const std::vector<int> &state) const;
 
