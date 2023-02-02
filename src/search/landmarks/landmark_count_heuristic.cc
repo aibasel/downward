@@ -137,9 +137,7 @@ public:
             "performance using the option 'transform=adapt_costs(one)' "
             "to enforce unit costs.");
 
-        document_language_support(
-            "action costs",
-            "supported");
+        document_language_support("action costs", "supported");
         document_language_support(
             "conditional_effects",
             "supported if the LandmarkFactory supports them; otherwise "
@@ -153,9 +151,6 @@ public:
             "yes except on tasks with axioms or on tasks with "
             "conditional effects when using a LandmarkFactory "
             "not supporting them");
-        document_property(
-            "preferred operators",
-            "yes (if enabled; see ``pref`` option)");
     }
 };
 

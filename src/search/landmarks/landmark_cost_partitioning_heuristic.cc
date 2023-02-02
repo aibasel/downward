@@ -81,41 +81,37 @@ public:
         lp::add_lp_solver_option_to_feature(*this);
 
         document_note(
-            "Optimal search",
-            "You probably also want to add this heuristic as a lazy_evaluator "
-            "in the A* algorithm to improve heuristic estimates.");
+            "Usage with A*",
+            "We recommend to add this heuristic as lazy_evaluator when using "
+            "it in the A* algorithm. This way, the heuristic is recomputed "
+            "before a state is expanded, leading to improved estimates that "
+            "incorporate all knowledge gained from paths that were found after "
+            "the state was inserted into the open list.\n"
+            "Furthermore, preferred operators should not be used for optimal "
+            "planning. Hence, the option `pref=true` should not be used in "
+            "an A* search. We allow computing preferred operators for this "
+            "heuristic because it could be used for satisficing planning where "
+            "preferred operators might improve performance (not tested).");
         document_note(
-            "Note",
+            "Consistency",
+            "The heuristic is consistent along single paths if it is "
+            "set as lazy_evaluator; i.e. when expanding s then we have "
+            "h(s) <= h(s')+cost(a) for all successors s' of s reached "
+            "with a. But newly found paths to s can increase h(s), at "
+            "which point the above inequality might not hold anymore.");
+        document_note(
+            "Optimal Cost Partitioning",
             "To use ``optimal=true``, you must build the planner with LP "
             "support. See LPBuildInstructions.");
 
-        document_language_support(
-            "action costs",
-            "supported");
-        document_language_support(
-            "conditional_effects",
-            "not supported");
-        document_language_support(
-            "axioms",
-            "not allowed");
+        document_language_support("action costs", "supported");
+        document_language_support("conditional_effects", "not supported");
+        document_language_support("axioms", "not allowed");
 
-        document_property(
-            "admissible",
-            "yes");
-        /* TODO: This was "yes with admissible=true and optimal cost
-            partitioning; otherwise no" before. Can we answer this now that
-            the heuristic only cares about admissible? */
-        document_property(
-            "consistent",
-            "complicated; needs further thought");
-        document_property(
-            "safe",
-            "yes except on tasks with axioms or on tasks with "
-            "conditional effects when using a LandmarkFactory "
-            "not supporting them");
-        document_property(
-            "preferred operators",
-            "yes (if enabled; see ``pref`` option)");
+        document_property("admissible", "yes");
+        document_property("consistent",
+                          "no; see document note about consistency");
+        document_property("safe", "yes");
     }
 };
 

@@ -232,5 +232,8 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
         "the heuristic and its preferred operators in isolation but improves "
         "performance when using this heuristic in conjunction with the "
         "FF heuristic, as in LAMA-like planner configurations.");
+
+    feature.document_property("preferred operators",
+                              "yes (if enabled; see ``pref`` option)");
 }
 }
