@@ -57,7 +57,7 @@ public:
                      const vector<FactPair> &preconditions,
                      const vector<FactPair> &effects,
                      int cost,
-                     const vector<int> &hash_multipliers,
+                     const Projection &projection,
                      int concrete_op_id);
     ~AbstractOperator();
 
@@ -93,7 +93,7 @@ AbstractOperator::AbstractOperator(const vector<FactPair> &prev_pairs,
                                    const vector<FactPair> &pre_pairs,
                                    const vector<FactPair> &eff_pairs,
                                    int cost,
-                                   const vector<int> &hash_multipliers,
+                                   const Projection &projection,
                                    int concrete_op_id)
     : concrete_op_id(concrete_op_id),
       cost(cost),
@@ -115,7 +115,7 @@ AbstractOperator::AbstractOperator(const vector<FactPair> &prev_pairs,
         int old_val = eff_pairs[i].value;
         int new_val = pre_pairs[i].value;
         assert(new_val != -1);
-        int effect = (new_val - old_val) * hash_multipliers[var];
+        int effect = (new_val - old_val) * projection.get_multiplier(var);
         hash_effect += effect;
     }
 }
@@ -141,22 +141,12 @@ void AbstractOperator::dump(const Pattern &pattern,
 }
 
 class PatternDatabaseFactory {
-    Pattern pattern;
+    Projection projection;
 
-    // size of the PDB
-    int num_states;
-
-    /*
-      final h-values for abstract-states.
-      dead-ends are represented by numeric_limits<int>::max()
-    */
     vector<int> distances;
 
     vector<int> generating_op_ids;
     vector<vector<OperatorID>> wildcard_plan;
-
-    // multipliers for each variable for perfect hash function
-    vector<int> hash_multipliers;
 
     /*
       Recursive method; called by build_abstract_operators. In the case
@@ -211,13 +201,6 @@ class PatternDatabaseFactory {
         int state_index,
         const vector<FactPair> &abstract_goals,
         const VariablesProxy &variables) const;
-
-    /*
-      The given concrete state is used to calculate the index of the
-      according abstract state. This is only used for table lookup
-      (distances) during search.
-    */
-    int hash_index(const vector<int> &state) const;
 public:
     PatternDatabaseFactory(
         const TaskProxy &task_proxy,
@@ -230,20 +213,33 @@ public:
 
     shared_ptr<PatternDatabase> extract_pdb();
 
-    // Returns the pattern (i.e. all variables used) of the PDB
-    const Pattern &get_pattern() const {
-        return pattern;
-    }
-
-    // Returns the size (number of abstract states) of the PDB
-    int get_size() const {
-        return num_states;
-    }
-
     vector<vector<OperatorID>> && extract_wildcard_plan() {
         return move(wildcard_plan);
     };
 };
+
+static Projection compute_projection(const TaskProxy &task_proxy, const Pattern &pattern) {
+    task_properties::verify_no_axioms(task_proxy);
+    task_properties::verify_no_conditional_effects(task_proxy);
+    assert(utils::is_sorted_unique(pattern));
+
+    vector<int> hash_multipliers;
+    hash_multipliers.reserve(pattern.size());
+    int num_states = 1;
+    for (int pattern_var_id : pattern) {
+        hash_multipliers.push_back(num_states);
+        VariableProxy var = task_proxy.get_variables()[pattern_var_id];
+        if (utils::is_product_within_limit(num_states, var.get_domain_size(),
+                                           numeric_limits<int>::max())) {
+            num_states *= var.get_domain_size();
+        } else {
+            cerr << "Given pattern is too large! (Overflow occured): " << endl;
+            cerr << pattern << endl;
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        }
+    }
+    return Projection(Pattern(pattern), num_states, move(hash_multipliers));
+}
 
 PatternDatabaseFactory::PatternDatabaseFactory(
     const TaskProxy &task_proxy,
@@ -252,7 +248,9 @@ PatternDatabaseFactory::PatternDatabaseFactory(
     bool compute_plan,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan)
-    : pattern(pattern) {
+    : projection(compute_projection(task_proxy, pattern)) {
+    assert(operator_costs.empty() ||
+           operator_costs.size() == task_proxy.get_operators().size());
     create_pdb(task_proxy, operator_costs, compute_plan, rng, compute_wildcard_plan);
 }
 
@@ -269,14 +267,14 @@ void PatternDatabaseFactory::multiply_out(
         if (!eff_pairs.empty()) {
             operators.push_back(
                 AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost,
-                                 hash_multipliers, concrete_op_id));
+                                 projection, concrete_op_id));
         }
     } else {
         // For each possible value for the current variable, build an
         // abstract operator.
         int var_id = effects_without_pre[pos].var;
         int eff = effects_without_pre[pos].value;
-        VariableProxy var = variables[pattern[var_id]];
+        VariableProxy var = variables[projection.get_pattern()[var_id]];
         for (int i = 0; i < var.get_domain_size(); ++i) {
             if (i != eff) {
                 pre_pairs.emplace_back(var_id, i);
@@ -350,32 +348,10 @@ void PatternDatabaseFactory::create_pdb(
     const TaskProxy &task_proxy, const vector<int> &operator_costs,
     bool compute_plan, const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan) {
-    task_properties::verify_no_axioms(task_proxy);
-    task_properties::verify_no_conditional_effects(task_proxy);
-    assert(operator_costs.empty() ||
-           operator_costs.size() == task_proxy.get_operators().size());
-    assert(utils::is_sorted_unique(pattern));
-
-    utils::Timer timer;
-    hash_multipliers.reserve(pattern.size());
-    num_states = 1;
-    for (int pattern_var_id : pattern) {
-        hash_multipliers.push_back(num_states);
-        VariableProxy var = task_proxy.get_variables()[pattern_var_id];
-        if (utils::is_product_within_limit(num_states, var.get_domain_size(),
-                                           numeric_limits<int>::max())) {
-            num_states *= var.get_domain_size();
-        } else {
-            cerr << "Given pattern is too large! (Overflow occured): " << endl;
-            cerr << pattern << endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-        }
-    }
-
     VariablesProxy variables = task_proxy.get_variables();
     vector<int> variable_to_index(variables.size(), -1);
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        variable_to_index[pattern[i]] = i;
+    for (size_t i = 0; i < projection.get_pattern().size(); ++i) {
+        variable_to_index[projection.get_pattern()[i]] = i;
     }
 
     // compute all abstract operators
@@ -392,7 +368,7 @@ void PatternDatabaseFactory::create_pdb(
     }
 
     // build the match tree
-    MatchTree match_tree(task_proxy, pattern, hash_multipliers);
+    MatchTree match_tree(task_proxy, projection);
     for (size_t op_id = 0; op_id < operators.size(); ++op_id) {
         const AbstractOperator &op = operators[op_id];
         match_tree.insert(op_id, op.get_regression_preconditions());
@@ -408,12 +384,12 @@ void PatternDatabaseFactory::create_pdb(
         }
     }
 
-    distances.reserve(num_states);
+    distances.reserve(projection.get_num_abstract_states());
     // first implicit entry: priority, second entry: index for an abstract state
     priority_queues::AdaptiveQueue<int> pq;
 
     // initialize queue
-    for (int state_index = 0; state_index < num_states; ++state_index) {
+    for (int state_index = 0; state_index < projection.get_num_abstract_states(); ++state_index) {
         if (is_goal_state(state_index, abstract_goals, variables)) {
             pq.push(0, state_index);
             distances.push_back(0);
@@ -433,7 +409,7 @@ void PatternDatabaseFactory::create_pdb(
           optimal plan because we do not minimize the number of used zero-cost
           operators.
          */
-        generating_op_ids.resize(num_states);
+        generating_op_ids.resize(projection.get_num_abstract_states());
     }
 
     // Dijkstra loop
@@ -479,7 +455,7 @@ void PatternDatabaseFactory::create_pdb(
         State initial_state = task_proxy.get_initial_state();
         initial_state.unpack();
         int current_state =
-            hash_index(initial_state.get_unpacked_values());
+            projection.rank(initial_state.get_unpacked_values());
         if (distances[current_state] != numeric_limits<int>::max()) {
             while (!is_goal_state(current_state, abstract_goals, variables)) {
                 int op_id = generating_op_ids[current_state];
@@ -520,10 +496,9 @@ bool PatternDatabaseFactory::is_goal_state(
     const VariablesProxy &variables) const {
     for (const FactPair &abstract_goal : abstract_goals) {
         int pattern_var_id = abstract_goal.var;
-        int var_id = pattern[pattern_var_id];
+        int var_id = projection.get_pattern()[pattern_var_id];
         VariableProxy var = variables[var_id];
-        int temp = state_index / hash_multipliers[pattern_var_id];
-        int val = temp % var.get_domain_size();
+        int val = projection.unrank(state_index, pattern_var_id, var.get_domain_size());
         if (val != abstract_goal.value) {
             return false;
         }
@@ -531,20 +506,10 @@ bool PatternDatabaseFactory::is_goal_state(
     return true;
 }
 
-int PatternDatabaseFactory::hash_index(const vector<int> &state) const {
-    int index = 0;
-    for (size_t i = 0; i < pattern.size(); ++i) {
-        index += hash_multipliers[i] * state[pattern[i]];
-    }
-    return index;
-}
-
 shared_ptr<PatternDatabase> PatternDatabaseFactory::extract_pdb() {
     return make_shared<PatternDatabase>(
-        move(pattern),
-        num_states,
-        move(distances),
-        move(hash_multipliers));
+        move(projection),
+        move(distances));
 }
 
 shared_ptr<PatternDatabase> compute_pdb(

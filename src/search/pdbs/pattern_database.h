@@ -8,51 +8,66 @@
 #include <vector>
 
 namespace pdbs {
-class PatternDatabase {
+class Projection {
     Pattern pattern;
+    int num_abstract_states;
+    std::vector<int> hash_multipliers;
+public:
+    Projection(
+        Pattern &&pattern,
+        int num_states,
+        std::vector<int> &&hash_multipliers);
 
-    // size of the PDB
-    int num_states;
+    // Compute the hash index (aka. the rank) of the given concrete state.
+    int rank(const std::vector<int> &state) const;
+
+    /*
+      Compute the value of a given variable in the abstract state given as
+      (hash) index.
+    */
+    int unrank(int index, int var, int domain_size) const;
+
+    const Pattern &get_pattern() const {
+        return pattern;
+    }
+
+    int get_num_abstract_states() const {
+        return num_abstract_states;
+    }
+
+    int get_multiplier(int var) const {
+        return hash_multipliers[var];
+    }
+};
+
+class PatternDatabase {
+    Projection projection;
 
     /*
       final h-values for abstract-states.
       dead-ends are represented by numeric_limits<int>::max()
     */
     std::vector<int> distances;
-
-    // multipliers for each variable for perfect hash function
-    std::vector<int> hash_multipliers;
-
-    /*
-      The given concrete state is used to calculate the index of the
-      according abstract state. This is only used for table lookup
-      (distances) during search.
-    */
-    int hash_index(const std::vector<int> &state) const;
 public:
     PatternDatabase(
-        Pattern &&pattern,
-        int num_states,
-        std::vector<int> &&distances,
-        std::vector<int> &&hash_multipliers);
-
+        Projection &&projection,
+        std::vector<int> &&distances);
     int get_value(const std::vector<int> &state) const;
 
-    // Returns the pattern (i.e. all variables used) of the PDB
     const Pattern &get_pattern() const {
-        return pattern;
+        return projection.get_pattern();
     }
 
-    // Returns the size (number of abstract states) of the PDB
+    // The size of the PDB is the number of abstract states.
     int get_size() const {
-        return num_states;
+        return projection.get_num_abstract_states();
     }
 
     /*
-      Returns the average h-value over all states, where dead-ends are
+      Return the average h-value over all states, where dead-ends are
       ignored (they neither increase the sum of all h-values nor the
       number of entries for the mean value calculation). If all states
-      are dead-ends, infinity is returned.
+      are dead-ends, return infinity.
       Note: This is only calculated when called; avoid repeated calls to
       this method!
     */

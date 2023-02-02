@@ -6,27 +6,37 @@
 using namespace std;
 
 namespace pdbs {
-PatternDatabase::PatternDatabase(
+Projection::Projection(
     Pattern &&pattern,
-    int num_states,
-    vector<int> &&distances,
+    int num_abstract_states,
     vector<int> &&hash_multipliers)
     : pattern(move(pattern)),
-      num_states(num_states),
-      distances(move(distances)),
+      num_abstract_states(num_abstract_states),
       hash_multipliers(move(hash_multipliers)) {
 }
 
-int PatternDatabase::hash_index(const vector<int> &state) const {
-    int index = 0;
+int Projection::rank(const vector<int> &state) const {
+    size_t index = 0;
     for (size_t i = 0; i < pattern.size(); ++i) {
         index += hash_multipliers[i] * state[pattern[i]];
     }
     return index;
 }
 
+int Projection::unrank(int index, int var, int domain_size) const {
+    int temp = index / hash_multipliers[var];
+    return temp % domain_size;
+}
+
+PatternDatabase::PatternDatabase(
+    Projection &&projection,
+    vector<int> &&distances)
+    : projection(move(projection)),
+      distances(move(distances)) {
+}
+
 int PatternDatabase::get_value(const vector<int> &state) const {
-    return distances[hash_index(state)];
+    return distances[projection.rank(state)];
 }
 
 double PatternDatabase::compute_mean_finite_h() const {
