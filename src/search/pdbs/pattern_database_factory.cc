@@ -22,6 +22,73 @@
 using namespace std;
 
 namespace pdbs {
+class AbstractOperator {
+    /*
+      This class represents an abstract operator how it is needed for
+      the regression search performed during the PDB-construction. As
+      all abstract states are represented as a number, abstract
+      operators don't have "usual" effects but "hash effects", i.e. the
+      change (as number) the abstract operator implies on a given
+      abstract state.
+    */
+    int concrete_op_id;
+
+    int cost;
+
+    /*
+      Preconditions for the regression search, corresponds to normal
+      effects and prevail of concrete operators.
+    */
+    vector<FactPair> regression_preconditions;
+
+    /*
+      Effect of the operator during regression search on a given
+      abstract state number.
+    */
+    int hash_effect;
+public:
+    /*
+      Abstract operators are built from concrete operators. The
+      parameters follow the usual name convention of SAS+ operators,
+      meaning prevail, preconditions and effects are all related to
+      progression search.
+    */
+    AbstractOperator(const vector<FactPair> &prevail,
+                     const vector<FactPair> &preconditions,
+                     const vector<FactPair> &effects,
+                     int cost,
+                     const vector<int> &hash_multipliers,
+                     int concrete_op_id);
+    ~AbstractOperator();
+
+    /*
+      Returns variable value pairs which represent the preconditions of
+      the abstract operator in a regression search
+    */
+    const vector<FactPair> &get_regression_preconditions() const {
+        return regression_preconditions;
+    }
+
+    /*
+      Returns the effect of the abstract operator in form of a value
+      change (+ or -) to an abstract state index
+    */
+    int get_hash_effect() const {return hash_effect;}
+
+    int get_concrete_op_id() const {
+        return concrete_op_id;
+    }
+
+    /*
+      Returns the cost of the abstract operator (same as the cost of
+      the original concrete operator)
+    */
+    int get_cost() const {return cost;}
+    void dump(const Pattern &pattern,
+              const VariablesProxy &variables,
+              utils::LogProxy &log) const;
+};
+
 AbstractOperator::AbstractOperator(const vector<FactPair> &prev_pairs,
                                    const vector<FactPair> &pre_pairs,
                                    const vector<FactPair> &eff_pairs,
@@ -72,6 +139,111 @@ void AbstractOperator::dump(const Pattern &pattern,
         log << "Hash effect:" << hash_effect << endl;
     }
 }
+
+class PatternDatabaseFactory {
+    Pattern pattern;
+
+    // size of the PDB
+    int num_states;
+
+    /*
+      final h-values for abstract-states.
+      dead-ends are represented by numeric_limits<int>::max()
+    */
+    vector<int> distances;
+
+    vector<int> generating_op_ids;
+    vector<vector<OperatorID>> wildcard_plan;
+
+    // multipliers for each variable for perfect hash function
+    vector<int> hash_multipliers;
+
+    /*
+      Recursive method; called by build_abstract_operators. In the case
+      of a precondition with value = -1 in the concrete operator, all
+      multiplied out abstract operators are computed, i.e. for all
+      possible values of the variable (with precondition = -1), one
+      abstract operator with a concrete value (!= -1) is computed.
+    */
+    void multiply_out(
+        int pos, int cost,
+        vector<FactPair> &prev_pairs,
+        vector<FactPair> &pre_pairs,
+        vector<FactPair> &eff_pairs,
+        const vector<FactPair> &effects_without_pre,
+        const VariablesProxy &variables,
+        int concrete_op_id,
+        vector<AbstractOperator> &operators);
+
+    /*
+      Computes all abstract operators for a given concrete operator (by
+      its global operator number). Initializes data structures for initial
+      call to recursive method multiply_out. variable_to_index maps
+      variables in the task to their index in the pattern or -1.
+    */
+    void build_abstract_operators(
+        const OperatorProxy &op, int cost,
+        const vector<int> &variable_to_index,
+        const VariablesProxy &variables,
+        vector<AbstractOperator> &operators);
+
+    /*
+      Computes all abstract operators, builds the match tree (successor
+      generator) and then does a Dijkstra regression search to compute
+      all final h-values (stored in distances). operator_costs can
+      specify individual operator costs for each operator for action
+      cost partitioning. If left empty, default operator costs are used.
+    */
+    void create_pdb(
+        const TaskProxy &task_proxy,
+        const vector<int> &operator_costs,
+        bool compute_plan,
+        const shared_ptr<utils::RandomNumberGenerator> &rng,
+        bool compute_wildcard_plan);
+
+    /*
+      For a given abstract state (given as index), the according values
+      for each variable in the state are computed and compared with the
+      given pairs of goal variables and values. Returns true iff the
+      state is a goal state.
+    */
+    bool is_goal_state(
+        int state_index,
+        const vector<FactPair> &abstract_goals,
+        const VariablesProxy &variables) const;
+
+    /*
+      The given concrete state is used to calculate the index of the
+      according abstract state. This is only used for table lookup
+      (distances) during search.
+    */
+    int hash_index(const vector<int> &state) const;
+public:
+    PatternDatabaseFactory(
+        const TaskProxy &task_proxy,
+        const Pattern &pattern,
+        const vector<int> &operator_costs = vector<int>(),
+        bool compute_plan = false,
+        const shared_ptr<utils::RandomNumberGenerator> &rng = nullptr,
+        bool compute_wildcard_plan = false);
+    ~PatternDatabaseFactory() = default;
+
+    shared_ptr<PatternDatabase> extract_pdb();
+
+    // Returns the pattern (i.e. all variables used) of the PDB
+    const Pattern &get_pattern() const {
+        return pattern;
+    }
+
+    // Returns the size (number of abstract states) of the PDB
+    int get_size() const {
+        return num_states;
+    }
+
+    vector<vector<OperatorID>> && extract_wildcard_plan() {
+        return move(wildcard_plan);
+    };
+};
 
 PatternDatabaseFactory::PatternDatabaseFactory(
     const TaskProxy &task_proxy,
