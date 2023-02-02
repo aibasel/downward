@@ -142,9 +142,7 @@ void AbstractOperator::dump(const Pattern &pattern,
 
 class PatternDatabaseFactory {
     Projection projection;
-
     vector<int> distances;
-
     vector<int> generating_op_ids;
     vector<vector<OperatorID>> wildcard_plan;
 
