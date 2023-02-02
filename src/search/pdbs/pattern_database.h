@@ -24,10 +24,10 @@ class PatternDatabase {
     std::vector<int> hash_multipliers;
 
     /*
-    The given concrete state is used to calculate the index of the
-    according abstract state. This is only used for table lookup
-    (distances) during search.
-  */
+      The given concrete state is used to calculate the index of the
+      according abstract state. This is only used for table lookup
+      (distances) during search.
+    */
     int hash_index(const std::vector<int> &state) const;
 public:
     PatternDatabase(
