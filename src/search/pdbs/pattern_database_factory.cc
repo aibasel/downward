@@ -522,13 +522,15 @@ shared_ptr<PatternDatabase> compute_pdb(
 }
 
 tuple<shared_ptr<PatternDatabase>, vector<vector<OperatorID>>>
-    compute_pdb_and_wildcard_plan(
+compute_pdb_and_wildcard_plan(
     const TaskProxy &task_proxy,
     const Pattern &pattern,
     const vector<int> &operator_costs,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan) {
     PatternDatabaseFactory pdb_factory(task_proxy, pattern, operator_costs, true, rng, compute_wildcard_plan);
-    return {pdb_factory.extract_pdb(), pdb_factory.extract_wildcard_plan()};
+    return {
+               pdb_factory.extract_pdb(), pdb_factory.extract_wildcard_plan()
+    };
 }
 }
