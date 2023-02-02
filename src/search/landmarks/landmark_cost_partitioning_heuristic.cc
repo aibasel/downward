@@ -1,7 +1,6 @@
 #include "landmark_cost_partitioning_heuristic.h"
 
 #include "landmark_cost_assignment.h"
-#include "landmark_factory.h"
 #include "landmark_status_manager.h"
 
 #include "../plugins/plugin.h"
@@ -17,34 +16,7 @@ using namespace std;
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     const plugins::Options &opts)
-    : LandmarkHeuristic(opts) {
-    if (log.is_at_least_normal()) {
-        log << "Initializing landmark cost partitioning heuristic..." << endl;
-    }
-
-    /*
-      TODO: The landmark graph is already constructed by the base class for
-       *LandmarkHeuristic*. The only reason why we get the landmark factory from
-       the options again is to check whether it produces reasonable orderings.
-       The check for reasonable orders can be removed once landmark progression
-       correctly handles them (issue1036).
-    */
-    shared_ptr<LandmarkFactory> lm_graph_factory =
-        opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
-    if (lm_graph_factory->computes_reasonable_orders()) {
-        cerr << "Reasonable orderings should not be used for "
-             << "admissible heuristics" << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-    } else if (task_properties::has_axioms(task_proxy)) {
-        cerr << "cost partitioning does not support axioms" << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
-    } else if (task_properties::has_conditional_effects(task_proxy) &&
-               !conditional_effects_supported) {
-        cerr << "conditional effects not supported by the landmark "
-             << "generation method" << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
-    }
-
+    : LandmarkHeuristic(opts, "cost partitioning", false, false, false) {
     if (opts.get<bool>("optimal")) {
         lm_cost_assignment =
             utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(

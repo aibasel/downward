@@ -16,13 +16,10 @@ using namespace std;
 
 namespace landmarks {
 LandmarkCountHeuristic::LandmarkCountHeuristic(const plugins::Options &opts)
-    : LandmarkHeuristic(opts),
+    : LandmarkHeuristic(opts, "count", true, true, true),
       dead_ends_reliable((!task_properties::has_axioms(task_proxy) &&
                           (!task_properties::has_conditional_effects(task_proxy)
                            || conditional_effects_supported))) {
-    if (log.is_at_least_normal()) {
-        log << "Initializing landmark count heuristic..." << endl;
-    }
     compute_landmark_costs();
 }
 

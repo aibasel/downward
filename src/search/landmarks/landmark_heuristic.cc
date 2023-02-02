@@ -6,21 +6,28 @@
 
 #include "../plugins/plugin.h"
 #include "../task_utils/successor_generator.h"
+#include "../task_utils/task_properties.h"
 #include "../tasks/cost_adapted_task.h"
 #include "../tasks/root_task.h"
 
 using namespace std;
 
 namespace landmarks {
-LandmarkHeuristic::LandmarkHeuristic(const plugins::Options &opts)
+LandmarkHeuristic::LandmarkHeuristic(
+    const plugins::Options &opts,
+    const string &name,
+    bool heuristic_supports_reasonable_orderings,
+    bool heuristic_supports_axioms,
+    bool heuristic_supports_conditional_effects)
     : Heuristic(opts),
       use_preferred_operators(opts.get<bool>("pref")),
       conditional_effects_supported(
           opts.get<shared_ptr<LandmarkFactory>>(
-              "lm_factory")->supports_conditional_effects()),
+              "lm_factory")->supports_conditional_effects()
+          && heuristic_supports_conditional_effects),
       successor_generator(nullptr) {
     if (log.is_at_least_normal()) {
-        log << "Initializing landmark heuristic base..." << endl;
+        log << "Initializing landmark " << name << " heuristic..." << endl;
     }
 
     /*
@@ -42,6 +49,22 @@ LandmarkHeuristic::LandmarkHeuristic(const plugins::Options &opts)
     }
     shared_ptr<LandmarkFactory> lm_graph_factory =
         opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
+
+    if (!heuristic_supports_reasonable_orderings
+        && lm_graph_factory->computes_reasonable_orders()) {
+        cerr << "Reasonable orderings should not be used for "
+             << "admissible heuristics" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    } else if (!heuristic_supports_axioms
+               && task_properties::has_axioms(task_proxy)) {
+        cerr << "cost partitioning does not support axioms" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+    } else if (!conditional_effects_supported
+               && task_properties::has_conditional_effects(task_proxy)) {
+        cerr << "conditional effects not supported by the landmark "
+             << "generation method" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+    }
 
     lm_graph = lm_graph_factory->compute_lm_graph(task);
     assert(lm_graph_factory->achievers_are_calculated());

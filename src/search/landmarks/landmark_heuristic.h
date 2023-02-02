@@ -44,7 +44,11 @@ protected:
         const State &state, const BitsetView &reached);
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    explicit LandmarkHeuristic(const plugins::Options &opts);
+    LandmarkHeuristic(const plugins::Options &opts,
+                      const std::string &name,
+                      bool heuristic_supports_reasonable_orderings,
+                      bool heuristic_supports_axioms,
+                      bool heuristic_supports_conditional_effects);
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) override {
