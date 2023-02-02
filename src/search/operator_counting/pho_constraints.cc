@@ -1,13 +1,10 @@
 #include "pho_constraints.h"
 
 #include "../lp/lp_solver.h"
-
 #include "../plugins/plugin.h"
-
 #include "../pdbs/pattern_database.h"
 #include "../pdbs/pattern_generator.h"
 #include "../pdbs/utils.h"
-
 #include "../utils/markup.h"
 
 #include <cassert>
