@@ -384,15 +384,14 @@ shared_ptr<PatternDatabase> compute_pdb(
     return pdb_factory.extract_pdb();
 }
 
-shared_ptr<PatternDatabase> compute_pdb_and_plan(
+tuple<shared_ptr<PatternDatabase>, vector<vector<OperatorID>>>
+    compute_pdb_and_wildcard_plan(
     const TaskProxy &task_proxy,
     const Pattern &pattern,
-    vector<vector<OperatorID>> &wildcard_plan,
     const vector<int> &operator_costs,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan) {
     PatternDatabaseFactory pdb_factory(task_proxy, pattern, operator_costs, true, rng, compute_wildcard_plan);
-    wildcard_plan = pdb_factory.extract_wildcard_plan();
-    return pdb_factory.extract_pdb();
+    return {pdb_factory.extract_pdb(), pdb_factory.extract_wildcard_plan()};
 }
 }
