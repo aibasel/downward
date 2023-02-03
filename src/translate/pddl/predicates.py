@@ -1,5 +1,7 @@
+from .pddl_types import TypedObject
+
 class Predicate:
-    def __init__(self, name, arguments):
+    def __init__(self, name: str, arguments: list[TypedObject]) -> None:
         self.name = name
         self.arguments = arguments
 

@@ -1,11 +1,17 @@
 import copy
 
 from . import conditions
+from .conditions import Condition, Literal
+from .effects import Effect
+from .f_expression import Increase
+from .pddl_types import TypedObject
 
 
 class Action:
-    def __init__(self, name, parameters, num_external_parameters,
-                 precondition, effects, cost):
+    def __init__(self, name: str, parameters: list[TypedObject],
+            num_external_parameters: int,
+            precondition: Condition, effects: list[Effect],
+            cost: None | Increase):
         assert 0 <= num_external_parameters <= len(parameters)
         self.name = name
         self.parameters = parameters
@@ -101,7 +107,8 @@ class Action:
 
 
 class PropositionalAction:
-    def __init__(self, name, precondition, effects, cost):
+    def __init__(self, name: str, precondition: list[Literal], effects:
+            list[tuple[list[Literal], Literal]], cost: int):
         self.name = name
         self.precondition = precondition
         self.add_effects = []

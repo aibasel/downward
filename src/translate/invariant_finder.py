@@ -126,6 +126,7 @@ def useful_groups(invariants, initial_facts):
     for (invariant, parameters) in useful_groups:
         yield [part.instantiate(parameters) for part in sorted(invariant.parts)]
 
+# returns a list of mutex groups (parameters instantiated, counted variables not)
 def get_groups(task, reachable_action_params=None):
     with timers.timing("Finding invariants", block=True):
         invariants = sorted(find_invariants(task, reachable_action_params))
