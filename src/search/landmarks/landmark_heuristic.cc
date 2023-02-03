@@ -59,8 +59,8 @@ LandmarkHeuristic::LandmarkHeuristic(
                && task_properties::has_axioms(task_proxy)) {
         cerr << "cost partitioning does not support axioms" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
-    } else if (!conditional_effects_supported
-               && task_properties::has_conditional_effects(task_proxy)) {
+    } else if (task_properties::has_conditional_effects(task_proxy)
+               && !conditional_effects_supported) {
         cerr << "conditional effects not supported by the landmark "
              << "generation method" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
