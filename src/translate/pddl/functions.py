@@ -1,7 +1,9 @@
+from typing import List
+
 from .pddl_types import TypedObject
 
 class Function:
-    def __init__(self, name: str, arguments: list[TypedObject],
+    def __init__(self, name: str, arguments: List[TypedObject],
                  type_name: str) -> None:
         self.name = name
         self.arguments = arguments

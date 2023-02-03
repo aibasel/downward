@@ -1,4 +1,4 @@
-from typing import Iterable, Union
+from typing import Iterable, List, Union
 
 from . import conditions
 from .f_expression import Increase
@@ -20,7 +20,7 @@ def cartesian_product(*sequences):
 
 
 class Effect:
-    def __init__(self, parameters: list[TypedObject], condition: Condition,
+    def __init__(self, parameters: List[TypedObject], condition: Condition,
                  literal: Literal) -> None:
         self.parameters = parameters
         self.condition = condition
@@ -112,7 +112,7 @@ class ConditionalEffect:
         return None, self
 
 class UniversalEffect:
-    def __init__(self, parameters: list[TypedObject], effect: AnyEffect):
+    def __init__(self, parameters: List[TypedObject], effect: AnyEffect):
         if isinstance(effect, UniversalEffect):
             self.parameters = parameters + effect.parameters
             self.effect = effect.effect
@@ -137,7 +137,7 @@ class UniversalEffect:
         return None, self
 
 class ConjunctiveEffect:
-    def __init__(self, effects: list[AnyEffect]) -> None:
+    def __init__(self, effects: List[AnyEffect]) -> None:
         flattened_effects = []
         for effect in effects:
             if isinstance(effect, ConjunctiveEffect):

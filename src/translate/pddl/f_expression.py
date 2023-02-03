@@ -1,3 +1,5 @@
+from typing import List
+
 class FunctionalExpression:
     def __init__(self, parts):
         self.parts = tuple(parts)
@@ -27,7 +29,7 @@ class NumericConstant(FunctionalExpression):
 
 class PrimitiveNumericExpression(FunctionalExpression):
     parts = ()
-    def __init__(self, symbol: str, args: list[str]) -> None:
+    def __init__(self, symbol: str, args: List[str]) -> None:
         self.symbol = symbol
         self.args = tuple(args)
         self.hash = hash((self.__class__, self.symbol, self.args))

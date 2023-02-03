@@ -2,7 +2,7 @@
 
 
 from collections import defaultdict
-from typing import Any, Optional
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import build_model
 import pddl_to_prolog
@@ -53,13 +53,13 @@ def instantiate_goal(goal, init_facts, fluent_facts):
 
 # the input task must have be normalized
 # the model has been computed by build_model.compute_model
-def instantiate(task: pddl.Task, model: Any) -> tuple[
+def instantiate(task: pddl.Task, model: Any) -> Tuple[
              bool, # relaxed_reachable
-             set[pddl.Literal], # fluent_facts (ground)
-             list[pddl.PropositionalAction], # instantiated_actions
-             Optional[list[pddl.Literal]], # instantiated_goal
-             list[pddl.PropositionalAxiom], # instantiated_axioms
-             dict[pddl.Action, list[str]] # reachable_action_parameters
+             Set[pddl.Literal], # fluent_facts (ground)
+             List[pddl.PropositionalAction], # instantiated_actions
+             Optional[List[pddl.Literal]], # instantiated_goal
+             List[pddl.PropositionalAxiom], # instantiated_axioms
+             Dict[pddl.Action, List[str]] # reachable_action_parameters
             ]:
     relaxed_reachable = False
     fluent_facts = get_fluent_facts(task, model)

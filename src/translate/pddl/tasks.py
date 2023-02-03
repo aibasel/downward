@@ -1,4 +1,4 @@
-from typing import Union
+from typing import List, Union
 
 from . import axioms
 from . import predicates
@@ -13,10 +13,10 @@ from .predicates import Predicate
 class Task:
     def __init__(self, domain_name: str, task_name: str,
                  requirements: "Requirements",
-                 types: list[Type], objects: list[TypedObject], predicates:
-                 list[Predicate], functions: list[Function],
-                 init: list[Union[Atom, Assign]], goal: Condition,
-                 actions: list[Action], axioms: list[Axiom],
+                 types: List[Type], objects: List[TypedObject], predicates:
+                 List[Predicate], functions: List[Function],
+                 init: List[Union[Atom, Assign]], goal: Condition,
+                 actions: List[Action], axioms: List[Axiom],
                  use_metric: bool) -> None:
         self.domain_name = domain_name
         self.task_name = task_name
@@ -69,7 +69,7 @@ class Task:
                 axiom.dump()
 
 class Requirements:
-    def __init__(self, requirements: list[str]):
+    def __init__(self, requirements: List[str]):
         self.requirements = requirements
         for req in requirements:
             assert req in (

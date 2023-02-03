@@ -2,6 +2,7 @@ import invariant_finder
 import options
 import pddl
 import timers
+from typing import Dict, List, Set, Tuple
 
 
 DEBUG = False
@@ -104,13 +105,13 @@ def collect_all_mutex_groups(groups, atoms):
 def sort_groups(groups):
     return sorted(sorted(group) for group in groups)
 
-def compute_groups(task: pddl.Task, atoms: set[pddl.Literal],
-    reachable_action_params: dict[pddl.Action, list[str]]) -> tuple[
-        list[list[pddl.Atom]], # groups
+def compute_groups(task: pddl.Task, atoms: Set[pddl.Literal],
+    reachable_action_params: Dict[pddl.Action, List[str]]) -> Tuple[
+        List[List[pddl.Atom]], # groups
         # -> all selected mutex groups plus singleton groups for uncovered facts
-        list[list[pddl.Atom]], # mutex_groups
+        List[List[pddl.Atom]], # mutex_groups
         # -> all found mutex groups plus singleton groups for uncovered facts
-        list[list[str]], # translation_key
+        List[List[str]], # translation_key
         # -> string representations of group atoms (plus one for "other value")
         ]:
     groups = invariant_finder.get_groups(task, reachable_action_params)

@@ -1,10 +1,12 @@
+from typing import List
+
 from . import conditions
 from .conditions import Atom, Condition, Literal
 from .pddl_types import TypedObject
 
 
 class Axiom:
-    def __init__(self, name: str, parameters: list[TypedObject],
+    def __init__(self, name: str, parameters: List[TypedObject],
                  num_external_parameters: int, condition: Condition):
         # For an explanation of num_external_parameters, see the
         # related Action class. Note that num_external_parameters
@@ -45,7 +47,7 @@ class Axiom:
 
 
 class PropositionalAxiom:
-    def __init__(self, name: str, condition: list[Literal], effect: Atom):
+    def __init__(self, name: str, condition: List[Literal], effect: Atom):
         self.name = name
         self.condition = condition
         self.effect = effect

@@ -4,9 +4,9 @@
 import os
 import sys
 import traceback
-from typing import Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 
-VarValPair = tuple[int, int]
+VarValPair = Tuple[int, int]
 
 def python_version_supported():
     return sys.version_info >= (3, 6)
@@ -55,10 +55,10 @@ simplified_effect_condition_counter = 0
 added_implied_precondition_counter = 0
 
 
-def strips_to_sas_dictionary(groups: list[list[pddl.Atom]],
-        assert_partial: bool) -> tuple[
-            list[int], # domain size for each variable
-            dict[pddl.Atom, list[VarValPair]]
+def strips_to_sas_dictionary(groups: List[List[pddl.Atom]],
+        assert_partial: bool) -> Tuple[
+            List[int], # domain size for each variable
+            Dict[pddl.Atom, List[VarValPair]]
             # variable, value pairs representing each atom
         ]:
     dictionary = {}
@@ -72,9 +72,9 @@ def strips_to_sas_dictionary(groups: list[list[pddl.Atom]],
 
 
 def translate_strips_conditions_aux(
-        conditions: list[pddl.Literal],
-        dictionary: dict[pddl.Atom, list[VarValPair]],
-        ranges: list[int]) -> Optional[list[dict[int, int]]]:
+        conditions: List[pddl.Literal],
+        dictionary: Dict[pddl.Atom, List[VarValPair]],
+        ranges: List[int]) -> Optional[List[Dict[int, int]]]:
     condition = {}
     for fact in conditions:
         if fact.negated:
@@ -159,11 +159,11 @@ def translate_strips_conditions_aux(
 
 
 def translate_strips_conditions(
-        conditions: list[pddl.Literal],
-        dictionary: dict[pddl.Atom, list[VarValPair]],
-        ranges: list[int],
-        mutex_dict: dict[pddl.Atom, list[VarValPair]],
-        mutex_ranges: list[int]) -> Optional[list[dict[int, int]]]:
+        conditions: List[pddl.Literal],
+        dictionary: Dict[pddl.Atom, List[VarValPair]],
+        ranges: List[int],
+        mutex_dict: Dict[pddl.Atom, List[VarValPair]],
+        mutex_ranges: List[int]) -> Optional[List[Dict[int, int]]]:
     if not conditions:
         return [{}]  # Quick exit for common case.
 
@@ -442,24 +442,24 @@ def dump_task(init, goals, actions, axioms, axiom_layer_dict):
 
 def translate_task(
         # var/value pairs representing each atom
-        strips_to_sas: dict[pddl.Atom, list[VarValPair]],
+        strips_to_sas: Dict[pddl.Atom, List[VarValPair]],
         # size of variable domains
-        ranges: list[int],
+        ranges: List[int],
         # string representation of each variable value
-        translation_key: list[list[str]],
+        translation_key: List[List[str]],
         # alternative var/value pairs representing each atom in full encoding
-        mutex_dict: dict[pddl.Atom, list[VarValPair]],
+        mutex_dict: Dict[pddl.Atom, List[VarValPair]],
         # size of variable domains in full encoding
-        mutex_ranges: list[int],
+        mutex_ranges: List[int],
         # representation of all mutex groups in terms of encoding from
         # strips_to_sas (or [] if not options.use_partial_encoding)
-        mutex_key: list[list[VarValPair]],
-        init: list[Union[pddl.Atom, pddl.Assign]],
-        goals: list[pddl.Literal],
-        actions: list[pddl.PropositionalAction],
-        axioms: list[pddl.PropositionalAxiom],
+        mutex_key: List[List[VarValPair]],
+        init: List[Union[pddl.Atom, pddl.Assign]],
+        goals: List[pddl.Literal],
+        actions: List[pddl.PropositionalAction],
+        axioms: List[pddl.PropositionalAxiom],
         metric: bool,
-        implied_facts: dict[VarValPair, list[VarValPair]]) -> sas_tasks.SASTask:
+        implied_facts: Dict[VarValPair, List[VarValPair]]) -> sas_tasks.SASTask:
     with timers.timing("Processing axioms", block=True):
         axioms, axiom_layer_dict = axiom_rules.handle_axioms(actions, axioms, goals,
                                                              options.layer_strategy)

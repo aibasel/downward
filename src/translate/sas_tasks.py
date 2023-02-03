@@ -1,8 +1,10 @@
+from typing import List, Tuple
+
 SAS_FILE_VERSION = 3
 
 DEBUG = False
 
-VarValPair = tuple[int, int]
+VarValPair = Tuple[int, int]
 
 class SASTask:
     """Planning task in finite-domain representation.
@@ -14,11 +16,11 @@ class SASTask:
 
     def __init__(self,
                  variables: "SASTask",
-                 mutexes: list["SASMutexGroup"],
+                 mutexes: List["SASMutexGroup"],
                  init: "SASInit",
                  goal: "SASGoal",
-                 operators: list["SASOperator"],
-                 axioms: list["SASAxiom"],
+                 operators: List["SASOperator"],
+                 axioms: List["SASAxiom"],
                  metric: bool) -> None:
         self.variables = variables
         self.mutexes = mutexes
@@ -116,8 +118,8 @@ class SASTask:
 
 
 class SASVariables:
-    def __init__(self, ranges: list[int], axiom_layers: list[int],
-                 value_names: list[list[str]]) -> None:
+    def __init__(self, ranges: List[int], axiom_layers: List[int],
+                 value_names: List[List[str]]) -> None:
         self.ranges = ranges
         self.axiom_layers = axiom_layers
         self.value_names = value_names
@@ -183,7 +185,7 @@ class SASVariables:
 
 
 class SASMutexGroup:
-    def __init__(self, facts: list[VarValPair]):
+    def __init__(self, facts: List[VarValPair]):
         self.facts = sorted(facts)
 
     def validate(self, variables):
@@ -235,7 +237,7 @@ class SASInit:
 
 
 class SASGoal:
-    def __init__(self, pairs: list[int, int]) -> None:
+    def __init__(self, pairs: List[Tuple[int, int]]) -> None:
         self.pairs = sorted(pairs)
 
     def validate(self, variables):
@@ -259,8 +261,8 @@ class SASGoal:
 
 
 class SASOperator:
-    def __init__(self, name: str, prevail: list[VarValPair], pre_post:
-            list[tuple[int, int, int, list[VarValPair]]], cost: int) -> None:
+    def __init__(self, name: str, prevail: List[VarValPair], pre_post:
+            List[Tuple[int, int, int, List[VarValPair]]], cost: int) -> None:
         self.name = name
         self.prevail = sorted(prevail)
         self.pre_post = self._canonical_pre_post(pre_post)
@@ -407,7 +409,7 @@ class SASOperator:
 
 
 class SASAxiom:
-    def __init__(self, condition: list[VarValPair], effect: VarValPair) -> None:
+    def __init__(self, condition: List[VarValPair], effect: VarValPair) -> None:
         self.condition = sorted(condition)
         self.effect = effect
         assert self.effect[1] in (0, 1)
