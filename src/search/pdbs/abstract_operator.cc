@@ -27,9 +27,9 @@ void AbstractOperator::dump(const Pattern &pattern,
         int var_id = regression_preconditions[i].var;
         int val = regression_preconditions[i].value;
         log << "Pattern variable: " << var_id
-                     << " (Concrete variable: " << pattern[var_id]
-                     << "  True name: " << variables[pattern[var_id]].get_name()
-                     << ") Value: " << val << endl;
+            << " (Concrete variable: " << pattern[var_id]
+            << "  True name: " << variables[pattern[var_id]].get_name()
+            << ") Value: " << val << endl;
     }
     log << "Hash effect: " << hash_effect << endl;
 }
@@ -49,8 +49,8 @@ static AbstractOperator build_abstract_operator(
     int cost) {
     vector<FactPair> regression_preconditions(prev_pairs);
     regression_preconditions.insert(regression_preconditions.end(),
-                         eff_pairs.begin(),
-                         eff_pairs.end());
+                                    eff_pairs.begin(),
+                                    eff_pairs.end());
     // Sort preconditions for MatchTree construction.
     sort(regression_preconditions.begin(), regression_preconditions.end());
     for (size_t i = 1; i < regression_preconditions.size(); ++i) {
