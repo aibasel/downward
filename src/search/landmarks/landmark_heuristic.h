@@ -18,7 +18,6 @@ class LandmarkHeuristic : public Heuristic {
 protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
     const bool use_preferred_operators;
-    const bool conditional_effects_supported;
 
     std::unique_ptr<LandmarkStatusManager> lm_status_manager;
     std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;

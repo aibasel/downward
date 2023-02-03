@@ -1,6 +1,7 @@
 #include "landmark_cost_partitioning_heuristic.h"
 
 #include "landmark_cost_assignment.h"
+#include "landmark_factory.h"
 #include "landmark_status_manager.h"
 
 #include "../plugins/plugin.h"
@@ -16,7 +17,9 @@ using namespace std;
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     const plugins::Options &opts)
-    : LandmarkHeuristic(opts, "cost partitioning", false, false, false) {
+    : LandmarkHeuristic(opts, "cost partitioning", false, false,
+                        opts.get<shared_ptr<LandmarkFactory>> (
+                            "lm_factory")->supports_conditional_effects()) {
     if (opts.get<bool>("optimal")) {
         lm_cost_assignment =
             utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
@@ -105,7 +108,10 @@ public:
             "support. See LPBuildInstructions.");
 
         document_language_support("action costs", "supported");
-        document_language_support("conditional_effects", "not supported");
+        document_language_support(
+            "conditional_effects",
+            "supported if the LandmarkFactory supports them; otherwise "
+            "not supported");
         document_language_support("axioms", "not allowed");
 
         document_property("admissible", "yes");

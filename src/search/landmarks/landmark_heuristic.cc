@@ -21,10 +21,6 @@ LandmarkHeuristic::LandmarkHeuristic(
     bool heuristic_supports_conditional_effects)
     : Heuristic(opts),
       use_preferred_operators(opts.get<bool>("pref")),
-      conditional_effects_supported(
-          opts.get<shared_ptr<LandmarkFactory>>(
-              "lm_factory")->supports_conditional_effects()
-          && heuristic_supports_conditional_effects),
       successor_generator(nullptr) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark " << name << " heuristic..." << endl;
@@ -60,7 +56,7 @@ LandmarkHeuristic::LandmarkHeuristic(
         cerr << "cost partitioning does not support axioms" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     } else if (task_properties::has_conditional_effects(task_proxy)
-               && !conditional_effects_supported) {
+               && !heuristic_supports_conditional_effects) {
         cerr << "conditional effects not supported by the landmark "
              << "generation method" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
