@@ -23,58 +23,7 @@
 using namespace std;
 
 namespace pdbs {
-class PatternDatabaseFactory {
-    Projection projection;
-    vector<int> distances;
-    vector<int> generating_op_ids;
-    vector<vector<OperatorID>> wildcard_plan;
-
-    /*
-      Computes all abstract operators, builds the match tree (successor
-      generator) and then does a Dijkstra regression search to compute
-      all final h-values (stored in distances). operator_costs can
-      specify individual operator costs for each operator for action
-      cost partitioning. If left empty, default operator costs are used.
-    */
-    void create_pdb(
-        const TaskProxy &task_proxy,
-        const vector<int> &operator_costs,
-        bool compute_plan,
-        const shared_ptr<utils::RandomNumberGenerator> &rng,
-        bool compute_wildcard_plan);
-
-    /*
-      For a given abstract state (given as index), the according values
-      for each variable in the state are computed and compared with the
-      given pairs of goal variables and values. Returns true iff the
-      state is a goal state.
-    */
-    bool is_goal_state(
-        int state_index,
-        const vector<FactPair> &abstract_goals,
-        const VariablesProxy &variables) const;
-public:
-    PatternDatabaseFactory(
-        const TaskProxy &task_proxy,
-        const Pattern &pattern,
-        const vector<int> &operator_costs = vector<int>(),
-        bool compute_plan = false,
-        const shared_ptr<utils::RandomNumberGenerator> &rng = nullptr,
-        bool compute_wildcard_plan = false);
-    ~PatternDatabaseFactory() = default;
-
-    shared_ptr<PatternDatabase> extract_pdb();
-
-    vector<vector<OperatorID>> && extract_wildcard_plan() {
-        return move(wildcard_plan);
-    };
-};
-
 static Projection compute_projection(const TaskProxy &task_proxy, const Pattern &pattern) {
-    task_properties::verify_no_axioms(task_proxy);
-    task_properties::verify_no_conditional_effects(task_proxy);
-    assert(utils::is_sorted_unique(pattern));
-
     vector<int> hash_multipliers;
     hash_multipliers.reserve(pattern.size());
     int num_states = 1;
@@ -91,6 +40,16 @@ static Projection compute_projection(const TaskProxy &task_proxy, const Pattern 
         }
     }
     return Projection(Pattern(pattern), num_states, move(hash_multipliers));
+}
+
+static vector<int> compute_variable_to_index(
+    const TaskProxy task_proxy, const Pattern &pattern) {
+    VariablesProxy variables = task_proxy.get_variables();
+    vector<int> variable_to_index(variables.size(), -1);
+    for (size_t i = 0; i < pattern.size(); ++i) {
+        variable_to_index[pattern[i]] = i;
+    }
+    return variable_to_index;
 }
 
 /*
@@ -187,7 +146,7 @@ static void multiply_out(
   Initializes data structures for initial call to recursive method
   multiply_out.
 */
-void build_abstract_operators(
+static void build_abstract_operators(
     const Projection &projection,
     const OperatorProxy &op,
     int cost,
@@ -240,30 +199,11 @@ void build_abstract_operators(
                  operators);
 }
 
-PatternDatabaseFactory::PatternDatabaseFactory(
+static vector<AbstractOperator> compute_abstract_operators(
     const TaskProxy &task_proxy,
-    const Pattern &pattern,
-    const vector<int> &operator_costs,
-    bool compute_plan,
-    const shared_ptr<utils::RandomNumberGenerator> &rng,
-    bool compute_wildcard_plan)
-    : projection(compute_projection(task_proxy, pattern)) {
-    assert(operator_costs.empty() ||
-           operator_costs.size() == task_proxy.get_operators().size());
-    create_pdb(task_proxy, operator_costs, compute_plan, rng, compute_wildcard_plan);
-}
-
-void PatternDatabaseFactory::create_pdb(
-    const TaskProxy &task_proxy, const vector<int> &operator_costs,
-    bool compute_plan, const shared_ptr<utils::RandomNumberGenerator> &rng,
-    bool compute_wildcard_plan) {
-    VariablesProxy variables = task_proxy.get_variables();
-    vector<int> variable_to_index(variables.size(), -1);
-    for (size_t i = 0; i < projection.get_pattern().size(); ++i) {
-        variable_to_index[projection.get_pattern()[i]] = i;
-    }
-
-    // compute all abstract operators
+    const Projection &projection,
+    const vector<int> &variable_to_index,
+    const vector<int> &operator_costs) {
     vector<AbstractOperator> operators;
     for (OperatorProxy op : task_proxy.get_operators()) {
         int op_cost;
@@ -276,15 +216,24 @@ void PatternDatabaseFactory::create_pdb(
             projection, op, op_cost, variable_to_index,
             task_proxy.get_variables(), operators);
     }
+    return operators;
+}
 
-    // build the match tree
+static MatchTree compute_match_tree(
+    const TaskProxy &task_proxy,
+    const Projection &projection,
+    const vector<AbstractOperator> &abstract_ops) {
     MatchTree match_tree(task_proxy, projection);
-    for (size_t op_id = 0; op_id < operators.size(); ++op_id) {
-        const AbstractOperator &op = operators[op_id];
+    for (size_t op_id = 0; op_id < abstract_ops.size(); ++op_id) {
+        const AbstractOperator &op = abstract_ops[op_id];
         match_tree.insert(op_id, op.get_regression_preconditions());
     }
+    return match_tree;
+}
 
-    // compute abstract goal var-val pairs
+static vector<FactPair> compute_abstract_goals(
+    const TaskProxy &task_proxy,
+    const vector<int> &variable_to_index) {
     vector<FactPair> abstract_goals;
     for (FactProxy goal : task_proxy.get_goals()) {
         int var_id = goal.get_variable().get_id();
@@ -293,33 +242,53 @@ void PatternDatabaseFactory::create_pdb(
             abstract_goals.emplace_back(variable_to_index[var_id], val);
         }
     }
+    return abstract_goals;
+}
 
+/*
+  For a given abstract state (given as index), the according values
+  for each variable in the state are computed and compared with the
+  given pairs of goal variables and values. Returns true iff the
+  state is a goal state.
+*/
+static bool is_goal_state(
+    const Projection &projection,
+    int state_index,
+    const vector<FactPair> &abstract_goals,
+    const VariablesProxy &variables) {
+    for (const FactPair &abstract_goal : abstract_goals) {
+        int pattern_var_id = abstract_goal.var;
+        int var_id = projection.get_pattern()[pattern_var_id];
+        VariableProxy var = variables[var_id];
+        int val = projection.unrank(state_index, pattern_var_id, var.get_domain_size());
+        if (val != abstract_goal.value) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static vector<int> compute_distances(
+    const VariablesProxy &variables,
+    const Projection &projection,
+    const vector<AbstractOperator> &abstract_ops,
+    const MatchTree &match_tree,
+    const vector<FactPair> &abstract_goals,
+    bool compute_plan,
+    vector<int> &generating_op_ids) {
+    vector<int> distances;
     distances.reserve(projection.get_num_abstract_states());
     // first implicit entry: priority, second entry: index for an abstract state
     priority_queues::AdaptiveQueue<int> pq;
 
     // initialize queue
     for (int state_index = 0; state_index < projection.get_num_abstract_states(); ++state_index) {
-        if (is_goal_state(state_index, abstract_goals, variables)) {
+        if (is_goal_state(projection, state_index, abstract_goals, variables)) {
             pq.push(0, state_index);
             distances.push_back(0);
         } else {
             distances.push_back(numeric_limits<int>::max());
         }
-    }
-
-    if (compute_plan) {
-        /*
-          If computing a plan during Dijkstra, we store, for each state,
-          an operator leading from that state to another state on a
-          strongly optimal plan of the PDB. We store the first operator
-          encountered during Dijkstra and only update it if the goal distance
-          of the state was updated. Note that in the presence of zero-cost
-          operators, this does not guarantee that we compute a strongly
-          optimal plan because we do not minimize the number of used zero-cost
-          operators.
-         */
-        generating_op_ids.resize(projection.get_num_abstract_states());
     }
 
     // Dijkstra loop
@@ -335,7 +304,7 @@ void PatternDatabaseFactory::create_pdb(
         vector<int> applicable_operator_ids;
         match_tree.get_applicable_operator_ids(state_index, applicable_operator_ids);
         for (int op_id : applicable_operator_ids) {
-            const AbstractOperator &op = operators[op_id];
+            const AbstractOperator &op = abstract_ops[op_id];
             int predecessor = state_index + op.get_hash_effect();
             int alternative_cost = distances[state_index] + op.get_cost();
             if (alternative_cost < distances[predecessor]) {
@@ -347,6 +316,53 @@ void PatternDatabaseFactory::create_pdb(
             }
         }
     }
+    return distances;
+}
+
+static shared_ptr<PatternDatabase> generate_pdb(
+    const TaskProxy &task_proxy,
+    const Pattern &pattern,
+    const vector<int> &operator_costs,
+    bool compute_plan,
+    const shared_ptr<utils::RandomNumberGenerator> &rng,
+    bool compute_wildcard_plan,
+    vector<vector<OperatorID>> *wildcard_plan = nullptr) {
+    task_properties::verify_no_axioms(task_proxy);
+    task_properties::verify_no_conditional_effects(task_proxy);
+    assert(utils::is_sorted_unique(pattern));
+    assert(operator_costs.empty() ||
+           operator_costs.size() == task_proxy.get_operators().size());
+
+    Projection projection = compute_projection(task_proxy, pattern);
+    vector<int> variable_to_index = compute_variable_to_index(
+        task_proxy, projection.get_pattern());
+    vector<AbstractOperator> abstract_ops = compute_abstract_operators(
+        task_proxy, projection, variable_to_index, operator_costs);
+    MatchTree match_tree = compute_match_tree(task_proxy, projection, abstract_ops);
+    vector<FactPair> abstract_goals = compute_abstract_goals(task_proxy, variable_to_index);
+
+    vector<int> generating_op_ids;
+    if (compute_plan) {
+        /*
+          If computing a plan during Dijkstra, we store, for each state,
+          an operator leading from that state to another state on a
+          strongly optimal plan of the PDB. We store the first operator
+          encountered during Dijkstra and only update it if the goal distance
+          of the state was updated. Note that in the presence of zero-cost
+          operators, this does not guarantee that we compute a strongly
+          optimal plan because we do not minimize the number of used zero-cost
+          operators.
+         */
+        generating_op_ids.resize(projection.get_num_abstract_states());
+    }
+    vector<int> distances = compute_distances(
+        task_proxy.get_variables(),
+        projection,
+        abstract_ops,
+        match_tree,
+        abstract_goals,
+        compute_plan,
+        generating_op_ids);
 
     // Compute abstract plan
     if (compute_plan) {
@@ -367,10 +383,10 @@ void PatternDatabaseFactory::create_pdb(
         int current_state =
             projection.rank(initial_state.get_unpacked_values());
         if (distances[current_state] != numeric_limits<int>::max()) {
-            while (!is_goal_state(current_state, abstract_goals, variables)) {
+            while (!is_goal_state(projection, current_state, abstract_goals, task_proxy.get_variables())) {
                 int op_id = generating_op_ids[current_state];
                 assert(op_id != -1);
-                const AbstractOperator &op = operators[op_id];
+                const AbstractOperator &op = abstract_ops[op_id];
                 int successor_state = current_state - op.get_hash_effect();
 
                 // Compute equivalent ops
@@ -378,7 +394,7 @@ void PatternDatabaseFactory::create_pdb(
                 vector<int> applicable_operator_ids;
                 match_tree.get_applicable_operator_ids(successor_state, applicable_operator_ids);
                 for (int applicable_op_id : applicable_operator_ids) {
-                    const AbstractOperator &applicable_op = operators[applicable_op_id];
+                    const AbstractOperator &applicable_op = abstract_ops[applicable_op_id];
                     int predecessor = successor_state + applicable_op.get_hash_effect();
                     if (predecessor == current_state && op.get_cost() == applicable_op.get_cost()) {
                         cheapest_operators.emplace_back(applicable_op.get_concrete_op_id());
@@ -386,11 +402,11 @@ void PatternDatabaseFactory::create_pdb(
                 }
                 if (compute_wildcard_plan) {
                     rng->shuffle(cheapest_operators);
-                    wildcard_plan.push_back(move(cheapest_operators));
+                    wildcard_plan->push_back(move(cheapest_operators));
                 } else {
                     OperatorID random_op_id = *rng->choose(cheapest_operators);
-                    wildcard_plan.emplace_back();
-                    wildcard_plan.back().push_back(random_op_id);
+                    wildcard_plan->emplace_back();
+                    wildcard_plan->back().push_back(random_op_id);
                 }
 
                 current_state = successor_state;
@@ -398,28 +414,7 @@ void PatternDatabaseFactory::create_pdb(
         }
         utils::release_vector_memory(generating_op_ids);
     }
-}
-
-bool PatternDatabaseFactory::is_goal_state(
-    int state_index,
-    const vector<FactPair> &abstract_goals,
-    const VariablesProxy &variables) const {
-    for (const FactPair &abstract_goal : abstract_goals) {
-        int pattern_var_id = abstract_goal.var;
-        int var_id = projection.get_pattern()[pattern_var_id];
-        VariableProxy var = variables[var_id];
-        int val = projection.unrank(state_index, pattern_var_id, var.get_domain_size());
-        if (val != abstract_goal.value) {
-            return false;
-        }
-    }
-    return true;
-}
-
-shared_ptr<PatternDatabase> PatternDatabaseFactory::extract_pdb() {
-    return make_shared<PatternDatabase>(
-        move(projection),
-        move(distances));
+    return make_shared<PatternDatabase>(move(projection), move(distances));
 }
 
 shared_ptr<PatternDatabase> compute_pdb(
@@ -427,8 +422,8 @@ shared_ptr<PatternDatabase> compute_pdb(
     const Pattern &pattern,
     const vector<int> &operator_costs,
     const shared_ptr<utils::RandomNumberGenerator> &rng) {
-    PatternDatabaseFactory pdb_factory(task_proxy, pattern, operator_costs, false, rng);
-    return pdb_factory.extract_pdb();
+    return generate_pdb(
+        task_proxy, pattern, operator_costs, false, rng, false);
 }
 
 tuple<shared_ptr<PatternDatabase>, vector<vector<OperatorID>>>
@@ -438,9 +433,11 @@ compute_pdb_and_wildcard_plan(
     const vector<int> &operator_costs,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan) {
-    PatternDatabaseFactory pdb_factory(task_proxy, pattern, operator_costs, true, rng, compute_wildcard_plan);
+    vector<vector<OperatorID>> wildcard_plan;
+    shared_ptr<PatternDatabase> pdb = generate_pdb(
+        task_proxy, pattern, operator_costs, true, rng, compute_wildcard_plan, &wildcard_plan);
     return {
-               pdb_factory.extract_pdb(), pdb_factory.extract_wildcard_plan()
+        pdb, wildcard_plan
     };
 }
 }
