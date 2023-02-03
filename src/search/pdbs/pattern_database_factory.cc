@@ -30,35 +30,6 @@ class PatternDatabaseFactory {
     vector<vector<OperatorID>> wildcard_plan;
 
     /*
-      Recursive method; called by build_abstract_operators. In the case
-      of a precondition with value = -1 in the concrete operator, all
-      multiplied out abstract operators are computed, i.e. for all
-      possible values of the variable (with precondition = -1), one
-      abstract operator with a concrete value (!= -1) is computed.
-    */
-    void multiply_out(
-        int pos, int cost,
-        vector<FactPair> &prev_pairs,
-        vector<FactPair> &pre_pairs,
-        vector<FactPair> &eff_pairs,
-        const vector<FactPair> &effects_without_pre,
-        const VariablesProxy &variables,
-        int concrete_op_id,
-        vector<AbstractOperator> &operators);
-
-    /*
-      Computes all abstract operators for a given concrete operator (by
-      its global operator number). Initializes data structures for initial
-      call to recursive method multiply_out. variable_to_index maps
-      variables in the task to their index in the pattern or -1.
-    */
-    void build_abstract_operators(
-        const OperatorProxy &op, int cost,
-        const vector<int> &variable_to_index,
-        const VariablesProxy &variables,
-        vector<AbstractOperator> &operators);
-
-    /*
       Computes all abstract operators, builds the match tree (successor
       generator) and then does a Dijkstra regression search to compute
       all final h-values (stored in distances). operator_costs can
@@ -135,96 +106,6 @@ PatternDatabaseFactory::PatternDatabaseFactory(
     create_pdb(task_proxy, operator_costs, compute_plan, rng, compute_wildcard_plan);
 }
 
-void PatternDatabaseFactory::multiply_out(
-    int pos, int cost, vector<FactPair> &prev_pairs,
-    vector<FactPair> &pre_pairs,
-    vector<FactPair> &eff_pairs,
-    const vector<FactPair> &effects_without_pre,
-    const VariablesProxy &variables,
-    int concrete_op_id,
-    vector<AbstractOperator> &operators) {
-    if (pos == static_cast<int>(effects_without_pre.size())) {
-        // All effects without precondition have been checked: insert op.
-        if (!eff_pairs.empty()) {
-            operators.push_back(
-                AbstractOperator(prev_pairs, pre_pairs, eff_pairs, cost,
-                                 projection, concrete_op_id));
-        }
-    } else {
-        // For each possible value for the current variable, build an
-        // abstract operator.
-        int var_id = effects_without_pre[pos].var;
-        int eff = effects_without_pre[pos].value;
-        VariableProxy var = variables[projection.get_pattern()[var_id]];
-        for (int i = 0; i < var.get_domain_size(); ++i) {
-            if (i != eff) {
-                pre_pairs.emplace_back(var_id, i);
-                eff_pairs.emplace_back(var_id, eff);
-            } else {
-                prev_pairs.emplace_back(var_id, i);
-            }
-            multiply_out(pos + 1, cost, prev_pairs, pre_pairs, eff_pairs,
-                         effects_without_pre, variables, concrete_op_id, operators);
-            if (i != eff) {
-                pre_pairs.pop_back();
-                eff_pairs.pop_back();
-            } else {
-                prev_pairs.pop_back();
-            }
-        }
-    }
-}
-
-void PatternDatabaseFactory::build_abstract_operators(
-    const OperatorProxy &op, int cost,
-    const vector<int> &variable_to_index,
-    const VariablesProxy &variables,
-    vector<AbstractOperator> &operators) {
-    // All variable value pairs that are a prevail condition
-    vector<FactPair> prev_pairs;
-    // All variable value pairs that are a precondition (value != -1)
-    vector<FactPair> pre_pairs;
-    // All variable value pairs that are an effect
-    vector<FactPair> eff_pairs;
-    // All variable value pairs that are a precondition (value = -1)
-    vector<FactPair> effects_without_pre;
-
-    size_t num_vars = variables.size();
-    vector<bool> has_precond_and_effect_on_var(num_vars, false);
-    vector<bool> has_precondition_on_var(num_vars, false);
-
-    for (FactProxy pre : op.get_preconditions())
-        has_precondition_on_var[pre.get_variable().get_id()] = true;
-
-    for (EffectProxy eff : op.get_effects()) {
-        int var_id = eff.get_fact().get_variable().get_id();
-        int pattern_var_id = variable_to_index[var_id];
-        int val = eff.get_fact().get_value();
-        if (pattern_var_id != -1) {
-            if (has_precondition_on_var[var_id]) {
-                has_precond_and_effect_on_var[var_id] = true;
-                eff_pairs.emplace_back(pattern_var_id, val);
-            } else {
-                effects_without_pre.emplace_back(pattern_var_id, val);
-            }
-        }
-    }
-    for (FactProxy pre : op.get_preconditions()) {
-        int var_id = pre.get_variable().get_id();
-        int pattern_var_id = variable_to_index[var_id];
-        int val = pre.get_value();
-        if (pattern_var_id != -1) { // variable occurs in pattern
-            if (has_precond_and_effect_on_var[var_id]) {
-                pre_pairs.emplace_back(pattern_var_id, val);
-            } else {
-                prev_pairs.emplace_back(pattern_var_id, val);
-            }
-        }
-    }
-    multiply_out(0, cost, prev_pairs, pre_pairs, eff_pairs, effects_without_pre,
-                 variables, op.get_id(), operators);
-}
-
 void PatternDatabaseFactory::create_pdb(
     const TaskProxy &task_proxy, const vector<int> &operator_costs,
     bool compute_plan, const shared_ptr<utils::RandomNumberGenerator> &rng,
@@ -245,7 +126,8 @@ void PatternDatabaseFactory::create_pdb(
             op_cost = operator_costs[op.get_id()];
         }
         build_abstract_operators(
-            op, op_cost, variable_to_index, variables, operators);
+            projection, op, op_cost, variable_to_index,
+            task_proxy.get_variables(), operators);
     }
 
     // build the match tree

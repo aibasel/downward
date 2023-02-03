@@ -39,18 +39,11 @@ class AbstractOperator {
     */
     int hash_effect;
 public:
-    /*
-      Abstract operators are built from concrete operators. The
-      parameters follow the usual name convention of SAS+ operators,
-      meaning prevail, preconditions and effects are all related to
-      progression search.
-    */
-    AbstractOperator(const std::vector<FactPair> &prevail,
-                     const std::vector<FactPair> &preconditions,
-                     const std::vector<FactPair> &effects,
-                     int cost,
-                     const Projection &pojection,
-                     int concrete_op_id);
+    AbstractOperator(
+        int concrete_op_id,
+        int cost,
+        std::vector<FactPair> &&preconditions,
+        int hash_effect);
 
     /*
       Returns variable value pairs which represent the preconditions of
@@ -84,6 +77,18 @@ public:
               const VariablesProxy &variables,
               utils::LogProxy &log) const;
 };
+
+/*
+  For the given concrete operator, compute all induced abstract operators.
+  The result is added to the given parameter operators.
+*/
+extern void build_abstract_operators(
+    const Projection &projection,
+    const OperatorProxy &op,
+    int cost,
+    const std::vector<int> &variable_to_index,
+    const VariablesProxy &variables,
+    std::vector<AbstractOperator> &operators);
 }
 
 #endif
