@@ -1,4 +1,5 @@
 import copy
+from typing import Optional
 
 from . import conditions
 from .conditions import Condition, Literal
@@ -11,7 +12,7 @@ class Action:
     def __init__(self, name: str, parameters: list[TypedObject],
             num_external_parameters: int,
             precondition: Condition, effects: list[Effect],
-            cost: None | Increase):
+            cost: Optional(Increase)):
         assert 0 <= num_external_parameters <= len(parameters)
         self.name = name
         self.parameters = parameters
