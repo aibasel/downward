@@ -16,7 +16,7 @@ CONFIGS = [
         "lazy(alt([single(hff),single(hff,pref_only=true),single(hlm),single(hlm,pref_only=true),type_based([hff,g()])],boost=1000),preferred=[hff,hlm],cost_type=one,reopen_closed=false,randomize_successors=true,preferred_successors_first=false,bound=BOUND)))"]),
     (25, ["--search",
         "let(lmg, lm_rhw(only_causal_landmarks=false,disjunctive_landmarks=true,use_orders=false),"
-        "let(hlm, lmcount(lmg,admissible=true,transform=adapt_costs(one)),"
+        "let(hlm, lmcp(lmg,transform=adapt_costs(one)),"
         "let(hff, ff(transform=adapt_costs(one)),"
         "lazy(alt([type_based([g()]),single(hlm),single(hlm,pref_only=true),single(hff),single(hff,pref_only=true)],boost=0),preferred=[hlm],reopen_closed=false,cost_type=plusone,bound=BOUND))))"]),
     (135, ["--search",
@@ -34,7 +34,7 @@ CONFIGS = [
     (57, ["--search",
         "let(lmg, lm_rhw(only_causal_landmarks=false,disjunctive_landmarks=true,use_orders=false),"
         "let(hcg, cg(transform=adapt_costs(plusone)),"
-        "let(hlm, lmcount(lmg,admissible=true,transform=adapt_costs(plusone)),"
+        "let(hlm, lmcp(lmg,transform=adapt_costs(plusone)),"
         "let(hff, ff(transform=adapt_costs(plusone)),"
         "lazy(alt([single(sum([g(),weight(hlm,10)])),single(sum([g(),weight(hlm,10)]),pref_only=true),single(sum([g(),weight(hff,10)])),single(sum([g(),weight(hff,10)]),pref_only=true),single(sum([g(),weight(hcg,10)])),single(sum([g(),weight(hcg,10)]),pref_only=true)],boost=1000),preferred=[hlm,hcg],reopen_closed=false,cost_type=plusone,bound=BOUND)))))"]),
     (17, ["--search",
@@ -55,7 +55,7 @@ CONFIGS = [
     (29, ["--search",
         "let(lmg, lm_rhw(only_causal_landmarks=false,disjunctive_landmarks=true,use_orders=true),"
         "let(hcea, cea(transform=adapt_costs(plusone)),"
-        "let(hlm, lmcount(lmg,admissible=true,transform=adapt_costs(plusone)),"
+        "let(hlm, lmcp(lmg,transform=adapt_costs(plusone)),"
         "let(hff, ff(transform=adapt_costs(plusone)),"
         "lazy(alt([single(hlm),single(hlm,pref_only=true),single(hff),single(hff,pref_only=true),single(hcea),single(hcea,pref_only=true)],boost=0),preferred=[hlm,hcea],reopen_closed=false,cost_type=plusone,bound=BOUND)))))"]),
     (88, ["--search",
@@ -76,7 +76,7 @@ CONFIGS = [
         "eager(alt([type_based([g()]),single(sum([g(),weight(hff,3)])),single(sum([g(),weight(hff,3)]),pref_only=true),single(sum([g(),weight(hlm,3)])),single(sum([g(),weight(hlm,3)]),pref_only=true)]),preferred=[hff,hlm],cost_type=one,bound=BOUND)))"]),
     (29, ["--search",
         "let(lmg, lm_rhw(only_causal_landmarks=false,disjunctive_landmarks=false,use_orders=true),"
-        "let(hlm, lmcount(lmg,admissible=false,transform=adapt_costs(one)),"
+        "let(hlm, lmcount(lmg,transform=adapt_costs(one)),"
         "let(hff, ff(transform=adapt_costs(one)),"
         "let(hblind, blind(),"
         "lazy(alt([type_based([g()]),single(sum([g(),weight(hblind,2)])),single(sum([g(),weight(hblind,2)]),pref_only=true),single(sum([g(),weight(hlm,2)])),single(sum([g(),weight(hlm,2)]),pref_only=true),single(sum([g(),weight(hff,2)])),single(sum([g(),weight(hff,2)]),pref_only=true)],boost=4419),preferred=[hlm],reopen_closed=true,cost_type=one,bound=BOUND)))))"]),
