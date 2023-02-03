@@ -42,7 +42,7 @@ public:
     AbstractOperator(
         int concrete_op_id,
         int cost,
-        std::vector<FactPair> &&preconditions,
+        std::vector<FactPair> &&regression_preconditions,
         int hash_effect);
 
     /*
@@ -77,18 +77,6 @@ public:
               const VariablesProxy &variables,
               utils::LogProxy &log) const;
 };
-
-/*
-  For the given concrete operator, compute all induced abstract operators.
-  The result is added to the given parameter operators.
-*/
-extern void build_abstract_operators(
-    const Projection &projection,
-    const OperatorProxy &op,
-    int cost,
-    const std::vector<int> &variable_to_index,
-    const VariablesProxy &variables,
-    std::vector<AbstractOperator> &operators);
 }
 
 #endif
