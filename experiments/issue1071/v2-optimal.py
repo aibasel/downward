@@ -15,9 +15,9 @@ ARCHIVE_PATH = f"ai/downward/{ISSUE}"
 def make_comparison_table():
     report = common_setup.ComparativeReport(
         algorithm_pairs=[
-            (f"{ISSUE}-base-seq-opt-bjolp", f"{ISSUE}-v1-seq-opt-bjolp"),
-            (f"{ISSUE}-base-seq-opt-bjolp-opt", f"{ISSUE}-v1-seq-opt-bjolp-opt"),
-            (f"{ISSUE}-base-lm-exhaust", f"{ISSUE}-v1-lm-exhaust"),
+            (f"{ISSUE}-base-seq-opt-bjolp", f"{ISSUE}-v2-seq-opt-bjolp"),
+            (f"{ISSUE}-base-seq-opt-bjolp-opt", f"{ISSUE}-v2-seq-opt-bjolp-opt"),
+            (f"{ISSUE}-base-lm-exhaust", f"{ISSUE}-v2-lm-exhaust"),
         ], attributes=ATTRIBUTES,
     )
     outfile = os.path.join(
