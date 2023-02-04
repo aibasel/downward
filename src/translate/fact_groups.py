@@ -14,7 +14,8 @@ def expand_group(group, task, reachable_facts):
         try:
             pos = list(fact.args).index("?X")
         except ValueError:
-            result.append(fact)
+            if fact in reachable_facts:
+                result.append(fact)
         else:
             # NOTE: This could be optimized by only trying objects of the correct
             #       type, or by using a unifier which directly generates the
