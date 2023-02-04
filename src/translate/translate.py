@@ -625,9 +625,12 @@ def build_mutex_key(strips_to_sas, groups):
     for group in groups:
         group_key = []
         for fact in group:
-            represented_by = strips_to_sas[fact]
-            assert len(represented_by) == 1
-            group_key.append(represented_by[0])
+            represented_by = strips_to_sas.get(fact)
+            if represented_by:
+            	assert len(represented_by) == 1
+            	group_key.append(represented_by[0])
+            else:
+                print("not in strips_to_sas, left out:", fact)
         group_keys.append(group_key)
     return group_keys
 
