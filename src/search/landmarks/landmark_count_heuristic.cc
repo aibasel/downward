@@ -30,6 +30,8 @@ namespace landmarks {
 LandmarkCountHeuristic::LandmarkCountHeuristic(const plugins::Options &opts)
     : Heuristic(opts),
       use_preferred_operators(opts.get<bool>("pref")),
+      use_preferred_operators_conjunctive(opts.get<bool>("use_preferred_operators_conjunctive")),
+      use_preferrence_hierarchy(opts.get<bool>("use_preferrence_hierarchy")),
       conditional_effects_supported(
           opts.get<shared_ptr<LandmarkFactory>>("lm_factory")->supports_conditional_effects()),
       admissible(opts.get<bool>("admissible")),
@@ -222,6 +224,7 @@ void LandmarkCountHeuristic::generate_preferred_operators(
     assert(successor_generator);
     vector<OperatorID> applicable_operators;
     successor_generator->generate_applicable_ops(state, applicable_operators);
+    vector<OperatorID> preferred_operators_conjunctive;
     vector<OperatorID> preferred_operators_simple;
     vector<OperatorID> preferred_operators_disjunctive;
 
@@ -242,23 +245,50 @@ void LandmarkCountHeuristic::generate_preferred_operators(
             FactProxy fact_proxy = effect.get_fact();
             LandmarkNode *lm_node = lgraph->get_node(fact_proxy.get_pair());
             if (lm_node && landmark_is_interesting(
-                    state, reached, *lm_node, all_landmarks_reached)) {
+                state, reached, *lm_node, all_landmarks_reached)) {
                 if (lm_node->get_landmark().disjunctive) {
                     preferred_operators_disjunctive.push_back(op_id);
                 } else {
                     preferred_operators_simple.push_back(op_id);
                 }
             }
+            if (lgraph->contains_conjunctive_landmark(fact_proxy.get_pair())) {
+                std::vector<LandmarkNode *> conjunctive_landmarks = lgraph->get_conjunctive_landmarks(fact_proxy.get_pair());
+                for( auto conj_lm : conjunctive_landmarks){
+                    if (landmark_is_interesting(
+                            state, reached, *conj_lm, all_landmarks_reached) ){
+                        preferred_operators_conjunctive.push_back(op_id);
+                        break;
+                    }
+                }
+
+            }
         }
     }
 
     OperatorsProxy operators = task_proxy.get_operators();
-    if (preferred_operators_simple.empty()) {
-        for (OperatorID op_id : preferred_operators_disjunctive) {
-            set_preferred(operators[op_id]);
+    if (use_preferrence_hierarchy){
+        if (!preferred_operators_conjunctive.empty()) {
+            for (OperatorID op_id : preferred_operators_conjunctive) {
+                set_preferred(operators[op_id]);
+            }
+        } else if (!preferred_operators_simple.empty()) {
+            for (OperatorID op_id : preferred_operators_simple) {
+                set_preferred(operators[op_id]);
+            }
+        } else {
+            for (OperatorID op_id : preferred_operators_disjunctive) {
+                set_preferred(operators[op_id]);
+            }
         }
     } else {
+        for (OperatorID op_id: preferred_operators_conjunctive) {
+            set_preferred(operators[op_id]);
+        }
         for (OperatorID op_id : preferred_operators_simple) {
+            set_preferred(operators[op_id]);
+        }
+        for (OperatorID op_id : preferred_operators_disjunctive) {
             set_preferred(operators[op_id]);
         }
     }
@@ -364,6 +394,20 @@ public:
             "identify preferred operators (see OptionCaveats#Using_preferred_operators_"
             "with_the_lmcount_heuristic)",
             "false");
+        add_option<bool>(
+                "use_preferred_operators_conjunctive",
+                "If true, conjunctive landmarks are considered for the generation "
+                "of preferred operators. Otherwise, only simple and disjunctive "
+                "landmarks are considered.",
+                "false");
+        add_option<bool>(
+                "use_preferrence_hierarchy",
+                "If true, only applicable operators leading to one kind of "
+                "interesting landmarks are preferred operators, namely those of the highest "
+                "hierarchy (conjunctive > simple > disjunctive)."
+                "Otherwise, all applicable operators leading to any interesting landmark "
+                "are preferred operators.",
+                "true");
         add_option<bool>("alm", "use action landmarks", "true");
         lp::add_lp_solver_option_to_feature(*this);
         Heuristic::add_options_to_feature(*this);
