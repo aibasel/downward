@@ -169,7 +169,7 @@ void LandmarkHeuristic::generate_preferred_operators(
 int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
     State state = convert_ancestor_state(ancestor_state);
     lm_status_manager->update_lm_status(ancestor_state);
-    int h = get_heuristic_value(state);
+    int h = compute_heuristic_value(state);
 
     if (use_preferred_operators) {
         BitsetView reached_lms =

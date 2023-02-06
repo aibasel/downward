@@ -33,7 +33,7 @@ LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     }
 }
 
-int LandmarkCostPartitioningHeuristic::get_heuristic_value(
+int LandmarkCostPartitioningHeuristic::compute_heuristic_value(
     const State & /*state*/) {
     double epsilon = 0.01;
 

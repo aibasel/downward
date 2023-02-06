@@ -67,7 +67,7 @@ void LandmarkCountHeuristic::compute_landmark_costs() {
     }
 }
 
-int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
+int LandmarkCountHeuristic::compute_heuristic_value(const State &state) {
     /*
       Need explicit test to see if state is a goal state. The landmark
       heuristic may compute h != 0 for a goal state if landmarks are
