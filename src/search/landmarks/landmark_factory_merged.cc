@@ -66,8 +66,7 @@ void LandmarkFactoryMerged::generate_landmarks(
             } else if (landmark->get_type() == LandmarkType::DISJUNCTIVE) {
                 continue;
             } else if (!lm_graph->contains_landmark(landmark->facts[0])) {
-                std::shared_ptr<Landmark> copy(landmark);
-                lm_graph->add_landmark(move(copy));
+                lm_graph->add_landmark(landmark);
             }
         }
     }
@@ -91,7 +90,6 @@ void LandmarkFactoryMerged::generate_landmarks(
                     any_of(landmark->facts.begin(), landmark->facts.end(),
                            [&](const FactPair &lm_fact) {return lm_graph->contains_landmark(lm_fact);});
                 if (!exists) {
-                    std::shared_ptr<Landmark> copy(landmark);
                     lm_graph->add_landmark(landmark);
                 }
             }

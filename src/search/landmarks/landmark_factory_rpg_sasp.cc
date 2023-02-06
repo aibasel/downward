@@ -232,9 +232,7 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
         return;
     }
     // This LM and no part of it exist, add the LM to the landmarks graph.
-    shared_ptr<DisjunctiveLandmark> disjunctive_landmark =
-            make_shared<DisjunctiveLandmark>(vector<FactPair>(a.begin(), a.end()));
-    new_lm_node = &lm_graph->add_landmark(move(disjunctive_landmark));
+    new_lm_node = &lm_graph->add_landmark(make_shared<DisjunctiveLandmark>(vector<FactPair>(a.begin(), a.end())));
     open_landmarks.push_back(new_lm_node);
     edge_add(*new_lm_node, b, t);
 }
@@ -402,9 +400,8 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
     build_disjunction_classes(task_proxy);
 
     for (FactProxy goal : task_proxy.get_goals()) {
-        shared_ptr<SimpleLandmark> simple_landmark =
-                make_shared<SimpleLandmark>(vector<FactPair>{goal.get_pair()}, true);
-        LandmarkNode &lm_node = lm_graph->add_landmark(move(simple_landmark));
+        LandmarkNode &lm_node = lm_graph->add_landmark(
+                make_shared<SimpleLandmark>(vector<FactPair>{goal.get_pair()}, true));
         open_landmarks.push_back(&lm_node);
     }
 

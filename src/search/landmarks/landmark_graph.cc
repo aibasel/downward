@@ -101,12 +101,12 @@ bool LandmarkGraph::contains_landmark(const FactPair &lm) const {
     return contains_simple_landmark(lm) || contains_disjunctive_landmark(lm);
 }
 
-LandmarkNode &LandmarkGraph::add_landmark(std::shared_ptr<Landmark> landmark_ptr) {
-    assert(all_of(landmark_ptr->facts.begin(), landmark_ptr->facts.end(), [&](const FactPair &lm_fact) {
+LandmarkNode &LandmarkGraph::add_landmark(std::shared_ptr<Landmark> landmark) {
+    assert(all_of(landmark->facts.begin(), landmark->facts.end(), [&](const FactPair &lm_fact) {
                       return !contains_landmark(lm_fact);
                   }));
     unique_ptr<LandmarkNode> new_node =
-        utils::make_unique_ptr<LandmarkNode>(move(landmark_ptr));
+        utils::make_unique_ptr<LandmarkNode>(landmark);
     LandmarkNode *new_node_p = new_node.get();
     const std::shared_ptr<Landmark> &lm = new_node->get_landmark();
     nodes.push_back(move(new_node));
