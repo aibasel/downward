@@ -92,6 +92,39 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
         opts, use_preferred, preferred_usage)->create_edge_open_list();
 }
 
+
+// TODO we do not support preferred operators, selection of preferred usage
+// TODO verbosity fixed to NORMAL
+EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(const std::string &description,
+    int cost_type, double max_time, int cost_bound,
+    shared_ptr<Evaluator> h)
+    : SearchEngine(description, OperatorCost(cost_type), max_time, cost_bound),
+      evaluator(h),
+      preferred_operator_evaluators(vector<shared_ptr<Evaluator>>()),
+      preferred_usage(PreferredUsage::RANK_PREFERRED_FIRST),
+      current_eval_context(state_registry.get_initial_state(), &statistics),
+      current_phase_start_g(-1),
+      num_ehc_phases(0),
+      last_num_expanded(-1) {
+    for (const shared_ptr<Evaluator> &eval : preferred_operator_evaluators) {
+        eval->get_path_dependent_evaluators(path_dependent_evaluators);
+    }
+    evaluator->get_path_dependent_evaluators(path_dependent_evaluators);
+
+    State initial_state = state_registry.get_initial_state();
+    for (Evaluator *evaluator : path_dependent_evaluators) {
+        evaluator->notify_initial_state(initial_state);
+    }
+    use_preferred = find(preferred_operator_evaluators.begin(),
+                         preferred_operator_evaluators.end(), evaluator) !=
+        preferred_operator_evaluators.end();
+
+    plugins::Options options;
+    options.set("verbosity", utils::Verbosity::NORMAL);
+    open_list = create_ehc_open_list_factory(
+        options, use_preferred, preferred_usage)->create_edge_open_list();
+}
+
 EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
 }
 

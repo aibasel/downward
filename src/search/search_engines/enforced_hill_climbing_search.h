@@ -61,6 +61,9 @@ protected:
 
 public:
     explicit EnforcedHillClimbingSearch(const plugins::Options &opts);
+    EnforcedHillClimbingSearch(const std::string &description,
+        int cost_type, double max_time, int cost_bound,
+        std::shared_ptr<Evaluator> h);
     virtual ~EnforcedHillClimbingSearch() override;
 
     virtual void print_statistics() const override;
