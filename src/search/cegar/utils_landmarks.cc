@@ -13,10 +13,10 @@ using namespace std;
 using namespace landmarks;
 
 namespace cegar {
-static FactPair get_fact(const Landmark &landmark) {
+static FactPair get_fact(const std::shared_ptr<Landmark> &landmark) {
     // We assume that the given Landmarks are from an h^m landmark graph with m=1.
-    assert(landmark.facts.size() == 1);
-    return landmark.facts[0];
+    assert(landmark->facts.size() == 1);
+    return landmark->facts[0];
 }
 
 shared_ptr<LandmarkGraph> get_landmark_graph(const shared_ptr<AbstractTask> &task) {

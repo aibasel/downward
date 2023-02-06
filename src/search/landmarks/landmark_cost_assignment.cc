@@ -23,12 +23,12 @@ LandmarkCostAssignment::LandmarkCostAssignment(
 }
 
 const set<int> &LandmarkCostAssignment::get_achievers(
-    int lmn_status, const Landmark &landmark) const {
+    int lmn_status, const std::shared_ptr<Landmark> &landmark) const {
     // Return relevant achievers of the landmark according to its status.
     if (lmn_status == lm_not_reached)
-        return landmark.first_achievers;
+        return landmark->first_achievers;
     else if (lmn_status == lm_needed_again)
-        return landmark.possible_achievers;
+        return landmark->possible_achievers;
     else
         return empty;
 }
@@ -206,7 +206,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value(
         constraint.clear();
     }
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
-        const Landmark &landmark = lm_graph.get_node(lm_id)->get_landmark();
+        const std::shared_ptr<Landmark> &landmark = lm_graph.get_node(lm_id)->get_landmark();
         int lm_status = lm_status_manager.get_landmark_status(lm_id);
         if (lm_status != lm_reached) {
             const set<int> &achievers =

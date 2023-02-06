@@ -84,11 +84,11 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
 }
 
 bool LandmarkFactory::is_landmark_precondition(
-    const OperatorProxy &op, const Landmark &landmark) const {
+    const OperatorProxy &op, const std::shared_ptr<Landmark> &landmark) const {
     /* Test whether the landmark is used by the operator as a precondition.
     A disjunctive landmarks is used if one of its disjuncts is used. */
     for (FactProxy pre : op.get_preconditions()) {
-        for (const FactPair &lm_fact : landmark.facts) {
+        for (const FactPair &lm_fact : landmark->facts) {
             if (pre.get_pair() == lm_fact)
                 return true;
         }
@@ -194,7 +194,7 @@ void LandmarkFactory::remove_first_weakest_cycle_edge(
     if (weakest_edge > EdgeType::REASONABLE) {
         for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it;
              it2 != path.end(); ++it2) {
-            it2->first->get_landmark().first_achievers.clear();
+            it2->first->get_landmark()->first_achievers.clear();
         }
     }
     assert(from->children.find(to) != from->children.end());

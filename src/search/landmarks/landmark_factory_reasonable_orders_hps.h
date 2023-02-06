@@ -12,8 +12,8 @@ class LandmarkFactoryReasonableOrdersHPS : public LandmarkFactory {
     void approximate_reasonable_orders(
         const TaskProxy &task_proxy, bool obedient_orders);
     bool interferes(
-        const TaskProxy &task_proxy, const Landmark &landmark_a,
-        const Landmark &landmark_b) const;
+        const TaskProxy &task_proxy, const std::shared_ptr<Landmark> &landmark_a,
+        const std::shared_ptr<Landmark> &landmark_b) const;
     void collect_ancestors(
         std::unordered_set<LandmarkNode *> &result,
         LandmarkNode &node, bool use_reasonable);

@@ -34,10 +34,10 @@ enum class EdgeType {
 
 class LandmarkNode {
     int id;
-    Landmark landmark;
+    std::shared_ptr<Landmark> landmark_ptr;
 public:
-    LandmarkNode(Landmark &&landmark)
-        : id(-1), landmark(std::move(landmark)) {
+    LandmarkNode(std::shared_ptr<Landmark> landmark_ptr)
+        : id(-1), landmark_ptr(std::move(landmark_ptr)) {
     }
 
     std::unordered_map<LandmarkNode *, EdgeType> parents;
@@ -54,12 +54,12 @@ public:
     }
 
     // TODO: Remove this function once the LM-graph is constant after creation.
-    Landmark &get_landmark() {
-        return landmark;
+    std::shared_ptr<Landmark> get_landmark() {
+        return landmark_ptr;
     }
 
-    const Landmark &get_landmark() const {
-        return landmark;
+    const std::shared_ptr<Landmark> get_landmark() const {
+        return landmark_ptr;
     }
 };
 
@@ -140,7 +140,7 @@ public:
 
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
-    LandmarkNode &add_landmark(Landmark &&landmark);
+    LandmarkNode &add_landmark(std::shared_ptr<Landmark> landmark);
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     void remove_node(LandmarkNode *node);
@@ -150,6 +150,8 @@ public:
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     void set_landmark_ids();
+
+    LandmarkNode &add_landmark(std::unique_ptr<Landmark> landmark_ptr);
 };
 }
 

@@ -138,15 +138,15 @@ void LandmarkCountHeuristic::compute_landmark_costs() {
     min_first_achiever_costs.reserve(lgraph->get_num_landmarks());
     min_possible_achiever_costs.reserve(lgraph->get_num_landmarks());
     for (auto &node : lgraph->get_nodes()) {
-        if (node->get_landmark().is_derived) {
+        if (node->get_landmark()->is_derived) {
             min_first_achiever_costs.push_back(min_operator_cost);
             min_possible_achiever_costs.push_back(min_operator_cost);
         } else {
             int min_first_achiever_cost = get_min_cost_of_achievers(
-                node->get_landmark().first_achievers, task_proxy);
+                node->get_landmark()->first_achievers, task_proxy);
             min_first_achiever_costs.push_back(min_first_achiever_cost);
             int min_possible_achiever_cost = get_min_cost_of_achievers(
-                node->get_landmark().possible_achievers, task_proxy);
+                node->get_landmark()->possible_achievers, task_proxy);
             min_possible_achiever_costs.push_back(min_possible_achiever_cost);
         }
     }
@@ -243,7 +243,7 @@ void LandmarkCountHeuristic::generate_preferred_operators(
             LandmarkNode *lm_node = lgraph->get_node(fact_proxy.get_pair());
             if (lm_node && landmark_is_interesting(
                     state, reached, *lm_node, all_landmarks_reached)) {
-                if (lm_node->get_landmark().disjunctive) {
+                if (lm_node->get_landmark()->get_type() == LandmarkType::DISJUNCTIVE) {
                     preferred_operators_disjunctive.push_back(op_id);
                 } else {
                     preferred_operators_simple.push_back(op_id);
@@ -275,8 +275,8 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
     */
 
     if (all_lms_reached) {
-        const Landmark &landmark = lm_node.get_landmark();
-        return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
+        const std::shared_ptr<Landmark> &landmark = lm_node.get_landmark();
+        return landmark->is_true_in_goal && !landmark->is_true_in_state(state);
     } else {
         return !reached.test(lm_node.get_id()) &&
                all_of(lm_node.parents.begin(), lm_node.parents.end(),

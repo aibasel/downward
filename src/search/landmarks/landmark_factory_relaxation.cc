@@ -44,10 +44,10 @@ void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
 
 bool LandmarkFactoryRelaxation::is_causal_landmark(
     const TaskProxy &task_proxy, Exploration &exploration,
-    const Landmark &landmark) const {
-    assert(!landmark.conjunctive);
+    const std::shared_ptr<Landmark> &landmark) const {
+    assert(landmark->get_type() != LandmarkType::CONJUNCTIVE);
 
-    if (landmark.is_true_in_goal)
+    if (landmark->is_true_in_goal)
         return true;
 
     vector<int> excluded_op_ids;
@@ -75,23 +75,23 @@ void LandmarkFactoryRelaxation::calc_achievers(
     assert(!achievers_calculated);
     VariablesProxy variables = task_proxy.get_variables();
     for (auto &lm_node : lm_graph->get_nodes()) {
-        Landmark &landmark = lm_node->get_landmark();
-        for (const FactPair &lm_fact : landmark.facts) {
+        std::shared_ptr<Landmark> landmark = lm_node->get_landmark();
+        for (const FactPair &lm_fact : landmark->facts) {
             const vector<int> &ops = get_operators_including_eff(lm_fact);
-            landmark.possible_achievers.insert(ops.begin(), ops.end());
+            landmark->possible_achievers.insert(ops.begin(), ops.end());
 
             if (variables[lm_fact.var].is_derived())
-                landmark.is_derived = true;
+                landmark->is_derived = true;
         }
 
         vector<vector<bool>> reached =
             compute_relaxed_reachability(exploration, landmark);
 
-        for (int op_or_axom_id : landmark.possible_achievers) {
+        for (int op_or_axom_id : landmark->possible_achievers) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);
 
             if (possibly_reaches_lm(op, reached, landmark)) {
-                landmark.first_achievers.insert(op_or_axom_id);
+                landmark->first_achievers.insert(op_or_axom_id);
             }
         }
     }
@@ -100,7 +100,7 @@ void LandmarkFactoryRelaxation::calc_achievers(
 
 bool LandmarkFactoryRelaxation::relaxed_task_solvable(
     const TaskProxy &task_proxy, Exploration &exploration,
-    const Landmark &exclude) const {
+    const std::shared_ptr<Landmark> &exclude) const {
     vector<vector<bool>> reached = compute_relaxed_reachability(exploration,
                                                                 exclude);
 
@@ -113,10 +113,10 @@ bool LandmarkFactoryRelaxation::relaxed_task_solvable(
 }
 
 vector<vector<bool>> LandmarkFactoryRelaxation::compute_relaxed_reachability(
-    Exploration &exploration, const Landmark &exclude) const {
+    Exploration &exploration, const std::shared_ptr<Landmark> &exclude) const {
     // Extract propositions from "exclude"
     vector<int> excluded_op_ids;
-    vector<FactPair> excluded_props(exclude.facts.begin(), exclude.facts.end());
+    vector<FactPair> excluded_props(exclude->facts.begin(), exclude->facts.end());
 
     return exploration.compute_relaxed_reachability(excluded_props,
                                                     excluded_op_ids);

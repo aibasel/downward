@@ -29,18 +29,18 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     void add_lm_forward_orders();
 
     void get_greedy_preconditions_for_lm(
-        const TaskProxy &task_proxy, const Landmark &landmark,
+        const TaskProxy &task_proxy, const std::shared_ptr<Landmark> &landmark,
         const OperatorProxy &op,
         std::unordered_map<int, int> &result) const;
     void compute_shared_preconditions(
         const TaskProxy &task_proxy,
         std::unordered_map<int, int> &shared_pre,
-        std::vector<std::vector<bool>> &reached, const Landmark &landmark);
+        std::vector<std::vector<bool>> &reached, const std::shared_ptr<Landmark> &landmark);
     void compute_disjunctive_preconditions(
         const TaskProxy &task_proxy,
         std::vector<std::set<FactPair>> &disjunctive_pre,
         std::vector<std::vector<bool>> &reached,
-        const Landmark &landmark);
+        const std::shared_ptr<Landmark> &landmark);
 
     virtual void generate_relaxed_landmarks(
         const std::shared_ptr<AbstractTask> &task,

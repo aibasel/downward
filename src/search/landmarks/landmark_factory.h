@@ -57,7 +57,7 @@ protected:
     void mk_acyclic_graph();
 
     bool is_landmark_precondition(const OperatorProxy &op,
-                                  const Landmark &landmark) const;
+                                  const std::shared_ptr<Landmark> &landmark) const;
 
     const std::vector<int> &get_operators_including_eff(const FactPair &eff) const {
         return operators_eff_lookup[eff.var][eff.value];

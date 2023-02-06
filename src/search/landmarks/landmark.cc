@@ -3,6 +3,7 @@
 using namespace std;
 
 namespace landmarks {
+    /*
 bool Landmark::is_true_in_state(const State &state) const {
     if (disjunctive) {
         for (const FactPair &fact : facts) {
@@ -20,5 +21,7 @@ bool Landmark::is_true_in_state(const State &state) const {
         }
         return true;
     }
+    return false;
 }
+     */
 }

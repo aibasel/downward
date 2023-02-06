@@ -16,13 +16,13 @@ protected:
     */
     bool relaxed_task_solvable(const TaskProxy &task_proxy,
                                Exploration &exploration,
-                               const Landmark &exclude) const;
+                               const std::shared_ptr<Landmark> &exclude) const;
     /*
       Compute for each fact whether it is relaxed reachable without
       achieving the excluded landmark.
     */
     std::vector<std::vector<bool>> compute_relaxed_reachability(
-        Exploration &exploration, const Landmark &exclude) const;
+        Exploration &exploration, const std::shared_ptr<Landmark> &exclude) const;
 
 private:
     void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
@@ -47,7 +47,7 @@ protected:
     */
     bool is_causal_landmark(const TaskProxy &task_proxy,
                             Exploration &exploration,
-                            const Landmark &landmark) const;
+                            const std::shared_ptr<Landmark> &landmark) const;
 };
 }
 

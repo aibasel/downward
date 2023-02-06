@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <memory>
 
 class OperatorProxy;
 class TaskProxy;
@@ -22,7 +23,7 @@ extern std::unordered_map<int, int> _intersect(
 
 extern bool possibly_reaches_lm(
     const OperatorProxy &op, const std::vector<std::vector<bool>> &reached,
-    const Landmark &landmark);
+    const std::shared_ptr<Landmark> &landmark);
 
 extern OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy, int op_or_axiom_id);
 extern int get_operator_or_axiom_id(const OperatorProxy &op);

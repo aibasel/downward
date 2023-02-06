@@ -1,6 +1,7 @@
 #include "landmark_factory_zhu_givan.h"
 
 #include "landmark.h"
+#include "simple_landmark.h"
 #include "landmark_graph.h"
 #include "util.h"
 
@@ -52,8 +53,9 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
             if (log.is_at_least_normal()) {
                 log << "Problem not solvable, even if relaxed." << endl;
             }
-            Landmark landmark({goal.get_pair()}, false, false, true);
-            lm_graph->add_landmark(move(landmark));
+            std::shared_ptr<SimpleLandmark> simple_landmark =
+                    std::make_shared<SimpleLandmark>(vector<FactPair>{goal.get_pair()}, true);
+            lm_graph->add_landmark(std::move(simple_landmark));
             return;
         }
     }
@@ -65,10 +67,11 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
         LandmarkNode *lm_node;
         if (lm_graph->contains_simple_landmark(goal_lm)) {
             lm_node = &lm_graph->get_simple_landmark(goal_lm);
-            lm_node->get_landmark().is_true_in_goal = true;
+            lm_node->get_landmark()->is_true_in_goal = true;
         } else {
-            Landmark landmark({goal_lm}, false, false, true);
-            lm_node = &lm_graph->add_landmark(move(landmark));
+            std::shared_ptr<SimpleLandmark> simple_landmark =
+                    std::make_shared<SimpleLandmark>(vector<FactPair>{goal.get_pair()}, true);
+            lm_node = &lm_graph->add_landmark(std::move(simple_landmark));
         }
         // extract landmarks from goal labels
         const plan_graph_node &goal_node =
@@ -82,8 +85,9 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
             LandmarkNode *node;
             // Add new landmarks
             if (!lm_graph->contains_simple_landmark(lm)) {
-                Landmark landmark({lm}, false, false);
-                node = &lm_graph->add_landmark(move(landmark));
+                std::shared_ptr<SimpleLandmark> simple_landmark =
+                        std::make_shared<SimpleLandmark>(vector<FactPair>{lm});
+                node = &lm_graph->add_landmark(std::move(simple_landmark));
             } else {
                 node = &lm_graph->get_simple_landmark(lm);
             }

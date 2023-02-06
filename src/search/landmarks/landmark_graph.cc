@@ -101,24 +101,24 @@ bool LandmarkGraph::contains_landmark(const FactPair &lm) const {
     return contains_simple_landmark(lm) || contains_disjunctive_landmark(lm);
 }
 
-LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark) {
-    assert(all_of(landmark.facts.begin(), landmark.facts.end(), [&](const FactPair &lm_fact) {
+LandmarkNode &LandmarkGraph::add_landmark(std::shared_ptr<Landmark> landmark_ptr) {
+    assert(all_of(landmark_ptr->facts.begin(), landmark_ptr->facts.end(), [&](const FactPair &lm_fact) {
                       return !contains_landmark(lm_fact);
                   }));
     unique_ptr<LandmarkNode> new_node =
-        utils::make_unique_ptr<LandmarkNode>(move(landmark));
+        utils::make_unique_ptr<LandmarkNode>(move(landmark_ptr));
     LandmarkNode *new_node_p = new_node.get();
-    const Landmark &lm = new_node->get_landmark();
+    const std::shared_ptr<Landmark> &lm = new_node->get_landmark();
     nodes.push_back(move(new_node));
-    if (lm.disjunctive) {
-        for (const FactPair &lm_fact : lm.facts) {
+    if (lm->get_type() == LandmarkType::DISJUNCTIVE) {
+        for (const FactPair &lm_fact : lm->facts) {
             disjunctive_landmarks_to_nodes.emplace(lm_fact, new_node_p);
         }
         ++num_disjunctive_landmarks;
-    } else if (lm.conjunctive) {
+    } else if (lm->get_type() == LandmarkType::CONJUNCTIVE) {
         ++num_conjunctive_landmarks;
     } else {
-        simple_landmarks_to_nodes.emplace(lm.facts.front(), new_node_p);
+        simple_landmarks_to_nodes.emplace(lm->facts.front(), new_node_p);
     }
     return *new_node_p;
 }
@@ -134,16 +134,16 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
         child_node.parents.erase(node);
         assert(child_node.parents.find(node) == child_node.parents.end());
     }
-    const Landmark &landmark = node->get_landmark();
-    if (landmark.disjunctive) {
+    const std::shared_ptr<Landmark> &landmark = node->get_landmark();
+    if (landmark->get_type() == LandmarkType::DISJUNCTIVE) {
         --num_disjunctive_landmarks;
-        for (const FactPair &lm_fact : landmark.facts) {
+        for (const FactPair &lm_fact : landmark->facts) {
             disjunctive_landmarks_to_nodes.erase(lm_fact);
         }
-    } else if (landmark.conjunctive) {
+    } else if (landmark->get_type() == LandmarkType::CONJUNCTIVE) {
         --num_conjunctive_landmarks;
     } else {
-        simple_landmarks_to_nodes.erase(landmark.facts[0]);
+        simple_landmarks_to_nodes.erase(landmark->facts[0]);
     }
 }
 

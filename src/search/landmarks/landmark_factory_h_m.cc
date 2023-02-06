@@ -2,6 +2,8 @@
 
 #include "exploration.h"
 #include "landmark.h"
+#include "conjunctive_landmark.h"
+#include "simple_landmark.h"
 
 #include "../abstract_task.h"
 
@@ -619,7 +621,7 @@ void LandmarkFactoryHM::discard_conjunctive_landmarks() {
                 << " conjunctive landmarks" << endl;
         }
         lm_graph->remove_node_if(
-            [](const LandmarkNode &node) {return node.get_landmark().conjunctive;});
+            [](const LandmarkNode &node) {return node.get_landmark()->get_type() == LandmarkType::CONJUNCTIVE;});
     }
 }
 
@@ -634,10 +636,10 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
     // first_achievers are already filled in by compute_h_m_landmarks
     // here only have to do possible_achievers
     for (auto &lm_node : lm_graph->get_nodes()) {
-        Landmark &landmark = lm_node->get_landmark();
+        std::shared_ptr<Landmark> landmark = lm_node->get_landmark();
         set<int> candidates;
         // put all possible adders in candidates set
-        for (const FactPair &lm_fact : landmark.facts) {
+        for (const FactPair &lm_fact : landmark->facts) {
             const vector<int> &ops = get_operators_including_eff(lm_fact);
             candidates.insert(ops.begin(), ops.end());
         }
@@ -646,8 +648,8 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
             FluentSet post = get_operator_postcondition(variables.size(), operators[op_id]);
             FluentSet pre = get_operator_precondition(operators[op_id]);
             size_t j;
-            for (j = 0; j < landmark.facts.size(); ++j) {
-                const FactPair &lm_fact = landmark.facts[j];
+            for (j = 0; j < landmark->facts.size(); ++j) {
+                const FactPair &lm_fact = landmark->facts[j];
                 // action adds this element of lm as well
                 if (find(post.begin(), post.end(), lm_fact) != post.end())
                     continue;
@@ -675,9 +677,9 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
                     break;
                 }
             }
-            if (j == landmark.facts.size()) {
+            if (j == landmark->facts.size()) {
                 // not inconsistent with any of the other landmark fluents
-                landmark.possible_achievers.insert(op_id);
+                landmark->possible_achievers.insert(op_id);
             }
         }
     }
@@ -927,8 +929,13 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
         vector<FactPair> facts(hm_entry.fluents);
         utils::sort_unique(facts);
         assert(!facts.empty());
-        Landmark landmark(facts, false, (facts.size() > 1), goal);
-        landmark.first_achievers.insert(
+        std::shared_ptr<Landmark> landmark;
+        if ((facts.size() > 1)){
+            landmark = make_shared<ConjunctiveLandmark>(vector<FactPair>{facts}, goal);
+        } else {
+            landmark = make_shared<SimpleLandmark>(vector<FactPair>{facts}, goal);
+        }
+        landmark->first_achievers.insert(
             hm_entry.first_achievers.begin(),
             hm_entry.first_achievers.end());
         lm_node_table_[set_index] = &lm_graph->add_landmark(move(landmark));

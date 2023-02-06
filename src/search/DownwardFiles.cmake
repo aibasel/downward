@@ -708,6 +708,8 @@ fast_downward_plugin(
     NAME LANDMARKS
     HELP "Plugin containing the code to reason with landmarks"
     SOURCES
+        landmarks/conjunctive_landmark
+        landmarks/disjunctive_landmark
         landmarks/exploration
         landmarks/landmark
         landmarks/landmark_cost_assignment
@@ -722,6 +724,7 @@ fast_downward_plugin(
         landmarks/landmark_factory_zhu_givan
         landmarks/landmark_graph
         landmarks/landmark_status_manager
+        landmarks/simple_landmark
         landmarks/util
     DEPENDS LP_SOLVER PRIORITY_QUEUES SUCCESSOR_GENERATOR TASK_PROPERTIES
 )

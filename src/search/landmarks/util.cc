@@ -32,7 +32,7 @@ unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unord
 
 bool possibly_reaches_lm(const OperatorProxy &op,
                          const vector<vector<bool>> &reached,
-                         const Landmark &landmark) {
+                         const std::shared_ptr<Landmark> &landmark) {
     /* Check whether operator o can possibly make landmark lmp true in a
        relaxed task (as given by the reachability information in reached) */
 
@@ -50,7 +50,7 @@ bool possibly_reaches_lm(const OperatorProxy &op,
     for (EffectProxy effect: op.get_effects()) {
         FactProxy effect_fact = effect.get_fact();
         assert(!reached[effect_fact.get_variable().get_id()].empty());
-        for (const FactPair &fact : landmark.facts) {
+        for (const FactPair &fact : landmark->facts) {
             if (effect_fact.get_pair() == fact) {
                 if (_possibly_fires(effect.get_conditions(), reached))
                     return true;
@@ -90,12 +90,12 @@ static void dump_node(
     if (log.is_at_least_debug()) {
         cout << "  lm" << node.get_id() << " [label=\"";
         bool first = true;
-        const Landmark &landmark = node.get_landmark();
-        for (FactPair fact : landmark.facts) {
+        const std::shared_ptr<Landmark> &landmark = node.get_landmark();
+        for (FactPair fact : landmark->facts) {
             if (!first) {
-                if (landmark.disjunctive) {
+                if (landmark->get_type() == LandmarkType::DISJUNCTIVE) {
                     cout << " | ";
-                } else if (landmark.conjunctive) {
+                } else if (landmark->get_type() == LandmarkType::CONJUNCTIVE) {
                     cout << " & ";
                 }
             }
@@ -104,10 +104,10 @@ static void dump_node(
             cout << var.get_fact(fact.value).get_name();
         }
         cout << "\"";
-        if (landmark.is_true_in_state(task_proxy.get_initial_state())) {
+        if (landmark->is_true_in_state(task_proxy.get_initial_state())) {
             cout << ", style=bold";
         }
-        if (landmark.is_true_in_goal) {
+        if (landmark->is_true_in_goal) {
             cout << ", style=filled";
         }
         cout << "];\n";

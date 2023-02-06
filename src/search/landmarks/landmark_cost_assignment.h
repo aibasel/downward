@@ -21,7 +21,7 @@ protected:
     const std::vector<int> operator_costs;
 
     const std::set<int> &get_achievers(int lmn_status,
-                                       const Landmark &landmark) const;
+                                       const std::shared_ptr<Landmark> &landmark) const;
 public:
     LandmarkCostAssignment(const std::vector<int> &operator_costs,
                            const LandmarkGraph &graph);

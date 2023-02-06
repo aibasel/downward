@@ -6,16 +6,23 @@
 #include <set>
 
 namespace landmarks {
+
+enum class LandmarkType {
+    SIMPLE = 0,
+    DISJUNCTIVE = 1,
+    CONJUNCTIVE = 2
+};
+
 class Landmark {
 public:
-    Landmark(std::vector<FactPair> _facts, bool disjunctive, bool conjunctive,
+    explicit Landmark(std::vector<FactPair> _facts,
              bool is_true_in_goal = false, bool is_derived = false)
-        : facts(move(_facts)), disjunctive(disjunctive), conjunctive(conjunctive),
+        : facts(move(_facts)),
           is_true_in_goal(is_true_in_goal), is_derived(is_derived) {
-        assert(!(conjunctive && disjunctive));
-        assert((conjunctive && facts.size() > 1)
-               || (disjunctive && facts.size() > 1) || facts.size() == 1);
+        assert(facts.size() >= 1);
     }
+
+    virtual ~Landmark() = default;
 
     bool operator ==(const Landmark &other) const {
         return this == &other;
@@ -26,15 +33,14 @@ public:
     }
 
     std::vector<FactPair> facts;
-    bool disjunctive;
-    bool conjunctive;
     bool is_true_in_goal;
     bool is_derived;
 
     std::set<int> first_achievers;
     std::set<int> possible_achievers;
 
-    bool is_true_in_state(const State &state) const;
+    virtual bool is_true_in_state(const State &state) const = 0;
+    virtual LandmarkType get_type() const = 0;
 };
 }
 #endif
