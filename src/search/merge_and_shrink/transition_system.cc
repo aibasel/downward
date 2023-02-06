@@ -48,7 +48,6 @@ void LocalLabelInfo::recompute_cost(const Labels &labels) {
     }
 }
 
-
 void LocalLabelInfo::merge_local_label_info(LocalLabelInfo &local_label_info) {
     assert(transitions == local_label_info.transitions);
     label_group.insert(
