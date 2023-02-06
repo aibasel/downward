@@ -45,10 +45,6 @@ class LocalLabelInfo {
     LabelGroup label_group;
     std::vector<Transition> transitions;
     int cost;
-
-    friend class TransitionSystem;
-
-    void clear();
 public:
     LocalLabelInfo(LabelGroup &&label_group,
                    std::vector<Transition> &&transitions,
@@ -58,9 +54,22 @@ public:
           cost(cost) {
     }
 
-    void add_label(int label, int label_cost);
+    // If label_cost is not given, cost of this local label info is not changed.
+    void add_label(int label, int label_cost = -1);
 
+    void remove_label(int label);
+    void replace_transitions(std::vector<Transition> &&new_transitions);
+
+    // The cost of this local label info is the minimum cost over all labels.
+    void recompute_cost(const Labels &labels);
+
+    /*
+      The given local label info must have identical transitions. Its labels
+      are moved into this local label info.
+    */
     void merge_local_label_info(LocalLabelInfo &local_label_info);
+
+    void clear();
 
     bool empty() const {
         return label_group.empty();

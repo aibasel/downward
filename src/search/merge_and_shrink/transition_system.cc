@@ -27,8 +27,27 @@ ostream &operator<<(ostream &os, const Transition &trans) {
 
 void LocalLabelInfo::add_label(int label, int label_cost) {
     label_group.push_back(label);
-    cost = min(cost, label_cost);
+    if (label_cost != -1) {
+        cost = min(cost, label_cost);
+    }
 }
+
+void LocalLabelInfo::remove_label(int label) {
+    label_group.erase(find(label_group.begin(), label_group.end(), label));
+}
+
+void LocalLabelInfo::replace_transitions(vector<Transition> &&new_transitions) {
+    transitions = move(new_transitions);
+}
+
+void LocalLabelInfo::recompute_cost(const Labels &labels) {
+    cost = INF;
+    for (int label : label_group) {
+        int label_cost = labels.get_label_cost(label);
+        cost = min(cost, label_cost);
+    }
+}
+
 
 void LocalLabelInfo::merge_local_label_info(LocalLabelInfo &local_label_info) {
     assert(transitions == local_label_info.transitions);
@@ -294,7 +313,7 @@ void TransitionSystem::apply_abstraction(
 
     // Update all transitions.
     for (LocalLabelInfo &local_label_info : local_label_infos) {
-        vector<Transition> &transitions = local_label_info.transitions;
+        const vector<Transition> &transitions = local_label_info.get_transitions();
         if (!transitions.empty()) {
             vector<Transition> new_transitions;
             /*
@@ -307,15 +326,14 @@ void TransitionSystem::apply_abstraction(
             positions in the end. This would be more ugly, though.
             */
             new_transitions.reserve(transitions.size());
-            for (size_t i = 0; i < transitions.size(); ++i) {
-                const Transition &transition = transitions[i];
+            for (const Transition &transition : transitions) {
                 int src = abstraction_mapping[transition.src];
                 int target = abstraction_mapping[transition.target];
                 if (src != PRUNED_STATE && target != PRUNED_STATE)
                     new_transitions.emplace_back(src, target);
             }
             utils::sort_unique(new_transitions);
-            transitions = move(new_transitions);
+            local_label_info.replace_transitions(move(new_transitions));
         }
     }
 
@@ -361,13 +379,13 @@ void TransitionSystem::apply_label_reduction(
             const vector<int> &old_labels = mapping.second;
             assert(old_labels.size() >= 2);
             int local_label = label_to_local_label[old_labels.front()];
-            LabelGroup &label_group = local_label_infos[local_label].label_group;
-            label_group.push_back(new_label);
+            LocalLabelInfo &local_label_info = local_label_infos[local_label];
+            local_label_info.add_label(new_label);
             label_to_local_label[new_label] = local_label;
 
             for (int old_label : old_labels) {
                 assert(label_to_local_label[old_label] == local_label);
-                label_group.erase(find(label_group.begin(), label_group.end(), old_label));
+                local_label_info.remove_label(old_label);
                 // Reset (for consistency only, old labels are never accessed).
                 label_to_local_label[old_label] = -1;
                 // NOTE: if we were combining labels with different cost,
@@ -396,8 +414,7 @@ void TransitionSystem::apply_label_reduction(
                     new_label_transitions.insert(new_label_transitions.end(), transitions.begin(), transitions.end());
                 }
 
-                LabelGroup &label_group = local_label_infos[old_local_label].label_group;
-                label_group.erase(find(label_group.begin(), label_group.end(), old_label));
+                local_label_infos[old_local_label].remove_label(old_label);
                 // Reset (for consistency only, old labels are never accessed).
                 label_to_local_label[old_label] = -1;
             }
@@ -417,17 +434,12 @@ void TransitionSystem::apply_label_reduction(
             LocalLabelInfo &local_label_info = local_label_infos[local_label];
             // If the local label does not represent any label anymore,
             // invalidate the entry.
-            if (local_label_infos[local_label].empty()) {
-                local_label_infos[local_label].clear();
+            if (local_label_info.empty()) {
+                local_label_info.clear();
             }
 
             // Otherwise, recompute its cost.
-            local_label_infos[local_label].cost = INF;
-            for (int label : local_label_info.label_group) {
-                int cost = labels.get_label_cost(label);
-                local_label_infos[local_label].cost = min(
-                    local_label_infos[local_label].cost, cost);
-            }
+            local_label_info.recompute_cost(labels);
         }
 
         compute_equivalent_local_labels();
@@ -474,7 +486,7 @@ bool TransitionSystem::is_label_mapping_consistent() const {
 
     for (size_t local_label = 0; local_label < local_label_infos.size(); ++local_label) {
         const LocalLabelInfo &local_label_info = local_label_infos[local_label];
-        for (int label : local_label_info.label_group) {
+        for (int label : local_label_info.get_label_group()) {
             if (label_to_local_label[label] != static_cast<int>(local_label)) {
                 dump_label_mapping();
                 cerr << "label " << label << " is not mapped "
@@ -497,7 +509,7 @@ void TransitionSystem::dump_label_mapping() const {
     for (size_t local_label = 0;
          local_label < local_label_infos.size(); ++local_label) {
         utils::g_log << local_label << ": "
-                     << local_label_infos[local_label].label_group << ", ";
+                     << local_label_infos[local_label].get_label_group() << ", ";
     }
     utils::g_log << endl;
 }
@@ -581,7 +593,7 @@ void TransitionSystem::dump_labels_and_transitions(utils::LogProxy &log) const {
                     log << ",";
                 log << src << " -> " << target;
             }
-            utils::g_log << "cost: " << local_label_info.cost << endl;
+            utils::g_log << "cost: " << local_label_info.get_cost() << endl;
         }
     }
 }
