@@ -46,13 +46,10 @@ class LocalLabelInfo {
     std::vector<Transition> transitions;
     int cost;
 public:
-    LocalLabelInfo(LabelGroup &&label_group,
-                   std::vector<Transition> &&transitions,
-                   int cost)
-        : label_group(label_group),
-          transitions(transitions),
-          cost(cost) {
-    }
+    LocalLabelInfo(
+        LabelGroup &&label_group,
+        std::vector<Transition> &&transitions,
+        int cost);
 
     // If label_cost is not given, cost of this local label info is not changed.
     void add_label(int label, int label_cost = -1);

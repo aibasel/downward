@@ -25,6 +25,15 @@ ostream &operator<<(ostream &os, const Transition &trans) {
     return os;
 }
 
+LocalLabelInfo::LocalLabelInfo(
+    LabelGroup &&label_group,
+    std::vector<Transition> &&transitions,
+    int cost)
+    : label_group(move(label_group)),
+      transitions(move(transitions)),
+      cost(cost) {
+}
+
 void LocalLabelInfo::add_label(int label, int label_cost) {
     label_group.push_back(label);
     if (label_cost != -1) {
