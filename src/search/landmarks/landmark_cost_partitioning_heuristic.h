@@ -9,7 +9,7 @@ class LandmarkCostAssignment;
 class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
     std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
 
-    int compute_heuristic_value(const State &state) override;
+    int get_heuristic_value(const State &state) override;
 public:
     explicit LandmarkCostPartitioningHeuristic(const plugins::Options &opts);
 

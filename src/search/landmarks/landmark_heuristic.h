@@ -26,7 +26,7 @@ protected:
       Unlike most landmark-related code, this function takes the
       task-transformation of the state, not the original one (i.e., not
       *ancestor_state*). This is because updating the landmark status manager
-      happens in *compute_heuristic(...)* before *compute_heuristic_value(...)*
+      happens in *compute_heuristic(...)* before *get_heuristic_value(...)*
       is called. Here, we only compute a heuristic value based on the
       information in the landmark status manager, which does not require the
       state at this point. The only reason we need this argument is to guarantee
@@ -34,7 +34,7 @@ protected:
       current function used for progressing the landmark statuses. Checking
       whether a state is a goal state requires the task-transformed state.
     */
-    virtual int compute_heuristic_value(const State &state) = 0;
+    virtual int get_heuristic_value(const State &state) = 0;
 
     bool landmark_is_interesting(
         const State &state, const BitsetView &reached,

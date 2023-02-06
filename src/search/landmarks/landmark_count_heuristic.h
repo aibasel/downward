@@ -13,7 +13,7 @@ class LandmarkCountHeuristic : public LandmarkHeuristic {
     int get_min_cost_of_achievers(const std::set<int> &achievers);
     void compute_landmark_costs();
 
-    int compute_heuristic_value(const State &state) override;
+    int get_heuristic_value(const State &state) override;
 public:
     explicit LandmarkCountHeuristic(const plugins::Options &opts);
 
