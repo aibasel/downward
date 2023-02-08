@@ -3,6 +3,8 @@
 
 #include "../algorithms/named_vector.h"
 
+#include "solver_interface.h"
+
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -24,7 +26,6 @@ enum class LPObjectiveSense {
 void add_lp_solver_option_to_feature(plugins::Feature &feature);
 
 class LinearProgram;
-class SolverInterface;
 
 class LPConstraint {
     std::vector<int> variables;
@@ -101,7 +102,7 @@ public:
     explicit LPSolver(LPSolverType solver_type);
 
     void load_problem(const LinearProgram &lp);
-    void add_temporary_constraints(const std::vector<LPConstraint> &constraints);
+    void add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints);
     void clear_temporary_constraints();
     double get_infinity() const;
 

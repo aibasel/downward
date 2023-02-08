@@ -4,14 +4,21 @@
 #include <string>
 #include <vector>
 
+namespace named_vector {
+template<typename T>
+class NamedVector;
+}
+
 namespace lp {
 class LinearProgram;
 class LPConstraint;
 
 class SolverInterface  {
 public:
+    virtual ~SolverInterface() = default;
+
     virtual void load_problem(const LinearProgram &lp) = 0;
-    virtual void add_temporary_constraints(const std::vector<LPConstraint> &constraints) = 0;
+    virtual void add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints) = 0;
     virtual void clear_temporary_constraints() = 0;
     virtual double get_infinity() const = 0;
 

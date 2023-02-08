@@ -1,6 +1,7 @@
 #include "lp_solver.h"
 
 #include "solver_interface.h"
+#include "cplex_solver_interface.h"
 
 #include "../plugins/plugin.h"
 
@@ -112,14 +113,14 @@ LPSolver::LPSolver(LPSolverType solver_type) {
     switch (solver_type) {
     case LPSolverType::CPLEX:
 #ifdef HAS_CPLEX
-        lp_solver = make_unique<CplexSolverInterface>();
+        pimpl = make_unique<CplexSolverInterface>();
 #else
         missing_solver = "CPLEX";
 #endif
         break;
     case LPSolverType::SOPLEX:
 #ifdef HAS_SOPLEX
-        lp_solver = make_unique<SoplexSolverInterface>();
+        pimpl = make_unique<SoplexSolverInterface>();
 #else
         missing_solver = "SoPlex";
 #endif
@@ -142,7 +143,7 @@ void LPSolver::load_problem(const LinearProgram &lp) {
     pimpl->load_problem(lp);
 }
 
-void LPSolver::add_temporary_constraints(const vector<LPConstraint> &constraints) {
+void LPSolver::add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints) {
     pimpl->add_temporary_constraints(constraints);
 }
 
