@@ -65,6 +65,25 @@ void LocalLabelInfo::clear() {
 }
 
 
+TransitionSystemConstIterator::TransitionSystemConstIterator(
+    const vector<LocalLabelInfo> &local_label_infos,
+    vector<LocalLabelInfo>::const_iterator it)
+    : end_it(local_label_infos.end()), it(it) {
+    advance_to_next_valid_index();
+}
+
+void TransitionSystemConstIterator::advance_to_next_valid_index() {
+    while (it != end_it && it->empty()) {
+        ++it;
+    }
+}
+
+TransitionSystemConstIterator &TransitionSystemConstIterator::operator++() {
+    ++it;
+    advance_to_next_valid_index();
+    return *this;
+}
+
 /*
   Implementation note: Transitions are grouped by their local labels,
   not by source state or any such thing. Such a grouping is beneficial

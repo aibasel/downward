@@ -89,6 +89,36 @@ public:
     }
 };
 
+
+/*
+  Iterator class for TransitionSystem which provides access to the active
+  entries of into local_label_infos.
+*/
+class TransitionSystemConstIterator {
+    const std::vector<LocalLabelInfo>::const_iterator end_it;
+    std::vector<LocalLabelInfo>::const_iterator it;
+
+    void advance_to_next_valid_index();
+public:
+    TransitionSystemConstIterator(
+        const std::vector<LocalLabelInfo> &local_label_infos,
+        std::vector<LocalLabelInfo>::const_iterator it);
+    TransitionSystemConstIterator &operator++();
+
+    const LocalLabelInfo &operator*() const {
+        return *it;
+    }
+
+    bool operator==(const TransitionSystemConstIterator &rhs) const {
+        return it == rhs.it;
+    }
+
+    bool operator!=(const TransitionSystemConstIterator &rhs) const {
+        return it != rhs.it;
+    }
+};
+
+
 class TransitionSystem {
 private:
     /*
@@ -183,12 +213,12 @@ public:
         const std::vector<std::pair<int, std::vector<int>>> &label_mapping,
         bool only_equivalent_labels);
 
-    std::vector<LocalLabelInfo>::const_iterator begin() const {
-        return local_label_infos.begin();
+    TransitionSystemConstIterator begin() const {
+        return TransitionSystemConstIterator(local_label_infos, local_label_infos.begin());
     }
 
-    std::vector<LocalLabelInfo>::const_iterator end() const {
-        return local_label_infos.end();
+    TransitionSystemConstIterator end() const {
+        return TransitionSystemConstIterator(local_label_infos, local_label_infos.end());
     }
 
     /*
