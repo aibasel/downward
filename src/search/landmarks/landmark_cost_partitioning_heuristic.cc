@@ -89,12 +89,7 @@ public:
             "it in the A* algorithm. This way, the heuristic is recomputed "
             "before a state is expanded, leading to improved estimates that "
             "incorporate all knowledge gained from paths that were found after "
-            "the state was inserted into the open list.\n"
-            "Furthermore, preferred operators should not be used for optimal "
-            "planning. Hence, the option `pref=true` should not be used in "
-            "an A* search. We allow computing preferred operators for this "
-            "heuristic because it could be used for satisficing planning where "
-            "preferred operators might improve performance (not tested).");
+            "the state was inserted into the open list.");
         document_note(
             "Consistency",
             "The heuristic is consistent along single paths if it is "
@@ -106,6 +101,15 @@ public:
             "Optimal Cost Partitioning",
             "To use ``optimal=true``, you must build the planner with LP "
             "support. See LPBuildInstructions.");
+        document_note(
+            "Preferred operators",
+            "Preferred operators should not be used for optimal planning. "
+            "We allow computing preferred operators for this heuristic because "
+            "it could be used for satisficing planning where preferred "
+            "operators might improve performance (not tested). See "
+            "Evaluator#Landmark-count_heuristic for more information on how "
+            "our implementation of preferred operators differs from the "
+            "description in the literature.");
 
         document_language_support("action costs", "supported");
         document_language_support(

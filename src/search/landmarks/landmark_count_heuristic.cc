@@ -77,7 +77,8 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
 
       TODO: This check could be done before updating the *lm_status_manager*,
        but if we want to do that in the base class, we need to delay this check
-       because it is only relevant for the inadmissible case.
+       because it is only relevant for the inadmissible case. Moreover, it
+       should be redundant once we update the landmark progression.
     */
     if (task_properties::is_goal_state(task_proxy, state))
         return 0;
@@ -138,6 +139,27 @@ public:
             "rather than cost. In experiments we achieved the best "
             "performance using the option 'transform=adapt_costs(one)' "
             "to enforce unit costs.");
+        document_note(
+            "Preferred operators",
+            "Our implementation to compute preferred operators based on landmarks "
+            "differs from the description in the literature (see reference above)."
+            "The original implementation computes two kinds of preferred "
+            "operators:\n\n"
+            "+ If there is an applicable operator that reaches a landmark, all "
+            "such operators are preferred.\n"
+            "+ If no such operators exist, perform an FF-style relaxed "
+            "exploration towards the nearest landmarks (according to the "
+            "landmark orderings) and use the preferred operators of this "
+            "exploration.\n\n\n"
+            "Our implementation only considers preferred operators of the first "
+            "type and does not include the second type. The rationale for this "
+            "change is that it reduces code complexity and helps more cleanly "
+            "separate landmark-based and FF-based computations in LAMA-like "
+            "planner configurations. In our experiments, only considering "
+            "preferred operators of the first type reduces performance when using "
+            "the heuristic and its preferred operators in isolation but improves "
+            "performance when using this heuristic in conjunction with the "
+            "FF heuristic, as in LAMA-like planner configurations.");
 
         document_language_support("action costs", "supported");
         document_language_support(

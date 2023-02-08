@@ -28,7 +28,7 @@ LandmarkHeuristic::LandmarkHeuristic(
 
     /*
       Actually, we should like to test if this is the root task or a
-      CostAdapatedTask *of the root task*, but there is currently no good way
+      CostAdaptedTask *of the root task*, but there is currently no good way
       to do this, so we use this incomplete, slightly less safe test.
     */
     if (task != tasks::g_root_task
@@ -206,28 +206,6 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
         "Using_preferred_operators_with_the_lmcount_heuristic)",
         "false");
     Heuristic::add_options_to_feature(feature);
-
-    feature.document_note(
-        "Preferred operators",
-        "Computing preferred operators based on landmarks was first suggested "
-        "in the LAMA planner " /* TODO: references? */ ". The original "
-        "implementation described in the literature computes two kinds of "
-        "preferred operators:\n\n"
-        "+ If there is an applicable operator that reaches a landmark, all "
-        "such operators are preferred.\n"
-        "+ If no such operators exist, perform an FF-style relaxed "
-        "exploration towards the nearest landmarks (according to the "
-        "landmark orderings) and use the preferred operators of this "
-        "exploration.\n\n\n"
-        "Our implementation only considers preferred operators of the first "
-        "type and does not include the second type. The rationale for this "
-        "change is that it reduces code complexity and helps more cleanly "
-        "separate landmark-based and FF-based computations in LAMA-like "
-        "planner configurations. In our experiments, only considering "
-        "preferred operators of the first type reduces performance when using "
-        "the heuristic and its preferred operators in isolation but improves "
-        "performance when using this heuristic in conjunction with the "
-        "FF heuristic, as in LAMA-like planner configurations.");
 
     feature.document_property("preferred operators",
                               "yes (if enabled; see ``pref`` option)");
