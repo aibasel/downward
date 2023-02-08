@@ -57,6 +57,8 @@ option(
   TRUE)
 
 if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
+    add_definitions("-D USE_LP")
+
     find_package(Cplex)
     if(CPLEX_FOUND)
         add_definitions("-D HAS_CPLEX")
@@ -70,25 +72,29 @@ if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
             )
         endif()
     endif()
-    find_package(Soplex)
-    if(SOPLEX_FOUND)
-        add_definitions("-D HAS_SOPLEX_NOT_YET_IMPLEMENTED")
+
+    find_package(SoPlex)
+    if (SOPLEX_FOUND)
+        add_definitions("-D HAS_SOPLEX")
         include_directories(${SOPLEX_INCLUDE_DIRS})
         target_link_libraries(downward ${SOPLEX_LIBRARIES})
+        find_package(ZLIB REQUIRED)
+        if(ZLIB_FOUND)
+            include_directories(${ZLIB_INCLUDE_DIRS})
+            target_link_libraries(downward ${ZLIB_LIBRARIES})
+        endif()
+        find_library(GMP_LIBRARY gmp REQUIRED)
+        if(GMP_LIBRARY)
+            target_link_libraries(downward ${GMP_LIBRARY})
+        endif()
     endif()
 
     if(CPLEX_FOUND OR SOPLEX_FOUND)
-        add_definitions("-D USE_LP")
         if(USE_GLIBCXX_DEBUG)
             message(
                 FATAL_ERROR
                 "To prevent incompatibilities, the option USE_GLIBCXX_DEBUG is "
                 "not supported when an LP solver is used. See issue982 for details.")
-        endif()
-        find_package(ZLIB REQUIRED)
-        if(ZLIB_FOUND)
-            include_directories(${ZLIB_INCLUDE_DIRS})
-            target_link_libraries(downward ${ZLIB_LIBRARIES})
         endif()
     endif()
 

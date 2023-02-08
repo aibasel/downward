@@ -1,9 +1,9 @@
 #ifndef LP_LP_SOLVER_H
 #define LP_LP_SOLVER_H
 
-#include "../algorithms/named_vector.h"
-
 #include "solver_interface.h"
+
+#include "../algorithms/named_vector.h"
 
 #include <iostream>
 #include <memory>
@@ -94,7 +94,6 @@ public:
     void set_objective_name(std::string name);
     const std::string &get_objective_name() const;
 };
-
 
 class LPSolver {
     std::unique_ptr<SolverInterface> pimpl;

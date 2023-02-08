@@ -1,6 +1,8 @@
 #ifndef LP_LP_INTERNALS_H
 #define LP_LP_INTERNALS_H
 
+#ifdef false
+
 /*
   This file provides some internal functions for the LP solver code.
   They could be implemented in linear_program.cc but we moved them here
@@ -15,8 +17,6 @@
 
 class CoinError;
 class OsiSolverInterface;
-
-class SolverInterface;
 
 namespace lp {
 enum class LPSolverType;
@@ -42,4 +42,5 @@ NO_RETURN
 void handle_coin_error(const CoinError &error);
 }
 
+#endif
 #endif

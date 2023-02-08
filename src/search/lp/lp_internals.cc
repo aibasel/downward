@@ -1,3 +1,5 @@
+#ifdef false
+
 #include "lp_internals.h"
 
 #ifdef USE_LP_OLD
@@ -48,6 +50,7 @@
 #include <OsiSpxSolverInterface.hpp>
 #include <spxout.h>
 #endif
+
 
 #ifdef __GNUG__
 #pragma GCC diagnostic pop
@@ -135,4 +138,5 @@ void handle_coin_error(const CoinError &error) {
 }
 }
 
+#endif
 #endif

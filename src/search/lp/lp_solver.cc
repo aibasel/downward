@@ -1,7 +1,7 @@
 #include "lp_solver.h"
 
-#include "solver_interface.h"
 #include "cplex_solver_interface.h"
+#include "soplex_solver_interface.h"
 
 #include "../plugins/plugin.h"
 
@@ -120,7 +120,7 @@ LPSolver::LPSolver(LPSolverType solver_type) {
         break;
     case LPSolverType::SOPLEX:
 #ifdef HAS_SOPLEX
-        pimpl = make_unique<SoplexSolverInterface>();
+        pimpl = make_unique<SoPlexSolverInterface>();
 #else
         missing_solver = "SoPlex";
 #endif
