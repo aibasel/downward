@@ -17,9 +17,11 @@ using namespace std;
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     const plugins::Options &opts)
-    : LandmarkHeuristic(opts, "cost partitioning", false, false,
-                        opts.get<shared_ptr<LandmarkFactory>> (
-                            "lm_factory")->supports_conditional_effects()) {
+    : LandmarkHeuristic(opts) {
+    if (log.is_at_least_normal()) {
+        log << "Initializing landmark cost partitioning heuristic..." << endl;
+    }
+    initialize(opts);
     if (opts.get<bool>("optimal")) {
         lm_cost_assignment =
             utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
@@ -30,6 +32,28 @@ LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
             utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
                 *lm_graph, opts.get<bool>("alm"));
+    }
+}
+
+void LandmarkCostPartitioningHeuristic::check_unsupported_features(
+    bool lm_factory_computes_reasonable_orderings,
+    bool lm_factory_supports_conditional_effects) {
+    if (lm_factory_computes_reasonable_orderings) {
+        cerr << "Reasonable orderings should not be used for "
+             << "admissible heuristics." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
+
+    if (task_properties::has_axioms(task_proxy)) {
+        cerr << "Cost partitioning does not support axioms." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+    }
+
+    if (!lm_factory_supports_conditional_effects
+        && task_properties::has_conditional_effects(task_proxy)) {
+        cerr << "Conditional effects not supported by the landmark "
+             << "generation method." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 }
 

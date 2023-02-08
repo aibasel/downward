@@ -6,7 +6,6 @@
 
 #include "../plugins/plugin.h"
 #include "../task_utils/successor_generator.h"
-#include "../task_utils/task_properties.h"
 #include "../tasks/cost_adapted_task.h"
 #include "../tasks/root_task.h"
 
@@ -36,56 +35,53 @@ static bool landmark_is_interesting(
 }
 
 LandmarkHeuristic::LandmarkHeuristic(
-    const plugins::Options &opts,
-    const string &name,
-    bool heuristic_supports_reasonable_orderings,
-    bool heuristic_supports_axioms,
-    bool heuristic_supports_conditional_effects)
+    const plugins::Options &opts)
     : Heuristic(opts),
       use_preferred_operators(opts.get<bool>("pref")),
       successor_generator(nullptr) {
-    if (log.is_at_least_normal()) {
-        log << "Initializing landmark " << name << " heuristic..." << endl;
-    }
+}
 
+void LandmarkHeuristic::initialize(const plugins::Options &opts) {
     /*
-      Actually, we should like to test if this is the root task or a
-      CostAdaptedTask *of the root task*, but there is currently no good way
-      to do this, so we use this incomplete, slightly less safe test.
+      Actually, we should test if this is the root task or a
+      CostAdaptedTask *of the root task*, but there is currently no good
+      way to do this, so we use this incomplete, slightly less safe test.
     */
     if (task != tasks::g_root_task
         && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr) {
-        cerr << "The landmark count heuristic currently only supports "
+        cerr << "The landmark heuristics currently only support "
              << "task transformations that modify the operator costs. "
              << "See issues 845 and 686 for details." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
+    compute_landmark_graph(opts);
+    lm_status_manager =
+        utils::make_unique_ptr<LandmarkStatusManager>(*lm_graph);
+
+    if (use_preferred_operators) {
+        /* Ideally, we should reuse the successor generator of the main
+           task in cases where it's compatible. See issue564. */
+        successor_generator =
+            utils::make_unique_ptr<successor_generator::SuccessorGenerator>(
+                task_proxy);
+    }
+}
+
+void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &opts) {
     utils::Timer lm_graph_timer;
     if (log.is_at_least_normal()) {
         log << "Generating landmark graph..." << endl;
     }
+
     shared_ptr<LandmarkFactory> lm_graph_factory =
         opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
-
-    if (!heuristic_supports_reasonable_orderings
-        && lm_graph_factory->computes_reasonable_orders()) {
-        cerr << "Reasonable orderings should not be used for "
-             << "admissible heuristics" << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-    } else if (!heuristic_supports_axioms
-               && task_properties::has_axioms(task_proxy)) {
-        cerr << "cost partitioning does not support axioms" << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
-    } else if (task_properties::has_conditional_effects(task_proxy)
-               && !heuristic_supports_conditional_effects) {
-        cerr << "conditional effects not supported by the landmark "
-             << "generation method" << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
-    }
-
+    check_unsupported_features(
+        lm_graph_factory->computes_reasonable_orders(),
+        lm_graph_factory->supports_conditional_effects());
     lm_graph = lm_graph_factory->compute_lm_graph(task);
     assert(lm_graph_factory->achievers_are_calculated());
+
     if (log.is_at_least_normal()) {
         log << "Landmark graph generation time: " << lm_graph_timer << endl;
         log << "Landmark graph contains " << lm_graph->get_num_landmarks()
@@ -96,16 +92,6 @@ LandmarkHeuristic::LandmarkHeuristic(
             << " are conjunctive." << endl;
         log << "Landmark graph contains " << lm_graph->get_num_edges()
             << " orderings." << endl;
-    }
-    lm_status_manager =
-        utils::make_unique_ptr<LandmarkStatusManager>(*lm_graph);
-
-    if (use_preferred_operators) {
-        /* Ideally, we should reuse the successor generator of the main
-           task in cases where it's compatible. See issue564. */
-        successor_generator =
-            utils::make_unique_ptr<successor_generator::SuccessorGenerator>(
-                task_proxy);
     }
 }
 

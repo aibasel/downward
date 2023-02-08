@@ -10,6 +10,7 @@ class SuccessorGenerator;
 }
 
 namespace landmarks {
+class LandmarkFactory;
 class LandmarkGraph;
 class LandmarkNode;
 class LandmarkStatusManager;
@@ -21,6 +22,12 @@ protected:
 
     std::unique_ptr<LandmarkStatusManager> lm_status_manager;
     std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;
+
+    void initialize(const plugins::Options &opts);
+    void compute_landmark_graph(const plugins::Options &opts);
+    virtual void check_unsupported_features(
+        bool lm_factory_computes_reasonable_orderings,
+        bool lm_factory_supports_conditional_effects) = 0;
 
     /*
       Unlike most landmark-related code, this function takes the
@@ -40,11 +47,7 @@ protected:
         const State &state, const BitsetView &reached);
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    LandmarkHeuristic(const plugins::Options &opts,
-                      const std::string &name,
-                      bool heuristic_supports_reasonable_orderings,
-                      bool heuristic_supports_axioms,
-                      bool heuristic_supports_conditional_effects);
+    explicit LandmarkHeuristic(const plugins::Options &opts);
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) override {

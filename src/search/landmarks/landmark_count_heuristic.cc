@@ -15,13 +15,28 @@
 using namespace std;
 
 namespace landmarks {
+static bool are_dead_ends_reliable(const plugins::Options &opts,
+                                   const TaskProxy &task_proxy) {
+    if (task_properties::has_axioms(task_proxy)) {
+        return false;
+    }
+
+    if (!opts.get<shared_ptr<LandmarkFactory>>(
+        "lm_factory")->supports_conditional_effects()
+        && task_properties::has_conditional_effects(task_proxy)) {
+        return false;
+    }
+
+    return true;
+}
+
 LandmarkCountHeuristic::LandmarkCountHeuristic(const plugins::Options &opts)
-    : LandmarkHeuristic(opts, "count", true, true, true),
-      dead_ends_reliable(
-          (!task_properties::has_axioms(task_proxy) &&
-           (!task_properties::has_conditional_effects(task_proxy)
-            || opts.get<shared_ptr<LandmarkFactory>>(
-                "lm_factory")->supports_conditional_effects()))) {
+    : LandmarkHeuristic(opts),
+      dead_ends_reliable(are_dead_ends_reliable(opts, task_proxy)) {
+    if (log.is_at_least_normal()) {
+        log << "Initializing landmark count heuristic..." << endl;
+    }
+    initialize(opts);
     compute_landmark_costs();
 }
 
