@@ -40,8 +40,6 @@ find_path(SOPLEX_INCLUDE_DIRS
     include
 )
 
-message("XXXX Got include dirs: ${SOPLEX_INCLUDE_DIRS} from hints ${SOPLEX_HINT_PATHS_RELEASE} and ${SOPLEX_HINT_PATHS_DEBUG}")
-
 find_library(SOPLEX_LIBRARY_RELEASE
     NAMES
     soplex
@@ -51,8 +49,6 @@ find_library(SOPLEX_LIBRARY_RELEASE
     lib
 )
 
-message("XXXX Got release lib: ${SOPLEX_LIBRARY_RELEASE} from hint ${SOPLEX_HINT_PATHS_RELEASE}")
-
 find_library(SOPLEX_LIBRARY_DEBUG
     NAMES
     soplex
@@ -61,7 +57,6 @@ find_library(SOPLEX_LIBRARY_DEBUG
     PATH_SUFFIXES
     lib
 )
-message("XXXX Got debug lib: ${SOPLEX_LIBRARY_DEBUG} from hint ${SOPLEX_HINT_PATHS_DEBUG}")
 
 if(SOPLEX_LIBRARY_RELEASE OR SOPLEX_LIBRARY_DEBUG)
     set(SOPLEX_LIBRARIES
@@ -69,12 +64,11 @@ if(SOPLEX_LIBRARY_RELEASE OR SOPLEX_LIBRARY_DEBUG)
         debug ${SOPLEX_LIBRARY_DEBUG}
     )
 endif()
-message("XXXX Got libs: ${SOPLEX_LIBRARIES}")
 
 # Check if everything was found and set SOPLEX_FOUND.
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
-    soplex
+    SoPlex
     REQUIRED_VARS SOPLEX_INCLUDE_DIRS SOPLEX_LIBRARIES
 )
 

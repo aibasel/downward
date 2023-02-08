@@ -2,7 +2,7 @@
 
 namespace lp {
 void SoPlexSolverInterface::load_problem(const LinearProgram &/*lp*/) {}
-void SoPlexSolverInterface::add_temporary_constraints(const std::vector<LPConstraint> &/*constraints*/) {}
+void SoPlexSolverInterface::add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &/*constraints*/) {}
 void SoPlexSolverInterface::clear_temporary_constraints() {}
 double SoPlexSolverInterface::get_infinity() const {return 0.0;}
 

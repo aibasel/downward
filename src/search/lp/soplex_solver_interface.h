@@ -23,7 +23,7 @@ class SoPlexSolverInterface : public SolverInterface {
 
 public:
     virtual void load_problem(const LinearProgram &lp) override;
-    virtual void add_temporary_constraints(const std::vector<LPConstraint> &constraints) override;
+    virtual void add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints) override;
     virtual void clear_temporary_constraints() override;
     virtual double get_infinity() const override;
 
