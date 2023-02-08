@@ -22,7 +22,7 @@ static bool are_dead_ends_reliable(const plugins::Options &opts,
     }
 
     if (!opts.get<shared_ptr<LandmarkFactory>>(
-        "lm_factory")->supports_conditional_effects()
+            "lm_factory")->supports_conditional_effects()
         && task_properties::has_conditional_effects(task_proxy)) {
         return false;
     }

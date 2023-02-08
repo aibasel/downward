@@ -12,7 +12,7 @@ class LandmarkCountHeuristic : public LandmarkHeuristic {
 
     virtual void check_unsupported_features(
         bool /*lm_factory_computes_reasonable_orderings*/,
-        bool /*lm_factory_supports_conditional_effects*/) override {};
+        bool /*lm_factory_supports_conditional_effects*/) override {}
 
     int get_min_cost_of_achievers(const std::set<int> &achievers) const;
     void compute_landmark_costs();
