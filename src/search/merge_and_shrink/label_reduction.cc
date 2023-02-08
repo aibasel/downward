@@ -75,9 +75,11 @@ void LabelReduction::compute_label_mapping(
             cost_to_equivalent_labels[cost].push_back(label);
             ++num_labels;
         }
-        for (const pair<int, const vector<int> &> entry : cost_to_equivalent_labels) {
-            const vector<int> &equivalent_labels = entry.second;
+        for (auto &entry : cost_to_equivalent_labels) {
+            vector<int> &equivalent_labels = entry.second;
             if (equivalent_labels.size() > 1) {
+                // Labels have to be sorted for LocalLabelInfo.
+                sort(equivalent_labels.begin(), equivalent_labels.end());
                 if (log.is_at_least_debug()) {
                     log << "Reducing labels "
                         << equivalent_labels << " to " << next_new_label << endl;

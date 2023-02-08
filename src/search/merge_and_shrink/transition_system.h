@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+#include "../utils/collections.h"
+
 #include <iostream>
 #include <memory>
 #include <string>
@@ -41,9 +43,18 @@ struct Transition {
 
 using LabelGroup = std::vector<int>;
 
+/*
+  Class for representing groups of labels with equivalent transitions in a
+  transition system. See also documentation for TransitionSystem.
+
+  The local label is in a consistent state if label_group and transitions
+  are sorted and unique.
+*/
 class LocalLabelInfo {
+    // The sorted set of labels with identical transitions in a transition system.
     LabelGroup label_group;
     std::vector<Transition> transitions;
+    // The cost is the minimum cost over all labels in label_group.
     int cost;
 public:
     LocalLabelInfo(
@@ -53,27 +64,38 @@ public:
         : label_group(move(label_group)),
           transitions(move(transitions)),
           cost(cost) {
+        assert(utils::is_sorted_unique(this->label_group) &&
+               utils::is_sorted_unique(this->transitions));
     }
 
-    // If label_cost is not given, cost of this local label info is not changed.
-    void add_label(int label, int label_cost = -1);
-
-    void remove_label(int label);
-    void replace_transitions(std::vector<Transition> &&new_transitions);
-
-    // The cost of this local label info is the minimum cost over all labels.
-    void recompute_cost(const Labels &labels);
+    void add_label(int label, int label_cost);
 
     /*
-      The given local label info must have identical transitions. Its labels
-      are moved into this local label info.
+      Remove the labels in old_labels from label_group and add new_label to it.
+      Requires old_labels to be sorted.
+    */
+    void apply_same_cost_label_mapping(
+        int new_label, const std::vector<int> &old_labels);
+
+    // Remove the labels in old_labels. Requires old_labels to be sorted.
+    void remove_labels(const std::vector<int> &old_labels);
+
+    void recompute_cost(const Labels &labels);
+    void replace_transitions(std::vector<Transition> &&new_transitions);
+
+    /*
+      The given local label must have identical transitions. Its labels are
+      moved into this local label info. The given local label is then
+      invalidated.
     */
     void merge_local_label_info(LocalLabelInfo &local_label_info);
 
-    void clear();
+    // Empty all data structures.
+    void deactivate();
 
-    bool empty() const {
-        return label_group.empty();
+    // A local label is active as long as it represents labels (in label_group).
+    bool is_active() const {
+        return !label_group.empty();
     }
 
     const LabelGroup &get_label_group() const {
@@ -87,6 +109,8 @@ public:
     int get_cost() const {
         return cost;
     }
+
+    bool is_consistent() const;
 };
 
 
@@ -162,10 +186,10 @@ private:
       The transitions for every group of locally equivalent labels are
       sorted (by source, by target) and there are no duplicates.
     */
-    bool are_transitions_sorted_unique() const;
+    bool are_local_labels_consistent() const;
+
     /*
-      The mapping label_to_local_label is consistent with the mapping
-      local_label_to_labels.
+      The mapping label_to_local_label is consistent with local_label_infos.
     */
     bool is_label_mapping_consistent() const;
     void dump_label_mapping() const;

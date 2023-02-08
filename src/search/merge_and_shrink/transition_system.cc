@@ -3,7 +3,6 @@
 #include "distances.h"
 #include "labels.h"
 
-#include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/memory.h"
 
@@ -30,14 +29,26 @@ void LocalLabelInfo::add_label(int label, int label_cost) {
     if (label_cost != -1) {
         cost = min(cost, label_cost);
     }
+    assert(is_consistent());
 }
 
-void LocalLabelInfo::remove_label(int label) {
-    label_group.erase(find(label_group.begin(), label_group.end(), label));
+void LocalLabelInfo::apply_same_cost_label_mapping(
+    int new_label, const vector<int> &old_labels) {
+    assert(is_consistent());
+    remove_labels(old_labels);
+    label_group.push_back(new_label);
+    assert(is_consistent());
 }
 
-void LocalLabelInfo::replace_transitions(vector<Transition> &&new_transitions) {
-    transitions = move(new_transitions);
+void LocalLabelInfo::remove_labels(const vector<int> &old_labels) {
+    assert(is_consistent());
+    assert(utils::is_sorted_unique(old_labels));
+    auto it = set_difference(
+        label_group.begin(), label_group.end(),
+        old_labels.begin(), old_labels.end(),
+        label_group.begin());
+    label_group.erase(it, label_group.end());
+    assert(is_consistent());
 }
 
 void LocalLabelInfo::recompute_cost(const Labels &labels) {
@@ -48,20 +59,34 @@ void LocalLabelInfo::recompute_cost(const Labels &labels) {
     }
 }
 
+void LocalLabelInfo::replace_transitions(vector<Transition> &&new_transitions) {
+    transitions = move(new_transitions);
+    assert(is_consistent());
+}
+
 void LocalLabelInfo::merge_local_label_info(LocalLabelInfo &local_label_info) {
+    assert(is_consistent());
+    assert(local_label_info.is_consistent());
     assert(transitions == local_label_info.transitions);
     label_group.insert(
         label_group.end(),
         make_move_iterator(local_label_info.label_group.begin()),
         make_move_iterator(local_label_info.label_group.end()));
     cost = min(cost, local_label_info.cost);
-    local_label_info.clear();
+    local_label_info.deactivate();
+    sort(label_group.begin(), label_group.end());
+    assert(is_consistent());
 }
 
-void LocalLabelInfo::clear() {
+void LocalLabelInfo::deactivate() {
     utils::release_vector_memory(transitions);
     utils::release_vector_memory(label_group);
     cost = -1;
+}
+
+bool LocalLabelInfo::is_consistent() const {
+    return utils::is_sorted_unique(label_group) &&
+        utils::is_sorted_unique(transitions);
 }
 
 
@@ -73,7 +98,7 @@ TransitionSystemConstIterator::TransitionSystemConstIterator(
 }
 
 void TransitionSystemConstIterator::advance_to_next_valid_index() {
-    while (it != end_it && it->empty()) {
+    while (it != end_it && !it->is_active()) {
         ++it;
     }
 }
@@ -226,6 +251,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
                 dead_labels.insert(dead_labels.end(), new_labels.begin(), new_labels.end());
             } else {
                 sort(new_transitions.begin(), new_transitions.end());
+                sort(new_labels.begin(), new_labels.end());
                 int new_local_label = local_label_infos.size();
                 int cost = INF;
                 for (int label : new_labels) {
@@ -245,6 +271,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
       All dead labels should form one single label group.
     */
     if (!dead_labels.empty()) {
+        sort(dead_labels.begin(), dead_labels.end());
         int new_local_label = local_label_infos.size();
         int cost = INF;
         for (int label : dead_labels) {
@@ -279,11 +306,11 @@ void TransitionSystem::compute_equivalent_local_labels() {
     int num_local_labels = local_label_infos.size();
     for (int local_label1 = 0; local_label1 < num_local_labels;
          ++local_label1) {
-        if (!local_label_infos[local_label1].empty()) {
+        if (local_label_infos[local_label1].is_active()) {
             const vector<Transition> &transitions1 = local_label_infos[local_label1].get_transitions();
             for (int local_label2 = local_label1 + 1;
                  local_label2 < num_local_labels; ++local_label2) {
-                if (!local_label_infos[local_label2].empty()) {
+                if (local_label_infos[local_label2].is_active()) {
                     const vector<Transition> &transitions2 = local_label_infos[local_label2].get_transitions();
                     // Comparing transitions directly works because they are sorted and unique.
                     if (transitions1 == transitions2) {
@@ -397,28 +424,25 @@ void TransitionSystem::apply_label_reduction(
             const vector<int> &old_labels = mapping.second;
             assert(old_labels.size() >= 2);
             int local_label = label_to_local_label[old_labels.front()];
-            LocalLabelInfo &local_label_info = local_label_infos[local_label];
-            local_label_info.add_label(new_label);
-            label_to_local_label[new_label] = local_label;
+            local_label_infos[local_label].apply_same_cost_label_mapping(
+                new_label, old_labels);
 
+            label_to_local_label[new_label] = local_label;
             for (int old_label : old_labels) {
                 assert(label_to_local_label[old_label] == local_label);
-                local_label_info.remove_label(old_label);
                 // Reset (for consistency only, old labels are never accessed).
                 label_to_local_label[old_label] = -1;
-                // NOTE: if we were combining labels with different cost,
-                // we would need to recompute the cost of the local label here.
             }
         }
     } else {
         /*
           Iterate over the label mapping. For each new label, go over the
           reduced labels to combine their transitions into the transitions
-          of the new label. Also remember the affected local labels.
-          Furthermore, remove the reduced labels from their local labels.
-          Add the new label together with its transitions as a new local label.
+          of the new label. Also store, for each local label, the labels
+          removed from them. Add the new label together with its transitions
+          as a new local label and update the label_to_local_label mapping.
         */
-        unordered_set<int> affected_local_labels;
+        unordered_map<int, vector<int>> local_label_to_old_labels;
         for (const pair<int, vector<int>> &mapping: label_mapping) {
             const vector<int> &old_labels = mapping.second;
             assert(old_labels.size() >= 2);
@@ -427,12 +451,10 @@ void TransitionSystem::apply_label_reduction(
             for (int old_label : old_labels) {
                 int old_local_label = label_to_local_label[old_label];
                 if (seen_local_labels.insert(old_local_label).second) {
-                    affected_local_labels.insert(old_local_label);
                     const vector<Transition> &transitions = local_label_infos[old_local_label].get_transitions();
                     new_label_transitions.insert(new_label_transitions.end(), transitions.begin(), transitions.end());
                 }
-
-                local_label_infos[old_local_label].remove_label(old_label);
+                local_label_to_old_labels[old_local_label].push_back(old_label);
                 // Reset (for consistency only, old labels are never accessed).
                 label_to_local_label[old_label] = -1;
             }
@@ -447,17 +469,14 @@ void TransitionSystem::apply_label_reduction(
             local_label_infos.emplace_back(move(new_label_group), move(new_label_transitions), new_cost);
         }
 
-        // Update all affected local labels.
-        for (int local_label : affected_local_labels) {
-            LocalLabelInfo &local_label_info = local_label_infos[local_label];
-            // If the local label does not represent any label anymore,
-            // invalidate the entry.
-            if (local_label_info.empty()) {
-                local_label_info.clear();
-            }
-
-            // Otherwise, recompute its cost.
-            local_label_info.recompute_cost(labels);
+        /*
+          Remove all labels of all affected local labels and recompute the
+          cost of these affected local labels.
+        */
+        for (auto &entry : local_label_to_old_labels) {
+            sort(entry.second.begin(), entry.second.end());
+            local_label_infos[entry.first].remove_labels(entry.second);
+            local_label_infos[entry.first].recompute_cost(labels);
         }
 
         compute_equivalent_local_labels();
@@ -472,16 +491,16 @@ string TransitionSystem::tag() const {
     return desc + ": ";
 }
 
-bool TransitionSystem::are_transitions_sorted_unique() const {
+bool TransitionSystem::are_local_labels_consistent() const {
     for (const LocalLabelInfo &local_label_info : *this) {
-        if (!utils::is_sorted_unique(local_label_info.get_transitions()))
+        if (!local_label_info.is_consistent())
             return false;
     }
     return true;
 }
 
 bool TransitionSystem::is_valid() const {
-    return are_transitions_sorted_unique()
+    return are_local_labels_consistent()
            && is_label_mapping_consistent();
 }
 
