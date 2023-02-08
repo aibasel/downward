@@ -1,6 +1,6 @@
 #include "lp_internals.h"
 
-#ifdef USE_LP
+#ifdef USE_LP_OLD
 #include "lp_solver.h"
 
 #include "../utils/language.h"
