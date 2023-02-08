@@ -49,7 +49,11 @@ public:
     LocalLabelInfo(
         LabelGroup &&label_group,
         std::vector<Transition> &&transitions,
-        int cost);
+        int cost)
+        : label_group(move(label_group)),
+          transitions(move(transitions)),
+          cost(cost) {
+    }
 
     // If label_cost is not given, cost of this local label info is not changed.
     void add_label(int label, int label_cost = -1);
