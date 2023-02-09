@@ -98,6 +98,8 @@ attributes.extend(extra_attributes)
 
 exp.add_comparison_table_step(attributes=attributes)
 
+exp.add_scatter_plot_step(attributes=['total_time'])
+
 exp.add_archive_step(ARCHIVE_PATH)
 
 exp.run_steps()
