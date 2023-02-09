@@ -119,14 +119,14 @@ public:
   entries of into local_label_infos.
 */
 class TransitionSystemConstIterator {
-    const std::vector<LocalLabelInfo>::const_iterator end_it;
     std::vector<LocalLabelInfo>::const_iterator it;
+    std::vector<LocalLabelInfo>::const_iterator end_it;
 
     void advance_to_next_valid_index();
 public:
     TransitionSystemConstIterator(
-        const std::vector<LocalLabelInfo> &local_label_infos,
-        std::vector<LocalLabelInfo>::const_iterator it);
+        std::vector<LocalLabelInfo>::const_iterator it,
+        std::vector<LocalLabelInfo>::const_iterator end_it);
     TransitionSystemConstIterator &operator++();
 
     const LocalLabelInfo &operator*() const {
@@ -238,11 +238,11 @@ public:
         bool only_equivalent_labels);
 
     TransitionSystemConstIterator begin() const {
-        return TransitionSystemConstIterator(local_label_infos, local_label_infos.begin());
+        return TransitionSystemConstIterator(local_label_infos.begin(), local_label_infos.end());
     }
 
     TransitionSystemConstIterator end() const {
-        return TransitionSystemConstIterator(local_label_infos, local_label_infos.end());
+        return TransitionSystemConstIterator(local_label_infos.end(), local_label_infos.end());
     }
 
     /*
