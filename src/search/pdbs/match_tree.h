@@ -24,7 +24,7 @@ class Projection;
 */
 
 class MatchTree {
-    const TaskProxy &task_proxy;
+    TaskProxy task_proxy;
     const Projection &projection;
     struct Node;
     Node *root;
@@ -36,7 +36,10 @@ class MatchTree {
         Node *node, int state_index, std::vector<int> &operator_ids) const;
     void dump_recursive(Node *node, utils::LogProxy &log) const;
 public:
-    // Initialize an empty match tree.
+    /*
+      Initialize an empty match tree. The given reference to Projection is
+      stored and must live at least as long as the MatchTree instance.
+    */
     MatchTree(const TaskProxy &task_proxy,
               const Projection &projection);
     ~MatchTree();
