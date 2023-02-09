@@ -25,8 +25,8 @@ def add_archive_step(exp, path):
     def archive():
         archive_path = ARCHIVE_LOCATION / path
         _archive_script_dir(exp, ARCHIVE_HOST, archive_path)
-        _archive_data_dir(exp, ARCHIVE_HOST, archive_path)
         _archive_eval_dir(exp, ARCHIVE_HOST, archive_path)
+        _archive_data_dir(exp, ARCHIVE_HOST, archive_path)
 
     exp.add_step("archive", archive)
 
@@ -90,7 +90,7 @@ def _archive_eval_dir(exp, host, archive_path):
 def _pack(filenames, archive_filename, path_prefix):
     """
     Packs all files given in filenames into an archive (.tar.xz) located at
-    archive_filename. The path_prefix is removed in the archive, i.e., 
+    archive_filename. The path_prefix is removed in the archive, i.e.,
     if the filename is '/path/to/file' and the prefix is '/path', the location
     inside the archive will be 'to/file'.
     """
