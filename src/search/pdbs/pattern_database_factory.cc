@@ -455,7 +455,7 @@ shared_ptr<PatternDatabase> compute_pdb(
 }
 
 tuple<shared_ptr<PatternDatabase>, vector<vector<OperatorID>>>
-compute_pdb_and_wildcard_plan(
+compute_pdb_and_plan(
     const TaskProxy &task_proxy,
     const Pattern &pattern,
     const vector<int> &operator_costs,

@@ -226,7 +226,7 @@ bool CEGAR::time_limit_reached(
 
 unique_ptr<PatternInfo> CEGAR::compute_pattern_info(Pattern &&pattern) const {
     vector<int> op_cost;
-    auto [pdb, plan] = compute_pdb_and_wildcard_plan(
+    auto [pdb, plan] = compute_pdb_and_plan(
         task_proxy, pattern, op_cost, rng, use_wildcard_plans);
 
     bool unsolvable = false;

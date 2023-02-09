@@ -44,7 +44,7 @@ extern std::shared_ptr<PatternDatabase> compute_pdb(
   set to true, each set contains at least one operator ID.
 */
 extern std::tuple<std::shared_ptr<PatternDatabase>,
-                  std::vector<std::vector<OperatorID>>> compute_pdb_and_wildcard_plan(
+                  std::vector<std::vector<OperatorID>>> compute_pdb_and_plan(
     const TaskProxy &task_proxy,
     const Pattern &pattern,
     const std::vector<int> &operator_costs = std::vector<int>(),
