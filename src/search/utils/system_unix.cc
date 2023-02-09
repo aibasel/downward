@@ -33,6 +33,7 @@
 #include <limits>
 #include <new>
 #include <stdlib.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #if OPERATING_SYSTEM == OSX
@@ -266,6 +267,45 @@ void report_exit_code_reentrant(ExitCode exitcode) {
 
 int get_process_id() {
     return getpid();
+}
+
+void call_hook(const string& plan_filename) {
+    /*
+      The path to the callback program can be absolute or relative to the
+      directory where the planner was called from.
+    */
+    const char* const callback = getenv("DOWNWARD_PLAN_CALLBACK");
+    // Do nothing if the environment variable is not set.
+    if (!callback)
+        return;
+    pid_t child_id = fork();
+    if (child_id == -1) {
+        ABORT("Forking plan hook process failed with the following error: " +
+              string(strerror(errno)));
+    } else if (child_id == 0) {
+        // We are the child process: Execute callback.
+        const char* const argv[] = {callback, plan_filename.c_str(), nullptr};
+        execvp(callback, const_cast<char* const*>(argv));
+        // The line below is only reached if the *execvp* call fails.
+        ABORT("Executing the plan hook '" + string(callback) +
+              "' failed with the following error: " + string(strerror(errno)));
+    } else {
+        // We are the parent process: Wait for child process.
+        int status;
+        waitpid(child_id, &status, 0);
+        if (!WIFEXITED(status)) {
+            /*
+              The call to *execvp* failed and its ABORT message was printed.
+              Thus we only abort here, without further messages.
+            */
+            abort();
+        }
+        if (WEXITSTATUS(status) != 0) {
+            ABORT("The plan hook '" + string(callback) +
+                  "' was executed but exited with non-zero exit code " +
+                  to_string(WEXITSTATUS(status)));
+        }
+    }
 }
 }
 

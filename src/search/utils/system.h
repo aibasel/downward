@@ -62,6 +62,7 @@ bool is_exit_code_error_reentrant(ExitCode exitcode);
 void register_event_handlers();
 void report_exit_code_reentrant(ExitCode exitcode);
 int get_process_id();
+void call_hook(const std::string &plan_file_name);
 }
 
 #endif
