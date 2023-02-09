@@ -33,7 +33,7 @@ public:
     using Heuristic::Heuristic;
 
     virtual int compute_heuristic(const State &ancestor_state) override {
-        PYBIND11_OVERRIDE(
+        PYBIND11_OVERRIDE_PURE(
             int,                /* Return type */
             Heuristic,          /* Parent class */
             compute_heuristic,  /* Name of function in C++ (must match Python name) */

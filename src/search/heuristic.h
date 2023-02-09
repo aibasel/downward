@@ -75,9 +75,7 @@ public:
     explicit Heuristic(std::shared_ptr<AbstractTask> task);
     virtual ~Heuristic() override;
 
-    virtual int compute_heuristic(const State &ancestor_state) {
-        return 0;
-    }
+    virtual int compute_heuristic(const State &ancestor_state) = 0;
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> & /*evals*/) override {
