@@ -278,9 +278,7 @@ void PatternDatabaseFactory::compute_abstract_goals() {
 bool PatternDatabaseFactory::is_goal_state(int state_index) const {
     for (const FactPair &abstract_goal : abstract_goals) {
         int pattern_var_id = abstract_goal.var;
-        int var_id = projection.get_pattern()[pattern_var_id];
-        VariableProxy var = variables[var_id];
-        int val = projection.unrank(state_index, pattern_var_id, var.get_domain_size());
+        int val = projection.unrank(state_index, pattern_var_id);
         if (val != abstract_goal.value) {
             return false;
         }

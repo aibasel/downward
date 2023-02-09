@@ -147,7 +147,7 @@ void MatchTree::get_applicable_operator_ids_recursive(
     if (node->is_leaf_node())
         return;
 
-    int val = projection.unrank(state_index, node->var_id, node->var_domain_size);
+    int val = projection.unrank(state_index, node->var_id);
 
     if (node->successors[val]) {
         // Follow the correct successor edge, if it exists.

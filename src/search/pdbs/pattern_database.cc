@@ -20,16 +20,19 @@ Projection::Projection(
     task_properties::verify_no_conditional_effects(task_proxy);
     assert(utils::is_sorted_unique(pattern));
 
+    domain_sizes.reserve(pattern.size());
     hash_multipliers.reserve(pattern.size());
     num_abstract_states = 1;
     for (int pattern_var_id : pattern) {
         hash_multipliers.push_back(num_abstract_states);
         VariableProxy var = task_proxy.get_variables()[pattern_var_id];
+        int domain_size = var.get_domain_size();
+        domain_sizes.push_back(domain_size);
         if (utils::is_product_within_limit(
                 num_abstract_states,
-                var.get_domain_size(),
+                domain_size,
                 numeric_limits<int>::max())) {
-            num_abstract_states *= var.get_domain_size();
+            num_abstract_states *= domain_size;
         } else {
             cerr << "Given pattern is too large! (Overflow occured): " << endl;
             cerr << pattern << endl;
@@ -46,9 +49,9 @@ int Projection::rank(const vector<int> &state) const {
     return index;
 }
 
-int Projection::unrank(int index, int var, int domain_size) const {
+int Projection::unrank(int index, int var) const {
     int temp = index / hash_multipliers[var];
-    return temp % domain_size;
+    return temp % domain_sizes[var];
 }
 
 PatternDatabase::PatternDatabase(

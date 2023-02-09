@@ -10,6 +10,7 @@
 namespace pdbs {
 class Projection {
     Pattern pattern;
+    std::vector<int> domain_sizes;
     int num_abstract_states;
     std::vector<int> hash_multipliers;
 public:
@@ -22,7 +23,7 @@ public:
       Compute the value of a given variable in the abstract state given as
       (hash) index.
     */
-    int unrank(int index, int var, int domain_size) const;
+    int unrank(int index, int var) const;
 
     const Pattern &get_pattern() const {
         return pattern;
