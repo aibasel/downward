@@ -13,10 +13,7 @@ class Projection {
     int num_abstract_states;
     std::vector<int> hash_multipliers;
 public:
-    Projection(
-        Pattern &&pattern,
-        int num_states,
-        std::vector<int> &&hash_multipliers);
+    Projection(const TaskProxy &task_proxy, const Pattern &pattern);
 
     // Compute the hash index (aka. the rank) of the given concrete state.
     int rank(const std::vector<int> &state) const;

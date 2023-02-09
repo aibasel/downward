@@ -1,5 +1,12 @@
 #include "pattern_database.h"
 
+#include "../task_utils/task_properties.h"
+
+#include "../utils/logging.h"
+#include "../utils/math.h"
+
+#include <cassert>
+#include <iostream>
 #include <limits>
 #include <vector>
 
@@ -7,12 +14,28 @@ using namespace std;
 
 namespace pdbs {
 Projection::Projection(
-    Pattern &&pattern,
-    int num_abstract_states,
-    vector<int> &&hash_multipliers)
-    : pattern(move(pattern)),
-      num_abstract_states(num_abstract_states),
-      hash_multipliers(move(hash_multipliers)) {
+    const TaskProxy &task_proxy, const Pattern &pattern)
+    : pattern(pattern) {
+    task_properties::verify_no_axioms(task_proxy);
+    task_properties::verify_no_conditional_effects(task_proxy);
+    assert(utils::is_sorted_unique(pattern));
+
+    hash_multipliers.reserve(pattern.size());
+    num_abstract_states = 1;
+    for (int pattern_var_id : pattern) {
+        hash_multipliers.push_back(num_abstract_states);
+        VariableProxy var = task_proxy.get_variables()[pattern_var_id];
+        if (utils::is_product_within_limit(
+                num_abstract_states,
+                var.get_domain_size(),
+                numeric_limits<int>::max())) {
+            num_abstract_states *= var.get_domain_size();
+        } else {
+            cerr << "Given pattern is too large! (Overflow occured): " << endl;
+            cerr << pattern << endl;
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        }
+    }
 }
 
 int Projection::rank(const vector<int> &state) const {

@@ -112,30 +112,6 @@ public:
     };
 };
 
-static Projection compute_projection(
-    const TaskProxy &task_proxy, const Pattern &pattern) {
-    task_properties::verify_no_axioms(task_proxy);
-    task_properties::verify_no_conditional_effects(task_proxy);
-    assert(utils::is_sorted_unique(pattern));
-
-    vector<int> hash_multipliers;
-    hash_multipliers.reserve(pattern.size());
-    int num_states = 1;
-    for (int pattern_var_id : pattern) {
-        hash_multipliers.push_back(num_states);
-        VariableProxy var = task_proxy.get_variables()[pattern_var_id];
-        if (utils::is_product_within_limit(num_states, var.get_domain_size(),
-                                           numeric_limits<int>::max())) {
-            num_states *= var.get_domain_size();
-        } else {
-            cerr << "Given pattern is too large! (Overflow occured): " << endl;
-            cerr << pattern << endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-        }
-    }
-    return Projection(Pattern(pattern), num_states, move(hash_multipliers));
-}
-
 void PatternDatabaseFactory::compute_variable_to_index(const Pattern &pattern) {
     variable_to_index.resize(variables.size(), -1);
     for (size_t i = 0; i < pattern.size(); ++i) {
@@ -431,7 +407,7 @@ PatternDatabaseFactory::PatternDatabaseFactory(
     bool compute_wildcard_plan)
     : task_proxy(task_proxy),
       variables(task_proxy.get_variables()),
-      projection(compute_projection(task_proxy, pattern)) {
+      projection(task_proxy, pattern) {
     assert(operator_costs.empty() ||
            operator_costs.size() == task_proxy.get_operators().size());
     compute_variable_to_index(pattern);
