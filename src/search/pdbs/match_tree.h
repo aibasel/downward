@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+#include "pattern_database.h"
+
 #include "../task_proxy.h"
 
 #include <cstddef>
@@ -25,7 +27,7 @@ class Projection;
 
 class MatchTree {
     TaskProxy task_proxy;
-    const Projection &projection;
+    Projection projection;
     struct Node;
     Node *root;
     void insert_recursive(int op_id,
@@ -37,8 +39,8 @@ class MatchTree {
     void dump_recursive(Node *node, utils::LogProxy &log) const;
 public:
     /*
-      Initialize an empty match tree. The given reference to Projection is
-      stored and must live at least as long as the MatchTree instance.
+      Initialize an empty match tree. We copy projection to ensure that the
+      match tree remains in a valid state independently of projection.
     */
     MatchTree(const TaskProxy &task_proxy,
               const Projection &projection);
