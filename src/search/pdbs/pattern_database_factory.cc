@@ -185,7 +185,7 @@ void PatternDatabaseFactory::multiply_out(
     if (pos == static_cast<int>(effects_without_pre.size())) {
         // All effects without precondition have been checked: insert op.
         if (!eff_pairs.empty()) {
-            operators.emplace_back(
+            operators.push_back(
                 build_abstract_operator(
                     prev_pairs, pre_pairs, eff_pairs,
                     concrete_op_id, cost));
