@@ -398,6 +398,11 @@ void PatternDatabaseFactory::compute_plan(
     utils::release_vector_memory(generating_op_ids);
 }
 
+/*
+  Note: if we move towards computing PDBs via command line option, e.g. as
+  in pdb_heuristic(pdb(pattern=...)), then this class might become a builder
+  class for pattern databases.
+*/
 PatternDatabaseFactory::PatternDatabaseFactory(
     const TaskProxy &task_proxy,
     const Pattern &pattern,
