@@ -1,8 +1,7 @@
 #include "landmark_factory_h_m.h"
 
-#include "exploration.h"
-#include "landmark.h"
 #include "conjunctive_landmark.h"
+#include "exploration.h"
 #include "simple_landmark.h"
 
 #include "../abstract_task.h"
@@ -636,7 +635,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
     // first_achievers are already filled in by compute_h_m_landmarks
     // here only have to do possible_achievers
     for (auto &lm_node : lm_graph->get_nodes()) {
-        shared_ptr<Landmark> landmark = lm_node->get_landmark();
+        shared_ptr<Landmark> &landmark = lm_node->get_landmark();
         set<int> candidates;
         // put all possible adders in candidates set
         for (const FactPair &lm_fact : landmark->facts) {
@@ -930,15 +929,15 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
         utils::sort_unique(facts);
         assert(!facts.empty());
         shared_ptr<Landmark> landmark;
-        if ((facts.size() > 1)) {
-            landmark = make_shared<ConjunctiveLandmark>(vector<FactPair>{facts}, goal);
-        } else {
+        if ((facts.size() == 1)) {
             landmark = make_shared<SimpleLandmark>(vector<FactPair>{facts}, goal);
+        } else {
+            landmark = make_shared<ConjunctiveLandmark>(vector<FactPair>{facts}, goal);
         }
         landmark->first_achievers.insert(
             hm_entry.first_achievers.begin(),
             hm_entry.first_achievers.end());
-        lm_node_table_[set_index] = &lm_graph->add_landmark(move(landmark));
+        lm_node_table_[set_index] = &lm_graph->add_landmark(landmark);
     }
 }
 

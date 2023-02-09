@@ -1,9 +1,9 @@
 #ifndef LANDMARKS_UTIL_H
 #define LANDMARKS_UTIL_H
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
-#include <memory>
 
 class OperatorProxy;
 class TaskProxy;

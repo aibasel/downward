@@ -54,11 +54,11 @@ public:
     }
 
     // TODO: Remove this function once the LM-graph is constant after creation.
-    std::shared_ptr<Landmark> get_landmark() {
+    std::shared_ptr<Landmark> &get_landmark() {
         return landmark;
     }
 
-    const std::shared_ptr<Landmark> get_landmark() const {
+    const std::shared_ptr<Landmark> &get_landmark() const {
         return landmark;
     }
 };

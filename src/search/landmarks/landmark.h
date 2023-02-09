@@ -7,18 +7,18 @@
 
 namespace landmarks {
 enum class LandmarkType {
-    SIMPLE = 0,
-    DISJUNCTIVE = 1,
-    CONJUNCTIVE = 2
+    SIMPLE,
+    DISJUNCTIVE,
+    CONJUNCTIVE
 };
 
 class Landmark {
 public:
-    explicit Landmark(std::vector<FactPair> _facts,
+    Landmark(std::vector<FactPair> facts,
                       bool is_true_in_goal = false, bool is_derived = false)
-        : facts(move(_facts)),
+        : facts(move(facts)),
           is_true_in_goal(is_true_in_goal), is_derived(is_derived) {
-        assert(facts.size() >= 1);
+        assert(!this->facts.empty());
     }
 
     virtual ~Landmark() = default;

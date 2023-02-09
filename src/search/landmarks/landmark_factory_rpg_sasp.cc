@@ -1,9 +1,8 @@
 #include "landmark_factory_rpg_sasp.h"
 
-#include "landmark.h"
 #include "disjunctive_landmark.h"
-#include "simple_landmark.h"
 #include "landmark_graph.h"
+#include "simple_landmark.h"
 #include "util.h"
 
 #include "../task_proxy.h"

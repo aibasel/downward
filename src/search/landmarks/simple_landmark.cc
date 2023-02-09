@@ -1,4 +1,3 @@
-#include "landmark.h"
 #include "simple_landmark.h"
 
 using namespace std;
