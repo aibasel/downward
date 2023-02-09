@@ -64,8 +64,7 @@ public:
         : label_group(move(label_group)),
           transitions(move(transitions)),
           cost(cost) {
-        assert(utils::is_sorted_unique(this->label_group) &&
-               utils::is_sorted_unique(this->transitions));
+        assert(is_consistent());
     }
 
     void add_label(int label, int label_cost);
