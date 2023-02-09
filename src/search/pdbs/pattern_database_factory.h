@@ -35,7 +35,7 @@ extern std::shared_ptr<PatternDatabase> compute_pdb(
 
   A wildcard plan is a sequence of set of operator IDs, where each such set
   induces the same transition between the two abstract states of this plan
-  step.. That is, a wildcard plan induces a single trace of abstract states
+  step. That is, a wildcard plan induces a single trace of abstract states
   like a regular plan, but offers a set of "equivalent" operators for each
   plan step.
 
