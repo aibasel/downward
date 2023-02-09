@@ -330,7 +330,8 @@ class IssueExperiment(FastDownwardExperiment):
 
         self.add_step("make-comparison-tables", make_comparison_tables)
 
-    def add_scatter_plot_step(self, relative=False, attributes=None, additional=[]):
+    def add_scatter_plot_step(self, revision_pairs=[], relative=False,
+        attributes=None, additional=[]):
         """Add step creating (relative) scatter plots for all revision pairs.
 
         Create a scatter plot for each combination of attribute,
@@ -350,6 +351,8 @@ class IssueExperiment(FastDownwardExperiment):
             step_name = "make-absolute-scatter-plots"
         if attributes is None:
             attributes = self.DEFAULT_SCATTER_PLOT_ATTRIBUTES
+        if not revision_pairs:
+            revision_pairs = [entry for entry in itertools.combinations(self._revisions, 2)]
 
         def make_scatter_plot(config_nick, rev1, rev2, attribute, config_nick2=None):
             name = "-".join([self.name, rev1, rev2, attribute, config_nick])
@@ -369,7 +372,7 @@ class IssueExperiment(FastDownwardExperiment):
 
         def make_scatter_plots():
             for config in self._configs:
-                for rev1, rev2 in itertools.combinations(self._revisions, 2):
+                for rev1, rev2 in revision_pairs:
                     for attribute in self.get_supported_attributes(
                             config.nick, attributes):
                         make_scatter_plot(config.nick, rev1, rev2, attribute)
