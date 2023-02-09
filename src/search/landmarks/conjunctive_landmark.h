@@ -9,7 +9,7 @@ namespace landmarks {
 class ConjunctiveLandmark : public Landmark {
 public:
     ConjunctiveLandmark(std::vector<FactPair> _facts,
-             bool is_true_in_goal = false, bool is_derived = false)
+                        bool is_true_in_goal = false, bool is_derived = false)
         : Landmark(_facts, is_true_in_goal, is_derived) {
         assert(facts.size() > 1);
     }

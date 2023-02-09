@@ -32,7 +32,7 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
     // insert goal landmarks and mark them as goals
     for (FactProxy goal : task_proxy.get_goals()) {
         shared_ptr<SimpleLandmark> simple_landmark =
-                make_shared<SimpleLandmark>(vector<FactPair>{goal.get_pair()}, true);
+            make_shared<SimpleLandmark>(vector<FactPair>{goal.get_pair()}, true);
         lm_graph->add_landmark(move(simple_landmark));
     }
     // test all other possible facts
@@ -42,7 +42,7 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
             const FactPair lm(var.get_id(), value);
             if (!lm_graph->contains_simple_landmark(lm)) {
                 shared_ptr<SimpleLandmark> simple_landmark =
-                        make_shared<SimpleLandmark>(vector<FactPair>{lm});
+                    make_shared<SimpleLandmark>(vector<FactPair>{lm});
                 if (initial_state[lm.var].get_value() == lm.value ||
                     !relaxed_task_solvable(task_proxy, exploration, simple_landmark)) {
                     lm_graph->add_landmark(move(simple_landmark));

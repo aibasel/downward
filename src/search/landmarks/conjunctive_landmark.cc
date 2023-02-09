@@ -14,8 +14,7 @@ bool ConjunctiveLandmark::is_true_in_state(const State &state) const {
 }
 
 
-LandmarkType ConjunctiveLandmark::get_type() const{
+LandmarkType ConjunctiveLandmark::get_type() const {
     return LandmarkType::CONJUNCTIVE;
 }
-
 }

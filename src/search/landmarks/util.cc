@@ -32,7 +32,7 @@ unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unord
 
 bool possibly_reaches_lm(const OperatorProxy &op,
                          const vector<vector<bool>> &reached,
-                         const std::shared_ptr<Landmark> &landmark) {
+                         const shared_ptr<Landmark> &landmark) {
     /* Check whether operator o can possibly make landmark lmp true in a
        relaxed task (as given by the reachability information in reached) */
 
@@ -90,7 +90,7 @@ static void dump_node(
     if (log.is_at_least_debug()) {
         cout << "  lm" << node.get_id() << " [label=\"";
         bool first = true;
-        const std::shared_ptr<Landmark> &landmark = node.get_landmark();
+        const shared_ptr<Landmark> &landmark = node.get_landmark();
         for (FactPair fact : landmark->facts) {
             if (!first) {
                 if (landmark->get_type() == LandmarkType::DISJUNCTIVE) {

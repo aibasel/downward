@@ -401,7 +401,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
 
     for (FactProxy goal : task_proxy.get_goals()) {
         LandmarkNode &lm_node = lm_graph->add_landmark(
-                make_shared<SimpleLandmark>(vector<FactPair>{goal.get_pair()}, true));
+            make_shared<SimpleLandmark>(vector<FactPair>{goal.get_pair()}, true));
         open_landmarks.push_back(&lm_node);
     }
 
@@ -486,7 +486,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
       Use domain transition graphs to find further orders. Only possible
       if lmp is a simple landmark.
     */
-    const shared_ptr<Landmark>  &landmark = lmp->get_landmark();
+    const shared_ptr<Landmark> &landmark = lmp->get_landmark();
     if (landmark->get_type() == LandmarkType::DISJUNCTIVE)
         return;
     const FactPair &lm_fact = landmark->facts[0];

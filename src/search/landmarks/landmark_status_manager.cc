@@ -36,7 +36,7 @@ void LandmarkStatusManager::set_reached_landmarks_for_initial_state(
     int inserted = 0;
     int num_goal_lms = 0;
     for (auto &lm_node : lm_graph.get_nodes()) {
-        const std::shared_ptr<Landmark> &landmark = lm_node->get_landmark();
+        const shared_ptr<Landmark> &landmark = lm_node->get_landmark();
         if (landmark->is_true_in_goal) {
             ++num_goal_lms;
         }
@@ -135,7 +135,7 @@ void LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
 bool LandmarkStatusManager::landmark_needed_again(
     int id, const State &state) {
     LandmarkNode *node = lm_graph.get_node(id);
-    const std::shared_ptr<Landmark> &landmark = node->get_landmark();
+    const shared_ptr<Landmark> &landmark = node->get_landmark();
     if (landmark->is_true_in_state(state)) {
         return false;
     } else if (landmark->is_true_in_goal) {

@@ -54,7 +54,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
                 log << "Problem not solvable, even if relaxed." << endl;
             }
             lm_graph->add_landmark(
-                    std::make_shared<SimpleLandmark>(vector<FactPair>{goal.get_pair()}, true));
+                make_shared<SimpleLandmark>(vector<FactPair>{goal.get_pair()}, true));
             return;
         }
     }
@@ -69,7 +69,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
             lm_node->get_landmark()->is_true_in_goal = true;
         } else {
             lm_node = &lm_graph->add_landmark(
-                    std::make_shared<SimpleLandmark>(vector<FactPair>{goal.get_pair()}, true));
+                make_shared<SimpleLandmark>(vector<FactPair>{goal.get_pair()}, true));
         }
         // extract landmarks from goal labels
         const plan_graph_node &goal_node =
@@ -84,7 +84,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
             // Add new landmarks
             if (!lm_graph->contains_simple_landmark(lm)) {
                 node = &lm_graph->add_landmark(
-                        std::make_shared<SimpleLandmark>(vector<FactPair>{lm}));
+                    make_shared<SimpleLandmark>(vector<FactPair>{lm}));
             } else {
                 node = &lm_graph->get_simple_landmark(lm);
             }

@@ -6,7 +6,6 @@
 #include <set>
 
 namespace landmarks {
-
 enum class LandmarkType {
     SIMPLE = 0,
     DISJUNCTIVE = 1,
@@ -16,7 +15,7 @@ enum class LandmarkType {
 class Landmark {
 public:
     explicit Landmark(std::vector<FactPair> _facts,
-             bool is_true_in_goal = false, bool is_derived = false)
+                      bool is_true_in_goal = false, bool is_derived = false)
         : facts(move(_facts)),
           is_true_in_goal(is_true_in_goal), is_derived(is_derived) {
         assert(facts.size() >= 1);

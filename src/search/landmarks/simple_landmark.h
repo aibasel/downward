@@ -9,8 +9,8 @@ namespace landmarks {
 class SimpleLandmark : public Landmark {
 public:
     SimpleLandmark(std::vector<FactPair> _facts,
-                                   bool is_true_in_goal = false, bool is_derived = false)
-                                   : Landmark(_facts, is_true_in_goal, is_derived) {
+                   bool is_true_in_goal = false, bool is_derived = false)
+        : Landmark(_facts, is_true_in_goal, is_derived) {
         assert(facts.size() == 1);
     }
 

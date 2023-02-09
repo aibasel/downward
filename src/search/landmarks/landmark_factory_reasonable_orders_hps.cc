@@ -55,7 +55,7 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
     State initial_state = task_proxy.get_initial_state();
     int variables_size = task_proxy.get_variables().size();
     for (auto &node_p : lm_graph->get_nodes()) {
-        const std::shared_ptr<Landmark> &landmark = node_p->get_landmark();
+        const shared_ptr<Landmark> &landmark = node_p->get_landmark();
         if (landmark->get_type() == LandmarkType::DISJUNCTIVE)
             continue;
 
@@ -64,7 +64,7 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
 
         if (!obedient_orders && landmark->is_true_in_goal) {
             for (auto &node2_p : lm_graph->get_nodes()) {
-                const std::shared_ptr<Landmark> &landmark2 = node2_p->get_landmark();
+                const shared_ptr<Landmark> &landmark2 = node2_p->get_landmark();
                 if (landmark == landmark2 || landmark2->get_type() == LandmarkType::DISJUNCTIVE)
                     continue;
                 if (interferes(task_proxy, landmark2, landmark)) {
@@ -96,7 +96,7 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
             // Insert reasonable orders between those members of "interesting nodes" that interfere
             // with node_p.
             for (LandmarkNode *node2_p : interesting_nodes) {
-                const std::shared_ptr<Landmark> &landmark2 = node2_p->get_landmark();
+                const shared_ptr<Landmark> &landmark2 = node2_p->get_landmark();
                 if (landmark == landmark2 || landmark2->get_type() == LandmarkType::DISJUNCTIVE)
                     continue;
                 if (interferes(task_proxy, landmark2, landmark)) {
@@ -111,8 +111,8 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
 }
 
 bool LandmarkFactoryReasonableOrdersHPS::interferes(
-    const TaskProxy &task_proxy, const std::shared_ptr<Landmark> &landmark_a,
-    const std::shared_ptr<Landmark> &landmark_b) const {
+    const TaskProxy &task_proxy, const shared_ptr<Landmark> &landmark_a,
+    const shared_ptr<Landmark> &landmark_b) const {
     /* Facts a and b interfere (i.e., achieving b before a would mean having to delete b
      and re-achieve it in order to achieve a) if one of the following condition holds:
      1. a and b are mutex

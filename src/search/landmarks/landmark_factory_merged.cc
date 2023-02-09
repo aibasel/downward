@@ -18,7 +18,7 @@ LandmarkFactoryMerged::LandmarkFactoryMerged(const plugins::Options &opts)
       lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")) {
 }
 
-LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const std::shared_ptr<Landmark> &landmark) const {
+LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const shared_ptr<Landmark> &landmark) const {
     if (landmark->get_type() == LandmarkType::SIMPLE) {
         const FactPair &lm_fact = landmark->facts[0];
         if (lm_graph->contains_simple_landmark(lm_fact))
@@ -59,7 +59,7 @@ void LandmarkFactoryMerged::generate_landmarks(
         const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
         // TODO: loop over landmarks instead
         for (auto &lm_node : nodes) {
-            const std::shared_ptr<Landmark> &landmark = lm_node->get_landmark();
+            const shared_ptr<Landmark> &landmark = lm_node->get_landmark();
             if (landmark->get_type() == LandmarkType::CONJUNCTIVE) {
                 cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
                 utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
@@ -77,7 +77,7 @@ void LandmarkFactoryMerged::generate_landmarks(
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
         const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
         for (auto &lm_node : nodes) {
-            const std::shared_ptr<Landmark> landmark = lm_node->get_landmark();
+            const shared_ptr<Landmark> landmark = lm_node->get_landmark();
             if (landmark->get_type() == LandmarkType::DISJUNCTIVE) {
 /*
   TODO: It seems that disjunctive landmarks are only added if none of the

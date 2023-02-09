@@ -14,7 +14,7 @@ bool DisjunctiveLandmark::is_true_in_state(const State &state) const {
     return false;
 }
 
-LandmarkType DisjunctiveLandmark::get_type() const{
+LandmarkType DisjunctiveLandmark::get_type() const {
     return LandmarkType::DISJUNCTIVE;
 }
 }

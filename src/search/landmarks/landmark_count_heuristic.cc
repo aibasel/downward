@@ -275,7 +275,7 @@ bool LandmarkCountHeuristic::landmark_is_interesting(
     */
 
     if (all_lms_reached) {
-        const std::shared_ptr<Landmark> &landmark = lm_node.get_landmark();
+        const shared_ptr<Landmark> &landmark = lm_node.get_landmark();
         return landmark->is_true_in_goal && !landmark->is_true_in_state(state);
     } else {
         return !reached.test(lm_node.get_id()) &&
