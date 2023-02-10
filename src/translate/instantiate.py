@@ -51,8 +51,8 @@ def instantiate_goal(goal, init_facts, fluent_facts):
         return None
     return result
 
-# the input task must have be normalized
-# the model has been computed by build_model.compute_model
+# The input task must have been normalized
+# The model has been computed by build_model.compute_model
 def instantiate(task: pddl.Task, model: Any) -> Tuple[
              bool, # relaxed_reachable
              Set[pddl.Literal], # fluent_facts (ground)

@@ -59,7 +59,7 @@ def strips_to_sas_dictionary(groups: List[List[pddl.Atom]],
         assert_partial: bool) -> Tuple[
             List[int], # domain size for each variable
             Dict[pddl.Atom, List[VarValPair]]
-            # variable, value pairs representing each atom
+            # variable/value pairs representing each atom
         ]:
     dictionary = {}
     for var_no, group in enumerate(groups):

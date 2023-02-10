@@ -127,7 +127,7 @@ def useful_groups(invariants, initial_facts):
         yield [part.instantiate(parameters) for part in sorted(invariant.parts)]
 
 # returns a list of mutex groups (parameters instantiated, counted variables not)
-def get_groups(task, reachable_action_params=None):
+def get_groups(task, reachable_action_params=None) -> list[list[pddl.Atom]]:
     with timers.timing("Finding invariants", block=True):
         invariants = sorted(find_invariants(task, reachable_action_params))
     with timers.timing("Checking invariant weight"):
