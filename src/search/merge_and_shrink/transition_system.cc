@@ -86,7 +86,7 @@ void LocalLabelInfo::deactivate() {
 
 bool LocalLabelInfo::is_consistent() const {
     return utils::is_sorted_unique(label_group) &&
-        utils::is_sorted_unique(transitions);
+           utils::is_sorted_unique(transitions);
 }
 
 
