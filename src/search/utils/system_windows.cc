@@ -9,7 +9,6 @@
 #include <iostream>
 #include <process.h>
 #include <psapi.h>
-#include <sys/wait.h>
 
 using namespace std;
 
@@ -81,21 +80,13 @@ void execute_hook(const char *const &callback, const string &plan_filename) {
     }
     int status = system(callback);
     if (status == -1) {
-        /*
-          Child process could not be created or its status could not be
-          retrieved.
-        */
-        ABORT("Forking plan hook process failed with the following error: " +
-              string(strerror(errno)));
-    }
-    if (!WIFEXITED(status)) {
         ABORT("Executing the plan hook '" + string(callback) +
               "' failed with the following error: " + string(strerror(errno)));
     }
-    if (WEXITSTATUS(return_value) != 0) {
+    if (status != 0) {
         ABORT("The plan hook '" + string(callback) +
               "' was executed but exited with non-zero exit code " +
-              to_string(WEXITSTATUS(status)));
+              to_string(status));
     }
 }
 }
