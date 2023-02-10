@@ -63,7 +63,7 @@ void call_hook(const string &plan_filename) {
       The path to the callback program can be absolute or relative to the
       directory where the planner was called from.
     */
-    const char* const callback = getenv("DOWNWARD_PLAN_CALLBACK");
+    const char *const callback = getenv("DOWNWARD_PLAN_CALLBACK");
     // Do nothing if the environment variable is not set.
     if (callback)
         execute_hook(callback, plan_filename);

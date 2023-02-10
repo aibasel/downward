@@ -269,7 +269,7 @@ int get_process_id() {
     return getpid();
 }
 
-void execute_hook(const char* const &callback, const string &plan_filename) {
+void execute_hook(const char *const &callback, const string &plan_filename) {
     pid_t child_id = fork();
     if (child_id == -1) {
         ABORT("Forking plan hook process failed with the following error: " +
@@ -277,8 +277,8 @@ void execute_hook(const char* const &callback, const string &plan_filename) {
     }
     if (child_id == 0) {
         // We are the child process: Execute callback.
-        const char* const argv[] = {callback, plan_filename.c_str(), nullptr};
-        execvp(callback, const_cast<char* const*>(argv));
+        const char *const argv[] = {callback, plan_filename.c_str(), nullptr};
+        execvp(callback, const_cast<char *const *>(argv));
         // The line below is only reached if the *execvp* call fails.
         ABORT("Executing the plan hook '" + string(callback) +
               "' failed with the following error: " + string(strerror(errno)));
