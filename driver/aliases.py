@@ -95,7 +95,7 @@ def _get_lama(pref):
     return [
         "--search",
         "--if-unit-cost",
-        f"let(hlm, lmcount(lm_reasonable_orders_hps(lm_rhw()),pref={pref}),"
+        f"let(hlm, landmark_sum(lm_reasonable_orders_hps(lm_rhw()),pref={pref}),"
         "let(hff, ff(),"
         """iterated([
             lazy_greedy([hff,hlm],preferred=[hff,hlm]),
@@ -105,9 +105,9 @@ def _get_lama(pref):
             lazy_wastar([hff,hlm],preferred=[hff,hlm],w=1)
          ],repeat_last=true,continue_on_fail=true)))""",
         "--if-non-unit-cost",
-        f"let(hlm1, lmcount(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one),pref={pref}),"
+        f"let(hlm1, landmark_sum(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one),pref={pref}),"
         "let(hff1, ff(transform=adapt_costs(one)),"
-        f"let(hlm2, lmcount(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(plusone),pref={pref}),"
+        f"let(hlm2, landmark_sum(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(plusone),pref={pref}),"
         "let(hff2, ff(transform=adapt_costs(plusone)),"
         """iterated([
             lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],
@@ -128,14 +128,14 @@ ALIASES["lama"] = _get_lama(pref="false")
 
 ALIASES["lama-first"] = [
     "--search",
-    "let(hlm, lmcount(lm_factory=lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one),pref=false),"
+    "let(hlm, landmark_sum(lm_factory=lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one),pref=false),"
     "let(hff, ff(transform=adapt_costs(one)),"
     """lazy_greedy([hff,hlm],preferred=[hff,hlm],
                                cost_type=one,reopen_closed=false)))"""]
 
 ALIASES["seq-opt-bjolp"] = [
     "--search",
-    "let(lmc, lmcp(lm_merged([lm_rhw(),lm_hm(m=1)])),"
+    "let(lmc, landmark_cost_partitioning(lm_merged([lm_rhw(),lm_hm(m=1)])),"
     "astar(lmc,lazy_evaluator=lmc))"]
 
 ALIASES["seq-opt-lmcut"] = [

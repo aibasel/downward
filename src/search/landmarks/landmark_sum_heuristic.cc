@@ -1,4 +1,4 @@
-#include "landmark_count_heuristic.h"
+#include "landmark_sum_heuristic.h"
 
 #include "landmark.h"
 #include "landmark_factory.h"
@@ -30,17 +30,17 @@ static bool are_dead_ends_reliable(const plugins::Options &opts,
     return true;
 }
 
-LandmarkCountHeuristic::LandmarkCountHeuristic(const plugins::Options &opts)
+LandmarkSumHeuristic::LandmarkSumHeuristic(const plugins::Options &opts)
     : LandmarkHeuristic(opts),
       dead_ends_reliable(are_dead_ends_reliable(opts, task_proxy)) {
     if (log.is_at_least_normal()) {
-        log << "Initializing landmark count heuristic..." << endl;
+        log << "Initializing landmark sum heuristic..." << endl;
     }
     initialize(opts);
     compute_landmark_costs();
 }
 
-int LandmarkCountHeuristic::get_min_cost_of_achievers(
+int LandmarkSumHeuristic::get_min_cost_of_achievers(
     const set<int> &achievers) const {
     int min_cost = numeric_limits<int>::max();
     for (int id : achievers) {
@@ -50,7 +50,7 @@ int LandmarkCountHeuristic::get_min_cost_of_achievers(
     return min_cost;
 }
 
-void LandmarkCountHeuristic::compute_landmark_costs() {
+void LandmarkSumHeuristic::compute_landmark_costs() {
     /*
       This function runs under the assumption that landmark node IDs go
       from 0 to the number of landmarks - 1, therefore the entry in
@@ -82,7 +82,7 @@ void LandmarkCountHeuristic::compute_landmark_costs() {
     }
 }
 
-int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
+int LandmarkSumHeuristic::get_heuristic_value(const State &state) {
     /*
       Need explicit test to see if state is a goal state. The landmark
       heuristic may compute h != 0 for a goal state if landmarks are
@@ -114,15 +114,17 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &state) {
     return h;
 }
 
-bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
+bool LandmarkSumHeuristic::dead_ends_are_reliable() const {
     return dead_ends_reliable;
 }
 
-class LandmarkCountHeuristicFeature : public plugins::TypedFeature<Evaluator, LandmarkCountHeuristic> {
+class LandmarkSumHeuristicFeature : public plugins::TypedFeature<Evaluator, LandmarkSumHeuristic> {
 public:
-    LandmarkCountHeuristicFeature() : TypedFeature("lmcount") {
-        document_title("Landmark-count heuristic");
+    LandmarkSumHeuristicFeature() : TypedFeature("landmark_sum") {
+        document_title("Landmark sum heuristic");
         document_synopsis(
+            "Formerly known as the landmark heuristic or landmark count "
+            "heuristic.\n"
             "See the papers" +
             utils::format_conference_reference(
                 {"Silvia Richter", "Malte Helmert", "Matthias Westphal"},
@@ -193,5 +195,5 @@ public:
     }
 };
 
-static plugins::FeaturePlugin<LandmarkCountHeuristicFeature> _plugin;
+static plugins::FeaturePlugin<LandmarkSumHeuristicFeature> _plugin;
 }

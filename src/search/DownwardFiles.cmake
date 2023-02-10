@@ -712,7 +712,7 @@ fast_downward_plugin(
         landmarks/landmark
         landmarks/landmark_cost_assignment
         landmarks/landmark_cost_partitioning_heuristic
-        landmarks/landmark_count_heuristic
+        landmarks/landmark_sum_heuristic
         landmarks/landmark_factory
         landmarks/landmark_factory_h_m
         landmarks/landmark_factory_reasonable_orders_hps

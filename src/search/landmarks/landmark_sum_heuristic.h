@@ -1,10 +1,10 @@
-#ifndef LANDMARKS_LANDMARK_COUNT_HEURISTIC_H
-#define LANDMARKS_LANDMARK_COUNT_HEURISTIC_H
+#ifndef LANDMARKS_LANDMARK_SUM_HEURISTIC_H
+#define LANDMARKS_LANDMARK_SUM_HEURISTIC_H
 
 #include "landmark_heuristic.h"
 
 namespace landmarks {
-class LandmarkCountHeuristic : public LandmarkHeuristic {
+class LandmarkSumHeuristic : public LandmarkHeuristic {
     const bool dead_ends_reliable;
 
     std::vector<int> min_first_achiever_costs;
@@ -15,7 +15,7 @@ class LandmarkCountHeuristic : public LandmarkHeuristic {
 
     int get_heuristic_value(const State &state) override;
 public:
-    explicit LandmarkCountHeuristic(const plugins::Options &opts);
+    explicit LandmarkSumHeuristic(const plugins::Options &opts);
 
     virtual bool dead_ends_are_reliable() const override;
 };

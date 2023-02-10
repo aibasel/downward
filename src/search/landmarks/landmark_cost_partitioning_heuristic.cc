@@ -82,9 +82,10 @@ bool LandmarkCostPartitioningHeuristic::dead_ends_are_reliable() const {
 
 class LandmarkCostPartitioningHeuristicFeature : public plugins::TypedFeature<Evaluator, LandmarkCostPartitioningHeuristic> {
 public:
-    LandmarkCostPartitioningHeuristicFeature() : TypedFeature("lmcp") {
+    LandmarkCostPartitioningHeuristicFeature() : TypedFeature("landmark_cost_partitioning") {
         document_title("Landmark cost partitioning heuristic");
         document_synopsis(
+            "Formerly known as the admissible landmark heuristic.\n"
             "See the papers" +
             utils::format_conference_reference(
                 {"Erez Karpas", "Carmel Domshlak"},
