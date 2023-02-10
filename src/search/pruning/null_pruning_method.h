@@ -8,7 +8,7 @@ class NullPruningMethod : public PruningMethod {
     virtual void prune(
         const State &, std::vector<OperatorID> &) override {}
 public:
-    explicit NullPruningMethod(const options::Options &opts);
+    explicit NullPruningMethod(const plugins::Options &opts);
     virtual void initialize(const std::shared_ptr<AbstractTask> &) override;
     virtual void print_statistics() const override {}
 };

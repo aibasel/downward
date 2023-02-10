@@ -3,11 +3,9 @@
 #include "utils.h"
 #include "utils_landmarks.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
 #include "../heuristics/additive_heuristic.h"
 #include "../landmarks/landmark_graph.h"
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../tasks/domain_abstracted_task_factory.h"
 #include "../tasks/modified_goals_task.h"
@@ -96,7 +94,7 @@ static Facts filter_and_order_facts(
 }
 
 
-TaskDuplicator::TaskDuplicator(const Options &opts)
+TaskDuplicator::TaskDuplicator(const plugins::Options &opts)
     : num_copies(opts.get<int>("copies")) {
 }
 
@@ -110,7 +108,7 @@ SharedTasks TaskDuplicator::get_subtasks(
     return subtasks;
 }
 
-GoalDecomposition::GoalDecomposition(const Options &opts)
+GoalDecomposition::GoalDecomposition(const plugins::Options &opts)
     : fact_order(opts.get<FactOrder>("order")),
       rng(utils::parse_rng_from_options(opts)) {
 }
@@ -130,7 +128,7 @@ SharedTasks GoalDecomposition::get_subtasks(
 }
 
 
-LandmarkDecomposition::LandmarkDecomposition(const Options &opts)
+LandmarkDecomposition::LandmarkDecomposition(const plugins::Options &opts)
     : fact_order(opts.get<FactOrder>("order")),
       combine_facts(opts.get<bool>("combine_facts")),
       rng(utils::parse_rng_from_options(opts)) {
@@ -170,63 +168,63 @@ SharedTasks LandmarkDecomposition::get_subtasks(
     return subtasks;
 }
 
-static shared_ptr<SubtaskGenerator> _parse_original(OptionParser &parser) {
-    parser.add_option<int>(
-        "copies",
-        "number of task copies",
-        "1",
-        Bounds("1", "infinity"));
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<TaskDuplicator>(opts);
-}
-
-static void add_fact_order_option(OptionParser &parser) {
-    vector<string> fact_orders;
-    fact_orders.push_back("ORIGINAL");
-    fact_orders.push_back("RANDOM");
-    fact_orders.push_back("HADD_UP");
-    fact_orders.push_back("HADD_DOWN");
-    parser.add_enum_option<FactOrder>(
+static void add_fact_order_option(plugins::Feature &feature) {
+    feature.add_option<FactOrder>(
         "order",
-        fact_orders,
         "ordering of goal or landmark facts",
-        "HADD_DOWN");
-    utils::add_rng_options(parser);
+        "hadd_down");
+    utils::add_rng_options(feature);
 }
 
-static shared_ptr<SubtaskGenerator> _parse_goals(OptionParser &parser) {
-    add_fact_order_option(parser);
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<GoalDecomposition>(opts);
+class TaskDuplicatorFeature : public plugins::TypedFeature<SubtaskGenerator, TaskDuplicator> {
+public:
+    TaskDuplicatorFeature() : TypedFeature("original") {
+        add_option<int>(
+            "copies",
+            "number of task copies",
+            "1",
+            plugins::Bounds("1", "infinity"));
+    }
+};
+
+static plugins::FeaturePlugin<TaskDuplicatorFeature> _plugin_original;
+
+class GoalDecompositionFeature : public plugins::TypedFeature<SubtaskGenerator, GoalDecomposition> {
+public:
+    GoalDecompositionFeature() : TypedFeature("goals") {
+        add_fact_order_option(*this);
+    }
+};
+
+static plugins::FeaturePlugin<GoalDecompositionFeature> _plugin_goals;
+
+
+class LandmarkDecompositionFeature : public plugins::TypedFeature<SubtaskGenerator, LandmarkDecomposition> {
+public:
+    LandmarkDecompositionFeature() : TypedFeature("landmarks") {
+        add_fact_order_option(*this);
+        add_option<bool>(
+            "combine_facts",
+            "combine landmark facts with domain abstraction",
+            "true");
+    }
+};
+
+static plugins::FeaturePlugin<LandmarkDecompositionFeature> _plugin_landmarks;
+
+
+static class SubtaskGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<SubtaskGenerator> {
+public:
+    SubtaskGeneratorCategoryPlugin() : TypedCategoryPlugin("SubtaskGenerator") {
+        document_synopsis("Subtask generator (used by the CEGAR heuristic).");
+    }
 }
+_category_plugin;
 
-static shared_ptr<SubtaskGenerator> _parse_landmarks(OptionParser &parser) {
-    add_fact_order_option(parser);
-    parser.add_option<bool>(
-        "combine_facts",
-        "combine landmark facts with domain abstraction",
-        "true");
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<LandmarkDecomposition>(opts);
-}
-
-static Plugin<SubtaskGenerator> _plugin_original(
-    "original", _parse_original);
-static Plugin<SubtaskGenerator> _plugin_goals(
-    "goals", _parse_goals);
-static Plugin<SubtaskGenerator> _plugin_landmarks(
-    "landmarks", _parse_landmarks);
-
-static PluginTypePlugin<SubtaskGenerator> _type_plugin(
-    "SubtaskGenerator",
-    "Subtask generator (used by the CEGAR heuristic).");
+static plugins::TypedEnumPlugin<FactOrder> _enum_plugin({
+        {"original", "according to their (internal) variable index"},
+        {"random", "according to a random permutation"},
+        {"hadd_up", "according to their h^add value, lowest first"},
+        {"hadd_down", "according to their h^add value, highest first "}
+    });
 }

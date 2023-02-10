@@ -42,9 +42,6 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
         std::vector<std::vector<bool>> &reached,
         const Landmark &landmark);
 
-    int min_cost_for_landmark(const TaskProxy &task_proxy,
-                              const Landmark &landmark,
-                              std::vector<std::vector<bool>> &reached);
     virtual void generate_relaxed_landmarks(
         const std::shared_ptr<AbstractTask> &task,
         Exploration &exploration) override;
@@ -65,7 +62,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
 
     void discard_disjunctive_landmarks();
 public:
-    explicit LandmarkFactoryRpgSasp(const options::Options &opts);
+    explicit LandmarkFactoryRpgSasp(const plugins::Options &opts);
 
     virtual bool computes_reasonable_orders() const override;
     virtual bool supports_conditional_effects() const override;

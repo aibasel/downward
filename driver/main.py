@@ -53,7 +53,7 @@ def main():
             break
 
     try:
-        logging.info(f"Planner time: {util.get_elapsed_time():.2}s")
+        logging.info(f"Planner time: {util.get_elapsed_time():.2f}s")
     except NotImplementedError:
         # Measuring the runtime of child processes is not supported on Windows.
         pass

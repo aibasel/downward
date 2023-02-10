@@ -1,9 +1,9 @@
 #include "lazy_search.h"
 
 #include "../open_list_factory.h"
-#include "../option_parser.h"
 
 #include "../algorithms/ordered_set.h"
+#include "../plugins/options.h"
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
@@ -17,7 +17,7 @@
 using namespace std;
 
 namespace lazy_search {
-LazySearch::LazySearch(const Options &opts)
+LazySearch::LazySearch(const plugins::Options &opts)
     : SearchEngine(opts),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_edge_open_list()),

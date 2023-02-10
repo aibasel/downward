@@ -1,15 +1,13 @@
 #include "sum_evaluator.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 #include <cassert>
-#include <limits>
 
 using namespace std;
 
 namespace sum_evaluator {
-SumEvaluator::SumEvaluator(const Options &opts)
+SumEvaluator::SumEvaluator(const plugins::Options &opts)
     : CombiningEvaluator(opts) {
 }
 
@@ -26,20 +24,21 @@ int SumEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
-static shared_ptr<Evaluator> _parse(OptionParser &parser) {
-    parser.document_synopsis("Sum evaluator",
-                             "Calculates the sum of the sub-evaluators.");
-    combining_evaluator::add_combining_evaluator_options_to_parser(parser);
+class SumEvaluatorFeature : public plugins::TypedFeature<Evaluator, SumEvaluator> {
+public:
+    SumEvaluatorFeature() : TypedFeature("sum") {
+        document_subcategory("evaluators_basic");
+        document_title("Sum evaluator");
+        document_synopsis("Calculates the sum of the sub-evaluators.");
 
-    Options opts = parser.parse();
+        combining_evaluator::add_combining_evaluator_options_to_feature(*this);
+    }
 
-    opts.verify_list_non_empty<shared_ptr<Evaluator>>("evals");
+    virtual shared_ptr<SumEvaluator> create_component(const plugins::Options &options, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, options, "evals");
+        return make_shared<SumEvaluator>(options);
+    }
+};
 
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<SumEvaluator>(opts);
-}
-
-static Plugin<Evaluator> _plugin("sum", _parse, "evaluators_basic");
+static plugins::FeaturePlugin<SumEvaluatorFeature> _plugin;
 }

@@ -1,9 +1,8 @@
 #include "root_task.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../state_registry.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/collections.h"
 #include "../utils/timer.h"
 
@@ -498,12 +497,15 @@ void read_root_task(istream &in) {
     g_root_task = make_shared<RootTask>(in);
 }
 
-static shared_ptr<AbstractTask> _parse(OptionParser &parser) {
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return g_root_task;
-}
+class RootTaskFeature : public plugins::TypedFeature<AbstractTask, AbstractTask> {
+public:
+    RootTaskFeature() : TypedFeature("no_transform") {
+    }
 
-static Plugin<AbstractTask> _plugin("no_transform", _parse);
+    virtual shared_ptr<AbstractTask> create_component(const plugins::Options &, const utils::Context &) const override {
+        return g_root_task;
+    }
+};
+
+static plugins::FeaturePlugin<RootTaskFeature> _plugin;
 }

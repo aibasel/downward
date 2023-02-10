@@ -1,8 +1,6 @@
 #include "pruning_method.h"
 
-#include "option_parser.h"
-#include "plugin.h"
-
+#include "plugins/plugin.h"
 #include "task_utils/task_properties.h"
 
 #include "utils/logging.h"
@@ -11,7 +9,7 @@
 
 using namespace std;
 
-PruningMethod::PruningMethod(const options::Options &opts)
+PruningMethod::PruningMethod(const plugins::Options &opts)
     : timer(false),
       log(utils::get_log_from_options(opts)),
       task(nullptr) {
@@ -60,9 +58,9 @@ void PruningMethod::print_statistics() const {
     }
 }
 
-void add_pruning_options_to_parser(options::OptionParser &parser) {
-    utils::add_log_options_to_parser(parser);
-    parser.document_note(
+void add_pruning_options_to_feature(plugins::Feature &feature) {
+    utils::add_log_options_to_feature(feature);
+    feature.document_note(
         "Note on verbosity parameter",
         "Setting verbosity to verbose or higher enables time measurements "
         "in each call to prune_operators for a given state. This induces a "
@@ -71,6 +69,10 @@ void add_pruning_options_to_parser(options::OptionParser &parser) {
         "normal verbosity for running experiments.");
 }
 
-static PluginTypePlugin<PruningMethod> _type_plugin(
-    "PruningMethod",
-    "Prune or reorder applicable operators.");
+static class PruningMethodCategoryPlugin : public plugins::TypedCategoryPlugin<PruningMethod> {
+public:
+    PruningMethodCategoryPlugin() : TypedCategoryPlugin("PruningMethod") {
+        document_synopsis("Prune or reorder applicable operators.");
+    }
+}
+_category_plugin;

@@ -2,10 +2,7 @@
 
 #include "types.h"
 
-#include "../options/option_parser.h"
-#include "../options/options.h"
-#include "../options/plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -16,7 +13,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeScoringFunctionSingleRandom::MergeScoringFunctionSingleRandom(
-    const options::Options &options)
+    const plugins::Options &options)
     : random_seed(options.get<int>("random_seed")),
       rng(utils::parse_rng_from_options(options)) {
 }
@@ -49,19 +46,17 @@ void MergeScoringFunctionSingleRandom::dump_function_specific_options(
     }
 }
 
-static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
-    parser.document_synopsis(
-        "Single random",
-        "This scoring function assigns exactly one merge candidate a score of "
-        "0, chosen randomly, and infinity to all others.");
-    utils::add_rng_options(parser);
+class MergeScoringFunctionSingleRandomFeature : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionSingleRandom> {
+public:
+    MergeScoringFunctionSingleRandomFeature() : TypedFeature("single_random") {
+        document_title("Single random");
+        document_synopsis(
+            "This scoring function assigns exactly one merge candidate a score of "
+            "0, chosen randomly, and infinity to all others.");
 
-    options::Options options = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<MergeScoringFunctionSingleRandom>(options);
-}
+        utils::add_rng_options(*this);
+    }
+};
 
-static options::Plugin<MergeScoringFunction> _plugin("single_random", _parse);
+static plugins::FeaturePlugin<MergeScoringFunctionSingleRandomFeature> _plugin;
 }

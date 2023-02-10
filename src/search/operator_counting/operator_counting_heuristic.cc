@@ -2,9 +2,7 @@
 
 #include "constraint_generator.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/markup.h"
 
 #include <cmath>
@@ -12,7 +10,7 @@
 using namespace std;
 
 namespace operator_counting {
-OperatorCountingHeuristic::OperatorCountingHeuristic(const Options &opts)
+OperatorCountingHeuristic::OperatorCountingHeuristic(const plugins::Options &opts)
     : Heuristic(opts),
       constraint_generators(
           opts.get_list<shared_ptr<ConstraintGenerator>>("constraint_generators")),
@@ -58,69 +56,68 @@ int OperatorCountingHeuristic::compute_heuristic(const State &ancestor_state) {
     return result;
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Operator-counting heuristic",
-        "An operator-counting heuristic computes a linear program (LP) in each "
-        "state. The LP has one variable Count_o for each operator o that "
-        "represents how often the operator is used in a plan. Operator-"
-        "counting constraints are linear constraints over these varaibles that "
-        "are guaranteed to have a solution with Count_o = occurrences(o, pi) "
-        "for every plan pi. Minimizing the total cost of operators subject to "
-        "some operator-counting constraints is an admissible heuristic. "
-        "For details, see" + utils::format_conference_reference(
-            {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert",
-             "Blai Bonet"},
-            "LP-based Heuristics for Cost-optimal Planning",
-            "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7892/8031",
-            "Proceedings of the Twenty-Fourth International Conference"
-            " on Automated Planning and Scheduling (ICAPS 2014)",
-            "226-234",
-            "AAAI Press",
-            "2014"));
+class OperatorCountingHeuristicFeature : public plugins::TypedFeature<Evaluator, OperatorCountingHeuristic> {
+public:
+    OperatorCountingHeuristicFeature() : TypedFeature("operatorcounting") {
+        document_title("Operator-counting heuristic");
+        document_synopsis(
+            "An operator-counting heuristic computes a linear program (LP) in each "
+            "state. The LP has one variable Count_o for each operator o that "
+            "represents how often the operator is used in a plan. Operator-"
+            "counting constraints are linear constraints over these varaibles that "
+            "are guaranteed to have a solution with Count_o = occurrences(o, pi) "
+            "for every plan pi. Minimizing the total cost of operators subject to "
+            "some operator-counting constraints is an admissible heuristic. "
+            "For details, see" + utils::format_conference_reference(
+                {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert",
+                 "Blai Bonet"},
+                "LP-based Heuristics for Cost-optimal Planning",
+                "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7892/8031",
+                "Proceedings of the Twenty-Fourth International Conference"
+                " on Automated Planning and Scheduling (ICAPS 2014)",
+                "226-234",
+                "AAAI Press",
+                "2014"));
 
-    parser.document_language_support("action costs", "supported");
-    parser.document_language_support(
-        "conditional effects",
-        "not supported (the heuristic supports them in theory, but none of "
-        "the currently implemented constraint generators do)");
-    parser.document_language_support(
-        "axioms",
-        "not supported (the heuristic supports them in theory, but none of "
-        "the currently implemented constraint generators do)");
-    parser.document_property("admissible", "yes");
-    parser.document_property(
-        "consistent",
-        "yes, if all constraint generators represent consistent heuristics");
-    parser.document_property("safe", "yes");
-    // TODO: prefer operators that are non-zero in the solution.
-    parser.document_property("preferred operators", "no");
+        add_list_option<shared_ptr<ConstraintGenerator>>(
+            "constraint_generators",
+            "methods that generate constraints over operator-counting variables");
+        add_option<bool>(
+            "use_integer_operator_counts",
+            "restrict operator-counting variables to integer values. Computing the "
+            "heuristic with integer variables can produce higher values but "
+            "requires solving a MIP instead of an LP which is generally more "
+            "computationally expensive. Turning this option on can thus drastically "
+            "increase the runtime.",
+            "false");
+        lp::add_lp_solver_option_to_feature(*this);
+        Heuristic::add_options_to_feature(*this);
 
+        document_language_support("action costs", "supported");
+        document_language_support(
+            "conditional effects",
+            "not supported (the heuristic supports them in theory, but none of "
+            "the currently implemented constraint generators do)");
+        document_language_support(
+            "axioms",
+            "not supported (the heuristic supports them in theory, but none of "
+            "the currently implemented constraint generators do)");
 
-    parser.add_list_option<shared_ptr<ConstraintGenerator>>(
-        "constraint_generators",
-        "methods that generate constraints over operator-counting variables");
+        document_property("admissible", "yes");
+        document_property(
+            "consistent",
+            "yes, if all constraint generators represent consistent heuristics");
+        document_property("safe", "yes");
+        // TODO: prefer operators that are non-zero in the solution.
+        document_property("preferred operators", "no");
+    }
 
-    parser.add_option<bool>(
-        "use_integer_operator_counts",
-        "restrict operator-counting variables to integer values. Computing the "
-        "heuristic with integer variables can produce higher values but "
-        "requires solving a MIP instead of an LP which is generally more "
-        "computationally expensive. Turning this option on can thus drastically "
-        "increase the runtime.",
-        "false");
+    virtual shared_ptr<OperatorCountingHeuristic> create_component(const plugins::Options &options, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<ConstraintGenerator>>(
+            context, options, "constraint_generators");
+        return make_shared<OperatorCountingHeuristic>(options);
+    }
+};
 
-    lp::add_lp_solver_option_to_parser(parser);
-    Heuristic::add_options_to_parser(parser);
-    Options opts = parser.parse();
-    if (parser.help_mode())
-        return nullptr;
-    opts.verify_list_non_empty<shared_ptr<ConstraintGenerator>>(
-        "constraint_generators");
-    if (parser.dry_run())
-        return nullptr;
-    return make_shared<OperatorCountingHeuristic>(opts);
-}
-
-static Plugin<Evaluator> _plugin("operatorcounting", _parse);
+static plugins::FeaturePlugin<OperatorCountingHeuristicFeature> _plugin;
 }

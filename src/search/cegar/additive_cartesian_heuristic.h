@@ -19,7 +19,7 @@ protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 
 public:
-    explicit AdditiveCartesianHeuristic(const options::Options &opts);
+    explicit AdditiveCartesianHeuristic(const plugins::Options &opts);
 };
 }
 

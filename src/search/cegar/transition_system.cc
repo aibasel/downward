@@ -327,6 +327,7 @@ int TransitionSystem::get_num_loops() const {
 void TransitionSystem::print_statistics(utils::LogProxy &log) const {
     if (log.is_at_least_normal()) {
         int total_incoming_transitions = 0;
+        utils::unused_variable(total_incoming_transitions);
         int total_outgoing_transitions = 0;
         int total_loops = 0;
         for (int state_id = 0; state_id < get_num_states(); ++state_id) {

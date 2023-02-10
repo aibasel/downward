@@ -1,7 +1,8 @@
 #include "abstract_task.h"
 
 #include "per_task_information.h"
-#include "plugin.h"
+
+#include "plugins/plugin.h"
 
 #include <iostream>
 
@@ -14,7 +15,11 @@ ostream &operator<<(ostream &os, const FactPair &fact_pair) {
     return os;
 }
 
-static PluginTypePlugin<AbstractTask> _type_plugin(
-    "AbstractTask",
-    // TODO: Replace empty string by synopsis for the wiki page.
-    "");
+static class AbstractTaskCategoryPlugin : public plugins::TypedCategoryPlugin<AbstractTask> {
+public:
+    AbstractTaskCategoryPlugin() : TypedCategoryPlugin("AbstractTask") {
+        // TODO: Replace empty string by synopsis for the wiki page.
+        document_synopsis("");
+    }
+}
+_category_plugin;

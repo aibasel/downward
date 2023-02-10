@@ -5,8 +5,8 @@
 
 #include "../heuristic.h"
 
-namespace options {
-class OptionParser;
+namespace plugins {
+class Feature;
 }
 
 namespace pdbs {
@@ -18,11 +18,11 @@ protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 
 public:
-    explicit CanonicalPDBsHeuristic(const options::Options &opts);
+    explicit CanonicalPDBsHeuristic(const plugins::Options &opts);
     virtual ~CanonicalPDBsHeuristic() = default;
 };
 
-void add_canonical_pdbs_options_to_parser(options::OptionParser &parser);
+void add_canonical_pdbs_options_to_feature(plugins::Feature &feature);
 }
 
 #endif

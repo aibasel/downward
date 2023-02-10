@@ -43,8 +43,8 @@ SEARCH_TASKS = {
 
 MERGE_AND_SHRINK = ('astar(merge_and_shrink('
     'merge_strategy=merge_stateless(merge_selector='
-        'score_based_filtering(scoring_functions=[goal_relevance,'
-        'dfp,total_order(atomic_ts_order=reverse_level,'
+        'score_based_filtering(scoring_functions=[goal_relevance(),'
+        'dfp(),total_order(atomic_ts_order=reverse_level,'
         'product_ts_order=new_to_old,atomic_before_product=false)])),'
     'shrink_strategy=shrink_bisimulation(greedy=false),'
     'label_reduction=exact('

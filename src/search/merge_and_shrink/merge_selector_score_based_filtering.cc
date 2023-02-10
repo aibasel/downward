@@ -3,9 +3,7 @@
 #include "factored_transition_system.h"
 #include "merge_scoring_function.h"
 
-#include "../options/option_parser.h"
-#include "../options/options.h"
-#include "../options/plugin.h"
+#include "../plugins/plugin.h"
 
 #include <cassert>
 
@@ -13,7 +11,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(
-    const options::Options &options)
+    const plugins::Options &options)
     : merge_scoring_functions(
           options.get_list<shared_ptr<MergeScoringFunction>>(
               "scoring_functions")) {
@@ -106,22 +104,20 @@ bool MergeSelectorScoreBasedFiltering::requires_goal_distances() const {
     return false;
 }
 
-static shared_ptr<MergeSelector>_parse(options::OptionParser &parser) {
-    parser.document_synopsis(
-        "Score based filtering merge selector",
-        "This merge selector has a list of scoring functions, which are used "
-        "iteratively to compute scores for merge candidates, keeping the best "
-        "ones (with minimal scores) until only one is left.");
-    parser.add_list_option<shared_ptr<MergeScoringFunction>>(
-        "scoring_functions",
-        "The list of scoring functions used to compute scores for candidates.");
+class MergeSelectorScoreBasedFilteringFeature : public plugins::TypedFeature<MergeSelector, MergeSelectorScoreBasedFiltering> {
+public:
+    MergeSelectorScoreBasedFilteringFeature() : TypedFeature("score_based_filtering") {
+        document_title("Score based filtering merge selector");
+        document_synopsis(
+            "This merge selector has a list of scoring functions, which are used "
+            "iteratively to compute scores for merge candidates, keeping the best "
+            "ones (with minimal scores) until only one is left.");
 
-    options::Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<MergeSelectorScoreBasedFiltering>(opts);
-}
+        add_list_option<shared_ptr<MergeScoringFunction>>(
+            "scoring_functions",
+            "The list of scoring functions used to compute scores for candidates.");
+    }
+};
 
-static options::Plugin<MergeSelector> _plugin("score_based_filtering", _parse);
+static plugins::FeaturePlugin<MergeSelectorScoreBasedFilteringFeature> _plugin;
 }

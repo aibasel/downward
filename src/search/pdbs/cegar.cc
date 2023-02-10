@@ -3,13 +3,13 @@
 #include "types.h"
 #include "utils.h"
 
-#include "../option_parser.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
-
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
+#include "../utils/math.h"
 #include "../utils/rng.h"
 
 #include <limits>
@@ -715,8 +715,8 @@ PatternInformation generate_pattern_with_cegar(
     return result;
 }
 
-void add_cegar_implementation_notes_to_parser(options::OptionParser &parser) {
-    parser.document_note(
+void add_cegar_implementation_notes_to_feature(plugins::Feature &feature) {
+    feature.document_note(
         "Short description of the CEGAR algorithm",
         "The CEGAR algorithm computes a pattern collection for a given planning "
         "task and a given (sub)set of its goals in a randomized order as "
@@ -731,7 +731,7 @@ void add_cegar_implementation_notes_to_parser(options::OptionParser &parser) {
         "computing regular or wildcard plans, where the latter are sequences of "
         "parallel operators inducing the same abstract transition.",
         true);
-    parser.document_note(
+    feature.document_note(
         "Implementation notes about the CEGAR algorithm",
         "The following describes differences of the implementation to "
         "the original implementation used and described in the paper.\n\n"
@@ -779,8 +779,8 @@ void add_cegar_implementation_notes_to_parser(options::OptionParser &parser) {
         true);
 }
 
-void add_cegar_wildcard_option_to_parser(options::OptionParser &parser) {
-    parser.add_option<bool>(
+void add_cegar_wildcard_option_to_feature(plugins::Feature &feature) {
+    feature.add_option<bool>(
         "use_wildcard_plans",
         "if true, compute wildcard plans which are sequences of sets of "
         "operators that induce the same transition; otherwise compute regular "

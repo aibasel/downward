@@ -4,10 +4,9 @@
 #include "landmark_graph.h"
 #include "util.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/system.h"
 
@@ -18,7 +17,7 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const Options &opts)
+LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const plugins::Options &opts)
     : LandmarkFactoryRelaxation(opts),
       disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
       use_orders(opts.get<bool>("use_orders")),
@@ -141,26 +140,6 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
         }
     }
     result.insert(intersection.begin(), intersection.end());
-}
-
-int LandmarkFactoryRpgSasp::min_cost_for_landmark(
-    const TaskProxy &task_proxy, const Landmark &landmark,
-    vector<vector<bool>> &reached) {
-    int min_cost = numeric_limits<int>::max();
-    // For each proposition in bp...
-    for (const FactPair &lm_fact : landmark.facts) {
-        // ...look at all achieving operators
-        const vector<int> &op_or_axiom_ids = get_operators_including_eff(lm_fact);
-        for (int op_or_axiom_id : op_or_axiom_ids) {
-            OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);
-            // and calculate the minimum cost of those that can make
-            // bp true for the first time according to reached
-            if (possibly_reaches_lm(op, reached, landmark)) {
-                min_cost = min(min_cost, op.get_cost());
-            }
-        }
-    }
-    return min_cost;
 }
 
 void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
@@ -461,12 +440,6 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
             }
             // Extract additional orders from the relaxed planning graph and DTG.
             approximate_lookahead_orders(task_proxy, reached, lm_node);
-            /*
-              Use the information about possibly achieving operators of
-              *landmark* to set its min cost.
-            */
-            landmark.cost =
-                min_cost_for_landmark(task_proxy, landmark, reached);
 
             // Process achieving operators again to find disjunctive LMs
             vector<set<FactPair>> disjunctive_pre;
@@ -662,29 +635,27 @@ bool LandmarkFactoryRpgSasp::supports_conditional_effects() const {
     return true;
 }
 
-static shared_ptr<LandmarkFactory> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "RHW Landmarks",
-        "The landmark generation method introduced by "
-        "Richter, Helmert and Westphal (AAAI 2008).");
+class LandmarkFactoryRpgSaspFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgSasp> {
+public:
+    LandmarkFactoryRpgSaspFeature() : TypedFeature("lm_rhw") {
+        document_title("RHW Landmarks");
+        document_synopsis(
+            "The landmark generation method introduced by "
+            "Richter, Helmert and Westphal (AAAI 2008).");
 
-    parser.add_option<bool>("disjunctive_landmarks",
-                            "keep disjunctive landmarks",
-                            "true");
-    add_landmark_factory_options_to_parser(parser);
-    add_use_orders_option_to_parser(parser);
-    add_only_causal_landmarks_option_to_parser(parser);
+        add_option<bool>(
+            "disjunctive_landmarks",
+            "keep disjunctive landmarks",
+            "true");
+        add_landmark_factory_options_to_feature(*this);
+        add_use_orders_option_to_feature(*this);
+        add_only_causal_landmarks_option_to_feature(*this);
 
-    Options opts = parser.parse();
+        document_language_support(
+            "conditional_effects",
+            "supported");
+    }
+};
 
-    parser.document_language_support("conditional_effects",
-                                     "supported");
-
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<LandmarkFactoryRpgSasp>(opts);
-}
-
-static Plugin<LandmarkFactory> _plugin("lm_rhw", _parse);
+static plugins::FeaturePlugin<LandmarkFactoryRpgSaspFeature> _plugin;
 }

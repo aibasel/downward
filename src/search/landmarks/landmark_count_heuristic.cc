@@ -4,12 +4,12 @@
 #include "landmark_cost_assignment.h"
 #include "landmark_factory.h"
 #include "landmark_status_manager.h"
+#include "util.h"
 
-#include "../option_parser.h"
 #include "../per_state_bitset.h"
-#include "../plugin.h"
 
 #include "../lp/lp_solver.h"
+#include "../plugins/plugin.h"
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
 #include "../tasks/cost_adapted_task.h"
@@ -27,7 +27,7 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
+LandmarkCountHeuristic::LandmarkCountHeuristic(const plugins::Options &opts)
     : Heuristic(opts),
       use_preferred_operators(opts.get<bool>("pref")),
       conditional_effects_supported(
@@ -76,6 +76,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     }
 
     lgraph = lm_graph_factory->compute_lm_graph(task);
+    assert(lm_graph_factory->achievers_are_calculated());
     if (log.is_at_least_normal()) {
         log << "Landmark graph generation time: " << lm_graph_timer << endl;
         log << "Landmark graph contains " << lgraph->get_num_landmarks()
@@ -99,6 +100,7 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
         }
     } else {
         lm_cost_assignment = nullptr;
+        compute_landmark_costs();
     }
 
     if (use_preferred_operators) {
@@ -108,33 +110,73 @@ LandmarkCountHeuristic::LandmarkCountHeuristic(const options::Options &opts)
     }
 }
 
+int LandmarkCountHeuristic::get_min_cost_of_achievers(const set<int> &achievers,
+                                                      const TaskProxy &task_proxy) {
+    int min_cost = numeric_limits<int>::max();
+    for (int id : achievers) {
+        OperatorProxy op = get_operator_or_axiom(task_proxy, id);
+        min_cost = min(min_cost, op.get_cost());
+    }
+    return min_cost;
+}
+
+void LandmarkCountHeuristic::compute_landmark_costs() {
+    /*
+       This function runs under the assumption that landmark node IDs go
+       from 0 to the number of landmarks - 1, therefore the entry in
+       *min_first_achiever_costs* and *min_possible_achiever_costs*
+       at index i corresponds to the entry for the landmark node with ID i.
+    */
+
+    /*
+       For derived landmarks, we overapproximate that all operators are achievers.
+       Since we do not want to explicitly store all operators in the achiever
+       vector, we instead just compute the minimum cost over all operators and
+       use this cost for all derived landmarks.
+    */
+    int min_operator_cost = task_properties::get_min_operator_cost(task_proxy);
+    min_first_achiever_costs.reserve(lgraph->get_num_landmarks());
+    min_possible_achiever_costs.reserve(lgraph->get_num_landmarks());
+    for (auto &node : lgraph->get_nodes()) {
+        if (node->get_landmark().is_derived) {
+            min_first_achiever_costs.push_back(min_operator_cost);
+            min_possible_achiever_costs.push_back(min_operator_cost);
+        } else {
+            int min_first_achiever_cost = get_min_cost_of_achievers(
+                node->get_landmark().first_achievers, task_proxy);
+            min_first_achiever_costs.push_back(min_first_achiever_cost);
+            int min_possible_achiever_cost = get_min_cost_of_achievers(
+                node->get_landmark().possible_achievers, task_proxy);
+            min_possible_achiever_costs.push_back(min_possible_achiever_cost);
+        }
+    }
+}
+
 int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
     double epsilon = 0.01;
 
-    // Need explicit test to see if state is a goal state. The landmark
-    // heuristic may compute h != 0 for a goal state if landmarks are
-    // achieved before their parents in the landmarks graph (because
-    // they do not get counted as reached in that case). However, we
-    // must return 0 for a goal state.
-
     lm_status_manager->update_lm_status(ancestor_state);
-    if (lm_status_manager->dead_end_exists()) {
-        return DEAD_END;
-    }
 
     if (admissible) {
         double h_val = lm_cost_assignment->cost_sharing_h_value(
             *lm_status_manager);
-        return static_cast<int>(ceil(h_val - epsilon));
+        if (h_val == numeric_limits<double>::max()) {
+            return DEAD_END;
+        } else {
+            return static_cast<int>(ceil(h_val - epsilon));
+        }
     } else {
         int h = 0;
         for (int id = 0; id < lgraph->get_num_landmarks(); ++id) {
-            landmark_status status =
-                lm_status_manager->get_landmark_status(id);
-            if (status == lm_not_reached || status == lm_needed_again) {
-                int cost = lgraph->get_node(id)->get_landmark().cost;
-                assert(cost < numeric_limits<int>::max());
-                h += cost;
+            landmark_status status = lm_status_manager->get_landmark_status(id);
+            if (status == lm_not_reached) {
+                if (min_first_achiever_costs[id] == numeric_limits<int>::max())
+                    return DEAD_END;
+                h += min_first_achiever_costs[id];
+            } else if (status == lm_needed_again) {
+                if (min_possible_achiever_costs[id] == numeric_limits<int>::max())
+                    return DEAD_END;
+                h += min_possible_achiever_costs[id];
             }
         }
         return h;
@@ -144,41 +186,52 @@ int LandmarkCountHeuristic::get_heuristic_value(const State &ancestor_state) {
 int LandmarkCountHeuristic::compute_heuristic(const State &ancestor_state) {
     State state = convert_ancestor_state(ancestor_state);
 
+    /*
+      Need explicit test to see if state is a goal state. The landmark
+      heuristic may compute h != 0 for a goal state if landmarks are
+      achieved before their parents in the landmarks graph (because
+      they do not get counted as reached in that case). However, we
+      must return 0 for a goal state.
+    */
     if (task_properties::is_goal_state(task_proxy, state))
         return 0;
 
     int h = get_heuristic_value(ancestor_state);
 
     if (use_preferred_operators) {
-        BitsetView landmark_info = lm_status_manager->get_reached_landmarks(ancestor_state);
-        LandmarkNodeSet reached_lms = convert_to_landmark_set(landmark_info);
-        generate_helpful_actions(state, reached_lms);
+        BitsetView reached_lms =
+            lm_status_manager->get_reached_landmarks(ancestor_state);
+        generate_preferred_operators(state, reached_lms);
     }
 
     return h;
 }
 
-bool LandmarkCountHeuristic::check_node_orders_disobeyed(const LandmarkNode &node,
-                                                         const LandmarkNodeSet &reached) const {
-    for (const auto &parent : node.parents) {
-        if (reached.count(parent.first) == 0) {
-            return true;
-        }
-    }
-    return false;
-}
+void LandmarkCountHeuristic::generate_preferred_operators(
+    const State &state, const BitsetView &reached) {
+    /*
+      Find operators that achieve landmark leaves. If a simple landmark can be
+      achieved, prefer only operators that achieve simple landmarks. Otherwise,
+      prefer operators that achieve disjunctive landmarks, or don't prefer any
+      operators if no such landmarks exist at all.
 
-bool LandmarkCountHeuristic::generate_helpful_actions(
-    const State &state, const LandmarkNodeSet &reached) {
-    /* Find actions that achieve new landmark leaves. If no such action exist,
-     return false. If a simple landmark can be achieved, return only operators
-     that achieve simple landmarks, else return operators that achieve
-     disjunctive landmarks */
+      TODO: Conjunctive landmarks are ignored in *lgraph->get_node(...)*, so
+       they are ignored when computing preferred operators. We consider this
+       a bug and want to fix it in issue1072.
+    */
     assert(successor_generator);
     vector<OperatorID> applicable_operators;
     successor_generator->generate_applicable_ops(state, applicable_operators);
-    vector<OperatorID> ha_simple;
-    vector<OperatorID> ha_disj;
+    vector<OperatorID> preferred_operators_simple;
+    vector<OperatorID> preferred_operators_disjunctive;
+
+    bool all_landmarks_reached = true;
+    for (int i = 0; i < reached.size(); ++i) {
+        if (!reached.test(i)) {
+            all_landmarks_reached = false;
+            break;
+        }
+    }
 
     for (OperatorID op_id : applicable_operators) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
@@ -188,46 +241,49 @@ bool LandmarkCountHeuristic::generate_helpful_actions(
                 continue;
             FactProxy fact_proxy = effect.get_fact();
             LandmarkNode *lm_node = lgraph->get_node(fact_proxy.get_pair());
-            if (lm_node && landmark_is_interesting(state, reached, *lm_node)) {
+            if (lm_node && landmark_is_interesting(
+                    state, reached, *lm_node, all_landmarks_reached)) {
                 if (lm_node->get_landmark().disjunctive) {
-                    ha_disj.push_back(op_id);
+                    preferred_operators_disjunctive.push_back(op_id);
                 } else {
-                    ha_simple.push_back(op_id);
+                    preferred_operators_simple.push_back(op_id);
                 }
             }
         }
     }
-    if (ha_disj.empty() && ha_simple.empty())
-        return false;
 
     OperatorsProxy operators = task_proxy.get_operators();
-    if (ha_simple.empty()) {
-        for (OperatorID op_id : ha_disj) {
+    if (preferred_operators_simple.empty()) {
+        for (OperatorID op_id : preferred_operators_disjunctive) {
             set_preferred(operators[op_id]);
         }
     } else {
-        for (OperatorID op_id : ha_simple) {
+        for (OperatorID op_id : preferred_operators_simple) {
             set_preferred(operators[op_id]);
         }
     }
-    return true;
 }
 
 bool LandmarkCountHeuristic::landmark_is_interesting(
-    const State &state, const LandmarkNodeSet &reached, LandmarkNode &lm_node) const {
-    /* A landmark is interesting if it hasn't been reached before and
-     its parents have all been reached, or if all landmarks have been
-     reached before, the LM is a goal, and it's not true at moment */
+    const State &state, const BitsetView &reached,
+    LandmarkNode &lm_node, bool all_lms_reached) const {
+    /*
+      We consider a landmark interesting in two (exclusive) cases:
+      (1) If all landmarks are reached and the landmark must hold in the goal
+          but does not hold in the current state.
+      (2) If it has not been reached before and all its parents are reached.
+    */
 
-    int num_reached = reached.size();
-    if (num_reached != lgraph->get_num_landmarks()) {
-        if (reached.find(&lm_node) != reached.end())
-            return false;
-        else
-            return !check_node_orders_disobeyed(lm_node, reached);
+    if (all_lms_reached) {
+        const Landmark &landmark = lm_node.get_landmark();
+        return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
+    } else {
+        return !reached.test(lm_node.get_id()) &&
+               all_of(lm_node.parents.begin(), lm_node.parents.end(),
+                      [&](const pair<LandmarkNode *, EdgeType> parent) {
+                          return reached.test(parent.first->get_id());
+                      });
     }
-    const Landmark &landmark = lm_node.get_landmark();
-    return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
 }
 
 void LandmarkCountHeuristic::notify_initial_state(const State &initial_state) {
@@ -248,141 +304,140 @@ bool LandmarkCountHeuristic::dead_ends_are_reliable() const {
     return dead_ends_reliable;
 }
 
-/*
-  This function exists purely so we don't have to change all the
-  functions in this class that use LandmarkSets for the reached LMs (HACK).
-*/
-LandmarkNodeSet LandmarkCountHeuristic::convert_to_landmark_set(
-    const BitsetView &landmark_bitset) {
-    LandmarkNodeSet landmark_node_set;
-    for (int i = 0; i < landmark_bitset.size(); ++i) {
-        if (landmark_bitset.test(i)) {
-            landmark_node_set.insert(lgraph->get_node(i));
-        }
+class LandmarkCountHeuristicFeature : public plugins::TypedFeature<Evaluator, LandmarkCountHeuristic> {
+public:
+    LandmarkCountHeuristicFeature() : TypedFeature("lmcount") {
+        document_title("Landmark-count heuristic");
+        document_synopsis(
+            "For the inadmissible variant see the papers" +
+            utils::format_conference_reference(
+                {"Silvia Richter", "Malte Helmert", "Matthias Westphal"},
+                "Landmarks Revisited",
+                "https://ai.dmi.unibas.ch/papers/richter-et-al-aaai2008.pdf",
+                "Proceedings of the 23rd AAAI Conference on Artificial "
+                "Intelligence (AAAI 2008)",
+                "975-982",
+                "AAAI Press",
+                "2008") +
+            "and" +
+            utils::format_journal_reference(
+                {"Silvia Richter", "Matthias Westphal"},
+                "The LAMA Planner: Guiding Cost-Based Anytime Planning with Landmarks",
+                "http://www.aaai.org/Papers/JAIR/Vol39/JAIR-3903.pdf",
+                "Journal of Artificial Intelligence Research",
+                "39",
+                "127-177",
+                "2010") +
+            "For the admissible variant see the papers" +
+            utils::format_conference_reference(
+                {"Erez Karpas", "Carmel Domshlak"},
+                "Cost-Optimal Planning with Landmarks",
+                "https://www.ijcai.org/Proceedings/09/Papers/288.pdf",
+                "Proceedings of the 21st International Joint Conference on "
+                "Artificial Intelligence (IJCAI 2009)",
+                "1728-1733",
+                "AAAI Press",
+                "2009") +
+            "and" +
+            utils::format_conference_reference(
+                {"Emil Keyder and Silvia Richter and Malte Helmert"},
+                "Sound and Complete Landmarks for And/Or Graphs",
+                "https://ai.dmi.unibas.ch/papers/keyder-et-al-ecai2010.pdf",
+                "Proceedings of the 19th European Conference on Artificial "
+                "Intelligence (ECAI 2010)",
+                "335-340",
+                "IOS Press",
+                "2010"));
+
+        add_option<shared_ptr<LandmarkFactory>>(
+            "lm_factory",
+            "the set of landmarks to use for this heuristic. "
+            "The set of landmarks can be specified here, "
+            "or predefined (see LandmarkFactory).");
+        add_option<bool>("admissible", "get admissible estimate", "false");
+        add_option<bool>(
+            "optimal",
+            "use optimal (LP-based) cost sharing "
+            "(only makes sense with ``admissible=true``)", "false");
+        add_option<bool>(
+            "pref",
+            "identify preferred operators (see OptionCaveats#Using_preferred_operators_"
+            "with_the_lmcount_heuristic)",
+            "false");
+        add_option<bool>("alm", "use action landmarks", "true");
+        lp::add_lp_solver_option_to_feature(*this);
+        Heuristic::add_options_to_feature(*this);
+
+        document_note(
+            "Optimal search",
+            "When using landmarks for optimal search (``admissible=true``), "
+            "you probably also want to add this heuristic as a lazy_evaluator "
+            "in the A* algorithm to improve heuristic estimates.");
+        document_note(
+            "Note",
+            "To use ``optimal=true``, you must build the planner with LP support. "
+            "See LPBuildInstructions.");
+        document_note(
+            "Differences to the literature",
+            "This heuristic differs from the description in the literature (see "
+            "references above) in the set of preferred operators computed. The "
+            "original implementation described in the literature computes two "
+            "kinds of preferred operators:\n\n"
+            "+ If there is an applicable operator that reaches a landmark, all "
+            "such operators are preferred.\n"
+            "+ If no such operators exist, perform an FF-style relaxed exploration "
+            "towards the nearest landmarks (according to the landmark orderings) "
+            "and use the preferred operators of this exploration.\n\n\n"
+            "Our implementation of the heuristic only considers preferred "
+            "operators of the first type and does not include the second type. The "
+            "rationale for this change is that it reduces code complexity and "
+            "helps more cleanly separate landmark-based and FF-based computations "
+            "in LAMA-like planner configurations. In our experiments, only "
+            "considering preferred operators of the first type reduces performance "
+            "when using the heuristic and its preferred operators in isolation but "
+            "improves performance when using this heuristic in conjunction with "
+            "the FF heuristic, as in LAMA-like planner configurations.");
+        document_note(
+            "Note on performance for satisficing planning",
+            "The cost of a landmark is based on the cost of the "
+            "operators that achieve it. For satisficing search "
+            "this can be counterproductive since it is often "
+            "better to focus on distance from goal "
+            "(i.e. length of the plan) rather than cost."
+            "In experiments we achieved the best performance using"
+            "the option 'transform=adapt_costs(one)' to enforce "
+            "unit costs.");
+
+        document_language_support(
+            "action costs",
+            "supported");
+        document_language_support(
+            "conditional_effects",
+            "supported if the LandmarkFactory supports them; otherwise ignored "
+            "with ``admissible=false`` and not allowed with ``admissible=true``");
+        document_language_support(
+            "axioms",
+            "ignored with ``admissible=false``; not allowed with ``admissible=true``");
+
+
+        document_property(
+            "admissible",
+            "yes if ``admissible=true``");
+        // TODO: this was "yes with admissible=true and optimal cost
+        // partitioning; otherwise no" before.
+        document_property(
+            "consistent",
+            "complicated; needs further thought");
+        document_property(
+            "safe",
+            "yes except on tasks with axioms or on tasks with "
+            "conditional effects when using a LandmarkFactory "
+            "not supporting them");
+        document_property(
+            "preferred operators",
+            "yes (if enabled; see ``pref`` option)");
     }
-    return landmark_node_set;
-}
+};
 
-
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Landmark-count heuristic",
-        "For the inadmissible variant see the papers" +
-        utils::format_conference_reference(
-            {"Silvia Richter", "Malte Helmert", "Matthias Westphal"},
-            "Landmarks Revisited",
-            "https://ai.dmi.unibas.ch/papers/richter-et-al-aaai2008.pdf",
-            "Proceedings of the 23rd AAAI Conference on Artificial "
-            "Intelligence (AAAI 2008)",
-            "975-982",
-            "AAAI Press",
-            "2008") +
-        "and" +
-        utils::format_journal_reference(
-            {"Silvia Richter", "Matthias Westphal"},
-            "The LAMA Planner: Guiding Cost-Based Anytime Planning with Landmarks",
-            "http://www.aaai.org/Papers/JAIR/Vol39/JAIR-3903.pdf",
-            "Journal of Artificial Intelligence Research",
-            "39",
-            "127-177",
-            "2010") +
-        "For the admissible variant see the papers" +
-        utils::format_conference_reference(
-            {"Erez Karpas", "Carmel Domshlak"},
-            "Cost-Optimal Planning with Landmarks",
-            "https://www.ijcai.org/Proceedings/09/Papers/288.pdf",
-            "Proceedings of the 21st International Joint Conference on "
-            "Artificial Intelligence (IJCAI 2009)",
-            "1728-1733",
-            "AAAI Press",
-            "2009") +
-        "and" +
-        utils::format_conference_reference(
-            {"Emil Keyder and Silvia Richter and Malte Helmert"},
-            "Sound and Complete Landmarks for And/Or Graphs",
-            "https://ai.dmi.unibas.ch/papers/keyder-et-al-ecai2010.pdf",
-            "Proceedings of the 19th European Conference on Artificial "
-            "Intelligence (ECAI 2010)",
-            "335-340",
-            "IOS Press",
-            "2010"));
-
-    parser.document_note(
-        "Optimal search",
-        "When using landmarks for optimal search (``admissible=true``), "
-        "you probably also want to add this heuristic as a lazy_evaluator "
-        "in the A* algorithm to improve heuristic estimates.");
-    parser.document_note(
-        "Note",
-        "To use ``optimal=true``, you must build the planner with LP support. "
-        "See LPBuildInstructions.");
-    parser.document_note(
-        "Differences to the literature",
-        "This heuristic differs from the description in the literature (see "
-        "references above) in the set of preferred operators computed. The "
-        "original implementation described in the literature computes two "
-        "kinds of preferred operators:\n\n"
-        "+ If there is an applicable operator that reaches a landmark, all "
-        "such operators are preferred.\n"
-        "+ If no such operators exist, perform an FF-style relaxed exploration "
-        "towards the nearest landmarks (according to the landmark orderings) "
-        "and use the preferred operators of this exploration.\n\n\n"
-        "Our implementation of the heuristic only considers preferred "
-        "operators of the first type and does not include the second type. The "
-        "rationale for this change is that it reduces code complexity and "
-        "helps more cleanly separate landmark-based and FF-based computations "
-        "in LAMA-like planner configurations. In our experiments, only "
-        "considering preferred operators of the first type reduces performance "
-        "when using the heuristic and its preferred operators in isolation but "
-        "improves performance when using this heuristic in conjunction with "
-        "the FF heuristic, as in LAMA-like planner configurations.");
-
-    parser.document_language_support("action costs",
-                                     "supported");
-    parser.document_language_support("conditional_effects",
-                                     "supported if the LandmarkFactory supports "
-                                     "them; otherwise ignored with "
-                                     "``admissible=false`` and not allowed with "
-                                     "``admissible=true``");
-    parser.document_language_support("axioms",
-                                     "ignored with ``admissible=false``; not "
-                                     "allowed with ``admissible=true``");
-    parser.document_property("admissible",
-                             "yes if ``admissible=true``");
-    // TODO: this was "yes with admissible=true and optimal cost
-    // partitioning; otherwise no" before.
-    parser.document_property("consistent",
-                             "complicated; needs further thought");
-    parser.document_property("safe",
-                             "yes except on tasks with axioms or on tasks with "
-                             "conditional effects when using a LandmarkFactory "
-                             "not supporting them");
-    parser.document_property("preferred operators",
-                             "yes (if enabled; see ``pref`` option)");
-
-    parser.add_option<shared_ptr<LandmarkFactory>>(
-        "lm_factory",
-        "the set of landmarks to use for this heuristic. "
-        "The set of landmarks can be specified here, "
-        "or predefined (see LandmarkFactory).");
-    parser.add_option<bool>("admissible", "get admissible estimate", "false");
-    parser.add_option<bool>(
-        "optimal",
-        "use optimal (LP-based) cost sharing "
-        "(only makes sense with ``admissible=true``)", "false");
-    parser.add_option<bool>("pref", "identify preferred operators "
-                            "(see OptionCaveats#Using_preferred_operators_"
-                            "with_the_lmcount_heuristic)", "false");
-    parser.add_option<bool>("alm", "use action landmarks", "true");
-    lp::add_lp_solver_option_to_parser(parser);
-    Heuristic::add_options_to_parser(parser);
-    Options opts = parser.parse();
-
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<LandmarkCountHeuristic>(opts);
-}
-
-static Plugin<Evaluator> _plugin("lmcount", _parse);
+static plugins::FeaturePlugin<LandmarkCountHeuristicFeature> _plugin;
 }

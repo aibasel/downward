@@ -2,9 +2,8 @@
 
 #include "../evaluator.h"
 #include "../open_list.h"
-#include "../option_parser.h"
-#include "../plugin.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/collections.h"
 #include "../utils/hash.h"
 #include "../utils/markup.h"
@@ -34,7 +33,7 @@ protected:
         EvaluationContext &eval_context, const Entry &entry) override;
 
 public:
-    explicit TypeBasedOpenList(const Options &opts);
+    explicit TypeBasedOpenList(const plugins::Options &opts);
     virtual ~TypeBasedOpenList() override = default;
 
     virtual Entry remove_min() override;
@@ -68,7 +67,7 @@ void TypeBasedOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-TypeBasedOpenList<Entry>::TypeBasedOpenList(const Options &opts)
+TypeBasedOpenList<Entry>::TypeBasedOpenList(const plugins::Options &opts)
     : rng(utils::parse_rng_from_options(opts)),
       evaluators(opts.get_list<shared_ptr<Evaluator>>("evaluators")) {
 }
@@ -136,7 +135,7 @@ void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
 }
 
 TypeBasedOpenListFactory::TypeBasedOpenListFactory(
-    const Options &options)
+    const plugins::Options &options)
     : options(options) {
 }
 
@@ -150,37 +149,38 @@ TypeBasedOpenListFactory::create_edge_open_list() {
     return utils::make_unique_ptr<TypeBasedOpenList<EdgeOpenListEntry>>(options);
 }
 
-static shared_ptr<OpenListFactory> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Type-based open list",
-        "Uses multiple evaluators to assign entries to buckets. "
-        "All entries in a bucket have the same evaluator values. "
-        "When retrieving an entry, a bucket is chosen uniformly at "
-        "random and one of the contained entries is selected "
-        "uniformly randomly. "
-        "The algorithm is based on" + utils::format_conference_reference(
-            {"Fan Xie", "Martin Mueller", "Robert Holte", "Tatsuya Imai"},
-            "Type-Based Exploration with Multiple Search Queues for"
-            " Satisficing Planning",
-            "http://www.aaai.org/ocs/index.php/AAAI/AAAI14/paper/view/8472/8705",
-            "Proceedings of the Twenty-Eigth AAAI Conference Conference"
-            " on Artificial Intelligence (AAAI 2014)",
-            "2395-2401",
-            "AAAI Press",
-            "2014"));
-    parser.add_list_option<shared_ptr<Evaluator>>(
-        "evaluators",
-        "Evaluators used to determine the bucket for each entry.");
+class TypeBasedOpenListFeature : public plugins::TypedFeature<OpenListFactory, TypeBasedOpenListFactory> {
+public:
+    TypeBasedOpenListFeature() : TypedFeature("type_based") {
+        document_title("Type-based open list");
+        document_synopsis(
+            "Uses multiple evaluators to assign entries to buckets. "
+            "All entries in a bucket have the same evaluator values. "
+            "When retrieving an entry, a bucket is chosen uniformly at "
+            "random and one of the contained entries is selected "
+            "uniformly randomly. "
+            "The algorithm is based on" + utils::format_conference_reference(
+                {"Fan Xie", "Martin Mueller", "Robert Holte", "Tatsuya Imai"},
+                "Type-Based Exploration with Multiple Search Queues for"
+                " Satisficing Planning",
+                "http://www.aaai.org/ocs/index.php/AAAI/AAAI14/paper/view/8472/8705",
+                "Proceedings of the Twenty-Eigth AAAI Conference Conference"
+                " on Artificial Intelligence (AAAI 2014)",
+                "2395-2401",
+                "AAAI Press",
+                "2014"));
 
-    utils::add_rng_options(parser);
+        add_list_option<shared_ptr<Evaluator>>(
+            "evaluators",
+            "Evaluators used to determine the bucket for each entry.");
+        utils::add_rng_options(*this);
+    }
 
-    Options opts = parser.parse();
-    opts.verify_list_non_empty<shared_ptr<Evaluator>>("evaluators");
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<TypeBasedOpenListFactory>(opts);
-}
+    virtual shared_ptr<TypeBasedOpenListFactory> create_component(const plugins::Options &options, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, options, "evaluators");
+        return make_shared<TypeBasedOpenListFactory>(options);
+    }
+};
 
-static Plugin<OpenListFactory> _plugin("type_based", _parse);
+static plugins::FeaturePlugin<TypeBasedOpenListFeature> _plugin;
 }

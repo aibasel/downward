@@ -50,7 +50,7 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    explicit ContextEnhancedAdditiveHeuristic(const options::Options &opts);
+    explicit ContextEnhancedAdditiveHeuristic(const plugins::Options &opts);
     ~ContextEnhancedAdditiveHeuristic();
     virtual bool dead_ends_are_reliable() const override;
 };

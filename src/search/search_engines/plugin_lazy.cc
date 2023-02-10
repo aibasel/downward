@@ -1,35 +1,38 @@
 #include "lazy_search.h"
 #include "search_common.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 using namespace std;
 
 namespace plugin_lazy {
-static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
-    parser.document_synopsis("Lazy best-first search", "");
-    parser.add_option<shared_ptr<OpenListFactory>>("open", "open list");
-    parser.add_option<bool>("reopen_closed", "reopen closed nodes", "false");
-    parser.add_list_option<shared_ptr<Evaluator>>(
-        "preferred",
-        "use preferred operators of these evaluators", "[]");
-    SearchEngine::add_succ_order_options(parser);
-    SearchEngine::add_options_to_parser(parser);
-    Options opts = parser.parse();
+class LazySearchFeature : public plugins::TypedFeature<SearchEngine, lazy_search::LazySearch> {
+public:
+    LazySearchFeature() : TypedFeature("lazy") {
+        document_title("Lazy best-first search");
+        document_synopsis("");
 
-    shared_ptr<lazy_search::LazySearch> engine;
-    if (!parser.dry_run()) {
-        engine = make_shared<lazy_search::LazySearch>(opts);
+        add_option<shared_ptr<OpenListFactory>>("open", "open list");
+        add_option<bool>("reopen_closed", "reopen closed nodes", "false");
+        add_list_option<shared_ptr<Evaluator>>(
+            "preferred",
+            "use preferred operators of these evaluators", "[]");
+        SearchEngine::add_succ_order_options(*this);
+        SearchEngine::add_options_to_feature(*this);
+    }
+
+    virtual shared_ptr<lazy_search::LazySearch> create_component(const plugins::Options &options, const utils::Context &) const override {
+        shared_ptr<lazy_search::LazySearch> engine = make_shared<lazy_search::LazySearch>(options);
         /*
           TODO: The following two lines look fishy. If they serve a
           purpose, shouldn't the constructor take care of this?
         */
-        vector<shared_ptr<Evaluator>> preferred_list = opts.get_list<shared_ptr<Evaluator>>("preferred");
+        vector<shared_ptr<Evaluator>> preferred_list = options.get_list<shared_ptr<Evaluator>>("preferred");
         engine->set_preferred_operator_evaluators(preferred_list);
-    }
 
-    return engine;
-}
-static Plugin<SearchEngine> _plugin("lazy", _parse);
+        return engine;
+    }
+};
+
+static plugins::FeaturePlugin<LazySearchFeature> _plugin;
 }

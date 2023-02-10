@@ -7,8 +7,9 @@
 
 class TaskProxy;
 
-namespace options {
-class OptionParser;
+namespace plugins {
+class ConstructContext;
+class Feature;
 class Options;
 }
 
@@ -56,13 +57,13 @@ class MergeAndShrinkAlgorithm {
         FactoredTransitionSystem &fts,
         const TaskProxy &task_proxy);
 public:
-    explicit MergeAndShrinkAlgorithm(const options::Options &opts);
+    explicit MergeAndShrinkAlgorithm(const plugins::Options &opts);
     FactoredTransitionSystem build_factored_transition_system(const TaskProxy &task_proxy);
 };
 
-extern void add_merge_and_shrink_algorithm_options_to_parser(options::OptionParser &parser);
-extern void add_transition_system_size_limit_options_to_parser(options::OptionParser &parser);
-extern void handle_shrink_limit_options_defaults(options::Options &opts);
+extern void add_merge_and_shrink_algorithm_options_to_feature(plugins::Feature &feature);
+extern void add_transition_system_size_limit_options_to_feature(plugins::Feature &feature);
+extern void handle_shrink_limit_options_defaults(plugins::Options &opts, const utils::Context &context);
 }
 
 #endif

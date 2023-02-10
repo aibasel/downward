@@ -9,6 +9,10 @@
 #include <unordered_map>
 #include <vector>
 
+namespace plugins {
+class Options;
+}
+
 namespace utils {
 class RandomNumberGenerator;
 }
@@ -50,7 +54,7 @@ class DiversePotentialHeuristics {
     void cover_samples(SamplesToFunctionsMap &samples_to_functions);
 
 public:
-    explicit DiversePotentialHeuristics(const options::Options &opts);
+    explicit DiversePotentialHeuristics(const plugins::Options &opts);
     ~DiversePotentialHeuristics() = default;
 
     // Sample states, then cover them.

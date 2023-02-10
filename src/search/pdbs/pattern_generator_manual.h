@@ -12,7 +12,7 @@ class PatternGeneratorManual : public PatternGenerator {
     virtual PatternInformation compute_pattern(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
-    explicit PatternGeneratorManual(const options::Options &opts);
+    explicit PatternGeneratorManual(const plugins::Options &opts);
     virtual ~PatternGeneratorManual() = default;
 };
 }

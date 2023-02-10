@@ -78,10 +78,10 @@ def check_search_code_with_clang_tidy():
         "readability-uniqueptr-delete-release",
         ]
     cmd = [
-        "run-clang-tidy-8",
+        "run-clang-tidy-12",
         "-quiet",
         "-p", build_dir,
-        "-clang-tidy-binary=clang-tidy-8",
+        "-clang-tidy-binary=clang-tidy-12",
         # Include all non-system headers (.*) except the ones from search/ext/.
         "-header-filter=.*,-tree.hh,-tree_util.hh",
         "-checks=-*," + ",".join(checks)]
@@ -90,15 +90,15 @@ def check_search_code_with_clang_tidy():
     try:
         output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT).decode("utf-8")
     except subprocess.CalledProcessError as err:
-        print("Failed to run clang-tidy-8. Is it on the PATH?")
+        print("Failed to run clang-tidy-12. Is it on the PATH?")
         print("Output:", err.stdout)
         return False
-    errors = re.findall(r"^(.*:\d+:\d+: (?:warning|error): .*)$", output, flags=re.M)
+    errors = re.findall(r"^(.*:\d+:\d+: .*(?:warning|error): .*)$", output, flags=re.M)
     for error in errors:
         print(error)
     if errors:
         fix_cmd = cmd + [
-            "-clang-apply-replacements-binary=clang-apply-replacements-8", "-fix"]
+            "-clang-apply-replacements-binary=clang-apply-replacements-12", "-fix"]
         print()
         print("You may be able to fix these issues with the following command: " +
             " ".join(pipes.quote(x) for x in fix_cmd))

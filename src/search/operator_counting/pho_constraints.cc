@@ -1,13 +1,9 @@
 #include "pho_constraints.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
 #include "../lp/lp_solver.h"
-
 #include "../pdbs/pattern_database.h"
 #include "../pdbs/pattern_generator.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/markup.h"
 
 #include <cassert>
@@ -18,7 +14,7 @@
 using namespace std;
 
 namespace operator_counting {
-PhOConstraints::PhOConstraints(const Options &opts)
+PhOConstraints::PhOConstraints(const plugins::Options &opts)
     : pattern_generator(
           opts.get<shared_ptr<pdbs::PatternCollectionGenerator>>("patterns")) {
 }
@@ -34,8 +30,8 @@ void PhOConstraints::initialize_constraints(
       create pattern_generator locally and no longer need to explicitly reset
       it.
     */
-    pattern_generator = nullptr;
     pdbs = pattern_collection_info.get_pdbs();
+    pattern_generator = nullptr;
     TaskProxy task_proxy(*task);
     named_vector::NamedVector<lp::LPConstraint> &constraints = lp.get_constraints();
     constraint_offset = constraints.size();
@@ -65,32 +61,29 @@ bool PhOConstraints::update_constraints(const State &state,
     return false;
 }
 
-static shared_ptr<ConstraintGenerator> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Posthoc optimization constraints",
-        "The generator will compute a PDB for each pattern and add the"
-        " constraint h(s) <= sum_{o in relevant(h)} Count_o. For details,"
-        " see" + utils::format_conference_reference(
-            {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
-            "Getting the Most Out of Pattern Databases for Classical Planning",
-            "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf",
-            "Proceedings of the Twenty-Third International Joint"
-            " Conference on Artificial Intelligence (IJCAI 2013)",
-            "2357-2364",
-            "AAAI Press",
-            "2013"));
+class PhOConstraintsFeature : public plugins::TypedFeature<ConstraintGenerator, PhOConstraints> {
+public:
+    PhOConstraintsFeature() : TypedFeature("pho_constraints") {
+        document_title("Posthoc optimization constraints");
+        document_synopsis(
+            "The generator will compute a PDB for each pattern and add the"
+            " constraint h(s) <= sum_{o in relevant(h)} Count_o. For details,"
+            " see" + utils::format_conference_reference(
+                {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
+                "Getting the Most Out of Pattern Databases for Classical Planning",
+                "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf",
+                "Proceedings of the Twenty-Third International Joint"
+                " Conference on Artificial Intelligence (IJCAI 2013)",
+                "2357-2364",
+                "AAAI Press",
+                "2013"));
 
-    parser.add_option<shared_ptr<pdbs::PatternCollectionGenerator>>(
-        "patterns",
-        "pattern generation method",
-        "systematic(2)");
+        add_option<shared_ptr<pdbs::PatternCollectionGenerator>>(
+            "patterns",
+            "pattern generation method",
+            "systematic(2)");
+    }
+};
 
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-
-    return make_shared<PhOConstraints>(opts);
-}
-
-static Plugin<ConstraintGenerator> _plugin("pho_constraints", _parse);
+static plugins::FeaturePlugin<PhOConstraintsFeature> _plugin;
 }

@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-namespace options {
-class OptionParser;
+namespace plugins {
+class Feature;
 }
 
 namespace utils {
@@ -61,8 +61,8 @@ extern PatternInformation generate_pattern_with_cegar(
     const FactPair &goal,
     std::unordered_set<int> &&blacklisted_variables = std::unordered_set<int>());
 
-extern void add_cegar_implementation_notes_to_parser(options::OptionParser &parser);
-extern void add_cegar_wildcard_option_to_parser(options::OptionParser &parser);
+extern void add_cegar_implementation_notes_to_feature(plugins::Feature &feature);
+extern void add_cegar_wildcard_option_to_feature(plugins::Feature &feature);
 }
 
 #endif

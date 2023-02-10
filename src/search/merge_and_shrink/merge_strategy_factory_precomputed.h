@@ -12,7 +12,7 @@ protected:
     virtual std::string name() const override;
     virtual void dump_strategy_specific_options() const override;
 public:
-    explicit MergeStrategyFactoryPrecomputed(options::Options &options);
+    explicit MergeStrategyFactoryPrecomputed(const plugins::Options &options);
     virtual ~MergeStrategyFactoryPrecomputed() override = default;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,

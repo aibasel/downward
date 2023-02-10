@@ -1,5 +1,10 @@
+from typing import List
+
+from .pddl_types import TypedObject
+
 class Function:
-    def __init__(self, name, arguments, type_name):
+    def __init__(self, name: str, arguments: List[TypedObject],
+                 type_name: str) -> None:
         self.name = name
         self.arguments = arguments
         if type_name != "number":

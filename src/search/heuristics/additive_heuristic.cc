@@ -1,7 +1,6 @@
 #include "additive_heuristic.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
@@ -15,7 +14,7 @@ namespace additive_heuristic {
 const int AdditiveHeuristic::MAX_COST_VALUE;
 
 // construction and destruction
-AdditiveHeuristic::AdditiveHeuristic(const Options &opts)
+AdditiveHeuristic::AdditiveHeuristic(const plugins::Options &opts)
     : RelaxationHeuristic(opts),
       did_write_overflow_warning(false) {
     if (log.is_at_least_normal()) {
@@ -146,27 +145,27 @@ void AdditiveHeuristic::compute_heuristic_for_cegar(const State &state) {
     compute_heuristic(state);
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis("Additive heuristic", "");
-    parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional effects", "supported");
-    parser.document_language_support(
-        "axioms",
-        "supported (in the sense that the planner won't complain -- "
-        "handling of axioms might be very stupid "
-        "and even render the heuristic unsafe)");
-    parser.document_property("admissible", "no");
-    parser.document_property("consistent", "no");
-    parser.document_property("safe", "yes for tasks without axioms");
-    parser.document_property("preferred operators", "yes");
+class AdditiveHeuristicFeature : public plugins::TypedFeature<Evaluator, AdditiveHeuristic> {
+public:
+    AdditiveHeuristicFeature() : TypedFeature("add") {
+        document_title("Additive heuristic");
 
-    Heuristic::add_options_to_parser(parser);
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<AdditiveHeuristic>(opts);
-}
+        Heuristic::add_options_to_feature(*this);
 
-static Plugin<Evaluator> _plugin("add", _parse);
+        document_language_support("action costs", "supported");
+        document_language_support("conditional effects", "supported");
+        document_language_support(
+            "axioms",
+            "supported (in the sense that the planner won't complain -- "
+            "handling of axioms might be very stupid "
+            "and even render the heuristic unsafe)");
+
+        document_property("admissible", "no");
+        document_property("consistent", "no");
+        document_property("safe", "yes for tasks without axioms");
+        document_property("preferred operators", "yes");
+    }
+};
+
+static plugins::FeaturePlugin<AdditiveHeuristicFeature> _plugin;
 }

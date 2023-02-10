@@ -14,10 +14,6 @@
 #include <memory>
 #include <vector>
 
-namespace options {
-class Options;
-}
-
 namespace lazy_search {
 class LazySearch : public SearchEngine {
 protected:
@@ -51,7 +47,7 @@ protected:
         const ordered_set::OrderedSet<OperatorID> &preferred_operators) const;
 
 public:
-    explicit LazySearch(const options::Options &opts);
+    explicit LazySearch(const plugins::Options &opts);
     virtual ~LazySearch() = default;
 
     void set_preferred_operator_evaluators(std::vector<std::shared_ptr<Evaluator>> &evaluators);

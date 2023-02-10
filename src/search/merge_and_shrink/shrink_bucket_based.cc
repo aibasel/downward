@@ -11,12 +11,12 @@
 using namespace std;
 
 namespace merge_and_shrink {
-ShrinkBucketBased::ShrinkBucketBased(const options::Options &opts)
+ShrinkBucketBased::ShrinkBucketBased(const plugins::Options &opts)
     : rng(utils::parse_rng_from_options(opts)) {
 }
 
-void ShrinkBucketBased::add_options_to_parser(options::OptionParser &parser) {
-    utils::add_rng_options(parser);
+void ShrinkBucketBased::add_options_to_feature(plugins::Feature &feature) {
+    utils::add_rng_options(feature);
 }
 
 StateEquivalenceRelation ShrinkBucketBased::compute_abstraction(

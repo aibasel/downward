@@ -1,20 +1,32 @@
 include(CMakeParseArguments)
 
+macro(check_and_set_compiler_flag FLAG)
+    include(CheckCXXCompilerFlag)
+    check_cxx_compiler_flag( "${FLAG}" FLAG_FOUND )
+    if(NOT FLAG_FOUND)
+        message(FATAL_ERROR "${CMAKE_CXX_COMPILER} does not support ${FLAG}")
+    endif()
+    message("Flag '${FLAG}' set for '${CMAKE_CXX_COMPILER}'")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")
+endmacro()
+
 macro(fast_downward_set_compiler_flags)
     # Note: on CMake >= 3.0 the compiler ID of Apple-provided clang is AppleClang.
     # If we change the required CMake version from 2.8.3 to 3.0 or greater,
     # we have to fix this.
     if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-        include(CheckCXXCompilerFlag)
-        check_cxx_compiler_flag( "-std=c++11" CXX11_FOUND )
-        if(CXX11_FOUND)
-             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-        else()
-            message(FATAL_ERROR "${CMAKE_CXX_COMPILER} does not support C++11, please use a different compiler")
-        endif()
+        check_and_set_compiler_flag( "-std=c++20" )
 
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wnon-virtual-dtor")
+
+        if (CMAKE_COMPILER_IS_GNUCXX
+            AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 12
+            AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13)
+            ## We ignore the warning "restrict" because of a bug in GCC 12:
+            ## https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105651
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-restrict")
+        endif()
 
         ## Configuration-specific flags
         set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -fomit-frame-pointer")
@@ -24,6 +36,7 @@ macro(fast_downward_set_compiler_flags)
         endif()
         set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
     elseif(MSVC)
+        check_and_set_compiler_flag( "/std:c++20" )
         # We force linking to be static on Windows because this makes compiling OSI simpler
         # (dynamic linking would require DLLs for OSI). On Windows this is a compiler
         # setting, not a linker setting.

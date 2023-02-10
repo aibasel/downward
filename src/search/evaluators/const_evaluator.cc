@@ -1,12 +1,11 @@
 #include "const_evaluator.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 using namespace std;
 
 namespace const_evaluator {
-ConstEvaluator::ConstEvaluator(const Options &opts)
+ConstEvaluator::ConstEvaluator(const plugins::Options &opts)
     : Evaluator(opts), value(opts.get<int>("value")) {
 }
 
@@ -16,23 +15,21 @@ EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
     return result;
 }
 
-static shared_ptr<Evaluator> _parse(OptionParser &parser) {
-    parser.document_synopsis(
-        "Constant evaluator",
-        "Returns a constant value.");
-    parser.add_option<int>(
-        "value",
-        "the constant value",
-        "1",
-        Bounds("0", "infinity"));
-    add_evaluator_options_to_parser(parser);
-    Options opts = parser.parse();
+class ConstEvaluatorFeature : public plugins::TypedFeature<Evaluator, ConstEvaluator> {
+public:
+    ConstEvaluatorFeature() : TypedFeature("const") {
+        document_subcategory("evaluators_basic");
+        document_title("Constant evaluator");
+        document_synopsis("Returns a constant value.");
 
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<ConstEvaluator>(opts);
-}
+        add_option<int>(
+            "value",
+            "the constant value",
+            "1",
+            plugins::Bounds("0", "infinity"));
+        add_evaluator_options_to_feature(*this);
+    }
+};
 
-static Plugin<Evaluator> _plugin("const", _parse, "evaluators_basic");
+static plugins::FeaturePlugin<ConstEvaluatorFeature> _plugin;
 }

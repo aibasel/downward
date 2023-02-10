@@ -1,3 +1,7 @@
+from typing import List
+
+from .pddl_types import TypedObject
+
 # Conditions (of any type) are immutable, because they need to
 # be hashed occasionally. Immutability also allows more efficient comparison
 # based on a precomputed hash value.
@@ -5,7 +9,7 @@
 # Careful: Most other classes (e.g. Effects, Axioms, Actions) are not!
 
 class Condition:
-    def __init__(self, parts):
+    def __init__(self, parts: List["Condition"]):
         self.parts = tuple(parts)
         self.hash = hash((self.__class__, self.parts))
     def __hash__(self):
@@ -158,7 +162,9 @@ class Disjunction(JunctorCondition):
 class QuantifiedCondition(Condition):
     # Defining __eq__ blocks inheritance of __hash__, so must set it explicitly.
     __hash__ = Condition.__hash__
-    def __init__(self, parameters, parts):
+    def __init__(self, parameters: List[TypedObject],
+                 parts: List[Condition]) -> None:
+        assert len(parts) == 1
         self.parameters = tuple(parameters)
         self.parts = tuple(parts)
         self.hash = hash((self.__class__, self.parameters, self.parts))
@@ -220,7 +226,7 @@ class Literal(Condition):
     __hash__ = Condition.__hash__
     parts = []
     __slots__ = ["predicate", "args", "hash"]
-    def __init__(self, predicate, args):
+    def __init__(self, predicate: str, args: List[str]) -> None:
         self.predicate = predicate
         self.args = tuple(args)
         self.hash = hash((self.__class__, self.predicate, self.args))

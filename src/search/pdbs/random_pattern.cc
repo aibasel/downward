@@ -1,11 +1,11 @@
 #include "random_pattern.h"
 
-#include "../option_parser.h"
-
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/countdown_timer.h"
 #include "../utils/logging.h"
+#include "../utils/math.h"
 #include "../utils/rng.h"
 
 #include <algorithm>
@@ -69,9 +69,9 @@ Pattern generate_random_pattern(
     return pattern;
 }
 
-void add_random_pattern_implementation_notes_to_parser(
-    options::OptionParser &parser) {
-    parser.document_note(
+void add_random_pattern_implementation_notes_to_feature(
+    plugins::Feature &feature) {
+    feature.document_note(
         "Short description of the random pattern algorithm",
         "The random pattern algorithm computes a pattern for a given planning "
         "task and a single goal of the task as follows. Starting with the given "
@@ -80,7 +80,7 @@ void add_random_pattern_implementation_notes_to_parser(
         "the current variable. It terminates if no neighbor fits the pattern due "
         "to the size limit or if the time limit is reached.",
         true);
-    parser.document_note(
+    feature.document_note(
         "Implementation notes about the random pattern algorithm",
         "In the original implementation used in the paper, the algorithm "
         "selected a random neighbor and then checked if selecting it would "
@@ -92,8 +92,8 @@ void add_random_pattern_implementation_notes_to_parser(
         true);
 }
 
-void add_random_pattern_bidirectional_option_to_parser(options::OptionParser &parser) {
-    parser.add_option<bool>(
+void add_random_pattern_bidirectional_option_to_feature(plugins::Feature &feature) {
+    feature.add_option<bool>(
         "bidirectional",
         "this option decides if the causal graph is considered to be "
         "directed or undirected selecting predecessors of already selected "

@@ -2,10 +2,9 @@
 
 #include "lm_cut_landmarks.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 #include "../utils/memory.h"
@@ -15,7 +14,7 @@
 using namespace std;
 
 namespace lm_cut_heuristic {
-LandmarkCutHeuristic::LandmarkCutHeuristic(const Options &opts)
+LandmarkCutHeuristic::LandmarkCutHeuristic(const plugins::Options &opts)
     : Heuristic(opts),
       landmark_generator(utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy)) {
     if (log.is_at_least_normal()) {
@@ -39,23 +38,23 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
     return total_cost;
 }
 
-static shared_ptr<Heuristic> _parse(OptionParser &parser) {
-    parser.document_synopsis("Landmark-cut heuristic", "");
-    parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional effects", "not supported");
-    parser.document_language_support("axioms", "not supported");
-    parser.document_property("admissible", "yes");
-    parser.document_property("consistent", "no");
-    parser.document_property("safe", "yes");
-    parser.document_property("preferred operators", "no");
+class LandmarkCutHeuristicFeature : public plugins::TypedFeature<Evaluator, LandmarkCutHeuristic> {
+public:
+    LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
+        document_title("Landmark-cut heuristic");
 
-    Heuristic::add_options_to_parser(parser);
-    Options opts = parser.parse();
-    if (parser.dry_run())
-        return nullptr;
-    else
-        return make_shared<LandmarkCutHeuristic>(opts);
-}
+        Heuristic::add_options_to_feature(*this);
 
-static Plugin<Evaluator> _plugin("lmcut", _parse);
+        document_language_support("action costs", "supported");
+        document_language_support("conditional effects", "not supported");
+        document_language_support("axioms", "not supported");
+
+        document_property("admissible", "yes");
+        document_property("consistent", "no");
+        document_property("safe", "yes");
+        document_property("preferred operators", "no");
+    }
+};
+
+static plugins::FeaturePlugin<LandmarkCutHeuristicFeature> _plugin;
 }

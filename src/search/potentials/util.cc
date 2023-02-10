@@ -4,8 +4,8 @@
 #include "potential_optimizer.h"
 
 #include "../heuristic.h"
-#include "../option_parser.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/sampling.h"
 #include "../utils/markup.h"
 
@@ -44,15 +44,15 @@ string get_admissible_potentials_reference() {
         "2015");
 }
 
-void prepare_parser_for_admissible_potentials(OptionParser &parser) {
-    parser.document_language_support("action costs", "supported");
-    parser.document_language_support("conditional effects", "not supported");
-    parser.document_language_support("axioms", "not supported");
-    parser.document_property("admissible", "yes");
-    parser.document_property("consistent", "yes");
-    parser.document_property("safe", "yes");
-    parser.document_property("preferred operators", "no");
-    parser.add_option<double>(
+void prepare_parser_for_admissible_potentials(plugins::Feature &feature) {
+    feature.document_language_support("action costs", "supported");
+    feature.document_language_support("conditional effects", "not supported");
+    feature.document_language_support("axioms", "not supported");
+    feature.document_property("admissible", "yes");
+    feature.document_property("consistent", "yes");
+    feature.document_property("safe", "yes");
+    feature.document_property("preferred operators", "no");
+    feature.add_option<double>(
         "max_potential",
         "Bound potentials by this number. Using the bound {{{infinity}}} "
         "disables the bounds. In some domains this makes the computation of "
@@ -61,8 +61,8 @@ void prepare_parser_for_admissible_potentials(OptionParser &parser) {
         "while using very low weights limits the choice of potential "
         "heuristics. For details, see the ICAPS paper cited above.",
         "1e8",
-        Bounds("0.0", "infinity"));
-    lp::add_lp_solver_option_to_parser(parser);
-    Heuristic::add_options_to_parser(parser);
+        plugins::Bounds("0.0", "infinity"));
+    lp::add_lp_solver_option_to_feature(feature);
+    Heuristic::add_options_to_feature(feature);
 }
 }

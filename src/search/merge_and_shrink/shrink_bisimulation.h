@@ -3,7 +3,7 @@
 
 #include "shrink_strategy.h"
 
-namespace options {
+namespace plugins {
 class Options;
 }
 
@@ -39,7 +39,7 @@ protected:
     virtual void dump_strategy_specific_options(utils::LogProxy &log) const override;
     virtual std::string name() const override;
 public:
-    explicit ShrinkBisimulation(const options::Options &opts);
+    explicit ShrinkBisimulation(const plugins::Options &opts);
     virtual ~ShrinkBisimulation() override = default;
     virtual StateEquivalenceRelation compute_equivalence_relation(
         const TransitionSystem &ts,

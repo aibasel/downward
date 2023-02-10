@@ -1,8 +1,6 @@
 #include "iterated_search.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <iostream>
@@ -10,12 +8,9 @@
 using namespace std;
 
 namespace iterated_search {
-IteratedSearch::IteratedSearch(const Options &opts, options::Registry &registry,
-                               const options::Predefinitions &predefinitions)
+IteratedSearch::IteratedSearch(const plugins::Options &opts)
     : SearchEngine(opts),
-      engine_configs(opts.get_list<ParseTree>("engine_configs")),
-      registry(registry),
-      predefinitions(predefinitions),
+      engine_configs(opts.get_list<parser::LazyValue>("engine_configs")),
       pass_bound(opts.get<bool>("pass_bound")),
       repeat_last_phase(opts.get<bool>("repeat_last")),
       continue_on_fail(opts.get<bool>("continue_on_fail")),
@@ -28,13 +23,16 @@ IteratedSearch::IteratedSearch(const Options &opts, options::Registry &registry,
 
 shared_ptr<SearchEngine> IteratedSearch::get_search_engine(
     int engine_configs_index) {
-    OptionParser parser(engine_configs[engine_configs_index], registry, predefinitions, false);
-    shared_ptr<SearchEngine> engine(parser.start_parsing<shared_ptr<SearchEngine>>());
-
-    ostringstream stream;
-    kptree::print_tree_bracketed(engine_configs[engine_configs_index], stream);
-    log << "Starting search: " << stream.str() << endl;
-
+    parser::LazyValue &engine_config = engine_configs[engine_configs_index];
+    shared_ptr<SearchEngine> engine;
+    try{
+        engine = engine_config.construct<shared_ptr<SearchEngine>>();
+    } catch (const utils::ContextError &e) {
+        cerr << "Delayed construction of LazyValue failed" << endl;
+        cerr << e.get_message() << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
+    log << "Starting search: " << engine->get_description() << endl;
     return engine;
 }
 
@@ -129,69 +127,83 @@ void IteratedSearch::save_plan_if_necessary() {
     // each successful search iteration.
 }
 
-static shared_ptr<SearchEngine> _parse(OptionParser &parser) {
-    parser.document_synopsis("Iterated search", "");
-    parser.document_note(
-        "Note 1",
-        "We don't cache heuristic values between search iterations at"
-        " the moment. If you perform a LAMA-style iterative search,"
-        " heuristic values will be computed multiple times.");
-    parser.document_note(
-        "Note 2",
-        "The configuration\n```\n"
-        "--search \"iterated([lazy_wastar(merge_and_shrink(),w=10), "
-        "lazy_wastar(merge_and_shrink(),w=5), lazy_wastar(merge_and_shrink(),w=3), "
-        "lazy_wastar(merge_and_shrink(),w=2), lazy_wastar(merge_and_shrink(),w=1)])\"\n"
-        "```\nwould perform the preprocessing phase of the merge and shrink heuristic "
-        "5 times (once before each iteration).\n\n"
-        "To avoid this, use heuristic predefinition, which avoids duplicate "
-        "preprocessing, as follows:\n```\n"
-        "--evaluator \"h=merge_and_shrink()\" --search "
-        "\"iterated([lazy_wastar(h,w=10), lazy_wastar(h,w=5), lazy_wastar(h,w=3), "
-        "lazy_wastar(h,w=2), lazy_wastar(h,w=1)])\"\n"
-        "```");
-    parser.document_note(
-        "Note 3",
-        "If you reuse the same landmark count heuristic "
-        "(using heuristic predefinition) between iterations, "
-        "the path data (that is, landmark status for each visited state) "
-        "will be saved between iterations.");
-    parser.add_list_option<ParseTree>("engine_configs",
-                                      "list of search engines for each phase");
-    parser.add_option<bool>(
-        "pass_bound",
-        "use bound from previous search. The bound is the real cost "
-        "of the plan found before, regardless of the cost_type parameter.",
-        "true");
-    parser.add_option<bool>("repeat_last",
-                            "repeat last phase of search",
-                            "false");
-    parser.add_option<bool>("continue_on_fail",
-                            "continue search after no solution found",
-                            "false");
-    parser.add_option<bool>("continue_on_solve",
-                            "continue search after solution found",
-                            "true");
-    SearchEngine::add_options_to_parser(parser);
-    Options opts = parser.parse();
+class IteratedSearchFeature : public plugins::TypedFeature<SearchEngine, IteratedSearch> {
+public:
+    IteratedSearchFeature() : TypedFeature("iterated") {
+        document_title("Iterated search");
+        document_synopsis("");
 
-    opts.verify_list_non_empty<ParseTree>("engine_configs");
+        add_list_option<shared_ptr<SearchEngine>>(
+            "engine_configs",
+            "list of search engines for each phase",
+            "",
+            true);
+        add_option<bool>(
+            "pass_bound",
+            "use bound from previous search. The bound is the real cost "
+            "of the plan found before, regardless of the cost_type parameter.",
+            "true");
+        add_option<bool>(
+            "repeat_last",
+            "repeat last phase of search",
+            "false");
+        add_option<bool>(
+            "continue_on_fail",
+            "continue search after no solution found",
+            "false");
+        add_option<bool>(
+            "continue_on_solve",
+            "continue search after solution found",
+            "true");
+        SearchEngine::add_options_to_feature(*this);
 
-    if (parser.help_mode()) {
-        return nullptr;
-    } else if (parser.dry_run()) {
-        //check if the supplied search engines can be parsed
-        for (const ParseTree &config : opts.get_list<ParseTree>("engine_configs")) {
-            OptionParser test_parser(config, parser.get_registry(),
-                                     parser.get_predefinitions(), true);
-            test_parser.start_parsing<shared_ptr<SearchEngine>>();
-        }
-        return nullptr;
-    } else {
-        return make_shared<IteratedSearch>(opts, parser.get_registry(),
-                                           parser.get_predefinitions());
+        document_note(
+            "Note 1",
+            "We don't cache heuristic values between search iterations at"
+            " the moment. If you perform a LAMA-style iterative search,"
+            " heuristic values will be computed multiple times.");
+        document_note(
+            "Note 2",
+            "The configuration\n```\n"
+            "--search \"iterated([lazy_wastar(merge_and_shrink(),w=10), "
+            "lazy_wastar(merge_and_shrink(),w=5), lazy_wastar(merge_and_shrink(),w=3), "
+            "lazy_wastar(merge_and_shrink(),w=2), lazy_wastar(merge_and_shrink(),w=1)])\"\n"
+            "```\nwould perform the preprocessing phase of the merge and shrink heuristic "
+            "5 times (once before each iteration).\n\n"
+            "To avoid this, use heuristic predefinition, which avoids duplicate "
+            "preprocessing, as follows:\n```\n"
+            "--evaluator \"h=merge_and_shrink()\" --search "
+            "\"iterated([lazy_wastar(h,w=10), lazy_wastar(h,w=5), lazy_wastar(h,w=3), "
+            "lazy_wastar(h,w=2), lazy_wastar(h,w=1)])\"\n"
+            "```");
+        document_note(
+            "Note 3",
+            "If you reuse the same landmark count heuristic "
+            "(using heuristic predefinition) between iterations, "
+            "the path data (that is, landmark status for each visited state) "
+            "will be saved between iterations.");
     }
-}
 
-static Plugin<SearchEngine> _plugin("iterated", _parse);
+    virtual shared_ptr<IteratedSearch> create_component(const plugins::Options &options, const utils::Context &context) const override {
+        plugins::Options options_copy(options);
+        /*
+          The options entry 'engine_configs' is a LazyValue representing a list
+          of search engines. But iterated search expects a list of LazyValues,
+          each representing a search engine. We unpack this first layer of
+          laziness here to report potential errors in a more useful context.
+
+          TODO: the medium-term plan is to get rid of LazyValue completely
+          and let the features create builders that in turn create the actual
+          search engines. Then we no longer need to be lazy because creating
+          the builder is a light-weight operation.
+        */
+        vector<parser::LazyValue> engine_configs =
+            options.get<parser::LazyValue>("engine_configs").construct_lazy_list();
+        options_copy.set("engine_configs", engine_configs);
+        plugins::verify_list_non_empty<parser::LazyValue>(context, options_copy, "engine_configs");
+        return make_shared<IteratedSearch>(options_copy);
+    }
+};
+
+static plugins::FeaturePlugin<IteratedSearchFeature> _plugin;
 }

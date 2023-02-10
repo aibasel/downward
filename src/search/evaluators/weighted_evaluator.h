@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace options {
+namespace plugins {
 class Options;
 }
 
@@ -15,7 +15,7 @@ class WeightedEvaluator : public Evaluator {
     int w;
 
 public:
-    explicit WeightedEvaluator(const options::Options &opts);
+    explicit WeightedEvaluator(const plugins::Options &opts);
     virtual ~WeightedEvaluator() override;
 
     virtual bool dead_ends_are_reliable() const override;

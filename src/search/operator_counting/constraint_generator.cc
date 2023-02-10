@@ -1,6 +1,6 @@
 #include "constraint_generator.h"
 
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 using namespace std;
 
@@ -9,8 +9,12 @@ void ConstraintGenerator::initialize_constraints(
     const shared_ptr<AbstractTask> &, lp::LinearProgram &) {
 }
 
-static PluginTypePlugin<ConstraintGenerator> _type_plugin(
-    "ConstraintGenerator",
-    // TODO: Replace empty string by synopsis for the wiki page.
-    "");
+static class ConstraintGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<ConstraintGenerator> {
+public:
+    ConstraintGeneratorCategoryPlugin() : TypedCategoryPlugin("ConstraintGenerator") {
+        // TODO: Replace empty string by synopsis for the wiki page.
+        //document_synopsis("");
+    }
+}
+_category_plugin;
 }

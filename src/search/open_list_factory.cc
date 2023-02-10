@@ -1,6 +1,6 @@
 #include "open_list_factory.h"
 
-#include "plugin.h"
+#include "plugins/plugin.h"
 
 using namespace std;
 
@@ -15,8 +15,10 @@ unique_ptr<EdgeOpenList> OpenListFactory::create_open_list() {
     return create_edge_open_list();
 }
 
-
-static PluginTypePlugin<OpenListFactory> _type_plugin(
-    "OpenList",
-    // TODO: Replace empty string by synopsis for the wiki page.
-    "");
+static class OpenListFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<OpenListFactory> {
+public:
+    OpenListFactoryCategoryPlugin() : TypedCategoryPlugin("OpenList") {
+        // TODO: use document_synopsis() for the wiki page.
+    }
+}
+_category_plugin;

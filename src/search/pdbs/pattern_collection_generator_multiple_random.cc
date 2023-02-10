@@ -3,10 +3,9 @@
 #include "random_pattern.h"
 #include "utils.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <vector>
@@ -15,7 +14,7 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorMultipleRandom::PatternCollectionGeneratorMultipleRandom(
-    options::Options &opts)
+    const plugins::Options &opts)
     : PatternCollectionGeneratorMultiple(opts),
       bidirectional(opts.get<bool>("bidirectional")) {
 }
@@ -52,28 +51,26 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
     return result;
 }
 
-static shared_ptr<PatternCollectionGenerator> _parse(options::OptionParser &parser) {
-    parser.document_synopsis(
-        "Multiple Random Patterns",
-        "This pattern collection generator implements the 'multiple "
-        "randomized causal graph' (mRCG) algorithm described in experiments of "
-        "the paper" + get_rovner_et_al_reference() +
-        "It is an instantiation of the 'multiple algorithm framework'. "
-        "To compute a pattern in each iteration, it uses the random "
-        "pattern algorithm, called 'single randomized causal graph' (sRCG) "
-        "in the paper. See below for descriptions of the algorithms.");
-    add_random_pattern_implementation_notes_to_parser(parser);
-    add_multiple_algorithm_implementation_notes_to_parser(parser);
-    add_multiple_options_to_parser(parser);
-    add_random_pattern_bidirectional_option_to_parser(parser);
+class PatternCollectionGeneratorMultipleRandomFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorMultipleRandom> {
+public:
+    PatternCollectionGeneratorMultipleRandomFeature() : TypedFeature("random_patterns") {
+        document_title("Multiple Random Patterns");
+        document_synopsis(
+            "This pattern collection generator implements the 'multiple "
+            "randomized causal graph' (mRCG) algorithm described in experiments of "
+            "the paper" + get_rovner_et_al_reference() +
+            "It is an instantiation of the 'multiple algorithm framework'. "
+            "To compute a pattern in each iteration, it uses the random "
+            "pattern algorithm, called 'single randomized causal graph' (sRCG) "
+            "in the paper. See below for descriptions of the algorithms.");
 
-    Options opts = parser.parse();
-    if (parser.dry_run()) {
-        return nullptr;
+        add_multiple_options_to_feature(*this);
+        add_random_pattern_bidirectional_option_to_feature(*this);
+
+        add_random_pattern_implementation_notes_to_feature(*this);
+        add_multiple_algorithm_implementation_notes_to_feature(*this);
     }
+};
 
-    return make_shared<PatternCollectionGeneratorMultipleRandom>(opts);
-}
-
-static Plugin<PatternCollectionGenerator> _plugin("random_patterns", _parse);
+static plugins::FeaturePlugin<PatternCollectionGeneratorMultipleRandomFeature> _plugin;
 }

@@ -3,7 +3,7 @@
 #include "factored_transition_system.h"
 #include "transition_system.h"
 
-#include "../plugin.h"
+#include "../plugins/plugin.h"
 
 #include "../utils/logging.h"
 
@@ -24,8 +24,14 @@ string ShrinkStrategy::get_name() const {
     return name();
 }
 
-static PluginTypePlugin<ShrinkStrategy> _type_plugin(
-    "ShrinkStrategy",
-    "This page describes the various shrink strategies supported "
-    "by the planner.");
+static class ShrinkStrategyCategoryPlugin : public plugins::TypedCategoryPlugin<ShrinkStrategy> {
+public:
+    ShrinkStrategyCategoryPlugin() : TypedCategoryPlugin("ShrinkStrategy") {
+        document_synopsis(
+            "This page describes the various shrink strategies supported "
+            "by the planner."
+            );
+    }
+}
+_category_plugin;
 }

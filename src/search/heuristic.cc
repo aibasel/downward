@@ -2,9 +2,8 @@
 
 #include "evaluation_context.h"
 #include "evaluation_result.h"
-#include "option_parser.h"
-#include "plugin.h"
 
+#include "plugins/plugin.h"
 #include "task_utils/task_properties.h"
 #include "tasks/cost_adapted_task.h"
 #include "tasks/root_task.h"
@@ -15,7 +14,7 @@
 
 using namespace std;
 
-Heuristic::Heuristic(const Options &opts)
+Heuristic::Heuristic(const plugins::Options &opts)
     : Evaluator(opts, true, true, true),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_evaluator_values(opts.get<bool>("cache_estimates")),
@@ -34,14 +33,14 @@ State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
     return task_proxy.convert_ancestor_state(ancestor_state);
 }
 
-void Heuristic::add_options_to_parser(OptionParser &parser) {
-    add_evaluator_options_to_parser(parser);
-    parser.add_option<shared_ptr<AbstractTask>>(
+void Heuristic::add_options_to_feature(plugins::Feature &feature) {
+    add_evaluator_options_to_feature(feature);
+    feature.add_option<shared_ptr<AbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic."
         " Currently, adapt_costs() and no_transform() are available.",
         "no_transform()");
-    parser.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
+    feature.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
 }
 
 EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {

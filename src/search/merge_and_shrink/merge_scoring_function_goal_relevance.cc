@@ -4,8 +4,7 @@
 #include "transition_system.h"
 #include "utils.h"
 
-#include "../options/option_parser.h"
-#include "../options/plugin.h"
+#include "../plugins/plugin.h"
 
 using namespace std;
 
@@ -40,18 +39,21 @@ string MergeScoringFunctionGoalRelevance::name() const {
     return "goal relevance";
 }
 
-static shared_ptr<MergeScoringFunction>_parse(options::OptionParser &parser) {
-    parser.document_synopsis(
-        "Goal relevance scoring",
-        "This scoring function assigns a merge candidate a value of 0 iff at "
-        "least one of the two transition systems of the merge candidate is "
-        "goal relevant in the sense that there is an abstract non-goal state. "
-        "All other candidates get a score of positive infinity.");
-    if (parser.dry_run())
-        return nullptr;
+class MergeScoringFunctionGoalRelevanceFeature : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionGoalRelevance> {
+public:
+    MergeScoringFunctionGoalRelevanceFeature() : TypedFeature("goal_relevance") {
+        document_title("Goal relevance scoring");
+        document_synopsis(
+            "This scoring function assigns a merge candidate a value of 0 iff at "
+            "least one of the two transition systems of the merge candidate is "
+            "goal relevant in the sense that there is an abstract non-goal state. "
+            "All other candidates get a score of positive infinity.");
+    }
 
-    return make_shared<MergeScoringFunctionGoalRelevance>();
-}
+    virtual shared_ptr<MergeScoringFunctionGoalRelevance> create_component(const plugins::Options &, const utils::Context &) const override {
+        return make_shared<MergeScoringFunctionGoalRelevance>();
+    }
+};
 
-static options::Plugin<MergeScoringFunction> _plugin("goal_relevance", _parse);
+static plugins::FeaturePlugin<MergeScoringFunctionGoalRelevanceFeature> _plugin;
 }

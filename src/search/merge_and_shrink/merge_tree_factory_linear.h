@@ -17,7 +17,7 @@ protected:
     virtual std::string name() const override;
     virtual void dump_tree_specific_options(utils::LogProxy &log) const override;
 public:
-    explicit MergeTreeFactoryLinear(const options::Options &options);
+    explicit MergeTreeFactoryLinear(const plugins::Options &options);
     virtual ~MergeTreeFactoryLinear() override = default;
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
         const TaskProxy &task_proxy) override;
@@ -34,7 +34,7 @@ public:
         return false;
     }
 
-    static void add_options_to_parser(options::OptionParser &parser);
+    static void add_options_to_feature(plugins::Feature &feature);
 };
 }
 

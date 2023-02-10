@@ -19,7 +19,7 @@ class CombiningEvaluator : public Evaluator {
 protected:
     virtual int combine_values(const std::vector<int> &values) = 0;
 public:
-    explicit CombiningEvaluator(const options::Options &opts);
+    explicit CombiningEvaluator(const plugins::Options &opts);
     virtual ~CombiningEvaluator() override;
 
     /*
@@ -43,8 +43,8 @@ public:
         std::set<Evaluator *> &evals) override;
 };
 
-extern void add_combining_evaluator_options_to_parser(
-    options::OptionParser &parser);
+extern void add_combining_evaluator_options_to_feature(
+    plugins::Feature &feature);
 }
 
 #endif

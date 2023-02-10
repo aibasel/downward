@@ -11,7 +11,7 @@ class PatternGeneratorGreedy : public PatternGenerator {
     virtual PatternInformation compute_pattern(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
-    explicit PatternGeneratorGreedy(const options::Options &opts);
+    explicit PatternGeneratorGreedy(const plugins::Options &opts);
     virtual ~PatternGeneratorGreedy() = default;
 };
 }

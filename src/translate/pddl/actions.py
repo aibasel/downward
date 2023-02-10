@@ -1,11 +1,18 @@
 import copy
+from typing import List, Optional, Tuple
 
 from . import conditions
+from .conditions import Condition, Literal
+from .effects import Effect
+from .f_expression import Increase
+from .pddl_types import TypedObject
 
 
 class Action:
-    def __init__(self, name, parameters, num_external_parameters,
-                 precondition, effects, cost):
+    def __init__(self, name: str, parameters: List[TypedObject],
+            num_external_parameters: int,
+            precondition: Condition, effects: List[Effect],
+            cost: Optional[Increase]):
         assert 0 <= num_external_parameters <= len(parameters)
         self.name = name
         self.parameters = parameters
@@ -31,7 +38,7 @@ class Action:
         for eff in self.effects:
             eff.dump()
         print("Cost:")
-        if(self.cost):
+        if self.cost:
             self.cost.dump()
         else:
             print("  None")
@@ -101,7 +108,8 @@ class Action:
 
 
 class PropositionalAction:
-    def __init__(self, name, precondition, effects, cost):
+    def __init__(self, name: str, precondition: List[Literal], effects:
+            List[Tuple[List[Literal], Literal]], cost: int):
         self.name = name
         self.precondition = precondition
         self.add_effects = []

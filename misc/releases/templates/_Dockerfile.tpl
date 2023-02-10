@@ -6,7 +6,7 @@
 ###############################################################################
 # A first image to build the planner
 ###############################################################################
-FROM ubuntu:18.04 AS builder
+FROM ubuntu:22.04 AS builder
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
     ca-certificates \
@@ -63,7 +63,7 @@ RUN git clone --depth 1 --branch TAG https://github.com/aibasel/downward.git . &
 ###############################################################################
 # The final image to run the planner
 ###############################################################################
-FROM ubuntu:18.04 AS runner
+FROM ubuntu:22.04 AS runner
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
     python3  \

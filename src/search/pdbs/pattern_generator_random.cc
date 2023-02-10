@@ -4,10 +4,9 @@
 #include "random_pattern.h"
 #include "utils.h"
 
-#include "../option_parser.h"
-#include "../plugin.h"
 #include "../task_proxy.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -17,7 +16,7 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorRandom::PatternGeneratorRandom(options::Options &opts)
+PatternGeneratorRandom::PatternGeneratorRandom(const plugins::Options &opts)
     : PatternGenerator(opts),
       max_pdb_size(opts.get<int>("max_pdb_size")),
       max_time(opts.get<double>("max_time")),
@@ -48,37 +47,35 @@ PatternInformation PatternGeneratorRandom::compute_pattern(
     return PatternInformation(task_proxy, pattern, log);
 }
 
-static shared_ptr<PatternGenerator> _parse(options::OptionParser &parser) {
-    parser.document_synopsis(
-        "Random Pattern",
-        "This pattern generator implements the 'single randomized "
-        "causal graph' algorithm described in experiments of the the paper"
-        + get_rovner_et_al_reference() +
-        "See below for a description of the algorithm and some implementation "
-        "notes.");
-    add_random_pattern_implementation_notes_to_parser(parser);
-    parser.add_option<int>(
-        "max_pdb_size",
-        "maximum number of states in the final pattern database (possibly "
-        "ignored by a singleton pattern consisting of a single goal variable)",
-        "1000000",
-        Bounds("1", "infinity"));
-    parser.add_option<double>(
-        "max_time",
-        "maximum time in seconds for the pattern generation",
-        "infinity",
-        Bounds("0.0", "infinity"));
-    add_random_pattern_bidirectional_option_to_parser(parser);
-    add_generator_options_to_parser(parser);
-    utils::add_rng_options(parser);
+class PatternGeneratorRandomFeature : public plugins::TypedFeature<PatternGenerator, PatternGeneratorRandom> {
+public:
+    PatternGeneratorRandomFeature() : TypedFeature("random_pattern") {
+        document_title("Random Pattern");
+        document_synopsis(
+            "This pattern generator implements the 'single randomized "
+            "causal graph' algorithm described in experiments of the the paper"
+            + get_rovner_et_al_reference() +
+            "See below for a description of the algorithm and some implementation "
+            "notes.");
 
-    Options opts = parser.parse();
-    if (parser.dry_run()) {
-        return nullptr;
+        add_option<int>(
+            "max_pdb_size",
+            "maximum number of states in the final pattern database (possibly "
+            "ignored by a singleton pattern consisting of a single goal variable)",
+            "1000000",
+            plugins::Bounds("1", "infinity"));
+        add_option<double>(
+            "max_time",
+            "maximum time in seconds for the pattern generation",
+            "infinity",
+            plugins::Bounds("0.0", "infinity"));
+        add_random_pattern_bidirectional_option_to_feature(*this);
+        add_generator_options_to_feature(*this);
+        utils::add_rng_options(*this);
+
+        add_random_pattern_implementation_notes_to_feature(*this);
     }
+};
 
-    return make_shared<PatternGeneratorRandom>(opts);
-}
-
-static Plugin<PatternGenerator> _plugin("random_pattern", _parse);
+static plugins::FeaturePlugin<PatternGeneratorRandomFeature> _plugin;
 }

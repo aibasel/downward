@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-namespace options {
+namespace plugins {
 class Options;
 }
 
@@ -57,7 +57,7 @@ class PotentialOptimizer {
     void extract_lp_solution();
 
 public:
-    explicit PotentialOptimizer(const options::Options &opts);
+    explicit PotentialOptimizer(const plugins::Options &opts);
     ~PotentialOptimizer() = default;
 
     const std::shared_ptr<AbstractTask> get_task() const;

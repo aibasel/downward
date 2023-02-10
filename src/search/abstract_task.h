@@ -11,10 +11,6 @@
 #include <utility>
 #include <vector>
 
-namespace options {
-class Options;
-}
-
 struct FactPair {
     int var;
     int value;

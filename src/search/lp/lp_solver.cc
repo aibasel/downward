@@ -2,8 +2,7 @@
 
 #include "lp_internals.h"
 
-#include "../option_parser.h"
-
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/system.h"
 
@@ -12,6 +11,16 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
+
+/*
+   OSI uses the keyword 'register' which was deprecated for a while and removed
+   in C++ 17. Most compilers ignore it but clang 14 complains if it is still used.
+*/
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wkeyword-macro"
+#endif
+#define register
+
 #include <OsiSolverInterface.hpp>
 #include <CoinPackedMatrix.hpp>
 #include <CoinPackedVector.hpp>
@@ -28,27 +37,16 @@ using namespace std;
 using utils::ExitCode;
 
 namespace lp {
-void add_lp_solver_option_to_parser(OptionParser &parser) {
-    parser.document_note(
+void add_lp_solver_option_to_feature(plugins::Feature &feature) {
+    feature.add_option<LPSolverType>(
+        "lpsolver",
+        "external solver that should be used to solve linear programs",
+        "cplex");
+
+    feature.document_note(
         "Note",
         "to use an LP solver, you must build the planner with LP support. "
         "See LPBuildInstructions.");
-    vector<string> lp_solvers;
-    vector<string> lp_solvers_doc;
-    lp_solvers.push_back("CLP");
-    lp_solvers_doc.push_back("default LP solver shipped with the COIN library");
-    lp_solvers.push_back("CPLEX");
-    lp_solvers_doc.push_back("commercial solver by IBM");
-    lp_solvers.push_back("GUROBI");
-    lp_solvers_doc.push_back("commercial solver");
-    lp_solvers.push_back("SOPLEX");
-    lp_solvers_doc.push_back("open source solver by ZIB");
-    parser.add_enum_option<LPSolverType>(
-        "lpsolver",
-        lp_solvers,
-        "external solver that should be used to solve linear programs",
-        "CPLEX",
-        lp_solvers_doc);
 }
 
 LPConstraint::LPConstraint(double lower_bound, double upper_bound)
@@ -505,4 +503,11 @@ void LPSolver::print_statistics() const {
 }
 
 #endif
+
+static plugins::TypedEnumPlugin<LPSolverType> _enum_plugin({
+        {"clp", "default LP solver shipped with the COIN library"},
+        {"cplex", "commercial solver by IBM"},
+        {"gurobi", "commercial solver"},
+        {"soplex", "open source solver by ZIB"}
+    });
 }

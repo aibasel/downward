@@ -43,7 +43,7 @@ class CGHeuristic : public Heuristic {
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    explicit CGHeuristic(const options::Options &opts);
+    explicit CGHeuristic(const plugins::Options &opts);
     ~CGHeuristic();
     virtual bool dead_ends_are_reliable() const override;
 };

@@ -15,8 +15,6 @@ class LandmarkGraph;
 class LandmarkNode;
 class LandmarkStatusManager;
 
-using LandmarkNodeSet = std::unordered_set<const LandmarkNode *>;
-
 class LandmarkCountHeuristic : public Heuristic {
     std::shared_ptr<LandmarkGraph> lgraph;
     const bool use_preferred_operators;
@@ -28,24 +26,30 @@ class LandmarkCountHeuristic : public Heuristic {
     std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
     std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;
 
+    /*
+      TODO: The following vectors are only used in the non-admissible case. This
+       is bad design, but given this is already the case for
+       *lm_cost_assignment* above, this is just another indicator to change this
+       in the future.
+    */
+    std::vector<int> min_first_achiever_costs;
+    std::vector<int> min_possible_achiever_costs;
+
     int get_heuristic_value(const State &ancestor_state);
 
-    bool check_node_orders_disobeyed(
-        const LandmarkNode &node, const LandmarkNodeSet &reached) const;
-
-    void add_node_children(LandmarkNode &node,
-                           const LandmarkNodeSet &reached) const;
-
     bool landmark_is_interesting(
-        const State &state, const LandmarkNodeSet &reached, LandmarkNode &lm_node) const;
-    bool generate_helpful_actions(
-        const State &state, const LandmarkNodeSet &reached);
+        const State &state, const BitsetView &reached,
+        LandmarkNode &lm_node, bool all_lms_reached) const;
+    void generate_preferred_operators(
+        const State &state, const BitsetView &reached);
 
-    LandmarkNodeSet convert_to_landmark_set(const BitsetView &landmark_bitset);
+    int get_min_cost_of_achievers(const std::set<int> &achievers,
+                                  const TaskProxy &task_proxy);
+    void compute_landmark_costs();
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    explicit LandmarkCountHeuristic(const options::Options &opts);
+    explicit LandmarkCountHeuristic(const plugins::Options &opts);
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) override {

@@ -3,12 +3,11 @@
 #include "../evaluation_context.h"
 #include "../evaluator.h"
 #include "../open_list_factory.h"
-#include "../option_parser.h"
 #include "../pruning_method.h"
 
 #include "../algorithms/ordered_set.h"
+#include "../plugins/options.h"
 #include "../task_utils/successor_generator.h"
-
 #include "../utils/logging.h"
 
 #include <cassert>
@@ -20,7 +19,7 @@
 using namespace std;
 
 namespace eager_search {
-EagerSearch::EagerSearch(const Options &opts)
+EagerSearch::EagerSearch(const plugins::Options &opts)
     : SearchEngine(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
@@ -308,8 +307,8 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     }
 }
 
-void add_options_to_parser(OptionParser &parser) {
-    SearchEngine::add_pruning_option(parser);
-    SearchEngine::add_options_to_parser(parser);
+void add_options_to_feature(plugins::Feature &feature) {
+    SearchEngine::add_pruning_option(feature);
+    SearchEngine::add_options_to_feature(feature);
 }
 }
