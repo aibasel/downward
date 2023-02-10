@@ -75,17 +75,16 @@ int get_process_id() {
 }
 
 void execute_hook(const char *const &callback, const string &plan_filename) {
-    if (!system(nullptr)) {
-        ABORT("Plan hook execution failed because no shell is available.");
-    }
-    int status = system(callback);
+    string command = string(callback) + " " + plan_filename;
+    int status = system(command.c_str());
     if (status == -1) {
-        ABORT("Executing the plan hook '" + string(callback) +
-              "' failed with the following error: " + string(strerror(errno)));
+        ABORT("The command interpreter calling the plan hook '" +
+              string(callback) + "' failed with the following error: " +
+              string(strerror(errno)));
     }
     if (status != 0) {
-        ABORT("The plan hook '" + string(callback) +
-              "' was executed but exited with non-zero exit code " +
+        ABORT("The command interpreter calling the plan hook '" +
+              string(callback) + "' exited with non-zero exit code " +
               to_string(status));
     }
 }
