@@ -1,3 +1,5 @@
+from typing import List
+
 class FunctionalExpression:
     def __init__(self, parts):
         self.parts = tuple(parts)
@@ -12,7 +14,7 @@ class FunctionalExpression:
 
 class NumericConstant(FunctionalExpression):
     parts = ()
-    def __init__(self, value):
+    def __init__(self, value: str) -> None:
         if value != int(value):
             raise ValueError("Fractional numbers are not supported")
         self.value = int(value)
@@ -27,7 +29,7 @@ class NumericConstant(FunctionalExpression):
 
 class PrimitiveNumericExpression(FunctionalExpression):
     parts = ()
-    def __init__(self, symbol, args):
+    def __init__(self, symbol: str, args: List[str]) -> None:
         self.symbol = symbol
         self.args = tuple(args)
         self.hash = hash((self.__class__, self.symbol, self.args))
@@ -53,7 +55,8 @@ class PrimitiveNumericExpression(FunctionalExpression):
         return result
 
 class FunctionAssignment:
-    def __init__(self, fluent, expression):
+    def __init__(self, fluent: PrimitiveNumericExpression,
+                 expression: FunctionalExpression) -> None:
         self.fluent = fluent
         self.expression = expression
     def __str__(self):
