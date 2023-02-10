@@ -106,4 +106,6 @@ exp.add_comparison_table_step(attributes=attributes, revision_pairs=[
     ("issue927-v18", "issue927-v19"),
 ])
 
+exp.add_archive_step(ARCHIVE_PATH)
+
 exp.run_steps()
