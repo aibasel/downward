@@ -43,7 +43,6 @@ void LocalLabelInfo::apply_same_cost_label_mapping(
 void LocalLabelInfo::remove_labels(const vector<int> &old_labels) {
     assert(is_consistent());
     assert(utils::is_sorted_unique(old_labels));
-    sort(label_group.begin(), label_group.end());
     auto it = set_difference(
         label_group.begin(), label_group.end(),
         old_labels.begin(), old_labels.end(),
@@ -75,6 +74,7 @@ void LocalLabelInfo::merge_local_label_info(LocalLabelInfo &local_label_info) {
         make_move_iterator(local_label_info.label_group.end()));
     cost = min(cost, local_label_info.cost);
     local_label_info.deactivate();
+    sort(label_group.begin(), label_group.end());
     assert(is_consistent());
 }
 
@@ -85,7 +85,8 @@ void LocalLabelInfo::deactivate() {
 }
 
 bool LocalLabelInfo::is_consistent() const {
-    return utils::is_sorted_unique(transitions);
+    return utils::is_sorted_unique(label_group) &&
+        utils::is_sorted_unique(transitions);
 }
 
 
@@ -250,6 +251,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
                 dead_labels.insert(dead_labels.end(), new_labels.begin(), new_labels.end());
             } else {
                 sort(new_transitions.begin(), new_transitions.end());
+                sort(new_labels.begin(), new_labels.end());
                 int new_local_label = local_label_infos.size();
                 int cost = INF;
                 for (int label : new_labels) {
@@ -269,6 +271,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
       All dead labels should form one single label group.
     */
     if (!dead_labels.empty()) {
+        sort(dead_labels.begin(), dead_labels.end());
         int new_local_label = local_label_infos.size();
         int cost = INF;
         for (int label : dead_labels) {
@@ -470,7 +473,7 @@ void TransitionSystem::apply_label_reduction(
           Remove all labels of all affected local labels and recompute the
           cost of these affected local labels.
         */
-        for (pair<const int, vector<int>> &entry : local_label_to_old_labels) {
+        for (auto &entry : local_label_to_old_labels) {
             sort(entry.second.begin(), entry.second.end());
             local_label_infos[entry.first].remove_labels(entry.second);
             local_label_infos[entry.first].recompute_cost(labels);
