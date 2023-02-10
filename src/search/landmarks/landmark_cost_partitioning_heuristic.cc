@@ -21,24 +21,16 @@ LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;
     }
+    check_unsupported_features(opts);
     initialize(opts);
-    if (opts.get<bool>("optimal")) {
-        lm_cost_assignment =
-            utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
-                task_properties::get_operator_costs(task_proxy),
-                *lm_graph, opts.get<lp::LPSolverType>("lpsolver"));
-    } else {
-        lm_cost_assignment =
-            utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
-                task_properties::get_operator_costs(task_proxy),
-                *lm_graph, opts.get<bool>("alm"));
-    }
+    set_cost_assignment(opts);
 }
 
 void LandmarkCostPartitioningHeuristic::check_unsupported_features(
-    bool lm_factory_computes_reasonable_orderings,
-    bool lm_factory_supports_conditional_effects) {
-    if (lm_factory_computes_reasonable_orderings) {
+    const plugins::Options &opts) {
+    shared_ptr<LandmarkFactory> lm_graph_factory =
+        opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
+    if (lm_graph_factory->computes_reasonable_orders()) {
         cerr << "Reasonable orderings should not be used for "
              << "admissible heuristics." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
@@ -49,11 +41,26 @@ void LandmarkCostPartitioningHeuristic::check_unsupported_features(
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
-    if (!lm_factory_supports_conditional_effects
+    if (!lm_graph_factory->supports_conditional_effects()
         && task_properties::has_conditional_effects(task_proxy)) {
         cerr << "Conditional effects not supported by the landmark "
              << "generation method." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+    }
+}
+
+void LandmarkCostPartitioningHeuristic::set_cost_assignment(
+    const plugins::Options &opts) {
+    if (opts.get<bool>("optimal")) {
+        lm_cost_assignment =
+            utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
+                task_properties::get_operator_costs(task_proxy),
+                *lm_graph, opts.get<lp::LPSolverType>("lpsolver"));
+    } else {
+        lm_cost_assignment =
+            utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
+                task_properties::get_operator_costs(task_proxy),
+                *lm_graph, opts.get<bool>("alm"));
     }
 }
 

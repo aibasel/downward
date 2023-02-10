@@ -9,9 +9,8 @@ class LandmarkCostAssignment;
 class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
     std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
 
-    virtual void check_unsupported_features(
-        bool lm_factory_computes_reasonable_orderings,
-        bool lm_factory_supports_conditional_effects) override;
+    void check_unsupported_features(const plugins::Options &opts);
+    void set_cost_assignment(const plugins::Options &opts);
 
     int get_heuristic_value(const State &state) override;
 public:

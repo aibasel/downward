@@ -76,9 +76,6 @@ void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &opts) {
 
     shared_ptr<LandmarkFactory> lm_graph_factory =
         opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
-    check_unsupported_features(
-        lm_graph_factory->computes_reasonable_orders(),
-        lm_graph_factory->supports_conditional_effects());
     lm_graph = lm_graph_factory->compute_lm_graph(task);
     assert(lm_graph_factory->achievers_are_calculated());
 
@@ -103,7 +100,7 @@ void LandmarkHeuristic::generate_preferred_operators(
       prefer operators that achieve disjunctive landmarks, or don't prefer any
       operators if no such landmarks exist at all.
 
-      TODO: Conjunctive landmarks are ignored in *lgraph->get_node(...)*, so
+      TODO: Conjunctive landmarks are ignored in *lm_graph->get_node(...)*, so
        they are ignored when computing preferred operators. We consider this
        a bug and want to fix it in issue1072.
     */

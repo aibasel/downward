@@ -25,9 +25,6 @@ protected:
 
     void initialize(const plugins::Options &opts);
     void compute_landmark_graph(const plugins::Options &opts);
-    virtual void check_unsupported_features(
-        bool lm_factory_computes_reasonable_orderings,
-        bool lm_factory_supports_conditional_effects) = 0;
 
     /*
       Unlike most landmark-related code, this function takes the
