@@ -121,6 +121,21 @@ def get_data_dir():
     return os.path.join(get_script_dir(), "data", get_experiment_name())
 
 
+def get_repo_base():
+    """Get base directory of the repository, as an absolute path.
+
+    Search upwards in the directory tree from the main script until a
+    directory with a subdirectory named ".git" is found.
+
+    Abort if the repo base cannot be found."""
+    path = os.path.abspath(get_script_dir())
+    while os.path.dirname(path) != path:
+        if os.path.exists(os.path.join(path, ".git")):
+            return path
+        path = os.path.dirname(path)
+    sys.exit("repo base could not be found")
+
+
 def is_repo_base(path):
     """Check if the given path points to a Git repository."""
     return os.path.exists(os.path.join(path, ".git"))
@@ -201,7 +216,7 @@ class IssueExperiment(FastDownwardExperiment):
         "run_dir",
         ]
 
-    def __init__(self, repo_base, revisions=None, configs=None, path=None, **kwargs):
+    def __init__(self, repo_base=get_repo_base(), revisions=None, configs=None, path=None, **kwargs):
         """
 
         You can either specify both *revisions* and *configs* or none

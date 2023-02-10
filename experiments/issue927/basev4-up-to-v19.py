@@ -12,6 +12,7 @@ from downward.reports.compare import ComparativeReport
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
 
+ARCHIVE_PATH = "ai/downward/issue927"
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]

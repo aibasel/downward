@@ -11,8 +11,8 @@ from downward.reports.compare import ComparativeReport
 
 import common_setup
 from common_setup import IssueConfig, IssueExperiment
-from relativescatter import RelativeScatterPlotReport
 
+ARCHIVE_PATH = "ai/downward/issue927"
 DIR = os.path.dirname(os.path.abspath(__file__))
 SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 BENCHMARKS_DIR = os.environ["DOWNWARD_BENCHMARKS"]
@@ -89,5 +89,7 @@ attributes = exp.DEFAULT_TABLE_ATTRIBUTES
 attributes.extend(extra_attributes)
 
 exp.add_comparison_table_step(attributes=attributes)
+
+exp.add_archive_step(ARCHIVE_PATH)
 
 exp.run_steps()
