@@ -27,7 +27,7 @@ CONFIGS = [
         config_nick,
         config,
         build_options=[build],
-        driver_options=["--build", build, "--search-time-limit", "5m"])
+        driver_options=["--build", build])
     for build in BUILDS
     for config_nick, config in CONFIG_NICKS
 ]
