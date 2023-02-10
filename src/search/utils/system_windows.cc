@@ -9,6 +9,7 @@
 #include <iostream>
 #include <process.h>
 #include <psapi.h>
+#include <sys/wait.h>
 
 using namespace std;
 
