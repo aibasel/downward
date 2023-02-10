@@ -73,7 +73,13 @@ class PatternDatabaseFactory {
 
     void compute_abstract_operators(const vector<int> &operator_costs);
 
-    MatchTree compute_match_tree() const;
+    /*
+      This creates a unique_ptr because MSVC 14.29 leaves MatchTree in
+      an invalid state when using raw objects here, presumably because
+      it cannot create a correct default move assignment operator for the
+      Node class used by MatchTree.
+    */
+    unique_ptr<MatchTree> compute_match_tree() const;
 
     void compute_abstract_goals();
 
@@ -256,11 +262,11 @@ void PatternDatabaseFactory::compute_abstract_operators(
     }
 }
 
-MatchTree PatternDatabaseFactory::compute_match_tree() const {
-    MatchTree match_tree(task_proxy, projection);
+unique_ptr<MatchTree> PatternDatabaseFactory::compute_match_tree() const {
+    unique_ptr<MatchTree> match_tree = utils::make_unique_ptr<MatchTree>(task_proxy, projection);
     for (size_t op_id = 0; op_id < abstract_ops.size(); ++op_id) {
         const AbstractOperator &op = abstract_ops[op_id];
-        match_tree.insert(op_id, op.get_regression_preconditions());
+        match_tree->insert(op_id, op.get_regression_preconditions());
     }
     return match_tree;
 }
@@ -415,12 +421,12 @@ PatternDatabaseFactory::PatternDatabaseFactory(
            operator_costs.size() == task_proxy.get_operators().size());
     compute_variable_to_index(pattern);
     compute_abstract_operators(operator_costs);
-    MatchTree match_tree = compute_match_tree();
+    unique_ptr<MatchTree> match_tree = compute_match_tree();
     compute_abstract_goals();
-    compute_distances(match_tree, compute_plan);
+    compute_distances(*match_tree, compute_plan);
 
     if (compute_plan) {
-        this->compute_plan(match_tree, rng, compute_wildcard_plan);
+        this->compute_plan(*match_tree, rng, compute_wildcard_plan);
     }
 }
 
