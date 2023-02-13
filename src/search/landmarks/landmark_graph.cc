@@ -127,7 +127,7 @@ LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark) {
         for (const FactPair &lm_fact: lm.facts) {
             auto it = conjunctive_landmarks_to_nodes.find(lm_fact);
             if (it == conjunctive_landmarks_to_nodes.end()) {
-                conjunctive_landmarks_to_nodes.emplace(lm_fact, std::vector<LandmarkNode *>{new_node_p});
+                conjunctive_landmarks_to_nodes.emplace(lm_fact, vector<LandmarkNode *>{new_node_p});
             } else {
                 (it->second).push_back(new_node_p);
             }
@@ -159,9 +159,9 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
     } else if (landmark.conjunctive) {
         --num_conjunctive_landmarks;
         for (const FactPair &lm_fact: landmark.facts) {
-            std::vector<LandmarkNode *> *conjunctive_landmarks_vector = &(conjunctive_landmarks_to_nodes.find(
-                                                                              lm_fact)->second);
-            auto it = std::find(conjunctive_landmarks_vector->begin(), conjunctive_landmarks_vector->end(), node);
+            vector<LandmarkNode *> *conjunctive_landmarks_vector = &(conjunctive_landmarks_to_nodes.find(
+                                                                         lm_fact)->second);
+            auto it = find(conjunctive_landmarks_vector->begin(), conjunctive_landmarks_vector->end(), node);
             assert(it != conjunctive_landmarks_vector->end());
             conjunctive_landmarks_vector->erase(it);
         }

@@ -244,7 +244,7 @@ void LandmarkCountHeuristic::generate_preferred_operators(
                 set_preferred(op);
             }
             if (lgraph->contains_conjunctive_landmark(fact_proxy.get_pair())) {
-                std::vector<LandmarkNode *> conjunctive_landmarks = lgraph->get_conjunctive_landmarks(fact_proxy.get_pair());
+                vector<LandmarkNode *> conjunctive_landmarks = lgraph->get_conjunctive_landmarks(fact_proxy.get_pair());
                 for (auto conj_lm : conjunctive_landmarks) {
                     if (landmark_is_interesting(
                             state, reached, *conj_lm, all_landmarks_reached)) {
