@@ -81,9 +81,10 @@ void execute_hook(const char *const &callback, const string &plan_filename) {
       command as well as the arguments within the command, whitespace in the
       arguments should be handled correctly.
     */
-    string command = "cmd /S /C " +
-                     "\"" + string(callback) + "\" " +
-                     "\"" + plan_filename + "\"";
+    string command = "cmd /S /C \""
+                     "\"" + string(callback) + "\" "
+                     "\"" + plan_filename + "\""
+                     "\"";
     int status = system(command.c_str());
     if (status == -1) {
         ABORT("The command interpreter calling the plan hook '" +
