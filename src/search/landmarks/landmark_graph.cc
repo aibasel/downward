@@ -57,6 +57,10 @@ LandmarkNode &LandmarkGraph::get_disjunctive_landmark(const FactPair &fact) cons
     return *(disjunctive_landmarks_to_nodes.find(fact)->second);
 }
 
+const vector<LandmarkNode *> &LandmarkGraph::get_conjunctive_landmarks(const FactPair &fact) const {
+    assert(contains_conjunctive_landmark(fact));
+    return conjunctive_landmarks_to_nodes.find(fact)->second;
+}
 
 bool LandmarkGraph::contains_simple_landmark(const FactPair &lm) const {
     return simple_landmarks_to_nodes.count(lm) != 0;
