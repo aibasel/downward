@@ -78,6 +78,7 @@ private:
 
     utils::HashMap<FactPair, LandmarkNode *> simple_landmarks_to_nodes;
     utils::HashMap<FactPair, LandmarkNode *> disjunctive_landmarks_to_nodes;
+    utils::HashMap<FactPair, std::vector<LandmarkNode *>> conjunctive_landmarks_to_nodes;
     Nodes nodes;
 
     void remove_node_occurrences(LandmarkNode *node);
@@ -119,6 +120,7 @@ public:
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     LandmarkNode &get_disjunctive_landmark(const FactPair &fact) const;
+    const std::vector<LandmarkNode *> &get_conjunctive_landmarks(const FactPair &fact) const;
 
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there.  It is not needed by
@@ -126,6 +128,7 @@ public:
     bool contains_simple_landmark(const FactPair &lm) const;
     /* Only used internally. */
     bool contains_disjunctive_landmark(const FactPair &lm) const;
+    bool contains_conjunctive_landmark(const FactPair &lm) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there.  It is not needed by
        HMLandmarkFactory*/

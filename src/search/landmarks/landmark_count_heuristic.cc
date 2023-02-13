@@ -222,8 +222,6 @@ void LandmarkCountHeuristic::generate_preferred_operators(
     assert(successor_generator);
     vector<OperatorID> applicable_operators;
     successor_generator->generate_applicable_ops(state, applicable_operators);
-    vector<OperatorID> preferred_operators_simple;
-    vector<OperatorID> preferred_operators_disjunctive;
 
     bool all_landmarks_reached = true;
     for (int i = 0; i < reached.size(); ++i) {
@@ -243,23 +241,18 @@ void LandmarkCountHeuristic::generate_preferred_operators(
             LandmarkNode *lm_node = lgraph->get_node(fact_proxy.get_pair());
             if (lm_node && landmark_is_interesting(
                     state, reached, *lm_node, all_landmarks_reached)) {
-                if (lm_node->get_landmark().disjunctive) {
-                    preferred_operators_disjunctive.push_back(op_id);
-                } else {
-                    preferred_operators_simple.push_back(op_id);
+                set_preferred(op);
+            }
+            if (lgraph->contains_conjunctive_landmark(fact_proxy.get_pair())) {
+                vector<LandmarkNode *> conjunctive_landmarks = lgraph->get_conjunctive_landmarks(fact_proxy.get_pair());
+                for (auto conj_lm : conjunctive_landmarks) {
+                    if (landmark_is_interesting(
+                            state, reached, *conj_lm, all_landmarks_reached)) {
+                        set_preferred(op);
+                        break;
+                    }
                 }
             }
-        }
-    }
-
-    OperatorsProxy operators = task_proxy.get_operators();
-    if (preferred_operators_simple.empty()) {
-        for (OperatorID op_id : preferred_operators_disjunctive) {
-            set_preferred(operators[op_id]);
-        }
-    } else {
-        for (OperatorID op_id : preferred_operators_simple) {
-            set_preferred(operators[op_id]);
         }
     }
 }
