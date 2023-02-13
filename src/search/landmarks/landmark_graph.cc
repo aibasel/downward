@@ -109,7 +109,7 @@ bool LandmarkGraph::contains_landmark(const FactPair &lm) const {
     return contains_simple_landmark(lm) || contains_disjunctive_landmark(lm);
 }
 
-LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark, bool store_conjunctive) {
+LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark) {
     assert(all_of(landmark.facts.begin(), landmark.facts.end(), [&](const FactPair &lm_fact) {
                       return !contains_landmark(lm_fact);
                   }));
@@ -124,14 +124,12 @@ LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark, bool store_conjun
         }
         ++num_disjunctive_landmarks;
     } else if (lm.conjunctive) {
-        if (store_conjunctive) {
-            for (const FactPair &lm_fact: lm.facts) {
-                auto it = conjunctive_landmarks_to_nodes.find(lm_fact);
-                if (it == conjunctive_landmarks_to_nodes.end()) {
-                    conjunctive_landmarks_to_nodes.emplace(lm_fact, std::vector<LandmarkNode *>{new_node_p});
-                } else {
-                    (it->second).push_back(new_node_p);
-                }
+        for (const FactPair &lm_fact: lm.facts) {
+            auto it = conjunctive_landmarks_to_nodes.find(lm_fact);
+            if (it == conjunctive_landmarks_to_nodes.end()) {
+                conjunctive_landmarks_to_nodes.emplace(lm_fact, std::vector<LandmarkNode *>{new_node_p});
+            } else {
+                (it->second).push_back(new_node_p);
             }
         }
         ++num_conjunctive_landmarks;
@@ -141,7 +139,7 @@ LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark, bool store_conjun
     return *new_node_p;
 }
 
-void LandmarkGraph::remove_node_occurrences(LandmarkNode *node, bool erase_conjunctive) {
+void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
     for (const auto &parent : node->parents) {
         LandmarkNode &parent_node = *(parent.first);
         parent_node.children.erase(node);
@@ -160,23 +158,20 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node, bool erase_conju
         }
     } else if (landmark.conjunctive) {
         --num_conjunctive_landmarks;
-        if (erase_conjunctive) {
-            for (const FactPair &lm_fact: landmark.facts) {
-                std::vector<LandmarkNode *> *conjunctive_landmarks_vector = &(conjunctive_landmarks_to_nodes.find(
-                        lm_fact)->second);
-                auto it = std::find(conjunctive_landmarks_vector->begin(), conjunctive_landmarks_vector->end(), node);
-                if (it != conjunctive_landmarks_vector->end()) {
-                    conjunctive_landmarks_vector->erase(it);
-                }
-            }
+        for (const FactPair &lm_fact: landmark.facts) {
+            std::vector<LandmarkNode *> *conjunctive_landmarks_vector = &(conjunctive_landmarks_to_nodes.find(
+                                                                              lm_fact)->second);
+            auto it = std::find(conjunctive_landmarks_vector->begin(), conjunctive_landmarks_vector->end(), node);
+            assert(it != conjunctive_landmarks_vector->end());
+            conjunctive_landmarks_vector->erase(it);
         }
     } else {
         simple_landmarks_to_nodes.erase(landmark.facts[0]);
     }
 }
 
-void LandmarkGraph::remove_node(LandmarkNode *node, bool erase_conjunctive) {
-    remove_node_occurrences(node, erase_conjunctive);
+void LandmarkGraph::remove_node(LandmarkNode *node) {
+    remove_node_occurrences(node);
     auto it = find_if(nodes.begin(), nodes.end(),
                       [&node](unique_ptr<LandmarkNode> &n) {
                           return n.get() == node;
@@ -186,10 +181,10 @@ void LandmarkGraph::remove_node(LandmarkNode *node, bool erase_conjunctive) {
 }
 
 void LandmarkGraph::remove_node_if(
-    const function<bool (const LandmarkNode &)> &remove_node_condition, bool erase_conjunctive) {
+    const function<bool (const LandmarkNode &)> &remove_node_condition) {
     for (auto &node : nodes) {
         if (remove_node_condition(*node)) {
-            remove_node_occurrences(node.get(), erase_conjunctive);
+            remove_node_occurrences(node.get());
         }
     }
     nodes.erase(remove_if(nodes.begin(), nodes.end(),
@@ -205,6 +200,4 @@ void LandmarkGraph::set_landmark_ids() {
         ++id;
     }
 }
-
-
 }

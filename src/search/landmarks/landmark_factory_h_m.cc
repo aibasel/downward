@@ -619,7 +619,7 @@ void LandmarkFactoryHM::discard_conjunctive_landmarks() {
                 << " conjunctive landmarks" << endl;
         }
         lm_graph->remove_node_if(
-            [](const LandmarkNode &node) {return node.get_landmark().conjunctive;}, conjunctive_landmarks);
+            [](const LandmarkNode &node) {return node.get_landmark().conjunctive;});
     }
 }
 
@@ -931,7 +931,7 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
         landmark.first_achievers.insert(
             hm_entry.first_achievers.begin(),
             hm_entry.first_achievers.end());
-        lm_node_table_[set_index] = &lm_graph->add_landmark(move(landmark), conjunctive_landmarks);
+        lm_node_table_[set_index] = &lm_graph->add_landmark(move(landmark));
     }
 }
 
