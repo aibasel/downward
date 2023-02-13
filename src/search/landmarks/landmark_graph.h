@@ -81,7 +81,7 @@ private:
     utils::HashMap<FactPair, std::vector<LandmarkNode *>> conjunctive_landmarks_to_nodes;
     Nodes nodes;
 
-    void remove_node_occurrences(LandmarkNode *node);
+    void remove_node_occurrences(LandmarkNode *node, bool erase_conjunctive);
 
 public:
     /* This is needed only by landmark graph factories and will disappear
@@ -143,12 +143,12 @@ public:
 
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
-    LandmarkNode &add_landmark(Landmark &&landmark);
+    LandmarkNode &add_landmark(Landmark &&landmark, bool store_conjunctive = false);
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
-    void remove_node(LandmarkNode *node);
+    void remove_node(LandmarkNode *node, bool erase_conjunctive = false);
     void remove_node_if(
-        const std::function<bool (const LandmarkNode &)> &remove_node_condition);
+        const std::function<bool (const LandmarkNode &)> &remove_node_condition, bool erase_conjunctive = false);
 
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
