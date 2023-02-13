@@ -82,9 +82,9 @@ void execute_hook(const char *const &callback, const string &plan_filename) {
       arguments should be handled correctly.
     */
     string command = "cmd /S /C \""
-                     "\"" + string(callback) + "\" "
-                     "\"" + plan_filename + "\""
-                     "\"";
+        "\"" + string(callback) + "\" "
+        "\"" + plan_filename + "\""
+        "\"";
     int status = system(command.c_str());
     if (status == -1) {
         ABORT("The command interpreter calling the plan hook '" +
