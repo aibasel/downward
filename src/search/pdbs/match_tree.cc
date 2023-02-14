@@ -1,5 +1,7 @@
 #include "match_tree.h"
 
+#include "pattern_database.h"
+
 #include "../utils/logging.h"
 
 #include <cassert>
@@ -63,12 +65,9 @@ bool MatchTree::Node::is_leaf_node() const {
     return var_id == LEAF_NODE;
 }
 
-MatchTree::MatchTree(const TaskProxy &task_proxy,
-                     const Pattern &pattern,
-                     const vector<int> &hash_multipliers)
+MatchTree::MatchTree(const TaskProxy &task_proxy, const Projection &projection)
     : task_proxy(task_proxy),
-      pattern(pattern),
-      hash_multipliers(hash_multipliers),
+      projection(projection),
       root(nullptr) {
 }
 
@@ -91,7 +90,7 @@ void MatchTree::insert_recursive(
     } else {
         const FactPair &fact = regression_preconditions[pre_index];
         int pattern_var_id = fact.var;
-        int var_id = pattern[pattern_var_id];
+        int var_id = projection.get_pattern()[pattern_var_id];
         VariableProxy var = task_proxy.get_variables()[var_id];
         int var_domain_size = var.get_domain_size();
 
@@ -148,8 +147,7 @@ void MatchTree::get_applicable_operator_ids_recursive(
     if (node->is_leaf_node())
         return;
 
-    int temp = state_index / hash_multipliers[node->var_id];
-    int val = temp % node->var_domain_size;
+    int val = projection.unrank(state_index, node->var_id);
 
     if (node->successors[val]) {
         // Follow the correct successor edge, if it exists.
