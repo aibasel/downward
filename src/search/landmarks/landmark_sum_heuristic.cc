@@ -15,14 +15,14 @@
 using namespace std;
 
 namespace landmarks {
-static bool are_dead_ends_reliable(const plugins::Options &opts,
-                                   const TaskProxy &task_proxy) {
+static bool are_dead_ends_reliable(
+    const shared_ptr<LandmarkFactory> &lm_factory,
+    const TaskProxy &task_proxy) {
     if (task_properties::has_axioms(task_proxy)) {
         return false;
     }
 
-    if (!opts.get<shared_ptr<LandmarkFactory>>(
-            "lm_factory")->supports_conditional_effects()
+    if (!lm_factory->supports_conditional_effects()
         && task_properties::has_conditional_effects(task_proxy)) {
         return false;
     }
@@ -32,7 +32,8 @@ static bool are_dead_ends_reliable(const plugins::Options &opts,
 
 LandmarkSumHeuristic::LandmarkSumHeuristic(const plugins::Options &opts)
     : LandmarkHeuristic(opts),
-      dead_ends_reliable(are_dead_ends_reliable(opts, task_proxy)) {
+      dead_ends_reliable(are_dead_ends_reliable(
+          opts.get<shared_ptr<LandmarkFactory>>("lm_factory"), task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark sum heuristic..." << endl;
     }
