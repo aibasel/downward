@@ -12,15 +12,34 @@
 using namespace std;
 
 namespace merge_and_shrink {
-Labels::Labels(vector<unique_ptr<Label>> &&labels)
-    : labels(move(labels)),
-      max_size(0) {
-    if (!this->labels.empty()) {
-        max_size = this->labels.size() * 2 - 1;
+LabelsConstIterator::LabelsConstIterator(
+    const vector<int> &label_costs,
+    vector<int>::const_iterator it)
+    : end_it(label_costs.end()), it(it), current_pos(distance(label_costs.begin(), it)) {
+    advance_to_next_valid_index();
+}
+
+void LabelsConstIterator::advance_to_next_valid_index() {
+    while (it != end_it && *it == -1) {
+        ++it;
+        ++current_pos;
     }
 }
 
-void Labels::reduce_labels(const vector<int> &old_label_nos) {
+LabelsConstIterator &LabelsConstIterator::operator++() {
+    ++it;
+    ++current_pos;
+    advance_to_next_valid_index();
+    return *this;
+}
+
+Labels::Labels(vector<int> &&label_costs, int max_num_labels)
+    : label_costs(move(label_costs)),
+      max_num_labels(max_num_labels),
+      num_active_labels(this->label_costs.size()) {
+}
+
+void Labels::reduce_labels(const vector<int> &old_labels) {
     /*
       Even though we currently only support exact label reductions where
       reduced labels are of equal cost, to support non-exact label reductions,
@@ -28,34 +47,30 @@ void Labels::reduce_labels(const vector<int> &old_label_nos) {
       labels reduced to it to satisfy admissibility.
     */
     int new_label_cost = INF;
-    for (size_t i = 0; i < old_label_nos.size(); ++i) {
-        int old_label_no = old_label_nos[i];
-        int cost = get_label_cost(old_label_no);
+    for (int old_label : old_labels) {
+        int cost = get_label_cost(old_label);
         if (cost < new_label_cost) {
             new_label_cost = cost;
         }
-        labels[old_label_no] = nullptr;
+        label_costs[old_label] = -1;
     }
-    labels.push_back(utils::make_unique_ptr<Label>(new_label_cost));
+    label_costs.push_back(new_label_cost);
+    num_active_labels -= old_labels.size();
+    ++num_active_labels;
 }
 
-bool Labels::is_current_label(int label_no) const {
-    assert(utils::in_bounds(label_no, labels));
-    return labels[label_no] != nullptr;
+int Labels::get_label_cost(int label) const {
+    assert(label_costs[label] != -1);
+    return label_costs[label];
 }
 
-int Labels::get_label_cost(int label_no) const {
-    assert(labels[label_no]);
-    return labels[label_no]->get_cost();
-}
-
-void Labels::dump_labels(utils::LogProxy &log) const {
-    log << "active labels:" << endl;
-    for (size_t label_no = 0; label_no < labels.size(); ++label_no) {
-        if (labels[label_no]) {
-            log << "label " << label_no
-                << ", cost " << labels[label_no]->get_cost()
-                << endl;
+void Labels::dump_labels() const {
+    utils::g_log << "active labels:" << endl;
+    for (size_t label = 0; label < label_costs.size(); ++label) {
+        if (label_costs[label] != -1) {
+            utils::g_log << "label " << label
+                         << ", cost " << label_costs[label]
+                         << endl;
         }
     }
 }

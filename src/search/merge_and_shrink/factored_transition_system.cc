@@ -97,8 +97,7 @@ bool FactoredTransitionSystem::is_component_valid(int index) const {
     if (compute_goal_distances && !distances[index]->are_goal_distances_computed()) {
         return false;
     }
-    return transition_systems[index]->are_transitions_sorted_unique() &&
-           transition_systems[index]->in_sync_with_label_equivalence_relation();
+    return transition_systems[index]->is_valid();
 }
 
 void FactoredTransitionSystem::assert_all_components_valid() const {
@@ -113,9 +112,10 @@ void FactoredTransitionSystem::apply_label_mapping(
     const vector<pair<int, vector<int>>> &label_mapping,
     int combinable_index) {
     assert_all_components_valid();
-    for (const auto &new_label_old_labels : label_mapping) {
-        assert(new_label_old_labels.first == labels->get_size());
-        labels->reduce_labels(new_label_old_labels.second);
+    for (const auto &entry : label_mapping) {
+        assert(entry.first == labels->get_num_total_labels());
+        const vector<int> &old_labels = entry.second;
+        labels->reduce_labels(old_labels);
     }
     for (size_t i = 0; i < transition_systems.size(); ++i) {
         if (transition_systems[i]) {

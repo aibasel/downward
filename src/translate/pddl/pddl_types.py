@@ -33,7 +33,7 @@ class Type:
 
 
 class TypedObject:
-    def __init__(self, name, type_name):
+    def __init__(self, name: str, type_name: str) -> None:
         self.name = name
         self.type_name = type_name
 
