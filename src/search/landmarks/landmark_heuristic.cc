@@ -14,7 +14,7 @@ using namespace std;
 namespace landmarks {
 static bool landmark_is_interesting(
     const State &state, const BitsetView &reached,
-    landmarks::LandmarkNode &lm_node, bool all_lms_reached) {
+    const landmarks::LandmarkNode &lm_node, bool all_lms_reached) {
     /*
       We consider a landmark interesting in two (exclusive) cases:
       (1) If all landmarks are reached and the landmark must hold in the goal
