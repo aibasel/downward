@@ -32,8 +32,10 @@ static bool are_dead_ends_reliable(
 
 LandmarkSumHeuristic::LandmarkSumHeuristic(const plugins::Options &opts)
     : LandmarkHeuristic(opts),
-      dead_ends_reliable(are_dead_ends_reliable(
-          opts.get<shared_ptr<LandmarkFactory>>("lm_factory"), task_proxy)) {
+      dead_ends_reliable(
+          are_dead_ends_reliable(
+              opts.get<shared_ptr<LandmarkFactory>>("lm_factory"),
+              task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark sum heuristic..." << endl;
     }
