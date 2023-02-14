@@ -1,7 +1,6 @@
 #include "label_reduction.h"
 
 #include "factored_transition_system.h"
-#include "label_equivalence_relation.h"
 #include "labels.h"
 #include "transition_system.h"
 #include "types.h"
@@ -59,41 +58,35 @@ void LabelReduction::initialize(const TaskProxy &task_proxy) {
 }
 
 void LabelReduction::compute_label_mapping(
-    const equivalence_relation::EquivalenceRelation *relation,
+    const equivalence_relation::EquivalenceRelation &relation,
     const FactoredTransitionSystem &fts,
     vector<pair<int, vector<int>>> &label_mapping,
     utils::LogProxy &log) const {
     const Labels &labels = fts.get_labels();
-    int next_new_label_no = labels.get_size();
+    int next_new_label = labels.get_num_total_labels();
     int num_labels = 0;
     int num_labels_after_reduction = 0;
-    for (auto group_it = relation->begin();
-         group_it != relation->end(); ++group_it) {
-        const equivalence_relation::Block &block = *group_it;
-        unordered_map<int, vector<int>> equivalent_label_nos;
-        for (auto label_it = block.begin();
-             label_it != block.end(); ++label_it) {
-            assert(*label_it < next_new_label_no);
-            int label_no = *label_it;
-            if (labels.is_current_label(label_no)) {
-                // only consider non-reduced labels
-                int cost = labels.get_label_cost(label_no);
-                equivalent_label_nos[cost].push_back(label_no);
-                ++num_labels;
-            }
+    for (const equivalence_relation::Block &block : relation) {
+        unordered_map<int, vector<int>> cost_to_equivalent_labels;
+        for (int label : block) {
+            assert(label < next_new_label);
+            int cost = labels.get_label_cost(label);
+            cost_to_equivalent_labels[cost].push_back(label);
+            ++num_labels;
         }
-        for (auto it = equivalent_label_nos.begin();
-             it != equivalent_label_nos.end(); ++it) {
-            const vector<int> &label_nos = it->second;
-            if (label_nos.size() > 1) {
+        for (auto &entry : cost_to_equivalent_labels) {
+            vector<int> &equivalent_labels = entry.second;
+            if (equivalent_labels.size() > 1) {
+                // Labels have to be sorted for LocalLabelInfo.
+                sort(equivalent_labels.begin(), equivalent_labels.end());
                 if (log.is_at_least_debug()) {
-                    log << "Reducing labels " << label_nos << " to "
-                        << next_new_label_no << endl;
+                    log << "Reducing labels "
+                        << equivalent_labels << " to " << next_new_label << endl;
                 }
-                label_mapping.push_back(make_pair(next_new_label_no, label_nos));
-                ++next_new_label_no;
+                label_mapping.push_back(make_pair(next_new_label, equivalent_labels));
+                ++next_new_label;
             }
-            if (!label_nos.empty()) {
+            if (!equivalent_labels.empty()) {
                 ++num_labels_after_reduction;
             }
         }
@@ -108,7 +101,7 @@ void LabelReduction::compute_label_mapping(
 }
 
 equivalence_relation::EquivalenceRelation
-*LabelReduction::compute_combinable_equivalence_relation(
+LabelReduction::compute_combinable_equivalence_relation(
     int ts_index,
     const FactoredTransitionSystem &fts) const {
     /*
@@ -119,24 +112,19 @@ equivalence_relation::EquivalenceRelation
 
     // Create the equivalence relation where all labels are equivalent.
     const Labels &labels = fts.get_labels();
-    int num_labels = labels.get_size();
-    vector<pair<int, int>> annotated_labels;
-    annotated_labels.reserve(num_labels);
-    for (int label_no = 0; label_no < num_labels; ++label_no) {
-        if (labels.is_current_label(label_no)) {
-            annotated_labels.push_back(make_pair(0, label_no));
-        }
+    int num_labels = labels.get_num_active_labels();
+    vector<int> all_active_labels;
+    all_active_labels.reserve(num_labels);
+    for (int label : labels) {
+        all_active_labels.push_back(label);
     }
-    equivalence_relation::EquivalenceRelation *relation =
-        equivalence_relation::EquivalenceRelation::from_annotated_elements<int>(
-            num_labels, annotated_labels);
+    equivalence_relation::EquivalenceRelation relation(all_active_labels);
 
     for (int index : fts) {
         if (index != ts_index) {
             const TransitionSystem &ts = fts.get_transition_system(index);
-            for (GroupAndTransitions gat : ts) {
-                const LabelGroup &label_group = gat.label_group;
-                relation->refine(label_group.begin(), label_group.end());
+            for (const LocalLabelInfo &local_label_info : ts) {
+                relation.refine(local_label_info.get_label_group());
             }
         }
     }
@@ -164,7 +152,7 @@ bool LabelReduction::reduce(
         assert(fts.is_active(next_merge.second));
 
         bool reduced = false;
-        equivalence_relation::EquivalenceRelation *relation =
+        equivalence_relation::EquivalenceRelation relation =
             compute_combinable_equivalence_relation(next_merge.first, fts);
         vector<pair<int, vector<int>>> label_mapping;
         compute_label_mapping(relation, fts, label_mapping, log);
@@ -172,8 +160,6 @@ bool LabelReduction::reduce(
             fts.apply_label_mapping(label_mapping, next_merge.first);
             reduced = true;
         }
-        delete relation;
-        relation = nullptr;
         utils::release_vector_memory(label_mapping);
 
         relation = compute_combinable_equivalence_relation(
@@ -184,7 +170,6 @@ bool LabelReduction::reduce(
             fts.apply_label_mapping(label_mapping, next_merge.second);
             reduced = true;
         }
-        delete relation;
         return reduced;
     }
 
@@ -225,10 +210,9 @@ bool LabelReduction::reduce(
 
         vector<pair<int, vector<int>>> label_mapping;
         if (fts.is_active(ts_index)) {
-            equivalence_relation::EquivalenceRelation *relation =
+            equivalence_relation::EquivalenceRelation relation =
                 compute_combinable_equivalence_relation(ts_index, fts);
             compute_label_mapping(relation, fts, label_mapping, log);
-            delete relation;
         }
 
         if (label_mapping.empty()) {

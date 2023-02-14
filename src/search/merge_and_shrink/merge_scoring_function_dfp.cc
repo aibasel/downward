@@ -2,7 +2,6 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
-#include "label_equivalence_relation.h"
 #include "labels.h"
 #include "transition_system.h"
 
@@ -19,13 +18,13 @@ vector<int> MergeScoringFunctionDFP::compute_label_ranks(
     const TransitionSystem &ts = fts.get_transition_system(index);
     const Distances &distances = fts.get_distances(index);
     assert(distances.are_goal_distances_computed());
-    int num_labels = fts.get_labels().get_size();
+    int num_labels = fts.get_labels().get_num_total_labels();
     // Irrelevant (and inactive, i.e. reduced) labels have a dummy rank of -1
     vector<int> label_ranks(num_labels, -1);
 
-    for (GroupAndTransitions gat : ts) {
-        const LabelGroup &label_group = gat.label_group;
-        const vector<Transition> &transitions = gat.transitions;
+    for (const LocalLabelInfo &local_label_info : ts) {
+        const LabelGroup &label_group = local_label_info.get_label_group();
+        const vector<Transition> &transitions = local_label_info.get_transitions();
         // Relevant labels with no transitions have a rank of infinity.
         int label_rank = INF;
         bool group_relevant = false;
@@ -51,8 +50,8 @@ vector<int> MergeScoringFunctionDFP::compute_label_ranks(
                                  distances.get_goal_distance(transition.target));
             }
         }
-        for (int label_no : label_group) {
-            label_ranks[label_no] = label_rank;
+        for (int label : label_group) {
+            label_ranks[label] = label_rank;
         }
     }
 
