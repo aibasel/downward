@@ -712,7 +712,6 @@ fast_downward_plugin(
         landmarks/landmark
         landmarks/landmark_cost_assignment
         landmarks/landmark_cost_partitioning_heuristic
-        landmarks/landmark_sum_heuristic
         landmarks/landmark_factory
         landmarks/landmark_factory_h_m
         landmarks/landmark_factory_reasonable_orders_hps
@@ -724,6 +723,7 @@ fast_downward_plugin(
         landmarks/landmark_graph
         landmarks/landmark_heuristic
         landmarks/landmark_status_manager
+        landmarks/landmark_sum_heuristic
         landmarks/util
     DEPENDS LP_SOLVER PRIORITY_QUEUES SUCCESSOR_GENERATOR TASK_PROPERTIES
 )
