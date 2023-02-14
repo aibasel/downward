@@ -1,4 +1,12 @@
+from typing import Iterable, List, Union
+
 from . import conditions
+from .f_expression import Increase
+from .conditions import Condition, Literal
+from .pddl_types import TypedObject
+
+AnyEffect = Union["ConditionalEffect", "ConjunctiveEffect", "UniversalEffect",
+                  "SimpleEffect", "CostEffect"]
 
 def cartesian_product(*sequences):
     # TODO: Also exists in tools.py outside the pddl package (defined slightly
@@ -12,7 +20,8 @@ def cartesian_product(*sequences):
 
 
 class Effect:
-    def __init__(self, parameters, condition, literal):
+    def __init__(self, parameters: List[TypedObject], condition: Condition,
+                 literal: Literal) -> None:
         self.parameters = parameters
         self.condition = condition
         self.literal = literal
@@ -73,7 +82,7 @@ class Effect:
 
 
 class ConditionalEffect:
-    def __init__(self, condition, effect):
+    def __init__(self, condition: Condition, effect: AnyEffect) -> None:
         if isinstance(effect, ConditionalEffect):
             self.condition = conditions.Conjunction([condition, effect.condition])
             self.effect = effect.effect
@@ -103,7 +112,7 @@ class ConditionalEffect:
         return None, self
 
 class UniversalEffect:
-    def __init__(self, parameters, effect):
+    def __init__(self, parameters: List[TypedObject], effect: AnyEffect):
         if isinstance(effect, UniversalEffect):
             self.parameters = parameters + effect.parameters
             self.effect = effect.effect
@@ -128,7 +137,7 @@ class UniversalEffect:
         return None, self
 
 class ConjunctiveEffect:
-    def __init__(self, effects):
+    def __init__(self, effects: List[AnyEffect]) -> None:
         flattened_effects = []
         for effect in effects:
             if isinstance(effect, ConjunctiveEffect):
@@ -156,7 +165,7 @@ class ConjunctiveEffect:
         return cost_effect, ConjunctiveEffect(new_effects)
 
 class SimpleEffect:
-    def __init__(self, effect):
+    def __init__(self, effect: Literal) -> None:
         self.effect = effect
     def dump(self, indent="  "):
         print("%s%s" % (indent, self.effect))
@@ -166,7 +175,7 @@ class SimpleEffect:
         return None, self
 
 class CostEffect:
-    def __init__(self, effect):
+    def __init__(self, effect: Increase) -> None:
         self.effect = effect
     def dump(self, indent="  "):
         print("%s%s" % (indent, self.effect))

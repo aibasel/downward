@@ -16,6 +16,16 @@
 #pragma GCC diagnostic ignored "-Wmisleading-indentation"
 #endif
 #endif
+
+/*
+   OSI uses the keyword 'register' which was deprecated for a while and removed
+   in C++ 17. Most compilers ignore it but clang 14 complains if it is still used.
+*/
+#ifdef __clang__
+#pragma clang diagnostic ignored "-Wkeyword-macro"
+#endif
+#define register
+
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wconstant-conversion"
 #endif

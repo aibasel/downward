@@ -2,6 +2,7 @@ import invariant_finder
 import options
 import pddl
 import timers
+from typing import Dict, List, Set, Tuple
 
 
 DEBUG = False
@@ -13,7 +14,8 @@ def expand_group(group, task, reachable_facts):
         try:
             pos = list(fact.args).index("?X")
         except ValueError:
-            result.append(fact)
+            if fact in reachable_facts:
+                result.append(fact)
         else:
             # NOTE: This could be optimized by only trying objects of the correct
             #       type, or by using a unifier which directly generates the
@@ -104,7 +106,15 @@ def collect_all_mutex_groups(groups, atoms):
 def sort_groups(groups):
     return sorted(sorted(group) for group in groups)
 
-def compute_groups(task, atoms, reachable_action_params):
+def compute_groups(task: pddl.Task, atoms: Set[pddl.Literal],
+    reachable_action_params: Dict[pddl.Action, List[str]]) -> Tuple[
+        List[List[pddl.Atom]], # groups
+        # -> all selected mutex groups plus singleton groups for uncovered facts
+        List[List[pddl.Atom]], # mutex_groups
+        # -> all found mutex groups plus singleton groups for uncovered facts
+        List[List[str]], # translation_key
+        # -> string representations of group atoms (plus one for "other value")
+        ]:
     groups = invariant_finder.get_groups(task, reachable_action_params)
 
     with timers.timing("Instantiating groups"):
