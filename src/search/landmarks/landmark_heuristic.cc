@@ -186,7 +186,7 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
     feature.add_option<bool>(
         "pref",
         "identify preferred operators (see OptionCaveats#"
-        "Using_preferred_operators_with_the_lmcount_heuristic)",
+        "Using_preferred_operators_with_landmark_heuristics)",
         "false");
     Heuristic::add_options_to_feature(feature);
 
