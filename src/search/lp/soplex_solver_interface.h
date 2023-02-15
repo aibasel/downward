@@ -1,7 +1,7 @@
 #ifndef LP_SOPLEX_SOLVER_INTERFACE_H
 #define LP_SOPLEX_SOLVER_INTERFACE_H
 
-//#ifdef HAS_SOPLEX
+#ifdef HAS_SOPLEX
 
 #include "solver_interface.h"
 
@@ -50,10 +50,10 @@ public:
 
     virtual int get_num_variables() const override;
     virtual int get_num_constraints() const override;
-    virtual int has_temporary_constraints() const override;
+    virtual bool has_temporary_constraints() const override;
     virtual void print_statistics() const override;
 };
 }
 
-//#endif
+#endif
 #endif

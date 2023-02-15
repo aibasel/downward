@@ -1,4 +1,5 @@
 #include "soplex_solver_interface.h"
+#ifdef HAS_SOPLEX
 
 namespace lp {
 void SoPlexSolverInterface::load_problem(const LinearProgram &/*lp*/) {}
@@ -29,6 +30,8 @@ std::vector<double> SoPlexSolverInterface::extract_solution() const {return std:
 
 int SoPlexSolverInterface::get_num_variables() const {return 0;}
 int SoPlexSolverInterface::get_num_constraints() const {return 0;}
-int SoPlexSolverInterface::has_temporary_constraints() const {return 0;}
+bool SoPlexSolverInterface::has_temporary_constraints() const {return false;}
 void SoPlexSolverInterface::print_statistics() const {}
 }
+
+#endif
