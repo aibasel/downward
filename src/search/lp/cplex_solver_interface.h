@@ -8,8 +8,7 @@
 #include "../algorithms/named_vector.h"
 #include "../utils/memory.h"
 
-//TODO: #include <ilcplex/cplex.h>
-#include "cplex.h"
+#include <cplex.h>
 
 namespace lp {
 class CplexSolverInterface : public SolverInterface {
@@ -17,6 +16,24 @@ class CplexSolverInterface : public SolverInterface {
     CPXLPptr problem;
     bool is_mip;
     int num_permanent_constraints;
+
+    /*
+      Our public interface allows using constraints of the form
+        LB <= expression <= UB
+      In cases where LB > UB, this constraint is trivially unsatisfiable.
+      CPLEX does not represent constraints like this and instead uses range
+      values, where the constraint is represented like this
+        expression - RNG = LB
+      where RNG is a variable restricted to take values from 0 to (UB - LB).
+      If LB > UB, the semantic instead is that RNG takes negative values between
+      (UB - LB) and 0. This means that in CPLEX, the constraint never is
+      trivially unsolvable. We still set the range value and the right-hand side
+      as described above but use negative range values to represent trivially
+      unsatisfiable constraints. The following two counters track how many such
+      cosntraints we have in the permanent and the temporary constraints.
+    */
+    int num_unsatisfiable_constraints;
+    int num_unsatisfiable_temp_constraints;
 
     /*
       Temporary data for assigning a new problem. We keep the vectors
@@ -36,8 +53,11 @@ class CplexSolverInterface : public SolverInterface {
     void clear_temporary_data();
 
     void add_variables(const named_vector::NamedVector<LPVariable> &variables);
-    void add_constraints(const named_vector::NamedVector<LPConstraint> &constraints);
+    void add_constraints(const named_vector::NamedVector<LPConstraint> &constraints, bool temporary);
     std::pair<double, double> get_constraint_bounds(int index);
+    bool is_trivially_unsolvable() const;
+    void change_constraint_bounds(int index, double current_lb, double current_ub,
+                                  double lb, double ub);
 public:
     CplexSolverInterface();
     virtual ~CplexSolverInterface() override;
@@ -63,7 +83,7 @@ public:
     virtual std::vector<double> extract_solution() const override;
     virtual int get_num_variables() const override;
     virtual int get_num_constraints() const override;
-    virtual int has_temporary_constraints() const override;
+    virtual bool has_temporary_constraints() const override;
     virtual void print_statistics() const override;
 };
 }

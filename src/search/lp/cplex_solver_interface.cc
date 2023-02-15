@@ -56,18 +56,15 @@ static tuple<char, double, double> bounds_to_sense_rhs_range(double lb, double u
         return {'G', lb, 0};
     } else if (lb == ub) {
         return {'E', lb, 0};
-    } else if (lb < ub) {
-        return {'R', lb, ub - lb};
     } else {
-        cerr << "Tried to add an unsatisfiable constraint with lower bound "
-             << lb << " and upper bound " << ub << "." << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        return {'R', lb, ub - lb};
     }
-
 }
 
 CplexSolverInterface::CplexSolverInterface()
-    : problem(nullptr) {
+    : env(nullptr), problem(nullptr), is_mip(false),
+      num_permanent_constraints(0), num_unsatisfiable_constraints(0),
+      num_unsatisfiable_temp_constraints(0) {
     int status = 0;
     env = CPXopenCPLEX(&status);
     if (status) {
@@ -140,13 +137,20 @@ void CplexSolverInterface::add_variables(const named_vector::NamedVector<LPVaria
     clear_temporary_data();
 }
 
-void CplexSolverInterface::add_constraints(const named_vector::NamedVector<LPConstraint> &constraints) {
+void CplexSolverInterface::add_constraints(const named_vector::NamedVector<LPConstraint> &constraints, bool temporary) {
     clear_temporary_data();
     int constraint_id = get_num_constraints();
     for (const LPConstraint &constraint : constraints) {
         double lb = constraint.get_lower_bound();
         double ub = constraint.get_upper_bound();
         const auto &[sense, rhs, range] = bounds_to_sense_rhs_range(lb, ub);
+        if (lb > ub) {
+            if (temporary) {
+                ++num_unsatisfiable_temp_constraints;
+            } else {
+                ++num_unsatisfiable_constraints;
+            }
+        }
         row_sense.push_back(sense);
         row_rhs.push_back(rhs);
         if (sense == 'R') {
@@ -207,9 +211,9 @@ pair<double, double> CplexSolverInterface::get_constraint_bounds(int index) {
     CPX_CALL(CPXgetrhs, env, problem, &rhs, index, index);
     switch (sense) {
     case 'L':
-        return {rhs, CPX_INFBOUND};
-    case 'G':
         return {-CPX_INFBOUND, rhs};
+    case 'G':
+        return {rhs, CPX_INFBOUND};
     case 'E':
         return {rhs, rhs};
     case 'R':
@@ -225,6 +229,33 @@ pair<double, double> CplexSolverInterface::get_constraint_bounds(int index) {
     }
 }
 
+bool CplexSolverInterface::is_trivially_unsolvable() const {
+    return num_unsatisfiable_constraints + num_unsatisfiable_temp_constraints > 0;
+}
+
+void CplexSolverInterface::change_constraint_bounds(int index,
+    double current_lb, double current_ub, double lb, double ub) {
+    const auto &[sense, rhs, range] = bounds_to_sense_rhs_range(lb, ub);
+
+    CPX_CALL(CPXchgsense, env, problem, 1, &index, &sense);
+    CPX_CALL(CPXchgrhs, env, problem, 1, &index, &rhs);
+    CPX_CALL(CPXchgrngval, env, problem, 1, &index, &range);
+
+    if (current_lb > current_ub && lb <= ub) {
+        if (index < num_permanent_constraints) {
+            --num_unsatisfiable_constraints;
+        } else {
+            --num_unsatisfiable_temp_constraints;
+        }
+    } else if (current_lb <= current_ub && lb > ub) {
+        if (index < num_permanent_constraints) {
+            ++num_unsatisfiable_constraints;
+        } else {
+            ++num_unsatisfiable_temp_constraints;
+        }
+    }
+}
+
 void CplexSolverInterface::load_problem(const LinearProgram &lp) {
     cout << "loading problem" << endl;
     if (problem) {
@@ -235,11 +266,16 @@ void CplexSolverInterface::load_problem(const LinearProgram &lp) {
 
     problem = createProblem(env, "");
     add_variables(variables);
-    add_constraints(constraints);
+    add_constraints(constraints, false);
     num_permanent_constraints = constraints.size();
     is_mip = any_of(variables.begin(), variables.end(), [](const LPVariable &var) {
         return var.is_integer;
     });
+    if (is_mip) {
+        CPX_CALL(CPXchgprobtype, env, problem, CPXPROB_MILP);
+    } else {
+        CPX_CALL(CPXchgprobtype, env, problem, CPXPROB_LP);
+    }
 
     // Set objective sense.
     if (lp.get_sense() == LPObjectiveSense::MINIMIZE) {
@@ -259,14 +295,15 @@ void CplexSolverInterface::load_problem(const LinearProgram &lp) {
 
 void CplexSolverInterface::add_temporary_constraints(
     const named_vector::NamedVector<LPConstraint> &constraints) {
-    add_constraints(constraints);
+    add_constraints(constraints, true);
 }
 
 void CplexSolverInterface::clear_temporary_constraints() {
     int start = num_permanent_constraints;
     int end = get_num_constraints() - 1;
     if (start < end) {
-        CPX_CALL(CPXdelcols, env, problem, start, end);
+        CPX_CALL(CPXdelrows, env, problem, start, end);
+        num_unsatisfiable_temp_constraints = 0;
     }
 }
 
@@ -287,19 +324,13 @@ void CplexSolverInterface::set_objective_coefficient(int index, double coefficie
 }
 
 void CplexSolverInterface::set_constraint_lower_bound(int index, double bound) {
-    double current_ub = get_constraint_bounds(index).second;
-    const auto &[sense, rhs, range] = bounds_to_sense_rhs_range(bound, current_ub);
-    CPX_CALL(CPXchgsense, env, problem, 1, &index, &sense);
-    CPX_CALL(CPXchgrhs, env, problem, 1, &index, &rhs);
-    CPX_CALL(CPXchgrngval, env, problem, 1, &index, &range);
+    const auto &[current_lb, current_ub] = get_constraint_bounds(index);
+    change_constraint_bounds(index, current_lb, current_ub, bound, current_ub);
 }
 
 void CplexSolverInterface::set_constraint_upper_bound(int index, double bound) {
-    double current_lb = get_constraint_bounds(index).first;
-    const auto &[sense, rhs, range] = bounds_to_sense_rhs_range(current_lb, bound);
-    CPX_CALL(CPXchgsense, env, problem, 1, &index, &sense);
-    CPX_CALL(CPXchgrhs, env, problem, 1, &index, &rhs);
-    CPX_CALL(CPXchgrngval, env, problem, 1, &index, &range);
+    const auto &[current_lb, current_ub] = get_constraint_bounds(index);
+    change_constraint_bounds(index, current_lb, current_ub, current_lb, bound);
 }
 
 void CplexSolverInterface::set_variable_lower_bound(int index, double bound) {
@@ -317,7 +348,9 @@ void CplexSolverInterface::set_mip_gap(double gap) {
 }
 
 void CplexSolverInterface::solve() {
-    if (is_mip) {
+    if (is_trivially_unsolvable()) {
+        return;
+    } else if (is_mip) {
         CPX_CALL(CPXmipopt, env, problem);
     } else {
         CPX_CALL(CPXdualopt, env, problem);
@@ -325,13 +358,23 @@ void CplexSolverInterface::solve() {
 }
 
 void CplexSolverInterface::write_lp(const string &filename) const {
+    if (is_trivially_unsolvable()) {
+        cerr << "The LP has trivially unsatisfiable constraints that are not "
+             << "accurately represented in CPLEX. Writing it to a file would "
+             << "misrepresent the LP." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
     // By not passing in a filetype, we let CPLEX infer it from the filename.
     static const char *filetype = nullptr;
     CPX_CALL(CPXwriteprob, env, problem, filename.c_str(), filetype);
 }
 
 void CplexSolverInterface::print_failure_analysis() const {
-    assert(has_optimal_solution());
+    if (is_trivially_unsolvable()) {
+        cout << "LP/MIP is infeasible because of a trivially unsatisfiable "
+                "constraint" << endl;
+        return;
+    }
     int status = CPXgetstat(env, problem);
     switch (status) {
         case CPX_STAT_OPTIMAL:
@@ -351,18 +394,25 @@ void CplexSolverInterface::print_failure_analysis() const {
 }
 
 bool CplexSolverInterface::is_infeasible() const {
-    assert(has_optimal_solution());
+    if (is_trivially_unsolvable()) {
+        return true;
+    }
     int status = CPXgetstat(env, problem);
     return status == CPX_STAT_INFEASIBLE || status == CPXMIP_INFEASIBLE;
 }
 
 bool CplexSolverInterface::is_unbounded() const {
-    assert(has_optimal_solution());
+    if (is_trivially_unsolvable()) {
+        return false;
+    }
     int status = CPXgetstat(env, problem);
     return status == CPX_STAT_UNBOUNDED;
 }
 
 bool CplexSolverInterface::has_optimal_solution() const {
+    if (is_trivially_unsolvable()) {
+        return false;
+    }
     int status = CPXgetstat(env, problem);
     switch (status) {
         case CPX_STAT_OPTIMAL:
@@ -401,7 +451,7 @@ int CplexSolverInterface::get_num_constraints() const {
     return CPXgetnumrows(env, problem);
 }
 
-int CplexSolverInterface::has_temporary_constraints() const {
+bool CplexSolverInterface::has_temporary_constraints() const {
     return num_permanent_constraints < get_num_constraints();
 }
 

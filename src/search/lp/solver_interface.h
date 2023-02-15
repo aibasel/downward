@@ -63,7 +63,7 @@ public:
 
     virtual int get_num_variables() const = 0;
     virtual int get_num_constraints() const = 0;
-    virtual int has_temporary_constraints() const = 0;
+    virtual bool has_temporary_constraints() const = 0;
     virtual void print_statistics() const = 0;
 };
 }
