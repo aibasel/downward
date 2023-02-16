@@ -139,7 +139,7 @@ public:
             "We allow computing preferred operators for this heuristic because "
             "it could be used for satisficing planning where preferred "
             "operators might improve performance (not tested). See "
-            "Evaluator#Landmark-count_heuristic for more information on how "
+            "Evaluator#Landmark_sum_heuristic for more information on how "
             "our implementation of preferred operators differs from the "
             "description in the literature.");
 
