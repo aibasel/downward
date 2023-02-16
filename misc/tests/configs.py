@@ -12,7 +12,7 @@ def configs_optimal_core():
             "astar(ipdb())"],
         "bjolp": [
             "--evaluator",
-            "lmc=lmcount(lm_merged([lm_rhw(),lm_hm(m=1)]),admissible=true)",
+            "lmc=landmark_cost_partitioning(lm_merged([lm_rhw(),lm_hm(m=1)]))",
             "--search",
             "astar(lmc,lazy_evaluator=lmc)"],
         "astar_lmcut": [
@@ -94,13 +94,13 @@ def configs_satisficing_core():
         # LAMA first
         "lama-first": [
             "--search",
-            "let(hlm,lmcount(lm_factory=lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one),pref=false),"
+            "let(hlm,landmark_sum(lm_factory=lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one),pref=false),"
             "let(hff,ff(transform=adapt_costs(one)),"
             "lazy_greedy([hff,hlm],preferred=[hff,hlm],"
             "cost_type=one,reopen_closed=false)))"],
         "lama-first-typed": [
             "--search",
-            "let(hlm,lmcount(lm_factory=lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one),pref=false),"
+            "let(hlm,landmark_sum(lm_factory=lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one),pref=false),"
             "let(hff,ff(transform=adapt_costs(one)),"
             "lazy(alt([single(hff), single(hff, pref_only=true),"
             "single(hlm), single(hlm, pref_only=true), type_based([hff, g()])], boost=1000),"
