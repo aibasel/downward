@@ -4,45 +4,79 @@
 #include <memory>
 #include <vector>
 
-namespace utils {
-class LogProxy;
-}
-
 namespace merge_and_shrink {
-class Label {
-    /*
-      This class implements labels as used by merge-and-shrink transition systems.
-      Labels are opaque tokens that have an associated cost.
-    */
-    int cost;
+/*
+  Iterator class for Labels.
+
+  The iterator provides the *index* into label_costs of Labels, which is the
+  ID of the label.
+
+  Implementation note: to avoid keeping a reference to label_costs, this class
+  stores the current position (curr_pos) in addition to the iterator (it) which
+  are always incremented in parallel.
+*/
+class LabelsConstIterator {
+    const std::vector<int>::const_iterator end_it;
+    std::vector<int>::const_iterator it;
+    std::size_t current_pos;
+
+    void advance_to_next_valid_index();
 public:
-    explicit Label(int cost_)
-        : cost(cost_) {
+    LabelsConstIterator(
+        const std::vector<int> &label_costs,
+        std::vector<int>::const_iterator it);
+    LabelsConstIterator &operator++();
+
+    int operator*() const {
+        return static_cast<int>(current_pos);
     }
-    ~Label() {}
-    int get_cost() const {
-        return cost;
+
+    bool operator==(const LabelsConstIterator &rhs) const {
+        return it == rhs.it;
+    }
+
+    bool operator!=(const LabelsConstIterator &rhs) const {
+        return it != rhs.it;
     }
 };
 
 /*
-  This class serves both as a container class to handle the set of all labels
-  and to perform label reduction on this set.
+  This class serves both as a container class to handle the set of all
+  labels and to perform label reduction on this set.
+
+  Labels are identified via integers indexing label_costs, which stores their
+  costs. When using label reductions, labels that become inactive are set to
+  -1 in label_costs.
 */
 class Labels {
-    std::vector<std::unique_ptr<Label>> labels;
-    int max_size; // the maximum number of labels that can be created
+    std::vector<int> label_costs;
+    int max_num_labels; // The maximum number of labels that can be created.
+    int num_active_labels; // The current number of active (non-reduced) labels.
 public:
-    explicit Labels(std::vector<std::unique_ptr<Label>> &&labels);
-    void reduce_labels(const std::vector<int> &old_label_nos);
-    bool is_current_label(int label_no) const;
-    int get_label_cost(int label_no) const;
-    void dump_labels(utils::LogProxy &log) const;
-    int get_size() const {
-        return labels.size();
+    Labels(std::vector<int> &&label_costs, int max_num_labels);
+    void reduce_labels(const std::vector<int> &old_labels);
+    int get_label_cost(int label) const;
+    void dump_labels() const;
+
+    // The summed number of both inactive and active labels.
+    int get_num_total_labels() const {
+        return label_costs.size();
     }
-    int get_max_size() const {
-        return max_size;
+
+    int get_max_num_labels() const {
+        return max_num_labels;
+    }
+
+    int get_num_active_labels() const {
+        return num_active_labels;
+    }
+
+    LabelsConstIterator begin() const {
+        return LabelsConstIterator(label_costs, label_costs.begin());
+    }
+
+    LabelsConstIterator end() const {
+        return LabelsConstIterator(label_costs, label_costs.end());
     }
 };
 }

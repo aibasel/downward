@@ -1,6 +1,7 @@
 #include "pattern_collection_information.h"
 
 #include "pattern_database.h"
+#include "pattern_database_factory.h"
 #include "pattern_cliques.h"
 #include "validation.h"
 
@@ -65,7 +66,7 @@ void PatternCollectionInformation::create_pdbs_if_missing() {
         pdbs = make_shared<PDBCollection>();
         for (const Pattern &pattern : *patterns) {
             shared_ptr<PatternDatabase> pdb =
-                make_shared<PatternDatabase>(task_proxy, pattern);
+                compute_pdb(task_proxy, pattern);
             pdbs->push_back(pdb);
         }
         if (log.is_at_least_normal()) {

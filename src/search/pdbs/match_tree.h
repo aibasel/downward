@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+#include "pattern_database.h"
+
 #include "../task_proxy.h"
 
 #include <cstddef>
@@ -13,6 +15,8 @@ class LogProxy;
 }
 
 namespace pdbs {
+class Projection;
+
 /*
   Successor Generator for abstract operators.
 
@@ -23,10 +27,8 @@ namespace pdbs {
 
 class MatchTree {
     TaskProxy task_proxy;
+    Projection projection;
     struct Node;
-    // See PatternDatabase for documentation on pattern and hash_multipliers.
-    Pattern pattern;
-    std::vector<int> hash_multipliers;
     Node *root;
     void insert_recursive(int op_id,
                           const std::vector<FactPair> &regression_preconditions,
@@ -36,10 +38,12 @@ class MatchTree {
         Node *node, int state_index, std::vector<int> &operator_ids) const;
     void dump_recursive(Node *node, utils::LogProxy &log) const;
 public:
-    // Initialize an empty match tree.
+    /*
+      Initialize an empty match tree. We copy projection to ensure that the
+      match tree remains in a valid state independently of projection.
+    */
     MatchTree(const TaskProxy &task_proxy,
-              const Pattern &pattern,
-              const std::vector<int> &hash_multipliers);
+              const Projection &projection);
     ~MatchTree();
     /* Insert an abstract operator into the match tree, creating or
        enlarging it. */

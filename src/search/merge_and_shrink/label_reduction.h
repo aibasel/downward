@@ -66,12 +66,12 @@ class LabelReduction {
     /* Apply the given label equivalence relation to the set of labels and
        compute the resulting label mapping. */
     void compute_label_mapping(
-        const equivalence_relation::EquivalenceRelation *relation,
+        const equivalence_relation::EquivalenceRelation &relation,
         const FactoredTransitionSystem &fts,
         std::vector<std::pair<int, std::vector<int>>> &label_mapping,
         utils::LogProxy &log) const;
     equivalence_relation::EquivalenceRelation
-    *compute_combinable_equivalence_relation(
+    compute_combinable_equivalence_relation(
         int ts_index,
         const FactoredTransitionSystem &fts) const;
 public:

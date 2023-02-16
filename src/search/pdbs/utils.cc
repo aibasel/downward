@@ -44,6 +44,16 @@ int compute_total_pdb_size(
     return size;
 }
 
+bool is_operator_relevant(const Pattern &pattern, const OperatorProxy &op) {
+    for (EffectProxy effect : op.get_effects()) {
+        int var_id = effect.get_fact().get_variable().get_id();
+        if (binary_search(pattern.begin(), pattern.end(), var_id)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 vector<FactPair> get_goals_in_random_order(
     const TaskProxy &task_proxy, utils::RandomNumberGenerator &rng) {
     vector<FactPair> goals = task_properties::get_fact_pairs(task_proxy.get_goals());
