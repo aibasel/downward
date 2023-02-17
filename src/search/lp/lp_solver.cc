@@ -39,7 +39,7 @@ void LPConstraint::insert(int index, double coefficient) {
     coefficients.push_back(coefficient);
 }
 
-ostream &LPConstraint::dump(ostream &stream, const LinearProgram *program) {
+ostream &LPConstraint::dump(ostream &stream, const LinearProgram *program) const {
     double infinity = numeric_limits<double>::infinity();
     if (program) {
         infinity = program->get_infinity();

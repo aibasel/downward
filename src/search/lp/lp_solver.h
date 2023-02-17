@@ -48,7 +48,7 @@ public:
     // Coefficients must be added without duplicate indices.
     void insert(int index, double coefficient);
 
-    std::ostream &dump(std::ostream &stream, const LinearProgram *program = nullptr);
+    std::ostream &dump(std::ostream &stream, const LinearProgram *program = nullptr) const;
 };
 
 struct LPVariable {
