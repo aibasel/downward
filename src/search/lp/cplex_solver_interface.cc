@@ -331,7 +331,7 @@ double CplexSolverInterface::get_infinity() const {
     return CPX_INFBOUND;
 }
 
-void CplexSolverInterface::set_objective_coefficients(const std::vector<double> &coefficients) {
+void CplexSolverInterface::set_objective_coefficients(const vector<double> &coefficients) {
     clear_temporary_constraints();
     indices.resize(coefficients.size());
     iota(indices.begin(), indices.end(), 0);
