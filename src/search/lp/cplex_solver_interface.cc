@@ -46,9 +46,9 @@ static void handle_cplex_error(CPXENVptr env, int error_code) {
 }
 
 /* Make a call to a CPLEX API function checking its return status. */
-template<typename Func, typename... Args>
-static void CPX_CALL(Func cpxfunc, CPXENVptr env, Args&&... args) {
-    int status = cpxfunc(env, forward<Args>(args)...);
+template<typename Func, typename ... Args>
+static void CPX_CALL(Func cpxfunc, CPXENVptr env, Args && ... args) {
+    int status = cpxfunc(env, forward<Args>(args) ...);
     if (status) {
         handle_cplex_error(env, status);
     }
@@ -254,8 +254,8 @@ bool CplexSolverInterface::is_trivially_unsolvable() const {
     return num_unsatisfiable_constraints + num_unsatisfiable_temp_constraints > 0;
 }
 
-void CplexSolverInterface::change_constraint_bounds(int index,
-    double current_lb, double current_ub, double lb, double ub) {
+void CplexSolverInterface::change_constraint_bounds(
+    int index, double current_lb, double current_ub, double lb, double ub) {
     const auto &[sense, rhs, range] = bounds_to_sense_rhs_range(lb, ub);
 
     CPX_CALL(CPXchgsense, env, problem, 1, &index, &sense);
@@ -289,8 +289,8 @@ void CplexSolverInterface::load_problem(const LinearProgram &lp) {
     add_constraints(constraints, false);
     num_permanent_constraints = constraints.size();
     is_mip = any_of(variables.begin(), variables.end(), [](const LPVariable &var) {
-        return var.is_integer;
-    });
+                        return var.is_integer;
+                    });
     if (is_mip) {
         CPX_CALL(CPXchgprobtype, env, problem, CPXPROB_MILP);
     } else {
@@ -392,36 +392,36 @@ void CplexSolverInterface::write_lp(const string &filename) const {
 void CplexSolverInterface::print_failure_analysis() const {
     if (is_trivially_unsolvable()) {
         cout << "LP/MIP is infeasible because of a trivially unsatisfiable "
-                "constraint" << endl;
+             << "constraint" << endl;
         return;
     }
     int status = CPXgetstat(env, problem);
     switch (status) {
-        case CPX_STAT_OPTIMAL:
-            cout << "LP has an optimal solution." << endl;
-            break;
-        case CPXMIP_OPTIMAL:
-            cout << "MIP has an optimal solution." << endl;
-            break;
-        case CPXMIP_OPTIMAL_TOL:
-            cout << "MIP has an optimal solution within the tolerances of the "
-                 << "absolute/relative MIP gap." << endl;
-            break;
-        case CPX_STAT_OPTIMAL_INFEAS:
-            cout << "LP has an optimal solution, but with infeasibilities after "
-                 << "unscaling." << endl;
-            break;
-        case CPX_STAT_UNBOUNDED:
-            cout << "LP/MIP is unbounded" << endl;
-            break;
-        case CPX_STAT_INFEASIBLE:
-            cout << "LP is infeasible" << endl;
-            break;
-        case CPXMIP_INFEASIBLE:
-            cout << "MIP is infeasible" << endl;
-            break;
-        default:
-            cout << "Unexpected status after solving LP/MIP: " << status << endl;
+    case CPX_STAT_OPTIMAL:
+        cout << "LP has an optimal solution." << endl;
+        break;
+    case CPXMIP_OPTIMAL:
+        cout << "MIP has an optimal solution." << endl;
+        break;
+    case CPXMIP_OPTIMAL_TOL:
+        cout << "MIP has an optimal solution within the tolerances of the "
+             << "absolute/relative MIP gap." << endl;
+        break;
+    case CPX_STAT_OPTIMAL_INFEAS:
+        cout << "LP has an optimal solution, but with infeasibilities after "
+             << "unscaling." << endl;
+        break;
+    case CPX_STAT_UNBOUNDED:
+        cout << "LP/MIP is unbounded" << endl;
+        break;
+    case CPX_STAT_INFEASIBLE:
+        cout << "LP is infeasible" << endl;
+        break;
+    case CPXMIP_INFEASIBLE:
+        cout << "MIP is infeasible" << endl;
+        break;
+    default:
+        cout << "Unexpected status after solving LP/MIP: " << status << endl;
     }
 }
 
@@ -447,32 +447,32 @@ bool CplexSolverInterface::has_optimal_solution() const {
     }
     int status = CPXgetstat(env, problem);
     switch (status) {
-        case CPX_STAT_OPTIMAL:
-        case CPXMIP_OPTIMAL:
-        /*
-          The following status was returned in some cases, for example when
-          computing h^+ for childsnack-opt14-strips/child-snack_pfile03-2.pddl.
-          It means that the solution is optimal within the tolerances defined by
-          the relative or absolute MIP gap.
-          TODO: is it safe to treat this as an optimal solution (OSI did)?
-        */
-        case CPXMIP_OPTIMAL_TOL:
-        /*
-          The following status was returned in some cases, for example when
-          computing diverse potential heuristics for Airport/p29.
-          It means that there is an optimal solution of the LP but there are
-          "infeasibilities after unscaling".
-          TODO: is it safe to treat this as an optimal solution (OSI did)?
-        */
-        case CPX_STAT_OPTIMAL_INFEAS:
-            return true;
-        case CPX_STAT_UNBOUNDED:
-        case CPX_STAT_INFEASIBLE:
-        case CPXMIP_INFEASIBLE:
-            return false;
-        default:
-            cerr << "Unexpected status after solving LP/MIP: " << status << endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    case CPX_STAT_OPTIMAL:
+    case CPXMIP_OPTIMAL:
+    /*
+      The following status was returned in some cases, for example when
+      computing h^+ for childsnack-opt14-strips/child-snack_pfile03-2.pddl.
+      It means that the solution is optimal within the tolerances defined by
+      the relative or absolute MIP gap.
+      TODO: is it safe to treat this as an optimal solution (OSI did)?
+    */
+    case CPXMIP_OPTIMAL_TOL:
+    /*
+      The following status was returned in some cases, for example when
+      computing diverse potential heuristics for Airport/p29.
+      It means that there is an optimal solution of the LP but there are
+      "infeasibilities after unscaling".
+      TODO: is it safe to treat this as an optimal solution (OSI did)?
+    */
+    case CPX_STAT_OPTIMAL_INFEAS:
+        return true;
+    case CPX_STAT_UNBOUNDED:
+    case CPX_STAT_INFEASIBLE:
+    case CPXMIP_INFEASIBLE:
+        return false;
+    default:
+        cerr << "Unexpected status after solving LP/MIP: " << status << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 }
 

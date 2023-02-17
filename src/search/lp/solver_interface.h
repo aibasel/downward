@@ -13,7 +13,7 @@ namespace lp {
 class LinearProgram;
 class LPConstraint;
 
-class SolverInterface  {
+class SolverInterface {
 public:
     virtual ~SolverInterface() = default;
 
