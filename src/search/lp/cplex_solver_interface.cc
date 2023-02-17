@@ -321,7 +321,7 @@ void CplexSolverInterface::add_temporary_constraints(
 void CplexSolverInterface::clear_temporary_constraints() {
     int start = num_permanent_constraints;
     int end = get_num_constraints() - 1;
-    if (start < end) {
+    if (start <= end) {
         CPX_CALL(CPXdelrows, env, problem, start, end);
         num_unsatisfiable_temp_constraints = 0;
     }
