@@ -14,10 +14,31 @@ using namespace std;
 namespace lp {
 NO_RETURN
 static void handle_cplex_error(CPXENVptr env, int error_code) {
+    /*
+      We checked for additional warnings when using the OSI framework, and
+      either ignored them so they would not output anything or treated them a
+      out-of-memory errors. In particular, we treated the following messages as
+      running out of memory.
+
+          "Insufficient memory for presolve."
+          "Not enough memory for devex."
+          "MIP starts not constructed because of out-of-memory status."
+
+      It is unclear which channel these messages are sent trough, and so far we
+      have not seen them in our tests. If they reoccur, we can probably capture
+      them by adding a callback function to the correct message handler.
+      https://www.ibm.com/docs/en/icos/22.1.1?topic=output-controlling-message-channels
+      It could be that these were just warnings that would lead to the error
+      below eventually. In that case there is nothing else we have to do.
+    */
+    if (error_code == CPXERR_NO_MEMORY) {
+        cerr << "Ran out of memory while calling CPLEX." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_OUT_OF_MEMORY);
+    }
     char buffer[CPXMESSAGEBUFSIZE];
     const char *error_string = CPXgeterrorstring(env, error_code, buffer);
     if (error_string) {
-        cerr << "CPLEX error: " << error_string << endl;
+        cerr << error_string << endl;
     } else {
         cerr << "CPLEX error: Unknown error code " << error_code << endl;
     }
@@ -218,7 +239,7 @@ pair<double, double> CplexSolverInterface::get_constraint_bounds(int index) {
         return {rhs, rhs};
     case 'R':
         double range_value;
-        CPX_CALL(CPXgetrhs, env, problem, &range_value, index, index);
+        CPX_CALL(CPXgetrngval, env, problem, &range_value, index, index);
         if (range_value > 0) {
             return {rhs, rhs + range_value};
         } else {
@@ -257,7 +278,6 @@ void CplexSolverInterface::change_constraint_bounds(int index,
 }
 
 void CplexSolverInterface::load_problem(const LinearProgram &lp) {
-    cout << "loading problem" << endl;
     if (problem) {
         freeProblem(env, &problem);
     }
@@ -378,15 +398,27 @@ void CplexSolverInterface::print_failure_analysis() const {
     int status = CPXgetstat(env, problem);
     switch (status) {
         case CPX_STAT_OPTIMAL:
+            cout << "LP has an optimal solution." << endl;
+            break;
         case CPXMIP_OPTIMAL:
-            cout << "LP/MIP has an optimal solution." << endl;
+            cout << "MIP has an optimal solution." << endl;
+            break;
+        case CPXMIP_OPTIMAL_TOL:
+            cout << "MIP has an optimal solution within the tolerances of the "
+                 << "absolute/relative MIP gap." << endl;
+            break;
+        case CPX_STAT_OPTIMAL_INFEAS:
+            cout << "LP has an optimal solution, but with infeasibilities after "
+                 << "unscaling." << endl;
             break;
         case CPX_STAT_UNBOUNDED:
             cout << "LP/MIP is unbounded" << endl;
             break;
         case CPX_STAT_INFEASIBLE:
+            cout << "LP is infeasible" << endl;
+            break;
         case CPXMIP_INFEASIBLE:
-            cout << "LP/MIP is infeasible" << endl;
+            cout << "MIP is infeasible" << endl;
             break;
         default:
             cout << "Unexpected status after solving LP/MIP: " << status << endl;
@@ -417,6 +449,22 @@ bool CplexSolverInterface::has_optimal_solution() const {
     switch (status) {
         case CPX_STAT_OPTIMAL:
         case CPXMIP_OPTIMAL:
+        /*
+          The following status was returned in some cases, for example when
+          computing h^+ for childsnack-opt14-strips/child-snack_pfile03-2.pddl.
+          It means that the solution is optimal within the tolerances defined by
+          the relative or absolute MIP gap.
+          TODO: is it safe to treat this as an optimal solution (OSI did)?
+        */
+        case CPXMIP_OPTIMAL_TOL:
+        /*
+          The following status was returned in some cases, for example when
+          computing diverse potential heuristics for Airport/p29.
+          It means that there is an optimal solution of the LP but there are
+          "infeasibilities after unscaling".
+          TODO: is it safe to treat this as an optimal solution (OSI did)?
+        */
+        case CPX_STAT_OPTIMAL_INFEAS:
             return true;
         case CPX_STAT_UNBOUNDED:
         case CPX_STAT_INFEASIBLE:

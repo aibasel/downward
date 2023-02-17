@@ -30,7 +30,7 @@ class CplexSolverInterface : public SolverInterface {
       trivially unsolvable. We still set the range value and the right-hand side
       as described above but use negative range values to represent trivially
       unsatisfiable constraints. The following two counters track how many such
-      cosntraints we have in the permanent and the temporary constraints.
+      constraints we have in the permanent and the temporary constraints.
     */
     int num_unsatisfiable_constraints;
     int num_unsatisfiable_temp_constraints;
