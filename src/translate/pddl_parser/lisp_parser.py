@@ -1,20 +1,18 @@
-__all__ = ["ParseError", "parse_nested_list"]
+__all__ = ["parse_nested_list"]
 
-class ParseError(Exception):
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return self.value
+from .parse_error import ParseError
 
 # Basic functions for parsing PDDL (Lisp) files.
 def parse_nested_list(input_file):
     tokens = tokenize(input_file)
     next_token = next(tokens)
     if next_token != "(":
-        raise ParseError("Expected '(', got %s." % next_token)
+        raise ParseError("Expected '(', got '%s'." % next_token)
     result = list(parse_list_aux(tokens))
-    for tok in tokens:  # Check that generator is exhausted.
-        raise ParseError("Unexpected token: %s." % tok)
+    remaining_tokens = list(tokens)
+    if remaining_tokens:
+        raise ParseError(f"Tokens remaining after parsing: "
+                         f"{' '.join(remaining_tokens)}")
     return result
 
 def tokenize(input):
