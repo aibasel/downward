@@ -76,7 +76,7 @@ public:
 
     virtual void checkSeverity() {
         /*
-          Note that currentMessage_ should be used here but it doesn't help for clpex:
+          Note that currentMessage_ should be used here but it doesn't help for cplex:
             currentMessage_.severity() is always "I"
             currentMessage_.externalNumber() is always 0
             currentMessage_.detail() is always empty
