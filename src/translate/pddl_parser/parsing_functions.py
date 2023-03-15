@@ -621,7 +621,7 @@ def parse_init(context, alist):
                 atom = pddl.Atom(fact[0], fact[1:])
                 check_atom_consistency(context, atom, initial_true, initial_false)
                 initial_true.add(atom)
-        initial.extend(initial_true)
+    initial.extend(initial_true)
     return initial
 
 
@@ -793,16 +793,15 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
 
         use_metric = False
         for entry in iterator:
-            if not check_named_block(entry, [":metric"]):
-                context.error("Expected ':metric' block", entry)
-            with context.layer("Parsing metric"):
-                if len(entry) != 3 or not isinstance(entry[2], list) or len(entry[2]) != 1 or entry[1] != "minimize" or entry[2][0] != "total-cost":
-                    context.error("Invalid metric definition.", entry, syntax=SYNTAX_METRIC)
-                use_metric = True
+            if isinstance(entry, list) and entry[0] == ":metric":
+                with context.layer("Parsing metric"):
+                    if len(entry) != 3 or not isinstance(entry[2], list) or len(entry[2]) != 1 or entry[1] != "minimize" or entry[2][0] != "total-cost":
+                        context.error("Invalid metric definition.", entry, syntax=SYNTAX_METRIC)
+                    use_metric = True
         yield use_metric
 
         for _ in iterator:
-            context.error("No blocks expected after goal and metric.")
+            assert False, "This line should be unreachable"
 
 
 def check_atom_consistency(context, atom, same_truth_value, other_truth_value, atom_is_true=True):
