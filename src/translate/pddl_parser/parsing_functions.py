@@ -125,7 +125,7 @@ def parse_typed_list(context, alist, only_variables=False,
                     items = alist[:separator_position]
                     _type = alist[separator_position + 1]
                     alist = alist[separator_position + 2:]
-                    if not(isinstance(_type, str) or
+                    if not (isinstance(_type, str) or
                            (_type and _type[0] == "either" and
                             all(isinstance(_sub_type, str) for _sub_type in _type[1:]))):
                         context.error("Type value is expected to be a single word "
@@ -244,7 +244,7 @@ def parse_condition_aux(context, alist, negated, type_dict, predicate_dict):
     elif tag in predicate_dict:
         return parse_literal(context, alist, type_dict, predicate_dict, negated=negated)
     else:
-        context.error(f"Expected logical operator or predicate name", tag)
+        context.error("Expected logical operator or predicate name", tag)
 
     for nb_arg, arg in enumerate(args, start=1):
         if not isinstance(arg, list) or not arg:
@@ -282,7 +282,7 @@ def parse_literal(context, alist, type_dict, predicate_dict, negated=False):
         if alist[0] == "not":
             if len(alist) != 2:
                 context.error(
-                    f"Negated literal definition has to have exactly one block as argument.",
+                    "Negated literal definition has to have exactly one block as argument.",
                     alist, syntax=SYNTAX_LITERAL_NEGATED)
             alist = alist[1]
             if not isinstance(alist, list) or not alist:
@@ -315,7 +315,7 @@ def _get_predicate_id_and_arity(context, text, type_dict, predicate_dict):
     the_predicate = predicate_dict.get(text)
 
     if the_type is None and the_predicate is None:
-        context.error(f"Undeclared predicate", text)
+        context.error("Undeclared predicate", text)
     elif the_predicate is not None:
         if the_type is not None and not SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH:
             msg = ("Warning: name clash between type and predicate %r.\n"
@@ -538,7 +538,7 @@ def parse_action(context, alist, type_dict, predicate_dict):
 def parse_axiom(context, alist, type_dict, predicate_dict):
     with context.layer("Parsing derived predicate"):
         if len(alist) != 3:
-            context.error(f"Expecting block with exactly three elements",
+            context.error("Expecting block with exactly three elements",
                           syntax=SYNTAX_AXIOM)
         assert alist[0] == ":derived"
         if not isinstance(alist[1], list):
@@ -667,7 +667,7 @@ def parse_domain_pddl(context, domain_pddl):
             domain_line = next(iterator)
             if (not check_named_block(domain_line, ["domain"]) or
                     len(domain_line) != 2 or not isinstance(domain_line[1], str)):
-                context.error(f"Invalid definition of domain name.",
+                context.error("Invalid definition of domain name.",
                               syntax=SYNTAX_DOMAIN_DOMAIN_NAME)
             yield domain_line[1]
 
