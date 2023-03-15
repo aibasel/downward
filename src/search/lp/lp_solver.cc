@@ -507,7 +507,6 @@ void LPSolver::print_statistics() const {
 static plugins::TypedEnumPlugin<LPSolverType> _enum_plugin({
         {"clp", "default LP solver shipped with the COIN library"},
         {"cplex", "commercial solver by IBM"},
-        {"gurobi", "commercial solver"},
         {"soplex", "open source solver by ZIB"}
     });
 }

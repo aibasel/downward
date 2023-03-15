@@ -40,10 +40,6 @@
 #include <cplex.h>
 #endif
 
-#ifdef COIN_HAS_GRB
-#include <OsiGrbSolverInterface.hpp>
-#endif
-
 #ifdef COIN_HAS_SPX
 #include <OsiSpxSolverInterface.hpp>
 #include <spxout.h>
@@ -126,13 +122,6 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
         }
 #else
         missing_symbol = "COIN_HAS_CPX";
-#endif
-        break;
-    case LPSolverType::GUROBI:
-#ifdef COIN_HAS_GRB
-        lp_solver = new OsiGrbSolverInterface;
-#else
-        missing_symbol = "COIN_HAS_GRB";
 #endif
         break;
     case LPSolverType::SOPLEX:

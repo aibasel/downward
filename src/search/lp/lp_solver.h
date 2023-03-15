@@ -33,7 +33,7 @@ class Feature;
 
 namespace lp {
 enum class LPSolverType {
-    CLP, CPLEX, GUROBI, SOPLEX
+    CLP, CPLEX, SOPLEX
 };
 
 enum class LPObjectiveSense {
