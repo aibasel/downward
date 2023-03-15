@@ -3,7 +3,6 @@
 # specified as components in the FIND_PACKAGE call.
 # Possible solvers are:
 #
-#  Clp (internal solver of COIN)
 #  Cpx (CPLEX)
 #  Spx (SoPlex)
 #
@@ -18,7 +17,7 @@
 #
 # Example Usages:
 #  find_package(OSI)
-#  find_package(OSI COMPONENTS Clp Cpx)
+#  find_package(OSI COMPONENTS Cpx)
 #
 # The location of OSI can be specified using the environment variable
 # or cmake parameter DOWNWARD_COIN_ROOT. If different installations
@@ -97,16 +96,6 @@ foreach(SOLVER ${OSI_FIND_COMPONENTS})
 endforeach()
 
 # A component is present if its adapter is present and its solver is present.
-
-# Clp component
-if(OSI_Clp_LIBRARIES)
-    find_package(Clp)
-    if (CLP_FOUND)
-        list(APPEND OSI_Clp_LIBRARIES ${CLP_LIBRARIES})
-        list(APPEND OSI_Clp_INCLUDE_DIRS ${CLP_INCLUDE_DIRS})
-        set(OSI_Clp_FOUND TRUE)
-    endif()
-endif()
 
 # Cpx component
 if(OSI_Cpx_LIBRARIES)

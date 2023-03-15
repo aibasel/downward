@@ -57,15 +57,15 @@ option(
   TRUE)
 
 if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
-    find_package(OSI OPTIONAL_COMPONENTS Cpx Clp Spx)
-    if(OSI_FOUND AND (OSI_Cpx_FOUND OR OSI_Clp_FOUND OR OSI_Spx_FOUND))
+    find_package(OSI OPTIONAL_COMPONENTS Cpx Spx)
+    if(OSI_FOUND AND (OSI_Cpx_FOUND OR OSI_Spx_FOUND))
         if(USE_GLIBCXX_DEBUG)
             message(
                 FATAL_ERROR
                 "To prevent incompatibilities, the option USE_GLIBCXX_DEBUG is "
                 "not supported when an LP solver is used. See issue982 for details.")
         endif()
-        foreach(SOLVER Cpx Clp Spx)
+        foreach(SOLVER Cpx Spx)
             if(OSI_${SOLVER}_FOUND)
                 string(TOUPPER ${SOLVER} TMP_SOLVER_UPPER_CASE)
                 mark_as_advanced(TMP_SOLVER_UPPER_CASE)

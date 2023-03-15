@@ -31,10 +31,6 @@
 #endif
 #include <OsiSolverInterface.hpp>
 
-#ifdef COIN_HAS_CLP
-#include <OsiClpSolverInterface.hpp>
-#endif
-
 #ifdef COIN_HAS_CPX
 #include <OsiCpxSolverInterface.hpp>
 #include <cplex.h>
@@ -105,13 +101,6 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
     string missing_symbol;
     OsiSolverInterface *lp_solver = 0;
     switch (solver_type) {
-    case LPSolverType::CLP:
-#ifdef COIN_HAS_CLP
-        lp_solver = new OsiClpSolverInterface;
-#else
-        missing_symbol = "COIN_HAS_CLP";
-#endif
-        break;
     case LPSolverType::CPLEX:
 #ifdef COIN_HAS_CPX
         {
