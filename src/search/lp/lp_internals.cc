@@ -8,13 +8,7 @@
 
 #ifdef __GNUG__
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated"
-#pragma GCC diagnostic ignored "-Woverflow"
-#pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#if __GNUC__ >= 6
-#pragma GCC diagnostic ignored "-Wmisleading-indentation"
-#endif
 #endif
 
 /*
@@ -26,9 +20,6 @@
 #endif
 #define register
 
-#ifdef __clang__
-#pragma GCC diagnostic ignored "-Wconstant-conversion"
-#endif
 #include <OsiSolverInterface.hpp>
 
 #ifdef COIN_HAS_CPX
