@@ -216,8 +216,6 @@ def parse_condition_aux(context, alist, negated, type_dict, predicate_dict):
     if not alist:
         context.error("Expected a non-empty block as condition.")
     tag = alist[0]
-    if not isinstance(tag, str):
-        context.error("Expected logical operator or predicate name", tag)
     if tag in ("and", "or", "not", "imply"):
         args = alist[1:]
         if tag == "imply":
