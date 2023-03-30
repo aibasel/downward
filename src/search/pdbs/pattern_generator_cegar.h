@@ -10,7 +10,7 @@ class RandomNumberGenerator;
 namespace pdbs {
 class PatternGeneratorCEGAR : public PatternGenerator {
     const int max_pdb_size;
-    const int max_time;
+    const double max_time;
     const bool use_wildcard_plans;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
