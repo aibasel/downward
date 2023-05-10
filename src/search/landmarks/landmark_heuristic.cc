@@ -169,7 +169,7 @@ void LandmarkHeuristic::notify_initial_state(const State &initial_state) {
 
 void LandmarkHeuristic::notify_state_transition(
     const State &parent_state, OperatorID op_id, const State &state) {
-    lm_status_manager->process_state_transition(parent_state, op_id, state);
+    lm_status_manager->progress(parent_state, op_id, state);
     if (cache_evaluator_values) {
         /* TODO:  It may be more efficient to check that the reached landmark
             set has actually changed and only then mark the h value as dirty. */

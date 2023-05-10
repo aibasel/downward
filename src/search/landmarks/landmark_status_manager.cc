@@ -28,56 +28,32 @@ void LandmarkStatusManager::process_initial_state(
 }
 
 void LandmarkStatusManager::set_past_landmarks_for_initial_state(
-    const State &initial_state, utils::LogProxy &log) {
+    const State &initial_state, utils::LogProxy &/*log*/) {
     BitsetView past = get_past_landmarks(initial_state);
-    // This is necessary since the default is "true for all" (see comment above).
-    past.reset();
 
-    int inserted = 0;
-    int num_goal_lms = 0;
-    for (auto &lm_node : lm_graph.get_nodes()) {
-        const Landmark &landmark = lm_node->get_landmark();
-        if (landmark.is_true_in_goal) {
-            ++num_goal_lms;
-        }
-
-        if (!lm_node->parents.empty()) {
-            continue;
-        }
-        if (landmark.conjunctive) {
-            bool lm_true = true;
-            for (const FactPair &fact : landmark.facts) {
-                if (initial_state[fact.var].get_value() != fact.value) {
-                    lm_true = false;
-                    break;
-                }
-            }
-            if (lm_true) {
-                past.set(lm_node->get_id());
-                ++inserted;
-            }
-        } else {
-            for (const FactPair &fact : landmark.facts) {
-                if (initial_state[fact.var].get_value() == fact.value) {
-                    past.set(lm_node->get_id());
-                    ++inserted;
-                    break;
-                }
-            }
+    for (auto &node : lm_graph.get_nodes()) {
+        if (!node->get_landmark().is_true_in_state(initial_state)) {
+            past.reset(node->get_id());
         }
     }
-    if (log.is_at_least_normal()) {
-        log << inserted << " initial landmarks, "
-            << num_goal_lms << " goal landmarks" << endl;
-    }
+
+    /*
+      TODO: The old code did some logging in this function. For example, it
+       printed the number of landmarks that hold in the initial state or the
+       goal. I personally don't think this is generally relevant information,
+       but if we want to keep that output, it should be easy to add it again.
+
+       If we decide to get rid of the logs, we can also remove the logger from
+       the function header.
+    */
 }
 
-bool LandmarkStatusManager::process_state_transition(
+void LandmarkStatusManager::progress(
     const State &parent_ancestor_state, OperatorID,
     const State &ancestor_state) {
     if (ancestor_state == parent_ancestor_state) {
         // This can happen, e.g., in Satellite-01.
-        return false;
+        return;
     }
 
     const BitsetView parent_past = get_past_landmarks(parent_ancestor_state);
@@ -87,30 +63,19 @@ bool LandmarkStatusManager::process_state_transition(
     assert(past.size() == num_landmarks);
     assert(parent_past.size() == num_landmarks);
 
-    /*
-       Set all landmarks not past in this parent as future. Over multiple paths,
-       this has the effect of computing the intersection of past for the
-       parents. It is important here that upon first visit, all elements in
-       *past* are true because true is the neutral element of intersection.
-
-       In the case where the landmark we are setting to false here is actually
-       achieved right now, it is set to "true" again below.
-    */
-    past.intersect(parent_past);
-
-    // Mark landmarks achieved right now as past (if they are "leaves").
     for (int id = 0; id < num_landmarks; ++id) {
-        if (!past.test(id)) {
-            LandmarkNode *node = lm_graph.get_node(id);
-            if (node->get_landmark().is_true_in_state(ancestor_state)) {
-                if (landmark_is_leaf(*node, past)) {
-                    past.set(id);
-                }
-            }
+        /*
+          TODO: Computing whether a landmark is true in a state is expensive.
+           It can happen that we compute this multiple times for the same
+           state. If we observe a slow-down in the experiments, we could look
+           into this as an opportunity to speed things up.
+        */
+        if (!parent_past.test(id) && past.test(id)
+            && !lm_graph.get_node(id)->get_landmark().is_true_in_state(
+                ancestor_state)) {
+            past.reset(id);
         }
     }
-
-    return true;
 }
 
 void LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
@@ -152,18 +117,5 @@ bool LandmarkStatusManager::landmark_needed_again(
         }
         return false;
     }
-}
-
-bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
-                                             const BitsetView &past) const {
-    //Note: this is the same as !check_node_orders_disobeyed
-    for (const auto &parent : node.parents) {
-        LandmarkNode *parent_node = parent.first;
-        // Note: no condition on edge type here
-        if (!past.test(parent_node->get_id())) {
-            return false;
-        }
-    }
-    return true;
 }
 }
