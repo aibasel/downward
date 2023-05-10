@@ -6,6 +6,7 @@
 namespace landmarks {
 class LandmarkFactoryReasonableOrdersHPS : public LandmarkFactory {
     std::shared_ptr<LandmarkFactory> lm_factory;
+    const bool use_obedient_reasonable;
 
     virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
 

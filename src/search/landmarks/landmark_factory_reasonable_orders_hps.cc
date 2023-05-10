@@ -13,7 +13,8 @@ using namespace std;
 namespace landmarks {
 LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(const plugins::Options &opts)
     : LandmarkFactory(opts),
-      lm_factory(opts.get<shared_ptr<LandmarkFactory>>("lm_factory")) {
+      lm_factory(opts.get<shared_ptr<LandmarkFactory>>("lm_factory")),
+      use_obedient_reasonable(opts.get<bool>("use_obedient_reasonable")) {
 }
 
 void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<AbstractTask> &task) {
@@ -29,10 +30,12 @@ void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<Abs
         log << "approx. reasonable orders" << endl;
     }
     approximate_reasonable_orders(task_proxy, false);
-    if (log.is_at_least_normal()) {
-        log << "approx. obedient reasonable orders" << endl;
+    if (use_obedient_reasonable) {
+        if (log.is_at_least_normal()) {
+            log << "approx. obedient reasonable orders" << endl;
+        }
+        approximate_reasonable_orders(task_proxy, true);
     }
-    approximate_reasonable_orders(task_proxy, true);
 
     mk_acyclic_graph();
 }
@@ -394,6 +397,18 @@ public:
                 "2004"));
 
         add_option<shared_ptr<LandmarkFactory>>("lm_factory");
+        /* TODO: Print warning in admissible heuristics when using
+            obedient-reasonable. */
+        // TODO: Should we adapt aliases to set this option to true?
+        add_option<bool>(
+            "use_obedient_reasonable",
+            "Mention whether obedient-reasonable orderings should also be "
+            "computed. Note that we are unsure whether and how they could be "
+            "used for optimal planning (i.e., in admissible heuristics). "
+            "Furthermore, our experiments suggest that they are not really "
+            "helpful for satisficing planning either, hence the default value "
+            "*false*.",
+            "false");
         add_landmark_factory_options_to_feature(*this);
 
         // TODO: correct?
