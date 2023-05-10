@@ -156,7 +156,7 @@ int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
 
     if (use_preferred_operators) {
         BitsetView reached_lms =
-            lm_status_manager->get_reached_landmarks(ancestor_state);
+            lm_status_manager->get_past_landmarks(ancestor_state);
         generate_preferred_operators(state, reached_lms);
     }
 

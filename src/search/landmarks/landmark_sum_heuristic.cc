@@ -103,12 +103,12 @@ int LandmarkSumHeuristic::get_heuristic_value(const State &state) {
 
     int h = 0;
     for (int id = 0; id < lm_graph->get_num_landmarks(); ++id) {
-        landmark_status status = lm_status_manager->get_landmark_status(id);
-        if (status == lm_not_reached) {
+        LandmarkStatus status = lm_status_manager->get_landmark_status(id);
+        if (status == FUTURE) {
             if (min_first_achiever_costs[id] == numeric_limits<int>::max())
                 return DEAD_END;
             h += min_first_achiever_costs[id];
-        } else if (status == lm_needed_again) {
+        } else if (status == PAST_AND_FUTURE) {
             if (min_possible_achiever_costs[id] == numeric_limits<int>::max())
                 return DEAD_END;
             h += min_possible_achiever_costs[id];

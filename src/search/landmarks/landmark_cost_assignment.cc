@@ -25,9 +25,9 @@ LandmarkCostAssignment::LandmarkCostAssignment(
 const set<int> &LandmarkCostAssignment::get_achievers(
     int lmn_status, const Landmark &landmark) const {
     // Return relevant achievers of the landmark according to its status.
-    if (lmn_status == lm_not_reached)
+    if (lmn_status == FUTURE)
         return landmark.first_achievers;
-    else if (lmn_status == lm_needed_again)
+    else if (lmn_status == PAST_AND_FUTURE)
         return landmark.possible_achievers;
     else
         return empty;
@@ -58,7 +58,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(
     for (auto &node : nodes) {
         int lmn_status =
             lm_status_manager.get_landmark_status(node->get_id());
-        if (lmn_status != lm_reached) {
+        if (lmn_status != PAST) {
             const set<int> &achievers =
                 get_achievers(lmn_status, node->get_landmark());
             if (achievers.empty())
@@ -92,7 +92,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(
     for (auto &node : nodes) {
         int lmn_status =
             lm_status_manager.get_landmark_status(node->get_id());
-        if (lmn_status != lm_reached) {
+        if (lmn_status != PAST) {
             const set<int> &achievers =
                 get_achievers(lmn_status, node->get_landmark());
             bool covered_by_action_lm = false;
@@ -186,7 +186,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value(
     */
     int num_cols = lm_graph.get_num_landmarks();
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
-        if (lm_status_manager.get_landmark_status(lm_id) == lm_reached) {
+        if (lm_status_manager.get_landmark_status(lm_id) == PAST) {
             lp.get_variables()[lm_id].upper_bound = 0;
         } else {
             lp.get_variables()[lm_id].upper_bound = lp_solver.get_infinity();
@@ -208,7 +208,7 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value(
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
         const Landmark &landmark = lm_graph.get_node(lm_id)->get_landmark();
         int lm_status = lm_status_manager.get_landmark_status(lm_id);
-        if (lm_status != lm_reached) {
+        if (lm_status != PAST) {
             const set<int> &achievers =
                 get_achievers(lm_status, landmark);
             if (achievers.empty())
