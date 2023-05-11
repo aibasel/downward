@@ -198,43 +198,27 @@ void LandmarkStatusManager::progress_reasonable_ordering(
 }
 
 void LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
+    /*
+      TODO: We could get rid of this function by accessing this information from
+       outside directly, i.e., checking **for a given state** whether the
+       landmark is past or future or both **in that state** (instead of calling
+       *get_landmark_status*). This should be possible but I didn't want to do
+       too many changes at once before we start experimenting.
+    */
     const BitsetView past = get_past_landmarks(ancestor_state);
+    const BitsetView fut = get_future_landmarks(ancestor_state);
 
     const int num_landmarks = lm_graph.get_num_landmarks();
-    /* This first loop is necessary as setup for the needed-again
-       check in the second loop. */
     for (int id = 0; id < num_landmarks; ++id) {
-        lm_status[id] = past.test(id) ? PAST : FUTURE;
-    }
-    for (int id = 0; id < num_landmarks; ++id) {
-        if (lm_status[id] == PAST
-            && landmark_needed_again(id, ancestor_state)) {
+        if (!past.test(id)) {
+            assert(fut.test(id));
+            lm_status[id] = FUTURE;
+        } else if (!fut.test(id)) {
+            assert(past.test(id));
+            lm_status[id] = PAST;
+        } else {
             lm_status[id] = PAST_AND_FUTURE;
         }
-    }
-}
-
-bool LandmarkStatusManager::landmark_needed_again(
-    int id, const State &state) {
-    LandmarkNode *node = lm_graph.get_node(id);
-    const Landmark &landmark = node->get_landmark();
-    if (landmark.is_true_in_state(state)) {
-        return false;
-    } else if (landmark.is_true_in_goal) {
-        return true;
-    } else {
-        /*
-          For all A ->_gn B, if B is not past and A currently not
-          true, since A is a necessary precondition for actions
-          achieving B for the first time, A must become true again.
-        */
-        for (const auto &child : node->children) {
-            if (child.second >= EdgeType::GREEDY_NECESSARY
-                && lm_status[child.first->get_id()] == FUTURE) {
-                return true;
-            }
-        }
-        return false;
     }
 }
 }

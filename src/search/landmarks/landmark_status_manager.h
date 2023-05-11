@@ -21,11 +21,8 @@ class LandmarkStatusManager {
     PerStateBitset future_landmarks;
     std::vector<LandmarkStatus> lm_status;
 
-    bool landmark_needed_again(int id, const State &state);
-
-    void progress_initial_state(const State &initial_state,
-                                utils::LogProxy &log);
-
+    void progress_initial_state(
+        const State &initial_state, utils::LogProxy &log);
     void progress_basic(
         const BitsetView &parent_past, const BitsetView &parent_fut,
         const State &parent_ancestor_state, BitsetView &past, BitsetView &fut,
