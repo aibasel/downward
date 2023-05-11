@@ -12,7 +12,7 @@ class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
     void check_unsupported_features(const plugins::Options &opts);
     void set_cost_assignment(const plugins::Options &opts);
 
-    int get_heuristic_value() override;
+    int get_heuristic_value(const State &ancestor_state) override;
 public:
     explicit LandmarkCostPartitioningHeuristic(const plugins::Options &opts);
 

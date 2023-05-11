@@ -64,10 +64,12 @@ void LandmarkCostPartitioningHeuristic::set_cost_assignment(
     }
 }
 
-int LandmarkCostPartitioningHeuristic::get_heuristic_value() {
+int LandmarkCostPartitioningHeuristic::get_heuristic_value(
+    const State &ancestor_state) {
     double epsilon = 0.01;
 
-    double h_val = lm_cost_assignment->cost_sharing_h_value(*lm_status_manager);
+    double h_val = lm_cost_assignment->cost_sharing_h_value(
+        *lm_status_manager, ancestor_state);
     if (h_val == numeric_limits<double>::max()) {
         return DEAD_END;
     } else {

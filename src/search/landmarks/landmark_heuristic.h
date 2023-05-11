@@ -26,19 +26,7 @@ protected:
     void initialize(const plugins::Options &opts);
     void compute_landmark_graph(const plugins::Options &opts);
 
-    /*
-      Unlike most landmark-related code, this function takes the
-      task-transformation of the state, not the original one (i.e., not
-      *ancestor_state*). This is because updating the landmark status manager
-      happens in *compute_heuristic(...)* before *get_heuristic_value(...)*
-      is called. Here, we only compute a heuristic value based on the
-      information in the landmark status manager, which does not require the
-      state at this point. The only reason we need this argument is to guarantee
-      goal-awareness of the LM-count heuristic which does not hold under the
-      current function used for progressing the landmark statuses. Checking
-      whether a state is a goal state requires the task-transformed state.
-    */
-    virtual int get_heuristic_value() = 0;
+    virtual int get_heuristic_value(const State &ancestor_state) = 0;
 
     void generate_preferred_operators(
         const State &state, const BitsetView &reached);

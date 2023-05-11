@@ -21,8 +21,7 @@ LandmarkStatusManager::LandmarkStatusManager(
       progress_greedy_necessary_orderings(progress_greedy_necessary_orderings),
       progress_reasonable_orderings(progress_reasonable_orderings),
       past_landmarks(vector<bool>(graph.get_num_landmarks(), true)),
-      future_landmarks(vector<bool>(graph.get_num_landmarks(), false)),
-      lm_status(graph.get_num_landmarks(), FUTURE) {
+      future_landmarks(vector<bool>(graph.get_num_landmarks(), false)) {
 }
 
 BitsetView LandmarkStatusManager::get_past_landmarks(const State &state) {
@@ -36,7 +35,6 @@ BitsetView LandmarkStatusManager::get_future_landmarks(const State &state) {
 void LandmarkStatusManager::process_initial_state(
     const State &initial_state, utils::LogProxy &log) {
     progress_initial_state(initial_state, log);
-    update_lm_status(initial_state);
 }
 
 void LandmarkStatusManager::progress_initial_state(
@@ -196,28 +194,13 @@ void LandmarkStatusManager::progress_reasonable_ordering(
     }
 }
 
-void LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
-    /*
-      TODO: We could get rid of this function by accessing this information from
-       outside directly, i.e., checking **for a given state** whether the
-       landmark is past or future or both **in that state** (instead of calling
-       *get_landmark_status*). This should be possible but I didn't want to do
-       too many changes at once before we start experimenting.
-    */
-    const BitsetView past = get_past_landmarks(ancestor_state);
-    const BitsetView fut = get_future_landmarks(ancestor_state);
+bool LandmarkStatusManager::landmark_is_past(
+    int id, const State &ancestor_state) const {
+    return past_landmarks[ancestor_state].test(id);
+}
 
-    const int num_landmarks = lm_graph.get_num_landmarks();
-    for (int id = 0; id < num_landmarks; ++id) {
-        if (!past.test(id)) {
-            assert(fut.test(id));
-            lm_status[id] = FUTURE;
-        } else if (!fut.test(id)) {
-            assert(past.test(id));
-            lm_status[id] = PAST;
-        } else {
-            lm_status[id] = PAST_AND_FUTURE;
-        }
-    }
+bool LandmarkStatusManager::landmark_is_future(
+    int id, const State &ancestor_state) const {
+    return future_landmarks[ancestor_state].test(id);
 }
 }

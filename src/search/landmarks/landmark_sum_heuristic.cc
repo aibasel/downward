@@ -85,18 +85,19 @@ void LandmarkSumHeuristic::compute_landmark_costs() {
     }
 }
 
-int LandmarkSumHeuristic::get_heuristic_value() {
+int LandmarkSumHeuristic::get_heuristic_value(const State &ancestor_state) {
     int h = 0;
+    int max_cost = numeric_limits<int>::max();
     for (int id = 0; id < lm_graph->get_num_landmarks(); ++id) {
-        LandmarkStatus status = lm_status_manager->get_landmark_status(id);
-        if (status == FUTURE) {
-            if (min_first_achiever_costs[id] == numeric_limits<int>::max())
+        if (lm_status_manager->landmark_is_future(id, ancestor_state)) {
+            bool past = lm_status_manager->landmark_is_past(id, ancestor_state);
+            if (past && min_possible_achiever_costs[id] < max_cost) {
+                h += min_possible_achiever_costs[id];
+            } else if (!past && min_first_achiever_costs[id] < max_cost) {
+                h += min_first_achiever_costs[id];
+            } else {
                 return DEAD_END;
-            h += min_first_achiever_costs[id];
-        } else if (status == PAST_AND_FUTURE) {
-            if (min_possible_achiever_costs[id] == numeric_limits<int>::max())
-                return DEAD_END;
-            h += min_possible_achiever_costs[id];
+            }
         }
     }
     return h;

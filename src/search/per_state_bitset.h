@@ -43,6 +43,20 @@ public:
 };
 
 
+class ConstBitsetView {
+    ConstArrayView<BitsetMath::Block> data;
+    int num_bits;
+public:
+    ConstBitsetView(ConstArrayView<BitsetMath::Block> data, int num_bits);
+
+    ConstBitsetView(const ConstBitsetView &other) = default;
+    ConstBitsetView &operator=(const ConstBitsetView &other) = default;
+
+    bool test(int index) const;
+    int size() const;
+};
+
+
 class PerStateBitset {
     int num_bits_per_entry;
     PerStateArray<BitsetMath::Block> data;
@@ -53,6 +67,7 @@ public:
     PerStateBitset &operator=(const PerStateBitset &) = delete;
 
     BitsetView operator[](const State &state);
+    ConstBitsetView operator[](const State &state) const;
 };
 
 #endif
