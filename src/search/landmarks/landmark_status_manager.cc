@@ -40,7 +40,7 @@ void LandmarkStatusManager::process_initial_state(
 }
 
 void LandmarkStatusManager::progress_initial_state(
-    const State &initial_state, utils::LogProxy &/*log*/) {
+    const State &initial_state, utils::LogProxy & /*log*/) {
     BitsetView past = get_past_landmarks(initial_state);
     BitsetView fut = get_future_landmarks(initial_state);
 
@@ -62,7 +62,7 @@ void LandmarkStatusManager::progress_initial_state(
                   orderings are not generated in the first place.
                 */
                 assert(!parent.first->get_landmark().is_true_in_state(
-                    initial_state));
+                           initial_state));
                 utils::unused_variable(parent);
                 fut.set(id);
             }
@@ -122,7 +122,6 @@ void LandmarkStatusManager::progress_basic(
     const BitsetView &parent_past, const BitsetView &parent_fut,
     const State &parent_ancestor_state, BitsetView &past,
     BitsetView &fut, const State &ancestor_state) {
-
     utils::unused_variable(parent_past);
     utils::unused_variable(parent_ancestor_state);
     for (auto &node : lm_graph.get_nodes()) {

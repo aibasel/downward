@@ -46,8 +46,8 @@ public:
     void process_initial_state(
         const State &initial_state, utils::LogProxy &log);
     void progress(
-        const State &parent_ancestor_state, OperatorID,
-        const State &ancestor_state);
+        const State & parent_ancestor_state, OperatorID,
+        const State & ancestor_state);
 
     /*
       TODO:
