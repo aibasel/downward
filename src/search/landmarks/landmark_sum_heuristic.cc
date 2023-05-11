@@ -85,22 +85,7 @@ void LandmarkSumHeuristic::compute_landmark_costs() {
     }
 }
 
-int LandmarkSumHeuristic::get_heuristic_value(const State &state) {
-    /*
-      Need explicit test to see if state is a goal state. The landmark
-      heuristic may compute h != 0 for a goal state if landmarks are
-      achieved before their parents in the landmarks graph (because
-      they do not get counted as reached in that case). However, we
-      must return 0 for a goal state.
-
-      TODO: This check could be done before updating the *lm_status_manager*,
-       but if we want to do that in the base class, we need to delay this check
-       because it is only relevant for the inadmissible case. Moreover, it
-       should be redundant once we update the landmark progression.
-    */
-    if (task_properties::is_goal_state(task_proxy, state))
-        return 0;
-
+int LandmarkSumHeuristic::get_heuristic_value() {
     int h = 0;
     for (int id = 0; id < lm_graph->get_num_landmarks(); ++id) {
         LandmarkStatus status = lm_status_manager->get_landmark_status(id);

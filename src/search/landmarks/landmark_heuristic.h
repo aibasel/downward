@@ -38,7 +38,7 @@ protected:
       current function used for progressing the landmark statuses. Checking
       whether a state is a goal state requires the task-transformed state.
     */
-    virtual int get_heuristic_value(const State &state) = 0;
+    virtual int get_heuristic_value() = 0;
 
     void generate_preferred_operators(
         const State &state, const BitsetView &reached);
