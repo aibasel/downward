@@ -13,18 +13,36 @@ enum LandmarkStatus {PAST = 0, FUTURE = 1, PAST_AND_FUTURE = 2};
 
 class LandmarkStatusManager {
     LandmarkGraph &lm_graph;
+    const bool progress_goals;
+    const bool progress_greedy_necessary_orderings;
+    const bool progress_reasonable_orderings;
 
-    PerStateBitset past_lms;
+    PerStateBitset past_landmarks;
+    PerStateBitset future_landmarks;
     std::vector<LandmarkStatus> lm_status;
 
     bool landmark_needed_again(int id, const State &state);
 
-    void set_past_landmarks_for_initial_state(
-        const State &initial_state, utils::LogProxy &log);
+    void progress_initial_state(const State &initial_state,
+                                utils::LogProxy &log);
+
+    void progress_basic(
+        const BitsetView &parent_past, const BitsetView &parent_fut,
+        const State &parent_ancestor_state, BitsetView &past, BitsetView &fut,
+        const State &ancestor_state);
+    void progress_goal(int id, const State &ancestor_state, BitsetView &fut);
+    void progress_greedy_necessary_ordering(int id, const State &ancestor_state,
+                                            const BitsetView &past, BitsetView &fut);
+    void progress_reasonable_ordering(int id, const BitsetView &past, BitsetView &fut);
 public:
-    explicit LandmarkStatusManager(LandmarkGraph &graph);
+    LandmarkStatusManager(
+        LandmarkGraph &graph,
+        bool progress_goals,
+        bool progress_greedy_necessary_orderings,
+        bool progress_reasonable_orderings);
 
     BitsetView get_past_landmarks(const State &state);
+    BitsetView get_future_landmarks(const State &state);
 
     void update_lm_status(const State &ancestor_state);
 

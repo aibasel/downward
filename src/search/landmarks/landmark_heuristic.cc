@@ -8,6 +8,7 @@
 #include "../task_utils/successor_generator.h"
 #include "../tasks/cost_adapted_task.h"
 #include "../tasks/root_task.h"
+#include "../utils/markup.h"
 
 using namespace std;
 
@@ -56,8 +57,9 @@ void LandmarkHeuristic::initialize(const plugins::Options &opts) {
     }
 
     compute_landmark_graph(opts);
-    lm_status_manager =
-        utils::make_unique_ptr<LandmarkStatusManager>(*lm_graph);
+    lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(
+        *lm_graph, opts.get<bool>("prog_goal"),
+        opts.get<bool>("prog_gn"), opts.get<bool>("prog_r"));
 
     if (use_preferred_operators) {
         /* Ideally, we should reuse the successor generator of the main
@@ -74,8 +76,7 @@ void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &opts) {
         log << "Generating landmark graph..." << endl;
     }
 
-    shared_ptr<LandmarkFactory> lm_graph_factory =
-        opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
+    auto lm_graph_factory = opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
     lm_graph = lm_graph_factory->compute_lm_graph(task);
     assert(lm_graph_factory->achievers_are_calculated());
 
@@ -178,6 +179,18 @@ void LandmarkHeuristic::notify_state_transition(
 }
 
 void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
+    feature.document_synopsis(
+        "Landmark progression is implemented according to the following paper:"
+        + utils::format_conference_reference(
+            {"Clemens Büchner", "Thomas Keller", "Salomé Eriksson", "Malte Helmert"},
+            "Landmarks Progression in Heuristic Search",
+            "https://ai.dmi.unibas.ch/papers/buechner-et-al-icaps2023.pdf",
+            "Proceedings of the Thirty-Third International Conference on "
+            "Automated Planning and Scheduling (ICAPS 2023)",
+            "TODO", // TODO: Pages missing.
+            "AAAI Press",
+            "2023"));
+
     feature.add_option<shared_ptr<LandmarkFactory>>(
         "lm_factory",
         "the set of landmarks to use for this heuristic. "
@@ -188,6 +201,12 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
         "identify preferred operators (see OptionCaveats#"
         "Using_preferred_operators_with_landmark_heuristics)",
         "false");
+    feature.add_option<bool>(
+        "prog_goal", "Use goal progression.", "true");
+    feature.add_option<bool>(
+        "prog_gn", "Use greedy-necessary ordering progression.", "true");
+    feature.add_option<bool>(
+        "prog_r", "Use reasonable ordering progression.", "true");
     Heuristic::add_options_to_feature(feature);
 
     feature.document_property("preferred operators",
