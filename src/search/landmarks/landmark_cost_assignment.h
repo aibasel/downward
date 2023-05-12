@@ -17,13 +17,12 @@ class LandmarkNode;
 class LandmarkStatusManager;
 
 class LandmarkCostAssignment {
-    const std::set<int> empty;
 protected:
     const LandmarkGraph &lm_graph;
     const std::vector<int> operator_costs;
 
     const std::set<int> &get_achievers(
-        bool past, bool fut, const Landmark &landmark) const;
+        bool past, const Landmark &landmark) const;
 public:
     LandmarkCostAssignment(const std::vector<int> &operator_costs,
                            const LandmarkGraph &graph);
@@ -31,7 +30,7 @@ public:
 
     virtual double cost_sharing_h_value(
         const LandmarkStatusManager &lm_status_manager,
-        const State &state) = 0;
+        const State &ancestor_state) = 0;
 };
 
 class LandmarkUniformSharedCostAssignment : public LandmarkCostAssignment {
@@ -43,7 +42,7 @@ public:
 
     virtual double cost_sharing_h_value(
         const LandmarkStatusManager &lm_status_manager,
-        const State &state) override;
+        const State &ancestor_state) override;
 };
 
 class LandmarkEfficientOptimalSharedCostAssignment : public LandmarkCostAssignment {
@@ -67,7 +66,7 @@ public:
 
     virtual double cost_sharing_h_value(
         const LandmarkStatusManager &lm_status_manager,
-        const State &state) override;
+        const State &ancestor_state) override;
 };
 }
 
