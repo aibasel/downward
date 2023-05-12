@@ -18,8 +18,6 @@ class LandmarkStatusManager {
     PerStateBitset past_landmarks;
     PerStateBitset future_landmarks;
 
-    void progress_initial_state(
-        const State &initial_state, utils::LogProxy &log);
     void progress_basic(
         const BitsetView &parent_past, const BitsetView &parent_fut,
         BitsetView &past, BitsetView &fut, const State &ancestor_state);
@@ -39,8 +37,7 @@ public:
     BitsetView get_past_landmarks(const State &state);
     BitsetView get_future_landmarks(const State &state);
 
-    void process_initial_state(
-        const State &initial_state, utils::LogProxy &log);
+    void progress_initial_state(const State &initial_state);
     void progress(
         const State & parent_ancestor_state, OperatorID op_id,
         const State & ancestor_state);

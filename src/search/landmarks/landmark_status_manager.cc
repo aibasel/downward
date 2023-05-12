@@ -2,8 +2,6 @@
 
 #include "landmark.h"
 
-#include "../utils/logging.h"
-
 using namespace std;
 
 namespace landmarks {
@@ -32,13 +30,7 @@ BitsetView LandmarkStatusManager::get_future_landmarks(const State &state) {
     return future_landmarks[state];
 }
 
-void LandmarkStatusManager::process_initial_state(
-    const State &initial_state, utils::LogProxy &log) {
-    progress_initial_state(initial_state, log);
-}
-
-void LandmarkStatusManager::progress_initial_state(
-    const State &initial_state, utils::LogProxy & /*log*/) {
+void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
     BitsetView past = get_past_landmarks(initial_state);
     BitsetView fut = get_future_landmarks(initial_state);
 
@@ -69,15 +61,6 @@ void LandmarkStatusManager::progress_initial_state(
             fut.set(id);
         }
     }
-    /*
-      TODO: The old code did some logging in this function. For example, it
-       printed the number of landmarks that hold in the initial state or the
-       goal. I personally don't think this is generally relevant information,
-       but if we want to keep that output, it should be easy to add it again.
-
-      TODO: If we decide to get rid of the logs, we can also remove the logger
-       from the function header.
-    */
 }
 
 void LandmarkStatusManager::progress(
@@ -100,9 +83,7 @@ void LandmarkStatusManager::progress(
     assert(fut.size() == num_landmarks);
     assert(parent_fut.size() == num_landmarks);
 
-    progress_basic(parent_past, parent_fut, parent_ancestor_state, past,
-                   fut, ancestor_state);
-
+    progress_basic(parent_past, parent_fut, past, fut, ancestor_state);
     for (int id = 0; id < num_landmarks; ++id) {
         if (progress_goals) {
             progress_goal(id, ancestor_state, fut);

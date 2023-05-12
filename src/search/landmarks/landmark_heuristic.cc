@@ -153,18 +153,16 @@ void LandmarkHeuristic::generate_preferred_operators(
 
 int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
     int h = get_heuristic_value(ancestor_state);
-
     if (use_preferred_operators) {
         BitsetView past = lm_status_manager->get_past_landmarks(ancestor_state);
         State state = convert_ancestor_state(ancestor_state);
         generate_preferred_operators(state, past);
     }
-
     return h;
 }
 
 void LandmarkHeuristic::notify_initial_state(const State &initial_state) {
-    lm_status_manager->process_initial_state(initial_state, log);
+    lm_status_manager->progress_initial_state(initial_state);
 }
 
 void LandmarkHeuristic::notify_state_transition(
@@ -200,6 +198,8 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
         "identify preferred operators (see OptionCaveats#"
         "Using_preferred_operators_with_landmark_heuristics)",
         "false");
+    /* TODO: Do we really want these options or should we just allways progress
+        everything we can? */
     feature.add_option<bool>(
         "prog_goal", "Use goal progression.", "true");
     feature.add_option<bool>(
