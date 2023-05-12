@@ -402,7 +402,7 @@ public:
         // TODO: Should we adapt aliases to set this option to true?
         add_option<bool>(
             "use_obedient_reasonable",
-            "Mention whether obedient-reasonable orderings should also be "
+            "Choose whether obedient-reasonable orderings should also be "
             "computed. Note that we are unsure whether and how they could be "
             "used for optimal planning (i.e., in admissible heuristics). "
             "Furthermore, our experiments suggest that they are not really "

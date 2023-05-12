@@ -76,7 +76,8 @@ void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &opts) {
         log << "Generating landmark graph..." << endl;
     }
 
-    auto lm_graph_factory = opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
+    shared_ptr<LandmarkFactory> lm_graph_factory =
+        opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
     lm_graph = lm_graph_factory->compute_lm_graph(task);
     assert(lm_graph_factory->achievers_are_calculated());
 
@@ -154,10 +155,9 @@ int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
     int h = get_heuristic_value(ancestor_state);
 
     if (use_preferred_operators) {
-        BitsetView reached_lms =
-            lm_status_manager->get_past_landmarks(ancestor_state);
+        BitsetView past = lm_status_manager->get_past_landmarks(ancestor_state);
         State state = convert_ancestor_state(ancestor_state);
-        generate_preferred_operators(state, reached_lms);
+        generate_preferred_operators(state, past);
     }
 
     return h;

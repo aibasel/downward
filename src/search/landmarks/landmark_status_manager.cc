@@ -118,10 +118,7 @@ void LandmarkStatusManager::progress(
 
 void LandmarkStatusManager::progress_basic(
     const BitsetView &parent_past, const BitsetView &parent_fut,
-    const State &parent_ancestor_state, BitsetView &past,
-    BitsetView &fut, const State &ancestor_state) {
-    utils::unused_variable(parent_past);
-    utils::unused_variable(parent_ancestor_state);
+    BitsetView &past, BitsetView &fut, const State &ancestor_state) {
     for (auto &node : lm_graph.get_nodes()) {
         int id = node->get_id();
         const Landmark &lm = node->get_landmark();

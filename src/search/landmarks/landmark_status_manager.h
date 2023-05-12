@@ -22,12 +22,13 @@ class LandmarkStatusManager {
         const State &initial_state, utils::LogProxy &log);
     void progress_basic(
         const BitsetView &parent_past, const BitsetView &parent_fut,
-        const State &parent_ancestor_state, BitsetView &past, BitsetView &fut,
-        const State &ancestor_state);
+        BitsetView &past, BitsetView &fut, const State &ancestor_state);
     void progress_goal(int id, const State &ancestor_state, BitsetView &fut);
-    void progress_greedy_necessary_ordering(int id, const State &ancestor_state,
-                                            const BitsetView &past, BitsetView &fut);
-    void progress_reasonable_ordering(int id, const BitsetView &past, BitsetView &fut);
+    void progress_greedy_necessary_ordering(
+        int id, const State &ancestor_state, const BitsetView &past,
+        BitsetView &fut);
+    void progress_reasonable_ordering(
+        int id, const BitsetView &past, BitsetView &fut);
 public:
     LandmarkStatusManager(
         LandmarkGraph &graph,
@@ -41,7 +42,7 @@ public:
     void process_initial_state(
         const State &initial_state, utils::LogProxy &log);
     void progress(
-        const State & parent_ancestor_state, OperatorID,
+        const State & parent_ancestor_state, OperatorID op_id,
         const State & ancestor_state);
 
     bool landmark_is_past(int id, const State &ancestor_state) const;
