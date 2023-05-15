@@ -156,7 +156,8 @@ void LandmarkStatusManager::progress_goals(const State &ancestor_state,
     for (int id : goal_landmark_ids) {
         if (!fut.test(id)) {
             Landmark &lm = lm_graph.get_node(id)->get_landmark();
-            if (lm.is_true_in_goal && !lm.is_true_in_state(ancestor_state)) {
+            assert(lm.is_true_in_goal);
+            if (!lm.is_true_in_state(ancestor_state)) {
                 fut.set(id);
             }
         }
@@ -170,8 +171,7 @@ void LandmarkStatusManager::progress_greedy_necessary_orderings(
         if (!past.test(head) && !fut.test(tail)
             && !lm_graph.get_node(tail)->get_landmark().is_true_in_state(
                 ancestor_state)) {
-            assert(fut.test(head));
-            fut.set(head);
+            fut.set(tail);
         }
     }
 }
