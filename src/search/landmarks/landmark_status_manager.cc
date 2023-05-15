@@ -5,6 +5,30 @@
 using namespace std;
 
 namespace landmarks {
+static vector<int> get_goal_ids(const LandmarkGraph &graph) {
+    vector<int> goal_lm_ids;
+    for (auto &node : graph.get_nodes()) {
+        if (node->get_landmark().is_true_in_goal) {
+            goal_lm_ids.push_back(node->get_id());
+        }
+    }
+    return goal_lm_ids;
+}
+
+static vector<pair<int, int>> get_orderings_of_type(
+    const LandmarkGraph &graph, const EdgeType &type) {
+    vector<pair<int,int>> orderings;
+    for (auto &node : graph.get_nodes()) {
+        for (auto &parent : node->parents) {
+            // TODO: Could be strengthened by *parent.second >= type*.
+            if (parent.second == type) {
+                orderings.emplace_back(parent.first->get_id(), node->get_id());
+            }
+        }
+    }
+    return orderings;
+}
+
 /*
   By default we mark all landmarks past, since we do an intersection when
   computing new landmark information.
@@ -15,9 +39,15 @@ LandmarkStatusManager::LandmarkStatusManager(
     bool progress_greedy_necessary_orderings,
     bool progress_reasonable_orderings)
     : lm_graph(graph),
-      progress_goals(progress_goals),
-      progress_greedy_necessary_orderings(progress_greedy_necessary_orderings),
-      progress_reasonable_orderings(progress_reasonable_orderings),
+      goal_landmark_ids(progress_goals ? get_goal_ids(graph) : vector<int>{}),
+      greedy_necessary_orderings(
+          progress_greedy_necessary_orderings
+          ? get_orderings_of_type(graph, EdgeType::GREEDY_NECESSARY)
+          : vector<pair<int,int>>{}),
+      reasonable_orderings(
+          progress_reasonable_orderings
+          ? get_orderings_of_type(graph, EdgeType::REASONABLE)
+          : vector<pair<int,int>>{}),
       past_landmarks(vector<bool>(graph.get_num_landmarks(), true)),
       future_landmarks(vector<bool>(graph.get_num_landmarks(), false)) {
 }
@@ -71,30 +101,21 @@ void LandmarkStatusManager::progress(
         return;
     }
 
-    const BitsetView parent_past = get_past_landmarks(parent_ancestor_state);
+    const BitsetView parent_past = past_landmarks[parent_ancestor_state];
     BitsetView past = get_past_landmarks(ancestor_state);
 
-    const BitsetView parent_fut = get_future_landmarks(parent_ancestor_state);
+    const BitsetView parent_fut = future_landmarks[parent_ancestor_state];
     BitsetView fut = get_future_landmarks(ancestor_state);
 
-    int num_landmarks = lm_graph.get_num_landmarks();
-    assert(past.size() == num_landmarks);
-    assert(parent_past.size() == num_landmarks);
-    assert(fut.size() == num_landmarks);
-    assert(parent_fut.size() == num_landmarks);
+    assert(past.size() == lm_graph.get_num_landmarks());
+    assert(parent_past.size() == lm_graph.get_num_landmarks());
+    assert(fut.size() == lm_graph.get_num_landmarks());
+    assert(parent_fut.size() == lm_graph.get_num_landmarks());
 
     progress_basic(parent_past, parent_fut, past, fut, ancestor_state);
-    for (int id = 0; id < num_landmarks; ++id) {
-        if (progress_goals) {
-            progress_goal(id, ancestor_state, fut);
-        }
-        if (progress_greedy_necessary_orderings) {
-            progress_greedy_necessary_ordering(id, ancestor_state, past, fut);
-        }
-        if (progress_reasonable_orderings) {
-            progress_reasonable_ordering(id, past, fut);
-        }
-    }
+    progress_goals(ancestor_state, fut);
+    progress_greedy_necessary_orderings(ancestor_state, past, fut);
+    progress_reasonable_orderings(past, fut);
 }
 
 void LandmarkStatusManager::progress_basic(
@@ -130,44 +151,37 @@ void LandmarkStatusManager::progress_basic(
     }
 }
 
-void LandmarkStatusManager::progress_goal(
-    int id, const State &ancestor_state, BitsetView &fut) {
-    if (!fut.test(id)) {
-        Landmark &lm = lm_graph.get_node(id)->get_landmark();
-        if (lm.is_true_in_goal && !lm.is_true_in_state(ancestor_state)) {
-            fut.set(id);
+void LandmarkStatusManager::progress_goals(const State &ancestor_state,
+                                           BitsetView &fut) {
+    for (int id : goal_landmark_ids) {
+        if (!fut.test(id)) {
+            Landmark &lm = lm_graph.get_node(id)->get_landmark();
+            if (lm.is_true_in_goal && !lm.is_true_in_state(ancestor_state)) {
+                fut.set(id);
+            }
         }
     }
 }
 
-// TODO: Maybe store landmark orderings by type in landmark graph?
-void LandmarkStatusManager::progress_greedy_necessary_ordering(
-    int id, const State &ancestor_state, const BitsetView &past,
-    BitsetView &fut) {
-    if (past.test(id)) {
-        return;
-    }
-
-    for (auto &parent : lm_graph.get_node(id)->parents) {
-        if (parent.second != EdgeType::GREEDY_NECESSARY
-            || fut.test(parent.first->get_id())) {
-            continue;
-        }
-        if (!parent.first->get_landmark().is_true_in_state(ancestor_state)) {
-            fut.set(parent.first->get_id());
+void LandmarkStatusManager::progress_greedy_necessary_orderings(
+    const State &ancestor_state, const BitsetView &past, BitsetView &fut) {
+    // TODO: We could avoid some .test() calls by doing one "parent" at a time.
+    for (auto &[tail, head] : greedy_necessary_orderings) {
+        if (!past.test(head) && !fut.test(tail)
+            && !lm_graph.get_node(tail)->get_landmark().is_true_in_state(
+                ancestor_state)) {
+            assert(fut.test(head));
+            fut.set(head);
         }
     }
 }
 
-void LandmarkStatusManager::progress_reasonable_ordering(
-    int id, const BitsetView &past, BitsetView &fut) {
-    if (past.test(id)) {
-        return;
-    }
-
-    for (auto &child : lm_graph.get_node(id)->children) {
-        if (child.second == EdgeType::REASONABLE) {
-            fut.set(child.first->get_id());
+void LandmarkStatusManager::progress_reasonable_orderings(
+    const BitsetView &past, BitsetView &fut) {
+    // TODO: We could avoid some .test() calls by doing one "child" at a time.
+    for (auto &[tail,head] : reasonable_orderings) {
+        if (!past.test(tail)) {
+            fut.set(head);
         }
     }
 }
