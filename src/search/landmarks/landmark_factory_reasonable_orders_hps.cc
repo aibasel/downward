@@ -408,7 +408,8 @@ public:
             "Furthermore, our experiments suggest that they are not really "
             "helpful for satisficing planning either, hence the default value "
             "*false*.",
-            "false");
+            // FIXME: change default value to *false*!
+            "true");
         add_landmark_factory_options_to_feature(*this);
 
         // TODO: correct?
