@@ -91,7 +91,7 @@ int LandmarkSumHeuristic::get_heuristic_value(const State &ancestor_state) {
         if (lm_status_manager->landmark_is_future(id, ancestor_state)) {
             bool past = lm_status_manager->landmark_is_past(id, ancestor_state);
             int min_achiever_cost = past ? min_possible_achiever_costs[id]
-                                         : min_first_achiever_costs[id];
+                : min_first_achiever_costs[id];
             if (min_achiever_cost < numeric_limits<int>::max()) {
                 h += min_achiever_cost;
             } else {

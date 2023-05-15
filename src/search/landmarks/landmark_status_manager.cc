@@ -17,7 +17,7 @@ static vector<int> get_goal_ids(const LandmarkGraph &graph) {
 
 static vector<pair<int, int>> get_orderings_of_type(
     const LandmarkGraph &graph, const EdgeType &type) {
-    vector<pair<int,int>> orderings;
+    vector<pair<int, int>> orderings;
     for (auto &node : graph.get_nodes()) {
         for (auto &parent : node->parents) {
             // TODO: Could be strengthened by *parent.second >= type*.
@@ -43,11 +43,11 @@ LandmarkStatusManager::LandmarkStatusManager(
       greedy_necessary_orderings(
           progress_greedy_necessary_orderings
           ? get_orderings_of_type(graph, EdgeType::GREEDY_NECESSARY)
-          : vector<pair<int,int>>{}),
+          : vector<pair<int, int>>{}),
       reasonable_orderings(
           progress_reasonable_orderings
           ? get_orderings_of_type(graph, EdgeType::REASONABLE)
-          : vector<pair<int,int>>{}),
+          : vector<pair<int, int>>{}),
       past_landmarks(vector<bool>(graph.get_num_landmarks(), true)),
       future_landmarks(vector<bool>(graph.get_num_landmarks(), false)) {
 }
@@ -179,7 +179,7 @@ void LandmarkStatusManager::progress_greedy_necessary_orderings(
 void LandmarkStatusManager::progress_reasonable_orderings(
     const BitsetView &past, BitsetView &fut) {
     // TODO: We could avoid some .test() calls by doing one "child" at a time.
-    for (auto &[tail,head] : reasonable_orderings) {
+    for (auto &[tail, head] : reasonable_orderings) {
         if (!past.test(tail)) {
             fut.set(head);
         }
