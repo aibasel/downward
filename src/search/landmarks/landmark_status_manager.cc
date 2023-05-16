@@ -5,24 +5,24 @@
 using namespace std;
 
 namespace landmarks {
-static vector<int> get_goal_ids(const LandmarkGraph &graph) {
-    vector<int> goal_lm_ids;
-    for (auto &node : graph.get_nodes()) {
+static vector<LandmarkNode *> get_goal_ids(const LandmarkGraph &graph) {
+    vector<LandmarkNode *> goal_lm_ids;
+    for (const unique_ptr<LandmarkNode> &node : graph.get_nodes()) {
         if (node->get_landmark().is_true_in_goal) {
-            goal_lm_ids.push_back(node->get_id());
+            goal_lm_ids.push_back(node.get());
         }
     }
     return goal_lm_ids;
 }
 
-static vector<pair<int, int>> get_orderings_of_type(
+static vector<pair<LandmarkNode *, LandmarkNode *>> get_orderings_of_type(
     const LandmarkGraph &graph, const EdgeType &type) {
-    vector<pair<int, int>> orderings;
+    vector<pair<LandmarkNode *, LandmarkNode *>> orderings;
     for (auto &node : graph.get_nodes()) {
         for (auto &parent : node->parents) {
             // TODO: Could be strengthened by *parent.second >= type*.
             if (parent.second == type) {
-                orderings.emplace_back(parent.first->get_id(), node->get_id());
+                orderings.emplace_back(parent.first, node.get());
             }
         }
     }
@@ -39,15 +39,15 @@ LandmarkStatusManager::LandmarkStatusManager(
     bool progress_greedy_necessary_orderings,
     bool progress_reasonable_orderings)
     : lm_graph(graph),
-      goal_landmark_ids(progress_goals ? get_goal_ids(graph) : vector<int>{}),
+      goal_landmark_ids(progress_goals ? get_goal_ids(graph) : vector<LandmarkNode *>{}),
       greedy_necessary_orderings(
           progress_greedy_necessary_orderings
           ? get_orderings_of_type(graph, EdgeType::GREEDY_NECESSARY)
-          : vector<pair<int, int>>{}),
+          : vector<pair<LandmarkNode *, LandmarkNode *>>{}),
       reasonable_orderings(
           progress_reasonable_orderings
           ? get_orderings_of_type(graph, EdgeType::REASONABLE)
-          : vector<pair<int, int>>{}),
+          : vector<pair<LandmarkNode *, LandmarkNode *>>{}),
       past_landmarks(vector<bool>(graph.get_num_landmarks(), true)),
       future_landmarks(vector<bool>(graph.get_num_landmarks(), false)) {
 }
@@ -142,11 +142,11 @@ void LandmarkStatusManager::progress_basic(
 
 void LandmarkStatusManager::progress_goals(const State &ancestor_state,
                                            BitsetView &fut) {
-    for (int id : goal_landmark_ids) {
-        Landmark &lm = lm_graph.get_node(id)->get_landmark();
+    for (const LandmarkNode *lm_node : goal_landmark_ids) {
+        const Landmark &lm = lm_node->get_landmark();
         assert(lm.is_true_in_goal);
         if (!lm.is_true_in_state(ancestor_state)) {
-            fut.set(id);
+            fut.set(lm_node->get_id());
         }
     }
 }
@@ -155,9 +155,10 @@ void LandmarkStatusManager::progress_greedy_necessary_orderings(
     const State &ancestor_state, const BitsetView &past, BitsetView &fut) {
     // TODO: We could avoid some .test() calls by doing one "parent" at a time.
     for (auto &[tail, head] : greedy_necessary_orderings) {
-        const Landmark &lm = lm_graph.get_node(tail)->get_landmark();
-        if (!past.test(head) && !lm.is_true_in_state(ancestor_state)) {
-            fut.set(tail);
+        const Landmark &lm = tail->get_landmark();
+        if (!past.test(head->get_id())
+            && !lm.is_true_in_state(ancestor_state)) {
+            fut.set(tail->get_id());
         }
     }
 }
@@ -166,8 +167,8 @@ void LandmarkStatusManager::progress_reasonable_orderings(
     const BitsetView &past, BitsetView &fut) {
     // TODO: We could avoid some .test() calls by doing one "child" at a time.
     for (auto &[tail, head] : reasonable_orderings) {
-        if (!past.test(tail)) {
-            fut.set(head);
+        if (!past.test(tail->get_id())) {
+            fut.set(head->get_id());
         }
     }
 }
