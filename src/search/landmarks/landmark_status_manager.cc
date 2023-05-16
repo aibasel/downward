@@ -101,10 +101,10 @@ void LandmarkStatusManager::progress(
         return;
     }
 
-    const BitsetView parent_past = past_landmarks[parent_ancestor_state];
+    const BitsetView parent_past = get_past_landmarks(parent_ancestor_state);
     BitsetView past = get_past_landmarks(ancestor_state);
 
-    const BitsetView parent_fut = future_landmarks[parent_ancestor_state];
+    const BitsetView parent_fut = get_future_landmarks(parent_ancestor_state);
     BitsetView fut = get_future_landmarks(ancestor_state);
 
     assert(past.size() == lm_graph.get_num_landmarks());
@@ -129,19 +129,8 @@ void LandmarkStatusManager::progress_basic(
               A future landmark remains future if it is not achieved by the
               current transition. If it additionally wasn't past in the parent,
               it remains not past.
-
-              We first test whether the landmark is currently considered past or
-              not future. If neither holds, the code that follows the condition
-              has no effect and we can therefore avoid computing whether the
-              landmark holds in the current state.
-              TODO: Computing whether a landmark holds in a state is expensive.
-               It can happen that we compute this multiple times (considering
-               also the ordering progressions that follow) for the same landmark
-               and state. If we observe a slow-down in the experiments, we could
-               look into this as an opportunity to speed things up.
             */
-            if ((past.test(id) || !fut.test(id))
-                && !lm.is_true_in_state(ancestor_state)) {
+            if (!lm.is_true_in_state(ancestor_state)) {
                 fut.set(id);
                 if (!parent_past.test(id)) {
                     past.reset(id);
@@ -154,12 +143,10 @@ void LandmarkStatusManager::progress_basic(
 void LandmarkStatusManager::progress_goals(const State &ancestor_state,
                                            BitsetView &fut) {
     for (int id : goal_landmark_ids) {
-        if (!fut.test(id)) {
-            Landmark &lm = lm_graph.get_node(id)->get_landmark();
-            assert(lm.is_true_in_goal);
-            if (!lm.is_true_in_state(ancestor_state)) {
-                fut.set(id);
-            }
+        Landmark &lm = lm_graph.get_node(id)->get_landmark();
+        assert(lm.is_true_in_goal);
+        if (!lm.is_true_in_state(ancestor_state)) {
+            fut.set(id);
         }
     }
 }
@@ -168,9 +155,8 @@ void LandmarkStatusManager::progress_greedy_necessary_orderings(
     const State &ancestor_state, const BitsetView &past, BitsetView &fut) {
     // TODO: We could avoid some .test() calls by doing one "parent" at a time.
     for (auto &[tail, head] : greedy_necessary_orderings) {
-        if (!past.test(head) && !fut.test(tail)
-            && !lm_graph.get_node(tail)->get_landmark().is_true_in_state(
-                ancestor_state)) {
+        const Landmark &lm = lm_graph.get_node(tail)->get_landmark();
+        if (!past.test(head) && !lm.is_true_in_state(ancestor_state)) {
             fut.set(tail);
         }
     }
