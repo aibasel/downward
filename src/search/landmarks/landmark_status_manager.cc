@@ -5,16 +5,6 @@
 using namespace std;
 
 namespace landmarks {
-static vector<LandmarkNode *> get_goal_ids(const LandmarkGraph &graph) {
-    vector<LandmarkNode *> goal_lm_ids;
-    for (const unique_ptr<LandmarkNode> &node : graph.get_nodes()) {
-        if (node->get_landmark().is_true_in_goal) {
-            goal_lm_ids.push_back(node.get());
-        }
-    }
-    return goal_lm_ids;
-}
-
 static vector<pair<LandmarkNode *, LandmarkNode *>> get_orderings_of_type(
     const LandmarkGraph &graph, const EdgeType &type) {
     vector<pair<LandmarkNode *, LandmarkNode *>> orderings;
@@ -39,7 +29,7 @@ LandmarkStatusManager::LandmarkStatusManager(
     bool progress_greedy_necessary_orderings,
     bool progress_reasonable_orderings)
     : lm_graph(graph),
-      goal_landmark_ids(progress_goals ? get_goal_ids(graph) : vector<LandmarkNode *>{}),
+      progress_goals(progress_goals),
       greedy_necessary_orderings(
           progress_greedy_necessary_orderings
           ? get_orderings_of_type(graph, EdgeType::GREEDY_NECESSARY)
@@ -112,13 +102,13 @@ void LandmarkStatusManager::progress(
     assert(fut.size() == lm_graph.get_num_landmarks());
     assert(parent_fut.size() == lm_graph.get_num_landmarks());
 
-    progress_basic(parent_past, parent_fut, past, fut, ancestor_state);
-    progress_goals(ancestor_state, fut);
+    progress_basic_and_goals(
+        parent_past, parent_fut, past, fut, ancestor_state);
     progress_greedy_necessary_orderings(ancestor_state, past, fut);
     progress_reasonable_orderings(past, fut);
 }
 
-void LandmarkStatusManager::progress_basic(
+void LandmarkStatusManager::progress_basic_and_goals(
     const BitsetView &parent_past, const BitsetView &parent_fut,
     BitsetView &past, BitsetView &fut, const State &ancestor_state) {
     for (auto &node : lm_graph.get_nodes()) {
@@ -136,17 +126,10 @@ void LandmarkStatusManager::progress_basic(
                     past.reset(id);
                 }
             }
-        }
-    }
-}
-
-void LandmarkStatusManager::progress_goals(const State &ancestor_state,
-                                           BitsetView &fut) {
-    for (const LandmarkNode *lm_node : goal_landmark_ids) {
-        const Landmark &lm = lm_node->get_landmark();
-        assert(lm.is_true_in_goal);
-        if (!lm.is_true_in_state(ancestor_state)) {
-            fut.set(lm_node->get_id());
+        } else if (progress_goals && lm.is_true_in_goal
+                   && !lm.is_true_in_state(ancestor_state)) {
+            // Goal progression
+            fut.set(id);
         }
     }
 }
