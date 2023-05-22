@@ -1,27 +1,49 @@
 #include "landmark_status_manager.h"
+#include "util.h"
 
 #include "landmark.h"
 
 using namespace std;
 
 namespace landmarks {
-static vector<pair<LandmarkNode *, LandmarkNode *>> get_orderings_of_type(
-    const LandmarkGraph &graph, const EdgeType &type) {
-    vector<pair<LandmarkNode *, LandmarkNode *>> orderings;
+static vector<pair<LandmarkNode *, vector<LandmarkNode *>>> get_greedy_necessary_children(
+    const LandmarkGraph &graph) {
+    vector<pair<LandmarkNode *, vector<LandmarkNode *>>> orderings;
     for (auto &node : graph.get_nodes()) {
-        for (auto &parent : node->parents) {
-            // TODO: Could be strengthened by *parent.second >= type*.
-            if (parent.second == type) {
-                orderings.emplace_back(parent.first, node.get());
+        vector<LandmarkNode *> greedy_necessary_children{};
+        for (auto &child : node->children) {
+            if (child.second == EdgeType::GREEDY_NECESSARY) {
+                greedy_necessary_children.push_back(child.first);
             }
+        }
+        if (!greedy_necessary_children.empty()) {
+            orderings.emplace_back(node.get(), move(greedy_necessary_children));
+        }
+    }
+    return orderings;
+}
+
+static vector<pair<LandmarkNode *, vector<LandmarkNode *>>> get_reasonable_parents(
+    const LandmarkGraph &graph) {
+    vector<pair<LandmarkNode *, vector<LandmarkNode *>>> orderings;
+    for (auto &node : graph.get_nodes()) {
+        vector<LandmarkNode *> reasonable_parents{};
+        for (auto &parent : node->parents) {
+            if (parent.second == EdgeType::REASONABLE) {
+                reasonable_parents.push_back(parent.first);
+            }
+        }
+        if (!reasonable_parents.empty()) {
+            orderings.emplace_back(node.get(), move(reasonable_parents));
         }
     }
     return orderings;
 }
 
 /*
-  By default we mark all landmarks past, since we do an intersection when
-  computing new landmark information.
+  By default we mark all landmarks past, since it is the neutral element for
+  set intersection which we emulate in the progression. Similarly, no landmarks
+  are future which is the neutral element for set union.
 */
 LandmarkStatusManager::LandmarkStatusManager(
     LandmarkGraph &graph,
@@ -30,14 +52,14 @@ LandmarkStatusManager::LandmarkStatusManager(
     bool progress_reasonable_orderings)
     : lm_graph(graph),
       progress_goals(progress_goals),
-      greedy_necessary_orderings(
+      greedy_necessary_children(
           progress_greedy_necessary_orderings
-          ? get_orderings_of_type(graph, EdgeType::GREEDY_NECESSARY)
-          : vector<pair<LandmarkNode *, LandmarkNode *>>{}),
-      reasonable_orderings(
+          ? get_greedy_necessary_children(graph)
+          : vector<pair<LandmarkNode *, vector<LandmarkNode *>>>{}),
+      reasonable_parents(
           progress_reasonable_orderings
-          ? get_orderings_of_type(graph, EdgeType::REASONABLE)
-          : vector<pair<LandmarkNode *, LandmarkNode *>>{}),
+          ? get_reasonable_parents(graph)
+          : vector<pair<LandmarkNode *, vector<LandmarkNode *>>>{}),
       past_landmarks(vector<bool>(graph.get_num_landmarks(), true)),
       future_landmarks(vector<bool>(graph.get_num_landmarks(), false)) {
 }
@@ -116,9 +138,9 @@ void LandmarkStatusManager::progress_basic_and_goals(
         const Landmark &lm = node->get_landmark();
         if (parent_fut.test(id)) {
             /*
-              A future landmark remains future if it is not achieved by the
-              current transition. If it additionally wasn't past in the parent,
-              it remains not past.
+              Basic progression: A future landmark remains future if it
+              is not achieved by the current transition. If it also
+              wasn't past in the parent, it remains not past.
             */
             if (!lm.is_true_in_state(ancestor_state)) {
                 fut.set(id);
@@ -126,9 +148,11 @@ void LandmarkStatusManager::progress_basic_and_goals(
                     past.reset(id);
                 }
             }
-        } else if (progress_goals && lm.is_true_in_goal
-                   && !lm.is_true_in_state(ancestor_state)) {
-            // Goal progression
+        } else if (
+            /* Goal progression: A landmark that must hold in the goal
+               but does not hold in the current state is future. */
+            progress_goals && lm.is_true_in_goal
+            && !lm.is_true_in_state(ancestor_state)) {
             fut.set(id);
         }
     }
@@ -136,22 +160,28 @@ void LandmarkStatusManager::progress_basic_and_goals(
 
 void LandmarkStatusManager::progress_greedy_necessary_orderings(
     const State &ancestor_state, const BitsetView &past, BitsetView &fut) {
-    // TODO: We could avoid some .test() calls by doing one "parent" at a time.
-    for (auto &[tail, head] : greedy_necessary_orderings) {
+    for (auto &[tail, children] : greedy_necessary_children) {
         const Landmark &lm = tail->get_landmark();
-        if (!past.test(head->get_id())
-            && !lm.is_true_in_state(ancestor_state)) {
-            fut.set(tail->get_id());
+        assert(!children.empty());
+        for (auto &child : children) {
+            if (!past.test(child->get_id())
+                && !lm.is_true_in_state(ancestor_state)) {
+                fut.set(tail->get_id());
+                break;
+            }
         }
     }
 }
 
 void LandmarkStatusManager::progress_reasonable_orderings(
     const BitsetView &past, BitsetView &fut) {
-    // TODO: We could avoid some .test() calls by doing one "child" at a time.
-    for (auto &[tail, head] : reasonable_orderings) {
-        if (!past.test(tail->get_id())) {
-            fut.set(head->get_id());
+    for (auto &[head, parents] : reasonable_parents) {
+        assert(!parents.empty());
+        for (auto &parent : parents) {
+            if (!past.test(parent->get_id())) {
+                fut.set(head->get_id());
+                break;
+            }
         }
     }
 }
