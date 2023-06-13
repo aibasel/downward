@@ -29,7 +29,7 @@ protected:
     virtual int get_heuristic_value(const State &ancestor_state) = 0;
 
     void generate_preferred_operators(
-        const State &state, ConstBitsetView &reached);
+        const State &state, ConstBitsetView &past);
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     explicit LandmarkHeuristic(const plugins::Options &opts);

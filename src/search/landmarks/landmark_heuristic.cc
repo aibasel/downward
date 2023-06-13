@@ -14,7 +14,7 @@ using namespace std;
 
 namespace landmarks {
 static bool landmark_is_interesting(
-    const State &state, ConstBitsetView &reached,
+    const State &state, ConstBitsetView &past,
     const landmarks::LandmarkNode &lm_node, bool all_lms_reached) {
     /*
       We consider a landmark interesting in two (exclusive) cases:
@@ -27,10 +27,10 @@ static bool landmark_is_interesting(
         const Landmark &landmark = lm_node.get_landmark();
         return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
     } else {
-        return !reached.test(lm_node.get_id()) &&
+        return !past.test(lm_node.get_id()) &&
                all_of(lm_node.parents.begin(), lm_node.parents.end(),
                       [&](const pair<LandmarkNode *, EdgeType> parent) {
-                          return reached.test(parent.first->get_id());
+                          return past.test(parent.first->get_id());
                       });
     }
 }
@@ -95,7 +95,7 @@ void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &opts) {
 }
 
 void LandmarkHeuristic::generate_preferred_operators(
-    const State &state, ConstBitsetView &reached) {
+    const State &state, ConstBitsetView &past) {
     /*
       Find operators that achieve landmark leaves. If a simple landmark can be
       achieved, prefer only operators that achieve simple landmarks. Otherwise,
@@ -112,10 +112,10 @@ void LandmarkHeuristic::generate_preferred_operators(
     vector<OperatorID> preferred_operators_simple;
     vector<OperatorID> preferred_operators_disjunctive;
 
-    bool all_landmarks_reached = true;
-    for (int i = 0; i < reached.size(); ++i) {
-        if (!reached.test(i)) {
-            all_landmarks_reached = false;
+    bool all_landmarks_past = true;
+    for (int i = 0; i < past.size(); ++i) {
+        if (!past.test(i)) {
+            all_landmarks_past= false;
             break;
         }
     }
@@ -129,7 +129,7 @@ void LandmarkHeuristic::generate_preferred_operators(
             FactProxy fact_proxy = effect.get_fact();
             LandmarkNode *lm_node = lm_graph->get_node(fact_proxy.get_pair());
             if (lm_node && landmark_is_interesting(
-                    state, reached, *lm_node, all_landmarks_reached)) {
+                    state, past, *lm_node, all_landmarks_past)) {
                 if (lm_node->get_landmark().disjunctive) {
                     preferred_operators_disjunctive.push_back(op_id);
                 } else {
@@ -169,7 +169,7 @@ void LandmarkHeuristic::notify_state_transition(
     const State &parent_state, OperatorID op_id, const State &state) {
     lm_status_manager->progress(parent_state, op_id, state);
     if (cache_evaluator_values) {
-        /* TODO:  It may be more efficient to check that the reached landmark
+        /* TODO:  It may be more efficient to check that the past landmark
             set has actually changed and only then mark the h value as dirty. */
         heuristic_cache[state].dirty = true;
     }
