@@ -115,7 +115,7 @@ void LandmarkHeuristic::generate_preferred_operators(
     bool all_landmarks_past = true;
     for (int i = 0; i < past.size(); ++i) {
         if (!past.test(i)) {
-            all_landmarks_past= false;
+            all_landmarks_past = false;
             break;
         }
     }
