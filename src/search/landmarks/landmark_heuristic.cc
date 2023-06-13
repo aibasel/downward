@@ -14,7 +14,7 @@ using namespace std;
 
 namespace landmarks {
 static bool landmark_is_interesting(
-    const State &state, const BitsetView &reached,
+    const State &state, ConstBitsetView &reached,
     const landmarks::LandmarkNode &lm_node, bool all_lms_reached) {
     /*
       We consider a landmark interesting in two (exclusive) cases:
@@ -95,7 +95,7 @@ void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &opts) {
 }
 
 void LandmarkHeuristic::generate_preferred_operators(
-    const State &state, const BitsetView &reached) {
+    const State &state, ConstBitsetView &reached) {
     /*
       Find operators that achieve landmark leaves. If a simple landmark can be
       achieved, prefer only operators that achieve simple landmarks. Otherwise,
@@ -154,7 +154,7 @@ void LandmarkHeuristic::generate_preferred_operators(
 int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
     int h = get_heuristic_value(ancestor_state);
     if (use_preferred_operators) {
-        BitsetView past = lm_status_manager->get_past_landmarks(ancestor_state);
+        ConstBitsetView past = lm_status_manager->get_past_landmarks_const(ancestor_state);
         State state = convert_ancestor_state(ancestor_state);
         generate_preferred_operators(state, past);
     }

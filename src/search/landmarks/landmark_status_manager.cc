@@ -72,6 +72,14 @@ BitsetView LandmarkStatusManager::get_future_landmarks(const State &state) {
     return future_landmarks[state];
 }
 
+ConstBitsetView LandmarkStatusManager::get_past_landmarks_const(const State &state) const {
+    return past_landmarks[state];
+}
+
+ConstBitsetView LandmarkStatusManager::get_future_landmarks_const(const State &state) const {
+    return future_landmarks[state];
+}
+
 void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
     BitsetView past = get_past_landmarks(initial_state);
     BitsetView fut = get_future_landmarks(initial_state);
@@ -184,15 +192,5 @@ void LandmarkStatusManager::progress_reasonable_orderings(
             }
         }
     }
-}
-
-bool LandmarkStatusManager::landmark_is_past(
-    int id, const State &ancestor_state) const {
-    return past_landmarks[ancestor_state].test(id);
-}
-
-bool LandmarkStatusManager::landmark_is_future(
-    int id, const State &ancestor_state) const {
-    return future_landmarks[ancestor_state].test(id);
 }
 }

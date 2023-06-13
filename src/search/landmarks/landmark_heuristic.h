@@ -3,7 +3,7 @@
 
 # include "../heuristic.h"
 
-class BitsetView;
+class ConstBitsetView;
 
 namespace successor_generator {
 class SuccessorGenerator;
@@ -29,7 +29,7 @@ protected:
     virtual int get_heuristic_value(const State &ancestor_state) = 0;
 
     void generate_preferred_operators(
-        const State &state, const BitsetView &reached);
+        const State &state, ConstBitsetView &reached);
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     explicit LandmarkHeuristic(const plugins::Options &opts);

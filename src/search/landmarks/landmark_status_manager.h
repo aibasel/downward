@@ -33,14 +33,13 @@ public:
 
     BitsetView get_past_landmarks(const State &state);
     BitsetView get_future_landmarks(const State &state);
+    ConstBitsetView get_past_landmarks_const(const State &state) const;
+    ConstBitsetView get_future_landmarks_const(const State &state) const;
 
     void progress_initial_state(const State &initial_state);
     void progress(
         const State &parent_ancestor_state, OperatorID op_id,
         const State &ancestor_state);
-
-    bool landmark_is_past(int id, const State &ancestor_state) const;
-    bool landmark_is_future(int id, const State &ancestor_state) const;
 };
 }
 
