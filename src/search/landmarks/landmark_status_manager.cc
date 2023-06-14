@@ -6,6 +6,16 @@
 using namespace std;
 
 namespace landmarks {
+static vector<LandmarkNode *> get_goal_landmarks(const LandmarkGraph &graph) {
+    vector<LandmarkNode *> goals;
+    for (auto &node : graph.get_nodes()) {
+        if (node->get_landmark().is_true_in_goal) {
+            goals.push_back(node.get());
+        }
+    }
+    return goals;
+}
+
 static vector<pair<LandmarkNode *, vector<LandmarkNode *>>> get_greedy_necessary_children(
     const LandmarkGraph &graph) {
     vector<pair<LandmarkNode *, vector<LandmarkNode *>>> orderings;
@@ -51,7 +61,8 @@ LandmarkStatusManager::LandmarkStatusManager(
     bool progress_greedy_necessary_orderings,
     bool progress_reasonable_orderings)
     : lm_graph(graph),
-      progress_goals(progress_goals),
+      goal_landmarks(progress_goals ? get_goal_landmarks(graph)
+                                    : vector<LandmarkNode *>{}),
       greedy_necessary_children(
           progress_greedy_necessary_orderings
           ? get_greedy_necessary_children(graph)
@@ -121,10 +132,12 @@ void LandmarkStatusManager::progress(
         return;
     }
 
-    const BitsetView parent_past = get_past_landmarks(parent_ancestor_state);
+    ConstBitsetView parent_past =
+        get_past_landmarks_const(parent_ancestor_state);
     BitsetView past = get_past_landmarks(ancestor_state);
 
-    const BitsetView parent_fut = get_future_landmarks(parent_ancestor_state);
+    ConstBitsetView parent_fut =
+        get_future_landmarks_const(parent_ancestor_state);
     BitsetView fut = get_future_landmarks(ancestor_state);
 
     assert(past.size() == lm_graph.get_num_landmarks());
@@ -132,36 +145,47 @@ void LandmarkStatusManager::progress(
     assert(fut.size() == lm_graph.get_num_landmarks());
     assert(parent_fut.size() == lm_graph.get_num_landmarks());
 
-    progress_basic_and_goals(
-        parent_past, parent_fut, past, fut, ancestor_state);
+    progress_basic(
+        parent_past, parent_fut, parent_ancestor_state,
+        past, fut, ancestor_state);
+    progress_goals(ancestor_state, fut);
     progress_greedy_necessary_orderings(ancestor_state, past, fut);
     progress_reasonable_orderings(past, fut);
 }
 
-void LandmarkStatusManager::progress_basic_and_goals(
-    const BitsetView &parent_past, const BitsetView &parent_fut,
-    BitsetView &past, BitsetView &fut, const State &ancestor_state) {
+void LandmarkStatusManager::progress_basic(
+    ConstBitsetView &parent_past, ConstBitsetView &parent_fut,
+    const State &parent_ancestor_state, BitsetView &past,
+    BitsetView &fut, const State &ancestor_state) {
     for (auto &node : lm_graph.get_nodes()) {
         int id = node->get_id();
         const Landmark &lm = node->get_landmark();
         if (parent_fut.test(id)) {
             /*
-              Basic progression: A future landmark remains future if it
-              is not achieved by the current transition. If it also
-              wasn't past in the parent, it remains not past.
+              Basic progression: A future landmark remains future if it is not
+              achieved by the current transition, i.e., it does not hold in the
+              current state or already held in the parent.
+
+              If it also wasn't past in the parent, it remains not past.
             */
             if (!lm.is_true_in_state(ancestor_state)) {
                 fut.set(id);
                 if (!parent_past.test(id)) {
                     past.reset(id);
                 }
+            } else if (lm.is_true_in_state(parent_ancestor_state)) {
+                assert(parent_past.test(id));
+                fut.set(id);
             }
-        } else if (
-            /* Goal progression: A landmark that must hold in the goal
-               but does not hold in the current state is future. */
-            progress_goals && lm.is_true_in_goal
-            && !lm.is_true_in_state(ancestor_state)) {
-            fut.set(id);
+        }
+    }
+}
+
+void LandmarkStatusManager::progress_goals(const State &ancestor_state,
+                                           BitsetView &fut) {
+    for (auto &node : goal_landmarks) {
+        if (node->get_landmark().is_true_in_state(ancestor_state)) {
+            fut.set(node->get_id());
         }
     }
 }
