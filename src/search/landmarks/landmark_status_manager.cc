@@ -62,7 +62,7 @@ LandmarkStatusManager::LandmarkStatusManager(
     bool progress_reasonable_orderings)
     : lm_graph(graph),
       goal_landmarks(progress_goals ? get_goal_landmarks(graph)
-                                    : vector<LandmarkNode *>{}),
+                     : vector<LandmarkNode *>{}),
       greedy_necessary_children(
           progress_greedy_necessary_orderings
           ? get_greedy_necessary_children(graph)
