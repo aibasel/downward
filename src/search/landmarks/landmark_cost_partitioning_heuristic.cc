@@ -30,13 +30,6 @@ void LandmarkCostPartitioningHeuristic::check_unsupported_features(
     const plugins::Options &opts) {
     shared_ptr<LandmarkFactory> lm_graph_factory =
         opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
-    /*
-    if (lm_graph_factory->computes_reasonable_orders()) {
-        cerr << "Reasonable orderings should not be used for "
-             << "admissible heuristics." << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-    }
-    */
 
     if (task_properties::has_axioms(task_proxy)) {
         cerr << "Cost partitioning does not support axioms." << endl;

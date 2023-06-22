@@ -161,28 +161,21 @@ void LandmarkStatusManager::progress_basic(
         int id = node->get_id();
         const Landmark &lm = node->get_landmark();
         if (parent_fut.test(id)) {
-            /*
-              Basic progression: A future landmark remains future if it is not
-              achieved by the current transition. If it also wasn't past in the
-              parent, it remains not past.
-            */
             if (!lm.is_true_in_state(ancestor_state)) {
+                /*
+                  A landmark that is future in the parent remains future
+                  if it does not hold in the current state. If it also
+                  wasn't past in the parent, it remains not past.
+                */
                 fut.set(id);
                 if (!parent_past.test(id)) {
                     past.reset(id);
                 }
             } else if (lm.is_true_in_state(parent_ancestor_state)) {
                 /*
-                  TODO: We might want to remove this case and add the
-                   following comment above:
-
-                  Note that the implementation below deviates from the theory in
-                  Büchner et al. (ICAPS 2023). In particular, the theory suggests to
-                  only revoke the future status from a landmark if it is *added*,
-                  i.e., did not hold in the parent and holds in the current state.
-                  While working on issue1036 we found experimentally that
-                  checking whether the landmark held in the parent state is too
-                  expensive and is not amortised by the gain in heuristic quality.
+                  If the landmark held in the parent already, then it
+                  was not added by this transition and should remain
+                  future.
                 */
                 assert(parent_past.test(id));
                 fut.set(id);
