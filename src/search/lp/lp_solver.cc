@@ -33,7 +33,6 @@
 #include <cassert>
 #include <iostream>
 #include <numeric>
-#include <unordered_set>
 
 using namespace std;
 using utils::ExitCode;
