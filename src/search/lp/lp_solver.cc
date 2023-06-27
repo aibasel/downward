@@ -32,6 +32,7 @@
 #include <cassert>
 #include <iostream>
 #include <numeric>
+#include <unordered_set>
 
 using namespace std;
 using utils::ExitCode;
@@ -40,7 +41,7 @@ namespace lp {
 #ifndef NDEBUG
 template<class T>
 static bool all_values_are_unique(const vector<T> &v) {
-    set<T> s(v.begin(), v.end());
+    unordered_set<T> s(v.begin(), v.end());
     return s.size() == v.size();
 }
 #endif
