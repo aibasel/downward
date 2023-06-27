@@ -37,6 +37,14 @@ using namespace std;
 using utils::ExitCode;
 
 namespace lp {
+#ifndef NDEBUG
+template<class T>
+static bool all_values_are_unique(const vector<T> &v) {
+    set<T> s(v.begin(), v.end());
+    return s.size() == v.size();
+}
+#endif
+
 void add_lp_solver_option_to_feature(plugins::Feature &feature) {
     feature.add_option<LPSolverType>(
         "lpsolver",
@@ -185,6 +193,7 @@ void LPSolver::load_problem(const LinearProgram &lp) {
 
     for (const LPConstraint &constraint : lp.get_constraints()) {
         const vector<int> &vars = constraint.get_variables();
+        assert(all_values_are_unique(vars));
         const vector<double> &coeffs = constraint.get_coefficients();
         assert(vars.size() == coeffs.size());
         starts.push_back(elements.size());
@@ -272,6 +281,7 @@ void LPSolver::add_temporary_constraints(const vector<LPConstraint> &constraints
         clear_temporary_data();
         int num_rows = constraints.size();
         for (const LPConstraint &constraint : constraints) {
+            assert(all_values_are_unique(constraint.get_variables()));
             row_lb.push_back(constraint.get_lower_bound());
             row_ub.push_back(constraint.get_upper_bound());
             rows.push_back(new CoinShallowPackedVector(
