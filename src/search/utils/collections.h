@@ -27,7 +27,7 @@ extern bool is_sorted_unique(const std::vector<T> &values) {
 }
 
 template<class T>
-static bool all_values_unique(const std::vector<T> &v) {
+extern bool all_values_unique(const std::vector<T> &v) {
     std::unordered_set<T> s(v.begin(), v.end());
     return s.size() == v.size();
 }
