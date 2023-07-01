@@ -36,24 +36,152 @@ class CplexSolverInterface : public SolverInterface {
     int num_unsatisfiable_temp_constraints;
 
     /*
-      Temporary data for assigning a new problem. We keep the vectors
-      around to avoid recreating them in every assignment.
-    */
-    std::vector<double> elements;
-    std::vector<int> indices;
-    std::vector<int> starts;
-    std::vector<double> col_lb;
-    std::vector<double> col_ub;
-    std::vector<char> col_type;
-    std::vector<double> objective;
-    std::vector<double> row_rhs;
-    std::vector<char> row_sense;
-    std::vector<double> row_range_values;
-    std::vector<int> row_range_indices;
-    void clear_temporary_data();
+      Matrix data in CPLEX format for loading a new problem. Matrix entries are
+      stored in sparse form: non-zero coefficients are either stored
+      column-by-column (in that case the column is the major dimension and the
+      row is the minor dimension) or row-by-row (in that case the row is the
+      major dimension and the column is the minor dimension).
 
-    void add_variables(const named_vector::NamedVector<LPVariable> &variables);
-    void add_constraints(const named_vector::NamedVector<LPConstraint> &constraints, bool temporary);
+      TODO: eventually, we might want to create our LP classes directly in this
+      format, so no additional conversion is necessary.
+    */
+    class CplexMatrix {
+        /*
+          Non-zero entries in the matrix.
+         */
+        std::vector<double> coefficients;
+        /*
+          Parallel vector to coefficients: specifies the minor dimension of the
+          corresponding entry.
+
+          For example, say entries are stored column-by-column, and there are
+          4 non-zero entries in columns 0 and 1. If column 2 now as a 4.5 in
+          row 1 and a 7.2 in row 5, then
+             coefficients[4] = 4.5, indices[4] = 1
+             coefficients[5] = 7.2, indices[5] = 5.
+         */
+        std::vector<int> indices;
+        /*
+          Specifies the starts of the major dimension in the two vectors above.
+          In the example above, starts[2] = 4 because the entries for column 2
+          start at index 4.
+         */
+        std::vector<int> starts;
+        /*
+          Specifies the number of non-zero entries within a major dimension.
+          In the example above, counts[2] = 2 because there are two non-zero
+          entries for column 2 (4.5 and 7.2).
+         */
+        std::vector<int> counts;
+    public:
+        /*
+          When loading a whole LP, column-by-column data better matches CPLEX's
+          internal data structures, so we prefer this encoding.
+         */
+        void assign_column_by_column(
+            const named_vector::NamedVector<LPConstraint> &constraints,
+            int num_cols);
+        /*
+          When adding constraints, a row-by-row encoding is more useful.
+          In row form, counts are not used. Instead, starts has an additional
+          entry at the end and counts[i] is always assumed to be
+          (starts[i+1] - starts[i]).
+         */
+        void assign_row_by_row(
+            const named_vector::NamedVector<LPConstraint> &constraints);
+
+        double *get_coefficients() { return coefficients.data(); }
+        int *get_indices() { return indices.data(); }
+        int *get_starts() { return starts.data(); }
+        int *get_counts() { return counts.data(); }
+        int get_num_nonzeros() { return coefficients.size(); }
+    };
+
+    class CplexColumnsInfo {
+        // Lower bound for each column (variable)
+        std::vector<double> lb;
+        // Upper bound for each column (variable)
+        std::vector<double> ub;
+        // Type of each column (continuos, integer)
+        std::vector<char> type;
+        // Objective value of each column (variable)
+        std::vector<double> objective;
+    public:
+        void assign(const named_vector::NamedVector<LPVariable> &variables);
+        double *get_lb() { return lb.data(); }
+        double *get_ub() { return ub.data(); }
+        char *get_type() { return type.data(); }
+        double *get_objective() { return objective.data(); }
+    };
+
+    class CplexRowsInfo {
+        // Right-hand side value of a row
+        std::vector<double> rhs;
+        // Sense of a row (Greater or equal, Less or equal, Equal, or Range)
+        std::vector<char> sense;
+        /*
+          If the sense of a row is Range, then its value is restricted to the
+          interval (RHS, RHS + range_value).
+         */
+        std::vector<double> range_values;
+        /*
+          In case not all rows specify a sense, this gives the indices of the
+          rows that are ranged rows.
+         */
+        std::vector<int> range_indices;
+    public:
+        void assign(const named_vector::NamedVector<LPConstraint> &constraints, int offset = 0, bool dense_range_values = true);
+        double *get_rhs() { return rhs.data(); }
+        char *get_sense() { return sense.data(); }
+        double *get_range_values() { return range_values.data(); }
+        int *get_range_indices() { return range_indices.data(); }
+        int get_num_ranged_rows() { return range_indices.size(); }
+    };
+
+    class CplexNameData {
+        std::vector<char *> names;
+        std::vector<int> indices;
+    public:
+        template <typename T>
+        explicit CplexNameData(const named_vector::NamedVector<T> &values) {
+            if (values.has_names()) {
+                names.resize(values.size());
+                indices.resize(values.size());
+                int num_values = values.size();
+                for (int i = 0; i < num_values; ++i) {
+                    names[i] = values.get_name(i).data();
+                    indices[i] = i;
+                }
+            }
+        }
+        int size() { return names.size(); }
+        int *get_indices() {
+            if (indices.empty()) {
+                return nullptr;
+            } else {
+                return indices.data();
+            }
+        }
+        char **get_names() {
+            if (names.empty()) {
+                return nullptr;
+            } else {
+                return names.data();
+            }
+        }
+    };
+
+    /*
+      We could create these objects locally but we want to keep them around to
+      avoid reallocation of the vectors in case we load multiple LPs. We don't
+      do this for name data as names are expensive anyway and should only be
+      used in debug mode where the additional allocation is not problematic.
+     */
+    CplexMatrix matrix;
+    CplexColumnsInfo columns;
+    CplexRowsInfo rows;
+    std::vector<int> objective_indices;
+
     std::pair<double, double> get_constraint_bounds(int index);
     bool is_trivially_unsolvable() const;
     void change_constraint_bounds(int index, double current_lb, double current_ub,

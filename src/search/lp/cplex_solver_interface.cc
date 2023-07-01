@@ -5,7 +5,9 @@
 
 #include "../utils/language.h"
 #include "../utils/logging.h"
+#include "../utils/system.h"
 
+#include <algorithm>
 #include <cstring>
 #include <numeric>
 
@@ -32,7 +34,6 @@ static void handle_cplex_error(CPXENVptr env, int error_code) {
       below eventually. In that case there is nothing else we have to do.
     */
     if (error_code == CPXERR_NO_MEMORY) {
-        cerr << "Ran out of memory while calling CPLEX." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_OUT_OF_MEMORY);
     }
     char buffer[CPXMESSAGEBUFSIZE];
@@ -82,6 +83,159 @@ static tuple<char, double, double> bounds_to_sense_rhs_range(double lb, double u
     }
 }
 
+static int sense_to_cplex_sense(LPObjectiveSense sense) {
+    if (sense == LPObjectiveSense::MINIMIZE) {
+        return CPX_MIN;
+    } else {
+        return CPX_MAX;
+    }
+}
+
+void CplexSolverInterface::CplexMatrix::assign_column_by_column(
+        const named_vector::NamedVector<LPConstraint> &constraints,
+        int num_cols) {
+    coefficients.clear();
+    indices.clear();
+    starts.clear();
+    counts.clear();
+
+    // Set column starts and number of entries in each column.
+    int num_rows = constraints.size();
+    starts.resize(num_cols, 0);
+    counts.resize(num_cols, 0);
+    int num_nonzeros = 0;
+    for (int row_index = 0; row_index < num_rows; ++row_index) {
+        const vector<int> &vars = constraints[row_index].get_variables();
+        num_nonzeros += vars.size();
+        for (int var : vars) {
+            ++counts[var];
+        }
+    }
+    for (int var = 1; var < num_cols; ++var) {
+        starts[var] = starts[var-1] + counts[var-1];
+    }
+    assert(num_nonzeros == starts[num_cols - 1] + counts[num_cols - 1]);
+
+    /*
+      Set non-zero coefficients in the correct places of 'coefficients'
+      according to their column, and store the corresponding row in 'indices'.
+     */
+    indices.resize(num_nonzeros);
+    coefficients.resize(num_nonzeros);
+    for (int row_index = 0; row_index < num_rows; ++row_index) {
+        const LPConstraint &constraint = constraints[row_index];
+        const vector<int> &vars = constraint.get_variables();
+        const vector<double> &coeffs = constraint.get_coefficients();
+        int num_entries = vars.size();
+        for (int i = 0; i < num_entries; ++i) {
+            int var = vars[i];
+            double coeff = coeffs[i];
+            assert(starts[var] < num_nonzeros);
+            indices[starts[var]] = row_index;
+            coefficients[starts[var]] = coeff;
+            /*
+              We shift the start of the column to the right here and fix this
+              after the loop. This way, we avoid an extra allocation and copy
+              of the vector.
+             */
+            ++starts[var];
+        }
+    }
+    /*
+      We shifted col_start[i] to the right once for every entry. Now we have to
+      shift it back to recover its original value.
+     */
+    for (int var = 0; var < num_cols; ++var) {
+        starts[var] -= counts[var];
+    }
+    assert(static_cast<int>(starts.size()) == num_cols);
+    assert(static_cast<int>(counts.size()) == num_cols);
+    assert(indices.size() == coefficients.size());
+}
+
+void CplexSolverInterface::CplexMatrix::assign_row_by_row(
+    const named_vector::NamedVector<LPConstraint> &constraints) {
+    coefficients.clear();
+    indices.clear();
+    starts.clear();
+    counts.clear();
+
+    // Collect non-zero matrix entries.
+    for (const LPConstraint &constraint : constraints) {
+        const vector<int> &vars = constraint.get_variables();
+        const vector<double> &coeffs = constraint.get_coefficients();
+        assert(vars.size() == coeffs.size());
+        starts.push_back(coefficients.size());
+        indices.insert(indices.end(), vars.begin(), vars.end());
+        coefficients.insert(coefficients.end(), coeffs.begin(), coeffs.end());
+    }
+    starts.push_back(coefficients.size());
+    assert(static_cast<int>(starts.size()) == constraints.size() + 1);
+    assert(indices.size() == coefficients.size());
+}
+
+void CplexSolverInterface::CplexColumnsInfo::assign(const named_vector::NamedVector<LPVariable> &variables) {
+    lb.clear();
+    ub.clear();
+    type.clear();
+    objective.clear();
+
+    int num_cols = variables.size();
+    lb.reserve(num_cols);
+    ub.reserve(num_cols);
+    type.reserve(num_cols);
+    objective.reserve(num_cols);
+    for (const LPVariable &var : variables) {
+        lb.push_back(var.lower_bound);
+        ub.push_back(var.upper_bound);
+        if (var.is_integer) {
+            type.push_back(CPX_INTEGER);
+        } else {
+            type.push_back(CPX_CONTINUOUS);
+        }
+        objective.push_back(var.objective_coefficient);
+    }
+    assert(static_cast<int>(lb.size()) == variables.size());
+    assert(static_cast<int>(ub.size()) == variables.size());
+    assert(static_cast<int>(type.size()) == variables.size());
+    assert(static_cast<int>(objective.size()) == variables.size());
+}
+
+void CplexSolverInterface::CplexRowsInfo::assign(const named_vector::NamedVector<LPConstraint> &constraints, int offset, bool dense_range_values) {
+    rhs.clear();
+    sense.clear();
+    range_values.clear();
+    range_indices.clear();
+
+    int num_rows = constraints.size();
+    sense.resize(num_rows);
+    rhs.resize(num_rows);
+    if (dense_range_values) {
+        range_values.resize(num_rows, 0);
+    }
+    for (int row_index = 0; row_index < num_rows; ++row_index) {
+        const LPConstraint &constraint = constraints[row_index];
+        double lb = constraint.get_lower_bound();
+        double ub = constraint.get_upper_bound();
+        const auto &[sense_value, rhs_value, range_value] = bounds_to_sense_rhs_range(lb, ub);
+        sense[row_index] = sense_value;
+        rhs[row_index] = rhs_value;
+        if (sense_value == 'R') {
+            if (dense_range_values) {
+                range_values[row_index] = range_value;
+            } else {
+                range_values.push_back(range_value);
+                range_indices.push_back(offset + row_index);
+            }
+        }
+    }
+    assert(static_cast<int>(rhs.size()) == constraints.size());
+    assert(static_cast<int>(sense.size()) == constraints.size());
+    assert(static_cast<int>(range_values.size()) <= constraints.size());
+    assert((dense_range_values && (static_cast<int>(range_values.size()) == constraints.size()) && (range_indices.size() == 0)) ||
+           (!dense_range_values && (range_values.size() == range_indices.size())));
+}
+
 CplexSolverInterface::CplexSolverInterface()
     : env(nullptr), problem(nullptr), is_mip(false),
       num_permanent_constraints(0), num_unsatisfiable_constraints(0),
@@ -104,125 +258,6 @@ CplexSolverInterface::~CplexSolverInterface() {
              << ")." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
-}
-
-void CplexSolverInterface::clear_temporary_data() {
-    elements.clear();
-    indices.clear();
-    starts.clear();
-    col_lb.clear();
-    col_ub.clear();
-    col_type.clear();
-    objective.clear();
-    row_rhs.clear();
-    row_sense.clear();
-    row_range_values.clear();
-    row_range_indices.clear();
-}
-
-void CplexSolverInterface::add_variables(const named_vector::NamedVector<LPVariable> &variables) {
-    clear_temporary_data();
-
-    int num_variables = variables.size();
-    col_lb.reserve(num_variables);
-    col_ub.reserve(num_variables);
-    col_type.reserve(num_variables);
-    objective.reserve(num_variables);
-    for (const LPVariable &var : variables) {
-        col_lb.push_back(var.lower_bound);
-        col_ub.push_back(var.upper_bound);
-        if (var.is_integer) {
-            col_type.push_back(CPX_INTEGER);
-        } else {
-            col_type.push_back(CPX_CONTINUOUS);
-        }
-        objective.push_back(var.objective_coefficient);
-    }
-
-    // Optionally add variable names.
-    char **col_names = nullptr;
-    if (variables.has_names()) {
-        col_names = new char *[variables.size()];
-        for (int i = 0; i < variables.size(); ++i) {
-            col_names[i] = variables.get_name(i).data();
-        }
-    }
-
-    CPX_CALL(CPXnewcols, env, problem, num_variables, objective.data(),
-             col_lb.data(), col_ub.data(), col_type.data(), col_names);
-
-    if (col_names) {
-        delete[] col_names;
-    }
-
-    clear_temporary_data();
-}
-
-void CplexSolverInterface::add_constraints(const named_vector::NamedVector<LPConstraint> &constraints, bool temporary) {
-    clear_temporary_data();
-    int constraint_id = get_num_constraints();
-    for (const LPConstraint &constraint : constraints) {
-        double lb = constraint.get_lower_bound();
-        double ub = constraint.get_upper_bound();
-        const auto &[sense, rhs, range] = bounds_to_sense_rhs_range(lb, ub);
-        if (lb > ub) {
-            if (temporary) {
-                ++num_unsatisfiable_temp_constraints;
-            } else {
-                ++num_unsatisfiable_constraints;
-            }
-        }
-        row_sense.push_back(sense);
-        row_rhs.push_back(rhs);
-        if (sense == 'R') {
-            row_range_indices.push_back(constraint_id);
-            row_range_values.push_back(range);
-        }
-        ++constraint_id;
-    }
-
-    // Optionally add constraint names.
-    char **row_names = nullptr;
-    if (constraints.has_names()) {
-        row_names = new char *[constraints.size()];
-        for (int i = 0; i < constraints.size(); ++i) {
-            row_names[i] = constraints.get_name(i).data();
-        }
-    }
-
-    // Collect non-zero matrix entries.
-    for (const LPConstraint &constraint : constraints) {
-        const vector<int> &vars = constraint.get_variables();
-        const vector<double> &coeffs = constraint.get_coefficients();
-        assert(vars.size() == coeffs.size());
-        starts.push_back(elements.size());
-        indices.insert(indices.end(), vars.begin(), vars.end());
-        elements.insert(elements.end(), coeffs.begin(), coeffs.end());
-    }
-    starts.push_back(elements.size());
-
-    // CPXaddrows can add new variables as well, but we do not want any.
-    static const int num_extra_columns = 0;
-    char **extra_column_names = nullptr;
-    CPX_CALL(CPXaddrows, env, problem, num_extra_columns, row_sense.size(),
-             indices.size(), row_rhs.data(), row_sense.data(),
-             starts.data(), indices.data(), elements.data(),
-             extra_column_names, row_names);
-
-    if (row_names) {
-        delete[] row_names;
-    }
-
-    /*
-      If there are any ranged rows, we have to set up their ranges with a
-      separate call.
-    */
-    if (!row_range_indices.empty()) {
-        CPX_CALL(CPXchgrngval, env, problem, row_range_indices.size(),
-                 row_range_indices.data(), row_range_values.data());
-    }
-
-    clear_temporary_data();
 }
 
 pair<double, double> CplexSolverInterface::get_constraint_bounds(int index) {
@@ -281,41 +316,100 @@ void CplexSolverInterface::load_problem(const LinearProgram &lp) {
     if (problem) {
         freeProblem(env, &problem);
     }
-    const named_vector::NamedVector<LPVariable> &variables = lp.get_variables();
-    const named_vector::NamedVector<LPConstraint> &constraints = lp.get_constraints();
-
     problem = createProblem(env, "");
-    add_variables(variables);
-    add_constraints(constraints, false);
+
+    const named_vector::NamedVector<LPVariable> &variables = lp.get_variables();
+    is_mip = any_of(variables.begin(), variables.end(), [](const LPVariable &v) {
+        return v.is_integer;
+    });
+
+    const named_vector::NamedVector<LPConstraint> &constraints = lp.get_constraints();
     num_permanent_constraints = constraints.size();
-    is_mip = any_of(variables.begin(), variables.end(), [](const LPVariable &var) {
-                        return var.is_integer;
-                    });
+    num_unsatisfiable_constraints = 0;
+    for (const LPConstraint &constraint : constraints) {
+        if (constraint.get_lower_bound() > constraint.get_upper_bound()) {
+            ++num_unsatisfiable_constraints;
+        }
+    }
+
+    matrix.assign_column_by_column(constraints, variables.size());
+    columns.assign(variables);
+    rows.assign(constraints);
+    CPX_CALL(CPXcopylp, env, problem, variables.size(), constraints.size(),
+             sense_to_cplex_sense(lp.get_sense()),
+             columns.get_objective(),
+             rows.get_rhs(),
+             rows.get_sense(),
+             matrix.get_starts(),
+             matrix.get_counts(),
+             matrix.get_indices(),
+             matrix.get_coefficients(),
+             columns.get_lb(),
+             columns.get_ub(),
+             rows.get_range_values());
+
     if (is_mip) {
-        CPX_CALL(CPXchgprobtype, env, problem, CPXPROB_MILP);
+        CPX_CALL(CPXcopyctype, env, problem, columns.get_type());
     } else {
-        CPX_CALL(CPXchgprobtype, env, problem, CPXPROB_LP);
+        assert(CPXgetprobtype(env, problem) == CPXPROB_LP);
     }
 
-    // Set objective sense.
-    if (lp.get_sense() == LPObjectiveSense::MINIMIZE) {
-        CPX_CALL(CPXchgobjsen, env, problem, CPX_MIN);
-    } else {
-        CPX_CALL(CPXchgobjsen, env, problem, CPX_MAX);
-    }
-
-    /*
-      Set objective name (there seems to be no direct way to do this, so
-      we use it as the problem name).
-    */
+    // Optionally set names.
     if (!lp.get_objective_name().empty()) {
         CPX_CALL(CPXchgprobname, env, problem, lp.get_objective_name().c_str());
+    }
+    if (variables.has_names()) {
+        CplexNameData col_names(variables);
+        CPX_CALL(CPXchgcolname, env, problem,
+                 col_names.size(),
+                 col_names.get_indices(),
+                 col_names.get_names());
+    }
+    if (constraints.has_names()) {
+        CplexNameData row_names(constraints);
+        CPX_CALL(CPXchgrowname, env, problem,
+                 row_names.size(),
+                 row_names.get_indices(),
+                 row_names.get_names());
     }
 }
 
 void CplexSolverInterface::add_temporary_constraints(
     const named_vector::NamedVector<LPConstraint> &constraints) {
-    add_constraints(constraints, true);
+
+    for (const LPConstraint &constraint : constraints) {
+        if (constraint.get_lower_bound() > constraint.get_upper_bound()) {
+            ++num_unsatisfiable_temp_constraints;
+        }
+    }
+
+    matrix.assign_row_by_row(constraints);
+    rows.assign(constraints, get_num_constraints(), false);
+    CplexNameData row_names(constraints);
+    // CPXaddrows can add new variables as well, but we do not want any.
+    static const int num_extra_columns = 0;
+    char **extra_column_names = nullptr;
+    CPX_CALL(CPXaddrows, env, problem, num_extra_columns,
+             constraints.size(),
+             matrix.get_num_nonzeros(),
+             rows.get_rhs(),
+             rows.get_sense(),
+             matrix.get_starts(),
+             matrix.get_indices(),
+             matrix.get_coefficients(),
+             extra_column_names,
+             row_names.get_names());
+
+    /*
+      If there are any ranged rows, we have to set up their ranges with a
+      separate call.
+    */
+    if (rows.get_num_ranged_rows() > 0) {
+        CPX_CALL(CPXchgrngval, env, problem,
+                 rows.get_num_ranged_rows(),
+                 rows.get_range_indices(),
+                 rows.get_range_values());
+    }
 }
 
 void CplexSolverInterface::clear_temporary_constraints() {
@@ -332,11 +426,10 @@ double CplexSolverInterface::get_infinity() const {
 }
 
 void CplexSolverInterface::set_objective_coefficients(const vector<double> &coefficients) {
-    clear_temporary_constraints();
-    indices.resize(coefficients.size());
-    iota(indices.begin(), indices.end(), 0);
-    CPX_CALL(CPXchgobj, env, problem, coefficients.size(), indices.data(), coefficients.data());
-    clear_temporary_constraints();
+    objective_indices.clear();
+    objective_indices.resize(coefficients.size());
+    iota(objective_indices.begin(), objective_indices.end(), 0);
+    CPX_CALL(CPXchgobj, env, problem, coefficients.size(), objective_indices.data(), coefficients.data());
 }
 
 void CplexSolverInterface::set_objective_coefficient(int index, double coefficient) {
@@ -373,7 +466,7 @@ void CplexSolverInterface::solve() {
     } else if (is_mip) {
         CPX_CALL(CPXmipopt, env, problem);
     } else {
-        CPX_CALL(CPXdualopt, env, problem);
+        CPX_CALL(CPXlpopt, env, problem);
     }
 }
 
