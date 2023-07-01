@@ -260,37 +260,13 @@ CplexSolverInterface::~CplexSolverInterface() {
     }
 }
 
-pair<double, double> CplexSolverInterface::get_constraint_bounds(int index) {
-    char sense;
-    CPX_CALL(CPXgetsense, env, problem, &sense, index, index);
-    double rhs;
-    CPX_CALL(CPXgetrhs, env, problem, &rhs, index, index);
-    switch (sense) {
-    case 'L':
-        return {-CPX_INFBOUND, rhs};
-    case 'G':
-        return {rhs, CPX_INFBOUND};
-    case 'E':
-        return {rhs, rhs};
-    case 'R':
-        double range_value;
-        CPX_CALL(CPXgetrngval, env, problem, &range_value, index, index);
-        if (range_value > 0) {
-            return {rhs, rhs + range_value};
-        } else {
-            return {rhs + range_value, rhs};
-        }
-    default:
-        ABORT("CPXgetsense returned unknown value.");
-    }
-}
-
 bool CplexSolverInterface::is_trivially_unsolvable() const {
     return num_unsatisfiable_constraints + num_unsatisfiable_temp_constraints > 0;
 }
 
-void CplexSolverInterface::change_constraint_bounds(
-    int index, double current_lb, double current_ub, double lb, double ub) {
+void CplexSolverInterface::change_constraint_bounds(int index, double lb, double ub) {
+    double current_lb = constraint_lower_bounds[index];
+    double current_ub = constraint_upper_bounds[index];
     if (current_lb == lb && current_ub == ub) {
         return;
     }
@@ -313,6 +289,8 @@ void CplexSolverInterface::change_constraint_bounds(
             ++num_unsatisfiable_temp_constraints;
         }
     }
+    constraint_lower_bounds[index] = lb;
+    constraint_upper_bounds[index] = ub;
 }
 
 void CplexSolverInterface::load_problem(const LinearProgram &lp) {
@@ -355,6 +333,13 @@ void CplexSolverInterface::load_problem(const LinearProgram &lp) {
         CPX_CALL(CPXcopyctype, env, problem, columns.get_type());
     } else {
         assert(CPXgetprobtype(env, problem) == CPXPROB_LP);
+    }
+
+    constraint_lower_bounds.clear();
+    constraint_upper_bounds.clear();
+    for (const LPConstraint &constraint : constraints) {
+        constraint_lower_bounds.push_back(constraint.get_lower_bound());
+        constraint_upper_bounds.push_back(constraint.get_upper_bound());
     }
 
     // Optionally set names.
@@ -413,6 +398,11 @@ void CplexSolverInterface::add_temporary_constraints(
                  rows.get_range_indices(),
                  rows.get_range_values());
     }
+
+    for (const LPConstraint &constraint : constraints) {
+        constraint_lower_bounds.push_back(constraint.get_lower_bound());
+        constraint_upper_bounds.push_back(constraint.get_upper_bound());
+    }
 }
 
 void CplexSolverInterface::clear_temporary_constraints() {
@@ -421,6 +411,9 @@ void CplexSolverInterface::clear_temporary_constraints() {
     if (start <= end) {
         CPX_CALL(CPXdelrows, env, problem, start, end);
         num_unsatisfiable_temp_constraints = 0;
+
+        constraint_lower_bounds.resize(num_permanent_constraints);
+        constraint_upper_bounds.resize(num_permanent_constraints);
     }
 }
 
@@ -440,13 +433,11 @@ void CplexSolverInterface::set_objective_coefficient(int index, double coefficie
 }
 
 void CplexSolverInterface::set_constraint_lower_bound(int index, double bound) {
-    const auto &[current_lb, current_ub] = get_constraint_bounds(index);
-    change_constraint_bounds(index, current_lb, current_ub, bound, current_ub);
+    change_constraint_bounds(index, bound, constraint_upper_bounds[index]);
 }
 
 void CplexSolverInterface::set_constraint_upper_bound(int index, double bound) {
-    const auto &[current_lb, current_ub] = get_constraint_bounds(index);
-    change_constraint_bounds(index, current_lb, current_ub, current_lb, bound);
+    change_constraint_bounds(index, constraint_lower_bounds[index], bound);
 }
 
 void CplexSolverInterface::set_variable_lower_bound(int index, double bound) {

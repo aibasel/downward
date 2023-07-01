@@ -182,10 +182,20 @@ class CplexSolverInterface : public SolverInterface {
     CplexRowsInfo rows;
     std::vector<int> objective_indices;
 
-    std::pair<double, double> get_constraint_bounds(int index);
+    /*
+      We store a copy of the current constraint bounds. We need to know the
+      current bounds when changing bounds, and accessing them through the CPLEX
+      interface has a significant overhead. Storing these vectors overlaps with
+      storing CplexRowsInfo above. The difference is that CplexRowsInfo stores
+      more information and we reuse it for temporary constraints, while we want
+      to keep the following vectors always synchronized with the full LP
+      (permanent and temporary constraints).
+     */
+    std::vector<double> constraint_lower_bounds;
+    std::vector<double> constraint_upper_bounds;
+
     bool is_trivially_unsolvable() const;
-    void change_constraint_bounds(int index, double current_lb, double current_ub,
-                                  double lb, double ub);
+    void change_constraint_bounds(int index, double lb, double ub);
 public:
     CplexSolverInterface();
     virtual ~CplexSolverInterface() override;
