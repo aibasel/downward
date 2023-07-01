@@ -291,6 +291,9 @@ bool CplexSolverInterface::is_trivially_unsolvable() const {
 
 void CplexSolverInterface::change_constraint_bounds(
     int index, double current_lb, double current_ub, double lb, double ub) {
+    if (current_lb == lb && current_ub == ub) {
+        return;
+    }
     const auto &[sense, rhs, range] = bounds_to_sense_rhs_range(lb, ub);
 
     CPX_CALL(CPXchgsense, env, problem, 1, &index, &sense);
