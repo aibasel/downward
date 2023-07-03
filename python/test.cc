@@ -1,6 +1,8 @@
-#include <pybind11/pybind11.h>
+                                                                                                                                                                                                                                                                                                                                                                    #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <functional>
 #include <fstream>
+#include <vector>
 
 #include "command_line.h"
 #include "heuristic.h"
@@ -42,9 +44,38 @@ public:
     }
 };
 
+void init_ff(py::module_ &m) {
+    py::options options;
+    options.disable_function_signatures();
+
+    py::class_<ff_heuristic::FFHeuristic, std::shared_ptr<ff_heuristic::FFHeuristic>, Heuristic>(m, "FFHeuristic")
+      .def(py::init<std::shared_ptr<AbstractTask>>(), py::arg("task"), py::doc(R"delimiter(
+    FFHeuristic
+    bla bla bla synopsis
+
+    Parameters
+    ----------
+    :param AbstractTask task: optional task transformation for this heuristic
+)delimiter"));
+}
+
+void init_ehc(py::module_ &m) {
+    py::options options;
+    options.disable_function_signatures();
+
+    py::class_<enforced_hill_climbing_search::EnforcedHillClimbingSearch, std::shared_ptr<enforced_hill_climbing_search::EnforcedHillClimbingSearch>>(m, "EHCSearch")
+      .def(py::init<const std::string &, int, double, int, std::shared_ptr<Evaluator>>())
+      .def("search", &enforced_hill_climbing_search::EnforcedHillClimbingSearch::search, py::doc("this has some effect"))
+      .def("found_solution", &enforced_hill_climbing_search::EnforcedHillClimbingSearch::found_solution)
+      .def("get_plan", &enforced_hill_climbing_search::EnforcedHillClimbingSearch::get_plan);
+}
+
 PYBIND11_MODULE(pydownward, m) {
     m.doc() = "Gabi's pybind11 example plugin"; // Optional module docstring
-                                                //
+
+    py::options options;
+    options.disable_function_signatures();
+
     m.def("read_task", &read_task, "Read the task from sas_file", py::arg("sas_file")="output.sas");
 
     m.def("get_root_task", &tasks::get_root_task, "Get the root task");
@@ -69,12 +100,8 @@ PYBIND11_MODULE(pydownward, m) {
       .def(py::init<std::shared_ptr<AbstractTask>>())
       .def("compute_heuristic", &Heuristic::compute_heuristic);
 
-    py::class_<ff_heuristic::FFHeuristic, std::shared_ptr<ff_heuristic::FFHeuristic>, Heuristic>(m, "FFHeuristic")
-      .def(py::init<std::shared_ptr<AbstractTask>>());
-
-    py::class_<enforced_hill_climbing_search::EnforcedHillClimbingSearch, std::shared_ptr<enforced_hill_climbing_search::EnforcedHillClimbingSearch>>(m, "EHCSearch")
-      .def(py::init<const std::string &, int, double, int, std::shared_ptr<Evaluator>>())
-      .def("search", &enforced_hill_climbing_search::EnforcedHillClimbingSearch::search)
-      .def("found_solution", &enforced_hill_climbing_search::EnforcedHillClimbingSearch::found_solution)
-      .def("get_plan", &enforced_hill_climbing_search::EnforcedHillClimbingSearch::get_plan);
+    std::vector<std::function<void(py::module_ &)>> init_functions = {init_ff, init_ehc};
+    for(auto f : init_functions) {
+        f(m);
+    }
 }
