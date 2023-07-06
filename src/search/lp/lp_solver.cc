@@ -3,6 +3,7 @@
 #include "lp_internals.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/system.h"
 
@@ -185,6 +186,7 @@ void LPSolver::load_problem(const LinearProgram &lp) {
 
     for (const LPConstraint &constraint : lp.get_constraints()) {
         const vector<int> &vars = constraint.get_variables();
+        assert(utils::all_values_unique(vars));
         const vector<double> &coeffs = constraint.get_coefficients();
         assert(vars.size() == coeffs.size());
         starts.push_back(elements.size());
@@ -272,6 +274,7 @@ void LPSolver::add_temporary_constraints(const vector<LPConstraint> &constraints
         clear_temporary_data();
         int num_rows = constraints.size();
         for (const LPConstraint &constraint : constraints) {
+            assert(utils::all_values_unique(constraint.get_variables()));
             row_lb.push_back(constraint.get_lower_bound());
             row_ub.push_back(constraint.get_upper_bound());
             rows.push_back(new CoinShallowPackedVector(
