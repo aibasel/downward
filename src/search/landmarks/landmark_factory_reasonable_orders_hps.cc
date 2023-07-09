@@ -13,8 +13,7 @@ using namespace std;
 namespace landmarks {
 LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(const plugins::Options &opts)
     : LandmarkFactory(opts),
-      lm_factory(opts.get<shared_ptr<LandmarkFactory>>("lm_factory")),
-      use_obedient_reasonable(opts.get<bool>("use_obedient_reasonable")) {
+      lm_factory(opts.get<shared_ptr<LandmarkFactory>>("lm_factory")) {
 }
 
 void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<AbstractTask> &task) {
@@ -30,12 +29,10 @@ void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<Abs
         log << "approx. reasonable orders" << endl;
     }
     approximate_reasonable_orders(task_proxy, false);
-    if (use_obedient_reasonable) {
-        if (log.is_at_least_normal()) {
-            log << "approx. obedient reasonable orders" << endl;
-        }
-        approximate_reasonable_orders(task_proxy, true);
+    if (log.is_at_least_normal()) {
+        log << "approx. obedient reasonable orders" << endl;
     }
+    approximate_reasonable_orders(task_proxy, true);
 
     mk_acyclic_graph();
 }
@@ -396,20 +393,24 @@ public:
                 "215-278",
                 "2004"));
 
+        document_note(
+            "Obedient-reasonable Orderings",
+            "Hoffmann et al. (2004) suggest obedient-reasonable orderings "
+            "in addition to reasonable orderings. Obedient-reasonable "
+            "orderings were later also used by the LAMA planner (Richter and "
+            "Westphal, 2010). They are \"reasonable orderings\" under the "
+            "assumption that the reasonable orderings are actually "
+            "\"natural\", i.e., every plan obeys the reasonable orderings. We "
+            "observed experimentally that obedient-reasonable orderings have "
+            "minimal effect on the performance of LAMA when working on the "
+            "theory underlying issue1036 (Büchner et al., 2023). More "
+            "specifically, we observed a slight decline in plan quality. "
+            "Furthermore, we are not aware of a valid progression function "
+            "according to that theory. Support for computing "
+            "obedient-reasonable orderings was therefore removed in issue1036, "
+            "as they were not used anywhere anymore.");
+
         add_option<shared_ptr<LandmarkFactory>>("lm_factory");
-        /* TODO: Print warning in admissible heuristics when using
-            obedient-reasonable. */
-        // TODO: Should we adapt aliases to set this option to true?
-        add_option<bool>(
-            "use_obedient_reasonable",
-            "Choose whether obedient-reasonable orderings should also be "
-            "computed. Note that we are unsure whether and how they could be "
-            "used for optimal planning (i.e., in admissible heuristics). "
-            "Furthermore, our experiments suggest that they are not really "
-            "helpful for satisficing planning either, hence the default value "
-            "*false*.",
-            // FIXME: change default value to *false*!
-            "true");
         add_landmark_factory_options_to_feature(*this);
 
         // TODO: correct?
