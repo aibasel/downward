@@ -19,13 +19,15 @@ class LandmarkStatusManager {
     PerStateBitset future_landmarks;
 
     void progress_basic(
-        ConstBitsetView &parent_past, ConstBitsetView &parent_fut,
+        ConstBitsetView &parent_past, ConstBitsetView &parent_future,
         const State &parent_ancestor_state, BitsetView &past,
-        BitsetView &fut, const State &ancestor_state);
-    void progress_goals(const State &ancestor_state, BitsetView &fut);
+        BitsetView &future, const State &ancestor_state);
+    void progress_goals(const State &ancestor_state, BitsetView &future);
     void progress_greedy_necessary_orderings(
-        const State &ancestor_state, const BitsetView &past, BitsetView &fut);
-    void progress_reasonable_orderings(const BitsetView &past, BitsetView &fut);
+        const State &ancestor_state, const BitsetView &past,
+        BitsetView &future);
+    void progress_reasonable_orderings(
+        const BitsetView &past, BitsetView &future);
 public:
     LandmarkStatusManager(
         LandmarkGraph &graph,
