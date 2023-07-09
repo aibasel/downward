@@ -22,7 +22,7 @@ protected:
     const std::vector<int> operator_costs;
 
     const std::set<int> &get_achievers(
-        bool past, const Landmark &landmark) const;
+        const Landmark &landmark, bool past) const;
 public:
     LandmarkCostAssignment(const std::vector<int> &operator_costs,
                            const LandmarkGraph &graph);

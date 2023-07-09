@@ -23,7 +23,7 @@ LandmarkCostAssignment::LandmarkCostAssignment(
 }
 
 const set<int> &LandmarkCostAssignment::get_achievers(
-    bool past, const Landmark &landmark) const {
+    const Landmark &landmark, bool past) const {
     // Return relevant achievers of the landmark according to its status.
     if (past) {
         return landmark.possible_achievers;
@@ -62,7 +62,8 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(
     for (auto &node : nodes) {
         int id = node->get_id();
         if (future.test(id)) {
-            const set<int> &achievers = get_achievers(past.test(id), node->get_landmark());
+            const set<int> &achievers =
+                get_achievers(node->get_landmark(), past.test(id));
             if (achievers.empty())
                 return numeric_limits<double>::max();
             if (use_action_landmarks && achievers.size() == 1) {
@@ -94,7 +95,8 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(
     for (auto &node : nodes) {
         int id = node->get_id();
         if (future.test(id)) {
-            const set<int> &achievers = get_achievers(past.test(id), node->get_landmark());
+            const set<int> &achievers =
+                get_achievers(node->get_landmark(), past.test(id));
             bool covered_by_action_lm = false;
             for (int op_id : achievers) {
                 assert(utils::in_bounds(op_id, action_landmarks));
@@ -121,7 +123,7 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(
         int id = node->get_id();
         assert(future.test(id));
         const set<int> &achievers =
-            get_achievers(past.test(id), node->get_landmark());
+            get_achievers(node->get_landmark(), past.test(id));
         double min_cost = numeric_limits<double>::max();
         for (int op_id : achievers) {
             assert(utils::in_bounds(op_id, achieved_lms_by_op));
@@ -214,7 +216,8 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value(
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
         const Landmark &landmark = lm_graph.get_node(lm_id)->get_landmark();
         if (future.test(lm_id)) {
-            const set<int> &achievers = get_achievers(past.test(lm_id), landmark);
+            const set<int> &achievers =
+                get_achievers(landmark, past.test(lm_id));
             if (achievers.empty())
                 return numeric_limits<double>::max();
             for (int op_id : achievers) {
