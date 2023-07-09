@@ -20,7 +20,7 @@ static vector<pair<LandmarkNode *, vector<LandmarkNode *>>> get_greedy_necessary
     const LandmarkGraph &graph) {
     vector<pair<LandmarkNode *, vector<LandmarkNode *>>> orderings;
     for (auto &node : graph.get_nodes()) {
-        vector<LandmarkNode *> greedy_necessary_children{};
+        vector<LandmarkNode *> greedy_necessary_children;
         for (auto &child : node->children) {
             if (child.second == EdgeType::GREEDY_NECESSARY) {
                 greedy_necessary_children.push_back(child.first);
@@ -37,7 +37,7 @@ static vector<pair<LandmarkNode *, vector<LandmarkNode *>>> get_reasonable_paren
     const LandmarkGraph &graph) {
     vector<pair<LandmarkNode *, vector<LandmarkNode *>>> orderings;
     for (auto &node : graph.get_nodes()) {
-        vector<LandmarkNode *> reasonable_parents{};
+        vector<LandmarkNode *> reasonable_parents;
         for (auto &parent : node->parents) {
             if (parent.second == EdgeType::REASONABLE) {
                 reasonable_parents.push_back(parent.first);
@@ -50,11 +50,6 @@ static vector<pair<LandmarkNode *, vector<LandmarkNode *>>> get_reasonable_paren
     return orderings;
 }
 
-/*
-  By default we mark all landmarks past, since it is the neutral element for
-  set intersection which we emulate in the progression. Similarly, no landmarks
-  are future which is the neutral element for set union.
-*/
 LandmarkStatusManager::LandmarkStatusManager(
     LandmarkGraph &graph,
     bool progress_goals,
@@ -71,6 +66,11 @@ LandmarkStatusManager::LandmarkStatusManager(
           progress_reasonable_orderings
           ? get_reasonable_parents(graph)
           : vector<pair<LandmarkNode *, vector<LandmarkNode *>>>{}),
+      /*
+        By default we mark all landmarks past, since it is the neutral element
+        for set intersection which we emulate in the progression. Similarly, no
+        landmarks are future which is the neutral element for set union.
+      */
       past_landmarks(vector<bool>(graph.get_num_landmarks(), true)),
       future_landmarks(vector<bool>(graph.get_num_landmarks(), false)) {
 }
