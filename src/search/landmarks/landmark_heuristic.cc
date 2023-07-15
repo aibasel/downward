@@ -184,7 +184,7 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
             "https://ai.dmi.unibas.ch/papers/buechner-et-al-icaps2023.pdf",
             "Proceedings of the Thirty-Third International Conference on "
             "Automated Planning and Scheduling (ICAPS 2023)",
-            "TODO", // TODO: Pages missing.
+            "70-79",
             "AAAI Press",
             "2023"));
 
