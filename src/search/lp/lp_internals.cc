@@ -118,12 +118,12 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
         break;
     case LPSolverType::CPLEX:
 #ifdef COIN_HAS_CPX
-        {
-            OsiCpxSolverInterface *cpx_solver = new OsiCpxSolverInterface;
-            CPXsetintparam(cpx_solver->getEnvironmentPtr(), CPX_PARAM_THREADS, 1);
-            cpx_solver->passInMessageHandler(new ErrorCatchingCoinMessageHandler);
-            lp_solver = cpx_solver;
-        }
+    {
+        OsiCpxSolverInterface *cpx_solver = new OsiCpxSolverInterface;
+        CPXsetintparam(cpx_solver->getEnvironmentPtr(), CPX_PARAM_THREADS, 1);
+        cpx_solver->passInMessageHandler(new ErrorCatchingCoinMessageHandler);
+        lp_solver = cpx_solver;
+    }
 #else
         missing_symbol = "COIN_HAS_CPX";
 #endif
@@ -137,11 +137,11 @@ unique_ptr<OsiSolverInterface> create_lp_solver(LPSolverType solver_type) {
         break;
     case LPSolverType::SOPLEX:
 #ifdef COIN_HAS_SPX
-        {
-            OsiSpxSolverInterface *spx_solver = new OsiSpxSolverInterface;
-            spx_solver->getSPxOut()->setVerbosity(soplex::SPxOut::ERROR);
-            lp_solver = spx_solver;
-        }
+    {
+        OsiSpxSolverInterface *spx_solver = new OsiSpxSolverInterface;
+        spx_solver->getSPxOut()->setVerbosity(soplex::SPxOut::ERROR);
+        lp_solver = spx_solver;
+    }
 #else
         missing_symbol = "COIN_HAS_SPX";
 #endif
