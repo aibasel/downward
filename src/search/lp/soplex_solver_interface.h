@@ -8,6 +8,8 @@
 #ifdef __GNUG__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wuse-after-free"
+#pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
 #endif
 
 #include <soplex.h>
@@ -20,8 +22,13 @@ namespace lp {
 
 
 class SoPlexSolverInterface : public SolverInterface {
-
+    // The reference to the solver is mutable because objValueReal is not const.
+    mutable soplex::SoPlex soplex;
+    int num_permanent_constraints;
+    int num_temporary_constraints;
 public:
+    SoPlexSolverInterface();
+
     virtual void load_problem(const LinearProgram &lp) override;
     virtual void add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints) override;
     virtual void clear_temporary_constraints() override;

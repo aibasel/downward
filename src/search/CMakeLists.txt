@@ -75,7 +75,7 @@ if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
 
     find_package(SoPlex)
     if (SOPLEX_FOUND)
-        add_definitions("-D HAS_SOPLEX_DISABLED")
+        add_definitions("-D HAS_SOPLEX")
         include_directories(${SOPLEX_INCLUDE_DIRS})
         target_link_libraries(downward ${SOPLEX_LIBRARIES})
         find_package(ZLIB REQUIRED)
