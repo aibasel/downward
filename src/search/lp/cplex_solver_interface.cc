@@ -71,7 +71,7 @@ void freeProblem(CPXENVptr env, CPXLPptr *problem) {
 static tuple<char, double, double> bounds_to_sense_rhs_range(double lb, double ub) {
     if (lb <= -CPX_INFBOUND && ub >= CPX_INFBOUND) {
         // CPLEX does not support <= or >= constraints without bounds.
-        return {'R', -CPX_INFBOUND, 2*CPX_INFBOUND};
+        return {'R', -CPX_INFBOUND, 2 * CPX_INFBOUND};
     } else if (lb <= -CPX_INFBOUND) {
         return {'L', ub, 0};
     } else if (ub >= CPX_INFBOUND) {
@@ -92,8 +92,8 @@ static int sense_to_cplex_sense(LPObjectiveSense sense) {
 }
 
 void CplexSolverInterface::CplexMatrix::assign_column_by_column(
-        const named_vector::NamedVector<LPConstraint> &constraints,
-        int num_cols) {
+    const named_vector::NamedVector<LPConstraint> &constraints,
+    int num_cols) {
     coefficients.clear();
     indices.clear();
     starts.clear();
@@ -112,7 +112,7 @@ void CplexSolverInterface::CplexMatrix::assign_column_by_column(
         }
     }
     for (int var = 1; var < num_cols; ++var) {
-        starts[var] = starts[var-1] + counts[var-1];
+        starts[var] = starts[var - 1] + counts[var - 1];
     }
     assert(num_nonzeros == starts[num_cols - 1] + counts[num_cols - 1]);
 
@@ -301,8 +301,8 @@ void CplexSolverInterface::load_problem(const LinearProgram &lp) {
 
     const named_vector::NamedVector<LPVariable> &variables = lp.get_variables();
     is_mip = any_of(variables.begin(), variables.end(), [](const LPVariable &v) {
-        return v.is_integer;
-    });
+                        return v.is_integer;
+                    });
 
     const named_vector::NamedVector<LPConstraint> &constraints = lp.get_constraints();
     num_permanent_constraints = constraints.size();
@@ -364,7 +364,6 @@ void CplexSolverInterface::load_problem(const LinearProgram &lp) {
 
 void CplexSolverInterface::add_temporary_constraints(
     const named_vector::NamedVector<LPConstraint> &constraints) {
-
     for (const LPConstraint &constraint : constraints) {
         if (constraint.get_lower_bound() > constraint.get_upper_bound()) {
             ++num_unsatisfiable_temp_constraints;

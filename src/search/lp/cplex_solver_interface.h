@@ -73,7 +73,7 @@ class CplexSolverInterface : public SolverInterface {
           entries for column 2 (4.5 and 7.2).
          */
         std::vector<int> counts;
-    public:
+public:
         /*
           When loading a whole LP, column-by-column data better matches CPLEX's
           internal data structures, so we prefer this encoding.
@@ -90,11 +90,11 @@ class CplexSolverInterface : public SolverInterface {
         void assign_row_by_row(
             const named_vector::NamedVector<LPConstraint> &constraints);
 
-        double *get_coefficients() { return coefficients.data(); }
-        int *get_indices() { return indices.data(); }
-        int *get_starts() { return starts.data(); }
-        int *get_counts() { return counts.data(); }
-        int get_num_nonzeros() { return coefficients.size(); }
+        double *get_coefficients() {return coefficients.data();}
+        int *get_indices() {return indices.data();}
+        int *get_starts() {return starts.data();}
+        int *get_counts() {return counts.data();}
+        int get_num_nonzeros() {return coefficients.size();}
     };
 
     class CplexColumnsInfo {
@@ -106,12 +106,12 @@ class CplexSolverInterface : public SolverInterface {
         std::vector<char> type;
         // Objective value of each column (variable)
         std::vector<double> objective;
-    public:
+public:
         void assign(const named_vector::NamedVector<LPVariable> &variables);
-        double *get_lb() { return lb.data(); }
-        double *get_ub() { return ub.data(); }
-        char *get_type() { return type.data(); }
-        double *get_objective() { return objective.data(); }
+        double *get_lb() {return lb.data();}
+        double *get_ub() {return ub.data();}
+        char *get_type() {return type.data();}
+        double *get_objective() {return objective.data();}
     };
 
     class CplexRowsInfo {
@@ -129,20 +129,20 @@ class CplexSolverInterface : public SolverInterface {
           rows that are ranged rows.
          */
         std::vector<int> range_indices;
-    public:
+public:
         void assign(const named_vector::NamedVector<LPConstraint> &constraints, int offset = 0, bool dense_range_values = true);
-        double *get_rhs() { return rhs.data(); }
-        char *get_sense() { return sense.data(); }
-        double *get_range_values() { return range_values.data(); }
-        int *get_range_indices() { return range_indices.data(); }
-        int get_num_ranged_rows() { return range_indices.size(); }
+        double *get_rhs() {return rhs.data();}
+        char *get_sense() {return sense.data();}
+        double *get_range_values() {return range_values.data();}
+        int *get_range_indices() {return range_indices.data();}
+        int get_num_ranged_rows() {return range_indices.size();}
     };
 
     class CplexNameData {
         std::vector<char *> names;
         std::vector<int> indices;
-    public:
-        template <typename T>
+public:
+        template<typename T>
         explicit CplexNameData(const named_vector::NamedVector<T> &values) {
             if (values.has_names()) {
                 names.resize(values.size());
@@ -154,7 +154,7 @@ class CplexSolverInterface : public SolverInterface {
                 }
             }
         }
-        int size() { return names.size(); }
+        int size() {return names.size();}
         int *get_indices() {
             if (indices.empty()) {
                 return nullptr;
