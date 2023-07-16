@@ -86,7 +86,7 @@ double SoPlexSolverInterface::get_infinity() const {
     return infinity;
 }
 
-void SoPlexSolverInterface::set_objective_coefficients(const std::vector<double> &coefficients) {
+void SoPlexSolverInterface::set_objective_coefficients(const vector<double> &coefficients) {
     int num_cols = coefficients.size();
     for (int i = 0; i < num_cols; ++i) {
         soplex.changeObjReal(i, coefficients[i]);
@@ -126,7 +126,7 @@ void SoPlexSolverInterface::solve() {
     soplex.solve();
 }
 
-void SoPlexSolverInterface::write_lp(const std::string &filename) const {
+void SoPlexSolverInterface::write_lp(const string &filename) const {
     soplex.writeFile(filename.c_str());
 }
 
