@@ -51,6 +51,7 @@ static LPColSetReal variables_to_col_set(const named_vector::NamedVector<LPVaria
 
 SoPlexSolverInterface::SoPlexSolverInterface() : SolverInterface() {
     soplex.setIntParam(SoPlex::VERBOSITY, SoPlex::VERBOSITY_ERROR);
+    soplex.setIntParam(SoPlex::SIMPLIFIER, SoPlex::SIMPLIFIER_OFF);
 }
 
 void SoPlexSolverInterface::load_problem(const LinearProgram &lp) {
@@ -123,7 +124,7 @@ void SoPlexSolverInterface::set_mip_gap(double /*gap*/) {
 }
 
 void SoPlexSolverInterface::solve() {
-    soplex.solve();
+    soplex.optimize();
 }
 
 void SoPlexSolverInterface::write_lp(const string &filename) const {
@@ -206,9 +207,9 @@ double SoPlexSolverInterface::get_objective_value() const {
 }
 
 vector<double> SoPlexSolverInterface::extract_solution() const {
-    VectorBase<double> obj(get_num_variables());
-    soplex.getObjReal(obj);
-    return obj.vec();
+    VectorBase<double> sol(get_num_variables());
+    soplex.getPrimal(sol);
+    return sol.vec();
 }
 
 int SoPlexSolverInterface::get_num_variables() const {
