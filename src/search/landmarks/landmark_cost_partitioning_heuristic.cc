@@ -17,7 +17,8 @@ using namespace std;
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     const plugins::Options &opts)
-    : LandmarkHeuristic(opts) {
+    : LandmarkHeuristic(opts),
+      cost_partitioning_strategy(opts.get<CostPartitioningStrategy>("cost_partitioning")) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;
     }
@@ -46,16 +47,18 @@ void LandmarkCostPartitioningHeuristic::check_unsupported_features(
 
 void LandmarkCostPartitioningHeuristic::set_cost_assignment(
     const plugins::Options &opts) {
-    if (opts.get<bool>("optimal")) {
+    if (cost_partitioning_strategy == CostPartitioningStrategy::OPTIMAL) {
         lm_cost_assignment =
             utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
                 *lm_graph, opts.get<lp::LPSolverType>("lpsolver"));
-    } else {
+    } else if (cost_partitioning_strategy == CostPartitioningStrategy::UNIFORM) {
         lm_cost_assignment =
             utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
                 task_properties::get_operator_costs(task_proxy),
                 *lm_graph, opts.get<bool>("alm"));
+    } else {
+        ABORT("Unknown cost partitioning strategy");
     }
 }
 
@@ -104,10 +107,10 @@ public:
                 "2010"));
 
         LandmarkHeuristic::add_options_to_feature(*this);
-        add_option<bool>(
-            "optimal",
-            "use optimal (LP-based) cost sharing",
-            "false");
+        add_option<CostPartitioningStrategy>(
+            "cost_partitioning",
+            "Choose strategy for partitioning operator costs among landmarks.",
+            "uniform");
         add_option<bool>("alm", "use action landmarks", "true");
         lp::add_lp_solver_option_to_feature(*this);
 
@@ -127,7 +130,7 @@ public:
             "which point the above inequality might not hold anymore.");
         document_note(
             "Optimal Cost Partitioning",
-            "To use ``optimal=true``, you must build the planner with LP "
+            "To use ``cost_partitioning=optimal``, you must build the planner with LP "
             "support. See LPBuildInstructions.");
         document_note(
             "Preferred operators",
@@ -151,4 +154,12 @@ public:
 };
 
 static plugins::FeaturePlugin<LandmarkCostPartitioningHeuristicFeature> _plugin;
+
+static plugins::TypedEnumPlugin<CostPartitioningStrategy> _enum_plugin({
+        {"optimal",
+         "use optimal (LP-based) cost partitioning"},
+        {"uniform",
+         "partition operator costs uniformly among all landmarks "
+         "achieved by that operator"},
+    });
 }
