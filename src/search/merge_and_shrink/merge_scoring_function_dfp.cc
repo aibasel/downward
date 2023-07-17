@@ -13,8 +13,8 @@
 using namespace std;
 
 namespace merge_and_shrink {
-vector<int> MergeScoringFunctionDFP::compute_label_ranks(
-    const FactoredTransitionSystem &fts, int index) const {
+static vector<int> compute_label_ranks(
+    const FactoredTransitionSystem &fts, int index) {
     const TransitionSystem &ts = fts.get_transition_system(index);
     const Distances &distances = fts.get_distances(index);
     assert(distances.are_goal_distances_computed());
