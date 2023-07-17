@@ -125,9 +125,9 @@ void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
                   orderings are not generated.
                 */
                 assert(all_of(node->parents.begin(), node->parents.end(),
-                              [](auto &parent){
-                    return parent.second == EdgeType::REASONABLE;
-                }));
+                              [](auto &parent) {
+                                  return parent.second == EdgeType::REASONABLE;
+                              }));
                 /*
                   Reasonable orderings A->B for which both A and B hold in the
                   initial state are immediately satisfied. We assume such
@@ -135,9 +135,9 @@ void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
                 */
                 assert(none_of(node->parents.begin(), node->parents.end(),
                                [initial_state](auto &parent) {
-                    Landmark &landmark = parent.first->get_landmark();
-                    return landmark.is_true_in_state(initial_state);
-                }));
+                                   Landmark &landmark = parent.first->get_landmark();
+                                   return landmark.is_true_in_state(initial_state);
+                               }));
             }
         } else {
             past.reset(id);
