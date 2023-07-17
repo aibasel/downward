@@ -14,13 +14,14 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionSingleRandom::MergeScoringFunctionSingleRandom(
     const plugins::Options &options)
-    : random_seed(options.get<int>("random_seed")),
+    : MergeScoringFunction(options),
+      random_seed(options.get<int>("random_seed")),
       rng(utils::parse_rng_from_options(options)) {
 }
 
 vector<double> MergeScoringFunctionSingleRandom::compute_scores(
     const FactoredTransitionSystem &,
-    const vector<pair<int, int>> &merge_candidates) {
+    const vector<shared_ptr<MergeCandidate>> &merge_candidates) {
     int chosen_index = rng->random(merge_candidates.size());
     vector<double> scores;
     scores.reserve(merge_candidates.size());
@@ -53,7 +54,7 @@ public:
         document_synopsis(
             "This scoring function assigns exactly one merge candidate a score of "
             "0, chosen randomly, and infinity to all others.");
-
+        add_merge_scoring_function_options_to_feature(*this);
         utils::add_rng_options(*this);
     }
 };

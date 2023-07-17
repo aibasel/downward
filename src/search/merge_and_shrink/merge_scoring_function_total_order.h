@@ -42,7 +42,7 @@ public:
     virtual ~MergeScoringFunctionTotalOrder() override = default;
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,
-        const std::vector<std::pair<int, int>> &merge_candidates) override;
+        const std::vector<std::shared_ptr<MergeCandidate>> &merge_candidates) override;
     virtual void initialize(const TaskProxy &task_proxy) override;
     static void add_options_to_feature(plugins::Feature &feature);
 

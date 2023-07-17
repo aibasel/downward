@@ -8,11 +8,11 @@ class MergeScoringFunctionGoalRelevance : public MergeScoringFunction {
 protected:
     virtual std::string name() const override;
 public:
-    MergeScoringFunctionGoalRelevance() = default;
+    MergeScoringFunctionGoalRelevance(const plugins::Options &options);
     virtual ~MergeScoringFunctionGoalRelevance() override = default;
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,
-        const std::vector<std::pair<int, int>> &merge_candidates) override;
+        const std::vector<std::shared_ptr<MergeCandidate>> &merge_candidates) override;
 
     virtual bool requires_init_distances() const override {
         return false;

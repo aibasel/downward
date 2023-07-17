@@ -18,7 +18,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
     const plugins::Options &options)
-    : atomic_ts_order(options.get<AtomicTSOrder>("atomic_ts_order")),
+    : MergeScoringFunction(options),
+      atomic_ts_order(options.get<AtomicTSOrder>("atomic_ts_order")),
       product_ts_order(options.get<ProductTSOrder>("product_ts_order")),
       atomic_before_product(options.get<bool>("atomic_before_product")),
       random_seed(options.get<int>("random_seed")),
@@ -27,15 +28,15 @@ MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
 
 vector<double> MergeScoringFunctionTotalOrder::compute_scores(
     const FactoredTransitionSystem &,
-    const vector<pair<int, int>> &merge_candidates) {
+    const vector<shared_ptr<MergeCandidate>> &merge_candidates) {
     assert(initialized);
     vector<double> scores;
     scores.reserve(merge_candidates.size());
     for (size_t candidate_index = 0; candidate_index < merge_candidates.size();
          ++candidate_index) {
-        pair<int, int> merge_candidate = merge_candidates[candidate_index];
-        int ts_index1 = merge_candidate.first;
-        int ts_index2 = merge_candidate.second;
+        const auto &merge_candidate = merge_candidates[candidate_index];
+        int ts_index1 = merge_candidate->index1;
+        int ts_index2 = merge_candidate->index2;
         for (size_t merge_candidate_order_index = 0;
              merge_candidate_order_index < merge_candidate_order.size();
              ++merge_candidate_order_index) {
@@ -199,6 +200,7 @@ public:
             "if used alone in a score based filtering merge selector, can be used "
             "to emulate the corresponding (precomputed) linear merge strategies "
             "reverse level/level (independently of the other options).");
+        add_merge_scoring_function_options_to_feature(*this);
         MergeScoringFunctionTotalOrder::add_options_to_feature(*this);
     }
 };

@@ -22,7 +22,7 @@ public:
     virtual ~MergeScoringFunctionMIASM() override = default;
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,
-        const std::vector<std::pair<int, int>> &merge_candidates) override;
+        const std::vector<std::shared_ptr<MergeCandidate>> &merge_candidates) override;
 
     virtual bool requires_init_distances() const override {
         return true;

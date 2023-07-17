@@ -16,7 +16,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
     const plugins::Options &options)
-    : shrink_strategy(options.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
+    : MergeScoringFunction(options),
+      shrink_strategy(options.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
       max_states(options.get<int>("max_states")),
       max_states_before_merge(options.get<int>("max_states_before_merge")),
       shrink_threshold_before_merge(options.get<int>("threshold_before_merge")),
@@ -25,43 +26,52 @@ MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
 
 vector<double> MergeScoringFunctionMIASM::compute_scores(
     const FactoredTransitionSystem &fts,
-    const vector<pair<int, int>> &merge_candidates) {
+    const vector<shared_ptr<MergeCandidate>> &merge_candidates) {
     vector<double> scores;
     scores.reserve(merge_candidates.size());
-    for (pair<int, int> merge_candidate : merge_candidates) {
-        int index1 = merge_candidate.first;
-        int index2 = merge_candidate.second;
-        unique_ptr<TransitionSystem> product = shrink_before_merge_externally(
-            fts,
-            index1,
-            index2,
-            *shrink_strategy,
-            max_states,
-            max_states_before_merge,
-            shrink_threshold_before_merge,
-            silent_log);
+    for (const auto &merge_candidate : merge_candidates) {
+        double score;
+        int id = merge_candidate->id;
+        if (use_caching && cached_scores.count(id)) {
+            score = cached_scores[id];
+        } else {
+            int index1 = merge_candidate->index1;
+            int index2 = merge_candidate->index2;
+            unique_ptr<TransitionSystem> product = shrink_before_merge_externally(
+                fts,
+                index1,
+                index2,
+                *shrink_strategy,
+                max_states,
+                max_states_before_merge,
+                shrink_threshold_before_merge,
+                silent_log);
 
-        // Compute distances for the product and count the alive states.
-        unique_ptr<Distances> distances = utils::make_unique_ptr<Distances>(*product);
-        const bool compute_init_distances = true;
-        const bool compute_goal_distances = true;
-        distances->compute_distances(compute_init_distances, compute_goal_distances, silent_log);
-        int num_states = product->get_size();
-        int alive_states_count = 0;
-        for (int state = 0; state < num_states; ++state) {
-            if (distances->get_init_distance(state) != INF &&
-                distances->get_goal_distance(state) != INF) {
-                ++alive_states_count;
+            // Compute distances for the product and count the alive states.
+            unique_ptr<Distances> distances = utils::make_unique_ptr<Distances>(*product);
+            const bool compute_init_distances = true;
+            const bool compute_goal_distances = true;
+            distances->compute_distances(compute_init_distances, compute_goal_distances, silent_log);
+            int num_states = product->get_size();
+            int alive_states_count = 0;
+            for (int state = 0; state < num_states; ++state) {
+                if (distances->get_init_distance(state) != INF &&
+                    distances->get_goal_distance(state) != INF) {
+                    ++alive_states_count;
+                }
+            }
+
+            /*
+              Compute the score as the ratio of alive states of the product
+              compared to the number of states of the full product.
+            */
+            assert(num_states);
+            score = static_cast<double>(alive_states_count) /
+                static_cast<double>(num_states);
+            if (use_caching) {
+                cached_scores[id] = score;
             }
         }
-
-        /*
-          Compute the score as the ratio of alive states of the product
-          compared to the number of states of the full product.
-        */
-        assert(num_states);
-        double score = static_cast<double>(alive_states_count) /
-            static_cast<double>(num_states);
         scores.push_back(score);
     }
     return scores;
@@ -127,6 +137,7 @@ public:
             "amount of possible pruning, merge-and-shrink should be configured to "
             "use full pruning, i.e. {{{prune_unreachable_states=true}}} and {{{"
             "prune_irrelevant_states=true}}} (the default).");
+        add_merge_scoring_function_options_to_feature(*this);
     }
 
     virtual shared_ptr<MergeScoringFunctionMIASM> create_component(const plugins::Options &options, const utils::Context &context) const override {
