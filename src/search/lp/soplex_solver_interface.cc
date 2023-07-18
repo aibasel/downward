@@ -53,7 +53,7 @@ SoPlexSolverInterface::SoPlexSolverInterface() : SolverInterface() {
     soplex.setIntParam(SoPlex::VERBOSITY, SoPlex::VERBOSITY_ERROR);
     soplex.setIntParam(SoPlex::SIMPLIFIER, SoPlex::SIMPLIFIER_OFF);
     soplex.setIntParam(SoPlex::REPRESENTATION, SoPlex::REPRESENTATION_ROW);
-    soplex.setIntParam(SoPlex::ALGORITHM, SoPlex::ALGORITHM_PRIMAL);
+    soplex.setIntParam(SoPlex::ALGORITHM, SoPlex::ALGORITHM_DUAL);
 }
 
 void SoPlexSolverInterface::load_problem(const LinearProgram &lp) {
