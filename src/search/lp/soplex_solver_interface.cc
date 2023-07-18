@@ -52,7 +52,7 @@ static LPColSetReal variables_to_col_set(const named_vector::NamedVector<LPVaria
 SoPlexSolverInterface::SoPlexSolverInterface() : SolverInterface() {
     soplex.setIntParam(SoPlex::VERBOSITY, SoPlex::VERBOSITY_ERROR);
     soplex.setIntParam(SoPlex::SIMPLIFIER, SoPlex::SIMPLIFIER_OFF);
-    soplex.setIntParam(SoPlex::REPRESENTATION, SoPlex::REPRESENTATION_ROW);
+    soplex.setIntParam(SoPlex::REPRESENTATION, SoPlex::REPRESENTATION_COLUMN);
     soplex.setIntParam(SoPlex::ALGORITHM, SoPlex::ALGORITHM_DUAL);
 }
 
