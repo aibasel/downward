@@ -38,6 +38,10 @@ protected:
 
 public:
     explicit TieBreakingOpenList(const plugins::Options &opts);
+    explicit TieBreakingOpenList(
+            bool pref_only,
+            vector<shared_ptr<Evaluator>> evaluators,
+            bool allow_unsafe_pruning);
     virtual ~TieBreakingOpenList() override = default;
 
     virtual Entry remove_min() override;
@@ -56,6 +60,16 @@ TieBreakingOpenList<Entry>::TieBreakingOpenList(const plugins::Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
       size(0), evaluators(opts.get_list<shared_ptr<Evaluator>>("evals")),
       allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
+}
+
+template<class Entry>
+TieBreakingOpenList<Entry>::TieBreakingOpenList(bool pref_only,
+                                                vector<shared_ptr<Evaluator>> evaluators,
+                                                bool allow_unsafe_pruning)
+        : OpenList<Entry>(pref_only),
+          size(0), evaluators(evaluators),
+          allow_unsafe_pruning(allow_unsafe_pruning)
+          {
 }
 
 template<class Entry>
@@ -137,8 +151,16 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
     return false;
 }
 
-TieBreakingOpenListFactory::TieBreakingOpenListFactory(const plugins::Options &options)
-    : options(options) {
+TieBreakingOpenListFactory::TieBreakingOpenListFactory(const plugins::Options &opts)
+    : options(opts) {
+}
+
+TieBreakingOpenListFactory::TieBreakingOpenListFactory(
+    bool pref_only,
+    vector<shared_ptr<Evaluator>> evaluators,
+    bool allow_unsafe_pruning)
+    : pref_only(pref_only), size(0), evaluators(evaluators), allow_unsafe_pruning(allow_unsafe_pruning) {
+
 }
 
 unique_ptr<StateOpenList>
@@ -167,9 +189,11 @@ public:
             "true");
     }
 
-    virtual shared_ptr<TieBreakingOpenListFactory> create_component(const plugins::Options &options, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, options, "evals");
-        return make_shared<TieBreakingOpenListFactory>(options);
+    virtual shared_ptr<TieBreakingOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, opts, "evals");
+        return make_shared<TieBreakingOpenListFactory>( 0,
+                                                        opts.get_list<shared_ptr<Evaluator>>("evals"),
+                                                        opts.get<bool>("unsafe_pruning"));
     }
 };
 
