@@ -13,9 +13,9 @@ class TieBreakingOpenListFactory : public OpenListFactory {
     std::vector<std::shared_ptr<Evaluator>> evaluators;
     bool allow_unsafe_pruning;
 public:
-    explicit TieBreakingOpenListFactory(const plugins::Options &opts);
+    explicit TieBreakingOpenListFactory(const plugins::Options &options);
     explicit TieBreakingOpenListFactory(
-            bool pref_only,
+            int size,
             std::vector<std::shared_ptr<Evaluator>> evaluators,
             bool allow_unsafe_pruning);
     virtual ~TieBreakingOpenListFactory() override = default;
