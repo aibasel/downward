@@ -182,7 +182,7 @@ public:
         : elements_per_array((assert(elements_per_array_ > 0),
                               elements_per_array_)),
           arrays_per_segment(
-              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), 1UL)),
+              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), size_t (1))),
           elements_per_segment(elements_per_array * arrays_per_segment),
           the_size(0) {
     }
@@ -193,7 +193,7 @@ public:
           elements_per_array((assert(elements_per_array_ > 0),
                               elements_per_array_)),
           arrays_per_segment(
-              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), 1UL)),
+              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), size_t (1))),
           elements_per_segment(elements_per_array * arrays_per_segment),
           the_size(0) {
     }
