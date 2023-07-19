@@ -131,9 +131,7 @@ pair<int, int> Abstraction::refine(
     assert(static_cast<int>(states.size()) == v2_id);
     states.push_back(move(v2));
 
-    return {
-               v1_id, v2_id
-    };
+    return {v1_id, v2_id};
 }
 
 void Abstraction::print_statistics() const {

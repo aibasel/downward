@@ -48,7 +48,9 @@ public:
     */
     State sample_state(
         int init_h,
-        const DeadEndDetector &is_dead_end = [](const State &) {return false;}) const;
+        const DeadEndDetector &is_dead_end = [] (const State &) {
+            return false;
+        }) const;
 };
 }
 
