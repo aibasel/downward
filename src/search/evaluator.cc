@@ -20,6 +20,18 @@ Evaluator::Evaluator(const plugins::Options &opts,
       log(utils::get_log_from_options(opts)) {
 }
 
+Evaluator::Evaluator(const basic_string<char> unparsed_config,
+                     bool use_for_reporting_minima,
+                     bool use_for_boosting,
+                     bool use_for_counting_evaluations,
+                     utils::LogProxy log)
+    : description(unparsed_config),
+      use_for_reporting_minima(use_for_reporting_minima),
+      use_for_boosting(use_for_boosting),
+      use_for_counting_evaluations(use_for_counting_evaluations),
+      log(log) {
+}
+
 bool Evaluator::dead_ends_are_reliable() const {
     return true;
 }
