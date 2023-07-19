@@ -40,6 +40,7 @@ public:
     explicit TieBreakingOpenList(const plugins::Options &opts);
     explicit TieBreakingOpenList(
             bool pref_only,
+            int size,
             vector<shared_ptr<Evaluator>> evaluators,
             bool allow_unsafe_pruning);
     virtual ~TieBreakingOpenList() override = default;
@@ -64,10 +65,11 @@ TieBreakingOpenList<Entry>::TieBreakingOpenList(const plugins::Options &opts)
 
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(bool pref_only,
+                                                int size,
                                                 vector<shared_ptr<Evaluator>> evaluators,
                                                 bool allow_unsafe_pruning)
         : OpenList<Entry>(pref_only),
-          size(0), evaluators(evaluators),
+          size(size), evaluators(evaluators),
           allow_unsafe_pruning(allow_unsafe_pruning)
           {
 }
