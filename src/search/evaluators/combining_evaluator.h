@@ -20,6 +20,12 @@ protected:
     virtual int combine_values(const std::vector<int> &values) = 0;
 public:
     explicit CombiningEvaluator(const plugins::Options &opts);
+    explicit CombiningEvaluator(std::basic_string<char> unparsed_config,
+            bool use_for_reporting_minima,
+            bool use_for_boosting,
+            bool use_for_counting_evaluations,
+            utils::LogProxy log,
+            std::vector<std::shared_ptr<Evaluator>> subevaluators);
     virtual ~CombiningEvaluator() override;
 
     /*

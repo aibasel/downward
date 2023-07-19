@@ -11,6 +11,15 @@ SumEvaluator::SumEvaluator(const plugins::Options &opts)
     : CombiningEvaluator(opts) {
 }
 
+SumEvaluator::SumEvaluator(basic_string<char> unparsed_config,
+                           bool use_for_reporting_minima,
+                           bool use_for_boosting,
+                           bool use_for_counting_evaluations,
+                           utils::LogProxy log,
+                           vector<shared_ptr<Evaluator>> subevaluators)
+            : CombiningEvaluator(unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations, log, subevaluators) {
+    }
+
 SumEvaluator::~SumEvaluator() {
 }
 
@@ -34,9 +43,16 @@ public:
         combining_evaluator::add_combining_evaluator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<SumEvaluator> create_component(const plugins::Options &options, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, options, "evals");
-        return make_shared<SumEvaluator>(options);
+    virtual shared_ptr<SumEvaluator> create_component(
+            const plugins::Options &opts, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, opts, "evals");
+        return make_shared<SumEvaluator>(opts.get_unparsed_config(),
+                                       opts.get<bool>("use_for_reporting_minima"),
+                                       opts.get<bool>("use_for_boosting"),
+                                       opts.get<bool>("use_for_counting_evaluations"),
+                                       utils::get_log_from_options(opts),
+                                       opts.get_list<shared_ptr<Evaluator>>("evals")
+        );
     }
 };
 
