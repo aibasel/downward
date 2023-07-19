@@ -27,6 +27,12 @@ public:
         bool use_for_reporting_minima = false,
         bool use_for_boosting = false,
         bool use_for_counting_evaluations = false);
+    explicit Evaluator(
+        const std::basic_string<char> unparsed_config,
+        bool use_for_reporting_minima,
+        bool use_for_boosting,
+        bool use_for_counting_evaluations,
+        utils::LogProxy log);
     virtual ~Evaluator() = default;
 
     /*

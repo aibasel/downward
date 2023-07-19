@@ -74,6 +74,10 @@ protected:
 
 public:
     explicit Heuristic(const plugins::Options &opts);
+    explicit Heuristic(const std::basic_string<char> unparsed_config,
+                       utils::LogProxy log,
+                       bool cache_evaluator_values,
+                       std::shared_ptr<AbstractTask> task);
     virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(

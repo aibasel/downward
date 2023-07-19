@@ -17,7 +17,10 @@ class LandmarkCutHeuristic : public Heuristic {
 
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    explicit LandmarkCutHeuristic(const plugins::Options &opts);
+    explicit LandmarkCutHeuristic(std::basic_string<char> unparsed_config,
+                                  utils::LogProxy log,
+                                  bool cache_evaluator_values,
+                                  std::shared_ptr<AbstractTask> task);
     virtual ~LandmarkCutHeuristic() override;
 };
 }

@@ -22,6 +22,17 @@ Heuristic::Heuristic(const plugins::Options &opts)
       task_proxy(*task) {
 }
 
+Heuristic::Heuristic(const std::basic_string<char> unparsed_config,
+                     utils::LogProxy log,
+                     bool cache_evaluator_values,
+                     shared_ptr<AbstractTask> task)
+   : Evaluator(unparsed_config, true, true, true, log),
+     heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
+     cache_evaluator_values(cache_evaluator_values),
+     task(task), task_proxy(*task) {
+}
+
+
 Heuristic::~Heuristic() {
 }
 
