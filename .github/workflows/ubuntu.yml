@@ -99,7 +99,7 @@ jobs:
           fi
 
           # Handle libs first because tar complains when no files follow the last --directory option.
-          tar cfz archive.tar.gz --directory /home/runner ${libs} --directory ${GITHUB_WORKSPACE} fast-downward.py driver misc builds/debug/bin/ builds/release/bin/
+          tar cfz archive.tar.gz ${libs} --directory ${GITHUB_WORKSPACE} fast-downward.py driver misc builds/debug/bin/ builds/release/bin/
 
       - name: Upload archive
         if: ${{ matrix.version.run_tox_tests }}
