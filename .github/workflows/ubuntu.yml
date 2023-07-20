@@ -161,9 +161,6 @@ jobs:
         # during compilation.
         run: |
           tar xfz archive.tar.gz
-          if [[ ! -z "${CPLEX_URL}" ]]; then
-            mv lib/ /home/runner
-          fi
 
       - name: Run driver, translator and search tests
         run: |
