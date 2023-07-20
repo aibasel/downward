@@ -1,41 +1,11 @@
 #include "lp_solver.h"
 
-#include "lp_internals.h"
+#include "cplex_solver_interface.h"
+#include "soplex_solver_interface.h"
 
 #include "../plugins/plugin.h"
-#include "../utils/collections.h"
-#include "../utils/logging.h"
-#include "../utils/system.h"
-
-#ifdef USE_LP
-#ifdef __GNUG__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif
-
-/*
-   OSI uses the keyword 'register' which was deprecated for a while and removed
-   in C++ 17. Most compilers ignore it but clang 14 complains if it is still used.
-*/
-#ifdef __clang__
-#pragma clang diagnostic ignored "-Wkeyword-macro"
-#endif
-#define register
-
-#include <OsiSolverInterface.hpp>
-#include <CoinPackedMatrix.hpp>
-#include <CoinPackedVector.hpp>
-#ifdef __GNUG__
-#pragma GCC diagnostic pop
-#endif
-#endif
-
-#include <cassert>
-#include <iostream>
-#include <numeric>
 
 using namespace std;
-using utils::ExitCode;
 
 namespace lp {
 void add_lp_solver_option_to_feature(plugins::Feature &feature) {
@@ -69,7 +39,7 @@ void LPConstraint::insert(int index, double coefficient) {
     coefficients.push_back(coefficient);
 }
 
-ostream &LPConstraint::dump(ostream &stream, const LinearProgram *program) {
+ostream &LPConstraint::dump(ostream &stream, const LinearProgram *program) const {
     double infinity = numeric_limits<double>::infinity();
     if (program) {
         infinity = program->get_infinity();
@@ -137,380 +107,132 @@ void LinearProgram::set_objective_name(string name) {
     objective_name = name;
 }
 
-LPSolver::~LPSolver() {
-}
 
-#ifdef USE_LP
-
-LPSolver::LPSolver(LPSolverType solver_type)
-    : is_initialized(false),
-      is_mip(false),
-      is_solved(false),
-      num_permanent_constraints(0),
-      has_temporary_constraints_(false) {
-    try {
-        lp_solver = create_lp_solver(solver_type);
-    } catch (CoinError &error) {
-        handle_coin_error(error);
+LPSolver::LPSolver(LPSolverType solver_type) {
+    string missing_solver;
+    switch (solver_type) {
+    case LPSolverType::CPLEX:
+#ifdef HAS_CPLEX
+        pimpl = make_unique<CplexSolverInterface>();
+#else
+        missing_solver = "CPLEX";
+#endif
+        break;
+    case LPSolverType::SOPLEX:
+#ifdef HAS_SOPLEX
+        pimpl = make_unique<SoPlexSolverInterface>();
+#else
+        missing_solver = "SoPlex";
+#endif
+        break;
+    default:
+        ABORT("Unknown LP solver type.");
     }
-}
-
-void LPSolver::clear_temporary_data() {
-    elements.clear();
-    indices.clear();
-    starts.clear();
-    col_lb.clear();
-    col_ub.clear();
-    objective.clear();
-    row_lb.clear();
-    row_ub.clear();
-    rows.clear();
+    if (!pimpl) {
+        cerr << "Tried to use LP solver " << missing_solver
+             << ", but the planner was compiled without support for it."
+             << endl
+             << "See https://www.fast-downward.org/LPBuildInstructions\n"
+             << "to install " << missing_solver
+             << " and use it in the planner." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
 }
 
 void LPSolver::load_problem(const LinearProgram &lp) {
-    clear_temporary_data();
-    is_mip = false;
-    is_initialized = false;
-    num_permanent_constraints = lp.get_constraints().size();
-
-    for (const LPVariable &var : lp.get_variables()) {
-        col_lb.push_back(var.lower_bound);
-        col_ub.push_back(var.upper_bound);
-        objective.push_back(var.objective_coefficient);
-    }
-
-    for (const LPConstraint &constraint : lp.get_constraints()) {
-        row_lb.push_back(constraint.get_lower_bound());
-        row_ub.push_back(constraint.get_upper_bound());
-    }
-
-    for (const LPConstraint &constraint : lp.get_constraints()) {
-        const vector<int> &vars = constraint.get_variables();
-        assert(utils::all_values_unique(vars));
-        const vector<double> &coeffs = constraint.get_coefficients();
-        assert(vars.size() == coeffs.size());
-        starts.push_back(elements.size());
-        indices.insert(indices.end(), vars.begin(), vars.end());
-        elements.insert(elements.end(), coeffs.begin(), coeffs.end());
-    }
-    /*
-      There are two ways to pass the lengths of vectors to a CoinMatrix:
-      1) 'starts' contains one entry per vector and we pass a separate array
-         of vector 'lengths' to the constructor.
-      2) If there are no gaps in the elements, we can also add elements.size()
-         as a last entry in the vector 'starts' and leave the parameter for
-         'lengths' at its default (0).
-      OSI recreates the 'lengths' array in any case and uses optimized code
-      for the second case, so we use it here.
-     */
-    starts.push_back(elements.size());
-
-    try {
-        CoinPackedMatrix matrix(false,
-                                lp.get_variables().size(),
-                                lp.get_constraints().size(),
-                                elements.size(),
-                                elements.data(),
-                                indices.data(),
-                                starts.data(),
-                                0);
-        lp_solver->loadProblem(matrix,
-                               col_lb.data(),
-                               col_ub.data(),
-                               objective.data(),
-                               row_lb.data(),
-                               row_ub.data());
-        for (int i = 0; i < static_cast<int>(lp.get_variables().size()); ++i) {
-            if (lp.get_variables()[i].is_integer) {
-                lp_solver->setInteger(i);
-                is_mip = true;
-            }
-        }
-
-        /*
-          We set the objective sense after loading because the SoPlex
-          interfaces of all OSI versions <= 0.108.4 ignore it when it is
-          set earlier. See issue752 for details.
-        */
-        if (lp.get_sense() == LPObjectiveSense::MINIMIZE) {
-            lp_solver->setObjSense(1);
-        } else {
-            lp_solver->setObjSense(-1);
-        }
-
-        if (!lp.get_objective_name().empty()) {
-            lp_solver->setObjName(lp.get_objective_name());
-        } else if (lp.get_variables().has_names() || lp.get_constraints().has_names()) {
-            // OSI requires the objective name to be set whenever any variable or constraint names are set.
-            lp_solver->setObjName("obj");
-        }
-
-        if (lp.get_variables().has_names() || lp.get_constraints().has_names() || !lp.get_objective_name().empty()) {
-            lp_solver->setIntParam(OsiIntParam::OsiNameDiscipline, 2);
-        } else {
-            lp_solver->setIntParam(OsiIntParam::OsiNameDiscipline, 0);
-        }
-
-        if (lp.get_variables().has_names()) {
-            for (int i = 0; i < lp.get_variables().size(); ++i) {
-                lp_solver->setColName(i, lp.get_variables().get_name(i));
-            }
-        }
-
-        if (lp.get_constraints().has_names()) {
-            for (int i = 0; i < lp.get_constraints().size(); ++i) {
-                lp_solver->setRowName(i, lp.get_constraints().get_name(i));
-            }
-        }
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
-
-    clear_temporary_data();
+    pimpl->load_problem(lp);
 }
 
-void LPSolver::add_temporary_constraints(const vector<LPConstraint> &constraints) {
-    if (!constraints.empty()) {
-        clear_temporary_data();
-        int num_rows = constraints.size();
-        for (const LPConstraint &constraint : constraints) {
-            assert(utils::all_values_unique(constraint.get_variables()));
-            row_lb.push_back(constraint.get_lower_bound());
-            row_ub.push_back(constraint.get_upper_bound());
-            rows.push_back(new CoinShallowPackedVector(
-                               constraint.get_variables().size(),
-                               constraint.get_variables().data(),
-                               constraint.get_coefficients().data(),
-                               false));
-        }
-
-        try {
-            lp_solver->addRows(num_rows,
-                               rows.data(), row_lb.data(), row_ub.data());
-        } catch (CoinError &error) {
-            handle_coin_error(error);
-        }
-        for (CoinPackedVectorBase *row : rows) {
-            delete row;
-        }
-        clear_temporary_data();
-        has_temporary_constraints_ = true;
-        is_solved = false;
-    }
+void LPSolver::add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints) {
+    pimpl->add_temporary_constraints(constraints);
 }
 
 void LPSolver::clear_temporary_constraints() {
-    if (has_temporary_constraints_) {
-        try {
-            lp_solver->restoreBaseModel(num_permanent_constraints);
-        } catch (CoinError &error) {
-            handle_coin_error(error);
-        }
-        has_temporary_constraints_ = false;
-        is_solved = false;
-    }
+    pimpl->clear_temporary_constraints();
 }
 
 double LPSolver::get_infinity() const {
-    try {
-        return lp_solver->getInfinity();
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
+    return pimpl->get_infinity();
 }
 
 void LPSolver::set_objective_coefficients(const vector<double> &coefficients) {
-    assert(static_cast<int>(coefficients.size()) == get_num_variables());
-    vector<int> indices(coefficients.size());
-    iota(indices.begin(), indices.end(), 0);
-    try {
-        lp_solver->setObjCoeffSet(indices.data(),
-                                  indices.data() + indices.size(),
-                                  coefficients.data());
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
-    is_solved = false;
+    pimpl->set_objective_coefficients(coefficients);
 }
 
 void LPSolver::set_objective_coefficient(int index, double coefficient) {
-    assert(index < get_num_variables());
-    try {
-        lp_solver->setObjCoeff(index, coefficient);
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
-    is_solved = false;
+    pimpl->set_objective_coefficient(index, coefficient);
 }
 
 void LPSolver::set_constraint_lower_bound(int index, double bound) {
-    assert(index < get_num_constraints());
-    try {
-        lp_solver->setRowLower(index, bound);
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
-    is_solved = false;
+    pimpl->set_constraint_lower_bound(index, bound);
 }
 
 void LPSolver::set_constraint_upper_bound(int index, double bound) {
-    assert(index < get_num_constraints());
-    try {
-        lp_solver->setRowUpper(index, bound);
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
-    is_solved = false;
+    pimpl->set_constraint_upper_bound(index, bound);
 }
 
 void LPSolver::set_variable_lower_bound(int index, double bound) {
-    assert(index < get_num_variables());
-    try {
-        lp_solver->setColLower(index, bound);
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
-    is_solved = false;
+    pimpl->set_variable_lower_bound(index, bound);
 }
 
 void LPSolver::set_variable_upper_bound(int index, double bound) {
-    assert(index < get_num_variables());
-    try {
-        lp_solver->setColUpper(index, bound);
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
-    is_solved = false;
+    pimpl->set_constraint_upper_bound(index, bound);
 }
 
 void LPSolver::set_mip_gap(double gap) {
-    lp::set_mip_gap(lp_solver.get(), gap);
+    pimpl->set_mip_gap(gap);
 }
 
 void LPSolver::solve() {
-    try {
-        if (is_initialized) {
-            lp_solver->resolve();
-        } else {
-            lp_solver->initialSolve();
-            is_initialized = true;
-        }
-        if (is_mip) {
-            lp_solver->branchAndBound();
-        }
-        if (lp_solver->isAbandoned()) {
-            // The documentation of OSI is not very clear here but memory seems
-            // to be the most common cause for this in our case.
-            cerr << "Abandoned LP during resolve. "
-                 << "Reasons include \"numerical difficulties\" and running out of memory." << endl;
-            utils::exit_with(ExitCode::SEARCH_CRITICAL_ERROR);
-        }
-        is_solved = true;
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
+    pimpl->solve();
 }
 
 void LPSolver::write_lp(const string &filename) const {
-    try {
-        lp_solver->writeLp(filename.c_str());
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
+    pimpl->write_lp(filename);
 }
 
 void LPSolver::print_failure_analysis() const {
-    cout << "abandoned: " << lp_solver->isAbandoned() << endl;
-    cout << "proven optimal: " << lp_solver->isProvenOptimal() << endl;
-    cout << "proven primal infeasible: " << lp_solver->isProvenPrimalInfeasible() << endl;
-    cout << "proven dual infeasible: " << lp_solver->isProvenDualInfeasible() << endl;
-    cout << "dual objective limit reached: " << lp_solver->isDualObjectiveLimitReached() << endl;
-    cout << "iteration limit reached: " << lp_solver->isIterationLimitReached() << endl;
+    pimpl->print_failure_analysis();
 }
 
 bool LPSolver::has_optimal_solution() const {
-    assert(is_solved);
-    try {
-        return !lp_solver->isProvenPrimalInfeasible() &&
-               !lp_solver->isProvenDualInfeasible() &&
-               lp_solver->isProvenOptimal();
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
+    return pimpl->has_optimal_solution();
 }
 
 double LPSolver::get_objective_value() const {
-    assert(has_optimal_solution());
-    try {
-        return lp_solver->getObjValue();
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
+    return pimpl->get_objective_value();
 }
 
 bool LPSolver::is_infeasible() const {
-    assert(is_solved);
-    try {
-        return lp_solver->isProvenPrimalInfeasible() &&
-               !lp_solver->isProvenDualInfeasible() &&
-               !lp_solver->isProvenOptimal();
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
+    return pimpl->is_infeasible();
 }
 
 bool LPSolver::is_unbounded() const {
-    assert(is_solved);
-    try {
-        return !lp_solver->isProvenPrimalInfeasible() &&
-               lp_solver->isProvenDualInfeasible() &&
-               !lp_solver->isProvenOptimal();
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
+    return pimpl->is_unbounded();
 }
 
 vector<double> LPSolver::extract_solution() const {
-    assert(has_optimal_solution());
-    try {
-        const double *sol = lp_solver->getColSolution();
-        return vector<double>(sol, sol + get_num_variables());
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
+    return pimpl->extract_solution();
 }
 
 int LPSolver::get_num_variables() const {
-    try {
-        return lp_solver->getNumCols();
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
+    return pimpl->get_num_variables();
 }
 
 int LPSolver::get_num_constraints() const {
-    try {
-        return lp_solver->getNumRows();
-    } catch (CoinError &error) {
-        handle_coin_error(error);
-    }
+    return pimpl->get_num_constraints();
 }
 
 int LPSolver::has_temporary_constraints() const {
-    return has_temporary_constraints_;
+    return pimpl->has_temporary_constraints();
 }
 
 void LPSolver::print_statistics() const {
-    utils::g_log << "LP variables: " << get_num_variables() << endl;
-    utils::g_log << "LP constraints: " << get_num_constraints() << endl;
+    pimpl->print_statistics();
 }
 
-#endif
-
 static plugins::TypedEnumPlugin<LPSolverType> _enum_plugin({
-        {"clp", "default LP solver shipped with the COIN library"},
         {"cplex", "commercial solver by IBM"},
-        {"gurobi", "commercial solver"},
         {"soplex", "open source solver by ZIB"}
     });
 }
