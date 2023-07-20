@@ -8,7 +8,7 @@
 #ifdef __GNUG__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#if (__GNUG__ >= 11) || (__clang_major__ >= 14)
+#if (__GNUG__ >= 11) || (__clang_major__ >= 12)
 #pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
 #endif
 #if __GNUG__ >= 12
