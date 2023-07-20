@@ -8,8 +8,10 @@
 #ifdef __GNUG__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wuse-after-free"
 #pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
+#if __GNUG__ >= 12 && !__clang__ && !_MSC_VER
+#pragma GCC diagnostic ignored "-Wuse-after-free"
+#endif
 #endif
 
 #include <soplex.h>
