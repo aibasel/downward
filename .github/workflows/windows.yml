@@ -12,13 +12,10 @@ env:
   CC: cl
   CXX: cl
 
-  DOWNWARD_COIN_ROOT_RELEASE: D:\a\downward\osi_release
-  DOWNWARD_COIN_ROOT_DEBUG: D:\a\downward\osi_debug
   DOWNWARD_CPLEX_ROOT: D:\a\downward\cplex
   ZLIB_ROOT: D:\a\downward\zlib
 
-  CPLEX_URL: "${{ secrets.CPLEX129_WINDOWS_URL }}"
-  OSI_URL: "https://www.coin-or.org/download/source/Osi/Osi-0.107.9.tgz"
+  CPLEX_URL: "${{ secrets.CPLEX2211_WINDOWS_URL }}"
   ZLIB_URL: "https://www.zlib.net/zlib1213.zip"
 
 
@@ -35,10 +32,10 @@ jobs:
         python-version: [3.8]
     steps:
       - name: Clone repository
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
 
       - name: Install Python
-        uses: actions/setup-python@master
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -72,73 +69,15 @@ jobs:
         if: ${{ env.CPLEX_URL != 0 }}
         run: |
           echo "For information about the CPLEX silent installation consult:"
-          echo "https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.studio.help/Optimization_Studio/topics/td_silent_install.html"
+          echo "https://www.ibm.com/docs/en/icos/22.1.1?topic=2211-silent-installation-cplex-optimization-studio"
           curl.exe --output cplex.exe $ENV:CPLEX_URL
 
           echo "Install CPLEX"
-          Start-Process -FilePath .\cplex.exe -ArgumentList "-f", "D:\a\downward\downward\.github\workflows\misc\cplex129_windows_installer.properties" -PassThru | Wait-Process
+          Start-Process -FilePath .\cplex.exe -ArgumentList "-f", "D:\a\downward\downward\.github\workflows\misc\cplex2211_windows_installer.properties" -PassThru | Wait-Process
           del .\cplex.exe
 
           echo "Copy the relevant directory to a location which is not magically protected against cmake"
           Xcopy /E /I ..\cplex_temp\cplex ..\cplex
-
-
-      - name: Install Coin
-        shell: cmd
-        if: ${{ env.CPLEX_URL != 0 }}
-        run: |
-          call "${{ matrix.platform.vc }}" %ARCH%
-          set SET_RUNTIME_LIBRARY=python D:\a\downward\downward\.github\workflows\misc\set-visual-studio-static-runtime-libraries.py
-
-          cd ..
-          echo "Download OSI"
-          curl.exe --output osi.tgz %OSI_URL%
-          tar xf osi.tgz
-          del osi.tgz
-          cd Osi-0.107.9
-
-          echo "Set up Include Directory"
-          mkdir ..\osi_release\include
-          copy CoinUtils\src\*.hpp ..\osi_release\include
-          copy CoinUtils\src\*.h ..\osi_release\include
-          copy Osi\src\Osi\*.hpp ..\osi_release\include
-          copy Osi\src\Osi\*.h ..\osi_release\include
-          copy Osi\src\OsiCpx\*.hpp ..\osi_release\include
-          copy Osi\src\OsiCpx\*.h ..\osi_release\include
-          Xcopy /E /I ..\osi_release\include ..\osi_debug\include
-
-          echo "Set up Lib Directory"
-          mkdir ..\osi_release\lib
-          mkdir ..\osi_debug\lib
-
-          echo "Compile libOsi"
-          cd Osi\MSVisualStudio\v10\
-          devenv Osi.sln /Upgrade
-          cd libOsi\
-          %SET_RUNTIME_LIBRARY% libOsi.vcxproj libOsi.vcxproj
-          msbuild libOsi.vcxproj /p:Configuration=Release /p:Platform=x64 /p:DefaultWindowsSDKVersion=%WindowsSDKVersion% /p:OutDir=lib
-          move lib\* ..\..\..\..\..\osi_release\lib\
-          msbuild libOsi.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:DefaultWindowsSDKVersion=%WindowsSDKVersion% /p:OutDir=lib
-          move lib\* ..\..\..\..\..\osi_debug\lib\
-
-          echo "Compile libOsiCpx"
-          cd ..\..\..\src\OsiCpx
-          cl /EHsc OsiCpxSolverInterface.cpp /I ..\Osi /I ..\..\..\CoinUtils\src /I "%DOWNWARD_CPLEX_ROOT%\include\ilcplex" /c
-          lib OsiCpxSolverInterface.obj
-          move OsiCpxSolverInterface.lib ..\..\..\..\osi_release\lib\libOsiCpx.lib
-          cl /EHsc OsiCpxSolverInterface.cpp /I ..\Osi /I ..\..\..\CoinUtils\src /I "%DOWNWARD_CPLEX_ROOT%\include\ilcplex" /c /MTd
-          lib OsiCpxSolverInterface.obj
-          move OsiCpxSolverInterface.lib ..\..\..\..\osi_debug\lib\libOsiCpx.lib
-
-          echo "Compile libCoinUtils"
-          cd ..\..\..\CoinUtils\MSVisualStudio\v10
-          devenv CoinUtils.sln /Upgrade
-          cd libCoinUtils
-          %SET_RUNTIME_LIBRARY% libCoinUtils.vcxproj libCoinUtils.vcxproj
-          msbuild libCoinUtils.vcxproj /p:Configuration=Release /p:Platform=x64 /p:DefaultWindowsSDKVersion=%WindowsSDKVersion% /p:OutDir=lib
-          move lib\* ..\..\..\..\..\osi_release\lib\
-          msbuild libCoinUtils.vcxproj /p:Configuration=Debug /p:Platform=x64 /p:DefaultWindowsSDKVersion=%WindowsSDKVersion% /p:OutDir=lib
-          move lib\* ..\..\..\..\..\osi_debug\lib\
 
 
       - name: Compile planner
