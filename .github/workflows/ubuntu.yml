@@ -30,9 +30,9 @@ jobs:
       CXX: ${{ matrix.version.cxx }}
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
       DOWNWARD_CPLEX_ROOT: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex
-      CPLEX_LIBS: ${{ format('{0}/{1}', env.DOWNWARD_CPLEX_ROOT, 'bin/x86-64_linux/libcplex2211.so') }}
+      CPLEX_LIBS: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/libcplex2211.so
       DOWNWARD_SOPLEX_ROOT: /home/runner/lib/soplex-a5df081
-      SOPLEX_LIBS: ${{ format('{0}/{1}', env.DOWNWARD_SOPLEX_ROOT, 'lib/') }}
+      SOPLEX_LIBS: /home/runner/lib/soplex-a5df081/lib/
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
