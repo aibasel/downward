@@ -94,9 +94,9 @@ jobs:
         # archive the entire lib directory of Osi because we need all
         # 4 large library files and several file links to these.
         run: |
-          libs="${{SOPLEX_LIBS}}"
+          libs="${SOPLEX_LIBS}"
           if [[ ! -z "${CPLEX_URL}" ]]; then
-            libs="${libs} ${{CPLEX_LIBS}}"
+            libs="${libs} ${CPLEX_LIBS}"
           fi
 
           # Handle libs first because tar complains when no files follow the last --directory option.
