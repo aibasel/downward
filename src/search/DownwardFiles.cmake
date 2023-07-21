@@ -476,8 +476,11 @@ fast_downward_plugin(
     NAME LP_SOLVER
     HELP "Interface to an LP solver"
     SOURCES
+        lp/cplex_solver_interface
         lp/lp_internals
         lp/lp_solver
+        lp/solver_interface
+        lp/soplex_solver_interface
     DEPENDS NAMED_VECTOR
     DEPENDENCY_ONLY
 )
