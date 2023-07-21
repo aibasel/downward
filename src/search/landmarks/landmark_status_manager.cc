@@ -66,12 +66,11 @@ LandmarkStatusManager::LandmarkStatusManager(
           progress_reasonable_orderings
           ? get_reasonable_parents(graph)
           : vector<pair<LandmarkNode *, vector<LandmarkNode *>>>{}),
-      /*
-        By default we mark all landmarks past, since it is the neutral element
-        for set intersection which we emulate in the progression. Similarly, no
-        landmarks are future which is the neutral element for set union.
-      */
+      /* We initialize to true in *past_landmarks* because true is the
+         neutral element of conjunction/set intersection. */
       past_landmarks(vector<bool>(graph.get_num_landmarks(), true)),
+      /* We initialize to false in *future_landmarks* because false is
+         the neutral element for disjunction/set union. */
       future_landmarks(vector<bool>(graph.get_num_landmarks(), false)) {
 }
 
@@ -110,7 +109,7 @@ void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
               is not valid for B to hold initially. Hence, if such an ordering
               exists, the problem is unsolvable. Consequently, it is fine to
               mark B future also in these cases, because for unsolvable
-              problems, anything is a landmark.
+              problems anything is a landmark.
             */
             if (any_of(node->parents.begin(), node->parents.end(),
                        [initial_state](auto &parent) {
