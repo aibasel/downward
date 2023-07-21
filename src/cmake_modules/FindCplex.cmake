@@ -71,6 +71,8 @@ elseif(MSVC)
     elseif(MSVC13)
         set(CPLEX_COMPILER_HINT "vs2015")
     elseif(MSVC14)
+        set(CPLEX_COMPILER_HINT "vs2017")
+    else()
         set(CPLEX_COMPILER_HINT "msvc14")
     endif()
 
@@ -108,11 +110,14 @@ else()
     )
 endif()
 
+message(WARNING "cplex library path suffix release${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE}")
+
 # CMake uses the first discovered library, searching in the order they
 # are mentioned here. We prefer dynamic libraries over static ones
 # (see issue925) and otherwise prefer the latest available version.
 find_library(CPLEX_LIBRARY_RELEASE
     NAMES
+    cplex2211
     cplex1290
     cplex1280
     cplex1271
@@ -130,6 +135,7 @@ message(WARNING "cplex library release: ${CPLEX_LIBRARY_RELEASE}")
 # See above.
 find_library(CPLEX_LIBRARY_DEBUG
     NAMES
+    cplex2211
     cplex1290
     cplex1280
     cplex1271
@@ -174,6 +180,7 @@ if(CPLEX_INCLUDE_DIRS)
     # HACK: there must be a better way to find the dll file.
     find_path(CPLEX_RUNTIME_LIBRARY_PATH
         NAMES
+        cplex2211.dll
         cplex1262.dll
         HINTS
         ${CPLEX_HINT_PATHS_RELEASE}
