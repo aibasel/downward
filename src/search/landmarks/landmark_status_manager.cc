@@ -100,27 +100,24 @@ void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
         const Landmark &lm = node->get_landmark();
         if (lm.is_true_in_state(initial_state)) {
             assert(past.test(id));
-            if (!node->parents.empty()) {
-                /*
-                  In solvable tasks, reasonable orderings A->B are the only ones
-                  for which it is valid for B to hold in the initial state. We
-                  do not assert this here because for unsolvable problems
-                  anything is a landmark. Hence, it is also fine to set B future
-                  whenever such an ordering is natural (or stronger), i.e., in
-                  unsolvable problems.
+            /*
+              A landmark B that holds initially is always past. If there is a
+              reasonable ordering A->B such that A does not hold initially, we
+              know B must be added again after A is added (or at the same time).
+              Therefore, we can set B future in these cases.
 
-                  Note: The definition of reasonable orderings A->B allows A and
-                  B to hold initially. In these cases, the ordering is
-                  immediately satisfied. Hence, we set B future only if A does
-                  not hold for at least one parent ordering.
-                */
-                if (any_of(node->parents.begin(), node->parents.end(),
-                           [initial_state](auto &parent) {
-                               Landmark &landmark = parent.first->get_landmark();
-                               return !landmark.is_true_in_state(initial_state);
-                           })) {
-                    future.set(id);
-                }
+              In solvable tasks and for natural (or stronger) orderings A->B, it
+              is not valid for B to hold initially. Hence, if such an ordering
+              exists, the problem is unsolvable. Consequently, it is fine to
+              mark B future also in these cases, because for unsolvable
+              problems, anything is a landmark.
+            */
+            if (any_of(node->parents.begin(), node->parents.end(),
+                       [initial_state](auto &parent) {
+                           Landmark &landmark = parent.first->get_landmark();
+                           return !landmark.is_true_in_state(initial_state);
+                       })) {
+                future.set(id);
             }
         } else {
             past.reset(id);
@@ -148,7 +145,7 @@ void LandmarkStatusManager::progress(
     assert(future.size() == lm_graph.get_num_landmarks());
     assert(parent_future.size() == lm_graph.get_num_landmarks());
 
-    progress_basic(
+    progress_landmarks(
         parent_past, parent_future, parent_ancestor_state,
         past, future, ancestor_state);
     progress_goals(ancestor_state, future);
@@ -156,7 +153,7 @@ void LandmarkStatusManager::progress(
     progress_reasonable_orderings(past, future);
 }
 
-void LandmarkStatusManager::progress_basic(
+void LandmarkStatusManager::progress_landmarks(
     ConstBitsetView &parent_past, ConstBitsetView &parent_future,
     const State &parent_ancestor_state, BitsetView &past,
     BitsetView &future, const State &ancestor_state) {
