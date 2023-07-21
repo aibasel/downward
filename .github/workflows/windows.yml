@@ -86,6 +86,10 @@ jobs:
           dir D:\a\downward
           dir D:\a\downward\cplex_temp
           dir D:\a\downward\cplex
+          dir D:\a\downward\cplex\lib
+          dir D:\a\downward\cplex\lib\x86_windows_vs2019
+          dir D:\a\downward\cplex\lib\x86_windows_vs2019\stat_mda
+          dir D:\a\downward\cplex\lib\x86_windows_vs2019\stat_mdd
           call "${{ matrix.platform.vc }}" %ARCH%
           python build.py release
           python build.py debug
