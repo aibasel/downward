@@ -71,8 +71,6 @@ elseif(MSVC)
     elseif(MSVC13)
         set(CPLEX_COMPILER_HINT "vs2015")
     elseif(MSVC14)
-        set(CPLEX_COMPILER_HINT "vs2017")
-    else()
         set(CPLEX_COMPILER_HINT "msvc14")
     endif()
 
