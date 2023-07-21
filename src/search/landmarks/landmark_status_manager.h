@@ -18,7 +18,7 @@ class LandmarkStatusManager {
     PerStateBitset past_landmarks;
     PerStateBitset future_landmarks;
 
-    void progress_basic(
+    void progress_landmarks(
         ConstBitsetView &parent_past, ConstBitsetView &parent_future,
         const State &parent_ancestor_state, BitsetView &past,
         BitsetView &future, const State &ancestor_state);
