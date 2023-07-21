@@ -83,6 +83,9 @@ jobs:
       - name: Compile planner
         shell: cmd
         run: |
+          dir D:\a\downward
+          dir D:\a\downward\cplex_temp
+          dir D:\a\downward\cplex
           call "${{ matrix.platform.vc }}" %ARCH%
           python build.py release
           python build.py debug
