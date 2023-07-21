@@ -83,11 +83,11 @@ BitsetView LandmarkStatusManager::get_future_landmarks(const State &state) {
     return future_landmarks[state];
 }
 
-ConstBitsetView LandmarkStatusManager::get_past_landmarks_const(const State &state) const {
+ConstBitsetView LandmarkStatusManager::get_past_landmarks(const State &state) const {
     return past_landmarks[state];
 }
 
-ConstBitsetView LandmarkStatusManager::get_future_landmarks_const(const State &state) const {
+ConstBitsetView LandmarkStatusManager::get_future_landmarks(const State &state) const {
     return future_landmarks[state];
 }
 
@@ -154,12 +154,10 @@ void LandmarkStatusManager::progress(
         return;
     }
 
-    ConstBitsetView parent_past =
-        get_past_landmarks_const(parent_ancestor_state);
+    ConstBitsetView parent_past = get_past_landmarks(parent_ancestor_state);
     BitsetView past = get_past_landmarks(ancestor_state);
 
-    ConstBitsetView parent_future =
-        get_future_landmarks_const(parent_ancestor_state);
+    ConstBitsetView parent_future = get_future_landmarks(parent_ancestor_state);
     BitsetView future = get_future_landmarks(ancestor_state);
 
     assert(past.size() == lm_graph.get_num_landmarks());

@@ -25,34 +25,42 @@ public:
 };
 
 
+class ConstBitsetView {
+    ConstArrayView<BitsetMath::Block> data;
+    int num_bits;
+public:
+    ConstBitsetView(ConstArrayView<BitsetMath::Block> data, int num_bits) :
+        data(data), num_bits(num_bits) {}
+
+
+    ConstBitsetView(const ConstBitsetView &other) = default;
+    ConstBitsetView &operator=(const ConstBitsetView &other) = default;
+
+    bool test(int index) const;
+    int size() const;
+};
+
+
 class BitsetView {
     ArrayView<BitsetMath::Block> data;
     int num_bits;
 public:
-    BitsetView(ArrayView<BitsetMath::Block> data, int num_bits);
+    BitsetView(ArrayView<BitsetMath::Block> data, int num_bits) :
+        data(data), num_bits(num_bits) {}
+
 
     BitsetView(const BitsetView &other) = default;
     BitsetView &operator=(const BitsetView &other) = default;
+
+    operator ConstBitsetView() const {
+        return ConstBitsetView(data, num_bits);
+    }
 
     void set(int index);
     void reset(int index);
     void reset();
     bool test(int index) const;
     void intersect(const BitsetView &other);
-    int size() const;
-};
-
-
-class ConstBitsetView {
-    ConstArrayView<BitsetMath::Block> data;
-    int num_bits;
-public:
-    ConstBitsetView(ConstArrayView<BitsetMath::Block> data, int num_bits);
-
-    ConstBitsetView(const ConstBitsetView &other) = default;
-    ConstBitsetView &operator=(const ConstBitsetView &other) = default;
-
-    bool test(int index) const;
     int size() const;
 };
 

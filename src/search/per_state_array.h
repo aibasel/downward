@@ -8,19 +8,14 @@
 
 
 template<class T>
-class ArrayView {
-    T *p;
+class ConstArrayView {
+    const T *p;
     int size_;
 public:
-    ArrayView(T *p, int size) : p(p), size_(size) {}
-    ArrayView(const ArrayView<T> &other) = default;
+    ConstArrayView(const T *p, int size) : p(p), size_(size) {}
+    ConstArrayView(const ConstArrayView<T> &other) = default;
 
-    ArrayView<T> &operator=(const ArrayView<T> &other) = default;
-
-    T &operator[](int index) {
-        assert(index >= 0 && index < size_);
-        return p[index];
-    }
+    ConstArrayView<T> &operator=(const ConstArrayView<T> &other) = default;
 
     const T &operator[](int index) const {
         assert(index >= 0 && index < size_);
@@ -33,14 +28,23 @@ public:
 };
 
 template<class T>
-class ConstArrayView {
-    const T *p;
+class ArrayView {
+    T *p;
     int size_;
 public:
-    ConstArrayView(const T *p, int size) : p(p), size_(size) {}
-    ConstArrayView(const ConstArrayView<T> &other) = default;
+    ArrayView(T *p, int size) : p(p), size_(size) {}
+    ArrayView(const ArrayView<T> &other) = default;
 
-    ConstArrayView<T> &operator=(const ConstArrayView<T> &other) = default;
+    ArrayView<T> &operator=(const ArrayView<T> &other) = default;
+
+    operator ConstArrayView<T>() const {
+        return ConstArrayView<T>(p, size_);
+    }
+
+    T &operator[](int index) {
+        assert(index >= 0 && index < size_);
+        return p[index];
+    }
 
     const T &operator[](int index) const {
         assert(index >= 0 && index < size_);

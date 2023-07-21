@@ -37,8 +37,8 @@ public:
 
     BitsetView get_past_landmarks(const State &state);
     BitsetView get_future_landmarks(const State &state);
-    ConstBitsetView get_past_landmarks_const(const State &state) const;
-    ConstBitsetView get_future_landmarks_const(const State &state) const;
+    ConstBitsetView get_past_landmarks(const State &state) const;
+    ConstBitsetView get_future_landmarks(const State &state) const;
 
     void progress_initial_state(const State &initial_state);
     void progress(

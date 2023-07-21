@@ -50,9 +50,9 @@ double LandmarkUniformSharedCostAssignment::cost_sharing_h_value(
 
     const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
     ConstBitsetView past =
-        lm_status_manager.get_past_landmarks_const(ancestor_state);
+        lm_status_manager.get_past_landmarks(ancestor_state);
     ConstBitsetView future =
-        lm_status_manager.get_future_landmarks_const(ancestor_state);
+        lm_status_manager.get_future_landmarks(ancestor_state);
 
     double h = 0;
 
@@ -183,9 +183,9 @@ double LandmarkEfficientOptimalSharedCostAssignment::cost_sharing_h_value(
 
 
     ConstBitsetView past =
-        lm_status_manager.get_past_landmarks_const(ancestor_state);
+        lm_status_manager.get_past_landmarks(ancestor_state);
     ConstBitsetView future =
-        lm_status_manager.get_future_landmarks_const(ancestor_state);
+        lm_status_manager.get_future_landmarks(ancestor_state);
     /*
       Set up LP variable bounds for the landmarks.
       The range of cost(lm_1) is {0} if the landmark is already

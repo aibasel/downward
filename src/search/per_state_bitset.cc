@@ -20,10 +20,6 @@ BitsetMath::Block BitsetMath::bit_mask(size_t pos) {
 }
 
 
-BitsetView::BitsetView(ArrayView<BitsetMath::Block> data, int num_bits) :
-    data(data), num_bits(num_bits) {}
-
-
 void BitsetView::set(int index) {
     assert(index >= 0 && index < num_bits);
     int block_index = BitsetMath::block_index(index);
@@ -83,9 +79,6 @@ BitsetView PerStateBitset::operator[](const State &state) {
     return BitsetView(data[state], num_bits_per_entry);
 }
 
-
-ConstBitsetView::ConstBitsetView(ConstArrayView<BitsetMath::Block> data, int num_bits) :
-    data(data), num_bits(num_bits) {}
 
 bool ConstBitsetView::test(int index) const {
     assert(index >= 0 && index < num_bits);
