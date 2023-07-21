@@ -100,44 +100,27 @@ void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
         const Landmark &lm = node->get_landmark();
         if (lm.is_true_in_state(initial_state)) {
             assert(past.test(id));
-            for (auto &parent : node->parents) {
-                /*
-                  We assume here that no natural orderings A->B are generated
-                  such that B holds in the initial state. Such orderings would
-                  only be valid in unsolvable problems.
-                */
-                assert(parent.second <= EdgeType::REASONABLE);
-                /*
-                  Reasonable orderings A->B for which both A and B hold in the
-                  initial state are immediately satisfied. We assume such
-                  orderings are not generated in the first place.
-                */
-                assert(!parent.first->get_landmark().is_true_in_state(
-                           initial_state));
-                utils::unused_variable(parent);
-                future.set(id);
-            }
             if (!node->parents.empty()) {
-                future.set(id);
                 /*
-                  Natural orderings A->B for which B holds in the initial state
-                  are only valid for unsolvable tasks. We assume such
-                  orderings are not generated.
+                  In solvable tasks, reasonable orderings A->B are the only ones
+                  for which it is valid for B to hold in the initial state. We
+                  do not assert this here because for unsolvable problems
+                  anything is a landmark. Hence, it is also fine to set B future
+                  whenever such an ordering is natural (or stronger), i.e., in
+                  unsolvable problems.
+
+                  Note: The definition of reasonable orderings A->B allows A and
+                  B to hold initially. In these cases, the ordering is
+                  immediately satisfied. Hence, we set B future only if A does
+                  not hold for at least one parent ordering.
                 */
-                assert(all_of(node->parents.begin(), node->parents.end(),
-                              [](auto &parent) {
-                                  return parent.second == EdgeType::REASONABLE;
-                              }));
-                /*
-                  Reasonable orderings A->B for which both A and B hold in the
-                  initial state are immediately satisfied. We assume such
-                  orderings are not generated in the first place.
-                */
-                assert(none_of(node->parents.begin(), node->parents.end(),
-                               [initial_state](auto &parent) {
-                                   Landmark &landmark = parent.first->get_landmark();
-                                   return landmark.is_true_in_state(initial_state);
-                               }));
+                if (any_of(node->parents.begin(), node->parents.end(),
+                           [initial_state](auto &parent) {
+                               Landmark &landmark = parent.first->get_landmark();
+                               return !landmark.is_true_in_state(initial_state);
+                           })) {
+                    future.set(id);
+                }
             }
         } else {
             past.reset(id);
