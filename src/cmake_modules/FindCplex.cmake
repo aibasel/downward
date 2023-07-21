@@ -179,7 +179,6 @@ if(CPLEX_INCLUDE_DIRS)
     find_path(CPLEX_RUNTIME_LIBRARY_PATH
         NAMES
         cplex2211.dll
-        cplex1262.dll
         HINTS
         ${CPLEX_HINT_PATHS_RELEASE}
         ${CPLEX_HINT_PATHS_DEBUG}
@@ -187,7 +186,7 @@ if(CPLEX_INCLUDE_DIRS)
         ${CPLEX_RUNTIME_LIBRARY_HINT}
     )
     if(CPLEX_RUNTIME_LIBRARY_PATH)
-        set(CPLEX_RUNTIME_LIBRARY "${CPLEX_RUNTIME_LIBRARY_PATH}/cplex1262.dll")
+        set(CPLEX_RUNTIME_LIBRARY "${CPLEX_RUNTIME_LIBRARY_PATH}/cplex2211.dll")
     endif()
 endif()
 
