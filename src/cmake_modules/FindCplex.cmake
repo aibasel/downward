@@ -41,8 +41,6 @@ find_path(CPLEX_INCLUDE_DIRS
     include/ilcplex
 )
 
-message(WARNING "the cplex include dirs are at ${CPLEX_INCLUDE_DIRS}")
-
 if(APPLE)
     set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32
         "lib/x86_osx/static_pic")
@@ -108,8 +106,6 @@ else()
     )
 endif()
 
-message(WARNING "cplex library path suffix release${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE}")
-
 # CMake uses the first discovered library, searching in the order they
 # are mentioned here. We prefer dynamic libraries over static ones
 # (see issue925) and otherwise prefer the latest available version.
@@ -127,9 +123,6 @@ find_library(CPLEX_LIBRARY_RELEASE
     ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE}
 )
 
-message(WARNING "cplex hint path release: ${CPLEX_HINT_PATHS_RELEASE}")
-message(WARNING "cplex library release: ${CPLEX_LIBRARY_RELEASE}")
-
 # See above.
 find_library(CPLEX_LIBRARY_DEBUG
     NAMES
@@ -144,9 +137,6 @@ find_library(CPLEX_LIBRARY_DEBUG
     PATH_SUFFIXES
     ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG}
 )
-
-message(WARNING "cplex hint path debug: ${CPLEX_HINT_PATHS_DEBUG}")
-message(WARNING "cplex library debug: ${CPLEX_LIBRARY_DEBUG}")
 
 if(CPLEX_INCLUDE_DIRS)
     # Parse CPLEX version.
@@ -189,10 +179,6 @@ if(CPLEX_INCLUDE_DIRS)
         set(CPLEX_RUNTIME_LIBRARY "${CPLEX_RUNTIME_LIBRARY_PATH}/cplex2211.dll")
     endif()
 endif()
-
-message(WARNING "cplex runtime library path hint: ${CPLEX_HINT_PATHS_RELEASE}/${CPLEX_RUNTIME_LIBRARY_HINT}")
-message(WARNING "cplex runtime library path: ${CPLEX_RUNTIME_LIBRARY_PATH}")
-
 
 # Check if everything was found and set CPLEX_FOUND.
 include(FindPackageHandleStandardArgs)
