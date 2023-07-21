@@ -41,6 +41,8 @@ find_path(CPLEX_INCLUDE_DIRS
     include/ilcplex
 )
 
+message(WARNING "the cplex include dirs are at ${CPLEX_INCLUDE_DIRS}")
+
 if(APPLE)
     set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32
         "lib/x86_osx/static_pic")
@@ -69,7 +71,7 @@ elseif(MSVC)
     elseif(MSVC13)
         set(CPLEX_COMPILER_HINT "vs2015")
     elseif(MSVC14)
-        set(CPLEX_COMPILER_HINT "vs2017")
+        set(CPLEX_COMPILER_HINT "msvc14")
     endif()
 
     set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 "lib/x86_windows_${CPLEX_COMPILER_HINT}/stat_mda")
@@ -122,6 +124,9 @@ find_library(CPLEX_LIBRARY_RELEASE
     ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE}
 )
 
+message(WARNING "cplex hint path release: ${CPLEX_HINT_PATHS_RELEASE}")
+message(WARNING "cplex library release: ${CPLEX_LIBRARY_RELEASE}")
+
 # See above.
 find_library(CPLEX_LIBRARY_DEBUG
     NAMES
@@ -135,6 +140,9 @@ find_library(CPLEX_LIBRARY_DEBUG
     PATH_SUFFIXES
     ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG}
 )
+
+message(WARNING "cplex hint path debug: ${CPLEX_HINT_PATHS_DEBUG}")
+message(WARNING "cplex library debug: ${CPLEX_LIBRARY_DEBUG}")
 
 if(CPLEX_INCLUDE_DIRS)
     # Parse CPLEX version.
@@ -177,6 +185,10 @@ if(CPLEX_INCLUDE_DIRS)
         set(CPLEX_RUNTIME_LIBRARY "${CPLEX_RUNTIME_LIBRARY_PATH}/cplex1262.dll")
     endif()
 endif()
+
+message(WARNING "cplex runtime library path hint: ${CPLEX_HINT_PATHS_RELEASE}/${CPLEX_RUNTIME_LIBRARY_HINT}")
+message(WARNING "cplex runtime library path: ${CPLEX_RUNTIME_LIBRARY_PATH}")
+
 
 # Check if everything was found and set CPLEX_FOUND.
 include(FindPackageHandleStandardArgs)
