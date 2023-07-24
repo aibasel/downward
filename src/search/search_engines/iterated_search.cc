@@ -165,14 +165,14 @@ public:
         document_note(
             "Note 2",
             "The configuration\n```\n"
-            "--search \"iterated([lazy_wastar(merge_and_shrink(),w=10), "
-            "lazy_wastar(merge_and_shrink(),w=5), lazy_wastar(merge_and_shrink(),w=3), "
-            "lazy_wastar(merge_and_shrink(),w=2), lazy_wastar(merge_and_shrink(),w=1)])\"\n"
+            "--search \"iterated([lazy_wastar(ipdb(),w=10), "
+            "lazy_wastar(ipdb(),w=5), lazy_wastar(ipdb(),w=3), "
+            "lazy_wastar(ipdb(),w=2), lazy_wastar(ipdb(),w=1)])\"\n"
             "```\nwould perform the preprocessing phase of the merge and shrink heuristic "
             "5 times (once before each iteration).\n\n"
             "To avoid this, use heuristic predefinition, which avoids duplicate "
             "preprocessing, as follows:\n```\n"
-            "--evaluator \"h=merge_and_shrink()\" --search "
+            "--evaluator \"h=ipdb()\" --search "
             "\"iterated([lazy_wastar(h,w=10), lazy_wastar(h,w=5), lazy_wastar(h,w=3), "
             "lazy_wastar(h,w=2), lazy_wastar(h,w=1)])\"\n"
             "```");
