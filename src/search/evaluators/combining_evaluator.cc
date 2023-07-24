@@ -17,17 +17,17 @@ CombiningEvaluator::CombiningEvaluator(const plugins::Options &opts)
             all_dead_ends_are_reliable = false;
 }
 
-CombiningEvaluator::CombiningEvaluator(basic_string<char> unparsed_config,
+CombiningEvaluator::CombiningEvaluator(utils::LogProxy log,
+                                       vector<shared_ptr<Evaluator>> subevaluators,
+                                       basic_string<char> unparsed_config,
                                        bool use_for_reporting_minima,
                                        bool use_for_boosting,
-                                       bool use_for_counting_evaluations,
-                                       utils::LogProxy log,
-                                       vector<shared_ptr<Evaluator>> subevaluators)
-        : Evaluator(unparsed_config,
+                                       bool use_for_counting_evaluations)
+        : Evaluator(log,
+                    unparsed_config,
                     use_for_reporting_minima,
                     use_for_boosting,
-                    use_for_counting_evaluations,
-                    log) {
+                    use_for_counting_evaluations) {
     all_dead_ends_are_reliable = true;
     for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
         if (!subevaluator->dead_ends_are_reliable())
