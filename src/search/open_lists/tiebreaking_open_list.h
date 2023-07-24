@@ -7,7 +7,7 @@
 
 namespace tiebreaking_open_list {
 class TieBreakingOpenListFactory : public OpenListFactory {
-    plugins::Options options;
+    plugins::Options options; //TODOissue559 remove options field in the long run.
     bool pref_only;
     int size;
     std::vector<std::shared_ptr<Evaluator>> evaluators;
