@@ -168,7 +168,7 @@ public:
             "--search \"iterated([lazy_wastar(ipdb(),w=10), "
             "lazy_wastar(ipdb(),w=5), lazy_wastar(ipdb(),w=3), "
             "lazy_wastar(ipdb(),w=2), lazy_wastar(ipdb(),w=1)])\"\n"
-            "```\nwould perform the preprocessing phase of the merge and shrink heuristic "
+            "```\nwould perform the preprocessing phase of the ipdb heuristic "
             "5 times (once before each iteration).\n\n"
             "To avoid this, use heuristic predefinition, which avoids duplicate "
             "preprocessing, as follows:\n```\n"
