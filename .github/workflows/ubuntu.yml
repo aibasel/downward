@@ -93,10 +93,10 @@ jobs:
           files_to_archive="fast-downward.py driver misc builds/debug/bin/ \
                             builds/release/bin/ ${SOPLEX_LIB} ${SOPLEX_INCLUDE}"
           if [[ ! -z "${CPLEX_URL}" ]]; then
-            files_to_archive="${libs} ${CPLEX_LIB}"
+            files_to_archive="${files_to_archive} ${CPLEX_LIB}"
           fi
-          tar cfz archive.tar.gz -C "/home/runner" $(realpath --relative-to="/home/runner" $files_to_archive)
-          tar tfz archive.tar.gz
+          tar cfzv archive.tar.gz -C "/home/runner" $(realpath --relative-to="/home/runner" $files_to_archive)
+          tar tfzv archive.tar.gz
 
       - name: Upload archive
         if: ${{ matrix.version.run_tox_tests }}
@@ -158,11 +158,15 @@ jobs:
         # during compilation.
         run: |
           pwd
-          tar tfz archive.tar.gz
-          tar xfz archive.tar.gz -C "/home/runner"
+          tar tfzv archive.tar.gz
+          tar xfzv archive.tar.gz -C "/home/runner"
+          echo "ls /home/runner"
           ls /home/runner
+          echo "/home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/"
           ls /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/
+          echo "ls $GITHUB_WORKSPACE"
           ls $GITHUB_WORKSPACE
+          echo "$GITHUB_WORKSPACE/misc"
           ls $GITHUB_WORKSPACE/misc
 
       - name: Run driver, translator and search tests
