@@ -158,7 +158,7 @@ jobs:
         # during compilation.
         run: |
           pwd
-          tar tfz archiv.tar.gz
+          tar tfz archive.tar.gz
           tar xfz archive.tar.gz -C "/home/runner"
           ls /home/runner
           ls /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/
