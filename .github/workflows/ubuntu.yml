@@ -96,6 +96,7 @@ jobs:
             files_to_archive="${libs} ${CPLEX_LIB}"
           fi
           tar cfz archive.tar.gz -C "/home/runner" $(realpath --relative-to="/home/runner" $files_to_archive)
+          tar tfz archive.tar.gz
 
       - name: Upload archive
         if: ${{ matrix.version.run_tox_tests }}
@@ -156,10 +157,17 @@ jobs:
         # We need to make sure that library paths are the same as
         # during compilation.
         run: |
+          pwd
+          tar tfz archiv.tar.gz
           tar xfz archive.tar.gz -C "/home/runner"
+          ls /home/runner
+          ls /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/
+          ls $GITHUB_WORKSPACE
+          ls $GITHUB_WORKSPACE/misc
 
       - name: Run driver, translator and search tests
         run: |
+          pwd
           cd misc/
           tox -e driver,translator,search
 
