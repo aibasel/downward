@@ -60,6 +60,9 @@ macro(fast_downward_set_compiler_flags)
 #        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267") # conversion from size_t to int with possible loss of data
 
         message(WARNING "CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}")
+        message(WARNING "ENV_CMAKE_CXX_FLAGS $ENV{CMAKE_CXX_FLAGS}")
+        message(WARNING "CXX_FLAGS ${CXX_FLAGS}")
+        message(WARNING "ENV CXX_FLAGS $ENV{CXX_FLAGS}")
 
         # TODO: Configuration-specific flags. We currently rely on the fact that
         # CMAKE_CXX_FLAGS_RELEASE and CMAKE_CXX_FLAGS_DEBUG get reasonable settings
