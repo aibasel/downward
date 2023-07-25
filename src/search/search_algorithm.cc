@@ -62,6 +62,33 @@ SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts)
     task_properties::print_variable_statistics(task_proxy);
 }
 
+SearchAlgorithm::SearchAlgorithm(utils::Verbosity verbosity,
+                           OperatorCost cost_type,
+                           double max_time,
+                           int bound,
+                           string unparsed_config)
+        : description(unparsed_config),
+          status(IN_PROGRESS),
+          solution_found(false),
+          task(tasks::g_root_task),
+          task_proxy(*task),
+          log(utils::get_log_from_verbosity(verbosity)),
+          state_registry(task_proxy),
+          successor_generator(get_successor_generator(task_proxy, log)),
+          search_space(state_registry, log),
+          statistics(log),
+          bound(bound),
+          cost_type(cost_type),
+          is_unit_cost(task_properties::is_unit_cost(task_proxy)),
+          max_time(max_time) {
+    if (bound < 0) {
+        cerr << "error: negative cost bound " << bound << endl;
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+    }
+    task_properties::print_variable_statistics(task_proxy);
+}
+
+
 SearchAlgorithm::~SearchAlgorithm() {
 }
 
