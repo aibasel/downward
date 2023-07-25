@@ -21,7 +21,7 @@ MergeScoringFunctionSingleRandom::MergeScoringFunctionSingleRandom(
 
 vector<double> MergeScoringFunctionSingleRandom::compute_scores(
     const FactoredTransitionSystem &,
-    const vector<shared_ptr<MergeCandidate>> &merge_candidates) {
+    const vector<MergeCandidate> &merge_candidates) {
     int chosen_index = rng->random(merge_candidates.size());
     vector<double> scores;
     scores.reserve(merge_candidates.size());

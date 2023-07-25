@@ -17,8 +17,8 @@ MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(
               "scoring_functions")) {
 }
 
-static vector<shared_ptr<MergeCandidate>> get_remaining_candidates(
-    const vector<shared_ptr<MergeCandidate>> &merge_candidates,
+static vector<MergeCandidate> get_remaining_candidates(
+    const vector<MergeCandidate> &merge_candidates,
     const vector<double> &scores) {
     assert(merge_candidates.size() == scores.size());
     double best_score = INF;
@@ -28,7 +28,7 @@ static vector<shared_ptr<MergeCandidate>> get_remaining_candidates(
         }
     }
 
-    vector<shared_ptr<MergeCandidate>> result;
+    vector<MergeCandidate> result;
     for (size_t i = 0; i < scores.size(); ++i) {
         if (scores[i] == best_score) {
             result.push_back(merge_candidates[i]);
@@ -40,7 +40,7 @@ static vector<shared_ptr<MergeCandidate>> get_remaining_candidates(
 pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
     const FactoredTransitionSystem &fts,
     const vector<int> &indices_subset) {
-    vector<shared_ptr<MergeCandidate>> merge_candidates =
+    vector<MergeCandidate> merge_candidates =
         compute_merge_candidates(fts, indices_subset);
 
     for (const shared_ptr<MergeScoringFunction> &scoring_function :
@@ -60,7 +60,7 @@ pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 
-    return make_pair(merge_candidates.front()->index1, merge_candidates.front()->index2);
+    return make_pair(merge_candidates.front().index1, merge_candidates.front().index2);
 }
 
 void MergeSelectorScoreBasedFiltering::initialize(const TaskProxy &task_proxy) {

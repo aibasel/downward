@@ -16,7 +16,7 @@ MergeScoringFunctionGoalRelevance::MergeScoringFunctionGoalRelevance(
 
 vector<double> MergeScoringFunctionGoalRelevance::compute_scores(
     const FactoredTransitionSystem &fts,
-    const vector<shared_ptr<MergeCandidate>> &merge_candidates) {
+    const vector<MergeCandidate> &merge_candidates) {
     int num_ts = fts.get_size();
     vector<bool> goal_relevant(num_ts, false);
     for (int ts_index : fts) {
@@ -29,8 +29,8 @@ vector<double> MergeScoringFunctionGoalRelevance::compute_scores(
     vector<double> scores;
     scores.reserve(merge_candidates.size());
     for (const auto &merge_candidate : merge_candidates) {
-        int ts_index1 = merge_candidate->index1;
-        int ts_index2 = merge_candidate->index2;
+        int ts_index1 = merge_candidate.index1;
+        int ts_index2 = merge_candidate.index2;
         int score = INF;
         if (goal_relevant[ts_index1] || goal_relevant[ts_index2]) {
             score = 0;

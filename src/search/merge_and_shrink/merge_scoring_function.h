@@ -41,7 +41,7 @@ public:
     virtual ~MergeScoringFunction() = default;
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,
-        const std::vector<std::shared_ptr<MergeCandidate>> &merge_candidates) = 0;
+        const std::vector<MergeCandidate> &merge_candidates) = 0;
     virtual bool requires_init_distances() const = 0;
     virtual bool requires_goal_distances() const = 0;
 

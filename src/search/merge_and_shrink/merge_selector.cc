@@ -14,22 +14,22 @@
 using namespace std;
 
 namespace merge_and_shrink {
-shared_ptr<MergeCandidate> MergeSelector::get_candidate(
+MergeCandidate MergeSelector::get_candidate(
     int index1, int index2) {
     assert(utils::in_bounds(index1, merge_candidates_by_indices));
     assert(utils::in_bounds(index2, merge_candidates_by_indices[index1]));
-    if (merge_candidates_by_indices[index1][index2] == nullptr) {
+    if (!merge_candidates_by_indices[index1][index2]) {
         merge_candidates_by_indices[index1][index2] =
-            make_shared<MergeCandidate>(num_candidates, index1, index2);
+            MergeCandidate(num_candidates, index1, index2);
         ++num_candidates;
     }
-    return merge_candidates_by_indices[index1][index2];
+    return *merge_candidates_by_indices[index1][index2];
 }
 
-vector<shared_ptr<MergeCandidate>> MergeSelector::compute_merge_candidates(
+vector<MergeCandidate> MergeSelector::compute_merge_candidates(
     const FactoredTransitionSystem &fts,
     const vector<int> &indices_subset) {
-    vector<shared_ptr<MergeCandidate>> merge_candidates;
+    vector<MergeCandidate> merge_candidates;
     if (indices_subset.empty()) {
         for (int ts_index1 = 0; ts_index1 < fts.get_size(); ++ts_index1) {
             if (fts.is_active(ts_index1)) {
@@ -61,7 +61,7 @@ void MergeSelector::initialize(const TaskProxy &task_proxy) {
     int max_factor_index = 2 * num_variables - 1;
     merge_candidates_by_indices.resize(
         max_factor_index,
-        vector<shared_ptr<MergeCandidate>>(max_factor_index, nullptr));
+        vector<optional<MergeCandidate>>(max_factor_index));
 }
 
 void MergeSelector::dump_options(utils::LogProxy &log) const {

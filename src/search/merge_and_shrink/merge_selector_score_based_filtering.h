@@ -3,6 +3,7 @@
 
 #include "merge_selector.h"
 
+#include <memory>
 #include <vector>
 
 namespace plugins {

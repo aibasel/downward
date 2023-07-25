@@ -26,17 +26,17 @@ MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
 
 vector<double> MergeScoringFunctionMIASM::compute_scores(
     const FactoredTransitionSystem &fts,
-    const vector<shared_ptr<MergeCandidate>> &merge_candidates) {
+    const vector<MergeCandidate> &merge_candidates) {
     vector<double> scores;
     scores.reserve(merge_candidates.size());
     for (const auto &merge_candidate : merge_candidates) {
         double score;
-        int id = merge_candidate->id;
+        int id = merge_candidate.id;
         if (use_caching && cached_scores.count(id)) {
             score = cached_scores[id];
         } else {
-            int index1 = merge_candidate->index1;
-            int index2 = merge_candidate->index2;
+            int index1 = merge_candidate.index1;
+            int index2 = merge_candidate.index2;
             unique_ptr<TransitionSystem> product = shrink_before_merge_externally(
                 fts,
                 index1,
