@@ -126,10 +126,8 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 }
 
 pair<shared_ptr<OpenListFactory>, const shared_ptr<Evaluator>>
-create_astar_open_list_factory_and_f_eval(const plugins::Options &opts) {
-    utils::Verbosity verbosity = opts.get<utils::Verbosity>("verbosity");
-    shared_ptr<Evaluator> eval = opts.get<shared_ptr<Evaluator>>("eval");
-    // TODOissue559 remove above lines, replace opts parameter with unpacked parameters.
+create_astar_open_list_factory_and_f_eval(const utils::Verbosity &verbosity,
+                                          const shared_ptr<Evaluator> &eval) {
     shared_ptr<GEval> g = make_shared<GEval>(utils::get_log_from_verbosity(verbosity));
 
     shared_ptr<Evaluator> h = eval;
