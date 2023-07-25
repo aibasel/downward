@@ -84,8 +84,8 @@ jobs:
         shell: cmd
         run: |
           call "${{ matrix.platform.vc }}" %ARCH%
-          set CXX_FLAGS=/WX
-          echo "CXX_FLAGS: %CXX_FLAGS%"
+          set CXXFLAGS=/WX
+          echo "CXXFLAGS: %CXXFLAGS%"
           python build.py release
           python build.py debug
 

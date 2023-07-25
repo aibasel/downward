@@ -61,8 +61,8 @@ macro(fast_downward_set_compiler_flags)
 
         message(WARNING "CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}")
         message(WARNING "ENV_CMAKE_CXX_FLAGS $ENV{CMAKE_CXX_FLAGS}")
-        message(WARNING "CXX_FLAGS ${CXX_FLAGS}")
-        message(WARNING "ENV CXX_FLAGS $ENV{CXX_FLAGS}")
+        message(WARNING "CXXFLAGS ${CXXFLAGS}")
+        message(WARNING "ENV CXXFLAGS $ENV{CXXFLAGS}")
 
         # TODO: Configuration-specific flags. We currently rely on the fact that
         # CMAKE_CXX_FLAGS_RELEASE and CMAKE_CXX_FLAGS_DEBUG get reasonable settings
