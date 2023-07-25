@@ -89,21 +89,17 @@ jobs:
         # We only run tests on one compiler version per Ubuntu version, so we
         # only need to archive that one.
         if: ${{ matrix.version.run_tox_tests }}
-        # We determined the dynamically-linked libraries using ldd. We
-        # archive the entire lib directory of Osi because we need all
-        # 4 large library files and several file links to these.
         run: |
-          libs="${SOPLEX_LIB} ${SOPLEX_INCLUDE}"
+          files_to_archive="fast-downward.py driver misc builds/debug/bin/ \
+                            builds/release/bin/ ${SOPLEX_LIB} ${SOPLEX_INCLUDE}"
           if [[ ! -z "${CPLEX_URL}" ]]; then
-            libs="${libs} ${CPLEX_LIB}"
+            files_to_archive="${files_to_archive} ${CPLEX_LIB}"
           fi
-
-          # Handle libs first because tar complains when no files follow the last --directory option.
-          tar cfz archive.tar.gz ${libs} --directory ${GITHUB_WORKSPACE} fast-downward.py driver misc builds/debug/bin/ builds/release/bin/
+          tar cfz archive.tar.gz -C "/home/runner" $(realpath --relative-to="/home/runner" $files_to_archive)
 
       - name: Upload archive
         if: ${{ matrix.version.run_tox_tests }}
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v3
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
           path: archive.tar.gz
@@ -123,7 +119,7 @@ jobs:
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
     steps:
       - name: Download archive
-        uses: actions/download-artifact@master
+        uses: actions/download-artifact@v3
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
 
@@ -133,7 +129,7 @@ jobs:
           name: compiled-planner-${{ matrix.version.ubuntu }}
 
       - name: Install Python
-        uses: actions/setup-python@master
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.version.python }}
 
@@ -160,7 +156,7 @@ jobs:
         # We need to make sure that library paths are the same as
         # during compilation.
         run: |
-          tar xfz archive.tar.gz
+          tar xfz archive.tar.gz -C "/home/runner"
 
       - name: Run driver, translator and search tests
         run: |
