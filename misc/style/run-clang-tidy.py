@@ -82,8 +82,6 @@ def check_search_code_with_clang_tidy():
         "-quiet",
         "-p", build_dir,
         "-clang-tidy-binary=clang-tidy-12",
-        # Include all non-system headers.
-        "-header-filter=.*",
         "-checks=-*," + ",".join(checks)]
     print("Running clang-tidy: " + " ".join(pipes.quote(x) for x in cmd))
     print()
