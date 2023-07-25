@@ -18,6 +18,8 @@
   to eager and lazy search.
 */
 
+#include "../utils/logging.h"
+
 #include <memory>
 
 class Evaluator;
@@ -76,7 +78,8 @@ extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
   the passed-in Options object as the h evaluator.
 */
 extern std::pair<std::shared_ptr<OpenListFactory>, const std::shared_ptr<Evaluator>>
-create_astar_open_list_factory_and_f_eval(const plugins::Options &opts);
+create_astar_open_list_factory_and_f_eval(const utils::Verbosity &verbosity,
+                                          const std::shared_ptr<Evaluator> &eval);
 }
 
 #endif

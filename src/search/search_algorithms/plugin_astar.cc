@@ -38,9 +38,11 @@ public:
             "```\n", true);
     }
 
-    virtual shared_ptr<eager_search::EagerSearch> create_component(const plugins::Options &options, const utils::Context &) const override {
-        plugins::Options options_copy(options);
-        auto temp = search_common::create_astar_open_list_factory_and_f_eval(options);
+    virtual shared_ptr<eager_search::EagerSearch> create_component(const plugins::Options &opts, const utils::Context &) const override {
+        utils::Verbosity verbosity = opts.get<utils::Verbosity>("verbosity");
+        shared_ptr<Evaluator> eval = opts.get<shared_ptr<Evaluator>>("eval");
+        plugins::Options options_copy(opts);
+        auto temp = search_common::create_astar_open_list_factory_and_f_eval(verbosity, eval);
         options_copy.set("open", temp.first);
         options_copy.set("f_eval", temp.second);
         options_copy.set("reopen_closed", true);
