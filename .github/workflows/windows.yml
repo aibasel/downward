@@ -100,6 +100,8 @@ jobs:
         # steps, we hope to be able to install VAL natively on Windows.
         run: |
           call "${{ matrix.platform.vc }}" %ARCH%
+          set CXX_FLAGS="%CXX_FLAGS% /WX"
+          echo "CXX_FLAGS: %CXX_FLAGS%"
           cd misc/
           tox -e translator,search
 
