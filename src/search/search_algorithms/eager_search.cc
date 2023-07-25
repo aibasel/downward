@@ -34,6 +34,35 @@ EagerSearch::EagerSearch(const plugins::Options &opts)
     }
 }
 
+EagerSearch::EagerSearch(utils::Verbosity verbosity,
+                         OperatorCost cost_type,
+                         double max_time,
+                         int bound,
+                         bool reopen_closed_nodes,
+                         unique_ptr<StateOpenList> open_list,
+                         vector<shared_ptr<Evaluator>> preferred_operator_evaluators,
+                         shared_ptr<PruningMethod> pruning_method,
+                         shared_ptr<Evaluator> f_evaluator,
+                         shared_ptr<Evaluator> lazy_evaluator,
+                         string unparsed_config
+                                 )
+        : SearchEngine(verbosity,
+                       cost_type,
+                       max_time,
+                       bound,
+                       unparsed_config),
+          reopen_closed_nodes(reopen_closed_nodes),
+          open_list(std::move(open_list)),
+          f_evaluator(f_evaluator),
+          preferred_operator_evaluators(preferred_operator_evaluators),
+          lazy_evaluator(lazy_evaluator),
+          pruning_method(pruning_method) {
+    if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
+        cerr << "lazy_evaluator must cache its estimates" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
+}
+
 void EagerSearch::initialize() {
     log << "Conducting best first search"
         << (reopen_closed_nodes ? " with" : " without")

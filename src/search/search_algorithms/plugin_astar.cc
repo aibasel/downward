@@ -1,6 +1,8 @@
 #include "eager_search.h"
 #include "search_common.h"
 
+#include "../open_list_factory.h"
+
 #include "../plugins/plugin.h"
 
 using namespace std;
@@ -39,16 +41,21 @@ public:
     }
 
     virtual shared_ptr<eager_search::EagerSearch> create_component(const plugins::Options &opts, const utils::Context &) const override {
-        utils::Verbosity verbosity = opts.get<utils::Verbosity>("verbosity");
-        shared_ptr<Evaluator> eval = opts.get<shared_ptr<Evaluator>>("eval");
-        plugins::Options options_copy(opts);
-        auto temp = search_common::create_astar_open_list_factory_and_f_eval(verbosity, eval);
-        options_copy.set("open", temp.first);
-        options_copy.set("f_eval", temp.second);
-        options_copy.set("reopen_closed", true);
+        utils::Verbosity _verbosity = opts.get<utils::Verbosity>("verbosity");
+        auto temp = search_common::create_astar_open_list_factory_and_f_eval(_verbosity,
+                                                                             opts.get<shared_ptr<Evaluator>>("eval"));
         vector<shared_ptr<Evaluator>> preferred_list;
-        options_copy.set("preferred", preferred_list);
-        return make_shared<eager_search::EagerSearch>(options_copy);
+        return make_shared<eager_search::EagerSearch>(_verbosity,
+                                                      opts.get<OperatorCost>("cost_type"),
+                                                      opts.get<double>("max_time"),
+                                                      opts.get<int>("bound"),
+                                                      true,
+                                                      temp.first->create_state_open_list(),
+                                                      preferred_list,
+                                                      opts.get<shared_ptr<PruningMethod>>("pruning"),
+                                                      temp.second,
+                                                      nullptr,
+                                                      opts.get_unparsed_config());
     }
 };
 
