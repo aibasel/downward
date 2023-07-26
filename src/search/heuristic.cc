@@ -7,6 +7,7 @@
 #include "task_utils/task_properties.h"
 #include "tasks/cost_adapted_task.h"
 #include "tasks/root_task.h"
+#include "utils/logging.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -19,6 +20,22 @@ Heuristic::Heuristic(const plugins::Options &opts)
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_evaluator_values(opts.get<bool>("cache_estimates")),
       task(opts.get<shared_ptr<AbstractTask>>("transform")),
+      task_proxy(*task) {
+}
+
+
+plugins::Options create_dummy_options_for_python_binding() {
+    plugins::Options opts;
+    opts.set<utils::Verbosity>("verbosity", utils::Verbosity::NORMAL);
+    opts.set_unparsed_config("Evaluator created from Python");
+    return opts;
+}
+
+Heuristic::Heuristic(shared_ptr<AbstractTask> task)
+    : Evaluator(create_dummy_options_for_python_binding(), true, true, true),
+      heuristic_cache(HEntry(NO_VALUE, true)),
+      cache_evaluator_values(true),
+      task(task),
       task_proxy(*task) {
 }
 

@@ -40,6 +40,28 @@ successor_generator::SuccessorGenerator &get_successor_generator(
     return successor_generator;
 }
 
+SearchEngine::SearchEngine(const std::string &description, OperatorCost cost_type, double max_time, int cost_bound)
+    : description(description),
+      status(IN_PROGRESS),
+      solution_found(false),
+      task(tasks::g_root_task),
+      task_proxy(*task),
+      log(utils::g_log), // TODO the options version can set the verbosity level
+      state_registry(task_proxy),
+      successor_generator(get_successor_generator(task_proxy, log)),
+      search_space(state_registry, log),
+      statistics(log),
+      cost_type(cost_type),
+      is_unit_cost(task_properties::is_unit_cost(task_proxy)),
+      max_time(max_time) {
+    if (cost_bound < 0) {
+        cerr << "error: negative cost bound " << cost_bound << endl;
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+    }
+    bound = cost_bound;
+    task_properties::print_variable_statistics(task_proxy);
+}
+
 SearchEngine::SearchEngine(const plugins::Options &opts)
     : description(opts.get_unparsed_config()),
       status(IN_PROGRESS),

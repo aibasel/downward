@@ -61,8 +61,6 @@ protected:
 
     enum {DEAD_END = -1, NO_VALUE = -2};
 
-    virtual int compute_heuristic(const State &ancestor_state) = 0;
-
     /*
       Usage note: Marking the same operator as preferred multiple times
       is OK -- it will only appear once in the list of preferred
@@ -74,7 +72,10 @@ protected:
 
 public:
     explicit Heuristic(const plugins::Options &opts);
+    explicit Heuristic(std::shared_ptr<AbstractTask> task);
     virtual ~Heuristic() override;
+
+    virtual int compute_heuristic(const State &ancestor_state) = 0;
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> & /*evals*/) override {

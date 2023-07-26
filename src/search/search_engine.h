@@ -61,6 +61,7 @@ protected:
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
     SearchEngine(const plugins::Options &opts);
+    SearchEngine(const std::string &description, OperatorCost cost_type, double max_time, int cost_bound);
     virtual ~SearchEngine();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();

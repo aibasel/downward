@@ -497,6 +497,11 @@ void read_root_task(istream &in) {
     g_root_task = make_shared<RootTask>(in);
 }
 
+shared_ptr<AbstractTask> get_root_task() { 
+  return g_root_task;
+}
+
+
 class RootTaskFeature : public plugins::TypedFeature<AbstractTask, AbstractTask> {
 public:
     RootTaskFeature() : TypedFeature("no_transform") {

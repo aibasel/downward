@@ -33,6 +33,7 @@ protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     explicit FFHeuristic(const plugins::Options &opts);
+    explicit FFHeuristic(std::shared_ptr<AbstractTask> task);
 };
 }
 
