@@ -158,11 +158,11 @@ public:
             "use_caching",
             "Cache scores for merge candidates. IMPORTANT! This only works "
             "under the assumption that the merge-and-shrink algorithm only "
-            "uses exact label reduction and does not shrink factors others "
-            "than those being merged. In this setting, the MIASM score of a "
-            "merge candidate is constant over merge-and-shrink iterations. If "
-            "caching is enabled, only the scores for the new merge candidates "
-            "need to be computed.",
+            "uses exact label reduction and does not (non-exactly) shrink "
+            "factors other than those being merged in the current iteration. "
+            "In this setting, the MIASM score of a merge candidate is constant "
+            "over merge-and-shrink iterations. If caching is enabled, only the "
+            "scores for the new merge candidates need to be computed.",
             "true");
     }
 
