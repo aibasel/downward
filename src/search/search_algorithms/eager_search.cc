@@ -45,18 +45,18 @@ EagerSearch::EagerSearch(utils::Verbosity verbosity,
                          shared_ptr<Evaluator> f_evaluator,
                          shared_ptr<Evaluator> lazy_evaluator,
                          string unparsed_config
-                                 )
-        : SearchEngine(verbosity,
-                       cost_type,
-                       max_time,
-                       bound,
-                       unparsed_config),
-          reopen_closed_nodes(reopen_closed_nodes),
-          open_list(std::move(open_list)),
-          f_evaluator(f_evaluator),
-          preferred_operator_evaluators(preferred_operator_evaluators),
-          lazy_evaluator(lazy_evaluator),
-          pruning_method(pruning_method) {
+                         )
+    : SearchEngine(verbosity,
+                   cost_type,
+                   max_time,
+                   bound,
+                   unparsed_config),
+      reopen_closed_nodes(reopen_closed_nodes),
+      open_list(std::move(open_list)),
+      f_evaluator(f_evaluator),
+      preferred_operator_evaluators(preferred_operator_evaluators),
+      lazy_evaluator(lazy_evaluator),
+      pruning_method(pruning_method) {
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);

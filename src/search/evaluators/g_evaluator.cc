@@ -16,7 +16,7 @@ GEvaluator::GEvaluator(utils::LogProxy log,
                        bool use_for_reporting_minima,
                        bool use_for_boosting,
                        bool use_for_counting_evaluations)
-        : Evaluator(log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations) {
+    : Evaluator(log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations) {
 }
 
 EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
@@ -36,12 +36,12 @@ public:
     }
 
     virtual shared_ptr<GEvaluator> create_component(
-            const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<GEvaluator>(utils::get_log_from_options(opts),
                                        opts.get_unparsed_config(),
                                        opts.get<bool>("use_for_reporting_minima"),
                                        opts.get<bool>("use_for_boosting"),
-                                       opts.get<bool>("use_for_counting_evaluations") );
+                                       opts.get<bool>("use_for_counting_evaluations"));
     }
 };
 
