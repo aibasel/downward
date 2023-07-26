@@ -41,6 +41,23 @@ find_path(CPLEX_INCLUDE_DIRS
     include/ilcplex
 )
 
+if(CPLEX_INCLUDE_DIRS)
+    # Parse CPLEX version.
+    file(STRINGS ${CPLEX_INCLUDE_DIRS}/cpxconst.h CPLEX_VERSION_STR
+         REGEX "#define[ ]+CPX_VERSION[ ]+[0-9]+")
+    string(REGEX MATCH "[0-9]+" CPLEX_VERSION_STR ${CPLEX_VERSION_STR})
+    if(CPLEX_VERSION_STR)
+      math(EXPR CPLEX_VERSION_MAJOR "${CPLEX_VERSION_STR} / 1000000")
+      math(EXPR CPLEX_VERSION_MINOR "${CPLEX_VERSION_STR} / 10000 % 100")
+      math(EXPR CPLEX_VERSION_SUBMINOR "${CPLEX_VERSION_STR} / 100 % 100")
+      set(CPLEX_VERSION
+          "${CPLEX_VERSION_MAJOR}.${CPLEX_VERSION_MINOR}.${CPLEX_VERSION_SUBMINOR}")
+      set(CPLEX_VERSION_NO_DOTS
+          "${CPLEX_VERSION_MAJOR}${CPLEX_VERSION_MINOR}${CPLEX_VERSION_SUBMINOR}")
+    endif()
+endif()
+
+
 if(APPLE)
     set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32
         "lib/x86_osx/static_pic")
@@ -108,14 +125,10 @@ endif()
 
 # CMake uses the first discovered library, searching in the order they
 # are mentioned here. We prefer dynamic libraries over static ones
-# (see issue925) and otherwise prefer the latest available version.
+# (see issue925).
 find_library(CPLEX_LIBRARY_RELEASE
     NAMES
-    cplex2211
-    cplex1290
-    cplex1280
-    cplex1271
-    cplex1262
+    cplex${CPLEX_VERSION_NO_DOTS}
     cplex
     HINTS
     ${CPLEX_HINT_PATHS_RELEASE}
@@ -126,11 +139,7 @@ find_library(CPLEX_LIBRARY_RELEASE
 # See above.
 find_library(CPLEX_LIBRARY_DEBUG
     NAMES
-    cplex2211
-    cplex1290
-    cplex1280
-    cplex1271
-    cplex1262
+    cplex${CPLEX_VERSION_NO_DOTS}
     cplex
     HINTS
     ${CPLEX_HINT_PATHS_DEBUG}
@@ -138,46 +147,32 @@ find_library(CPLEX_LIBRARY_DEBUG
     ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG}
 )
 
-if(CPLEX_INCLUDE_DIRS)
-    # Parse CPLEX version.
-    file(STRINGS ${CPLEX_INCLUDE_DIRS}/cpxconst.h CPLEX_VERSION_STR
-         REGEX "#define[ ]+CPX_VERSION[ ]+[0-9]+")
-    string(REGEX MATCH "[0-9]+" CPLEX_VERSION_STR ${CPLEX_VERSION_STR})
-    if(CPLEX_VERSION_STR)
-      math(EXPR CPLEX_VERSION_MAJOR "${CPLEX_VERSION_STR} / 1000000")
-      math(EXPR CPLEX_VERSION_MINOR "${CPLEX_VERSION_STR} / 10000 % 100")
-      math(EXPR CPLEX_VERSION_SUBMINOR "${CPLEX_VERSION_STR} / 100 % 100")
-      set(CPLEX_VERSION
-          "${CPLEX_VERSION_MAJOR}.${CPLEX_VERSION_MINOR}.${CPLEX_VERSION_SUBMINOR}")
+if(CPLEX_LIBRARY_RELEASE OR CPLEX_LIBRARY_DEBUG)
+    find_package(Threads REQUIRED)
+
+    set(CPLEX_LIBRARIES_COMMON ${CMAKE_THREAD_LIBS_INIT})
+    if(NOT (${CPLEX_VERSION} VERSION_LESS "12.8"))
+        set(CPLEX_LIBRARIES_COMMON ${CPLEX_LIBRARIES_COMMON} ${CMAKE_DL_LIBS})
     endif()
 
-    if(CPLEX_LIBRARY_RELEASE OR CPLEX_LIBRARY_DEBUG)
-        find_package(Threads REQUIRED)
-
-        set(CPLEX_LIBRARIES_COMMON ${CMAKE_THREAD_LIBS_INIT})
-        if(NOT (${CPLEX_VERSION} VERSION_LESS "12.8"))
-            set(CPLEX_LIBRARIES_COMMON ${CPLEX_LIBRARIES_COMMON} ${CMAKE_DL_LIBS})
-        endif()
-
-        set(CPLEX_LIBRARIES
-            optimized ${CPLEX_LIBRARY_RELEASE} ${CPLEX_LIBRARIES_COMMON}
-            debug ${CPLEX_LIBRARY_DEBUG} ${CPLEX_LIBRARIES_COMMON}
-        )
-    endif()
-
-    # HACK: there must be a better way to find the dll file.
-    find_path(CPLEX_RUNTIME_LIBRARY_PATH
-        NAMES
-        cplex2211.dll
-        HINTS
-        ${CPLEX_HINT_PATHS_RELEASE}
-        ${CPLEX_HINT_PATHS_DEBUG}
-        PATH_SUFFIXES
-        ${CPLEX_RUNTIME_LIBRARY_HINT}
+    set(CPLEX_LIBRARIES
+        optimized ${CPLEX_LIBRARY_RELEASE} ${CPLEX_LIBRARIES_COMMON}
+        debug ${CPLEX_LIBRARY_DEBUG} ${CPLEX_LIBRARIES_COMMON}
     )
-    if(CPLEX_RUNTIME_LIBRARY_PATH)
-        set(CPLEX_RUNTIME_LIBRARY "${CPLEX_RUNTIME_LIBRARY_PATH}/cplex2211.dll")
-    endif()
+endif()
+
+# HACK: there must be a better way to find the dll file.
+find_path(CPLEX_RUNTIME_LIBRARY_PATH
+    NAMES
+    cplex${CPLEX_VERSION_NO_DOTS}.dll
+    HINTS
+    ${CPLEX_HINT_PATHS_RELEASE}
+    ${CPLEX_HINT_PATHS_DEBUG}
+    PATH_SUFFIXES
+    ${CPLEX_RUNTIME_LIBRARY_HINT}
+)
+if(CPLEX_RUNTIME_LIBRARY_PATH)
+    set(CPLEX_RUNTIME_LIBRARY "${CPLEX_RUNTIME_LIBRARY_PATH}/cplex${CPLEX_VERSION_NO_DOTS}.dll")
 endif()
 
 # Check if everything was found and set CPLEX_FOUND.
@@ -194,5 +189,5 @@ mark_as_advanced(
     CPLEX_LIBRARY_PATH_SUFFIX_RELEASE CPLEX_LIBRARY_PATH_SUFFIX_DEBUG
     CPLEX_LIBRARY_RELEASE CPLEX_LIBRARY_DEBUG CPLEX_RUNTIME_LIBRARY_PATH
     CPX_VERSION CPLEX_VERSION_MAJOR CPLEX_VERSION_MINOR CPLEX_VERSION_STR
-    CPLEX_VERSION_SUBMINOR
+    CPLEX_VERSION_SUBMINOR CPLEX_VERSION_NO_DOTS
 )
