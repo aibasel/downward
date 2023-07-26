@@ -29,7 +29,7 @@ def check_search_code_with_clang_tidy():
     src_files = utils.get_src_files(search_dir, (".h", ".cc"))
     compile_commands = [{
         "directory": os.path.join(build_dir, "search"),
-        "command": "g++ -I{}/ext -std=c++11 -c {}".format(search_dir, src_file),
+        "command": "g++ -std=c++20 -c {}".format(src_file),
         "file": src_file}
         for src_file in src_files
     ]
@@ -82,8 +82,6 @@ def check_search_code_with_clang_tidy():
         "-quiet",
         "-p", build_dir,
         "-clang-tidy-binary=clang-tidy-12",
-        # Include all non-system headers (.*) except the ones from search/ext/.
-        "-header-filter=.*,-tree.hh,-tree_util.hh",
         "-checks=-*," + ",".join(checks)]
     print("Running clang-tidy: " + " ".join(pipes.quote(x) for x in cmd))
     print()
