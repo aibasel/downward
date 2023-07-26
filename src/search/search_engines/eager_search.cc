@@ -13,7 +13,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <memory>
-#include <optional.hh>
+#include <optional>
 #include <set>
 
 using namespace std;
@@ -108,7 +108,7 @@ void EagerSearch::print_statistics() const {
 }
 
 SearchStatus EagerSearch::step() {
-    tl::optional<SearchNode> node;
+    optional<SearchNode> node;
     while (true) {
         if (open_list->empty()) {
             log << "Completely explored state space -- no solution!" << endl;

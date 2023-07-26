@@ -68,7 +68,7 @@ endif()
 # Check if everything was found and set SOPLEX_FOUND.
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
-    soplex
+    SoPlex
     REQUIRED_VARS SOPLEX_INCLUDE_DIRS SOPLEX_LIBRARIES
 )
 

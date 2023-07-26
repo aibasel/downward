@@ -29,10 +29,6 @@ fast_downward_set_linker_flags()
 include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
 add_executable(downward ${PLANNER_SOURCES})
 
-## == Includes ==
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext)
-
 ## == Libraries ==
 
 # On Linux, find the rt library for clock_gettime().
@@ -57,41 +53,45 @@ option(
   TRUE)
 
 if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
-    find_package(OSI OPTIONAL_COMPONENTS Cpx Clp Grb Spx)
-    if(OSI_FOUND AND (OSI_Cpx_FOUND OR OSI_Clp_FOUND OR OSI_Grb_FOUND OR OSI_Spx_FOUND))
+    add_definitions("-D USE_LP")
+
+    find_package(Cplex)
+    if(CPLEX_FOUND)
+        add_definitions("-D HAS_CPLEX")
+        include_directories(${CPLEX_INCLUDE_DIRS})
+        target_link_libraries(downward ${CPLEX_LIBRARIES})
+        if(CPLEX_RUNTIME_LIBRARY)
+            add_custom_command(TARGET downward POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                ${CPLEX_RUNTIME_LIBRARY}
+                $<TARGET_FILE_DIR:downward>
+            )
+        endif()
+    endif()
+
+    find_package(SoPlex)
+    if (SOPLEX_FOUND)
+        add_definitions("-D HAS_SOPLEX")
+        include_directories(${SOPLEX_INCLUDE_DIRS})
+        target_link_libraries(downward ${SOPLEX_LIBRARIES})
+        find_package(ZLIB REQUIRED)
+        if(ZLIB_FOUND)
+            include_directories(${ZLIB_INCLUDE_DIRS})
+            target_link_libraries(downward ${ZLIB_LIBRARIES})
+        endif()
+        find_library(GMP_LIBRARY gmp REQUIRED)
+        if(GMP_LIBRARY)
+            target_link_libraries(downward ${GMP_LIBRARY})
+        endif()
+    endif()
+
+    if(CPLEX_FOUND OR SOPLEX_FOUND)
         if(USE_GLIBCXX_DEBUG)
             message(
                 FATAL_ERROR
                 "To prevent incompatibilities, the option USE_GLIBCXX_DEBUG is "
                 "not supported when an LP solver is used. See issue982 for details.")
         endif()
-        foreach(SOLVER Cpx Clp Grb Spx)
-            if(OSI_${SOLVER}_FOUND)
-                string(TOUPPER ${SOLVER} TMP_SOLVER_UPPER_CASE)
-                mark_as_advanced(TMP_SOLVER_UPPER_CASE)
-                add_definitions("-D COIN_HAS_${TMP_SOLVER_UPPER_CASE}")
-                include_directories(${OSI_${SOLVER}_INCLUDE_DIRS})
-                target_link_libraries(downward ${OSI_${SOLVER}_LIBRARIES})
-            endif()
-        endforeach()
-
-        # Note that basic OSI libs must be added after (!) all OSI solver libs.
-        add_definitions("-D USE_LP")
-        include_directories(${OSI_INCLUDE_DIRS})
-        target_link_libraries(downward ${OSI_LIBRARIES})
-
-        find_package(ZLIB REQUIRED)
-        if(ZLIB_FOUND)
-            include_directories(${ZLIB_INCLUDE_DIRS})
-            target_link_libraries(downward ${ZLIB_LIBRARIES})
-        endif()
     endif()
 
-    if(OSI_Cpx_FOUND AND CPLEX_RUNTIME_LIBRARY)
-        add_custom_command(TARGET downward POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy
-            ${CPLEX_RUNTIME_LIBRARY}
-            $<TARGET_FILE_DIR:downward>
-        )
-    endif()
 endif()

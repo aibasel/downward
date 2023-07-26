@@ -37,17 +37,21 @@
   time. Note that we do not support 0-length arrays (checked with an assertion).
 */
 
-// TODO: Get rid of the code duplication here. How to do it without
-// paying a performance penalty? issue388.
+/*
+  There is currently a significant amount of duplication between the
+  two classes. We decided to live with this for the time being,
+  but this could certainly be made prettier.
+*/
 
-// For documentation on classes relevant to storing and working with registered
-// states see the file state_registry.h.
+/*
+  For documentation on classes relevant to storing and working with registered
+  states see the file state_registry.h.
+*/
 
 namespace segmented_vector {
 template<class Entry, class Allocator = std::allocator<Entry>>
 class SegmentedVector {
     using EntryAllocator = typename std::allocator_traits<Allocator>::template rebind_alloc<Entry>;
-    // TODO: Try to find a good value for SEGMENT_BYTES.
     static const size_t SEGMENT_BYTES = 8192;
 
     static const size_t SEGMENT_ELEMENTS =
@@ -72,9 +76,8 @@ class SegmentedVector {
         segments.push_back(new_segment);
     }
 
-    // No implementation to forbid copies and assignment
-    SegmentedVector(const SegmentedVector<Entry> &);
-    SegmentedVector &operator=(const SegmentedVector<Entry> &);
+    SegmentedVector(const SegmentedVector<Entry> &) = delete;
+    SegmentedVector &operator=(const SegmentedVector<Entry> &) = delete;
 public:
     SegmentedVector()
         : the_size(0) {
@@ -127,15 +130,14 @@ public:
     void pop_back() {
         std::allocator_traits<EntryAllocator>::destroy(entry_allocator, &operator[](the_size - 1));
         --the_size;
-        // If the removed element was the last in its segment, the segment
-        // is not removed (memory is not deallocated). This way a subsequent
-        // push_back does not have to allocate the memory again.
+        /*
+          If the removed element was the last in its segment, the segment
+          is not removed (memory is not deallocated). This way a subsequent
+          push_back does not have to allocate the memory again.
+        */
     }
 
     void resize(size_t new_size, Entry entry = Entry()) {
-        // NOTE: We currently grow/shrink one element at a time.
-        //       Revision 6ee5ff7b8873 contains an implementation that can
-        //       handle other resizes more efficiently.
         while (new_size < the_size) {
             pop_back();
         }
@@ -149,7 +151,6 @@ public:
 template<class Element, class Allocator = std::allocator<Element>>
 class SegmentedArrayVector {
     using ElementAllocator = typename std::allocator_traits<Allocator>::template rebind_alloc<Element>;
-    // TODO: Try to find a good value for SEGMENT_BYTES.
     static const size_t SEGMENT_BYTES = 8192;
 
     const size_t elements_per_array;
@@ -174,15 +175,14 @@ class SegmentedArrayVector {
         segments.push_back(new_segment);
     }
 
-    // No implementation to forbid copies and assignment
-    SegmentedArrayVector(const SegmentedArrayVector<Element> &);
-    SegmentedArrayVector &operator=(const SegmentedArrayVector<Element> &);
+    SegmentedArrayVector(const SegmentedArrayVector<Element> &) = delete;
+    SegmentedArrayVector &operator=(const SegmentedArrayVector<Element> &) = delete;
 public:
     SegmentedArrayVector(size_t elements_per_array_)
         : elements_per_array((assert(elements_per_array_ > 0),
                               elements_per_array_)),
           arrays_per_segment(
-              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), size_t(1))),
+              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), size_t (1))),
           elements_per_segment(elements_per_array * arrays_per_segment),
           the_size(0) {
     }
@@ -193,15 +193,12 @@ public:
           elements_per_array((assert(elements_per_array_ > 0),
                               elements_per_array_)),
           arrays_per_segment(
-              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), size_t(1))),
+              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), size_t (1))),
           elements_per_segment(elements_per_array * arrays_per_segment),
           the_size(0) {
     }
 
     ~SegmentedArrayVector() {
-        // TODO Factor out common code with SegmentedVector. In particular
-        //      we could destroy the_size * elements_per_array elements here
-        //      wihtout looping over the arrays first.
         for (size_t i = 0; i < the_size; ++i) {
             for (size_t offset = 0; offset < elements_per_array; ++offset) {
                 std::allocator_traits<ElementAllocator>::destroy(element_allocator, operator[](i) + offset);
@@ -249,15 +246,14 @@ public:
             std::allocator_traits<ElementAllocator>::destroy(element_allocator, operator[](the_size - 1) + offset);
         }
         --the_size;
-        // If the removed element was the last in its segment, the segment
-        // is not removed (memory is not deallocated). This way a subsequent
-        // push_back does not have to allocate the memory again.
+        /*
+          If the removed element was the last in its segment, the segment
+          is not removed (memory is not deallocated). This way a subsequent
+          push_back does not have to allocate the memory again.
+        */
     }
 
     void resize(size_t new_size, const Element *entry) {
-        // NOTE: We currently grow/shrink one element at a time.
-        //       Revision 6ee5ff7b8873 contains an implementation that can
-        //       handle other resizes more efficiently.
         while (new_size < the_size) {
             pop_back();
         }

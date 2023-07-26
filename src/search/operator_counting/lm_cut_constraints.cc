@@ -1,5 +1,6 @@
 #include "lm_cut_constraints.h"
 
+#include "../algorithms/named_vector.h"
 #include "../heuristics/lm_cut_landmarks.h"
 #include "../lp/lp_solver.h"
 #include "../plugins/plugin.h"
@@ -22,7 +23,7 @@ void LMCutConstraints::initialize_constraints(
 bool LMCutConstraints::update_constraints(const State &state,
                                           lp::LPSolver &lp_solver) {
     assert(landmark_generator);
-    vector<lp::LPConstraint> constraints;
+    named_vector::NamedVector<lp::LPConstraint> constraints;
     double infinity = lp_solver.get_infinity();
 
     bool dead_end = landmark_generator->compute_landmarks(

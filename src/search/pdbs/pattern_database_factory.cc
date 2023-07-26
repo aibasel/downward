@@ -113,9 +113,9 @@ public:
             move(distances));
     }
 
-    vector<vector<OperatorID>> && extract_wildcard_plan() {
+    vector<vector<OperatorID>> &&extract_wildcard_plan() {
         return move(wildcard_plan);
-    };
+    }
 };
 
 void PatternDatabaseFactory::compute_variable_to_index(const Pattern &pattern) {
@@ -447,8 +447,6 @@ compute_pdb_and_plan(
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan) {
     PatternDatabaseFactory pdb_factory(task_proxy, pattern, operator_costs, true, rng, compute_wildcard_plan);
-    return {
-               pdb_factory.extract_pdb(), pdb_factory.extract_wildcard_plan()
-    };
+    return {pdb_factory.extract_pdb(), pdb_factory.extract_wildcard_plan()};
 }
 }
