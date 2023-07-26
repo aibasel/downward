@@ -1,22 +1,7 @@
 include(CMakeParseArguments)
 
-macro(check_and_set_compiler_flag FLAG)
-    include(CheckCXXCompilerFlag)
-    check_cxx_compiler_flag( "${FLAG}" FLAG_FOUND )
-    if(NOT FLAG_FOUND)
-        message(FATAL_ERROR "${CMAKE_CXX_COMPILER} does not support ${FLAG}")
-    endif()
-    message("Flag '${FLAG}' set for '${CMAKE_CXX_COMPILER}'")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAG}")
-endmacro()
-
 macro(fast_downward_set_compiler_flags)
-    # Note: on CMake >= 3.0 the compiler ID of Apple-provided clang is AppleClang.
-    # If we change the required CMake version from 2.8.3 to 3.0 or greater,
-    # we have to fix this.
     if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang")
-        check_and_set_compiler_flag( "-std=c++20" )
-
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wnon-virtual-dtor -Wfloat-conversion -Wmissing-declarations -Wzero-as-null-pointer-constant")
 
@@ -35,8 +20,6 @@ macro(fast_downward_set_compiler_flags)
             set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
         endif()
     elseif(MSVC)
-        check_and_set_compiler_flag( "/std:c++20" )
-
         # Enable exceptions.
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 
