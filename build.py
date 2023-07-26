@@ -12,12 +12,17 @@ CONFIGS = {config: params for config, params in build_configs.__dict__.items()
 DEFAULT_CONFIG_NAME = CONFIGS.pop("DEFAULT")
 DEBUG_CONFIG_NAME = CONFIGS.pop("DEBUG")
 CMAKE = "cmake"
+CMAKE_GENERATOR = None
+if os.name == "posix":
+    CMAKE_GENERATOR = "Unix Makefiles"
+elif os.name == "nt":
+    CMAKE_GENERATOR = "NMake Makefiles"
 try:
     # Number of usable CPUs (Unix only)
     NUM_CPUS = len(os.sched_getaffinity(0))
 except AttributeError:
     # Number of available CPUs as a fall-back (may be None)
-    NUM_CPUS = os.cpu_count() or 1
+    NUM_CPUS = os.cpu_count()
 
 def print_usage():
     script_name = os.path.basename(__file__)
@@ -91,8 +96,18 @@ def build(config_name, configure_parameters, build_parameters):
     print(f"Building configuration {config_name}.")
 
     build_path = get_build_path(config_name)
-    try_run([CMAKE, "-S", get_src_path(), "-B", build_path] + configure_parameters)
-    try_run([CMAKE, "--build", build_path, "-j", f"{NUM_CPUS}", "--"] + build_parameters)
+    generator_cmd = [CMAKE, "-S", get_src_path(), "-B", build_path]
+    if CMAKE_GENERATOR:
+        generator_cmd += ["-G", CMAKE_GENERATOR]
+    generator_cmd += configure_parameters
+    try_run(generator_cmd)
+
+    build_cmd = [CMAKE, "--build", build_path]
+    if NUM_CPUS:
+        build_cmd += ["-j", f"{NUM_CPUS}"]
+    if build_parameters:
+        build_cmd += ["--"] + build_parameters
+    try_run(build_cmd)
 
     print(f"Built configuration {config_name} successfully.")
 
