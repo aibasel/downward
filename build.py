@@ -12,9 +12,12 @@ CONFIGS = {config: params for config, params in build_configs.__dict__.items()
 DEFAULT_CONFIG_NAME = CONFIGS.pop("DEFAULT")
 DEBUG_CONFIG_NAME = CONFIGS.pop("DEBUG")
 CMAKE = "cmake"
-# Number of usable CPUs (see https://docs.python.org/3/library/os.html)
-NUM_CPUS = len(os.sched_getaffinity(0))
-
+try:
+    # Number of usable CPUs (Unix only)
+    NUM_CPUS = len(os.sched_getaffinity(0))
+except AttributeError:
+    # Number of available CPUs as a fall-back (may be None)
+    NUM_CPUS = os.cpu_count() or 1
 
 def print_usage():
     script_name = os.path.basename(__file__)
