@@ -59,7 +59,7 @@ public:
     }
 
     virtual shared_ptr<LandmarkCutHeuristic> create_component(
-            const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<LandmarkCutHeuristic>(opts.get_unparsed_config(),
                                                  utils::get_log_from_options(opts),
                                                  opts.get<bool>("cache_estimates"),

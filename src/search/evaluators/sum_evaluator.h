@@ -21,8 +21,7 @@ public:
                           std::basic_string<char> unparsed_config = std::string(),
                           bool use_for_reporting_minima = false,
                           bool use_for_boosting = false,
-                          bool use_for_counting_evaluations = false
-                          );
+                          bool use_for_counting_evaluations = false);
     virtual ~SumEvaluator() override;
 };
 }
