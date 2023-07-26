@@ -13,13 +13,8 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeScoringFunctionDFP::MergeScoringFunctionDFP(
-    const plugins::Options &options)
-    : MergeScoringFunction(options) {
-}
-
-vector<int> MergeScoringFunctionDFP::compute_label_ranks(
-    const FactoredTransitionSystem &fts, int index) const {
+static vector<int> compute_label_ranks(
+    const FactoredTransitionSystem &fts, int index) {
     const TransitionSystem &ts = fts.get_transition_system(index);
     const Distances &distances = fts.get_distances(index);
     assert(distances.are_goal_distances_computed());
@@ -65,7 +60,7 @@ vector<int> MergeScoringFunctionDFP::compute_label_ranks(
 
 vector<double> MergeScoringFunctionDFP::compute_scores(
     const FactoredTransitionSystem &fts,
-    const vector<MergeCandidate> &merge_candidates) {
+    const vector<pair<int, int>> &merge_candidates) {
     int num_ts = fts.get_size();
 
     vector<vector<int>> transition_system_label_ranks(num_ts);
@@ -73,9 +68,9 @@ vector<double> MergeScoringFunctionDFP::compute_scores(
     scores.reserve(merge_candidates.size());
 
     // Go over all pairs of transition systems and compute their weight.
-    for (const auto &merge_candidate : merge_candidates) {
-        int ts_index1 = merge_candidate.index1;
-        int ts_index2 = merge_candidate.index2;
+    for (pair<int, int> merge_candidate : merge_candidates) {
+        int ts_index1 = merge_candidate.first;
+        int ts_index2 = merge_candidate.second;
 
         vector<int> &label_ranks1 = transition_system_label_ranks[ts_index1];
         if (label_ranks1.empty()) {
@@ -134,7 +129,10 @@ public:
             "atomic_before_product=true)])),shrink_strategy=shrink_bisimulation("
             "greedy=false),label_reduction=exact(before_shrinking=true,"
             "before_merging=false),max_states=50000,threshold_before_merge=1)\n}}}");
-        add_merge_scoring_function_options_to_feature(*this);
+    }
+
+    virtual shared_ptr<MergeScoringFunctionDFP> create_component(const plugins::Options &, const utils::Context &) const override {
+        return make_shared<MergeScoringFunctionDFP>();
     }
 };
 

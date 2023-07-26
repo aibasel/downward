@@ -34,7 +34,7 @@ class MergeScoringFunctionTotalOrder : public MergeScoringFunction {
     int random_seed; // only for dump options
     std::shared_ptr<utils::RandomNumberGenerator> rng;
     std::vector<std::pair<int, int>> merge_candidate_order;
-protected:
+
     virtual std::string name() const override;
     virtual void dump_function_specific_options(utils::LogProxy &log) const override;
 public:
@@ -42,7 +42,7 @@ public:
     virtual ~MergeScoringFunctionTotalOrder() override = default;
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,
-        const std::vector<MergeCandidate> &merge_candidates) override;
+        const std::vector<std::pair<int, int>> &merge_candidates) override;
     virtual void initialize(const TaskProxy &task_proxy) override;
     static void add_options_to_feature(plugins::Feature &feature);
 

@@ -5,14 +5,13 @@
 
 namespace merge_and_shrink {
 class MergeScoringFunctionGoalRelevance : public MergeScoringFunction {
-protected:
     virtual std::string name() const override;
 public:
-    MergeScoringFunctionGoalRelevance(const plugins::Options &options);
+    MergeScoringFunctionGoalRelevance() = default;
     virtual ~MergeScoringFunctionGoalRelevance() override = default;
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,
-        const std::vector<MergeCandidate> &merge_candidates) override;
+        const std::vector<std::pair<int, int>> &merge_candidates) override;
 
     virtual bool requires_init_distances() const override {
         return false;

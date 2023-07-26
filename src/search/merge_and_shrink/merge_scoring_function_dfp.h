@@ -5,16 +5,13 @@
 
 namespace merge_and_shrink {
 class MergeScoringFunctionDFP : public MergeScoringFunction {
-    std::vector<int> compute_label_ranks(
-        const FactoredTransitionSystem &fts, int index) const;
-protected:
     virtual std::string name() const override;
 public:
-    explicit MergeScoringFunctionDFP(const plugins::Options &options);
+    MergeScoringFunctionDFP() = default;
     virtual ~MergeScoringFunctionDFP() override = default;
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,
-        const std::vector<MergeCandidate> &merge_candidates) override;
+        const std::vector<std::pair<int, int>> &merge_candidates) override;
 
     virtual bool requires_init_distances() const override {
         return false;

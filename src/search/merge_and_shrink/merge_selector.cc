@@ -1,11 +1,8 @@
 #include "merge_selector.h"
 
 #include "factored_transition_system.h"
-#include "merge_scoring_function.h"
 
-#include "../task_proxy.h"
 #include "../plugins/plugin.h"
-#include "../utils/collections.h"
 #include "../utils/logging.h"
 
 #include <cassert>
@@ -14,29 +11,17 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeCandidate MergeSelector::get_candidate(
-    int index1, int index2) {
-    assert(utils::in_bounds(index1, merge_candidates_by_indices));
-    assert(utils::in_bounds(index2, merge_candidates_by_indices[index1]));
-    if (!merge_candidates_by_indices[index1][index2]) {
-        merge_candidates_by_indices[index1][index2] =
-            MergeCandidate(num_candidates, index1, index2);
-        ++num_candidates;
-    }
-    return *merge_candidates_by_indices[index1][index2];
-}
-
-vector<MergeCandidate> MergeSelector::compute_merge_candidates(
+vector<pair<int, int>> MergeSelector::compute_merge_candidates(
     const FactoredTransitionSystem &fts,
-    const vector<int> &indices_subset) {
-    vector<MergeCandidate> merge_candidates;
+    const vector<int> &indices_subset) const {
+    vector<pair<int, int>> merge_candidates;
     if (indices_subset.empty()) {
         for (int ts_index1 = 0; ts_index1 < fts.get_size(); ++ts_index1) {
             if (fts.is_active(ts_index1)) {
                 for (int ts_index2 = ts_index1 + 1; ts_index2 < fts.get_size();
                      ++ts_index2) {
                     if (fts.is_active(ts_index2)) {
-                        merge_candidates.push_back(get_candidate(ts_index1, ts_index2));
+                        merge_candidates.emplace_back(ts_index1, ts_index2);
                     }
                 }
             }
@@ -49,19 +34,11 @@ vector<MergeCandidate> MergeSelector::compute_merge_candidates(
             for (size_t j = i + 1; j < indices_subset.size(); ++j) {
                 int ts_index2 = indices_subset[j];
                 assert(fts.is_active(ts_index2));
-                merge_candidates.push_back(get_candidate(ts_index1, ts_index2));
+                merge_candidates.emplace_back(ts_index1, ts_index2);
             }
         }
     }
     return merge_candidates;
-}
-
-void MergeSelector::initialize(const TaskProxy &task_proxy) {
-    int num_variables = task_proxy.get_variables().size();
-    int max_factor_index = 2 * num_variables - 1;
-    merge_candidates_by_indices.resize(
-        max_factor_index,
-        vector<optional<MergeCandidate>>(max_factor_index));
 }
 
 void MergeSelector::dump_options(utils::LogProxy &log) const {

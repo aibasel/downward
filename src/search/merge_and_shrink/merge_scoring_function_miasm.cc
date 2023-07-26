@@ -7,6 +7,8 @@
 #include "transition_system.h"
 #include "merge_scoring_function_miasm_utils.h"
 
+#include "../task_proxy.h"
+
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
@@ -16,7 +18,7 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
     const plugins::Options &options)
-    : MergeScoringFunction(options),
+    : use_caching(options.get<bool>("use_caching")),
       shrink_strategy(options.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
       max_states(options.get<int>("max_states")),
       max_states_before_merge(options.get<int>("max_states_before_merge")),
@@ -26,17 +28,16 @@ MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
 
 vector<double> MergeScoringFunctionMIASM::compute_scores(
     const FactoredTransitionSystem &fts,
-    const vector<MergeCandidate> &merge_candidates) {
+    const vector<pair<int, int>> &merge_candidates) {
     vector<double> scores;
     scores.reserve(merge_candidates.size());
-    for (const auto &merge_candidate : merge_candidates) {
+    for (pair<int, int> merge_candidate : merge_candidates) {
         double score;
-        int id = merge_candidate.id;
-        if (use_caching && cached_scores.count(id)) {
-            score = cached_scores[id];
+        int index1 = merge_candidate.first;
+        int index2 = merge_candidate.second;
+        if (use_caching && cached_scores_by_merge_candidate_indices[index1][index2]) {
+            score = *cached_scores_by_merge_candidate_indices[index1][index2];
         } else {
-            int index1 = merge_candidate.index1;
-            int index2 = merge_candidate.index2;
             unique_ptr<TransitionSystem> product = shrink_before_merge_externally(
                 fts,
                 index1,
@@ -69,12 +70,27 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
             score = static_cast<double>(alive_states_count) /
                 static_cast<double>(num_states);
             if (use_caching) {
-                cached_scores[id] = score;
+                cached_scores_by_merge_candidate_indices[index1][index2] = score;
             }
         }
         scores.push_back(score);
     }
     return scores;
+}
+
+void MergeScoringFunctionMIASM::initialize(const TaskProxy &task_proxy) {
+    initialized = true;
+    int num_variables = task_proxy.get_variables().size();
+    int max_factor_index = 2 * num_variables - 1;
+    cached_scores_by_merge_candidate_indices.resize(
+        max_factor_index,
+        vector<optional<double>>(max_factor_index));
+}
+
+void MergeScoringFunctionMIASM::dump_function_specific_options(utils::LogProxy &log) const {
+    if (log.is_at_least_normal()) {
+        log << "Use caching: " << (use_caching ? "yes" : "no") << endl;
+    }
 }
 
 string MergeScoringFunctionMIASM::name() const {
@@ -137,7 +153,17 @@ public:
             "amount of possible pruning, merge-and-shrink should be configured to "
             "use full pruning, i.e. {{{prune_unreachable_states=true}}} and {{{"
             "prune_irrelevant_states=true}}} (the default).");
-        add_merge_scoring_function_options_to_feature(*this);
+
+        add_option<bool>(
+            "use_caching",
+            "Cache scores for merge candidates. IMPORTANT! This only works "
+            "under the assumption that the merge-and-shrink algorithm only "
+            "uses exact label reduction and does not shrink factors others "
+            "than those being merged. In this setting, the MIASM score of a "
+            "merge candidate is constant over merge-and-shrink iterations. If "
+            "caching is enabled, only the scores for the new merge candidates "
+            "need to be computed.",
+            "true");
     }
 
     virtual shared_ptr<MergeScoringFunctionMIASM> create_component(const plugins::Options &options, const utils::Context &context) const override {

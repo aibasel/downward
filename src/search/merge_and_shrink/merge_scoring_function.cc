@@ -8,9 +8,8 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeScoringFunction::MergeScoringFunction(const plugins::Options &options)
-    : use_caching(options.get<bool>("use_caching")),
-      initialized(false) {
+MergeScoringFunction::MergeScoringFunction()
+    : initialized(false) {
 }
 
 void MergeScoringFunction::dump_options(utils::LogProxy &log) const {
@@ -19,14 +18,6 @@ void MergeScoringFunction::dump_options(utils::LogProxy &log) const {
         log << "Name: " << name() << endl;
         dump_function_specific_options(log);
     }
-}
-
-void add_merge_scoring_function_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<bool>(
-        "use_caching",
-        "Cache scores for merge candidates. Currently only supported by the "
-        "MIASM scoring function.",
-        "false");
 }
 
 static class MergeScoringFunctionCategoryPlugin : public plugins::TypedCategoryPlugin<MergeScoringFunction> {

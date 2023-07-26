@@ -17,7 +17,7 @@ namespace merge_and_shrink {
 class MergeScoringFunctionSingleRandom : public MergeScoringFunction {
     int random_seed; // only for dump options
     std::shared_ptr<utils::RandomNumberGenerator> rng;
-protected:
+
     virtual std::string name() const override;
     virtual void dump_function_specific_options(utils::LogProxy &log) const override;
 public:
@@ -25,7 +25,7 @@ public:
     virtual ~MergeScoringFunctionSingleRandom() override = default;
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,
-        const std::vector<MergeCandidate> &merge_candidates) override;
+        const std::vector<std::pair<int, int>> &merge_candidates) override;
 
     virtual bool requires_init_distances() const override {
         return false;
