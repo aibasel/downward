@@ -79,7 +79,7 @@ perfect_heuristic = Attribute('perfect_heuristic', absolute=True, min_wins=False
 # m&s attributes
 ms_construction_time = Attribute('ms_construction_time', absolute=False, min_wins=True, function=geometric_mean)
 score_ms_construction_time = Attribute('score_ms_construction_time', min_wins=False, digits=4)
-ms_atomic_construction_time = Attribute('ms_atomic_construction_time', absolute=False, min_wins=True, functions=[geometric_mean])
+ms_atomic_construction_time = Attribute('ms_atomic_construction_time', absolute=False, min_wins=True, function=[geometric_mean])
 ms_abstraction_constructed = Attribute('ms_abstraction_constructed', absolute=True, min_wins=False)
 ms_atomic_fts_constructed = Attribute('ms_atomic_fts_constructed', absolute=True, min_wins=False)
 ms_out_of_memory = Attribute('ms_out_of_memory', absolute=True, min_wins=True)
