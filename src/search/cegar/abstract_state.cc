@@ -11,7 +11,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace cartesian_abstractions {
 AbstractState::AbstractState(
     int state_id, NodeID node_id, CartesianSet &&cartesian_set)
     : state_id(state_id),

@@ -6,7 +6,7 @@
 #include <ostream>
 #include <vector>
 
-namespace cegar {
+namespace cartesian_abstractions {
 using Bitset = dynamic_bitset::DynamicBitset<unsigned short>;
 
 /*

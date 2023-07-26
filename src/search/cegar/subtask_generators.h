@@ -20,7 +20,7 @@ class RandomNumberGenerator;
 class LogProxy;
 }
 
-namespace cegar {
+namespace cartesian_abstractions {
 using Facts = std::vector<FactPair>;
 using SharedTasks = std::vector<std::shared_ptr<AbstractTask>>;
 

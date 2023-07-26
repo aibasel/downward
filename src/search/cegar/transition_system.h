@@ -12,7 +12,7 @@ namespace utils {
 class LogProxy;
 }
 
-namespace cegar {
+namespace cartesian_abstractions {
 /*
   Rewire transitions after each split.
 */

@@ -19,7 +19,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace cartesian_abstractions {
 // Create the Cartesian set that corresponds to the given preconditions or goals.
 static CartesianSet get_cartesian_set(
     const vector<int> &domain_sizes, const ConditionsProxy &conditions) {

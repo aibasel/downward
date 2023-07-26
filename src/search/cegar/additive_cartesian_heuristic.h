@@ -5,7 +5,7 @@
 
 #include <vector>
 
-namespace cegar {
+namespace cartesian_abstractions {
 class CartesianHeuristicFunction;
 
 /*

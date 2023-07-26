@@ -15,7 +15,7 @@ class RandomNumberGenerator;
 class LogProxy;
 }
 
-namespace cegar {
+namespace cartesian_abstractions {
 class Abstraction;
 struct Flaw;
 

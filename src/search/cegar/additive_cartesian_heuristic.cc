@@ -15,7 +15,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace cartesian_abstractions {
 static vector<CartesianHeuristicFunction> generate_heuristic_functions(
     const plugins::Options &opts, utils::LogProxy &log) {
     if (log.is_at_least_normal()) {

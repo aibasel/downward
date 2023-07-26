@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-namespace cegar {
+namespace cartesian_abstractions {
 using Solution = std::deque<Transition>;
 
 /*

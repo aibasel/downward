@@ -18,7 +18,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace cartesian_abstractions {
 Abstraction::Abstraction(const shared_ptr<AbstractTask> &task, utils::LogProxy &log)
     : transition_system(utils::make_unique_ptr<TransitionSystem>(TaskProxy(*task).get_operators())),
       concrete_initial_state(TaskProxy(*task).get_initial_state()),

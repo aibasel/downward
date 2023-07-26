@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-namespace cegar {
+namespace cartesian_abstractions {
 struct Transition {
     int op_id;
     int target_id;

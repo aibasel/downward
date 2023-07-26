@@ -12,7 +12,7 @@ class OperatorProxy;
 class State;
 class TaskProxy;
 
-namespace cegar {
+namespace cartesian_abstractions {
 class Node;
 
 /*

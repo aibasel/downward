@@ -16,7 +16,7 @@ namespace additive_heuristic {
 class AdditiveHeuristic;
 }
 
-namespace cegar {
+namespace cartesian_abstractions {
 extern std::unique_ptr<additive_heuristic::AdditiveHeuristic>
 create_additive_heuristic(const std::shared_ptr<AbstractTask> &task);
 

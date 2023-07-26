@@ -14,7 +14,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace cartesian_abstractions {
 SplitSelector::SplitSelector(
     const shared_ptr<AbstractTask> &task,
     PickSplit pick)

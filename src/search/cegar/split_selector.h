@@ -14,7 +14,7 @@ namespace utils {
 class RandomNumberGenerator;
 }
 
-namespace cegar {
+namespace cartesian_abstractions {
 class AbstractState;
 
 // Strategies for selecting a split in case there are multiple possibilities.

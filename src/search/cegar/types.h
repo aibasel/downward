@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace cegar {
+namespace cartesian_abstractions {
 class AbstractState;
 struct Transition;
 

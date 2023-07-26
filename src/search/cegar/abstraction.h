@@ -14,7 +14,7 @@ namespace utils {
 class LogProxy;
 }
 
-namespace cegar {
+namespace cartesian_abstractions {
 class AbstractState;
 class RefinementHierarchy;
 class TransitionSystem;

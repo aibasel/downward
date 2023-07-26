@@ -6,7 +6,7 @@
 
 class State;
 
-namespace cegar {
+namespace cartesian_abstractions {
 class RefinementHierarchy;
 /*
   Store RefinementHierarchy and heuristic values for looking up abstract state

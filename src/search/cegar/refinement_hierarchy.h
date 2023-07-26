@@ -12,7 +12,7 @@
 class AbstractTask;
 class State;
 
-namespace cegar {
+namespace cartesian_abstractions {
 class Node;
 
 /*
