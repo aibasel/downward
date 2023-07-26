@@ -34,7 +34,6 @@ macro(fast_downward_set_compiler_flags)
         if(USE_GLIBCXX_DEBUG)
             set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
         endif()
-        set(CMAKE_CXX_FLAGS_PROFILE "-O3 -pg")
     elseif(MSVC)
         check_and_set_compiler_flag( "/std:c++20" )
 
@@ -67,18 +66,6 @@ macro(fast_downward_set_linker_flags)
     endif()
 endmacro()
 
-macro(fast_downward_add_profile_build)
-    # We don't offer a dedicated PROFILE build on Windows.
-    if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
-        if(NOT CMAKE_CONFIGURATION_TYPES)
-            set_property(CACHE CMAKE_BUILD_TYPE PROPERTY HELPSTRING "Choose the type of build")
-            set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug;Release;Profile")
-        endif()
-        set(CMAKE_CXX_FLAGS_PROFILE ${CMAKE_CXX_FLAGS_DEBUG})
-        set(CMAKE_EXE_LINKER_FLAGS_PROFILE "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -pg")
-    endif()
-endmacro()
-
 macro(fast_downward_default_to_release_build)
     # Only for single-config generators (like Makefiles) that choose the build type at generation time.
     if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
@@ -91,7 +78,7 @@ macro(fast_downward_set_configuration_types)
     # Only for multi-config generators (like Visual Studio Projects) that choose
     # the build type at build time.
     if(CMAKE_CONFIGURATION_TYPES)
-        set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile"
+        set(CMAKE_CONFIGURATION_TYPES "Debug;Release"
             CACHE STRING "Reset the configurations to what we need" FORCE)
     endif()
 endmacro()
