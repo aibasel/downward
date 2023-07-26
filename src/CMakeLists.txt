@@ -27,8 +27,7 @@
 #   -DCMAKE_BUILD_TYPE=type
 # to the cmake call.
 
-# Version 2.8.3 introduces CMakeParseArguments.
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.16)
 
 # Select a default compiler because CMake does not respect the PATH environment variable for some generators,
 # e.g. used by existing compute servers in Basel.

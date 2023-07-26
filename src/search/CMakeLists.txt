@@ -1,6 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
-# For Windows we require CMake 3.12, but this is currently not
-# available for Ubuntu 18.04.
+cmake_minimum_required(VERSION 3.16)
 
 if(NOT FAST_DOWNWARD_MAIN_CMAKELISTS_READ)
     message(
