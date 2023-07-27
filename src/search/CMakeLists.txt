@@ -40,7 +40,7 @@ endif()
 # On Windows, find the psapi library for determining peak memory.
 if(WIN32)
     cmake_policy(SET CMP0074 NEW)
-    target_link_libraries(downward psapi)
+    target_link_libraries(downward PRIVATE psapi)
 endif()
 
 # If any enabled plugin requires an LP solver, compile with all
