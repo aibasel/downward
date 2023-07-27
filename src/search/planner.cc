@@ -48,21 +48,23 @@ int main(int argc, const char **argv) {
     shared_ptr<Evaluator> lmcut =  ti_lmcut->create_task_specific(tasks::g_root_task);
     cout << "" << lmcut->get_description() << "," << lmcut->is_used_for_boosting() << endl;
     cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ LMC SUCCESS \\o/" << endl;
-    /*
+
     //test g
     shared_ptr<g_evaluator::TaskIndependentGEvaluator> ti_g =
-            make_shared<g_evaluator::TaskIndependentGEvaluator>(_unparsed_config,
-                                                                               _log,
-                                                                               _cache_evaluator_values);
+            make_shared<g_evaluator::TaskIndependentGEvaluator>(_log,
+                                                                _unparsed_config,
+                                                                _cache_evaluator_values);
     shared_ptr<Evaluator> g =  ti_g->create_task_specific(tasks::g_root_task);
     cout << "" << g->get_description() << "," << g->is_used_for_boosting() << endl;
     cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ G SUCCESS \\o/" << endl;
-*/
+
 
     //shared_ptr<TaskIndependentGEval> ti_geval = make_shared<TaskIndependentGEval>(arg1, arg2);
     //shared_ptr<GEval> geval = ti_geval.specify(tasks::g_root_task);
     cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ TEST SUCCESS \\o/" << endl;
-    exit(1);
+    cout << "!!!!!!!!!!!THIS WAS A TEST RUN!!!!!!!!!!!!!!" << endl;
+
+    exit(0);
     //end testing
 
 
