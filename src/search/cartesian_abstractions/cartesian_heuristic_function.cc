@@ -6,7 +6,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace cartesian_abstractions {
 CartesianHeuristicFunction::CartesianHeuristicFunction(
     unique_ptr<RefinementHierarchy> &&hierarchy,
     vector<int> &&h_values)

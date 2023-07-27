@@ -1,5 +1,5 @@
-#ifndef CEGAR_REFINEMENT_HIERARCHY_H
-#define CEGAR_REFINEMENT_HIERARCHY_H
+#ifndef CARTESIAN_ABSTRACTIONS_REFINEMENT_HIERARCHY_H
+#define CARTESIAN_ABSTRACTIONS_REFINEMENT_HIERARCHY_H
 
 #include "types.h"
 
@@ -12,7 +12,7 @@
 class AbstractTask;
 class State;
 
-namespace cegar {
+namespace cartesian_abstractions {
 class Node;
 
 /*

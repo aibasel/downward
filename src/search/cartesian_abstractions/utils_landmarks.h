@@ -1,5 +1,5 @@
-#ifndef CEGAR_UTILS_LANDMARKS_H
-#define CEGAR_UTILS_LANDMARKS_H
+#ifndef CARTESIAN_ABSTRACTIONS_UTILS_LANDMARKS_H
+#define CARTESIAN_ABSTRACTIONS_UTILS_LANDMARKS_H
 
 #include <memory>
 #include <unordered_map>
@@ -12,7 +12,7 @@ namespace landmarks {
 class LandmarkGraph;
 }
 
-namespace cegar {
+namespace cartesian_abstractions {
 using VarToValues = std::unordered_map<int, std::vector<int>>;
 
 extern std::shared_ptr<landmarks::LandmarkGraph> get_landmark_graph(

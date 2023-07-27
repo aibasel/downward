@@ -1,11 +1,11 @@
-#ifndef CEGAR_ADDITIVE_CARTESIAN_HEURISTIC_H
-#define CEGAR_ADDITIVE_CARTESIAN_HEURISTIC_H
+#ifndef CARTESIAN_ABSTRACTIONS_ADDITIVE_CARTESIAN_HEURISTIC_H
+#define CARTESIAN_ABSTRACTIONS_ADDITIVE_CARTESIAN_HEURISTIC_H
 
 #include "../heuristic.h"
 
 #include <vector>
 
-namespace cegar {
+namespace cartesian_abstractions {
 class CartesianHeuristicFunction;
 
 /*

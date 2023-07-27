@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace cartesian_abstractions {
 CartesianSet::CartesianSet(const vector<int> &domain_sizes) {
     domain_subsets.reserve(domain_sizes.size());
     for (int domain_size : domain_sizes) {

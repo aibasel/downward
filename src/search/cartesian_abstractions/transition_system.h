@@ -1,5 +1,5 @@
-#ifndef CEGAR_TRANSITION_SYSTEM_H
-#define CEGAR_TRANSITION_SYSTEM_H
+#ifndef CARTESIAN_ABSTRACTIONS_TRANSITION_SYSTEM_H
+#define CARTESIAN_ABSTRACTIONS_TRANSITION_SYSTEM_H
 
 #include "types.h"
 
@@ -12,7 +12,7 @@ namespace utils {
 class LogProxy;
 }
 
-namespace cegar {
+namespace cartesian_abstractions {
 /*
   Rewire transitions after each split.
 */

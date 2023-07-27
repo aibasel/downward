@@ -20,7 +20,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace cartesian_abstractions {
 /*
   We reserve some memory to be able to recover from out-of-memory
   situations gracefully. When the memory runs out, we stop refining and

@@ -4,7 +4,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace cartesian_abstractions {
 Node::Node(int state_id)
     : left_child(UNDEFINED),
       right_child(UNDEFINED),

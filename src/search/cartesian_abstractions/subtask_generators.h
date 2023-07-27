@@ -1,5 +1,5 @@
-#ifndef CEGAR_SUBTASK_GENERATORS_H
-#define CEGAR_SUBTASK_GENERATORS_H
+#ifndef CARTESIAN_ABSTRACTIONS_SUBTASK_GENERATORS_H
+#define CARTESIAN_ABSTRACTIONS_SUBTASK_GENERATORS_H
 
 #include <memory>
 #include <vector>
@@ -20,7 +20,7 @@ class RandomNumberGenerator;
 class LogProxy;
 }
 
-namespace cegar {
+namespace cartesian_abstractions {
 using Facts = std::vector<FactPair>;
 using SharedTasks = std::vector<std::shared_ptr<AbstractTask>>;
 

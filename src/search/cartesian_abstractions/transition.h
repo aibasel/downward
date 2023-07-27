@@ -1,9 +1,9 @@
-#ifndef CEGAR_TRANSITION_H
-#define CEGAR_TRANSITION_H
+#ifndef CARTESIAN_ABSTRACTIONS_TRANSITION_H
+#define CARTESIAN_ABSTRACTIONS_TRANSITION_H
 
 #include <iostream>
 
-namespace cegar {
+namespace cartesian_abstractions {
 struct Transition {
     int op_id;
     int target_id;

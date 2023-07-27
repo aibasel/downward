@@ -1,5 +1,5 @@
-#ifndef CEGAR_CEGAR_H
-#define CEGAR_CEGAR_H
+#ifndef CARTESIAN_ABSTRACTIONS_CEGAR_H
+#define CARTESIAN_ABSTRACTIONS_CEGAR_H
 
 #include "abstract_search.h"
 #include "split_selector.h"
@@ -15,7 +15,7 @@ class RandomNumberGenerator;
 class LogProxy;
 }
 
-namespace cegar {
+namespace cartesian_abstractions {
 class Abstraction;
 struct Flaw;
 

@@ -1,5 +1,5 @@
-#ifndef CEGAR_ABSTRACTION_H
-#define CEGAR_ABSTRACTION_H
+#ifndef CARTESIAN_ABSTRACTIONS_ABSTRACTION_H
+#define CARTESIAN_ABSTRACTIONS_ABSTRACTION_H
 
 #include "types.h"
 
@@ -14,7 +14,7 @@ namespace utils {
 class LogProxy;
 }
 
-namespace cegar {
+namespace cartesian_abstractions {
 class AbstractState;
 class RefinementHierarchy;
 class TransitionSystem;

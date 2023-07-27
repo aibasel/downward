@@ -1,12 +1,12 @@
-#ifndef CEGAR_CARTESIAN_SET_H
-#define CEGAR_CARTESIAN_SET_H
+#ifndef CARTESIAN_ABSTRACTIONS_CARTESIAN_SET_H
+#define CARTESIAN_ABSTRACTIONS_CARTESIAN_SET_H
 
 #include "../algorithms/dynamic_bitset.h"
 
 #include <ostream>
 #include <vector>
 
-namespace cegar {
+namespace cartesian_abstractions {
 using Bitset = dynamic_bitset::DynamicBitset<unsigned short>;
 
 /*

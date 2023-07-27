@@ -22,7 +22,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace cartesian_abstractions {
 class SortFactsByIncreasingHaddValues {
     // Can't store as unique_ptr since the class needs copy-constructor.
     shared_ptr<additive_heuristic::AdditiveHeuristic> hadd;

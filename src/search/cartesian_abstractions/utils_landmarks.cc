@@ -12,7 +12,7 @@
 using namespace std;
 using namespace landmarks;
 
-namespace cegar {
+namespace cartesian_abstractions {
 static FactPair get_fact(const Landmark &landmark) {
     // We assume that the given Landmarks are from an h^m landmark graph with m=1.
     assert(landmark.facts.size() == 1);

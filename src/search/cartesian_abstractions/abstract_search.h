@@ -1,5 +1,5 @@
-#ifndef CEGAR_ABSTRACT_SEARCH_H
-#define CEGAR_ABSTRACT_SEARCH_H
+#ifndef CARTESIAN_ABSTRACTIONS_ABSTRACT_SEARCH_H
+#define CARTESIAN_ABSTRACTIONS_ABSTRACT_SEARCH_H
 
 #include "transition.h"
 #include "types.h"
@@ -10,7 +10,7 @@
 #include <memory>
 #include <vector>
 
-namespace cegar {
+namespace cartesian_abstractions {
 using Solution = std::deque<Transition>;
 
 /*

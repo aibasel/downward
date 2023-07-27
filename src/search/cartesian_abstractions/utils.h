@@ -1,5 +1,5 @@
-#ifndef CEGAR_UTILS_H
-#define CEGAR_UTILS_H
+#ifndef CARTESIAN_ABSTRACTIONS_UTILS_H
+#define CARTESIAN_ABSTRACTIONS_UTILS_H
 
 #include "../task_proxy.h"
 
@@ -16,7 +16,7 @@ namespace additive_heuristic {
 class AdditiveHeuristic;
 }
 
-namespace cegar {
+namespace cartesian_abstractions {
 extern std::unique_ptr<additive_heuristic::AdditiveHeuristic>
 create_additive_heuristic(const std::shared_ptr<AbstractTask> &task);
 

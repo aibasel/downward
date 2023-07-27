@@ -1,5 +1,5 @@
-#ifndef CEGAR_COST_SATURATION_H
-#define CEGAR_COST_SATURATION_H
+#ifndef CARTESIAN_ABSTRACTIONS_COST_SATURATION_H
+#define CARTESIAN_ABSTRACTIONS_COST_SATURATION_H
 
 #include "refinement_hierarchy.h"
 #include "split_selector.h"
@@ -14,7 +14,7 @@ class RandomNumberGenerator;
 class LogProxy;
 }
 
-namespace cegar {
+namespace cartesian_abstractions {
 class CartesianHeuristicFunction;
 class SubtaskGenerator;
 

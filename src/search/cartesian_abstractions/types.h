@@ -1,12 +1,12 @@
-#ifndef CEGAR_TYPES_H
-#define CEGAR_TYPES_H
+#ifndef CARTESIAN_ABSTRACTIONS_TYPES_H
+#define CARTESIAN_ABSTRACTIONS_TYPES_H
 
 #include <limits>
 #include <memory>
 #include <unordered_set>
 #include <vector>
 
-namespace cegar {
+namespace cartesian_abstractions {
 class AbstractState;
 struct Transition;
 

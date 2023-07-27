@@ -1,12 +1,12 @@
-#ifndef CEGAR_CARTESIAN_HEURISTIC_FUNCTION_H
-#define CEGAR_CARTESIAN_HEURISTIC_FUNCTION_H
+#ifndef CARTESIAN_ABSTRACTIONS_CARTESIAN_HEURISTIC_FUNCTION_H
+#define CARTESIAN_ABSTRACTIONS_CARTESIAN_HEURISTIC_FUNCTION_H
 
 #include <memory>
 #include <vector>
 
 class State;
 
-namespace cegar {
+namespace cartesian_abstractions {
 class RefinementHierarchy;
 /*
   Store RefinementHierarchy and heuristic values for looking up abstract state

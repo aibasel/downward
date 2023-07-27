@@ -12,7 +12,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace cartesian_abstractions {
 unique_ptr<additive_heuristic::AdditiveHeuristic> create_additive_heuristic(
     const shared_ptr<AbstractTask> &task) {
     plugins::Options opts;

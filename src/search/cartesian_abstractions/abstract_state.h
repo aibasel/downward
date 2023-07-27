@@ -1,5 +1,5 @@
-#ifndef CEGAR_ABSTRACT_STATE_H
-#define CEGAR_ABSTRACT_STATE_H
+#ifndef CARTESIAN_ABSTRACTIONS_ABSTRACT_STATE_H
+#define CARTESIAN_ABSTRACTIONS_ABSTRACT_STATE_H
 
 #include "cartesian_set.h"
 #include "types.h"
@@ -12,7 +12,7 @@ class OperatorProxy;
 class State;
 class TaskProxy;
 
-namespace cegar {
+namespace cartesian_abstractions {
 class Node;
 
 /*

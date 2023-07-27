@@ -15,7 +15,7 @@
 
 using namespace std;
 
-namespace cegar {
+namespace cartesian_abstractions {
 static vector<CartesianHeuristicFunction> generate_heuristic_functions(
     const plugins::Options &opts, utils::LogProxy &log) {
     if (log.is_at_least_normal()) {
@@ -62,10 +62,10 @@ class AdditiveCartesianHeuristicFeature
     : public plugins::TypedFeature<Evaluator, AdditiveCartesianHeuristic> {
 public:
     AdditiveCartesianHeuristicFeature() : TypedFeature("cegar") {
-        document_title("Additive CEGAR heuristic");
+        document_title("Additive Cartesian CEGAR heuristic");
         document_synopsis(
-            "See the paper introducing Counterexample-guided Abstraction "
-            "Refinement (CEGAR) for classical planning:" +
+            "See the paper introducing counterexample-guided Cartesian "
+            "abstraction refinement (CEGAR) for classical planning:" +
             utils::format_conference_reference(
                 {"Jendrik Seipp", "Malte Helmert"},
                 "Counterexample-guided Cartesian Abstraction Refinement",
