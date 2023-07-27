@@ -41,12 +41,56 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
     return total_cost;
 }
 
-class LandmarkCutHeuristicFeature : public plugins::TypedFeature<Evaluator, LandmarkCutHeuristic> {
+
+
+TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(string unparsed_config, utils::LogProxy log, bool cache_evaluator_values)
+    : TaskIndependentHeuristic(unparsed_config, log, cache_evaluator_values),
+    unparsed_config(unparsed_config), log(log), cache_evaluator_values(cache_evaluator_values) {
+    }
+
+TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
+    }
+
+shared_ptr<Evaluator> TaskIndependentLandmarkCutHeuristic::create_task_specific(shared_ptr<AbstractTask> &task) {
+        return make_shared<LandmarkCutHeuristic>(unparsed_config, log, cache_evaluator_values, task);
+    }
+
+
+
+/*class TaskIndependentUnitCostHeuristic: TaskIndependentEvaluator {
+    shared_ptr<TaskIndependentEvaluator> evaluator;
+
+    TaskIndependentLandmarkCutHeuristic(evaluator)
+            : evaluator(evaluator) {
+    }
+
+    virtual shared_ptr<Evaluator> create_task_specific(shared_ptr<AbstractTask> &task) override {
+        AbstractTask unit_cost_task = make_unit_cost_task(task);
+        return evaluator.create_task_specific(unit_cost_task);
+    }
+};*/
+
+/*class TaskIndependentEHCSearch: TaskIndependentEvaluator {
+    shared_ptr<TaskIndependentEvaluator> evaluator;
+
+    TaskIndependentLandmarkCutHeuristic(evaluator)
+            : evaluator(evaluator) {
+            }
+
+    virtual shared_ptr<Evaluator> create_task_specific(shared_ptr<AbstractTask> &task) override {
+        shared_ptr<Evaluator> specific_eval = evaluator.create_task_specific(task);
+        return make_shared<EHCSearch>(specific_eval);
+    }
+};
+*/
+
+
+class TaskIndependentLandmarkCutHeuristicFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentLandmarkCutHeuristic> {
 public:
-    LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
+    TaskIndependentLandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
 
-        Heuristic::add_options_to_feature(*this);
+        TaskIndependentHeuristic::add_options_to_feature(*this);
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
@@ -58,14 +102,22 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<LandmarkCutHeuristic> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+    virtual shared_ptr<LandmarkCutHeuristic> create_TD_component(
+        const plugins::Options &opts, const utils::Context &) const {
         return make_shared<LandmarkCutHeuristic>(opts.get_unparsed_config(),
                                                  utils::get_log_from_options(opts),
                                                  opts.get<bool>("cache_estimates"),
                                                  opts.get<shared_ptr<AbstractTask>>("transform"));
     }
+
+    virtual shared_ptr<TaskIndependentLandmarkCutHeuristic> create_component(
+            const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<TaskIndependentLandmarkCutHeuristic>(opts.get_unparsed_config(),
+                                                                utils::get_log_from_options(opts),
+                                                                opts.get<bool>("cache_estimates")
+        );
+    }
 };
 
-static plugins::FeaturePlugin<LandmarkCutHeuristicFeature> _plugin;
+static plugins::FeaturePlugin<TaskIndependentLandmarkCutHeuristicFeature> _plugin;
 }
