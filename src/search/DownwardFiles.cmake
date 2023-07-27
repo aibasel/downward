@@ -476,11 +476,9 @@ fast_downward_plugin(
     NAME LP_SOLVER
     HELP "Interface to an LP solver"
     SOURCES
-        lp/cplex_solver_interface
         lp/lp_internals
         lp/lp_solver
         lp/solver_interface
-        lp/soplex_solver_interface
     DEPENDS NAMED_VECTOR
     DEPENDENCY_ONLY
 )
@@ -809,14 +807,3 @@ fast_downward_plugin(
         algorithms/sccs
     DEPENDENCY_ONLY
 )
-
-fast_downward_add_plugin_sources(PLANNER_SOURCES)
-
-# The order in PLANNER_SOURCES influences the order in which object
-# files are given to the linker, which can have a significant influence
-# on performance (see issue67). The general recommendation seems to be
-# to list files that define functions after files that use them.
-# We approximate this by reversing the list, which will put the plugins
-# first, followed by the core files, followed by the main file.
-# This is certainly not optimal, but works well enough in practice.
-list(REVERSE PLANNER_SOURCES)

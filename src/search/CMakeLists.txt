@@ -11,7 +11,7 @@ endif()
 
 ## == Project ==
 
-project(downward)
+project(downward LANGUAGES CXX)
 
 option(
   USE_GLIBCXX_DEBUG
@@ -22,9 +22,9 @@ Enabling them makes the binary incompatible with libraries that are not compiled
 with this flag, which can lead to hard-to-debug errors."
   FALSE)
 
-# Collect source files needed for the active plugins.
+add_executable(downward planner.cc)
+
 include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
-add_executable(downward ${PLANNER_SOURCES})
 
 target_link_libraries(downward PUBLIC fd_interface_library)
 get_target_property(bin_dir fd_interface_library RUNTIME_OUTPUT_DIRECTORY)
@@ -53,37 +53,37 @@ option(
   "Compile with support for all LP solvers installed on this system."
   TRUE)
 
-if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
-    add_definitions("-D USE_LP")
-
+if(USE_LP)
     find_package(Cplex)
     if(CPLEX_FOUND)
-        add_definitions("-D HAS_CPLEX")
-        include_directories(${CPLEX_INCLUDE_DIRS})
-        target_link_libraries(downward PRIVATE ${CPLEX_LIBRARIES})
+        add_library(downward_cplex_interface INTERFACE)
+        target_compile_definitions(downward_cplex_interface INTERFACE HAS_CPLEX)
+        target_include_directories(downward_cplex_interface INTERFACE ${CPLEX_INCLUDE_DIRS})
+        target_link_libraries(downward_cplex_interface INTERFACE ${CPLEX_LIBRARIES})
         if(CPLEX_RUNTIME_LIBRARY)
-            add_custom_command(TARGET downward POST_BUILD
+            add_custom_command(TARGET downward_cplex_interface POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
                 ${CPLEX_RUNTIME_LIBRARY}
                 $<TARGET_FILE_DIR:downward>
             )
         endif()
+        target_sources(downward_cplex_interface INTERFACE lp/cplex_solver_interface.h lp/cplex_solver_interface.cc)
+        target_link_libraries(downward_LP_SOLVER INTERFACE downward_cplex_interface)
     endif()
 
     find_package(SoPlex)
     if (SOPLEX_FOUND)
-        add_definitions("-D HAS_SOPLEX")
-        include_directories(${SOPLEX_INCLUDE_DIRS})
-        target_link_libraries(downward PRIVATE ${SOPLEX_LIBRARIES})
+        add_library(downward_soplex_interface INTERFACE)
+        target_compile_definitions(downward_soplex_interface INTERFACE HAS_SOPLEX)
+        target_include_directories(downward_soplex_interface INTERFACE ${SOPLEX_INCLUDE_DIRS})
+        target_link_libraries(downward_soplex_interface INTERFACE ${SOPLEX_LIBRARIES})
         find_package(ZLIB REQUIRED)
-        if(ZLIB_FOUND)
-            include_directories(${ZLIB_INCLUDE_DIRS})
-            target_link_libraries(downward PRIVATE ${ZLIB_LIBRARIES})
-        endif()
+        target_include_directories(downward_soplex_interface INTERFACE ${ZLIB_INCLUDE_DIRS})
+        target_link_libraries(downward_soplex_interface INTERFACE ${ZLIB_LIBRARIES})
         find_library(GMP_LIBRARY gmp REQUIRED)
-        if(GMP_LIBRARY)
-            target_link_libraries(downward PRIVATE ${GMP_LIBRARY})
-        endif()
+        target_link_libraries(downward_soplex_interface INTERFACE ${GMP_LIBRARY})
+        target_sources(downward_soplex_interface INTERFACE lp/soplex_solver_interface.h lp/soplex_solver_interface.cc)
+        target_link_libraries(downward_LP_SOLVER INTERFACE downward_soplex_interface)
     endif()
 
     if(CPLEX_FOUND OR SOPLEX_FOUND)
