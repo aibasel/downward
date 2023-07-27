@@ -32,10 +32,15 @@ find_program(CMAKE_C_COMPILER NAMES $ENV{CC} cc gcc PATHS ENV PATH NO_DEFAULT_PA
 find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} c++ g++ PATHS ENV PATH NO_DEFAULT_PATH)
 
 # Path containing custom CMake modules
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
+# TODO: I could not find anything other than modifying the CMAKE_* variable directly,
+# but appending to the list sounds at least better than just setting the variable
+# https://cmake.org/cmake/help/latest/variable/CMAKE_MODULE_PATH.html#variable:CMAKE_MODULE_PATH
+# says the variable is intended to be set by the project, so I guess this is the intended way?
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 include(FastDownwardMacros)
+#TODO: is there a better place for this call?
+define_interface_library()
 
-fast_downward_default_to_release_build()
 project(fast-downward)
 fast_downward_report_bitwidth()
 # Due to a bug in cmake, configuration types are only set up correctly on the second cmake run.
@@ -43,8 +48,6 @@ fast_downward_report_bitwidth()
 fast_downward_set_configuration_types()
 
 set(FAST_DOWNWARD_MAIN_CMAKELISTS_READ TRUE)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 # Write compiler ID and version to the cache to allow retrieving this information
 # with "cmake -LA" (see test-memory-leaks.py).
@@ -56,10 +59,11 @@ mark_as_advanced(DOWNWARD_CXX_COMPILER_ID DOWNWARD_CXX_COMPILER_VERSION)
 
 # Copy the translator into the output directory.
 add_custom_target(translate ALL)
+get_target_property(bin_dir fd_interface_library RUNTIME_OUTPUT_DIRECTORY)
 add_custom_command(TARGET translate POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/translate
-        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/translate
+        ${bin_dir}/${CMAKE_CFG_INTDIR}/translate
     COMMENT "Copying translator module into output directory")
 
 add_subdirectory(search)

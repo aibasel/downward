@@ -1,38 +1,51 @@
 include(CMakeParseArguments)
 
-macro(fast_downward_set_compiler_flags)
-    if(CMAKE_COMPILER_IS_GNUCXX OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wnon-virtual-dtor -Wfloat-conversion -Wmissing-declarations -Wzero-as-null-pointer-constant")
 
-        if (CMAKE_COMPILER_IS_GNUCXX
+macro(define_interface_library)
+    add_library(fd_interface_library INTERFACE)
+    target_compile_features(fd_interface_library INTERFACE cxx_std_20)
+    # TODO: rework. The idea was that downward inherits this property, but it doesn't
+    # Instead, maybe an "install" command would be sensible?
+    set_target_properties(fd_interface_library PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+    # TODO: check if these are the correct names
+    set(gcc_cxx "$<COMPILE_LANG_AND_ID:CXX,GNU,LCC>")
+    set(clang_cxx "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang>")
+    set(msvc_cxx "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
+
+    if(gcc_cxx OR clang_cxx)
+        target_compile_options(fd_interface_library INTERFACE "-g")
+        target_compile_options(fd_interface_library INTERFACE "-Wall;-Wextra;-Wpedantic;-Wnon-virtual-dtor;-Wfloat-conversion;-Wmissing-declarations;-Wzero-as-null-pointer-constant")
+
+        if (gcc_cxx
             AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 12
             AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13)
             ## We ignore the warning "restrict" because of a bug in GCC 12:
             ## https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105651
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-restrict")
+            target_compile_options(fd_interface_library INTERFACE "-Wno-restrict")
         endif()
 
         ## Configuration-specific flags
-        set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -fomit-frame-pointer")
-        set(CMAKE_CXX_FLAGS_DEBUG "-O3")
+        target_compile_options(fd_interface_library INTERFACE "$<$<CONFIG:RELEASE>:-O3;-DNDEBUG;-fomit-frame-pointer>")
+        target_compile_options(fd_interface_library INTERFACE "$<$<CONFIG:DEBUG>:-O3>")
         if(USE_GLIBCXX_DEBUG)
-            set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
+            target_compile_options(fd_interface_library INTERFACE "$<$<CONFIG:DEBUG>:-D_GLIBCXX_DEBUG>")
         endif()
-    elseif(MSVC)
+    elseif(msvc_cxx)
         # Enable exceptions.
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+        target_compile_options(fd_interface_library INTERFACE "/EHsc")        
 
         # Use warning level 4 (/W4).
         # /Wall currently detects too many warnings outside of our code to be useful.
-        string(REPLACE "/W3" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+        target_compile_options(fd_interface_library INTERFACE "/W4")
+        # TODO: before, we replaced W3 with W4. Do we still need to do that?
 
         # Disable warnings that currently trigger in the code until we fix them.
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4456") # declaration hides previous local declaration
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4458") # declaration hides class member
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4459") # declaration hides global declaration
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244") # conversion with possible loss of data
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4267") # conversion from size_t to int with possible loss of data
+        target_compile_options(fd_interface_library INTERFACE "/wd4456") # declaration hides previous local declaration
+        target_compile_options(fd_interface_library INTERFACE "/wd4458") # declaration hides class member
+        target_compile_options(fd_interface_library INTERFACE "/wd4459") # declaration hides global declaration
+        target_compile_options(fd_interface_library INTERFACE "/wd4244") # conversion with possible loss of data
+        target_compile_options(fd_interface_library INTERFACE "/wd4267") # conversion from size_t to int with possible loss of data
 
         # TODO: Configuration-specific flags. We currently rely on the fact that
         # CMAKE_CXX_FLAGS_RELEASE and CMAKE_CXX_FLAGS_DEBUG get reasonable settings
@@ -43,20 +56,25 @@ macro(fast_downward_set_compiler_flags)
     endif()
 endmacro()
 
-macro(fast_downward_set_linker_flags)
-    if(UNIX)
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
-    endif()
-endmacro()
+# TODO: I'm not sure if we need this anymore? I could not find a corresponding
+# "modern" command and it compiled without it
+#~ macro(fast_downward_set_linker_flags)
+    #~ if(UNIX)
+        #~ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
+    #~ endif()
+#~ endmacro()
 
-macro(fast_downward_default_to_release_build)
-    # Only for single-config generators (like Makefiles) that choose the build type at generation time.
-    if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-        message(STATUS "Defaulting to release build.")
-        set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
-    endif()
-endmacro()
+# TODO: It seems this is not needed anymore? When I call build, it never enters
+# the if block...
+#~ macro(fast_downward_default_to_release_build)
+    #~ # Only for single-config generators (like Makefiles) that choose the build type at generation time.
+    #~ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+        #~ message(STATUS "Defaulting to release build.")
+        #~ set(default_build_type "Release")
+    #~ endif()
+#~ endmacro()
 
+# TODO: I cannot find out how to replace this set(CMAKE_* ...) call
 macro(fast_downward_set_configuration_types)
     # Only for multi-config generators (like Visual Studio Projects) that choose
     # the build type at build time.

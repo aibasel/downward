@@ -22,20 +22,19 @@ Enabling them makes the binary incompatible with libraries that are not compiled
 with this flag, which can lead to hard-to-debug errors."
   FALSE)
 
-fast_downward_set_compiler_flags()
-fast_downward_set_linker_flags()
-
 # Collect source files needed for the active plugins.
 include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
 add_executable(downward ${PLANNER_SOURCES})
 
-target_compile_features(downward PUBLIC cxx_std_20)
+target_link_libraries(downward PUBLIC fd_interface_library)
+get_target_property(bin_dir fd_interface_library RUNTIME_OUTPUT_DIRECTORY)
+set_target_properties(downward PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${bin_dir})
 
 ## == Libraries ==
 
 # On Linux, find the rt library for clock_gettime().
 if(UNIX AND NOT APPLE)
-    target_link_libraries(downward rt)
+    target_link_libraries(downward PRIVATE rt)
 endif()
 
 # On Windows, find the psapi library for determining peak memory.
@@ -61,7 +60,7 @@ if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
     if(CPLEX_FOUND)
         add_definitions("-D HAS_CPLEX")
         include_directories(${CPLEX_INCLUDE_DIRS})
-        target_link_libraries(downward ${CPLEX_LIBRARIES})
+        target_link_libraries(downward PRIVATE ${CPLEX_LIBRARIES})
         if(CPLEX_RUNTIME_LIBRARY)
             add_custom_command(TARGET downward POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
@@ -75,15 +74,15 @@ if(PLUGIN_LP_SOLVER_ENABLED AND USE_LP)
     if (SOPLEX_FOUND)
         add_definitions("-D HAS_SOPLEX")
         include_directories(${SOPLEX_INCLUDE_DIRS})
-        target_link_libraries(downward ${SOPLEX_LIBRARIES})
+        target_link_libraries(downward PRIVATE ${SOPLEX_LIBRARIES})
         find_package(ZLIB REQUIRED)
         if(ZLIB_FOUND)
             include_directories(${ZLIB_INCLUDE_DIRS})
-            target_link_libraries(downward ${ZLIB_LIBRARIES})
+            target_link_libraries(downward PRIVATE ${ZLIB_LIBRARIES})
         endif()
         find_library(GMP_LIBRARY gmp REQUIRED)
         if(GMP_LIBRARY)
-            target_link_libraries(downward ${GMP_LIBRARY})
+            target_link_libraries(downward PRIVATE ${GMP_LIBRARY})
         endif()
     endif()
 
