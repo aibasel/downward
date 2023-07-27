@@ -15,6 +15,7 @@
 
 #include "heuristics/lm_cut_heuristic.h"
 #include "evaluators/g_evaluator.h"
+#include "evaluators/sum_evaluator.h"
 
 using namespace std;
 using utils::ExitCode;
@@ -57,6 +58,20 @@ int main(int argc, const char **argv) {
     shared_ptr<Evaluator> g =  ti_g->create_task_specific(tasks::g_root_task);
     cout << "" << g->get_description() << "," << g->is_used_for_boosting() << endl;
     cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ G SUCCESS \\o/" << endl;
+
+
+    //test sum
+    std::vector<std::shared_ptr<TaskIndependentEvaluator>> _ti_subevals;
+    _ti_subevals.push_back(dynamic_pointer_cast<TaskIndependentEvaluator>(ti_g));
+    _ti_subevals.push_back(dynamic_pointer_cast<TaskIndependentEvaluator>(ti_g));
+
+    shared_ptr<sum_evaluator::TaskIndependentSumEvaluator> ti_sum =
+            make_shared<sum_evaluator::TaskIndependentSumEvaluator>(_log,
+                                                                _ti_subevals,
+                                                                _unparsed_config);
+    shared_ptr<Evaluator> sum =  ti_sum->create_task_specific(tasks::g_root_task);
+    cout << "" << sum->get_description() << "," << sum->is_used_for_boosting() << endl;
+    cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ SUM SUCCESS \\o/" << endl;
 
 
     //shared_ptr<TaskIndependentGEval> ti_geval = make_shared<TaskIndependentGEval>(arg1, arg2);

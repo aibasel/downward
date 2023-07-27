@@ -75,3 +75,40 @@ void add_combining_evaluator_options_to_feature(plugins::Feature &feature) {
     add_evaluator_options_to_feature(feature);
 }
 }
+
+TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(utils::LogProxy log,
+                                                                     std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
+                                                                     string unparsed_config,
+                                                                     bool use_for_reporting_minima,
+                                                                     bool use_for_boosting,
+                                                                     bool use_for_counting_evaluations)
+        : TaskIndependentEvaluator(log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
+          subevaluators(subevaluators){
+}
+
+void TaskIndependentCombiningEvaluator::add_options_to_feature(plugins::Feature &feature) {
+    add_evaluator_options_to_feature(feature);
+    feature.add_option<shared_ptr<AbstractTask>>(
+            "transform",
+                    "Optional task transformation for the heuristic."
+                    " Currently, adapt_costs() and no_transform() are available.",
+                    "no_transform()");
+    feature.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
+}
+
+/*
+shared_ptr<Evaluator> TaskIndependentCombiningEvaluator::create_task_specific(shared_ptr<AbstractTask> &task) {
+    vector<shared_ptr<Evaluator>> td_subevaluators(subevaluators.size());
+    transform( subevaluators.begin(), subevaluators.end(), td_subevaluators.begin(),
+               [this, &task](const shared_ptr<TaskIndependentEvaluator>& eval) {
+                   return eval->create_task_specific(task);
+               }
+    );
+    return make_shared<combining_evaluator::CombiningEvaluator>(log,
+                                           td_subevaluators,
+                                           description,
+                                           use_for_reporting_minima,
+                                           use_for_boosting,
+                                           use_for_counting_evaluations);
+}
+*/
