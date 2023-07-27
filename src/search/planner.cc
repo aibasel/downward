@@ -9,6 +9,13 @@
 
 #include <iostream>
 
+
+#include "task_independent_search_algorithm.h"
+//for testing
+
+#include "heuristics/lm_cut_heuristic.h"
+#include "evaluators/g_evaluator.h"
+
 using namespace std;
 using utils::ExitCode;
 
@@ -29,9 +36,39 @@ int main(int argc, const char **argv) {
         unit_cost = task_properties::is_unit_cost(task_proxy);
     }
 
-    shared_ptr<SearchAlgorithm> search_algorithm =
-        parse_cmd_line(argc, argv, unit_cost);
+    //start testing
+    std::string _unparsed_config = std::string();
+    utils::LogProxy _log = get_log_from_verbosity(utils::Verbosity::NORMAL);
+    bool _cache_evaluator_values = false;
+    //test lmc
+    shared_ptr<lm_cut_heuristic::TaskIndependentLandmarkCutHeuristic> ti_lmcut =
+            make_shared<lm_cut_heuristic::TaskIndependentLandmarkCutHeuristic>(_unparsed_config,
+                                                                               _log,
+                                                                               _cache_evaluator_values);
+    shared_ptr<Evaluator> lmcut =  ti_lmcut->create_task_specific(tasks::g_root_task);
+    cout << "" << lmcut->get_description() << "," << lmcut->is_used_for_boosting() << endl;
+    cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ LMC SUCCESS \\o/" << endl;
+    /*
+    //test g
+    shared_ptr<g_evaluator::TaskIndependentGEvaluator> ti_g =
+            make_shared<g_evaluator::TaskIndependentGEvaluator>(_unparsed_config,
+                                                                               _log,
+                                                                               _cache_evaluator_values);
+    shared_ptr<Evaluator> g =  ti_g->create_task_specific(tasks::g_root_task);
+    cout << "" << g->get_description() << "," << g->is_used_for_boosting() << endl;
+    cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ G SUCCESS \\o/" << endl;
+*/
 
+    //shared_ptr<TaskIndependentGEval> ti_geval = make_shared<TaskIndependentGEval>(arg1, arg2);
+    //shared_ptr<GEval> geval = ti_geval.specify(tasks::g_root_task);
+    cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ TEST SUCCESS \\o/" << endl;
+    exit(1);
+    //end testing
+
+
+    shared_ptr<TaskIndependentSearchAlgorithm> ti_search_algorithm = parse_cmd_line(argc, argv, unit_cost);
+    //shared_ptr<SearchAlgorithm> search_algorithm = ti_search_algorithm->create_task_specific(tasks::g_root_task);
+    shared_ptr<SearchAlgorithm> search_algorithm(nullptr);
 
     utils::Timer search_timer;
     search_algorithm->search();

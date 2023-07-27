@@ -65,7 +65,8 @@ public:
                  OperatorCost cost_type,
                  double max_time,
                  int bound,
-                 std::string unparsed_config);
+                 std::string unparsed_config,
+                 std::shared_ptr<AbstractTask> task);
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();

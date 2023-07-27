@@ -5,6 +5,7 @@
 #include "operator_id.h"
 #include "per_state_information.h"
 #include "task_proxy.h"
+#include "task_independent_evaluator.h"
 
 #include "algorithms/ordered_set.h"
 
@@ -94,4 +95,16 @@ public:
     virtual int get_cached_estimate(const State &state) const override;
 };
 
+
+class TaskIndependentHeuristic: TaskIndependentEvaluator {
+protected:
+    bool cache_evaluator_values;
+public:
+    explicit TaskIndependentHeuristic(const std::string unparsed_config,
+                       utils::LogProxy log,
+                       bool cache_evaluator_values);
+    virtual ~TaskIndependentHeuristic() = default;
+
+    static void add_options_to_feature(plugins::Feature &feature);
+};
 #endif

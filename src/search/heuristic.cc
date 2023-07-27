@@ -118,3 +118,20 @@ int Heuristic::get_cached_estimate(const State &state) const {
     assert(is_estimate_cached(state));
     return heuristic_cache[state].h;
 }
+
+TaskIndependentHeuristic::TaskIndependentHeuristic(const string unparsed_config,
+                     utils::LogProxy log,
+                     bool cache_evaluator_values)
+        : TaskIndependentEvaluator(log, unparsed_config, true, true, true),
+          cache_evaluator_values(cache_evaluator_values) {
+}
+
+void TaskIndependentHeuristic::add_options_to_feature(plugins::Feature &feature) {
+    add_evaluator_options_to_feature(feature);
+    feature.add_option<shared_ptr<AbstractTask>>(
+            "transform",
+                    "Optional task transformation for the heuristic."
+                    " Currently, adapt_costs() and no_transform() are available.",
+                    "no_transform()");
+    feature.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
+}

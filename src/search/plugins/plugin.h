@@ -109,8 +109,11 @@ public:
         : FeatureAuto<Constructed>(TypeRegistry::instance()->get_type<BasePtr>(), key) {
     }
 
-    Any construct(const Options &options, const utils::Context &context) const override {
-        std::shared_ptr<Base> ptr = this->create_component(options, context);
+    Any construct(const Options &opts, const utils::Context &context) const override {
+        //std::shared_ptr<Base> ptr = this->create_component(opts, context);
+        std::cout << "XXXXXXXXXXXXXXXXXXXxx: " << std::endl;
+        auto ptr = this->create_component(opts, context);
+        std::cout << "AAAAAAAAAAAAAAAAAAAAAA: " << typeid(ptr).name() << std::endl;
         return Any(ptr);
     }
 };
