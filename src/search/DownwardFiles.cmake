@@ -642,24 +642,24 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME CEGAR
-    HELP "Plugin containing the code for CEGAR heuristics"
+    HELP "Plugin containing the code for Cartesian CEGAR heuristics"
     SOURCES
-        cegar/abstraction
-        cegar/abstract_search
-        cegar/abstract_state
-        cegar/additive_cartesian_heuristic
-        cegar/cartesian_heuristic_function
-        cegar/cartesian_set
-        cegar/cegar
-        cegar/cost_saturation
-        cegar/refinement_hierarchy
-        cegar/split_selector
-        cegar/subtask_generators
-        cegar/transition
-        cegar/transition_system
-        cegar/types
-        cegar/utils
-        cegar/utils_landmarks
+        cartesian_abstractions/abstraction
+        cartesian_abstractions/abstract_search
+        cartesian_abstractions/abstract_state
+        cartesian_abstractions/additive_cartesian_heuristic
+        cartesian_abstractions/cartesian_heuristic_function
+        cartesian_abstractions/cartesian_set
+        cartesian_abstractions/cegar
+        cartesian_abstractions/cost_saturation
+        cartesian_abstractions/refinement_hierarchy
+        cartesian_abstractions/split_selector
+        cartesian_abstractions/subtask_generators
+        cartesian_abstractions/transition
+        cartesian_abstractions/transition_system
+        cartesian_abstractions/types
+        cartesian_abstractions/utils
+        cartesian_abstractions/utils_landmarks
     DEPENDS ADDITIVE_HEURISTIC DYNAMIC_BITSET EXTRA_TASKS LANDMARKS PRIORITY_QUEUES TASK_PROPERTIES
 )
 
