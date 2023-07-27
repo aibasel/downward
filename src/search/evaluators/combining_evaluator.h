@@ -2,6 +2,7 @@
 #define EVALUATORS_COMBINING_EVALUATOR_H
 
 #include "../evaluator.h"
+#include "../task_independent_evaluator.h"
 
 #include <memory>
 #include <set>
@@ -52,5 +53,21 @@ public:
 extern void add_combining_evaluator_options_to_feature(
     plugins::Feature &feature);
 }
+
+
+class TaskIndependentCombiningEvaluator: public TaskIndependentEvaluator {
+protected:
+    std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators;
+public:
+    explicit TaskIndependentCombiningEvaluator(utils::LogProxy log,
+                                               std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
+                                               std::basic_string<char> unparsed_config = std::string(),
+                                               bool use_for_reporting_minima = false,
+                                               bool use_for_boosting = false,
+                                               bool use_for_counting_evaluations = false);
+    virtual ~TaskIndependentCombiningEvaluator() = default;
+
+    static void add_options_to_feature(plugins::Feature &feature);
+};
 
 #endif
