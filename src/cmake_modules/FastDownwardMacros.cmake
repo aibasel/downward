@@ -5,25 +5,24 @@ include(CMakeParseArguments)
 add_library(cxx_options INTERFACE)
 target_compile_features(cxx_options INTERFACE cxx_std_20)
 
-set(gcc_like "$<COMPILE_LANG_AND_ID:CXX,ARMClang,AppleClang,Clang,GNU,LCC>")
-set(gcc "$<COMPILE_LANG_AND_ID:CXX,GNU>")
-set(msvc "$<COMPILE_LANG_AND_ID:CXX,MSVC>")
-set(gcc_like_release "$<AND:${gcc_like},$<CONFIG:RELEASE>>")
-set(gcc_like_debug "$<AND:${gcc_like},$<CONFIG:DEBUG>>")
-set(should_use_glibcxx_debug "$<AND:${gcc_like_debug},$<BOOL:USE_GLIBCXX_DEBUG>>")
+set(using_gcc_like "$<CXX_COMPILER_ID:ARMClang,AppleClang,Clang,GNU,LCC>")
+set(using_gcc "$<CXX_COMPILER_ID:GNU>")
+set(using_msvc "$<CXX_COMPILER_ID:MSVC>")
+set(using_gcc_like_release "$<AND:${using_gcc_like},$<CONFIG:RELEASE>>")
+set(using_gcc_like_debug "$<AND:${using_gcc_like},$<CONFIG:DEBUG>>")
+set(should_use_glibcxx_debug "$<AND:${using_gcc_like_debug},$<BOOL:USE_GLIBCXX_DEBUG>>")
 
 target_compile_options(cxx_options INTERFACE
-    "$<${gcc_like}:-O3;-g>")
+    "$<${using_gcc_like}:-O3;-g>")
+target_link_options(cxx_options INTERFACE
+    "$<${using_gcc_like}:-g>")
 target_compile_options(cxx_options INTERFACE
-    "$<${gcc_like_release}:-DNDEBUG;-fomit-frame-pointer>")
+    "$<${using_gcc_like_release}:-DNDEBUG;-fomit-frame-pointer>")
 target_compile_definitions(cxx_options INTERFACE
     "$<${should_use_glibcxx_debug}:_GLIBCXX_DEBUG>")
 # Enable exceptions for MSVC.
 target_compile_options(cxx_options INTERFACE
-    "$<${msvc}:/EHsc>")
-if(UNIX) #TODO: Maybe we can also replace this with a generator expression?
-    target_link_options(cxx_options INTERFACE "-g")
-endif()
+    "$<${using_msvc}:/EHsc>")
 
 add_library(cxx_warnings INTERFACE)
 target_compile_options(cxx_warnings INTERFACE
@@ -33,14 +32,14 @@ target_compile_options(cxx_warnings INTERFACE
 ## https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105651
 set(v12_or_later "$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,12>")
 set(before_v13 "$<VERSION_LESS:$<CXX_COMPILER_VERSION>,13>")
-set(bugged_gcc "$<AND:${gcc},${v12_or_later},${before_v13}>")
+set(bugged_gcc "$<AND:${using_gcc},${v12_or_later},${before_v13}>")
 target_compile_options(cxx_warnings INTERFACE
     "$<${bugged_gcc}:-Wno-restrict>")
 
 # For MSVC, use warning level 4 (/W4) because /Wall currently detects too
 # many warnings outside of our code to be useful.
 target_compile_options(cxx_warnings INTERFACE
-    "$<${msvc}:/W4;/wd4456;/wd4458;/wd4459;/wd4244;/wd4267>")
+    "$<${using_msvc}:/W4;/wd4456;/wd4458;/wd4459;/wd4244;/wd4267>")
     # Disable warnings that currently trigger in the code until we fix them.
     #   /wd4456: declaration hides previous local declaration
     #   /wd4458: declaration hides class member

@@ -31,7 +31,7 @@
 #   enabled. If the dependency was not enabled before, this will be logged.
 # DEPENDENCY_ONLY disables the plugin unless it is needed as a dependency and
 #   hides the option to enable the plugin in cmake GUIs like ccmake.
-# CORE_LIBRARY always enables the plugin (even if DISABLE_LIBRARYS_BY_DEFAULT
+# CORE_LIBRARY always enables the plugin (even if DISABLE_LIBRARIES_BY_DEFAULT
 #   is used) and hides the option to disable it in CMake GUIs like ccmake.
 
 option(
