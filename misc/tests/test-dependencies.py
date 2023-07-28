@@ -29,35 +29,35 @@ with open(DOWNWARD_FILES) as d:
     content = d.readlines()
 
 content = [line for line in content if '#' not in line]
-content = [line for line in content if 'NAME' in line or 'CORE_PLUGIN' in line or 'DEPENDENCY_ONLY' in line]
+content = [line for line in content if 'NAME' in line or 'CORE_LIBRARY' in line or 'DEPENDENCY_ONLY' in line]
 
-plugins_to_be_tested = []
+libraries_to_be_tested = []
 for line in content:
     if 'NAME' in line:
-        plugins_to_be_tested.append(line.replace("NAME", "").strip())
-    if 'CORE_PLUGIN' in line or 'DEPENDENCY_ONLY' in line:
-        plugins_to_be_tested.pop()
+        libraries_to_be_tested.append(line.replace("NAME", "").strip())
+    if 'CORE_LIBRARY' in line or 'DEPENDENCY_ONLY' in line:
+        libraries_to_be_tested.pop()
 
 with open(TEST_BUILD_CONFIGS, "w") as f:
-    for plugin in plugins_to_be_tested:
-        lowercase = plugin.lower()
-        line = "{lowercase} = [\"-DCMAKE_BUILD_TYPE=Debug\", \"-DDISABLE_PLUGINS_BY_DEFAULT=YES\"," \
-               " \"-DPLUGIN_{plugin}_ENABLED=True\"]\n".format(**locals())
+    for library in libraries_to_be_tested:
+        lowercase = library.lower()
+        line = "{lowercase} = [\"-DCMAKE_BUILD_TYPE=Debug\", \"-DDISABLE_LIBRARIES_BY_DEFAULT=YES\"," \
+               " \"-DLIBRARY_{library}_ENABLED=True\"]\n".format(**locals())
         f.write(line)
         paths_to_clean.append(os.path.join(BUILDS, lowercase))
 
-plugins_failed_test = []
-for plugin in plugins_to_be_tested:
+libraries_failed_test = []
+for library in libraries_to_be_tested:
     try:
-        subprocess.check_call([BUILD, plugin.lower()])
+        subprocess.check_call([BUILD, library.lower()])
     except subprocess.CalledProcessError:
-        plugins_failed_test.append(plugin)
+        libraries_failed_test.append(library)
 
-if plugins_failed_test:
+if libraries_failed_test:
     print("\nFailure:")
-    for plugin in plugins_failed_test:
-        print("{plugin} failed dependencies test".format(**locals()))
+    for library in libraries_failed_test:
+        print("{library} failed dependencies test".format(**locals()))
     sys.exit(1)
 else:
-    print("\nAll plugins have passed dependencies test")
+    print("\nAll libraries have passed dependencies test")
     clean_up(paths_to_clean)
