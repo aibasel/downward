@@ -36,8 +36,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 include(FastDownwardMacros)
 
 project(fast-downward)
-#TODO: Restructure so this is not a call to a macro
-define_interface_library()
 fast_downward_report_bitwidth()
 # Due to a bug in cmake, configuration types are only set up correctly on the second cmake run.
 # This means that cmake has to be called twice for multi-config generators like Visual Studio.
