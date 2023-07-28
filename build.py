@@ -35,14 +35,16 @@ def print_usage():
         configs.append(name + "\n    " + " ".join(args))
     configs_string = "\n  ".join(configs)
     cmake_name = os.path.basename(CMAKE)
+    generator_name = CMAKE_GENERATOR.lower()
     default_config_name = DEFAULT_CONFIG_NAME
     debug_config_name = DEBUG_CONFIG_NAME
     print(f"""Usage: {script_name} [BUILD [BUILD ...]] [--all] [--debug] [MAKE_OPTIONS]
 
 Build one or more predefined build configurations of Fast Downward. Each build
-uses {cmake_name} compile the code. Build configurations differ in the
-parameters they pass to {cmake_name}. By default, the build uses all available cores.
-Use the "-j" option for {cmake_name} to override this default behaviour.
+uses {cmake_name} to compile the code using {generator_name} . Build configurations
+differ in the parameters they pass to {cmake_name}. By default, the build uses all
+available cores if this number can be determined. Use the "-j" option for
+{cmake_name} to override this default behaviour.
 
 Build configurations
   {configs_string}
