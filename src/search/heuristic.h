@@ -96,7 +96,7 @@ public:
 };
 
 
-class TaskIndependentHeuristic: TaskIndependentEvaluator {
+class TaskIndependentHeuristic: public TaskIndependentEvaluator {
 protected:
     bool cache_evaluator_values;
 public:
