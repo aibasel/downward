@@ -16,6 +16,7 @@
 #include "heuristics/lm_cut_heuristic.h"
 #include "evaluators/g_evaluator.h"
 #include "evaluators/sum_evaluator.h"
+#include "open_lists/tiebreaking_open_list.h"
 
 using namespace std;
 using utils::ExitCode;
@@ -72,6 +73,20 @@ int main(int argc, const char **argv) {
     shared_ptr<Evaluator> sum =  ti_sum->create_task_specific(tasks::g_root_task);
     cout << "" << sum->get_description() << "," << sum->is_used_for_boosting() << endl;
     cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ SUM SUCCESS \\o/" << endl;
+
+
+    //test TieBreakingOpenList
+
+    bool _pref_only = true;
+    bool _allow_unsafe_pruning = true;
+    shared_ptr<tiebreaking_open_list::TaskIndependentTieBreakingOpenList<int>> ti_tbol =
+            make_shared<tiebreaking_open_list::TaskIndependentTieBreakingOpenList<int>>(_pref_only,
+                                                                                         _ti_subevals,
+                                                                                         _allow_unsafe_pruning);
+    shared_ptr<OpenList<int>> tbol =  ti_tbol->create_task_specific(tasks::g_root_task);
+    cout << "" << tbol->only_contains_preferred_entries() << endl;
+    cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ TieBreakingOpenList SUCCESS \\o/" << endl;
+
 
 
     //shared_ptr<TaskIndependentGEval> ti_geval = make_shared<TaskIndependentGEval>(arg1, arg2);
