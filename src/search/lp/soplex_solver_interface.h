@@ -1,8 +1,6 @@
 #ifndef LP_SOPLEX_SOLVER_INTERFACE_H
 #define LP_SOPLEX_SOLVER_INTERFACE_H
 
-#ifdef HAS_SOPLEX
-
 #include "solver_interface.h"
 
 #ifdef __GNUG__
@@ -65,5 +63,4 @@ public:
 };
 }
 
-#endif
 #endif

@@ -9,7 +9,7 @@
 # In that case, individual libraries can be enabled with
 #    -DLIBRARY_FOO_ENABLED=TRUE
 #
-# Defining a new plugin:
+# Defining a new library:
 #    create_fast_downward_library(
 #        NAME <NAME>
 #        [ DISPLAY_NAME <DISPLAY_NAME> ]
@@ -24,14 +24,14 @@
 # <DISPLAY_NAME> defaults to lower case <NAME> and is used to group files
 #   in IDEs and for messages.
 # <HELP> defaults to <DISPLAY_NAME> and is used to describe the cmake option.
-# SOURCES lists the source files that are part of the plugin. Entries are
+# SOURCES lists the source files that are part of the library. Entries are
 #   listed without extension. For an entry <file>, both <file>.h and <file>.cc
 #   are added if the files exist.
-# DEPENDS lists libraries that will be automatically enabled if this plugin is
+# DEPENDS lists libraries that will be automatically enabled if this library is
 #   enabled. If the dependency was not enabled before, this will be logged.
-# DEPENDENCY_ONLY disables the plugin unless it is needed as a dependency and
-#   hides the option to enable the plugin in cmake GUIs like ccmake.
-# CORE_LIBRARY always enables the plugin (even if DISABLE_LIBRARIES_BY_DEFAULT
+# DEPENDENCY_ONLY disables the library unless it is needed as a dependency and
+#   hides the option to enable the library in cmake GUIs like ccmake.
+# CORE_LIBRARY always enables the library (even if DISABLE_LIBRARIES_BY_DEFAULT
 #   is used) and hides the option to disable it in CMake GUIs like ccmake.
 
 option(
@@ -46,8 +46,6 @@ create_fast_downward_library(
     NAME CORE_SOURCES
     HELP "Core source files"
     SOURCES
-        planner
-
         abstract_task
         axioms
         command_line
