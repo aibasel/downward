@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace plugin_eager {
-class EagerSearchFeature : public plugins::TypedFeature<SearchEngine, eager_search::EagerSearch> {
+class EagerSearchFeature : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
 public:
     EagerSearchFeature() : TypedFeature("eager") {
         document_title("Eager best-first search");

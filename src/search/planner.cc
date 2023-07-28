@@ -1,5 +1,5 @@
 #include "command_line.h"
-#include "search_engine.h"
+#include "search_algorithm.h"
 
 #include "tasks/root_task.h"
 #include "task_utils/task_properties.h"
@@ -29,20 +29,21 @@ int main(int argc, const char **argv) {
         unit_cost = task_properties::is_unit_cost(task_proxy);
     }
 
-    shared_ptr<SearchEngine> engine = parse_cmd_line(argc, argv, unit_cost);
+    shared_ptr<SearchAlgorithm> search_algorithm =
+        parse_cmd_line(argc, argv, unit_cost);
 
 
     utils::Timer search_timer;
-    engine->search();
+    search_algorithm->search();
     search_timer.stop();
     utils::g_timer.stop();
 
-    engine->save_plan_if_necessary();
-    engine->print_statistics();
+    search_algorithm->save_plan_if_necessary();
+    search_algorithm->print_statistics();
     utils::g_log << "Search time: " << search_timer << endl;
     utils::g_log << "Total time: " << utils::g_timer << endl;
 
-    ExitCode exitcode = engine->found_solution()
+    ExitCode exitcode = search_algorithm->found_solution()
         ? ExitCode::SUCCESS
         : ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
     utils::report_exit_code_reentrant(exitcode);

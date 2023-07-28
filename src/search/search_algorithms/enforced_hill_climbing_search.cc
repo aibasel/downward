@@ -67,7 +67,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     const plugins::Options &opts)
-    : SearchEngine(opts),
+    : SearchAlgorithm(opts),
       evaluator(opts.get<shared_ptr<Evaluator>>("h")),
       preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
       preferred_usage(opts.get<PreferredUsage>("preferred_usage")),
@@ -271,7 +271,7 @@ void EnforcedHillClimbingSearch::print_statistics() const {
     }
 }
 
-class EnforcedHillClimbingSearchFeature : public plugins::TypedFeature<SearchEngine, EnforcedHillClimbingSearch> {
+class EnforcedHillClimbingSearchFeature : public plugins::TypedFeature<SearchAlgorithm, EnforcedHillClimbingSearch> {
 public:
     EnforcedHillClimbingSearchFeature() : TypedFeature("ehc") {
         document_title("Lazy enforced hill-climbing");
@@ -286,7 +286,7 @@ public:
             "preferred",
             "use preferred operators of these evaluators",
             "[]");
-        SearchEngine::add_options_to_feature(*this);
+        SearchAlgorithm::add_options_to_feature(*this);
     }
 };
 

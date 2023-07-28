@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace plugin_eager_greedy {
-class EagerGreedySearchFeature : public plugins::TypedFeature<SearchEngine, eager_search::EagerSearch> {
+class EagerGreedySearchFeature : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
 public:
     EagerGreedySearchFeature() : TypedFeature("eager_greedy") {
         document_title("Greedy search (eager)");

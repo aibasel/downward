@@ -9,8 +9,8 @@ using namespace std;
 
 namespace iterated_search {
 IteratedSearch::IteratedSearch(const plugins::Options &opts)
-    : SearchEngine(opts),
-      engine_configs(opts.get_list<parser::LazyValue>("engine_configs")),
+    : SearchAlgorithm(opts),
+      algorithm_configs(opts.get_list<parser::LazyValue>("algorithm_configs")),
       pass_bound(opts.get<bool>("pass_bound")),
       repeat_last_phase(opts.get<bool>("repeat_last")),
       continue_on_fail(opts.get<bool>("continue_on_fail")),
@@ -21,23 +21,23 @@ IteratedSearch::IteratedSearch(const plugins::Options &opts)
       iterated_found_solution(false) {
 }
 
-shared_ptr<SearchEngine> IteratedSearch::get_search_engine(
-    int engine_configs_index) {
-    parser::LazyValue &engine_config = engine_configs[engine_configs_index];
-    shared_ptr<SearchEngine> engine;
+shared_ptr<SearchAlgorithm> IteratedSearch::get_search_algorithm(
+    int algorithm_configs_index) {
+    parser::LazyValue &algorithm_config = algorithm_configs[algorithm_configs_index];
+    shared_ptr<SearchAlgorithm> search_algorithm;
     try{
-        engine = engine_config.construct<shared_ptr<SearchEngine>>();
+        search_algorithm = algorithm_config.construct<shared_ptr<SearchAlgorithm>>();
     } catch (const utils::ContextError &e) {
         cerr << "Delayed construction of LazyValue failed" << endl;
         cerr << e.get_message() << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
-    log << "Starting search: " << engine->get_description() << endl;
-    return engine;
+    log << "Starting search: " << search_algorithm->get_description() << endl;
+    return search_algorithm;
 }
 
-shared_ptr<SearchEngine> IteratedSearch::create_current_phase() {
-    int num_phases = engine_configs.size();
+shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
+    int num_phases = algorithm_configs.size();
     if (phase >= num_phases) {
         /* We've gone through all searches. We continue if
            repeat_last_phase is true, but *not* if we didn't find a
@@ -47,17 +47,19 @@ shared_ptr<SearchEngine> IteratedSearch::create_current_phase() {
            this overrides continue_on_fail.
         */
         if (repeat_last_phase && last_phase_found_solution) {
-            return get_search_engine(engine_configs.size() - 1);
+            return get_search_algorithm(
+                algorithm_configs.size() -
+                1);
         } else {
             return nullptr;
         }
     }
 
-    return get_search_engine(phase);
+    return get_search_algorithm(phase);
 }
 
 SearchStatus IteratedSearch::step() {
-    shared_ptr<SearchEngine> current_search = create_current_phase();
+    shared_ptr<SearchAlgorithm> current_search = create_current_phase();
     if (!current_search) {
         return found_solution() ? SOLVED : FAILED;
     }
@@ -127,15 +129,15 @@ void IteratedSearch::save_plan_if_necessary() {
     // each successful search iteration.
 }
 
-class IteratedSearchFeature : public plugins::TypedFeature<SearchEngine, IteratedSearch> {
+class IteratedSearchFeature : public plugins::TypedFeature<SearchAlgorithm, IteratedSearch> {
 public:
     IteratedSearchFeature() : TypedFeature("iterated") {
         document_title("Iterated search");
         document_synopsis("");
 
-        add_list_option<shared_ptr<SearchEngine>>(
-            "engine_configs",
-            "list of search engines for each phase",
+        add_list_option<shared_ptr<SearchAlgorithm>>(
+            "algorithm_configs",
+            "list of search algorithms for each phase",
             "",
             true);
         add_option<bool>(
@@ -155,7 +157,7 @@ public:
             "continue_on_solve",
             "continue search after solution found",
             "true");
-        SearchEngine::add_options_to_feature(*this);
+        SearchAlgorithm::add_options_to_feature(*this);
 
         document_note(
             "Note 1",
@@ -187,20 +189,20 @@ public:
     virtual shared_ptr<IteratedSearch> create_component(const plugins::Options &options, const utils::Context &context) const override {
         plugins::Options options_copy(options);
         /*
-          The options entry 'engine_configs' is a LazyValue representing a list
-          of search engines. But iterated search expects a list of LazyValues,
-          each representing a search engine. We unpack this first layer of
+          The options entry 'algorithm_configs' is a LazyValue representing a list
+          of search algorithms. But iterated search expects a list of LazyValues,
+          each representing a search algorithm. We unpack this first layer of
           laziness here to report potential errors in a more useful context.
 
           TODO: the medium-term plan is to get rid of LazyValue completely
           and let the features create builders that in turn create the actual
-          search engines. Then we no longer need to be lazy because creating
+          search algorithms. Then we no longer need to be lazy because creating
           the builder is a light-weight operation.
         */
-        vector<parser::LazyValue> engine_configs =
-            options.get<parser::LazyValue>("engine_configs").construct_lazy_list();
-        options_copy.set("engine_configs", engine_configs);
-        plugins::verify_list_non_empty<parser::LazyValue>(context, options_copy, "engine_configs");
+        vector<parser::LazyValue> algorithm_configs =
+            options.get<parser::LazyValue>("algorithm_configs").construct_lazy_list();
+        options_copy.set("algorithm_configs", algorithm_configs);
+        plugins::verify_list_non_empty<parser::LazyValue>(context, options_copy, "algorithm_configs");
         return make_shared<IteratedSearch>(options_copy);
     }
 };

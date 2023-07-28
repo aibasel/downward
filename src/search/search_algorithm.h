@@ -1,5 +1,5 @@
-#ifndef SEARCH_ENGINE_H
-#define SEARCH_ENGINE_H
+#ifndef SEARCH_ALGORITHM_H
+#define SEARCH_ALGORITHM_H
 
 #include "operator_cost.h"
 #include "operator_id.h"
@@ -30,7 +30,7 @@ class SuccessorGenerator;
 
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
-class SearchEngine {
+class SearchAlgorithm {
     std::string description;
     SearchStatus status;
     bool solution_found;
@@ -60,8 +60,8 @@ protected:
     bool check_goal_and_set_plan(const State &state);
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
-    SearchEngine(const plugins::Options &opts);
-    virtual ~SearchEngine();
+    SearchAlgorithm(const plugins::Options &opts);
+    virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
     bool found_solution() const;

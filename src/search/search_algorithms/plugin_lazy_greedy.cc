@@ -8,7 +8,7 @@ using namespace std;
 namespace plugin_lazy_greedy {
 static const string DEFAULT_LAZY_BOOST = "1000";
 
-class LazyGreedySearchFeature : public plugins::TypedFeature<SearchEngine, lazy_search::LazySearch> {
+class LazyGreedySearchFeature : public plugins::TypedFeature<SearchAlgorithm, lazy_search::LazySearch> {
 public:
     LazyGreedySearchFeature() : TypedFeature("lazy_greedy") {
         document_title("Greedy search (lazy)");
@@ -30,8 +30,8 @@ public:
             "boost value for alternation queues that are restricted "
             "to preferred operator nodes",
             DEFAULT_LAZY_BOOST);
-        SearchEngine::add_succ_order_options(*this);
-        SearchEngine::add_options_to_feature(*this);
+        SearchAlgorithm::add_succ_order_options(*this);
+        SearchAlgorithm::add_options_to_feature(*this);
 
         document_note(
             "Open lists",
@@ -72,11 +72,11 @@ public:
     virtual shared_ptr<lazy_search::LazySearch> create_component(const plugins::Options &options, const utils::Context &) const override {
         plugins::Options options_copy(options);
         options_copy.set("open", search_common::create_greedy_open_list_factory(options));
-        shared_ptr<lazy_search::LazySearch> engine = make_shared<lazy_search::LazySearch>(options_copy);
+        shared_ptr<lazy_search::LazySearch> search_algorithm = make_shared<lazy_search::LazySearch>(options_copy);
         // TODO: The following two lines look fishy. See similar comment in _parse.
         vector<shared_ptr<Evaluator>> preferred_list = options_copy.get_list<shared_ptr<Evaluator>>("preferred");
-        engine->set_preferred_operator_evaluators(preferred_list);
-        return engine;
+        search_algorithm->set_preferred_operator_evaluators(preferred_list);
+        return search_algorithm;
     }
 };
 

@@ -1,9 +1,9 @@
-#ifndef SEARCH_ENGINES_ENFORCED_HILL_CLIMBING_SEARCH_H
-#define SEARCH_ENGINES_ENFORCED_HILL_CLIMBING_SEARCH_H
+#ifndef SEARCH_ALGORITHMS_ENFORCED_HILL_CLIMBING_SEARCH_H
+#define SEARCH_ALGORITHMS_ENFORCED_HILL_CLIMBING_SEARCH_H
 
 #include "../evaluation_context.h"
 #include "../open_list.h"
-#include "../search_engine.h"
+#include "../search_algorithm.h"
 
 #include <map>
 #include <memory>
@@ -28,7 +28,7 @@ enum class PreferredUsage {
   an eager one. We hypothesize that both versions need to evaluate and store
   the same states anyways.
 */
-class EnforcedHillClimbingSearch : public SearchEngine {
+class EnforcedHillClimbingSearch : public SearchAlgorithm {
     std::unique_ptr<EdgeOpenList> open_list;
 
     std::shared_ptr<Evaluator> evaluator;
