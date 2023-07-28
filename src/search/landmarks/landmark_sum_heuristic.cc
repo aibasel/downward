@@ -161,6 +161,10 @@ public:
             "to enforce unit costs.");
         document_note(
             "Preferred operators",
+            "Computing preferred operators is *only enabled* when setting "
+            "pref=true because it has a nontrivial runtime cost. Using the "
+            "heuristic for preferred operators without setting pref=true "
+            "has no effect.\n"
             "Our implementation to compute preferred operators based on landmarks "
             "differs from the description in the literature (see reference above)."
             "The original implementation computes two kinds of preferred "

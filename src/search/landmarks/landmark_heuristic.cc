@@ -185,8 +185,7 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
         "or predefined (see LandmarkFactory).");
     feature.add_option<bool>(
         "pref",
-        "identify preferred operators (see OptionCaveats#"
-        "Using_preferred_operators_with_landmark_heuristics)",
+        "enable preferred operators (see note below)",
         "false");
     Heuristic::add_options_to_feature(feature);
 

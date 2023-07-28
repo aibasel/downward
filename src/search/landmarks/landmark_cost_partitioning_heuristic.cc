@@ -136,12 +136,9 @@ public:
         document_note(
             "Preferred operators",
             "Preferred operators should not be used for optimal planning. "
-            "We allow computing preferred operators for this heuristic because "
-            "it could be used for satisficing planning where preferred "
-            "operators might improve performance (not tested). See "
-            "Evaluator#Landmark_sum_heuristic for more information on how "
-            "our implementation of preferred operators differs from the "
-            "description in the literature.");
+            "See Evaluator#Landmark_sum_heuristic for more information "
+            "on using preferred operators; the comments there also apply "
+            "to this heuristic.");
 
         document_language_support("action costs", "supported");
         document_language_support(
