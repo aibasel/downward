@@ -3,9 +3,12 @@ include(CMakeParseArguments)
 
     add_library(fd_warnings INTERFACE)
 
+    message("CMAKE CXX COMPILER ID: ${CMAKE_CXX_COMPILER_ID}")
+
     if((${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
        OR (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
        OR (${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang"))
+        message("Compiler is Gnu or Clang")
         target_compile_options(fd_warnings INTERFACE
             "-Wall" "-Wextra" "-Wpedantic" "-Wnon-virtual-dtor" "-Wfloat-conversion" "-Wmissing-declarations" "-Wzero-as-null-pointer-constant")
 
@@ -18,6 +21,7 @@ include(CMakeParseArguments)
             target_compile_options(fd_warnings INTERFACE "-Wno-restrict")
         endif()
     elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
+        message("Compiler is MSVC")
         # Use warning level 4 (/W4).
         # /Wall currently detects too many warnings outside of our code to be useful.
         target_compile_options(fd_warnings INTERFACE "/W4")
