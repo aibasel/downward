@@ -49,24 +49,28 @@ target_compile_options(cxx_warnings INTERFACE
 target_link_libraries(cxx_options INTERFACE cxx_warnings)
 
 
-# TODO: Reopening the question whether we need it; Silvan could build in VS Code without it.
-macro(fast_downward_default_to_release_build)
-    # Only for single-config generators (like Makefiles) that choose the build type at generation time.
-    if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-        message(STATUS "Defaulting to release build.")
-        set(default_build_type "Release")
-    endif()
-endmacro()
+function(fast_downward_set_up_build_types)
+    set(allowedBuildTypes Debug Release)
 
-# TODO: I cannot find out how to replace this set(CMAKE_* ...) call
-macro(fast_downward_set_configuration_types)
-    # Only for multi-config generators (like Visual Studio Projects) that choose
-    # the build type at build time.
-    if(CMAKE_CONFIGURATION_TYPES)
-        set(CMAKE_CONFIGURATION_TYPES "Debug;Release"
-            CACHE STRING "Reset the configurations to what we need" FORCE)
+    get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    if(isMultiConfig)
+        # Set the possible choices for multi-config generators like (like
+        # Visual Studio Projects) that choose the build type at build time.
+        set(CMAKE_CONFIGURATION_TYPES "${allowedBuildTypes}"
+            CACHE STRING "Supported build types: ${allowedBuildTypes}" FORCE)
+    else()
+        # Set the possible choices for programs like ccmake.
+        set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "${allowedBuildTypes}")
+        if(NOT CMAKE_BUILD_TYPE)
+            message(STATUS "Defaulting to release build.")
+            set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
+        elseif(NOT CMAKE_BUILD_TYPE IN_LIST allowedBuildTypes)
+            message(FATAL_ERROR "Unknown build type: ${CMAKE_BUILD_TYPE}. "
+                "Supported build types: ${allowedBuildTypes}")
+        endif()
     endif()
-endmacro()
+endfunction()
+
 
 macro(fast_downward_report_bitwidth)
     if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)

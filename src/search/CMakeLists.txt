@@ -28,6 +28,9 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
 
 ## == Libraries ==
 
+# TODO the next two libraries should be dependencies of the (interface) library
+# that actually uses the corresponding methods (probably the one containing system.h?).
+
 # On Linux, find the rt library for clock_gettime().
 if(UNIX AND NOT APPLE)
     target_link_libraries(downward PRIVATE rt)
