@@ -12,6 +12,8 @@ macro(define_interface_library)
     set(clang_cxx (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang"))
     set(msvc_cxx (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC"))
 
+    message(WARNING "Compiler ID is ${CMAKE_CXX_COMPILER_ID}")
+
     if(gcc_cxx OR clang_cxx)
         target_compile_options(fd_interface_library INTERFACE "-g")
         target_compile_options(fd_interface_library INTERFACE "-Wall;-Wextra;-Wpedantic;-Wnon-virtual-dtor;-Wfloat-conversion;-Wmissing-declarations;-Wzero-as-null-pointer-constant")
@@ -21,6 +23,7 @@ macro(define_interface_library)
             AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13)
             ## We ignore the warning "restrict" because of a bug in GCC 12:
             ## https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105651
+            message(WARNING "Adding flag -Wno-restrict")
             target_compile_options(fd_interface_library INTERFACE "-Wno-restrict")
         endif()
 
