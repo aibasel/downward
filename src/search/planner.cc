@@ -63,8 +63,8 @@ int main(int argc, const char **argv) {
 
     //test sum
     std::vector<std::shared_ptr<TaskIndependentEvaluator>> _ti_subevals;
-    _ti_subevals.push_back(dynamic_pointer_cast<TaskIndependentEvaluator>(ti_g));
-    _ti_subevals.push_back(dynamic_pointer_cast<TaskIndependentEvaluator>(ti_g));
+    _ti_subevals.push_back(ti_g);
+    _ti_subevals.push_back(ti_lmcut);
 
     shared_ptr<sum_evaluator::TaskIndependentSumEvaluator> ti_sum =
             make_shared<sum_evaluator::TaskIndependentSumEvaluator>(_log,
