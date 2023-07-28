@@ -156,4 +156,23 @@ bool OpenList<Entry>::only_contains_preferred_entries() const {
     return only_preferred;
 }
 
+
+template<class Entry>
+class TaskIndependentOpenList {
+    bool only_preferred;
+protected:
+public:
+    explicit TaskIndependentOpenList(bool preferred_only = false);
+    virtual ~TaskIndependentOpenList() = default;
+
+    virtual std::shared_ptr<OpenList<Entry>> create_task_specific(std::shared_ptr<AbstractTask> &task) = 0;
+};
+
+template<class Entry>
+TaskIndependentOpenList<Entry>::TaskIndependentOpenList(bool only_preferred)
+        : only_preferred(only_preferred) {
+}
+
+
+
 #endif
