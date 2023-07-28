@@ -57,7 +57,8 @@ if(USE_LP)
         target_include_directories(downward_cplex_interface INTERFACE ${CPLEX_INCLUDE_DIRS})
         target_link_libraries(downward_cplex_interface INTERFACE ${CPLEX_LIBRARIES})
         if(CPLEX_RUNTIME_LIBRARY)
-            add_custom_command(TARGET downward_cplex_interface POST_BUILD
+            add_custom_target(copy-cplex ALL)
+            add_custom_command(TARGET copy-cplex POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
                 ${CPLEX_RUNTIME_LIBRARY}
                 $<TARGET_FILE_DIR:downward>
