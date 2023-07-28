@@ -4,7 +4,7 @@ include(CMakeParseArguments)
     add_library(fd_warnings INTERFACE)
 
     if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-       OR ("${CMAKE_CXX_COMPILER_ID MATCHES}" "Clang"))
+       OR ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang"))
         target_compile_options(fd_warnings INTERFACE
             "-Wall" "-Wextra" "-Wpedantic" "-Wnon-virtual-dtor" "-Wfloat-conversion" "-Wmissing-declarations" "-Wzero-as-null-pointer-constant")
 
