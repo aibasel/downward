@@ -35,7 +35,10 @@ find_program(CMAKE_CXX_COMPILER NAMES $ENV{CXX} c++ g++ PATHS ENV PATH NO_DEFAUL
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
 include(FastDownwardMacros)
 
-project(fast-downward)
+project(fast-downward
+    DESCRIPTION "Fast Downward is a domain-independent classical planning system."
+    HOMEPAGE_URL https://www.fast-downward.org/
+    LANGUAGES CXX)
 fast_downward_report_bitwidth()
 # Due to a bug in cmake, configuration types are only set up correctly on the second cmake run.
 # This means that cmake has to be called twice for multi-config generators like Visual Studio.
