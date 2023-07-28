@@ -1,60 +1,64 @@
 include(CMakeParseArguments)
 
 
-macro(define_interface_library)
-    add_library(fd_interface_library INTERFACE)
-    target_compile_features(fd_interface_library INTERFACE cxx_std_20)
-    # TODO: rework. The idea was that downward inherits this property, but it doesn't
-    # Instead, maybe an "install" command would be sensible?
-    set_target_properties(fd_interface_library PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+    add_library(fd_warnings INTERFACE)
 
-    set(gcc_cxx (${CMAKE_CXX_COMPILER_ID} STREQUAL "Gnu"))
-    set(clang_cxx (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" OR ${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang"))
-    set(msvc_cxx (${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC"))
+    if((${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+       OR (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+       OR (${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang"))
+        target_compile_options(fd_warnings INTERFACE
+            "-Wall" "-Wextra" "-Wpedantic" "-Wnon-virtual-dtor" "-Wfloat-conversion" "-Wmissing-declarations" "-Wzero-as-null-pointer-constant")
 
-    message(WARNING "Compiler ID is ${CMAKE_CXX_COMPILER_ID}")
 
-    if(gcc_cxx OR clang_cxx)
-        target_compile_options(fd_interface_library INTERFACE "-g")
-        target_compile_options(fd_interface_library INTERFACE "-Wall;-Wextra;-Wpedantic;-Wnon-virtual-dtor;-Wfloat-conversion;-Wmissing-declarations;-Wzero-as-null-pointer-constant")
-
-        if (gcc_cxx
+        if ((${CMAKE_CXX_COMPILER_ID} STREQUAL "Gnu")
             AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 12
             AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 13)
             ## We ignore the warning "restrict" because of a bug in GCC 12:
             ## https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105651
-            message(WARNING "Adding flag -Wno-restrict")
-            target_compile_options(fd_interface_library INTERFACE "-Wno-restrict")
+            target_compile_options(fd_warnings INTERFACE "-Wno-restrict")
         endif()
-
-        ## Configuration-specific flags
-        target_compile_options(fd_interface_library INTERFACE "$<$<CONFIG:RELEASE>:-O3;-DNDEBUG;-fomit-frame-pointer>")
-        target_compile_options(fd_interface_library INTERFACE "$<$<CONFIG:DEBUG>:-O3>")
-        if(USE_GLIBCXX_DEBUG)
-            target_compile_options(fd_interface_library INTERFACE "$<$<CONFIG:DEBUG>:-D_GLIBCXX_DEBUG>")
-        endif()
-    elseif(msvc_cxx)
-        # Enable exceptions.
-        target_compile_options(fd_interface_library INTERFACE "/EHsc")        
-
+    elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
         # Use warning level 4 (/W4).
         # /Wall currently detects too many warnings outside of our code to be useful.
-        target_compile_options(fd_interface_library INTERFACE "/W4")
+        target_compile_options(fd_warnings INTERFACE "/W4")
         # TODO: before, we replaced W3 with W4. Do we still need to do that?
 
         # Disable warnings that currently trigger in the code until we fix them.
-        target_compile_options(fd_interface_library INTERFACE "/wd4456") # declaration hides previous local declaration
-        target_compile_options(fd_interface_library INTERFACE "/wd4458") # declaration hides class member
-        target_compile_options(fd_interface_library INTERFACE "/wd4459") # declaration hides global declaration
-        target_compile_options(fd_interface_library INTERFACE "/wd4244") # conversion with possible loss of data
-        target_compile_options(fd_interface_library INTERFACE "/wd4267") # conversion from size_t to int with possible loss of data
-
-        # TODO: Configuration-specific flags. We currently rely on the fact that
-        # CMAKE_CXX_FLAGS_RELEASE and CMAKE_CXX_FLAGS_DEBUG get reasonable settings
-        # from cmake. This is the case for most build environments, but we have less
-        # control over the way the binary is created.
+        target_compile_options(fd_warnings INTERFACE "/wd4456") # declaration hides previous local declaration
+        target_compile_options(fd_warnings INTERFACE "/wd4458") # declaration hides class member
+        target_compile_options(fd_warnings INTERFACE "/wd4459") # declaration hides global declaration
+        target_compile_options(fd_warnings INTERFACE "/wd4244") # conversion with possible loss of data
+        target_compile_options(fd_warnings INTERFACE "/wd4267") # conversion from size_t to int with possible loss of data
     else()
-        message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER}")
+        message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
+    endif()
+endmacro()
+
+macro(define_interface_library)
+    add_library(fd_interface_library INTERFACE)
+    target_compile_features(fd_interface_library INTERFACE cxx_std_20)
+
+    define_warnings_library()
+    target_link_libraries(fd_interface_library INTERFACE fd_warnings)
+
+    # TODO: rework. The idea was that downward inherits this property, but it doesn't
+    # Instead, maybe an "install" command would be sensible?
+    set_target_properties(fd_interface_library PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+    if((${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+       OR (${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+       OR (${CMAKE_CXX_COMPILER_ID} STREQUAL "AppleClang"))
+        target_compile_options(fd_interface_library INTERFACE
+            "-O3" "-g" "$<$<CONFIG:RELEASE>:-DNDEBUG;-fomit-frame-pointer>")
+
+        if(USE_GLIBCXX_DEBUG)
+            target_compile_definitions(fd_interface_library INTERFACE "$<$<CONFIG:DEBUG>:_GLIBCXX_DEBUG>")
+        endif()
+    elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
+        # Enable exceptions.
+        target_compile_options(fd_interface_library INTERFACE "/EHsc")        
+    else()
+        message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
     endif()
 endmacro()
 
