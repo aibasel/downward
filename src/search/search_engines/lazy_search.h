@@ -1,5 +1,5 @@
-#ifndef SEARCH_ENGINES_LAZY_SEARCH_H
-#define SEARCH_ENGINES_LAZY_SEARCH_H
+#ifndef SEARCH_ALGORITHMS_LAZY_SEARCH_H
+#define SEARCH_ALGORITHMS_LAZY_SEARCH_H
 
 #include "../evaluation_context.h"
 #include "../evaluator.h"
@@ -15,7 +15,7 @@
 #include <vector>
 
 namespace lazy_search {
-class LazySearch : public SearchEngine {
+class LazySearch : public SearchAlgorithm {
 protected:
     std::unique_ptr<EdgeOpenList> open_list;
 

@@ -1,16 +1,16 @@
-#ifndef SEARCH_ENGINES_SEARCH_COMMON_H
-#define SEARCH_ENGINES_SEARCH_COMMON_H
+#ifndef SEARCH_ALGORITHMS_SEARCH_COMMON_H
+#define SEARCH_ALGORITHMS_SEARCH_COMMON_H
 
 /*
   This module contains functions for creating open list factories used
-  by the search engines.
+  by the search algorithms.
 
   TODO: Think about where this code should ideally live. One possible
   ordering principle: avoid unnecessary plug-in dependencies.
 
   This code currently depends on multiple different open list
   implementations, so it would be good if it would not be a dependency
-  of search engines that don't need all these open lists. Under this
+  of search algorithms that don't need all these open lists. Under this
   maxim, EHC should not depend on this file. A logical solution might
   be to move every creation function that only uses one particular
   open list type into the header for this open list type, and leave

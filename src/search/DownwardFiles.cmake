@@ -376,7 +376,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME SEARCH_COMMON
-    HELP "Basic classes used for all search engines"
+    HELP "Basic classes used for all search algorithms"
     SOURCES
         search_engines/search_common
     DEPENDS ALTERNATION_OPEN_LIST G_EVALUATOR BEST_FIRST_OPEN_LIST SUM_EVALUATOR TIEBREAKING_OPEN_LIST WEIGHTED_EVALUATOR
@@ -385,7 +385,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME EAGER_SEARCH
-    HELP "Eager search algorithm"
+    HELP "Eager search"
     SOURCES
         search_engines/eager_search
     DEPENDS NULL_PRUNING_METHOD ORDERED_SET SUCCESSOR_GENERATOR
@@ -450,7 +450,7 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME ENFORCED_HILL_CLIMBING_SEARCH
-    HELP "Lazy enforced hill-climbing search algorithm"
+    HELP "Lazy enforced hill-climbing search"
     SOURCES
         search_engines/enforced_hill_climbing_search
     DEPENDS G_EVALUATOR ORDERED_SET PREF_EVALUATOR SEARCH_COMMON SUCCESSOR_GENERATOR
@@ -458,14 +458,14 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME ITERATED_SEARCH
-    HELP "Iterated search algorithm"
+    HELP "Iterated search"
     SOURCES
         search_engines/iterated_search
 )
 
 fast_downward_plugin(
     NAME LAZY_SEARCH
-    HELP "Lazy search algorithm"
+    HELP "Lazy search"
     SOURCES
         search_engines/lazy_search
     DEPENDS ORDERED_SET SUCCESSOR_GENERATOR

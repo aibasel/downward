@@ -135,7 +135,7 @@ public:
 
 /*
   The CategoryPlugin class contains meta-information for a given
-  category of feature (e.g. "SearchEngine" or "MergeStrategyFactory").
+  category of feature (e.g. "SearchAlgorithm" or "MergeStrategyFactory").
 */
 class CategoryPlugin {
     std::type_index pointer_type;
@@ -144,7 +144,7 @@ class CategoryPlugin {
     /*
       The category name should be "user-friendly". It is for example used
       as the name of the wiki page that documents this feature type.
-      It follows wiki conventions (e.g. "Heuristic", "SearchEngine",
+      It follows wiki conventions (e.g. "Heuristic", "SearchAlgorithm",
       "ShrinkStrategy").
     */
     std::string category_name;

@@ -40,7 +40,7 @@ successor_generator::SuccessorGenerator &get_successor_generator(
     return successor_generator;
 }
 
-SearchEngine::SearchEngine(const plugins::Options &opts)
+SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts)
     : description(opts.get_unparsed_config()),
       status(IN_PROGRESS),
       solution_found(false),
@@ -62,28 +62,28 @@ SearchEngine::SearchEngine(const plugins::Options &opts)
     task_properties::print_variable_statistics(task_proxy);
 }
 
-SearchEngine::~SearchEngine() {
+SearchAlgorithm::~SearchAlgorithm() {
 }
 
-bool SearchEngine::found_solution() const {
+bool SearchAlgorithm::found_solution() const {
     return solution_found;
 }
 
-SearchStatus SearchEngine::get_status() const {
+SearchStatus SearchAlgorithm::get_status() const {
     return status;
 }
 
-const Plan &SearchEngine::get_plan() const {
+const Plan &SearchAlgorithm::get_plan() const {
     assert(solution_found);
     return plan;
 }
 
-void SearchEngine::set_plan(const Plan &p) {
+void SearchAlgorithm::set_plan(const Plan &p) {
     solution_found = true;
     plan = p;
 }
 
-void SearchEngine::search() {
+void SearchAlgorithm::search() {
     initialize();
     utils::CountdownTimer timer(max_time);
     while (status == IN_PROGRESS) {
@@ -98,7 +98,7 @@ void SearchEngine::search() {
     log << "Actual search time: " << timer.get_elapsed_time() << endl;
 }
 
-bool SearchEngine::check_goal_and_set_plan(const State &state) {
+bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
         log << "Solution found!" << endl;
         Plan plan;
@@ -109,22 +109,22 @@ bool SearchEngine::check_goal_and_set_plan(const State &state) {
     return false;
 }
 
-void SearchEngine::save_plan_if_necessary() {
+void SearchAlgorithm::save_plan_if_necessary() {
     if (found_solution()) {
         plan_manager.save_plan(get_plan(), task_proxy);
     }
 }
 
-int SearchEngine::get_adjusted_cost(const OperatorProxy &op) const {
+int SearchAlgorithm::get_adjusted_cost(const OperatorProxy &op) const {
     return get_adjusted_action_cost(op, cost_type, is_unit_cost);
 }
 
 /* TODO: merge this into add_options_to_feature when all search
-         engines support pruning.
+         algorithms support pruning.
 
    Method doesn't belong here because it's only useful for certain derived classes.
    TODO: Figure out where it belongs and move it there. */
-void SearchEngine::add_pruning_option(plugins::Feature &feature) {
+void SearchAlgorithm::add_pruning_option(plugins::Feature &feature) {
     feature.add_option<shared_ptr<PruningMethod>>(
         "pruning",
         "Pruning methods can prune or reorder the set of applicable operators in "
@@ -133,7 +133,7 @@ void SearchEngine::add_pruning_option(plugins::Feature &feature) {
         "null()");
 }
 
-void SearchEngine::add_options_to_feature(plugins::Feature &feature) {
+void SearchAlgorithm::add_options_to_feature(plugins::Feature &feature) {
     ::add_cost_type_option_to_feature(feature);
     feature.add_option<int>(
         "bound",
@@ -153,7 +153,7 @@ void SearchEngine::add_options_to_feature(plugins::Feature &feature) {
 
 /* Method doesn't belong here because it's only useful for certain derived classes.
    TODO: Figure out where it belongs and move it there. */
-void SearchEngine::add_succ_order_options(plugins::Feature &feature) {
+void SearchAlgorithm::add_succ_order_options(plugins::Feature &feature) {
     vector<string> options;
     feature.add_option<bool>(
         "randomize_successors",
@@ -182,9 +182,9 @@ void print_initial_evaluator_values(
         );
 }
 
-static class SearchEngineCategoryPlugin : public plugins::TypedCategoryPlugin<SearchEngine> {
+static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<SearchAlgorithm> {
 public:
-    SearchEngineCategoryPlugin() : TypedCategoryPlugin("SearchEngine") {
+    SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("SearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.
         // document_synopsis("...");
     }

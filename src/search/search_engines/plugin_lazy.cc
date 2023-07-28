@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace plugin_lazy {
-class LazySearchFeature : public plugins::TypedFeature<SearchEngine, lazy_search::LazySearch> {
+class LazySearchFeature : public plugins::TypedFeature<SearchAlgorithm, lazy_search::LazySearch> {
 public:
     LazySearchFeature() : TypedFeature("lazy") {
         document_title("Lazy best-first search");
@@ -17,20 +17,20 @@ public:
         add_list_option<shared_ptr<Evaluator>>(
             "preferred",
             "use preferred operators of these evaluators", "[]");
-        SearchEngine::add_succ_order_options(*this);
-        SearchEngine::add_options_to_feature(*this);
+        SearchAlgorithm::add_succ_order_options(*this);
+        SearchAlgorithm::add_options_to_feature(*this);
     }
 
     virtual shared_ptr<lazy_search::LazySearch> create_component(const plugins::Options &options, const utils::Context &) const override {
-        shared_ptr<lazy_search::LazySearch> engine = make_shared<lazy_search::LazySearch>(options);
+        shared_ptr<lazy_search::LazySearch> search_algorithm = make_shared<lazy_search::LazySearch>(options);
         /*
           TODO: The following two lines look fishy. If they serve a
           purpose, shouldn't the constructor take care of this?
         */
         vector<shared_ptr<Evaluator>> preferred_list = options.get_list<shared_ptr<Evaluator>>("preferred");
-        engine->set_preferred_operator_evaluators(preferred_list);
+        search_algorithm->set_preferred_operator_evaluators(preferred_list);
 
-        return engine;
+        return search_algorithm;
     }
 };
 

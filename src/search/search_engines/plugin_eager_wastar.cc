@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace plugin_eager_wastar {
-class EagerWAstarSearchFeature : public plugins::TypedFeature<SearchEngine, eager_search::EagerSearch> {
+class EagerWAstarSearchFeature : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
 public:
     EagerWAstarSearchFeature() : TypedFeature("eager_wastar") {
         document_title("Eager weighted A* search");

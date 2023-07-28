@@ -20,7 +20,7 @@ using namespace std;
 
 namespace eager_search {
 EagerSearch::EagerSearch(const plugins::Options &opts)
-    : SearchEngine(opts),
+    : SearchAlgorithm(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_state_open_list()),
@@ -308,7 +308,7 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
 }
 
 void add_options_to_feature(plugins::Feature &feature) {
-    SearchEngine::add_pruning_option(feature);
-    SearchEngine::add_options_to_feature(feature);
+    SearchAlgorithm::add_pruning_option(feature);
+    SearchAlgorithm::add_options_to_feature(feature);
 }
 }

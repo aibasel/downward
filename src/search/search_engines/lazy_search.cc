@@ -18,7 +18,7 @@ using namespace std;
 
 namespace lazy_search {
 LazySearch::LazySearch(const plugins::Options &opts)
-    : SearchEngine(opts),
+    : SearchAlgorithm(opts),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
                 create_edge_open_list()),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),

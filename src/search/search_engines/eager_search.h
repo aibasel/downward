@@ -1,5 +1,5 @@
-#ifndef SEARCH_ENGINES_EAGER_SEARCH_H
-#define SEARCH_ENGINES_EAGER_SEARCH_H
+#ifndef SEARCH_ALGORITHMS_EAGER_SEARCH_H
+#define SEARCH_ALGORITHMS_EAGER_SEARCH_H
 
 #include "../open_list.h"
 #include "../search_engine.h"
@@ -15,7 +15,7 @@ class Feature;
 }
 
 namespace eager_search {
-class EagerSearch : public SearchEngine {
+class EagerSearch : public SearchAlgorithm {
     const bool reopen_closed_nodes;
 
     std::unique_ptr<StateOpenList> open_list;
