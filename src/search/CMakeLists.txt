@@ -26,10 +26,6 @@ add_executable(downward planner.cc)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
 
-target_link_libraries(downward PUBLIC fd_interface_library)
-get_target_property(bin_dir fd_interface_library RUNTIME_OUTPUT_DIRECTORY)
-set_target_properties(downward PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${bin_dir})
-
 ## == Libraries ==
 
 # On Linux, find the rt library for clock_gettime().

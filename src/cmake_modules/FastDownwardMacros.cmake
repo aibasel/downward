@@ -46,28 +46,20 @@ macro(define_interface_library)
         #   /wd4267: conversion from size_t to int with possible loss of data
     target_link_libraries(fd_interface_library INTERFACE fd_warnings)
 
-    # TODO: rework. The idea was that downward inherits this property, but it doesn't
-    # Instead, maybe an "install" command would be sensible?
-    set_target_properties(fd_interface_library PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+    if(UNIX)
+        target_link_options(fd_interface_library INTERFACE "-g")
+    endif()
 endmacro()
 
-# TODO: I'm not sure if we need this anymore? I could not find a corresponding
-# "modern" command and it compiled without it
-#~ macro(fast_downward_set_linker_flags)
-    #~ if(UNIX)
-        #~ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -g")
-    #~ endif()
-#~ endmacro()
 
-# TODO: It seems this is not needed anymore? When I call build, it never enters
-# the if block...
-#~ macro(fast_downward_default_to_release_build)
-    #~ # Only for single-config generators (like Makefiles) that choose the build type at generation time.
-    #~ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-        #~ message(STATUS "Defaulting to release build.")
-        #~ set(default_build_type "Release")
-    #~ endif()
-#~ endmacro()
+
+macro(fast_downward_default_to_release_build)
+    # Only for single-config generators (like Makefiles) that choose the build type at generation time.
+    if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+        message(STATUS "Defaulting to release build.")
+        set(default_build_type "Release")
+    endif()
+endmacro()
 
 # TODO: I cannot find out how to replace this set(CMAKE_* ...) call
 macro(fast_downward_set_configuration_types)
