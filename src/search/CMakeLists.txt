@@ -71,18 +71,15 @@ if(USE_LP)
         target_link_libraries(downward_LP_SOLVER INTERFACE downward_cplex_interface)
     endif()
 
-    find_package(SoPlex)
+    # TODO: we actually require a version greater than 6.0.3 but it is not released yet.
+    find_package(soplex 6.0.3)
     if (SOPLEX_FOUND)
+        message(STATUS "Found SoPlex: ${SOPLEX_INCLUDE_DIRS}")
         add_library(downward_soplex_interface INTERFACE)
+        target_link_libraries(downward_soplex_interface INTERFACE libsoplex)
         target_compile_definitions(downward_soplex_interface INTERFACE HAS_SOPLEX)
-        target_include_directories(downward_soplex_interface INTERFACE ${SOPLEX_INCLUDE_DIRS})
-        target_link_libraries(downward_soplex_interface INTERFACE ${SOPLEX_LIBRARIES})
-        find_package(ZLIB REQUIRED)
-        target_include_directories(downward_soplex_interface INTERFACE ${ZLIB_INCLUDE_DIRS})
-        target_link_libraries(downward_soplex_interface INTERFACE ${ZLIB_LIBRARIES})
-        find_library(GMP_LIBRARY gmp REQUIRED)
-        target_link_libraries(downward_soplex_interface INTERFACE ${GMP_LIBRARY})
         target_sources(downward_soplex_interface INTERFACE lp/soplex_solver_interface.h lp/soplex_solver_interface.cc)
+
         target_link_libraries(downward_LP_SOLVER INTERFACE downward_soplex_interface)
     endif()
 
