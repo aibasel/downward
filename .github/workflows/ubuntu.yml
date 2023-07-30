@@ -31,7 +31,7 @@ jobs:
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
       DOWNWARD_CPLEX_ROOT: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex
       CPLEX_LIB: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/libcplex2211.so
-      soplex_DIR: /home/runner/lib/soplex-6.0.3x
+      SOPLEX_DIR: /home/runner/lib/soplex-6.0.3x
       SOPLEX_LIB: /home/runner/lib/soplex-6.0.3x/lib/
       SOPLEX_INCLUDE: /home/runner/lib/soplex-6.0.3x/include/
     steps:
@@ -76,7 +76,7 @@ jobs:
           cd ..
           cmake -S soplex -B build
           cmake --build build
-          cmake --install build --prefix "${DOWNWARD_SOPLEX_ROOT}"
+          cmake --install build --prefix "${SOPLEX_DIR}"
           rm -rf soplex build
 
       - name: Compile planner
