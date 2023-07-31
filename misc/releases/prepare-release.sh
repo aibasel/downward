@@ -78,18 +78,16 @@ fi
 # Update version number.
 set_version "$PRETTY_VERSION"
 
-# Generate the different recipe files for Docker, Singularity and Vagrant.
+# Generate the different recipe files for Docker and Vagrant.
 pushd $RELEASESDIR
 
 mkdir -p $MAJOR
 fill_template "_Dockerfile.tpl" "TAG" "$TAG" > $MAJOR/Dockerfile.$MAJOR
-fill_template "_Singularity.tpl" "MAJOR" "$MAJOR" > $MAJOR/Singularity.$MAJOR
 fill_template "_Vagrantfile.tpl" "TAG" "$TAG" > $MAJOR/Vagrantfile.$MAJOR
 git add $MAJOR
 
 mkdir -p latest
 ln -fs ../$MAJOR/Dockerfile.$MAJOR latest/Dockerfile
-ln -fs ../$MAJOR/Singularity.$MAJOR latest/Singularity
 ln -fs ../$MAJOR/Vagrantfile.$MAJOR latest/Vagrantfile
 git add latest
 
