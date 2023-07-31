@@ -5,7 +5,13 @@
 Vagrant.configure("2") do |config|
   # For a complete reference of vagrant options see https://docs.vagrantup.com.
 
-  config.vm.box = "ubuntu/bionic64"
+  # We increase the RAM from a default of 1GB for compiling with SoPlex.
+  # See issue1101 for details.
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 2048
+  end
+
+  config.vm.box = "ubuntu/jammy64"
 
   # To compile the planner with support for CPLEX, download the 64-bit Linux
   # installer of CPLEX 22.1.1 and set the environment variable
@@ -37,7 +43,7 @@ Vagrant.configure("2") do |config|
 
     if [ -f "$CPLEX_INSTALLER" ]; then
         # Set environment variables for CPLEX.
-        cat > /etc/profile.d/downward-cplex.sh <<- EOM
+        cat > /etc/profile.d/downward-cplex.sh <<-EOM
 			export DOWNWARD_CPLEX_ROOT="/opt/ibm/ILOG/CPLEX_Studio2211/cplex"
 		EOM
         source /etc/profile.d/downward-cplex.sh
@@ -47,15 +53,16 @@ Vagrant.configure("2") do |config|
     fi
 
     # Set environment variables for SoPlex.
-    cat > /etc/profile.d/downward-soplex.sh <<- EOM
-        export DOWNWARD_SOPLEX_ROOT="/opt/soplex"
-    EOM
+    cat > /etc/profile.d/downward-soplex.sh <<-EOM
+		export DOWNWARD_SOPLEX_ROOT="/opt/soplex"
+	EOM
     source /etc/profile.d/downward-soplex.sh
-    git clone --depth 1 --branch a5df081 https://github.com/scipopt/soplex.git soplex
-    cmake -DCMAKE_INSTALL_PREFIX="$DOWNWARD_SOPLEX_ROOT" -S soplex -B soplex/build
-    cmake --build soplex/build
-    cmake --install soplex/build
-    rm -rf soplex
+    git clone --branch master https://github.com/scipopt/soplex.git soplex
+    cd soplex
+    git checkout a5df081
+    cmake -DCMAKE_INSTALL_PREFIX="$DOWNWARD_SOPLEX_ROOT" -S . -B build
+    cmake --build build
+    cmake --install build
 
     cd /home/vagrant
 

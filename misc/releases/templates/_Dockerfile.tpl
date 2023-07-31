@@ -26,8 +26,9 @@ ENV DOWNWARD_SOPLEX_ROOT /opt/soplex
 
 # Install SoPlex.
 WORKDIR /workspace/soplex
-ADD $SOPLEX_VERSION.tgz .
-RUN git clone --depth 1 --branch "$SOPLEX_REVISION" https://github.com/scipopt/soplex.git . && \
+# TODO: on next release, replace this with `--depth 1 --branch $SOPLEX_REVISION` ($SOPLEX_REVISION needs to be a branch or tag, not a commit hash)
+RUN git clone --branch master https://github.com/scipopt/soplex.git . && \
+    git checkout $SOPLEX_REVISION && \
     cmake -DCMAKE_INSTALL_PREFIX="$DOWNWARD_SOPLEX_ROOT" -S . -B build && \
     cmake --build build && \
     cmake --install build
