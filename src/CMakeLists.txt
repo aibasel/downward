@@ -42,9 +42,6 @@ project(fast-downward
     LANGUAGES CXX)
 fast_downward_report_bitwidth()
 
-# TODO: test if this is still the case. It looks ok for multi-config ninja.
-# Due to a bug in cmake, configuration types are only set up correctly on the second cmake run.
-# This means that cmake has to be called twice for multi-config generators like Visual Studio.
 fast_downward_set_up_build_types()
 
 # TODO: can we get rid of this? The point was to prevent src/search/CMakeLists.txt
