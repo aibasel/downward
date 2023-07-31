@@ -38,7 +38,6 @@ Vagrant.configure("2") do |config|
         make            \
         python3         \
         unzip           \
-        wget            \
         zlib1g-dev
 
     if [ -f "$CPLEX_INSTALLER" ]; then
