@@ -160,8 +160,7 @@ void LandmarkFactory::mk_acyclic_graph() {
     // the old method for this is no longer available.
     // assert(acyclic_node_set.size() == number_of_landmarks());
     if (log.is_at_least_normal()) {
-        log << "Removed " << removed_edges
-            << " reasonable or obedient reasonable orders" << endl;
+        log << "Removed " << removed_edges << " reasonable orders" << endl;
     }
 }
 
