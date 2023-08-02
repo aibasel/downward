@@ -27,7 +27,7 @@ def find_corresponding_closing_bracket(content, start):
 # not a core or depencency library, add its name to the return list.
 def get_library_definitions(content):
     libraries = []
-    library_definition_string = "create_fast_downward_library\("
+    library_definition_string = r"create_fast_downward_library\("
     pattern = re.compile(library_definition_string)
     for library_match in pattern.finditer(content):
         start = library_match.start()+len(library_definition_string)
@@ -36,8 +36,8 @@ def get_library_definitions(content):
         # we cannot manually en-/disable core and dependency only libraries
         if any(s in library_definition for s in ["CORE_LIBRARY", "DEPENDENCY_ONLY"]):
             continue
-        name_match = re.search("NAME (\S+)", library_definition)
-        assert(name_match)
+        name_match = re.search(r"NAME (\S+)", library_definition)
+        assert name_match
         name = name_match.group(1)
         libraries.append(name)
     return libraries
@@ -54,7 +54,7 @@ except AttributeError:
 # Read in the file where libraries are defined and extract the library names.
 with open(LIBRARY_DEFINITION_FILE) as d:
     content = d.read()
-content = re.sub('#(.*)','', content) #Remove all comments
+content = re.sub(r"#(.*)", "", content) # Remove all comments
 libraries = get_library_definitions(content)
 
 # Build each library and add it to libraries_failed_test if not successfull.
@@ -62,7 +62,7 @@ libraries_failed_test = []
 for library in libraries:
     build_path = os.path.join(BUILDS, library.lower())
     config_args = [
-        "cmake", "-S", os.path.join(REPO, "src"), "-B", build_path, 
+        "cmake", "-S", os.path.join(REPO, "src"), "-B", build_path,
         "-DCMAKE_BUILD_TYPE=Debug", "-DDISABLE_LIBRARIES_BY_DEFAULT=YES",
         "-DLIBRARY_{library}_ENABLED=True\"]\n".format(**locals())
     ]
