@@ -377,21 +377,16 @@ public:
                 "2004"));
 
         document_note(
-            "Obedient-reasonable Orderings",
-            "Hoffmann et al. (2004) suggest obedient-reasonable orderings "
-            "in addition to reasonable orderings. Obedient-reasonable "
-            "orderings were later also used by the LAMA planner (Richter and "
-            "Westphal, 2010). They are \"reasonable orderings\" under the "
-            "assumption that the (non-obedient) reasonable orderings are "
-            "actually \"natural\", i.e., every plan obeys the reasonable "
-            "orderings. We observed experimentally that obedient-reasonable "
-            "orderings have minimal effect on the performance of LAMA when "
-            "working on the theory underlying issue1036 (Büchner et al., "
-            "2023). More specifically, we observed a slight decline in plan "
-            "quality. Furthermore, we are not aware of a valid progression "
-            "function according to that theory. Support for computing "
-            "obedient-reasonable orderings was therefore removed in issue1089, "
-            "as they were not used anywhere anymore.");
+            "Obedient-reasonable orders",
+            "Hoffmann et al. (2004) suggest obedient-reasonable orders in "
+            "addition to reasonable orders. Obedient-reasonable orders were "
+            "later also used by the LAMA planner (Richter and Westphal, 2010). "
+            "They are \"reasonable orders\" under the assumption that all "
+            "(non-obedient) reasonable orders are actually \"natural\", i.e., "
+            "every plan obeys the reasonable orders. We observed "
+            "experimentally that obedient-reasonable orders have minimal "
+            "effect on the performance of LAMA (Büchner et al., 2023) and "
+            "decided to remove them in issue1089.");
 
         add_option<shared_ptr<LandmarkFactory>>("lm_factory");
         add_landmark_factory_options_to_feature(*this);
