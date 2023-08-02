@@ -46,12 +46,6 @@ set(FAST_DOWNWARD_MAIN_CMAKELISTS_READ TRUE)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
-# Write compiler ID and version to the cache to allow retrieving this information
-# with "cmake -LA" (see test-memory-leaks.py).
-set(DOWNWARD_CXX_COMPILER_ID ${CMAKE_CXX_COMPILER_ID} CACHE STRING "")
-set(DOWNWARD_CXX_COMPILER_VERSION ${CMAKE_CXX_COMPILER_VERSION} CACHE STRING "")
-mark_as_advanced(DOWNWARD_CXX_COMPILER_ID DOWNWARD_CXX_COMPILER_VERSION)
-
 # Add planner components as subprojects.
 
 # Copy the translator into the output directory.
