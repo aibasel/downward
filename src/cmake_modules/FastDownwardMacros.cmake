@@ -26,7 +26,7 @@ target_compile_options(cxx_options INTERFACE
 
 add_library(cxx_warnings INTERFACE)
 target_compile_options(cxx_warnings INTERFACE
-    "$<${gcc_like}:-Wall;-Wextra;-Wpedantic;-Wnon-virtual-dtor;-Wfloat-conversion;-Wmissing-declarations;-Wzero-as-null-pointer-constant>")
+    "$<${using_gcc_like}:-Wall;-Wextra;-Wpedantic;-Wnon-virtual-dtor;-Wfloat-conversion;-Wmissing-declarations;-Wzero-as-null-pointer-constant>")
 
 ## We ignore the warning "restrict" because of a bug in GCC 12:
 ## https://gcc.gnu.org/bugzilla/show_bug.cgi?id=105651
