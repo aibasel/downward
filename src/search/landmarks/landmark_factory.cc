@@ -103,7 +103,7 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
     */
     assert(&from != &to);
 
-    if (type == EdgeType::REASONABLE || type == EdgeType::OBEDIENT_REASONABLE) { // simple cycle test
+    if (type == EdgeType::REASONABLE) { // simple cycle test
         if (from.parents.find(&to) != from.parents.end()) { // Edge in opposite direction exists
             if (log.is_at_least_debug()) {
                 log << "edge in opposite direction exists" << endl;
@@ -179,7 +179,7 @@ void LandmarkFactory::remove_first_weakest_cycle_edge(
             to = next(it2)->first;
             weakest_edge = edge;
         }
-        if (weakest_edge == EdgeType::OBEDIENT_REASONABLE) {
+        if (weakest_edge == EdgeType::REASONABLE) {
             break;
         }
     }
