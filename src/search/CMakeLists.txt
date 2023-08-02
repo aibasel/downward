@@ -72,7 +72,7 @@ if(USE_LP)
     endif()
 
     # TODO: we actually require a version greater than 6.0.3 but it is not released yet.
-    find_package(soplex 6.0.3)
+    find_package(soplex 6.0.3 QUIET)
     if (SOPLEX_FOUND)
         message(STATUS "Found SoPlex: ${SOPLEX_INCLUDE_DIRS}")
         add_library(downward_soplex_interface INTERFACE)
