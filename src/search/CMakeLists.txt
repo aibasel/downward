@@ -29,10 +29,6 @@ fast_downward_set_linker_flags()
 include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
 add_executable(downward ${PLANNER_SOURCES})
 
-## == Includes ==
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ext)
-
 ## == Libraries ==
 
 # On Linux, find the rt library for clock_gettime().

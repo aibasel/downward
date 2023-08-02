@@ -66,7 +66,7 @@ fast_downward_plugin(
         per_task_information
         plan_manager
         pruning_method
-        search_engine
+        search_algorithm
         search_node_info
         search_progress
         search_space
@@ -376,18 +376,18 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME SEARCH_COMMON
-    HELP "Basic classes used for all search engines"
+    HELP "Basic classes used for all search algorithms"
     SOURCES
-        search_engines/search_common
+        search_algorithms/search_common
     DEPENDS ALTERNATION_OPEN_LIST G_EVALUATOR BEST_FIRST_OPEN_LIST SUM_EVALUATOR TIEBREAKING_OPEN_LIST WEIGHTED_EVALUATOR
     DEPENDENCY_ONLY
 )
 
 fast_downward_plugin(
     NAME EAGER_SEARCH
-    HELP "Eager search algorithm"
+    HELP "Eager search"
     SOURCES
-        search_engines/eager_search
+        search_algorithms/eager_search
     DEPENDS NULL_PRUNING_METHOD ORDERED_SET SUCCESSOR_GENERATOR
     DEPENDENCY_ONLY
 )
@@ -396,7 +396,7 @@ fast_downward_plugin(
     NAME PLUGIN_ASTAR
     HELP "A* search"
     SOURCES
-        search_engines/plugin_astar
+        search_algorithms/plugin_astar
     DEPENDS EAGER_SEARCH SEARCH_COMMON
 )
 
@@ -404,7 +404,7 @@ fast_downward_plugin(
     NAME PLUGIN_EAGER
     HELP "Eager (i.e., normal) best-first search"
     SOURCES
-        search_engines/plugin_eager
+        search_algorithms/plugin_eager
     DEPENDS EAGER_SEARCH SEARCH_COMMON
 )
 
@@ -412,7 +412,7 @@ fast_downward_plugin(
     NAME PLUGIN_EAGER_GREEDY
     HELP "Eager greedy best-first search"
     SOURCES
-        search_engines/plugin_eager_greedy
+        search_algorithms/plugin_eager_greedy
     DEPENDS EAGER_SEARCH SEARCH_COMMON
 )
 
@@ -420,7 +420,7 @@ fast_downward_plugin(
     NAME PLUGIN_EAGER_WASTAR
     HELP "Weighted eager A* search"
     SOURCES
-        search_engines/plugin_eager_wastar
+        search_algorithms/plugin_eager_wastar
     DEPENDS EAGER_SEARCH SEARCH_COMMON
 )
 
@@ -428,7 +428,7 @@ fast_downward_plugin(
     NAME PLUGIN_LAZY
     HELP "Best-first search with deferred evaluation (lazy)"
     SOURCES
-        search_engines/plugin_lazy
+        search_algorithms/plugin_lazy
     DEPENDS LAZY_SEARCH SEARCH_COMMON
 )
 
@@ -436,7 +436,7 @@ fast_downward_plugin(
     NAME PLUGIN_LAZY_GREEDY
     HELP "Greedy best-first search with deferred evaluation (lazy)"
     SOURCES
-        search_engines/plugin_lazy_greedy
+        search_algorithms/plugin_lazy_greedy
     DEPENDS LAZY_SEARCH SEARCH_COMMON
 )
 
@@ -444,30 +444,30 @@ fast_downward_plugin(
     NAME PLUGIN_LAZY_WASTAR
     HELP "Weighted A* search with deferred evaluation (lazy)"
     SOURCES
-        search_engines/plugin_lazy_wastar
+        search_algorithms/plugin_lazy_wastar
     DEPENDS LAZY_SEARCH SEARCH_COMMON
 )
 
 fast_downward_plugin(
     NAME ENFORCED_HILL_CLIMBING_SEARCH
-    HELP "Lazy enforced hill-climbing search algorithm"
+    HELP "Lazy enforced hill-climbing search"
     SOURCES
-        search_engines/enforced_hill_climbing_search
+        search_algorithms/enforced_hill_climbing_search
     DEPENDS G_EVALUATOR ORDERED_SET PREF_EVALUATOR SEARCH_COMMON SUCCESSOR_GENERATOR
 )
 
 fast_downward_plugin(
     NAME ITERATED_SEARCH
-    HELP "Iterated search algorithm"
+    HELP "Iterated search"
     SOURCES
-        search_engines/iterated_search
+        search_algorithms/iterated_search
 )
 
 fast_downward_plugin(
     NAME LAZY_SEARCH
-    HELP "Lazy search algorithm"
+    HELP "Lazy search"
     SOURCES
-        search_engines/lazy_search
+        search_algorithms/lazy_search
     DEPENDS ORDERED_SET SUCCESSOR_GENERATOR
     DEPENDENCY_ONLY
 )
@@ -642,24 +642,24 @@ fast_downward_plugin(
 
 fast_downward_plugin(
     NAME CEGAR
-    HELP "Plugin containing the code for CEGAR heuristics"
+    HELP "Plugin containing the code for Cartesian CEGAR heuristics"
     SOURCES
-        cegar/abstraction
-        cegar/abstract_search
-        cegar/abstract_state
-        cegar/additive_cartesian_heuristic
-        cegar/cartesian_heuristic_function
-        cegar/cartesian_set
-        cegar/cegar
-        cegar/cost_saturation
-        cegar/refinement_hierarchy
-        cegar/split_selector
-        cegar/subtask_generators
-        cegar/transition
-        cegar/transition_system
-        cegar/types
-        cegar/utils
-        cegar/utils_landmarks
+        cartesian_abstractions/abstraction
+        cartesian_abstractions/abstract_search
+        cartesian_abstractions/abstract_state
+        cartesian_abstractions/additive_cartesian_heuristic
+        cartesian_abstractions/cartesian_heuristic_function
+        cartesian_abstractions/cartesian_set
+        cartesian_abstractions/cegar
+        cartesian_abstractions/cost_saturation
+        cartesian_abstractions/refinement_hierarchy
+        cartesian_abstractions/split_selector
+        cartesian_abstractions/subtask_generators
+        cartesian_abstractions/transition
+        cartesian_abstractions/transition_system
+        cartesian_abstractions/types
+        cartesian_abstractions/utils
+        cartesian_abstractions/utils_landmarks
     DEPENDS ADDITIVE_HEURISTIC DYNAMIC_BITSET EXTRA_TASKS LANDMARKS PRIORITY_QUEUES TASK_PROPERTIES
 )
 

@@ -48,7 +48,7 @@ int OperatorCountingHeuristic::compute_heuristic(const State &ancestor_state) {
     if (lp_solver.has_optimal_solution()) {
         double epsilon = 0.01;
         double objective_value = lp_solver.get_objective_value();
-        result = ceil(objective_value - epsilon);
+        result = static_cast<int>(ceil(objective_value - epsilon));
     } else {
         result = DEAD_END;
     }

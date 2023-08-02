@@ -69,7 +69,7 @@ elseif(MSVC)
     elseif(MSVC13)
         set(CPLEX_COMPILER_HINT "vs2015")
     elseif(MSVC14)
-        set(CPLEX_COMPILER_HINT "vs2017")
+        set(CPLEX_COMPILER_HINT "msvc14")
     endif()
 
     set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 "lib/x86_windows_${CPLEX_COMPILER_HINT}/stat_mda")
@@ -111,6 +111,7 @@ endif()
 # (see issue925) and otherwise prefer the latest available version.
 find_library(CPLEX_LIBRARY_RELEASE
     NAMES
+    cplex2211
     cplex1290
     cplex1280
     cplex1271
@@ -125,6 +126,7 @@ find_library(CPLEX_LIBRARY_RELEASE
 # See above.
 find_library(CPLEX_LIBRARY_DEBUG
     NAMES
+    cplex2211
     cplex1290
     cplex1280
     cplex1271
@@ -166,7 +168,7 @@ if(CPLEX_INCLUDE_DIRS)
     # HACK: there must be a better way to find the dll file.
     find_path(CPLEX_RUNTIME_LIBRARY_PATH
         NAMES
-        cplex1262.dll
+        cplex2211.dll
         HINTS
         ${CPLEX_HINT_PATHS_RELEASE}
         ${CPLEX_HINT_PATHS_DEBUG}
@@ -174,7 +176,7 @@ if(CPLEX_INCLUDE_DIRS)
         ${CPLEX_RUNTIME_LIBRARY_HINT}
     )
     if(CPLEX_RUNTIME_LIBRARY_PATH)
-        set(CPLEX_RUNTIME_LIBRARY "${CPLEX_RUNTIME_LIBRARY_PATH}/cplex1262.dll")
+        set(CPLEX_RUNTIME_LIBRARY "${CPLEX_RUNTIME_LIBRARY_PATH}/cplex2211.dll")
     endif()
 endif()
 

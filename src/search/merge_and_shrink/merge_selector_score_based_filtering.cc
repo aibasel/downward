@@ -17,9 +17,9 @@ MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(
               "scoring_functions")) {
 }
 
-vector<pair<int, int>> MergeSelectorScoreBasedFiltering::get_remaining_candidates(
+static vector<pair<int, int>> get_remaining_candidates(
     const vector<pair<int, int>> &merge_candidates,
-    const vector<double> &scores) const {
+    const vector<double> &scores) {
     assert(merge_candidates.size() == scores.size());
     double best_score = INF;
     for (double score : scores) {

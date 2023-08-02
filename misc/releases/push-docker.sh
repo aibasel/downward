@@ -16,14 +16,6 @@ SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 RELEASESDIR=$SCRIPTDIR
 DOCKERFILE="$RELEASESDIR/$MAJOR/Dockerfile.$MAJOR"
 
-SOPLEX_INSTALLER="$DOWNWARD_LP_INSTALLERS/soplex-3.1.1.tgz"
-
-# Verify that the LP installer files exist
-if [ ! -f "$SOPLEX_INSTALLER" ]; then
-    echo "SoPlex 3.1.1 installation file not found at '$SOPLEX_INSTALLER'. Please set the environment variable DOWNWARD_LP_INSTALLERS to a path containing the SoPlex installer."
-    exit 1
-fi
-
 function docker_build_and_tag {
     RECIPE_FILE=$1
     BUILD_TAG=$2
@@ -37,7 +29,6 @@ function docker_build_and_tag {
     TEMPDIR=$(mktemp -d)
     pushd $TEMPDIR
     cp $RECIPE_FILE Dockerfile
-    cp $SOPLEX_INSTALLER .
     docker build -t $BUILD_TAG .
     popd
     rm -rf $TEMPDIR

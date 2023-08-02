@@ -125,22 +125,22 @@ def build(config_name, cmake_parameters, make_parameters):
 
 
 def main():
-    config_names = set()
+    config_names = []
     make_parameters = DEFAULT_MAKE_PARAMETERS
     for arg in sys.argv[1:]:
         if arg == "--help" or arg == "-h":
             print_usage()
             sys.exit(0)
         elif arg == "--debug":
-            config_names.add(DEBUG_CONFIG_NAME)
+            config_names.append(DEBUG_CONFIG_NAME)
         elif arg == "--all":
-            config_names |= set(CONFIGS.keys())
+            config_names.extend(sorted(CONFIGS.keys()))
         elif arg in CONFIGS:
-            config_names.add(arg)
+            config_names.append(arg)
         else:
             make_parameters.append(arg)
     if not config_names:
-        config_names.add(DEFAULT_CONFIG_NAME)
+        config_names.append(DEFAULT_CONFIG_NAME)
     for config_name in config_names:
         build(config_name, CONFIGS[config_name], make_parameters)
 

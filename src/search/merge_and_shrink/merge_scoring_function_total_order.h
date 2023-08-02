@@ -34,7 +34,7 @@ class MergeScoringFunctionTotalOrder : public MergeScoringFunction {
     int random_seed; // only for dump options
     std::shared_ptr<utils::RandomNumberGenerator> rng;
     std::vector<std::pair<int, int>> merge_candidate_order;
-protected:
+
     virtual std::string name() const override;
     virtual void dump_function_specific_options(utils::LogProxy &log) const override;
 public:

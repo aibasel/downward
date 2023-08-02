@@ -97,9 +97,9 @@
   Usage example 2
   ---------------
   Problem:
-    In the LMcount heuristic each state should store which landmarks are
+    In the landmark heuristics each state should store which landmarks are
     already reached when this state is reached. This should only require
-    additional memory when the LMcount heuristic is used.
+    additional memory when these heuristics are used.
 
   Solution:
     The heuristic object uses an attribute of type PerStateBitset to store for each

@@ -48,6 +48,6 @@ static plugins::TypedEnumPlugin<OperatorCost> _enum_plugin({
      "(except if all actions have original cost 1, "
      "in which case cost 1 is used). "
      "This is the behaviour known for the heuristics of the LAMA planner. "
-     "This is intended to be used by the heuristics, not search engines, "
+     "This is intended to be used by the heuristics, not search algorithms, "
      "but is supported for both."}
 });

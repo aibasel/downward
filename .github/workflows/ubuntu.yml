@@ -28,17 +28,18 @@ jobs:
     env:
       CC: ${{ matrix.version.cc }}
       CXX: ${{ matrix.version.cxx }}
-      CPLEX_URL: ${{ secrets.CPLEX129_LINUX_URL }}
-      SOPLEX_URL: ${{ secrets.SOPLEX311_URL }}
-      DOWNWARD_CPLEX_ROOT: /home/runner/lib/ibm/ILOG/CPLEX_Studio129/cplex
-      DOWNWARD_SOPLEX_ROOT: /home/runner/lib/soplex-3.1.1
-      DOWNWARD_COIN_ROOT: /home/runner/lib/coin
+      CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
+      DOWNWARD_CPLEX_ROOT: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex
+      CPLEX_LIB: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/libcplex2211.so
+      DOWNWARD_SOPLEX_ROOT: /home/runner/lib/soplex-6.0.3x
+      SOPLEX_LIB: /home/runner/lib/soplex-6.0.3x/lib/
+      SOPLEX_INCLUDE: /home/runner/lib/soplex-6.0.3x/include/
     steps:
       - name: Clone repository
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
 
       - name: Install Python
-        uses: actions/setup-python@master
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.version.python }}
 
@@ -56,11 +57,9 @@ jobs:
         run: |
           sudo apt-get -y install ${{ matrix.version.cxx }}
 
-      # We only want to set up Osi if both LP solvers are set, hence
-      # we execute the following three steps only if both secrets
-      # are set.
+      # Only install CPLEX if its URL/secret is set.
       - name: Install CPLEX
-        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
+        if: ${{ env.CPLEX_URL != 0 }}
         run: |
           # We redirect output of wget to hide the secret URLs.
           wget -O cplex_installer $CPLEX_URL &> /dev/null
@@ -68,43 +67,17 @@ jobs:
           ./cplex_installer -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR="$(dirname "${DOWNWARD_CPLEX_ROOT}")" -i silent
           rm cplex_installer
 
+      # Always install SoPlex
       - name: Install SoPlex
-        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
-          # We redirect output of wget to hide the secret URLs.
-          wget -O soplex-3.1.1.tgz $SOPLEX_URL &> /dev/null
-          tar xzf soplex-3.1.1.tgz
-          cd soplex-3.1.1
-          mkdir build
-          cd build
-          cmake -DCMAKE_INSTALL_PREFIX="$DOWNWARD_SOPLEX_ROOT" ..
-          make
-          make install
-          cd ../../
-          rm -r soplex-3.1.1.tgz soplex-3.1.1
-
-      - name: Install Osi
-        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
-        run: |
-          wget http://www.coin-or.org/download/source/Osi/Osi-0.107.9.tgz
-          tar xzf Osi-0.107.9.tgz
-          cd Osi-0.107.9
-          mkdir $DOWNWARD_COIN_ROOT
-          ./configure CC=$CC CFLAGS="-pthread -Wno-long-long" \
-                      CXX=$CXX CXXFLAGS="-pthread -Wno-long-long" \
-                      LDFLAGS="-L$DOWNWARD_CPLEX_ROOT/lib/x86-64_linux/static_pic \
-                               -L$DOWNWARD_SOPLEX_ROOT/lib" \
-                      --without-lapack --enable-static=no \
-                      --prefix="$DOWNWARD_COIN_ROOT" \
-                      --disable-bzlib \
-                      --with-soplex-incdir=$DOWNWARD_SOPLEX_ROOT/include \
-                      --with-soplex-lib="-lsoplex" \
-                      --with-cplex-incdir=$DOWNWARD_CPLEX_ROOT/include/ilcplex \
-                      --with-cplex-lib="-lcplex -lm -ldl" # -ldl is only needed for CPLEX >= 12.8
-          make -j2
-          make install
-          cd ../
-          rm -r Osi-0.107.9.tgz Osi-0.107.9
+          git clone https://github.com/scipopt/soplex.git
+          cd soplex
+          git checkout a5df0814d67812c13a00f06eec507b4d071fb862
+          cd ..
+          cmake -S soplex -B build
+          cmake --build build
+          cmake --install build --prefix "${DOWNWARD_SOPLEX_ROOT}"
+          rm -rf soplex build
 
       - name: Compile planner
         run: |
@@ -116,24 +89,17 @@ jobs:
         # We only run tests on one compiler version per Ubuntu version, so we
         # only need to archive that one.
         if: ${{ matrix.version.run_tox_tests }}
-        # We determined the dynamically-linked libraries using ldd. We
-        # archive the entire lib directory of Osi because we need all
-        # 4 large library files and several file links to these.
         run: |
-          libs=""
-          if [[ ! -z "${CPLEX_URL}" || ! -z "${SOPLEX_URL}" ]]; then
-            libs="${libs} lib/coin/lib/"
-          fi
+          files_to_archive="fast-downward.py driver misc builds/debug/bin/ \
+                            builds/release/bin/ ${SOPLEX_LIB} ${SOPLEX_INCLUDE}"
           if [[ ! -z "${CPLEX_URL}" ]]; then
-            libs="${libs} lib/ibm/ILOG/CPLEX_Studio129/cplex/bin/x86-64_linux/libcplex1290.so"
+            files_to_archive="${files_to_archive} ${CPLEX_LIB}"
           fi
-
-          # Handle libs first because tar complains when no files follow the last --directory option.
-          tar cfz archive.tar.gz --directory /home/runner ${libs} --directory ${GITHUB_WORKSPACE} fast-downward.py driver misc builds/debug/bin/ builds/release/bin/
+          tar cfz archive.tar.gz -C "/home/runner" $(realpath --relative-to="/home/runner" $files_to_archive)
 
       - name: Upload archive
         if: ${{ matrix.version.run_tox_tests }}
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v3
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
           path: archive.tar.gz
@@ -150,11 +116,10 @@ jobs:
           - {ubuntu: ubuntu-20.04, python: '3.8'}
           - {ubuntu: ubuntu-22.04, python: '3.10'}
     env:
-      CPLEX_URL: ${{ secrets.CPLEX129_LINUX_URL }}
-      SOPLEX_URL: ${{ secrets.SOPLEX311_URL }}
+      CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
     steps:
       - name: Download archive
-        uses: actions/download-artifact@master
+        uses: actions/download-artifact@v3
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
 
@@ -164,7 +129,7 @@ jobs:
           name: compiled-planner-${{ matrix.version.ubuntu }}
 
       - name: Install Python
-        uses: actions/setup-python@master
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.version.python }}
 
@@ -191,10 +156,7 @@ jobs:
         # We need to make sure that library paths are the same as
         # during compilation.
         run: |
-          tar xfz archive.tar.gz
-          if [[ ! -z "${CPLEX_URL}" || ! -z "${SOPLEX_URL}" ]]; then
-            mv lib/ /home/runner
-          fi
+          tar xfz archive.tar.gz -C "/home/runner"
 
       - name: Run driver, translator and search tests
         run: |
@@ -202,13 +164,12 @@ jobs:
           tox -e driver,translator,search
 
       - name: Run CPLEX tests
-        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
+        if: ${{ env.CPLEX_URL != 0 }}
         run: |
           cd misc/
           tox -e cplex
 
       - name: Run SoPlex tests
-        if: ${{ env.CPLEX_URL != 0 && env.SOPLEX_URL != 0 }}
         run: |
           cd misc/
           tox -e soplex

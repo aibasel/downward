@@ -2,7 +2,7 @@
 
 Fast Downward is a domain-independent classical planning system.
 
-Copyright 2003-2022 Fast Downward contributors (see below).
+Copyright 2003-2023 Fast Downward contributors (see below).
 
 For further information:
 - Fast Downward website: <https://www.fast-downward.org>
@@ -23,9 +23,9 @@ This version of Fast Downward has been tested with the following software versio
 | macOS 11     | 3.8    | AppleClang 13                                                    | 3.24  |
 | Windows 10   | 3.8    | Visual Studio Enterprise 2019 (MSVC 19.29) and 2022 (MSVC 19.31) | 3.22  |
 
-We test LP support with CPLEX 12.9, SoPlex 3.1.1 and Osi 0.107.9.
-On Ubuntu, we test both CPLEX and SoPlex. On Windows, we currently
-only test CPLEX, and on macOS, we do not test LP solvers (yet).
+We test LP support with CPLEX 22.1.1 and SoPlex 6.0.3+. On Ubuntu we
+test both CPLEX and SoPlex. On Windows we currently only test CPLEX,
+and on macOS we do not test LP solvers (yet).
 
 
 ## Contributors
@@ -38,20 +38,23 @@ Currently, this list is sorted by the last year the person has been
 active, and in case of ties, by the earliest year the person started
 contributing, and finally by last name.
 
-- 2003-2022 Malte Helmert
-- 2008-2016, 2018-2022 Gabriele Roeger
-- 2010-2022 Jendrik Seipp
-- 2010-2011, 2013-2022 Silvan Sievers
-- 2012-2022 Florian Pommerening
-- 2013, 2015-2022 Salomé Eriksson
-- 2015, 2021-2022 Thomas Keller
-- 2018-2022 Patrick Ferber
-- 2021-2022 Clemens Büchner
+- 2003-2023 Malte Helmert
+- 2008-2016, 2018-2023 Gabriele Roeger
+- 2010-2023 Jendrik Seipp
+- 2010-2011, 2013-2023 Silvan Sievers
+- 2012-2023 Florian Pommerening
+- 2013, 2015-2023 Salomé Eriksson
+- 2015, 2021-2023 Thomas Keller
+- 2018-2023 Patrick Ferber
+- 2018-2020, 2023 Augusto B. Corrêa
+- 2021-2023 Clemens Büchner
+- 2022-2023 Remo Christen
+- 2023 Simon Dold
+- 2023 Claudia S. Grundke
+- 2023 Emanuele Tirendi
 - 2021-2022 Dominik Drexler
-- 2022 Remo Christen
 - 2016-2020 Cedric Geissmann
 - 2017-2020 Guillem Francès
-- 2018-2020 Augusto B. Corrêa
 - 2020 Rik de Graaff
 - 2015-2019 Manuel Heusner
 - 2017 Daniel Killenberger
