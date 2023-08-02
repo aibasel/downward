@@ -8,12 +8,13 @@
 #include "../task_utils/successor_generator.h"
 #include "../tasks/cost_adapted_task.h"
 #include "../tasks/root_task.h"
+#include "../utils/markup.h"
 
 using namespace std;
 
 namespace landmarks {
 static bool landmark_is_interesting(
-    const State &state, const BitsetView &reached,
+    const State &state, ConstBitsetView &past,
     const landmarks::LandmarkNode &lm_node, bool all_lms_reached) {
     /*
       We consider a landmark interesting in two (exclusive) cases:
@@ -26,10 +27,10 @@ static bool landmark_is_interesting(
         const Landmark &landmark = lm_node.get_landmark();
         return landmark.is_true_in_goal && !landmark.is_true_in_state(state);
     } else {
-        return !reached.test(lm_node.get_id()) &&
+        return !past.test(lm_node.get_id()) &&
                all_of(lm_node.parents.begin(), lm_node.parents.end(),
                       [&](const pair<LandmarkNode *, EdgeType> parent) {
-                          return reached.test(parent.first->get_id());
+                          return past.test(parent.first->get_id());
                       });
     }
 }
@@ -56,8 +57,9 @@ void LandmarkHeuristic::initialize(const plugins::Options &opts) {
     }
 
     compute_landmark_graph(opts);
-    lm_status_manager =
-        utils::make_unique_ptr<LandmarkStatusManager>(*lm_graph);
+    lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(
+        *lm_graph, opts.get<bool>("prog_goal"),
+        opts.get<bool>("prog_gn"), opts.get<bool>("prog_r"));
 
     if (use_preferred_operators) {
         /* Ideally, we should reuse the successor generator of the main
@@ -93,7 +95,7 @@ void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &opts) {
 }
 
 void LandmarkHeuristic::generate_preferred_operators(
-    const State &state, const BitsetView &reached) {
+    const State &state, ConstBitsetView &past) {
     /*
       Find operators that achieve landmark leaves. If a simple landmark can be
       achieved, prefer only operators that achieve simple landmarks. Otherwise,
@@ -110,10 +112,10 @@ void LandmarkHeuristic::generate_preferred_operators(
     vector<OperatorID> preferred_operators_simple;
     vector<OperatorID> preferred_operators_disjunctive;
 
-    bool all_landmarks_reached = true;
-    for (int i = 0; i < reached.size(); ++i) {
-        if (!reached.test(i)) {
-            all_landmarks_reached = false;
+    bool all_landmarks_past = true;
+    for (int i = 0; i < past.size(); ++i) {
+        if (!past.test(i)) {
+            all_landmarks_past = false;
             break;
         }
     }
@@ -127,7 +129,7 @@ void LandmarkHeuristic::generate_preferred_operators(
             FactProxy fact_proxy = effect.get_fact();
             LandmarkNode *lm_node = lm_graph->get_node(fact_proxy.get_pair());
             if (lm_node && landmark_is_interesting(
-                    state, reached, *lm_node, all_landmarks_reached)) {
+                    state, past, *lm_node, all_landmarks_past)) {
                 if (lm_node->get_landmark().disjunctive) {
                     preferred_operators_disjunctive.push_back(op_id);
                 } else {
@@ -150,34 +152,42 @@ void LandmarkHeuristic::generate_preferred_operators(
 }
 
 int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
-    State state = convert_ancestor_state(ancestor_state);
-    lm_status_manager->update_lm_status(ancestor_state);
-    int h = get_heuristic_value(state);
-
+    int h = get_heuristic_value(ancestor_state);
     if (use_preferred_operators) {
-        BitsetView reached_lms =
-            lm_status_manager->get_reached_landmarks(ancestor_state);
-        generate_preferred_operators(state, reached_lms);
+        ConstBitsetView past = lm_status_manager->get_past_landmarks(ancestor_state);
+        State state = convert_ancestor_state(ancestor_state);
+        generate_preferred_operators(state, past);
     }
-
     return h;
 }
 
 void LandmarkHeuristic::notify_initial_state(const State &initial_state) {
-    lm_status_manager->process_initial_state(initial_state, log);
+    lm_status_manager->progress_initial_state(initial_state);
 }
 
 void LandmarkHeuristic::notify_state_transition(
     const State &parent_state, OperatorID op_id, const State &state) {
-    lm_status_manager->process_state_transition(parent_state, op_id, state);
+    lm_status_manager->progress(parent_state, op_id, state);
     if (cache_evaluator_values) {
-        /* TODO:  It may be more efficient to check that the reached landmark
+        /* TODO:  It may be more efficient to check that the past landmark
             set has actually changed and only then mark the h value as dirty. */
         heuristic_cache[state].dirty = true;
     }
 }
 
 void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
+    feature.document_synopsis(
+        "Landmark progression is implemented according to the following paper:"
+        + utils::format_conference_reference(
+            {"Clemens Büchner", "Thomas Keller", "Salomé Eriksson", "Malte Helmert"},
+            "Landmarks Progression in Heuristic Search",
+            "https://ai.dmi.unibas.ch/papers/buechner-et-al-icaps2023.pdf",
+            "Proceedings of the Thirty-Third International Conference on "
+            "Automated Planning and Scheduling (ICAPS 2023)",
+            "70-79",
+            "AAAI Press",
+            "2023"));
+
     feature.add_option<shared_ptr<LandmarkFactory>>(
         "lm_factory",
         "the set of landmarks to use for this heuristic. "
@@ -187,6 +197,14 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
         "pref",
         "enable preferred operators (see note below)",
         "false");
+    /* TODO: Do we really want these options or should we just allways progress
+        everything we can? */
+    feature.add_option<bool>(
+        "prog_goal", "Use goal progression.", "true");
+    feature.add_option<bool>(
+        "prog_gn", "Use greedy-necessary ordering progression.", "true");
+    feature.add_option<bool>(
+        "prog_r", "Use reasonable ordering progression.", "true");
     Heuristic::add_options_to_feature(feature);
 
     feature.document_property("preferred operators",

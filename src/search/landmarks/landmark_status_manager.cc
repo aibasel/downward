@@ -1,171 +1,222 @@
 #include "landmark_status_manager.h"
+#include "util.h"
 
 #include "landmark.h"
-
-#include "../utils/logging.h"
 
 using namespace std;
 
 namespace landmarks {
-/*
-  By default we mark all landmarks as reached, since we do an intersection when
-  computing new landmark information.
-*/
-LandmarkStatusManager::LandmarkStatusManager(LandmarkGraph &graph)
-    : lm_graph(graph),
-      reached_lms(vector<bool>(graph.get_num_landmarks(), true)),
-      lm_status(graph.get_num_landmarks(), lm_not_reached) {
-}
-
-BitsetView LandmarkStatusManager::get_reached_landmarks(const State &state) {
-    return reached_lms[state];
-}
-
-void LandmarkStatusManager::process_initial_state(
-    const State &initial_state, utils::LogProxy &log) {
-    set_reached_landmarks_for_initial_state(initial_state, log);
-    update_lm_status(initial_state);
-}
-
-void LandmarkStatusManager::set_reached_landmarks_for_initial_state(
-    const State &initial_state, utils::LogProxy &log) {
-    BitsetView reached = get_reached_landmarks(initial_state);
-    // This is necessary since the default is "true for all" (see comment above).
-    reached.reset();
-
-    int inserted = 0;
-    int num_goal_lms = 0;
-    for (auto &lm_node : lm_graph.get_nodes()) {
-        const Landmark &landmark = lm_node->get_landmark();
-        if (landmark.is_true_in_goal) {
-            ++num_goal_lms;
+static vector<LandmarkNode *> get_goal_landmarks(const LandmarkGraph &graph) {
+    vector<LandmarkNode *> goals;
+    for (auto &node : graph.get_nodes()) {
+        if (node->get_landmark().is_true_in_goal) {
+            goals.push_back(node.get());
         }
+    }
+    return goals;
+}
 
-        if (!lm_node->parents.empty()) {
-            continue;
-        }
-        if (landmark.conjunctive) {
-            bool lm_true = true;
-            for (const FactPair &fact : landmark.facts) {
-                if (initial_state[fact.var].get_value() != fact.value) {
-                    lm_true = false;
-                    break;
-                }
+static vector<pair<LandmarkNode *, vector<LandmarkNode *>>> get_greedy_necessary_children(
+    const LandmarkGraph &graph) {
+    vector<pair<LandmarkNode *, vector<LandmarkNode *>>> orderings;
+    for (auto &node : graph.get_nodes()) {
+        vector<LandmarkNode *> greedy_necessary_children;
+        for (auto &child : node->children) {
+            if (child.second == EdgeType::GREEDY_NECESSARY) {
+                greedy_necessary_children.push_back(child.first);
             }
-            if (lm_true) {
-                reached.set(lm_node->get_id());
-                ++inserted;
+        }
+        if (!greedy_necessary_children.empty()) {
+            orderings.emplace_back(node.get(), move(greedy_necessary_children));
+        }
+    }
+    return orderings;
+}
+
+static vector<pair<LandmarkNode *, vector<LandmarkNode *>>> get_reasonable_parents(
+    const LandmarkGraph &graph) {
+    vector<pair<LandmarkNode *, vector<LandmarkNode *>>> orderings;
+    for (auto &node : graph.get_nodes()) {
+        vector<LandmarkNode *> reasonable_parents;
+        for (auto &parent : node->parents) {
+            if (parent.second == EdgeType::REASONABLE) {
+                reasonable_parents.push_back(parent.first);
+            }
+        }
+        if (!reasonable_parents.empty()) {
+            orderings.emplace_back(node.get(), move(reasonable_parents));
+        }
+    }
+    return orderings;
+}
+
+LandmarkStatusManager::LandmarkStatusManager(
+    LandmarkGraph &graph,
+    bool progress_goals,
+    bool progress_greedy_necessary_orderings,
+    bool progress_reasonable_orderings)
+    : lm_graph(graph),
+      goal_landmarks(progress_goals ? get_goal_landmarks(graph)
+                     : vector<LandmarkNode *>{}),
+      greedy_necessary_children(
+          progress_greedy_necessary_orderings
+          ? get_greedy_necessary_children(graph)
+          : vector<pair<LandmarkNode *, vector<LandmarkNode *>>>{}),
+      reasonable_parents(
+          progress_reasonable_orderings
+          ? get_reasonable_parents(graph)
+          : vector<pair<LandmarkNode *, vector<LandmarkNode *>>>{}),
+      /* We initialize to true in *past_landmarks* because true is the
+         neutral element of conjunction/set intersection. */
+      past_landmarks(vector<bool>(graph.get_num_landmarks(), true)),
+      /* We initialize to false in *future_landmarks* because false is
+         the neutral element for disjunction/set union. */
+      future_landmarks(vector<bool>(graph.get_num_landmarks(), false)) {
+}
+
+BitsetView LandmarkStatusManager::get_past_landmarks(const State &state) {
+    return past_landmarks[state];
+}
+
+BitsetView LandmarkStatusManager::get_future_landmarks(const State &state) {
+    return future_landmarks[state];
+}
+
+ConstBitsetView LandmarkStatusManager::get_past_landmarks(const State &state) const {
+    return past_landmarks[state];
+}
+
+ConstBitsetView LandmarkStatusManager::get_future_landmarks(const State &state) const {
+    return future_landmarks[state];
+}
+
+void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
+    BitsetView past = get_past_landmarks(initial_state);
+    BitsetView future = get_future_landmarks(initial_state);
+
+    for (auto &node : lm_graph.get_nodes()) {
+        int id = node->get_id();
+        const Landmark &lm = node->get_landmark();
+        if (lm.is_true_in_state(initial_state)) {
+            assert(past.test(id));
+            /*
+              A landmark B that holds initially is always past. If there is a
+              reasonable ordering A->B such that A does not hold initially, we
+              know B must be added again after A is added (or at the same time).
+              Therefore, we can set B future in these cases.
+
+              In solvable tasks and for natural (or stronger) orderings A->B, it
+              is not valid for B to hold initially. Hence, if such an ordering
+              exists, the problem is unsolvable. Consequently, it is fine to
+              mark B future also in these cases, because for unsolvable
+              problems anything is a landmark.
+            */
+            if (any_of(node->parents.begin(), node->parents.end(),
+                       [initial_state](auto &parent) {
+                           Landmark &landmark = parent.first->get_landmark();
+                           return !landmark.is_true_in_state(initial_state);
+                       })) {
+                future.set(id);
             }
         } else {
-            for (const FactPair &fact : landmark.facts) {
-                if (initial_state[fact.var].get_value() == fact.value) {
-                    reached.set(lm_node->get_id());
-                    ++inserted;
-                    break;
-                }
-            }
+            past.reset(id);
+            future.set(id);
         }
-    }
-    if (log.is_at_least_normal()) {
-        log << inserted << " initial landmarks, "
-            << num_goal_lms << " goal landmarks" << endl;
     }
 }
 
-bool LandmarkStatusManager::process_state_transition(
+void LandmarkStatusManager::progress(
     const State &parent_ancestor_state, OperatorID,
     const State &ancestor_state) {
     if (ancestor_state == parent_ancestor_state) {
         // This can happen, e.g., in Satellite-01.
-        return false;
+        return;
     }
 
-    const BitsetView parent_reached = get_reached_landmarks(parent_ancestor_state);
-    BitsetView reached = get_reached_landmarks(ancestor_state);
+    ConstBitsetView parent_past = get_past_landmarks(parent_ancestor_state);
+    BitsetView past = get_past_landmarks(ancestor_state);
 
-    int num_landmarks = lm_graph.get_num_landmarks();
-    assert(reached.size() == num_landmarks);
-    assert(parent_reached.size() == num_landmarks);
+    ConstBitsetView parent_future = get_future_landmarks(parent_ancestor_state);
+    BitsetView future = get_future_landmarks(ancestor_state);
 
-    /*
-       Set all landmarks not reached by this parent as "not reached".
-       Over multiple paths, this has the effect of computing the intersection
-       of "reached" for the parents. It is important here that upon first visit,
-       all elements in "reached" are true because true is the neutral element
-       of intersection.
+    assert(past.size() == lm_graph.get_num_landmarks());
+    assert(parent_past.size() == lm_graph.get_num_landmarks());
+    assert(future.size() == lm_graph.get_num_landmarks());
+    assert(parent_future.size() == lm_graph.get_num_landmarks());
 
-       In the case where the landmark we are setting to false here is actually
-       achieved right now, it is set to "true" again below.
-    */
-    reached.intersect(parent_reached);
+    progress_landmarks(
+        parent_past, parent_future, parent_ancestor_state,
+        past, future, ancestor_state);
+    progress_goals(ancestor_state, future);
+    progress_greedy_necessary_orderings(ancestor_state, past, future);
+    progress_reasonable_orderings(past, future);
+}
 
-
-    // Mark landmarks reached right now as "reached" (if they are "leaves").
-    for (int id = 0; id < num_landmarks; ++id) {
-        if (!reached.test(id)) {
-            LandmarkNode *node = lm_graph.get_node(id);
-            if (node->get_landmark().is_true_in_state(ancestor_state)) {
-                if (landmark_is_leaf(*node, reached)) {
-                    reached.set(id);
+void LandmarkStatusManager::progress_landmarks(
+    ConstBitsetView &parent_past, ConstBitsetView &parent_future,
+    const State &parent_ancestor_state, BitsetView &past,
+    BitsetView &future, const State &ancestor_state) {
+    for (auto &node : lm_graph.get_nodes()) {
+        int id = node->get_id();
+        const Landmark &lm = node->get_landmark();
+        if (parent_future.test(id)) {
+            if (!lm.is_true_in_state(ancestor_state)) {
+                /*
+                  A landmark that is future in the parent remains future
+                  if it does not hold in the current state. If it also
+                  wasn't past in the parent, it remains not past.
+                */
+                future.set(id);
+                if (!parent_past.test(id)) {
+                    past.reset(id);
                 }
+            } else if (lm.is_true_in_state(parent_ancestor_state)) {
+                /*
+                  If the landmark held in the parent already, then it
+                  was not added by this transition and should remain
+                  future.
+                */
+                assert(parent_past.test(id));
+                future.set(id);
             }
         }
     }
-
-    return true;
 }
 
-void LandmarkStatusManager::update_lm_status(const State &ancestor_state) {
-    const BitsetView reached = get_reached_landmarks(ancestor_state);
-
-    const int num_landmarks = lm_graph.get_num_landmarks();
-    /* This first loop is necessary as setup for the needed-again
-       check in the second loop. */
-    for (int id = 0; id < num_landmarks; ++id) {
-        lm_status[id] = reached.test(id) ? lm_reached : lm_not_reached;
-    }
-    for (int id = 0; id < num_landmarks; ++id) {
-        if (lm_status[id] == lm_reached
-            && landmark_needed_again(id, ancestor_state)) {
-            lm_status[id] = lm_needed_again;
+void LandmarkStatusManager::progress_goals(const State &ancestor_state,
+                                           BitsetView &future) {
+    for (auto &node : goal_landmarks) {
+        if (!node->get_landmark().is_true_in_state(ancestor_state)) {
+            future.set(node->get_id());
         }
     }
 }
 
-bool LandmarkStatusManager::landmark_needed_again(
-    int id, const State &state) {
-    LandmarkNode *node = lm_graph.get_node(id);
-    const Landmark &landmark = node->get_landmark();
-    if (landmark.is_true_in_state(state)) {
-        return false;
-    } else if (landmark.is_true_in_goal) {
-        return true;
-    } else {
-        /*
-          For all A ->_gn B, if B is not reached and A currently not
-          true, since A is a necessary precondition for actions
-          achieving B for the first time, it must become true again.
-        */
-        for (const auto &child : node->children) {
-            if (child.second >= EdgeType::GREEDY_NECESSARY
-                && lm_status[child.first->get_id()] == lm_not_reached) {
-                return true;
+void LandmarkStatusManager::progress_greedy_necessary_orderings(
+    const State &ancestor_state, const BitsetView &past, BitsetView &future) {
+    for (auto &[tail, children] : greedy_necessary_children) {
+        const Landmark &lm = tail->get_landmark();
+        assert(!children.empty());
+        for (auto &child : children) {
+            if (!past.test(child->get_id())
+                && !lm.is_true_in_state(ancestor_state)) {
+                future.set(tail->get_id());
+                break;
             }
         }
-        return false;
     }
 }
 
-bool LandmarkStatusManager::landmark_is_leaf(const LandmarkNode &node,
-                                             const BitsetView &reached) const {
-    //Note: this is the same as !check_node_orders_disobeyed
-    for (const auto &parent : node.parents) {
-        LandmarkNode *parent_node = parent.first;
-        // Note: no condition on edge type here
-        if (!reached.test(parent_node->get_id())) {
-            return false;
+void LandmarkStatusManager::progress_reasonable_orderings(
+    const BitsetView &past, BitsetView &future) {
+    for (auto &[head, parents] : reasonable_parents) {
+        assert(!parents.empty());
+        for (auto &parent : parents) {
+            if (!past.test(parent->get_id())) {
+                future.set(head->get_id());
+                break;
+            }
         }
     }
-    return true;
 }
 }

@@ -85,33 +85,21 @@ void LandmarkSumHeuristic::compute_landmark_costs() {
     }
 }
 
-int LandmarkSumHeuristic::get_heuristic_value(const State &state) {
-    /*
-      Need explicit test to see if state is a goal state. The landmark
-      heuristic may compute h != 0 for a goal state if landmarks are
-      achieved before their parents in the landmarks graph (because
-      they do not get counted as reached in that case). However, we
-      must return 0 for a goal state.
-
-      TODO: This check could be done before updating the *lm_status_manager*,
-       but if we want to do that in the base class, we need to delay this check
-       because it is only relevant for the inadmissible case. Moreover, it
-       should be redundant once we update the landmark progression.
-    */
-    if (task_properties::is_goal_state(task_proxy, state))
-        return 0;
-
+int LandmarkSumHeuristic::get_heuristic_value(const State &ancestor_state) {
     int h = 0;
+    ConstBitsetView past =
+        lm_status_manager->get_past_landmarks(ancestor_state);
+    ConstBitsetView future =
+        lm_status_manager->get_future_landmarks(ancestor_state);
     for (int id = 0; id < lm_graph->get_num_landmarks(); ++id) {
-        landmark_status status = lm_status_manager->get_landmark_status(id);
-        if (status == lm_not_reached) {
-            if (min_first_achiever_costs[id] == numeric_limits<int>::max())
+        if (future.test(id)) {
+            int min_achiever_cost = past.test(id) ? min_possible_achiever_costs[id]
+                : min_first_achiever_costs[id];
+            if (min_achiever_cost < numeric_limits<int>::max()) {
+                h += min_achiever_cost;
+            } else {
                 return DEAD_END;
-            h += min_first_achiever_costs[id];
-        } else if (status == lm_needed_again) {
-            if (min_possible_achiever_costs[id] == numeric_limits<int>::max())
-                return DEAD_END;
-            h += min_possible_achiever_costs[id];
+            }
         }
     }
     return h;

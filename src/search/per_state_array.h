@@ -8,6 +8,26 @@
 
 
 template<class T>
+class ConstArrayView {
+    const T *p;
+    int size_;
+public:
+    ConstArrayView(const T *p, int size) : p(p), size_(size) {}
+    ConstArrayView(const ConstArrayView<T> &other) = default;
+
+    ConstArrayView<T> &operator=(const ConstArrayView<T> &other) = default;
+
+    const T &operator[](int index) const {
+        assert(index >= 0 && index < size_);
+        return p[index];
+    }
+
+    int size() const {
+        return size_;
+    }
+};
+
+template<class T>
 class ArrayView {
     T *p;
     int size_;
@@ -16,6 +36,10 @@ public:
     ArrayView(const ArrayView<T> &other) = default;
 
     ArrayView<T> &operator=(const ArrayView<T> &other) = default;
+
+    operator ConstArrayView<T>() const {
+        return ConstArrayView<T>(p, size_);
+    }
 
     T &operator[](int index) {
         assert(index >= 0 && index < size_);
@@ -120,16 +144,28 @@ public:
         return ArrayView<Element>((*entries)[state_id], default_array.size());
     }
 
-    ArrayView<Element> operator[](const State &) const {
-        ABORT("PerStateArray::operator[] const not implemented. "
-              "See source code for more information.");
-        /*
-          This method is not implemented because it is currently not used and
-          would require quite a bit of boilerplate, introducing a ConstArrayView
-          class similar to ArrayView. If you need it, it should be easy to
-          implement based on PerStateInformation:operator[] const. This method
-          should return a ConstArrayView<Element>.
-        */
+    ConstArrayView<Element> operator[](const State &state) const {
+        const StateRegistry *registry = state.get_registry();
+        if (!registry) {
+            std::cerr << "Tried to access per-state array with an unregistered "
+                      << "state." << std::endl;
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        }
+        const segmented_vector::SegmentedArrayVector<Element> *entries =
+            get_entries(registry);
+        if (!entries) {
+            ABORT("PerStateArray::operator[] const tried to access "
+                  "non-existing entry.");
+        }
+        int state_id = state.get_id().value;
+        assert(state.get_id() != StateID::no_state);
+        assert(utils::in_bounds(state_id, *registry));
+        int num_entries = entries->size();
+        if (state_id >= num_entries) {
+            ABORT("PerStateArray::operator[] const tried to access "
+                  "non-existing entry.");
+        }
+        return ConstArrayView<Element>((*entries)[state_id], default_array.size());
     }
 
     virtual void notify_service_destroyed(const StateRegistry *registry) override {
