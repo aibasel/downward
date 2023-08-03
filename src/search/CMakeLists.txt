@@ -28,20 +28,6 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/DownwardFiles.cmake")
 
 ## == Libraries ==
 
-# TODO the next two libraries should be dependencies of the (interface) library
-# that actually uses the corresponding methods (probably the one containing system.h?).
-
-# On Linux, find the rt library for clock_gettime().
-if(UNIX AND NOT APPLE)
-    target_link_libraries(downward PRIVATE rt)
-endif()
-
-# On Windows, find the psapi library for determining peak memory.
-if(WIN32)
-    cmake_policy(SET CMP0074 NEW)
-    target_link_libraries(downward PRIVATE psapi)
-endif()
-
 # If any enabled plugin requires an LP solver, compile with all
 # available LP solvers. If no solvers are installed, the planner will
 # still compile, but using heuristics that depend on an LP solver will

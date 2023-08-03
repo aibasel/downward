@@ -132,6 +132,21 @@ function(create_fast_downward_library)
     foreach(DEPENDENCY ${_LIBRARY_DEPENDS})
         target_link_libraries(downward_${_LIBRARY_NAME} INTERFACE downward_${DEPENDENCY})
     endforeach()
+    # TODO: This feels very hacky. I'd rather have the ability to specify
+    # external dependencies in DownwardFiles.cmake (i.e. new parameter
+    # DEPENDSEXTERNAL) but how to specify conditions there?
+    if (${_LIBRARY_NAME} STREQUAL "UTILS")
+        # On Linux, find the rt library for clock_gettime().
+        if(UNIX AND NOT APPLE)
+            target_link_libraries(downward_${_LIBRARY_NAME} INTERFACE rt)
+        endif()
+
+        # On Windows, find the psapi library for determining peak memory.
+        if(WIN32)
+            cmake_policy(SET CMP0074 NEW)
+            target_link_libraries(downward_${_LIBRARY_NAME} INTERFACE psapi)
+        endif()
+    endif()
 
     if (_LIBRARY_CORE_LIBRARY OR LIBRARY_${_LIBRARY_NAME}_ENABLED)
         target_link_libraries(downward PUBLIC downward_${_LIBRARY_NAME})
