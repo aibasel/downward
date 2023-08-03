@@ -25,24 +25,10 @@
 
 cmake_minimum_required(VERSION 3.16)
 
-# Path containing custom CMake modules
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules)
-include(FastDownwardMacros)
-
 project(fast-downward
     DESCRIPTION "Fast Downward is a domain-independent classical planning system."
     HOMEPAGE_URL https://www.fast-downward.org/
     LANGUAGES CXX)
-fast_downward_report_bitwidth()
-
-fast_downward_set_up_build_types()
-
-# TODO: can we get rid of this? The point was to prevent src/search/CMakeLists.txt
-# from being used without the general setup happening in this file, but we move the
-# relevant setup there, maybe it is OK to use it stand-alone? If we cannot make the
-# nested CMakeLists.txt self-contained, comparing CMAKE_SOURCE_DIR to CMAKE_CURRENT_SOURCE_DIR
-# might be an option that does not require this magic variable at the top level.
-set(FAST_DOWNWARD_MAIN_CMAKELISTS_READ TRUE)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 

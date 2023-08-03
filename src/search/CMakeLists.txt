@@ -1,17 +1,16 @@
 cmake_minimum_required(VERSION 3.16)
 
-if(NOT FAST_DOWNWARD_MAIN_CMAKELISTS_READ)
-    message(
-        FATAL_ERROR
-        "Run cmake on the CMakeLists.txt in the 'src' directory, "
-        "not the one in 'src/search'. Please delete CMakeCache.txt "
-        "from the current directory and restart cmake.")
-endif()
+# Path containing custom CMake modules
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake_modules)
+include(FastDownwardMacros)
 
 
 ## == Project ==
 
 project(downward LANGUAGES CXX)
+
+fast_downward_report_bitwidth()
+fast_downward_set_up_build_types()
 
 option(
   USE_GLIBCXX_DEBUG
