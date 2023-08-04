@@ -130,9 +130,6 @@ static void dump_edge(int from, int to, EdgeType edge, utils::LogProxy &log) {
         case EdgeType::REASONABLE:
             cout << "\"r\", style=dashed";
             break;
-        case EdgeType::OBEDIENT_REASONABLE:
-            cout << "\"o_r\", style=dashed";
-            break;
         }
         cout << "];\n";
     }
