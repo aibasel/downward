@@ -9,10 +9,13 @@
 #
 # The standard FIND_PACKAGE features are supported (QUIET, REQUIRED, etc.).
 
-include(FindPackageHandleStandardArgs)
-
-set(SUPPORTED_CONFIGURATIONS "Debug" "Release")
+set(IMPORTED_CONFIGURATIONS "Debug" "Release")
 set(HINT_PATHS ${DOWNWARD_CPLEX_ROOT} $ENV{DOWNWARD_CPLEX_ROOT})
+
+add_library(cplex::cplex IMPORTED SHARED)
+set_target_properties(cplex::cplex PROPERTIES
+    IMPORTED_CONFIGURATIONS "${IMPORTED_CONFIGURATIONS}"
+)
 
 find_path(CPLEX_INCLUDE_DIRS
     NAMES
@@ -22,6 +25,7 @@ find_path(CPLEX_INCLUDE_DIRS
     PATH_SUFFIXES
     include/ilcplex
 )
+target_include_directories(cplex::cplex INTERFACE ${CPLEX_INCLUDE_DIRS})
 
 if(CPLEX_INCLUDE_DIRS)
     # Parse CPLEX version.
@@ -37,11 +41,26 @@ if(CPLEX_INCLUDE_DIRS)
       set(CPLEX_VERSION_NO_DOTS
           "${CPLEX_VERSION_MAJOR}${CPLEX_VERSION_MINOR}${CPLEX_VERSION_SUBMINOR}")
     endif()
+
+    # Versions >= 12.8 depend on dl.
+    if(NOT (${CPLEX_VERSION} VERSION_LESS "12.8"))
+        target_link_libraries(cplex::cplex INTERFACE ${CMAKE_DL_LIBS})
+    endif()
 else()
-    # We use find_package_handle_standard_args to exit cleanly here and produce
-    # an appropriate error message.
-    find_package_handle_standard_args(Cplex REQUIRED_VARS CPLEX_INCLUDE_DIRS)
+    set(CPLEX_VERSION "CPLEX_VERSION-NOTFOUND")
+    set(CPLEX_VERSION_NO_DOTS "CPLEX_VERSION-NOTFOUND")
 endif()
+
+# Find dependencies.
+set(FIND_OPTIONS)
+if(${CPLEX_FIND_QUIETLY})
+    list(APPEND FIND_OPTIONS "QUIET")
+endif()
+if(${CPLEX_FIND_REQUIRED})
+    list(APPEND FIND_OPTIONS "REQUIRED")
+endif()
+find_package(Threads ${FIND_OPTIONS})
+target_link_libraries(cplex::cplex INTERFACE Threads::Threads)
 
 
 # CPLEX stores libraries under different paths of the form
@@ -84,20 +103,14 @@ elseif(MSVC14)
 endif()
 
 if(LINUX OR APPLE)
-    set(LIBRARY_TYPE_HINTS_RELEASE "static_pic" "")
-    set(LIBRARY_TYPE_HINTS_DEBUG "static_pic" "")
+    set(LIBRARY_TYPE_HINTS_RELEASE "static_pic")
+    set(LIBRARY_TYPE_HINTS_DEBUG "static_pic")
 elseif(WIN32)
-    set(LIBRARY_TYPE_HINTS_RELEASE "stat_mda" "")
-    set(LIBRARY_TYPE_HINTS_DEBUG "stat_mdd" "")
+    set(LIBRARY_TYPE_HINTS_RELEASE "stat_mda")
+    set(LIBRARY_TYPE_HINTS_DEBUG "stat_mdd")
 endif()
 
-add_library(cplex::cplex IMPORTED SHARED)
-target_include_directories(cplex::cplex INTERFACE ${CPLEX_INCLUDE_DIRS})
-set_target_properties(cplex::cplex PROPERTIES
-    IMPORTED_CONFIGURATIONS "${SUPPORTED_CONFIGURATIONS}"
-)
-
-foreach(CONFIG_ORIG ${SUPPORTED_CONFIGURATIONS})
+foreach(CONFIG_ORIG ${IMPORTED_CONFIGURATIONS})
     # The configuration needs to be upper case in variable names like
     # IMPORTED_LOCATION_${CONFIG}.
     string(TOUPPER ${CONFIG_ORIG} CONFIG)
@@ -105,6 +118,7 @@ foreach(CONFIG_ORIG ${SUPPORTED_CONFIGURATIONS})
     # Collect possible suffixes.
     foreach(BITWIDTH_HINT ${BITWIDTH_HINTS})
         foreach(PLATFORM_HINT ${PLATFORM_HINTS})
+            list(APPEND SUFFIXES_${CONFIG} "${BITWIDTH_HINT}_${PLATFORM_HINT}")
             foreach(LIBRARY_TYPE_HINT ${LIBRARY_TYPE_HINTS_${CONFIG}})
                 list(APPEND SUFFIXES_${CONFIG} "${BITWIDTH_HINT}_${PLATFORM_HINT}/${LIBRARY_TYPE_HINT}")
                 foreach(COMPILER_HINT ${COMPILER_HINTS})
@@ -145,23 +159,6 @@ foreach(CONFIG_ORIG ${SUPPORTED_CONFIGURATIONS})
     )
 endforeach()
 
-
-# Find dependencies
-
-set(FIND_OPTIONS)
-if(${CPLEX_FIND_QUIETLY})
-    list(APPEND FIND_OPTIONS "QUIET")
-endif()
-if(${CPLEX_FIND_REQUIRED})
-    list(APPEND FIND_OPTIONS "REQUIRED")
-endif()
-find_package(Threads ${FIND_OPTIONS})
-
-target_link_libraries(cplex::cplex INTERFACE Threads::Threads)
-if(NOT (${CPLEX_VERSION} VERSION_LESS "12.8"))
-    target_link_libraries(cplex::cplex INTERFACE ${CMAKE_DL_LIBS})
-endif()
-
 # Check if everything was found and set CPLEX_FOUND.
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
@@ -173,7 +170,7 @@ find_package_handle_standard_args(
 )
 
 mark_as_advanced(
-    SUPPORTED_CONFIGURATIONS HINT_PATHS CPLEX_INCLUDE_DIRS CPLEX_LIBRARIES
+    IMPORTED_CONFIGURATIONS HINT_PATHS CPLEX_INCLUDE_DIRS CPLEX_LIBRARIES
     CPX_VERSION CPLEX_VERSION_MAJOR CPLEX_VERSION_MINOR CPLEX_VERSION_STR
     CPLEX_VERSION_SUBMINOR CPLEX_VERSION_NO_DOTS BITWIDTH_HINTS PLATFORM_HINTS
     LIBRARY_TYPE_HINTS_RELEASE LIBRARY_TYPE_HINTS_DEBUG SUFFIXES_RELEASE
