@@ -9,8 +9,9 @@
 #
 # The standard FIND_PACKAGE features are supported (QUIET, REQUIRED, etc.).
 
-set(SUPPORTED_CONFIGURATIONS "Debug" "Release")
+include(FindPackageHandleStandardArgs)
 
+set(SUPPORTED_CONFIGURATIONS "Debug" "Release")
 set(HINT_PATHS ${DOWNWARD_CPLEX_ROOT} $ENV{DOWNWARD_CPLEX_ROOT})
 
 find_path(CPLEX_INCLUDE_DIRS
@@ -36,12 +37,16 @@ if(CPLEX_INCLUDE_DIRS)
       set(CPLEX_VERSION_NO_DOTS
           "${CPLEX_VERSION_MAJOR}${CPLEX_VERSION_MINOR}${CPLEX_VERSION_SUBMINOR}")
     endif()
+else()
+    # We use find_package_handle_standard_args to exit cleanly here and produce
+    # an appropriate error message.
+    find_package_handle_standard_args(Cplex REQUIRED_VARS CPLEX_INCLUDE_DIRS)
 endif()
 
 
 # CPLEX stores libraries under different paths of the form
 # <PREFIX>/lib/<BITWIDTH_HINT>_<PLATFORM_HINT>[_<COMPILER_HINT>]/<LIBRARY_TYPE_HINT>/
-# <PREFIX>/bin/<BITWIDTH_HINT>_<PLATFORM_HINT>[_<COMPILER_HINT>]/<LIBRARY_TYPE_HINT>/
+# <PREFIX>/bin/<BITWIDTH_HINT>_<PLATFORM_HINT>[_<COMPILER_HINT>]/
 # The hints have different options depending on the system and CPLEX version.
 # We set up lists with all options and then multiply them out to set up
 # possible paths where we should search for the library.
@@ -79,11 +84,11 @@ elseif(MSVC14)
 endif()
 
 if(LINUX OR APPLE)
-    set(LIBRARY_TYPE_HINTS_RELEASE "static_pic")
-    set(LIBRARY_TYPE_HINTS_DEBUG "static_pic")
+    set(LIBRARY_TYPE_HINTS_RELEASE "static_pic" "")
+    set(LIBRARY_TYPE_HINTS_DEBUG "static_pic" "")
 elseif(WIN32)
-    set(LIBRARY_TYPE_HINTS_RELEASE "stat_mda")
-    set(LIBRARY_TYPE_HINTS_DEBUG "stat_mdd")
+    set(LIBRARY_TYPE_HINTS_RELEASE "stat_mda" "")
+    set(LIBRARY_TYPE_HINTS_DEBUG "stat_mdd" "")
 endif()
 
 add_library(cplex::cplex IMPORTED SHARED)
@@ -119,13 +124,10 @@ foreach(CONFIG_ORIG ${SUPPORTED_CONFIGURATIONS})
         ${SUFFIXES_${CONFIG}}
     )
 
-    # Even though, we are defining a shared library, on windows, we require the
-    # implib (.lib or .dll.a) file as well, which is in /lib. On other systems
-    # this will find the static lib (.a) but the setting we use it for will be
-    # ignored.
+    # On Windows, we require the implib (.lib) file as well, which is in /lib.
     find_library(CPLEX_IMPLIB_${CONFIG}
         NAMES
-        cplex
+        cplex${CPLEX_VERSION_NO_DOTS}
         HINTS
         ${HINT_PATHS}/lib
         PATH_SUFFIXES
