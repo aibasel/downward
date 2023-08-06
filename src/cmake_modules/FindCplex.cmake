@@ -110,6 +110,7 @@ elseif(WIN32)
     set(LIBRARY_TYPE_HINTS_DEBUG "stat_mdd")
 endif()
 
+set(REQUIRED_LIBRARIES)
 foreach(CONFIG_ORIG ${IMPORTED_CONFIGURATIONS})
     # The configuration needs to be upper case in variable names like
     # IMPORTED_LOCATION_${CONFIG}.
@@ -128,45 +129,60 @@ foreach(CONFIG_ORIG ${IMPORTED_CONFIGURATIONS})
         endforeach()
     endforeach()
 
-    # CPLEX stores .so and .dll files in /bin
-    find_library(CPLEX_SHARED_LIBRARY_${CONFIG}
-        NAMES
-        cplex${CPLEX_VERSION_NO_DOTS}
-        HINTS
-        ${HINT_PATHS}/bin
-        PATH_SUFFIXES
-        ${SUFFIXES_${CONFIG}}
-    )
-
-    # On Windows, we require the implib (.lib) file as well, which is in /lib.
-    find_library(CPLEX_IMPLIB_${CONFIG}
-        NAMES
-        cplex${CPLEX_VERSION_NO_DOTS}
-        HINTS
-        ${HINT_PATHS}/lib
-        PATH_SUFFIXES
-        ${SUFFIXES_${CONFIG}}
-    )
+    if (WIN32)
+        # On Windows, libraries consist of a .dll file and a .lib file.
+        # CPLEX stores the .dll file in /bin and the .lib file in /lib.
+        # Since likning is against the .lib file, find_library() does not find
+        # the dll and we have to use find_file() instead.
+        find_file(CPLEX_SHARED_LIBRARY_${CONFIG}
+            NAMES
+            cplex${CPLEX_VERSION_NO_DOTS}.dll
+            HINTS
+            ${HINT_PATHS}/bin
+            PATH_SUFFIXES
+            ${SUFFIXES_${CONFIG}}
+        )
+        find_library(CPLEX_IMPLIB_${CONFIG}
+            NAMES
+            cplex${CPLEX_VERSION_NO_DOTS}
+            HINTS
+            ${HINT_PATHS}/lib
+            PATH_SUFFIXES
+            ${SUFFIXES_${CONFIG}}
+        )
+        set_target_properties(cplex::cplex PROPERTIES
+            IMPORTED_LOCATION_${CONFIG} ${CPLEX_SHARED_LIBRARY_${CONFIG}}
+            IMPORTED_IMPLIB_${CONFIG} ${CPLEX_IMPLIB_${CONFIG}}
+        )
+        list(APPEND REQUIRED_LIBRARIES CPLEX_SHARED_LIBRARY_${CONFIG} CPLEX_IMPLIB_${CONFIG})
+    else()
+        # CPLEX stores .so files in /bin
+        find_library(CPLEX_SHARED_LIBRARY_${CONFIG}
+            NAMES
+            cplex${CPLEX_VERSION_NO_DOTS}
+            HINTS
+            ${HINT_PATHS}/bin
+            PATH_SUFFIXES
+            ${SUFFIXES_${CONFIG}}
+        )
+        set_target_properties(cplex::cplex PROPERTIES
+            IMPORTED_LOCATION_${CONFIG} ${CPLEX_SHARED_LIBRARY_${CONFIG}}
+        )
+        list(APPEND REQUIRED_LIBRARIES CPLEX_SHARED_LIBRARY_${CONFIG})
+    endif()
 
     message(STATUS "HINTS: ${HINT_PATHS}/lib")
     message(STATUS "SUFFIXES_${CONFIG}: ${SUFFIXES_${CONFIG}}")
     message(STATUS "CPLEX_SHARED_LIBRARY_${CONFIG}: ${CPLEX_SHARED_LIBRARY_${CONFIG}}")
     message(STATUS "CPLEX_IMPLIB_${CONFIG}: ${CPLEX_IMPLIB_${CONFIG}}")
-
-    set_target_properties(cplex::cplex PROPERTIES
-        IMPORTED_LOCATION_${CONFIG} ${CPLEX_SHARED_LIBRARY_${CONFIG}}
-        IMPORTED_IMPLIB_${CONFIG} ${CPLEX_IMPLIB_${CONFIG}}
-    )
 endforeach()
 
 # Check if everything was found and set CPLEX_FOUND.
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
     Cplex
-    REQUIRED_VARS CPLEX_INCLUDE_DIRS CPLEX_SHARED_LIBRARY_RELEASE
-    CPLEX_SHARED_LIBRARY_DEBUG CPLEX_IMPLIB_RELEASE CPLEX_IMPLIB_DEBUG
-    THREADS_FOUND
-    VERSION_VAR CPLEX_VERSION
+    REQUIRED_VARS CPLEX_INCLUDE_DIRS ${REQUIRED_LIBRARIES}
+    THREADS_FOUND VERSION_VAR CPLEX_VERSION
 )
 
 mark_as_advanced(
