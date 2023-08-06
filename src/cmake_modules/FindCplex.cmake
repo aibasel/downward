@@ -170,12 +170,7 @@ foreach(CONFIG_ORIG ${IMPORTED_CONFIGURATIONS})
         )
         list(APPEND REQUIRED_LIBRARIES CPLEX_SHARED_LIBRARY_${CONFIG})
     endif()
-
-    message(STATUS "HINTS: ${HINT_PATHS}/lib")
-    message(STATUS "SUFFIXES_${CONFIG}: ${SUFFIXES_${CONFIG}}")
-    message(STATUS "CPLEX_SHARED_LIBRARY_${CONFIG}: ${CPLEX_SHARED_LIBRARY_${CONFIG}}")
-    message(STATUS "CPLEX_IMPLIB_${CONFIG}: ${CPLEX_IMPLIB_${CONFIG}}")
-endforeach()
+    endforeach()
 
 # Check if everything was found and set CPLEX_FOUND.
 include(FindPackageHandleStandardArgs)

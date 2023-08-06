@@ -67,8 +67,6 @@ jobs:
           ./cplex_installer -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR="$(dirname "${DOWNWARD_CPLEX_ROOT}")" -i silent
           rm cplex_installer
 
-          cd /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex && find bin lib include | sed -e "s/[^-][^\/]*\// |/g" -e "s/|\([^ ]\)/|-\1/"
-
       # Always install SoPlex
       - name: Install SoPlex
         run: |
