@@ -1,42 +1,23 @@
-# - Find the CPLEX LP solver.
-# This code defines the following variables:
-#
-#  CPLEX_FOUND                 - TRUE if CPLEX was found.
-#  CPLEX_INCLUDE_DIRS          - Full paths to all include dirs.
-#  CPLEX_LIBRARIES             - Full paths to all libraries.
-#  CPLEX_RUNTIME_LIBRARY       - Full path to the dll file on windows
+# Find the CPLEX LP solver and export the target cplex::cplex.
 #
 # Usage:
 #  find_package(cplex)
+#  target_link_libraries(<target> PRIVATE cplex::cplex)
 #
 # The location of CPLEX can be specified using the environment variable
-# or cmake parameter DOWNWARD_CPLEX_ROOT. If different installations
-# for release/debug versions of CPLEX are available,they can be
-# specified with
-#   DOWNWARD_CPLEX_ROOT
-#   DOWNWARD_CPLEX_ROOT_RELEASE
-#   DOWNWARD_CPLEX_ROOT_DEBUG
-# More specific paths are preferred over less specific ones when searching
-# for libraries.
+# or cmake parameter DOWNWARD_CPLEX_ROOT.
 #
-# Note that the standard FIND_PACKAGE features are supported
-# (QUIET, REQUIRED, etc.).
+# The standard FIND_PACKAGE features are supported (QUIET, REQUIRED, etc.).
 
-foreach(BUILDMODE "RELEASE" "DEBUG")
-    set(CPLEX_HINT_PATHS_${BUILDMODE}
-        ${DOWNWARD_CPLEX_ROOT_${BUILDMODE}}
-        $ENV{DOWNWARD_CPLEX_ROOT_${BUILDMODE}}
-        ${DOWNWARD_CPLEX_ROOT}
-        $ENV{DOWNWARD_CPLEX_ROOT}
-    )
-endforeach()
+set(SUPPORTED_CONFIGURATIONS "Debug" "Release")
+
+set(HINT_PATHS ${DOWNWARD_CPLEX_ROOT} $ENV{DOWNWARD_CPLEX_ROOT})
 
 find_path(CPLEX_INCLUDE_DIRS
     NAMES
     cplex.h
     HINTS
-    ${CPLEX_HINT_PATHS_RELEASE}
-    ${CPLEX_HINT_PATHS_DEBUG}
+    ${HINT_PATHS}
     PATH_SUFFIXES
     include/ilcplex
 )
@@ -58,136 +39,142 @@ if(CPLEX_INCLUDE_DIRS)
 endif()
 
 
-if(APPLE)
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32
-        "lib/x86_osx/static_pic")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32})
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64
-        "lib/x86-64_osx/static_pic")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64})
-elseif(UNIX)
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32
-        "lib/x86_sles10_4.1/static_pic"
-        "lib/x86_linux/static_pic")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32})
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64
-        "bin/x86-64_linux/"
-        "lib/x86-64_sles10_4.1/static_pic"
-        "lib/x86-64_linux/static_pic")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64 ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64})
-elseif(MSVC)
-    # Note that the numbers are correct: Visual Studio 2011 is version 10.
-    if (MSVC10)
-        set(CPLEX_COMPILER_HINT "vs2011")
-    elseif(MSVC11)
-        set(CPLEX_COMPILER_HINT "vs2012")
-    elseif(MSVC12)
-        set(CPLEX_COMPILER_HINT "vs2013")
-    elseif(MSVC13)
-        set(CPLEX_COMPILER_HINT "vs2015")
-    elseif(MSVC14)
-        set(CPLEX_COMPILER_HINT "msvc14")
-    endif()
-
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 "lib/x86_windows_${CPLEX_COMPILER_HINT}/stat_mda")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32 "lib/x86_windows_${CPLEX_COMPILER_HINT}/stat_mdd")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64
-      "lib/x86-64_windows_${CPLEX_COMPILER_HINT}/stat_mda"
-      "lib/x64_windows_${CPLEX_COMPILER_HINT}/stat_mda")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64
-      "lib/x86-64_windows_${CPLEX_COMPILER_HINT}/stat_mdd"
-      "lib/x64_windows_${CPLEX_COMPILER_HINT}/stat_mdd")
-
-    if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
-        set(CPLEX_RUNTIME_LIBRARY_HINT "bin/x86_win32")
-    elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-        set(CPLEX_RUNTIME_LIBRARY_HINT "bin/x64_win64")
-    endif()
-endif()
+# CPLEX stores libraries under different paths of the form
+# <PREFIX>/lib/<BITWIDTH_HINT>_<PLATFORM_HINT>[_<COMPILER_HINT>]/<LIBRARY_TYPE_HINT>/
+# <PREFIX>/bin/<BITWIDTH_HINT>_<PLATFORM_HINT>[_<COMPILER_HINT>]/<LIBRARY_TYPE_HINT>/
+# The hints have different options depending on the system and CPLEX version.
+# We set up lists with all options and then multiply them out to set up
+# possible paths where we should search for the library.
 
 if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32})
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32})
+    set(BITWIDTH_HINTS "x86")
 elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64})
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64})
-else()
-    message(WARNING "Bitwidth could not be detected, preferring 32bit version of CPLEX")
-    set(CPLEX_LIBRARY_PATH_SUFFIX_RELEASE
-        ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32}
-        ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64}
-    )
-    set(CPLEX_LIBRARY_PATH_SUFFIX_DEBUG
-        ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32}
-        ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64}
-    )
+    set(BITWIDTH_HINTS "x86-64" "x64")
 endif()
 
-# CMake uses the first discovered library, searching in the order they
-# are mentioned here. We prefer dynamic libraries over static ones
-# (see issue925).
-find_library(CPLEX_LIBRARY_RELEASE
-    NAMES
-    cplex${CPLEX_VERSION_NO_DOTS}
-    cplex
-    HINTS
-    ${CPLEX_HINT_PATHS_RELEASE}
-    PATH_SUFFIXES
-    ${CPLEX_LIBRARY_PATH_SUFFIX_RELEASE}
-)
-
-# See above.
-find_library(CPLEX_LIBRARY_DEBUG
-    NAMES
-    cplex${CPLEX_VERSION_NO_DOTS}
-    cplex
-    HINTS
-    ${CPLEX_HINT_PATHS_DEBUG}
-    PATH_SUFFIXES
-    ${CPLEX_LIBRARY_PATH_SUFFIX_DEBUG}
-)
-
-if(CPLEX_LIBRARY_RELEASE OR CPLEX_LIBRARY_DEBUG)
-    find_package(Threads REQUIRED)
-
-    set(CPLEX_LIBRARIES_COMMON ${CMAKE_THREAD_LIBS_INIT})
-    if(NOT (${CPLEX_VERSION} VERSION_LESS "12.8"))
-        set(CPLEX_LIBRARIES_COMMON ${CPLEX_LIBRARIES_COMMON} ${CMAKE_DL_LIBS})
+if(APPLE)
+    set(PLATFORM_HINTS "osx")
+elseif(LINUX)
+    set(PLATFORM_HINTS "linux" "sles10_4.1")
+elseif(WIN32) # Despite the name, WIN32 is also true on 64-bit systems.
+    if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
+        set(PLATFORM_HINTS "windows" "win32")
+    elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+        set(PLATFORM_HINTS "windows" "win64")
     endif()
-
-    set(CPLEX_LIBRARIES
-        optimized ${CPLEX_LIBRARY_RELEASE} ${CPLEX_LIBRARIES_COMMON}
-        debug ${CPLEX_LIBRARY_DEBUG} ${CPLEX_LIBRARIES_COMMON}
-    )
 endif()
 
-# HACK: there must be a better way to find the dll file.
-find_path(CPLEX_RUNTIME_LIBRARY_PATH
-    NAMES
-    cplex${CPLEX_VERSION_NO_DOTS}.dll
-    HINTS
-    ${CPLEX_HINT_PATHS_RELEASE}
-    ${CPLEX_HINT_PATHS_DEBUG}
-    PATH_SUFFIXES
-    ${CPLEX_RUNTIME_LIBRARY_HINT}
+set(COMPILER_HINTS)
+if(MSVC10)
+    # Note that the numbers are correct: Visual Studio 2011 is version 10.
+    set(COMPILER_HINTS "vs2011" "msvc10")
+elseif(MSVC11)
+    set(COMPILER_HINTS "vs2012" "msvc11")
+elseif(MSVC12)
+    set(COMPILER_HINTS "vs2013" "msvc12")
+elseif(MSVC13)
+    set(COMPILER_HINTS "vs2015" "msvc13")
+elseif(MSVC14)
+    set(COMPILER_HINTS "vs2017" "msvc14")
+endif()
+
+if(LINUX OR APPLE)
+    set(LIBRARY_TYPE_HINTS_RELEASE "static_pic")
+    set(LIBRARY_TYPE_HINTS_DEBUG "static_pic")
+elseif(WIN32)
+    set(LIBRARY_TYPE_HINTS_RELEASE "stat_mda")
+    set(LIBRARY_TYPE_HINTS_DEBUG "stat_mdd")
+endif()
+
+add_library(cplex::cplex IMPORTED SHARED)
+target_include_directories(cplex::cplex INTERFACE ${CPLEX_INCLUDE_DIRS})
+set_target_properties(cplex::cplex PROPERTIES
+    IMPORTED_CONFIGURATIONS "${SUPPORTED_CONFIGURATIONS}"
 )
-if(CPLEX_RUNTIME_LIBRARY_PATH)
-    set(CPLEX_RUNTIME_LIBRARY "${CPLEX_RUNTIME_LIBRARY_PATH}/cplex${CPLEX_VERSION_NO_DOTS}.dll")
+
+foreach(CONFIG_ORIG ${SUPPORTED_CONFIGURATIONS})
+    # The configuration needs to be upper case in variable names like
+    # IMPORTED_LOCATION_${CONFIG}.
+    string(TOUPPER ${CONFIG_ORIG} CONFIG)
+
+    # Collect possible suffixes.
+    foreach(BITWIDTH_HINT ${BITWIDTH_HINTS})
+        foreach(PLATFORM_HINT ${PLATFORM_HINTS})
+            foreach(LIBRARY_TYPE_HINT ${LIBRARY_TYPE_HINTS_${CONFIG}})
+                list(APPEND SUFFIXES_${CONFIG} "${BITWIDTH_HINT}_${PLATFORM_HINT}/${LIBRARY_TYPE_HINT}")
+                foreach(COMPILER_HINT ${COMPILER_HINTS})
+                    list(APPEND SUFFIXES_${CONFIG} "${BITWIDTH_HINT}_${PLATFORM_HINT}_${COMPILER_HINT}/${LIBRARY_TYPE_HINT}")
+                endforeach()
+            endforeach()
+        endforeach()
+    endforeach()
+
+    # CPLEX stores .so and .dll files in /bin
+    find_library(CPLEX_SHARED_LIBRARY_${CONFIG}
+        NAMES
+        cplex${CPLEX_VERSION_NO_DOTS}
+        HINTS
+        ${HINT_PATHS}/bin
+        PATH_SUFFIXES
+        ${SUFFIXES_${CONFIG}}
+    )
+
+    # Even though, we are defining a shared library, on windows, we require the
+    # implib (.lib or .dll.a) file as well, which is in /lib. On other systems
+    # this will find the static lib (.a) but the setting we use it for will be
+    # ignored.
+    find_library(CPLEX_IMPLIB_${CONFIG}
+        NAMES
+        cplex
+        HINTS
+        ${HINT_PATHS}/lib
+        PATH_SUFFIXES
+        ${SUFFIXES_${CONFIG}}
+    )
+
+    message(STATUS "HINTS: ${HINT_PATHS}/lib")
+    message(STATUS "SUFFIXES_${CONFIG}: ${SUFFIXES_${CONFIG}}")
+    message(STATUS "CPLEX_SHARED_LIBRARY_${CONFIG}: ${CPLEX_SHARED_LIBRARY_${CONFIG}}")
+    message(STATUS "CPLEX_IMPLIB_${CONFIG}: ${CPLEX_IMPLIB_${CONFIG}}")
+
+    set_target_properties(cplex::cplex PROPERTIES
+        IMPORTED_LOCATION_${CONFIG} ${CPLEX_SHARED_LIBRARY_${CONFIG}}
+        IMPORTED_IMPLIB_${CONFIG} ${CPLEX_IMPLIB_${CONFIG}}
+    )
+endforeach()
+
+
+# Find dependencies
+
+set(FIND_OPTIONS)
+if(${CPLEX_FIND_QUIETLY})
+    list(APPEND FIND_OPTIONS "QUIET")
+endif()
+if(${CPLEX_FIND_REQUIRED})
+    list(APPEND FIND_OPTIONS "REQUIRED")
+endif()
+find_package(Threads ${FIND_OPTIONS})
+
+target_link_libraries(cplex::cplex INTERFACE Threads::Threads)
+if(NOT (${CPLEX_VERSION} VERSION_LESS "12.8"))
+    target_link_libraries(cplex::cplex INTERFACE ${CMAKE_DL_LIBS})
 endif()
 
 # Check if everything was found and set CPLEX_FOUND.
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
     Cplex
-    REQUIRED_VARS CPLEX_INCLUDE_DIRS CPLEX_LIBRARIES
+    REQUIRED_VARS CPLEX_INCLUDE_DIRS CPLEX_SHARED_LIBRARY_RELEASE
+    CPLEX_SHARED_LIBRARY_DEBUG CPLEX_IMPLIB_RELEASE CPLEX_IMPLIB_DEBUG
+    THREADS_FOUND
+    VERSION_VAR CPLEX_VERSION
 )
 
 mark_as_advanced(
-    CPLEX_INCLUDE_DIRS CPLEX_LIBRARIES CPLEX_LIBRARIES_COMMON CPLEX_LIBRARY_PATH_SUFFIX
-    CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_32 CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_32
-    CPLEX_LIBRARY_PATH_SUFFIX_RELEASE_64 CPLEX_LIBRARY_PATH_SUFFIX_DEBUG_64
-    CPLEX_LIBRARY_PATH_SUFFIX_RELEASE CPLEX_LIBRARY_PATH_SUFFIX_DEBUG
-    CPLEX_LIBRARY_RELEASE CPLEX_LIBRARY_DEBUG CPLEX_RUNTIME_LIBRARY_PATH
+    SUPPORTED_CONFIGURATIONS HINT_PATHS CPLEX_INCLUDE_DIRS CPLEX_LIBRARIES
     CPX_VERSION CPLEX_VERSION_MAJOR CPLEX_VERSION_MINOR CPLEX_VERSION_STR
-    CPLEX_VERSION_SUBMINOR CPLEX_VERSION_NO_DOTS
+    CPLEX_VERSION_SUBMINOR CPLEX_VERSION_NO_DOTS BITWIDTH_HINTS PLATFORM_HINTS
+    LIBRARY_TYPE_HINTS_RELEASE LIBRARY_TYPE_HINTS_DEBUG SUFFIXES_RELEASE
+    SUFFIXES_DEBUG FIND_OPTIONS COMPILER_HINTS COMPILER_HINT CPLEX_IMPLIB_DEBUG
+    CPLEX_IMPLIB_RELEASE CPLEX_SHARED_LIBRARY_DEBUG CPLEX_SHARED_LIBRARY_RELEASE
 )

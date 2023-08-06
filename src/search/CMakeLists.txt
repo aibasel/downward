@@ -38,21 +38,13 @@ option(
   TRUE)
 
 if(USE_LP)
-    find_package(Cplex)
+    find_package(Cplex 12)
     if(CPLEX_FOUND)
         add_library(downward_cplex_interface INTERFACE)
         target_compile_definitions(downward_cplex_interface INTERFACE HAS_CPLEX)
-        target_include_directories(downward_cplex_interface INTERFACE ${CPLEX_INCLUDE_DIRS})
-        target_link_libraries(downward_cplex_interface INTERFACE ${CPLEX_LIBRARIES})
-        if(CPLEX_RUNTIME_LIBRARY)
-            add_custom_target(copy-cplex ALL)
-            add_custom_command(TARGET copy-cplex POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                ${CPLEX_RUNTIME_LIBRARY}
-                $<TARGET_FILE_DIR:downward>
-            )
-        endif()
+        target_link_libraries(downward_cplex_interface INTERFACE cplex::cplex)
         target_sources(downward_cplex_interface INTERFACE lp/cplex_solver_interface.h lp/cplex_solver_interface.cc)
+
         target_link_libraries(downward_LP_SOLVER INTERFACE downward_cplex_interface)
     endif()
 
@@ -76,5 +68,11 @@ if(USE_LP)
                 "not supported when an LP solver is used. See issue982 for details.")
         endif()
     endif()
-
 endif()
+
+# On Windows we have to copy all DLLs next to the generated binary.
+# https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html#genex:TARGET_RUNTIME_DLLS
+add_custom_command(TARGET downward POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:downward> $<TARGET_RUNTIME_DLLS:downward>
+  COMMAND_EXPAND_LISTS
+)

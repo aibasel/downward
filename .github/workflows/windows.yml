@@ -78,6 +78,8 @@ jobs:
           echo "Copy the relevant directory to a location which is not magically protected against cmake"
           Xcopy /E /I ..\cplex_temp\cplex ..\cplex
 
+          tree ..\cplex /F
+
 
       - name: Compile planner
         shell: cmd
