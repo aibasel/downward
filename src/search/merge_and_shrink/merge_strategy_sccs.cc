@@ -39,6 +39,7 @@ pair<int, int> MergeStrategySCCs::get_next() {
         */
         if (non_singleton_cg_sccs.empty()) {
             // We are done dealing with all SCCs, allow merging any factors.
+            current_ts_indices.reserve(fts.get_num_active_entries());
             for (int ts_index: fts) {
                 current_ts_indices.push_back(ts_index);
             }
