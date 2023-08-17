@@ -67,7 +67,6 @@ public:
                                                bool use_for_counting_evaluations = false);
     virtual ~TaskIndependentCombiningEvaluator() = default;
 
-    static void add_options_to_feature(plugins::Feature &feature); //TODO issue559 is this needed?
 };
 
 #endif
