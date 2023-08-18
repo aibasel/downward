@@ -44,6 +44,27 @@ TieBreakingOpenListFactory::create_edge_open_list() {
     return utils::make_unique_ptr<TieBreakingOpenList<EdgeOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
 }
 
+    TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFactory(const plugins::Options &opts)
+        : options(opts), pref_only(opts.get<bool>("pref_only")), size(0), evaluators(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals")), allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
+}
+
+TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFactory(
+        bool pref_only,
+        vector<shared_ptr<TaskIndependentEvaluator>> evaluators,
+        bool allow_unsafe_pruning)
+        : pref_only(pref_only), size(0), evaluators(evaluators), allow_unsafe_pruning(allow_unsafe_pruning) {
+}
+
+unique_ptr<TaskIndependentStateOpenList>
+TaskIndependentTieBreakingOpenListFactory::create_task_independent_state_open_list() {
+    return utils::make_unique_ptr<TaskIndependentTieBreakingOpenList<StateOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
+}
+
+unique_ptr<TaskIndependentEdgeOpenList>
+TaskIndependentTieBreakingOpenListFactory::create_task_independent_edge_open_list() {
+    return utils::make_unique_ptr<TaskIndependentTieBreakingOpenList<EdgeOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
+}
+
 class TieBreakingOpenListFeature : public plugins::TypedFeature<OpenListFactory, TieBreakingOpenListFactory> {
 public:
     TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {

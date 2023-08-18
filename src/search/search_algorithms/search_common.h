@@ -23,7 +23,9 @@
 #include <memory>
 
 class Evaluator;
+class TaskIndependentEvaluator;
 class OpenListFactory;
+class TaskIndependentOpenListFactory;
 
 namespace plugins {
 class Options;
@@ -80,6 +82,11 @@ extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 extern std::pair<std::shared_ptr<OpenListFactory>, const std::shared_ptr<Evaluator>>
 create_astar_open_list_factory_and_f_eval(const utils::Verbosity &verbosity,
                                           const std::shared_ptr<Evaluator> &eval);
+
+
+std::pair<std::shared_ptr<TaskIndependentOpenListFactory>, const std::shared_ptr<TaskIndependentEvaluator>>
+create_task_independent_astar_open_list_factory_and_f_eval(const utils::Verbosity &verbosity,
+                                                           const std::shared_ptr<TaskIndependentEvaluator> &eval);
 }
 
 #endif

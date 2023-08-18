@@ -39,9 +39,10 @@ EagerSearch::EagerSearch(utils::Verbosity verbosity,
                          double max_time,
                          int bound,
                          bool reopen_closed_nodes,
-                         unique_ptr<StateOpenList> open_list,
+                         shared_ptr<StateOpenList> open_list,
                          vector<shared_ptr<Evaluator>> preferred_operator_evaluators,
                          shared_ptr<PruningMethod> pruning_method,
+                         shared_ptr<AbstractTask> &task,
                          shared_ptr<Evaluator> f_evaluator,
                          shared_ptr<Evaluator> lazy_evaluator,
                          string unparsed_config
@@ -340,5 +341,58 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
 void add_options_to_feature(plugins::Feature &feature) {
     SearchAlgorithm::add_pruning_option(feature);
     SearchAlgorithm::add_options_to_feature(feature);
+}
+
+
+TaskIndependentEagerSearch::TaskIndependentEagerSearch(utils::Verbosity verbosity,
+                                                       OperatorCost cost_type,
+                                                       double max_time,
+                                                       int bound,
+                                                       bool reopen_closed_nodes,
+                                                       shared_ptr<TaskIndependentStateOpenList> open_list,
+                                                       vector<shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
+                                                       shared_ptr<PruningMethod> pruning_method,
+                                                       shared_ptr<TaskIndependentEvaluator> f_evaluator,
+                                                       shared_ptr<TaskIndependentEvaluator> lazy_evaluator,
+                                                       string unparsed_config
+                                                       )
+        : TaskIndependentSearchEngine(verbosity,
+                       cost_type,
+                       max_time,
+                       bound,
+                       unparsed_config
+                       ),
+          reopen_closed_nodes(reopen_closed_nodes),
+          open_list(std::move(open_list)),
+          f_evaluator(f_evaluator),
+          preferred_operator_evaluators(preferred_operator_evaluators),
+          lazy_evaluator(lazy_evaluator),
+          pruning_method(pruning_method) {
+}
+
+TaskIndependentEagerSearch::~TaskIndependentEagerSearch() {
+}
+shared_ptr<SearchEngine> TaskIndependentEagerSearch::create_task_specific(shared_ptr<AbstractTask> &task) {
+    vector<shared_ptr<Evaluator>> ti_evaluators(preferred_operator_evaluators.size());
+    transform( preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), ti_evaluators.begin(),
+               [this, &task](const shared_ptr<TaskIndependentEvaluator>& eval) {
+                   return eval->create_task_specific(task);
+               }
+    );
+
+
+
+    return make_shared<EagerSearch>(verbosity,
+            cost_type,
+            max_time,
+            bound,
+            reopen_closed_nodes,
+            open_list->create_task_specific(task),
+            ti_evaluators,
+            pruning_method,
+            task,
+            nullptr,
+            nullptr
+            );
 }
 }

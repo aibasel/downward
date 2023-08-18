@@ -17,6 +17,7 @@
 #include "evaluators/g_evaluator.h"
 #include "evaluators/sum_evaluator.h"
 #include "open_lists/tiebreaking_open_list.h"
+#include "search_engines/eager_search.h"
 
 using namespace std;
 using utils::ExitCode;
@@ -88,9 +89,37 @@ int main(int argc, const char **argv) {
     cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ TieBreakingOpenList SUCCESS \\o/" << endl;
 
 
+    //test astar
 
-    //shared_ptr<TaskIndependentGEval> ti_geval = make_shared<TaskIndependentGEval>(arg1, arg2);
-    //shared_ptr<GEval> geval = ti_geval.specify(tasks::g_root_task);
+    shared_ptr<tiebreaking_open_list::TaskIndependentTieBreakingOpenList<StateID>> ti_tbol_si =
+            make_shared<tiebreaking_open_list::TaskIndependentTieBreakingOpenList<StateID>>(_pref_only,
+                                                                                        _ti_subevals,
+                                                                                        _allow_unsafe_pruning);
+    cout << "ti_tbol_si created" << endl;
+
+
+    std::shared_ptr<TaskIndependentOpenList<StateID>> ti_ol_si = std::move(ti_tbol_si);
+    cout << "ti_tbol_si converted to ti_ol_si" << endl;
+
+
+    shared_ptr<eager_search::TaskIndependentEagerSearch> ti_es =
+            make_shared<eager_search::TaskIndependentEagerSearch>(utils::Verbosity::NORMAL,
+                                                                  OperatorCost::NORMAL,
+                                                                  0,
+                                                                  0,
+                                                                  false,
+                                                                  ti_ol_si,
+                                                                  _ti_subevals,
+                                                                  nullptr
+                                                                  );
+    cout << "ti_es created" << endl;
+
+    shared_ptr<SearchEngine> es =  ti_es->create_task_specific(tasks::g_root_task);
+    cout << "" << es->get_bound()  << endl;
+    cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ Eager search SUCCESS \\o/" << endl;
+
+
+
     cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ TEST SUCCESS \\o/" << endl;
     cout << "!!!!!!!!!!!THIS WAS A TEST RUN!!!!!!!!!!!!!!" << endl;
 

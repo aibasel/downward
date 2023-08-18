@@ -180,7 +180,7 @@ std::shared_ptr<OpenList<Entry>> TaskIndependentTieBreakingOpenList<Entry>::crea
                    return eval->create_task_specific(task);
                }
     );
-    return std::make_shared<TieBreakingOpenList<Entry>>(pref_only,
+    return std::make_unique<TieBreakingOpenList<Entry>>(pref_only,
                                                    td_evaluators,
                                                    allow_unsafe_pruning);
 }
@@ -203,6 +203,23 @@ public:
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;
+};
+class TaskIndependentTieBreakingOpenListFactory : public TaskIndependentOpenListFactory {
+    plugins::Options options; //TODOissue559 remove options field in the long run.
+    bool pref_only;
+    int size;
+    std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators;
+    bool allow_unsafe_pruning;
+public:
+    explicit TaskIndependentTieBreakingOpenListFactory(const plugins::Options &opts);
+    explicit TaskIndependentTieBreakingOpenListFactory(
+            bool pref_only,
+            std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators,
+            bool allow_unsafe_pruning);
+    virtual ~TaskIndependentTieBreakingOpenListFactory() override = default;
+
+    virtual std::unique_ptr<TaskIndependentStateOpenList> create_task_independent_state_open_list() override;
+    virtual std::unique_ptr<TaskIndependentEdgeOpenList> create_task_independent_edge_open_list() override;
 };
 }
 

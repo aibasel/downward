@@ -26,4 +26,15 @@ public:
     std::unique_ptr<OpenList<T>> create_open_list();
 };
 
+
+class TaskIndependentOpenListFactory {
+public:
+    TaskIndependentOpenListFactory() = default;
+    virtual ~TaskIndependentOpenListFactory() = default;
+
+    TaskIndependentOpenListFactory(const TaskIndependentOpenListFactory &) = delete;
+
+    virtual std::unique_ptr<TaskIndependentStateOpenList> create_task_independent_state_open_list() = 0;
+    virtual std::unique_ptr<TaskIndependentEdgeOpenList> create_task_independent_edge_open_list() = 0;
+};
 #endif
