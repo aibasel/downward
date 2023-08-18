@@ -3,6 +3,8 @@
 
 #include "../open_list.h"
 #include "../search_algorithm.h"
+#include "../task_independent_search_engine.h"
+#include "../task_independent_evaluator.h"
 
 #include <memory>
 #include <vector>
@@ -18,7 +20,7 @@ namespace eager_search {
 class EagerSearch : public SearchAlgorithm {
     const bool reopen_closed_nodes;
 
-    std::unique_ptr<StateOpenList> open_list;
+    std::shared_ptr<StateOpenList> open_list;
     std::shared_ptr<Evaluator> f_evaluator;
 
     std::vector<Evaluator *> path_dependent_evaluators;
@@ -42,18 +44,52 @@ public:
                          double max_time,
                          int bound,
                          bool reopen_closed_nodes,
-                         std::unique_ptr<StateOpenList> open_list,
+                         std::shared_ptr<StateOpenList> open_list,
                          std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators,
                          std::shared_ptr<PruningMethod> pruning_method,
+                         std::shared_ptr<AbstractTask> &task,
                          std::shared_ptr<Evaluator> f_evaluator = nullptr,
                          std::shared_ptr<Evaluator> lazy_evaluator = nullptr,
-                         std::string unparsed_config = std::string());
+                         std::string unparsed_config = std::string()
+                         );
     virtual ~EagerSearch() = default;
 
     virtual void print_statistics() const override;
 
     void dump_search_space() const;
 };
+
+
+
+class TaskIndependentEagerSearch: public TaskIndependentSearchEngine {
+private:
+    const bool reopen_closed_nodes;
+
+    std::shared_ptr<TaskIndependentStateOpenList> open_list;
+    std::shared_ptr<TaskIndependentEvaluator> f_evaluator;
+
+    std::vector<TaskIndependentEvaluator *> path_dependent_evaluators;
+    std::vector<std::shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators;
+    std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator;
+
+    std::shared_ptr<PruningMethod> pruning_method;
+public:
+    explicit TaskIndependentEagerSearch(utils::Verbosity verbosity,
+                                        OperatorCost cost_type,
+                                        double max_time,
+                                        int bound,
+                                        bool reopen_closed_nodes,
+                                        std::shared_ptr<TaskIndependentStateOpenList> open_list,
+                                        std::vector<std::shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
+                                        std::shared_ptr<PruningMethod> pruning_method,
+                                        std::shared_ptr<TaskIndependentEvaluator> f_evaluator = nullptr,
+                                        std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator = nullptr,
+                                        std::string unparsed_config = std::string());
+    virtual std::shared_ptr<SearchAlgorithm> create_task_specific(std::shared_ptr<AbstractTask> &task) override;
+
+    virtual ~TaskIndependentEagerSearch()  override;
+};
+
 
 extern void add_options_to_feature(plugins::Feature &feature);
 }

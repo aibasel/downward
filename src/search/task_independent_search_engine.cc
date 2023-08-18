@@ -2,20 +2,13 @@
 #include "task_independent_search_engine.h"
 
 
+#include "plugins/plugin.h"
+
 #include "utils/system.h"
 
 using namespace std;
 using utils::ExitCode;
 
-shared_ptr <SearchEngine> TaskIndependentSearchEngine::create_task_specific(shared_ptr <AbstractTask> &_task) {
-    //std::shared_ptr<AbstractTask> task = tasks::g_root_task;
-    return make_shared<SearchEngine>(verbosity,
-                                     cost_type,
-                                     max_time,
-                                     bound,
-                                     description,
-                                     _task);
-}
 
 TaskIndependentSearchEngine::TaskIndependentSearchEngine(utils::Verbosity verbosity,
                            OperatorCost cost_type,
