@@ -218,6 +218,19 @@ void BoolLiteralNode::dump(string indent) const {
     cout << indent << "BOOL: " << value << endl;
 }
 
+StringLiteralNode::StringLiteralNode(const string &value)
+    : value(value) {
+}
+
+plugins::Any StringLiteralNode::construct(ConstructContext &context) const {
+    utils::TraceBlock block(context, "Constructing string value from '" + value + "'");
+    return value;
+}
+
+void StringLiteralNode::dump(string indent) const {
+    cout << indent << "STRING: " << value << endl;
+}
+
 IntLiteralNode::IntLiteralNode(const string &value)
     : value(value) {
 }
@@ -471,6 +484,18 @@ unique_ptr<DecoratedASTNode> BoolLiteralNode::clone() const {
 
 shared_ptr<DecoratedASTNode> BoolLiteralNode::clone_shared() const {
     return make_shared<BoolLiteralNode>(*this);
+}
+
+StringLiteralNode::StringLiteralNode(const StringLiteralNode &other)
+    : value(other.value) {
+}
+
+unique_ptr<DecoratedASTNode> StringLiteralNode::clone() const {
+    return utils::make_unique_ptr<StringLiteralNode>(*this);
+}
+
+shared_ptr<DecoratedASTNode> StringLiteralNode::clone_shared() const {
+    return make_shared<StringLiteralNode>(*this);
 }
 
 IntLiteralNode::IntLiteralNode(const IntLiteralNode &other)

@@ -162,6 +162,7 @@ static unordered_set<TokenType> literal_tokens {
     TokenType::FLOAT,
     TokenType::INTEGER,
     TokenType::BOOLEAN,
+    TokenType::STRING,
     TokenType::IDENTIFIER
 };
 
@@ -193,7 +194,8 @@ static ASTNodePtr parse_list(TokenStream &tokens, SyntaxAnalyzerContext &context
 
 static vector<TokenType> PARSE_NODE_TOKEN_TYPES = {
     TokenType::LET, TokenType::IDENTIFIER, TokenType::BOOLEAN,
-    TokenType::INTEGER, TokenType::FLOAT, TokenType::OPENING_BRACKET};
+    TokenType::STRING, TokenType::INTEGER, TokenType::FLOAT,
+    TokenType::OPENING_BRACKET};
 
 static ASTNodePtr parse_node(TokenStream &tokens,
                              SyntaxAnalyzerContext &context) {
@@ -220,6 +222,7 @@ static ASTNodePtr parse_node(TokenStream &tokens,
             return parse_literal(tokens, context);
         }
     case TokenType::BOOLEAN:
+    case TokenType::STRING:
     case TokenType::INTEGER:
     case TokenType::FLOAT:
         return parse_literal(tokens, context);

@@ -157,6 +157,20 @@ public:
     BoolLiteralNode(const BoolLiteralNode &other);
 };
 
+class StringLiteralNode : public DecoratedASTNode {
+    std::string value;
+public:
+    StringLiteralNode(const std::string &value);
+
+    plugins::Any construct(ConstructContext &context) const override;
+    void dump(std::string indent) const override;
+
+    // TODO: once we get rid of lazy construction, this should no longer be necessary.
+    virtual std::unique_ptr<DecoratedASTNode> clone() const override;
+    virtual std::shared_ptr<DecoratedASTNode> clone_shared() const override;
+    StringLiteralNode(const StringLiteralNode &other);
+};
+
 class IntLiteralNode : public DecoratedASTNode {
     std::string value;
 public:

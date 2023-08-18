@@ -19,6 +19,7 @@ enum class TokenType {
     INTEGER,
     FLOAT,
     BOOLEAN,
+    STRING,
     IDENTIFIER,
     LET
 };
