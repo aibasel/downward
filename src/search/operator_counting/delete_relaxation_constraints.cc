@@ -12,8 +12,8 @@ using namespace std;
 
 namespace operator_counting {
 static void add_lp_variables(int count, LPVariables &variables, vector<int> &indices,
-                      double lower, double upper, double objective,
-                      bool is_integer) {
+                             double lower, double upper, double objective,
+                             bool is_integer) {
     for (int i = 0; i < count; ++i) {
         indices.push_back(variables.size());
         variables.emplace_back(lower, upper, objective, is_integer);

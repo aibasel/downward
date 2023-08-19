@@ -17,8 +17,8 @@ StateEquationConstraints::StateEquationConstraints(
 }
 
 static void add_indices_to_constraint(lp::LPConstraint &constraint,
-                               const set<int> &indices,
-                               double coefficient) {
+                                      const set<int> &indices,
+                                      double coefficient) {
     for (int index : indices) {
         constraint.insert(index, coefficient);
     }
