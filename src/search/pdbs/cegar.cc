@@ -274,7 +274,7 @@ void CEGAR::compute_initial_collection() {
   potentially not applicable in the state, and expecting that the operator
   has not conditional effects.
 */
-void apply_op_to_state(vector<int> &state, const OperatorProxy &op) {
+static void apply_op_to_state(vector<int> &state, const OperatorProxy &op) {
     assert(!op.is_axiom());
     for (EffectProxy effect : op.get_effects()) {
         assert(effect.get_conditions().empty());

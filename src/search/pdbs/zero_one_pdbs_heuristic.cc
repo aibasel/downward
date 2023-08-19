@@ -9,7 +9,7 @@
 using namespace std;
 
 namespace pdbs {
-ZeroOnePDBs get_zero_one_pdbs_from_options(
+static ZeroOnePDBs get_zero_one_pdbs_from_options(
     const shared_ptr<AbstractTask> &task, const plugins::Options &opts) {
     shared_ptr<PatternCollectionGenerator> pattern_generator =
         opts.get<shared_ptr<PatternCollectionGenerator>>("patterns");
