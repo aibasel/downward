@@ -55,7 +55,7 @@ static void CPX_CALL(Func cpxfunc, CPXENVptr env, Args && ... args) {
     }
 }
 
-CPXLPptr createProblem(CPXENVptr env, const string &name) {
+static CPXLPptr createProblem(CPXENVptr env, const string &name) {
     int status = 0;
     CPXLPptr problem = CPXcreateprob(env, &status, name.c_str());
     if (status) {
@@ -64,7 +64,7 @@ CPXLPptr createProblem(CPXENVptr env, const string &name) {
     return problem;
 }
 
-void freeProblem(CPXENVptr env, CPXLPptr *problem) {
+static void freeProblem(CPXENVptr env, CPXLPptr *problem) {
     CPX_CALL(CPXfreeprob, env, problem);
 }
 

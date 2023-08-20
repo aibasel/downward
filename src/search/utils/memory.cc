@@ -13,7 +13,7 @@ static char *extra_memory_padding = nullptr;
 // Save standard out-of-memory handler.
 static void (*standard_out_of_memory_handler)() = nullptr;
 
-void continuing_out_of_memory_handler() {
+static void continuing_out_of_memory_handler() {
     release_extra_memory_padding();
     utils::g_log << "Failed to allocate memory. Released extra memory padding." << endl;
 }
