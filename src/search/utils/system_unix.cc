@@ -97,6 +97,7 @@ static void print_peak_memory_reentrant() {
     write_reentrant_str(STDOUT_FILENO, "Peak memory: ");
     write_reentrant_int(STDOUT_FILENO, get_peak_memory_in_kb());
     write_reentrant_str(STDOUT_FILENO, " KB\n");
+    utils::unused_variable(read_char_reentrant);
 #else
 
     int proc_file_descr = TEMP_FAILURE_RETRY(open("/proc/self/status", O_RDONLY));
