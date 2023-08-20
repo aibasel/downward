@@ -10,7 +10,6 @@
 #include <cassert>
 #include <iostream>
 #include <set>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -19,6 +18,11 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
+ostream &operator<<(ostream &os, const Transition &trans) {
+    os << trans.src << "->" << trans.target;
+    return os;
+}
+
 void LocalLabelInfo::add_label(int label, int label_cost) {
     label_group.push_back(label);
     if (label_cost != -1) {

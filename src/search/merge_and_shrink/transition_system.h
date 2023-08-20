@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -40,6 +41,8 @@ struct Transition {
         return !(*this < other);
     }
 };
+
+std::ostream &operator<<(std::ostream &os, const Transition &trans);
 
 using LabelGroup = std::vector<int>;
 
