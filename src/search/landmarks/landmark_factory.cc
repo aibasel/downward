@@ -98,25 +98,14 @@ bool LandmarkFactory::is_landmark_precondition(
 
 void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
                                EdgeType type) {
-    /* Adds an edge in the landmarks graph if there is no contradicting edge (simple measure to
-    reduce cycles. If the edge is already present, the stronger edge type wins.
-    */
+    /* Adds an edge in the landmarks graph. If an edge between the same
+       landmarks is already present, the stronger edge type wins. */
+    // TODO: Do we have a strong argument why self-loops should be prevented?
     assert(&from != &to);
 
-    if (type == EdgeType::REASONABLE) { // simple cycle test
-        if (from.parents.find(&to) != from.parents.end()) { // Edge in opposite direction exists
-            if (log.is_at_least_debug()) {
-                log << "edge in opposite direction exists" << endl;
-            }
-            if (from.parents.find(&to)->second > type) // Stronger order present, return
-                return;
-            // Edge in opposite direction is weaker, delete
-            from.parents.erase(&to);
-            to.children.erase(&from);
-        }
-    }
-
     // If edge already exists, remove if weaker
+    /* TODO: Isn't it more efficient to just replace the type if the present
+        ordering type is weaker? */
     if (from.children.find(&to) != from.children.end() && from.children.find(
             &to)->second < type) {
         from.children.erase(&to);
