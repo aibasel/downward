@@ -130,7 +130,6 @@ void LandmarkFactoryMerged::generate_landmarks(
 
 void LandmarkFactoryMerged::postprocess() {
     lm_graph->set_landmark_ids();
-    mk_acyclic_graph();
 }
 
 bool LandmarkFactoryMerged::computes_reasonable_orders() const {

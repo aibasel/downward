@@ -54,7 +54,6 @@ protected:
     void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
 
     void discard_all_orderings();
-    void mk_acyclic_graph();
 
     bool is_landmark_precondition(const OperatorProxy &op,
                                   const Landmark &landmark) const;
