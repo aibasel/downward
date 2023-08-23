@@ -64,16 +64,9 @@ protected:
 
 private:
     AbstractTask *lm_graph_task;
-
-    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) = 0;
-
     std::vector<std::vector<std::vector<int>>> operators_eff_lookup;
 
-    int loop_acyclic_graph(LandmarkNode &lmn,
-                           std::unordered_set<LandmarkNode *> &acyclic_node_set);
-    void remove_first_weakest_cycle_edge(
-        std::list<std::pair<LandmarkNode *, EdgeType>> &path,
-        std::list<std::pair<LandmarkNode *, EdgeType>>::iterator it);
+    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) = 0;
     void generate_operators_lookups(const TaskProxy &task_proxy);
 };
 
