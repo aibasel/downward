@@ -61,6 +61,15 @@ void LandmarkHeuristic::initialize(const plugins::Options &opts) {
         *lm_graph, opts.get<bool>("prog_goal"),
         opts.get<bool>("prog_gn"), opts.get<bool>("prog_r"));
 
+    /* TODO: Maybe deal with this differently, e.g., mark initial state
+        as dead-end. (Similar use case in M&S maybe?) */
+    if (landmark_graph_has_cycle_of_natural_orderings()) {
+        log << "Found a cycle of natural (or stronger) landmark orderings. By "
+            << "the definition of natural orderings, the problem is unsolvable."
+            << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
+    }
+
     if (use_preferred_operators) {
         /* Ideally, we should reuse the successor generator of the main
            task in cases where it's compatible. See issue564. */
@@ -68,6 +77,42 @@ void LandmarkHeuristic::initialize(const plugins::Options &opts) {
             utils::make_unique_ptr<successor_generator::SuccessorGenerator>(
                 task_proxy);
     }
+}
+
+bool LandmarkHeuristic::landmark_graph_has_cycle_of_natural_orderings() {
+    int num_landmarks = lm_graph->get_num_landmarks();
+    vector<bool> closed(num_landmarks, false);
+    vector<bool> visited(num_landmarks, false);
+    for (auto &node : lm_graph->get_nodes()) {
+        if (depth_first_search_for_cycle_of_natural_orderings(
+            *node, closed, visited)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool LandmarkHeuristic::depth_first_search_for_cycle_of_natural_orderings(
+    const LandmarkNode &node, vector<bool> &closed, vector<bool> &visited) {
+    int id = node.get_id();
+    if (closed[id]) {
+        return false;
+    } else if (visited[id]) {
+        // Cycle detected.
+        return true;
+    }
+
+    visited[id] = true;
+    for (auto &child : node.children) {
+        if (child.second >= EdgeType::NATURAL) {
+            if (depth_first_search_for_cycle_of_natural_orderings(
+                *child.first, closed, visited)) {
+                return true;
+            }
+        }
+    }
+    closed[id] = true;
+    return false;
 }
 
 void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &opts) {
