@@ -85,7 +85,7 @@ bool LandmarkHeuristic::landmark_graph_has_cycle_of_natural_orderings() {
     vector<bool> visited(num_landmarks, false);
     for (auto &node : lm_graph->get_nodes()) {
         if (depth_first_search_for_cycle_of_natural_orderings(
-            *node, closed, visited)) {
+                *node, closed, visited)) {
             return true;
         }
     }
@@ -106,7 +106,7 @@ bool LandmarkHeuristic::depth_first_search_for_cycle_of_natural_orderings(
     for (auto &child : node.children) {
         if (child.second >= EdgeType::NATURAL) {
             if (depth_first_search_for_cycle_of_natural_orderings(
-                *child.first, closed, visited)) {
+                    *child.first, closed, visited)) {
                 return true;
             }
         }
