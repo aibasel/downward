@@ -13,7 +13,7 @@ enum class CostPartitioningStrategy {
 
 class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
     const CostPartitioningStrategy cost_partitioning_strategy;
-    std::shared_ptr<LandmarkCostAssignment> lm_cost_assignment;
+    std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
 
     void check_unsupported_features(const plugins::Options &opts);
     void set_cost_assignment(const plugins::Options &opts);
