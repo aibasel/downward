@@ -109,7 +109,7 @@ public:
         LandmarkHeuristic::add_options_to_feature(*this);
         add_option<CostPartitioningStrategy>(
             "cost_partitioning",
-            "Choose strategy for partitioning operator costs among landmarks.",
+            "strategy for partitioning operator costs among landmarks",
             "uniform");
         add_option<bool>("alm", "use action landmarks", "true");
         lp::add_lp_solver_option_to_feature(*this);
