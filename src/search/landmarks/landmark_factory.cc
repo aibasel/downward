@@ -100,12 +100,9 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
                                EdgeType type) {
     /* Adds an edge in the landmarks graph. If an edge between the same
        landmarks is already present, the stronger edge type wins. */
-    // TODO: Do we have a strong argument why self-loops should be prevented?
     assert(&from != &to);
 
     // If edge already exists, remove if weaker
-    /* TODO: Isn't it more efficient to just replace the type if the present
-        ordering type is weaker? */
     if (from.children.find(&to) != from.children.end() && from.children.find(
             &to)->second < type) {
         from.children.erase(&to);
