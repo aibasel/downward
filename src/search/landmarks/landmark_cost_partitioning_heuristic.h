@@ -6,7 +6,13 @@
 namespace landmarks {
 class LandmarkCostAssignment;
 
+enum class CostPartitioningStrategy {
+    OPTIMAL,
+    UNIFORM,
+};
+
 class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
+    const CostPartitioningStrategy cost_partitioning_strategy;
     std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
 
     void check_unsupported_features(const plugins::Options &opts);
