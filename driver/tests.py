@@ -90,11 +90,12 @@ def _convert_to_standalone_config(config):
 
 
 def test_portfolio_configs():
-    for name, portfolio in PORTFOLIOS.items():
+    all_configs = set()
+    for portfolio in PORTFOLIOS.values():
         configs = _get_portfolio_configs(Path(portfolio))
-        for index, config in enumerate(configs, start=1):
-            print(f"Testing config {index} from portfolio {name}")
-            run_driver(["output.sas"] + _convert_to_standalone_config(config))
+        all_configs |= set(tuple(_convert_to_standalone_config(config)) for config in configs)
+    for config in set(all_configs):
+        run_driver(["output.sas"] + list(config))
 
 
 @pytest.mark.skipif(not limits.can_set_time_limit(), reason="Cannot set time limits on this system")
