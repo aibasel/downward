@@ -5,8 +5,10 @@ Test module for Fast Downward driver script. Run with
 """
 
 import os
+from pathlib import Path
 import subprocess
 import sys
+import traceback
 
 import pytest
 
@@ -57,6 +59,42 @@ def test_portfolios():
         parameters = ["--portfolio", portfolio,
                       "--search-time-limit", "30m", "output.sas"]
         run_driver(parameters)
+
+
+def _get_portfolio_configs(portfolio: Path):
+    content = portfolio.read_text()
+    attributes = {}
+    try:
+        exec(content, attributes)
+    except Exception:
+        traceback.print_exc()
+        raise SyntaxError(
+            f"The portfolio {portfolio} could not be loaded.")
+    if "CONFIGS" not in attributes:
+        raise ValueError("portfolios must define CONFIGS")
+    return [config for _, config in attributes["CONFIGS"]]
+
+
+def _convert_to_standalone_config(config):
+    replacements = [
+        ("H_COST_TRANSFORM", "adapt_costs(one)"),
+        ("S_COST_TYPE", "one"),
+        ("BOUND", "infinity"),
+        ("bound=infinity", "bound=infinity, verbosity=silent"),
+    ]
+    for index, part in enumerate(config):
+        for before, after in replacements:
+            part = part.replace(before, after)
+        config[index] = part
+    return config
+
+
+def test_portfolio_configs():
+    for name, portfolio in PORTFOLIOS.items():
+        configs = _get_portfolio_configs(Path(portfolio))
+        for index, config in enumerate(configs, start=1):
+            print(f"Testing config {index} from portfolio {name}")
+            run_driver(["output.sas"] + _convert_to_standalone_config(config))
 
 
 @pytest.mark.skipif(not limits.can_set_time_limit(), reason="Cannot set time limits on this system")
