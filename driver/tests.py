@@ -80,7 +80,6 @@ def _convert_to_standalone_config(config):
         ("H_COST_TRANSFORM", "adapt_costs(one)"),
         ("S_COST_TYPE", "one"),
         ("BOUND", "infinity"),
-        ("bound=infinity", "bound=infinity, verbosity=silent"),
     ]
     for index, part in enumerate(config):
         for before, after in replacements:
