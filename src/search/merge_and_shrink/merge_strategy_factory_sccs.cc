@@ -21,11 +21,11 @@
 using namespace std;
 
 namespace merge_and_shrink {
-bool compare_sccs_increasing(const vector<int> &lhs, const vector<int> &rhs) {
+static bool compare_sccs_increasing(const vector<int> &lhs, const vector<int> &rhs) {
     return lhs.size() < rhs.size();
 }
 
-bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &rhs) {
+static bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &rhs) {
     return lhs.size() > rhs.size();
 }
 
