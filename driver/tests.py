@@ -93,7 +93,7 @@ def test_portfolio_configs():
     for portfolio in PORTFOLIOS.values():
         configs = _get_portfolio_configs(Path(portfolio))
         all_configs |= set(tuple(_convert_to_standalone_config(config)) for config in configs)
-    for config in set(all_configs):
+    for config in all_configs:
         run_driver(["output.sas"] + list(config))
 
 
