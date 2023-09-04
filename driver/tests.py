@@ -77,8 +77,8 @@ def _get_portfolio_configs(portfolio: Path):
 
 def _convert_to_standalone_config(config):
     replacements = [
-        ("H_COST_TRANSFORM", "adapt_costs(one)"),
-        ("S_COST_TYPE", "one"),
+        ("H_COST_TRANSFORM", "no_transform()"),
+        ("S_COST_TYPE", "normal"),
         ("BOUND", "infinity"),
     ]
     for index, part in enumerate(config):
