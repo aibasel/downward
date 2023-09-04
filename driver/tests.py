@@ -103,6 +103,9 @@ def test_portfolio_configs():
         configs = _get_portfolio_configs(Path(portfolio))
         all_configs |= set(tuple(_convert_to_standalone_config(config)) for config in configs)
     for config in all_configs:
+        # Skip CPLEX configs on macOS because our GitHub Actions runners don't support it.
+        if sys.platform == "darwin" and any("operatorcounting" in part for part in config):
+            continue
         _run_search(config)
 
 
