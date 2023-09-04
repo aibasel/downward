@@ -21,7 +21,7 @@ namespace merge_and_shrink {
   copy the transition system, apply the state equivalence relation to it and
   return the result. Return nullptr otherwise.
 */
-unique_ptr<TransitionSystem> copy_and_shrink_ts(
+static unique_ptr<TransitionSystem> copy_and_shrink_ts(
     const TransitionSystem &ts,
     const Distances &distances,
     const ShrinkStrategy &shrink_strategy,

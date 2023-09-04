@@ -11,7 +11,7 @@
 using namespace std;
 
 namespace landmarks {
-bool _possibly_fires(const EffectConditionsProxy &conditions, const vector<vector<bool>> &reached) {
+static bool _possibly_fires(const EffectConditionsProxy &conditions, const vector<vector<bool>> &reached) {
     for (FactProxy cond : conditions)
         if (!reached[cond.get_variable().get_id()][cond.get_value()])
             return false;

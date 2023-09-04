@@ -22,7 +22,7 @@ using utils::ExitCode;
 
 class PruningMethod;
 
-successor_generator::SuccessorGenerator &get_successor_generator(
+static successor_generator::SuccessorGenerator &get_successor_generator(
     const TaskProxy &task_proxy, utils::LogProxy &log) {
     log << "Building successor generator..." << flush;
     int peak_memory_before = utils::get_peak_memory_in_kb();

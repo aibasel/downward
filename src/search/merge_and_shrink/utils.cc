@@ -61,7 +61,7 @@ pair<int, int> compute_shrink_sizes(
   if the size limit is not violated. If so, trigger the shrinking process.
   Return true iff the factor was actually shrunk.
 */
-bool shrink_factor(
+static bool shrink_factor(
     FactoredTransitionSystem &fts,
     int index,
     int new_size,
