@@ -14,8 +14,10 @@ import pytest
 
 from .aliases import ALIASES, PORTFOLIOS
 from .arguments import EXAMPLES
+from .call import check_call
 from . import limits
 from . import returncodes
+from .run_components import get_executable, REL_SEARCH_PATH
 from .util import REPO_ROOT_DIR, find_domain_filename
 
 
@@ -88,13 +90,20 @@ def _convert_to_standalone_config(config):
     return config
 
 
+def _run_search(config):
+    check_call(
+        "search",
+        [get_executable("release", REL_SEARCH_PATH)] + list(config),
+        stdin="output.sas")
+
+
 def test_portfolio_configs():
     all_configs = set()
     for portfolio in PORTFOLIOS.values():
         configs = _get_portfolio_configs(Path(portfolio))
         all_configs |= set(tuple(_convert_to_standalone_config(config)) for config in configs)
     for config in all_configs:
-        run_driver(["output.sas"] + list(config))
+        _run_search(config)
 
 
 @pytest.mark.skipif(not limits.can_set_time_limit(), reason="Cannot set time limits on this system")
