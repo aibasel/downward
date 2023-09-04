@@ -57,6 +57,7 @@ def get_pddl_features(task):
 
             if line == "begin_operator":
                 in_op = True
+                next(f)  # Skip line with operator name.
             elif line == "end_operator":
                 in_op = False
             elif in_op:
