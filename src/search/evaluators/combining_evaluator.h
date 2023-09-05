@@ -55,7 +55,7 @@ extern void add_combining_evaluator_options_to_feature(
 }
 
 
-class TaskIndependentCombiningEvaluator: public TaskIndependentEvaluator {
+class TaskIndependentCombiningEvaluator : public TaskIndependentEvaluator {
 protected:
     std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators;
 public:
@@ -66,7 +66,6 @@ public:
                                                bool use_for_boosting = false,
                                                bool use_for_counting_evaluations = false);
     virtual ~TaskIndependentCombiningEvaluator() = default;
-
 };
 
 #endif

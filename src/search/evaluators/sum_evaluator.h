@@ -27,7 +27,7 @@ public:
 };
 
 
-class TaskIndependentSumEvaluator: public TaskIndependentCombiningEvaluator {
+class TaskIndependentSumEvaluator : public TaskIndependentCombiningEvaluator {
 private:
     std::string unparsed_config;
     utils::LogProxy log;
@@ -35,14 +35,13 @@ public:
     explicit TaskIndependentSumEvaluator(utils::LogProxy log,
                                          std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
                                          std::string unparsed_config = std::string(),
-                                       bool use_for_reporting_minima = false,
-                                       bool use_for_boosting = false,
-                                       bool use_for_counting_evaluations = false);
+                                         bool use_for_reporting_minima = false,
+                                         bool use_for_boosting = false,
+                                         bool use_for_counting_evaluations = false);
     virtual std::shared_ptr<Evaluator> create_task_specific(std::shared_ptr<AbstractTask> &task) override;
 
     virtual ~TaskIndependentSumEvaluator()  override;
 };
-
 }
 
 #endif

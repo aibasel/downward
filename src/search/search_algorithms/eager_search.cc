@@ -356,18 +356,18 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(utils::Verbosity verbosit
                                                        shared_ptr<TaskIndependentEvaluator> lazy_evaluator,
                                                        string unparsed_config
                                                        )
-        : TaskIndependentSearchEngine(verbosity,
-                       cost_type,
-                       max_time,
-                       bound,
-                       unparsed_config
-                       ),
-          reopen_closed_nodes(reopen_closed_nodes),
-          open_list(std::move(open_list)),
-          f_evaluator(f_evaluator),
-          preferred_operator_evaluators(preferred_operator_evaluators),
-          lazy_evaluator(lazy_evaluator),
-          pruning_method(pruning_method) {
+    : TaskIndependentSearchEngine(verbosity,
+                                  cost_type,
+                                  max_time,
+                                  bound,
+                                  unparsed_config
+                                  ),
+      reopen_closed_nodes(reopen_closed_nodes),
+      open_list(std::move(open_list)),
+      f_evaluator(f_evaluator),
+      preferred_operator_evaluators(preferred_operator_evaluators),
+      lazy_evaluator(lazy_evaluator),
+      pruning_method(pruning_method) {
 }
 
 TaskIndependentEagerSearch::~TaskIndependentEagerSearch() {
@@ -375,25 +375,25 @@ TaskIndependentEagerSearch::~TaskIndependentEagerSearch() {
 shared_ptr<SearchEngine> TaskIndependentEagerSearch::create_task_specific(shared_ptr<AbstractTask> &task) {
     utils::g_log << "Creating task specific EagerSearch..." << endl;
     vector<shared_ptr<Evaluator>> ti_evaluators(preferred_operator_evaluators.size());
-    transform( preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), ti_evaluators.begin(),
-               [this, &task](const shared_ptr<TaskIndependentEvaluator>& eval) {
-                   return eval->create_task_specific(task);
-               }
-    );
+    transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), ti_evaluators.begin(),
+              [this, &task](const shared_ptr<TaskIndependentEvaluator> &eval) {
+                  return eval->create_task_specific(task);
+              }
+              );
 
 
 
     return make_shared<EagerSearch>(verbosity,
-            cost_type,
-            max_time,
-            bound,
-            reopen_closed_nodes,
-            open_list->create_task_specific(task),
-            ti_evaluators,
-            pruning_method,
-            task,
-            nullptr,
-            nullptr
-            );
+                                    cost_type,
+                                    max_time,
+                                    bound,
+                                    reopen_closed_nodes,
+                                    open_list->create_task_specific(task),
+                                    ti_evaluators,
+                                    pruning_method,
+                                    task,
+                                    nullptr,
+                                    nullptr
+                                    );
 }
 }

@@ -34,8 +34,8 @@ TaskIndependentGEvaluator::TaskIndependentGEvaluator(utils::LogProxy log,
                                                      bool use_for_reporting_minima,
                                                      bool use_for_boosting,
                                                      bool use_for_counting_evaluations)
-        : TaskIndependentEvaluator(log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
-          unparsed_config(unparsed_config), log(log){
+    : TaskIndependentEvaluator(log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
+      unparsed_config(unparsed_config), log(log) {
 }
 
 TaskIndependentGEvaluator::~TaskIndependentGEvaluator() {
@@ -59,10 +59,10 @@ public:
     virtual shared_ptr<TaskIndependentGEvaluator> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<TaskIndependentGEvaluator>(utils::get_log_from_options(opts),
-                                       opts.get_unparsed_config(),
-                                       opts.get<bool>("use_for_reporting_minima"),
-                                       opts.get<bool>("use_for_boosting"),
-                                       opts.get<bool>("use_for_counting_evaluations"));
+                                                      opts.get_unparsed_config(),
+                                                      opts.get<bool>("use_for_reporting_minima"),
+                                                      opts.get<bool>("use_for_boosting"),
+                                                      opts.get<bool>("use_for_counting_evaluations"));
     }
 };
 

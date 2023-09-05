@@ -1,4 +1,3 @@
-
 #ifndef DOWNWARD_TASK_INDEPENDENT_EVALUATOR_H
 #define DOWNWARD_TASK_INDEPENDENT_EVALUATOR_H
 
@@ -16,11 +15,11 @@ protected:
     mutable utils::LogProxy log;
 public:
     explicit TaskIndependentEvaluator(
-            utils::LogProxy log,
-            const std::string unparsed_config = std::string(),
-            bool use_for_reporting_minima = false,
-            bool use_for_boosting = false,
-            bool use_for_counting_evaluations = false);
+        utils::LogProxy log,
+        const std::string unparsed_config = std::string(),
+        bool use_for_reporting_minima = false,
+        bool use_for_boosting = false,
+        bool use_for_counting_evaluations = false);
     virtual ~TaskIndependentEvaluator() = default;
 
     virtual std::shared_ptr<Evaluator> create_task_specific(std::shared_ptr<AbstractTask> &task) = 0;

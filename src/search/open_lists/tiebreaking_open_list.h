@@ -34,9 +34,9 @@ protected:
 public:
     explicit TieBreakingOpenList(const plugins::Options &opts);
     explicit TieBreakingOpenList(
-            bool pref_only,
-            std::vector<std::shared_ptr<Evaluator>> evaluators,
-            bool allow_unsafe_pruning);
+        bool pref_only,
+        std::vector<std::shared_ptr<Evaluator>> evaluators,
+        bool allow_unsafe_pruning);
     virtual ~TieBreakingOpenList() override = default;
 
     virtual Entry remove_min() override;
@@ -44,30 +44,30 @@ public:
     virtual void clear() override;
     virtual void get_path_dependent_evaluators(std::set<Evaluator *> &evals) override;
     virtual bool is_dead_end(
-            EvaluationContext &eval_context) const override;
+        EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
-            EvaluationContext &eval_context) const override;
+        EvaluationContext &eval_context) const override;
 };
 
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(const plugins::Options &opts)
-        : OpenList<Entry>(opts.get<bool>("pref_only")),
-          size(0), evaluators(opts.get_list<std::shared_ptr<Evaluator>>("evals")),
-          allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
+    : OpenList<Entry>(opts.get<bool>("pref_only")),
+      size(0), evaluators(opts.get_list<std::shared_ptr<Evaluator>>("evals")),
+      allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
 }
 
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(bool pref_only,
                                                 std::vector<std::shared_ptr<Evaluator>> evaluators,
                                                 bool allow_unsafe_pruning)
-        : OpenList<Entry>(pref_only),
-          size(0), evaluators(evaluators),
-          allow_unsafe_pruning(allow_unsafe_pruning) {
+    : OpenList<Entry>(pref_only),
+      size(0), evaluators(evaluators),
+      allow_unsafe_pruning(allow_unsafe_pruning) {
 }
 
 template<class Entry>
 void TieBreakingOpenList<Entry>::do_insertion(
-        EvaluationContext &eval_context, const Entry &entry) {
+    EvaluationContext &eval_context, const Entry &entry) {
     std::vector<int> key;
     key.reserve(evaluators.size());
     for (const std::shared_ptr<Evaluator> &evaluator : evaluators)
@@ -110,14 +110,14 @@ int TieBreakingOpenList<Entry>::dimension() const {
 
 template<class Entry>
 void TieBreakingOpenList<Entry>::get_path_dependent_evaluators(
-        std::set<Evaluator *> &evals) {
+    std::set<Evaluator *> &evals) {
     for (const std::shared_ptr<Evaluator> &evaluator : evaluators)
         evaluator->get_path_dependent_evaluators(evals);
 }
 
 template<class Entry>
 bool TieBreakingOpenList<Entry>::is_dead_end(
-        EvaluationContext &eval_context) const {
+    EvaluationContext &eval_context) const {
     // TODO: Properly document this behaviour.
     // If one safe heuristic detects a dead end, return true.
     if (is_reliable_dead_end(eval_context))
@@ -136,7 +136,7 @@ bool TieBreakingOpenList<Entry>::is_dead_end(
 
 template<class Entry>
 bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
-        EvaluationContext &eval_context) const {
+    EvaluationContext &eval_context) const {
     for (const std::shared_ptr<Evaluator> &evaluator : evaluators)
         if (eval_context.is_evaluator_value_infinite(evaluator.get()) &&
             evaluator->dead_ends_are_reliable())
@@ -145,7 +145,7 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
 }
 
 template<class Entry>
-class TaskIndependentTieBreakingOpenList: public TaskIndependentOpenList<Entry> {
+class TaskIndependentTieBreakingOpenList : public TaskIndependentOpenList<Entry> {
 private:
     bool pref_only;
     std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators;
@@ -168,21 +168,21 @@ template<class Entry>
 TaskIndependentTieBreakingOpenList<Entry>::TaskIndependentTieBreakingOpenList(bool preferred_only,
                                                                               std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators,
                                                                               bool allow_unsafe_pruning)
-        : TaskIndependentOpenList<Entry>(preferred_only),
-          pref_only(preferred_only), evaluators(evaluators), allow_unsafe_pruning(allow_unsafe_pruning){
+    : TaskIndependentOpenList<Entry>(preferred_only),
+      pref_only(preferred_only), evaluators(evaluators), allow_unsafe_pruning(allow_unsafe_pruning) {
 }
 
 template<class Entry>
 std::shared_ptr<OpenList<Entry>> TaskIndependentTieBreakingOpenList<Entry>::create_task_specific(std::shared_ptr<AbstractTask> &task) {
     std::vector<std::shared_ptr<Evaluator>> td_evaluators(evaluators.size());
-    transform( evaluators.begin(), evaluators.end(), td_evaluators.begin(),
-               [this, &task](const std::shared_ptr<TaskIndependentEvaluator>& eval) {
-                   return eval->create_task_specific(task);
-               }
-    );
+    transform(evaluators.begin(), evaluators.end(), td_evaluators.begin(),
+              [this, &task](const std::shared_ptr<TaskIndependentEvaluator> &eval) {
+                  return eval->create_task_specific(task);
+              }
+              );
     return std::make_unique<TieBreakingOpenList<Entry>>(pref_only,
-                                                   td_evaluators,
-                                                   allow_unsafe_pruning);
+                                                        td_evaluators,
+                                                        allow_unsafe_pruning);
 }
 
 
@@ -213,9 +213,9 @@ class TaskIndependentTieBreakingOpenListFactory : public TaskIndependentOpenList
 public:
     explicit TaskIndependentTieBreakingOpenListFactory(const plugins::Options &opts);
     explicit TaskIndependentTieBreakingOpenListFactory(
-            bool pref_only,
-            std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators,
-            bool allow_unsafe_pruning);
+        bool pref_only,
+        std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators,
+        bool allow_unsafe_pruning);
     virtual ~TaskIndependentTieBreakingOpenListFactory() override = default;
 
     virtual std::unique_ptr<TaskIndependentStateOpenList> create_task_independent_state_open_list() override;
