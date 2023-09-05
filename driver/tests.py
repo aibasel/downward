@@ -95,7 +95,6 @@ def _convert_to_standalone_config(config):
         ("H_COST_TRANSFORM", "no_transform()"),
         ("S_COST_TYPE", "normal"),
         ("BOUND", "infinity"),
-        ("lpsolver=cplex", "lpsolver=soplex"),  # CPLEX is not available in all CI runners.
     ]
     for index, part in enumerate(config):
         for before, after in replacements:
@@ -121,6 +120,8 @@ def _get_all_portfolio_configs():
 
 @pytest.mark.parametrize("config", _get_all_portfolio_configs())
 def test_portfolio_config(config):
+    if sys.platform == "darwin" and any("operatorcounting" in part for part in config):
+        pytest.skip("macOS CI runners don't support LP configs.")
     _run_search(config)
 
 

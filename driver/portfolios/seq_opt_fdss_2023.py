@@ -20,7 +20,7 @@ CONFIGS_STRIPS = [
     # bjolp
     (206, ['--search', 'let(lmc, landmark_cost_partitioning(lm_merged([lm_rhw(), lm_hm(m=1)])), astar(lmc,lazy_evaluator=lmc))']),
     # seq-lmcut-por
-    (105, ['--search', 'astar(operatorcounting([state_equation_constraints(), lmcut_constraints()], lpsolver=cplex), pruning=limited_pruning(pruning=atom_centric_stubborn_sets(), min_required_pruning_ratio=0.2))']),
+    (105, ['--search', 'astar(operatorcounting([state_equation_constraints(), lmcut_constraints()]), pruning=limited_pruning(pruning=atom_centric_stubborn_sets(), min_required_pruning_ratio=0.2))']),
     # potential-initial-state
     (83, ['--search', 'astar(initial_state_potential())']),
     # cartesian-cegar-landmarks-goals-60s-por
@@ -28,7 +28,7 @@ CONFIGS_STRIPS = [
     # can-sys3
     (218, ['--search', 'astar(cpdbs(patterns=systematic(3)))']),
     # seq-lmcut-hplus-relaxed
-    (91, ['--search', 'astar(operatorcounting([state_equation_constraints(), lmcut_constraints(), delete_relaxation_constraints(use_time_vars=false, use_integer_vars=false)], lpsolver=cplex))']),
+    (91, ['--search', 'astar(operatorcounting([state_equation_constraints(), lmcut_constraints(), delete_relaxation_constraints(use_time_vars=false, use_integer_vars=false)]))']),
 ]
 
 CONFIGS_COND_EFFS = [
