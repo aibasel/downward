@@ -82,23 +82,6 @@ TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(utils::LogP
                                                                      bool use_for_reporting_minima,
                                                                      bool use_for_boosting,
                                                                      bool use_for_counting_evaluations)
-        : TaskIndependentEvaluator(log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
-          subevaluators(subevaluators){
+    : TaskIndependentEvaluator(log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
+      subevaluators(subevaluators) {
 }
-
-/*
-shared_ptr<Evaluator> TaskIndependentCombiningEvaluator::create_task_specific(shared_ptr<AbstractTask> &task) {
-    vector<shared_ptr<Evaluator>> td_subevaluators(subevaluators.size());
-    transform( subevaluators.begin(), subevaluators.end(), td_subevaluators.begin(),
-               [this, &task](const shared_ptr<TaskIndependentEvaluator>& eval) {
-                   return eval->create_task_specific(task);
-               }
-    );
-    return make_shared<combining_evaluator::CombiningEvaluator>(log,
-                                           td_subevaluators,
-                                           description,
-                                           use_for_reporting_minima,
-                                           use_for_boosting,
-                                           use_for_counting_evaluations);
-}
-*/
