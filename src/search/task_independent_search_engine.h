@@ -6,7 +6,7 @@
 #include "operator_cost.h"
 #include "plan_manager.h"
 
-class TaskIndependentSearchEngine{
+class TaskIndependentSearchEngine {
     std::string description;
     SearchStatus status;
     bool solution_found;
@@ -22,7 +22,6 @@ protected:
     double max_time;
 
 public:
-    //TaskIndependentSearchEngine(const plugins::Options &opts);
     TaskIndependentSearchEngine(utils::Verbosity verbosity,
                                 OperatorCost cost_type,
                                 double max_time,
@@ -34,7 +33,6 @@ public:
 
 
     virtual std::shared_ptr<SearchEngine> create_task_specific(std::shared_ptr<AbstractTask> &task) = 0;
-
 };
 
 

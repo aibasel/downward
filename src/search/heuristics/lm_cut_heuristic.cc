@@ -45,47 +45,16 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 
 TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(string unparsed_config, utils::LogProxy log, bool cache_evaluator_values)
     : TaskIndependentHeuristic(unparsed_config, log, cache_evaluator_values),
-    unparsed_config(unparsed_config), log(log), cache_evaluator_values(cache_evaluator_values) {
-    }
+      unparsed_config(unparsed_config), log(log), cache_evaluator_values(cache_evaluator_values) {
+}
 
 TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
-    }
+}
 
 shared_ptr<Evaluator> TaskIndependentLandmarkCutHeuristic::create_task_specific(shared_ptr<AbstractTask> &task) {
     utils::g_log << "Creating task specific LandmarkCutHeuristic..." << endl;
     return make_shared<LandmarkCutHeuristic>(unparsed_config, log, cache_evaluator_values, task);
-    }
-
-
-
-/*class TaskIndependentUnitCostHeuristic: TaskIndependentEvaluator {
-    shared_ptr<TaskIndependentEvaluator> evaluator;
-
-    TaskIndependentLandmarkCutHeuristic(evaluator)
-            : evaluator(evaluator) {
-    }
-
-    virtual shared_ptr<Evaluator> create_task_specific(shared_ptr<AbstractTask> &task) override {
-        AbstractTask unit_cost_task = make_unit_cost_task(task);
-        return evaluator.create_task_specific(unit_cost_task);
-    }
-};*/
-
-/*class TaskIndependentEHCSearch: TaskIndependentEvaluator {
-    shared_ptr<TaskIndependentEvaluator> evaluator;
-
-    TaskIndependentLandmarkCutHeuristic(evaluator)
-            : evaluator(evaluator) {
-            }
-
-    virtual shared_ptr<Evaluator> create_task_specific(shared_ptr<AbstractTask> &task) override {
-        shared_ptr<Evaluator> specific_eval = evaluator.create_task_specific(task);
-        return make_shared<EHCSearch>(specific_eval);
-    }
-};
-*/
-
-
+}
 class TaskIndependentLandmarkCutHeuristicFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentLandmarkCutHeuristic> {
 public:
     TaskIndependentLandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
@@ -112,11 +81,11 @@ public:
     }
 
     virtual shared_ptr<TaskIndependentLandmarkCutHeuristic> create_component(
-            const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<TaskIndependentLandmarkCutHeuristic>(opts.get_unparsed_config(),
                                                                 utils::get_log_from_options(opts),
                                                                 opts.get<bool>("cache_estimates")
-        );
+                                                                );
     }
 };
 
