@@ -17,8 +17,8 @@ public:
             "as f-function. "
             "We break ties using the evaluator. Closed nodes are re-opened.");
 
-        add_option<shared_ptr<Evaluator>>("eval", "evaluator for h-value");
-        add_option<shared_ptr<Evaluator>>(
+        add_option<shared_ptr<TaskIndependentEvaluator>>("eval", "evaluator for h-value");
+        add_option<shared_ptr<TaskIndependentEvaluator>>(
             "lazy_evaluator",
             "An evaluator that re-evaluates a state before it is expanded.",
             plugins::ArgumentInfo::NO_DEFAULT);

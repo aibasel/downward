@@ -50,6 +50,7 @@ TaskIndependentSumEvaluator::~TaskIndependentSumEvaluator() {
 
 shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(shared_ptr<AbstractTask> &task) {
     //TODO issue559: could this be moved into the TI_CombiningEvaluator class? In TI_MaxEvaluator we would do the very same...
+    utils::g_log << "Creating task specific SumEvaluator..." << endl;
     vector<shared_ptr<Evaluator>> ti_subevaluators(subevaluators.size());
     transform( subevaluators.begin(), subevaluators.end(), ti_subevaluators.begin(),
                [this, &task](const shared_ptr<TaskIndependentEvaluator>& eval) {
