@@ -24,7 +24,7 @@ public:
     virtual ~LandmarkCutHeuristic() override;
 };
 
-class TaskIndependentLandmarkCutHeuristic: public TaskIndependentHeuristic {
+class TaskIndependentLandmarkCutHeuristic : public TaskIndependentHeuristic {
 private:
     std::string unparsed_config;
     utils::LogProxy log;
@@ -37,7 +37,6 @@ public:
 
     virtual ~TaskIndependentLandmarkCutHeuristic()  override;
 };
-
 }
 
 #endif

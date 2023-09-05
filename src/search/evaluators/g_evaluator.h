@@ -25,7 +25,7 @@ public:
 };
 
 
-class TaskIndependentGEvaluator: public TaskIndependentEvaluator {
+class TaskIndependentGEvaluator : public TaskIndependentEvaluator {
 private:
     std::string unparsed_config;
     utils::LogProxy log;
@@ -39,7 +39,6 @@ public:
 
     virtual ~TaskIndependentGEvaluator()  override;
 };
-
 }
 
 #endif

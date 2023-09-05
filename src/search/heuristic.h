@@ -96,13 +96,13 @@ public:
 };
 
 
-class TaskIndependentHeuristic: public TaskIndependentEvaluator {
+class TaskIndependentHeuristic : public TaskIndependentEvaluator {
 protected:
     bool cache_evaluator_values;
 public:
     explicit TaskIndependentHeuristic(const std::string unparsed_config,
-                       utils::LogProxy log,
-                       bool cache_evaluator_values);
+                                      utils::LogProxy log,
+                                      bool cache_evaluator_values);
     virtual ~TaskIndependentHeuristic() = default;
 
     static void add_options_to_feature(plugins::Feature &feature); //TODO issue559 is this needed?

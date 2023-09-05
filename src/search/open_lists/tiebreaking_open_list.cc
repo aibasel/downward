@@ -17,8 +17,6 @@
 using namespace std;
 
 namespace tiebreaking_open_list {
-
-
 TieBreakingOpenListFactory::TieBreakingOpenListFactory(const plugins::Options &opts)
     : options(opts),
     pref_only(opts.get<bool>("pref_only")),
@@ -44,15 +42,15 @@ TieBreakingOpenListFactory::create_edge_open_list() {
     return utils::make_unique_ptr<TieBreakingOpenList<EdgeOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
 }
 
-    TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFactory(const plugins::Options &opts)
-        : options(opts), pref_only(opts.get<bool>("pref_only")), size(0), evaluators(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals")), allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
+TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFactory(const plugins::Options &opts)
+    : options(opts), pref_only(opts.get<bool>("pref_only")), size(0), evaluators(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals")), allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
 }
 
 TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFactory(
-        bool pref_only,
-        vector<shared_ptr<TaskIndependentEvaluator>> evaluators,
-        bool allow_unsafe_pruning)
-        : pref_only(pref_only), size(0), evaluators(evaluators), allow_unsafe_pruning(allow_unsafe_pruning) {
+    bool pref_only,
+    vector<shared_ptr<TaskIndependentEvaluator>> evaluators,
+    bool allow_unsafe_pruning)
+    : pref_only(pref_only), size(0), evaluators(evaluators), allow_unsafe_pruning(allow_unsafe_pruning) {
 }
 
 unique_ptr<TaskIndependentStateOpenList>

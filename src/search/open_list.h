@@ -173,7 +173,7 @@ bool OpenList<Entry>::only_contains_preferred_entries() const {
 
 template<class Entry>
 TaskIndependentOpenList<Entry>::TaskIndependentOpenList(bool only_preferred)
-        : only_preferred(only_preferred) {
+    : only_preferred(only_preferred) {
 }
 
 

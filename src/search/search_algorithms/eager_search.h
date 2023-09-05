@@ -50,8 +50,7 @@ public:
                          std::shared_ptr<AbstractTask> &task,
                          std::shared_ptr<Evaluator> f_evaluator = nullptr,
                          std::shared_ptr<Evaluator> lazy_evaluator = nullptr,
-                         std::string unparsed_config = std::string()
-                         );
+                         std::string unparsed_config = std::string());
     virtual ~EagerSearch() = default;
 
     virtual void print_statistics() const override;
@@ -61,7 +60,7 @@ public:
 
 
 
-class TaskIndependentEagerSearch: public TaskIndependentSearchEngine {
+class TaskIndependentEagerSearch : public TaskIndependentSearchEngine {
 private:
     const bool reopen_closed_nodes;
 
