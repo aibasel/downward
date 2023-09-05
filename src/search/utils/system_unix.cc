@@ -227,7 +227,7 @@ void register_event_handlers() {
     // On exit or when receiving certain signals such as SIGINT (Ctrl-C),
     // print the peak memory usage.
 #if OPERATING_SYSTEM == LINUX
-    on_exit(exit_handler, 0);
+    on_exit(exit_handler, nullptr);
 #elif OPERATING_SYSTEM == OSX
     atexit(exit_handler);
 #endif
@@ -243,11 +243,11 @@ void register_event_handlers() {
     // Reset handler to default action after completion.
     default_signal_action.sa_flags = SA_RESETHAND;
 
-    sigaction(SIGABRT, &default_signal_action, 0);
-    sigaction(SIGTERM, &default_signal_action, 0);
-    sigaction(SIGSEGV, &default_signal_action, 0);
-    sigaction(SIGINT, &default_signal_action, 0);
-    sigaction(SIGXCPU, &default_signal_action, 0);
+    sigaction(SIGABRT, &default_signal_action, nullptr);
+    sigaction(SIGTERM, &default_signal_action, nullptr);
+    sigaction(SIGSEGV, &default_signal_action, nullptr);
+    sigaction(SIGINT, &default_signal_action, nullptr);
+    sigaction(SIGXCPU, &default_signal_action, nullptr);
 }
 
 void report_exit_code_reentrant(ExitCode exitcode) {

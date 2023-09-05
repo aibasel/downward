@@ -18,7 +18,7 @@ macro(fast_downward_set_compiler_flags)
         check_and_set_compiler_flag( "-std=c++20" )
 
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wnon-virtual-dtor -Wfloat-conversion -Wmissing-declarations")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Wnon-virtual-dtor -Wfloat-conversion -Wmissing-declarations -Wzero-as-null-pointer-constant")
 
         if (CMAKE_COMPILER_IS_GNUCXX
             AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 12
