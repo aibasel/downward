@@ -14,13 +14,13 @@ CONFIGS_STRIPS = [
     # ipdb-60s-por
     (542, ['--search', 'astar(ipdb(max_time=60), pruning=limited_pruning(pruning=atom_centric_stubborn_sets(), min_required_pruning_ratio=0.2))']),
     # can-cegar-10s-por
-    (93, ['--search', 'astar(cpdbs(multiple_cegar(max_pdb_size=1000000,max_collection_size=10000000,pattern_generation_max_time=infinity,total_max_time=10,stagnation_limit=2,blacklist_trigger_percentage=0.75,enable_blacklist_on_stagnation=true,use_wildcard_plans=true)), pruning=limited_pruning(pruning=atom_centric_stubborn_sets(), min_required_pruning_ratio=0.2))']),
+    (93, ['--search', 'astar(cpdbs(multiple_cegar(max_pdb_size=1000000,max_collection_size=10000000,pattern_generation_max_time=infinity,total_max_time=10,stagnation_limit=2.0,blacklist_trigger_percentage=0.75,enable_blacklist_on_stagnation=true,use_wildcard_plans=true)), pruning=limited_pruning(pruning=atom_centric_stubborn_sets(), min_required_pruning_ratio=0.2))']),
     # mas-ssc-sbmiasm-300s-por
     (213, ['--search', 'astar(merge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false), merge_strategy=merge_sccs(order_of_sccs=topological, merge_selector=score_based_filtering(scoring_functions=[sf_miasm(shrink_strategy=shrink_bisimulation(greedy=false),max_states=50000,threshold_before_merge=1),total_order(atomic_ts_order=reverse_level,product_ts_order=new_to_old,atomic_before_product=false)])), label_reduction=exact(before_shrinking=true, before_merging=false), max_states=50k, threshold_before_merge=1, main_loop_max_time=300), pruning=limited_pruning(pruning=atom_centric_stubborn_sets(), min_required_pruning_ratio=0.2))']),
     # bjolp
     (206, ['--search', 'let(lmc, landmark_cost_partitioning(lm_merged([lm_rhw(), lm_hm(m=1)])), astar(lmc,lazy_evaluator=lmc))']),
     # seq-lmcut-por
-    (105, ['--search', 'astar(operatorcounting([state_equation_constraints(), lmcut_constraints()]), pruning=limited_pruning(pruning=atom_centric_stubborn_sets(), min_required_pruning_ratio=0.2))']),
+    (105, ['--search', 'astar(operatorcounting([state_equation_constraints(), lmcut_constraints()], lpsolver=cplex), pruning=limited_pruning(pruning=atom_centric_stubborn_sets(), min_required_pruning_ratio=0.2))']),
     # potential-initial-state
     (83, ['--search', 'astar(initial_state_potential())']),
     # cartesian-cegar-landmarks-goals-60s-por
@@ -28,7 +28,7 @@ CONFIGS_STRIPS = [
     # can-sys3
     (218, ['--search', 'astar(cpdbs(patterns=systematic(3)))']),
     # seq-lmcut-hplus-relaxed
-    (91, ['--search', 'astar(operatorcounting([state_equation_constraints(), lmcut_constraints(), delete_relaxation_constraints(use_time_vars=false, use_integer_vars=false)]))']),
+    (91, ['--search', 'astar(operatorcounting([state_equation_constraints(), lmcut_constraints(), delete_relaxation_constraints(use_time_vars=false, use_integer_vars=false)], lpsolver=cplex))']),
 ]
 
 CONFIGS_COND_EFFS = [

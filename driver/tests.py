@@ -27,16 +27,27 @@ def translate():
            "misc/tests/benchmarks/gripper/prob01.pddl"]
     subprocess.check_call(cmd, cwd=REPO_ROOT_DIR)
 
+# We need to translate the example task when this module is imported to have the
+# SAS+ file ready for the @pytest.parametrize function below. Translating the
+# task in setup_module() does not work here, because the @pytest.parametrize
+# decorator is executed before setup_module() is called. An alternative would be
+# to use a conftest.py file and call translate() in a pytest_sessionstart()
+# function, but that adds another file and leads to dumping the translator
+# output to the terminal.
+translate()
+
 
 def cleanup():
     subprocess.check_call([sys.executable, "fast-downward.py", "--cleanup"],
                           cwd=REPO_ROOT_DIR)
 
 
-def run_driver(parameters):
+def teardown_module(module):
     cleanup()
-    translate()
-    cmd = [sys.executable, "fast-downward.py"] + parameters
+
+
+def run_driver(parameters):
+    cmd = [sys.executable, "fast-downward.py", "--keep"] + parameters
     return subprocess.check_call(cmd, cwd=REPO_ROOT_DIR)
 
 
@@ -72,9 +83,11 @@ def _get_portfolio_configs(portfolio: Path):
         traceback.print_exc()
         raise SyntaxError(
             f"The portfolio {portfolio} could not be loaded.")
-    if "CONFIGS" not in attributes:
-        raise ValueError("portfolios must define CONFIGS")
-    return [config for _, config in attributes["CONFIGS"]]
+    for key, value in attributes.items():
+        # The optimal FDSS 2023 portfolio defines different configs for different PDDL subsets.
+        if key.startswith("CONFIGS"):
+            for _, config in value:
+                yield config
 
 
 def _convert_to_standalone_config(config):
@@ -82,6 +95,7 @@ def _convert_to_standalone_config(config):
         ("H_COST_TRANSFORM", "no_transform()"),
         ("S_COST_TYPE", "normal"),
         ("BOUND", "infinity"),
+        ("lpsolver=cplex", "lpsolver=soplex"),  # CPLEX is not available in all CI runners.
     ]
     for index, part in enumerate(config):
         for before, after in replacements:
@@ -97,16 +111,17 @@ def _run_search(config):
         stdin="output.sas")
 
 
-def test_portfolio_configs():
+def _get_all_portfolio_configs():
     all_configs = set()
     for portfolio in PORTFOLIOS.values():
         configs = _get_portfolio_configs(Path(portfolio))
         all_configs |= set(tuple(_convert_to_standalone_config(config)) for config in configs)
-    for config in all_configs:
-        # Skip CPLEX configs on macOS because our GitHub Actions runners don't support it.
-        if sys.platform == "darwin" and any("operatorcounting" in part for part in config):
-            continue
-        _run_search(config)
+    return all_configs
+
+
+@pytest.mark.parametrize("config", _get_all_portfolio_configs())
+def test_portfolio_config(config):
+    _run_search(config)
 
 
 @pytest.mark.skipif(not limits.can_set_time_limit(), reason="Cannot set time limits on this system")
