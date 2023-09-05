@@ -8,6 +8,7 @@
 #ifdef __GNUG__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
 #if (__GNUG__ >= 11) || (__clang_major__ >= 12)
 #pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
 #endif
