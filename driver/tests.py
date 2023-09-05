@@ -120,7 +120,8 @@ def _get_all_portfolio_configs():
 
 @pytest.mark.parametrize("config", _get_all_portfolio_configs())
 def test_portfolio_config(config):
-    if os.getenv("CI") and sys.platform == "darwin" and any("operatorcounting" in part for part in config):
+    if (os.getenv("CI") and sys.platform == "darwin" and
+        any("operatorcounting" in part or "initial_state_potential" in part for part in config)):
         pytest.skip("macOS CI runners don't support LP configs.")
     _run_search(config)
 
