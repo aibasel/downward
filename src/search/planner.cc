@@ -17,7 +17,7 @@
 #include "evaluators/g_evaluator.h"
 #include "evaluators/sum_evaluator.h"
 #include "open_lists/tiebreaking_open_list.h"
-#include "search_engines/eager_search.h"
+#include "search_algorithms/eager_search.h"
 
 using namespace std;
 using utils::ExitCode;
@@ -39,97 +39,11 @@ int main(int argc, const char **argv) {
         unit_cost = task_properties::is_unit_cost(task_proxy);
     }
 
-    //start testing
-    std::string _unparsed_config = std::string();
-    utils::LogProxy _log = get_log_from_verbosity(utils::Verbosity::NORMAL);
-    bool _cache_evaluator_values = false;
-    //test lmc
-    shared_ptr<lm_cut_heuristic::TaskIndependentLandmarkCutHeuristic> ti_lmcut =
-            make_shared<lm_cut_heuristic::TaskIndependentLandmarkCutHeuristic>(_unparsed_config,
-                                                                               _log,
-                                                                               _cache_evaluator_values);
-    shared_ptr<Evaluator> lmcut =  ti_lmcut->create_task_specific(tasks::g_root_task);
-    cout << "" << lmcut->get_description() << "," << lmcut->is_used_for_boosting() << endl;
-    cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ LMC SUCCESS \\o/" << endl;
-
-    //test g
-    shared_ptr<g_evaluator::TaskIndependentGEvaluator> ti_g =
-            make_shared<g_evaluator::TaskIndependentGEvaluator>(_log,
-                                                                _unparsed_config,
-                                                                _cache_evaluator_values);
-    shared_ptr<Evaluator> g =  ti_g->create_task_specific(tasks::g_root_task);
-    cout << "" << g->get_description() << "," << g->is_used_for_boosting() << endl;
-    cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ G SUCCESS \\o/" << endl;
-
-
-    //test sum
-    std::vector<std::shared_ptr<TaskIndependentEvaluator>> _ti_subevals;
-    _ti_subevals.push_back(ti_g);
-    _ti_subevals.push_back(ti_lmcut);
-
-    shared_ptr<sum_evaluator::TaskIndependentSumEvaluator> ti_sum =
-            make_shared<sum_evaluator::TaskIndependentSumEvaluator>(_log,
-                                                                _ti_subevals,
-                                                                _unparsed_config);
-    shared_ptr<Evaluator> sum =  ti_sum->create_task_specific(tasks::g_root_task);
-    cout << "" << sum->get_description() << "," << sum->is_used_for_boosting() << endl;
-    cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ SUM SUCCESS \\o/" << endl;
-
-
-    //test TieBreakingOpenList
-
-    bool _pref_only = true;
-    bool _allow_unsafe_pruning = true;
-    shared_ptr<tiebreaking_open_list::TaskIndependentTieBreakingOpenList<int>> ti_tbol =
-            make_shared<tiebreaking_open_list::TaskIndependentTieBreakingOpenList<int>>(_pref_only,
-                                                                                         _ti_subevals,
-                                                                                         _allow_unsafe_pruning);
-    shared_ptr<OpenList<int>> tbol =  ti_tbol->create_task_specific(tasks::g_root_task);
-    cout << "" << tbol->only_contains_preferred_entries() << endl;
-    cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ TieBreakingOpenList SUCCESS \\o/" << endl;
-
-
-    //test astar
-
-    shared_ptr<tiebreaking_open_list::TaskIndependentTieBreakingOpenList<StateID>> ti_tbol_si =
-            make_shared<tiebreaking_open_list::TaskIndependentTieBreakingOpenList<StateID>>(_pref_only,
-                                                                                        _ti_subevals,
-                                                                                        _allow_unsafe_pruning);
-    cout << "ti_tbol_si created" << endl;
-
-
-    std::shared_ptr<TaskIndependentOpenList<StateID>> ti_ol_si = std::move(ti_tbol_si);
-    cout << "ti_tbol_si converted to ti_ol_si" << endl;
-
-
-    shared_ptr<eager_search::TaskIndependentEagerSearch> ti_es =
-            make_shared<eager_search::TaskIndependentEagerSearch>(utils::Verbosity::NORMAL,
-                                                                  OperatorCost::NORMAL,
-                                                                  0,
-                                                                  0,
-                                                                  false,
-                                                                  ti_ol_si,
-                                                                  _ti_subevals,
-                                                                  nullptr
-                                                                  );
-    cout << "ti_es created" << endl;
-
-    shared_ptr<SearchEngine> es =  ti_es->create_task_specific(tasks::g_root_task);
-    cout << "" << es->get_bound()  << endl;
-    cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ Eager search SUCCESS \\o/" << endl;
-
-
-
-    cout << " \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ \\o/ TEST SUCCESS \\o/" << endl;
-    cout << "!!!!!!!!!!!THIS WAS A TEST RUN!!!!!!!!!!!!!!" << endl;
-
-    exit(0);
-    //end testing
-
-
+    utils::g_log << "Creating task independent SearchAlgorithm..." << endl;
     shared_ptr<TaskIndependentSearchAlgorithm> ti_search_algorithm = parse_cmd_line(argc, argv, unit_cost);
-    //shared_ptr<SearchAlgorithm> search_algorithm = ti_search_algorithm->create_task_specific(tasks::g_root_task);
-    shared_ptr<SearchAlgorithm> search_algorithm(nullptr);
+
+    utils::g_log << "Creating task specific SearchAlgorithm..." << endl;
+    shared_ptr<SearchAlgorithm> search_algorithm = ti_search_algorithm->create_task_specific(tasks::g_root_task);
 
     utils::Timer search_timer;
     search_algorithm->search();

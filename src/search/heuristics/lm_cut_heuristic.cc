@@ -52,7 +52,8 @@ TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
     }
 
 shared_ptr<Evaluator> TaskIndependentLandmarkCutHeuristic::create_task_specific(shared_ptr<AbstractTask> &task) {
-        return make_shared<LandmarkCutHeuristic>(unparsed_config, log, cache_evaluator_values, task);
+    utils::g_log << "Creating task specific LandmarkCutHeuristic..." << endl;
+    return make_shared<LandmarkCutHeuristic>(unparsed_config, log, cache_evaluator_values, task);
     }
 
 

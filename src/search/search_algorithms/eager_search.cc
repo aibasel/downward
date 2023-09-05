@@ -373,6 +373,7 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(utils::Verbosity verbosit
 TaskIndependentEagerSearch::~TaskIndependentEagerSearch() {
 }
 shared_ptr<SearchEngine> TaskIndependentEagerSearch::create_task_specific(shared_ptr<AbstractTask> &task) {
+    utils::g_log << "Creating task specific EagerSearch..." << endl;
     vector<shared_ptr<Evaluator>> ti_evaluators(preferred_operator_evaluators.size());
     transform( preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), ti_evaluators.begin(),
                [this, &task](const shared_ptr<TaskIndependentEvaluator>& eval) {

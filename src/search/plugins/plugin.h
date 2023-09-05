@@ -110,10 +110,7 @@ public:
     }
 
     Any construct(const Options &opts, const utils::Context &context) const override {
-        //std::shared_ptr<Base> ptr = this->create_component(opts, context);
-        std::cout << "XXXXXXXXXXXXXXXXXXXxx: " << std::endl;
-        auto ptr = this->create_component(opts, context);
-        std::cout << "AAAAAAAAAAAAAAAAAAAAAA: " << typeid(ptr).name() << std::endl;
+        std::shared_ptr<Base> ptr = this->create_component(opts, context);
         return Any(ptr);
     }
 };
