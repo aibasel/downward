@@ -29,6 +29,9 @@ class LandmarkHeuristic : public Heuristic {
 protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
     const bool use_preferred_operators;
+
+    // TODO: Remove the following two members after experiments.
+    const bool prefer_simple_landmarks;
     const InterestingIf interesting_landmarks;
 
     std::unique_ptr<LandmarkStatusManager> lm_status_manager;

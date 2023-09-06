@@ -64,6 +64,7 @@ LandmarkHeuristic::LandmarkHeuristic(
     const plugins::Options &opts)
     : Heuristic(opts),
       use_preferred_operators(opts.get<bool>("pref")),
+      prefer_simple_landmarks(opts.get<bool>("prefer_simple_landmarks")),
       interesting_landmarks(opts.get<InterestingIf>("interesting_if")),
       successor_generator(nullptr) {
 }
@@ -210,12 +211,23 @@ void LandmarkHeuristic::generate_preferred_operators(
     }
 
     OperatorsProxy operators = task_proxy.get_operators();
-    if (preferred_operators_simple.empty()) {
-        for (OperatorID op_id : preferred_operators_disjunctive) {
-            set_preferred(operators[op_id]);
+    if (prefer_simple_landmarks) {
+        // Legacy version.
+        if (preferred_operators_simple.empty()) {
+            for (OperatorID op_id : preferred_operators_disjunctive) {
+                set_preferred(operators[op_id]);
+            }
+        } else {
+            for (OperatorID op_id : preferred_operators_simple) {
+                set_preferred(operators[op_id]);
+            }
         }
     } else {
+        // New and improved, maybe.
         for (OperatorID op_id : preferred_operators_simple) {
+            set_preferred(operators[op_id]);
+        }
+        for (OperatorID op_id : preferred_operators_disjunctive) {
             set_preferred(operators[op_id]);
         }
     }
@@ -294,6 +306,16 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
         "pref",
         "enable preferred operators (see note below)",
         "false");
+    /* TODO: Remove this option, this is just for experimenting whether using
+        the hierarchy has a positive effect on performance. */
+    feature.add_option<bool>(
+        "prefer_simple_landmarks",
+        "If true, only applicable operators leading to one kind of interesting "
+        "landmarks are preferred operators, namely those of the highest "
+        "hierarchy (simple > disjunctive)."
+        "Otherwise, all applicable operators leading to any interesting "
+        "landmark are preferred operators.",
+        "true");
     /* TODO: Remove this option, this is just for experimenting which variant
         works best in practice. */
     feature.add_option<InterestingIf>(
