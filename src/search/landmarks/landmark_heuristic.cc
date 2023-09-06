@@ -339,9 +339,9 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
 /* TODO: Remove this plugin, this is just for experimenting which variant works
     best in practice. */
 static plugins::TypedEnumPlugin<InterestingIf> _enum_plugin({
-    {"legacy", "old variant"},
-    {"future", "all future landmarks are interesting"},
-    {"parents_past",
-     "only future landmarks with all parents reached are interesting"},
-});
+        {"legacy", "old variant"},
+        {"future", "all future landmarks are interesting"},
+        {"parents_past",
+         "only future landmarks with all parents reached are interesting"},
+    });
 }
