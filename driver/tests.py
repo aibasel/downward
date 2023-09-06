@@ -83,6 +83,8 @@ def _get_portfolio_configs(portfolio: Path):
         traceback.print_exc()
         raise SyntaxError(
             f"The portfolio {portfolio} could not be loaded.")
+    if "CONFIGS" not in attributes:
+        raise ValueError("portfolios must define CONFIGS")
     return [config for _, config in attributes["CONFIGS"]]
 
 
