@@ -61,14 +61,8 @@ void LandmarkHeuristic::initialize(const plugins::Options &opts) {
         *lm_graph, opts.get<bool>("prog_goal"),
         opts.get<bool>("prog_gn"), opts.get<bool>("prog_r"));
 
-    /* TODO: Maybe deal with this differently, e.g., mark initial state
-        as dead-end. (Similar use case in M&S maybe?) */
-    if (landmark_graph_has_cycle_of_natural_orderings()) {
-        log << "Found a cycle of natural (or stronger) landmark orderings. By "
-            << "the definition of natural orderings, the problem is unsolvable."
-            << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
-    }
+    initial_landmark_graph_has_cycle_of_natural_orderings =
+        landmark_graph_has_cycle_of_natural_orderings();
 
     if (use_preferred_operators) {
         /* Ideally, we should reuse the successor generator of the main
@@ -98,7 +92,6 @@ bool LandmarkHeuristic::depth_first_search_for_cycle_of_natural_orderings(
     if (closed[id]) {
         return false;
     } else if (visited[id]) {
-        // Cycle detected.
         return true;
     }
 
@@ -197,6 +190,12 @@ void LandmarkHeuristic::generate_preferred_operators(
 }
 
 int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
+    if (initial_landmark_graph_has_cycle_of_natural_orderings) {
+        log << "Found a cycle of natural (or stronger) landmark orderings. By "
+            << "the definition of natural orderings, the problem is unsolvable."
+            << endl;
+        return DEAD_END;
+    }
     int h = get_heuristic_value(ancestor_state);
     if (use_preferred_operators) {
         ConstBitsetView past = lm_status_manager->get_past_landmarks(ancestor_state);
