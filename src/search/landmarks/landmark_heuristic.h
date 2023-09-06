@@ -15,6 +15,8 @@ class LandmarkGraph;
 class LandmarkNode;
 class LandmarkStatusManager;
 
+enum class InterestingIf {LEGACY, FUTURE, PARENTS_PAST};
+
 class LandmarkHeuristic : public Heuristic {
     bool initial_landmark_graph_has_cycle_of_natural_orderings;
 
@@ -27,6 +29,7 @@ class LandmarkHeuristic : public Heuristic {
 protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
     const bool use_preferred_operators;
+    const InterestingIf interesting_landmarks;
 
     std::unique_ptr<LandmarkStatusManager> lm_status_manager;
     std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;
@@ -37,7 +40,12 @@ protected:
     virtual int get_heuristic_value(const State &ancestor_state) = 0;
 
     void generate_preferred_operators(
-        const State &state, ConstBitsetView &past);
+        const State &state, ConstBitsetView &past,
+        ConstBitsetView &future);
+
+    bool landmark_is_interesting(
+        const State &state, ConstBitsetView &past, ConstBitsetView &future,
+        const landmarks::LandmarkNode &lm_node, bool all_lms_reached);
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     explicit LandmarkHeuristic(const plugins::Options &opts);
