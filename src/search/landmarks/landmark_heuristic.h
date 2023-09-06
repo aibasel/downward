@@ -15,6 +15,7 @@ class LandmarkGraph;
 class LandmarkNode;
 class LandmarkStatusManager;
 
+// TODO: Remove after experiments.
 enum class InterestingIf {LEGACY, FUTURE, PARENTS_PAST};
 
 class LandmarkHeuristic : public Heuristic {
