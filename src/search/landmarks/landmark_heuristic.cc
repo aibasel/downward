@@ -220,8 +220,8 @@ int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
     }
     int h = get_heuristic_value(ancestor_state);
     if (use_preferred_operators) {
-        ConstBitsetView past = lm_status_manager->get_past_landmarks(
-            ancestor_state);
+        ConstBitsetView past =
+            lm_status_manager->get_past_landmarks(ancestor_state);
         State state = convert_ancestor_state(ancestor_state);
         generate_preferred_operators(state, past);
     }
