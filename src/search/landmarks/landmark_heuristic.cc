@@ -63,6 +63,10 @@ void LandmarkHeuristic::initialize(const plugins::Options &opts) {
 
     initial_landmark_graph_has_cycle_of_natural_orderings =
         landmark_graph_has_cycle_of_natural_orderings();
+    if (initial_landmark_graph_has_cycle_of_natural_orderings
+        && log.is_at_least_normal()) {
+        log << "Landmark graph contains a cycle of natural orderings." << endl;
+    }
 
     if (use_preferred_operators) {
         /* Ideally, we should reuse the successor generator of the main
@@ -212,9 +216,6 @@ int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
        the implementation side.
     */
     if (initial_landmark_graph_has_cycle_of_natural_orderings) {
-        log << "Found a cycle of natural (or stronger) landmark orderings. By "
-            << "the definition of natural orderings, the problem is unsolvable."
-            << endl;
         return DEAD_END;
     }
     int h = get_heuristic_value(ancestor_state);
