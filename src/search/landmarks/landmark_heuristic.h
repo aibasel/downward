@@ -16,6 +16,14 @@ class LandmarkNode;
 class LandmarkStatusManager;
 
 class LandmarkHeuristic : public Heuristic {
+    bool initial_landmark_graph_has_cycle_of_natural_orderings;
+
+    /* TODO: We would prefer the following two functions to be implemented
+        somewhere else as more generic graph algorithms. */
+    bool landmark_graph_has_cycle_of_natural_orderings();
+    bool depth_first_search_for_cycle_of_natural_orderings(
+        const LandmarkNode &node, std::vector<bool> &closed,
+        std::vector<bool> &visited);
 protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
     const bool use_preferred_operators;

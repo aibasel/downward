@@ -98,23 +98,9 @@ bool LandmarkFactory::is_landmark_precondition(
 
 void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
                                EdgeType type) {
-    /* Adds an edge in the landmarks graph if there is no contradicting edge (simple measure to
-    reduce cycles. If the edge is already present, the stronger edge type wins.
-    */
+    /* Adds an edge in the landmarks graph. If an edge between the same
+       landmarks is already present, the stronger edge type wins. */
     assert(&from != &to);
-
-    if (type == EdgeType::REASONABLE) { // simple cycle test
-        if (from.parents.find(&to) != from.parents.end()) { // Edge in opposite direction exists
-            if (log.is_at_least_debug()) {
-                log << "edge in opposite direction exists" << endl;
-            }
-            if (from.parents.find(&to)->second > type) // Stronger order present, return
-                return;
-            // Edge in opposite direction is weaker, delete
-            from.parents.erase(&to);
-            to.children.erase(&from);
-        }
-    }
 
     // If edge already exists, remove if weaker
     if (from.children.find(&to) != from.children.end() && from.children.find(
@@ -147,114 +133,6 @@ void LandmarkFactory::discard_all_orderings() {
         node->children.clear();
         node->parents.clear();
     }
-}
-
-void LandmarkFactory::mk_acyclic_graph() {
-    unordered_set<LandmarkNode *> acyclic_node_set(lm_graph->get_num_landmarks());
-    int removed_edges = 0;
-    for (auto &node : lm_graph->get_nodes()) {
-        if (acyclic_node_set.find(node.get()) == acyclic_node_set.end())
-            removed_edges += loop_acyclic_graph(*node, acyclic_node_set);
-    }
-    // [Malte] Commented out the following assertion because
-    // the old method for this is no longer available.
-    // assert(acyclic_node_set.size() == number_of_landmarks());
-    if (log.is_at_least_normal()) {
-        log << "Removed " << removed_edges << " reasonable orders" << endl;
-    }
-}
-
-void LandmarkFactory::remove_first_weakest_cycle_edge(
-    list<pair<LandmarkNode *, EdgeType>> &path,
-    list<pair<LandmarkNode *, EdgeType>>::iterator it) {
-    LandmarkNode *from = path.back().first;
-    LandmarkNode *to = it->first;
-    EdgeType weakest_edge = path.back().second;
-    for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it;
-         it2 != prev(path.end()); ++it2) {
-        EdgeType edge = it2->second;
-        if (edge < weakest_edge) {
-            from = it2->first;
-            to = next(it2)->first;
-            weakest_edge = edge;
-        }
-        if (weakest_edge == EdgeType::REASONABLE) {
-            break;
-        }
-    }
-    /*
-      If the weakest ordering in a cycle is natural (or stronger), this
-      indicates that the problem at hand is unsolvable. We signal this by
-      clearing the first achievers of all landmarks present in that cycle.
-      We assert here that (first) achievers were calculated beforehand to make
-      sure that this information is not overwritten later on.
-    */
-    assert(achievers_calculated);
-    if (weakest_edge > EdgeType::REASONABLE) {
-        for (list<pair<LandmarkNode *, EdgeType>>::iterator it2 = it;
-             it2 != path.end(); ++it2) {
-            it2->first->get_landmark().first_achievers.clear();
-        }
-    }
-    assert(from->children.find(to) != from->children.end());
-    assert(to->parents.find(from) != to->parents.end());
-    from->children.erase(to);
-    to->parents.erase(from);
-}
-
-int LandmarkFactory::loop_acyclic_graph(LandmarkNode &lmn,
-                                        unordered_set<LandmarkNode *> &acyclic_node_set) {
-    assert(acyclic_node_set.find(&lmn) == acyclic_node_set.end());
-    int nr_removed = 0;
-    list<pair<LandmarkNode *, EdgeType>> path;
-    unordered_set<LandmarkNode *> visited = unordered_set<LandmarkNode *>(lm_graph->get_num_landmarks());
-    LandmarkNode *cur = &lmn;
-    while (true) {
-        assert(acyclic_node_set.find(cur) == acyclic_node_set.end());
-        if (visited.find(cur) != visited.end()) { // cycle
-            // find other occurrence of cur node in path
-            list<pair<LandmarkNode *, EdgeType>>::iterator it;
-            for (it = path.begin(); it != path.end(); ++it) {
-                if (it->first == cur)
-                    break;
-            }
-            assert(it != path.end());
-            // remove edge from graph
-            remove_first_weakest_cycle_edge(path, it);
-            ++nr_removed;
-
-            path.clear();
-            cur = &lmn;
-            visited.clear();
-            continue;
-        }
-        visited.insert(cur);
-        bool empty = true;
-        for (const auto &child : cur->children) {
-            LandmarkNode *child_p = child.first;
-            EdgeType edge = child.second;
-            if (acyclic_node_set.find(child_p) == acyclic_node_set.end()) {
-                path.emplace_back(cur, edge);
-                cur = child_p;
-                empty = false;
-                break;
-            }
-        }
-        if (!empty)
-            continue;
-
-        // backtrack
-        visited.erase(cur);
-        acyclic_node_set.insert(cur);
-        if (!path.empty()) {
-            cur = path.back().first;
-            path.pop_back();
-            visited.erase(cur);
-        } else
-            break;
-    }
-    assert(acyclic_node_set.find(&lmn) != acyclic_node_set.end());
-    return nr_removed;
 }
 
 void LandmarkFactory::generate_operators_lookups(const TaskProxy &task_proxy) {
