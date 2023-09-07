@@ -184,9 +184,6 @@ void FunctionCallNode::collect_keyword_arguments(
     unordered_map<string, plugins::ArgumentInfo> argument_infos_by_key;
     for (const plugins::ArgumentInfo &arg_info : argument_infos) {
         assert(!argument_infos_by_key.contains(arg_info.key));
-        if (argument_infos_by_key.contains(arg_info.key)){
-            cout << "Already contains " << arg_info.key << endl;
-        }
         argument_infos_by_key.insert({arg_info.key, arg_info});
     }
 
