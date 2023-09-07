@@ -171,7 +171,6 @@ Features RawRegistry::collect_features(
                     + "' of feature '" + key + "'.");
             }
             ++occurrences[arg_info.key];
-
         }
         // Check that arg_keys are unique
         for (const auto &pair : occurrences) {
@@ -179,11 +178,10 @@ Features RawRegistry::collect_features(
             int occurrence = pair.second;
             if (occurrence > 1) {
                 errors.push_back(
-                        "The Argument '" + arg_key + "' in '" +  key + "' is defined " +
-                        to_string(occurrence) + " times.");
+                    "The Argument '" + arg_key + "' in '" + key + "' is defined " +
+                    to_string(occurrence) + " times.");
             }
         }
-
     }
 
     return features;
