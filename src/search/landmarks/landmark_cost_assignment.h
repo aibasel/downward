@@ -16,7 +16,7 @@ class LandmarkGraph;
 class LandmarkNode;
 class LandmarkStatusManager;
 
-class LandmarkCostPartitioningAlgorithm {
+class CostPartitioningAlgorithm {
 protected:
     const LandmarkGraph &lm_graph;
     const std::vector<int> operator_costs;
@@ -24,28 +24,28 @@ protected:
     const std::set<int> &get_achievers(
         const Landmark &landmark, bool past) const;
 public:
-    LandmarkCostPartitioningAlgorithm(const std::vector<int> &operator_costs,
-                                      const LandmarkGraph &graph);
-    virtual ~LandmarkCostPartitioningAlgorithm() = default;
+    CostPartitioningAlgorithm(const std::vector<int> &operator_costs,
+                              const LandmarkGraph &graph);
+    virtual ~CostPartitioningAlgorithm() = default;
 
-    virtual double compute_cost_partitioning(
+    virtual double compute_cost_partitioned_h_value(
         const LandmarkStatusManager &lm_status_manager,
         const State &ancestor_state) = 0;
 };
 
-class UniformCostPartitioningAlgorithm : public LandmarkCostPartitioningAlgorithm {
+class UniformCostPartitioningAlgorithm : public CostPartitioningAlgorithm {
     bool use_action_landmarks;
 public:
     UniformCostPartitioningAlgorithm(const std::vector<int> &operator_costs,
                                      const LandmarkGraph &graph,
                                      bool use_action_landmarks);
 
-    virtual double compute_cost_partitioning(
+    virtual double compute_cost_partitioned_h_value(
         const LandmarkStatusManager &lm_status_manager,
         const State &ancestor_state) override;
 };
 
-class OptimalCostPartitioningAlgorithm : public LandmarkCostPartitioningAlgorithm {
+class OptimalCostPartitioningAlgorithm : public CostPartitioningAlgorithm {
     lp::LPSolver lp_solver;
     /* We keep an additional copy of the constraints around to avoid
        some effort with recreating the vector (see issue443). */
@@ -64,7 +64,7 @@ public:
                                      const LandmarkGraph &graph,
                                      lp::LPSolverType solver_type);
 
-    virtual double compute_cost_partitioning(
+    virtual double compute_cost_partitioned_h_value(
         const LandmarkStatusManager &lm_status_manager,
         const State &ancestor_state) override;
 };

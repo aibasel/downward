@@ -4,16 +4,15 @@
 #include "landmark_heuristic.h"
 
 namespace landmarks {
-class LandmarkCostPartitioningAlgorithm;
+class CostPartitioningAlgorithm;
 
-enum class CostPartitioningStrategy {
+enum class CostPartitioningMethod {
     OPTIMAL,
     UNIFORM,
 };
 
 class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
-    const CostPartitioningStrategy cost_partitioning_strategy;
-    std::unique_ptr<LandmarkCostPartitioningAlgorithm> cost_partitioning_algorithm;
+    std::unique_ptr<CostPartitioningAlgorithm> cost_partitioning_algorithm;
 
     void check_unsupported_features(const plugins::Options &opts);
     void set_cost_partitioning_algorithm(const plugins::Options &opts);

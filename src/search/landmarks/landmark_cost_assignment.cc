@@ -17,12 +17,12 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkCostPartitioningAlgorithm::LandmarkCostPartitioningAlgorithm(
+CostPartitioningAlgorithm::CostPartitioningAlgorithm(
     const vector<int> &operator_costs, const LandmarkGraph &graph)
     : lm_graph(graph), operator_costs(operator_costs) {
 }
 
-const set<int> &LandmarkCostPartitioningAlgorithm::get_achievers(
+const set<int> &CostPartitioningAlgorithm::get_achievers(
     const Landmark &landmark, bool past) const {
     // Return relevant achievers of the landmark according to its status.
     if (past) {
@@ -36,11 +36,11 @@ const set<int> &LandmarkCostPartitioningAlgorithm::get_achievers(
 UniformCostPartitioningAlgorithm::UniformCostPartitioningAlgorithm(
     const vector<int> &operator_costs, const LandmarkGraph &graph,
     bool use_action_landmarks)
-    : LandmarkCostPartitioningAlgorithm(operator_costs, graph),
+    : CostPartitioningAlgorithm(operator_costs, graph),
       use_action_landmarks(use_action_landmarks) {
 }
 
-double UniformCostPartitioningAlgorithm::compute_cost_partitioning(
+double UniformCostPartitioningAlgorithm::compute_cost_partitioned_h_value(
     const LandmarkStatusManager &lm_status_manager,
     const State &ancestor_state) {
     vector<int> achieved_lms_by_op(operator_costs.size(), 0);
@@ -128,9 +128,9 @@ double UniformCostPartitioningAlgorithm::compute_cost_partitioning(
             int num_achieved = achieved_lms_by_op[op_id];
             assert(num_achieved >= 1);
             assert(utils::in_bounds(op_id, operator_costs));
-            double shared_cost =
+            double partitioned_cost =
                 static_cast<double>(operator_costs[op_id]) / num_achieved;
-            min_cost = min(min_cost, shared_cost);
+            min_cost = min(min_cost, partitioned_cost);
         }
         h += min_cost;
     }
@@ -142,7 +142,7 @@ double UniformCostPartitioningAlgorithm::compute_cost_partitioning(
 OptimalCostPartitioningAlgorithm::OptimalCostPartitioningAlgorithm(
     const vector<int> &operator_costs, const LandmarkGraph &graph,
     lp::LPSolverType solver_type)
-    : LandmarkCostPartitioningAlgorithm(operator_costs, graph),
+    : CostPartitioningAlgorithm(operator_costs, graph),
       lp_solver(solver_type),
       lp(build_initial_lp()) {
 }
@@ -175,7 +175,7 @@ lp::LinearProgram OptimalCostPartitioningAlgorithm::build_initial_lp() {
                              {}, lp_solver.get_infinity());
 }
 
-double OptimalCostPartitioningAlgorithm::compute_cost_partitioning(
+double OptimalCostPartitioningAlgorithm::compute_cost_partitioned_h_value(
     const LandmarkStatusManager &lm_status_manager,
     const State &ancestor_state) {
     /* TODO: We could also do the same thing with action landmarks we
