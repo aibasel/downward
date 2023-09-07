@@ -4,7 +4,7 @@
 #include "landmark_heuristic.h"
 
 namespace landmarks {
-class LandmarkCostAssignment;
+class LandmarkCostPartitioningAlgorithm;
 
 enum class CostPartitioningStrategy {
     OPTIMAL,
@@ -13,10 +13,10 @@ enum class CostPartitioningStrategy {
 
 class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
     const CostPartitioningStrategy cost_partitioning_strategy;
-    std::unique_ptr<LandmarkCostAssignment> lm_cost_assignment;
+    std::unique_ptr<LandmarkCostPartitioningAlgorithm> cost_partitioning_algorithm;
 
     void check_unsupported_features(const plugins::Options &opts);
-    void set_cost_assignment(const plugins::Options &opts);
+    void set_cost_partitioning_algorithm(const plugins::Options &opts);
 
     int get_heuristic_value(const State &ancestor_state) override;
 public:

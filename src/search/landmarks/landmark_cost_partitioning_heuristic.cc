@@ -18,13 +18,14 @@ namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     const plugins::Options &opts)
     : LandmarkHeuristic(opts),
-      cost_partitioning_strategy(opts.get<CostPartitioningStrategy>("cost_partitioning")) {
+      cost_partitioning_strategy(
+          opts.get<CostPartitioningStrategy>("cost_partitioning")) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;
     }
     check_unsupported_features(opts);
     initialize(opts);
-    set_cost_assignment(opts);
+    set_cost_partitioning_algorithm(opts);
 }
 
 void LandmarkCostPartitioningHeuristic::check_unsupported_features(
@@ -45,16 +46,16 @@ void LandmarkCostPartitioningHeuristic::check_unsupported_features(
     }
 }
 
-void LandmarkCostPartitioningHeuristic::set_cost_assignment(
+void LandmarkCostPartitioningHeuristic::set_cost_partitioning_algorithm(
     const plugins::Options &opts) {
     if (cost_partitioning_strategy == CostPartitioningStrategy::OPTIMAL) {
-        lm_cost_assignment =
-            utils::make_unique_ptr<LandmarkEfficientOptimalSharedCostAssignment>(
+        cost_partitioning_algorithm =
+            utils::make_unique_ptr<OptimalCostPartitioningAlgorithm>(
                 task_properties::get_operator_costs(task_proxy),
                 *lm_graph, opts.get<lp::LPSolverType>("lpsolver"));
     } else if (cost_partitioning_strategy == CostPartitioningStrategy::UNIFORM) {
-        lm_cost_assignment =
-            utils::make_unique_ptr<LandmarkUniformSharedCostAssignment>(
+        cost_partitioning_algorithm =
+            utils::make_unique_ptr<UniformCostPartitioningAlgorithm>(
                 task_properties::get_operator_costs(task_proxy),
                 *lm_graph, opts.get<bool>("alm"));
     } else {
@@ -66,7 +67,7 @@ int LandmarkCostPartitioningHeuristic::get_heuristic_value(
     const State &ancestor_state) {
     double epsilon = 0.01;
 
-    double h_val = lm_cost_assignment->cost_sharing_h_value(
+    double h_val = cost_partitioning_algorithm->compute_cost_partitioning(
         *lm_status_manager, ancestor_state);
     if (h_val == numeric_limits<double>::max()) {
         return DEAD_END;
