@@ -163,13 +163,27 @@ Features RawRegistry::collect_features(
                 "Missing Plugin for type of feature '" + key + "'.");
         }
 
+        unordered_map<string, int> occurrences;
         for (const ArgumentInfo &arg_info : feature.get_arguments()) {
             if (arg_info.type == TypeRegistry::NO_TYPE) {
                 errors.push_back(
                     "Missing Plugin for type of argument '" + arg_info.key
                     + "' of feature '" + key + "'.");
             }
+            ++occurrences[arg_info.key];
+
         }
+        // Check that arg_keys are unique
+        for (const auto &pair : occurrences) {
+            const string &arg_key = pair.first;
+            int occurrence = pair.second;
+            if (occurrence > 1) {
+                errors.push_back(
+                        "The Argument '" + arg_key + "' in '" +  key + "' is defined " +
+                        to_string(occurrence) + " times.");
+            }
+        }
+
     }
 
     return features;
