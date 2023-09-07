@@ -58,7 +58,7 @@ void LandmarkCostPartitioningHeuristic::set_cost_partitioning_algorithm(
                 task_properties::get_operator_costs(task_proxy),
                 *lm_graph, opts.get<bool>("alm"));
     } else {
-        ABORT("Unknown cost partitioning strategy");
+        ABORT("Unknown cost partitioning method");
     }
 }
 
