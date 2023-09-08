@@ -40,7 +40,7 @@ UniformCostPartitioningAlgorithm::UniformCostPartitioningAlgorithm(
       use_action_landmarks(use_action_landmarks) {
 }
 
-double UniformCostPartitioningAlgorithm::compute_cost_partitioned_h_value(
+double UniformCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
     const LandmarkStatusManager &lm_status_manager,
     const State &ancestor_state) {
     vector<int> achieved_lms_by_op(operator_costs.size(), 0);
@@ -175,7 +175,7 @@ lp::LinearProgram OptimalCostPartitioningAlgorithm::build_initial_lp() {
                              {}, lp_solver.get_infinity());
 }
 
-double OptimalCostPartitioningAlgorithm::compute_cost_partitioned_h_value(
+double OptimalCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
     const LandmarkStatusManager &lm_status_manager,
     const State &ancestor_state) {
     /* TODO: We could also do the same thing with action landmarks we

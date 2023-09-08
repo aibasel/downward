@@ -66,8 +66,9 @@ int LandmarkCostPartitioningHeuristic::get_heuristic_value(
     const State &ancestor_state) {
     double epsilon = 0.01;
 
-    double h_val = cost_partitioning_algorithm->compute_cost_partitioned_h_value(
-        *lm_status_manager, ancestor_state);
+    double h_val =
+        cost_partitioning_algorithm->get_cost_partitioned_heuristic_value(
+            *lm_status_manager, ancestor_state);
     if (h_val == numeric_limits<double>::max()) {
         return DEAD_END;
     } else {

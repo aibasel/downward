@@ -28,7 +28,7 @@ public:
                               const LandmarkGraph &graph);
     virtual ~CostPartitioningAlgorithm() = default;
 
-    virtual double compute_cost_partitioned_h_value(
+    virtual double get_cost_partitioned_heuristic_value(
         const LandmarkStatusManager &lm_status_manager,
         const State &ancestor_state) = 0;
 };
@@ -40,7 +40,7 @@ public:
                                      const LandmarkGraph &graph,
                                      bool use_action_landmarks);
 
-    virtual double compute_cost_partitioned_h_value(
+    virtual double get_cost_partitioned_heuristic_value(
         const LandmarkStatusManager &lm_status_manager,
         const State &ancestor_state) override;
 };
@@ -64,7 +64,7 @@ public:
                                      const LandmarkGraph &graph,
                                      lp::LPSolverType solver_type);
 
-    virtual double compute_cost_partitioned_h_value(
+    virtual double get_cost_partitioned_heuristic_value(
         const LandmarkStatusManager &lm_status_manager,
         const State &ancestor_state) override;
 };
