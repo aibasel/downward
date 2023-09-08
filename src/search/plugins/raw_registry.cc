@@ -163,23 +163,23 @@ Features RawRegistry::collect_features(
                 "Missing Plugin for type of feature '" + feature_key + "'.");
         }
 
-        unordered_map<string, int> argument_key_occurrences;
+        unordered_map<string, int> parameter_occurrences;
         for (const ArgumentInfo &arg_info : feature.get_arguments()) {
             if (arg_info.type == TypeRegistry::NO_TYPE) {
                 errors.push_back(
-                    "Missing Plugin for type of argument '" + arg_info.key
+                    "Missing Plugin for type of parameter '" + arg_info.key
                     + "' of feature '" + feature_key + "'.");
             }
-            ++argument_key_occurrences[arg_info.key];
+            ++parameter_occurrences[arg_info.key];
         }
-        // Check that arg_keys are unique
-        for (const auto &pair : argument_key_occurrences) {
-            const string &arg_key = pair.first;
-            int arg_key_occurrence = pair.second;
-            if (arg_key_occurrence > 1) {
+        // Check that parameters are unique
+        for (const auto &pair : parameter_occurrences) {
+            const string &parameter = pair.first;
+            int parameter_occurrence = pair.second;
+            if (parameter_occurrence > 1) {
                 errors.push_back(
-                    "The Argument '" + arg_key + "' in '" + feature_key + "' is defined " +
-                    to_string(arg_key_occurrence) + " times.");
+                        "The Parameter '" + parameter + "' in '" + feature_key + "' is defined " +
+                        to_string(parameter_occurrence) + " times.");
             }
         }
     }
