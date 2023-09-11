@@ -10,14 +10,7 @@
 #include <iostream>
 
 
-#include "task_independent_search_algorithm.h"
-//for testing
 
-#include "heuristics/lm_cut_heuristic.h"
-#include "evaluators/g_evaluator.h"
-#include "evaluators/sum_evaluator.h"
-#include "open_lists/tiebreaking_open_list.h"
-#include "search_algorithms/eager_search.h"
 
 using namespace std;
 using utils::ExitCode;

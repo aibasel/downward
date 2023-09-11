@@ -1,7 +1,6 @@
 #include "tiebreaking_open_list.h"
 
 #include "../evaluator.h"
-#include "../task_independent_evaluator.h"
 
 #include "../open_list.h"
 

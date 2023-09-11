@@ -210,14 +210,37 @@ void print_initial_evaluator_values(
         );
 }
 
-static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<SearchAlgorithm> {
+static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentSearchAlgorithm> {
 public:
-    SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("SearchAlgorithm") {
+    SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("TaskIndependentSearchEngine") {
         // TODO: Replace add synopsis for the wiki page.
         // document_synopsis("...");
     }
 }
 _category_plugin;
+
+
+TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(utils::Verbosity verbosity,
+                                                         OperatorCost cost_type,
+                                                         double max_time,
+                                                         int bound,
+                                                         string unparsed_config)
+        : description(unparsed_config),
+          status(IN_PROGRESS),
+          solution_found(false),
+          verbosity(verbosity),
+          bound(bound),
+          cost_type(cost_type),
+          max_time(max_time) {
+    if (bound < 0) {
+        cerr << "error: negative cost bound " << bound << endl;
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+    }
+}
+
+TaskIndependentSearchAlgorithm::~TaskIndependentSearchAlgorithm() {
+}
+
 
 void collect_preferred_operators(
     EvaluationContext &eval_context,
