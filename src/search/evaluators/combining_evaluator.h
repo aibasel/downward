@@ -2,7 +2,6 @@
 #define EVALUATORS_COMBINING_EVALUATOR_H
 
 #include "../evaluator.h"
-#include "../task_independent_evaluator.h"
 
 #include <memory>
 #include <set>

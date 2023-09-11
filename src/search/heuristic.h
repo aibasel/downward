@@ -5,7 +5,6 @@
 #include "operator_id.h"
 #include "per_state_information.h"
 #include "task_proxy.h"
-#include "task_independent_evaluator.h"
 
 #include "algorithms/ordered_set.h"
 

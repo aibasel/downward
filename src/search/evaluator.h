@@ -1,6 +1,7 @@
 #ifndef EVALUATOR_H
 #define EVALUATOR_H
 
+#include "abstract_task.h"
 #include "evaluation_result.h"
 
 #include "utils/logging.h"
@@ -104,6 +105,25 @@ public:
       the given state is cached, i.e., is_estimate_cached returns true.
     */
     virtual int get_cached_estimate(const State &state) const;
+};
+
+class TaskIndependentEvaluator {
+    const std::string description;
+    const bool use_for_reporting_minima;
+    const bool use_for_boosting;
+    const bool use_for_counting_evaluations;
+protected:
+    mutable utils::LogProxy log;
+public:
+    explicit TaskIndependentEvaluator(
+            utils::LogProxy log,
+            const std::string unparsed_config = std::string(),
+            bool use_for_reporting_minima = false,
+            bool use_for_boosting = false,
+            bool use_for_counting_evaluations = false);
+    virtual ~TaskIndependentEvaluator() = default;
+
+    virtual std::shared_ptr<Evaluator> create_task_specific(std::shared_ptr<AbstractTask> &task) = 0;
 };
 
 extern void add_evaluator_options_to_feature(plugins::Feature &feature);

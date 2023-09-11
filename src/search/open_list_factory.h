@@ -27,7 +27,7 @@ public:
 };
 
 
-class TaskIndependentOpenListFactory {
+class TaskIndependentOpenListFactory { //TODO559 remove indirection TI_XYZ_Factory -> XYZ_Factory -> XYZ, instead TI_XYZ -> XYZ
 public:
     TaskIndependentOpenListFactory() = default;
     virtual ~TaskIndependentOpenListFactory() = default;

@@ -10,6 +10,7 @@
 #include <vector>
 
 class Evaluator;
+class TaskIndependentEvaluator;
 class PruningMethod;
 
 namespace plugins {

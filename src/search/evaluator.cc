@@ -86,13 +86,25 @@ int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
 }
 
+TaskIndependentEvaluator::TaskIndependentEvaluator(utils::LogProxy log,
+                                                   const string unparsed_config,
+                                                   bool use_for_reporting_minima,
+                                                   bool use_for_boosting,
+                                                   bool use_for_counting_evaluations)
+        : description(unparsed_config),
+          use_for_reporting_minima(use_for_reporting_minima),
+          use_for_boosting(use_for_boosting),
+          use_for_counting_evaluations(use_for_counting_evaluations),
+          log(log) {
+}
+
 void add_evaluator_options_to_feature(plugins::Feature &feature) {
     utils::add_log_options_to_feature(feature);
 }
 
-static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<Evaluator> {
+static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentEvaluator> {
 public:
-    EvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {
+    EvaluatorCategoryPlugin() : TypedCategoryPlugin("TaskIndependentEvaluator") {
         document_synopsis(
             "An evaluator specification is either a newly created evaluator "
             "instance or an evaluator that has been defined previously. "

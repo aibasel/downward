@@ -2,7 +2,6 @@
 #define EVALUATORS_SUM_EVALUATOR_H
 
 #include "combining_evaluator.h"
-#include "../task_independent_evaluator.h"
 
 #include <memory>
 #include <vector>

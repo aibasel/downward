@@ -3,8 +3,6 @@
 
 #include "../evaluator.h"
 
-#include "../task_independent_evaluator.h"
-
 #include "../abstract_task.h"
 
 namespace g_evaluator {

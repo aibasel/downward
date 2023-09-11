@@ -1,6 +1,6 @@
 #include "sum_evaluator.h"
 
-#include "../task_independent_evaluator.h"
+#include "../evaluator.h"
 
 #include "../plugins/plugin.h"
 
