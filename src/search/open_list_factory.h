@@ -26,8 +26,10 @@ public:
     std::unique_ptr<OpenList<T>> create_open_list();
 };
 
-
-class TaskIndependentOpenListFactory { //TODO559 remove indirection TI_XYZ_Factory -> XYZ_Factory -> XYZ, instead TI_XYZ -> XYZ
+//TODO559 discuss indirection TaskIndependent_XYZ_Factory -> XYZ_Factory -> XYZ, instead TaskIndependent_XYZ -> XYZ
+// Remove OpenListFactory completely. It is subsumed by TaskIndependentOpenListFactory that produces
+// a TaskIndependentOpenList that produces an OpenList.
+class TaskIndependentOpenListFactory {
 public:
     TaskIndependentOpenListFactory() = default;
     virtual ~TaskIndependentOpenListFactory() = default;
@@ -36,5 +38,14 @@ public:
 
     virtual std::unique_ptr<TaskIndependentStateOpenList> create_task_independent_state_open_list() = 0;
     virtual std::unique_ptr<TaskIndependentEdgeOpenList> create_task_independent_edge_open_list() = 0;
+
+    /*
+      The following template receives manual specializations (in the
+      cc file) for the open list types we want to support. It is
+      intended for templatized callers, e.g. the constructor of
+      AlternationOpenList.
+    */
+    template<typename T>
+    std::unique_ptr<TaskIndependentOpenList<T>> create_task_independent_open_list();
 };
 #endif
