@@ -27,8 +27,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(fast-downward
     DESCRIPTION "Fast Downward is a domain-independent classical planning system."
-    HOMEPAGE_URL https://www.fast-downward.org/
-    LANGUAGES CXX)
+    HOMEPAGE_URL https://www.fast-downward.org/)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
