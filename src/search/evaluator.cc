@@ -98,6 +98,12 @@ TaskIndependentEvaluator::TaskIndependentEvaluator(utils::LogProxy log,
           log(log) {
 }
 
+
+plugins::Any TaskIndependentEvaluator::create_task_specific(shared_ptr<AbstractTask> &task) {
+    std::shared_ptr<ComponentMap> component_map;
+    return create_task_specific(task, component_map);
+}
+
 void add_evaluator_options_to_feature(plugins::Feature &feature) {
     utils::add_log_options_to_feature(feature);
 }

@@ -241,6 +241,11 @@ TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(utils::Verbosity 
 TaskIndependentSearchAlgorithm::~TaskIndependentSearchAlgorithm() {
 }
 
+plugins::Any TaskIndependentSearchEngine::create_task_specific(shared_ptr<AbstractTask> &task) {
+    std::shared_ptr<ComponentMap> component_map;
+    return create_task_specific(task, component_map);
+}
+
 
 void collect_preferred_operators(
     EvaluationContext &eval_context,

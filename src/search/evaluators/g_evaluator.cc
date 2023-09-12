@@ -41,8 +41,19 @@ TaskIndependentGEvaluator::TaskIndependentGEvaluator(utils::LogProxy log,
 TaskIndependentGEvaluator::~TaskIndependentGEvaluator() {
 }
 
-shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific([[maybe_unused]] shared_ptr<AbstractTask> &task) {
-    return make_shared<GEvaluator>(log, unparsed_config);
+plugins::Any TaskIndependentGEvaluator::create_task_specific([[maybe_unused]] shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
+
+    std::shared_ptr<GEvaluator> task_specific_g_evaluator;
+    plugins::Any any_obj;
+
+    if (component_map -> contains_key(make_pair(task, static_cast<void*>(this)))){
+        any_obj = component_map -> get_value(make_pair(task, static_cast<void*>(this)));
+    } else {
+        task_specific_g_evaluator = make_shared<GEvaluator>(log, unparsed_config);
+        any_obj = plugins::Any(task_specific_g_evaluator);
+        component_map -> add_entry(make_pair(task, static_cast<void*>(this)), any_obj);
+    }
+    return any_obj;
 }
 
 

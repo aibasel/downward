@@ -51,10 +51,21 @@ TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(string 
 TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
 }
 
-shared_ptr<Evaluator> TaskIndependentLandmarkCutHeuristic::create_task_specific(shared_ptr<AbstractTask> &task) {
-    utils::g_log << "Creating task specific LandmarkCutHeuristic..." << endl;
-    return make_shared<LandmarkCutHeuristic>(unparsed_config, log, cache_evaluator_values, task);
+plugins::Any TaskIndependentLandmarkCutHeuristic::create_task_specific(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<LandmarkCutHeuristic> task_specific_lm_cut_heurisitc;
+    plugins::Any any_obj;
+    if (component_map -> contains_key(make_pair(task, static_cast<void*>(this)))){
+        utils::g_log << "RRRRRRRRRRRRRRRRRRRRRRRRRRRRRRReuse task specific LandmarkCutHeuristic..." << endl;
+        any_obj = component_map -> get_value(make_pair(task, static_cast<void*>(this)));
+    } else {
+        utils::g_log << "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCreating task specific LandmarkCutHeuristic..." << endl;
+        task_specific_lm_cut_heurisitc = make_shared<LandmarkCutHeuristic>(unparsed_config, log, cache_evaluator_values, task);
+        any_obj = plugins::Any(task_specific_lm_cut_heurisitc);
+        component_map -> add_entry(make_pair(task, static_cast<void*>(this)), any_obj);
+    }
+    return any_obj;
 }
+
 class TaskIndependentLandmarkCutHeuristicFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentLandmarkCutHeuristic> {
 public:
     TaskIndependentLandmarkCutHeuristicFeature() : TypedFeature("lmcut") {

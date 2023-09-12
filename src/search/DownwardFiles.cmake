@@ -51,6 +51,7 @@ fast_downward_plugin(
         abstract_task
         axioms
         command_line
+        component_map
         evaluation_context
         evaluation_result
         evaluator

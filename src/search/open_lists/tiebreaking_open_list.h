@@ -160,7 +160,7 @@ public:
     explicit TaskIndependentTieBreakingOpenList(bool pref_only,
                                                 std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators,
                                                 bool allow_unsafe_pruning);
-    virtual std::shared_ptr<OpenList<Entry>> create_task_specific(std::shared_ptr<AbstractTask> &task) override;
+   virtual plugins::Any create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) override;
 
     virtual ~TaskIndependentTieBreakingOpenList()  override = default;
 };
@@ -174,22 +174,34 @@ TaskIndependentTieBreakingOpenList<Entry>::TaskIndependentTieBreakingOpenList(bo
 }
 
 template<class Entry>
-std::shared_ptr<OpenList<Entry>> TaskIndependentTieBreakingOpenList<Entry>::create_task_specific(std::shared_ptr<AbstractTask> &task) {
-    std::vector<std::shared_ptr<Evaluator>> td_evaluators(evaluators.size());
-    transform(evaluators.begin(), evaluators.end(), td_evaluators.begin(),
-              [this, &task](const std::shared_ptr<TaskIndependentEvaluator> &eval) {
-                  return eval->create_task_specific(task);
-              }
-              );
-    return std::make_unique<TieBreakingOpenList<Entry>>(pref_only,
-                                                        td_evaluators,
-                                                        allow_unsafe_pruning);
+plugins::Any TaskIndependentTieBreakingOpenList<Entry>::create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
+    std::shared_ptr<TieBreakingOpenList<Entry>> task_specific_tie_breaking_open_list;
+    plugins::Any any_obj;
+    if (component_map -> contains_key(make_pair(task, static_cast<void*>(this)))){
+        utils::g_log << "Reuse task specific TieBreakingOpenList..." << std::endl;
+        any_obj = component_map -> get_value(make_pair(task, static_cast<void*>(this)));
+    } else {
+        utils::g_log << "Creating task specific TieBreakingOpenList..." << std::endl;
+        std::vector<std::shared_ptr<Evaluator>> td_evaluators(evaluators.size());
+        transform(evaluators.begin(), evaluators.end(), td_evaluators.begin(),
+                  [this, &task, &component_map](const std::shared_ptr<TaskIndependentEvaluator> &eval) {
+                      return plugins::any_cast<std::shared_ptr<Evaluator>>(eval->create_task_specific(task, component_map));
+                  }
+        );
+
+        task_specific_tie_breaking_open_list = std::make_shared<TieBreakingOpenList<Entry>>(pref_only,
+                                                                                   td_evaluators,
+                                                                                   allow_unsafe_pruning);
+        any_obj = plugins::Any(task_specific_tie_breaking_open_list);
+        component_map -> add_entry(make_pair(task, static_cast<void*>(this)), any_obj);
+    }
+    return any_obj;
 }
 
 
 
 class TieBreakingOpenListFactory : public OpenListFactory {
-    plugins::Options options; //TODOissue559 remove options field in the long run.
+    plugins::Options options; //TODO issue559 remove options field in the long run.
     bool pref_only;
     int size;
     std::vector<std::shared_ptr<Evaluator>> evaluators;
@@ -206,7 +218,7 @@ public:
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;
 };
 class TaskIndependentTieBreakingOpenListFactory : public TaskIndependentOpenListFactory {
-    plugins::Options options; //TODOissue559 remove options field in the long run.
+    plugins::Options options; //TODO issue559 remove options field in the long run.
     bool pref_only;
     int size;
     std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators;

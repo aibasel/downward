@@ -5,6 +5,7 @@
 
 #include "evaluation_context.h"
 #include "operator_id.h"
+#include "component_map.h"
 
 class StateID;
 
@@ -134,8 +135,16 @@ public:
     explicit TaskIndependentOpenList(bool preferred_only = false);
     virtual ~TaskIndependentOpenList() = default;
 
-    virtual std::shared_ptr<OpenList<Entry>> create_task_specific(std::shared_ptr<AbstractTask> &task) = 0;
+    plugins::Any create_task_specific(std::shared_ptr<AbstractTask> &task);
+    virtual plugins::Any create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) = 0;
 };
+
+template<class Entry>
+plugins::Any
+TaskIndependentOpenList<Entry>::create_task_specific(std::shared_ptr<AbstractTask> &task) {
+    std::shared_ptr<ComponentMap> component_map;
+    return create_task_specific(task, component_map);
+}
 
 
 using StateOpenListEntry = StateID;
