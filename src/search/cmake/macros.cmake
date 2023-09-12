@@ -1,8 +1,6 @@
 include_guard(GLOBAL)
 
 include(CMakeParseArguments)
-include(common_cxx_flags)
-include(options)
 
 function(set_up_build_types allowedBuildTypes)
     get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)

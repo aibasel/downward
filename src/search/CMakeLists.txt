@@ -35,7 +35,9 @@ cmake_minimum_required(VERSION 3.16)
 
 # Path containing custom CMake modules
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+include(common_cxx_flags)
 include(macros)
+include(options)
 
 report_bitwidth()
 set_up_build_types("Debug;Release")
