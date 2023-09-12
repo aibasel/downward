@@ -55,7 +55,7 @@ endfunction()
 
 function(create_fast_downward_library)
     set(_OPTIONS DEPENDENCY_ONLY CORE_LIBRARY)
-    set(_ONE_VALUE_ARGS NAME DISPLAY_NAME HELP)
+    set(_ONE_VALUE_ARGS NAME HELP)
     set(_MULTI_VALUE_ARGS SOURCES DEPENDS)
     cmake_parse_arguments(_LIBRARY "${_OPTIONS}" "${_ONE_VALUE_ARGS}" "${_MULTI_VALUE_ARGS}" ${ARGN})
     # Check mandatory arguments.
@@ -75,7 +75,8 @@ function(create_fast_downward_library)
         else()
             set(_OPTION_DEFAULT TRUE)
         endif()
-        option(LIBRARY_${_LIBRARY_NAME}_ENABLED ${_LIBRARY_HELP} ${_OPTION_DEFAULT})
+        string(TOUPPER ${_LIBRARY_NAME} _LIBRARY_NAME_UPPER)
+        option(LIBRARY_${_LIBRARY_NAME_UPPER}_ENABLED ${_LIBRARY_HELP} ${_OPTION_DEFAULT})
     endif()
 
     add_library(downward_${_LIBRARY_NAME} INTERFACE)
