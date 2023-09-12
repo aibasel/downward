@@ -48,16 +48,33 @@ TaskIndependentSumEvaluator::TaskIndependentSumEvaluator(utils::LogProxy log,
 TaskIndependentSumEvaluator::~TaskIndependentSumEvaluator() {
 }
 
-shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(shared_ptr<AbstractTask> &task) {
-    //TODO issue559: could this be moved into the TI_CombiningEvaluator class? In TI_MaxEvaluator we would do the very same...
-    utils::g_log << "Creating task specific SumEvaluator..." << endl;
-    vector<shared_ptr<Evaluator>> ti_subevaluators(subevaluators.size());
-    transform(subevaluators.begin(), subevaluators.end(), ti_subevaluators.begin(),
-              [this, &task](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                  return eval->create_task_specific(task);
-              }
-              );
-    return make_shared<SumEvaluator>(log, ti_subevaluators, unparsed_config);
+plugins::Any TaskIndependentSumEvaluator::create_task_specific(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
+    //TODO issue559 could this be moved into the TI_CombiningEvaluator class? In TI_MaxEvaluator we would do the very same...
+
+    shared_ptr<SumEvaluator> task_specific_sum_evaluator;
+    plugins::Any any_obj;
+
+    if (component_map -> contains_key(make_pair(task, static_cast<void*>(this)))){
+        utils::g_log << "Reuse task specific SumEvaluator..." << endl;
+        any_obj = component_map -> get_value(make_pair(task, static_cast<void*>(this)));
+    } else {
+
+
+        utils::g_log << "Creating task specific SumEvaluator..." << endl;
+        vector<shared_ptr<Evaluator>> td_subevaluators(subevaluators.size());
+        transform(subevaluators.begin(), subevaluators.end(), td_subevaluators.begin(),
+                  [this, &task, &component_map](const shared_ptr<TaskIndependentEvaluator> &eval) {
+                      return plugins::any_cast<shared_ptr<Evaluator>>(eval->create_task_specific(task, component_map));
+                  }
+        );
+
+        task_specific_sum_evaluator = make_shared<SumEvaluator>(log, td_subevaluators, unparsed_config);
+        component_map -> add_entry(make_pair(task, static_cast<void*>(this)), task_specific_sum_evaluator);
+    }
+    return task_specific_sum_evaluator;
+
+    //problem with the casting... is a Component class required?
+
 }
 
 class SumEvaluatorFeature : public plugins::TypedFeature<Evaluator, SumEvaluator> {

@@ -1,5 +1,6 @@
 #include "command_line.h"
 #include "search_algorithm.h"
+#include "search_algorithms/eager_search.h"
 
 #include "tasks/root_task.h"
 #include "task_utils/task_properties.h"
@@ -36,7 +37,9 @@ int main(int argc, const char **argv) {
     shared_ptr<TaskIndependentSearchAlgorithm> ti_search_algorithm = parse_cmd_line(argc, argv, unit_cost);
 
     utils::g_log << "Creating task specific SearchAlgorithm..." << endl;
-    shared_ptr<SearchAlgorithm> search_algorithm = ti_search_algorithm->create_task_specific(tasks::g_root_task);
+    plugins::Any any_search_algorithm = ti_search_algorithm->create_task_specific(tasks::g_root_task);
+    shared_ptr<SearchAlgorithm> search_algorithm = plugins::any_cast<shared_ptr<SearchAlgorithm>>(any_search_algorithm);
+
 
     utils::Timer search_timer;
     search_algorithm->search();

@@ -33,7 +33,7 @@ public:
     explicit TaskIndependentLandmarkCutHeuristic(std::string unparsed_config,
                                                  utils::LogProxy log,
                                                  bool cache_evaluator_values);
-    virtual std::shared_ptr<Evaluator> create_task_specific(std::shared_ptr<AbstractTask> &task) override;
+    plugins::Any create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) override;
 
     virtual ~TaskIndependentLandmarkCutHeuristic()  override;
 };

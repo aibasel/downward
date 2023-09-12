@@ -372,28 +372,38 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(utils::Verbosity verbosit
 
 TaskIndependentEagerSearch::~TaskIndependentEagerSearch() {
 }
-shared_ptr<SearchEngine> TaskIndependentEagerSearch::create_task_specific(shared_ptr<AbstractTask> &task) {
-    utils::g_log << "Creating task specific EagerSearch..." << endl;
-    vector<shared_ptr<Evaluator>> ti_evaluators(preferred_operator_evaluators.size());
-    transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), ti_evaluators.begin(),
-              [this, &task](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                  return eval->create_task_specific(task);
-              }
-              );
 
 
+plugins::Any TaskIndependentEagerSearch::create_task_specific(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<EagerSearch> task_specific_eager_search;
+    plugins::Any any_obj;
+    if (component_map -> contains_key(make_pair(task, static_cast<void*>(this)))){
+        utils::g_log << "Reuse task specific EagerSearch..." << endl;
+        any_obj = component_map -> get_value(make_pair(task, static_cast<void*>(this)));
+    } else {
 
-    return make_shared<EagerSearch>(verbosity,
-                                    cost_type,
-                                    max_time,
-                                    bound,
-                                    reopen_closed_nodes,
-                                    open_list->create_task_specific(task),
-                                    ti_evaluators,
-                                    pruning_method,
-                                    task,
-                                    nullptr,
-                                    nullptr
-                                    );
+        utils::g_log << "Creating task specific EagerSearch..." << endl;
+        vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
+        transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
+                  [this, &task, &component_map](const shared_ptr<TaskIndependentEvaluator> &eval) {
+                      return plugins::any_cast<shared_ptr<Evaluator>>(eval->create_task_specific(task, component_map));
+                  }
+        );
+
+        task_specific_eager_search = make_shared<EagerSearch>(verbosity,
+                                                              cost_type,
+                                                              max_time,
+                                                              bound,
+                                                              reopen_closed_nodes,
+                                                              plugins::any_cast<shared_ptr<OpenList<StateID>>>(open_list->create_task_specific(task)),
+                                                              td_evaluators,
+                                                              pruning_method,
+                                                              task,
+                                                              nullptr,
+                                                              nullptr);
+        any_obj = plugins::Any(task_specific_eager_search);
+        component_map -> add_entry(make_pair(task, static_cast<void*>(this)), any_obj);
+    }
+    return any_obj;
 }
 }

@@ -5,6 +5,7 @@
 #include "evaluation_result.h"
 
 #include "utils/logging.h"
+#include "component_map.h"
 
 #include <set>
 
@@ -123,7 +124,9 @@ public:
             bool use_for_counting_evaluations = false);
     virtual ~TaskIndependentEvaluator() = default;
 
-    virtual std::shared_ptr<Evaluator> create_task_specific(std::shared_ptr<AbstractTask> &task) = 0;
+    plugins::Any create_task_specific(std::shared_ptr<AbstractTask> &task);
+    virtual plugins::Any create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) = 0;
+
 };
 
 extern void add_evaluator_options_to_feature(plugins::Feature &feature);

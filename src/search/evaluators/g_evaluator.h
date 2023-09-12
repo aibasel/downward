@@ -33,7 +33,7 @@ public:
                                        bool use_for_reporting_minima = false,
                                        bool use_for_boosting = false,
                                        bool use_for_counting_evaluations = false);
-    virtual std::shared_ptr<Evaluator> create_task_specific(std::shared_ptr<AbstractTask> &task) override;
+    plugins::Any create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) override;
 
     virtual ~TaskIndependentGEvaluator()  override;
 };
