@@ -1,8 +1,8 @@
 include_guard(GLOBAL)
 
 include(CMakeParseArguments)
-include(cxx_options)
-include(project_options)
+include(common_cxx_flags)
+include(options)
 
 function(set_up_build_types allowedBuildTypes)
     get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -80,7 +80,7 @@ function(create_fast_downward_library)
     endif()
 
     add_library(downward_${_LIBRARY_NAME} INTERFACE)
-    target_link_libraries(downward_${_LIBRARY_NAME} INTERFACE cxx_options)
+    target_link_libraries(downward_${_LIBRARY_NAME} INTERFACE common_cxx_flags)
     target_sources(downward_${_LIBRARY_NAME} INTERFACE ${_LIBRARY_SOURCES})
     foreach(DEPENDENCY ${_LIBRARY_DEPENDS})
         target_link_libraries(downward_${_LIBRARY_NAME} INTERFACE downward_${DEPENDENCY})
@@ -91,7 +91,7 @@ function(create_fast_downward_library)
     endif()
 endfunction()
 
-function(copy_dlls_to_binary_dir _TARGET_NAME)
+function(copy_dlls_to_binary_dir_after_build _TARGET_NAME)
     # https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html#genex:_TARGET_RUNTIME_DLLS
     add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_TARGET_NAME}> $<TARGET_RUNTIME_DLLS:${_TARGET_NAME}>

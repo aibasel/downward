@@ -22,14 +22,14 @@
 #
 # <HELP> is used to describe the cmake option, for example in ccmake.
 # SOURCES lists the source files that are part of the library. Entries are
-#   listed without extension. For an entry <file>, both <file>.h and <file>.cc
-#   are added if the files exist.
-# DEPENDS lists libraries that will be automatically enabled if this library is
-#   enabled. If the dependency was not enabled before, this will be logged.
+#    listed without extension. For an entry <file>, both <file>.h and <file>.cc
+#    are added if the files exist.
+# DEPENDS lists libraries that will be compiled as dependendies if this library
+#    is enabled.
 # DEPENDENCY_ONLY disables the library unless it is needed as a dependency and
-#   hides the option to enable the library in cmake GUIs like ccmake.
+#    hides the option to enable the library in cmake GUIs like ccmake.
 # CORE_LIBRARY always enables the library (even if DISABLE_LIBRARIES_BY_DEFAULT
-#   is used) and hides the option to disable it in CMake GUIs like ccmake.
+#    is used) and hides the option to disable it in CMake GUIs like ccmake.
 
 cmake_minimum_required(VERSION 3.16)
 
@@ -45,7 +45,7 @@ project(downward LANGUAGES CXX)
 add_executable(downward planner.cc)
 
 # On Windows we have to copy all DLLs next to the generated binary.
-copy_dlls_to_binary_dir(downward)
+copy_dlls_to_binary_dir_after_build(downward)
 
 # In the following, we include all source files, grouped into libraries with
 # dependencies among each other.
@@ -501,24 +501,18 @@ create_fast_downward_library(
 if(USE_LP)
     find_package(Cplex 12)
     if(CPLEX_FOUND)
-        add_library(downward_cplex_interface INTERFACE)
-        target_compile_definitions(downward_cplex_interface INTERFACE HAS_CPLEX)
-        target_link_libraries(downward_cplex_interface INTERFACE cplex::cplex)
-        target_sources(downward_cplex_interface INTERFACE lp/cplex_solver_interface.h lp/cplex_solver_interface.cc)
-
-        target_link_libraries(downward_lp_solver INTERFACE downward_cplex_interface)
+        target_compile_definitions(downward_lp_solver INTERFACE HAS_CPLEX)
+        target_link_libraries(downward_lp_solver INTERFACE cplex::cplex)
+        target_sources(downward_lp_solver INTERFACE lp/cplex_solver_interface.h lp/cplex_solver_interface.cc)
     endif()
 
     # TODO: we actually require a version greater than 6.0.3 but it is not released yet.
     find_package(soplex 6.0.3 QUIET)
     if (SOPLEX_FOUND)
         message(STATUS "Found SoPlex: ${SOPLEX_INCLUDE_DIRS}")
-        add_library(downward_soplex_interface INTERFACE)
-        target_link_libraries(downward_soplex_interface INTERFACE libsoplex)
-        target_compile_definitions(downward_soplex_interface INTERFACE HAS_SOPLEX)
-        target_sources(downward_soplex_interface INTERFACE lp/soplex_solver_interface.h lp/soplex_solver_interface.cc)
-
-        target_link_libraries(downward_lp_solver INTERFACE downward_soplex_interface)
+        target_link_libraries(downward_lp_solver INTERFACE libsoplex)
+        target_compile_definitions(downward_lp_solver INTERFACE HAS_SOPLEX)
+        target_sources(downward_lp_solver INTERFACE lp/soplex_solver_interface.h lp/soplex_solver_interface.cc)
     endif()
 endif()
 
