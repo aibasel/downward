@@ -123,10 +123,10 @@ jobs:
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
 
-      - name: Delete artifact
-        uses: geekyeggo/delete-artifact@v2
-        with:
-          name: compiled-planner-${{ matrix.version.ubuntu }}
+      #- name: Delete artifact
+      #  uses: geekyeggo/delete-artifact@v2
+      #  with:
+      #    name: compiled-planner-${{ matrix.version.ubuntu }}
 
       - name: Install Python
         uses: actions/setup-python@v4

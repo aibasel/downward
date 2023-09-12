@@ -94,7 +94,7 @@ endfunction()
 function(copy_dlls_to_binary_dir_after_build _TARGET_NAME)
     # https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html#genex:_TARGET_RUNTIME_DLLS
     add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_TARGET_NAME}> $<TARGET_RUNTIME_DLLS:${_TARGET_NAME}>
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:${_TARGET_NAME}> $<TARGET_FILE_DIR:${_TARGET_NAME}>
         COMMAND_EXPAND_LISTS
     )
 endfunction()

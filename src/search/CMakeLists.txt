@@ -45,7 +45,9 @@ project(downward LANGUAGES CXX)
 add_executable(downward planner.cc)
 
 # On Windows we have to copy all DLLs next to the generated binary.
-copy_dlls_to_binary_dir_after_build(downward)
+if (WIN32)
+    copy_dlls_to_binary_dir_after_build(downward)
+endif()
 
 # In the following, we include all source files, grouped into libraries with
 # dependencies among each other.
