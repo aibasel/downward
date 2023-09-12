@@ -86,7 +86,7 @@ function(create_fast_downward_library)
         target_link_libraries(downward_${_LIBRARY_NAME} INTERFACE downward_${DEPENDENCY})
     endforeach()
 
-    if (_LIBRARY_CORE_LIBRARY OR LIBRARY_${_LIBRARY_NAME}_ENABLED)
+    if (_LIBRARY_CORE_LIBRARY OR LIBRARY_${_LIBRARY_NAME_UPPER}_ENABLED)
         target_link_libraries(downward PUBLIC downward_${_LIBRARY_NAME})
     endif()
 endfunction()
