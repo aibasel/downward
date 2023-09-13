@@ -8,7 +8,7 @@ import sys
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
-LIBRARY_DEFINITION_FILE = os.path.join(REPO, "src", "search", "DownwardFiles.cmake")
+LIBRARY_DEFINITION_FILE = os.path.join(REPO, "src", "search", "CMakeLists.txt")
 BUILDS = os.path.join(REPO, "builds/test-dependencies")
 
 
@@ -64,7 +64,7 @@ for library in libraries:
     config_args = [
         "cmake", "-S", os.path.join(REPO, "src"), "-B", build_path,
         "-DCMAKE_BUILD_TYPE=Debug", "-DDISABLE_LIBRARIES_BY_DEFAULT=YES",
-        "-DLIBRARY_{library}_ENABLED=True\"]\n".format(**locals())
+        f"-DLIBRARY_{library.upper()}_ENABLED=True"
     ]
     build_args = ["cmake", "--build", build_path]
     if NUM_CPUS:
