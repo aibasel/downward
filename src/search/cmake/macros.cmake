@@ -103,30 +103,30 @@ function(copy_dlls_to_binary_dir_after_build _TARGET_NAME)
         endforeach()
 
         add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E echo "IMPORTED_LOCATION_RELEASE $<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_RELEASE>"
+            COMMAND ${CMAKE_COMMAND} -E echo "IMPORTED_LOCATION_RELEASE "
         )
         add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E echo "TARGET_FILE_DIR $<TARGET_FILE_DIR:${_TARGET_NAME}>"
         )
+
+        
         add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E echo "imported_location_RELEASE $<$<CONFIG:Release>:${imported_location_RELEASE}>"
+            COMMAND ${CMAKE_COMMAND} -E echo "imported_location_RELEASE $<$<CONFIG:Release>:$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_RELEASE>>"
         )
         add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E echo "imported_location_DEBUG $<$<CONFIG:Debug>:${imported_location_DEBUG}>"
+            COMMAND ${CMAKE_COMMAND} -E echo "imported_location_DEBUG $<$<CONFIG:Debug>:$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_DEBUG>>"
+        )
+        add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E echo "imported_location $<$<CONFIG:Release>:$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_RELEASE>,$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_DEBUG>>"
         )
 
-        if(was_set)
-            message("Adding DLL copy command")
-            add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy
-                    $<$<CONFIG:Release>:${imported_location_RELEASE}>
-                    $<$<CONFIG:Debug>:${imported_location_DEBUG}>
-                    $<TARGET_FILE_DIR:${_TARGET_NAME}>
-                    COMMAND_EXPAND_LISTS
-            )
-        else()
-          message("Property was not set. Not adding DLL copy command")
-        endif()
+        message("Adding DLL copy command")
+        add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+                $<$<CONFIG:Release>:$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_RELEASE>,$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_DEBUG>>
+                $<TARGET_FILE_DIR:${_TARGET_NAME}>
+                COMMAND_EXPAND_LISTS
+        )
     else()
         message("cplex target does not exist. Not adding DLL copy command")
     endif()
