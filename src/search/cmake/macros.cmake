@@ -103,9 +103,15 @@ function(copy_dlls_to_binary_dir_after_build _TARGET_NAME)
         endforeach()
         if(was_set)
             add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E echo
+                    $<$<CONFIG:Release>:${imported_location_RELEASE}>
+                    $<$<CONFIG:Debug>:${imported_location_DEBUG}>
+                    $<TARGET_FILE_DIR:${_TARGET_NAME}>
+            )
+            add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy
-                    $<$<CONFIG:RELEASE>:${imported_location_RELEASE}>
-                    $<$<CONFIG:DEBUG>:${imported_location_DEBUG}>
+                    $<$<CONFIG:Release>:${imported_location_RELEASE}>
+                    $<$<CONFIG:Debug>:${imported_location_DEBUG}>
                     $<TARGET_FILE_DIR:${_TARGET_NAME}>
                     COMMAND_EXPAND_LISTS
             )
