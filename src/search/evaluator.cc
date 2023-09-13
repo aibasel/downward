@@ -110,7 +110,7 @@ void add_evaluator_options_to_feature(plugins::Feature &feature) {
 
 static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentEvaluator> {
 public:
-    EvaluatorCategoryPlugin() : TypedCategoryPlugin("TaskIndependentEvaluator") {
+    EvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {
         document_synopsis(
             "An evaluator specification is either a newly created evaluator "
             "instance or an evaluator that has been defined previously. "
