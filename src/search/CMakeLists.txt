@@ -987,5 +987,7 @@ print_target_properties(cplex::cplex)
 # On Windows we have to copy all DLLs next to the generated binary.
 if (WIN32)
     copy_dlls_to_binary_dir_after_build(downward)
+else()
+    message("Not on Windows. Not adding DLL copy command")
 endif()
 

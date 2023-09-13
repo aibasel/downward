@@ -102,6 +102,7 @@ function(copy_dlls_to_binary_dir_after_build _TARGET_NAME)
             endif()
         endforeach()
         if(was_set)
+            message("Adding DLL copy command")
             add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E echo
                     $<$<CONFIG:Release>:${imported_location_RELEASE}>
@@ -115,6 +116,10 @@ function(copy_dlls_to_binary_dir_after_build _TARGET_NAME)
                     $<TARGET_FILE_DIR:${_TARGET_NAME}>
                     COMMAND_EXPAND_LISTS
             )
+        else()
+          message("Property was not set. Not adding DLL copy command")
         endif()
+    else()
+        message("cplex target does not exist. Not adding DLL copy command")
     endif()
 endfunction()
