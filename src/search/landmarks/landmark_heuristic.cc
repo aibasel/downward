@@ -13,59 +13,11 @@
 using namespace std;
 
 namespace landmarks {
-bool LandmarkHeuristic::landmark_is_interesting(
-    const State &state, ConstBitsetView &past, ConstBitsetView &future,
-    const landmarks::LandmarkNode &lm_node, bool all_lms_reached) {
-    bool is_interesting;
-    switch (interesting_landmarks) {
-    case InterestingIf::LEGACY:
-        /*
-          We consider a landmark interesting in two (exclusive) cases:
-          (1) If all landmarks are reached and the landmark must hold in the
-              goal but does not hold in the current state.
-          (2) If it has not been reached before and all its parents are reached.
-        */
-        if (all_lms_reached) {
-            const Landmark &landmark = lm_node.get_landmark();
-            is_interesting =
-                landmark.is_true_in_goal && !landmark.is_true_in_state(state);
-        } else {
-            is_interesting =
-                !past.test(lm_node.get_id())
-                && all_of(lm_node.parents.begin(),
-                          lm_node.parents.end(),
-                          [&](const pair<LandmarkNode *, EdgeType> parent) {
-                              return past.test(
-                                  parent.first->get_id());
-                          });
-        }
-        break;
-    case InterestingIf::FUTURE:
-        // We simply consider a landmark interesting if it is future.
-        is_interesting = future.test(lm_node.get_id());
-        break;
-    case InterestingIf::PARENTS_PAST:
-        /* We consider a landmark interesting if it is future and all its
-           parents are past. */
-        is_interesting =
-            future.test(lm_node.get_id())
-            && all_of(lm_node.parents.begin(), lm_node.parents.end(),
-                      [&](const pair<LandmarkNode *, EdgeType> parent) {
-                          return past.test(parent.first->get_id());
-                      });
-        break;
-    default:
-        ABORT("Unknown landmark *InterestingIf* type.");
-    }
-    return is_interesting;
-}
-
 LandmarkHeuristic::LandmarkHeuristic(
     const plugins::Options &opts)
     : Heuristic(opts),
       use_preferred_operators(opts.get<bool>("pref")),
       prefer_simple_landmarks(opts.get<bool>("prefer_simple_landmarks")),
-      interesting_landmarks(opts.get<InterestingIf>("interesting_if")),
       successor_generator(nullptr) {
 }
 
@@ -164,9 +116,9 @@ void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &opts) {
 }
 
 void LandmarkHeuristic::generate_preferred_operators(
-    const State &state, ConstBitsetView &past, ConstBitsetView &future) {
+    const State &state, ConstBitsetView &future) {
     /*
-      Find operators that achieve landmark leaves. If a simple landmark can be
+      Find operators that achieve landmarks. If a simple landmark can be
       achieved, prefer only operators that achieve simple landmarks. Otherwise,
       prefer operators that achieve disjunctive landmarks, or don't prefer any
       operators if no such landmarks exist at all.
@@ -181,16 +133,6 @@ void LandmarkHeuristic::generate_preferred_operators(
     vector<OperatorID> preferred_operators_simple;
     vector<OperatorID> preferred_operators_disjunctive;
 
-    bool all_landmarks_past = true;
-    if (interesting_landmarks == InterestingIf::LEGACY) {
-        for (int i = 0; i < past.size(); ++i) {
-            if (!past.test(i)) {
-                all_landmarks_past = false;
-                break;
-            }
-        }
-    }
-
     for (OperatorID op_id : applicable_operators) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
         EffectsProxy effects = op.get_effects();
@@ -199,8 +141,7 @@ void LandmarkHeuristic::generate_preferred_operators(
                 continue;
             FactProxy fact_proxy = effect.get_fact();
             LandmarkNode *lm_node = lm_graph->get_node(fact_proxy.get_pair());
-            if (lm_node && landmark_is_interesting(
-                    state, past, future, *lm_node, all_landmarks_past)) {
+            if (lm_node && future.test(lm_node->get_id())) {
                 if (lm_node->get_landmark().disjunctive) {
                     preferred_operators_disjunctive.push_back(op_id);
                 } else {
@@ -260,12 +201,10 @@ int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
     }
     int h = get_heuristic_value(ancestor_state);
     if (use_preferred_operators) {
-        ConstBitsetView past =
-            lm_status_manager->get_past_landmarks(ancestor_state);
         ConstBitsetView future =
             lm_status_manager->get_future_landmarks(ancestor_state);
         State state = convert_ancestor_state(ancestor_state);
-        generate_preferred_operators(state, past, future);
+        generate_preferred_operators(state, future);
     }
     return h;
 }
@@ -316,12 +255,6 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
         "Otherwise, all applicable operators leading to any interesting "
         "landmark are preferred operators.",
         "true");
-    /* TODO: Remove this option, this is just for experimenting which variant
-        works best in practice. */
-    feature.add_option<InterestingIf>(
-        "interesting_if",
-        "Choose which strategy to use to decide if a landmark is interesting "
-        "in order to compute preferred operators or not.");
     /* TODO: Do we really want these options or should we just always progress
         everything we can? */
     feature.add_option<bool>(
@@ -335,13 +268,4 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
     feature.document_property("preferred operators",
                               "yes (if enabled; see ``pref`` option)");
 }
-
-/* TODO: Remove this plugin, this is just for experimenting which variant works
-    best in practice. */
-static plugins::TypedEnumPlugin<InterestingIf> _enum_plugin({
-        {"legacy", "old variant"},
-        {"future", "all future landmarks are interesting"},
-        {"parents_past",
-         "only future landmarks with all parents reached are interesting"},
-    });
 }
