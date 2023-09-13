@@ -972,4 +972,4 @@ function(print_target_properties target)
     endforeach()
 endfunction()
 
-print_target_properties(downward)
+print_target_properties(cplex::cplex)
