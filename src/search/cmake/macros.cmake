@@ -88,9 +88,27 @@ function(create_fast_downward_library)
 endfunction()
 
 function(copy_dlls_to_binary_dir_after_build _TARGET_NAME)
+    # Once we require CMake version >=3.21, we can use the code below instead.
     # https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html#genex:_TARGET_RUNTIME_DLLS
-    add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_RUNTIME_DLLS:${_TARGET_NAME}> $<TARGET_FILE_DIR:${_TARGET_NAME}>
-        COMMAND_EXPAND_LISTS
-    )
+    # add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
+    #     COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_TARGET_NAME}> $<TARGET_RUNTIME_DLLS:${_TARGET_NAME}>
+    #     COMMAND_EXPAND_LISTS
+    # )
+    if(TARGET cplex::cplex)
+        foreach(CONFIG "DEBUG;RELEASE")
+            get_property(was_set TARGET cplex::cplex PROPERTY IMPORTED_LOCATION_${CONFIG} SET)
+            if(was_set)
+                get_target_property(imported_location_${CONFIG} cplex::cplex IMPORTED_LOCATION_${CONFIG})
+            endif()
+        endforeach()
+        if(was_set)
+            add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy
+                    $<$<CONFIG:RELEASE>:${imported_location_RELEASE}>
+                    $<$<CONFIG:DEBUG>:${imported_location_DEBUG}>
+                    $<TARGET_FILE_DIR:${_TARGET_NAME}>
+                    COMMAND_EXPAND_LISTS
+            )
+        endif()
+    endif()
 endfunction()
