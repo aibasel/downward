@@ -125,7 +125,6 @@ void LandmarkHeuristic::generate_preferred_operators(
     assert(successor_generator);
     vector<OperatorID> applicable_operators;
     successor_generator->generate_applicable_ops(state, applicable_operators);
-    OperatorsProxy operators = task_proxy.get_operators();
 
     for (OperatorID op_id : applicable_operators) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
@@ -136,7 +135,7 @@ void LandmarkHeuristic::generate_preferred_operators(
             FactProxy fact_proxy = effect.get_fact();
             LandmarkNode *lm_node = lm_graph->get_node(fact_proxy.get_pair());
             if (lm_node && future.test(lm_node->get_id())) {
-                set_preferred(operators[op_id]);
+                set_preferred(op);
             }
         }
     }
