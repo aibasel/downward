@@ -46,11 +46,6 @@ set_up_options()
 project(downward LANGUAGES CXX)
 add_executable(downward planner.cc)
 
-# On Windows we have to copy all DLLs next to the generated binary.
-if (WIN32)
-    copy_dlls_to_binary_dir_after_build(downward)
-endif()
-
 # In the following, we include all source files, grouped into libraries with
 # dependencies among each other.
 
@@ -987,3 +982,10 @@ my_print(cplex::cplex  IMPORTED_LOCATION_Debug)
 my_print(cplex::cplex  IMPORTED_LOCATION_RELEASE)
 my_print(cplex::cplex  IMPORTED_LOCATION_Release)
 print_target_properties(cplex::cplex)
+
+
+# On Windows we have to copy all DLLs next to the generated binary.
+if (WIN32)
+    copy_dlls_to_binary_dir_after_build(downward)
+endif()
+
