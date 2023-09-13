@@ -143,12 +143,12 @@ create_fast_downward_library(
 )
 # On Linux, find the rt library for clock_gettime().
 if(UNIX AND NOT APPLE)
-    target_link_libraries(downward_utils INTERFACE rt)
+    target_link_libraries(utils INTERFACE rt)
 endif()
 # On Windows, find the psapi library for determining peak memory.
 if(WIN32)
     cmake_policy(SET CMP0074 NEW)
-    target_link_libraries(downward_utils INTERFACE psapi)
+    target_link_libraries(utils INTERFACE psapi)
 endif()
 
 
@@ -549,18 +549,18 @@ create_fast_downward_library(
 if(USE_LP)
     find_package(Cplex 12)
     if(CPLEX_FOUND)
-        target_compile_definitions(downward_lp_solver INTERFACE HAS_CPLEX)
-        target_link_libraries(downward_lp_solver INTERFACE cplex::cplex)
-        target_sources(downward_lp_solver INTERFACE lp/cplex_solver_interface.h lp/cplex_solver_interface.cc)
+        target_compile_definitions(lp_solver INTERFACE HAS_CPLEX)
+        target_link_libraries(lp_solver INTERFACE cplex::cplex)
+        target_sources(lp_solver INTERFACE lp/cplex_solver_interface.h lp/cplex_solver_interface.cc)
     endif()
 
     # TODO: we actually require a version greater than 6.0.3 but it is not released yet.
     find_package(soplex 6.0.3 QUIET)
     if (SOPLEX_FOUND)
         message(STATUS "Found SoPlex: ${SOPLEX_INCLUDE_DIRS}")
-        target_link_libraries(downward_lp_solver INTERFACE libsoplex)
-        target_compile_definitions(downward_lp_solver INTERFACE HAS_SOPLEX)
-        target_sources(downward_lp_solver INTERFACE lp/soplex_solver_interface.h lp/soplex_solver_interface.cc)
+        target_link_libraries(lp_solver INTERFACE libsoplex)
+        target_compile_definitions(lp_solver INTERFACE HAS_SOPLEX)
+        target_sources(lp_solver INTERFACE lp/soplex_solver_interface.h lp/soplex_solver_interface.cc)
     endif()
 endif()
 
