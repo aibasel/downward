@@ -212,7 +212,7 @@ void print_initial_evaluator_values(
 
 static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentSearchAlgorithm> {
 public:
-    SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("TaskIndependentSearchEngine") {
+    SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("TaskIndependentSearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.
         // document_synopsis("...");
     }
@@ -241,7 +241,7 @@ TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(utils::Verbosity 
 TaskIndependentSearchAlgorithm::~TaskIndependentSearchAlgorithm() {
 }
 
-plugins::Any TaskIndependentSearchEngine::create_task_specific(shared_ptr<AbstractTask> &task) {
+plugins::Any TaskIndependentSearchAlgorithm::create_task_specific(shared_ptr<AbstractTask> &task) {
     std::shared_ptr<ComponentMap> component_map;
     return create_task_specific(task, component_map);
 }

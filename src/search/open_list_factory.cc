@@ -27,7 +27,7 @@ unique_ptr<TaskIndependentEdgeOpenList> TaskIndependentOpenListFactory::create_t
 
 static class OpenListFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentOpenListFactory> {
 public:
-    OpenListFactoryCategoryPlugin() : TypedCategoryPlugin("TaskIndependentOpenList") {
+    OpenListFactoryCategoryPlugin() : TypedCategoryPlugin("OpenList") {
         // TODO: use document_synopsis() for the wiki page.
     }
 }
