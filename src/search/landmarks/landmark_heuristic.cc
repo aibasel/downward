@@ -17,7 +17,6 @@ LandmarkHeuristic::LandmarkHeuristic(
     const plugins::Options &opts)
     : Heuristic(opts),
       use_preferred_operators(opts.get<bool>("pref")),
-      prefer_simple_landmarks(opts.get<bool>("prefer_simple_landmarks")),
       successor_generator(nullptr) {
 }
 
@@ -118,11 +117,7 @@ void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &opts) {
 void LandmarkHeuristic::generate_preferred_operators(
     const State &state, ConstBitsetView &future) {
     /*
-      Find operators that achieve landmarks. If a simple landmark can be
-      achieved, prefer only operators that achieve simple landmarks. Otherwise,
-      prefer operators that achieve disjunctive landmarks, or don't prefer any
-      operators if no such landmarks exist at all.
-
+      Find operators that achieve future landmarks.
       TODO: Conjunctive landmarks are ignored in *lm_graph->get_node(...)*, so
        they are ignored when computing preferred operators. We consider this
        a bug and want to fix it in issue1072.
@@ -130,8 +125,7 @@ void LandmarkHeuristic::generate_preferred_operators(
     assert(successor_generator);
     vector<OperatorID> applicable_operators;
     successor_generator->generate_applicable_ops(state, applicable_operators);
-    vector<OperatorID> preferred_operators_simple;
-    vector<OperatorID> preferred_operators_disjunctive;
+    OperatorsProxy operators = task_proxy.get_operators();
 
     for (OperatorID op_id : applicable_operators) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
@@ -142,34 +136,8 @@ void LandmarkHeuristic::generate_preferred_operators(
             FactProxy fact_proxy = effect.get_fact();
             LandmarkNode *lm_node = lm_graph->get_node(fact_proxy.get_pair());
             if (lm_node && future.test(lm_node->get_id())) {
-                if (lm_node->get_landmark().disjunctive) {
-                    preferred_operators_disjunctive.push_back(op_id);
-                } else {
-                    preferred_operators_simple.push_back(op_id);
-                }
-            }
-        }
-    }
-
-    OperatorsProxy operators = task_proxy.get_operators();
-    if (prefer_simple_landmarks) {
-        // Legacy version.
-        if (preferred_operators_simple.empty()) {
-            for (OperatorID op_id : preferred_operators_disjunctive) {
                 set_preferred(operators[op_id]);
             }
-        } else {
-            for (OperatorID op_id : preferred_operators_simple) {
-                set_preferred(operators[op_id]);
-            }
-        }
-    } else {
-        // New and improved, maybe.
-        for (OperatorID op_id : preferred_operators_simple) {
-            set_preferred(operators[op_id]);
-        }
-        for (OperatorID op_id : preferred_operators_disjunctive) {
-            set_preferred(operators[op_id]);
         }
     }
 }
@@ -245,16 +213,6 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
         "pref",
         "enable preferred operators (see note below)",
         "false");
-    /* TODO: Remove this option, this is just for experimenting whether using
-        the hierarchy has a positive effect on performance. */
-    feature.add_option<bool>(
-        "prefer_simple_landmarks",
-        "If true, only applicable operators leading to one kind of interesting "
-        "landmarks are preferred operators, namely those of the highest "
-        "hierarchy (simple > disjunctive)."
-        "Otherwise, all applicable operators leading to any interesting "
-        "landmark are preferred operators.",
-        "true");
     /* TODO: Do we really want these options or should we just always progress
         everything we can? */
     feature.add_option<bool>(

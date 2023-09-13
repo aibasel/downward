@@ -28,9 +28,6 @@ protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
     const bool use_preferred_operators;
 
-    // TODO: Remove the following two members after experiments.
-    const bool prefer_simple_landmarks;
-
     std::unique_ptr<LandmarkStatusManager> lm_status_manager;
     std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;
 
