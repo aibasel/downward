@@ -36,12 +36,8 @@ protected:
 
     virtual int get_heuristic_value(const State &ancestor_state) = 0;
 
-    void generate_preferred_operators(const State &state,
-                                      ConstBitsetView &future);
-
-    bool landmark_is_interesting(
-        const State &state, ConstBitsetView &past, ConstBitsetView &future,
-        const landmarks::LandmarkNode &lm_node, bool all_lms_reached);
+    void generate_preferred_operators(
+        const State &state, ConstBitsetView &future);
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     explicit LandmarkHeuristic(const plugins::Options &opts);
