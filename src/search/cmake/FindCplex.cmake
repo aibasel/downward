@@ -78,7 +78,7 @@ endif()
 
 if(APPLE)
     set(PLATFORM_HINTS "osx")
-elseif(LINUX)
+elseif(UNIX AND NOT APPLE) # starting from CMake >=3.25, use LINUX instead.
     set(PLATFORM_HINTS "linux" "sles10_4.1")
 elseif(WIN32) # Despite the name, WIN32 is also true on 64-bit systems.
     if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
@@ -102,7 +102,7 @@ elseif(MSVC14)
     set(COMPILER_HINTS "vs2017" "msvc14")
 endif()
 
-if(LINUX OR APPLE)
+if(UNIX)
     set(LIBRARY_TYPE_HINTS_RELEASE "static_pic")
     set(LIBRARY_TYPE_HINTS_DEBUG "static_pic")
 elseif(WIN32)
