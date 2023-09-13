@@ -1,3 +1,5 @@
+include_guard(GLOBAL)
+
 add_library(common_cxx_flags INTERFACE)
 target_compile_features(common_cxx_flags INTERFACE cxx_std_20)
 

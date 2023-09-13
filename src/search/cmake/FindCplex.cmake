@@ -132,7 +132,7 @@ foreach(CONFIG_ORIG ${IMPORTED_CONFIGURATIONS})
     if (WIN32)
         # On Windows, libraries consist of a .dll file and a .lib file.
         # CPLEX stores the .dll file in /bin and the .lib file in /lib.
-        # Since likning is against the .lib file, find_library() does not find
+        # Since linking is against the .lib file, find_library() does not find
         # the dll and we have to use find_file() instead.
         find_file(CPLEX_SHARED_LIBRARY_${CONFIG}
             NAMES

@@ -5,8 +5,8 @@ include(CMakeParseArguments)
 function(set_up_build_types allowedBuildTypes)
     get_property(isMultiConfig GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
     if(isMultiConfig)
-        # Set the possible choices for multi-config generators like (like
-        # Visual Studio Projects) that choose the build type at build time.
+        # Set the possible choices for multi-config generators (like Visual
+        # Studio Projects) that choose the build type at build time.
         set(CMAKE_CONFIGURATION_TYPES "${allowedBuildTypes}"
             CACHE STRING "Supported build types: ${allowedBuildTypes}" FORCE)
     else()
