@@ -95,18 +95,6 @@ function(copy_dlls_to_binary_dir_after_build _TARGET_NAME)
     #     COMMAND_EXPAND_LISTS
     # )        
     add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo "imported_location_RELEASE $<$<AND:$<TARGET_EXISTS:cplex::cplex>,$<CONFIG:Release>>:$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_RELEASE>>"
-    )
-    add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo "imported_location_DEBUG $<$<AND:$<TARGET_EXISTS:cplex::cplex>,$<CONFIG:Debug>>:$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_DEBUG>>"
-    )
-    add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E echo "imported_location
-        $<$<AND:$<TARGET_EXISTS:cplex::cplex>,$<CONFIG:Release>>:$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_RELEASE>>
-        $<$<AND:$<TARGET_EXISTS:cplex::cplex>,$<CONFIG:Debug>>:$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_DEBUG>>"
-    )
-
-    add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
             $<$<AND:$<TARGET_EXISTS:cplex::cplex>,$<CONFIG:Release>>:$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_RELEASE>>
             $<$<AND:$<TARGET_EXISTS:cplex::cplex>,$<CONFIG:Debug>>:$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_DEBUG>>

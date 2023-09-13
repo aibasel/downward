@@ -86,11 +86,6 @@ jobs:
           set CXXFLAGS=/WX
           python build.py release
           python build.py debug
-          echo "release directory"
-          dir builds\release\bin
-          echo "debug directory"
-          dir builds\debug\bin
-          echo %PATH%
 
       - name: Install tox
         run: |
