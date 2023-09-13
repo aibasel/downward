@@ -973,3 +973,5 @@ function(print_target_properties target)
 endfunction()
 
 print_target_properties(cplex::cplex)
+message(WARNING "upper: debug: ${IMPORTED_LOCATION_DEBUG}, release: ${IMPORTED_LOCATION_RELEASE}")
+message(WARNING "camel: debug: ${IMPORTED_LOCATION_Debug}, release: ${IMPORTED_LOCATION_Release}")
