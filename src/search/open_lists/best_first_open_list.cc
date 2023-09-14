@@ -28,6 +28,8 @@ protected:
 
 public:
     explicit BestFirstOpenList(const plugins::Options &opts);
+    explicit BestFirstOpenList(bool pref_only, shared_ptr<Evaluator> evaluator);
+
     BestFirstOpenList(const shared_ptr<Evaluator> &eval, bool preferred_only);
     virtual ~BestFirstOpenList() override = default;
 
@@ -47,6 +49,15 @@ BestFirstOpenList<Entry>::BestFirstOpenList(const plugins::Options &opts)
     : OpenList<Entry>(opts.get<bool>("pref_only")),
       size(0),
       evaluator(opts.get<shared_ptr<Evaluator>>("eval")) {
+}
+
+
+
+template<class Entry>
+BestFirstOpenList<Entry>::BestFirstOpenList(bool pref_only, shared_ptr<Evaluator> evaluator)
+        : OpenList<Entry>(pref_only),
+          size(0),
+          evaluator(evaluator) {
 }
 
 template<class Entry>
@@ -114,6 +125,12 @@ BestFirstOpenListFactory::BestFirstOpenListFactory(
     : options(options) {
 }
 
+BestFirstOpenListFactory::BestFirstOpenListFactory(bool pref_only, shared_ptr<Evaluator> evaluator)
+: pref_only(pref_only),
+evaluator(evaluator) {
+}
+
+
 unique_ptr<StateOpenList>
 BestFirstOpenListFactory::create_state_open_list() {
     return utils::make_unique_ptr<BestFirstOpenList<StateOpenListEntry>>(options);
@@ -143,6 +160,11 @@ public:
             "values to buckets. Pushing and popping from a bucket runs in constant "
             "time. Therefore, inserting and removing an entry from the open list "
             "takes time O(log(n)), where n is the number of buckets.");
+    }
+    virtual shared_ptr<BestFirstOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<OpenListFactory>>(context, opts, "sublists");
+        return make_shared<BestFirstOpenListFactory>(opts.get<bool>("pref_only"),
+                                                       opts.get<shared_ptr<Evaluator>>("eval"));
     }
 };
 

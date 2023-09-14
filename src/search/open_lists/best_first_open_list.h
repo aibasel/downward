@@ -14,8 +14,11 @@
 namespace standard_scalar_open_list {
 class BestFirstOpenListFactory : public OpenListFactory {
     plugins::Options options;
+    bool pref_only;
+    std::shared_ptr<Evaluator> evaluator;
 public:
     explicit BestFirstOpenListFactory(const plugins::Options &options);
+    explicit BestFirstOpenListFactory(bool pref_only, std::shared_ptr<Evaluator> evaluator);
     virtual ~BestFirstOpenListFactory() override = default;
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
