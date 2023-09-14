@@ -19,17 +19,34 @@ public:
     explicit WeightedEvaluator(utils::LogProxy log,
                                std::shared_ptr<Evaluator> evaluator,
                                int weight,
-                               std::basic_string<char> unparsed_config,
-                               bool use_for_reporting_minima,
-                               bool use_for_boosting,
-                               bool use_for_counting_evaluations,
-                               std::vector<std::shared_ptr<Evaluator>> subevaluators);
+                               std::basic_string<char> unparsed_config = std::string(),
+                               bool use_for_reporting_minima = false,
+                               bool use_for_boosting = false,
+                               bool use_for_counting_evaluations = false);
     virtual ~WeightedEvaluator() override;
 
     virtual bool dead_ends_are_reliable() const override;
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
     virtual void get_path_dependent_evaluators(std::set<Evaluator *> &evals) override;
+};
+
+
+class TaskIndependentWeightedEvaluator: public TaskIndependentEvaluator {
+private:
+    std::shared_ptr<TaskIndependentEvaluator> evaluator;
+    int weight;
+public:
+    explicit TaskIndependentWeightedEvaluator(utils::LogProxy log,
+                                         std::shared_ptr<TaskIndependentEvaluator> evaluator,
+                                         int weight,
+                                         std::string unparsed_config = std::string(),
+                                         bool use_for_reporting_minima = false,
+                                         bool use_for_boosting = false,
+                                         bool use_for_counting_evaluations = false);
+    virtual plugins::Any create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) override;
+
+    virtual ~TaskIndependentWeightedEvaluator()  override;
 };
 }
 
