@@ -93,11 +93,30 @@ function(copy_dlls_to_binary_dir_after_build _TARGET_NAME)
     # add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
     #     COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_TARGET_NAME}> $<TARGET_RUNTIME_DLLS:${_TARGET_NAME}>
     #     COMMAND_EXPAND_LISTS
-    # )        
+    # )
+    set(_has_cplex_target "$<TARGET_EXISTS:cplex::cplex>")
+
+    set(_is_release_build "$<CONFIG:Release>")
+    set(_release_dll "$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_RELEASE>")
+    set(_has_release_dll "$<BOOL:${_release_dll}>")
+    set(_should_copy_release_dll "$<AND:${_has_cplex_target},${_is_release_build},${_has_release_dll}>")
+
+    set(_is_debug_build "$<CONFIG:Debug>")
+    set(_debug_dll "$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_DEBUG>")
+    set(_has_debug_dll "$<BOOL:${_debug_dll}>")
+    set(_should_copy_debug_dll "$<AND:${_has_cplex_target},${_is_debug_build},${_has_debug_dll}>")
+
+    # In case no DLL file has to be copied, the copy command below would get an
+    # empty list of files to copy, and it would crash. We cannot use an "if"
+    # because the result of the generator expressions will only be known at
+    # build time. We thus always also copy the target to its own location.
+    set(_dummy "$<TARGET_FILE:${_TARGET_NAME}>")
+    
     add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
-            $<$<AND:$<TARGET_EXISTS:cplex::cplex>,$<CONFIG:Release>>:$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_RELEASE>>
-            $<$<AND:$<TARGET_EXISTS:cplex::cplex>,$<CONFIG:Debug>>:$<TARGET_PROPERTY:cplex::cplex,IMPORTED_LOCATION_DEBUG>>
+            $<${_should_copy_release_dll}:${_release_dll}>
+            $<${_should_copy_debug_dll}:${_debug_dll}>
+            ${_dummy}
             $<TARGET_FILE_DIR:${_TARGET_NAME}>
             COMMAND_EXPAND_LISTS
     )
