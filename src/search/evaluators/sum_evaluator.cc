@@ -69,11 +69,11 @@ plugins::Any TaskIndependentSumEvaluator::create_task_specific(shared_ptr<Abstra
         );
 
         task_specific_sum_evaluator = make_shared<SumEvaluator>(log, td_subevaluators, unparsed_config);
-        component_map -> add_entry(make_pair(task, static_cast<void*>(this)), task_specific_sum_evaluator);
+        any_obj = plugins::Any(task_specific_sum_evaluator);
+        component_map -> add_entry(make_pair(task, static_cast<void*>(this)), any_obj);
     }
-    return task_specific_sum_evaluator;
+    return any_obj;
 
-    //problem with the casting... is a Component class required?
 
 }
 
