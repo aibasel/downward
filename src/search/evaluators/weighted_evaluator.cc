@@ -13,7 +13,25 @@ namespace weighted_evaluator {
 WeightedEvaluator::WeightedEvaluator(const plugins::Options &opts)
     : Evaluator(opts),
       evaluator(opts.get<shared_ptr<Evaluator>>("eval")),
-      w(opts.get<int>("weight")) {
+      weight(opts.get<int>("weight")) {
+}
+
+WeightedEvaluator::WeightedEvaluator(
+                           utils::LogProxy log,
+                           shared_ptr<Evaluator> evaluator,
+                           int weight,
+                           basic_string<char> unparsed_config,
+                           bool use_for_reporting_minima,
+                           bool use_for_boosting,
+                           bool use_for_counting_evaluations,
+                           vector<shared_ptr<Evaluator>> subevaluators)
+        : Evaluator(log,unparsed_config,
+                    use_for_reporting_minima,
+                    use_for_boosting,
+                    use_for_counting_evaluations
+                    ),
+                    evaluator(evaluator),
+          weight(weight) {
 }
 
 WeightedEvaluator::~WeightedEvaluator() {
@@ -30,7 +48,7 @@ EvaluationResult WeightedEvaluator::compute_result(
     int value = eval_context.get_evaluator_value_or_infinity(evaluator.get());
     if (value != EvaluationResult::INFTY) {
         // TODO: Check for overflow?
-        value *= w;
+        value *= weight;
     }
     result.set_evaluator_value(value);
     return result;
