@@ -7,8 +7,12 @@
 namespace alternation_open_list {
 class AlternationOpenListFactory : public OpenListFactory {
     plugins::Options options;
+    int boost_amount;
+    std::vector<std::shared_ptr<OpenListFactory>> open_list_factories;
 public:
     explicit AlternationOpenListFactory(const plugins::Options &options);
+    explicit AlternationOpenListFactory(int boost_amount, std::vector<std::shared_ptr<OpenListFactory>> open_list_factories);
+
     virtual ~AlternationOpenListFactory() override = default;
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;

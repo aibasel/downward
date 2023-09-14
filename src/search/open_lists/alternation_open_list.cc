@@ -26,6 +26,8 @@ protected:
 
 public:
     explicit AlternationOpenList(const plugins::Options &opts);
+    explicit AlternationOpenList(int boost_amount, vector<shared_ptr<OpenListFactory>> _open_list_factories);
+
     virtual ~AlternationOpenList() override = default;
 
     virtual Entry remove_min() override;
@@ -52,6 +54,17 @@ AlternationOpenList<Entry>::AlternationOpenList(const plugins::Options &opts)
 
     priorities.resize(open_lists.size(), 0);
 }
+
+
+template<class Entry>
+AlternationOpenList<Entry>::AlternationOpenList(int boost_amount,vector<shared_ptr<OpenListFactory>> _open_list_factories)
+        : boost_amount(boost_amount) {
+    vector<shared_ptr<OpenListFactory>> open_list_factories(_open_list_factories);
+    open_lists.reserve(open_list_factories.size());
+    for (const auto &factory : open_list_factories)
+        open_lists.push_back(factory->create_open_list<Entry>());
+     priorities.resize(open_lists.size(), 0);
+ }
 
 template<class Entry>
 void AlternationOpenList<Entry>::do_insertion(
@@ -131,6 +144,10 @@ AlternationOpenListFactory::AlternationOpenListFactory(const plugins::Options &o
     : options(options) {
 }
 
+AlternationOpenListFactory::AlternationOpenListFactory(int boost_amount,vector<shared_ptr<OpenListFactory>> open_list_factories)
+        : boost_amount(boost_amount), open_list_factories(open_list_factories) {
+}
+
 unique_ptr<StateOpenList>
 AlternationOpenListFactory::create_state_open_list() {
     return utils::make_unique_ptr<AlternationOpenList<StateOpenListEntry>>(options);
@@ -158,9 +175,10 @@ public:
             "0");
     }
 
-    virtual shared_ptr<AlternationOpenListFactory> create_component(const plugins::Options &options, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<OpenListFactory>>(context, options, "sublists");
-        return make_shared<AlternationOpenListFactory>(options);
+    virtual shared_ptr<AlternationOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<OpenListFactory>>(context, opts, "sublists");
+        return make_shared<AlternationOpenListFactory>(opts.get<int>("boost"),
+                                                       opts.get_list<shared_ptr<OpenListFactory>>("sublists"));
     }
 };
 
