@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 ENV CXX g++
 # TODO: on next release, replace this with a tagged SoPlex release > 6.0.3.
 ENV SOPLEX_REVISION a5df081
-ENV DOWNWARD_SOPLEX_ROOT /opt/soplex
+ENV soplex_DIR /opt/soplex
 
 # Install SoPlex.
 WORKDIR /workspace/soplex
@@ -32,7 +32,7 @@ WORKDIR /workspace/soplex
 # another distribution mechanism.
 RUN git clone --branch master https://github.com/scipopt/soplex.git . && \
     git checkout $SOPLEX_REVISION && \
-    cmake -DCMAKE_INSTALL_PREFIX="$DOWNWARD_SOPLEX_ROOT" -S . -B build && \
+    cmake -DCMAKE_INSTALL_PREFIX="$soplex_DIR" -S . -B build && \
     cmake --build build && \
     cmake --install build
 
@@ -61,7 +61,7 @@ COPY --from=builder /workspace/downward/builds/debug/bin/ ./builds/debug/bin/
 COPY --from=builder /workspace/downward/driver ./driver
 COPY --from=builder /opt/soplex /opt/soplex
 
-ENV DOWNWARD_SOPLEX_ROOT=/opt/soplex
-ENV LD_LIBRARY_PATH=$DOWNWARD_SOPLEX_ROOT/lib
+ENV soplex_DIR=/opt/soplex
+ENV LD_LIBRARY_PATH=$soplex_DIR/lib
 
 ENTRYPOINT ["/workspace/downward/fast-downward.py"]

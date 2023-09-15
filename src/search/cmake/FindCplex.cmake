@@ -5,12 +5,12 @@
 #  target_link_libraries(<target> PRIVATE cplex::cplex)
 #
 # The location of CPLEX can be specified using the environment variable
-# or cmake parameter DOWNWARD_CPLEX_ROOT.
+# or cmake parameter cplex_DIR.
 #
 # The standard FIND_PACKAGE features are supported (QUIET, REQUIRED, etc.).
 
 set(IMPORTED_CONFIGURATIONS "Debug" "Release")
-set(HINT_PATHS ${DOWNWARD_CPLEX_ROOT} $ENV{DOWNWARD_CPLEX_ROOT})
+set(HINT_PATHS ${cplex_DIR} $ENV{cplex_DIR})
 
 add_library(cplex::cplex IMPORTED SHARED)
 set_target_properties(cplex::cplex PROPERTIES

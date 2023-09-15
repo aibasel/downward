@@ -43,7 +43,7 @@ Vagrant.configure("2") do |config|
     if [ -f "$CPLEX_INSTALLER" ]; then
         # Set environment variables for CPLEX.
         cat > /etc/profile.d/downward-cplex.sh <<-EOM
-			export DOWNWARD_CPLEX_ROOT="/opt/ibm/ILOG/CPLEX_Studio2211/cplex"
+			export cplex_DIR="/opt/ibm/ILOG/CPLEX_Studio2211/cplex"
 		EOM
         source /etc/profile.d/downward-cplex.sh
 
@@ -53,13 +53,13 @@ Vagrant.configure("2") do |config|
 
     # Set environment variables for SoPlex.
     cat > /etc/profile.d/downward-soplex.sh <<-EOM
-		export DOWNWARD_SOPLEX_ROOT="/opt/soplex"
+		export soplex_DIR="/opt/soplex"
 	EOM
     source /etc/profile.d/downward-soplex.sh
     git clone --branch master https://github.com/scipopt/soplex.git soplex
     cd soplex
     git checkout a5df081
-    cmake -DCMAKE_INSTALL_PREFIX="$DOWNWARD_SOPLEX_ROOT" -S . -B build
+    cmake -DCMAKE_INSTALL_PREFIX="$soplex_DIR" -S . -B build
     cmake --build build
     cmake --install build
 
