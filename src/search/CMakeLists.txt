@@ -85,8 +85,15 @@ create_fast_downward_library(
         state_registry
         task_id
         task_proxy
-
-    DEPENDS causal_graph int_hash_set int_packer ordered_set segmented_vector subscriber successor_generator task_properties
+    DEPENDS
+        causal_graph
+        int_hash_set
+        int_packer
+        ordered_set
+        segmented_vector
+        subscriber
+        successor_generator
+        task_properties
     CORE_LIBRARY
 )
 
