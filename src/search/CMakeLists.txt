@@ -151,7 +151,6 @@ if(WIN32)
     target_link_libraries(utils INTERFACE psapi)
 endif()
 
-
 create_fast_downward_library(
     NAME alternation_open_list
     HELP "Open list that alternates between underlying open lists in a round-robin manner"

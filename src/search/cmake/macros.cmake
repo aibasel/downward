@@ -67,7 +67,7 @@ function(create_fast_downward_library)
     add_existing_sources_to_list(_LIBRARY_SOURCES)
 
     if (NOT _LIBRARY_CORE_LIBRARY AND NOT _LIBRARY_DEPENDENCY_ONLY)
-        # Decide whether the plugin should be enabled by default.
+        # Decide whether the library should be enabled by default.
         if (DISABLE_LIBRARIES_BY_DEFAULT)
             set(_OPTION_DEFAULT FALSE)
         else()
@@ -89,11 +89,14 @@ endfunction()
 
 function(copy_dlls_to_binary_dir_after_build _TARGET_NAME)
     # Once we require CMake version >=3.21, we can use the code below instead.
-    # https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html#genex:_TARGET_RUNTIME_DLLS
+    # https://cmake.org/cmake/help/latest/manual/cmake-generator-expressions.7.html#genex:TARGET_RUNTIME_DLLS
     # add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
     #     COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${_TARGET_NAME}> $<TARGET_RUNTIME_DLLS:${_TARGET_NAME}>
     #     COMMAND_EXPAND_LISTS
     # )
+    # On top of making the variables and dummy hack below obsolete, this
+    # solution will also automatically detect all DLLs our executable depends
+    # on, so we won't have to handle CPLEX explicitly anymore.
     set(_has_cplex_target "$<TARGET_EXISTS:cplex::cplex>")
 
     set(_is_release_build "$<CONFIG:Release>")
@@ -111,7 +114,7 @@ function(copy_dlls_to_binary_dir_after_build _TARGET_NAME)
     # because the result of the generator expressions will only be known at
     # build time. We thus always also copy the target to its own location.
     set(_dummy "$<TARGET_FILE:${_TARGET_NAME}>")
-    
+
     add_custom_command(TARGET ${_TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
             $<${_should_copy_release_dll}:${_release_dll}>

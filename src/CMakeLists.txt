@@ -31,7 +31,7 @@ project(fast-downward
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
-# Add planner components as subprojects.
+# Add planner components.
 
 # Copy the translator into the output directory.
 add_custom_target(translate ALL)
@@ -41,4 +41,5 @@ add_custom_command(TARGET translate POST_BUILD
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/translate
     COMMENT "Copying translator module into output directory")
 
+# Add search component as a subproject.
 add_subdirectory(search)
