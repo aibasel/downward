@@ -36,7 +36,7 @@ def get_library_definitions(content):
         # we cannot manually en-/disable core and dependency only libraries
         if any(s in library_definition for s in ["CORE_LIBRARY", "DEPENDENCY_ONLY"]):
             continue
-        name_match = re.search(r"NAME (\S+)", library_definition)
+        name_match = re.search(r"NAME\s+(\S+)", library_definition)
         assert name_match
         name = name_match.group(1)
         libraries.append(name)
@@ -61,18 +61,18 @@ libraries = get_library_definitions(content)
 libraries_failed_test = []
 for library in libraries:
     build_path = os.path.join(BUILDS, library.lower())
-    config_args = [
+    config_cmd = [
         "cmake", "-S", os.path.join(REPO, "src"), "-B", build_path,
         "-DCMAKE_BUILD_TYPE=Debug", "-DDISABLE_LIBRARIES_BY_DEFAULT=YES",
         f"-DLIBRARY_{library.upper()}_ENABLED=True"
     ]
-    build_args = ["cmake", "--build", build_path]
+    build_cmd = ["cmake", "--build", build_path]
     if NUM_CPUS:
-        build_args += ["-j", f"{NUM_CPUS}"]
+        build_cmd += ["-j", f"{NUM_CPUS}"]
 
     try:
-        subprocess.check_call(config_args)
-        subprocess.check_call(build_args)
+        subprocess.check_call(config_cmd)
+        subprocess.check_call(build_cmd)
     except subprocess.CalledProcessError:
         libraries_failed_test.append(library)
 
