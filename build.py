@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import errno
-import multiprocessing
 import os
 import subprocess
 import sys
@@ -12,25 +11,18 @@ CONFIGS = {config: params for config, params in build_configs.__dict__.items()
            if not config.startswith("_")}
 DEFAULT_CONFIG_NAME = CONFIGS.pop("DEFAULT")
 DEBUG_CONFIG_NAME = CONFIGS.pop("DEBUG")
-
 CMAKE = "cmake"
-DEFAULT_MAKE_PARAMETERS = []
+CMAKE_GENERATOR = None
 if os.name == "posix":
-    MAKE = "make"
-    try:
-        num_cpus = multiprocessing.cpu_count()
-    except NotImplementedError:
-        pass
-    else:
-        DEFAULT_MAKE_PARAMETERS.append('-j{}'.format(num_cpus))
     CMAKE_GENERATOR = "Unix Makefiles"
 elif os.name == "nt":
-    MAKE = "nmake"
     CMAKE_GENERATOR = "NMake Makefiles"
-else:
-    print("Unsupported OS: " + os.name)
-    sys.exit(1)
-
+try:
+    # Number of usable CPUs (Unix only)
+    NUM_CPUS = len(os.sched_getaffinity(0))
+except AttributeError:
+    # Number of available CPUs as a fall-back (may be None)
+    NUM_CPUS = os.cpu_count()
 
 def print_usage():
     script_name = os.path.basename(__file__)
@@ -43,18 +35,16 @@ def print_usage():
         configs.append(name + "\n    " + " ".join(args))
     configs_string = "\n  ".join(configs)
     cmake_name = os.path.basename(CMAKE)
-    make_name = os.path.basename(MAKE)
     generator_name = CMAKE_GENERATOR.lower()
     default_config_name = DEFAULT_CONFIG_NAME
     debug_config_name = DEBUG_CONFIG_NAME
-    print("""Usage: {script_name} [BUILD [BUILD ...]] [--all] [--debug] [MAKE_OPTIONS]
+    print(f"""Usage: {script_name} [BUILD [BUILD ...]] [--all] [--debug] [MAKE_OPTIONS]
 
 Build one or more predefined build configurations of Fast Downward. Each build
-uses {cmake_name} to generate {generator_name} and then uses {make_name} to compile the
-code. Build configurations differ in the parameters they pass to {cmake_name}.
-By default, the build uses N threads on a machine with N cores if the number of
-cores can be determined. Use the "-j" option for {cmake_name} to override this default
-behaviour.
+uses {cmake_name} to compile the code using {generator_name} . Build configurations
+differ in the parameters they pass to {cmake_name}. By default, the build uses all
+available cores if this number can be determined. Use the "-j" option for
+{cmake_name} to override this default behaviour.
 
 Build configurations
   {configs_string}
@@ -64,7 +54,7 @@ Build configurations
 --help        Print this message and exit.
 
 Make options
-  All other parameters are forwarded to {make_name}.
+  All other parameters are forwarded to the build step.
 
 Example usage:
   ./{script_name}                     # build {default_config_name} in #cores threads
@@ -73,7 +63,7 @@ Example usage:
   ./{script_name} --debug             # build {debug_config_name}
   ./{script_name} release debug       # build release and debug configs
   ./{script_name} --all VERBOSE=true  # build all build configs with detailed logs
-""".format(**locals()))
+""")
 
 
 def get_project_root_path():
@@ -92,41 +82,41 @@ def get_src_path():
 def get_build_path(config_name):
     return os.path.join(get_builds_path(), config_name)
 
-def try_run(cmd, cwd):
-    print('Executing command "{}" in directory "{}".'.format(" ".join(cmd), cwd))
+def try_run(cmd):
+    print(f'Executing command "{" ".join(cmd)}"')
     try:
-        subprocess.check_call(cmd, cwd=cwd)
+        subprocess.check_call(cmd)
     except OSError as exc:
         if exc.errno == errno.ENOENT:
-            print("Could not find '%s' on your PATH. For installation instructions, "
-                  "see https://www.fast-downward.org/ObtainingAndRunningFastDownward." %
-                  cmd[0])
+            print(f"Could not find '{cmd[0]}' on your PATH. For installation instructions, "
+                  "see https://www.fast-downward.org/ObtainingAndRunningFastDownward.")
             sys.exit(1)
         else:
             raise
 
-def build(config_name, cmake_parameters, make_parameters):
-    print("Building configuration {config_name}.".format(**locals()))
+def build(config_name, configure_parameters, build_parameters):
+    print(f"Building configuration {config_name}.")
+
     build_path = get_build_path(config_name)
-    rel_src_path = os.path.relpath(get_src_path(), build_path)
-    try:
-        os.makedirs(build_path)
-    except OSError as exc:
-        if exc.errno == errno.EEXIST and os.path.isdir(build_path):
-            pass
-        else:
-            raise
+    generator_cmd = [CMAKE, "-S", get_src_path(), "-B", build_path]
+    if CMAKE_GENERATOR:
+        generator_cmd += ["-G", CMAKE_GENERATOR]
+    generator_cmd += configure_parameters
+    try_run(generator_cmd)
 
-    try_run([CMAKE, "-G", CMAKE_GENERATOR] + cmake_parameters + [rel_src_path],
-            cwd=build_path)
-    try_run([MAKE] + make_parameters, cwd=build_path)
+    build_cmd = [CMAKE, "--build", build_path]
+    if NUM_CPUS:
+        build_cmd += ["-j", f"{NUM_CPUS}"]
+    if build_parameters:
+        build_cmd += ["--"] + build_parameters
+    try_run(build_cmd)
 
-    print("Built configuration {config_name} successfully.".format(**locals()))
+    print(f"Built configuration {config_name} successfully.")
 
 
 def main():
     config_names = []
-    make_parameters = DEFAULT_MAKE_PARAMETERS
+    build_parameters = []
     for arg in sys.argv[1:]:
         if arg == "--help" or arg == "-h":
             print_usage()
@@ -138,11 +128,11 @@ def main():
         elif arg in CONFIGS:
             config_names.append(arg)
         else:
-            make_parameters.append(arg)
+            build_parameters.append(arg)
     if not config_names:
         config_names.append(DEFAULT_CONFIG_NAME)
     for config_name in config_names:
-        build(config_name, CONFIGS[config_name], make_parameters)
+        build(config_name, CONFIGS[config_name], build_parameters)
 
 
 if __name__ == "__main__":

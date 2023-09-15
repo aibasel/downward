@@ -4,8 +4,6 @@
 
 #include "../utils/system.h"
 
-#ifdef HAS_SOPLEX
-
 using namespace std;
 using namespace soplex;
 
@@ -228,5 +226,3 @@ void SoPlexSolverInterface::print_statistics() const {
     soplex.printStatistics(cout);
 }
 }
-
-#endif

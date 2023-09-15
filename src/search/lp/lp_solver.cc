@@ -1,7 +1,11 @@
 #include "lp_solver.h"
 
+#ifdef HAS_CPLEX
 #include "cplex_solver_interface.h"
+#endif
+#ifdef HAS_SOPLEX
 #include "soplex_solver_interface.h"
+#endif
 
 #include "../plugins/plugin.h"
 

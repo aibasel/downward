@@ -5,6 +5,7 @@ import re
 import subprocess
 import sys
 
+from pathlib import Path
 import pytest
 
 import configs
@@ -17,8 +18,6 @@ BUILD_DIR = os.path.join(REPO, "builds", "release")
 DOWNWARD_BIN = os.path.join(BUILD_DIR, "bin", "downward")
 SAS_FILE = os.path.join(REPO, "test.sas")
 PLAN_FILE = os.path.join(REPO, "test.plan")
-VALGRIND_GCC5_SUPPRESSION_FILE = os.path.join(
-    REPO, "misc", "tests", "valgrind", "gcc5.supp")
 DLOPEN_SUPPRESSION_FILE = os.path.join(
     REPO, "misc", "tests", "valgrind", "dlopen.supp")
 DL_CATCH_ERROR_SUPPRESSION_FILE = os.path.join(
@@ -31,33 +30,16 @@ CONFIGS = {}
 CONFIGS.update(configs.default_configs_optimal(core=True, extended=True))
 CONFIGS.update(configs.default_configs_satisficing(core=True, extended=True))
 
+SUPPRESSION_FILES = [
+    DLOPEN_SUPPRESSION_FILE,
+    DL_CATCH_ERROR_SUPPRESSION_FILE,
+]
 
 def escape_list(l):
     return " ".join(pipes.quote(x) for x in l)
 
 
-def get_compiler_and_version():
-    output = subprocess.check_output(
-        ["cmake", "-LA", "-N", "../../src/"], cwd=BUILD_DIR).decode("utf-8")
-    compiler = re.search(
-        "^DOWNWARD_CXX_COMPILER_ID:STRING=(.+)$", output, re.M).group(1)
-    version = re.search(
-        "^DOWNWARD_CXX_COMPILER_VERSION:STRING=(.+)$", output, re.M).group(1)
-    return compiler, version
-
-
-COMPILER, COMPILER_VERSION = get_compiler_and_version()
-SUPPRESSION_FILES = [
-    DLOPEN_SUPPRESSION_FILE,
-    DL_CATCH_ERROR_SUPPRESSION_FILE,
-]
-if COMPILER == "GNU" and COMPILER_VERSION.split(".")[0] == "5":
-    print("Using leak suppression file for GCC 5 "
-          "(see https://issues.fast-downward.org/issue703).")
-    SUPPRESSION_FILES.append(VALGRIND_GCC5_SUPPRESSION_FILE)
-
-
-def run_plan_script(task, config):
+def run_plan_script(task, config, custom_suppression_files):
     assert "--alias" not in config, config
     cmd = [
         "valgrind",
@@ -66,7 +48,8 @@ def run_plan_script(task, config):
         "--show-leak-kinds=all",
         "--errors-for-leak-kinds=all",
         "--track-origins=yes"]
-    for suppression_file in SUPPRESSION_FILES:
+    suppression_files = SUPPRESSION_FILES + custom_suppression_files
+    for suppression_file in [Path(p).absolute() for p in suppression_files]:
         cmd.append("--suppressions={}".format(suppression_file))
     cmd.extend([DOWNWARD_BIN] + config + ["--internal-plan-file", PLAN_FILE])
     print("\nRun: {}".format(escape_list(cmd)))
@@ -101,8 +84,8 @@ def setup_module(_module):
 
 
 @pytest.mark.parametrize("config", sorted(CONFIGS.values()))
-def test_configs(config):
-    run_plan_script(SAS_FILE, config)
+def test_configs(config, suppression_files):
+    run_plan_script(SAS_FILE, config, suppression_files)
 
 
 def teardown_module(_module):
