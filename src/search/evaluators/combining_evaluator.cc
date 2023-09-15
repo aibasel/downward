@@ -1,9 +1,10 @@
 #include "combining_evaluator.h"
 
 #include "../evaluation_context.h"
-#include "../evaluation_result.h"
 
 #include "../plugins/plugin.h"
+
+#include <utility>
 
 using namespace std;
 
@@ -23,8 +24,8 @@ CombiningEvaluator::CombiningEvaluator(utils::LogProxy log,
                                        bool use_for_reporting_minima,
                                        bool use_for_boosting,
                                        bool use_for_counting_evaluations)
-    : Evaluator(log,
-                unparsed_config,
+    : Evaluator(std::move(log),
+                std::move(unparsed_config),
                 use_for_reporting_minima,
                 use_for_boosting,
                 use_for_counting_evaluations) {
@@ -69,12 +70,14 @@ void CombiningEvaluator::get_path_dependent_evaluators(
     for (auto &subevaluator : subevaluators)
         subevaluator->get_path_dependent_evaluators(evals);
 }
+
+
 void add_combining_evaluator_options_to_feature(plugins::Feature &feature) {
     feature.add_list_option<shared_ptr<Evaluator>>(
         "evals", "at least one evaluator");
     add_evaluator_options_to_feature(feature);
 }
-}
+
 
 TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(utils::LogProxy log,
                                                                      std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
@@ -84,4 +87,22 @@ TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(utils::LogP
                                                                      bool use_for_counting_evaluations)
     : TaskIndependentEvaluator(log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
       subevaluators(subevaluators) {
+}
+
+shared_ptr<CombiningEvaluator> TaskIndependentCombiningEvaluator::create_task_specific_CombiningEvaluator(shared_ptr<AbstractTask> &task) {
+    log << "Creating CombiningEvaluator as root component..." << endl;
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_CombiningEvaluator(task, component_map);
+}
+
+shared_ptr<CombiningEvaluator> TaskIndependentCombiningEvaluator::create_task_specific_CombiningEvaluator([[maybe_unused]] shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map) {
+    cerr << "Tries to create CombiningEvaluator in an unimplemented way." << endl;
+    utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+}
+
+
+shared_ptr<Evaluator> TaskIndependentCombiningEvaluator::create_task_specific_Evaluator(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<CombiningEvaluator> x = create_task_specific_CombiningEvaluator(task, component_map);
+    return static_pointer_cast<Evaluator>(x);
+}
 }

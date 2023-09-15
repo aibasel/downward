@@ -11,12 +11,6 @@
 using namespace std;
 
 namespace standard_scalar_open_list {
-
-
-
-
-
-
 template<class Entry>
 void BestFirstOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
@@ -75,41 +69,61 @@ BestFirstOpenListFactory::BestFirstOpenListFactory(
 }
 
 BestFirstOpenListFactory::BestFirstOpenListFactory(bool pref_only, shared_ptr<Evaluator> evaluator)
-: pref_only(pref_only), size(0),
-evaluator(evaluator) {
+    : pref_only(pref_only), size(0),
+      evaluator(evaluator) {
 }
 
 
-unique_ptr<StateOpenList>
+shared_ptr<StateOpenList>
 BestFirstOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<BestFirstOpenList<StateOpenListEntry>>(options);
+    return make_shared<BestFirstOpenList<StateOpenListEntry>>(options);
 }
 
-unique_ptr<EdgeOpenList>
+shared_ptr<EdgeOpenList>
 BestFirstOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<BestFirstOpenList<EdgeOpenListEntry>>(options);
+    return make_shared<BestFirstOpenList<EdgeOpenListEntry>>(options);
 }
 
 TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory(const plugins::Options &opts)
-        : options(opts), size(0), pref_only(opts.get<bool>("pref_only")), evaluator(opts.get<std::shared_ptr<TaskIndependentEvaluator>>("eval")) {
+    : pref_only(opts.get<bool>("pref_only")),
+      size(0),
+      evaluator(opts.get<std::shared_ptr<TaskIndependentEvaluator>>("eval")),
+      options(opts) {
 }
 
 TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory(
-        bool pref_only, shared_ptr<TaskIndependentEvaluator> evaluator
-)
-        : pref_only(pref_only), size(0), evaluator(evaluator) {
+    bool pref_only, shared_ptr<TaskIndependentEvaluator> evaluator
+    )
+    : pref_only(pref_only), size(0), evaluator(evaluator) {
 }
 
 
+shared_ptr<BestFirstOpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific_BestFirstOpenListFactory(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<BestFirstOpenListFactory> task_specific_x;
+    if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
+        utils::g_log << "Reuse task specific BestFirstOpenListFactory..." << endl;
+        task_specific_x = plugins::any_cast<shared_ptr<BestFirstOpenListFactory>>(
+            component_map->get_dual_key_value(task, this));
+    } else {
+        utils::g_log << "Creating task specific BestFirstOpenListFactory..." << endl;
 
-std::unique_ptr<TaskIndependentStateOpenList>
-TaskIndependentBestFirstOpenListFactory::create_task_independent_state_open_list() {
-    return utils::make_unique_ptr<TaskIndependentBestFirstOpenList<StateOpenListEntry>>(pref_only, evaluator);
+        task_specific_x = make_shared<BestFirstOpenListFactory>(pref_only, evaluator->create_task_specific_Evaluator(task, component_map));
+        component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_x));
+    }
+    return task_specific_x;
 }
 
-std::unique_ptr<TaskIndependentEdgeOpenList>
-TaskIndependentBestFirstOpenListFactory::create_task_independent_edge_open_list() {
-    return utils::make_unique_ptr<TaskIndependentBestFirstOpenList<EdgeOpenListEntry>>(pref_only, evaluator);
+
+shared_ptr<BestFirstOpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific_BestFirstOpenListFactory(shared_ptr<AbstractTask> &task) {
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_BestFirstOpenListFactory(task, component_map);
+}
+
+
+shared_ptr<OpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific_OpenListFactory(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
+    utils::g_log << "Creating BestFirstOpenListFactory as root component..." << endl;
+    shared_ptr<BestFirstOpenListFactory> x = create_task_specific_BestFirstOpenListFactory(task, component_map);
+    return static_pointer_cast<OpenListFactory>(x);
 }
 
 
@@ -136,7 +150,7 @@ public:
     virtual shared_ptr<TaskIndependentBestFirstOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<OpenListFactory>>(context, opts, "sublists");
         return make_shared<TaskIndependentBestFirstOpenListFactory>(opts.get<bool>("pref_only"),
-                                                       opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"));
+                                                                    opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"));
     }
 };
 

@@ -125,22 +125,6 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
         options.get<int>("boost"));
 }
 
-pair<shared_ptr<OpenListFactory>, const shared_ptr<Evaluator>>
-create_astar_open_list_factory_and_f_eval(const utils::Verbosity &verbosity,
-                                          const shared_ptr<Evaluator> &eval) {
-    shared_ptr<GEval> g = make_shared<GEval>(utils::get_log_from_verbosity(verbosity));
-
-    shared_ptr<Evaluator> h = eval;
-
-    shared_ptr<Evaluator> f = make_shared<SumEval>(utils::get_log_from_verbosity(verbosity),
-                                                   vector<shared_ptr<Evaluator>>({g, h}));
-
-    vector<shared_ptr<Evaluator>> evals = {f, h};
-
-    shared_ptr<OpenListFactory> open =
-        make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(false, evals, false);
-    return make_pair(open, f);
-}
 
 pair<shared_ptr<TaskIndependentOpenListFactory>, const shared_ptr<TaskIndependentEvaluator>>
 create_task_independent_astar_open_list_factory_and_f_eval(const utils::Verbosity &verbosity,

@@ -32,21 +32,29 @@ public:
 };
 
 
-class TaskIndependentWeightedEvaluator: public TaskIndependentEvaluator {
+class TaskIndependentWeightedEvaluator : public TaskIndependentEvaluator {
 private:
     std::shared_ptr<TaskIndependentEvaluator> evaluator;
     int weight;
 public:
     explicit TaskIndependentWeightedEvaluator(utils::LogProxy log,
-                                         std::shared_ptr<TaskIndependentEvaluator> evaluator,
-                                         int weight,
-                                         std::string unparsed_config = std::string(),
-                                         bool use_for_reporting_minima = false,
-                                         bool use_for_boosting = false,
-                                         bool use_for_counting_evaluations = false);
-    virtual plugins::Any create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) override;
+                                              std::shared_ptr<TaskIndependentEvaluator> evaluator,
+                                              int weight,
+                                              std::string unparsed_config = std::string(),
+                                              bool use_for_reporting_minima = false,
+                                              bool use_for_boosting = false,
+                                              bool use_for_counting_evaluations = false);
 
     virtual ~TaskIndependentWeightedEvaluator()  override;
+
+    virtual std::shared_ptr<Evaluator> create_task_specific_Evaluator(std::shared_ptr<AbstractTask> &task) override;
+
+    virtual std::shared_ptr<Evaluator> create_task_specific_Evaluator(
+        std::shared_ptr<AbstractTask> &task,
+        std::shared_ptr<ComponentMap> &component_map) override;
+
+    virtual std::shared_ptr<WeightedEvaluator> create_task_specific_WeightedEvaluator(std::shared_ptr<AbstractTask> &task);
+    virtual std::shared_ptr<WeightedEvaluator> create_task_specific_WeightedEvaluator(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
 };
 }
 

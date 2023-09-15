@@ -1,9 +1,8 @@
 #ifndef EVALUATORS_G_EVALUATOR_H
 #define EVALUATORS_G_EVALUATOR_H
 
-#include "../evaluator.h"
-
 #include "../abstract_task.h"
+#include "../evaluator.h"
 
 namespace g_evaluator {
 class GEvaluator : public Evaluator {
@@ -33,9 +32,18 @@ public:
                                        bool use_for_reporting_minima = false,
                                        bool use_for_boosting = false,
                                        bool use_for_counting_evaluations = false);
-    plugins::Any create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) override;
+    template<typename T>
+    std::shared_ptr<T> create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
 
     virtual ~TaskIndependentGEvaluator()  override;
+
+
+    virtual std::shared_ptr<Evaluator> create_task_specific_Evaluator(
+        std::shared_ptr<AbstractTask> &task,
+        std::shared_ptr<ComponentMap> &component_map) override;
+
+    virtual std::shared_ptr<GEvaluator> create_task_specific_GEvaluator(std::shared_ptr<AbstractTask> &task);
+    virtual std::shared_ptr<GEvaluator> create_task_specific_GEvaluator(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
 };
 }
 

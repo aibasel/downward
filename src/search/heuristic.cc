@@ -9,8 +9,6 @@
 #include "tasks/root_task.h"
 
 #include <cassert>
-#include <cstdlib>
-#include <limits>
 
 using namespace std;
 
@@ -124,6 +122,23 @@ TaskIndependentHeuristic::TaskIndependentHeuristic(const string unparsed_config,
                                                    bool cache_evaluator_values)
     : TaskIndependentEvaluator(log, unparsed_config, true, true, true),
       cache_evaluator_values(cache_evaluator_values) {
+}
+
+shared_ptr<Heuristic> TaskIndependentHeuristic::create_task_specific_Heuristic(shared_ptr<AbstractTask> &task) {
+    log << "Creating Heuristic as root component..." << endl;
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_Heuristic(task, component_map);
+}
+
+shared_ptr<Heuristic> TaskIndependentHeuristic::create_task_specific_Heuristic([[maybe_unused]] shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map) {
+    cerr << "Tries to create Heuristic in an unimplemented way." << endl;
+    utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+}
+
+
+shared_ptr<Evaluator> TaskIndependentHeuristic::create_task_specific_Evaluator(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<Heuristic> x = create_task_specific_Heuristic(task, component_map);
+    return static_pointer_cast<Evaluator>(x);
 }
 
 void TaskIndependentHeuristic::add_options_to_feature(plugins::Feature &feature) {

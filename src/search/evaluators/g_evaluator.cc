@@ -1,10 +1,8 @@
 #include "g_evaluator.h"
 
 #include "../evaluation_context.h"
-#include "../evaluation_result.h"
-#include "../plugins/plugin.h"
 
-#include "../utils/logging.h"
+#include "../plugins/plugin.h"
 
 using namespace std;
 
@@ -41,21 +39,35 @@ TaskIndependentGEvaluator::TaskIndependentGEvaluator(utils::LogProxy log,
 TaskIndependentGEvaluator::~TaskIndependentGEvaluator() {
 }
 
-plugins::Any TaskIndependentGEvaluator::create_task_specific([[maybe_unused]] shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
 
-    std::shared_ptr<GEvaluator> task_specific_g_evaluator;
-    plugins::Any any_obj;
+shared_ptr<GEvaluator> TaskIndependentGEvaluator::create_task_specific_GEvaluator(std::shared_ptr<AbstractTask> &task,
+                                                                                  std::shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<GEvaluator> task_specific_g_evaluator;
 
-    if (component_map -> contains_key(make_pair(task, static_cast<void*>(this)))){
-        any_obj = component_map -> get_value(make_pair(task, static_cast<void*>(this)));
+    if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
+        log << "Reuse task specific GEvaluator..." << endl;
+        task_specific_g_evaluator = plugins::any_cast<shared_ptr<GEvaluator>>(
+            component_map->get_dual_key_value(task, this));
     } else {
+        log << "Creating task specific GEvaluator..." << endl;
         task_specific_g_evaluator = make_shared<GEvaluator>(log, unparsed_config);
-        any_obj = plugins::Any(task_specific_g_evaluator);
-        component_map -> add_entry(make_pair(task, static_cast<void*>(this)), any_obj);
+        component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_g_evaluator));
     }
-    return any_obj;
+    return task_specific_g_evaluator;
 }
 
+
+shared_ptr<GEvaluator> TaskIndependentGEvaluator::create_task_specific_GEvaluator(shared_ptr<AbstractTask> &task) {
+    log << "Creating GEvaluator as root component..." << endl;
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_GEvaluator(task, component_map);
+}
+
+
+shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific_Evaluator(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<GEvaluator> x = create_task_specific_GEvaluator(task, component_map);
+    return static_pointer_cast<Evaluator>(x);
+}
 
 class TaskIndependentGEvaluatorFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentGEvaluator> {
 public:
