@@ -5,6 +5,7 @@ import re
 import subprocess
 import sys
 
+from pathlib import Path
 import pytest
 
 import configs
@@ -39,10 +40,6 @@ def escape_list(l):
 
 
 def run_plan_script(task, config, custom_suppression_files):
-    custom_suppression_files = [
-        os.path.join(REPO, "misc", "tests", "valgrind", f)
-        for f in custom_suppression_files
-    ]
     assert "--alias" not in config, config
     cmd = [
         "valgrind",
@@ -51,7 +48,8 @@ def run_plan_script(task, config, custom_suppression_files):
         "--show-leak-kinds=all",
         "--errors-for-leak-kinds=all",
         "--track-origins=yes"]
-    for suppression_file in SUPPRESSION_FILES + custom_suppression_files:
+    suppression_files = SUPPRESSION_FILES + custom_suppression_files
+    for suppression_file in [Path(p).absolute() for p in suppression_files]:
         cmd.append("--suppressions={}".format(suppression_file))
     cmd.extend([DOWNWARD_BIN] + config + ["--internal-plan-file", PLAN_FILE])
     print("\nRun: {}".format(escape_list(cmd)))
