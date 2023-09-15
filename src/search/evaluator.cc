@@ -91,17 +91,30 @@ TaskIndependentEvaluator::TaskIndependentEvaluator(utils::LogProxy log,
                                                    bool use_for_reporting_minima,
                                                    bool use_for_boosting,
                                                    bool use_for_counting_evaluations)
-        : description(unparsed_config),
-          use_for_reporting_minima(use_for_reporting_minima),
-          use_for_boosting(use_for_boosting),
-          use_for_counting_evaluations(use_for_counting_evaluations),
-          log(log) {
+    : description(unparsed_config),
+      use_for_reporting_minima(use_for_reporting_minima),
+      use_for_boosting(use_for_boosting),
+      use_for_counting_evaluations(use_for_counting_evaluations),
+      log(log) {
 }
 
 
-plugins::Any TaskIndependentEvaluator::create_task_specific(shared_ptr<AbstractTask> &task) {
-    std::shared_ptr<ComponentMap> component_map;
-    return create_task_specific(task, component_map);
+
+shared_ptr<Evaluator> TaskIndependentEvaluator::create_task_specific_Evaluator(shared_ptr<AbstractTask> &task) {
+    log << "Creating Evaluator as root component..." << endl;
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_Evaluator(task, component_map);
+}
+
+shared_ptr<Evaluator> TaskIndependentEvaluator::create_task_specific_Evaluator([[maybe_unused]] shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map) {
+    cerr << "Tries to create Evaluator in an unimplemented way." << endl;
+    utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+}
+
+
+shared_ptr<Component> TaskIndependentEvaluator::create_task_specific_Component(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<Evaluator> x = create_task_specific_Evaluator(task, component_map);
+    return static_pointer_cast<Component>(x);
 }
 
 void add_evaluator_options_to_feature(plugins::Feature &feature) {

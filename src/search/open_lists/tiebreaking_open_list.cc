@@ -1,7 +1,6 @@
 #include "tiebreaking_open_list.h"
 
 #include "../evaluator.h"
-
 #include "../open_list.h"
 
 #include "../plugins/plugin.h"
@@ -31,14 +30,14 @@ TieBreakingOpenListFactory::TieBreakingOpenListFactory(
     : pref_only(pref_only), size(0), evaluators(evaluators), allow_unsafe_pruning(allow_unsafe_pruning) {
 }
 
-unique_ptr<StateOpenList>
+shared_ptr<StateOpenList>
 TieBreakingOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<TieBreakingOpenList<StateOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
+    return make_shared<TieBreakingOpenList<StateOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
 }
 
-unique_ptr<EdgeOpenList>
+shared_ptr<EdgeOpenList>
 TieBreakingOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<TieBreakingOpenList<EdgeOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
+    return make_shared<TieBreakingOpenList<EdgeOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
 }
 
 TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFactory(const plugins::Options &opts)
@@ -52,6 +51,53 @@ TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFac
     : pref_only(pref_only), size(0), evaluators(evaluators), allow_unsafe_pruning(allow_unsafe_pruning) {
 }
 
+
+
+
+shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_TieBreakingOpenListFactory(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<TieBreakingOpenListFactory> task_specific_x;
+    utils::g_log << "Checking ComponentMap for TieBreakingOpenListFactory..." << endl;
+    if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
+        utils::g_log << "Reuse task specific EagerSearch..." << endl;
+        task_specific_x = plugins::any_cast<shared_ptr<TieBreakingOpenListFactory>>(
+            component_map->get_dual_key_value(task, this));
+    } else {
+        utils::g_log << "Creating task specific TieBreakingOpenListFactory..." << endl;
+        vector<shared_ptr<Evaluator>> ts_evaluators(evaluators.size());
+
+        transform(evaluators.begin(), evaluators.end(), ts_evaluators.begin(),
+                  [this, &task, &component_map](const shared_ptr<TaskIndependentEvaluator> &eval) {
+                      return eval->create_task_specific_Evaluator(task, component_map);
+                  }
+                  );
+
+        task_specific_x = make_shared<TieBreakingOpenListFactory>(pref_only,
+                                                                  ts_evaluators,
+                                                                  allow_unsafe_pruning);
+        component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_x));
+    }
+    return task_specific_x;
+}
+
+
+shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_TieBreakingOpenListFactory(shared_ptr<AbstractTask> &task) {
+    utils::g_log << "Creating TieBreakingOpenListFactory as root component..." << endl;
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_TieBreakingOpenListFactory(task, component_map);
+}
+
+
+shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_OpenListFactory(shared_ptr<AbstractTask> &task) {
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_OpenListFactory(task, component_map);
+}
+
+shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_OpenListFactory(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<TieBreakingOpenListFactory> x = create_task_specific_TieBreakingOpenListFactory(task, component_map);
+    return static_pointer_cast<OpenListFactory>(x);
+}
+
+/* Job of the specific factory
 unique_ptr<TaskIndependentStateOpenList>
 TaskIndependentTieBreakingOpenListFactory::create_task_independent_state_open_list() {
     return utils::make_unique_ptr<TaskIndependentTieBreakingOpenList<StateOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
@@ -61,6 +107,7 @@ unique_ptr<TaskIndependentEdgeOpenList>
 TaskIndependentTieBreakingOpenListFactory::create_task_independent_edge_open_list() {
     return utils::make_unique_ptr<TaskIndependentTieBreakingOpenList<EdgeOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
 }
+*/
 
 class TieBreakingOpenListFeature : public plugins::TypedFeature<TaskIndependentOpenListFactory, TaskIndependentTieBreakingOpenListFactory> {
 public:
@@ -81,8 +128,8 @@ public:
     virtual shared_ptr<TaskIndependentTieBreakingOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentEvaluator>>(context, opts, "evals");
         return make_shared<TaskIndependentTieBreakingOpenListFactory>(opts.get<bool>("pref_only"),
-                                                       opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
-                                                       opts.get<bool>("unsafe_pruning"));
+                                                                      opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
+                                                                      opts.get<bool>("unsafe_pruning"));
     }
 };
 

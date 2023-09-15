@@ -212,7 +212,7 @@ void print_initial_evaluator_values(
 
 static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentSearchAlgorithm> {
 public:
-    SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("TaskIndependentSearchAlgorithm") {
+    SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("SearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.
         // document_synopsis("...");
     }
@@ -225,13 +225,13 @@ TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(utils::Verbosity 
                                                          double max_time,
                                                          int bound,
                                                          string unparsed_config)
-        : description(unparsed_config),
-          status(IN_PROGRESS),
-          solution_found(false),
-          verbosity(verbosity),
-          bound(bound),
-          cost_type(cost_type),
-          max_time(max_time) {
+    : description(unparsed_config),
+      status(IN_PROGRESS),
+      solution_found(false),
+      verbosity(verbosity),
+      bound(bound),
+      cost_type(cost_type),
+      max_time(max_time) {
     if (bound < 0) {
         cerr << "error: negative cost bound " << bound << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
@@ -241,9 +241,21 @@ TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(utils::Verbosity 
 TaskIndependentSearchAlgorithm::~TaskIndependentSearchAlgorithm() {
 }
 
-plugins::Any TaskIndependentSearchAlgorithm::create_task_specific(shared_ptr<AbstractTask> &task) {
-    std::shared_ptr<ComponentMap> component_map;
-    return create_task_specific(task, component_map);
+shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific_SearchAlgorithm(shared_ptr<AbstractTask> &task) {
+    utils::g_log << "Creating SearchAlgorithm as root component..." << endl;
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_SearchAlgorithm(task, component_map);
+}
+
+shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific_SearchAlgorithm([[maybe_unused]] shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map) {
+    cerr << "Tries to create SearchAlgorithm in an unimplemented way." << endl;
+    utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+}
+
+
+shared_ptr<Component> TaskIndependentSearchAlgorithm::create_task_specific_Component(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<SearchAlgorithm> x = create_task_specific_SearchAlgorithm(task, component_map);
+    return static_pointer_cast<Component>(x);
 }
 
 

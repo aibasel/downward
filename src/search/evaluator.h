@@ -2,10 +2,10 @@
 #define EVALUATOR_H
 
 #include "abstract_task.h"
+#include "component_map.h"
 #include "evaluation_result.h"
 
 #include "utils/logging.h"
-#include "component_map.h"
 
 #include <set>
 
@@ -16,7 +16,7 @@ namespace plugins {
 class Options;
 }
 
-class Evaluator {
+class Evaluator : public Component {
     const std::string description;
     const bool use_for_reporting_minima;
     const bool use_for_boosting;
@@ -108,7 +108,7 @@ public:
     virtual int get_cached_estimate(const State &state) const;
 };
 
-class TaskIndependentEvaluator {
+class TaskIndependentEvaluator : public TaskIndependentComponent {
     const std::string description;
     const bool use_for_reporting_minima;
     const bool use_for_boosting;
@@ -117,17 +117,21 @@ protected:
     mutable utils::LogProxy log;
 public:
     explicit TaskIndependentEvaluator(
-            utils::LogProxy log,
-            const std::string unparsed_config = std::string(),
-            bool use_for_reporting_minima = false,
-            bool use_for_boosting = false,
-            bool use_for_counting_evaluations = false);
+        utils::LogProxy log,
+        const std::string unparsed_config = std::string(),
+        bool use_for_reporting_minima = false,
+        bool use_for_boosting = false,
+        bool use_for_counting_evaluations = false);
     virtual ~TaskIndependentEvaluator() = default;
 
-    plugins::Any create_task_specific(std::shared_ptr<AbstractTask> &task);
-    virtual plugins::Any create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) = 0;
+    virtual std::shared_ptr<Component> create_task_specific_Component(
+        std::shared_ptr<AbstractTask> &task,
+        std::shared_ptr<ComponentMap> &component_map) override;
 
+    virtual std::shared_ptr<Evaluator> create_task_specific_Evaluator(std::shared_ptr<AbstractTask> &task);
+    virtual std::shared_ptr<Evaluator> create_task_specific_Evaluator(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
 };
+
 
 extern void add_evaluator_options_to_feature(plugins::Feature &feature);
 

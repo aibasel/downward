@@ -2,6 +2,7 @@
 #define SEARCH_ALGORITHMS_EAGER_SEARCH_H
 
 #include "../open_list.h"
+#include "../open_list_factory.h"
 #include "../search_algorithm.h"
 
 #include <memory>
@@ -63,7 +64,10 @@ class TaskIndependentEagerSearch : public TaskIndependentSearchEngine {
 private:
     const bool reopen_closed_nodes;
 
-    std::shared_ptr<TaskIndependentStateOpenList> open_list;
+    //std::shared_ptr<TaskIndependentStateOpenList> open_list;
+    std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory;
+
+
     std::shared_ptr<TaskIndependentEvaluator> f_evaluator;
 
     std::vector<TaskIndependentEvaluator *> path_dependent_evaluators;
@@ -77,14 +81,22 @@ public:
                                         double max_time,
                                         int bound,
                                         bool reopen_closed_nodes,
-                                        std::shared_ptr<TaskIndependentStateOpenList> open_list,
+                                        std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory, //will produce StateOpenList
                                         std::vector<std::shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
                                         std::shared_ptr<PruningMethod> pruning_method,
                                         std::shared_ptr<TaskIndependentEvaluator> f_evaluator = nullptr,
                                         std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator = nullptr,
                                         std::string unparsed_config = std::string());
 
-    plugins::Any create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) override;
+    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_SearchAlgorithm(
+        std::shared_ptr<AbstractTask> &task,
+        std::shared_ptr<ComponentMap> &component_map) override;
+
+    virtual std::shared_ptr<EagerSearch> create_task_specific_EagerSearch(std::shared_ptr<AbstractTask> &task);
+    virtual std::shared_ptr<EagerSearch> create_task_specific_EagerSearch(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
+
+//    template<typename T>
+//  std::shared_ptr<T> create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
 
     virtual ~TaskIndependentEagerSearch()  override;
 };

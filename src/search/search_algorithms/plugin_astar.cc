@@ -1,8 +1,6 @@
 #include "eager_search.h"
 #include "search_common.h"
 
-#include "../open_list_factory.h"
-
 #include "../plugins/plugin.h"
 
 using namespace std;
@@ -42,15 +40,15 @@ public:
 
     virtual shared_ptr<eager_search::TaskIndependentEagerSearch> create_component(const plugins::Options &opts, const utils::Context &) const override {
         utils::Verbosity _verbosity = opts.get<utils::Verbosity>("verbosity");
-        auto temp = search_common::create_task_independent_astar_open_list_factory_and_f_eval(_verbosity,
-                                                                                              opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"));
+        pair<shared_ptr<TaskIndependentOpenListFactory>, shared_ptr<TaskIndependentEvaluator>> temp = search_common::create_task_independent_astar_open_list_factory_and_f_eval(_verbosity,
+                                                                                                                                                                                opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"));
         vector<shared_ptr<TaskIndependentEvaluator>> preferred_list;
         return make_shared<eager_search::TaskIndependentEagerSearch>(_verbosity,
                                                                      opts.get<OperatorCost>("cost_type"),
                                                                      opts.get<double>("max_time"),
                                                                      opts.get<int>("bound"),
                                                                      true,
-                                                                     temp.first->create_task_independent_state_open_list(),
+                                                                     temp.first,
                                                                      preferred_list,
                                                                      opts.get<shared_ptr<PruningMethod>>("pruning"),
                                                                      temp.second,

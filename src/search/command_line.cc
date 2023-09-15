@@ -15,9 +15,6 @@
 #include <sstream>
 #include <vector>
 
-
-#include "task_independent_search_algorithm.h"
-
 using namespace std;
 
 NO_RETURN

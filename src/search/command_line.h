@@ -4,7 +4,6 @@
 #include <memory>
 #include <string>
 
-class SearchAlgorithm;
 class TaskIndependentSearchAlgorithm;
 
 extern std::shared_ptr<TaskIndependentSearchAlgorithm> parse_cmd_line(

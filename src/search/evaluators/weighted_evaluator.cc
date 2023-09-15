@@ -1,10 +1,8 @@
 #include "weighted_evaluator.h"
 
 #include "../evaluation_context.h"
-#include "../evaluation_result.h"
 #include "../plugins/plugin.h"
 
-#include <cstdlib>
 #include <sstream>
 
 using namespace std;
@@ -17,20 +15,20 @@ WeightedEvaluator::WeightedEvaluator(const plugins::Options &opts)
 }
 
 WeightedEvaluator::WeightedEvaluator(
-                           utils::LogProxy log,
-                           shared_ptr<Evaluator> evaluator,
-                           int weight,
-                           basic_string<char> unparsed_config,
-                           bool use_for_reporting_minima,
-                           bool use_for_boosting,
-                           bool use_for_counting_evaluations)
-        : Evaluator(log,unparsed_config,
-                    use_for_reporting_minima,
-                    use_for_boosting,
-                    use_for_counting_evaluations
-                    ),
-                    evaluator(evaluator),
-          weight(weight) {
+    utils::LogProxy log,
+    shared_ptr<Evaluator> evaluator,
+    int weight,
+    basic_string<char> unparsed_config,
+    bool use_for_reporting_minima,
+    bool use_for_boosting,
+    bool use_for_counting_evaluations)
+    : Evaluator(log, unparsed_config,
+                use_for_reporting_minima,
+                use_for_boosting,
+                use_for_counting_evaluations
+                ),
+      evaluator(evaluator),
+      weight(weight) {
 }
 
 WeightedEvaluator::~WeightedEvaluator() {
@@ -59,41 +57,56 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
 
 
 TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(utils::LogProxy log,
-                                                         shared_ptr<TaskIndependentEvaluator> evaluator,
-                                                         int weight,
-                                                         basic_string<char> unparsed_config,
-                                                         bool use_for_reporting_minima,
-                                                         bool use_for_boosting,
-                                                         bool use_for_counting_evaluations)
-        : TaskIndependentEvaluator(log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
-          evaluator(evaluator),
-          weight(weight) {
+                                                                   shared_ptr<TaskIndependentEvaluator> evaluator,
+                                                                   int weight,
+                                                                   basic_string<char> unparsed_config,
+                                                                   bool use_for_reporting_minima,
+                                                                   bool use_for_boosting,
+                                                                   bool use_for_counting_evaluations)
+    : TaskIndependentEvaluator(log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
+      evaluator(evaluator),
+      weight(weight) {
 }
 
 TaskIndependentWeightedEvaluator::~TaskIndependentWeightedEvaluator() {
 }
 
-plugins::Any TaskIndependentWeightedEvaluator::create_task_specific(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
+
+shared_ptr<WeightedEvaluator> TaskIndependentWeightedEvaluator::create_task_specific_WeightedEvaluator(
+    shared_ptr<AbstractTask> &task,
+    std::shared_ptr<ComponentMap> &component_map) {
     shared_ptr<WeightedEvaluator> task_specific_weighted_evaluator;
-    plugins::Any any_obj;
 
-    if (component_map -> contains_key(make_pair(task, static_cast<void*>(this)))){
-        utils::g_log << "Reuse task specific WeightedEvaluator..." << endl;
-        any_obj = component_map -> get_value(make_pair(task, static_cast<void*>(this)));
+    if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
+        log << "Reuse task specific WeightedEvaluator..." << endl;
+        task_specific_weighted_evaluator = plugins::any_cast<shared_ptr<WeightedEvaluator>>(
+            component_map->get_dual_key_value(task, this));
     } else {
-
-
-        utils::g_log << "Creating task specific WeightedEvaluator..." << endl;
+        log << "Creating task specific WeightedEvaluator..." << endl;
 
         task_specific_weighted_evaluator = make_shared<WeightedEvaluator>(
-                log, plugins::any_cast<shared_ptr<Evaluator>>(evaluator->create_task_specific(task,component_map)), weight);
-        any_obj = plugins::Any(task_specific_weighted_evaluator);
-        component_map -> add_entry(make_pair(task, static_cast<void*>(this)), any_obj);
+            log, evaluator->create_task_specific_Evaluator(task, component_map), weight);
+        component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_weighted_evaluator));
     }
-    return any_obj;
+    return task_specific_weighted_evaluator;
+}
+
+shared_ptr<WeightedEvaluator> TaskIndependentWeightedEvaluator::create_task_specific_WeightedEvaluator(shared_ptr<AbstractTask> &task) {
+    log << "Creating WeightedEvaluator as root component..." << endl;
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_WeightedEvaluator(task, component_map);
 }
 
 
+shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific_Evaluator(shared_ptr<AbstractTask> &task) {
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_Evaluator(task, component_map);
+}
+
+shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific_Evaluator(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<WeightedEvaluator> x = create_task_specific_WeightedEvaluator(task, component_map);
+    return static_pointer_cast<Evaluator>(x);
+}
 
 class WeightedEvaluatorFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentWeightedEvaluator> {
 public:
@@ -109,7 +122,7 @@ public:
     }
 
     virtual shared_ptr<TaskIndependentWeightedEvaluator> create_component(
-            const plugins::Options &opts, const utils::Context &context) const override {
+        const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentEvaluator>>(context, opts, "evals");
         return make_shared<TaskIndependentWeightedEvaluator>(utils::get_log_from_options(opts),
                                                              opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
@@ -118,7 +131,7 @@ public:
                                                              opts.get<bool>("use_for_reporting_minima"),
                                                              opts.get<bool>("use_for_boosting"),
                                                              opts.get<bool>("use_for_counting_evaluations")
-        );
+                                                             );
     }
 };
 
