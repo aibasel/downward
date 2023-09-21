@@ -1,9 +1,0 @@
-Description of tags for this issue:
-
-- issue561-base: base version before any changes
-- issue561-v1: mostly cleanup; introduce smart pointers in some places
-- issue561-v2: split off class for heuristic representation
-- issue561-v3: split off class for distance computations
-- issue561-v4: split off rudimentary FactoredTransitionSystem class
-  and move construction of atomic transition systems into a factory
-- issue561-v5: remove "messy" methods of Distances
