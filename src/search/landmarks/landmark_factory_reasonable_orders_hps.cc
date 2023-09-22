@@ -50,9 +50,6 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
         if (landmark.disjunctive)
             continue;
 
-        if (landmark.is_true_in_state(initial_state))
-            return;
-
         if (landmark.is_true_in_goal) {
             for (auto &node2_p : lm_graph->get_nodes()) {
                 const Landmark &landmark2 = node2_p->get_landmark();
