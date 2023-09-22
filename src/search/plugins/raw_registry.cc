@@ -118,28 +118,28 @@ SubcategoryPlugins RawRegistry::collect_subcategory_plugins(
 Features RawRegistry::collect_features(
     const SubcategoryPlugins &subcategory_plugins, vector<string> &errors) const {
     Features features;
-    unordered_map<string, int> key_occurrences;
+    unordered_map<string, int> feature_key_occurrences;
     for (const Plugin *plugin : plugins) {
         shared_ptr<Feature> feature = plugin->create_feature();
-        string key = feature->get_key();
-        key_occurrences[key]++;
-        features[key] = move(feature);
+        string feature_key = feature->get_key();
+        feature_key_occurrences[feature_key]++;
+        features[feature_key] = move(feature);
     }
 
-    // Check that keys are unique
-    for (const auto &pair : key_occurrences) {
-        const string &key = pair.first;
+    // Check that feature_keys are unique
+    for (const auto &pair : feature_key_occurrences) {
+        const string &feature_key = pair.first;
         int occurrences = pair.second;
         if (occurrences > 1) {
             errors.push_back(
                 to_string(occurrences) + " Features are defined for the key '" +
-                key + "'.");
+                feature_key + "'.");
         }
     }
 
     // Check that all subcategories used in features are defined
     for (const auto &item : features) {
-        const string &key = item.first;
+        const string &feature_key = item.first;
         const Feature &feature = *item.second;
         string subcategory = feature.get_subcategory();
 
@@ -147,27 +147,39 @@ Features RawRegistry::collect_features(
             const Type &type = feature.get_type();
             errors.push_back(
                 "Missing SubcategoryPlugin '" + subcategory + "' for Plugin '" +
-                key + "' of type " + type.name());
+                feature_key + "' of type " + type.name());
         }
     }
 
     // Check that all types used in features are defined
     unordered_set<type_index> missing_types;
     for (const auto &item : features) {
-        const string &key = item.first;
+        const string &feature_key = item.first;
         const Feature &feature = *item.second;
 
         const Type &type = feature.get_type();
         if (type == TypeRegistry::NO_TYPE) {
             errors.push_back(
-                "Missing Plugin for type of feature '" + key + "'.");
+                "Missing Plugin for type of feature '" + feature_key + "'.");
         }
 
+        unordered_map<string, int> parameter_occurrences;
         for (const ArgumentInfo &arg_info : feature.get_arguments()) {
             if (arg_info.type == TypeRegistry::NO_TYPE) {
                 errors.push_back(
-                    "Missing Plugin for type of argument '" + arg_info.key
-                    + "' of feature '" + key + "'.");
+                    "Missing Plugin for type of parameter '" + arg_info.key
+                    + "' of feature '" + feature_key + "'.");
+            }
+            ++parameter_occurrences[arg_info.key];
+        }
+        // Check that parameters are unique
+        for (const auto &pair : parameter_occurrences) {
+            const string &parameter = pair.first;
+            int parameter_occurrence = pair.second;
+            if (parameter_occurrence > 1) {
+                errors.push_back(
+                    "The parameter '" + parameter + "' in '" + feature_key + "' is defined " +
+                    to_string(parameter_occurrence) + " times.");
             }
         }
     }
