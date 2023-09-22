@@ -178,7 +178,7 @@ Features RawRegistry::collect_features(
             int parameter_occurrence = pair.second;
             if (parameter_occurrence > 1) {
                 errors.push_back(
-                    "The Parameter '" + parameter + "' in '" + feature_key + "' is defined " +
+                    "The parameter '" + parameter + "' in '" + feature_key + "' is defined " +
                     to_string(parameter_occurrence) + " times.");
             }
         }
