@@ -1,6 +1,0 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
-
-from main import main
-
-main(revisions=["issue583-base-v3", "issue583-v5"])

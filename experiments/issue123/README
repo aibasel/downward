@@ -1,4 +1,0 @@
-In order to use the supplied experiment script issue123.py, you need
-to update the variable REPO_NAME (or REPO) to provide the path to
-your repository. Furthermore, standard_experiment.py needs to have
-updated paths (at the top of the file, search for seiverss).
