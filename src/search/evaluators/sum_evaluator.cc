@@ -105,9 +105,9 @@ public:
         return make_shared<TaskIndependentSumEvaluator>(utils::get_log_from_options(opts),
                                                         opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
                                                         opts.get_unparsed_config(),
-                                                        opts.get<bool>("use_for_reporting_minima"),
-                                                        opts.get<bool>("use_for_boosting"),
-                                                        opts.get<bool>("use_for_counting_evaluations")
+                                                        opts.get<bool>("use_for_reporting_minima", false),
+                                                        opts.get<bool>("use_for_boosting", false),
+                                                        opts.get<bool>("use_for_counting_evaluations", false)
                                                         );
     }
 };

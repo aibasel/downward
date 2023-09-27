@@ -128,9 +128,9 @@ public:
                                                              opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
                                                              opts.get<int>("weight"),
                                                              opts.get_unparsed_config(),
-                                                             opts.get<bool>("use_for_reporting_minima"),
-                                                             opts.get<bool>("use_for_boosting"),
-                                                             opts.get<bool>("use_for_counting_evaluations")
+                                                             opts.get<bool>("use_for_reporting_minima", false),
+                                                             opts.get<bool>("use_for_boosting", false),
+                                                             opts.get<bool>("use_for_counting_evaluations", false)
                                                              );
     }
 };

@@ -83,9 +83,9 @@ public:
         const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<TaskIndependentGEvaluator>(utils::get_log_from_options(opts),
                                                       opts.get_unparsed_config(),
-                                                      opts.get<bool>("use_for_reporting_minima"),
-                                                      opts.get<bool>("use_for_boosting"),
-                                                      opts.get<bool>("use_for_counting_evaluations"));
+                                                      opts.get<bool>("use_for_reporting_minima", false),
+                                                      opts.get<bool>("use_for_boosting", false),
+                                                      opts.get<bool>("use_for_counting_evaluations", false));
     }
 };
 
