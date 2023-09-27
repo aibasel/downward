@@ -73,7 +73,7 @@ void CombiningEvaluator::get_path_dependent_evaluators(
 
 
 void add_combining_evaluator_options_to_feature(plugins::Feature &feature) {
-    feature.add_list_option<shared_ptr<Evaluator>>(
+    feature.add_list_option<shared_ptr<TaskIndependentEvaluator>>(
         "evals", "at least one evaluator");
     add_evaluator_options_to_feature(feature);
 }
