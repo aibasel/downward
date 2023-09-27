@@ -62,6 +62,20 @@ public:
     virtual void convert_state_values_from_parent(std::vector<int> &) const {
     }
 };
+
+
+class TaskIndependentDelegatingTask : public TaskIndependentAbstractTask {
+public:
+    explicit TaskIndependentDelegatingTask();
+    virtual ~TaskIndependentDelegatingTask() override = default;
+
+    virtual std::shared_ptr<AbstractTask> create_task_specific_AbstractTask(
+            std::shared_ptr<AbstractTask> &task,
+            std::shared_ptr<ComponentMap> &component_map);
+
+    virtual std::shared_ptr<DelegatingTask> create_task_specific_DelegatingTask(std::shared_ptr<AbstractTask> &task);
+    virtual std::shared_ptr<DelegatingTask> create_task_specific_DelegatingTask(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
+};
 }
 
 #endif

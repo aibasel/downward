@@ -1,12 +1,11 @@
 #ifndef FAST_DOWNWARD_COMPONENT_MAP_H
 #define FAST_DOWNWARD_COMPONENT_MAP_H
 
-#include "abstract_task.h"
-
 #include "plugins/any.h"
 
 #include <unordered_map>
 
+class AbstractTask;
 class ComponentMap;
 
 class Component {

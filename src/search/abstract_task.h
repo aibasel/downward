@@ -5,6 +5,7 @@
 
 #include "algorithms/subscriber.h"
 #include "utils/hash.h"
+#include "component_map.h"
 
 #include <memory>
 #include <string>
@@ -48,7 +49,7 @@ inline void feed(HashState &hash_state, const FactPair &fact) {
 }
 }
 
-class AbstractTask : public subscriber::SubscriberService<AbstractTask> {
+class AbstractTask : public subscriber::SubscriberService<AbstractTask>, public Component {
 public:
     AbstractTask() = default;
     virtual ~AbstractTask() override = default;
@@ -101,6 +102,19 @@ public:
     virtual void convert_ancestor_state_values(
         std::vector<int> &values,
         const AbstractTask *ancestor_task) const = 0;
+};
+
+class TaskIndependentAbstractTask : public TaskIndependentComponent {
+public:
+    explicit TaskIndependentAbstractTask();
+    virtual ~TaskIndependentAbstractTask() override = default;
+
+    virtual std::shared_ptr<Component> create_task_specific_Component(
+            std::shared_ptr<AbstractTask> &task,
+            std::shared_ptr<ComponentMap> &component_map);
+
+    virtual std::shared_ptr<AbstractTask> create_task_specific_AbstractTask(std::shared_ptr<AbstractTask> &task);
+    virtual std::shared_ptr<AbstractTask> create_task_specific_AbstractTask(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
 };
 
 #endif

@@ -27,9 +27,41 @@ int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
     return get_adjusted_action_cost(op, cost_type, parent_is_unit_cost);
 }
 
-class CostAdaptedTaskFeature : public plugins::TypedFeature<AbstractTask, CostAdaptedTask> {
+
+TaskIndependentCostAdaptedTask::TaskIndependentCostAdaptedTask(OperatorCost cost_type)
+    : cost_type(cost_type) {
+}
+
+shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_task_specific_CostAdaptedTask(shared_ptr<AbstractTask> &task) {
+    utils::g_log << "Creating CostAdaptedTask as root component..." << endl;
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_CostAdaptedTask(task, component_map);
+}
+
+shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_task_specific_CostAdaptedTask([[maybe_unused]] shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<CostAdaptedTask> task_specific_x;
+    if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
+        utils::g_log << "Reuse task specific CostAdaptedTask..." << endl;
+        task_specific_x = plugins::any_cast<shared_ptr<CostAdaptedTask>>(
+                component_map->get_dual_key_value(task, this));
+    } else {
+        utils::g_log << "Creating task specific CostAdaptedTask..." << endl;
+        task_specific_x = make_shared<CostAdaptedTask>(task, cost_type);
+        component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_x));
+    }
+    return task_specific_x;
+}
+
+
+shared_ptr<DelegatingTask> TaskIndependentCostAdaptedTask::create_task_specific_DelegatingTask(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<CostAdaptedTask> x = create_task_specific_CostAdaptedTask(task, component_map);
+    return static_pointer_cast<DelegatingTask>(x);
+}
+
+
+class CostAdaptedTaskFeature : public plugins::TypedFeature<TaskIndependentAbstractTask, TaskIndependentCostAdaptedTask> {
 public:
-    CostAdaptedTaskFeature() : TypedFeature("adapt_costs") {
+        CostAdaptedTaskFeature() : TypedFeature("adapt_costs") {
         document_title("Cost-adapted task");
         document_synopsis(
             "A cost-adapting transformation of the root task.");
@@ -37,9 +69,9 @@ public:
         add_cost_type_option_to_feature(*this);
     }
 
-    virtual shared_ptr<CostAdaptedTask> create_component(const plugins::Options &options, const utils::Context &) const override {
+    virtual shared_ptr<TaskIndependentCostAdaptedTask> create_component(const plugins::Options &options, const utils::Context &) const override {
         OperatorCost cost_type = options.get<OperatorCost>("cost_type");
-        return make_shared<CostAdaptedTask>(g_root_task, cost_type);
+        return make_shared<TaskIndependentCostAdaptedTask>(cost_type);
     }
 };
 
