@@ -3,6 +3,7 @@
 
 #include "delegating_task.h"
 
+#include "../component_map.h"
 #include "../operator_cost.h"
 
 namespace plugins {
@@ -32,6 +33,21 @@ public:
     virtual ~CostAdaptedTask() override = default;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;
+};
+
+
+class TaskIndependentCostAdaptedTask : public TaskIndependentDelegatingTask {
+    const OperatorCost cost_type;
+public:
+    explicit TaskIndependentCostAdaptedTask(OperatorCost cost_type);
+    virtual ~TaskIndependentCostAdaptedTask() override = default;
+
+    virtual std::shared_ptr<DelegatingTask> create_task_specific_DelegatingTask(
+            std::shared_ptr<AbstractTask> &task,
+            std::shared_ptr<ComponentMap> &component_map) override;
+
+    virtual std::shared_ptr<CostAdaptedTask> create_task_specific_CostAdaptedTask(std::shared_ptr<AbstractTask> &task);
+    virtual std::shared_ptr<CostAdaptedTask> create_task_specific_CostAdaptedTask(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
 };
 }
 

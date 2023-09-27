@@ -15,9 +15,33 @@ ostream &operator<<(ostream &os, const FactPair &fact_pair) {
     return os;
 }
 
-static class AbstractTaskCategoryPlugin : public plugins::TypedCategoryPlugin<AbstractTask> {
+
+TaskIndependentAbstractTask::TaskIndependentAbstractTask() {
+}
+
+
+
+shared_ptr<AbstractTask> TaskIndependentAbstractTask::create_task_specific_AbstractTask(shared_ptr<AbstractTask> &task) {
+    utils::g_log << "Creating AbstractTask as root component..." << endl;
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_AbstractTask(task, component_map);
+}
+
+shared_ptr<AbstractTask> TaskIndependentAbstractTask::create_task_specific_AbstractTask([[maybe_unused]] shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map) {
+    cerr << "Tries to create AbstractTask in an unimplemented way." << endl;
+    utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+}
+
+
+shared_ptr<Component> TaskIndependentAbstractTask::create_task_specific_Component(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<AbstractTask> x = create_task_specific_AbstractTask(task, component_map);
+    return static_pointer_cast<Component>(x);
+}
+
+
+static class TaskIndependentAbstractTaskCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentAbstractTask> {
 public:
-    AbstractTaskCategoryPlugin() : TypedCategoryPlugin("AbstractTask") {
+    TaskIndependentAbstractTaskCategoryPlugin() : TypedCategoryPlugin("TI_AbstractTask") {
         // TODO: Replace empty string by synopsis for the wiki page.
         document_synopsis("");
     }

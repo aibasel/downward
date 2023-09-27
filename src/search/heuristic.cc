@@ -143,7 +143,7 @@ shared_ptr<Evaluator> TaskIndependentHeuristic::create_task_specific_Evaluator(s
 
 void TaskIndependentHeuristic::add_options_to_feature(plugins::Feature &feature) {
     add_evaluator_options_to_feature(feature);
-    feature.add_option<shared_ptr<AbstractTask>>(
+    feature.add_option<shared_ptr<TaskIndependentAbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic."
         " Currently, adapt_costs() and no_transform() are available.",

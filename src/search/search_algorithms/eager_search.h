@@ -95,9 +95,6 @@ public:
     virtual std::shared_ptr<EagerSearch> create_task_specific_EagerSearch(std::shared_ptr<AbstractTask> &task);
     virtual std::shared_ptr<EagerSearch> create_task_specific_EagerSearch(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
 
-//    template<typename T>
-//  std::shared_ptr<T> create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
-
     virtual ~TaskIndependentEagerSearch()  override;
 };
 

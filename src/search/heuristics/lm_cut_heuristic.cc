@@ -80,9 +80,9 @@ shared_ptr<Heuristic> TaskIndependentLandmarkCutHeuristic::create_task_specific_
 }
 
 
-class TaskIndependentLandmarkCutHeuristicFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentLandmarkCutHeuristic> {
+class LandmarkCutHeuristicFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentLandmarkCutHeuristic> {
 public:
-    TaskIndependentLandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
+    LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
 
         TaskIndependentHeuristic::add_options_to_feature(*this);
@@ -97,13 +97,6 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<LandmarkCutHeuristic> create_TD_component(
-        const plugins::Options &opts, const utils::Context &) const {
-        return make_shared<LandmarkCutHeuristic>(opts.get_unparsed_config(),
-                                                 utils::get_log_from_options(opts),
-                                                 opts.get<bool>("cache_estimates"),
-                                                 opts.get<shared_ptr<AbstractTask>>("transform"));
-    }
 
     virtual shared_ptr<TaskIndependentLandmarkCutHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
@@ -114,5 +107,5 @@ public:
     }
 };
 
-static plugins::FeaturePlugin<TaskIndependentLandmarkCutHeuristicFeature> _plugin;
+static plugins::FeaturePlugin<LandmarkCutHeuristicFeature> _plugin;
 }
