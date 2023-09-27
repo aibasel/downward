@@ -108,6 +108,20 @@ public:
 };
 
 
+class TaskIndependentRootTask : public TaskIndependentAbstractTask {
+
+public:
+    explicit TaskIndependentRootTask();
+
+    virtual std::shared_ptr<AbstractTask> create_task_specific_AbstractTask(
+            std::shared_ptr<AbstractTask> &task,
+            std::shared_ptr<ComponentMap> &component_map);
+
+    virtual std::shared_ptr<RootTask> create_task_specific_RootTask(std::shared_ptr<AbstractTask> &task);
+    virtual std::shared_ptr<RootTask> create_task_specific_RootTask(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
+};
+
+
 static void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables) {
     if (!utils::in_bounds(fact.var, variables)) {
         cerr << "Invalid variable id: " << fact.var << endl;
@@ -497,13 +511,37 @@ void read_root_task(istream &in) {
     g_root_task = make_shared<RootTask>(in);
 }
 
-class RootTaskFeature : public plugins::TypedFeature<AbstractTask, AbstractTask> {
+
+
+
+TaskIndependentRootTask::TaskIndependentRootTask() {
+}
+
+shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask(shared_ptr<AbstractTask> &task) {
+    utils::g_log << "Creating RootTask as root component..." << endl;
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_RootTask(task, component_map);
+}
+
+shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask([[maybe_unused]] shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map) {
+    cerr << "Tries to create RootTask in an unimplemented way." << endl;
+    utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+}
+
+
+shared_ptr<AbstractTask> TaskIndependentRootTask::create_task_specific_AbstractTask(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<RootTask> x = create_task_specific_RootTask(task, component_map);
+    return static_pointer_cast<AbstractTask>(x);
+}
+
+
+class RootTaskFeature : public plugins::TypedFeature<TaskIndependentAbstractTask, TaskIndependentAbstractTask> {
 public:
     RootTaskFeature() : TypedFeature("no_transform") {
     }
 
-    virtual shared_ptr<AbstractTask> create_component(const plugins::Options &, const utils::Context &) const override {
-        return g_root_task;
+    virtual shared_ptr<TaskIndependentAbstractTask> create_component(const plugins::Options &, const utils::Context &) const override {
+        return make_shared<TaskIndependentAbstractTask>();
     }
 };
 
