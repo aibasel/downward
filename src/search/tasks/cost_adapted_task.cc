@@ -43,7 +43,7 @@ shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_task_specific
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
         utils::g_log << "Reuse task specific CostAdaptedTask..." << endl;
         task_specific_x = plugins::any_cast<shared_ptr<CostAdaptedTask>>(
-                component_map->get_dual_key_value(task, this));
+            component_map->get_dual_key_value(task, this));
     } else {
         utils::g_log << "Creating task specific CostAdaptedTask..." << endl;
         task_specific_x = make_shared<CostAdaptedTask>(task, cost_type);
@@ -61,7 +61,7 @@ shared_ptr<DelegatingTask> TaskIndependentCostAdaptedTask::create_task_specific_
 
 class CostAdaptedTaskFeature : public plugins::TypedFeature<TaskIndependentAbstractTask, TaskIndependentCostAdaptedTask> {
 public:
-        CostAdaptedTaskFeature() : TypedFeature("adapt_costs") {
+    CostAdaptedTaskFeature() : TypedFeature("adapt_costs") {
         document_title("Cost-adapted task");
         document_synopsis(
             "A cost-adapting transformation of the root task.");

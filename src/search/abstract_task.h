@@ -1,11 +1,11 @@
 #ifndef ABSTRACT_TASK_H
 #define ABSTRACT_TASK_H
 
+#include "component_map.h"
 #include "operator_id.h"
 
 #include "algorithms/subscriber.h"
 #include "utils/hash.h"
-#include "component_map.h"
 
 #include <memory>
 #include <string>
@@ -110,8 +110,8 @@ public:
     virtual ~TaskIndependentAbstractTask() override = default;
 
     virtual std::shared_ptr<Component> create_task_specific_Component(
-            std::shared_ptr<AbstractTask> &task,
-            std::shared_ptr<ComponentMap> &component_map);
+        std::shared_ptr<AbstractTask> &task,
+        std::shared_ptr<ComponentMap> &component_map);
 
     virtual std::shared_ptr<AbstractTask> create_task_specific_AbstractTask(std::shared_ptr<AbstractTask> &task);
     virtual std::shared_ptr<AbstractTask> create_task_specific_AbstractTask(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);

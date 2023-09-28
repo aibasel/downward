@@ -109,13 +109,12 @@ public:
 
 
 class TaskIndependentRootTask : public TaskIndependentAbstractTask {
-
 public:
     explicit TaskIndependentRootTask();
 
     virtual std::shared_ptr<AbstractTask> create_task_specific_AbstractTask(
-            std::shared_ptr<AbstractTask> &task,
-            std::shared_ptr<ComponentMap> &component_map);
+        std::shared_ptr<AbstractTask> &task,
+        std::shared_ptr<ComponentMap> &component_map);
 
     virtual std::shared_ptr<RootTask> create_task_specific_RootTask(std::shared_ptr<AbstractTask> &task);
     virtual std::shared_ptr<RootTask> create_task_specific_RootTask(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
