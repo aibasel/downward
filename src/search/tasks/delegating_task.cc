@@ -1,4 +1,5 @@
 #include "delegating_task.h"
+
 #include "../utils/logging.h"
 
 using namespace std;
@@ -130,6 +131,4 @@ shared_ptr<AbstractTask> TaskIndependentDelegatingTask::create_task_specific_Abs
     shared_ptr<DelegatingTask> x = create_task_specific_DelegatingTask(task, component_map);
     return static_pointer_cast<AbstractTask>(x);
 }
-
-
 }

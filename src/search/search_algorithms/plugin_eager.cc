@@ -30,7 +30,6 @@ public:
     }
 
     virtual shared_ptr<eager_search::TaskIndependentEagerSearch> create_component(const plugins::Options &opts, const utils::Context &) const override {
-
         return make_shared<eager_search::TaskIndependentEagerSearch>(opts.get<utils::Verbosity>("verbosity"),
                                                                      opts.get<OperatorCost>("cost_type"),
                                                                      opts.get<double>("max_time"),
