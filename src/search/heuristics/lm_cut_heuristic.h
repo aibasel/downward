@@ -32,7 +32,9 @@ private:
 public:
     explicit TaskIndependentLandmarkCutHeuristic(std::string unparsed_config,
                                                  utils::LogProxy log,
-                                                 bool cache_evaluator_values);
+                                                 bool cache_evaluator_values,
+                                                 std::shared_ptr<TaskIndependentAbstractTask> task_transformation
+                                                 );
 
     virtual ~TaskIndependentLandmarkCutHeuristic()  override;
 
