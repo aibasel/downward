@@ -2,6 +2,7 @@
 
 #include "lm_cut_landmarks.h"
 
+#include "../tasks/cost_adapted_task.h"
 #include "../plugins/plugin.h"
 
 #include <iostream>
@@ -38,8 +39,8 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 
 
 
-TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(string unparsed_config, utils::LogProxy log, bool cache_evaluator_values)
-    : TaskIndependentHeuristic(unparsed_config, log, cache_evaluator_values),
+TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(string unparsed_config, utils::LogProxy log, bool cache_evaluator_values, shared_ptr<TaskIndependentAbstractTask> task_transformation)
+    : TaskIndependentHeuristic(unparsed_config, log, cache_evaluator_values, task_transformation),
       log(log) {
 }
 
@@ -55,7 +56,11 @@ shared_ptr<LandmarkCutHeuristic> TaskIndependentLandmarkCutHeuristic::create_tas
             component_map->get_dual_key_value(task, this));
     } else {
         log << "Creating task specific LandmarkCutHeuristic..." << endl;
-        task_specific_lm_cut_heurisitc = make_shared<LandmarkCutHeuristic>(unparsed_config, log, cache_evaluator_values, task);
+
+        task_specific_lm_cut_heurisitc = make_shared<LandmarkCutHeuristic>(unparsed_config,
+                                                                           log,
+                                                                           cache_evaluator_values,
+                                                                           task_transformation->create_task_specific_AbstractTask(task, component_map));
         component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_lm_cut_heurisitc));
     }
     return task_specific_lm_cut_heurisitc;
@@ -97,13 +102,13 @@ public:
         document_property("preferred operators", "no");
     }
 
-
     virtual shared_ptr<TaskIndependentLandmarkCutHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<TaskIndependentLandmarkCutHeuristic>(opts.get_unparsed_config(),
                                                                 utils::get_log_from_options(opts),
-                                                                opts.get<bool>("cache_estimates")
-                                                                );
+                                                                opts.get<bool>("cache_estimates"),
+                                                                opts.get<shared_ptr<TaskIndependentAbstractTask>>("transform")
+        );
     }
 };
 

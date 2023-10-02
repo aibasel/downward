@@ -419,7 +419,6 @@ void read_root_task(istream &in) {
 
 
 TaskIndependentRootTask::TaskIndependentRootTask() {
-    cout << "TaskIndependentRootTask::TaskIndependentRootTask()" << endl;
 }
 
 shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask(shared_ptr<AbstractTask> &task) {
@@ -435,7 +434,6 @@ shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask([[ma
 
 
 shared_ptr<AbstractTask> TaskIndependentRootTask::create_task_specific_AbstractTask(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
-    cout << "shared_ptr<AbstractTask> TaskIndependentRootTask::create_task_specific_AbstractTask(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {" << endl;
     shared_ptr<RootTask> x = create_task_specific_RootTask(task, component_map);
     return static_pointer_cast<AbstractTask>(x);
 }
