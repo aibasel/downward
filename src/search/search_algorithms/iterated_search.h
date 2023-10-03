@@ -30,6 +30,15 @@ class IteratedSearch : public SearchAlgorithm {
 
 public:
     IteratedSearch(const plugins::Options &opts);
+    IteratedSearch(utils::Verbosity verbosity,
+                   OperatorCost cost_type,
+                   double max_time,
+                   std::string unparsed_config,
+                   std::vector<parser::LazyValue> engine_configs,
+                   bool pass_bound,
+                   bool repeat_last_phase,
+                   bool continue_on_fail,
+                   bool continue_on_solve);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
