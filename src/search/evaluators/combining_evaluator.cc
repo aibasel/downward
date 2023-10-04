@@ -90,7 +90,7 @@ TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(utils::LogP
 }
 
 shared_ptr<CombiningEvaluator> TaskIndependentCombiningEvaluator::create_task_specific_CombiningEvaluator(const shared_ptr<AbstractTask> &task, int depth) {
-    log << "Creating CombiningEvaluator as root component..." << endl;
+    log << std::string(depth, ' ') << "Creating CombiningEvaluator as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_CombiningEvaluator(task, component_map, depth);
 }

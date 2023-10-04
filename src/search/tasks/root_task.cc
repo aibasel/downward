@@ -422,7 +422,7 @@ TaskIndependentRootTask::TaskIndependentRootTask() {
 }
 
 shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask(const shared_ptr<AbstractTask> &task, int depth) {
-    utils::g_log << "Creating RootTask as root component..." << endl;
+    utils::g_log << std::string(depth, ' ') << "Creating RootTask as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_RootTask(task, component_map, depth);
 }

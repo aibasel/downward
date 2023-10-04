@@ -92,7 +92,7 @@ shared_ptr<WeightedEvaluator> TaskIndependentWeightedEvaluator::create_task_spec
 }
 
 shared_ptr<WeightedEvaluator> TaskIndependentWeightedEvaluator::create_task_specific_WeightedEvaluator(const shared_ptr<AbstractTask> &task, int depth) {
-    log << "Creating WeightedEvaluator as root component..." << endl;
+    log << std::string(depth, ' ') << "Creating WeightedEvaluator as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_WeightedEvaluator(task, component_map, depth);
 }

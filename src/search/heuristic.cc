@@ -127,7 +127,7 @@ TaskIndependentHeuristic::TaskIndependentHeuristic(const string unparsed_config,
 }
 
 shared_ptr<Heuristic> TaskIndependentHeuristic::create_task_specific_Heuristic(const shared_ptr<AbstractTask> &task, int depth) {
-    log << "Creating Heuristic as root component..." << endl;
+    log << std::string(depth, ' ') << "Creating Heuristic as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_Heuristic(task, component_map, depth);
 }

@@ -33,7 +33,7 @@ TaskIndependentCostAdaptedTask::TaskIndependentCostAdaptedTask(OperatorCost cost
 }
 
 shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_task_specific_CostAdaptedTask(const shared_ptr<AbstractTask> &task, int depth) {
-    utils::g_log << "Creating CostAdaptedTask as root component..." << endl;
+    utils::g_log << std::string(depth, ' ') << "Creating CostAdaptedTask as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_CostAdaptedTask(task, component_map, depth);
 }

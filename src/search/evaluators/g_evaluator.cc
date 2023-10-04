@@ -58,7 +58,7 @@ shared_ptr<GEvaluator> TaskIndependentGEvaluator::create_task_specific_GEvaluato
 
 
 shared_ptr<GEvaluator> TaskIndependentGEvaluator::create_task_specific_GEvaluator(const shared_ptr<AbstractTask> &task, int depth) {
-    log << "Creating GEvaluator as root component..." << endl;
+    log << std::string(depth, ' ') << "Creating GEvaluator as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_GEvaluator(task, component_map, depth);
 }

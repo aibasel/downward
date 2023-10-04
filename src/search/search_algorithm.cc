@@ -242,7 +242,7 @@ TaskIndependentSearchAlgorithm::~TaskIndependentSearchAlgorithm() {
 }
 
 shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific_SearchAlgorithm(const shared_ptr<AbstractTask> &task, int depth) {
-    utils::g_log << "Creating SearchAlgorithm as root component..." << endl;
+    utils::g_log << std::string(depth, ' ') << "Creating SearchAlgorithm as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_SearchAlgorithm(task, component_map, depth);
 }
