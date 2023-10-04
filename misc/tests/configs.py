@@ -12,7 +12,8 @@ def configs_optimal_core():
             "astar(ipdb())"],
         "bjolp": [
             "--evaluator",
-            "lmc=landmark_cost_partitioning(lm_merged([lm_rhw(),lm_hm(m=1)]))",
+            """lmc=landmark_cost_partitioning(lm_merged(
+                [lm_rhw(),lm_hm(m=1)]))""",
             "--search",
             "astar(lmc,lazy_evaluator=lmc)"],
         "astar_lmcut": [
