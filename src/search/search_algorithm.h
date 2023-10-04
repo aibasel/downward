@@ -113,6 +113,7 @@ public:
     virtual ~TaskIndependentSearchAlgorithm();
 
     PlanManager &get_plan_manager() {return plan_manager;}
+    std::string get_description() {return description;}
 
     virtual std::shared_ptr<Component> create_task_specific_Component(
             const std::shared_ptr<AbstractTask> &task,
