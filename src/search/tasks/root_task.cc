@@ -421,20 +421,20 @@ void read_root_task(istream &in) {
 TaskIndependentRootTask::TaskIndependentRootTask() {
 }
 
-shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask(shared_ptr<AbstractTask> &task) {
+shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask(shared_ptr<AbstractTask> &task, int depth) {
     utils::g_log << "Creating RootTask as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
-    return create_task_specific_RootTask(task, component_map);
+    return create_task_specific_RootTask(task, component_map, depth);
 }
 
-shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask([[maybe_unused]] shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map) {
+shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask([[maybe_unused]] shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map, int depth) {
     cerr << "Tries to create RootTask in an unimplemented way." << endl;
     utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
 }
 
 
-shared_ptr<AbstractTask> TaskIndependentRootTask::create_task_specific_AbstractTask(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
-    shared_ptr<RootTask> x = create_task_specific_RootTask(task, component_map);
+shared_ptr<AbstractTask> TaskIndependentRootTask::create_task_specific_AbstractTask(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+    shared_ptr<RootTask> x = create_task_specific_RootTask(task, component_map, depth);
     return static_pointer_cast<AbstractTask>(x);
 }
 

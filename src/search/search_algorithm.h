@@ -116,10 +116,10 @@ public:
 
     virtual std::shared_ptr<Component> create_task_specific_Component(
         std::shared_ptr<AbstractTask> &task,
-        std::shared_ptr<ComponentMap> &component_map) override;
+        std::shared_ptr<ComponentMap> &component_map, int depth = -1) override;
 
-    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_SearchAlgorithm(std::shared_ptr<AbstractTask> &task);
-    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_SearchAlgorithm(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
+    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_SearchAlgorithm(std::shared_ptr<AbstractTask> &task, int depth = -1);
+    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_SearchAlgorithm(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
 };
 
 /*

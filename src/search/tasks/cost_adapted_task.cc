@@ -32,20 +32,20 @@ TaskIndependentCostAdaptedTask::TaskIndependentCostAdaptedTask(OperatorCost cost
     : cost_type(cost_type) {
 }
 
-shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_task_specific_CostAdaptedTask(shared_ptr<AbstractTask> &task) {
+shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_task_specific_CostAdaptedTask(shared_ptr<AbstractTask> &task, int depth) {
     utils::g_log << "Creating CostAdaptedTask as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
-    return create_task_specific_CostAdaptedTask(task, component_map);
+    return create_task_specific_CostAdaptedTask(task, component_map, depth);
 }
 
-shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_task_specific_CostAdaptedTask([[maybe_unused]] shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map) {
+shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_task_specific_CostAdaptedTask([[maybe_unused]] shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<CostAdaptedTask> task_specific_x;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
-        utils::g_log << "Reuse task specific CostAdaptedTask..." << endl;
+        utils::g_log << std::string(depth, ' ') << "Reusing task CostAdaptedTask..." << endl;
         task_specific_x = plugins::any_cast<shared_ptr<CostAdaptedTask>>(
             component_map->get_dual_key_value(task, this));
     } else {
-        utils::g_log << "Creating task specific CostAdaptedTask..." << endl;
+        utils::g_log << std::string(depth, ' ') << "Creating task specific CostAdaptedTask..." << endl;
         task_specific_x = make_shared<CostAdaptedTask>(task, cost_type);
         component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_x));
     }
@@ -53,8 +53,8 @@ shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_task_specific
 }
 
 
-shared_ptr<DelegatingTask> TaskIndependentCostAdaptedTask::create_task_specific_DelegatingTask(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
-    shared_ptr<CostAdaptedTask> x = create_task_specific_CostAdaptedTask(task, component_map);
+shared_ptr<DelegatingTask> TaskIndependentCostAdaptedTask::create_task_specific_DelegatingTask(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+    shared_ptr<CostAdaptedTask> x = create_task_specific_CostAdaptedTask(task, component_map, depth);
     return static_pointer_cast<DelegatingTask>(x);
 }
 
