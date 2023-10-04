@@ -60,6 +60,7 @@ public:
     explicit TaskIndependentIteratedSearch(utils::Verbosity verbosity,
                                            OperatorCost cost_type,
                                            double max_time,
+                                           int bound,
                                            std::string unparsed_config,
                                            std::vector<parser::LazyValue> algorithm_configs,
                                            bool pass_bound,

@@ -84,9 +84,8 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
             return nullptr;
         }
     }
-    auto x2 = get_search_algorithm(phase);
-    auto ret2 = x2->create_task_specific_SearchAlgorithm(task, 1);
-    return ret2;
+
+    return get_search_algorithm(phase)->create_task_specific_SearchAlgorithm(task, 1);
 }
 
 SearchStatus IteratedSearch::step() {
@@ -164,6 +163,7 @@ void IteratedSearch::save_plan_if_necessary() {
 TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(utils::Verbosity verbosity,
                                                              OperatorCost cost_type,
                                                              double max_time,
+                                                             int bound,
                                                              string unparsed_config,
                                                              vector<parser::LazyValue> algorithm_configs,
                                                              bool pass_bound,
@@ -306,6 +306,7 @@ public:
         return make_shared<TaskIndependentIteratedSearch>(opts.get<utils::Verbosity>("verbosity"),
                                            opts.get<OperatorCost>("cost_type"),
                                            opts.get<double>("max_time"),
+                                                   opts.get<int>("bound"),
                                            opts.get_unparsed_config(),
                                            opts.get<parser::LazyValue>("algorithm_configs").construct_lazy_list(),
                                            opts.get<bool>("pass_bound"),
