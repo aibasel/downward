@@ -114,7 +114,7 @@ void SoPlexSolverInterface::set_variable_upper_bound(int index, double bound) {
 
 void SoPlexSolverInterface::set_mip_gap(double /*gap*/) {
     /*
-      There is nothing to do here: Soplex doesn't accept MIPs, so setting a MIP
+      There is nothing to do here: SoPlex doesn't accept MIPs, so setting a MIP
       gap tolerance has no effect. We do not treat it as an error, so solvers
       can be set up without checking what problems they will eventually solve.
       Loading a problem with integer variables will lead to an error either way.
