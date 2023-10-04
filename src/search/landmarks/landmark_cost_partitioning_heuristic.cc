@@ -1,6 +1,6 @@
 #include "landmark_cost_partitioning_heuristic.h"
 
-#include "landmark_cost_assignment.h"
+#include "landmark_cost_partitioning_algorithms.h"
 #include "landmark_factory.h"
 #include "landmark_status_manager.h"
 
