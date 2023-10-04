@@ -78,7 +78,7 @@ jobs:
           Start-Process -FilePath .\cplex.exe -ArgumentList "-f", "$ENV:GITHUB_WORKSPACE\.github\workflows\misc\cplex2211_windows_installer.properties" -PassThru | Wait-Process
           del .\cplex.exe
 
-          echo "Copy the relevant directory to a location which is not magically protected against cmake"
+          echo "Copy the relevant directory to a location which is not magically protected against CMake"
           Xcopy /E /I D:\a\downward\cplex_temp\cplex $ENV:cplex_DIR
 
 
