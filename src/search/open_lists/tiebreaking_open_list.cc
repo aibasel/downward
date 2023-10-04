@@ -54,20 +54,22 @@ TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFac
 
 
 
-shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_TieBreakingOpenListFactory(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
+shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_TieBreakingOpenListFactory(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<TieBreakingOpenListFactory> task_specific_x;
-    utils::g_log << "Checking ComponentMap for TieBreakingOpenListFactory..." << endl;
+    utils::g_log << std::string(depth, ' ') << "Checking ComponentMap for TieBreakingOpenListFactory..." << endl;
+    utils::g_log << std::string(depth, ' ') << "Checking ComponentMap for TieBreakingOpenListFactory..." << endl;
+
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
-        utils::g_log << "Reuse task specific EagerSearch..." << endl;
+        utils::g_log << std::string(depth, ' ') << "Reusing task specific EagerSearch..." << endl;
         task_specific_x = plugins::any_cast<shared_ptr<TieBreakingOpenListFactory>>(
             component_map->get_dual_key_value(task, this));
     } else {
-        utils::g_log << "Creating task specific TieBreakingOpenListFactory..." << endl;
+        utils::g_log << std::string(depth, ' ') << "Creating task specific TieBreakingOpenListFactory..." << endl;
         vector<shared_ptr<Evaluator>> ts_evaluators(evaluators.size());
 
         transform(evaluators.begin(), evaluators.end(), ts_evaluators.begin(),
-                  [this, &task, &component_map](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      return eval->create_task_specific_Evaluator(task, component_map);
+                  [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
+                      return eval->create_task_specific_Evaluator(task, component_map, depth+1);
                   }
                   );
 
@@ -80,20 +82,20 @@ shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory
 }
 
 
-shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_TieBreakingOpenListFactory(shared_ptr<AbstractTask> &task) {
+shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_TieBreakingOpenListFactory(shared_ptr<AbstractTask> &task, int depth) {
     utils::g_log << "Creating TieBreakingOpenListFactory as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
-    return create_task_specific_TieBreakingOpenListFactory(task, component_map);
+    return create_task_specific_TieBreakingOpenListFactory(task, component_map, depth);
 }
 
 
-shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_OpenListFactory(shared_ptr<AbstractTask> &task) {
+shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_OpenListFactory(shared_ptr<AbstractTask> &task, int depth) {
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
-    return create_task_specific_OpenListFactory(task, component_map);
+    return create_task_specific_OpenListFactory(task, component_map, depth);
 }
 
-shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_OpenListFactory(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
-    shared_ptr<TieBreakingOpenListFactory> x = create_task_specific_TieBreakingOpenListFactory(task, component_map);
+shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_OpenListFactory(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+    shared_ptr<TieBreakingOpenListFactory> x = create_task_specific_TieBreakingOpenListFactory(task, component_map, depth);
     return static_pointer_cast<OpenListFactory>(x);
 }
 

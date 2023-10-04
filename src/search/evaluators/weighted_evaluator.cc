@@ -74,37 +74,37 @@ TaskIndependentWeightedEvaluator::~TaskIndependentWeightedEvaluator() {
 
 shared_ptr<WeightedEvaluator> TaskIndependentWeightedEvaluator::create_task_specific_WeightedEvaluator(
     shared_ptr<AbstractTask> &task,
-    std::shared_ptr<ComponentMap> &component_map) {
+    std::shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<WeightedEvaluator> task_specific_weighted_evaluator;
 
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
-        log << "Reuse task specific WeightedEvaluator..." << endl;
+        log << std::string(depth, ' ') << "Reusing task WeightedEvaluator..." << endl;
         task_specific_weighted_evaluator = plugins::any_cast<shared_ptr<WeightedEvaluator>>(
             component_map->get_dual_key_value(task, this));
     } else {
-        log << "Creating task specific WeightedEvaluator..." << endl;
+        log << std::string(depth, ' ') << "Creating task specific WeightedEvaluator..." << endl;
 
         task_specific_weighted_evaluator = make_shared<WeightedEvaluator>(
-            log, evaluator->create_task_specific_Evaluator(task, component_map), weight);
+            log, evaluator->create_task_specific_Evaluator(task, component_map, depth), weight);
         component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_weighted_evaluator));
     }
     return task_specific_weighted_evaluator;
 }
 
-shared_ptr<WeightedEvaluator> TaskIndependentWeightedEvaluator::create_task_specific_WeightedEvaluator(shared_ptr<AbstractTask> &task) {
+shared_ptr<WeightedEvaluator> TaskIndependentWeightedEvaluator::create_task_specific_WeightedEvaluator(shared_ptr<AbstractTask> &task, int depth) {
     log << "Creating WeightedEvaluator as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
-    return create_task_specific_WeightedEvaluator(task, component_map);
+    return create_task_specific_WeightedEvaluator(task, component_map, depth);
 }
 
 
-shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific_Evaluator(shared_ptr<AbstractTask> &task) {
+shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific_Evaluator(shared_ptr<AbstractTask> &task, int depth) {
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
-    return create_task_specific_Evaluator(task, component_map);
+    return create_task_specific_Evaluator(task, component_map, depth);
 }
 
-shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific_Evaluator(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
-    shared_ptr<WeightedEvaluator> x = create_task_specific_WeightedEvaluator(task, component_map);
+shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific_Evaluator(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+    shared_ptr<WeightedEvaluator> x = create_task_specific_WeightedEvaluator(task, component_map, depth);
     return static_pointer_cast<Evaluator>(x);
 }
 

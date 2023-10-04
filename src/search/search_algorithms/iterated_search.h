@@ -69,10 +69,10 @@ public:
 
     virtual std::shared_ptr<SearchEngine> create_task_specific_SearchEngine(
             std::shared_ptr<AbstractTask> &task,
-            std::shared_ptr<ComponentMap> &component_map) override;
+            std::shared_ptr<ComponentMap> &component_map, int depth = -1) override;
 
-    virtual std::shared_ptr<IteratedSearch> create_task_specific_IteratedSearch(std::shared_ptr<AbstractTask> &task);
-    virtual std::shared_ptr<IteratedSearch> create_task_specific_IteratedSearch(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
+    virtual std::shared_ptr<IteratedSearch> create_task_specific_IteratedSearch(std::shared_ptr<AbstractTask> &task, int depth = -1);
+    virtual std::shared_ptr<IteratedSearch> create_task_specific_IteratedSearch(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
 
     virtual ~TaskIndependentIteratedSearch()  override;
 };

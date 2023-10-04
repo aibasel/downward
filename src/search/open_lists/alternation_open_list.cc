@@ -49,19 +49,19 @@ TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFac
 
 
 shared_ptr<AlternationOpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific_AlternationOpenListFactory(
-    std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
+    std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<AlternationOpenListFactory> task_specific_x;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
-        utils::g_log << "Reuse task specific AlternationOpenListFactory..." << endl;
+        utils::g_log << std::string(depth, ' ') << "Reusing task AlternationOpenListFactory..." << endl;
         task_specific_x = plugins::any_cast<shared_ptr<AlternationOpenListFactory>>(
             component_map->get_dual_key_value(task, this));
     } else {
-        utils::g_log << "Creating task specific AlternationOpenListFactory..." << endl;
+        utils::g_log << std::string(depth, ' ') << "Creating task specific AlternationOpenListFactory..." << endl;
 
         vector<shared_ptr<OpenListFactory>> td_open_list_factories(open_list_factories.size());
         transform(open_list_factories.begin(), open_list_factories.end(), td_open_list_factories.begin(),
-                  [this, &task, &component_map](const shared_ptr<TaskIndependentOpenListFactory> &eval) {
-                      return eval->create_task_specific_OpenListFactory(task, component_map);
+                  [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentOpenListFactory> &eval) {
+                      return eval->create_task_specific_OpenListFactory(task, component_map, depth+1);
                   }
                   );
 
@@ -72,16 +72,16 @@ shared_ptr<AlternationOpenListFactory> TaskIndependentAlternationOpenListFactory
 }
 
 
-shared_ptr<AlternationOpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific_AlternationOpenListFactory(shared_ptr<AbstractTask> &task) {
+shared_ptr<AlternationOpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific_AlternationOpenListFactory(shared_ptr<AbstractTask> &task, int depth) {
     utils::g_log << "Creating AlternationOpenListFactory as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
-    return create_task_specific_AlternationOpenListFactory(task, component_map);
+    return create_task_specific_AlternationOpenListFactory(task, component_map, depth);
 }
 
 
 
-shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific_OpenListFactory(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
-    shared_ptr<AlternationOpenListFactory> x = create_task_specific_AlternationOpenListFactory(task, component_map);
+shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific_OpenListFactory(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+    shared_ptr<AlternationOpenListFactory> x = create_task_specific_AlternationOpenListFactory(task, component_map, depth);
     return static_pointer_cast<OpenListFactory>(x);
 }
 

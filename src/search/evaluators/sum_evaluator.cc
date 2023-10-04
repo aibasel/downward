@@ -56,18 +56,18 @@ TaskIndependentSumEvaluator::~TaskIndependentSumEvaluator() {
 }
 
 
-shared_ptr<SumEvaluator> TaskIndependentSumEvaluator::create_task_specific_SumEvaluator(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
+shared_ptr<SumEvaluator> TaskIndependentSumEvaluator::create_task_specific_SumEvaluator(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<SumEvaluator> task_specific_sum_evaluator;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
-        log << "Reuse task specific SumEvaluator..." << endl;
+        log << std::string(depth, ' ') << "Reusing task SumEvaluator..." << endl;
         task_specific_sum_evaluator = plugins::any_cast<shared_ptr<SumEvaluator>>(
             component_map->get_dual_key_value(task, this));
     } else {
-        log << "Creating task specific SumEvaluator..." << endl;
+        log << std::string(depth, ' ') << "Creating task specific SumEvaluator..." << endl;
         vector<shared_ptr<Evaluator>> td_subevaluators(subevaluators.size());
         transform(subevaluators.begin(), subevaluators.end(), td_subevaluators.begin(),
-                  [this, &task, &component_map](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      return eval->create_task_specific_Evaluator(task, component_map);
+                  [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
+                      return eval->create_task_specific_Evaluator(task, component_map, depth+1);
                   }
                   );
         task_specific_sum_evaluator = make_shared<SumEvaluator>(log, td_subevaluators, unparsed_config);
@@ -77,15 +77,15 @@ shared_ptr<SumEvaluator> TaskIndependentSumEvaluator::create_task_specific_SumEv
 }
 
 
-shared_ptr<SumEvaluator> TaskIndependentSumEvaluator::create_task_specific_SumEvaluator(shared_ptr<AbstractTask> &task) {
+shared_ptr<SumEvaluator> TaskIndependentSumEvaluator::create_task_specific_SumEvaluator(shared_ptr<AbstractTask> &task, int depth) {
     log << "Creating SumEvaluator as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
-    return create_task_specific_SumEvaluator(task, component_map);
+    return create_task_specific_SumEvaluator(task, component_map, depth);
 }
 
 
-shared_ptr<combining_evaluator::CombiningEvaluator> TaskIndependentSumEvaluator::create_task_specific_CombiningEvaluator(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
-    shared_ptr<SumEvaluator> x = create_task_specific_SumEvaluator(task, component_map);
+shared_ptr<combining_evaluator::CombiningEvaluator> TaskIndependentSumEvaluator::create_task_specific_CombiningEvaluator(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+    shared_ptr<SumEvaluator> x = create_task_specific_SumEvaluator(task, component_map, depth);
     return static_pointer_cast<combining_evaluator::CombiningEvaluator>(x);
 }
 

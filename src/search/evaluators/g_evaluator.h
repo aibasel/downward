@@ -33,17 +33,17 @@ public:
                                        bool use_for_boosting = false,
                                        bool use_for_counting_evaluations = false);
     template<typename T>
-    std::shared_ptr<T> create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
+    std::shared_ptr<T> create_task_specific(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
 
     virtual ~TaskIndependentGEvaluator()  override;
 
 
     virtual std::shared_ptr<Evaluator> create_task_specific_Evaluator(
         std::shared_ptr<AbstractTask> &task,
-        std::shared_ptr<ComponentMap> &component_map) override;
+        std::shared_ptr<ComponentMap> &component_map, int depth = -1) override;
 
-    virtual std::shared_ptr<GEvaluator> create_task_specific_GEvaluator(std::shared_ptr<AbstractTask> &task);
-    virtual std::shared_ptr<GEvaluator> create_task_specific_GEvaluator(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
+    virtual std::shared_ptr<GEvaluator> create_task_specific_GEvaluator(std::shared_ptr<AbstractTask> &task, int depth = -1);
+    virtual std::shared_ptr<GEvaluator> create_task_specific_GEvaluator(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
 };
 }
 

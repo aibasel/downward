@@ -98,31 +98,31 @@ TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory
 }
 
 
-shared_ptr<BestFirstOpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific_BestFirstOpenListFactory(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
+shared_ptr<BestFirstOpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific_BestFirstOpenListFactory(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<BestFirstOpenListFactory> task_specific_x;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
-        utils::g_log << "Reuse task specific BestFirstOpenListFactory..." << endl;
+        utils::g_log << std::string(depth, ' ') << "Reusing task BestFirstOpenListFactory..." << endl;
         task_specific_x = plugins::any_cast<shared_ptr<BestFirstOpenListFactory>>(
             component_map->get_dual_key_value(task, this));
     } else {
-        utils::g_log << "Creating task specific BestFirstOpenListFactory..." << endl;
+        utils::g_log << std::string(depth, ' ') << "Creating task specific BestFirstOpenListFactory..." << endl;
 
-        task_specific_x = make_shared<BestFirstOpenListFactory>(pref_only, evaluator->create_task_specific_Evaluator(task, component_map));
+        task_specific_x = make_shared<BestFirstOpenListFactory>(pref_only, evaluator->create_task_specific_Evaluator(task, component_map, depth+1));
         component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_x));
     }
     return task_specific_x;
 }
 
 
-shared_ptr<BestFirstOpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific_BestFirstOpenListFactory(shared_ptr<AbstractTask> &task) {
+shared_ptr<BestFirstOpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific_BestFirstOpenListFactory(shared_ptr<AbstractTask> &task, int depth) {
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
-    return create_task_specific_BestFirstOpenListFactory(task, component_map);
+    return create_task_specific_BestFirstOpenListFactory(task, component_map, depth);
 }
 
 
-shared_ptr<OpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific_OpenListFactory(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
+shared_ptr<OpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific_OpenListFactory(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
     utils::g_log << "Creating BestFirstOpenListFactory as root component..." << endl;
-    shared_ptr<BestFirstOpenListFactory> x = create_task_specific_BestFirstOpenListFactory(task, component_map);
+    shared_ptr<BestFirstOpenListFactory> x = create_task_specific_BestFirstOpenListFactory(task, component_map, depth);
     return static_pointer_cast<OpenListFactory>(x);
 }
 
