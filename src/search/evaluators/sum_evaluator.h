@@ -41,11 +41,11 @@ public:
     virtual ~TaskIndependentSumEvaluator()  override;
 
     virtual std::shared_ptr<combining_evaluator::CombiningEvaluator> create_task_specific_CombiningEvaluator(
-        std::shared_ptr<AbstractTask> &task,
+            const std::shared_ptr<AbstractTask> &task,
         std::shared_ptr<ComponentMap> &component_map, int depth = -1) override;
 
-    virtual std::shared_ptr<SumEvaluator> create_task_specific_SumEvaluator(std::shared_ptr<AbstractTask> &task, int depth = -1);
-    virtual std::shared_ptr<SumEvaluator> create_task_specific_SumEvaluator(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
+    virtual std::shared_ptr<SumEvaluator> create_task_specific_SumEvaluator(const std::shared_ptr<AbstractTask> &task, int depth = -1);
+    virtual std::shared_ptr<SumEvaluator> create_task_specific_SumEvaluator(const std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
 };
 }
 

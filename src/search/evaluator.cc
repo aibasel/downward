@@ -100,19 +100,19 @@ TaskIndependentEvaluator::TaskIndependentEvaluator(utils::LogProxy log,
 
 
 
-shared_ptr<Evaluator> TaskIndependentEvaluator::create_task_specific_Evaluator(shared_ptr<AbstractTask> &task, int depth) {
+shared_ptr<Evaluator> TaskIndependentEvaluator::create_task_specific_Evaluator(const shared_ptr<AbstractTask> &task, int depth) {
     log << "Creating Evaluator as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_Evaluator(task, component_map, depth);
 }
 
-shared_ptr<Evaluator> TaskIndependentEvaluator::create_task_specific_Evaluator([[maybe_unused]] shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<Evaluator> TaskIndependentEvaluator::create_task_specific_Evaluator([[maybe_unused]] const shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map, int depth) {
     cerr << "Tries to create Evaluator in an unimplemented way." << endl;
     utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
 }
 
 
-shared_ptr<Component> TaskIndependentEvaluator::create_task_specific_Component(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<Component> TaskIndependentEvaluator::create_task_specific_Component(const shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<Evaluator> x = create_task_specific_Evaluator(task, component_map, depth);
     return static_pointer_cast<Component>(x);
 }

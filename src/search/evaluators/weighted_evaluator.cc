@@ -73,7 +73,7 @@ TaskIndependentWeightedEvaluator::~TaskIndependentWeightedEvaluator() {
 
 
 shared_ptr<WeightedEvaluator> TaskIndependentWeightedEvaluator::create_task_specific_WeightedEvaluator(
-    shared_ptr<AbstractTask> &task,
+        const shared_ptr<AbstractTask> &task,
     std::shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<WeightedEvaluator> task_specific_weighted_evaluator;
 
@@ -91,19 +91,19 @@ shared_ptr<WeightedEvaluator> TaskIndependentWeightedEvaluator::create_task_spec
     return task_specific_weighted_evaluator;
 }
 
-shared_ptr<WeightedEvaluator> TaskIndependentWeightedEvaluator::create_task_specific_WeightedEvaluator(shared_ptr<AbstractTask> &task, int depth) {
+shared_ptr<WeightedEvaluator> TaskIndependentWeightedEvaluator::create_task_specific_WeightedEvaluator(const shared_ptr<AbstractTask> &task, int depth) {
     log << "Creating WeightedEvaluator as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_WeightedEvaluator(task, component_map, depth);
 }
 
 
-shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific_Evaluator(shared_ptr<AbstractTask> &task, int depth) {
+shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific_Evaluator(const shared_ptr<AbstractTask> &task, int depth) {
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_Evaluator(task, component_map, depth);
 }
 
-shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific_Evaluator(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific_Evaluator(const shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<WeightedEvaluator> x = create_task_specific_WeightedEvaluator(task, component_map, depth);
     return static_pointer_cast<Evaluator>(x);
 }

@@ -25,7 +25,7 @@ IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                OperatorCost cost_type,
                                double max_time,
                                int bound,
-                               shared_ptr<AbstractTask> &task,
+                               const shared_ptr<AbstractTask> &task,
                                vector<parser::LazyValue> algorithm_configs,
                                bool pass_bound,
                                bool repeat_last_phase,
@@ -50,18 +50,19 @@ IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                {
                                }
 
-shared_ptr<SearchAlgorithm> IteratedSearch::get_search_algorithm(
+shared_ptr<TaskIndependentSearchAlgorithm> IteratedSearch::get_search_algorithm(
     int algorithm_configs_index) {
     parser::LazyValue &algorithm_config = algorithm_configs[algorithm_configs_index];
-    shared_ptr<SearchAlgorithm> search_algorithm;
+    shared_ptr<TaskIndependentSearchAlgorithm> search_algorithm;
     try{
-        search_algorithm = algorithm_config.construct<shared_ptr<SearchAlgorithm>>();
+        search_algorithm = algorithm_config.construct<shared_ptr<TaskIndependentSearchAlgorithm>>();
     } catch (const utils::ContextError &e) {
         cerr << "Delayed construction of LazyValue failed" << endl;
         cerr << e.get_message() << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
-    log << "Starting search: " << search_algorithm->get_description() << endl;
+    auto x = "engine->get_description(); is only possible in TS_Component";
+    log << "Starting search: " << x << endl;
     return search_algorithm;
 }
 
@@ -76,15 +77,16 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
            this overrides continue_on_fail.
         */
         if (repeat_last_phase && last_phase_found_solution) {
-            return get_search_algorithm(
-                algorithm_configs.size() -
-                1);
+            auto x1 = get_search_algorithm(algorithm_configs.size() - 1);
+            auto ret1 = x1->create_task_specific_SearchAlgorithm(task,1);
+            return ret1;
         } else {
             return nullptr;
         }
     }
-
-    return get_search_algorithm(phase);
+    auto x2 = get_search_algorithm(phase);
+    auto ret2 = x2->create_task_specific_SearchAlgorithm(task, 1);
+    return ret2;
 }
 
 SearchStatus IteratedSearch::step() {
@@ -185,7 +187,7 @@ TaskIndependentIteratedSearch::~TaskIndependentIteratedSearch() {
 }
 
 
-shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_IteratedSearch(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_IteratedSearch(const shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<IteratedSearch> task_specific_x;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task IteratedSearch..." << endl;
@@ -213,7 +215,7 @@ shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_I
 
 
 
-shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_IteratedSearch(shared_ptr<AbstractTask> &task, int depth) {
+shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_IteratedSearch(const shared_ptr<AbstractTask> &task, int depth) {
     utils::g_log << "Creating IteratedSearch as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_IteratedSearch(task, component_map, depth);
@@ -221,7 +223,7 @@ shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_I
 
 
 
-shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_specific_SearchEngine(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_specific_SearchAlgorithm(const shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<SearchAlgorithm> x = create_task_specific_IteratedSearch(task, component_map, depth);
     return static_pointer_cast<SearchAlgorithm>(x);
 }

@@ -68,7 +68,7 @@ public:
                  double max_time,
                  int bound,
                  std::string unparsed_config,
-                 std::shared_ptr<AbstractTask> task);
+                 const std::shared_ptr<AbstractTask> task);
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
@@ -115,11 +115,11 @@ public:
     PlanManager &get_plan_manager() {return plan_manager;}
 
     virtual std::shared_ptr<Component> create_task_specific_Component(
-        std::shared_ptr<AbstractTask> &task,
+            const std::shared_ptr<AbstractTask> &task,
         std::shared_ptr<ComponentMap> &component_map, int depth = -1) override;
 
-    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_SearchAlgorithm(std::shared_ptr<AbstractTask> &task, int depth = -1);
-    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_SearchAlgorithm(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
+    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_SearchAlgorithm(const std::shared_ptr<AbstractTask> &task, int depth = -1);
+    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_SearchAlgorithm(const std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
 };
 
 /*
