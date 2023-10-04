@@ -385,12 +385,12 @@ shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSe
         vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
         transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      return eval->create_task_specific_Evaluator(task, component_map, depth+1);
+                      return eval->create_task_specific_Evaluator(task, depth >=0 ? depth+1 : depth);
                   }
                   );
 
         shared_ptr<StateOpenList> _open_list = shared_ptr<StateOpenList>(
-            open_list_factory->create_task_specific_OpenListFactory(task, component_map, depth+1)->create_state_open_list());
+            open_list_factory->create_task_specific_OpenListFactory(task, depth >=0 ? depth+1 : depth)->create_state_open_list());
 
         task_specific_eager_search = make_shared<EagerSearch>(verbosity,
                                                               cost_type,
@@ -401,8 +401,8 @@ shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSe
                                                               td_evaluators,
                                                               pruning_method,
                                                               task,
-                                                              f_evaluator ? f_evaluator->create_task_specific_Evaluator(task, component_map, depth+1) : nullptr,
-                                                              lazy_evaluator ? lazy_evaluator->create_task_specific_Evaluator(task, component_map, depth+1) : nullptr);
+                                                              f_evaluator ? f_evaluator->create_task_specific_Evaluator(task, depth >=0 ? depth+1 : depth) : nullptr,
+                                                              lazy_evaluator ? lazy_evaluator->create_task_specific_Evaluator(task, depth >=0 ? depth+1 : depth) : nullptr);
 
         component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_eager_search));
     }
