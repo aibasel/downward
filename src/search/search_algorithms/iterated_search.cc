@@ -61,7 +61,7 @@ shared_ptr<TaskIndependentSearchAlgorithm> IteratedSearch::get_search_algorithm(
         cerr << e.get_message() << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
-    auto x = "engine->get_description(); is only possible in TS_Component";
+    auto x = "engine->get_description(); is only possible in TS_Component"; // TODO: issue559 add get_description() to TI_XYZ.
     log << "Starting search: " << x << endl;
     return search_algorithm;
 }
