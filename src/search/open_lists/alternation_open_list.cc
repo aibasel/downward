@@ -61,7 +61,7 @@ shared_ptr<AlternationOpenListFactory> TaskIndependentAlternationOpenListFactory
         vector<shared_ptr<OpenListFactory>> td_open_list_factories(open_list_factories.size());
         transform(open_list_factories.begin(), open_list_factories.end(), td_open_list_factories.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentOpenListFactory> &eval) {
-                      return eval->create_task_specific_OpenListFactory(task, component_map, depth+1);
+                      return eval->create_task_specific_OpenListFactory(task, depth >=0 ? depth+1 : depth);
                   }
                   );
 

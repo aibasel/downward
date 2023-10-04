@@ -60,7 +60,7 @@ shared_ptr<LandmarkCutHeuristic> TaskIndependentLandmarkCutHeuristic::create_tas
         task_specific_lm_cut_heurisitc = make_shared<LandmarkCutHeuristic>(unparsed_config,
                                                                            log,
                                                                            cache_evaluator_values,
-                                                                           task_transformation->create_task_specific_AbstractTask(task, component_map, depth+1));
+                                                                           task_transformation->create_task_specific_AbstractTask(task, depth >=0 ? depth+1 : depth));
         component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_lm_cut_heurisitc));
     }
     return task_specific_lm_cut_heurisitc;
