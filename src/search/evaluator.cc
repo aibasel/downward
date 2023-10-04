@@ -101,7 +101,7 @@ TaskIndependentEvaluator::TaskIndependentEvaluator(utils::LogProxy log,
 
 
 shared_ptr<Evaluator> TaskIndependentEvaluator::create_task_specific_Evaluator(const shared_ptr<AbstractTask> &task, int depth) {
-    log << "Creating Evaluator as root component..." << endl;
+    log << std::string(depth, ' ') << "Creating Evaluator as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_Evaluator(task, component_map, depth);
 }

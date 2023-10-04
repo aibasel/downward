@@ -60,7 +60,7 @@ shared_ptr<LandmarkCutHeuristic> TaskIndependentLandmarkCutHeuristic::create_tas
         task_specific_lm_cut_heurisitc = make_shared<LandmarkCutHeuristic>(unparsed_config,
                                                                            log,
                                                                            cache_evaluator_values,
-                                                                           task_transformation->create_task_specific_AbstractTask(task, depth >=0 ? depth+1 : depth));
+                                                                           task_transformation->create_task_specific_AbstractTask(task, component_map, depth >=0 ? depth+1 : depth));
         component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_lm_cut_heurisitc));
     }
     return task_specific_lm_cut_heurisitc;
@@ -68,7 +68,7 @@ shared_ptr<LandmarkCutHeuristic> TaskIndependentLandmarkCutHeuristic::create_tas
 
 
 shared_ptr<LandmarkCutHeuristic> TaskIndependentLandmarkCutHeuristic::create_task_specific_LandmarkCutHeuristic(const shared_ptr<AbstractTask> &task, int depth) {
-    log << "Creating LandmarkCutHeuristic as root component..." << endl;
+    log << std::string(depth, ' ') << "Creating LandmarkCutHeuristic as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_LandmarkCutHeuristic(task, component_map, depth);
 }

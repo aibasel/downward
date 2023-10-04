@@ -69,7 +69,7 @@ shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory
 
         transform(evaluators.begin(), evaluators.end(), ts_evaluators.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      return eval->create_task_specific_Evaluator(task, depth >=0 ? depth+1 : depth);
+                      return eval->create_task_specific_Evaluator(task, component_map, depth >=0 ? depth+1 : depth);
                   }
                   );
 
@@ -83,7 +83,7 @@ shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory
 
 
 shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_TieBreakingOpenListFactory(const shared_ptr<AbstractTask> &task, int depth) {
-    utils::g_log << "Creating TieBreakingOpenListFactory as root component..." << endl;
+    utils::g_log << std::string(depth, ' ') << "Creating TieBreakingOpenListFactory as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_TieBreakingOpenListFactory(task, component_map, depth);
 }

@@ -16,7 +16,7 @@ shared_ptr<EdgeOpenList> OpenListFactory::create_open_list() {
 
 
 shared_ptr<OpenListFactory> TaskIndependentOpenListFactory::create_task_specific_OpenListFactory(const shared_ptr<AbstractTask> &task, int depth) {
-    utils::g_log << "Creating OpenListFactory as root component..." << endl;
+    utils::g_log << std::string(depth, ' ') << "Creating OpenListFactory as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_OpenListFactory(task, component_map, depth);
 }

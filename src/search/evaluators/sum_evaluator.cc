@@ -67,7 +67,7 @@ shared_ptr<SumEvaluator> TaskIndependentSumEvaluator::create_task_specific_SumEv
         vector<shared_ptr<Evaluator>> td_subevaluators(subevaluators.size());
         transform(subevaluators.begin(), subevaluators.end(), td_subevaluators.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      return eval->create_task_specific_Evaluator(task, depth >=0 ? depth+1 : depth);
+                      return eval->create_task_specific_Evaluator(task, component_map, depth >=0 ? depth+1 : depth);
                   }
                   );
         task_specific_sum_evaluator = make_shared<SumEvaluator>(log, td_subevaluators, unparsed_config);
@@ -78,7 +78,7 @@ shared_ptr<SumEvaluator> TaskIndependentSumEvaluator::create_task_specific_SumEv
 
 
 shared_ptr<SumEvaluator> TaskIndependentSumEvaluator::create_task_specific_SumEvaluator(const shared_ptr<AbstractTask> &task, int depth) {
-    log << "Creating SumEvaluator as root component..." << endl;
+    log << std::string(depth, ' ') << "Creating SumEvaluator as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_SumEvaluator(task, component_map, depth);
 }

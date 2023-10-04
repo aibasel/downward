@@ -216,7 +216,7 @@ shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_I
 
 
 shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_IteratedSearch(const shared_ptr<AbstractTask> &task, int depth) {
-    utils::g_log << "Creating IteratedSearch as root component..." << endl;
+    utils::g_log << std::string(depth, ' ') << "Creating IteratedSearch as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_IteratedSearch(task, component_map, depth);
 }
