@@ -248,7 +248,7 @@ shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific
 }
 
 shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific_SearchAlgorithm([[maybe_unused]] const shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map, [[maybe_unused]] int depth) {
-    cerr << "Tries to create SearchAlgorithm in an unimplemented way." << endl;
+    cerr << std::string(depth, ' ') << "Tries to create SearchAlgorithm in an unimplemented way." << endl;
     utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
 }
 
