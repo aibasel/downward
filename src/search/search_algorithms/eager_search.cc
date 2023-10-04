@@ -42,7 +42,7 @@ EagerSearch::EagerSearch(utils::Verbosity verbosity,
                          shared_ptr<StateOpenList> open_list,
                          vector<shared_ptr<Evaluator>> preferred_operator_evaluators,
                          shared_ptr<PruningMethod> pruning_method,
-                         shared_ptr<AbstractTask> &task,
+                         const shared_ptr<AbstractTask> &task,
                          shared_ptr<Evaluator> f_evaluator,
                          shared_ptr<Evaluator> lazy_evaluator,
                          string unparsed_config
@@ -374,7 +374,7 @@ TaskIndependentEagerSearch::~TaskIndependentEagerSearch() {
 }
 
 
-shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSearch(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSearch(const shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<EagerSearch> task_specific_eager_search;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task EagerSearch..." << endl;
@@ -412,7 +412,7 @@ shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSe
 
 
 
-shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSearch(shared_ptr<AbstractTask> &task, int depth) {
+shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSearch(const shared_ptr<AbstractTask> &task, int depth) {
     utils::g_log << "Creating EagerSearch as root component..." << endl;
     std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
     return create_task_specific_EagerSearch(task, component_map, depth);
@@ -420,7 +420,7 @@ shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSe
 
 
 
-shared_ptr<SearchEngine> TaskIndependentEagerSearch::create_task_specific_SearchEngine(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<SearchEngine> TaskIndependentEagerSearch::create_task_specific_SearchEngine(const shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<SearchEngine> x = create_task_specific_EagerSearch(task, component_map, depth);
     return static_pointer_cast<SearchEngine>(x);
 }

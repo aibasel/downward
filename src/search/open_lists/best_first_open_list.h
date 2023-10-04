@@ -91,11 +91,11 @@ public:
     virtual ~TaskIndependentBestFirstOpenListFactory() override = default;
 
     virtual std::shared_ptr<OpenListFactory> create_task_specific_OpenListFactory(
-        std::shared_ptr<AbstractTask> &task,
+            const std::shared_ptr<AbstractTask> &task,
         std::shared_ptr<ComponentMap> &component_map, int depth = -1) override;
 
-    virtual std::shared_ptr<BestFirstOpenListFactory> create_task_specific_BestFirstOpenListFactory(std::shared_ptr<AbstractTask> &task, int depth = -1);
-    virtual std::shared_ptr<BestFirstOpenListFactory> create_task_specific_BestFirstOpenListFactory(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
+    virtual std::shared_ptr<BestFirstOpenListFactory> create_task_specific_BestFirstOpenListFactory(const std::shared_ptr<AbstractTask> &task, int depth = -1);
+    virtual std::shared_ptr<BestFirstOpenListFactory> create_task_specific_BestFirstOpenListFactory(const std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
 };
 }
 

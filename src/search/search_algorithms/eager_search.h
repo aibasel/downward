@@ -47,7 +47,7 @@ public:
                          std::shared_ptr<StateOpenList> open_list,
                          std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators,
                          std::shared_ptr<PruningMethod> pruning_method,
-                         std::shared_ptr<AbstractTask> &task,
+                         const std::shared_ptr<AbstractTask> &task,
                          std::shared_ptr<Evaluator> f_evaluator = nullptr,
                          std::shared_ptr<Evaluator> lazy_evaluator = nullptr,
                          std::string unparsed_config = std::string());
@@ -60,7 +60,7 @@ public:
 
 
 
-class TaskIndependentEagerSearch : public TaskIndependentSearchEngine {
+class TaskIndependentEagerSearch : public TaskIndependentSearchAlgorithm {
 private:
     const bool reopen_closed_nodes;
 
@@ -89,11 +89,11 @@ public:
                                         std::string unparsed_config = std::string());
 
     virtual std::shared_ptr<SearchAlgorithm> create_task_specific_SearchAlgorithm(
-        std::shared_ptr<AbstractTask> &task,
+            const std::shared_ptr<AbstractTask> &task,
         std::shared_ptr<ComponentMap> &component_map, int depth = -1) override;
 
-    virtual std::shared_ptr<EagerSearch> create_task_specific_EagerSearch(std::shared_ptr<AbstractTask> &task, int depth = -1);
-    virtual std::shared_ptr<EagerSearch> create_task_specific_EagerSearch(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
+    virtual std::shared_ptr<EagerSearch> create_task_specific_EagerSearch(const std::shared_ptr<AbstractTask> &task, int depth = -1);
+    virtual std::shared_ptr<EagerSearch> create_task_specific_EagerSearch(const std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
 
     virtual ~TaskIndependentEagerSearch()  override;
 };

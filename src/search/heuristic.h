@@ -77,7 +77,7 @@ public:
     explicit Heuristic(const std::basic_string<char> unparsed_config,
                        utils::LogProxy log,
                        bool cache_evaluator_values,
-                       std::shared_ptr<AbstractTask> task);
+                       const std::shared_ptr<AbstractTask> task);
     virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(
@@ -111,11 +111,11 @@ public:
 
 
     virtual std::shared_ptr<Evaluator> create_task_specific_Evaluator(
-        std::shared_ptr<AbstractTask> &task,
+            const std::shared_ptr<AbstractTask> &task,
         std::shared_ptr<ComponentMap> &component_map, int depth = -1) override;
 
-    virtual std::shared_ptr<Heuristic> create_task_specific_Heuristic(std::shared_ptr<AbstractTask> &task, int depth = -1);
-    virtual std::shared_ptr<Heuristic> create_task_specific_Heuristic(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
+    virtual std::shared_ptr<Heuristic> create_task_specific_Heuristic(const std::shared_ptr<AbstractTask> &task, int depth = -1);
+    virtual std::shared_ptr<Heuristic> create_task_specific_Heuristic(const std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
 };
 
 

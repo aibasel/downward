@@ -103,11 +103,11 @@ public:
     explicit TaskIndependentRootTask();
 
     virtual std::shared_ptr<AbstractTask> create_task_specific_AbstractTask(
-            std::shared_ptr<AbstractTask> &task,
+            const std::shared_ptr<AbstractTask> &task,
             std::shared_ptr<ComponentMap> &component_map, int depth = -1) override;
 
-    virtual std::shared_ptr<RootTask> create_task_specific_RootTask(std::shared_ptr<AbstractTask> &task, int depth = -1);
-    virtual std::shared_ptr<RootTask> create_task_specific_RootTask(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
+    virtual std::shared_ptr<RootTask> create_task_specific_RootTask(const std::shared_ptr<AbstractTask> &task, int depth = -1);
+    virtual std::shared_ptr<RootTask> create_task_specific_RootTask(const std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
 };
 
 }

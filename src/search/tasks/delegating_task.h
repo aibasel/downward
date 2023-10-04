@@ -70,11 +70,11 @@ public:
     virtual ~TaskIndependentDelegatingTask() override = default;
 
     virtual std::shared_ptr<AbstractTask> create_task_specific_AbstractTask(
-        std::shared_ptr<AbstractTask> &task,
+            const std::shared_ptr<AbstractTask> &task,
         std::shared_ptr<ComponentMap> &component_map, int depth = -1);
 
-    virtual std::shared_ptr<DelegatingTask> create_task_specific_DelegatingTask(std::shared_ptr<AbstractTask> &task, int depth = -1);
-    virtual std::shared_ptr<DelegatingTask> create_task_specific_DelegatingTask(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
+    virtual std::shared_ptr<DelegatingTask> create_task_specific_DelegatingTask(const std::shared_ptr<AbstractTask> &task, int depth = -1);
+    virtual std::shared_ptr<DelegatingTask> create_task_specific_DelegatingTask(const std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
 };
 }
 
