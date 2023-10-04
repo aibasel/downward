@@ -24,12 +24,14 @@ IteratedSearch::IteratedSearch(const plugins::Options &opts)
 IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                OperatorCost cost_type,
                                double max_time,
-                               string unparsed_config,
+                               int bound,
+                               shared_ptr<AbstractTask> &task,
                                vector<parser::LazyValue> algorithm_configs,
                                bool pass_bound,
                                bool repeat_last_phase,
                                bool continue_on_fail,
-                               bool continue_on_solve
+                               bool continue_on_solve,
+                               string unparsed_config
                                ) : SearchAlgorithm(verbosity,
                                                 cost_type,
                                                 max_time,
@@ -156,13 +158,81 @@ void IteratedSearch::save_plan_if_necessary() {
     // each successful search iteration.
 }
 
-class IteratedSearchFeature : public plugins::TypedFeature<SearchAlgorithm, IteratedSearch> {
+
+TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(utils::Verbosity verbosity,
+                                                             OperatorCost cost_type,
+                                                             double max_time,
+                                                             string unparsed_config,
+                                                             vector<parser::LazyValue> algorithm_configs,
+                                                             bool pass_bound,
+                                                             bool repeat_last_phase,
+                                                             bool continue_on_fail,
+                                                             bool continue_on_solve
+)
+        : TaskIndependentSearchAlgorithm(verbosity,
+                                      cost_type,
+                                      max_time,
+                                      bound,
+                                      unparsed_config),
+          algorithm_configs(algorithm_configs),
+          pass_bound(pass_bound),
+          repeat_last_phase(repeat_last_phase),
+          continue_on_fail(continue_on_fail),
+          continue_on_solve(continue_on_solve) {
+}
+
+TaskIndependentIteratedSearch::~TaskIndependentIteratedSearch() {
+}
+
+
+shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_IteratedSearch(shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<IteratedSearch> task_specific_x;
+    if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
+        utils::g_log << "Reuse task specific IteratedSearch..." << endl;
+        task_specific_x = plugins::any_cast<shared_ptr<IteratedSearch>>(
+                component_map->get_dual_key_value(task, this));
+    } else {
+        utils::g_log << "Creating task specific IteratedSearch..." << endl;
+
+        task_specific_x = make_shared<IteratedSearch>(verbosity,
+                cost_type,
+                max_time,
+                bound,
+                task,
+                algorithm_configs,
+                pass_bound,
+                repeat_last_phase,
+                continue_on_fail,
+                continue_on_solve);
+
+        component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_x));
+    }
+    return task_specific_x;
+}
+
+
+
+
+shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_IteratedSearch(shared_ptr<AbstractTask> &task) {
+    utils::g_log << "Creating IteratedSearch as root component..." << endl;
+    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    return create_task_specific_IteratedSearch(task, component_map);
+}
+
+
+
+shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_specific_SearchEngine(shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map) {
+    shared_ptr<SearchAlgorithm> x = create_task_specific_IteratedSearch(task, component_map);
+    return static_pointer_cast<SearchAlgorithm>(x);
+}
+
+class TaskIndependentIteratedSearchFeature : public plugins::TypedFeature<TaskIndependentSearchAlgorithm, TaskIndependentIteratedSearch> {
 public:
-    IteratedSearchFeature() : TypedFeature("iterated") {
+    TaskIndependentIteratedSearchFeature() : TypedFeature("iterated") {
         document_title("Iterated search");
         document_synopsis("");
 
-        add_list_option<shared_ptr<SearchAlgorithm>>(
+        add_list_option<shared_ptr<TaskIndependentSearchAlgorithm>>(
             "algorithm_configs",
             "list of search algorithms for each phase",
             "",
@@ -213,7 +283,7 @@ public:
             "will be saved between iterations.");
     }
 
-    virtual shared_ptr<IteratedSearch> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+    virtual shared_ptr<TaskIndependentIteratedSearch> create_component(const plugins::Options &opts, const utils::Context &context) const override {
         plugins::Options options_copy(opts);
         /*
           The options entry 'algorithm_configs' is a LazyValue representing a list
@@ -231,7 +301,7 @@ public:
         options_copy.set("algorithm_configs", algorithm_configs);
         plugins::verify_list_non_empty<parser::LazyValue>(context, options_copy, "algorithm_configs");
 
-        return make_shared<IteratedSearch>(opts.get<utils::Verbosity>("verbosity"),
+        return make_shared<TaskIndependentIteratedSearch>(opts.get<utils::Verbosity>("verbosity"),
                                            opts.get<OperatorCost>("cost_type"),
                                            opts.get<double>("max_time"),
                                            opts.get_unparsed_config(),
@@ -244,5 +314,7 @@ public:
     }
 };
 
-static plugins::FeaturePlugin<IteratedSearchFeature> _plugin;
+
+static plugins::FeaturePlugin<TaskIndependentIteratedSearchFeature> _plugin;
+
 }

@@ -33,16 +33,51 @@ public:
     IteratedSearch(utils::Verbosity verbosity,
                    OperatorCost cost_type,
                    double max_time,
-                   std::string unparsed_config,
+                   int bound,
+                   std::shared_ptr<AbstractTask> &task,
                    std::vector<parser::LazyValue> engine_configs,
                    bool pass_bound,
                    bool repeat_last_phase,
                    bool continue_on_fail,
-                   bool continue_on_solve);
+                   bool continue_on_solve,
+                   std::string unparsed_config = std::string());
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
 };
+
+
+
+class TaskIndependentIteratedSearch : public TaskIndependentSearchEngine {
+private:
+    std::vector<parser::LazyValue> engine_configs;
+
+    bool pass_bound;
+    bool repeat_last_phase;
+    bool continue_on_fail;
+    bool continue_on_solve;
+public:
+    explicit TaskIndependentIteratedSearch(utils::Verbosity verbosity,
+                                           OperatorCost cost_type,
+                                           double max_time,
+                                           std::string unparsed_config,
+                                           std::vector<parser::LazyValue> engine_configs,
+                                           bool pass_bound,
+                                           bool repeat_last_phase,
+                                           bool continue_on_fail,
+                                           bool continue_on_solve);
+
+    virtual std::shared_ptr<SearchEngine> create_task_specific_SearchEngine(
+            std::shared_ptr<AbstractTask> &task,
+            std::shared_ptr<ComponentMap> &component_map) override;
+
+    virtual std::shared_ptr<IteratedSearch> create_task_specific_IteratedSearch(std::shared_ptr<AbstractTask> &task);
+    virtual std::shared_ptr<IteratedSearch> create_task_specific_IteratedSearch(std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map);
+
+    virtual ~TaskIndependentIteratedSearch()  override;
+};
+
+
 }
 
 #endif
