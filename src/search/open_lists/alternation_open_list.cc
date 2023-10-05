@@ -49,7 +49,7 @@ TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFac
 
 
 shared_ptr<AlternationOpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific_AlternationOpenListFactory(
-        const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
+    const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<AlternationOpenListFactory> task_specific_x;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task AlternationOpenListFactory..." << endl;
@@ -61,7 +61,7 @@ shared_ptr<AlternationOpenListFactory> TaskIndependentAlternationOpenListFactory
         vector<shared_ptr<OpenListFactory>> td_open_list_factories(open_list_factories.size());
         transform(open_list_factories.begin(), open_list_factories.end(), td_open_list_factories.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentOpenListFactory> &eval) {
-                      return eval->create_task_specific_OpenListFactory(task, component_map, depth >=0 ? depth+1 : depth);
+                      return eval->create_task_specific_OpenListFactory(task, component_map, depth >= 0 ? depth + 1 : depth);
                   }
                   );
 

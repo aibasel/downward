@@ -15,7 +15,6 @@
 using namespace std;
 
 namespace tiebreaking_open_list {
-
 TieBreakingOpenListFactory::TieBreakingOpenListFactory(
     bool pref_only,
     vector<shared_ptr<Evaluator>> evaluators,
@@ -59,7 +58,7 @@ shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory
 
         transform(evaluators.begin(), evaluators.end(), ts_evaluators.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      return eval->create_task_specific_Evaluator(task, component_map, depth >=0 ? depth+1 : depth);
+                      return eval->create_task_specific_Evaluator(task, component_map, depth >= 0 ? depth + 1 : depth);
                   }
                   );
 

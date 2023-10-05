@@ -8,7 +8,6 @@
 using namespace std;
 
 namespace iterated_search {
-
 IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                OperatorCost cost_type,
                                double max_time,
@@ -35,15 +34,10 @@ IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                    phase(0),
                                    last_phase_found_solution(false),
                                    best_bound(bound),
-                                   iterated_found_solution(false)
-                               {
-
-                                   component_map=(move(_component_map));
-                                   cout << "IteratedSearch::IteratedSearch   component_map->add_dual_key_entry(nullptr, nullptr, nullptr);" << endl;
-                                   component_map->add_dual_key_entry(nullptr, nullptr, nullptr);
-                                   cout << "DONE IteratedSearch::IteratedSearch   component_map->add_dual_key_entry(nullptr, nullptr, nullptr);" << endl;
-
-                               }
+                                   iterated_found_solution(false) {
+    component_map = (move(_component_map));
+    component_map->add_dual_key_entry(nullptr, nullptr, nullptr);
+}
 
 
 shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
@@ -57,13 +51,13 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
            this overrides continue_on_fail.
         */
         if (repeat_last_phase && last_phase_found_solution) {
-            log << "Starting search: " << search_algorithms[search_algorithms.size() - 1] -> get_description() << endl;
+            log << "Starting search: " << search_algorithms[search_algorithms.size() - 1]->get_description() << endl;
             return search_algorithms[search_algorithms.size() - 1]->create_task_specific_SearchAlgorithm(task, 1);
         } else {
             return nullptr;
         }
     }
-    log << "Starting search: " << search_algorithms[phase] -> get_description() << endl;
+    log << "Starting search: " << search_algorithms[phase]->get_description() << endl;
     return search_algorithms[phase]->create_task_specific_SearchAlgorithm(task, component_map, 1);
 }
 
@@ -149,17 +143,17 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(utils::Verbosity ve
                                                              bool repeat_last_phase,
                                                              bool continue_on_fail,
                                                              bool continue_on_solve
-)
-        : TaskIndependentSearchAlgorithm(verbosity,
-                                      cost_type,
-                                      max_time,
-                                      bound,
-                                      unparsed_config),
-          search_algorithms(search_algorithms),
-          pass_bound(pass_bound),
-          repeat_last_phase(repeat_last_phase),
-          continue_on_fail(continue_on_fail),
-          continue_on_solve(continue_on_solve) {
+                                                             )
+    : TaskIndependentSearchAlgorithm(verbosity,
+                                  cost_type,
+                                  max_time,
+                                  bound,
+                                  unparsed_config),
+      search_algorithms(search_algorithms),
+      pass_bound(pass_bound),
+      repeat_last_phase(repeat_last_phase),
+      continue_on_fail(continue_on_fail),
+      continue_on_solve(continue_on_solve) {
 }
 
 TaskIndependentIteratedSearch::~TaskIndependentIteratedSearch() {
@@ -174,16 +168,16 @@ shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_I
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific IteratedSearch..." << endl;
         task_specific_x = make_shared<IteratedSearch>(verbosity,
-                cost_type,
-                max_time,
-                bound,
-                task,
-                move(component_map),
-                search_algorithms,
-                pass_bound,
-                repeat_last_phase,
-                continue_on_fail,
-                continue_on_solve);
+                                                      cost_type,
+                                                      max_time,
+                                                      bound,
+                                                      task,
+                                                      move(component_map),
+                                                      search_algorithms,
+                                                      pass_bound,
+                                                      repeat_last_phase,
+                                                      continue_on_fail,
+                                                      continue_on_solve);
         utils::g_log << "Created task specific IteratedSearch..." << endl;
     }
     return task_specific_x;
@@ -264,22 +258,20 @@ public:
     }
 
     virtual shared_ptr<TaskIndependentIteratedSearch> create_component(const plugins::Options &opts, const utils::Context &context) const override {
-
         return make_shared<TaskIndependentIteratedSearch>(opts.get<utils::Verbosity>("verbosity"),
-                                           opts.get<OperatorCost>("cost_type"),
-                                           opts.get<double>("max_time"),
-                                           opts.get<int>("bound"),
-                                           opts.get_unparsed_config(),
-                                           opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>("search_algorithms"),
-                                           opts.get<bool>("pass_bound"),
-                                           opts.get<bool>("repeat_last"),
-                                           opts.get<bool>("continue_on_fail"),
-                                           opts.get<bool>("continue_on_solve")
-                                           );
+                                                          opts.get<OperatorCost>("cost_type"),
+                                                          opts.get<double>("max_time"),
+                                                          opts.get<int>("bound"),
+                                                          opts.get_unparsed_config(),
+                                                          opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>("search_algorithms"),
+                                                          opts.get<bool>("pass_bound"),
+                                                          opts.get<bool>("repeat_last"),
+                                                          opts.get<bool>("continue_on_fail"),
+                                                          opts.get<bool>("continue_on_solve")
+                                                          );
     }
 };
 
 
 static plugins::FeaturePlugin<TaskIndependentIteratedSearchFeature> _plugin;
-
 }

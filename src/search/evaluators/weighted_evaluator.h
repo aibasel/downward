@@ -50,7 +50,7 @@ public:
     virtual std::shared_ptr<Evaluator> create_task_specific_Evaluator(const std::shared_ptr<AbstractTask> &task, int depth = -1) override;
 
     virtual std::shared_ptr<Evaluator> create_task_specific_Evaluator(
-            const std::shared_ptr<AbstractTask> &task,
+        const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map, int depth = -1) override;
 
     virtual std::shared_ptr<WeightedEvaluator> create_task_specific_WeightedEvaluator(const std::shared_ptr<AbstractTask> &task, int depth = -1);

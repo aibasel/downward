@@ -107,7 +107,7 @@ shared_ptr<BestFirstOpenListFactory> TaskIndependentBestFirstOpenListFactory::cr
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific BestFirstOpenListFactory..." << endl;
 
-        task_specific_x = make_shared<BestFirstOpenListFactory>(pref_only, evaluator->create_task_specific_Evaluator(task, component_map, depth >=0 ? depth+1 : depth));
+        task_specific_x = make_shared<BestFirstOpenListFactory>(pref_only, evaluator->create_task_specific_Evaluator(task, component_map, depth >= 0 ? depth + 1 : depth));
         component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_x));
     }
     return task_specific_x;
