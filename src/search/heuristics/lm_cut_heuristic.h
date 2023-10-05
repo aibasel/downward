@@ -30,15 +30,14 @@ public:
     explicit TaskIndependentLandmarkCutHeuristic(std::string unparsed_config,
                                                  utils::LogProxy log,
                                                  bool cache_evaluator_values,
-                                                 std::shared_ptr<TaskIndependentAbstractTask> task_transformation
-                                                 );
+                                                 std::shared_ptr<TaskIndependentAbstractTask> task_transformation);
 
     virtual ~TaskIndependentLandmarkCutHeuristic()  override;
 
     virtual std::shared_ptr<Heuristic> create_task_specific_Heuristic(const std::shared_ptr<AbstractTask> &task, int depth = -1) override;
 
     virtual std::shared_ptr<Heuristic> create_task_specific_Heuristic(
-            const std::shared_ptr<AbstractTask> &task,
+        const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map, int depth = -1) override;
 
     virtual std::shared_ptr<LandmarkCutHeuristic> create_task_specific_LandmarkCutHeuristic(const std::shared_ptr<AbstractTask> &task, int depth = -1);

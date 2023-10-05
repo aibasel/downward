@@ -73,7 +73,7 @@ TaskIndependentWeightedEvaluator::~TaskIndependentWeightedEvaluator() {
 
 
 shared_ptr<WeightedEvaluator> TaskIndependentWeightedEvaluator::create_task_specific_WeightedEvaluator(
-        const shared_ptr<AbstractTask> &task,
+    const shared_ptr<AbstractTask> &task,
     std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<WeightedEvaluator> task_specific_weighted_evaluator;
 

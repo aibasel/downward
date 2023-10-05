@@ -39,7 +39,7 @@ public:
     virtual ~TaskIndependentCostAdaptedTask() override = default;
 
     virtual std::shared_ptr<DelegatingTask> create_task_specific_DelegatingTask(
-            const std::shared_ptr<AbstractTask> &task,
+        const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map, int depth = -1) override;
 
     virtual std::shared_ptr<CostAdaptedTask> create_task_specific_CostAdaptedTask(const std::shared_ptr<AbstractTask> &task, int depth = -1);
