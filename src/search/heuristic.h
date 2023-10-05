@@ -15,7 +15,6 @@ class TaskProxy;
 
 namespace plugins {
 class Feature;
-class Options;
 }
 
 class Heuristic : public Evaluator {
@@ -73,7 +72,6 @@ protected:
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
-    explicit Heuristic(const plugins::Options &opts);
     explicit Heuristic(const std::basic_string<char> unparsed_config,
                        utils::LogProxy log,
                        bool cache_evaluator_values,

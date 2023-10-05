@@ -38,7 +38,6 @@ protected:
     virtual SearchStatus step() override;
 
 public:
-    explicit EagerSearch(const plugins::Options &opts);
     explicit EagerSearch(utils::Verbosity verbosity,
                          OperatorCost cost_type,
                          double max_time,
