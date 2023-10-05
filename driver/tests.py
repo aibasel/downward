@@ -21,22 +21,6 @@ from .run_components import get_executable, REL_SEARCH_PATH
 from .util import REPO_ROOT_DIR, find_domain_filename
 
 
-def translate():
-    """Create translated task."""
-    cmd = [sys.executable, "fast-downward.py", "--translate",
-           "misc/tests/benchmarks/gripper/prob01.pddl"]
-    subprocess.check_call(cmd, cwd=REPO_ROOT_DIR)
-
-# We need to translate the example task when this module is imported to have the
-# SAS+ file ready for the @pytest.parametrize function below. Translating the
-# task in setup_module() does not work here, because the @pytest.parametrize
-# decorator is executed before setup_module() is called. An alternative would be
-# to use a conftest.py file and call translate() in a pytest_sessionstart()
-# function, but that adds another file and leads to dumping the translator
-# output to the terminal.
-translate()
-
-
 def cleanup():
     subprocess.check_call([sys.executable, "fast-downward.py", "--cleanup"],
                           cwd=REPO_ROOT_DIR)
