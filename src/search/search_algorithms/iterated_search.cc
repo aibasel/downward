@@ -10,7 +10,7 @@ using namespace std;
 namespace iterated_search {
 IteratedSearch::IteratedSearch(const plugins::Options &opts)
     : SearchAlgorithm(opts),
-      algorithm_configs(opts.get_list<parser::LazyValue>("algorithm_configs")),
+      search_algorithms(opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>("search_algorithms")),
       pass_bound(opts.get<bool>("pass_bound")),
       repeat_last_phase(opts.get<bool>("repeat_last")),
       continue_on_fail(opts.get<bool>("continue_on_fail")),
@@ -26,7 +26,7 @@ IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                double max_time,
                                int bound,
                                const shared_ptr<AbstractTask> &task,
-                               vector<parser::LazyValue> algorithm_configs,
+                               vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
                                bool pass_bound,
                                bool repeat_last_phase,
                                bool continue_on_fail,
@@ -38,7 +38,7 @@ IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                                 bound,
                                                 unparsed_config,
                                                 task),
-                                   algorithm_configs(algorithm_configs),
+                                   search_algorithms(search_algorithms),
                                    pass_bound(pass_bound),
                                    repeat_last_phase(repeat_last_phase),
                                    continue_on_fail(continue_on_fail),
@@ -50,23 +50,9 @@ IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                {
                                }
 
-shared_ptr<TaskIndependentSearchAlgorithm> IteratedSearch::get_search_algorithm(
-    int algorithm_configs_index) {
-    parser::LazyValue &algorithm_config = algorithm_configs[algorithm_configs_index];
-    shared_ptr<TaskIndependentSearchAlgorithm> search_algorithm;
-    try{
-        search_algorithm = algorithm_config.construct<shared_ptr<TaskIndependentSearchAlgorithm>>();
-    } catch (const utils::ContextError &e) {
-        cerr << "Delayed construction of LazyValue failed" << endl;
-        cerr << e.get_message() << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-    }
-    log << "Starting search: " << search_algorithm->get_description() << endl;
-    return search_algorithm;
-}
 
 shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
-    int num_phases = algorithm_configs.size();
+    int num_phases = search_algorithms.size();
     if (phase >= num_phases) {
         /* We've gone through all searches. We continue if
            repeat_last_phase is true, but *not* if we didn't find a
@@ -76,15 +62,14 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
            this overrides continue_on_fail.
         */
         if (repeat_last_phase && last_phase_found_solution) {
-            auto x1 = get_search_algorithm(algorithm_configs.size() - 1);
-            auto ret1 = x1->create_task_specific_SearchAlgorithm(task,1);
-            return ret1;
+            log << "Starting search: " << search_algorithms[search_algorithms.size() - 1] -> get_description() << endl;
+            return search_algorithms[search_algorithms.size() - 1]->create_task_specific_SearchAlgorithm(task, 1);
         } else {
             return nullptr;
         }
     }
-
-    return get_search_algorithm(phase)->create_task_specific_SearchAlgorithm(task, 1);
+    log << "Starting search: " << search_algorithms[phase] -> get_description() << endl;
+    return search_algorithms[phase]->create_task_specific_SearchAlgorithm(task, 1);
 }
 
 SearchStatus IteratedSearch::step() {
@@ -164,7 +149,7 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(utils::Verbosity ve
                                                              double max_time,
                                                              int bound,
                                                              string unparsed_config,
-                                                             vector<parser::LazyValue> algorithm_configs,
+                                                             vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
                                                              bool pass_bound,
                                                              bool repeat_last_phase,
                                                              bool continue_on_fail,
@@ -175,7 +160,7 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(utils::Verbosity ve
                                       max_time,
                                       bound,
                                       unparsed_config),
-          algorithm_configs(algorithm_configs),
+          search_algorithms(search_algorithms),
           pass_bound(pass_bound),
           repeat_last_phase(repeat_last_phase),
           continue_on_fail(continue_on_fail),
@@ -200,7 +185,7 @@ shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_I
                 max_time,
                 bound,
                 task,
-                algorithm_configs,
+                search_algorithms,
                 pass_bound,
                 repeat_last_phase,
                 continue_on_fail,
@@ -234,7 +219,7 @@ public:
         document_synopsis("");
 
         add_list_option<shared_ptr<TaskIndependentSearchAlgorithm>>(
-            "algorithm_configs",
+            "search_algorithms",
             "list of search algorithms for each phase",
             "",
             true);
@@ -297,17 +282,13 @@ public:
           search algorithms. Then we no longer need to be lazy because creating
           the builder is a light-weight operation.
         */
-        vector<parser::LazyValue> algorithm_configs =
-            opts.get<parser::LazyValue>("algorithm_configs").construct_lazy_list();
-        options_copy.set("algorithm_configs", algorithm_configs);
-        plugins::verify_list_non_empty<parser::LazyValue>(context, options_copy, "algorithm_configs");
 
         return make_shared<TaskIndependentIteratedSearch>(opts.get<utils::Verbosity>("verbosity"),
                                            opts.get<OperatorCost>("cost_type"),
                                            opts.get<double>("max_time"),
                                                    opts.get<int>("bound"),
                                            opts.get_unparsed_config(),
-                                           opts.get<parser::LazyValue>("algorithm_configs").construct_lazy_list(),
+                                           opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>("search_algorithms"),
                                            opts.get<bool>("pass_bound"),
                                            opts.get<bool>("repeat_last"),
                                            opts.get<bool>("continue_on_fail"),
