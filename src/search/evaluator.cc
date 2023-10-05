@@ -106,7 +106,10 @@ shared_ptr<Evaluator> TaskIndependentEvaluator::create_task_specific_Evaluator(c
     return create_task_specific_Evaluator(task, component_map, depth);
 }
 
-shared_ptr<Evaluator> TaskIndependentEvaluator::create_task_specific_Evaluator([[maybe_unused]] const shared_ptr<AbstractTask> &task, [[maybe_unused]] unique_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<Evaluator> TaskIndependentEvaluator::create_task_specific_Evaluator(
+        [[maybe_unused]] const shared_ptr<AbstractTask> &task,
+        [[maybe_unused]] unique_ptr<ComponentMap> &component_map,
+        [[maybe_unused]] int depth) {
     cerr << "Tries to create Evaluator in an unimplemented way." << endl;
     utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
 }
