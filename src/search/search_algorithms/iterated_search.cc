@@ -8,18 +8,6 @@
 using namespace std;
 
 namespace iterated_search {
-IteratedSearch::IteratedSearch(const plugins::Options &opts)
-    : SearchAlgorithm(opts),
-      search_algorithms(opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>("search_algorithms")),
-      pass_bound(opts.get<bool>("pass_bound")),
-      repeat_last_phase(opts.get<bool>("repeat_last")),
-      continue_on_fail(opts.get<bool>("continue_on_fail")),
-      continue_on_solve(opts.get<bool>("continue_on_solve")),
-      phase(0),
-      last_phase_found_solution(false),
-      best_bound(bound),
-      iterated_found_solution(false) {
-}
 
 IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                OperatorCost cost_type,

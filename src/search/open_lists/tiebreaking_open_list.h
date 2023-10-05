@@ -32,7 +32,6 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit TieBreakingOpenList(const plugins::Options &opts);
     explicit TieBreakingOpenList(
         bool pref_only,
         std::vector<std::shared_ptr<Evaluator>> evaluators,
@@ -49,12 +48,6 @@ public:
         EvaluationContext &eval_context) const override;
 };
 
-template<class Entry>
-TieBreakingOpenList<Entry>::TieBreakingOpenList(const plugins::Options &opts)
-    : OpenList<Entry>(opts.get<bool>("pref_only")),
-      size(0), evaluators(opts.get_list<std::shared_ptr<Evaluator>>("evals")),
-      allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
-}
 
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(bool pref_only,
@@ -148,13 +141,11 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
 
 
 class TieBreakingOpenListFactory : public OpenListFactory {
-    plugins::Options options; //TODO issue559 remove options field in the long run.
     bool pref_only;
     int size;
     std::vector<std::shared_ptr<Evaluator>> evaluators;
     bool allow_unsafe_pruning;
 public:
-    explicit TieBreakingOpenListFactory(const plugins::Options &options);
     explicit TieBreakingOpenListFactory(
         bool pref_only,
         std::vector<std::shared_ptr<Evaluator>> evaluators,
@@ -165,13 +156,11 @@ public:
     virtual std::shared_ptr<EdgeOpenList> create_edge_open_list() override;
 };
 class TaskIndependentTieBreakingOpenListFactory : public TaskIndependentOpenListFactory {
-    plugins::Options options; //TODO issue559 remove options field in the long run.
     bool pref_only;
     int size;
     std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators;
     bool allow_unsafe_pruning;
 public:
-    explicit TaskIndependentTieBreakingOpenListFactory(const plugins::Options &opts);
     explicit TaskIndependentTieBreakingOpenListFactory(
         bool pref_only,
         std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators,

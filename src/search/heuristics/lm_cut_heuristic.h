@@ -5,9 +5,6 @@
 
 #include <memory>
 
-namespace plugins {
-class Options;
-}
 
 namespace lm_cut_heuristic {
 class LandmarkCutLandmarks;

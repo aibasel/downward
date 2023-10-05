@@ -17,7 +17,6 @@
 #include <vector>
 
 namespace plugins {
-class Options;
 class Feature;
 }
 
@@ -62,7 +61,6 @@ protected:
     bool check_goal_and_set_plan(const State &state);
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
-    SearchAlgorithm(const plugins::Options &opts);
     SearchAlgorithm(utils::Verbosity verbosity,
                  OperatorCost cost_type,
                  double max_time,
