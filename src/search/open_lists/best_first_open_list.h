@@ -73,8 +73,8 @@ public:
     explicit BestFirstOpenListFactory(bool pref_only, std::shared_ptr<Evaluator> evaluator);
     virtual ~BestFirstOpenListFactory() override = default;
 
-    virtual std::shared_ptr<StateOpenList> create_state_open_list() override;
-    virtual std::shared_ptr<EdgeOpenList> create_edge_open_list() override;
+    virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
+    virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;
 };
 
 

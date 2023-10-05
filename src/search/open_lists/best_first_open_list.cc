@@ -74,14 +74,14 @@ BestFirstOpenListFactory::BestFirstOpenListFactory(bool pref_only, shared_ptr<Ev
 }
 
 
-shared_ptr<StateOpenList>
+unique_ptr<StateOpenList>
 BestFirstOpenListFactory::create_state_open_list() {
-    return make_shared<BestFirstOpenList<StateOpenListEntry>>(options);
+    return make_unique<BestFirstOpenList<StateOpenListEntry>>(options);
 }
 
-shared_ptr<EdgeOpenList>
+unique_ptr<EdgeOpenList>
 BestFirstOpenListFactory::create_edge_open_list() {
-    return make_shared<BestFirstOpenList<EdgeOpenListEntry>>(options);
+    return make_unique<BestFirstOpenList<EdgeOpenListEntry>>(options);
 }
 
 TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory(const plugins::Options &opts)

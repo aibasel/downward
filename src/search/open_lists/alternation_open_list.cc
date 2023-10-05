@@ -23,15 +23,15 @@ AlternationOpenListFactory::AlternationOpenListFactory(int boost_amount, vector<
 }
 
 
-shared_ptr<StateOpenList>
+unique_ptr<StateOpenList>
 AlternationOpenListFactory::create_state_open_list() {
-    return make_shared<AlternationOpenList<StateOpenListEntry>>(boost_amount, open_list_factories);
+    return make_unique<AlternationOpenList<StateOpenListEntry>>(boost_amount, open_list_factories);
 }
 
 
-shared_ptr<EdgeOpenList>
+unique_ptr<EdgeOpenList>
 AlternationOpenListFactory::create_edge_open_list() {
-    return make_shared<AlternationOpenList<EdgeOpenListEntry>>(boost_amount, open_list_factories);
+    return make_unique<AlternationOpenList<EdgeOpenListEntry>>(boost_amount, open_list_factories);
 }
 
 
