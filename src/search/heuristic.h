@@ -105,9 +105,6 @@ public:
                                       );
     virtual ~TaskIndependentHeuristic() = default;
 
-    static void add_options_to_feature(plugins::Feature &feature); //TODO: issue559 is this needed?
-
-
     virtual std::shared_ptr<Evaluator> create_task_specific_Evaluator(
             const std::shared_ptr<AbstractTask> &task,
         std::shared_ptr<ComponentMap> &component_map, int depth = -1) override;

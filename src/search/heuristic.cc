@@ -36,6 +36,7 @@ State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
 }
 
 void Heuristic::add_options_to_feature(plugins::Feature &feature) {
+    cout << "Heuristic::add_options_to_feature(plugins::Feature &feature) " << endl;
     add_evaluator_options_to_feature(feature);
     feature.add_option<shared_ptr<TaskIndependentAbstractTask>>(
         "transform",
@@ -134,16 +135,4 @@ shared_ptr<Heuristic> TaskIndependentHeuristic::create_task_specific_Heuristic([
 shared_ptr<Evaluator> TaskIndependentHeuristic::create_task_specific_Evaluator(const shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<Heuristic> x = create_task_specific_Heuristic(task, component_map, depth);
     return static_pointer_cast<Evaluator>(x);
-}
-
-void TaskIndependentHeuristic::add_options_to_feature(plugins::Feature &feature) {
-    add_evaluator_options_to_feature(feature);
-    feature.add_option<shared_ptr<TaskIndependentAbstractTask>>(
-        "transform",
-        "Optional task transformation for the heuristic."
-        " Currently, adapt_costs() and no_transform() are available.",
-        "adapt_costs(normal)");
-    //"no_transform()");
-    //plugins::ArgumentInfo::NO_DEFAULT);
-    feature.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
 }
