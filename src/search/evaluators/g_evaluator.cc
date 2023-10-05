@@ -41,7 +41,7 @@ TaskIndependentGEvaluator::~TaskIndependentGEvaluator() {
 
 
 shared_ptr<GEvaluator> TaskIndependentGEvaluator::create_task_specific_GEvaluator(const std::shared_ptr<AbstractTask> &task,
-                                                                                  std::shared_ptr<ComponentMap> &component_map, int depth) {
+                                                                                  std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<GEvaluator> task_specific_g_evaluator;
 
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
@@ -59,12 +59,12 @@ shared_ptr<GEvaluator> TaskIndependentGEvaluator::create_task_specific_GEvaluato
 
 shared_ptr<GEvaluator> TaskIndependentGEvaluator::create_task_specific_GEvaluator(const shared_ptr<AbstractTask> &task, int depth) {
     log << std::string(depth, ' ') << "Creating GEvaluator as root component..." << endl;
-    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
     return create_task_specific_GEvaluator(task, component_map, depth);
 }
 
 
-shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific_Evaluator(const shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific_Evaluator(const shared_ptr<AbstractTask> &task, unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<GEvaluator> x = create_task_specific_GEvaluator(task, component_map, depth);
     return static_pointer_cast<Evaluator>(x);
 }
