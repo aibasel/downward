@@ -82,6 +82,8 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
             state_packer.set(buffer, i, new_values[i]);
         }
         StateID id = insert_id_or_pop_state();
+        // See below for the case withou axioms on why we need to reset buffer.
+        buffer = state_data_pool[id.value];
         return task_proxy.create_state(*this, id, buffer, move(new_values));
     } else {
         for (EffectProxy effect : op.get_effects()) {
@@ -91,6 +93,17 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
             }
         }
         StateID id = insert_id_or_pop_state();
+        /*
+          insert_id_or_pop_state deletes the state data pointed to by buffer
+          if the state already exists. We need to use the buffer corresponding
+          to the right state. NOTE: the below code is exactly what lookup_state
+          does, but for symmetry with the above case for axioms and for future
+          refactoring, we explicitly set buffer here.
+
+          TODO: ideally, we would not modify state_data_pool here and in
+          insert_id_or_pop_state, but only at one place.
+        */
+        buffer = state_data_pool[id.value];
         return task_proxy.create_state(*this, id, buffer);
     }
 }
