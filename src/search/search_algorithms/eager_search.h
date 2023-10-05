@@ -20,7 +20,7 @@ namespace eager_search {
 class EagerSearch : public SearchAlgorithm {
     const bool reopen_closed_nodes;
 
-    std::shared_ptr<StateOpenList> open_list;
+    std::unique_ptr<StateOpenList> open_list;
     std::shared_ptr<Evaluator> f_evaluator;
 
     std::vector<Evaluator *> path_dependent_evaluators;
@@ -43,7 +43,7 @@ public:
                          double max_time,
                          int bound,
                          bool reopen_closed_nodes,
-                         std::shared_ptr<StateOpenList> open_list,
+                         std::unique_ptr<StateOpenList> open_list,
                          std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators,
                          std::shared_ptr<PruningMethod> pruning_method,
                          const std::shared_ptr<AbstractTask> &task,
