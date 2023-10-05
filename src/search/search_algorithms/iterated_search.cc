@@ -270,23 +270,11 @@ public:
     }
 
     virtual shared_ptr<TaskIndependentIteratedSearch> create_component(const plugins::Options &opts, const utils::Context &context) const override {
-        plugins::Options options_copy(opts);
-        /*
-          The options entry 'algorithm_configs' is a LazyValue representing a list
-          of search algorithms. But iterated search expects a list of LazyValues,
-          each representing a search algorithm. We unpack this first layer of
-          laziness here to report potential errors in a more useful context.
-
-          TODO: the medium-term plan is to get rid of LazyValue completely
-          and let the features create builders that in turn create the actual
-          search algorithms. Then we no longer need to be lazy because creating
-          the builder is a light-weight operation.
-        */
 
         return make_shared<TaskIndependentIteratedSearch>(opts.get<utils::Verbosity>("verbosity"),
                                            opts.get<OperatorCost>("cost_type"),
                                            opts.get<double>("max_time"),
-                                                   opts.get<int>("bound"),
+                                           opts.get<int>("bound"),
                                            opts.get_unparsed_config(),
                                            opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>("search_algorithms"),
                                            opts.get<bool>("pass_bound"),

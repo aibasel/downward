@@ -60,12 +60,11 @@ ContextError::ContextError(const string &msg)
 const string Context::INDENT = "  ";
 
 Context::Context(const Context &context)
-    : initial_stack_size(context.block_stack.size()),
-      block_stack(context.block_stack) {
+    : block_stack(context.block_stack) {
 }
 
 Context::~Context() {
-    if (block_stack.size() > initial_stack_size) {
+    if (block_stack.size() > 0) {
         cerr << str() << endl;
         ABORT("A context was destructed with an non-empty stack.");
     }

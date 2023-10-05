@@ -143,7 +143,6 @@ public:
 class Context {
 protected:
     static const std::string INDENT;
-    size_t initial_stack_size = 0;  // TODO: Can be removed once we got rid of LazyValues
     std::vector<std::string> block_stack;
 
 public:

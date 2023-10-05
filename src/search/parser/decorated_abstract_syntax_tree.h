@@ -37,23 +37,7 @@ public:
 };
 using DecoratedASTNodePtr = std::unique_ptr<DecoratedASTNode>;
 
-class LazyValue {
-    ConstructContext context;
-    DecoratedASTNodePtr node;
-    plugins::Any construct_any() const;
 
-public:
-    LazyValue(const DecoratedASTNode &node, const ConstructContext &context);
-    LazyValue(const LazyValue &other);
-
-    template<typename T>
-    T construct() const {
-        plugins::Any constructed = construct_any();
-        return plugins::OptionsAnyCaster<T>::cast(constructed);
-    }
-
-    std::vector<LazyValue> construct_lazy_list();
-};
 
 class FunctionArgument {
     std::string key;

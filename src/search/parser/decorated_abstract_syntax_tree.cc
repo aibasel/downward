@@ -28,42 +28,7 @@ plugins::Any ConstructContext::get_variable(const string &name) const {
     return variable;
 }
 
-LazyValue::LazyValue(const DecoratedASTNode &node, const ConstructContext &context)
-    : context(context), node(node.clone()) {
-}
 
-LazyValue::LazyValue(const LazyValue &other)
-    : context(other.context), node(other.node->clone()) {
-}
-
-plugins::Any LazyValue::construct_any() const {
-    ConstructContext clean_context = context;
-    utils::TraceBlock block(clean_context, "Delayed construction of LazyValue");
-    return node->construct(clean_context);
-}
-
-vector<LazyValue> LazyValue::construct_lazy_list() {
-    utils::TraceBlock block(context, "Delayed construction of a list");
-    const DecoratedListNode *list_node =
-        dynamic_cast<const DecoratedListNode *>(node.get());
-    if (!list_node) {
-        context.error(
-            "Delayed construction of a list failed because the parsed element "
-            "was no list.");
-    }
-
-    vector<LazyValue> elements;
-    elements.reserve(list_node->get_elements().size());
-    int elem = 1;
-    for (const DecoratedASTNodePtr &element : list_node->get_elements()) {
-        utils::TraceBlock(context,
-                          "Create LazyValue for " + to_string(elem) +
-                          ". list element");
-        elements.emplace_back(LazyValue(*element, context));
-        elem++;
-    }
-    return elements;
-}
 
 plugins::Any DecoratedASTNode::construct() const {
     ConstructContext context;
@@ -140,11 +105,7 @@ plugins::Any DecoratedFunctionCallNode::construct(ConstructContext &context) con
     opts.set_unparsed_config(unparsed_config);
     for (const FunctionArgument &arg : arguments) {
         utils::TraceBlock block(context, "Constructing argument '" + arg.get_key() + "'");
-        if (arg.is_lazily_constructed()) {
-            opts.set(arg.get_key(), LazyValue(arg.get_value(), context));
-        } else {
-            opts.set(arg.get_key(), arg.get_value().construct(context));
-        }
+        opts.set(arg.get_key(), arg.get_value().construct(context));
     }
     return feature->construct(opts, context);
 }
