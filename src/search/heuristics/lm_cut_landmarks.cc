@@ -102,7 +102,7 @@ void LandmarkCutLandmarks::setup_exploration_queue() {
 
     for (RelaxedOperator &op : relaxed_operators) {
         op.unsatisfied_preconditions = op.preconditions.size();
-        op.h_max_supporter = 0;
+        op.h_max_supporter = nullptr;
         op.h_max_supporter_cost = numeric_limits<int>::max();
     }
 }

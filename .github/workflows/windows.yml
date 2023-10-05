@@ -12,7 +12,7 @@ env:
   CC: cl
   CXX: cl
 
-  DOWNWARD_CPLEX_ROOT: D:\a\downward\cplex
+  cplex_DIR: D:\a\downward\cplex
 
   CPLEX_URL: "${{ secrets.CPLEX2211_WINDOWS_URL }}"
   ZLIB_URL: "https://www.zlib.net/zlib13.zip"

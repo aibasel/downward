@@ -29,9 +29,9 @@ jobs:
       CC: ${{ matrix.version.cc }}
       CXX: ${{ matrix.version.cxx }}
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
-      DOWNWARD_CPLEX_ROOT: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex
+      cplex_DIR: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex
       CPLEX_LIB: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/libcplex2211.so
-      DOWNWARD_SOPLEX_ROOT: /home/runner/lib/soplex-6.0.3x
+      soplex_DIR: /home/runner/lib/soplex-6.0.3x
       SOPLEX_LIB: /home/runner/lib/soplex-6.0.3x/lib/
       SOPLEX_INCLUDE: /home/runner/lib/soplex-6.0.3x/include/
     steps:
@@ -64,7 +64,7 @@ jobs:
           # We redirect output of wget to hide the secret URLs.
           wget -O cplex_installer $CPLEX_URL &> /dev/null
           chmod +x cplex_installer
-          ./cplex_installer -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR="$(dirname "${DOWNWARD_CPLEX_ROOT}")" -i silent
+          ./cplex_installer -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR="$(dirname "${cplex_DIR}")" -i silent
           rm cplex_installer
 
       # Always install SoPlex
@@ -76,7 +76,7 @@ jobs:
           cd ..
           cmake -S soplex -B build
           cmake --build build
-          cmake --install build --prefix "${DOWNWARD_SOPLEX_ROOT}"
+          cmake --install build --prefix "${soplex_DIR}"
           rm -rf soplex build
 
       - name: Compile planner

@@ -1,5 +1,4 @@
 #include "cplex_solver_interface.h"
-#ifdef HAS_CPLEX
 
 #include "lp_solver.h"
 
@@ -595,4 +594,3 @@ void CplexSolverInterface::print_statistics() const {
     utils::g_log << "LP non-zero entries: " << CPXgetnumnz(env, problem) << endl;
 }
 }
-#endif

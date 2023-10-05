@@ -1,6 +1,5 @@
 #ifndef LP_CPLEX_SOLVER_INTERFACE_H
 #define LP_CPLEX_SOLVER_INTERFACE_H
-#ifdef HAS_CPLEX
 
 #include "lp_solver.h"
 #include "solver_interface.h"
@@ -225,5 +224,4 @@ public:
     virtual void print_statistics() const override;
 };
 }
-#endif
 #endif

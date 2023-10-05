@@ -121,7 +121,7 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(c
       max_time(opts.get<double>("max_time")),
       rng(utils::parse_rng_from_options(opts)),
       num_rejected(0),
-      hill_climbing_timer(0) {
+      hill_climbing_timer(nullptr) {
 }
 
 int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
@@ -552,7 +552,6 @@ static void add_hillclimbing_options(plugins::Feature &feature) {
         "infinity",
         plugins::Bounds("0.0", "infinity"));
     utils::add_rng_options(feature);
-    add_generator_options_to_feature(feature);
 }
 
 static void check_hillclimbing_options(
@@ -596,6 +595,7 @@ public:
             "optimized for the Evaluator#Canonical_PDB heuristic. It it described "
             "in the following paper:" + paper_references());
         add_hillclimbing_options(*this);
+        add_generator_options_to_feature(*this);
     }
 
     virtual shared_ptr<PatternCollectionGeneratorHillclimbing> create_component(const plugins::Options &options, const utils::Context &context) const override {
