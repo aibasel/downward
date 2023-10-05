@@ -14,8 +14,8 @@ public:
 
     OpenListFactory(const OpenListFactory &) = delete;
 
-    virtual std::shared_ptr<StateOpenList> create_state_open_list() = 0;
-    virtual std::shared_ptr<EdgeOpenList> create_edge_open_list() = 0;
+    virtual std::unique_ptr<StateOpenList> create_state_open_list() = 0;
+    virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() = 0;
 
     /*
       The following template receives manual specializations (in the
@@ -24,7 +24,7 @@ public:
       AlternationOpenList.
     */
     template<typename T>
-    std::shared_ptr<OpenList<T>> create_open_list();
+    std::unique_ptr<OpenList<T>> create_open_list();
 };
 
 /*

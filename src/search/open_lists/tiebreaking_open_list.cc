@@ -23,14 +23,14 @@ TieBreakingOpenListFactory::TieBreakingOpenListFactory(
     : pref_only(pref_only), size(0), evaluators(evaluators), allow_unsafe_pruning(allow_unsafe_pruning) {
 }
 
-shared_ptr<StateOpenList>
+unique_ptr<StateOpenList>
 TieBreakingOpenListFactory::create_state_open_list() {
-    return make_shared<TieBreakingOpenList<StateOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
+    return make_unique<TieBreakingOpenList<StateOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
 }
 
-shared_ptr<EdgeOpenList>
+unique_ptr<EdgeOpenList>
 TieBreakingOpenListFactory::create_edge_open_list() {
-    return make_shared<TieBreakingOpenList<EdgeOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
+    return make_unique<TieBreakingOpenList<EdgeOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
 }
 
 
