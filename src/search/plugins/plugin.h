@@ -43,15 +43,13 @@ public:
         const std::string &key,
         const std::string &help = "",
         const std::string &default_value = "",
-        const Bounds &bounds = Bounds::unlimited(),
-        bool lazy_construction = false);
+        const Bounds &bounds = Bounds::unlimited());
 
     template<typename T>
     void add_list_option(
         const std::string &key,
         const std::string &help = "",
-        const std::string &default_value = "",
-        bool lazy_construction = false);
+        const std::string &default_value = "");
 
     void document_subcategory(const std::string &subcategory);
     void document_title(const std::string &title);
@@ -234,20 +232,17 @@ void Feature::add_option(
     const std::string &key,
     const std::string &help,
     const std::string &default_value,
-    const Bounds &bounds,
-    bool lazy_construction) {
+    const Bounds &bounds) {
     arguments.emplace_back(key, help, TypeRegistry::instance()->get_type<T>(),
-                           default_value, bounds, lazy_construction);
+                           default_value, bounds);
 }
 
 template<typename T>
 void Feature::add_list_option(
     const std::string &key,
     const std::string &help,
-    const std::string &default_value,
-    bool lazy_construction) {
-    add_option<std::vector<T>>(key, help, default_value, Bounds::unlimited(),
-                               lazy_construction);
+    const std::string &default_value) {
+    add_option<std::vector<T>>(key, help, default_value, Bounds::unlimited());
 }
 }
 
