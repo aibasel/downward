@@ -427,7 +427,10 @@ shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask(cons
     return create_task_specific_RootTask(task, component_map, depth);
 }
 
-shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask([[maybe_unused]] const shared_ptr<AbstractTask> &task, [[maybe_unused]] unique_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask(
+        [[maybe_unused]] const shared_ptr<AbstractTask> &task,
+        [[maybe_unused]] unique_ptr<ComponentMap> &component_map,
+        [[maybe_unused]] int depth) {
     cerr << "Tries to create RootTask in an unimplemented way." << endl;
     utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
 }
