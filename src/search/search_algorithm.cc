@@ -222,17 +222,17 @@ TaskIndependentSearchAlgorithm::~TaskIndependentSearchAlgorithm() {
 
 shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific_SearchAlgorithm(const shared_ptr<AbstractTask> &task, int depth) {
     utils::g_log << std::string(depth, ' ') << "Creating SearchAlgorithm as root component..." << endl;
-    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
     return create_task_specific_SearchAlgorithm(task, component_map, depth);
 }
 
-shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific_SearchAlgorithm([[maybe_unused]] const shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map, [[maybe_unused]] int depth) {
+shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific_SearchAlgorithm([[maybe_unused]] const shared_ptr<AbstractTask> &task, [[maybe_unused]] unique_ptr<ComponentMap> &component_map, [[maybe_unused]] int depth) {
     cerr << std::string(depth, ' ') << "Tries to create SearchAlgorithm in an unimplemented way." << endl;
     utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
 }
 
 
-shared_ptr<Component> TaskIndependentSearchAlgorithm::create_task_specific_Component(const shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<Component> TaskIndependentSearchAlgorithm::create_task_specific_Component(const shared_ptr<AbstractTask> &task, unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<SearchAlgorithm> x = create_task_specific_SearchAlgorithm(task, component_map, depth);
     return static_pointer_cast<Component>(x);
 }

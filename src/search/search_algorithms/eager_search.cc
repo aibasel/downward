@@ -360,7 +360,7 @@ TaskIndependentEagerSearch::~TaskIndependentEagerSearch() {
 }
 
 
-shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSearch(const shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSearch(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<EagerSearch> task_specific_eager_search;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task EagerSearch..." << endl;
@@ -400,13 +400,13 @@ shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSe
 
 shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSearch(const shared_ptr<AbstractTask> &task, int depth) {
     utils::g_log << std::string(depth, ' ') << "Creating EagerSearch as root component..." << endl;
-    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
     return create_task_specific_EagerSearch(task, component_map, depth);
 }
 
 
 
-shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific_SearchAlgorithm(const shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific_SearchAlgorithm(const shared_ptr<AbstractTask> &task, unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<SearchAlgorithm> x = create_task_specific_EagerSearch(task, component_map, depth);
     return static_pointer_cast<SearchAlgorithm>(x);
 }

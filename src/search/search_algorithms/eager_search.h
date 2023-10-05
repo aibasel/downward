@@ -89,10 +89,10 @@ public:
 
     virtual std::shared_ptr<SearchAlgorithm> create_task_specific_SearchAlgorithm(
             const std::shared_ptr<AbstractTask> &task,
-        std::shared_ptr<ComponentMap> &component_map, int depth = -1) override;
+        std::unique_ptr<ComponentMap> &component_map, int depth = -1) override;
 
     virtual std::shared_ptr<EagerSearch> create_task_specific_EagerSearch(const std::shared_ptr<AbstractTask> &task, int depth = -1);
-    virtual std::shared_ptr<EagerSearch> create_task_specific_EagerSearch(const std::shared_ptr<AbstractTask> &task, std::shared_ptr<ComponentMap> &component_map, int depth = -1);
+    virtual std::shared_ptr<EagerSearch> create_task_specific_EagerSearch(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth = -1);
 
     virtual ~TaskIndependentEagerSearch()  override;
 };

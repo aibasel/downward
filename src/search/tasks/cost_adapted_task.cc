@@ -34,11 +34,11 @@ TaskIndependentCostAdaptedTask::TaskIndependentCostAdaptedTask(OperatorCost cost
 
 shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_task_specific_CostAdaptedTask(const shared_ptr<AbstractTask> &task, int depth) {
     utils::g_log << std::string(depth, ' ') << "Creating CostAdaptedTask as root component..." << endl;
-    std::shared_ptr<ComponentMap> component_map = std::make_shared<ComponentMap>();
+    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
     return create_task_specific_CostAdaptedTask(task, component_map, depth);
 }
 
-shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_task_specific_CostAdaptedTask([[maybe_unused]] const shared_ptr<AbstractTask> &task, [[maybe_unused]] shared_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_task_specific_CostAdaptedTask([[maybe_unused]] const shared_ptr<AbstractTask> &task, [[maybe_unused]] unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<CostAdaptedTask> task_specific_x;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task CostAdaptedTask..." << endl;
@@ -53,7 +53,7 @@ shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_task_specific
 }
 
 
-shared_ptr<DelegatingTask> TaskIndependentCostAdaptedTask::create_task_specific_DelegatingTask(const shared_ptr<AbstractTask> &task, shared_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<DelegatingTask> TaskIndependentCostAdaptedTask::create_task_specific_DelegatingTask(const shared_ptr<AbstractTask> &task, unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<CostAdaptedTask> x = create_task_specific_CostAdaptedTask(task, component_map, depth);
     return static_pointer_cast<DelegatingTask>(x);
 }
