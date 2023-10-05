@@ -25,7 +25,7 @@ EagerSearch::EagerSearch(utils::Verbosity verbosity,
                          double max_time,
                          int bound,
                          bool reopen_closed_nodes,
-                         shared_ptr<StateOpenList> open_list,
+                         unique_ptr<StateOpenList> open_list,
                          vector<shared_ptr<Evaluator>> preferred_operator_evaluators,
                          shared_ptr<PruningMethod> pruning_method,
                          const shared_ptr<AbstractTask> &task,
@@ -375,7 +375,7 @@ shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSe
                   }
                   );
 
-        shared_ptr<StateOpenList> _open_list = shared_ptr<StateOpenList>(
+        unique_ptr<StateOpenList> _open_list = unique_ptr<StateOpenList>(
             open_list_factory->create_task_specific_OpenListFactory(task, component_map, depth >=0 ? depth+1 : depth)->create_state_open_list());
 
         task_specific_eager_search = make_shared<EagerSearch>(verbosity,
@@ -383,7 +383,7 @@ shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSe
                                                               max_time,
                                                               bound,
                                                               reopen_closed_nodes,
-                                                              _open_list,
+                                                              move(_open_list),
                                                               td_evaluators,
                                                               pruning_method,
                                                               task,
