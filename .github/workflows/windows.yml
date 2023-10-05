@@ -12,7 +12,7 @@ env:
   CC: cl
   CXX: cl
 
-  cplex_DIR: D:\a\downward\cplex
+  cplex_DIR: D:\a\cplex
 
   CPLEX_URL: "${{ secrets.CPLEX2211_WINDOWS_URL }}"
   ZLIB_URL: "https://www.zlib.net/zlib13.zip"
@@ -71,15 +71,12 @@ jobs:
           echo "https://www.ibm.com/docs/en/icos/22.1.1?topic=2211-silent-installation-cplex-optimization-studio"
           curl.exe --output cplex.exe $ENV:CPLEX_URL
 
-          # This directory only already exists for repos called "downward".
-          mkdir D:\a\downward
-
           echo "Install CPLEX"
           Start-Process -FilePath .\cplex.exe -ArgumentList "-f", "$ENV:GITHUB_WORKSPACE\.github\workflows\misc\cplex2211_windows_installer.properties" -PassThru | Wait-Process
           del .\cplex.exe
 
           echo "Copy the relevant directory to a location which is not magically protected against CMake"
-          Xcopy /E /I D:\a\downward\cplex_temp\cplex $ENV:cplex_DIR
+          Xcopy /E /I D:\a\cplex_temp\cplex $ENV:cplex_DIR
 
 
       - name: Compile planner
