@@ -114,24 +114,4 @@ void DelegatingTask::convert_ancestor_state_values(
 
 TaskIndependentDelegatingTask::TaskIndependentDelegatingTask() {
 }
-
-shared_ptr<DelegatingTask> TaskIndependentDelegatingTask::create_task_specific_DelegatingTask(const shared_ptr<AbstractTask> &task, int depth) {
-    utils::g_log << std::string(depth, ' ') << "Creating DelegatingTask as root component..." << endl;
-    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return create_task_specific_DelegatingTask(task, component_map, depth);
-}
-
-shared_ptr<DelegatingTask> TaskIndependentDelegatingTask::create_task_specific_DelegatingTask(
-        [[maybe_unused]] const shared_ptr<AbstractTask> &task,
-        [[maybe_unused]] unique_ptr<ComponentMap> &component_map,
-        [[maybe_unused]] int depth) {
-    cerr << "Tries to create DelegatingTask in an unimplemented way." << endl;
-    utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-}
-
-
-shared_ptr<AbstractTask> TaskIndependentDelegatingTask::create_task_specific_AbstractTask(const shared_ptr<AbstractTask> &task, unique_ptr<ComponentMap> &component_map, int depth) {
-    shared_ptr<DelegatingTask> x = create_task_specific_DelegatingTask(task, component_map, depth);
-    return static_pointer_cast<AbstractTask>(x);
-}
 }

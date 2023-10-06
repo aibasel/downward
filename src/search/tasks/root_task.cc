@@ -420,25 +420,12 @@ void read_root_task(istream &in) {
 
 TaskIndependentRootTask::TaskIndependentRootTask() {
 }
-
-shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask(const shared_ptr<AbstractTask> &task, int depth) {
-    utils::g_log << std::string(depth, ' ') << "Creating RootTask as root component..." << endl;
-    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return create_task_specific_RootTask(task, component_map, depth);
-}
-
-shared_ptr<RootTask> TaskIndependentRootTask::create_task_specific_RootTask(
+shared_ptr<AbstractTask> TaskIndependentRootTask::create_task_specific(
         [[maybe_unused]] const shared_ptr<AbstractTask> &task,
         [[maybe_unused]] unique_ptr<ComponentMap> &component_map,
         [[maybe_unused]] int depth) {
     cerr << "Tries to create RootTask in an unimplemented way." << endl;
     utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-}
-
-
-shared_ptr<AbstractTask> TaskIndependentRootTask::create_task_specific_AbstractTask(const shared_ptr<AbstractTask> &task, unique_ptr<ComponentMap> &component_map, int depth) {
-    shared_ptr<RootTask> x = create_task_specific_RootTask(task, component_map, depth);
-    return static_pointer_cast<AbstractTask>(x);
 }
 
 

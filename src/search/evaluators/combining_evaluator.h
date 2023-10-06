@@ -65,13 +65,6 @@ public:
                                                bool use_for_boosting = false,
                                                bool use_for_counting_evaluations = false);
     virtual ~TaskIndependentCombiningEvaluator() = default;
-
-    virtual std::shared_ptr<Evaluator> create_task_specific_Evaluator(
-        const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map, int depth = -1) override;
-
-    virtual std::shared_ptr<CombiningEvaluator> create_task_specific_CombiningEvaluator(const std::shared_ptr<AbstractTask> &task, int depth = -1);
-    virtual std::shared_ptr<CombiningEvaluator> create_task_specific_CombiningEvaluator(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth = -1);
 };
 }
 #endif

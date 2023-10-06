@@ -16,11 +16,6 @@ public:
     explicit TaskIndependentComponent() {}
     virtual ~TaskIndependentComponent() = default;
 
-    virtual std::shared_ptr<Component> create_task_specific_Component(const std::shared_ptr<AbstractTask> &task, int depth = -1);
-
-    virtual std::shared_ptr<Component> create_task_specific_Component(
-        const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map, int depth = -1) = 0;
 };
 
 

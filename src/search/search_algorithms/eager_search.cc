@@ -358,7 +358,7 @@ TaskIndependentEagerSearch::~TaskIndependentEagerSearch() {
 }
 
 
-shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSearch(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<EagerSearch> task_specific_eager_search;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task specific EagerSearch..." << endl;
@@ -369,12 +369,12 @@ shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSe
         vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
         transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      return eval->create_task_specific_Evaluator(task, component_map, depth >= 0 ? depth + 1 : depth);
+                      return eval->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
                   }
                   );
 
         unique_ptr<StateOpenList> _open_list = unique_ptr<StateOpenList>(
-            open_list_factory->create_task_specific_OpenListFactory(task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
+            open_list_factory->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
 
         task_specific_eager_search = make_shared<EagerSearch>(verbosity,
                                                               cost_type,
@@ -385,8 +385,8 @@ shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSe
                                                               td_evaluators,
                                                               pruning_method,
                                                               task,
-                                                              f_evaluator ? f_evaluator->create_task_specific_Evaluator(task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
-                                                              lazy_evaluator ? lazy_evaluator->create_task_specific_Evaluator(task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr);
+                                                              f_evaluator ? f_evaluator->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
+                                                              lazy_evaluator ? lazy_evaluator->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr);
 
         component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_eager_search));
     }
@@ -396,16 +396,9 @@ shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSe
 
 
 
-shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSearch(const shared_ptr<AbstractTask> &task, int depth) {
+shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific_root(const shared_ptr<AbstractTask> &task, int depth) {
     utils::g_log << std::string(depth, ' ') << "Creating EagerSearch as root component..." << endl;
     std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return create_task_specific_EagerSearch(task, component_map, depth);
-}
-
-
-
-shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific_SearchAlgorithm(const shared_ptr<AbstractTask> &task, unique_ptr<ComponentMap> &component_map, int depth) {
-    shared_ptr<SearchAlgorithm> x = create_task_specific_EagerSearch(task, component_map, depth);
-    return static_pointer_cast<SearchAlgorithm>(x);
+    return create_task_specific(task, component_map, depth);
 }
 }

@@ -34,14 +34,9 @@ public:
 
     virtual ~TaskIndependentLandmarkCutHeuristic()  override;
 
-    virtual std::shared_ptr<Heuristic> create_task_specific_Heuristic(const std::shared_ptr<AbstractTask> &task, int depth = -1) override;
-
-    virtual std::shared_ptr<Heuristic> create_task_specific_Heuristic(
-        const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map, int depth = -1) override;
-
-    virtual std::shared_ptr<LandmarkCutHeuristic> create_task_specific_LandmarkCutHeuristic(const std::shared_ptr<AbstractTask> &task, int depth = -1);
-    virtual std::shared_ptr<LandmarkCutHeuristic> create_task_specific_LandmarkCutHeuristic(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth = -1);
+    std::shared_ptr<Evaluator>
+    create_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
+                         int depth = -1 ) override;
 };
 }
 

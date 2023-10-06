@@ -43,10 +43,8 @@ TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFac
 
 
 
-shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_TieBreakingOpenListFactory(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<TieBreakingOpenListFactory> task_specific_x;
-    utils::g_log << std::string(depth, ' ') << "Checking ComponentMap for TieBreakingOpenListFactory..." << endl;
-    utils::g_log << std::string(depth, ' ') << "Checking ComponentMap for TieBreakingOpenListFactory..." << endl;
 
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task specific EagerSearch..." << endl;
@@ -58,7 +56,7 @@ shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory
 
         transform(evaluators.begin(), evaluators.end(), ts_evaluators.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      return eval->create_task_specific_Evaluator(task, component_map, depth >= 0 ? depth + 1 : depth);
+                      return eval->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
                   }
                   );
 
@@ -70,35 +68,6 @@ shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory
     return task_specific_x;
 }
 
-
-shared_ptr<TieBreakingOpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_TieBreakingOpenListFactory(const shared_ptr<AbstractTask> &task, int depth) {
-    utils::g_log << std::string(depth, ' ') << "Creating TieBreakingOpenListFactory as root component..." << endl;
-    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return create_task_specific_TieBreakingOpenListFactory(task, component_map, depth);
-}
-
-
-shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_OpenListFactory(const shared_ptr<AbstractTask> &task, int depth) {
-    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return create_task_specific_OpenListFactory(task, component_map, depth);
-}
-
-shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific_OpenListFactory(const shared_ptr<AbstractTask> &task, unique_ptr<ComponentMap> &component_map, int depth) {
-    shared_ptr<TieBreakingOpenListFactory> x = create_task_specific_TieBreakingOpenListFactory(task, component_map, depth);
-    return static_pointer_cast<OpenListFactory>(x);
-}
-
-/* Job of the specific factory
-unique_ptr<TaskIndependentStateOpenList>
-TaskIndependentTieBreakingOpenListFactory::create_task_independent_state_open_list() {
-    return utils::make_unique_ptr<TaskIndependentTieBreakingOpenList<StateOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
-}
-
-unique_ptr<TaskIndependentEdgeOpenList>
-TaskIndependentTieBreakingOpenListFactory::create_task_independent_edge_open_list() {
-    return utils::make_unique_ptr<TaskIndependentTieBreakingOpenList<EdgeOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
-}
-*/
 
 class TieBreakingOpenListFeature : public plugins::TypedFeature<TaskIndependentOpenListFactory, TaskIndependentTieBreakingOpenListFactory> {
 public:

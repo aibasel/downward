@@ -89,23 +89,5 @@ TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(utils::LogP
       subevaluators(subevaluators) {
 }
 
-shared_ptr<CombiningEvaluator> TaskIndependentCombiningEvaluator::create_task_specific_CombiningEvaluator(const shared_ptr<AbstractTask> &task, int depth) {
-    log << std::string(depth, ' ') << "Creating CombiningEvaluator as root component..." << endl;
-    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return create_task_specific_CombiningEvaluator(task, component_map, depth);
-}
 
-shared_ptr<CombiningEvaluator> TaskIndependentCombiningEvaluator::create_task_specific_CombiningEvaluator(
-        [[maybe_unused]] const shared_ptr<AbstractTask> &task,
-        [[maybe_unused]] unique_ptr<ComponentMap> &component_map,
-        [[maybe_unused]] int depth) {
-    cerr << "Tries to create CombiningEvaluator in an unimplemented way." << endl;
-    utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-}
-
-
-shared_ptr<Evaluator> TaskIndependentCombiningEvaluator::create_task_specific_Evaluator(const shared_ptr<AbstractTask> &task, unique_ptr<ComponentMap> &component_map, int depth) {
-    shared_ptr<CombiningEvaluator> x = create_task_specific_CombiningEvaluator(task, component_map, depth);
-    return static_pointer_cast<Evaluator>(x);
-}
 }

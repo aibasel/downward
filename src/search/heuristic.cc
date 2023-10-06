@@ -120,22 +120,4 @@ TaskIndependentHeuristic::TaskIndependentHeuristic(const string unparsed_config,
       cache_evaluator_values(cache_evaluator_values), task_transformation(task_transformation) {
 }
 
-shared_ptr<Heuristic> TaskIndependentHeuristic::create_task_specific_Heuristic(const shared_ptr<AbstractTask> &task, int depth) {
-    log << std::string(depth, ' ') << "Creating Heuristic as root component..." << endl;
-    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return create_task_specific_Heuristic(task, component_map, depth);
-}
 
-shared_ptr<Heuristic> TaskIndependentHeuristic::create_task_specific_Heuristic(
-        [[maybe_unused]] const shared_ptr<AbstractTask> &task,
-        [[maybe_unused]] unique_ptr<ComponentMap> &component_map,
-        [[maybe_unused]] int depth) {
-    cerr << "Tries to create Heuristic in an unimplemented way." << endl;
-    utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-}
-
-
-shared_ptr<Evaluator> TaskIndependentHeuristic::create_task_specific_Evaluator(const shared_ptr<AbstractTask> &task, unique_ptr<ComponentMap> &component_map, int depth) {
-    shared_ptr<Heuristic> x = create_task_specific_Heuristic(task, component_map, depth);
-    return static_pointer_cast<Evaluator>(x);
-}

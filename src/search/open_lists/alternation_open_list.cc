@@ -48,7 +48,7 @@ TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFac
 }
 
 
-shared_ptr<AlternationOpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific_AlternationOpenListFactory(
+shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific(
     const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<AlternationOpenListFactory> task_specific_x;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
@@ -61,7 +61,7 @@ shared_ptr<AlternationOpenListFactory> TaskIndependentAlternationOpenListFactory
         vector<shared_ptr<OpenListFactory>> td_open_list_factories(open_list_factories.size());
         transform(open_list_factories.begin(), open_list_factories.end(), td_open_list_factories.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentOpenListFactory> &eval) {
-                      return eval->create_task_specific_OpenListFactory(task, component_map, depth >= 0 ? depth + 1 : depth);
+                      return eval->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
                   }
                   );
 
@@ -71,19 +71,6 @@ shared_ptr<AlternationOpenListFactory> TaskIndependentAlternationOpenListFactory
     return task_specific_x;
 }
 
-
-shared_ptr<AlternationOpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific_AlternationOpenListFactory(const shared_ptr<AbstractTask> &task, int depth) {
-    utils::g_log << std::string(depth, ' ') << "Creating AlternationOpenListFactory as root component..." << endl;
-    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return create_task_specific_AlternationOpenListFactory(task, component_map, depth);
-}
-
-
-
-shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific_OpenListFactory(const shared_ptr<AbstractTask> &task, unique_ptr<ComponentMap> &component_map, int depth) {
-    shared_ptr<AlternationOpenListFactory> x = create_task_specific_AlternationOpenListFactory(task, component_map, depth);
-    return static_pointer_cast<OpenListFactory>(x);
-}
 
 template<class Entry>
 void AlternationOpenList<Entry>::do_insertion(
