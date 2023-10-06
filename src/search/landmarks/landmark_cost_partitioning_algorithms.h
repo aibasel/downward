@@ -5,7 +5,7 @@
 
 #include "../lp/lp_solver.h"
 
-#include <set>
+#include <unordered_set>
 #include <vector>
 
 class OperatorsProxy;
@@ -21,7 +21,7 @@ protected:
     const LandmarkGraph &lm_graph;
     const std::vector<int> operator_costs;
 
-    const std::set<int> &get_achievers(
+    const std::unordered_set<int> &get_achievers(
         const Landmark &landmark, bool past) const;
 public:
     CostPartitioningAlgorithm(const std::vector<int> &operator_costs,

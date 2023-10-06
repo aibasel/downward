@@ -22,7 +22,7 @@ CostPartitioningAlgorithm::CostPartitioningAlgorithm(
     : lm_graph(graph), operator_costs(operator_costs) {
 }
 
-const set<int> &CostPartitioningAlgorithm::get_achievers(
+const unordered_set<int> &CostPartitioningAlgorithm::get_achievers(
     const Landmark &landmark, bool past) const {
     // Return relevant achievers of the landmark according to its status.
     if (past) {
@@ -60,7 +60,7 @@ double UniformCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
     for (auto &node : nodes) {
         int id = node->get_id();
         if (future.test(id)) {
-            const set<int> &achievers =
+            const unordered_set<int> &achievers =
                 get_achievers(node->get_landmark(), past.test(id));
             if (achievers.empty())
                 return numeric_limits<double>::max();
@@ -93,7 +93,7 @@ double UniformCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
     for (auto &node : nodes) {
         int id = node->get_id();
         if (future.test(id)) {
-            const set<int> &achievers =
+            const unordered_set<int> &achievers =
                 get_achievers(node->get_landmark(), past.test(id));
             bool covered_by_action_lm = false;
             for (int op_id : achievers) {
@@ -120,7 +120,7 @@ double UniformCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
         // TODO: Iterate over Landmarks instead of LandmarkNodes
         int id = node->get_id();
         assert(future.test(id));
-        const set<int> &achievers =
+        const unordered_set<int> &achievers =
             get_achievers(node->get_landmark(), past.test(id));
         double min_cost = numeric_limits<double>::max();
         for (int op_id : achievers) {
@@ -216,7 +216,7 @@ double OptimalCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
     for (int lm_id = 0; lm_id < num_cols; ++lm_id) {
         const Landmark &landmark = lm_graph.get_node(lm_id)->get_landmark();
         if (future.test(lm_id)) {
-            const set<int> &achievers =
+            const unordered_set<int> &achievers =
                 get_achievers(landmark, past.test(lm_id));
             if (achievers.empty())
                 return numeric_limits<double>::max();

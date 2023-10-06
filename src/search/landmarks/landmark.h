@@ -3,7 +3,7 @@
 
 #include "../task_proxy.h"
 
-#include <set>
+#include <unordered_set>
 
 namespace landmarks {
 class Landmark {
@@ -31,8 +31,8 @@ public:
     bool is_true_in_goal;
     bool is_derived;
 
-    std::set<int> first_achievers;
-    std::set<int> possible_achievers;
+    std::unordered_set<int> first_achievers;
+    std::unordered_set<int> possible_achievers;
 
     bool is_true_in_state(const State &state) const;
 };
