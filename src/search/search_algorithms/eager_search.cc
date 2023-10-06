@@ -361,7 +361,7 @@ TaskIndependentEagerSearch::~TaskIndependentEagerSearch() {
 shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_task_specific_EagerSearch(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<EagerSearch> task_specific_eager_search;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
-        utils::g_log << std::string(depth, ' ') << "Reusing task EagerSearch..." << endl;
+        utils::g_log << std::string(depth, ' ') << "Reusing task specific EagerSearch..." << endl;
         task_specific_eager_search = plugins::any_cast<shared_ptr<EagerSearch>>(
             component_map->get_dual_key_value(task, this));
     } else {

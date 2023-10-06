@@ -51,7 +51,7 @@ TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
 shared_ptr<LandmarkCutHeuristic> TaskIndependentLandmarkCutHeuristic::create_task_specific_LandmarkCutHeuristic(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<LandmarkCutHeuristic> task_specific_lm_cut_heurisitc;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
-        log << std::string(depth, ' ') << "Reusing task LandmarkCutHeuristic..." << endl;
+        log << std::string(depth, ' ') << "Reusing task specific LandmarkCutHeuristic..." << endl;
         task_specific_lm_cut_heurisitc = plugins::any_cast<shared_ptr<LandmarkCutHeuristic>>(
             component_map->get_dual_key_value(task, this));
     } else {

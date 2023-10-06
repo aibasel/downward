@@ -59,7 +59,7 @@ TaskIndependentSumEvaluator::~TaskIndependentSumEvaluator() {
 shared_ptr<SumEvaluator> TaskIndependentSumEvaluator::create_task_specific_SumEvaluator(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<SumEvaluator> task_specific_sum_evaluator;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
-        log << std::string(depth, ' ') << "Reusing task SumEvaluator..." << endl;
+        log << std::string(depth, ' ') << "Reusing task specific SumEvaluator..." << endl;
         task_specific_sum_evaluator = plugins::any_cast<shared_ptr<SumEvaluator>>(
             component_map->get_dual_key_value(task, this));
     } else {
