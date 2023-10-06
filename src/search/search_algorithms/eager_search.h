@@ -87,14 +87,14 @@ public:
                                         std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator = nullptr,
                                         std::string unparsed_config = std::string());
 
-    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_SearchAlgorithm(
-        const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map, int depth = -1) override;
-
-    virtual std::shared_ptr<EagerSearch> create_task_specific_EagerSearch(const std::shared_ptr<AbstractTask> &task, int depth = -1);
-    virtual std::shared_ptr<EagerSearch> create_task_specific_EagerSearch(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth = -1);
-
     virtual ~TaskIndependentEagerSearch()  override;
+
+
+    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_root(const std::shared_ptr<AbstractTask> &task, int depth = -1) override;
+
+    std::shared_ptr<SearchAlgorithm>
+    create_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
+                         int depth = -1 ) override;
 };
 
 
