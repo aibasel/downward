@@ -78,7 +78,7 @@ shared_ptr<WeightedEvaluator> TaskIndependentWeightedEvaluator::create_task_spec
     shared_ptr<WeightedEvaluator> task_specific_weighted_evaluator;
 
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
-        log << std::string(depth, ' ') << "Reusing task WeightedEvaluator..." << endl;
+        log << std::string(depth, ' ') << "Reusing task specific WeightedEvaluator..." << endl;
         task_specific_weighted_evaluator = plugins::any_cast<shared_ptr<WeightedEvaluator>>(
             component_map->get_dual_key_value(task, this));
     } else {

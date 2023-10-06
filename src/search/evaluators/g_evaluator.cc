@@ -45,7 +45,7 @@ shared_ptr<GEvaluator> TaskIndependentGEvaluator::create_task_specific_GEvaluato
     shared_ptr<GEvaluator> task_specific_g_evaluator;
 
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
-        log << std::string(depth, ' ') << "Reusing task GEvaluator..." << endl;
+        log << std::string(depth, ' ') << "Reusing task specific GEvaluator..." << endl;
         task_specific_g_evaluator = plugins::any_cast<shared_ptr<GEvaluator>>(
             component_map->get_dual_key_value(task, this));
     } else {

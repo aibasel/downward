@@ -101,7 +101,7 @@ TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory
 shared_ptr<BestFirstOpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific_BestFirstOpenListFactory(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<BestFirstOpenListFactory> task_specific_x;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
-        utils::g_log << std::string(depth, ' ') << "Reusing task BestFirstOpenListFactory..." << endl;
+        utils::g_log << std::string(depth, ' ') << "Reusing task specific BestFirstOpenListFactory..." << endl;
         task_specific_x = plugins::any_cast<shared_ptr<BestFirstOpenListFactory>>(
             component_map->get_dual_key_value(task, this));
     } else {
