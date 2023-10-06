@@ -58,7 +58,7 @@ TokenStream split_tokens(const string &text) {
         for (const auto &type_and_expression : token_type_expressions) {
             TokenType token_type = type_and_expression.first;
             const regex &expression = type_and_expression.second;
-            if (regex_search(start, end, match, expression)) {
+            if (regex_search(start, end, match, expression, regex_constants::match_continuous)) {
                 tokens.push_back({utils::tolower(match[1]), token_type});
                 start += match[0].length();
                 has_match = true;
