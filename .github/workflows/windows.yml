@@ -12,7 +12,7 @@ env:
   CC: cl
   CXX: cl
 
-  cplex_DIR: D:\a\downward\cplex
+  cplex_DIR: D:\a\cplex
 
   CPLEX_URL: "${{ secrets.CPLEX2211_WINDOWS_URL }}"
   ZLIB_URL: "https://www.zlib.net/zlib13.zip"
@@ -72,11 +72,11 @@ jobs:
           curl.exe --output cplex.exe $ENV:CPLEX_URL
 
           echo "Install CPLEX"
-          Start-Process -FilePath .\cplex.exe -ArgumentList "-f", "D:\a\downward\downward\.github\workflows\misc\cplex2211_windows_installer.properties" -PassThru | Wait-Process
+          Start-Process -FilePath .\cplex.exe -ArgumentList "-f", "$ENV:GITHUB_WORKSPACE\.github\workflows\misc\cplex2211_windows_installer.properties" -PassThru | Wait-Process
           del .\cplex.exe
 
-          echo "Copy the relevant directory to a location which is not magically protected against cmake"
-          Xcopy /E /I ..\cplex_temp\cplex ..\cplex
+          echo "Copy the relevant directory to a location which is not magically protected against CMake"
+          Xcopy /E /I D:\a\cplex_temp\cplex $ENV:cplex_DIR
 
 
       - name: Compile planner
