@@ -258,6 +258,7 @@ public:
     }
 
     virtual shared_ptr<TaskIndependentIteratedSearch> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<TaskIndependentSearchEngine>>(context, opts, "engines");
         return make_shared<TaskIndependentIteratedSearch>(opts.get<utils::Verbosity>("verbosity"),
                                                           opts.get<OperatorCost>("cost_type"),
                                                           opts.get<double>("max_time"),
