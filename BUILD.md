@@ -44,7 +44,7 @@ To build the planner, from the top-level directory run:
 
 This will create our default build `release` in the directory `builds`. Other predefined build types are `debug`, `release_no_lp`, `glibcxx_debug` and `minimal`. Calling `./build.py --debug` will create a default debug build (equivalent to `debug`). You can pass make parameters to `./build.py`, e.g., `./build.py --debug -j4` will create a debug build using 4 threads for compilation (`-j4`), and `./build.py translate` will only build the translator component. (Because the translator is implemented in Python, "building" it just entails copying its source code into the build directory.) By default, `build.py` uses all cores for building the planner.
 
-See [[#Manual_Builds]] for more complex builds.
+[Our website](https://www.fast-downward.org/ForDevelopers/CMake) has details on more complex builds.
 
 ### Compiling on macOS
 
@@ -57,70 +57,6 @@ Windows does not interpret the shebang in Python files, so you have to call {{{b
 Note that compiling from terminal is only possible with the right environment. The easiest way to get such an environment is to use the ``Developer Power''''''Shell for VS 2019`` or ``Developer Power''''''Shell.
 
 Alternatively, you can create a Visual Studio Project (see [[#Manual_Builds]]), open it in Visual Studio and build from there. Visual Studio will create its binary files in subdirectories of the project that our driver script currently does not recognize. If you build with Visual Studio, you will have to run the individual components of the planner yourself.
-
-## Manual and Custom Builds
-
-[[move to ForDevelopers; can add a link to that somewhere and say what sort of info we have there]]
-
-The {{{build.py}}} script only creates a directory, calls {{{cmake}}} once to generate a build system, and a second time to execute the build. To do these steps manually, run:
-{{{#!highlight bash
-cmake -S src -B builds/mycustombuild
-cmake --build builds/mycustombuild}}}
-
-where {{{CMAKE_OPTIONS}}} are the options used to configure the build (see below). Without options, this results in the {{{release}}} build. (Use {{{--build mycustombuild}}} in the {{{fast-downward.py}}} script to select this build when running the planner.)
-
-You can use a CMake GUI to set up all available options. To do so, on Unix-like systems replace the call to {{{cmake}}} by {{{ccmake}}} ({{{sudo apt install cmake-curses-gui}}}). On Windows, open the CMake GUI and enter the paths there.
-
-Possible options to configure the build include:
-  * {{{-DLIBRARY_BLIND_SEARCH_HEURISTIC_ENABLED=False}}}
-    Switch off the blind heuristic.
-    See {{{src/search/CMakeLists.txt}}} for other libraries.
-  * {{{-DCMAKE_BUILD_TYPE=DEBUG}}}
-    The only other build type is: {{{RELEASE}}} (default)
-  * {{{-DCMAKE_C_COMPILER=/usr/bin/clang}}}, {{{-DCMAKE_CXX_COMPILER=/usr/bin/clang++}}}
-    Force the use of `clang`/`clang++` (adjust paths as necessary).
-
-You can also generate makefiles for other build systems (such as ninja) or generate project files for most IDEs:
-  * {{{-GNinja}}}
-    Use {{{ninja}}} instead of {{{make}}} in step 4.
-  * {{{-G"NMake Makefiles"}}}
-    Windows command line compile. Open the x86 developer shell for your compiler
-    and then use {{{nmake}}} instead of {{{make}}} in step 4.
-  * {{{-G"Visual Studio 15 2017"}}}
-    This should generate a solution for Visual Studio 2017. Run this command in the command prompt with the environment variables loaded (i.e., execute the vsvarsall script).
-  * {{{-G"XCode"}}}
-    This should generate a project file for XCode.
-  * Run {{{cmake}}} without parameters to see which generators are available on your system.
-
-You can also change the compiler/linker and their options by setting the environment variables {{{CC}}}, {{{CXX}}}, {{{LINKER}}} and {{{CXXFLAGS}}}. These variables need to be set before running `./build.py` or executing `cmake` manually, so one drawback is that you cannot save such settings as build configurations in `build_config.py`. If you want to change these settings for an existing build, you must manually remove the build directory before rerunning `./build.py`.
-
-Examples:
-  * To compile with {{{clang}}} use:
-  {{{#!highlight bash
-CC=clang CXX=clang++ cmake ../../src}}}
-  * Use full paths if the compiler is not found on the {{{PATH}}}, e.g., to force using the GNU compiler on macOS using !HomeBrew:
-
-  /!\ Note that the following path is for GCC 4.8 which we no longer support. If you know the relevant path for a !HomeBrew version of GCC 10 or newer, please let us know.
-  {{{#!highlight bash
-CXX=/usr/local/Cellar/gcc48/4.8.3/bin/g++-4.8 CC=/usr/local/Cellar/gcc48/4.8.3/bin/g++-4.8 LINKER=/opt/local/bin/g++-mp-4.8 cmake ../../src}}}
-
-  * The next example creates a build with the GNU compiler using !MacPorts:
-
-  /!\ Note that the following path is for GCC 4.8 which we no longer support. If you know the relevant path for a !MacPorts version of GCC 10 or newer, please let us know.
-  {{{#!highlight bash
-CXX=/opt/local/bin/g++-mp-4.8 CC=/opt/local/bin/gcc-mp-4.8 LINKER=/opt/local/bin/g++-mp-4.8 cmake ../../src}}}
-
-  * To abort compilation when the compiler emits a warning, set `CXXFLAGS="-Werror"`.
-
-  * To force a 32-bit build on a 64-bit platform, set `CXXFLAGS="-m32"`. We recommend disabling the LP solver with 32-bit builds.
-
-If you use a configuration often, it might make sense to add an alias for it in {{{build_configs.py}}}.
-
-Fast Downward automatically includes an LP Solver in the build if it is needed and the solver is detected on the system. If you want to explicitly build without LP solvers that are installed on your system, use {{{./build.py release_no_lp}}}, or a [[ObtainingAndRunningFastDownward#Manual_Builds|manual build]] with the option {{{-DUSE_LP=NO}}}.
-
-If you don't want to permanently modify your environment, you can also set these variables directly when calling CMake.
-
-
 
 ## Running the planner
 
