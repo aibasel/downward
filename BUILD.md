@@ -1,9 +1,7 @@
-# Obtaining and running Fast Downward
-
-This page describes how to build and run the Fast Downward planner.
-
-
 ## Supported platforms
+
+[keep info in principle, but don't duplicate info with README.md]
+[definitely remove details that are unrelated to bild]
 
 The planner is mainly developed under Linux; and all of its features should work with no restrictions under this platform.
 The planner should compile and run correctly on macOS, but we cannot guarantee that it works as well as under Linux.
@@ -14,6 +12,8 @@ We appreciate bug reports and patches for all platforms, in particular, contribu
 
 
 ## Dependencies
+
+[good in principle]
 
 '''Linux:''' To obtain and build the planner, you will need the Git version control system, a C++ compiler, CMake and GNU make.
 To run the planner, you will also need Python 3.
@@ -27,29 +27,28 @@ During the installation of Visual Studio, the C++ compiler is not installed by d
 
 ### Linear-Programming configurations
 
+[good in principle]
+
 Some configurations require an LP solver to work. The planner will compile fine if there is no LP installed on the system, but trying to use the features that require an LP solver will generate an error message explaining what is missing.
 See [[LPBuildInstructions]] for instructions on how to set up an LP solver and tell Fast Downward about it.
 
 ### Validating the computed plans
 
+[good in principle]
+
 You can validate the found plans by passing {{{--validate}}} to the planner. For this, the [[https://github.com/KCL-Planning/VAL|VAL plan validation software]]
 needs to be installed on your system. [[SettingUpVal|Here]] you can find some instructions to help you set it up.
 
-
-## Obtaining the code
-
-Since July 2020, the main development of the code takes place on [[https://github.com/aibasel/downward/|Github]] but [[Releases#Historical_Releases|legacy versions of previous repositories]] are available.
-The command {{{
-git clone https://github.com/aibasel/downward.git DIRNAME}}}
-will create a clone of the Fast Downward master repository in directory {{{DIRNAME}}}. The directory is created if it does not yet exist. In the following, we assume that you used {{{downward}}} as the {{{DIRNAME}}}.
+=> make sure to do something with SettingUpVal; include the necessary information here or point to it, but hopefully it's easier now in the first place
 
 ## Compiling the planner
-To build the planner for the first time, run:
+
+To build the planner, from the top-level directory run:
+
 {{{#!highlight bash
-cd downward
 ./build.py}}}
 
-This will create our default build {{{release}}} in the directory {{{downward/builds}}}. Other predefined build types are {{{debug}}}, {{{release_no_lp}}}, {{{glibcxx_debug}}} and {{{minimal}}}. Calling {{{./build.py --debug}}} will create a default debug build (equivalent to {{{debug}}}). You can pass make parameters to {{{./build.py}}}, e.g., {{{./build.py --debug -j4}}} will create a debug build using 4 threads for compilation ({{{-j4}}}), and {{{./build.py translate}}} will only build the translator component. (Because the translator is implemented in Python, "building" it just entails copying its source code into the build directory.) By default, {{{build.py}}} uses all cores for building the planner.
+This will create our default build {{{release}}} in the directory {{{builds}}}. Other predefined build types are {{{debug}}}, {{{release_no_lp}}}, {{{glibcxx_debug}}} and {{{minimal}}}. Calling {{{./build.py --debug}}} will create a default debug build (equivalent to {{{debug}}}). You can pass make parameters to {{{./build.py}}}, e.g., {{{./build.py --debug -j4}}} will create a debug build using 4 threads for compilation ({{{-j4}}}), and {{{./build.py translate}}} will only build the translator component. (Because the translator is implemented in Python, "building" it just entails copying its source code into the build directory.) By default, {{{build.py}}} uses all cores for building the planner.
 
 See [[#Manual_Builds]] for more complex builds.
 
@@ -66,6 +65,8 @@ Note that compiling from terminal is only possible with the right environment. T
 Alternatively, you can create a Visual Studio Project (see [[#Manual_Builds]]), open it in Visual Studio and build from there. Visual Studio will create its binary files in subdirectories of the project that our driver script currently does not recognize. If you build with Visual Studio, you will have to run the individual components of the planner yourself.
 
 ## Manual and Custom Builds
+
+[[move to ForDevelopers; can add a link to that somewhere and say what sort of info we have there]]
 
 The {{{build.py}}} script only creates a directory, calls {{{cmake}}} once to generate a build system, and a second time to execute the build. To do these steps manually, run:
 {{{#!highlight bash
@@ -123,38 +124,33 @@ If you use a configuration often, it might make sense to add an alias for it in 
 
 ## Running the planner
 
+[[does not belong here, but perhaps include a one-line example to test the build]]
+
 For basic instructions on how to run the planner including examples, see PlannerUsage. The search component of the planner accepts a host of different options with widely differing behaviour. At the very least, you will want to choose a [[Doc/SearchAlgorithm|search algorithm]] with one or more [[Doc/Evaluator|evaluator specification]]s.
 
 ## Caveats
+[[does not belong here]]
 
 Please be aware of the following issues when working with the planner, '''especially if you want to use it for conducting scientific experiments''':
 
  1. We recommend using the [[Releases|latest release]]. If you are using the main branch instead, be aware that things can break or degrade with every commit. Typically they don't, but if they do, don't be surprised.
- 1. There are '''known bugs''', especially with the translator component. To find out more, check out [[http://issues.fast-downward.org|our issue tracker]]. The planner has only really been tested with IPC domains, and even for those it does not work properly with all formulations of all domains. For more information, see the section on [[#Known_good_domains]] below.
+   => quick start/README
  1. The '''search options''' are built with flexibility in mind, not ease of use. It is very easy to use option settings that look plausible, yet introduce significant inefficiencies. For example, an invocation like {{{
 ./fast-downward.py domain.pddl problem.pddl --search "lazy_greedy([ff()], preferred=[ff()])"}}} looks plausible, yet is hugely inefficient since it will compute the FF heuristic twice per state. See the examples on the PlannerUsage page to see how to call the planner properly. If in doubt, ask.
+   => usage instructions
 
 ## Known good domains
+[[remove section, but keep info below in some form]]
 
-There is a large collection of planning competition benchmarks at https://github.com/aibasel/downward-benchmarks, which includes all IPC domains (but not all ''formulations'' of all domains). The planner is somewhat sensitive to non-STRIPS language constructs and will choke on some valid PDDL inputs. Moreover, many of the heuristics do not support axioms or conditional effects. Even worse, sometimes the translator will introduce conditional effects even though the original PDDL input did not contain them. (We are working on this.)
+=> add link to downward-benchmarks repo or some other way to do a minimal test of a build (e.g. using PDDL files included in the repository)
+=> otherwise link to downward-benchmarks belongs to README or something similar
 
-We recommend that you use the sets of domains that are predefined in the [[https://github.com/aibasel/downward-benchmarks/blob/master/suites.py|suites.py]] script for your experiments. Here are the benchmark suites that we usually use in the two most common settings:
-
- * Inadmissible heuristics supporting conditional effects and axioms (e.g. context-enhanced additive, FF, additive, causal graph): {{{satisficing}}}
- * Admissible heuristics not supporting conditional effects and axioms (e.g. LM-Cut, iPDB): {{{optimal_strips}}}
-
-After cloning the repo, you can list the domains in the respective suites by doing:
-
-{{{#!highlight bash
-./suites.py optimal_strips
-}}}
-
-You can use the resulting list of domains in your experiment scripts (see below).
-
-## Experiments with Fast Downward
+https://github.com/aibasel/downward-benchmarks
 
 The {{{Downward Lab}}} toolkit helps running Fast Downward experiments on large benchmark sets. &rarr; [[ScriptUsage|More information]]
+=> Perhaps also reference downward-lab.
 
+=> TODO: What is with this ScriptUsage page?
 
 ================================================
 
