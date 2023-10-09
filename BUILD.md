@@ -29,8 +29,8 @@ Some planner configurations depend on an LP solver.
 
 [good in principle]
 
-You can validate the found plans by passing {{{--validate}}} to the planner. For this, the [[https://github.com/KCL-Planning/VAL|VAL plan validation software]]
-needs to be installed on your system. [[SettingUpVal|Here]] you can find some instructions to help you set it up.
+You can validate the found plans by passing `--validate` to the planner. For this, the [VAL plan validation software](https://github.com/KCL-Planning/VAL)
+needs to be installed on your system. [Here](SettingUpVal) you can find some instructions to help you set it up.
 
 => make sure to do something with SettingUpVal; include the necessary information here or point to it, but hopefully it's easier now in the first place
 
@@ -38,10 +38,11 @@ needs to be installed on your system. [[SettingUpVal|Here]] you can find some in
 
 To build the planner, from the top-level directory run:
 
-{{{#!highlight bash
-./build.py}}}
+```bash
+./build.py
+```
 
-This will create our default build {{{release}}} in the directory {{{builds}}}. Other predefined build types are {{{debug}}}, {{{release_no_lp}}}, {{{glibcxx_debug}}} and {{{minimal}}}. Calling {{{./build.py --debug}}} will create a default debug build (equivalent to {{{debug}}}). You can pass make parameters to {{{./build.py}}}, e.g., {{{./build.py --debug -j4}}} will create a debug build using 4 threads for compilation ({{{-j4}}}), and {{{./build.py translate}}} will only build the translator component. (Because the translator is implemented in Python, "building" it just entails copying its source code into the build directory.) By default, {{{build.py}}} uses all cores for building the planner.
+This will create our default build `release` in the directory `builds`. Other predefined build types are `debug`, `release_no_lp`, `glibcxx_debug` and `minimal`. Calling `./build.py --debug` will create a default debug build (equivalent to `debug`). You can pass make parameters to `./build.py`, e.g., `./build.py --debug -j4` will create a debug build using 4 threads for compilation (`-j4`), and `./build.py translate` will only build the translator component. (Because the translator is implemented in Python, "building" it just entails copying its source code into the build directory.) By default, `build.py` uses all cores for building the planner.
 
 See [[#Manual_Builds]] for more complex builds.
 
