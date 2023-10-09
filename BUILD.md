@@ -12,12 +12,18 @@
 During the installation of Visual Studio, the C++ compiler is not installed by default, but the IDE will prompt you to install it when you create a new C++ project.
 
 
-### Linear-Programming configurations
+### Linear-Programming configurations (optional)
 
-[good in principle]
+Some planner configurations depend on an LP solver. 
 
-Some configurations require an LP solver to work. The planner will compile fine if there is no LP installed on the system, but trying to use the features that require an LP solver will generate an error message explaining what is missing.
-See [[LPBuildInstructions]] for instructions on how to set up an LP solver and tell Fast Downward about it.
+
+
+
+
+
+
+
+
 
 ### Validating the computed plans
 
@@ -109,6 +115,12 @@ CXX=/opt/local/bin/g++-mp-4.8 CC=/opt/local/bin/gcc-mp-4.8 LINKER=/opt/local/bin
 
 If you use a configuration often, it might make sense to add an alias for it in {{{build_configs.py}}}.
 
+Fast Downward automatically includes an LP Solver in the build if it is needed and the solver is detected on the system. If you want to explicitly build without LP solvers that are installed on your system, use {{{./build.py release_no_lp}}}, or a [[ObtainingAndRunningFastDownward#Manual_Builds|manual build]] with the option {{{-DUSE_LP=NO}}}.
+
+If you don't want to permanently modify your environment, you can also set these variables directly when calling CMake.
+
+
+
 ## Running the planner
 
 [[does not belong here, but perhaps include a one-line example to test the build]]
@@ -143,41 +155,27 @@ The {{{Downward Lab}}} toolkit helps running Fast Downward experiments on large 
 
 # LP solver support
 
-[[shorten this leading text to ~1 sentence]]
+[[intro sentence above]]
 
-Some configurations of the search component of Fast Downward, such as optimal cost partitioning for landmark heuristics, require a linear programming (LP or IP) solver and will complain if the planner has not been built with support for such a solver. Running an LP configuration requires three steps, explained below:
+Currently, CPLEX and !SoPlex are supported. You can install one or both solvers without causing conflicts.
 
- 1. Installing one or more LP solvers.
- 1. Building Fast Downward with LP support.
+## Installing CPLEX
 
-=> TODO: Discuss relative performance SoPlex/CPLEX somewhere in Usage or a related place. Link our issue (issue752, issue1076) with relative performance of the two somewhere there. Also mention there that SoPlex is LP-only.
+Obtain CPLEX (e.g. via the [free academic license](http://ibm.com/academic)) and follow the guided installation. See [troubleshooting](#troubleshooting) if you have problems accessing the installer.
+On Windows, install CPLEX into a directory without spaces.
 
-## Step 1. Installing one or more LP solvers
-
-Fast Downward uses a generic interface for accessing LP solvers and hence can be used together with different LP solvers. Currently, CPLEX and !SoPlex are supported. You can install one or both solvers without causing conflicts. Installation varies by solver and operating system.
-
-### Installing CPLEX on Linux/macOS
-
-IBM offers a [[http://ibm.com/academic|free academic license]] that includes access to CPLEX.
-Once you are registered, you find the software under Technology -> Data Science. Choose the right version and switch to HTTP download unless you have the IBM download manager installed. If you have problems using their website with Firefox, try Chrome instead. Execute the downloaded binary and follow the guided installation. If you want to install in a global location, you have to execute the installer as {{{root}}}.
-
-After the installation, set the following environment variable.
-The installer is for ILOG Studio, which contains more than just CPLEX, so the variable points to the subdirectory {{{/cplex}}} of the installation.
-Adapt the path if you installed another version or did not install in the default location:
-{{{
+After the installation, set the environment variable `cplex_DIR` to the subdirectory `/cplex` of the installation.
+For example on Ubuntu:
+```bash
 export cplex_DIR=/opt/ibm/ILOG/CPLEX_Studio2211/cplex
-}}}
+```
+Note that on Windows, setting up the environment variable might require using `/` instead of the more Windows-common `\`.
 
-If you don't want to permanently modify your environment, you can also set these variables directly when calling CMake. The variable needs to be set when building Fast Downward's search component (Step 2.).
 
-### Installing CPLEX on Windows
 
-Follow the Linux instructions to acquire a license and access the Windows-version of the CPLEX installer. Please install CPLEX into a directory without spaces.
-For a silent installation, please consult: https://www.ibm.com/support/knowledgecenter/SSSA5P_12.9.0/ilog.odms.studio.help/Optimization_Studio/topics/td_silent_install.html
 
-/!\ '''Important Note:''' Setting up environment variables might require using / instead of the more Windows-common \ to work correctly.
 
-### Installing SoPlex on Linux/macOS
+## Installing SoPlex on Linux/macOS
 
 !SoPlex is available under the Apache License from [[https://github.com/scipopt/soplex|Github]]. To be compatible with C++-20, we require a version of !SoPlex more recent than 6.0.3. At the time of this writing, 6.0.3 is the latest release, so we have to build from the unreleased version at the tip of the main branch.
 
@@ -200,7 +198,7 @@ After installation, permanently set the environment variable {{{soplex_DIR}}} to
 
 /!\ '''Note:''' Once a version including Salomé's fix is released, we can update this and can recommend the [[https://soplex.zib.de/index.php#download|SoPlex homepage]] for downloads instead.
 
-### Installing SoPlex on the grid in Basel
+## Installing SoPlex on the grid in Basel
 [[should go somewhere else, e.g. ForDevelopers; should also resolve mix of info between ForDevelopers and biozentrum wiki]]
 
 To build !SoPlex on the grid, you should load a module with the GMP library and a compatible compiler module. The following setup should work:
@@ -217,20 +215,9 @@ Because the library is loaded from a module, it is not in a default directory, s
 cmake -S soplex -B build -DGMP_DIR="$EBROOTGMP"
 }}}
 
+Once LP solvers are installed and the environment variables {{{cplex_DIR}}} and/or {{{soplex_DIR}}} are set up correctly, Fast Downward automatically includes an LP Solver in the build if it is needed and the solver is detected on the system.
 
-## Step 2. Building Fast Downward with LP support
-[[I think it's enough to say that the build includes the LP solvers if available and perhaps once that config changes require deleting the builds directory]]
-
-Once LP solvers are installed and the environment variables {{{cplex_DIR}}} and/or {{{soplex_DIR}}} are set up correctly, you can build Fast Downward's search component with LP support by calling {{{./build.py}}}. Remove your previous build first:
-{{{
-rm -rf builds
-}}}
-
-Fast Downward automatically includes an LP Solver in the build if it is needed and the solver is detected on the system. If you want to explicitly build without LP solvers that are installed on your system, use {{{./build.py release_no_lp}}}, or a [[ObtainingAndRunningFastDownward#Manual_Builds|manual build]] with the option {{{-DUSE_LP=NO}}}.
-
-=> mention USE_LP=NO where we document custom builds
-
-## Troubleshooting
+# Troubleshooting
 
 [[keep a troubleshooting section; perhaps include rm -rf build here; make this a generic troubleshooting section, not an LP-specific one]]
 
@@ -238,3 +225,6 @@ If you get warnings about unresolved references with CPLEX, visit their [[http:/
 
 If you compiled Fast Downward on Windows (especially on !GitHub Actions) and cannot execute the binary in a new command line, then it might be unable to find a dynamically linked library. Use {{{dumpbin /dependents PATH\TO\DOWNWARD\BINARY}}} to list all required libraries and ensure that they can be found in your {{{PATH}}} variable.
 => is this still current?
+
+IBM offers a [free academic license](http://ibm.com/academic) that includes access to CPLEX.
+Once you are registered, you find the software under Technology -> Data Science. Choose the right version and switch to HTTP download unless you have the IBM download manager installed. If you have problems using their website with Firefox, try Chrome instead. Execute the downloaded binary and follow the guided installation.
