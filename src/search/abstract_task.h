@@ -1,7 +1,7 @@
 #ifndef ABSTRACT_TASK_H
 #define ABSTRACT_TASK_H
 
-#include "component_map.h"
+#include "component.h"
 #include "operator_id.h"
 
 #include "algorithms/subscriber.h"

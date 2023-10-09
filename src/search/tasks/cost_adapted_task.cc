@@ -35,14 +35,14 @@ TaskIndependentCostAdaptedTask::TaskIndependentCostAdaptedTask(OperatorCost cost
 
 shared_ptr<AbstractTask> TaskIndependentCostAdaptedTask::create_task_specific([[maybe_unused]] const shared_ptr<AbstractTask> &task, [[maybe_unused]] unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<CostAdaptedTask> task_specific_x;
-    if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
+    if (component_map->count( static_cast<TaskIndependentComponent *>(this))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task specific CostAdaptedTask..." << endl;
         task_specific_x = dynamic_pointer_cast<CostAdaptedTask>(
-            component_map->get_dual_key_value(task, this));
+            component_map->at(static_cast<TaskIndependentComponent *>(this)));
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific CostAdaptedTask..." << endl;
         task_specific_x = make_shared<CostAdaptedTask>(task, cost_type);
-        component_map->add_dual_key_entry(task, this, task_specific_x);
+        component_map->insert(make_pair<TaskIndependentComponent *, std::shared_ptr<Component>>(static_cast<TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }

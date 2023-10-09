@@ -51,10 +51,10 @@ TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFac
 shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific(
     const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<AlternationOpenListFactory> task_specific_x;
-    if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
+    if (component_map->count( static_cast<TaskIndependentComponent *>(this))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task specific AlternationOpenListFactory..." << endl;
         task_specific_x = dynamic_pointer_cast<AlternationOpenListFactory>(
-            component_map->get_dual_key_value(task, this));
+            component_map->at(static_cast<TaskIndependentComponent *>(this)));
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific AlternationOpenListFactory..." << endl;
 
@@ -66,7 +66,7 @@ shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_ta
                   );
 
         task_specific_x = make_shared<AlternationOpenListFactory>(boost_amount, td_open_list_factories);
-        component_map->add_dual_key_entry(task, this, task_specific_x);
+        component_map->insert(make_pair<TaskIndependentComponent *, std::shared_ptr<Component>>(static_cast<TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }

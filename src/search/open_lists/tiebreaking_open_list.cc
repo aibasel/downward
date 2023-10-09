@@ -46,25 +46,23 @@ TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFac
 shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<TieBreakingOpenListFactory> task_specific_x;
 
-    if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
+    if (component_map->count( static_cast<TaskIndependentComponent *>(this))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task specific EagerSearch..." << endl;
         task_specific_x = dynamic_pointer_cast<TieBreakingOpenListFactory>(
-            component_map->get_dual_key_value(task, this));
+            component_map->at(static_cast<TaskIndependentComponent *>(this)));
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific TieBreakingOpenListFactory..." << endl;
         vector<shared_ptr<Evaluator>> ts_evaluators(evaluators.size());
 
         transform(evaluators.begin(), evaluators.end(), ts_evaluators.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      cout << "XXXXXXXXXX transform" << endl;
                       return eval->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
                   }
                   );
-        cout << "XXXXXXXXXX" << endl;
         task_specific_x = make_shared<TieBreakingOpenListFactory>(pref_only,
                                                                   ts_evaluators,
                                                                   allow_unsafe_pruning);
-        component_map->add_dual_key_entry(task, this, task_specific_x);
+        component_map->insert(make_pair<TaskIndependentComponent *, std::shared_ptr<Component>>(static_cast<TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }

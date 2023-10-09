@@ -13,7 +13,7 @@ IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                double max_time,
                                int bound,
                                const shared_ptr<AbstractTask> &task,
-                               std::unique_ptr<ComponentMap> &&_component_map,
+                               std::unique_ptr<ComponentMap> &&component_map,
                                vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
                                bool pass_bound,
                                bool repeat_last_phase,
@@ -26,6 +26,7 @@ IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                                 bound,
                                                 unparsed_config,
                                                 task),
+                                   component_map(move(component_map)),
                                    search_algorithms(search_algorithms),
                                    pass_bound(pass_bound),
                                    repeat_last_phase(repeat_last_phase),
@@ -35,9 +36,7 @@ IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                    last_phase_found_solution(false),
                                    best_bound(bound),
                                    iterated_found_solution(false) {
-    component_map = (move(_component_map));
-    component_map->add_dual_key_entry(nullptr, nullptr, nullptr);
-}
+    }
 
 
 shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
@@ -162,7 +161,7 @@ TaskIndependentIteratedSearch::~TaskIndependentIteratedSearch() {
 
 shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_IteratedSearch(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &&component_map, int depth) {
     shared_ptr<IteratedSearch> task_specific_x;
-    if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
+    if (component_map->count( static_cast<TaskIndependentComponent *>(this))) {
         cerr << "Tries to reuse task specific IteratedSearch... This should not happen" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     } else {

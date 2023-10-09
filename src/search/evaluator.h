@@ -2,7 +2,7 @@
 #define EVALUATOR_H
 
 #include "abstract_task.h"
-#include "component_map.h"
+#include "component.h"
 #include "evaluation_result.h"
 
 #include "utils/logging.h"
