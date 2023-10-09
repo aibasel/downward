@@ -53,7 +53,7 @@ shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_ta
     shared_ptr<AlternationOpenListFactory> task_specific_x;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task specific AlternationOpenListFactory..." << endl;
-        task_specific_x = plugins::any_cast<shared_ptr<AlternationOpenListFactory>>(
+        task_specific_x = dynamic_pointer_cast<AlternationOpenListFactory>(
             component_map->get_dual_key_value(task, this));
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific AlternationOpenListFactory..." << endl;
@@ -66,7 +66,7 @@ shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_ta
                   );
 
         task_specific_x = make_shared<AlternationOpenListFactory>(boost_amount, td_open_list_factories);
-        component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_x));
+        component_map->add_dual_key_entry(task, this, task_specific_x);
     }
     return task_specific_x;
 }

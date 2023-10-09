@@ -359,10 +359,10 @@ TaskIndependentEagerSearch::~TaskIndependentEagerSearch() {
 
 
 shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
-    shared_ptr<EagerSearch> task_specific_eager_search;
+    shared_ptr<EagerSearch> task_specific_x;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task specific EagerSearch..." << endl;
-        task_specific_eager_search = plugins::any_cast<shared_ptr<EagerSearch>>(
+        task_specific_x = dynamic_pointer_cast<EagerSearch>(
             component_map->get_dual_key_value(task, this));
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific EagerSearch..." << endl;
@@ -376,21 +376,21 @@ shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(con
         unique_ptr<StateOpenList> _open_list = unique_ptr<StateOpenList>(
             open_list_factory->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
 
-        task_specific_eager_search = make_shared<EagerSearch>(verbosity,
-                                                              cost_type,
-                                                              max_time,
-                                                              bound,
-                                                              reopen_closed_nodes,
-                                                              move(_open_list),
-                                                              td_evaluators,
-                                                              pruning_method,
-                                                              task,
+        task_specific_x = make_shared<EagerSearch>(verbosity,
+                                                   cost_type,
+                                                   max_time,
+                                                   bound,
+                                                   reopen_closed_nodes,
+                                                   move(_open_list),
+                                                   td_evaluators,
+                                                   pruning_method,
+                                                   task,
                                                               f_evaluator ? f_evaluator->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
                                                               lazy_evaluator ? lazy_evaluator->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr);
 
-        component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_eager_search));
+        component_map->add_dual_key_entry(task, this, task_specific_x);
     }
-    return task_specific_eager_search;
+    return task_specific_x;
 }
 
 

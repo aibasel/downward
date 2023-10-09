@@ -19,6 +19,7 @@ shared_ptr<unordered_map<void *, plugins::Any>> ComponentMap::get_inner_map(std:
 
 
 bool ComponentMap::contains_key(KEY key) {
+    /*
     bool b;
     if (!component_map.contains(key.first)) {
         b = false;
@@ -27,6 +28,8 @@ bool ComponentMap::contains_key(KEY key) {
         b = inner_map->contains(key.second);
     }
     return b;
+    */
+    return component_map2.contains(key.second);
 }
 
 
@@ -34,7 +37,7 @@ VALUE ComponentMap::get_value(KEY key) {
     shared_ptr<unordered_map<void *, plugins::Any>> inner_map = get_inner_map(key.first);
 
     if (auto search = inner_map->find(key.second); search != inner_map->end()) {
-        return search->second;
+        return nullptr;//search->second;
     } else {
         cerr << "ComponentMap does not contain key." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
@@ -54,11 +57,18 @@ void ComponentMap::add_entry(KEY key, VALUE value) {
 }
 
 void ComponentMap::add_dual_key_entry(shared_ptr<AbstractTask> key1, TaskIndependentComponent *key2, VALUE value) {
-    KEY pair = make_pair(key1, static_cast<void *>(key2));
-    add_entry(pair, value);
+    //KEY pair = make_pair(key1, static_cast<void *>(key2));
+    //add_entry(pair, value);
+    component_map2.insert(make_pair(key2,value));
 }
 
 VALUE ComponentMap::get_dual_key_value(std::shared_ptr<AbstractTask> key1, TaskIndependentComponent *key2) {
-    KEY pair = make_pair(key1, static_cast<void *>(key2));
-    return get_value(pair);
+    //KEY pair = make_pair(key1, static_cast<void *>(key2));
+    //return get_value(pair);
+    if (auto search = component_map2.find(key2); search != component_map2.end()) {
+        return search->second;
+    } else {
+        cerr << "ComponentMap does not contain key." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
 }

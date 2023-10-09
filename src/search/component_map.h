@@ -9,6 +9,8 @@ class AbstractTask;
 class ComponentMap;
 
 class Component {
+public:
+    virtual ~Component() = default;
 };
 
 class TaskIndependentComponent {
@@ -21,7 +23,7 @@ public:
 
 using KEY = std::pair<std::shared_ptr<AbstractTask>, void *>;
 // pointer to a task specific component
-using VALUE = plugins::Any;
+using VALUE = std::shared_ptr<Component>;//plugins::Any;
 
 
 class ComponentMap {
@@ -40,6 +42,7 @@ private:
 
     std::shared_ptr<std::unordered_map<void *, plugins::Any>> get_inner_map(std::shared_ptr<AbstractTask> key);
 
+    std::unordered_map<void *, VALUE> component_map2;
 public:
     explicit ComponentMap();
     virtual ~ComponentMap() = default;
