@@ -2,7 +2,7 @@
 #define SEARCH_ALGORITHM_H
 
 #include "abstract_task.h"
-#include "component_map.h"
+#include "component.h"
 #include "operator_cost.h"
 #include "operator_id.h"
 #include "plan_manager.h"

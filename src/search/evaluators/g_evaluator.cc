@@ -44,14 +44,14 @@ shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific(const std:
                                                                                   std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<GEvaluator> task_specific_x;
 
-    if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
+    if (component_map->count( static_cast<TaskIndependentComponent *>(this))) {
         log << std::string(depth, ' ') << "Reusing task specific GEvaluator..." << endl;
         task_specific_x = dynamic_pointer_cast<GEvaluator>(
-            component_map->get_dual_key_value(task, this));
+            component_map->at(static_cast<TaskIndependentComponent *>(this)));
     } else {
         log << std::string(depth, ' ') << "Creating task specific GEvaluator..." << endl;
         task_specific_x = make_shared<GEvaluator>(log, unparsed_config);
-        component_map->add_dual_key_entry(task, this, task_specific_x);
+        component_map->insert(make_pair<TaskIndependentComponent *, std::shared_ptr<Component>>(static_cast<TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }

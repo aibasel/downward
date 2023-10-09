@@ -1,7 +1,7 @@
 #ifndef OPEN_LIST_FACTORY_H
 #define OPEN_LIST_FACTORY_H
 
-#include "component_map.h"
+#include "component.h"
 #include "open_list.h"
 
 #include <memory>
