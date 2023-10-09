@@ -60,9 +60,8 @@ Alternatively, you can create a Visual Studio Project (see [[#Manual_Builds]]), 
 
 ## Running the planner
 
-[[does not belong here, but perhaps include a one-line example to test the build]]
+[[include a one-line example to test the build and a link to PlannerUsage]]
 
-For basic instructions on how to run the planner including examples, see PlannerUsage. The search component of the planner accepts a host of different options with widely differing behaviour. At the very least, you will want to choose a [[Doc/SearchAlgorithm|search algorithm]] with one or more [[Doc/Evaluator|evaluator specification]]s.
 
 ## Caveats
 [[does not belong here]]
