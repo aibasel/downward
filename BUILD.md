@@ -1,27 +1,14 @@
-## Supported platforms
-
-[keep info in principle, but don't duplicate info with README.md]
-[definitely remove details that are unrelated to bild]
-
-The planner is mainly developed under Linux; and all of its features should work with no restrictions under this platform.
-The planner should compile and run correctly on macOS, but we cannot guarantee that it works as well as under Linux.
-The same comment applies for Windows, where additionally some diagnostic features (e.g. reporting memory used when the planner is terminated by a signal) are not supported.
-Setting time and memory limits and running portfolios is not supported under Windows either.
-
-We appreciate bug reports and patches for all platforms, in particular, contributions to the documentation (e.g. installation instructions) for macOS and Windows.
-
-
 ## Dependencies
 
-[good in principle]
+- **Linux/MacOS:** you need a C++ compiler, CMake and GNU make.
+  To run the planner, you will also need Python 3.
 
-'''Linux:''' To obtain and build the planner, you will need the Git version control system, a C++ compiler, CMake and GNU make.
-To run the planner, you will also need Python 3.
-On Linux, the following should install all these dependencies: {{{
-sudo apt install cmake g++ git make python3}}}
-
-'''Windows:''' If using Windows, you should install [[https://visualstudio.microsoft.com/de/vs/older-downloads/|Visual Studio >= 2017]],
-[[https://www.python.org/downloads/windows/|Python]], [[https://git-scm.com/download/win|Git]], and [[http://www.cmake.org/download/|CMake]].
+  On Debian/Ubuntu, the following should install all these dependencies:
+  ```
+  sudo apt install cmake g++ make python3
+  ```
+- **Windows:** install [Visual Studio >= 2017](https://visualstudio.microsoft.com/de/vs/older-downloads/),
+[Python](https://www.python.org/downloads/windows/), and [CMake](http://www.cmake.org/download/).
 During the installation of Visual Studio, the C++ compiler is not installed by default, but the IDE will prompt you to install it when you create a new C++ project.
 
 
