@@ -132,22 +132,6 @@ After installation, permanently set the environment variable {{{soplex_DIR}}} to
 
 /!\ '''Note:''' Once a version including Salomé's fix is released, we can update this and can recommend the [[https://soplex.zib.de/index.php#download|SoPlex homepage]] for downloads instead.
 
-## Installing SoPlex on the grid in Basel
-[[should go somewhere else, e.g. ForDevelopers; should also resolve mix of info between ForDevelopers and biozentrum wiki]]
-
-To build !SoPlex on the grid, you should load a module with the GMP library and a compatible compiler module. The following setup should work:
-{{{
-module purge
-module load GCC/11.3.0.lua
-module load CMake/3.23.1-GCCcore-11.3.0.lua
-module load Python/3.10.4-GCCcore-11.3.0.lua
-module load GMP/6.2.1-GCCcore-11.3.0
-}}}
-
-Because the library is loaded from a module, it is not in a default directory, so change the CMake call to
-{{{
-cmake -S soplex -B build -DGMP_DIR="$EBROOTGMP"
-}}}
 
 Once LP solvers are installed and the environment variables {{{cplex_DIR}}} and/or {{{soplex_DIR}}} are set up correctly, Fast Downward automatically includes an LP Solver in the build if it is needed and the solver is detected on the system.
 
