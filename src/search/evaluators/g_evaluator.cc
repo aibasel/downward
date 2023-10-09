@@ -42,18 +42,18 @@ TaskIndependentGEvaluator::~TaskIndependentGEvaluator() {
 
 shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific(const std::shared_ptr<AbstractTask> &task,
                                                                                   std::unique_ptr<ComponentMap> &component_map, int depth) {
-    shared_ptr<GEvaluator> task_specific_g_evaluator;
+    shared_ptr<GEvaluator> task_specific_x;
 
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
         log << std::string(depth, ' ') << "Reusing task specific GEvaluator..." << endl;
-        task_specific_g_evaluator = plugins::any_cast<shared_ptr<GEvaluator>>(
+        task_specific_x = dynamic_pointer_cast<GEvaluator>(
             component_map->get_dual_key_value(task, this));
     } else {
         log << std::string(depth, ' ') << "Creating task specific GEvaluator..." << endl;
-        task_specific_g_evaluator = make_shared<GEvaluator>(log, unparsed_config);
-        component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_g_evaluator));
+        task_specific_x = make_shared<GEvaluator>(log, unparsed_config);
+        component_map->add_dual_key_entry(task, this, task_specific_x);
     }
-    return task_specific_g_evaluator;
+    return task_specific_x;
 }
 
 

@@ -57,10 +57,10 @@ TaskIndependentSumEvaluator::~TaskIndependentSumEvaluator() {
 
 
 shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
-    shared_ptr<SumEvaluator> task_specific_sum_evaluator;
+    shared_ptr<SumEvaluator> task_specific_x;
     if (component_map->contains_key(make_pair(task, static_cast<void *>(this)))) {
         log << std::string(depth, ' ') << "Reusing task specific SumEvaluator..." << endl;
-        task_specific_sum_evaluator = plugins::any_cast<shared_ptr<SumEvaluator>>(
+        task_specific_x = dynamic_pointer_cast<SumEvaluator>(
             component_map->get_dual_key_value(task, this));
     } else {
         log << std::string(depth, ' ') << "Creating task specific SumEvaluator..." << endl;
@@ -70,10 +70,10 @@ shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(const sh
                       return eval->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
                   }
                   );
-        task_specific_sum_evaluator = make_shared<SumEvaluator>(log, td_subevaluators, unparsed_config);
-        component_map->add_dual_key_entry(task, this, plugins::Any(task_specific_sum_evaluator));
+        task_specific_x = make_shared<SumEvaluator>(log, td_subevaluators, unparsed_config);
+        component_map->add_dual_key_entry(task, this, task_specific_x);
     }
-    return task_specific_sum_evaluator;
+    return task_specific_x;
 }
 
 
