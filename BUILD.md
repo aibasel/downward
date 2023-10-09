@@ -156,11 +156,14 @@ The {{{Downward Lab}}} toolkit helps running Fast Downward experiments on large 
 
 # LP solver support
 
-Some configurations of the search component of Fast Downward, such as optimal cost partitioning for landmark heuristics, require a linear programming (LP) solver and will complain if the planner has not been built with support for such a solver. Running an LP configuration requires three steps, explained below:
+[[shorten this leading text to ~1 sentence]]
+
+Some configurations of the search component of Fast Downward, such as optimal cost partitioning for landmark heuristics, require a linear programming (LP or IP) solver and will complain if the planner has not been built with support for such a solver. Running an LP configuration requires three steps, explained below:
 
  1. Installing one or more LP solvers.
  1. Building Fast Downward with LP support.
- 1. Choosing a solver with command-line arguments.
+
+=> TODO: Discuss relative performance SoPlex/CPLEX somewhere in Usage or a related place. Link our issue (issue752, issue1076) with relative performance of the two somewhere there. Also mention there that SoPlex is LP-only.
 
 ## Step 1. Installing one or more LP solvers
 
@@ -191,6 +194,8 @@ For a silent installation, please consult: https://www.ibm.com/support/knowledge
 
 !SoPlex is available under the Apache License from [[https://github.com/scipopt/soplex|Github]]. To be compatible with C++-20, we require a version of !SoPlex more recent than 6.0.3. At the time of this writing, 6.0.3 is the latest release, so we have to build from the unreleased version at the tip of the main branch.
 
+=> strengthen SoPlex performance warning
+
 You can install !SoPlex as follows (adapt the path if you install another version or want to use another location):
 {{{
 
@@ -209,6 +214,7 @@ After installation, permanently set the environment variable {{{soplex_DIR}}} to
 /!\ '''Note:''' Once a version including Salomé's fix is released, we can update this and can recommend the [[https://soplex.zib.de/index.php#download|SoPlex homepage]] for downloads instead.
 
 ### Installing SoPlex on the grid in Basel
+[[should go somewhere else, e.g. ForDevelopers; should also resolve mix of info between ForDevelopers and biozentrum wiki]]
 
 To build !SoPlex on the grid, you should load a module with the GMP library and a compatible compiler module. The following setup should work:
 {{{
@@ -226,6 +232,7 @@ cmake -S soplex -B build -DGMP_DIR="$EBROOTGMP"
 
 
 ## Step 2. Building Fast Downward with LP support
+[[I think it's enough to say that the build includes the LP solvers if available and perhaps once that config changes require deleting the builds directory]]
 
 Once LP solvers are installed and the environment variables {{{cplex_DIR}}} and/or {{{soplex_DIR}}} are set up correctly, you can build Fast Downward's search component with LP support by calling {{{./build.py}}}. Remove your previous build first:
 {{{
@@ -234,21 +241,13 @@ rm -rf builds
 
 Fast Downward automatically includes an LP Solver in the build if it is needed and the solver is detected on the system. If you want to explicitly build without LP solvers that are installed on your system, use {{{./build.py release_no_lp}}}, or a [[ObtainingAndRunningFastDownward#Manual_Builds|manual build]] with the option {{{-DUSE_LP=NO}}}.
 
-
-## Step 3. Choosing a solver with command-line arguments
-
-Features that use an LP solver have a command-line option `lpsolver` to switch between different solver types. See [[http://issues.fast-downward.org/issue752|issue752]] and [[http://issues.fast-downward.org/issue1076|issue1076]] for a discussion of the relative performance of CPLEX and !SoPlex.
-
-Note that !SoPlex is not a MIP solver, so using it for configurations that require integer variables will result in an error. Please use CPLEX for such cases.
-
+=> mention USE_LP=NO where we document custom builds
 
 ## Troubleshooting
 
-The LP-related libraries have a number of dependencies which might not be installed on your system. If for some reason one of the above steps fails, we would appreciate if you could attempt to troubleshoot it yourself.
+[[keep a troubleshooting section; perhaps include rm -rf build here; make this a generic troubleshooting section, not an LP-specific one]]
 
 If you get warnings about unresolved references with CPLEX, visit their [[http://www-01.ibm.com/support/docview.wss?uid=swg21399926|help pages]].
 
 If you compiled Fast Downward on Windows (especially on !GitHub Actions) and cannot execute the binary in a new command line, then it might be unable to find a dynamically linked library. Use {{{dumpbin /dependents PATH\TO\DOWNWARD\BINARY}}} to list all required libraries and ensure that they can be found in your {{{PATH}}} variable.
-
-If after troubleshooting you can get the LP package to work, please do let us know of your problem and its solution so that we can improve these instructions. If you still cannot get it to work, we may be able to provide some help, but note that the LP solvers are external packages not developed by us.
-
+=> is this still current?
