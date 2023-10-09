@@ -67,12 +67,10 @@ Alternatively, you can create a Visual Studio Project (see [[#Manual_Builds]]), 
 [[does not belong here]]
 
 Please be aware of the following issues when working with the planner, '''especially if you want to use it for conducting scientific experiments''':
+We recommend using the [[Releases|latest release]]. If you are using the main branch instead, be aware that things can break or degrade with every commit. Typically they don't, but if they do, don't be surprised.
 
- 1. We recommend using the [[Releases|latest release]]. If you are using the main branch instead, be aware that things can break or degrade with every commit. Typically they don't, but if they do, don't be surprised.
-   => quick start/README
- 1. The '''search options''' are built with flexibility in mind, not ease of use. It is very easy to use option settings that look plausible, yet introduce significant inefficiencies. For example, an invocation like {{{
-./fast-downward.py domain.pddl problem.pddl --search "lazy_greedy([ff()], preferred=[ff()])"}}} looks plausible, yet is hugely inefficient since it will compute the FF heuristic twice per state. See the examples on the PlannerUsage page to see how to call the planner properly. If in doubt, ask.
-   => usage instructions
+=> quick start/README
+
 
 ## Known good domains
 [[remove section, but keep info below in some form]]
