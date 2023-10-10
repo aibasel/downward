@@ -3,9 +3,9 @@ name: Ubuntu
 
 on:
   push:
-    branches: [main, issue*, release-*]
+    branches: [main, release-*]
   pull_request:
-    branches: [main, issue*, release-*]
+    branches: [main, release-*]
 
 # Some notes on file paths: the working directory is $GITHUB_WORKSPACE,
 # which equals /home/runner/work/my-repo-name/my-repo-name. The code is

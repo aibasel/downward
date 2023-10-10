@@ -3,9 +3,9 @@ name: Code style tests
 
 on:
   push:
-    branches: [main, issue*, release-*]
+    branches: [main, release-*]
   pull_request:
-    branches: [main, issue*, release-*]
+    branches: [main, release-*]
 
 jobs:
   style:
