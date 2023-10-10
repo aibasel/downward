@@ -91,11 +91,11 @@ The {{{Downward Lab}}} toolkit helps running Fast Downward experiments on large 
 
 [[intro sentence above]]
 
-Currently, CPLEX and !SoPlex are supported. You can install one or both solvers without causing conflicts.
+Currently, CPLEX (commercial, [free academic license](http://ibm.com/academic)) and SoPlex (Apache License) are supported. You can install one or both solvers without causing conflicts.
 
 ## Installing CPLEX
 
-Obtain CPLEX (e.g. via the [free academic license](http://ibm.com/academic)) and follow the guided installation. See [troubleshooting](#troubleshooting) if you have problems accessing the installer.
+Obtain CPLEX and follow the guided installation. See [troubleshooting](#troubleshooting) if you have problems accessing the installer.
 On Windows, install CPLEX into a directory without spaces.
 
 After the installation, set the environment variable `cplex_DIR` to the subdirectory `/cplex` of the installation.
@@ -107,30 +107,26 @@ Note that on Windows, setting up the environment variable might require using `/
 
 
 
-
-
 ## Installing SoPlex on Linux/macOS
 
-!SoPlex is available under the Apache License from [[https://github.com/scipopt/soplex|Github]]. To be compatible with C++-20, we require a version of !SoPlex more recent than 6.0.3. At the time of this writing, 6.0.3 is the latest release, so we have to build from the unreleased version at the tip of the main branch.
+**Important:**  The GNU Multiple Precision library (GMP) is critical for the performance of SoPlex but the build does not complain if it is not present.
+Make sure that the build uses the library (check the output of cmake for `Found GMP`).
 
-=> strengthen SoPlex performance warning
-
-You can install !SoPlex as follows (adapt the path if you install another version or want to use another location):
-{{{
-
+As of SoPlex 6.0.4, the release does not support C++-20, so we build  from the tip of the [Github main branch](https://github.com/scipopt/soplex) (adapt the path if you install another version or want to use another location):
+```bash
+sudo apt install libgmp3-dev
 git clone https://github.com/scipopt/soplex.git
-sudo apt install libgmp3-dev # The library is optional but important for SoPlex's performance
-export soplex_DIR=/opt/soplex-6.0.3x
+export soplex_DIR=/opt/soplex-6.0.4x
 export CXXFLAGS="$CXXFLAGS -Wno-use-after-free" # Ignore compiler warnings about use-after-free
 cmake -S soplex -B build
 cmake --build build
 cmake --install build --prefix $soplex_DIR
 rm -rf soplex build
-}}}
+```
 
-After installation, permanently set the environment variable {{{soplex_DIR}}} to the value you used in installation.
+After installation, permanently set the environment variable `soplex_DIR}` to the value you used in installation.
 
-/!\ '''Note:''' Once a version including Salomé's fix is released, we can update this and can recommend the [[https://soplex.zib.de/index.php#download|SoPlex homepage]] for downloads instead.
+**Note:** Once [support for C++-20](https://github.com/scipopt/soplex/pull/15) has been included in a SoPlex release, we can update this and can recommend the [SoPlex homepage](https://soplex.zib.de/index.php#download) for downloads instead.
 
 
 Once LP solvers are installed and the environment variables {{{cplex_DIR}}} and/or {{{soplex_DIR}}} are set up correctly, Fast Downward automatically includes an LP Solver in the build if it is needed and the solver is detected on the system.
