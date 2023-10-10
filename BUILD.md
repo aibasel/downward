@@ -139,3 +139,7 @@ If you compiled Fast Downward on Windows (especially on !GitHub Actions) and can
 
 IBM offers a [free academic license](http://ibm.com/academic) that includes access to CPLEX.
 Once you are registered, you find the software under Technology -> Data Science. Choose the right version and switch to HTTP download unless you have the IBM download manager installed. If you have problems using their website with Firefox, try Chrome instead. Execute the downloaded binary and follow the guided installation.
+
+
+Building VAL on macOS: If your compiler doesn't find flex or bison, your include directories might be in a non-standard location. In this case you probably have to specify where to look for includes and libraries in VAL's Makefile (probably `/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr`).
+
