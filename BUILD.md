@@ -83,21 +83,17 @@ To build the planner, from the top-level directory run:
 ./build.py
 ```
 
-This will create our default build `release` in the directory `builds`. Other predefined build types are `debug`, `release_no_lp`, `glibcxx_debug` and `minimal`. Calling `./build.py --debug` will create a default debug build (equivalent to `debug`). You can pass make parameters to `./build.py`, e.g., `./build.py --debug -j4` will create a debug build using 4 threads for compilation (`-j4`), and `./build.py translate` will only build the translator component. (Because the translator is implemented in Python, "building" it just entails copying its source code into the build directory.) By default, `build.py` uses all cores for building the planner.
+This will create the default build `release` in the directory `builds`. For information on alternative builds (e.g. `debug`) and further options, call
+`./build.py --help`. [Our website](https://www.fast-downward.org/ForDevelopers/CMake) has details on how to set up development builds.
 
-[Our website](https://www.fast-downward.org/ForDevelopers/CMake) has details on more complex builds.
-
-### Compiling on macOS
-
-Fast Downward should compile with the GNU C++ compiler and {{{clang}}} with the same instructions described above. In case your system compiler does not work for some reason, you will need to install the GNU compiler (if not already present) and tell CMake which compiler to use (see [[#Manual_Builds]]).
 
 ### Compiling on Windows
 
-Windows does not interpret the shebang in Python files, so you have to call {{{build.py}}} as {{{python3 build.py}}} (make sure python3 is on your {{{PATH}}}). Also note that options are passed without {{{--}}}, e.g., {{{python3 build.py build=release_no_lp}}}.
+Windows does not interpret the shebang in Python files, so you have to call `build.py` as `python3 build.py` (make sure `python3` is on your `PATH`). Also note that options are passed without `--`, e.g., `python3 build.py build=debug`.
 
-Note that compiling from terminal is only possible with the right environment. The easiest way to get such an environment is to use the ``Developer Power''''''Shell for VS 2019`` or ``Developer Power''''''Shell.
+Note that compiling from terminal is only possible with the right environment. The easiest way to get such an environment is to use the `Developer PowerShell for VS 2019` or `Developer PowerShell`.
 
-Alternatively, you can create a Visual Studio Project (see [[#Manual_Builds]]), open it in Visual Studio and build from there. Visual Studio will create its binary files in subdirectories of the project that our driver script currently does not recognize. If you build with Visual Studio, you will have to run the individual components of the planner yourself.
+Alternatively, you can [create a Visual Studio Project](https://www.fast-downward.org/ForDevelopers/CMake#Custom_Builds), open it in Visual Studio and build from there. Visual Studio will create its binary files in subdirectories of the project that our driver script currently does not recognize. If you build with Visual Studio, you will have to run the individual components of the planner yourself.
 
 ## Running the planner
 
