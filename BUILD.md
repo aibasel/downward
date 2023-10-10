@@ -1,30 +1,26 @@
 ## Dependencies
+### Mandatory Dependencies
 
-- **Linux/MacOS:** you need a C++ compiler, CMake and GNU make.
+**Linux/MacOS:** you need a C++ compiler, CMake and GNU make.
   To run the planner, you will also need Python 3.
 
   On Debian/Ubuntu, the following should install all these dependencies:
   ```
   sudo apt install cmake g++ make python3
   ```
-- **Windows:** install [Visual Studio >= 2017](https://visualstudio.microsoft.com/de/vs/older-downloads/),
+
+**Windows:** install [Visual Studio >= 2017](https://visualstudio.microsoft.com/de/vs/older-downloads/),
 [Python](https://www.python.org/downloads/windows/), and [CMake](http://www.cmake.org/download/).
 During the installation of Visual Studio, the C++ compiler is not installed by default, but the IDE will prompt you to install it when you create a new C++ project.
 
 
-### Linear-Programming configurations (optional)
+### Optional: Linear-Programming Solvers
 
-Some planner configurations depend on an LP solver. 
+Some planner configurations depend on an LP or MIP solver. We support CPLEX (commercial, [free academic license](http://ibm.com/academic)) and SoPlex (Apache License, no MIP support). You can install one or both solvers without causing conflicts.
 
-================================================
+Once LP solvers are installed and the environment variables `cplex_DIR` and/or `soplex_DIR` are set up correctly, Fast Downward automatically includes each solver detected on the system in the build.
 
-# LP solver support
-
-[[intro sentence above]]
-
-Currently, CPLEX (commercial, [free academic license](http://ibm.com/academic)) and SoPlex (Apache License) are supported. You can install one or both solvers without causing conflicts.
-
-## Installing CPLEX
+#### Installing CPLEX
 
 Obtain CPLEX and follow the guided installation. See [troubleshooting](#troubleshooting) if you have problems accessing the installer.
 On Windows, install CPLEX into a directory without spaces.
@@ -37,8 +33,7 @@ export cplex_DIR=/opt/ibm/ILOG/CPLEX_Studio2211/cplex
 Note that on Windows, setting up the environment variable might require using `/` instead of the more Windows-common `\`.
 
 
-
-## Installing SoPlex on Linux/macOS
+#### Installing SoPlex on Linux/macOS
 
 **Important:**  The GNU Multiple Precision library (GMP) is critical for the performance of SoPlex but the build does not complain if it is not present.
 Make sure that the build uses the library (check the output of cmake for `Found GMP`).
@@ -55,12 +50,12 @@ cmake --install build --prefix $soplex_DIR
 rm -rf soplex build
 ```
 
-After installation, permanently set the environment variable `soplex_DIR}` to the value you used in installation.
+After installation, permanently set the environment variable `soplex_DIR` to the value you used in installation.
 
 **Note:** Once [support for C++-20](https://github.com/scipopt/soplex/pull/15) has been included in a SoPlex release, we can update this and can recommend the [SoPlex homepage](https://soplex.zib.de/index.php#download) for downloads instead.
 
 
-Once LP solvers are installed and the environment variables {{{cplex_DIR}}} and/or {{{soplex_DIR}}} are set up correctly, Fast Downward automatically includes an LP Solver in the build if it is needed and the solver is detected on the system.
+
 
 
 
