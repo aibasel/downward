@@ -55,23 +55,25 @@ After installation, permanently set the environment variable `soplex_DIR` to the
 **Note:** Once [support for C++-20](https://github.com/scipopt/soplex/pull/15) has been included in a SoPlex release, we can update this and can recommend the [SoPlex homepage](https://soplex.zib.de/index.php#download) for downloads instead.
 
 
+### Optional: Plan Validator
 
+You can validate the found plans by passing `--validate` to the planner if the [VAL plan validation software](https://github.com/KCL-Planning/VAL)
+is installed on your system and the binary `validate` is on the `PATH`.
 
+**Note:** VAL has a [bug](https://github.com/KCL-Planning/VAL/issues/48) that prevents it from correctly handling the IPC 18 data network domain.
+You can install an older version, e.g. under Debian/Ubuntu:
 
+```bash
+sudo apt install g++ make flex bison
+git clone https://github.com/KCL-Planning/VAL.git
+cd VAL
+git checkout a5565396007eee73ac36527fbf904142b3077c74
+make clean  # Remove old binaries.
+sed -i 's/-Werror //g' Makefile  # Ignore warnings.
+make
+```
 
-
-
-
-
-
-### Validating the computed plans
-
-[good in principle]
-
-You can validate the found plans by passing `--validate` to the planner. For this, the [VAL plan validation software](https://github.com/KCL-Planning/VAL)
-needs to be installed on your system. [Here](SettingUpVal) you can find some instructions to help you set it up.
-
-=> make sure to do something with SettingUpVal; include the necessary information here or point to it, but hopefully it's easier now in the first place
+Don't forget to add the resulting `validate` binary to your `PATH`.
 
 ## Compiling the planner
 
