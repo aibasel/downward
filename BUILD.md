@@ -57,7 +57,7 @@ After installation, permanently set the environment variable `soplex_DIR` to the
 
 ### Optional: Plan Validator
 
-You can validate the found plans by passing `--validate` to the planner if the [VAL plan validation software](https://github.com/KCL-Planning/VAL)
+You can validate the found plans by passing `--validate` (implied by `--debug`) to the planner if the [VAL plan validation software](https://github.com/KCL-Planning/VAL)
 is installed on your system and the binary `validate` is on the `PATH`.
 
 **Note:** VAL has a [bug](https://github.com/KCL-Planning/VAL/issues/48) that prevents it from correctly handling the IPC 18 data network domain.
