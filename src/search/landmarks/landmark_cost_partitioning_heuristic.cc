@@ -132,7 +132,7 @@ public:
         document_note(
             "Optimal Cost Partitioning",
             "To use ``cost_partitioning=optimal``, you must build the planner with LP "
-            "support. See LPBuildInstructions.");
+            "support. See [build instructions https://github.com/aibasel/downward/blob/main/BUILD.md].");
         document_note(
             "Preferred operators",
             "Preferred operators should not be used for optimal planning. "

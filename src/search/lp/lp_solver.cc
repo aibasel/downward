@@ -21,7 +21,7 @@ void add_lp_solver_option_to_feature(plugins::Feature &feature) {
     feature.document_note(
         "Note",
         "to use an LP solver, you must build the planner with LP support. "
-        "See LPBuildInstructions.");
+        "See [build instructions https://github.com/aibasel/downward/blob/main/BUILD.md].");
 }
 
 LPConstraint::LPConstraint(double lower_bound, double upper_bound)
@@ -136,7 +136,7 @@ LPSolver::LPSolver(LPSolverType solver_type) {
         cerr << "Tried to use LP solver " << missing_solver
              << ", but the planner was compiled without support for it."
              << endl
-             << "See https://www.fast-downward.org/LPBuildInstructions\n"
+             << "See https://github.com/aibasel/downward/blob/main/BUILD.md\n"
              << "to install " << missing_solver
              << " and use it in the planner." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
