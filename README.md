@@ -20,7 +20,7 @@ Our separate [benchmark repository](https://github.com/aibasel/downward-benchmar
 
 The planner is mainly developed under Linux; and all of its features should work with no restrictions under this platform.
 The planner should compile and run correctly on macOS, but we cannot guarantee that it works as well as under Linux.
-The same comment applies for Windows, where additionally some diagnostic features (e.g. reporting memory used when the planner is terminated by a signal) are not supported.
+The same comment applies for Windows, where additionally some diagnostic features (e.g., reporting peak memory usage when the planner is terminated by a signal) are not supported.
 Setting time and memory limits and running portfolios is not supported under Windows either.
 
 This version of Fast Downward has been tested with the following software versions:

@@ -36,9 +36,9 @@ Note that on Windows, setting up the environment variable might require using `/
 #### Installing SoPlex on Linux/macOS
 
 **Important:**  The GNU Multiple Precision library (GMP) is critical for the performance of SoPlex but the build does not complain if it is not present.
-Make sure that the build uses the library (check the output of cmake for `Found GMP`).
+Make sure that the build uses the library (check the output of CMake for `Found GMP`).
 
-As of SoPlex 6.0.4, the release does not support C++-20, so we build  from the tip of the [Github main branch](https://github.com/scipopt/soplex) (adapt the path if you install another version or want to use another location):
+As of SoPlex 6.0.4, the release does not support C++-20, so we build  from the tip of the [GitHub main branch](https://github.com/scipopt/soplex) (adapt the path if you install a different version or want to use a different location):
 ```bash
 sudo apt install libgmp3-dev
 git clone https://github.com/scipopt/soplex.git
@@ -50,7 +50,7 @@ cmake --install build --prefix $soplex_DIR
 rm -rf soplex build
 ```
 
-After installation, permanently set the environment variable `soplex_DIR` to the value you used in installation.
+After installation, permanently set the environment variable `soplex_DIR` to the value you used during the installation.
 
 **Note:** Once [support for C++-20](https://github.com/scipopt/soplex/pull/15) has been included in a SoPlex release, we can update this and can recommend the [SoPlex homepage](https://soplex.zib.de/index.php#download) for downloads instead.
 
@@ -61,7 +61,7 @@ You can validate the found plans by passing `--validate` to the planner if the [
 is installed on your system and the binary `validate` is on the `PATH`.
 
 **Note:** VAL has a [bug](https://github.com/KCL-Planning/VAL/issues/48) that prevents it from correctly handling the IPC 18 data network domain.
-You can install an older version, e.g. under Debian/Ubuntu:
+You can install an older version, e.g., under Debian/Ubuntu:
 
 ```bash
 sudo apt install g++ make flex bison
@@ -91,7 +91,7 @@ This creates the default build `release` in the directory `builds`. For informat
 
 Windows does not interpret the shebang in Python files, so you have to call `build.py` as `python3 build.py` (make sure `python3` is on your `PATH`). Also note that options are passed without `--`, e.g., `python3 build.py build=debug`.
 
-Note that compiling from terminal is only possible with the right environment. The easiest way to get such an environment is to use the `Developer PowerShell for VS 2019` or `Developer PowerShell`.
+Note that compiling from the terminal is only possible with the right environment. The easiest way to get such an environment is to use the `Developer PowerShell for VS 2019` or `Developer PowerShell`.
 
 Alternatively, you can [create a Visual Studio Project](https://www.fast-downward.org/ForDevelopers/CMake#Custom_Builds), open it in Visual Studio and build from there. Visual Studio creates its binary files in subdirectories of the project that our driver script currently does not recognize. If you build with Visual Studio, you have to run the individual components of the planner yourself.
 
