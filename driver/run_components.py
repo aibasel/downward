@@ -1,6 +1,7 @@
 import errno
 import logging
 import os.path
+import shutil
 import subprocess
 import sys
 
@@ -11,16 +12,21 @@ from . import returncodes
 from . import util
 from .plan_manager import PlanManager
 
-# TODO: We might want to turn translate into a module and call it with "python3 -m translate".
-REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
 if os.name == "posix":
-    REL_SEARCH_PATH = "downward"
-    VALIDATE = "validate"
+    BINARY_EXT = ""
 elif os.name == "nt":
-    REL_SEARCH_PATH = "downward.exe"
-    VALIDATE = "validate.exe"
+    BINARY_EXT = ".exe"
 else:
     returncodes.exit_with_driver_unsupported_error("Unsupported OS: " + os.name)
+
+# TODO: We might want to turn translate into a module and call it with "python3 -m translate".
+REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
+REL_SEARCH_PATH = f"downward{BINARY_EXT}"
+# Older versions of VAL use lower case, newer versions upper case. We prefer the
+# older version because this is what our build instructions recommend.
+VALIDATE = (shutil.which(f"validate{BINARY_EXT}") or
+            shutil.which(f"Validate{BINARY_EXT}"))
+
 
 def get_executable(build, rel_path):
     # First, consider 'build' to be a path directly to the binaries.
@@ -139,8 +145,11 @@ def run_search(args):
 
 
 def run_validate(args):
-    logging.info("Running validate.")
+    if not VALIDATE:
+        returncodes.exit_with_driver_input_error(
+            "Error: Trying to run validate but it was not found on the PATH.")
 
+    logging.info("Running validate.")
     num_files = len(args.filenames)
     if num_files == 1:
         task, = args.filenames
@@ -163,9 +172,6 @@ def run_validate(args):
             time_limit=args.validate_time_limit,
             memory_limit=args.validate_memory_limit)
     except OSError as err:
-        if err.errno == errno.ENOENT:
-            returncodes.exit_with_driver_input_error("Error: {} not found. Is it on the PATH?".format(VALIDATE))
-        else:
-            returncodes.exit_with_driver_critical_error(err)
+        returncodes.exit_with_driver_critical_error(err)
     else:
         return (0, True)
