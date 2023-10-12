@@ -10,6 +10,11 @@ For further information:
 - Fast Downward mailing list: <https://groups.google.com/forum/#!forum/fast-downward>
 - Fast Downward main repository: <https://github.com/aibasel/downward>
 
+## Scientific experiments
+
+We recommend to use the [latest release](https://github.com/aibasel/downward/releases/latest) instead of the tip of the main branch.
+The [Downward Lab](https://lab.readthedocs.io/en/stable/) Python package helps running Fast Downward experiments.
+Our separate [benchmark repository](https://github.com/aibasel/downward-benchmarks) contains a collection of planning tasks.
 
 ## Supported software versions
 
