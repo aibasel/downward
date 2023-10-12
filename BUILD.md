@@ -2,7 +2,7 @@
 ### Mandatory Dependencies
 
 **Linux/MacOS:** you need a C++ compiler, CMake and GNU make.
-  To run the planner, you will also need Python 3.
+  To run the planner, you also need Python 3.
 
   On Debian/Ubuntu, the following should install all these dependencies:
   ```
@@ -11,7 +11,7 @@
 
 **Windows:** install [Visual Studio >= 2017](https://visualstudio.microsoft.com/de/vs/older-downloads/),
 [Python](https://www.python.org/downloads/windows/), and [CMake](http://www.cmake.org/download/).
-During the installation of Visual Studio, the C++ compiler is not installed by default, but the IDE will prompt you to install it when you create a new C++ project.
+During the installation of Visual Studio, the C++ compiler is not installed by default, but the IDE prompts you to install it when you create a new C++ project.
 
 
 ### Optional: Linear-Programming Solvers
@@ -83,7 +83,7 @@ To build the planner, from the top-level directory run:
 ./build.py
 ```
 
-This will create the default build `release` in the directory `builds`. For information on alternative builds (e.g. `debug`) and further options, call
+This creates the default build `release` in the directory `builds`. For information on alternative builds (e.g. `debug`) and further options, call
 `./build.py --help`. [Our website](https://www.fast-downward.org/ForDevelopers/CMake) has details on how to set up development builds.
 
 
@@ -93,7 +93,7 @@ Windows does not interpret the shebang in Python files, so you have to call `bui
 
 Note that compiling from terminal is only possible with the right environment. The easiest way to get such an environment is to use the `Developer PowerShell for VS 2019` or `Developer PowerShell`.
 
-Alternatively, you can [create a Visual Studio Project](https://www.fast-downward.org/ForDevelopers/CMake#Custom_Builds), open it in Visual Studio and build from there. Visual Studio will create its binary files in subdirectories of the project that our driver script currently does not recognize. If you build with Visual Studio, you will have to run the individual components of the planner yourself.
+Alternatively, you can [create a Visual Studio Project](https://www.fast-downward.org/ForDevelopers/CMake#Custom_Builds), open it in Visual Studio and build from there. Visual Studio creates its binary files in subdirectories of the project that our driver script currently does not recognize. If you build with Visual Studio, you have to run the individual components of the planner yourself.
 
 ## Running the planner
 
