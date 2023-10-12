@@ -95,33 +95,9 @@ Note that compiling from terminal is only possible with the right environment. T
 
 Alternatively, you can [create a Visual Studio Project](https://www.fast-downward.org/ForDevelopers/CMake#Custom_Builds), open it in Visual Studio and build from there. Visual Studio creates its binary files in subdirectories of the project that our driver script currently does not recognize. If you build with Visual Studio, you have to run the individual components of the planner yourself.
 
-## Running the planner
+## Testing the build
 
 [[include a one-line example to test the build and a link to PlannerUsage]]
-
-
-## Caveats
-[[does not belong here]]
-
-Please be aware of the following issues when working with the planner, '''especially if you want to use it for conducting scientific experiments''':
-We recommend using the [[Releases|latest release]]. If you are using the main branch instead, be aware that things can break or degrade with every commit. Typically they don't, but if they do, don't be surprised.
-
-=> quick start/README
-
-
-## Known good domains
-[[remove section, but keep info below in some form]]
-
-=> add link to downward-benchmarks repo or some other way to do a minimal test of a build (e.g. using PDDL files included in the repository)
-=> otherwise link to downward-benchmarks belongs to README or something similar
-
-https://github.com/aibasel/downward-benchmarks
-
-The {{{Downward Lab}}} toolkit helps running Fast Downward experiments on large benchmark sets. &rarr; [[ScriptUsage|More information]]
-=> Perhaps also reference downward-lab.
-
-=> TODO: What is with this ScriptUsage page?
-
 
 
 # Troubleshooting
