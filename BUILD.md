@@ -97,8 +97,16 @@ Alternatively, you can [create a Visual Studio Project](https://www.fast-downwar
 
 ## Testing the build
 
-[[include a one-line example to test the build and a link to PlannerUsage]]
+To test your build use:
 
+```bash
+./fast-downward.py misc/tests/benchmarks/miconic/s1-0.pddl --search "astar(lmcut())"
+```
+
+To test the LP support use:
+```bash
+./fast-downward.py misc/tests/benchmarks/miconic/s1-0.pddl --search "astar(operatorcounting([lmcut_constraints()]))"
+```
 
 # Troubleshooting
 
