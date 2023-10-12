@@ -1,4 +1,4 @@
-# See https://www.fast-downward.org/ForDevelopers/AddingSourceFiles
+# See https://www.fast-downward.org/ForDevelopers/CMake
 # for general information on adding source files and CMake libraries.
 #
 # All libraries are enabled by default and users can disable them by specifying

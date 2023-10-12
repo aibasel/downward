@@ -568,7 +568,7 @@ static basic_string<char> paper_references() {
          "Sven Koenig"},
         "Domain-Independent Construction of Pattern Database Heuristics for"
         " Cost-Optimal Planning",
-        "http://www.informatik.uni-freiburg.de/~ki/papers/haslum-etal-aaai07.pdf",
+        "https://ai.dmi.unibas.ch/papers/haslum-et-al-aaai07.pdf",
         "Proceedings of the 22nd AAAI Conference on Artificial"
         " Intelligence (AAAI 2007)",
         "1007-1012",
