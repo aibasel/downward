@@ -73,7 +73,8 @@ State StateRegistry::get_successor_state(const State &predecessor, const Operato
     /*
       TODO: ideally, we would not modify state_data_pool here and in
       insert_id_or_pop_state, but only at one place, to avoid errors like
-      buffer becoming a dangling pointer.
+      buffer becoming a dangling pointer. This used to be a bug before being
+      fixed in https://issues.fast-downward.org/issue1115.
     */
     state_data_pool.push_back(predecessor.get_buffer());
     PackedStateBin *buffer = state_data_pool[state_data_pool.size() - 1];
