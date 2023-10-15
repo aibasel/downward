@@ -89,7 +89,7 @@ def try_run(cmd):
     except OSError as exc:
         if exc.errno == errno.ENOENT:
             print(f"Could not find '{cmd[0]}' on your PATH. For installation instructions, "
-                  "see https://www.fast-downward.org/ObtainingAndRunningFastDownward.")
+                  "see BUILD.md in the project root directory.")
             sys.exit(1)
         else:
             raise
