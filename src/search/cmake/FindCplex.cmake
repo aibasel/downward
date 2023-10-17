@@ -12,7 +12,11 @@
 set(IMPORTED_CONFIGURATIONS "Debug" "Release")
 set(HINT_PATHS ${cplex_DIR} $ENV{cplex_DIR})
 
-add_library(cplex::cplex IMPORTED UNKNOWN)
+if(WIN32)
+    add_library(cplex::cplex IMPORTED SHARED)
+else()
+    add_library(cplex::cplex IMPORTED UNKNOWN)
+endif()
 set_target_properties(cplex::cplex PROPERTIES
     IMPORTED_CONFIGURATIONS "${IMPORTED_CONFIGURATIONS}"
 )
