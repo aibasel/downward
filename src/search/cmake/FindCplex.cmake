@@ -12,7 +12,16 @@
 set(IMPORTED_CONFIGURATIONS "Debug" "Release")
 set(HINT_PATHS ${cplex_DIR} $ENV{cplex_DIR})
 
-add_library(cplex::cplex IMPORTED UNKNOWN)
+if(WIN32)
+    # On Windows we have to declare the library as SHARED to correctly
+    # communicate the location of the dll and impllib files.
+    add_library(cplex::cplex IMPORTED SHARED)
+else()
+    # On Linux, the CPLEX installer sometimes does not provide dynamic
+    # libraries. If they are absent, we fall back to static ones further down,
+    # hence we mark the type unknown here.
+    add_library(cplex::cplex IMPORTED UNKNOWN)
+endif()
 set_target_properties(cplex::cplex PROPERTIES
     IMPORTED_CONFIGURATIONS "${IMPORTED_CONFIGURATIONS}"
 )
