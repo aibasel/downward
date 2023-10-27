@@ -7,7 +7,7 @@ def parse_nested_list(input_file):
     tokens = tokenize(input_file)
     next_token = next(tokens)
     if next_token != "(":
-        raise ParseError("Expected '(', got '%s'." % next_token)
+        raise ParseError(f"Expected '(', got '{next_token}'.")
     result = list(parse_list_aux(tokens))
     remaining_tokens = list(tokens)
     if remaining_tokens:
@@ -21,8 +21,7 @@ def tokenize(input):
         try:
             line.encode("ascii")
         except UnicodeEncodeError:
-            raise ParseError("Non-ASCII character outside comment: %s" %
-                             line[0:-1])
+            raise ParseError(f"Non-ASCII character outside comment: {line[0:-1]}")
         line = line.replace("(", " ( ").replace(")", " ) ").replace("?", " ?")
         for token in line.split():
             yield token.lower()
