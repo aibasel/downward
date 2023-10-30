@@ -385,7 +385,8 @@ bool CEGAR::get_flaws_for_pattern(
                 log << "plan did not lead to a goal state: ";
             }
             bool raise_goal_flaw = false;
-            for (const FactPair &goal : goals) {
+            for (const FactProxy &goal_proxy : task_proxy.get_goals()) {
+                const FactPair &goal = goal_proxy.get_pair();
                 int goal_var_id = goal.var;
                 if (final_state[goal_var_id].get_value() != goal.value &&
                     !blacklisted_variables.count(goal_var_id)) {
