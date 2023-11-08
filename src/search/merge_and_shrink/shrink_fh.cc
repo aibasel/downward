@@ -218,7 +218,7 @@ public:
         document_note(
             "Note",
             "The strategy first partitions all states according to their "
-            "combination of f- and g-values. These partitions are then sorted, "
+            "combination of f- and h-values. These partitions are then sorted, "
             "first according to their f-value, then according to their h-value "
             "(increasing or decreasing, depending on the chosen options). "
             "States sorted last are shrinked together until reaching max_states.");
@@ -229,8 +229,8 @@ public:
             "is a numerical parameter for which sensible values include 1000, "
             "10000, 50000, 100000 and 200000) and the linear merge startegy "
             "cg_goal_level to obtain the variant 'f-preserving shrinking of "
-            "transition systems', called called HHH in the IJCAI 2011 paper, see "
-            "bisimulation based shrink strategy. "
+            "transition systems', called HHH in the IJCAI 2011 paper. Also "
+            "see bisimulation based shrink strategy. "
             "When we last ran experiments on interaction of shrink strategies "
             "with label reduction, this strategy performed best when used with "
             "label reduction before merging (and no label reduction before "
