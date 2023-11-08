@@ -7,6 +7,7 @@
 #include "task_proxy.h"
 
 #include "algorithms/ordered_set.h"
+#include "tasks/root_task.h"
 
 #include <memory>
 #include <vector>
@@ -73,6 +74,9 @@ protected:
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
+    explicit Heuristic(utils::Verbosity verbosity = utils::Verbosity::NORMAL,
+                       std::shared_ptr<AbstractTask> transform = tasks::g_root_task,
+                       bool cache_estimates = true);
     explicit Heuristic(const plugins::Options &opts);
     virtual ~Heuristic() override;
 
