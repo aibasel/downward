@@ -29,6 +29,15 @@ void add_log_options_to_feature(plugins::Feature &feature) {
         "normal");
 }
 
+LogProxy get_log_from_verbosity(const Verbosity &verbosity) {
+    /* NOTE: We return (a proxy to) the global log if all options match the
+       default values of the global log. */
+    if (verbosity == Verbosity::NORMAL) {
+        return LogProxy(global_log);
+    }
+    return LogProxy(make_shared<Log>(verbosity));
+}
+
 LogProxy get_log_from_options(const plugins::Options &options) {
     /* NOTE: We return (a proxy to) the global log if all options match the
        default values of the global log. */

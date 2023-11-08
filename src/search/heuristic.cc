@@ -13,6 +13,13 @@
 #include <limits>
 
 using namespace std;
+Heuristic::Heuristic(utils::Verbosity verbosity, shared_ptr<AbstractTask> transform, bool cache_estimates)
+        : Evaluator(verbosity, true, true, true),
+          heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
+          cache_evaluator_values(cache_estimates),
+          task(transform),
+          task_proxy(*task) {
+}
 
 Heuristic::Heuristic(const plugins::Options &opts)
     : Evaluator(opts, true, true, true),
