@@ -408,13 +408,21 @@ LiteralNode::LiteralNode(Token value)
 }
 
 DecoratedASTNodePtr LiteralNode::decorate(DecorateContext &context) const {
-    utils::TraceBlock block(context, "Checking Literal: " + value.content);
+    utils::TraceBlock block(context, "Checking Literal: " + value.repr());
     if (context.has_variable(value.content)) {
-        if (value.type != TokenType::IDENTIFIER) {
+        if (value.type == TokenType::IDENTIFIER) {
+            string variable_name = value.content;
+            return utils::make_unique_ptr<VariableNode>(variable_name);
+        } else if (value.type != TokenType::STRING) {
+            /*
+              Variable names may be identical to a string literal but not
+              identical to any other token, e.g., a boolean:
+                  "let(true, blind(), astar(true))"
+              This kind of mistake is handled earlier, so ending up here is a
+              programming mistake, not an input error.
+            */
             ABORT("A non-identifier token was defined as variable.");
         }
-        string variable_name = value.content;
-        return utils::make_unique_ptr<VariableNode>(variable_name);
     }
 
     switch (value.type) {
@@ -436,7 +444,7 @@ DecoratedASTNodePtr LiteralNode::decorate(DecorateContext &context) const {
 
 void LiteralNode::dump(string indent) const {
     cout << indent << token_type_name(value.type) << ": "
-         << value.content << endl;
+         << value.repr() << endl;
 }
 
 const plugins::Type &LiteralNode::get_type(DecorateContext &context) const {

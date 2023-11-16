@@ -8,6 +8,44 @@
 using namespace std;
 
 namespace utils {
+string escape(const string &s) {
+    string result;
+    result.reserve(s.length());
+    for (char c : s) {
+        if (c == '\\') {
+            result += "\\\\";
+        } else if (c == '"') {
+            result += "\\\"";
+        } else if (c == '\n') {
+            result += "\\n";
+        } else {
+            result += c;
+        }
+    }
+    return result;
+}
+
+string unescape(const string &s) {
+    string result;
+    result.reserve(s.length());
+    bool escaped = false;
+    for (char c : s) {
+        if (escaped) {
+            escaped = false;
+            if (c == 'n') {
+                result += "\n";
+            } else {
+                result += c;
+            }
+        } else if (c == '\\') {
+            escaped = true;
+        } else {
+            result += c;
+        }
+    }
+    return result;
+}
+
 void lstrip(string &s) {
     s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
                                    return !isspace(ch);

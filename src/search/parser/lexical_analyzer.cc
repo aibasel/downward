@@ -29,8 +29,7 @@ static vector<pair<TokenType, regex>> construct_token_type_expressions() {
         {TokenType::INTEGER,
          R"([+-]?(infinity|\d+([kmg]\b)?))"},
         {TokenType::BOOLEAN, R"(true|false)"},
-        // TODO: support quoted strings.
-        {TokenType::STRING, R"("([^"]*)\")"},
+        {TokenType::STRING, R"(\"((\\\\|\\"|\\n|[^"\\])*)\")"},
         {TokenType::LET, R"(let)"},
         {TokenType::IDENTIFIER, R"([a-zA-Z_]\w*)"}
     };
@@ -44,6 +43,23 @@ static vector<pair<TokenType, regex>> construct_token_type_expressions() {
 static const vector<pair<TokenType, regex>> token_type_expressions =
     construct_token_type_expressions();
 
+static string highlight_position(const string &text, string::const_iterator pos) {
+    ostringstream error;
+    int distance_to_error = pos - text.begin();
+    for (const string &line : utils::split(text, "\n")) {
+        int line_length = line.size();
+        bool error_in_line =
+            distance_to_error < line_length && distance_to_error >= 0;
+        error << (error_in_line ? "> " : "  ") << line << endl;
+        if (error_in_line)
+            error << string(distance_to_error + 2, ' ') << "^" << endl;
+
+        distance_to_error -= line.size() + 1;
+    }
+    string message = error.str();
+    utils::rstrip(message);
+    return message;
+}
 
 TokenStream split_tokens(const string &text) {
     utils::Context context;
@@ -63,7 +79,7 @@ TokenStream split_tokens(const string &text) {
             if (regex_search(start, end, match, expression, regex_constants::match_continuous)) {
                 string value;
                 if (token_type == TokenType::STRING) {
-                    value = match[2];
+                    value = utils::unescape(match[2]);
                 } else {
                     value = utils::tolower(match[1]);
                 }
@@ -74,22 +90,8 @@ TokenStream split_tokens(const string &text) {
             }
         }
         if (!has_match) {
-            ostringstream error;
-            error << "Unable to recognize next token:" << endl;
-            int distance_to_error = start - text.begin();
-            for (const string &line : utils::split(text, "\n")) {
-                int line_length = line.size();
-                bool error_in_line =
-                    distance_to_error < line_length && distance_to_error >= 0;
-                error << (error_in_line ? "> " : "  ") << line << endl;
-                if (error_in_line)
-                    error << string(distance_to_error + 2, ' ') << "^" << endl;
-
-                distance_to_error -= line.size() + 1;
-            }
-            string message = error.str();
-            utils::rstrip(message);
-            context.error(message);
+            context.error("Unable to recognize next token:\n" +
+                          highlight_position(text, start));
         }
     }
     return TokenStream(move(tokens));

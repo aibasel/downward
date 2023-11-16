@@ -15,6 +15,14 @@ Token::Token(const string &content, TokenType type)
     : content(content), type(type) {
 }
 
+string Token::repr() const {
+    if (type == TokenType::STRING) {
+        return "\"" + utils::escape(content) + "\"";
+    } else {
+        return content;
+    }
+}
+
 TokenStream::TokenStream(vector<Token> &&tokens)
     : tokens(move(tokens)), pos(0) {
 }
@@ -70,7 +78,7 @@ string TokenStream::str(int from, int to) const {
     int max_position = min(static_cast<int>(tokens.size()), to);
     ostringstream message;
     while (curr_position < max_position) {
-        message << tokens[curr_position].content;
+        message << tokens[curr_position].repr();
         curr_position++;
     }
     return message.str();
@@ -113,7 +121,7 @@ ostream &operator<<(ostream &out, TokenType token_type) {
 }
 
 ostream &operator<<(ostream &out, const Token &token) {
-    out << "<Type: '" << token.type << "', Value: '" << token.content << "'>";
+    out << "<Type: '" << token.type << "', Value: '" << token.repr() << "'>";
     return out;
 }
 }

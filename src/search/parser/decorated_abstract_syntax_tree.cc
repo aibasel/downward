@@ -228,7 +228,7 @@ plugins::Any StringLiteralNode::construct(ConstructContext &context) const {
 }
 
 void StringLiteralNode::dump(string indent) const {
-    cout << indent << "STRING: " << value << endl;
+    cout << indent << "STRING: \"" << utils::escape(value) << "\"" << endl;
 }
 
 IntLiteralNode::IntLiteralNode(const string &value)

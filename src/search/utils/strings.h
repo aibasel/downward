@@ -8,6 +8,8 @@
 #include <vector>
 
 namespace utils {
+extern std::string escape(const std::string &s);
+extern std::string unescape(const std::string &s);
 extern void lstrip(std::string &s);
 extern void rstrip(std::string &s);
 extern void strip(std::string &s);
