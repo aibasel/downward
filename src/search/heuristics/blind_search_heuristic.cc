@@ -12,7 +12,7 @@
 using namespace std;
 
 namespace blind_search_heuristic {
-BlindSearchHeuristic::BlindSearchHeuristic(utils::Verbosity verbosity, shared_ptr<AbstractTask>  transform, bool cache_estimates)
+BlindSearchHeuristic::BlindSearchHeuristic(utils::Verbosity verbosity, const shared_ptr<AbstractTask> &transform, bool cache_estimates)
         : Heuristic(verbosity, transform, cache_estimates),
           min_operator_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
@@ -26,9 +26,6 @@ BlindSearchHeuristic::BlindSearchHeuristic(const plugins::Options &opts)
     if (log.is_at_least_normal()) {
         log << "Initializing blind search heuristic..." << endl;
     }
-}
-
-BlindSearchHeuristic::~BlindSearchHeuristic() {
 }
 
 int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {

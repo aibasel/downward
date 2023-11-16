@@ -30,8 +30,6 @@ void add_log_options_to_feature(plugins::Feature &feature) {
 }
 
 LogProxy get_log_from_verbosity(const Verbosity &verbosity) {
-    /* NOTE: We return (a proxy to) the global log if all options match the
-       default values of the global log. */
     if (verbosity == Verbosity::NORMAL) {
         return LogProxy(global_log);
     }

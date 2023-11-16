@@ -11,7 +11,7 @@ protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     BlindSearchHeuristic(utils::Verbosity verbosity = utils::Verbosity::NORMAL,
-                         std::shared_ptr<AbstractTask>  transform = tasks::g_root_task,
+                         const std::shared_ptr<AbstractTask> &transform = tasks::g_root_task,
                          bool cache_estimates = true);
     BlindSearchHeuristic(const plugins::Options &opts);
     ~BlindSearchHeuristic();
