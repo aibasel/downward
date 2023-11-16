@@ -26,7 +26,9 @@ public:
             utils::Verbosity verbosity = utils::Verbosity::NORMAL,
             bool use_for_reporting_minima = false,
             bool use_for_boosting = false,
-            bool use_for_counting_evaluations = false);
+            bool use_for_counting_evaluations = false
+                    //string description = default_description
+                    );
     explicit Evaluator(
         const plugins::Options &opts,
         bool use_for_reporting_minima = false,
