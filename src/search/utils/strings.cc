@@ -9,6 +9,10 @@ using namespace std;
 
 namespace utils {
 string escape(const string &s) {
+    /*
+      Escape any occurrences of \ with \\, occurrences of " with \" and
+      newlines with \n.
+    */
     string result;
     result.reserve(s.length());
     for (char c : s) {
@@ -26,6 +30,12 @@ string escape(const string &s) {
 }
 
 string unescape(const string &s) {
+    /*
+      On sequences created with escape(), this will restore the original string.
+      However, no syntax checking is done. Escaped symbols other than the ones
+      added by escape() will just ignore the escaping \ (e.g., \t is treated
+      as t, not as a tab). Strings ending in \ will not produce an error.
+    */
     string result;
     result.reserve(s.length());
     bool escaped = false;
@@ -33,7 +43,7 @@ string unescape(const string &s) {
         if (escaped) {
             escaped = false;
             if (c == 'n') {
-                result += "\n";
+                result += '\n';
             } else {
                 result += c;
             }
