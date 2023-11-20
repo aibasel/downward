@@ -29,7 +29,6 @@ struct Token {
     TokenType type;
 
     Token(const std::string &content, TokenType type);
-    std::string repr() const;
 };
 
 class TokenStream {

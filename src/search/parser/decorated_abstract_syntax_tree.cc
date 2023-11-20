@@ -224,11 +224,38 @@ StringLiteralNode::StringLiteralNode(const string &value)
 
 plugins::Any StringLiteralNode::construct(ConstructContext &context) const {
     utils::TraceBlock block(context, "Constructing string value from '" + value + "'");
-    return value;
+    if (!(value.starts_with('"') && value.ends_with('"'))) {
+        ABORT("String literal value is not enclosed in quotation marks"
+              " (this should have been caught before constructing this node).");
+    }
+    /*
+      We are not doing any further syntax checking. Escaped symbols other than
+      \n will just ignore the escaping \ (e.g., \t is treated as t, not as a
+      tab). Strings ending in \ will not produce an error but should be excluded
+      by the previous steps.
+    */
+    string result;
+    result.reserve(value.length() - 2);
+    bool escaped = false;
+    for (char c : value.substr(1, value.size() - 2)) {
+        if (escaped) {
+            escaped = false;
+            if (c == 'n') {
+                result += '\n';
+            } else {
+                result += c;
+            }
+        } else if (c == '\\') {
+            escaped = true;
+        } else {
+            result += c;
+        }
+    }
+    return result;
 }
 
 void StringLiteralNode::dump(string indent) const {
-    cout << indent << "STRING: \"" << utils::escape(value) << "\"" << endl;
+    cout << indent << "STRING: " << value << endl;
 }
 
 IntLiteralNode::IntLiteralNode(const string &value)

@@ -29,7 +29,7 @@ static vector<pair<TokenType, regex>> construct_token_type_expressions() {
         {TokenType::INTEGER,
          R"([+-]?(infinity|\d+([kmg]\b)?))"},
         {TokenType::BOOLEAN, R"(true|false)"},
-        {TokenType::STRING, R"(\"((\\\\|\\"|\\n|[^"\\])*)\")"},
+        {TokenType::STRING, R"("(\\\\|\\"|\\n|[^"\\])*")"},
         {TokenType::LET, R"(let)"},
         {TokenType::IDENTIFIER, R"([a-zA-Z_]\w*)"}
     };
@@ -77,13 +77,7 @@ TokenStream split_tokens(const string &text) {
             TokenType token_type = type_and_expression.first;
             const regex &expression = type_and_expression.second;
             if (regex_search(start, end, match, expression, regex_constants::match_continuous)) {
-                string value;
-                if (token_type == TokenType::STRING) {
-                    value = utils::unescape(match[2]);
-                } else {
-                    value = utils::tolower(match[1]);
-                }
-                tokens.push_back({value, token_type});
+                tokens.push_back({match[1], token_type});
                 start += match[0].length();
                 has_match = true;
                 break;

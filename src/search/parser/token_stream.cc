@@ -11,16 +11,18 @@
 using namespace std;
 
 namespace parser {
-Token::Token(const string &content, TokenType type)
-    : content(content), type(type) {
-}
-
-string Token::repr() const {
-    if (type == TokenType::STRING) {
-        return "\"" + utils::escape(content) + "\"";
+static string case_insensitive_to_lower(const string &content, TokenType type) {
+    if (type == TokenType::BOOLEAN ||
+        type == TokenType::FLOAT ||
+        type == TokenType::IDENTIFIER ||
+        type == TokenType::INTEGER) {
+        return utils::tolower(content);
     } else {
         return content;
     }
+}
+Token::Token(const string &content, TokenType type)
+    : content(case_insensitive_to_lower(content, type)), type(type) {
 }
 
 TokenStream::TokenStream(vector<Token> &&tokens)
@@ -78,7 +80,7 @@ string TokenStream::str(int from, int to) const {
     int max_position = min(static_cast<int>(tokens.size()), to);
     ostringstream message;
     while (curr_position < max_position) {
-        message << tokens[curr_position].repr();
+        message << tokens[curr_position].content;
         curr_position++;
     }
     return message.str();
@@ -121,7 +123,7 @@ ostream &operator<<(ostream &out, TokenType token_type) {
 }
 
 ostream &operator<<(ostream &out, const Token &token) {
-    out << "<Type: '" << token.type << "', Value: '" << token.repr() << "'>";
+    out << "<Type: '" << token.type << "', Value: '" << token.content << "'>";
     return out;
 }
 }

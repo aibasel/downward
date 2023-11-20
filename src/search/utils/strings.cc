@@ -8,54 +8,6 @@
 using namespace std;
 
 namespace utils {
-string escape(const string &s) {
-    /*
-      Escape any occurrences of \ with \\, occurrences of " with \" and
-      newlines with \n.
-    */
-    string result;
-    result.reserve(s.length());
-    for (char c : s) {
-        if (c == '\\') {
-            result += "\\\\";
-        } else if (c == '"') {
-            result += "\\\"";
-        } else if (c == '\n') {
-            result += "\\n";
-        } else {
-            result += c;
-        }
-    }
-    return result;
-}
-
-string unescape(const string &s) {
-    /*
-      On sequences created with escape(), this will restore the original string.
-      However, no syntax checking is done. Escaped symbols other than the ones
-      added by escape() will just ignore the escaping \ (e.g., \t is treated
-      as t, not as a tab). Strings ending in \ will not produce an error.
-    */
-    string result;
-    result.reserve(s.length());
-    bool escaped = false;
-    for (char c : s) {
-        if (escaped) {
-            escaped = false;
-            if (c == 'n') {
-                result += '\n';
-            } else {
-                result += c;
-            }
-        } else if (c == '\\') {
-            escaped = true;
-        } else {
-            result += c;
-        }
-    }
-    return result;
-}
-
 void lstrip(string &s) {
     s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
                                    return !isspace(ch);
