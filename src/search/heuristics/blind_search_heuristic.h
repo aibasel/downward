@@ -14,7 +14,6 @@ public:
                          const std::shared_ptr<AbstractTask> &transform = tasks::g_root_task,
                          bool cache_estimates = true);
     BlindSearchHeuristic(const plugins::Options &opts);
-    ~BlindSearchHeuristic();
 };
 }
 
