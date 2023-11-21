@@ -27,9 +27,19 @@ static vector<pair<TokenType, regex>> construct_token_type_expressions() {
         {TokenType::LET, R"(let)"},
         {TokenType::BOOLEAN, R"(true|false)"},
         {TokenType::STRING, R"("(\\\\|\\"|\\n|[^"\\])*")"},
-        {TokenType::INTEGER, R"([+-]?(infinity|\d+([kmg]\b)?))"},
+        /*
+          Floats have to be parsed before integers, so tokens like '1.2' are
+          parsed as one float token rather than an integer token '1' followed
+          by a float token '.2'.
+        */
         {TokenType::FLOAT,
          R"([+-]?(((\d*\.\d+|\d+\.)(e[+-]?\d+|[kmg]\b)?)|\d+e[+-]?\d+))"},
+        {TokenType::INTEGER, R"([+-]?(infinity|\d+([kmg]\b)?))"},
+        /*
+          Identifiers have to be parsed last to prevent reserved words (
+          'infinity', 'true', 'false', and 'let') from being recognized as
+          identifiers.
+        */
         {TokenType::IDENTIFIER, R"([a-zA-Z_]\w*)"}
     };
     vector<pair<TokenType, regex>> token_type_expression;
