@@ -24,13 +24,12 @@ static vector<pair<TokenType, regex>> construct_token_type_expressions() {
         {TokenType::CLOSING_BRACKET, R"(\])"},
         {TokenType::COMMA, R"(,)"},
         {TokenType::EQUALS, R"(=)"},
-        {TokenType::FLOAT,
-         R"([+-]?(((\d*\.\d+|\d+\.)(e[+-]?\d+|[kmg]\b)?)|\d+e[+-]?\d+))"},
-        {TokenType::INTEGER,
-         R"([+-]?(infinity|\d+([kmg]\b)?))"},
+        {TokenType::LET, R"(let)"},
         {TokenType::BOOLEAN, R"(true|false)"},
         {TokenType::STRING, R"("(\\\\|\\"|\\n|[^"\\])*")"},
-        {TokenType::LET, R"(let)"},
+        {TokenType::INTEGER, R"([+-]?(infinity|\d+([kmg]\b)?))"},
+        {TokenType::FLOAT,
+         R"([+-]?(((\d*\.\d+|\d+\.)(e[+-]?\d+|[kmg]\b)?)|\d+e[+-]?\d+))"},
         {TokenType::IDENTIFIER, R"([a-zA-Z_]\w*)"}
     };
     vector<pair<TokenType, regex>> token_type_expression;

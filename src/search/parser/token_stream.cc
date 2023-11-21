@@ -13,9 +13,9 @@ using namespace std;
 namespace parser {
 static string case_insensitive_to_lower(const string &content, TokenType type) {
     if (type == TokenType::BOOLEAN ||
+        type == TokenType::INTEGER ||
         type == TokenType::FLOAT ||
-        type == TokenType::IDENTIFIER ||
-        type == TokenType::INTEGER) {
+        type == TokenType::IDENTIFIER) {
         return utils::tolower(content);
     } else {
         return content;
@@ -100,18 +100,18 @@ string token_type_name(TokenType token_type) {
         return ",";
     case TokenType::EQUALS:
         return "=";
-    case TokenType::INTEGER:
-        return "Integer";
-    case TokenType::FLOAT:
-        return "Float";
+    case TokenType::LET:
+        return "Let";
     case TokenType::BOOLEAN:
         return "Boolean";
     case TokenType::STRING:
         return "String";
+    case TokenType::INTEGER:
+        return "Integer";
+    case TokenType::FLOAT:
+        return "Float";
     case TokenType::IDENTIFIER:
         return "Identifier";
-    case TokenType::LET:
-        return "Let";
     default:
         ABORT("Unknown token type.");
     }
