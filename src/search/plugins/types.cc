@@ -292,6 +292,7 @@ BasicType TypeRegistry::NO_TYPE = BasicType(typeid(void), "<no type>");
 
 TypeRegistry::TypeRegistry() {
     insert_basic_type<bool>();
+    insert_basic_type<string>();
     insert_basic_type<int>();
     insert_basic_type<double>();
 }

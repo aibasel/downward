@@ -159,9 +159,10 @@ static ASTNodePtr parse_function(TokenStream &tokens,
 }
 
 static unordered_set<TokenType> literal_tokens {
-    TokenType::FLOAT,
-    TokenType::INTEGER,
     TokenType::BOOLEAN,
+    TokenType::STRING,
+    TokenType::INTEGER,
+    TokenType::FLOAT,
     TokenType::IDENTIFIER
 };
 
@@ -191,27 +192,35 @@ static ASTNodePtr parse_list(TokenStream &tokens, SyntaxAnalyzerContext &context
     return utils::make_unique_ptr<ListNode>(move(elements));
 }
 
-static vector<TokenType> PARSE_NODE_TOKEN_TYPES = {
-    TokenType::LET, TokenType::IDENTIFIER, TokenType::BOOLEAN,
-    TokenType::INTEGER, TokenType::FLOAT, TokenType::OPENING_BRACKET};
+static vector<TokenType> parse_node_token_types = {
+    TokenType::OPENING_BRACKET, TokenType::LET, TokenType::BOOLEAN,
+    TokenType::STRING, TokenType::INTEGER, TokenType::FLOAT,
+    TokenType::IDENTIFIER};
 
 static ASTNodePtr parse_node(TokenStream &tokens,
                              SyntaxAnalyzerContext &context) {
     utils::TraceBlock block(context, "Identify node type");
     Token token = tokens.peek(context);
-    if (find(PARSE_NODE_TOKEN_TYPES.begin(),
-             PARSE_NODE_TOKEN_TYPES.end(),
-             token.type) == PARSE_NODE_TOKEN_TYPES.end()) {
+    if (find(parse_node_token_types.begin(),
+             parse_node_token_types.end(),
+             token.type) == parse_node_token_types.end()) {
         ostringstream message;
         message << "Unexpected token '" << token
                 << "'. Expected any of the following token types: "
-                << utils::join(PARSE_NODE_TOKEN_TYPES, ", ");
+                << utils::join(parse_node_token_types, ", ");
         context.error(message.str());
     }
 
     switch (token.type) {
+    case TokenType::OPENING_BRACKET:
+        return parse_list(tokens, context);
     case TokenType::LET:
         return parse_let(tokens, context);
+    case TokenType::BOOLEAN:
+    case TokenType::STRING:
+    case TokenType::INTEGER:
+    case TokenType::FLOAT:
+        return parse_literal(tokens, context);
     case TokenType::IDENTIFIER:
         if (tokens.has_tokens(2)
             && tokens.peek(context, 1).type == TokenType::OPENING_PARENTHESIS) {
@@ -219,12 +228,6 @@ static ASTNodePtr parse_node(TokenStream &tokens,
         } else {
             return parse_literal(tokens, context);
         }
-    case TokenType::BOOLEAN:
-    case TokenType::INTEGER:
-    case TokenType::FLOAT:
-        return parse_literal(tokens, context);
-    case TokenType::OPENING_BRACKET:
-        return parse_list(tokens, context);
     default:
         ABORT("Unknown token type '" + token_type_name(token.type) + "'.");
     }

@@ -218,6 +218,46 @@ void BoolLiteralNode::dump(string indent) const {
     cout << indent << "BOOL: " << value << endl;
 }
 
+StringLiteralNode::StringLiteralNode(const string &value)
+    : value(value) {
+}
+
+plugins::Any StringLiteralNode::construct(ConstructContext &context) const {
+    utils::TraceBlock block(context, "Constructing string value from '" + value + "'");
+    if (!(value.starts_with('"') && value.ends_with('"'))) {
+        ABORT("String literal value is not enclosed in quotation marks"
+              " (this should have been caught before constructing this node).");
+    }
+    /*
+      We are not doing any further syntax checking. Escaped symbols other than
+      \n will just ignore the escaping \ (e.g., \t is treated as t, not as a
+      tab). Strings ending in \ will not produce an error but should be excluded
+      by the previous steps.
+    */
+    string result;
+    result.reserve(value.length() - 2);
+    bool escaped = false;
+    for (char c : value.substr(1, value.size() - 2)) {
+        if (escaped) {
+            escaped = false;
+            if (c == 'n') {
+                result += '\n';
+            } else {
+                result += c;
+            }
+        } else if (c == '\\') {
+            escaped = true;
+        } else {
+            result += c;
+        }
+    }
+    return result;
+}
+
+void StringLiteralNode::dump(string indent) const {
+    cout << indent << "STRING: " << value << endl;
+}
+
 IntLiteralNode::IntLiteralNode(const string &value)
     : value(value) {
 }
@@ -471,6 +511,18 @@ unique_ptr<DecoratedASTNode> BoolLiteralNode::clone() const {
 
 shared_ptr<DecoratedASTNode> BoolLiteralNode::clone_shared() const {
     return make_shared<BoolLiteralNode>(*this);
+}
+
+StringLiteralNode::StringLiteralNode(const StringLiteralNode &other)
+    : value(other.value) {
+}
+
+unique_ptr<DecoratedASTNode> StringLiteralNode::clone() const {
+    return utils::make_unique_ptr<StringLiteralNode>(*this);
+}
+
+shared_ptr<DecoratedASTNode> StringLiteralNode::clone_shared() const {
+    return make_shared<StringLiteralNode>(*this);
 }
 
 IntLiteralNode::IntLiteralNode(const IntLiteralNode &other)

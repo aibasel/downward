@@ -24,12 +24,22 @@ static vector<pair<TokenType, regex>> construct_token_type_expressions() {
         {TokenType::CLOSING_BRACKET, R"(\])"},
         {TokenType::COMMA, R"(,)"},
         {TokenType::EQUALS, R"(=)"},
+        {TokenType::LET, R"(let)"},
+        {TokenType::BOOLEAN, R"(true|false)"},
+        {TokenType::STRING, R"("(\\\\|\\"|\\n|[^"\\])*")"},
+        /*
+          Floats have to be parsed before integers, so tokens like '1.2' are
+          parsed as one float token rather than an integer token '1' followed
+          by a float token '.2'.
+        */
         {TokenType::FLOAT,
          R"([+-]?(((\d*\.\d+|\d+\.)(e[+-]?\d+|[kmg]\b)?)|\d+e[+-]?\d+))"},
-        {TokenType::INTEGER,
-         R"([+-]?(infinity|\d+([kmg]\b)?))"},
-        {TokenType::BOOLEAN, R"(true|false)"},
-        {TokenType::LET, R"(let)"},
+        {TokenType::INTEGER, R"([+-]?(infinity|\d+([kmg]\b)?))"},
+        /*
+          Identifiers have to be parsed last to prevent reserved words (
+          'infinity', 'true', 'false', and 'let') from being recognized as
+          identifiers.
+        */
         {TokenType::IDENTIFIER, R"([a-zA-Z_]\w*)"}
     };
     vector<pair<TokenType, regex>> token_type_expression;
@@ -42,6 +52,24 @@ static vector<pair<TokenType, regex>> construct_token_type_expressions() {
 static const vector<pair<TokenType, regex>> token_type_expressions =
     construct_token_type_expressions();
 
+static string highlight_position(const string &text, string::const_iterator pos) {
+    ostringstream message_stream;
+    int distance_to_highlight = pos - text.begin();
+    for (const string &line : utils::split(text, "\n")) {
+        int line_length = line.size();
+        bool highlight_in_line =
+            distance_to_highlight < line_length && distance_to_highlight >= 0;
+        message_stream << (highlight_in_line ? "> " : "  ") << line << endl;
+        if (highlight_in_line) {
+            message_stream << string(distance_to_highlight + 2, ' ') << "^"
+                           << endl;
+        }
+        distance_to_highlight -= line.size() + 1;
+    }
+    string message = message_stream.str();
+    utils::rstrip(message);
+    return message;
+}
 
 TokenStream split_tokens(const string &text) {
     utils::Context context;
@@ -59,29 +87,15 @@ TokenStream split_tokens(const string &text) {
             TokenType token_type = type_and_expression.first;
             const regex &expression = type_and_expression.second;
             if (regex_search(start, end, match, expression, regex_constants::match_continuous)) {
-                tokens.push_back({utils::tolower(match[1]), token_type});
+                tokens.push_back({match[1], token_type});
                 start += match[0].length();
                 has_match = true;
                 break;
             }
         }
         if (!has_match) {
-            ostringstream error;
-            error << "Unable to recognize next token:" << endl;
-            int distance_to_error = start - text.begin();
-            for (const string &line : utils::split(text, "\n")) {
-                int line_length = line.size();
-                bool error_in_line =
-                    distance_to_error < line_length && distance_to_error >= 0;
-                error << (error_in_line ? "> " : "  ") << line << endl;
-                if (error_in_line)
-                    error << string(distance_to_error + 2, ' ') << "^" << endl;
-
-                distance_to_error -= line.size() + 1;
-            }
-            string message = error.str();
-            utils::rstrip(message);
-            context.error(message);
+            context.error("Unable to recognize next token:\n" +
+                          highlight_position(text, start));
         }
     }
     return TokenStream(move(tokens));
