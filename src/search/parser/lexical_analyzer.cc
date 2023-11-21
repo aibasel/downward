@@ -43,19 +43,20 @@ static const vector<pair<TokenType, regex>> token_type_expressions =
     construct_token_type_expressions();
 
 static string highlight_position(const string &text, string::const_iterator pos) {
-    ostringstream error;
-    int distance_to_error = pos - text.begin();
+    ostringstream message_stream;
+    int distance_to_highlight = pos - text.begin();
     for (const string &line : utils::split(text, "\n")) {
         int line_length = line.size();
-        bool error_in_line =
-            distance_to_error < line_length && distance_to_error >= 0;
-        error << (error_in_line ? "> " : "  ") << line << endl;
-        if (error_in_line)
-            error << string(distance_to_error + 2, ' ') << "^" << endl;
-
-        distance_to_error -= line.size() + 1;
+        bool highlight_in_line =
+            distance_to_highlight < line_length && distance_to_highlight >= 0;
+        message_stream << (highlight_in_line ? "> " : "  ") << line << endl;
+        if (highlight_in_line) {
+            message_stream << string(distance_to_highlight + 2, ' ') << "^"
+                           << endl;
+        }
+        distance_to_highlight -= line.size() + 1;
     }
-    string message = error.str();
+    string message = message_stream.str();
     utils::rstrip(message);
     return message;
 }
