@@ -11,8 +11,10 @@ using namespace std;
 
 namespace ff_heuristic {
 // construction and destruction
-FFHeuristic::FFHeuristic(const plugins::Options &opts)
-    : AdditiveHeuristic(opts),
+FFHeuristic::FFHeuristic(const string &name,
+    utils::Verbosity verbosity, const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates)
+    : AdditiveHeuristic(name, verbosity, transform, cache_estimates),
       relaxed_plan(task_proxy.get_operators().size(), false) {
     if (log.is_at_least_normal()) {
         log << "Initializing FF heuristic..." << endl;
@@ -88,6 +90,14 @@ public:
         document_property("consistent", "no");
         document_property("safe", "yes for tasks without axioms");
         document_property("preferred operators", "yes");
+    }
+
+    virtual shared_ptr<FFHeuristic> create_component(
+            const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<FFHeuristic>(opts.get<string>("name"),
+                                        opts.get<utils::Verbosity>("verbosity"),
+                                        opts.get<shared_ptr<AbstractTask>>("transform"),
+                                        opts.get<bool>("cache_estimates"));
     }
 };
 

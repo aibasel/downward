@@ -65,7 +65,10 @@ protected:
     // Common part of h^add and h^ff computation.
     int compute_add_and_ff(const State &state);
 public:
-    explicit AdditiveHeuristic(const plugins::Options &opts);
+    AdditiveHeuristic(const std::string &name,
+                      utils::Verbosity verbosity,
+                      const std::shared_ptr<AbstractTask> &transform,
+                      bool cache_estimates);
 
     /*
       TODO: The two methods below are temporarily needed for the CEGAR

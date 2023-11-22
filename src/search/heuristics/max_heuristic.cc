@@ -22,8 +22,10 @@ namespace max_heuristic {
  */
 
 // construction and destruction
-HSPMaxHeuristic::HSPMaxHeuristic(const plugins::Options &opts)
-    : RelaxationHeuristic(opts) {
+HSPMaxHeuristic::HSPMaxHeuristic(const string &name,
+    utils::Verbosity verbosity, const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates)
+    : RelaxationHeuristic(name, verbosity, transform, cache_estimates) {
     if (log.is_at_least_normal()) {
         log << "Initializing HSP max heuristic..." << endl;
     }
@@ -117,6 +119,14 @@ public:
         document_property("consistent", "yes for tasks without axioms");
         document_property("safe", "yes for tasks without axioms");
         document_property("preferred operators", "no");
+    }
+
+    virtual shared_ptr<HSPMaxHeuristic> create_component(
+            const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<HSPMaxHeuristic>(opts.get<string>("name"),
+                                            opts.get<utils::Verbosity>("verbosity"),
+                                            opts.get<shared_ptr<AbstractTask>>("transform"),
+                                            opts.get<bool>("cache_estimates"));
     }
 };
 

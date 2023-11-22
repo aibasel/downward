@@ -9,11 +9,12 @@
 using namespace std;
 
 
-Evaluator::Evaluator(utils::Verbosity verbosity,
+Evaluator::Evaluator(const string &name,
+                     utils::Verbosity verbosity,
                      bool use_for_reporting_minima,
                      bool use_for_boosting,
                      bool use_for_counting_evaluations)
-        : description(string()),
+        : name(name),
           use_for_reporting_minima(use_for_reporting_minima),
           use_for_boosting(use_for_boosting),
           use_for_counting_evaluations(use_for_counting_evaluations),
@@ -25,7 +26,7 @@ Evaluator::Evaluator(const plugins::Options &opts,
                      bool use_for_reporting_minima,
                      bool use_for_boosting,
                      bool use_for_counting_evaluations)
-    : description(opts.get_unparsed_config()),
+    : name(opts.get_unparsed_config()),
       use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
@@ -40,7 +41,7 @@ void Evaluator::report_value_for_initial_state(
     const EvaluationResult &result) const {
     if (log.is_at_least_normal()) {
         assert(use_for_reporting_minima);
-        log << "Initial heuristic value for " << description << ": ";
+        log << "Initial heuristic value for " << name << ": ";
         if (result.is_infinite())
             log << "infinity";
         else
@@ -53,13 +54,13 @@ void Evaluator::report_new_minimum_value(
     const EvaluationResult &result) const {
     if (log.is_at_least_normal()) {
         assert(use_for_reporting_minima);
-        log << "New best heuristic value for " << description << ": "
+        log << "New best heuristic value for " << name << ": "
             << result.get_evaluator_value() << endl;
     }
 }
 
-const string &Evaluator::get_description() const {
-    return description;
+const string &Evaluator::get_name() const {
+    return name;
 }
 
 bool Evaluator::is_used_for_reporting_minima() const {
@@ -87,6 +88,9 @@ int Evaluator::get_cached_estimate(const State &) const {
 }
 
 void add_evaluator_options_to_feature(plugins::Feature &feature) {
+    feature.add_option<string>("name",
+                               "name used to identify evaluator in logs",
+                               "\"<Evaluator>\"");
     utils::add_log_options_to_feature(feature);
 }
 
