@@ -32,7 +32,10 @@ class FFHeuristic : public additive_heuristic::AdditiveHeuristic {
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    explicit FFHeuristic(const plugins::Options &opts);
+    explicit FFHeuristic(const std::string &name,
+                         utils::Verbosity verbosity,
+                         const std::shared_ptr<AbstractTask> &transform,
+                         bool cache_estimates);
 };
 }
 

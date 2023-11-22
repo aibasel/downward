@@ -35,8 +35,10 @@ UnaryOperator::UnaryOperator(
 
 
 // construction and destruction
-RelaxationHeuristic::RelaxationHeuristic(const plugins::Options &opts)
-    : Heuristic(opts) {
+RelaxationHeuristic::RelaxationHeuristic(const string &name,
+    utils::Verbosity verbosity, const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates)
+    : Heuristic(name, verbosity, transform, cache_estimates) {
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));
 

@@ -13,8 +13,8 @@
 #include <limits>
 
 using namespace std;
-Heuristic::Heuristic(utils::Verbosity verbosity, shared_ptr<AbstractTask> transform, bool cache_estimates)
-        : Evaluator(verbosity, true, true, true),
+Heuristic::Heuristic(const string &name, utils::Verbosity verbosity, shared_ptr<AbstractTask> transform, bool cache_estimates)
+        : Evaluator(name, verbosity, true, true, true),
           heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
           cache_evaluator_values(cache_estimates),
           task(transform),
@@ -27,9 +27,6 @@ Heuristic::Heuristic(const plugins::Options &opts)
       cache_evaluator_values(opts.get<bool>("cache_estimates")),
       task(opts.get<shared_ptr<AbstractTask>>("transform")),
       task_proxy(*task) {
-}
-
-Heuristic::~Heuristic() {
 }
 
 void Heuristic::set_preferred(const OperatorProxy &op) {

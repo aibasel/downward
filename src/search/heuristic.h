@@ -74,11 +74,10 @@ protected:
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
-    explicit Heuristic(utils::Verbosity verbosity = utils::Verbosity::NORMAL,
-                       std::shared_ptr<AbstractTask> transform = tasks::g_root_task,
-                       bool cache_estimates = true);
+    explicit Heuristic(const std::string &name, utils::Verbosity verbosity,
+                       std::shared_ptr<AbstractTask> transform,
+                       bool cache_estimates);
     explicit Heuristic(const plugins::Options &opts);
-    virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> & /*evals*/) override {
