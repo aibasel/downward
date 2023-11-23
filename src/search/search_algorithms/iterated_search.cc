@@ -169,7 +169,6 @@ shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_I
                                                       max_time,
                                                       bound,
                                                       task,
-                                                      move(component_map),
                                                       search_algorithms,
                                                       pass_bound,
                                                       repeat_last_phase,
@@ -203,8 +202,7 @@ public:
         add_list_option<shared_ptr<TaskIndependentSearchAlgorithm>>(
             "search_algorithms",
             "list of search algorithms for each phase",
-            "",
-            true);
+            "");
         add_option<bool>(
             "pass_bound",
             "use bound from previous search. The bound is the real cost "
@@ -252,7 +250,7 @@ public:
     }
 
     virtual shared_ptr<TaskIndependentIteratedSearch> create_component(const plugins::Options &opts, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<TaskIndependentSearchEngine>>(context, opts, "engines");
+        plugins::verify_list_non_empty<shared_ptr<TaskIndependentSearchAlgorithm>>(context, opts, "search_algorithms");
         return make_shared<TaskIndependentIteratedSearch>(opts.get<utils::Verbosity>("verbosity"),
                                                           opts.get<OperatorCost>("cost_type"),
                                                           opts.get<double>("max_time"),
