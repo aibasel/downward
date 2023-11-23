@@ -10,7 +10,6 @@
 
 namespace iterated_search {
 class IteratedSearch : public SearchAlgorithm {
-    std::unique_ptr<ComponentMap> component_map;
     std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms;
 
     bool pass_bound;
@@ -35,7 +34,6 @@ public:
                    double max_time,
                    int bound,
                    const std::shared_ptr<AbstractTask> &task,
-                   std::unique_ptr<ComponentMap> &&component_map,
                    std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
                    bool pass_bound,
                    bool repeat_last_phase,
