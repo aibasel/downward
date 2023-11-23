@@ -13,7 +13,6 @@ IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                double max_time,
                                int bound,
                                const shared_ptr<AbstractTask> &task,
-                               std::unique_ptr<ComponentMap> &&component_map,
                                vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
                                bool pass_bound,
                                bool repeat_last_phase,
@@ -26,7 +25,6 @@ IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                                 bound,
                                                 unparsed_config,
                                                 task),
-                                   component_map(move(component_map)),
                                    search_algorithms(search_algorithms),
                                    pass_bound(pass_bound),
                                    repeat_last_phase(repeat_last_phase),
@@ -51,13 +49,13 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
         */
         if (repeat_last_phase && last_phase_found_solution) {
             log << "Starting search: " << search_algorithms[search_algorithms.size() - 1]->get_description() << endl;
-            return search_algorithms[search_algorithms.size() - 1]->create_task_specific(task, component_map, 1);
+            return search_algorithms[search_algorithms.size() - 1]->create_task_specific_root(task, 1);
         } else {
             return nullptr;
         }
     }
     log << "Starting search: " << search_algorithms[phase]->get_description() << endl;
-    return search_algorithms[phase]->create_task_specific(task, component_map, 1);
+    return search_algorithms[phase]->create_task_specific_root(task, 1);
 }
 
 SearchStatus IteratedSearch::step() {
