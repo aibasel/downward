@@ -111,7 +111,7 @@ Duration Timer::reset() {
 }
 
 ostream &operator<<(ostream &os, const Timer &timer) {
-    os << fixed << setprecision(6) << timer();
+    os << fixed << setprecision(2) << timer();
     return os;
 }
 
