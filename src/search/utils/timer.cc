@@ -16,7 +16,10 @@ using namespace std;
 
 namespace utils {
 ostream &operator<<(ostream &os, const Duration &time) {
+    ios_base::fmtflags original_flags = os.flags();
+    os << fixed << setprecision(time.output_precision);
     os << static_cast<double>(time) << "s";
+    os.flags(original_flags);
     return os;
 }
 
@@ -111,7 +114,7 @@ Duration Timer::reset() {
 }
 
 ostream &operator<<(ostream &os, const Timer &timer) {
-    os << fixed << setprecision(6) << timer();
+    os << timer();
     return os;
 }
 
