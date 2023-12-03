@@ -5,7 +5,6 @@
 #include "system.h"
 #include "timer.h"
 
-#include <iomanip>
 #include <memory>
 #include <ostream>
 #include <string>
