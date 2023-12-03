@@ -133,4 +133,18 @@ static plugins::TypedEnumPlugin<Verbosity> _enum_plugin({
         {"verbose", "full output"},
         {"debug", "like verbose with additional debug output"}
     });
+
+void Log::prepend_header(ostream &stream) {
+    stream << "[t=";
+
+    std::ios_base::fmtflags previous_flags = stream.flags();
+    stream << std::fixed << std::setprecision(output_precision); // change format flags
+
+    stream << g_timer;
+
+    stream.flags(previous_flags); // undo format flag changes
+
+    stream << ", "
+           << get_peak_memory_in_kb() << " KB] ";
+}
 }

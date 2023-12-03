@@ -1,7 +1,6 @@
 #include "timer.h"
 
 #include <ctime>
-#include <iomanip>
 #include <ostream>
 
 #if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
@@ -16,10 +15,7 @@ using namespace std;
 
 namespace utils {
 ostream &operator<<(ostream &os, const Duration &time) {
-    ios_base::fmtflags original_flags = os.flags();
-    os << fixed << setprecision(time.output_precision);
     os << static_cast<double>(time) << "s";
-    os.flags(original_flags);
     return os;
 }
 

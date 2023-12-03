@@ -5,6 +5,7 @@
 #include "system.h"
 #include "timer.h"
 
+#include <iomanip>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -34,7 +35,9 @@ enum class Verbosity {
 class Log {
     std::ostream &stream;
     const Verbosity verbosity;
+    static const int output_precision = 6;
     bool line_has_started;
+    void prepend_header(std::ostream &stream);
 
 public:
     explicit Log(Verbosity verbosity)
@@ -45,10 +48,8 @@ public:
     Log &operator<<(const T &elem) {
         if (!line_has_started) {
             line_has_started = true;
-            stream << "[t=" << g_timer << ", "
-                   << get_peak_memory_in_kb() << " KB] ";
+            prepend_header(stream);
         }
-
         stream << elem;
         return *this;
     }

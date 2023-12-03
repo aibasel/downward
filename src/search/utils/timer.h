@@ -9,7 +9,6 @@ namespace utils {
 class Duration {
     double seconds;
 public:
-    static const int output_precision = 6;
     explicit Duration(double seconds) : seconds(seconds) {}
     operator double() const {
         return seconds;
