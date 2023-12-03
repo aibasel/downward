@@ -137,8 +137,8 @@ static plugins::TypedEnumPlugin<Verbosity> _enum_plugin({
 void Log::prepend_header(ostream &stream) {
     stream << "[t=";
 
-    std::ios_base::fmtflags previous_flags = stream.flags();
-    stream << std::fixed << std::setprecision(output_precision); // change format flags
+    ios_base::fmtflags previous_flags = stream.flags();
+    stream << fixed << setprecision(output_precision); // change format flags
 
     stream << g_timer;
 
