@@ -32,11 +32,11 @@ enum class Verbosity {
   Internal class encapsulated by LogProxy.
 */
 class Log {
+    static const int TIMER_PRECISION = 6;
     std::ostream &stream;
     const Verbosity verbosity;
-    static const int output_precision = 6;
     bool line_has_started;
-    void prepend_header(std::ostream &stream);
+    void add_prefix() const;
 
 public:
     explicit Log(Verbosity verbosity)
@@ -47,7 +47,7 @@ public:
     Log &operator<<(const T &elem) {
         if (!line_has_started) {
             line_has_started = true;
-            prepend_header(stream);
+            add_prefix();
         }
         stream << elem;
         return *this;
