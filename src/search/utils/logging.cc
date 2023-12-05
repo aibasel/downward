@@ -136,10 +136,12 @@ static plugins::TypedEnumPlugin<Verbosity> _enum_plugin({
 
 void Log::add_prefix() const {
     stream << "[t=";
+    streamsize previous_precision = cout.precision(TIMER_PRECISION);
     ios_base::fmtflags previous_flags = stream.flags();
-    stream << fixed << setprecision(TIMER_PRECISION);
+    stream.setf(ios_base::fixed, ios_base::floatfield);
     stream << g_timer;
     stream.flags(previous_flags);
+    cout.precision(previous_precision);
     stream << ", "
            << get_peak_memory_in_kb() << " KB] ";
 }
