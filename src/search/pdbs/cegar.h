@@ -41,6 +41,7 @@ extern PatternCollectionInformation generate_pattern_collection_with_cegar(
     int max_collection_size,
     double max_time,
     bool use_wildcard_plans,
+    bool use_restricted_goal,
     utils::LogProxy &log,
     const std::shared_ptr<utils::RandomNumberGenerator> &rng,
     const std::shared_ptr<AbstractTask> &task,
@@ -56,6 +57,7 @@ extern PatternInformation generate_pattern_with_cegar(
     int max_pdb_size,
     double max_time,
     bool use_wildcard_plans,
+    bool use_restricted_goal,
     utils::LogProxy &log,
     const std::shared_ptr<utils::RandomNumberGenerator> &rng,
     const std::shared_ptr<AbstractTask> &task,
@@ -63,8 +65,8 @@ extern PatternInformation generate_pattern_with_cegar(
     std::unordered_set<int> &&blacklisted_variables = std::unordered_set<int>());
 
 extern void add_cegar_implementation_notes_to_feature(plugins::Feature &feature);
-extern void add_cegar_wildcard_option_to_feature(plugins::Feature &feature);
-std::tuple<bool> get_cegar_wildcard_arguments_from_options(
+extern void add_cegar_options_to_feature(plugins::Feature &feature);
+std::tuple<bool, bool> get_cegar_arguments_from_options(
     const plugins::Options &opts);
 }
 

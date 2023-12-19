@@ -12,13 +12,14 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorDisjointCegar::PatternCollectionGeneratorDisjointCegar(
     int max_pdb_size, int max_collection_size, double max_time,
-    bool use_wildcard_plans, int random_seed,
+    bool use_wildcard_plans, bool use_restricted_goal, int random_seed,
     utils::Verbosity verbosity)
     : PatternCollectionGenerator(verbosity),
       max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
       max_time(max_time),
       use_wildcard_plans(use_wildcard_plans),
+      use_restricted_goal(use_restricted_goal),
       rng(utils::get_rng(random_seed)) {
 }
 
@@ -37,6 +38,7 @@ PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::compute_pa
         max_collection_size,
         max_time,
         use_wildcard_plans,
+        use_restricted_goal,
         log,
         rng,
         task,
@@ -77,7 +79,7 @@ public:
             "singleton pattern for each goal variable)",
             "infinity",
             plugins::Bounds("0.0", "infinity"));
-        add_cegar_wildcard_option_to_feature(*this);
+        add_cegar_options_to_feature(*this);
         utils::add_rng_options_to_feature(*this);
         add_generator_options_to_feature(*this);
 
@@ -91,7 +93,7 @@ public:
             opts.get<int>("max_pdb_size"),
             opts.get<int>("max_collection_size"),
             opts.get<double>("max_time"),
-            get_cegar_wildcard_arguments_from_options(opts),
+            get_cegar_arguments_from_options(opts),
             utils::get_rng_arguments_from_options(opts),
             get_generator_arguments_from_options(opts)
             );

@@ -84,6 +84,7 @@ class CEGAR {
     const int max_collection_size;
     const double max_time;
     const bool use_wildcard_plans;
+    const bool use_restricted_goal;
     utils::LogProxy &log;
     shared_ptr<utils::RandomNumberGenerator> rng;
     const shared_ptr<AbstractTask> &task;
@@ -151,6 +152,7 @@ public:
         int max_collection_size,
         double max_time,
         bool use_wildcard_plans,
+        bool use_restricted_goal,
         utils::LogProxy &log,
         const shared_ptr<utils::RandomNumberGenerator> &rng,
         const shared_ptr<AbstractTask> &task,
@@ -164,6 +166,7 @@ CEGAR::CEGAR(
     int max_collection_size,
     double max_time,
     bool use_wildcard_plans,
+    bool use_restricted_goal,
     utils::LogProxy &log,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
@@ -173,6 +176,7 @@ CEGAR::CEGAR(
       max_collection_size(max_collection_size),
       max_time(max_time),
       use_wildcard_plans(use_wildcard_plans),
+      use_restricted_goal(use_restricted_goal),
       log(log),
       rng(rng),
       task(task),
@@ -385,8 +389,7 @@ bool CEGAR::get_flaws_for_pattern(
                 log << "plan did not lead to a goal state: ";
             }
             bool raise_goal_flaw = false;
-            for (const FactProxy &goal_proxy : task_proxy.get_goals()) {
-                const FactPair &goal = goal_proxy.get_pair();
+            for (const FactPair &goal : use_restricted_goal ? goals : task_properties::get_fact_pairs(task_proxy.get_goals())) {
                 int goal_var_id = goal.var;
                 if (final_state[goal_var_id].get_value() != goal.value &&
                     !blacklisted_variables.count(goal_var_id)) {
@@ -565,7 +568,7 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
         log << "max time: " << max_time << endl;
         log << "wildcard plans: " << use_wildcard_plans << endl;
         log << "goal variables: ";
-        for (const FactPair &goal : this->goals) {
+        for (const FactPair &goal : use_restricted_goal ? this->goals : task_properties::get_fact_pairs(task_proxy.get_goals())) {
             log << goal.var << ", ";
         }
         log << endl;
@@ -662,6 +665,7 @@ PatternCollectionInformation generate_pattern_collection_with_cegar(
     int max_collection_size,
     double max_time,
     bool use_wildcard_plans,
+    bool use_restricted_goal,
     utils::LogProxy &log,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
@@ -672,6 +676,7 @@ PatternCollectionInformation generate_pattern_collection_with_cegar(
         max_collection_size,
         max_time,
         use_wildcard_plans,
+        use_restricted_goal,
         log,
         rng,
         task,
@@ -684,6 +689,7 @@ PatternInformation generate_pattern_with_cegar(
     int max_pdb_size,
     double max_time,
     bool use_wildcard_plans,
+    bool use_restricted_goal,
     utils::LogProxy &log,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     const shared_ptr<AbstractTask> &task,
@@ -695,6 +701,7 @@ PatternInformation generate_pattern_with_cegar(
         max_pdb_size,
         max_time,
         use_wildcard_plans,
+        use_restricted_goal,
         log,
         rng,
         task,
@@ -779,16 +786,24 @@ void add_cegar_implementation_notes_to_feature(plugins::Feature &feature) {
         true);
 }
 
-void add_cegar_wildcard_option_to_feature(plugins::Feature &feature) {
+void add_cegar_options_to_feature(plugins::Feature &feature) {
     feature.add_option<bool>(
         "use_wildcard_plans",
         "if true, compute wildcard plans which are sequences of sets of "
         "operators that induce the same transition; otherwise compute regular "
         "plans which are sequences of single operators",
         "true");
+
+    feature.add_option<bool>(
+        "use_restricted_goal",
+        "if true, CEGAR considers only those variables for goal flaws that are "
+        "used to initialize the pattern collection; otherwise all goal "
+        "variables can occur in goal flaws");
 }
-tuple<bool> get_cegar_wildcard_arguments_from_options(
+
+tuple<bool, bool> get_cegar_arguments_from_options(
     const plugins::Options &opts) {
-    return make_tuple(opts.get<bool>("use_wildcard_plans"));
+    return make_tuple(opts.get<bool>("use_wildcard_plans"),
+                      opts.get<bool>("use_restricted_goal"));
 }
 }

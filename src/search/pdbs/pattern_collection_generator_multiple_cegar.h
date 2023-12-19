@@ -6,6 +6,7 @@
 namespace pdbs {
 class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGeneratorMultiple {
     const bool use_wildcard_plans;
+    const bool use_restricted_goal;
 
     virtual std::string id() const override;
     virtual void initialize(const std::shared_ptr<AbstractTask> &) override {}
@@ -18,7 +19,7 @@ class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGenerato
         std::unordered_set<int> &&blacklisted_variables) override;
 public:
     PatternCollectionGeneratorMultipleCegar(
-        bool use_wildcard_plans, int max_pdb_size,
+        bool use_wildcard_plans, bool use_restricted_goal, int max_pdb_size,
         int max_collection_size, double pattern_generation_max_time,
         double total_max_time, double stagnation_limit,
         double blacklist_trigger_percentage,

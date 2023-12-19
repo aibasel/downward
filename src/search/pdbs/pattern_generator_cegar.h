@@ -12,6 +12,7 @@ class PatternGeneratorCEGAR : public PatternGenerator {
     const int max_pdb_size;
     const double max_time;
     const bool use_wildcard_plans;
+    const bool use_restricted_goal;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
     virtual std::string name() const override;
@@ -20,7 +21,7 @@ class PatternGeneratorCEGAR : public PatternGenerator {
 public:
     PatternGeneratorCEGAR(
         int max_pdb_size, double max_time, bool use_wildcard_plans,
-        int random_seed, utils::Verbosity verbosity);
+        bool use_restricted_goal, int random_seed, utils::Verbosity verbosity);
 };
 }
 

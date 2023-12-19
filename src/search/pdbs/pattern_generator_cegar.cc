@@ -18,11 +18,12 @@ using namespace std;
 namespace pdbs {
 PatternGeneratorCEGAR::PatternGeneratorCEGAR(
     int max_pdb_size, double max_time, bool use_wildcard_plans,
-    int random_seed, utils::Verbosity verbosity)
+    bool use_restricted_goal, int random_seed, utils::Verbosity verbosity)
     : PatternGenerator(verbosity),
       max_pdb_size(max_pdb_size),
       max_time(max_time),
       use_wildcard_plans(use_wildcard_plans),
+      use_restricted_goal(use_restricted_goal),
       rng(utils::get_rng(random_seed)) {
 }
 
@@ -38,6 +39,7 @@ PatternInformation PatternGeneratorCEGAR::compute_pattern(
         max_pdb_size,
         max_time,
         use_wildcard_plans,
+        use_restricted_goal,
         log,
         rng,
         task,
@@ -67,7 +69,7 @@ public:
             "maximum time in seconds for the pattern generation",
             "infinity",
             plugins::Bounds("0.0", "infinity"));
-        add_cegar_wildcard_option_to_feature(*this);
+        add_cegar_options_to_feature(*this);
         utils::add_rng_options_to_feature(*this);
         add_generator_options_to_feature(*this);
 
@@ -80,7 +82,7 @@ public:
         return plugins::make_shared_from_arg_tuples<PatternGeneratorCEGAR>(
             opts.get<int>("max_pdb_size"),
             opts.get<double>("max_time"),
-            get_cegar_wildcard_arguments_from_options(opts),
+            get_cegar_arguments_from_options(opts),
             utils::get_rng_arguments_from_options(opts),
             get_generator_arguments_from_options(opts)
             );
