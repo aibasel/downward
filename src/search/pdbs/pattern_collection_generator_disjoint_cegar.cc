@@ -17,6 +17,7 @@ PatternCollectionGeneratorDisjointCegar::PatternCollectionGeneratorDisjointCegar
       max_collection_size(opts.get<int>("max_collection_size")),
       max_time(opts.get<double>("max_time")),
       use_wildcard_plans(opts.get<bool>("use_wildcard_plans")),
+      use_restricted_goal(opts.get<bool>("use_restricted_goal")),
       rng(utils::parse_rng_from_options(opts)) {
 }
 
@@ -35,6 +36,7 @@ PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::compute_pa
         max_collection_size,
         max_time,
         use_wildcard_plans,
+        use_restricted_goal,
         log,
         rng,
         task,
@@ -74,7 +76,7 @@ public:
             "singleton pattern for each goal variable)",
             "infinity",
             plugins::Bounds("0.0", "infinity"));
-        add_cegar_wildcard_option_to_feature(*this);
+        add_cegar_options_to_feature(*this);
         add_generator_options_to_feature(*this);
         utils::add_rng_options(*this);
 

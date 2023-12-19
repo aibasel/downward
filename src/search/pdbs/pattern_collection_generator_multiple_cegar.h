@@ -6,6 +6,7 @@
 namespace pdbs {
 class PatternCollectionGeneratorMultipleCegar : public PatternCollectionGeneratorMultiple {
     const bool use_wildcard_plans;
+    const bool use_restricted_goal;
 
     virtual std::string id() const override;
     virtual void initialize(const std::shared_ptr<AbstractTask> &) override {}
