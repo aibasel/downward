@@ -10,15 +10,17 @@
 using namespace std;
 
 namespace lm_cut_heuristic {
-LandmarkCutHeuristic::LandmarkCutHeuristic(basic_string<char> unparsed_config,
+LandmarkCutHeuristic::LandmarkCutHeuristic(string name,
+                                           basic_string<char> unparsed_config,
                                            utils::LogProxy log,
                                            bool cache_evaluator_values,
                                            const shared_ptr<AbstractTask> task)
     : Heuristic(unparsed_config, log, cache_evaluator_values, task),
       landmark_generator(utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy)) {
     if (log.is_at_least_normal()) {
-        log << "Initializing landmark cut heuristic..." << endl;
+        log << "Initializing landmark cut heuristic named '" << name <<"'..." << endl;
     }
+
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {
@@ -39,9 +41,9 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 
 
 
-TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(string unparsed_config, utils::LogProxy log, bool cache_evaluator_values, shared_ptr<TaskIndependentAbstractTask> task_transformation)
+TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(string name, string unparsed_config, utils::LogProxy log, bool cache_evaluator_values, shared_ptr<TaskIndependentAbstractTask> task_transformation)
     : TaskIndependentHeuristic(unparsed_config, log, cache_evaluator_values, task_transformation),
-      log(log) {
+      log(log), name(name) {
 }
 
 TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
@@ -57,7 +59,8 @@ shared_ptr<Evaluator> TaskIndependentLandmarkCutHeuristic::create_task_specific(
     } else {
         log << std::string(depth, ' ') << "Creating task specific LandmarkCutHeuristic..." << endl;
 
-        task_specific_x = make_shared<LandmarkCutHeuristic>(unparsed_config,
+        task_specific_x = make_shared<LandmarkCutHeuristic>(name,
+                                                            unparsed_config,
                                                             log,
                                                             cache_evaluator_values,
                                                             task_transformation->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth));
@@ -71,6 +74,8 @@ class LandmarkCutHeuristicFeature : public plugins::TypedFeature<TaskIndependent
 public:
     LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
+
+        this->add_option<string>("name", "name testing", "\"Default Name\"");
 
         Heuristic::add_options_to_feature(*this);
 
@@ -86,7 +91,8 @@ public:
 
     virtual shared_ptr<TaskIndependentLandmarkCutHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<TaskIndependentLandmarkCutHeuristic>(opts.get_unparsed_config(),
+        return make_shared<TaskIndependentLandmarkCutHeuristic>(opts.get<string>("name"),
+                                                                opts.get_unparsed_config(),
                                                                 utils::get_log_from_options(opts),
                                                                 opts.get<bool>("cache_estimates"),
                                                                 opts.get<shared_ptr<TaskIndependentAbstractTask>>("transform")

@@ -14,7 +14,8 @@ class LandmarkCutHeuristic : public Heuristic {
 
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    explicit LandmarkCutHeuristic(std::basic_string<char> unparsed_config,
+    explicit LandmarkCutHeuristic(std::string name,
+                                  std::basic_string<char> unparsed_config,
                                   utils::LogProxy log,
                                   bool cache_evaluator_values,
                                   const std::shared_ptr<AbstractTask> task);
@@ -23,11 +24,13 @@ public:
 
 class TaskIndependentLandmarkCutHeuristic : public TaskIndependentHeuristic {
 private:
+    std::string name;
     std::string unparsed_config;
     utils::LogProxy log;
     bool cache_evaluator_values;
 public:
-    explicit TaskIndependentLandmarkCutHeuristic(std::string unparsed_config,
+    explicit TaskIndependentLandmarkCutHeuristic(std::string name,
+                                                 std::string unparsed_config,
                                                  utils::LogProxy log,
                                                  bool cache_evaluator_values,
                                                  std::shared_ptr<TaskIndependentAbstractTask> task_transformation);
