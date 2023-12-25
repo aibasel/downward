@@ -10,12 +10,12 @@
 using namespace std;
 
 namespace lm_cut_heuristic {
-LandmarkCutHeuristic::LandmarkCutHeuristic(string name,
+LandmarkCutHeuristic::LandmarkCutHeuristic(const string &name,
                                            basic_string<char> unparsed_config,
                                            utils::LogProxy log,
                                            bool cache_evaluator_values,
                                            const shared_ptr<AbstractTask> task)
-    : Heuristic(unparsed_config, log, cache_evaluator_values, task),
+    : Heuristic(name, unparsed_config, log, cache_evaluator_values, task),
       landmark_generator(utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cut heuristic named '" << name <<"'..." << endl;
@@ -41,9 +41,9 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 
 
 
-TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(string name, string unparsed_config, utils::LogProxy log, bool cache_evaluator_values, shared_ptr<TaskIndependentAbstractTask> task_transformation)
-    : TaskIndependentHeuristic(unparsed_config, log, cache_evaluator_values, task_transformation),
-      log(log), name(name) {
+TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(const string &name, string unparsed_config, utils::LogProxy log, bool cache_evaluator_values, shared_ptr<TaskIndependentAbstractTask> task_transformation)
+    : TaskIndependentHeuristic(name, unparsed_config, log, cache_evaluator_values, task_transformation),
+      log(log) {
 }
 
 TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
