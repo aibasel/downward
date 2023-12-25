@@ -13,7 +13,8 @@
 using namespace std;
 
 
-Heuristic::Heuristic(const std::basic_string<char> unparsed_config,
+Heuristic::Heuristic(const string &name,
+                     const std::basic_string<char> unparsed_config,
                      utils::LogProxy log,
                      bool cache_evaluator_values,
                      const shared_ptr<AbstractTask> task)
@@ -21,6 +22,7 @@ Heuristic::Heuristic(const std::basic_string<char> unparsed_config,
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_evaluator_values(cache_evaluator_values),
       task(task), task_proxy(*task) {
+    cout << "Heuristic::Heuristic with name = '" << name << "'" << endl;
 }
 
 
@@ -111,13 +113,14 @@ int Heuristic::get_cached_estimate(const State &state) const {
     return heuristic_cache[state].h;
 }
 
-TaskIndependentHeuristic::TaskIndependentHeuristic(const string unparsed_config,
+TaskIndependentHeuristic::TaskIndependentHeuristic(const string &name,
+                                                   const string unparsed_config,
                                                    utils::LogProxy log,
                                                    bool cache_evaluator_values,
                                                    std::shared_ptr<TaskIndependentAbstractTask> task_transformation
                                                    )
     : TaskIndependentEvaluator(log, unparsed_config, true, true, true),
-      cache_evaluator_values(cache_evaluator_values), task_transformation(task_transformation) {
+      cache_evaluator_values(cache_evaluator_values), task_transformation(task_transformation), name(name) {
 }
 
 

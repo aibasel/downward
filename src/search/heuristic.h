@@ -72,7 +72,8 @@ protected:
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
-    explicit Heuristic(const std::basic_string<char> unparsed_config,
+    explicit Heuristic(const std::string &name,
+                       const std::basic_string<char> unparsed_config,
                        utils::LogProxy log,
                        bool cache_evaluator_values,
                        const std::shared_ptr<AbstractTask> task);
@@ -95,10 +96,12 @@ public:
 
 class TaskIndependentHeuristic : public TaskIndependentEvaluator {
 protected:
+    const std::string name;
     bool cache_evaluator_values;
     std::shared_ptr<TaskIndependentAbstractTask> task_transformation;
 public:
-    explicit TaskIndependentHeuristic(const std::string unparsed_config,
+    explicit TaskIndependentHeuristic(const std::string &name,
+                                      const std::string unparsed_config,
                                       utils::LogProxy log,
                                       bool cache_evaluator_values,
                                       std::shared_ptr<TaskIndependentAbstractTask> task_transformation);
