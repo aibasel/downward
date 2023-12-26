@@ -22,7 +22,7 @@ WeightedEvaluator::WeightedEvaluator(
     bool use_for_reporting_minima,
     bool use_for_boosting,
     bool use_for_counting_evaluations)
-    : Evaluator(log, unparsed_config,
+    : Evaluator("WeightedEvaluator", log, unparsed_config,
                 use_for_reporting_minima,
                 use_for_boosting,
                 use_for_counting_evaluations
@@ -63,7 +63,7 @@ TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(utils::LogPro
                                                                    bool use_for_reporting_minima,
                                                                    bool use_for_boosting,
                                                                    bool use_for_counting_evaluations)
-    : TaskIndependentEvaluator(log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
+    : TaskIndependentEvaluator("WeightedEvaluator" ,log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
       evaluator(evaluator),
       weight(weight) {
 }

@@ -20,16 +20,19 @@ Evaluator::Evaluator(const plugins::Options &opts,
       log(utils::get_log_from_options(opts)) {
 }
 
-Evaluator::Evaluator(utils::LogProxy log,
+Evaluator::Evaluator(const string &name,
+                     utils::LogProxy log,
                      const basic_string<char> unparsed_config,
                      bool use_for_reporting_minima,
                      bool use_for_boosting,
                      bool use_for_counting_evaluations)
-    : description(unparsed_config),
+    : name(name),
+    description(unparsed_config),
       use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
       log(log) {
+    cout << "Evaluator::Evaluator with name = '" << name << "'" << endl;
 }
 
 bool Evaluator::dead_ends_are_reliable() const {
@@ -40,7 +43,7 @@ void Evaluator::report_value_for_initial_state(
     const EvaluationResult &result) const {
     if (log.is_at_least_normal()) {
         assert(use_for_reporting_minima);
-        log << "Initial heuristic value for " << description << ": ";
+        log << "Initial heuristic value for " << name << ": ";
         if (result.is_infinite())
             log << "infinity";
         else
@@ -53,7 +56,7 @@ void Evaluator::report_new_minimum_value(
     const EvaluationResult &result) const {
     if (log.is_at_least_normal()) {
         assert(use_for_reporting_minima);
-        log << "New best heuristic value for " << description << ": "
+        log << "New best heuristic value for " << name << ": "
             << result.get_evaluator_value() << endl;
     }
 }
@@ -86,12 +89,14 @@ int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
 }
 
-TaskIndependentEvaluator::TaskIndependentEvaluator(utils::LogProxy log,
+TaskIndependentEvaluator::TaskIndependentEvaluator(const string &name,
+                                                   utils::LogProxy log,
                                                    const string unparsed_config,
                                                    bool use_for_reporting_minima,
                                                    bool use_for_boosting,
                                                    bool use_for_counting_evaluations)
-    : description(unparsed_config),
+    : name(name),
+    description(unparsed_config),
       use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),

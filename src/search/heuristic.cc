@@ -18,11 +18,10 @@ Heuristic::Heuristic(const string &name,
                      utils::LogProxy log,
                      bool cache_evaluator_values,
                      const shared_ptr<AbstractTask> task)
-    : Evaluator(log, unparsed_config, true, true, true),
+    : Evaluator(name, log, unparsed_config, true, true, true),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_evaluator_values(cache_evaluator_values),
       task(task), task_proxy(*task) {
-    cout << "Heuristic::Heuristic with name = '" << name << "'" << endl;
 }
 
 
@@ -119,8 +118,8 @@ TaskIndependentHeuristic::TaskIndependentHeuristic(const string &name,
                                                    bool cache_evaluator_values,
                                                    std::shared_ptr<TaskIndependentAbstractTask> task_transformation
                                                    )
-    : TaskIndependentEvaluator(log, unparsed_config, true, true, true),
-      cache_evaluator_values(cache_evaluator_values), task_transformation(task_transformation), name(name) {
+    : TaskIndependentEvaluator(name, log, unparsed_config, true, true, true),
+      cache_evaluator_values(cache_evaluator_values), task_transformation(task_transformation) {
 }
 
 

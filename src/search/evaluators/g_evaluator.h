@@ -8,7 +8,8 @@ namespace g_evaluator {
 class GEvaluator : public Evaluator {
 public:
     explicit GEvaluator(const plugins::Options &opts);
-    explicit GEvaluator(utils::LogProxy log,
+    explicit GEvaluator(const std::string &name,
+                        utils::LogProxy log,
                         std::basic_string<char> unparsed_config = std::string(),
                         bool use_for_reporting_minima = false,
                         bool use_for_boosting = false,
@@ -28,7 +29,8 @@ private:
     utils::LogProxy log;
 
 public:
-    explicit TaskIndependentGEvaluator(utils::LogProxy log,
+    explicit TaskIndependentGEvaluator(const std::string &name,
+                                       utils::LogProxy log,
                                        std::string unparsed_config = std::string(),
                                        bool use_for_reporting_minima = false,
                                        bool use_for_boosting = false,

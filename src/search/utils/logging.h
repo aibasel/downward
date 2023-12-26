@@ -129,7 +129,7 @@ public:
 */
 extern LogProxy g_log;
 
-extern void add_log_options_to_feature(plugins::Feature &feature);
+extern void add_log_options_to_feature(plugins::Feature &feature, const std::string &name="issue 559 default name");
 extern LogProxy get_log_from_options(const plugins::Options &options);
 extern LogProxy get_log_from_verbosity(const Verbosity &verbosity);
 

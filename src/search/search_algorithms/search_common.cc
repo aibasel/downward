@@ -130,7 +130,7 @@ pair<shared_ptr<TaskIndependentOpenListFactory>, const shared_ptr<TaskIndependen
 create_task_independent_astar_open_list_factory_and_f_eval(const utils::Verbosity &verbosity,
                                                            const shared_ptr<TaskIndependentEvaluator> &eval) {
     shared_ptr<g_evaluator::TaskIndependentGEvaluator> g =
-        make_shared<g_evaluator::TaskIndependentGEvaluator>(utils::get_log_from_verbosity(verbosity));
+        make_shared<g_evaluator::TaskIndependentGEvaluator>("astar.g_eval", utils::get_log_from_verbosity(verbosity));
 
     shared_ptr<TaskIndependentEvaluator> h = eval;
 

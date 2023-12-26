@@ -53,11 +53,11 @@ TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
 shared_ptr<Evaluator> TaskIndependentLandmarkCutHeuristic::create_task_specific(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<LandmarkCutHeuristic> task_specific_x;
     if (component_map->count( static_cast<TaskIndependentComponent *>(this))) {
-        log << std::string(depth, ' ') << "Reusing task specific LandmarkCutHeuristic..." << endl;
+        log << std::string(depth, ' ') << "Reusing task specific LandmarkCutHeuristic '" + name + "'..." << endl;
         task_specific_x = dynamic_pointer_cast<LandmarkCutHeuristic>(
             component_map->at(static_cast<TaskIndependentComponent *>(this)));
     } else {
-        log << std::string(depth, ' ') << "Creating task specific LandmarkCutHeuristic..." << endl;
+        log << std::string(depth, ' ') << "Creating task specific LandmarkCutHeuristic '" + name + "'..." << endl;
 
         task_specific_x = make_shared<LandmarkCutHeuristic>(name,
                                                             unparsed_config,
@@ -74,8 +74,6 @@ class LandmarkCutHeuristicFeature : public plugins::TypedFeature<TaskIndependent
 public:
     LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
-
-        this->add_option<string>("name", "name testing", "\"Default Name\"");
 
         Heuristic::add_options_to_feature(*this);
 
