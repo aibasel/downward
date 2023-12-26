@@ -24,7 +24,8 @@ CombiningEvaluator::CombiningEvaluator(utils::LogProxy log,
                                        bool use_for_reporting_minima,
                                        bool use_for_boosting,
                                        bool use_for_counting_evaluations)
-    : Evaluator(std::move(log),
+    : Evaluator("CombiningEvaluator",
+                std::move(log),
                 std::move(unparsed_config),
                 use_for_reporting_minima,
                 use_for_boosting,
@@ -85,7 +86,7 @@ TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(utils::LogP
                                                                      bool use_for_reporting_minima,
                                                                      bool use_for_boosting,
                                                                      bool use_for_counting_evaluations)
-    : TaskIndependentEvaluator(log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
+    : TaskIndependentEvaluator("CombiningEvaluator", log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
       subevaluators(subevaluators) {
 }
 
