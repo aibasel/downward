@@ -103,8 +103,8 @@ TaskIndependentEvaluator::TaskIndependentEvaluator(const string &name,
 }
 
 
-void add_evaluator_options_to_feature(plugins::Feature &feature) {
-    utils::add_log_options_to_feature(feature);
+void add_evaluator_options_to_feature(plugins::Feature &feature, const string &name) {
+    utils::add_log_options_to_feature(feature, name);
 }
 
 static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentEvaluator> {

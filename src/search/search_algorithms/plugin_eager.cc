@@ -26,7 +26,7 @@ public:
             "preferred",
             "use preferred operators of these evaluators",
             "[]");
-        eager_search::add_options_to_feature(*this);
+        eager_search::add_options_to_feature(*this, "eager");
     }
 
     virtual shared_ptr<eager_search::TaskIndependentEagerSearch> create_component(const plugins::Options &opts, const utils::Context &) const override {

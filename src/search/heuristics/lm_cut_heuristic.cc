@@ -75,7 +75,7 @@ public:
     LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
 
-        Heuristic::add_options_to_feature(*this);
+        Heuristic::add_options_to_feature(*this, "lmcut");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
