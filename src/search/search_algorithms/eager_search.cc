@@ -52,7 +52,8 @@ EagerSearch::EagerSearch(const std::string &name,
 }
 
 void EagerSearch::initialize() {
-    log << "Conducting best first search"
+    log << name + ": "
+        << "Conducting best first search"
         << (reopen_closed_nodes ? " with" : " without")
         << " reopening closed nodes, (real) bound = " << bound
         << endl;

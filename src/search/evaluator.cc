@@ -32,7 +32,6 @@ Evaluator::Evaluator(const string &name,
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
       log(log) {
-    cout << "Evaluator::Evaluator with name = '" << name << "'" << endl;
 }
 
 bool Evaluator::dead_ends_are_reliable() const {
