@@ -81,7 +81,8 @@ extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 */
 
 std::pair<std::shared_ptr<TaskIndependentOpenListFactory>, const std::shared_ptr<TaskIndependentEvaluator>>
-create_task_independent_astar_open_list_factory_and_f_eval(const utils::Verbosity &verbosity,
+create_task_independent_astar_open_list_factory_and_f_eval(const std::string &name,
+                                                           const utils::Verbosity &verbosity,
                                                            const std::shared_ptr<TaskIndependentEvaluator> &eval);
 }
 
