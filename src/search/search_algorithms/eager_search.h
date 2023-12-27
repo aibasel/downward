@@ -34,11 +34,13 @@ class EagerSearch : public SearchAlgorithm {
     void reward_progress();
 
 protected:
+    const std::string name;
     virtual void initialize() override;
     virtual SearchStatus step() override;
 
 public:
-    explicit EagerSearch(utils::Verbosity verbosity,
+    explicit EagerSearch(const std::string &name,
+                         utils::Verbosity verbosity,
                          OperatorCost cost_type,
                          double max_time,
                          int bound,
@@ -74,8 +76,11 @@ private:
     std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator;
 
     std::shared_ptr<PruningMethod> pruning_method;
+protected:
+    const std::string name;
 public:
-    explicit TaskIndependentEagerSearch(utils::Verbosity verbosity,
+    explicit TaskIndependentEagerSearch(const std::string &name,
+                                        utils::Verbosity verbosity,
                                         OperatorCost cost_type,
                                         double max_time,
                                         int bound,

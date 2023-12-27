@@ -18,7 +18,8 @@
 using namespace std;
 
 namespace eager_search {
-EagerSearch::EagerSearch(utils::Verbosity verbosity,
+EagerSearch::EagerSearch(const std::string &name,
+                         utils::Verbosity verbosity,
                          OperatorCost cost_type,
                          double max_time,
                          int bound,
@@ -37,6 +38,7 @@ EagerSearch::EagerSearch(utils::Verbosity verbosity,
                    bound,
                    unparsed_config,
                    task),
+      name(name),
       reopen_closed_nodes(reopen_closed_nodes),
       open_list(std::move(open_list)),
       f_evaluator(f_evaluator),
@@ -328,7 +330,8 @@ void add_options_to_feature(plugins::Feature &feature) {
 }
 
 
-TaskIndependentEagerSearch::TaskIndependentEagerSearch(utils::Verbosity verbosity,
+TaskIndependentEagerSearch::TaskIndependentEagerSearch(const std::string &name,
+                                                       utils::Verbosity verbosity,
                                                        OperatorCost cost_type,
                                                        double max_time,
                                                        int bound,
@@ -346,6 +349,7 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(utils::Verbosity verbosit
                                   bound,
                                   unparsed_config
                                   ),
+      name(name),
       reopen_closed_nodes(reopen_closed_nodes),
       open_list_factory(std::move(open_list_factory)),
       f_evaluator(f_evaluator),
@@ -361,11 +365,11 @@ TaskIndependentEagerSearch::~TaskIndependentEagerSearch() {
 shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<EagerSearch> task_specific_x;
     if (component_map->count( static_cast<TaskIndependentComponent *>(this))) {
-        utils::g_log << std::string(depth, ' ') << "Reusing task specific EagerSearch..." << endl;
+        utils::g_log << std::string(depth, ' ') << "Reusing task specific EagerSearch '" << name << "'..." << endl;
         task_specific_x = dynamic_pointer_cast<EagerSearch>(
             component_map->at(static_cast<TaskIndependentComponent *>(this)));
     } else {
-        utils::g_log << std::string(depth, ' ') << "Creating task specific EagerSearch..." << endl;
+        utils::g_log << std::string(depth, ' ') << "Creating task specific EagerSearch '" << name << "'..." << endl;
         vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
         transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
@@ -376,7 +380,8 @@ shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(con
         unique_ptr<StateOpenList> _open_list = unique_ptr<StateOpenList>(
             open_list_factory->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
 
-        task_specific_x = make_shared<EagerSearch>(verbosity,
+        task_specific_x = make_shared<EagerSearch>(name,
+                                                   verbosity,
                                                    cost_type,
                                                    max_time,
                                                    bound,
