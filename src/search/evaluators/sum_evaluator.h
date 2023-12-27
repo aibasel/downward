@@ -16,7 +16,8 @@ protected:
     virtual int combine_values(const std::vector<int> &values) override;
 public:
     explicit SumEvaluator(const plugins::Options &opts);
-    explicit SumEvaluator(utils::LogProxy log,
+    explicit SumEvaluator(const std::string &name,
+                          utils::LogProxy log,
                           std::vector<std::shared_ptr<Evaluator>> subevaluators,
                           std::basic_string<char> unparsed_config = std::string(),
                           bool use_for_reporting_minima = false,
@@ -31,7 +32,8 @@ private:
     std::string unparsed_config;
     utils::LogProxy log;
 public:
-    explicit TaskIndependentSumEvaluator(utils::LogProxy log,
+    explicit TaskIndependentSumEvaluator(const std::string &name,
+                                         utils::LogProxy log,
                                          std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
                                          std::string unparsed_config = std::string(),
                                          bool use_for_reporting_minima = false,

@@ -85,7 +85,7 @@ public:
     /* The following three methods should become functions as they
        do not require access to private/protected class members. */
     static void add_pruning_option(plugins::Feature &feature);
-    static void add_options_to_feature(plugins::Feature &feature, const std::string &name  = "issue559 default name");
+    static void add_options_to_feature(plugins::Feature &feature, const std::string &name);
     static void add_succ_order_options(plugins::Feature &feature);
 };
 

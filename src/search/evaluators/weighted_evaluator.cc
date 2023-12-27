@@ -102,7 +102,7 @@ public:
 
         add_option<shared_ptr<TaskIndependentEvaluator>>("eval", "evaluator");
         add_option<int>("weight", "weight");
-        add_evaluator_options_to_feature(*this);
+        add_evaluator_options_to_feature(*this, "weighted_eval");
     }
 
     virtual shared_ptr<TaskIndependentWeightedEvaluator> create_component(

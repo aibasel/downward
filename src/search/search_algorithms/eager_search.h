@@ -100,7 +100,7 @@ public:
 };
 
 
-extern void add_options_to_feature(plugins::Feature &feature, const std::string &name = "issue559 default name");
+extern void add_options_to_feature(plugins::Feature &feature, const std::string &name);
 }
 
 #endif
