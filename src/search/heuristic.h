@@ -83,7 +83,7 @@ public:
         std::set<Evaluator *> & /*evals*/) override {
     }
 
-    static void add_options_to_feature(plugins::Feature &feature);
+    static void add_options_to_feature(plugins::Feature &feature, const std::string &name = "issue559 default name");
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;

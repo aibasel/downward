@@ -142,7 +142,7 @@ void SearchAlgorithm::add_pruning_option(plugins::Feature &feature) {
         "null()");
 }
 
-void SearchAlgorithm::add_options_to_feature(plugins::Feature &feature) {
+void SearchAlgorithm::add_options_to_feature(plugins::Feature &feature, const string &name) {
     ::add_cost_type_option_to_feature(feature);
     feature.add_option<int>(
         "bound",
@@ -157,7 +157,7 @@ void SearchAlgorithm::add_options_to_feature(plugins::Feature &feature) {
         "experiments. Timed-out searches are treated as failed searches, "
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
-    utils::add_log_options_to_feature(feature);
+    utils::add_log_options_to_feature(feature, name);
 }
 
 /* Method doesn't belong here because it's only useful for certain derived classes.

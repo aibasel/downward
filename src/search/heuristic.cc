@@ -36,9 +36,9 @@ State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
     return task_proxy.convert_ancestor_state(ancestor_state);
 }
 
-void Heuristic::add_options_to_feature(plugins::Feature &feature) {
+void Heuristic::add_options_to_feature(plugins::Feature &feature, const string &name) {
     cout << "Heuristic::add_options_to_feature(plugins::Feature &feature) " << endl;
-    add_evaluator_options_to_feature(feature);
+    add_evaluator_options_to_feature(feature, name);
     feature.add_option<shared_ptr<TaskIndependentAbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic."
