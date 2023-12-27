@@ -29,7 +29,8 @@ class IteratedSearch : public SearchAlgorithm {
     virtual SearchStatus step() override;
 
 public:
-    IteratedSearch(utils::Verbosity verbosity,
+    IteratedSearch(const std::string &name,
+                   utils::Verbosity verbosity,
                    OperatorCost cost_type,
                    double max_time,
                    int bound,
@@ -58,7 +59,8 @@ private:
 
     std::shared_ptr<IteratedSearch> create_task_specific_IteratedSearch(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &&component_map, int depth = -1);
 public:
-    explicit TaskIndependentIteratedSearch(utils::Verbosity verbosity,
+    explicit TaskIndependentIteratedSearch(const std::string &name,
+                                           utils::Verbosity verbosity,
                                            OperatorCost cost_type,
                                            double max_time,
                                            int bound,

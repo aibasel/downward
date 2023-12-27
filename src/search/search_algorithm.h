@@ -42,6 +42,7 @@ protected:
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
 
+    const std::string name;
     mutable utils::LogProxy log;
     PlanManager plan_manager;
     StateRegistry state_registry;
@@ -61,7 +62,8 @@ protected:
     bool check_goal_and_set_plan(const State &state);
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
-    SearchAlgorithm(utils::Verbosity verbosity,
+    SearchAlgorithm(const std::string &name,
+                    utils::Verbosity verbosity,
                  OperatorCost cost_type,
                  double max_time,
                  int bound,
@@ -94,6 +96,7 @@ class TaskIndependentSearchAlgorithm : public TaskIndependentComponent {
     Plan plan;
 protected:
 
+    const std::string name;
     mutable utils::Verbosity verbosity;
     PlanManager plan_manager;
     SearchProgress search_progress;
@@ -103,7 +106,8 @@ protected:
     double max_time;
 
 public:
-    TaskIndependentSearchAlgorithm(utils::Verbosity verbosity,
+    TaskIndependentSearchAlgorithm(const std::string &name,
+                                   utils::Verbosity verbosity,
                                 OperatorCost cost_type,
                                 double max_time,
                                 int bound,
