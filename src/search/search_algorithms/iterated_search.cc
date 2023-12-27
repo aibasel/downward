@@ -8,7 +8,8 @@
 using namespace std;
 
 namespace iterated_search {
-IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
+IteratedSearch::IteratedSearch(const string &name,
+                               utils::Verbosity verbosity,
                                OperatorCost cost_type,
                                double max_time,
                                int bound,
@@ -19,7 +20,8 @@ IteratedSearch::IteratedSearch(utils::Verbosity verbosity,
                                bool continue_on_fail,
                                bool continue_on_solve,
                                string unparsed_config
-                               ) : SearchAlgorithm(verbosity,
+                               ) : SearchAlgorithm(name,
+                                                   verbosity,
                                                 cost_type,
                                                 max_time,
                                                 bound,
@@ -130,7 +132,8 @@ void IteratedSearch::save_plan_if_necessary() {
 }
 
 
-TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(utils::Verbosity verbosity,
+TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(const string &name,
+                                                             utils::Verbosity verbosity,
                                                              OperatorCost cost_type,
                                                              double max_time,
                                                              int bound,
@@ -141,7 +144,8 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(utils::Verbosity ve
                                                              bool continue_on_fail,
                                                              bool continue_on_solve
                                                              )
-    : TaskIndependentSearchAlgorithm(verbosity,
+    : TaskIndependentSearchAlgorithm(name,
+                                     verbosity,
                                   cost_type,
                                   max_time,
                                   bound,
@@ -164,7 +168,8 @@ shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_I
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific IteratedSearch..." << endl;
-        task_specific_x = make_shared<IteratedSearch>(verbosity,
+        task_specific_x = make_shared<IteratedSearch>(name,
+                                                      verbosity,
                                                       cost_type,
                                                       max_time,
                                                       bound,
@@ -251,7 +256,8 @@ public:
 
     virtual shared_ptr<TaskIndependentIteratedSearch> create_component(const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentSearchAlgorithm>>(context, opts, "search_algorithms");
-        return make_shared<TaskIndependentIteratedSearch>(opts.get<utils::Verbosity>("verbosity"),
+        return make_shared<TaskIndependentIteratedSearch>(opts.get<string>("name"),
+                                                          opts.get<utils::Verbosity>("verbosity"),
                                                           opts.get<OperatorCost>("cost_type"),
                                                           opts.get<double>("max_time"),
                                                           opts.get<int>("bound"),

@@ -34,7 +34,6 @@ class EagerSearch : public SearchAlgorithm {
     void reward_progress();
 
 protected:
-    const std::string name;
     virtual void initialize() override;
     virtual SearchStatus step() override;
 
@@ -76,8 +75,6 @@ private:
     std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator;
 
     std::shared_ptr<PruningMethod> pruning_method;
-protected:
-    const std::string name;
 public:
     explicit TaskIndependentEagerSearch(const std::string &name,
                                         utils::Verbosity verbosity,
