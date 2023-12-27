@@ -47,11 +47,11 @@ shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific(const std:
     shared_ptr<GEvaluator> task_specific_x;
 
     if (component_map->count( static_cast<TaskIndependentComponent *>(this))) {
-        log << std::string(depth, ' ') << "Reusing task specific GEvaluator..." << endl;
+        log << std::string(depth, ' ') << "Reusing task specific GEvaluator '" << name << "'..." << endl;
         task_specific_x = dynamic_pointer_cast<GEvaluator>(
             component_map->at(static_cast<TaskIndependentComponent *>(this)));
     } else {
-        log << std::string(depth, ' ') << "Creating task specific GEvaluator..." << endl;
+        log << std::string(depth, ' ') << "Creating task specific GEvaluator '" << name << "'..." << endl;
         task_specific_x = make_shared<GEvaluator>(name, log, unparsed_config);
         component_map->insert(make_pair<TaskIndependentComponent *, std::shared_ptr<Component>>(static_cast<TaskIndependentComponent *>(this), task_specific_x));
     }
@@ -67,7 +67,7 @@ public:
         document_title("g-value evaluator");
         document_synopsis(
             "Returns the g-value (path cost) of the search node.");
-        add_evaluator_options_to_feature(*this);
+        add_evaluator_options_to_feature(*this, "g_eval");
     }
 
     virtual shared_ptr<TaskIndependentGEvaluator> create_component(

@@ -40,6 +40,6 @@ public:
     virtual void print_statistics() const;
 };
 
-extern void add_pruning_options_to_feature(plugins::Feature &feature);
+extern void add_pruning_options_to_feature(plugins::Feature &feature, const std::string &name);
 
 #endif

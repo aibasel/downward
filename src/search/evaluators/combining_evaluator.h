@@ -20,7 +20,8 @@ protected:
     virtual int combine_values(const std::vector<int> &values) = 0;
 public:
     explicit CombiningEvaluator(const plugins::Options &opts);
-    explicit CombiningEvaluator(utils::LogProxy log,
+    explicit CombiningEvaluator(const std::string &name,
+                                utils::LogProxy log,
                                 std::vector<std::shared_ptr<Evaluator>> subevaluators,
                                 std::basic_string<char> unparsed_config = std::string(),
                                 bool use_for_reporting_minima = false,
@@ -50,7 +51,7 @@ public:
 };
 
 extern void add_combining_evaluator_options_to_feature(
-    plugins::Feature &feature);
+    plugins::Feature &feature, const std::string &name);
 
 
 
@@ -58,7 +59,8 @@ class TaskIndependentCombiningEvaluator : public TaskIndependentEvaluator {
 protected:
     std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators;
 public:
-    explicit TaskIndependentCombiningEvaluator(utils::LogProxy log,
+    explicit TaskIndependentCombiningEvaluator(const std::string &name,
+                                               utils::LogProxy log,
                                                std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
                                                std::basic_string<char> unparsed_config = std::string(),
                                                bool use_for_reporting_minima = false,

@@ -225,7 +225,7 @@ public:
             "continue_on_solve",
             "continue search after solution found",
             "true");
-        SearchAlgorithm::add_options_to_feature(*this);
+        SearchAlgorithm::add_options_to_feature(*this, "iterated_search");
 
         document_note(
             "Note 1",

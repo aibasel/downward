@@ -18,13 +18,14 @@ CombiningEvaluator::CombiningEvaluator(const plugins::Options &opts)
             all_dead_ends_are_reliable = false;
 }
 
-CombiningEvaluator::CombiningEvaluator(utils::LogProxy log,
+CombiningEvaluator::CombiningEvaluator(const string &name,
+                                       utils::LogProxy log,
                                        vector<shared_ptr<Evaluator>> subevaluators,
                                        basic_string<char> unparsed_config,
                                        bool use_for_reporting_minima,
                                        bool use_for_boosting,
                                        bool use_for_counting_evaluations)
-    : Evaluator("CombiningEvaluator",
+    : Evaluator(name,
                 std::move(log),
                 std::move(unparsed_config),
                 use_for_reporting_minima,
@@ -73,20 +74,21 @@ void CombiningEvaluator::get_path_dependent_evaluators(
 }
 
 
-void add_combining_evaluator_options_to_feature(plugins::Feature &feature) {
+void add_combining_evaluator_options_to_feature(plugins::Feature &feature, const string &name) {
     feature.add_list_option<shared_ptr<TaskIndependentEvaluator>>(
         "evals", "at least one evaluator");
-    add_evaluator_options_to_feature(feature);
+    add_evaluator_options_to_feature(feature, name);
 }
 
 
-TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(utils::LogProxy log,
-                                                                     std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
+TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(const string &name,
+                                                                     utils::LogProxy log,
+                                                                     vector<shared_ptr<TaskIndependentEvaluator>> subevaluators,
                                                                      string unparsed_config,
                                                                      bool use_for_reporting_minima,
                                                                      bool use_for_boosting,
                                                                      bool use_for_counting_evaluations)
-    : TaskIndependentEvaluator("CombiningEvaluator", log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
+    : TaskIndependentEvaluator(name, log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
       subevaluators(subevaluators) {
 }
 

@@ -136,7 +136,8 @@ create_task_independent_astar_open_list_factory_and_f_eval(const string &name,
     shared_ptr<TaskIndependentEvaluator> h = eval;
 
     shared_ptr<sum_evaluator::TaskIndependentSumEvaluator> f =
-        make_shared<sum_evaluator::TaskIndependentSumEvaluator>(utils::get_log_from_verbosity(verbosity),
+        make_shared<sum_evaluator::TaskIndependentSumEvaluator>(name + ".sum_eval",
+                                                                utils::get_log_from_verbosity(verbosity),
                                                                 vector<shared_ptr<TaskIndependentEvaluator>>({g, h}));
 
     vector<shared_ptr<TaskIndependentEvaluator>> evals = {f, h};

@@ -58,8 +58,8 @@ void PruningMethod::print_statistics() const {
     }
 }
 
-void add_pruning_options_to_feature(plugins::Feature &feature) {
-    utils::add_log_options_to_feature(feature);
+void add_pruning_options_to_feature(plugins::Feature &feature, const string &name) {
+    utils::add_log_options_to_feature(feature, name);
     feature.document_note(
         "Note on verbosity parameter",
         "Setting verbosity to verbose or higher enables time measurements "

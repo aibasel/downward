@@ -24,7 +24,7 @@ public:
             "This is a skeleton method that does not perform any pruning, i.e., "
             "all applicable operators are applied in all expanded states. ");
 
-        add_pruning_options_to_feature(*this);
+        add_pruning_options_to_feature(*this, "null_pruning");
     }
 };
 
