@@ -38,9 +38,6 @@ TaskIndependentGEvaluator::TaskIndependentGEvaluator(const string &name,
       unparsed_config(unparsed_config), log(log) {
 }
 
-TaskIndependentGEvaluator::~TaskIndependentGEvaluator() {
-}
-
 
 shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific(const std::shared_ptr<AbstractTask> &task,
                                                                                   std::unique_ptr<ComponentMap> &component_map, int depth) {

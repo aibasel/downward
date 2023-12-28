@@ -20,7 +20,6 @@ LandmarkCutHeuristic::LandmarkCutHeuristic(const string &name,
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cut heuristic named '" << name <<"'..." << endl;
     }
-
 }
 
 LandmarkCutHeuristic::~LandmarkCutHeuristic() {

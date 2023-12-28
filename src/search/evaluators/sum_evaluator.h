@@ -40,7 +40,7 @@ public:
                                          bool use_for_boosting = false,
                                          bool use_for_counting_evaluations = false);
 
-    virtual ~TaskIndependentSumEvaluator()  override;
+    virtual ~TaskIndependentSumEvaluator()  override = default;
 
     std::shared_ptr<Evaluator>
     create_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,

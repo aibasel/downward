@@ -359,9 +359,6 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(const std::string &name,
       pruning_method(pruning_method) {
 }
 
-TaskIndependentEagerSearch::~TaskIndependentEagerSearch() {
-}
-
 
 shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<EagerSearch> task_specific_x;

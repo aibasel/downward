@@ -24,7 +24,7 @@ LogProxy g_log(global_log);
 
 void add_log_options_to_feature(plugins::Feature &feature, const string &name) {
     feature.add_option<string>("name",
-                               "name testing",
+                               "Option to specify the components name.",
                                "\"" + name + "\"");
     feature.add_option<Verbosity>(
         "verbosity",
