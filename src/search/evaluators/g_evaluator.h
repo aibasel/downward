@@ -36,7 +36,7 @@ public:
                                        bool use_for_boosting = false,
                                        bool use_for_counting_evaluations = false);
 
-    virtual ~TaskIndependentGEvaluator()  override;
+    virtual ~TaskIndependentGEvaluator()  override = default;
 
 
     std::shared_ptr<Evaluator>

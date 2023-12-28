@@ -66,7 +66,7 @@ public:
                                                bool use_for_reporting_minima = false,
                                                bool use_for_boosting = false,
                                                bool use_for_counting_evaluations = false);
-    virtual ~TaskIndependentCombiningEvaluator() = default;
+    virtual ~TaskIndependentCombiningEvaluator() override = default;
 };
 }
 #endif

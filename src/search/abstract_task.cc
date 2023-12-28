@@ -30,7 +30,7 @@ shared_ptr<AbstractTask> TaskIndependentAbstractTask::create_task_specific(
 
 static class TaskIndependentAbstractTaskCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentAbstractTask> {
 public:
-    TaskIndependentAbstractTaskCategoryPlugin() : TypedCategoryPlugin("TI_AbstractTask") {
+    TaskIndependentAbstractTaskCategoryPlugin() : TypedCategoryPlugin("AbstractTask") {
         // TODO: Replace empty string by synopsis for the wiki page.
         document_synopsis("");
     }

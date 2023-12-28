@@ -1,7 +1,5 @@
 #include "delegating_task.h"
 
-#include "../utils/logging.h"
-
 using namespace std;
 
 namespace tasks {

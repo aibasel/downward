@@ -157,9 +157,6 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(const string &name,
       continue_on_solve(continue_on_solve) {
 }
 
-TaskIndependentIteratedSearch::~TaskIndependentIteratedSearch() {
-}
-
 
 shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_IteratedSearch(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &&component_map, int depth) {
     shared_ptr<IteratedSearch> task_specific_x;

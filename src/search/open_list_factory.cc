@@ -15,11 +15,6 @@ unique_ptr<EdgeOpenList> OpenListFactory::create_open_list() {
 }
 
 
-
-
-
-
-
 static class OpenListFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentOpenListFactory> {
 public:
     OpenListFactoryCategoryPlugin() : TypedCategoryPlugin("OpenList") {

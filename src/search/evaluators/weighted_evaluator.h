@@ -16,7 +16,8 @@ class WeightedEvaluator : public Evaluator {
 
 public:
     explicit WeightedEvaluator(const plugins::Options &opts);
-    explicit WeightedEvaluator(utils::LogProxy log,
+    explicit WeightedEvaluator(const std::string &name,
+                               utils::LogProxy log,
                                std::shared_ptr<Evaluator> evaluator,
                                int weight,
                                std::basic_string<char> unparsed_config = std::string(),
@@ -37,7 +38,8 @@ private:
     std::shared_ptr<TaskIndependentEvaluator> evaluator;
     int weight;
 public:
-    explicit TaskIndependentWeightedEvaluator(utils::LogProxy log,
+    explicit TaskIndependentWeightedEvaluator(const std::string &name,
+                                              utils::LogProxy log,
                                               std::shared_ptr<TaskIndependentEvaluator> evaluator,
                                               int weight,
                                               std::string unparsed_config = std::string(),
@@ -45,7 +47,7 @@ public:
                                               bool use_for_boosting = false,
                                               bool use_for_counting_evaluations = false);
 
-    virtual ~TaskIndependentWeightedEvaluator()  override;
+    virtual ~TaskIndependentWeightedEvaluator() override = default;
 
     std::shared_ptr<Evaluator>
     create_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,

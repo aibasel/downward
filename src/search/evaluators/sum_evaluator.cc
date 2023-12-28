@@ -55,9 +55,6 @@ TaskIndependentSumEvaluator::TaskIndependentSumEvaluator(const string &name,
       log(log) {
 }
 
-TaskIndependentSumEvaluator::~TaskIndependentSumEvaluator() {
-}
-
 
 shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
     shared_ptr<SumEvaluator> task_specific_x;

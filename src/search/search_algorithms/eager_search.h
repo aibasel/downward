@@ -64,7 +64,6 @@ class TaskIndependentEagerSearch : public TaskIndependentSearchAlgorithm {
 private:
     const bool reopen_closed_nodes;
 
-    //std::shared_ptr<TaskIndependentStateOpenList> open_list;
     std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory;
 
 
@@ -89,7 +88,7 @@ public:
                                         std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator = nullptr,
                                         std::string unparsed_config = std::string());
 
-    virtual ~TaskIndependentEagerSearch()  override;
+    virtual ~TaskIndependentEagerSearch() override = default;
 
 
     virtual std::shared_ptr<SearchAlgorithm> create_task_specific_root(const std::shared_ptr<AbstractTask> &task, int depth = -1) override;

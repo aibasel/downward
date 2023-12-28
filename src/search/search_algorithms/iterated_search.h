@@ -22,7 +22,6 @@ class IteratedSearch : public SearchAlgorithm {
     int best_bound;
     bool iterated_found_solution;
 
-    std::shared_ptr<TaskIndependentSearchAlgorithm> get_search_algorithm(int algorithm_configs_index);
     std::shared_ptr<SearchAlgorithm> create_current_phase();
     SearchStatus step_return_value();
 
@@ -71,7 +70,7 @@ public:
                                            bool continue_on_fail,
                                            bool continue_on_solve);
 
-    virtual ~TaskIndependentIteratedSearch()  override;
+    virtual ~TaskIndependentIteratedSearch() override = default;
 
     std::shared_ptr<SearchAlgorithm> create_task_specific_root(const std::shared_ptr<AbstractTask> &task, int depth = -1) override;
 
