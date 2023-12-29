@@ -173,7 +173,7 @@ bool FunctionCallNode::collect_argument(
         decorated_arg = utils::make_unique_ptr<CheckBoundsNode>(
             move(decorated_arg), move(decorated_min_node), move(decorated_max_node));
     }
-    FunctionArgument function_arg(key, move(decorated_arg), arg_info.lazy_construction);
+    FunctionArgument function_arg(key, move(decorated_arg));
     arguments.insert({key, move(function_arg)});
     return true;
 }
