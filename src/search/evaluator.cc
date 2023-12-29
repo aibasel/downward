@@ -26,11 +26,11 @@ Evaluator::Evaluator(const string &name,
                      bool use_for_reporting_minima,
                      bool use_for_boosting,
                      bool use_for_counting_evaluations)
-    : name(name),
-      description(unparsed_config),
+    : description(unparsed_config),
       use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
+      name(name),
       log(log) {
 }
 
@@ -94,11 +94,11 @@ TaskIndependentEvaluator::TaskIndependentEvaluator(const string &name,
                                                    bool use_for_reporting_minima,
                                                    bool use_for_boosting,
                                                    bool use_for_counting_evaluations)
-    : name(name),
-      description(unparsed_config),
+    : description(unparsed_config),
       use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
+      name(name),
       log(log) {
 }
 
