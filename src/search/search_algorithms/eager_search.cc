@@ -18,18 +18,19 @@
 using namespace std;
 
 namespace eager_search {
-EagerSearch::EagerSearch(const std::string &name,
-                         utils::Verbosity verbosity,
-                         OperatorCost cost_type,
-                         double max_time,
-                         int bound,
-                         bool reopen_closed_nodes,
-                         unique_ptr<StateOpenList> open_list,
-                         vector<shared_ptr<Evaluator>> preferred_operator_evaluators,
-                         shared_ptr<PruningMethod> pruning_method,
-                         const shared_ptr<AbstractTask> &task,
-                         shared_ptr<Evaluator> f_evaluator,
-                         shared_ptr<Evaluator> lazy_evaluator
+EagerSearch::EagerSearch(
+        unique_ptr<StateOpenList> open_list,
+        bool reopen_closed_nodes,
+        shared_ptr<Evaluator> f_evaluator,
+        shared_ptr<Evaluator> lazy_evaluator,
+        vector<shared_ptr<Evaluator>> preferred_operator_evaluators,
+        shared_ptr<PruningMethod> pruning_method,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const string &name,
+        utils::Verbosity verbosity,
+        const shared_ptr<AbstractTask> &task
                          )
     : SearchAlgorithm(cost_type,
                       bound,
@@ -379,20 +380,21 @@ shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(
             open_list_factory->create_task_specific(
                 task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
 
-        task_specific_x = make_shared<EagerSearch>(name,
-                                                   verbosity,
-                                                   cost_type,
-                                                   max_time,
-                                                   bound,
-                                                   reopen_closed_nodes,
-                                                   move(_open_list),
-                                                   td_evaluators,
-                                                   pruning_method,
-                                                   task,
-                                                   f_evaluator ? f_evaluator->create_task_specific(
-                                                       task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
-                                                   lazy_evaluator ? lazy_evaluator->create_task_specific(
-                                                       task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr);
+        task_specific_x = make_shared<EagerSearch>(
+                move(_open_list),
+                reopen_closed_nodes,
+                f_evaluator ? f_evaluator->create_task_specific(
+                        task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
+                lazy_evaluator ? lazy_evaluator->create_task_specific(
+                        task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
+                td_evaluators,
+                pruning_method,
+                cost_type,
+                bound,
+                max_time,
+                name,
+                verbosity,
+                task);
 
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
                                   (static_cast<const TaskIndependentComponent *>(this), task_specific_x));

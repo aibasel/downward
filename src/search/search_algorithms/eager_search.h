@@ -38,18 +38,19 @@ protected:
     virtual SearchStatus step() override;
 
 public:
-    explicit EagerSearch(const std::string &name,
-                         utils::Verbosity verbosity,
-                         OperatorCost cost_type,
-                         double max_time,
-                         int bound,
-                         bool reopen_closed_nodes,
-                         std::unique_ptr<StateOpenList> open_list,
-                         std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators,
-                         std::shared_ptr<PruningMethod> pruning_method,
-                         const std::shared_ptr<AbstractTask> &task,
-                         std::shared_ptr<Evaluator> f_evaluator = nullptr,
-                         std::shared_ptr<Evaluator> lazy_evaluator = nullptr);
+    explicit EagerSearch(
+            std::unique_ptr<StateOpenList> open_list,
+            bool reopen_closed_nodes,
+            std::shared_ptr<Evaluator> f_evaluator,
+            std::shared_ptr<Evaluator> lazy_evaluator,
+            std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators,
+            std::shared_ptr<PruningMethod> pruning_method,
+            OperatorCost cost_type,
+            int bound,
+            double max_time,
+            const std::string &name,
+            utils::Verbosity verbosity,
+            const std::shared_ptr<AbstractTask> &task);
     virtual ~EagerSearch() = default;
 
     virtual void print_statistics() const override;
