@@ -39,7 +39,7 @@ private:
     int weight;
 public:
     explicit TaskIndependentWeightedEvaluator(const std::string &name,
-                                              utils::LogProxy log,
+                                              utils::Verbosity verbosity,
                                               std::shared_ptr<TaskIndependentEvaluator> evaluator,
                                               int weight,
                                               std::string unparsed_config = std::string(),

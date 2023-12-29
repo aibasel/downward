@@ -89,7 +89,7 @@ int Evaluator::get_cached_estimate(const State &) const {
 }
 
 TaskIndependentEvaluator::TaskIndependentEvaluator(const string &name,
-                                                   utils::LogProxy log,
+                                                   utils::Verbosity verbosity,
                                                    const string unparsed_config,
                                                    bool use_for_reporting_minima,
                                                    bool use_for_boosting,
@@ -99,7 +99,7 @@ TaskIndependentEvaluator::TaskIndependentEvaluator(const string &name,
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
       name(name),
-      log(log) {
+      log(utils::get_log_from_verbosity(verbosity)) {
 }
 
 

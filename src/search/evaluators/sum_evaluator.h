@@ -32,7 +32,7 @@ private:
     std::string unparsed_config;
 public:
     explicit TaskIndependentSumEvaluator(const std::string &name,
-                                         utils::LogProxy log,
+                                         utils::Verbosity verbosity,
                                          std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
                                          std::string unparsed_config = std::string(),
                                          bool use_for_reporting_minima = false,
