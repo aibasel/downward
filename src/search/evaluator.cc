@@ -13,8 +13,7 @@ Evaluator::Evaluator(const plugins::Options &opts,
                      bool use_for_reporting_minima,
                      bool use_for_boosting,
                      bool use_for_counting_evaluations)
-    : description("description"),
-      use_for_reporting_minima(use_for_reporting_minima),
+    : use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
       log(utils::get_log_from_options(opts)) {
@@ -25,8 +24,7 @@ Evaluator::Evaluator(const string &name,
                      bool use_for_reporting_minima,
                      bool use_for_boosting,
                      bool use_for_counting_evaluations)
-    : description("description"),
-      use_for_reporting_minima(use_for_reporting_minima),
+    : use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
       name(name),
@@ -59,8 +57,8 @@ void Evaluator::report_new_minimum_value(
     }
 }
 
-const string &Evaluator::get_description() const {
-    return description;
+const string &Evaluator::get_name() const {
+    return name;
 }
 
 bool Evaluator::is_used_for_reporting_minima() const {
@@ -92,8 +90,7 @@ TaskIndependentEvaluator::TaskIndependentEvaluator(const string &name,
                                                    bool use_for_reporting_minima,
                                                    bool use_for_boosting,
                                                    bool use_for_counting_evaluations)
-    : description("description"),
-      use_for_reporting_minima(use_for_reporting_minima),
+    : use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
       name(name),

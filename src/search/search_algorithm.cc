@@ -48,8 +48,7 @@ SearchAlgorithm::SearchAlgorithm(
         const string &name,
         utils::Verbosity verbosity,
         const shared_ptr<AbstractTask> &_task)
-    : description("description"), // TODO issue559 ?
-      status(IN_PROGRESS),
+    : status(IN_PROGRESS),
       solution_found(false),
       task(_task),
       task_proxy(*task),
@@ -109,7 +108,7 @@ void SearchAlgorithm::search() {
 
 bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
-        log << "Solution found! (by " << name << ")" << endl;
+        log << "Solution found! (by '" << name << "')" << endl;
         Plan plan;
         search_space.trace_path(state, plan);
         set_plan(plan);
@@ -206,8 +205,7 @@ TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(OperatorCost cost
                                                                double max_time,
                                                                const string &name,
                                                                utils::Verbosity verbosity)
-    : description("description"), // TODO issue559 rm?
-      status(IN_PROGRESS),
+    : status(IN_PROGRESS),
       solution_found(false),
       name(name),
       verbosity(verbosity),

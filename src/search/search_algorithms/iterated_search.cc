@@ -50,13 +50,13 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
            this overrides continue_on_fail.
         */
         if (repeat_last_phase && last_phase_found_solution) {
-            log << "Starting search: " << search_algorithms[search_algorithms.size() - 1]->get_description() << endl;
+            log << "Starting search: '" << search_algorithms[search_algorithms.size() - 1]->get_name() << "'" << endl;
             return search_algorithms[search_algorithms.size() - 1]->create_task_specific_root(task, 1);
         } else {
             return nullptr;
         }
     }
-    log << "Starting search: " << search_algorithms[phase]->get_description() << endl;
+    log << "Starting search: '" << search_algorithms[phase]->get_name() << "'" << endl;
     return search_algorithms[phase]->create_task_specific_root(task, 1);
 }
 
