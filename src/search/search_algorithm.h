@@ -62,13 +62,14 @@ protected:
     bool check_goal_and_set_plan(const State &state);
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
-    SearchAlgorithm(const std::string &name,
-                    utils::Verbosity verbosity,
-                    OperatorCost cost_type,
-                    double max_time,
-                    int bound,
-                    std::string unparsed_config,
-                    const std::shared_ptr<AbstractTask> task);
+    SearchAlgorithm(
+            OperatorCost cost_type,
+            int bound,
+            double max_time,
+            std::string unparsed_config,
+            const std::string &name,
+            utils::Verbosity verbosity,
+            const std::shared_ptr<AbstractTask> &task);
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
@@ -106,12 +107,12 @@ protected:
     double max_time;
 
 public:
-    TaskIndependentSearchAlgorithm(const std::string &name,
-                                   utils::Verbosity verbosity,
-                                   OperatorCost cost_type,
-                                   double max_time,
+    TaskIndependentSearchAlgorithm(OperatorCost cost_type,
                                    int bound,
-                                   std::string unparsed_config);
+                                   double max_time,
+                                   std::string unparsed_config,
+                                   const std::string &name,
+                                   utils::Verbosity verbosity);
     virtual ~TaskIndependentSearchAlgorithm();
 
     PlanManager &get_plan_manager() {return plan_manager;}

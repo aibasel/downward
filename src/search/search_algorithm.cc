@@ -41,13 +41,14 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
 }
 
 
-SearchAlgorithm::SearchAlgorithm(const string &name,
-                                 utils::Verbosity verbosity,
-                                 OperatorCost cost_type,
-                                 double max_time,
-                                 int bound,
-                                 string unparsed_config,
-                                 const std::shared_ptr<AbstractTask> _task)
+SearchAlgorithm::SearchAlgorithm(
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        string unparsed_config,
+        const string &name,
+        utils::Verbosity verbosity,
+        const shared_ptr<AbstractTask> &_task)
     : description(unparsed_config),
       status(IN_PROGRESS),
       solution_found(false),
@@ -201,12 +202,12 @@ public:
 _category_plugin;
 
 
-TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(const string &name,
-                                                               utils::Verbosity verbosity,
-                                                               OperatorCost cost_type,
-                                                               double max_time,
+TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(OperatorCost cost_type,
                                                                int bound,
-                                                               string unparsed_config)
+                                                               double max_time,
+                                                               string unparsed_config,
+                                                               const string &name,
+                                                               utils::Verbosity verbosity)
     : description(unparsed_config),
       status(IN_PROGRESS),
       solution_found(false),
