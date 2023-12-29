@@ -11,6 +11,16 @@
 using namespace std;
 
 namespace parser {
+
+class ConstructContext : public utils::Context {
+    std::unordered_map<std::string, plugins::Any> variables;
+public:
+    void set_variable(const std::string &name, const plugins::Any &value);
+    void remove_variable(const std::string &name);
+    bool has_variable(const std::string &name) const;
+    plugins::Any get_variable(const std::string &name) const;
+};
+
 void ConstructContext::set_variable(const string &name, const plugins::Any &value) {
     variables[name] = value;
 }
