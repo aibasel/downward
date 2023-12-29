@@ -154,6 +154,25 @@ ALIASES["issue559_test1"] = [
     "                 f_eval=sum([g(), "
     "                             h]))"
     "          ]))"] # TODO issue559 remove this
+ALIASES["issue559_test2"] = [
+    "--search",
+    "let(h, lmcut(name=\"AllTimeLMcut\"),"
+    " iterated([astar(name=\"ASTAR_1\",eval=h),"
+    "           eager(tiebreaking([sum([g(\"my_G_Eval\"), "
+    "                                   h]), "
+    "                              h],"
+    "                             unsafe_pruning=false"
+    "                            ),"
+    "                 reopen_closed=true,"
+    "                 f_eval=sum([g(), "
+    "                             h])),"
+    "           eager(tiebreaking([sum([g(), "
+    "                                   h]), "
+    "                              h],"
+    "                             unsafe_pruning=false"
+    "                            )"
+    "                 ,name=\"eager3\")"
+    "          ],pass_bound=false))"] # TODO issue559 remove this
 
 PORTFOLIOS = {}
 for portfolio in os.listdir(PORTFOLIO_DIR):
