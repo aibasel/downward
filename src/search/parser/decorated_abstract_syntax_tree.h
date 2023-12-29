@@ -14,15 +14,8 @@ class Options;
 }
 
 namespace parser {
-// TODO: if we can get rid of lazy values, this class could be moved to the cc file.
-class ConstructContext : public utils::Context {
-    std::unordered_map<std::string, plugins::Any> variables;
-public:
-    void set_variable(const std::string &name, const plugins::Any &value);
-    void remove_variable(const std::string &name);
-    bool has_variable(const std::string &name) const;
-    plugins::Any get_variable(const std::string &name) const;
-};
+
+class ConstructContext;
 
 class DecoratedASTNode {
 public:
