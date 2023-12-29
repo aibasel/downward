@@ -73,10 +73,10 @@ protected:
 
 public:
     explicit Heuristic(const std::string &name,
-                       const std::basic_string<char> unparsed_config,
-                       utils::LogProxy log,
-                       bool cache_evaluator_values,
-                       const std::shared_ptr<AbstractTask> task);
+                       const std::string unparsed_config,
+                       utils::Verbosity verbosity,
+                       const std::shared_ptr<AbstractTask> task,
+                       bool cache_evaluator_values);
     virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(
@@ -102,8 +102,8 @@ public:
     explicit TaskIndependentHeuristic(const std::string &name,
                                       const std::string unparsed_config,
                                       utils::Verbosity verbosity,
-                                      bool cache_evaluator_values,
-                                      std::shared_ptr<TaskIndependentAbstractTask> task_transformation);
+                                      std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
+                                      bool cache_evaluator_values);
     virtual ~TaskIndependentHeuristic() = default;
 };
 

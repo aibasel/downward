@@ -32,7 +32,7 @@ public:
         bool use_for_counting_evaluations = false);
     explicit Evaluator(
         const std::string &name,
-        utils::LogProxy log,
+        utils::Verbosity verbosity,
         const std::basic_string<char> unparsed_config = std::string(),
         bool use_for_reporting_minima = false,
         bool use_for_boosting = false,
@@ -117,6 +117,7 @@ class TaskIndependentEvaluator : public TaskIndependentComponent {
     const bool use_for_counting_evaluations;
 protected:
     const std::string name;
+    const utils::Verbosity verbosity;
     mutable utils::LogProxy log;
 public:
     explicit TaskIndependentEvaluator(

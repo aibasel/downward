@@ -15,18 +15,15 @@ WeightedEvaluator::WeightedEvaluator(const plugins::Options &opts)
 }
 
 WeightedEvaluator::WeightedEvaluator(
-    const string &name,
-    utils::LogProxy log,
-    shared_ptr<Evaluator> evaluator,
-    int weight,
-    basic_string<char> unparsed_config,
-    bool use_for_reporting_minima,
-    bool use_for_boosting,
-    bool use_for_counting_evaluations)
-    : Evaluator(name, log, unparsed_config,
-                use_for_reporting_minima,
-                use_for_boosting,
-                use_for_counting_evaluations
+        shared_ptr<Evaluator> evaluator,
+        int weight,
+        string unparsed_config,
+        const string &name,
+        utils::Verbosity verbosity)
+    : Evaluator(name, verbosity, unparsed_config,
+                false,
+                false,
+                false
                 ),
       evaluator(evaluator),
       weight(weight) {
@@ -57,16 +54,14 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
 }
 
 
-TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(const string &name,
-                                                                   utils::Verbosity verbosity,
+TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(
                                                                    shared_ptr<TaskIndependentEvaluator> evaluator,
                                                                    int weight,
                                                                    basic_string<char> unparsed_config,
-                                                                   bool use_for_reporting_minima,
-                                                                   bool use_for_boosting,
-                                                                   bool use_for_counting_evaluations)
-    : TaskIndependentEvaluator(name, verbosity, unparsed_config, use_for_reporting_minima, use_for_boosting,
-                               use_for_counting_evaluations),
+                                                                   const string &name,
+                                                                   utils::Verbosity verbosity)
+    : TaskIndependentEvaluator(name, verbosity, unparsed_config, false, false,
+                               false),
       evaluator(evaluator),
       weight(weight) {
 }
@@ -85,7 +80,11 @@ shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific(
         log << std::string(depth, ' ') << "Creating task specific WeightedEvaluator..." << endl;
 
         task_specific_x = make_shared<WeightedEvaluator>(
-            name, log, evaluator->create_task_specific(task, component_map, depth), weight);
+            evaluator->create_task_specific(task, component_map, depth),
+            weight,
+            "", // TODO issue559 remove?
+            name,
+            verbosity);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
                                   static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
@@ -109,14 +108,12 @@ public:
     virtual shared_ptr<TaskIndependentWeightedEvaluator> create_component(
         const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentEvaluator>>(context, opts, "evals");
-        return make_shared<TaskIndependentWeightedEvaluator>(opts.get<string>("name"),
-                                                             opts.get<utils::Verbosity>("verbosity"),
+        return make_shared<TaskIndependentWeightedEvaluator>(
                                                              opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
                                                              opts.get<int>("weight"),
                                                              opts.get_unparsed_config(),
-                                                             opts.get<bool>("use_for_reporting_minima", false),
-                                                             opts.get<bool>("use_for_boosting", false),
-                                                             opts.get<bool>("use_for_counting_evaluations", false)
+                                                             opts.get<string>("name"),
+                                                             opts.get<utils::Verbosity>("verbosity")
                                                              );
     }
 };
