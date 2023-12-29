@@ -331,23 +331,23 @@ void add_options_to_feature(plugins::Feature &feature, const string &name) {
 }
 
 
-TaskIndependentEagerSearch::TaskIndependentEagerSearch(const std::string &name,
-                                                       utils::Verbosity verbosity,
-                                                       OperatorCost cost_type,
-                                                       double max_time,
-                                                       int bound,
-                                                       bool reopen_closed_nodes,
-                                                       shared_ptr<TaskIndependentOpenListFactory> open_list_factory,
-                                                       vector<shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
-                                                       shared_ptr<PruningMethod> pruning_method,
-                                                       shared_ptr<TaskIndependentEvaluator> f_evaluator,
-                                                       shared_ptr<TaskIndependentEvaluator> lazy_evaluator,
-                                                       string unparsed_config
+TaskIndependentEagerSearch::TaskIndependentEagerSearch(
+        shared_ptr<TaskIndependentOpenListFactory> open_list_factory,
+        bool reopen_closed_nodes,
+        shared_ptr<TaskIndependentEvaluator> f_evaluator,
+        shared_ptr<TaskIndependentEvaluator> lazy_evaluator,
+        vector<shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
+        shared_ptr<PruningMethod> pruning_method,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const string &name,
+        utils::Verbosity verbosity
                                                        )
     : TaskIndependentSearchAlgorithm(cost_type,
                                      bound,
                                      max_time,
-                                     unparsed_config,
+                                     "unparsed_config", // TODO issue559
                                      name,
                                      verbosity
                                      ),

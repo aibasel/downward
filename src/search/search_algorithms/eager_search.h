@@ -75,18 +75,18 @@ private:
 
     std::shared_ptr<PruningMethod> pruning_method;
 public:
-    explicit TaskIndependentEagerSearch(const std::string &name,
-                                        utils::Verbosity verbosity,
-                                        OperatorCost cost_type,
-                                        double max_time,
-                                        int bound,
-                                        bool reopen_closed_nodes,
-                                        std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory, //will produce StateOpenList
-                                        std::vector<std::shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
-                                        std::shared_ptr<PruningMethod> pruning_method,
-                                        std::shared_ptr<TaskIndependentEvaluator> f_evaluator = nullptr,
-                                        std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator = nullptr,
-                                        std::string unparsed_config = std::string());
+    explicit TaskIndependentEagerSearch(
+            std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory, //will produce StateOpenList
+            bool reopen_closed_nodes,
+            std::shared_ptr<TaskIndependentEvaluator> f_evaluator,
+            std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator,
+            std::vector<std::shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
+            std::shared_ptr<PruningMethod> pruning_method,
+            OperatorCost cost_type,
+            int bound,
+            double max_time,
+            const std::string &name,
+            utils::Verbosity verbosity);
 
     virtual ~TaskIndependentEagerSearch() override = default;
 

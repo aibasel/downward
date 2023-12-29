@@ -30,18 +30,19 @@ public:
     }
 
     virtual shared_ptr<eager_search::TaskIndependentEagerSearch> create_component(const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<eager_search::TaskIndependentEagerSearch>(opts.get<string>("name"),
-                                                                     opts.get<utils::Verbosity>("verbosity"),
-                                                                     opts.get<OperatorCost>("cost_type"),
-                                                                     opts.get<double>("max_time"),
-                                                                     opts.get<int>("bound"),
-                                                                     opts.get<bool>("reopen_closed"),
-                                                                     opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
-                                                                     opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
-                                                                     opts.get<shared_ptr<PruningMethod>>("pruning"),
-                                                                     opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
-                                                                     opts.get<shared_ptr<TaskIndependentEvaluator>>("lazy_evaluator", nullptr),
-                                                                     opts.get_unparsed_config());
+        return make_shared<eager_search::TaskIndependentEagerSearch>(
+                opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
+                opts.get<bool>("reopen_closed"),
+                opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
+                nullptr,
+                opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
+                opts.get<shared_ptr<PruningMethod>>("pruning"),
+                opts.get<OperatorCost>("cost_type"),
+                opts.get<int>("bound"),
+                opts.get<double>("max_time"),
+                opts.get<string>("name"),
+                opts.get<utils::Verbosity>("verbosity")
+                                                                     );
     }
 };
 
