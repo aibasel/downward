@@ -66,7 +66,6 @@ public:
             OperatorCost cost_type,
             int bound,
             double max_time,
-            std::string unparsed_config,
             const std::string &name,
             utils::Verbosity verbosity,
             const std::shared_ptr<AbstractTask> &task);
@@ -110,7 +109,6 @@ public:
     TaskIndependentSearchAlgorithm(OperatorCost cost_type,
                                    int bound,
                                    double max_time,
-                                   std::string unparsed_config,
                                    const std::string &name,
                                    utils::Verbosity verbosity);
     virtual ~TaskIndependentSearchAlgorithm();

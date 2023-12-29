@@ -45,11 +45,10 @@ SearchAlgorithm::SearchAlgorithm(
         OperatorCost cost_type,
         int bound,
         double max_time,
-        string unparsed_config,
         const string &name,
         utils::Verbosity verbosity,
         const shared_ptr<AbstractTask> &_task)
-    : description(unparsed_config),
+    : description("description"), // TODO issue559 ?
       status(IN_PROGRESS),
       solution_found(false),
       task(_task),
@@ -205,10 +204,9 @@ _category_plugin;
 TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(OperatorCost cost_type,
                                                                int bound,
                                                                double max_time,
-                                                               string unparsed_config,
                                                                const string &name,
                                                                utils::Verbosity verbosity)
-    : description(unparsed_config),
+    : description("description"), // TODO issue559 rm?
       status(IN_PROGRESS),
       solution_found(false),
       name(name),

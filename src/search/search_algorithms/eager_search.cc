@@ -29,13 +29,11 @@ EagerSearch::EagerSearch(const std::string &name,
                          shared_ptr<PruningMethod> pruning_method,
                          const shared_ptr<AbstractTask> &task,
                          shared_ptr<Evaluator> f_evaluator,
-                         shared_ptr<Evaluator> lazy_evaluator,
-                         string unparsed_config
+                         shared_ptr<Evaluator> lazy_evaluator
                          )
     : SearchAlgorithm(cost_type,
                       bound,
                       max_time,
-                      unparsed_config,
                       name,
                       verbosity,
                       task),
@@ -347,7 +345,6 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(
     : TaskIndependentSearchAlgorithm(cost_type,
                                      bound,
                                      max_time,
-                                     "unparsed_config", // TODO issue559
                                      name,
                                      verbosity
                                      ),
