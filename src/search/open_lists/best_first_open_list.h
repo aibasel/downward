@@ -70,7 +70,7 @@ class BestFirstOpenListFactory : public OpenListFactory {
     std::shared_ptr<Evaluator> evaluator;
 public:
     explicit BestFirstOpenListFactory(const plugins::Options &options);
-    explicit BestFirstOpenListFactory(bool pref_only, std::shared_ptr<Evaluator> evaluator);
+    explicit BestFirstOpenListFactory(std::shared_ptr<Evaluator> evaluator, bool pref_only);
     virtual ~BestFirstOpenListFactory() override = default;
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
@@ -86,8 +86,8 @@ class TaskIndependentBestFirstOpenListFactory : public TaskIndependentOpenListFa
 public:
     explicit TaskIndependentBestFirstOpenListFactory(const plugins::Options &opts);
     explicit TaskIndependentBestFirstOpenListFactory(
-        bool pref_only,
-        std::shared_ptr<TaskIndependentEvaluator> evaluator);
+            std::shared_ptr<TaskIndependentEvaluator> evaluator,
+            bool pref_only);
     virtual ~TaskIndependentBestFirstOpenListFactory() override = default;
 
     std::shared_ptr<OpenListFactory>

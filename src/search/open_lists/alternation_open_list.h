@@ -70,7 +70,8 @@ class AlternationOpenListFactory : public OpenListFactory {
     std::vector<std::shared_ptr<OpenListFactory>> open_list_factories;
 public:
     explicit AlternationOpenListFactory(const plugins::Options &opts);
-    explicit AlternationOpenListFactory(int boost_amount, std::vector<std::shared_ptr<OpenListFactory>> open_list_factories);
+    explicit AlternationOpenListFactory(std::vector<std::shared_ptr<OpenListFactory>> open_list_factories,
+                                        int boost_amount);
 
     virtual ~AlternationOpenListFactory() override = default;
 
@@ -86,8 +87,8 @@ class TaskIndependentAlternationOpenListFactory : public TaskIndependentOpenList
 public:
     explicit TaskIndependentAlternationOpenListFactory(const plugins::Options &opts);
     explicit TaskIndependentAlternationOpenListFactory(
-        int boost_amount,
-        std::vector<std::shared_ptr<TaskIndependentOpenListFactory>> open_list_factories);
+        std::vector<std::shared_ptr<TaskIndependentOpenListFactory>> open_list_factories,
+        int boost_amount);
     virtual ~TaskIndependentAlternationOpenListFactory() override = default;
 
     std::shared_ptr<OpenListFactory>
