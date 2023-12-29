@@ -162,8 +162,8 @@ class TaskIndependentTieBreakingOpenListFactory : public TaskIndependentOpenList
     bool allow_unsafe_pruning;
 public:
     explicit TaskIndependentTieBreakingOpenListFactory(
+            std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators,
         bool pref_only,
-        std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators,
         bool allow_unsafe_pruning);
     virtual ~TaskIndependentTieBreakingOpenListFactory() override = default;
 
