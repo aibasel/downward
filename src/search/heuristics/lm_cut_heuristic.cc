@@ -11,11 +11,10 @@ using namespace std;
 
 namespace lm_cut_heuristic {
 LandmarkCutHeuristic::LandmarkCutHeuristic(const string &name,
-                                           basic_string<char> unparsed_config,
                                            utils::Verbosity verbosity,
                                            const shared_ptr<AbstractTask> task,
                                            bool cache_evaluator_values)
-    : Heuristic(name, unparsed_config, verbosity, task, cache_evaluator_values),
+    : Heuristic(name, verbosity, task, cache_evaluator_values),
       landmark_generator(utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cut heuristic named '" << name << "'..." << endl;
@@ -42,11 +41,10 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 
 TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(
     const string &name,
-    string unparsed_config,
     utils::Verbosity verbosity,
     shared_ptr<TaskIndependentAbstractTask> task_transformation,
     bool cache_evaluator_values)
-    : TaskIndependentHeuristic(name, unparsed_config, verbosity, task_transformation, cache_evaluator_values) {
+    : TaskIndependentHeuristic(name, verbosity, task_transformation, cache_evaluator_values) {
 }
 
 TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
@@ -66,7 +64,6 @@ shared_ptr<Evaluator> TaskIndependentLandmarkCutHeuristic::create_task_specific(
         log << std::string(depth, ' ') << "Creating task specific LandmarkCutHeuristic '" + name + "'..." << endl;
 
         task_specific_x = make_shared<LandmarkCutHeuristic>(name,
-                                                            "",
                                                             verbosity,
                                                             task_transformation->create_task_specific(
                                                                 task, component_map,
@@ -99,7 +96,6 @@ public:
     virtual shared_ptr<TaskIndependentLandmarkCutHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<TaskIndependentLandmarkCutHeuristic>(opts.get<string>("name"),
-                                                                opts.get_unparsed_config(),
                                                                 opts.get<utils::Verbosity>("verbosity"),
                                                                 opts.get<shared_ptr<TaskIndependentAbstractTask>>(
                                                                         "transform"),

@@ -24,7 +24,6 @@ CombiningEvaluator::CombiningEvaluator(
                                        utils::Verbosity verbosity)
     : Evaluator(name,
                 verbosity,
-                "unparsed_config",
                 false,
                 false,
                 false) {
@@ -82,7 +81,7 @@ TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(
         vector<shared_ptr<TaskIndependentEvaluator>> subevaluators,
         const string &name,
                                                                      utils::Verbosity verbosity)
-    : TaskIndependentEvaluator(name, verbosity, "unparsed_config", false, false, false),
+    : TaskIndependentEvaluator(name, verbosity, false, false, false),
       subevaluators(subevaluators) {
 }
 }

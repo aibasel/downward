@@ -33,10 +33,9 @@ public:
     explicit Evaluator(
         const std::string &name,
         utils::Verbosity verbosity,
-        const std::basic_string<char> unparsed_config = std::string(),
-        bool use_for_reporting_minima = false,
-        bool use_for_boosting = false,
-        bool use_for_counting_evaluations = false);
+        bool use_for_reporting_minima,
+        bool use_for_boosting,
+        bool use_for_counting_evaluations);
     virtual ~Evaluator() = default;
 
     /*
@@ -123,10 +122,9 @@ public:
     explicit TaskIndependentEvaluator(
         const std::string &name,
         utils::Verbosity verbosity,
-        const std::string unparsed_config = std::string(),
-        bool use_for_reporting_minima = false,
-        bool use_for_boosting = false,
-        bool use_for_counting_evaluations = false);
+        bool use_for_reporting_minima,
+        bool use_for_boosting,
+        bool use_for_counting_evaluations);
     virtual ~TaskIndependentEvaluator() = default;
 
     virtual std::shared_ptr<Evaluator>

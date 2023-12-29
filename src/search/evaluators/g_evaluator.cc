@@ -13,7 +13,7 @@ GEvaluator::GEvaluator(const plugins::Options &opts)
 
 GEvaluator::GEvaluator(const string &name,
                        utils::Verbosity verbosity)
-    : Evaluator(name, verbosity, "unparsed_config", false, false, false) {
+    : Evaluator(name, verbosity, false, false, false) {
 }
 
 EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
@@ -28,7 +28,6 @@ TaskIndependentGEvaluator::TaskIndependentGEvaluator(const string &name,
                                                      utils::Verbosity verbosity)
     : TaskIndependentEvaluator(name,
                                verbosity,
-                               "unparsed_config",
                                false,
                                false,
                                false){

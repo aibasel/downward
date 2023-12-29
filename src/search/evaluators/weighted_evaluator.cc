@@ -17,10 +17,9 @@ WeightedEvaluator::WeightedEvaluator(const plugins::Options &opts)
 WeightedEvaluator::WeightedEvaluator(
         shared_ptr<Evaluator> evaluator,
         int weight,
-        string unparsed_config,
         const string &name,
         utils::Verbosity verbosity)
-    : Evaluator(name, verbosity, unparsed_config,
+    : Evaluator(name, verbosity,
                 false,
                 false,
                 false
@@ -57,10 +56,9 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
 TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(
                                                                    shared_ptr<TaskIndependentEvaluator> evaluator,
                                                                    int weight,
-                                                                   basic_string<char> unparsed_config,
                                                                    const string &name,
                                                                    utils::Verbosity verbosity)
-    : TaskIndependentEvaluator(name, verbosity, unparsed_config, false, false,
+    : TaskIndependentEvaluator(name, verbosity, false, false,
                                false),
       evaluator(evaluator),
       weight(weight) {
@@ -82,7 +80,6 @@ shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific(
         task_specific_x = make_shared<WeightedEvaluator>(
             evaluator->create_task_specific(task, component_map, depth),
             weight,
-            "", // TODO issue559 remove?
             name,
             verbosity);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
@@ -111,7 +108,6 @@ public:
         return make_shared<TaskIndependentWeightedEvaluator>(
                                                              opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
                                                              opts.get<int>("weight"),
-                                                             opts.get_unparsed_config(),
                                                              opts.get<string>("name"),
                                                              opts.get<utils::Verbosity>("verbosity")
                                                              );
