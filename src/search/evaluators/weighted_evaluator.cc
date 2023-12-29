@@ -15,7 +15,7 @@ WeightedEvaluator::WeightedEvaluator(const plugins::Options &opts)
 }
 
 WeightedEvaluator::WeightedEvaluator(
-        const string &name,
+    const string &name,
     utils::LogProxy log,
     shared_ptr<Evaluator> evaluator,
     int weight,
@@ -65,7 +65,7 @@ TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(const string 
                                                                    bool use_for_reporting_minima,
                                                                    bool use_for_boosting,
                                                                    bool use_for_counting_evaluations)
-    : TaskIndependentEvaluator(name ,log, unparsed_config, use_for_reporting_minima, use_for_boosting,
+    : TaskIndependentEvaluator(name, log, unparsed_config, use_for_reporting_minima, use_for_boosting,
                                use_for_counting_evaluations),
       evaluator(evaluator),
       weight(weight) {
@@ -77,7 +77,7 @@ shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific(
     std::unique_ptr<ComponentMap> &component_map, int depth) const {
     shared_ptr<WeightedEvaluator> task_specific_x;
 
-    if (component_map->count( static_cast<const TaskIndependentComponent *>(this))) {
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
         log << std::string(depth, ' ') << "Reusing task specific WeightedEvaluator..." << endl;
         task_specific_x = dynamic_pointer_cast<WeightedEvaluator>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
@@ -87,7 +87,7 @@ shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific(
         task_specific_x = make_shared<WeightedEvaluator>(
             name, log, evaluator->create_task_specific(task, component_map, depth), weight);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
-                static_cast<const TaskIndependentComponent *>(this), task_specific_x));
+                                  static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }

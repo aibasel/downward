@@ -64,11 +64,11 @@ protected:
 public:
     SearchAlgorithm(const std::string &name,
                     utils::Verbosity verbosity,
-                 OperatorCost cost_type,
-                 double max_time,
-                 int bound,
-                 std::string unparsed_config,
-                 const std::shared_ptr<AbstractTask> task);
+                    OperatorCost cost_type,
+                    double max_time,
+                    int bound,
+                    std::string unparsed_config,
+                    const std::shared_ptr<AbstractTask> task);
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
@@ -108,17 +108,17 @@ protected:
 public:
     TaskIndependentSearchAlgorithm(const std::string &name,
                                    utils::Verbosity verbosity,
-                                OperatorCost cost_type,
-                                double max_time,
-                                int bound,
-                                std::string unparsed_config);
+                                   OperatorCost cost_type,
+                                   double max_time,
+                                   int bound,
+                                   std::string unparsed_config);
     virtual ~TaskIndependentSearchAlgorithm();
 
     PlanManager &get_plan_manager() {return plan_manager;}
     std::string get_description() {return description;}
 
     virtual std::shared_ptr<SearchAlgorithm> create_task_specific_root(
-            const std::shared_ptr<AbstractTask> &task, int depth = -1) const;
+        const std::shared_ptr<AbstractTask> &task, int depth = -1) const;
 
     virtual std::shared_ptr<SearchAlgorithm>
     create_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,

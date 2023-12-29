@@ -421,9 +421,9 @@ void read_root_task(istream &in) {
 TaskIndependentRootTask::TaskIndependentRootTask() {
 }
 shared_ptr<AbstractTask> TaskIndependentRootTask::create_task_specific(
-        [[maybe_unused]] const shared_ptr<AbstractTask> &task,
-        [[maybe_unused]] unique_ptr<ComponentMap> &component_map,
-        [[maybe_unused]] int depth) const {
+    [[maybe_unused]] const shared_ptr<AbstractTask> &task,
+    [[maybe_unused]] unique_ptr<ComponentMap> &component_map,
+    [[maybe_unused]] int depth) const {
     cerr << "Tries to create RootTask in an unimplemented way." << endl;
     utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
 }
@@ -435,7 +435,7 @@ public:
     }
 
     virtual shared_ptr<TaskIndependentAbstractTask> create_component(
-            const plugins::Options &, const utils::Context &) const override {
+        const plugins::Options &, const utils::Context &) const override {
         return make_shared<TaskIndependentAbstractTask>();
     }
 };

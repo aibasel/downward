@@ -43,11 +43,11 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
 
 SearchAlgorithm::SearchAlgorithm(const string &name,
                                  utils::Verbosity verbosity,
-                           OperatorCost cost_type,
-                           double max_time,
-                           int bound,
-                           string unparsed_config,
-                           const std::shared_ptr<AbstractTask> _task)
+                                 OperatorCost cost_type,
+                                 double max_time,
+                                 int bound,
+                                 string unparsed_config,
+                                 const std::shared_ptr<AbstractTask> _task)
     : description(unparsed_config),
       status(IN_PROGRESS),
       solution_found(false),
@@ -203,10 +203,10 @@ _category_plugin;
 
 TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(const string &name,
                                                                utils::Verbosity verbosity,
-                                                         OperatorCost cost_type,
-                                                         double max_time,
-                                                         int bound,
-                                                         string unparsed_config)
+                                                               OperatorCost cost_type,
+                                                               double max_time,
+                                                               int bound,
+                                                               string unparsed_config)
     : description(unparsed_config),
       status(IN_PROGRESS),
       solution_found(false),
@@ -225,7 +225,7 @@ TaskIndependentSearchAlgorithm::~TaskIndependentSearchAlgorithm() {
 }
 
 shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific_root(
-        const shared_ptr<AbstractTask> &task, int depth) const {
+    const shared_ptr<AbstractTask> &task, int depth) const {
     utils::g_log << std::string(depth, ' ') << "Creating SearchAlgorithm as root component..." << endl;
     std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
     return create_task_specific(task, component_map, depth);

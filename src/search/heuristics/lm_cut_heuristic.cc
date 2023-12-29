@@ -18,7 +18,7 @@ LandmarkCutHeuristic::LandmarkCutHeuristic(const string &name,
     : Heuristic(name, unparsed_config, log, cache_evaluator_values, task),
       landmark_generator(utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy)) {
     if (log.is_at_least_normal()) {
-        log << "Initializing landmark cut heuristic named '" << name <<"'..." << endl;
+        log << "Initializing landmark cut heuristic named '" << name << "'..." << endl;
     }
 }
 
@@ -41,11 +41,11 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 
 
 TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(
-        const string &name,
-        string unparsed_config,
-        utils::LogProxy log,
-        bool cache_evaluator_values,
-        shared_ptr<TaskIndependentAbstractTask> task_transformation)
+    const string &name,
+    string unparsed_config,
+    utils::LogProxy log,
+    bool cache_evaluator_values,
+    shared_ptr<TaskIndependentAbstractTask> task_transformation)
     : TaskIndependentHeuristic(name, unparsed_config, log, cache_evaluator_values, task_transformation) {
 }
 
@@ -54,11 +54,11 @@ TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
 
 
 shared_ptr<Evaluator> TaskIndependentLandmarkCutHeuristic::create_task_specific(
-        const shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const {
+    const shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
     shared_ptr<LandmarkCutHeuristic> task_specific_x;
-    if (component_map->count( static_cast<const TaskIndependentComponent *>(this))) {
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
         log << std::string(depth, ' ') << "Reusing task specific LandmarkCutHeuristic '" + name + "'..." << endl;
         task_specific_x = dynamic_pointer_cast<LandmarkCutHeuristic>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
@@ -70,10 +70,10 @@ shared_ptr<Evaluator> TaskIndependentLandmarkCutHeuristic::create_task_specific(
                                                             log,
                                                             cache_evaluator_values,
                                                             task_transformation->create_task_specific(
-                                                                    task, component_map,
-                                                                    depth >= 0 ? depth + 1 : depth));
+                                                                task, component_map,
+                                                                depth >= 0 ? depth + 1 : depth));
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
-                static_cast<const TaskIndependentComponent *>(this), task_specific_x));
+                                  static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }
@@ -103,7 +103,7 @@ public:
                                                                 utils::get_log_from_options(opts),
                                                                 opts.get<bool>("cache_estimates"),
                                                                 opts.get<shared_ptr<TaskIndependentAbstractTask>>(
-                                                                        "transform")
+                                                                    "transform")
                                                                 );
     }
 };

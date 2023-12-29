@@ -34,11 +34,11 @@ EagerSearch::EagerSearch(const std::string &name,
                          )
     : SearchAlgorithm(name,
                       verbosity,
-                   cost_type,
-                   max_time,
-                   bound,
-                   unparsed_config,
-                   task),
+                      cost_type,
+                      max_time,
+                      bound,
+                      unparsed_config,
+                      task),
       reopen_closed_nodes(reopen_closed_nodes),
       open_list(std::move(open_list)),
       f_evaluator(f_evaluator),
@@ -346,11 +346,11 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(const std::string &name,
                                                        )
     : TaskIndependentSearchAlgorithm(name,
                                      verbosity,
-                                  cost_type,
-                                  max_time,
-                                  bound,
-                                  unparsed_config
-                                  ),
+                                     cost_type,
+                                     max_time,
+                                     bound,
+                                     unparsed_config
+                                     ),
       reopen_closed_nodes(reopen_closed_nodes),
       open_list_factory(std::move(open_list_factory)),
       f_evaluator(f_evaluator),
@@ -361,11 +361,11 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(const std::string &name,
 
 
 shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(
-        const shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const {
+    const shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
     shared_ptr<EagerSearch> task_specific_x;
-    if (component_map->count( static_cast<const TaskIndependentComponent *>(this))) {
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task specific EagerSearch '" << name << "'..." << endl;
         task_specific_x = dynamic_pointer_cast<EagerSearch>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
@@ -379,7 +379,8 @@ shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(
                   );
 
         unique_ptr<StateOpenList> _open_list = unique_ptr<StateOpenList>(
-            open_list_factory->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
+            open_list_factory->create_task_specific(
+                task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
 
         task_specific_x = make_shared<EagerSearch>(name,
                                                    verbosity,
@@ -391,11 +392,13 @@ shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(
                                                    td_evaluators,
                                                    pruning_method,
                                                    task,
-                                                              f_evaluator ? f_evaluator->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
-                                                              lazy_evaluator ? lazy_evaluator->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr);
+                                                   f_evaluator ? f_evaluator->create_task_specific(
+                                                       task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
+                                                   lazy_evaluator ? lazy_evaluator->create_task_specific(
+                                                       task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr);
 
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
-                                       (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
+                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }

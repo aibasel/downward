@@ -44,10 +44,10 @@ TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFac
 
 
 shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific(
-        const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) const {
+    const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) const {
     shared_ptr<TieBreakingOpenListFactory> task_specific_x;
 
-    if (component_map->count( static_cast<const TaskIndependentComponent *>(this))) {
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task specific EagerSearch..." << endl;
         task_specific_x = dynamic_pointer_cast<TieBreakingOpenListFactory>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
@@ -64,14 +64,14 @@ shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_ta
                                                                   ts_evaluators,
                                                                   allow_unsafe_pruning);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
-                static_cast<const TaskIndependentComponent *>(this), task_specific_x));
+                                  static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }
 
 
 class TieBreakingOpenListFeature : public plugins::TypedFeature<
-        TaskIndependentOpenListFactory, TaskIndependentTieBreakingOpenListFactory> {
+                                       TaskIndependentOpenListFactory, TaskIndependentTieBreakingOpenListFactory> {
 public:
     TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
         document_title("Tie-breaking open list");
@@ -88,11 +88,11 @@ public:
     }
 
     virtual shared_ptr<TaskIndependentTieBreakingOpenListFactory> create_component(
-            const plugins::Options &opts, const utils::Context &context) const override {
+        const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentEvaluator>>(context, opts, "evals");
         return make_shared<TaskIndependentTieBreakingOpenListFactory>(opts.get<bool>("pref_only"),
-                                                                      opts.get_list<shared_ptr<
-                                                                              TaskIndependentEvaluator>>("evals"),
+                                                                      opts.get_list<
+                                                                          shared_ptr<TaskIndependentEvaluator>>("evals"),
                                                                       opts.get<bool>("unsafe_pruning"));
     }
 };

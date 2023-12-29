@@ -120,5 +120,3 @@ TaskIndependentHeuristic::TaskIndependentHeuristic(const string &name,
     : TaskIndependentEvaluator(name, log, unparsed_config, true, true, true),
       cache_evaluator_values(cache_evaluator_values), task_transformation(task_transformation) {
 }
-
-

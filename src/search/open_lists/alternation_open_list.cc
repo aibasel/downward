@@ -51,7 +51,7 @@ TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFac
 shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific(
     const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) const {
     shared_ptr<AlternationOpenListFactory> task_specific_x;
-    if (component_map->count( static_cast<const TaskIndependentComponent *>(this))) {
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task specific AlternationOpenListFactory..." << endl;
         task_specific_x = dynamic_pointer_cast<AlternationOpenListFactory>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));

@@ -22,11 +22,11 @@ IteratedSearch::IteratedSearch(const string &name,
                                string unparsed_config
                                ) : SearchAlgorithm(name,
                                                    verbosity,
-                                                cost_type,
-                                                max_time,
-                                                bound,
-                                                unparsed_config,
-                                                task),
+                                                   cost_type,
+                                                   max_time,
+                                                   bound,
+                                                   unparsed_config,
+                                                   task),
                                    search_algorithms(search_algorithms),
                                    pass_bound(pass_bound),
                                    repeat_last_phase(repeat_last_phase),
@@ -36,7 +36,7 @@ IteratedSearch::IteratedSearch(const string &name,
                                    last_phase_found_solution(false),
                                    best_bound(bound),
                                    iterated_found_solution(false) {
-    }
+}
 
 
 shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
@@ -146,10 +146,10 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(const string &name,
                                                              )
     : TaskIndependentSearchAlgorithm(name,
                                      verbosity,
-                                  cost_type,
-                                  max_time,
-                                  bound,
-                                  unparsed_config),
+                                     cost_type,
+                                     max_time,
+                                     bound,
+                                     unparsed_config),
       search_algorithms(search_algorithms),
       pass_bound(pass_bound),
       repeat_last_phase(repeat_last_phase),
@@ -159,11 +159,11 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(const string &name,
 
 
 shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_IteratedSearch(
-        const shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const {
+    const shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
     shared_ptr<IteratedSearch> task_specific_x;
-    if (component_map->count( static_cast<const TaskIndependentComponent *>(this))) {
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
         cerr << "Tries to reuse task specific IteratedSearch... This should not happen" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     } else {
@@ -188,7 +188,7 @@ shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_I
 
 
 shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_specific_root(
-        const shared_ptr<AbstractTask> &task, int depth) const {
+    const shared_ptr<AbstractTask> &task, int depth) const {
     utils::g_log << std::string(depth, ' ') << "Creating IteratedSearch as root component..." << endl;
     std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
     return create_task_specific_IteratedSearch(task, component_map, depth);
@@ -267,7 +267,7 @@ public:
                                                           opts.get<int>("bound"),
                                                           opts.get_unparsed_config(),
                                                           opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
-                                                                  "search_algorithms"),
+                                                              "search_algorithms"),
                                                           opts.get<bool>("pass_bound"),
                                                           opts.get<bool>("repeat_last"),
                                                           opts.get<bool>("continue_on_fail"),
