@@ -20,13 +20,10 @@ protected:
     virtual int combine_values(const std::vector<int> &values) = 0;
 public:
     explicit CombiningEvaluator(const plugins::Options &opts);
-    explicit CombiningEvaluator(const std::string &name,
-                                utils::LogProxy log,
-                                std::vector<std::shared_ptr<Evaluator>> subevaluators,
-                                std::basic_string<char> unparsed_config = std::string(),
-                                bool use_for_reporting_minima = false,
-                                bool use_for_boosting = false,
-                                bool use_for_counting_evaluations = false);
+    explicit CombiningEvaluator(
+            std::vector<std::shared_ptr<Evaluator>> subevaluators,
+            const std::string &name,
+                                utils::Verbosity verbosity);
     virtual ~CombiningEvaluator() override;
 
     /*
@@ -59,13 +56,10 @@ class TaskIndependentCombiningEvaluator : public TaskIndependentEvaluator {
 protected:
     std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators;
 public:
-    explicit TaskIndependentCombiningEvaluator(const std::string &name,
-                                               utils::Verbosity verbosity,
-                                               std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
-                                               std::basic_string<char> unparsed_config = std::string(),
-                                               bool use_for_reporting_minima = false,
-                                               bool use_for_boosting = false,
-                                               bool use_for_counting_evaluations = false);
+    explicit TaskIndependentCombiningEvaluator(
+            std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
+            const std::string &name,
+                                               utils::Verbosity verbosity);
     virtual ~TaskIndependentCombiningEvaluator() override = default;
 };
 }

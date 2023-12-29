@@ -13,20 +13,14 @@ SumEvaluator::SumEvaluator(const plugins::Options &opts)
 }
 
 
-SumEvaluator::SumEvaluator(const string &name,
-                           utils::LogProxy log,
-                           vector<shared_ptr<Evaluator>> subevaluators,
-                           basic_string<char> unparsed_config,
-                           bool use_for_reporting_minima,
-                           bool use_for_boosting,
-                           bool use_for_counting_evaluations)
-    : CombiningEvaluator(name,
-                         log,
-                         subevaluators,
-                         unparsed_config,
-                         use_for_reporting_minima,
-                         use_for_boosting,
-                         use_for_counting_evaluations) {
+SumEvaluator::SumEvaluator(
+        vector<shared_ptr<Evaluator>> subevaluators,
+        const string &name,
+                           utils::Verbosity verbosity)
+    : CombiningEvaluator(
+        subevaluators,
+        name,
+        verbosity) {
 }
 
 
@@ -44,21 +38,14 @@ int SumEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
-TaskIndependentSumEvaluator::TaskIndependentSumEvaluator(const string &name,
-                                                         utils::Verbosity verbosity,
-                                                         std::vector<std::shared_ptr<
-                                                                         TaskIndependentEvaluator>> subevaluators,
-                                                         std::basic_string<char> unparsed_config,
-                                                         bool use_for_reporting_minima,
-                                                         bool use_for_boosting,
-                                                         bool use_for_counting_evaluations)
-    : TaskIndependentCombiningEvaluator(name,
-                                        verbosity,
-                                        subevaluators,
-                                        unparsed_config,
-                                        use_for_reporting_minima,
-                                        use_for_boosting,
-                                        use_for_counting_evaluations) {
+TaskIndependentSumEvaluator::TaskIndependentSumEvaluator(
+        std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
+                const string &name,
+                utils::Verbosity verbosity)
+    : TaskIndependentCombiningEvaluator(
+        subevaluators,
+        name,
+        verbosity) {
 }
 
 
@@ -78,7 +65,7 @@ shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(const sh
                       return eval->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
                   }
                   );
-        task_specific_x = make_shared<SumEvaluator>(name, log, td_subevaluators, unparsed_config);
+        task_specific_x = make_shared<SumEvaluator>(td_subevaluators, name, verbosity);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
                                   static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
@@ -99,13 +86,10 @@ public:
     virtual shared_ptr<TaskIndependentSumEvaluator> create_component(
         const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentEvaluator>>(context, opts, "evals");
-        return make_shared<TaskIndependentSumEvaluator>(opts.get<string>("name"),
-                                                        opts.get<utils::Verbosity>("verbosity"),
-                                                        opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
-                                                        opts.get_unparsed_config(),
-                                                        opts.get<bool>("use_for_reporting_minima", false),
-                                                        opts.get<bool>("use_for_boosting", false),
-                                                        opts.get<bool>("use_for_counting_evaluations", false)
+        return make_shared<TaskIndependentSumEvaluator>(
+                opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
+                        opts.get<string>("name"),
+                                                        opts.get<utils::Verbosity>("verbosity")
                                                         );
     }
 };

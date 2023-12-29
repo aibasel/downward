@@ -16,14 +16,12 @@ class WeightedEvaluator : public Evaluator {
 
 public:
     explicit WeightedEvaluator(const plugins::Options &opts);
-    explicit WeightedEvaluator(const std::string &name,
-                               utils::LogProxy log,
-                               std::shared_ptr<Evaluator> evaluator,
-                               int weight,
-                               std::basic_string<char> unparsed_config = std::string(),
-                               bool use_for_reporting_minima = false,
-                               bool use_for_boosting = false,
-                               bool use_for_counting_evaluations = false);
+    explicit WeightedEvaluator(
+            std::shared_ptr<Evaluator> evaluator,
+            int weight,
+            std::string unparsed_config,
+            const std::string &name,
+            utils::Verbosity verbosity);
     virtual ~WeightedEvaluator() override;
 
     virtual bool dead_ends_are_reliable() const override;
@@ -38,14 +36,12 @@ private:
     std::shared_ptr<TaskIndependentEvaluator> evaluator;
     int weight;
 public:
-    explicit TaskIndependentWeightedEvaluator(const std::string &name,
-                                              utils::Verbosity verbosity,
+    explicit TaskIndependentWeightedEvaluator(
                                               std::shared_ptr<TaskIndependentEvaluator> evaluator,
                                               int weight,
-                                              std::string unparsed_config = std::string(),
-                                              bool use_for_reporting_minima = false,
-                                              bool use_for_boosting = false,
-                                              bool use_for_counting_evaluations = false);
+                                              std::string unparsed_config,
+                                              const std::string &name,
+                                              utils::Verbosity verbosity);
 
     virtual ~TaskIndependentWeightedEvaluator() override = default;
 

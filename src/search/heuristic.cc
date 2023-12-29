@@ -14,11 +14,11 @@ using namespace std;
 
 
 Heuristic::Heuristic(const string &name,
-                     const std::basic_string<char> unparsed_config,
-                     utils::LogProxy log,
-                     bool cache_evaluator_values,
-                     const shared_ptr<AbstractTask> task)
-    : Evaluator(name, log, unparsed_config, true, true, true),
+                     const string unparsed_config,
+                     utils::Verbosity verbosity,
+                     const shared_ptr<AbstractTask> task,
+                     bool cache_evaluator_values)
+    : Evaluator(name, verbosity, unparsed_config, true, true, true),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_evaluator_values(cache_evaluator_values),
       task(task), task_proxy(*task) {
@@ -114,8 +114,8 @@ int Heuristic::get_cached_estimate(const State &state) const {
 TaskIndependentHeuristic::TaskIndependentHeuristic(const string &name,
                                                    const string unparsed_config,
                                                    utils::Verbosity verbosity,
-                                                   bool cache_evaluator_values,
-                                                   std::shared_ptr<TaskIndependentAbstractTask> task_transformation
+                                                   shared_ptr<TaskIndependentAbstractTask> task_transformation,
+                                                   bool cache_evaluator_values
                                                    )
     : TaskIndependentEvaluator(name, verbosity, unparsed_config, true, true, true),
       cache_evaluator_values(cache_evaluator_values), task_transformation(task_transformation) {

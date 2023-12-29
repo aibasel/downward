@@ -18,19 +18,16 @@ CombiningEvaluator::CombiningEvaluator(const plugins::Options &opts)
             all_dead_ends_are_reliable = false;
 }
 
-CombiningEvaluator::CombiningEvaluator(const string &name,
-                                       utils::LogProxy log,
-                                       vector<shared_ptr<Evaluator>> subevaluators,
-                                       basic_string<char> unparsed_config,
-                                       bool use_for_reporting_minima,
-                                       bool use_for_boosting,
-                                       bool use_for_counting_evaluations)
+CombiningEvaluator::CombiningEvaluator(
+        vector<shared_ptr<Evaluator>> subevaluators,
+        const string &name,
+                                       utils::Verbosity verbosity)
     : Evaluator(name,
-                log,
-                unparsed_config,
-                use_for_reporting_minima,
-                use_for_boosting,
-                use_for_counting_evaluations) {
+                verbosity,
+                "unparsed_config",
+                false,
+                false,
+                false) {
     all_dead_ends_are_reliable = true;
     for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
         if (!subevaluator->dead_ends_are_reliable())
@@ -81,14 +78,11 @@ void add_combining_evaluator_options_to_feature(plugins::Feature &feature, const
 }
 
 
-TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(const string &name,
-                                                                     utils::Verbosity verbosity,
-                                                                     vector<shared_ptr<TaskIndependentEvaluator>> subevaluators,
-                                                                     string unparsed_config,
-                                                                     bool use_for_reporting_minima,
-                                                                     bool use_for_boosting,
-                                                                     bool use_for_counting_evaluations)
-    : TaskIndependentEvaluator(name, verbosity, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
+TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(
+        vector<shared_ptr<TaskIndependentEvaluator>> subevaluators,
+        const string &name,
+                                                                     utils::Verbosity verbosity)
+    : TaskIndependentEvaluator(name, verbosity, "unparsed_config", false, false, false),
       subevaluators(subevaluators) {
 }
 }

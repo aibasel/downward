@@ -12,10 +12,10 @@ using namespace std;
 namespace lm_cut_heuristic {
 LandmarkCutHeuristic::LandmarkCutHeuristic(const string &name,
                                            basic_string<char> unparsed_config,
-                                           utils::LogProxy log,
-                                           bool cache_evaluator_values,
-                                           const shared_ptr<AbstractTask> task)
-    : Heuristic(name, unparsed_config, log, cache_evaluator_values, task),
+                                           utils::Verbosity verbosity,
+                                           const shared_ptr<AbstractTask> task,
+                                           bool cache_evaluator_values)
+    : Heuristic(name, unparsed_config, verbosity, task, cache_evaluator_values),
       landmark_generator(utils::make_unique_ptr<LandmarkCutLandmarks>(task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cut heuristic named '" << name << "'..." << endl;
@@ -46,7 +46,7 @@ TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(
     utils::Verbosity verbosity,
     shared_ptr<TaskIndependentAbstractTask> task_transformation,
     bool cache_evaluator_values)
-    : TaskIndependentHeuristic(name, unparsed_config, verbosity, cache_evaluator_values, task_transformation) {
+    : TaskIndependentHeuristic(name, unparsed_config, verbosity, task_transformation, cache_evaluator_values) {
 }
 
 TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
@@ -66,12 +66,12 @@ shared_ptr<Evaluator> TaskIndependentLandmarkCutHeuristic::create_task_specific(
         log << std::string(depth, ' ') << "Creating task specific LandmarkCutHeuristic '" + name + "'..." << endl;
 
         task_specific_x = make_shared<LandmarkCutHeuristic>(name,
-                                                            unparsed_config,
-                                                            log,
-                                                            cache_evaluator_values,
+                                                            "",
+                                                            verbosity,
                                                             task_transformation->create_task_specific(
                                                                 task, component_map,
-                                                                depth >= 0 ? depth + 1 : depth));
+                                                                depth >= 0 ? depth + 1 : depth),
+                                                            cache_evaluator_values);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
                                   static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }

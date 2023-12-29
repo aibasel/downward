@@ -9,11 +9,7 @@ class GEvaluator : public Evaluator {
 public:
     explicit GEvaluator(const plugins::Options &opts);
     explicit GEvaluator(const std::string &name,
-                        utils::LogProxy log,
-                        std::basic_string<char> unparsed_config = std::string(),
-                        bool use_for_reporting_minima = false,
-                        bool use_for_boosting = false,
-                        bool use_for_counting_evaluations = false);
+                        utils::Verbosity verbosity);
     virtual ~GEvaluator() override = default;
 
     virtual EvaluationResult compute_result(
@@ -29,11 +25,7 @@ private:
 
 public:
     explicit TaskIndependentGEvaluator(const std::string &name,
-                                       utils::Verbosity verbosity,
-                                       std::string unparsed_config = std::string(),
-                                       bool use_for_reporting_minima = false,
-                                       bool use_for_boosting = false,
-                                       bool use_for_counting_evaluations = false);
+                                       utils::Verbosity verbosity);
 
     virtual ~TaskIndependentGEvaluator()  override = default;
 

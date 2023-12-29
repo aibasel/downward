@@ -12,12 +12,8 @@ GEvaluator::GEvaluator(const plugins::Options &opts)
 }
 
 GEvaluator::GEvaluator(const string &name,
-                       utils::LogProxy log,
-                       basic_string<char> unparsed_config,
-                       bool use_for_reporting_minima,
-                       bool use_for_boosting,
-                       bool use_for_counting_evaluations)
-    : Evaluator(name, log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations) {
+                       utils::Verbosity verbosity)
+    : Evaluator(name, verbosity, "unparsed_config", false, false, false) {
 }
 
 EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
@@ -29,13 +25,13 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
 
 
 TaskIndependentGEvaluator::TaskIndependentGEvaluator(const string &name,
-                                                     utils::Verbosity verbosity,
-                                                     std::basic_string<char> unparsed_config,
-                                                     bool use_for_reporting_minima,
-                                                     bool use_for_boosting,
-                                                     bool use_for_counting_evaluations)
-    : TaskIndependentEvaluator(name, verbosity, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
-      unparsed_config(unparsed_config) {
+                                                     utils::Verbosity verbosity)
+    : TaskIndependentEvaluator(name,
+                               verbosity,
+                               "unparsed_config",
+                               false,
+                               false,
+                               false){
 }
 
 
@@ -51,7 +47,7 @@ shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
         log << std::string(depth, ' ') << "Creating task specific GEvaluator '" << name << "'..." << endl;
-        task_specific_x = make_shared<GEvaluator>(name, log, unparsed_config);
+        task_specific_x = make_shared<GEvaluator>(name, verbosity);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
                                   (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
@@ -73,11 +69,7 @@ public:
     virtual shared_ptr<TaskIndependentGEvaluator> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<TaskIndependentGEvaluator>(opts.get<string>("name"),
-                                                      opts.get<utils::Verbosity>("verbosity"),
-                                                      opts.get_unparsed_config(),
-                                                      opts.get<bool>("use_for_reporting_minima", false),
-                                                      opts.get<bool>("use_for_boosting", false),
-                                                      opts.get<bool>("use_for_counting_evaluations", false));
+                                                      opts.get<utils::Verbosity>("verbosity"));
     }
 };
 

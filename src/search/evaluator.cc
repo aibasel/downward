@@ -21,7 +21,7 @@ Evaluator::Evaluator(const plugins::Options &opts,
 }
 
 Evaluator::Evaluator(const string &name,
-                     utils::LogProxy log,
+                     utils::Verbosity verbosity,
                      const basic_string<char> unparsed_config,
                      bool use_for_reporting_minima,
                      bool use_for_boosting,
@@ -31,7 +31,7 @@ Evaluator::Evaluator(const string &name,
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
       name(name),
-      log(log) {
+      log(utils::get_log_from_verbosity(verbosity)) {
 }
 
 bool Evaluator::dead_ends_are_reliable() const {
@@ -99,6 +99,7 @@ TaskIndependentEvaluator::TaskIndependentEvaluator(const string &name,
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
       name(name),
+      verbosity(verbosity),
       log(utils::get_log_from_verbosity(verbosity)) {
 }
 

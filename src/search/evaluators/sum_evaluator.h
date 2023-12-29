@@ -16,13 +16,10 @@ protected:
     virtual int combine_values(const std::vector<int> &values) override;
 public:
     explicit SumEvaluator(const plugins::Options &opts);
-    explicit SumEvaluator(const std::string &name,
-                          utils::LogProxy log,
-                          std::vector<std::shared_ptr<Evaluator>> subevaluators,
-                          std::basic_string<char> unparsed_config = std::string(),
-                          bool use_for_reporting_minima = false,
-                          bool use_for_boosting = false,
-                          bool use_for_counting_evaluations = false);
+    explicit SumEvaluator(
+            std::vector<std::shared_ptr<Evaluator>> subevaluators,
+            const std::string &name,
+            utils::Verbosity verbosity);
     virtual ~SumEvaluator() override;
 };
 
@@ -31,13 +28,10 @@ class TaskIndependentSumEvaluator : public combining_evaluator::TaskIndependentC
 private:
     std::string unparsed_config;
 public:
-    explicit TaskIndependentSumEvaluator(const std::string &name,
-                                         utils::Verbosity verbosity,
-                                         std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
-                                         std::string unparsed_config = std::string(),
-                                         bool use_for_reporting_minima = false,
-                                         bool use_for_boosting = false,
-                                         bool use_for_counting_evaluations = false);
+    explicit TaskIndependentSumEvaluator(
+            std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
+            const std::string &name,
+                                         utils::Verbosity verbosity);
 
     virtual ~TaskIndependentSumEvaluator()  override = default;
 
