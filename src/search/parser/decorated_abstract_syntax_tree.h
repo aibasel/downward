@@ -9,10 +9,6 @@
 #include <string>
 #include <vector>
 
-namespace plugins {
-class Options;
-}
-
 namespace parser {
 
 class ConstructContext;
