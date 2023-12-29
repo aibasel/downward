@@ -17,7 +17,6 @@ IteratedSearch::IteratedSearch(
         OperatorCost cost_type,
         int bound,
         double max_time,
-        string unparsed_config,
         const string &name,
         utils::Verbosity verbosity,
                                const shared_ptr<AbstractTask> &task
@@ -25,7 +24,6 @@ IteratedSearch::IteratedSearch(
                                        cost_type,
                                        bound,
                                        max_time,
-                                       unparsed_config,
                                        name,
                                        verbosity,
                                        task),
@@ -143,14 +141,12 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(
         OperatorCost cost_type,
         int bound,
         double max_time,
-        string unparsed_config,
         const string &name,
         utils::Verbosity verbosity
                                                              )
     : TaskIndependentSearchAlgorithm(cost_type,
                                      bound,
                                      max_time,
-                                     unparsed_config,
                                      name,
                                      verbosity
                                      ),
@@ -180,7 +176,6 @@ shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_I
                  cost_type,
                  bound,
                  max_time,
-         "", // TODO issue559 remove?
          name,
          verbosity,
                                                       task);
@@ -275,7 +270,6 @@ public:
                                                           opts.get<OperatorCost>("cost_type"),
                 opts.get<int>("bound"),
                                                           opts.get<double>("max_time"),
-                                                          opts.get_unparsed_config(),
                                                           opts.get<string>("name"),
                                                           opts.get<utils::Verbosity>("verbosity")
                                                           );
