@@ -28,18 +28,19 @@ class IteratedSearch : public SearchAlgorithm {
     virtual SearchStatus step() override;
 
 public:
-    IteratedSearch(const std::string &name,
-                   utils::Verbosity verbosity,
-                   OperatorCost cost_type,
-                   double max_time,
-                   int bound,
-                   const std::shared_ptr<AbstractTask> &task,
-                   std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
-                   bool pass_bound,
-                   bool repeat_last_phase,
-                   bool continue_on_fail,
-                   bool continue_on_solve,
-                   std::string unparsed_config = std::string());
+    IteratedSearch(
+            std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+            bool pass_bound,
+            bool repeat_last_phase,
+            bool continue_on_fail,
+            bool continue_on_solve,
+            OperatorCost cost_type,
+            int bound,
+            double max_time,
+            std::string unparsed_config,
+            const std::string &name,
+            utils::Verbosity verbosity,
+                   const std::shared_ptr<AbstractTask> &task);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
@@ -60,17 +61,18 @@ private:
                                                                         std::unique_ptr<ComponentMap> &component_map,
                                                                         int depth = -1) const;
 public:
-    explicit TaskIndependentIteratedSearch(const std::string &name,
-                                           utils::Verbosity verbosity,
-                                           OperatorCost cost_type,
-                                           double max_time,
-                                           int bound,
-                                           std::string unparsed_config,
-                                           std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
-                                           bool pass_bound,
-                                           bool repeat_last_phase,
-                                           bool continue_on_fail,
-                                           bool continue_on_solve);
+    explicit TaskIndependentIteratedSearch(
+            std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+            bool pass_bound,
+            bool repeat_last_phase,
+            bool continue_on_fail,
+            bool continue_on_solve,
+            OperatorCost cost_type,
+            int bound,
+            double max_time,
+            std::string unparsed_config,
+            const std::string &name,
+            utils::Verbosity verbosity);
 
     virtual ~TaskIndependentIteratedSearch() override = default;
 

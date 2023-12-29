@@ -8,18 +8,19 @@
 using namespace std;
 
 namespace iterated_search {
-IteratedSearch::IteratedSearch(const string &name,
-                               utils::Verbosity verbosity,
-                               OperatorCost cost_type,
-                               double max_time,
-                               int bound,
-                               const shared_ptr<AbstractTask> &task,
-                               vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
-                               bool pass_bound,
-                               bool repeat_last_phase,
-                               bool continue_on_fail,
-                               bool continue_on_solve,
-                               string unparsed_config
+IteratedSearch::IteratedSearch(
+        vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+        bool pass_bound,
+        bool repeat_last_phase,
+        bool continue_on_fail,
+        bool continue_on_solve,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        string unparsed_config,
+        const string &name,
+        utils::Verbosity verbosity,
+                               const shared_ptr<AbstractTask> &task
                                ) : SearchAlgorithm(
                                        cost_type,
                                        bound,
@@ -133,17 +134,18 @@ void IteratedSearch::save_plan_if_necessary() {
 }
 
 
-TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(const string &name,
-                                                             utils::Verbosity verbosity,
-                                                             OperatorCost cost_type,
-                                                             double max_time,
-                                                             int bound,
-                                                             string unparsed_config,
-                                                             vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
-                                                             bool pass_bound,
-                                                             bool repeat_last_phase,
-                                                             bool continue_on_fail,
-                                                             bool continue_on_solve
+TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(
+        vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+        bool pass_bound,
+        bool repeat_last_phase,
+        bool continue_on_fail,
+        bool continue_on_solve,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        string unparsed_config,
+        const string &name,
+        utils::Verbosity verbosity
                                                              )
     : TaskIndependentSearchAlgorithm(cost_type,
                                      bound,
@@ -170,17 +172,18 @@ shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_I
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific IteratedSearch..." << endl;
-        task_specific_x = make_shared<IteratedSearch>(name,
-                                                      verbosity,
-                                                      cost_type,
-                                                      max_time,
-                                                      bound,
-                                                      task,
-                                                      search_algorithms,
-                                                      pass_bound,
-                                                      repeat_last_phase,
-                                                      continue_on_fail,
-                                                      continue_on_solve);
+        task_specific_x = make_shared<IteratedSearch>(search_algorithms,
+                 pass_bound,
+                 repeat_last_phase,
+                 continue_on_fail,
+                 continue_on_solve,
+                 cost_type,
+                 bound,
+                 max_time,
+         "", // TODO issue559 remove?
+         name,
+         verbosity,
+                                                      task);
         utils::g_log << "Created task specific IteratedSearch..." << endl;
     }
     return task_specific_x;
@@ -262,18 +265,19 @@ public:
     virtual shared_ptr<TaskIndependentIteratedSearch> create_component(const plugins::Options &opts,
                                                                        const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentSearchAlgorithm>>(context, opts, "search_algorithms");
-        return make_shared<TaskIndependentIteratedSearch>(opts.get<string>("name"),
-                                                          opts.get<utils::Verbosity>("verbosity"),
+        return make_shared<TaskIndependentIteratedSearch>(
+                opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
+                        "search_algorithms"),
+                opts.get<bool>("pass_bound"),
+                opts.get<bool>("repeat_last"),
+                opts.get<bool>("continue_on_fail"),
+                opts.get<bool>("continue_on_solve"),
                                                           opts.get<OperatorCost>("cost_type"),
+                opts.get<int>("bound"),
                                                           opts.get<double>("max_time"),
-                                                          opts.get<int>("bound"),
                                                           opts.get_unparsed_config(),
-                                                          opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
-                                                              "search_algorithms"),
-                                                          opts.get<bool>("pass_bound"),
-                                                          opts.get<bool>("repeat_last"),
-                                                          opts.get<bool>("continue_on_fail"),
-                                                          opts.get<bool>("continue_on_solve")
+                                                          opts.get<string>("name"),
+                                                          opts.get<utils::Verbosity>("verbosity")
                                                           );
     }
 };
