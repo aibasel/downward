@@ -143,7 +143,7 @@ create_task_independent_astar_open_list_factory_and_f_eval(const string &name,
     vector<shared_ptr<TaskIndependentEvaluator>> evals = {f, h};
 
     shared_ptr<TaskIndependentOpenListFactory> open =
-        make_shared<tiebreaking_open_list::TaskIndependentTieBreakingOpenListFactory>(false, evals, false);
+        make_shared<tiebreaking_open_list::TaskIndependentTieBreakingOpenListFactory>(evals, false, false);
     return make_pair(open, f);
 }
 }
