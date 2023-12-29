@@ -42,19 +42,12 @@ using DecoratedASTNodePtr = std::unique_ptr<DecoratedASTNode>;
 class FunctionArgument {
     std::string key;
     DecoratedASTNodePtr value;
-
-    // TODO: This is here only for the iterated search. Once we switch to builders, we won't need it any more.
-    bool lazy_construction;
 public:
-    FunctionArgument(const std::string &key, DecoratedASTNodePtr value,
-                     bool lazy_construction);
+    FunctionArgument(const std::string &key, DecoratedASTNodePtr value);
 
     std::string get_key() const;
     const DecoratedASTNode &get_value() const;
     void dump(const std::string &indent) const;
-
-    // TODO: This is here only for the iterated search. Once we switch to builders, we won't need it any more.
-    bool is_lazily_constructed() const;
     FunctionArgument(const FunctionArgument &other);
 };
 

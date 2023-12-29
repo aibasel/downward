@@ -13,14 +13,12 @@ ArgumentInfo::ArgumentInfo(
     const string &help,
     const Type &type,
     const string &default_value,
-    const Bounds &bounds,
-    bool lazy_construction)
+    const Bounds &bounds)
     : key(key),
       help(help),
       type(type),
       default_value(default_value),
-      bounds(bounds),
-      lazy_construction(lazy_construction) {
+      bounds(bounds) {
 }
 
 bool ArgumentInfo::is_optional() const {

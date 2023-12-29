@@ -36,9 +36,8 @@ plugins::Any DecoratedASTNode::construct() const {
     return construct(context);
 }
 
-FunctionArgument::FunctionArgument(const string &key, DecoratedASTNodePtr value,
-                                   bool lazy_construction)
-    : key(key), value(move(value)), lazy_construction(lazy_construction) {
+FunctionArgument::FunctionArgument(const string &key, DecoratedASTNodePtr value)
+    : key(key), value(move(value)) {
 }
 
 string FunctionArgument::get_key() const {
@@ -52,10 +51,6 @@ const DecoratedASTNode &FunctionArgument::get_value() const {
 void FunctionArgument::dump(const string &indent) const {
     cout << indent << key << " = " << endl;
     value->dump("| " + indent);
-}
-
-bool FunctionArgument::is_lazily_constructed() const {
-    return lazy_construction;
 }
 
 DecoratedLetNode::DecoratedLetNode(
@@ -403,8 +398,7 @@ void CheckBoundsNode::dump(string indent) const {
 
 // We are keeping all copy functionality together because it should be removed soon.
 FunctionArgument::FunctionArgument(const FunctionArgument &other)
-    : key(other.key), value(other.value->clone()),
-      lazy_construction(other.lazy_construction) {
+    : key(other.key), value(other.value->clone()) {
 }
 
 DecoratedLetNode::DecoratedLetNode(const DecoratedLetNode &other)

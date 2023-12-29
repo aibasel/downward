@@ -17,16 +17,12 @@ struct ArgumentInfo {
     Bounds bounds;
     static const std::string NO_DEFAULT;
 
-    // TODO: once we switch to builder, this should no longer be necessary.
-    bool lazy_construction;
-
     ArgumentInfo(
         const std::string &key,
         const std::string &help,
         const Type &type,
         const std::string &default_value,
-        const Bounds &bounds,
-        bool lazy_construction = false);
+        const Bounds &bounds);
 
     bool is_optional() const;
     bool has_default() const;
