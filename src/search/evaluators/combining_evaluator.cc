@@ -91,6 +91,4 @@ TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(const strin
     : TaskIndependentEvaluator(name, log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
       subevaluators(subevaluators) {
 }
-
-
 }

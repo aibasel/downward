@@ -47,7 +47,7 @@ int SumEvaluator::combine_values(const vector<int> &values) {
 TaskIndependentSumEvaluator::TaskIndependentSumEvaluator(const string &name,
                                                          utils::LogProxy log,
                                                          std::vector<std::shared_ptr<
-                                                                 TaskIndependentEvaluator>> subevaluators,
+                                                                         TaskIndependentEvaluator>> subevaluators,
                                                          std::basic_string<char> unparsed_config,
                                                          bool use_for_reporting_minima,
                                                          bool use_for_boosting,
@@ -66,7 +66,7 @@ shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(const sh
                                                                         std::unique_ptr<ComponentMap> &component_map,
                                                                         int depth) const {
     shared_ptr<SumEvaluator> task_specific_x;
-    if (component_map->count( static_cast<const TaskIndependentComponent *>(this))) {
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
         log << std::string(depth, ' ') << "Reusing task specific SumEvaluator '" << name << "'..." << endl;
         task_specific_x = dynamic_pointer_cast<SumEvaluator>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
@@ -80,7 +80,7 @@ shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(const sh
                   );
         task_specific_x = make_shared<SumEvaluator>(name, log, td_subevaluators, unparsed_config);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
-                static_cast<const TaskIndependentComponent *>(this), task_specific_x));
+                                  static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }

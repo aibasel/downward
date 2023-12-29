@@ -105,7 +105,6 @@ public:
                                       bool cache_evaluator_values,
                                       std::shared_ptr<TaskIndependentAbstractTask> task_transformation);
     virtual ~TaskIndependentHeuristic() = default;
-
 };
 
 

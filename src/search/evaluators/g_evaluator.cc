@@ -40,12 +40,12 @@ TaskIndependentGEvaluator::TaskIndependentGEvaluator(const string &name,
 
 
 shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific(
-        [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const {
+    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
     shared_ptr<GEvaluator> task_specific_x;
 
-    if (component_map->count( static_cast<const TaskIndependentComponent *>(this))) {
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
         log << std::string(depth, ' ') << "Reusing task specific GEvaluator '" << name << "'..." << endl;
         task_specific_x = dynamic_pointer_cast<GEvaluator>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
@@ -53,7 +53,7 @@ shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific(
         log << std::string(depth, ' ') << "Creating task specific GEvaluator '" << name << "'..." << endl;
         task_specific_x = make_shared<GEvaluator>(name, log, unparsed_config);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
-                                       (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
+                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }
