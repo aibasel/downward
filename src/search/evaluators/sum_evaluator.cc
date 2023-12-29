@@ -45,7 +45,7 @@ int SumEvaluator::combine_values(const vector<int> &values) {
 }
 
 TaskIndependentSumEvaluator::TaskIndependentSumEvaluator(const string &name,
-                                                         utils::LogProxy log,
+                                                         utils::Verbosity verbosity,
                                                          std::vector<std::shared_ptr<
                                                                          TaskIndependentEvaluator>> subevaluators,
                                                          std::basic_string<char> unparsed_config,
@@ -53,7 +53,7 @@ TaskIndependentSumEvaluator::TaskIndependentSumEvaluator(const string &name,
                                                          bool use_for_boosting,
                                                          bool use_for_counting_evaluations)
     : TaskIndependentCombiningEvaluator(name,
-                                        log,
+                                        verbosity,
                                         subevaluators,
                                         unparsed_config,
                                         use_for_reporting_minima,
@@ -100,7 +100,7 @@ public:
         const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentEvaluator>>(context, opts, "evals");
         return make_shared<TaskIndependentSumEvaluator>(opts.get<string>("name"),
-                                                        utils::get_log_from_options(opts),
+                                                        opts.get<utils::Verbosity>("verbosity"),
                                                         opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
                                                         opts.get_unparsed_config(),
                                                         opts.get<bool>("use_for_reporting_minima", false),

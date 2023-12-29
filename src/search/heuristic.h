@@ -101,7 +101,7 @@ protected:
 public:
     explicit TaskIndependentHeuristic(const std::string &name,
                                       const std::string unparsed_config,
-                                      utils::LogProxy log,
+                                      utils::Verbosity verbosity,
                                       bool cache_evaluator_values,
                                       std::shared_ptr<TaskIndependentAbstractTask> task_transformation);
     virtual ~TaskIndependentHeuristic() = default;

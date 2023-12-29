@@ -43,10 +43,10 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(
     const string &name,
     string unparsed_config,
-    utils::LogProxy log,
-    bool cache_evaluator_values,
-    shared_ptr<TaskIndependentAbstractTask> task_transformation)
-    : TaskIndependentHeuristic(name, unparsed_config, log, cache_evaluator_values, task_transformation) {
+    utils::Verbosity verbosity,
+    shared_ptr<TaskIndependentAbstractTask> task_transformation,
+    bool cache_evaluator_values)
+    : TaskIndependentHeuristic(name, unparsed_config, verbosity, cache_evaluator_values, task_transformation) {
 }
 
 TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
@@ -100,10 +100,10 @@ public:
         const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<TaskIndependentLandmarkCutHeuristic>(opts.get<string>("name"),
                                                                 opts.get_unparsed_config(),
-                                                                utils::get_log_from_options(opts),
-                                                                opts.get<bool>("cache_estimates"),
+                                                                opts.get<utils::Verbosity>("verbosity"),
                                                                 opts.get<shared_ptr<TaskIndependentAbstractTask>>(
-                                                                    "transform")
+                                                                        "transform"),
+                                                                opts.get<bool>("cache_estimates")
                                                                 );
     }
 };

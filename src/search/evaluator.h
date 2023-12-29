@@ -121,7 +121,7 @@ protected:
 public:
     explicit TaskIndependentEvaluator(
         const std::string &name,
-        utils::LogProxy log,
+        utils::Verbosity verbosity,
         const std::string unparsed_config = std::string(),
         bool use_for_reporting_minima = false,
         bool use_for_boosting = false,

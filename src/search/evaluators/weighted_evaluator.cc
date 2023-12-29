@@ -58,14 +58,14 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
 
 
 TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(const string &name,
-                                                                   utils::LogProxy log,
+                                                                   utils::Verbosity verbosity,
                                                                    shared_ptr<TaskIndependentEvaluator> evaluator,
                                                                    int weight,
                                                                    basic_string<char> unparsed_config,
                                                                    bool use_for_reporting_minima,
                                                                    bool use_for_boosting,
                                                                    bool use_for_counting_evaluations)
-    : TaskIndependentEvaluator(name, log, unparsed_config, use_for_reporting_minima, use_for_boosting,
+    : TaskIndependentEvaluator(name, verbosity, unparsed_config, use_for_reporting_minima, use_for_boosting,
                                use_for_counting_evaluations),
       evaluator(evaluator),
       weight(weight) {
@@ -110,7 +110,7 @@ public:
         const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentEvaluator>>(context, opts, "evals");
         return make_shared<TaskIndependentWeightedEvaluator>(opts.get<string>("name"),
-                                                             utils::get_log_from_options(opts),
+                                                             opts.get<utils::Verbosity>("verbosity"),
                                                              opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
                                                              opts.get<int>("weight"),
                                                              opts.get_unparsed_config(),

@@ -26,8 +26,8 @@ CombiningEvaluator::CombiningEvaluator(const string &name,
                                        bool use_for_boosting,
                                        bool use_for_counting_evaluations)
     : Evaluator(name,
-                std::move(log),
-                std::move(unparsed_config),
+                log,
+                unparsed_config,
                 use_for_reporting_minima,
                 use_for_boosting,
                 use_for_counting_evaluations) {
@@ -82,13 +82,13 @@ void add_combining_evaluator_options_to_feature(plugins::Feature &feature, const
 
 
 TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(const string &name,
-                                                                     utils::LogProxy log,
+                                                                     utils::Verbosity verbosity,
                                                                      vector<shared_ptr<TaskIndependentEvaluator>> subevaluators,
                                                                      string unparsed_config,
                                                                      bool use_for_reporting_minima,
                                                                      bool use_for_boosting,
                                                                      bool use_for_counting_evaluations)
-    : TaskIndependentEvaluator(name, log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
+    : TaskIndependentEvaluator(name, verbosity, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
       subevaluators(subevaluators) {
 }
 }

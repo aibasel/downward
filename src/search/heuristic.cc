@@ -113,10 +113,10 @@ int Heuristic::get_cached_estimate(const State &state) const {
 
 TaskIndependentHeuristic::TaskIndependentHeuristic(const string &name,
                                                    const string unparsed_config,
-                                                   utils::LogProxy log,
+                                                   utils::Verbosity verbosity,
                                                    bool cache_evaluator_values,
                                                    std::shared_ptr<TaskIndependentAbstractTask> task_transformation
                                                    )
-    : TaskIndependentEvaluator(name, log, unparsed_config, true, true, true),
+    : TaskIndependentEvaluator(name, verbosity, unparsed_config, true, true, true),
       cache_evaluator_values(cache_evaluator_values), task_transformation(task_transformation) {
 }
