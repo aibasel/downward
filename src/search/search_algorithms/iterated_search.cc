@@ -158,9 +158,12 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(const string &name,
 }
 
 
-shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_IteratedSearch(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &&component_map, int depth) {
+shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_IteratedSearch(
+        const shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const {
     shared_ptr<IteratedSearch> task_specific_x;
-    if (component_map->count( static_cast<TaskIndependentComponent *>(this))) {
+    if (component_map->count( static_cast<const TaskIndependentComponent *>(this))) {
         cerr << "Tries to reuse task specific IteratedSearch... This should not happen" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     } else {
@@ -184,15 +187,18 @@ shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_I
 
 
 
-shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_specific_root(const shared_ptr<AbstractTask> &task, int depth) {
+shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_specific_root(
+        const shared_ptr<AbstractTask> &task, int depth) const {
     utils::g_log << std::string(depth, ' ') << "Creating IteratedSearch as root component..." << endl;
     std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return create_task_specific_IteratedSearch(task, move(component_map), depth);
+    return create_task_specific_IteratedSearch(task, component_map, depth);
 }
 
 
-shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_specific(const shared_ptr<AbstractTask> &task, unique_ptr<ComponentMap> &component_map, int depth) {
-    return create_task_specific_IteratedSearch(task, move(component_map), depth);
+shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_specific(const shared_ptr<AbstractTask> &task,
+                                                                                unique_ptr<ComponentMap> &component_map,
+                                                                                int depth) const {
+    return create_task_specific_IteratedSearch(task, component_map, depth);
 }
 
 class TaskIndependentIteratedSearchFeature : public plugins::TypedFeature<TaskIndependentSearchAlgorithm, TaskIndependentIteratedSearch> {
@@ -251,7 +257,8 @@ public:
             "will be saved between iterations.");
     }
 
-    virtual shared_ptr<TaskIndependentIteratedSearch> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+    virtual shared_ptr<TaskIndependentIteratedSearch> create_component(const plugins::Options &opts,
+                                                                       const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentSearchAlgorithm>>(context, opts, "search_algorithms");
         return make_shared<TaskIndependentIteratedSearch>(opts.get<string>("name"),
                                                           opts.get<utils::Verbosity>("verbosity"),
@@ -259,7 +266,8 @@ public:
                                                           opts.get<double>("max_time"),
                                                           opts.get<int>("bound"),
                                                           opts.get_unparsed_config(),
-                                                          opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>("search_algorithms"),
+                                                          opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
+                                                                  "search_algorithms"),
                                                           opts.get<bool>("pass_bound"),
                                                           opts.get<bool>("repeat_last"),
                                                           opts.get<bool>("continue_on_fail"),

@@ -111,7 +111,7 @@ public:
 
     virtual std::shared_ptr<AbstractTask>
     create_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                         int depth = -1);
+                         int depth = -1) const;
 };
 
 #endif

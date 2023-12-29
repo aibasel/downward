@@ -17,12 +17,12 @@ class Options;
 }
 
 class Evaluator : public Component {
-    const std::string name;
     const std::string description;
     const bool use_for_reporting_minima;
     const bool use_for_boosting;
     const bool use_for_counting_evaluations;
 protected:
+    const std::string name;
     mutable utils::LogProxy log;
 public:
     explicit Evaluator(
@@ -130,7 +130,7 @@ public:
 
     virtual std::shared_ptr<Evaluator>
     create_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                         int depth = -1) = 0;
+                         int depth = -1) const = 0;
 };
 
 

@@ -37,6 +37,6 @@ public:
 
     virtual std::shared_ptr<OpenListFactory>
     create_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                         int depth = -1) = 0;
+                         int depth = -1) const = 0;
 };
 #endif

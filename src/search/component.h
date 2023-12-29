@@ -15,5 +15,5 @@ public:
     virtual ~TaskIndependentComponent() = default;
 };
 
-using ComponentMap = std::unordered_map<TaskIndependentComponent *, std::shared_ptr<Component>>;
+using ComponentMap = std::unordered_map<const TaskIndependentComponent *, std::shared_ptr<Component>>;
 #endif

@@ -26,7 +26,6 @@ public:
 class TaskIndependentGEvaluator : public TaskIndependentEvaluator {
 private:
     std::string unparsed_config;
-    utils::LogProxy log;
 
 public:
     explicit TaskIndependentGEvaluator(const std::string &name,
@@ -41,7 +40,7 @@ public:
 
     std::shared_ptr<Evaluator>
     create_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                         int depth = -1 ) override;
+                         int depth = -1 ) const override;
 };
 }
 
