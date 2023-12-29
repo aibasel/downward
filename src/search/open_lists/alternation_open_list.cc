@@ -18,7 +18,8 @@ AlternationOpenListFactory::AlternationOpenListFactory(const plugins::Options &o
     : options(opts), boost_amount(opts.get<int>("boost")), size(0), open_list_factories(opts.get_list<shared_ptr<OpenListFactory>>("sublists")) {
 }
 
-AlternationOpenListFactory::AlternationOpenListFactory(int boost_amount, vector<shared_ptr<OpenListFactory>> open_list_factories)
+AlternationOpenListFactory::AlternationOpenListFactory(vector<shared_ptr<OpenListFactory>> open_list_factories,
+                                                       int boost_amount)
     : boost_amount(boost_amount), size(0), open_list_factories(open_list_factories) {
 }
 
@@ -41,8 +42,8 @@ TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFac
 }
 
 TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFactory(
-    int boost_amount,
-    vector<shared_ptr<TaskIndependentOpenListFactory>> open_list_factories
+    vector<shared_ptr<TaskIndependentOpenListFactory>> open_list_factories,
+    int boost_amount
     )
     : boost_amount(boost_amount), size(0), open_list_factories(open_list_factories) {
 }
@@ -65,7 +66,7 @@ shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_ta
                   }
                   );
 
-        task_specific_x = make_shared<AlternationOpenListFactory>(boost_amount, td_open_list_factories);
+        task_specific_x = make_shared<AlternationOpenListFactory>(td_open_list_factories, boost_amount);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
@@ -166,8 +167,9 @@ public:
 
     virtual shared_ptr<TaskIndependentAlternationOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentOpenListFactory>>(context, opts, "sublists");
-        return make_shared<TaskIndependentAlternationOpenListFactory>(opts.get<int>("boost"),
-                                                                      opts.get_list<shared_ptr<TaskIndependentOpenListFactory>>("sublists"));
+        return make_shared<TaskIndependentAlternationOpenListFactory>(
+                                                                      opts.get_list<shared_ptr<TaskIndependentOpenListFactory>>("sublists"),
+                                                                      opts.get<int>("boost"));
     }
 };
 

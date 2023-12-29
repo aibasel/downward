@@ -68,7 +68,7 @@ BestFirstOpenListFactory::BestFirstOpenListFactory(
     : options(options) {
 }
 
-BestFirstOpenListFactory::BestFirstOpenListFactory(bool pref_only, shared_ptr<Evaluator> evaluator)
+BestFirstOpenListFactory::BestFirstOpenListFactory(shared_ptr<Evaluator> evaluator, bool pref_only)
     : pref_only(pref_only), size(0),
       evaluator(evaluator) {
 }
@@ -92,8 +92,8 @@ TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory
 }
 
 TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory(
-    bool pref_only, shared_ptr<TaskIndependentEvaluator> evaluator
-    )
+    shared_ptr<TaskIndependentEvaluator> evaluator, bool pref_only
+)
     : pref_only(pref_only), size(0), evaluator(evaluator) {
 }
 
@@ -109,7 +109,8 @@ shared_ptr<OpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task
         utils::g_log << std::string(depth, ' ') << "Creating task specific BestFirstOpenListFactory..." << endl;
 
         task_specific_x = make_shared<BestFirstOpenListFactory>(
-            pref_only, evaluator->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth));
+            evaluator->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth),
+            pref_only);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
                                   static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
@@ -141,9 +142,10 @@ public:
     virtual shared_ptr<TaskIndependentBestFirstOpenListFactory> create_component(
         const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<OpenListFactory>>(context, opts, "sublists");
-        return make_shared<TaskIndependentBestFirstOpenListFactory>(opts.get<bool>("pref_only"),
+        return make_shared<TaskIndependentBestFirstOpenListFactory>(
                                                                     opts.get<shared_ptr<TaskIndependentEvaluator>>(
-                                                                        "eval"));
+                                                                        "eval"),
+                                                                    opts.get<bool>("pref_only"));
     }
 };
 
