@@ -98,17 +98,18 @@ TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory
 }
 
 
-shared_ptr<OpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific(const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<OpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific(
+        const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) const {
     shared_ptr<BestFirstOpenListFactory> task_specific_x;
-    if (component_map->count( static_cast<TaskIndependentComponent *>(this))) {
+    if (component_map->count( static_cast<const TaskIndependentComponent *>(this))) {
         utils::g_log << std::string(depth, ' ') << "Reusing task specific BestFirstOpenListFactory..." << endl;
         task_specific_x = dynamic_pointer_cast<BestFirstOpenListFactory>(
-            component_map->at(static_cast<TaskIndependentComponent *>(this)));
+            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific BestFirstOpenListFactory..." << endl;
 
         task_specific_x = make_shared<BestFirstOpenListFactory>(pref_only, evaluator->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth));
-        component_map->insert(make_pair<TaskIndependentComponent *, std::shared_ptr<Component>>(static_cast<TaskIndependentComponent *>(this), task_specific_x));
+        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }

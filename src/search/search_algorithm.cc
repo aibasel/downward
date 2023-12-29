@@ -48,12 +48,12 @@ SearchAlgorithm::SearchAlgorithm(const string &name,
                            int bound,
                            string unparsed_config,
                            const std::shared_ptr<AbstractTask> _task)
-    : name(name),
-    description(unparsed_config),
+    : description(unparsed_config),
       status(IN_PROGRESS),
       solution_found(false),
       task(_task),
       task_proxy(*task),
+      name(name),
       log(utils::get_log_from_verbosity(verbosity)),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
@@ -207,10 +207,10 @@ TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(const string &nam
                                                          double max_time,
                                                          int bound,
                                                          string unparsed_config)
-    : name(name),
-    description(unparsed_config),
+    : description(unparsed_config),
       status(IN_PROGRESS),
       solution_found(false),
+      name(name),
       verbosity(verbosity),
       bound(bound),
       cost_type(cost_type),
@@ -224,7 +224,8 @@ TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(const string &nam
 TaskIndependentSearchAlgorithm::~TaskIndependentSearchAlgorithm() {
 }
 
-shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific_root(const shared_ptr<AbstractTask> &task, int depth) {
+shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific_root(
+        const shared_ptr<AbstractTask> &task, int depth) const {
     utils::g_log << std::string(depth, ' ') << "Creating SearchAlgorithm as root component..." << endl;
     std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
     return create_task_specific(task, component_map, depth);

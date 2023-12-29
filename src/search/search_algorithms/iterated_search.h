@@ -56,7 +56,9 @@ private:
     bool continue_on_fail;
     bool continue_on_solve;
 
-    std::shared_ptr<IteratedSearch> create_task_specific_IteratedSearch(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &&component_map, int depth = -1);
+    std::shared_ptr<IteratedSearch> create_task_specific_IteratedSearch(const std::shared_ptr<AbstractTask> &task,
+                                                                        std::unique_ptr<ComponentMap> &component_map,
+                                                                        int depth = -1) const;
 public:
     explicit TaskIndependentIteratedSearch(const std::string &name,
                                            utils::Verbosity verbosity,
@@ -72,11 +74,12 @@ public:
 
     virtual ~TaskIndependentIteratedSearch() override = default;
 
-    std::shared_ptr<SearchAlgorithm> create_task_specific_root(const std::shared_ptr<AbstractTask> &task, int depth = -1) override;
+    std::shared_ptr<SearchAlgorithm> create_task_specific_root(const std::shared_ptr<AbstractTask> &task,
+                                                               int depth = -1) const override;
 
     std::shared_ptr<SearchAlgorithm>
     create_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                         int depth = -1 ) override;
+                         int depth = -1 ) const override;
 };
 }
 

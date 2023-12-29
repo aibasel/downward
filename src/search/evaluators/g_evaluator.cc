@@ -35,22 +35,25 @@ TaskIndependentGEvaluator::TaskIndependentGEvaluator(const string &name,
                                                      bool use_for_boosting,
                                                      bool use_for_counting_evaluations)
     : TaskIndependentEvaluator(name, log, unparsed_config, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations),
-      unparsed_config(unparsed_config), log(log) {
+      unparsed_config(unparsed_config) {
 }
 
 
-shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific(const std::shared_ptr<AbstractTask> &task,
-                                                                                  std::unique_ptr<ComponentMap> &component_map, int depth) {
+shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific(
+        [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const {
     shared_ptr<GEvaluator> task_specific_x;
 
-    if (component_map->count( static_cast<TaskIndependentComponent *>(this))) {
+    if (component_map->count( static_cast<const TaskIndependentComponent *>(this))) {
         log << std::string(depth, ' ') << "Reusing task specific GEvaluator '" << name << "'..." << endl;
         task_specific_x = dynamic_pointer_cast<GEvaluator>(
-            component_map->at(static_cast<TaskIndependentComponent *>(this)));
+            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
         log << std::string(depth, ' ') << "Creating task specific GEvaluator '" << name << "'..." << endl;
         task_specific_x = make_shared<GEvaluator>(name, log, unparsed_config);
-        component_map->insert(make_pair<TaskIndependentComponent *, std::shared_ptr<Component>>(static_cast<TaskIndependentComponent *>(this), task_specific_x));
+        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
+                                       (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }

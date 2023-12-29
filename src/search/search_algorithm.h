@@ -117,11 +117,12 @@ public:
     PlanManager &get_plan_manager() {return plan_manager;}
     std::string get_description() {return description;}
 
-    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_root(const std::shared_ptr<AbstractTask> &task, int depth = -1);
+    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_root(
+            const std::shared_ptr<AbstractTask> &task, int depth = -1) const;
 
     virtual std::shared_ptr<SearchAlgorithm>
     create_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                         int depth = -1) = 0;
+                         int depth = -1) const = 0;
 };
 
 /*

@@ -92,7 +92,7 @@ public:
 
     std::shared_ptr<OpenListFactory>
     create_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                         int depth = -1 ) override;
+                         int depth = -1 ) const override;
 
 };
 }
