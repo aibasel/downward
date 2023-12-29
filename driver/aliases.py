@@ -141,6 +141,19 @@ ALIASES["seq-opt-bjolp"] = [
 ALIASES["seq-opt-lmcut"] = [
     "--search", "astar(lmcut())"]
 
+ALIASES["issue559_test1"] = [
+    "--search",
+    "let(h, lmcut(name=\"AllTimeLMcut\"),"
+    " iterated([astar(name=\"ASTAR_1\",eval=h),"
+    "           eager(tiebreaking([sum([g(\"my_G_Eval\"), "
+    "                                   h]), "
+    "                              h],"
+    "                             unsafe_pruning=false"
+    "                            ),"
+    "                 reopen_closed=true,"
+    "                 f_eval=sum([g(), "
+    "                             h]))"
+    "          ]))"] # TODO issue559 remove this
 
 PORTFOLIOS = {}
 for portfolio in os.listdir(PORTFOLIO_DIR):
