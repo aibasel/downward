@@ -19,7 +19,6 @@ public:
     explicit WeightedEvaluator(
             std::shared_ptr<Evaluator> evaluator,
             int weight,
-            std::string unparsed_config,
             const std::string &name,
             utils::Verbosity verbosity);
     virtual ~WeightedEvaluator() override;
@@ -39,7 +38,6 @@ public:
     explicit TaskIndependentWeightedEvaluator(
                                               std::shared_ptr<TaskIndependentEvaluator> evaluator,
                                               int weight,
-                                              std::string unparsed_config,
                                               const std::string &name,
                                               utils::Verbosity verbosity);
 

@@ -73,7 +73,6 @@ protected:
 
 public:
     explicit Heuristic(const std::string &name,
-                       const std::string unparsed_config,
                        utils::Verbosity verbosity,
                        const std::shared_ptr<AbstractTask> task,
                        bool cache_evaluator_values);
@@ -100,7 +99,6 @@ protected:
     std::shared_ptr<TaskIndependentAbstractTask> task_transformation;
 public:
     explicit TaskIndependentHeuristic(const std::string &name,
-                                      const std::string unparsed_config,
                                       utils::Verbosity verbosity,
                                       std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
                                       bool cache_evaluator_values);

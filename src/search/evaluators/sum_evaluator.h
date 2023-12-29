@@ -25,8 +25,6 @@ public:
 
 
 class TaskIndependentSumEvaluator : public combining_evaluator::TaskIndependentCombiningEvaluator {
-private:
-    std::string unparsed_config;
 public:
     explicit TaskIndependentSumEvaluator(
             std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,

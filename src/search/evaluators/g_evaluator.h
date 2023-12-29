@@ -20,9 +20,6 @@ public:
 
 
 class TaskIndependentGEvaluator : public TaskIndependentEvaluator {
-private:
-    std::string unparsed_config;
-
 public:
     explicit TaskIndependentGEvaluator(const std::string &name,
                                        utils::Verbosity verbosity);
