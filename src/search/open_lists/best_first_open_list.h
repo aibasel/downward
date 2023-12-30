@@ -82,7 +82,6 @@ class TaskIndependentBestFirstOpenListFactory : public TaskIndependentOpenListFa
     bool pref_only;
     int size;
     std::shared_ptr<TaskIndependentEvaluator> evaluator;
-    plugins::Options options; //TODO issue559 remove options field in the long run.
 protected:
     std::string get_product_name() const override {return "BestFirstOpenListFactory";}
 public:
