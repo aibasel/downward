@@ -158,7 +158,7 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(
 }
 
 
-shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::create_task_specific_IteratedSearch(
+shared_ptr<IteratedSearch> TaskIndependentIteratedSearch::get_task_specific_IteratedSearch(
     const shared_ptr<AbstractTask> &task,
     std::unique_ptr<ComponentMap> &component_map,
     int depth) const {
@@ -191,14 +191,14 @@ shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_specific_
     const shared_ptr<AbstractTask> &task, int depth) const {
     utils::g_log << std::string(depth, ' ') << "Creating IteratedSearch as root component..." << endl;
     std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return create_task_specific_IteratedSearch(task, component_map, depth);
+    return get_task_specific_IteratedSearch(task, component_map, depth);
 }
 
 
-shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_specific(const shared_ptr<AbstractTask> &task,
+shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::get_task_specific(const shared_ptr<AbstractTask> &task,
                                                                                 unique_ptr<ComponentMap> &component_map,
                                                                                 int depth) const {
-    return create_task_specific_IteratedSearch(task, component_map, depth);
+    return get_task_specific_IteratedSearch(task, component_map, depth);
 }
 
 class TaskIndependentIteratedSearchFeature : public plugins::TypedFeature<TaskIndependentSearchAlgorithm, TaskIndependentIteratedSearch> {

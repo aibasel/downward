@@ -49,7 +49,19 @@ TaskIndependentBlindSearchHeuristic::~TaskIndependentBlindSearchHeuristic() {
 }
 
 
-shared_ptr<Evaluator> TaskIndependentBlindSearchHeuristic::create_task_specific(
+    shared_ptr<BlindSearchHeuristic> TaskIndependentBlindSearchHeuristic::create_ts(
+            const shared_ptr<AbstractTask> &task,
+            std::unique_ptr<ComponentMap> &component_map,
+            int depth) const {
+        return make_shared<BlindSearchHeuristic>(name,
+                                                 verbosity,
+                                                 task_transformation->create_task_specific(
+                                                         task, component_map,
+                                                         depth >= 0 ? depth + 1 : depth),
+                                                 cache_evaluator_values);
+    }
+
+shared_ptr<Evaluator> TaskIndependentBlindSearchHeuristic::get_task_specific(
         const shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
         int depth) const {
@@ -61,12 +73,8 @@ shared_ptr<Evaluator> TaskIndependentBlindSearchHeuristic::create_task_specific(
     } else {
         log << std::string(depth, ' ') << "Creating task specific BlindSearchHeuristic '" + name + "'..." << endl;
 
-        task_specific_x = make_shared<BlindSearchHeuristic>(name,
-                                                            verbosity,
-                                                            task_transformation->create_task_specific(
-                                                                    task, component_map,
-                                                                    depth >= 0 ? depth + 1 : depth),
-                                                            cache_evaluator_values);
+        task_specific_x = create_ts(task, component_map, depth);
+
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
                 static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
