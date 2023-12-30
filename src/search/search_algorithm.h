@@ -111,7 +111,6 @@ public:
     virtual ~TaskIndependentSearchAlgorithm();
 
     PlanManager &get_plan_manager() {return plan_manager;}
-    std::string get_name() {return name;}
 
     virtual std::shared_ptr<SearchAlgorithm> create_task_specific_root(
         const std::shared_ptr<AbstractTask> &task, int depth = -1) const;
