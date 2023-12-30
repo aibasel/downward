@@ -29,17 +29,17 @@ class IteratedSearch : public SearchAlgorithm {
 
 public:
     IteratedSearch(
-            std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
-            bool pass_bound,
-            bool repeat_last_phase,
-            bool continue_on_fail,
-            bool continue_on_solve,
-            OperatorCost cost_type,
-            int bound,
-            double max_time,
-            const std::string &name,
-            utils::Verbosity verbosity,
-                   const std::shared_ptr<AbstractTask> &task);
+        std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+        bool pass_bound,
+        bool repeat_last_phase,
+        bool continue_on_fail,
+        bool continue_on_solve,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const std::string &name,
+        utils::Verbosity verbosity,
+        const std::shared_ptr<AbstractTask> &task);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
@@ -59,16 +59,16 @@ protected:
     std::string get_product_name() const override {return "IteratedSearch";}
 public:
     explicit TaskIndependentIteratedSearch(
-            std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
-            bool pass_bound,
-            bool repeat_last_phase,
-            bool continue_on_fail,
-            bool continue_on_solve,
-            OperatorCost cost_type,
-            int bound,
-            double max_time,
-            const std::string &name,
-            utils::Verbosity verbosity);
+        std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+        bool pass_bound,
+        bool repeat_last_phase,
+        bool continue_on_fail,
+        bool continue_on_solve,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const std::string &name,
+        utils::Verbosity verbosity);
 
     virtual ~TaskIndependentIteratedSearch() override = default;
 
@@ -83,9 +83,9 @@ public:
                       int depth = -1) const override;
 
     std::shared_ptr<ConcreteProduct> create_ts(
-            const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const;
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const;
 };
 }
 

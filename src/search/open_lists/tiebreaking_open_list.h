@@ -147,7 +147,7 @@ class TieBreakingOpenListFactory : public OpenListFactory {
     bool allow_unsafe_pruning;
 public:
     explicit TieBreakingOpenListFactory(
-            std::vector<std::shared_ptr<Evaluator>> evaluators,
+        std::vector<std::shared_ptr<Evaluator>> evaluators,
         bool pref_only,
         bool allow_unsafe_pruning);
     virtual ~TieBreakingOpenListFactory() override = default;
@@ -164,7 +164,7 @@ protected:
     std::string get_product_name() const override {return "TieBreakingOpenListFactory";}
 public:
     explicit TaskIndependentTieBreakingOpenListFactory(
-            std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators,
+        std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators,
         bool pref_only,
         bool allow_unsafe_pruning);
     virtual ~TaskIndependentTieBreakingOpenListFactory() override = default;
@@ -177,10 +177,9 @@ public:
                       int depth = -1) const override;
 
     std::shared_ptr<ConcreteProduct> create_ts(
-            const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const;
-
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const;
 };
 }
 

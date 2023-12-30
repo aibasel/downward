@@ -100,9 +100,9 @@ public:
                       int depth = -1) const override;
 
     std::shared_ptr<ConcreteProduct> create_ts(
-            const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const;
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const;
 };
 }
 

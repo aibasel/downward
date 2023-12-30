@@ -63,12 +63,12 @@ protected:
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
     SearchAlgorithm(
-            OperatorCost cost_type,
-            int bound,
-            double max_time,
-            const std::string &name,
-            utils::Verbosity verbosity,
-            const std::shared_ptr<AbstractTask> &task);
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const std::string &name,
+        utils::Verbosity verbosity,
+        const std::shared_ptr<AbstractTask> &task);
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
@@ -118,7 +118,7 @@ public:
 
     virtual std::shared_ptr<SearchAlgorithm>
     get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                         int depth = -1) const = 0;
+                      int depth = -1) const = 0;
 };
 
 /*

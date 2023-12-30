@@ -40,49 +40,48 @@ TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFac
     vector<shared_ptr<TaskIndependentOpenListFactory>> open_list_factories,
     int boost_amount
     )
-        : TaskIndependentOpenListFactory("AlternationOpenListFactory", utils::Verbosity::NORMAL),
-        boost_amount(boost_amount), size(0), open_list_factories(open_list_factories) {
+    : TaskIndependentOpenListFactory("AlternationOpenListFactory", utils::Verbosity::NORMAL),
+      boost_amount(boost_amount), size(0), open_list_factories(open_list_factories) {
 }
 
 
-    using ConcreteProduct = AlternationOpenListFactory;
-    using AbstractProduct = OpenListFactory;
-    using Concrete = TaskIndependentAlternationOpenListFactory;
+using ConcreteProduct = AlternationOpenListFactory;
+using AbstractProduct = OpenListFactory;
+using Concrete = TaskIndependentAlternationOpenListFactory;
 
-    shared_ptr<AbstractProduct> Concrete::get_task_specific(
-            [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const {
-        shared_ptr<ConcreteProduct> task_specific_x;
+shared_ptr<AbstractProduct> Concrete::get_task_specific(
+    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
+    shared_ptr<ConcreteProduct> task_specific_x;
 
-        if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-            log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
-                    component_map->at(static_cast<const TaskIndependentComponent *>(this)));
-        } else {
-            log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = create_ts(task, component_map, depth);
-            component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
-                                          (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
-        }
-        return task_specific_x;
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
+            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
+    } else {
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = create_ts(task, component_map, depth);
+        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
+                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
+    return task_specific_x;
+}
 
-    std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
-                                                         unique_ptr <ComponentMap> &component_map, int depth) const {
+std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
+                                                     unique_ptr <ComponentMap> &component_map, int depth) const {
+    vector<shared_ptr<OpenListFactory>> td_open_list_factories(open_list_factories.size());
+    transform(open_list_factories.begin(), open_list_factories.end(), td_open_list_factories.begin(),
+              [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentOpenListFactory> &eval) {
+                  return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+              }
+              );
 
-        vector<shared_ptr<OpenListFactory>> td_open_list_factories(open_list_factories.size());
-        transform(open_list_factories.begin(), open_list_factories.end(), td_open_list_factories.begin(),
-                  [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentOpenListFactory> &eval) {
-                      return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
-                  }
-        );
-
-        return make_shared<AlternationOpenListFactory>(td_open_list_factories, boost_amount);
-    }
+    return make_shared<AlternationOpenListFactory>(td_open_list_factories, boost_amount);
+}
 
 
-    template<class Entry>
+template<class Entry>
 void AlternationOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     for (const auto &sublist : open_lists)
@@ -177,8 +176,8 @@ public:
     virtual shared_ptr<TaskIndependentAlternationOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentOpenListFactory>>(context, opts, "sublists");
         return make_shared<TaskIndependentAlternationOpenListFactory>(
-                                                                      opts.get_list<shared_ptr<TaskIndependentOpenListFactory>>("sublists"),
-                                                                      opts.get<int>("boost"));
+            opts.get_list<shared_ptr<TaskIndependentOpenListFactory>>("sublists"),
+            opts.get<int>("boost"));
     }
 };
 

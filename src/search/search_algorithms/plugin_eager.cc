@@ -29,20 +29,21 @@ public:
         eager_search::add_options_to_feature(*this, "eager");
     }
 
-    virtual shared_ptr<eager_search::TaskIndependentEagerSearch> create_component(const plugins::Options &opts, const utils::Context &) const override {
+    virtual shared_ptr<eager_search::TaskIndependentEagerSearch>
+    create_component(const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<eager_search::TaskIndependentEagerSearch>(
-                opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
-                opts.get<bool>("reopen_closed"),
-                opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
-                nullptr,
-                opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
-                opts.get<shared_ptr<PruningMethod>>("pruning"),
-                opts.get<OperatorCost>("cost_type"),
-                opts.get<int>("bound"),
-                opts.get<double>("max_time"),
-                opts.get<string>("name"),
-                opts.get<utils::Verbosity>("verbosity")
-                                                                     );
+            opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
+            opts.get<bool>("reopen_closed"),
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
+            nullptr,
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
+            opts.get<shared_ptr<PruningMethod>>("pruning"),
+            opts.get<OperatorCost>("cost_type"),
+            opts.get<int>("bound"),
+            opts.get<double>("max_time"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity")
+            );
     }
 };
 

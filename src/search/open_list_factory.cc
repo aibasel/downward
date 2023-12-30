@@ -16,8 +16,7 @@ unique_ptr<EdgeOpenList> OpenListFactory::create_open_list() {
 
 
 TaskIndependentOpenListFactory::TaskIndependentOpenListFactory(const std::string name, utils::Verbosity verbosity)
- : TaskIndependentComponent(name, verbosity)
-{
+    : TaskIndependentComponent(name, verbosity) {
 }
 
 static class OpenListFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentOpenListFactory> {

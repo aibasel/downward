@@ -9,33 +9,33 @@ using namespace std;
 
 namespace iterated_search {
 IteratedSearch::IteratedSearch(
-        vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
-        bool pass_bound,
-        bool repeat_last_phase,
-        bool continue_on_fail,
-        bool continue_on_solve,
-        OperatorCost cost_type,
-        int bound,
-        double max_time,
-        const string &name,
-        utils::Verbosity verbosity,
-                               const shared_ptr<AbstractTask> &task
-                               ) : SearchAlgorithm(
-                                       cost_type,
-                                       bound,
-                                       max_time,
-                                       name,
-                                       verbosity,
-                                       task),
-                                   search_algorithms(search_algorithms),
-                                   pass_bound(pass_bound),
-                                   repeat_last_phase(repeat_last_phase),
-                                   continue_on_fail(continue_on_fail),
-                                   continue_on_solve(continue_on_solve),
-                                   phase(0),
-                                   last_phase_found_solution(false),
-                                   best_bound(bound),
-                                   iterated_found_solution(false) {
+    vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+    bool pass_bound,
+    bool repeat_last_phase,
+    bool continue_on_fail,
+    bool continue_on_solve,
+    OperatorCost cost_type,
+    int bound,
+    double max_time,
+    const string &name,
+    utils::Verbosity verbosity,
+    const shared_ptr<AbstractTask> &task
+    ) : SearchAlgorithm(
+            cost_type,
+            bound,
+            max_time,
+            name,
+            verbosity,
+            task),
+        search_algorithms(search_algorithms),
+        pass_bound(pass_bound),
+        repeat_last_phase(repeat_last_phase),
+        continue_on_fail(continue_on_fail),
+        continue_on_solve(continue_on_solve),
+        phase(0),
+        last_phase_found_solution(false),
+        best_bound(bound),
+        iterated_found_solution(false) {
 }
 
 
@@ -133,17 +133,17 @@ void IteratedSearch::save_plan_if_necessary() {
 
 
 TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(
-        vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
-        bool pass_bound,
-        bool repeat_last_phase,
-        bool continue_on_fail,
-        bool continue_on_solve,
-        OperatorCost cost_type,
-        int bound,
-        double max_time,
-        const string &name,
-        utils::Verbosity verbosity
-                                                             )
+    vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+    bool pass_bound,
+    bool repeat_last_phase,
+    bool continue_on_fail,
+    bool continue_on_solve,
+    OperatorCost cost_type,
+    int bound,
+    double max_time,
+    const string &name,
+    utils::Verbosity verbosity
+    )
     : TaskIndependentSearchAlgorithm(cost_type,
                                      bound,
                                      max_time,
@@ -159,44 +159,44 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(
 
 
 
-    using ConcreteProduct = IteratedSearch;
-    using AbstractProduct = SearchAlgorithm;
-    using Concrete = TaskIndependentIteratedSearch;
+using ConcreteProduct = IteratedSearch;
+using AbstractProduct = SearchAlgorithm;
+using Concrete = TaskIndependentIteratedSearch;
 
-    shared_ptr<AbstractProduct> Concrete::get_task_specific(
-            const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const {
-        shared_ptr<ConcreteProduct> task_specific_x;
+shared_ptr<AbstractProduct> Concrete::get_task_specific(
+    const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
+    shared_ptr<ConcreteProduct> task_specific_x;
 
-        if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-            log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
-                    component_map->at(static_cast<const TaskIndependentComponent *>(this)));
-        } else {
-            log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = create_ts(task, component_map, depth);
-            component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
-                                          (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
-        }
-        return task_specific_x;
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
+            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
+    } else {
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = create_ts(task, component_map, depth);
+        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
+                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
+    return task_specific_x;
+}
 
-    std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
-                                                                             [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
-                                                                             [[maybe_unused]] int depth) const {
-        return make_shared<IteratedSearch>(search_algorithms,
-                                           pass_bound,
-                                           repeat_last_phase,
-                                           continue_on_fail,
-                                           continue_on_solve,
-                                           cost_type,
-                                           bound,
-                                           max_time,
-                                           name,
-                                           verbosity,
-                                           task);
-    }
+std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
+                                                     [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
+                                                     [[maybe_unused]] int depth) const {
+    return make_shared<IteratedSearch>(search_algorithms,
+                                       pass_bound,
+                                       repeat_last_phase,
+                                       continue_on_fail,
+                                       continue_on_solve,
+                                       cost_type,
+                                       bound,
+                                       max_time,
+                                       name,
+                                       verbosity,
+                                       task);
+}
 
 
 
@@ -210,7 +210,7 @@ shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_specific_
 
 
 
-    class TaskIndependentIteratedSearchFeature : public plugins::TypedFeature<TaskIndependentSearchAlgorithm, TaskIndependentIteratedSearch> {
+class TaskIndependentIteratedSearchFeature : public plugins::TypedFeature<TaskIndependentSearchAlgorithm, TaskIndependentIteratedSearch> {
 public:
     TaskIndependentIteratedSearchFeature() : TypedFeature("iterated") {
         document_title("Iterated search");
@@ -270,18 +270,18 @@ public:
                                                                        const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentSearchAlgorithm>>(context, opts, "search_algorithms");
         return make_shared<TaskIndependentIteratedSearch>(
-                opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
-                        "search_algorithms"),
-                opts.get<bool>("pass_bound"),
-                opts.get<bool>("repeat_last"),
-                opts.get<bool>("continue_on_fail"),
-                opts.get<bool>("continue_on_solve"),
-                                                          opts.get<OperatorCost>("cost_type"),
-                opts.get<int>("bound"),
-                                                          opts.get<double>("max_time"),
-                                                          opts.get<string>("name"),
-                                                          opts.get<utils::Verbosity>("verbosity")
-                                                          );
+            opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
+                "search_algorithms"),
+            opts.get<bool>("pass_bound"),
+            opts.get<bool>("repeat_last"),
+            opts.get<bool>("continue_on_fail"),
+            opts.get<bool>("continue_on_solve"),
+            opts.get<OperatorCost>("cost_type"),
+            opts.get<int>("bound"),
+            opts.get<double>("max_time"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity")
+            );
     }
 };
 

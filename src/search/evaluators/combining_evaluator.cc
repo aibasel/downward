@@ -19,9 +19,9 @@ CombiningEvaluator::CombiningEvaluator(const plugins::Options &opts)
 }
 
 CombiningEvaluator::CombiningEvaluator(
-        vector<shared_ptr<Evaluator>> subevaluators,
-        const string &name,
-                                       utils::Verbosity verbosity)
+    vector<shared_ptr<Evaluator>> subevaluators,
+    const string &name,
+    utils::Verbosity verbosity)
     : Evaluator(name,
                 verbosity,
                 false,
@@ -78,9 +78,9 @@ void add_combining_evaluator_options_to_feature(plugins::Feature &feature, const
 
 
 TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(
-        vector<shared_ptr<TaskIndependentEvaluator>> subevaluators,
-        const string &name,
-                                                                     utils::Verbosity verbosity)
+    vector<shared_ptr<TaskIndependentEvaluator>> subevaluators,
+    const string &name,
+    utils::Verbosity verbosity)
     : TaskIndependentEvaluator(name, verbosity, false, false, false),
       subevaluators(subevaluators) {
 }

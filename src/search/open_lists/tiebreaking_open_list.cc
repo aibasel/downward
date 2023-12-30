@@ -16,7 +16,7 @@ using namespace std;
 
 namespace tiebreaking_open_list {
 TieBreakingOpenListFactory::TieBreakingOpenListFactory(
-        vector<shared_ptr<Evaluator>> evaluators,
+    vector<shared_ptr<Evaluator>> evaluators,
     bool pref_only,
     bool allow_unsafe_pruning)
     : pref_only(pref_only), size(0), evaluators(evaluators), allow_unsafe_pruning(allow_unsafe_pruning) {
@@ -34,7 +34,7 @@ TieBreakingOpenListFactory::create_edge_open_list() {
 
 
 TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFactory(
-        vector<shared_ptr<TaskIndependentEvaluator>> evaluators,
+    vector<shared_ptr<TaskIndependentEvaluator>> evaluators,
     bool pref_only,
     bool allow_unsafe_pruning)
     : TaskIndependentOpenListFactory("TieBreakingOpenListFactory", utils::Verbosity::NORMAL),
@@ -44,46 +44,46 @@ TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFac
 
 
 
-    using ConcreteProduct = TieBreakingOpenListFactory;
-    using AbstractProduct = OpenListFactory;
-    using Concrete = TaskIndependentTieBreakingOpenListFactory;
+using ConcreteProduct = TieBreakingOpenListFactory;
+using AbstractProduct = OpenListFactory;
+using Concrete = TaskIndependentTieBreakingOpenListFactory;
 
-    shared_ptr<AbstractProduct> Concrete::get_task_specific(
-            [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const {
-        shared_ptr<ConcreteProduct> task_specific_x;
+shared_ptr<AbstractProduct> Concrete::get_task_specific(
+    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
+    shared_ptr<ConcreteProduct> task_specific_x;
 
-        if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-            log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
-                    component_map->at(static_cast<const TaskIndependentComponent *>(this)));
-        } else {
-            log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = create_ts(task, component_map, depth);
-            component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
-                                          (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
-        }
-        return task_specific_x;
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
+            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
+    } else {
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = create_ts(task, component_map, depth);
+        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
+                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
+    return task_specific_x;
+}
 
-    std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
-                                                         unique_ptr <ComponentMap> &component_map, int depth) const {
-        vector<shared_ptr<Evaluator>> ts_evaluators(evaluators.size());
+std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
+                                                     unique_ptr <ComponentMap> &component_map, int depth) const {
+    vector<shared_ptr<Evaluator>> ts_evaluators(evaluators.size());
 
-        transform(evaluators.begin(), evaluators.end(), ts_evaluators.begin(),
-                  [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
-                  }
-        );
-    return  make_shared<TieBreakingOpenListFactory>(
-            ts_evaluators,
-            pref_only,
-            allow_unsafe_pruning);
-    }
+    transform(evaluators.begin(), evaluators.end(), ts_evaluators.begin(),
+              [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
+                  return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+              }
+              );
+    return make_shared<TieBreakingOpenListFactory>(
+        ts_evaluators,
+        pref_only,
+        allow_unsafe_pruning);
+}
 
 
-    class TieBreakingOpenListFeature : public plugins::TypedFeature<
+class TieBreakingOpenListFeature : public plugins::TypedFeature<
                                        TaskIndependentOpenListFactory, TaskIndependentTieBreakingOpenListFactory> {
 public:
     TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
@@ -104,9 +104,9 @@ public:
         const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentEvaluator>>(context, opts, "evals");
         return make_shared<TaskIndependentTieBreakingOpenListFactory>(
-                opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
-                opts.get<bool>("pref_only"),
-                opts.get<bool>("unsafe_pruning"));
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
+            opts.get<bool>("pref_only"),
+            opts.get<bool>("unsafe_pruning"));
     }
 };
 

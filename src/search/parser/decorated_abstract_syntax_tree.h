@@ -10,7 +10,6 @@
 #include <vector>
 
 namespace parser {
-
 class ConstructContext;
 
 class DecoratedASTNode {

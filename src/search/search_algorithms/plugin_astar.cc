@@ -38,24 +38,26 @@ public:
             "```\n", true);
     }
 
-    virtual shared_ptr<eager_search::TaskIndependentEagerSearch> create_component(const plugins::Options &opts, const utils::Context &) const override {
+    virtual shared_ptr<eager_search::TaskIndependentEagerSearch>
+    create_component(const plugins::Options &opts, const utils::Context &) const override {
         utils::Verbosity _verbosity = opts.get<utils::Verbosity>("verbosity");
         string _name = opts.get<string>("name");
-        pair<shared_ptr<TaskIndependentOpenListFactory>, shared_ptr<TaskIndependentEvaluator>> temp = search_common::create_task_independent_astar_open_list_factory_and_f_eval(_name,
-                                                                                                                                                                                _verbosity,
-                                                                                                                                                                                opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"));
+        pair<shared_ptr<TaskIndependentOpenListFactory>, shared_ptr<TaskIndependentEvaluator>> temp =
+            search_common::create_task_independent_astar_open_list_factory_and_f_eval(_name,
+                                                                                      _verbosity,
+                                                                                      opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"));
         return make_shared<eager_search::TaskIndependentEagerSearch>(
-                temp.first,
-                true,
-                temp.second,
-                opts.get<shared_ptr<TaskIndependentEvaluator>>("lazy_evaluator", nullptr),
-                vector<shared_ptr<TaskIndependentEvaluator>>(),
-                opts.get<shared_ptr<PruningMethod>>("pruning"),
-                opts.get<OperatorCost>("cost_type"),
-                opts.get<int>("bound"),
-                opts.get<double>("max_time"),
-                _name,
-                _verbosity);
+            temp.first,
+            true,
+            temp.second,
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("lazy_evaluator", nullptr),
+            vector<shared_ptr<TaskIndependentEvaluator>>(),
+            opts.get<shared_ptr<PruningMethod>>("pruning"),
+            opts.get<OperatorCost>("cost_type"),
+            opts.get<int>("bound"),
+            opts.get<double>("max_time"),
+            _name,
+            _verbosity);
     }
 };
 

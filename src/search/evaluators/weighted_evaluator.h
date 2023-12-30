@@ -17,10 +17,10 @@ class WeightedEvaluator : public Evaluator {
 public:
     explicit WeightedEvaluator(const plugins::Options &opts);
     explicit WeightedEvaluator(
-            std::shared_ptr<Evaluator> evaluator,
-            int weight,
-            const std::string &name,
-            utils::Verbosity verbosity);
+        std::shared_ptr<Evaluator> evaluator,
+        int weight,
+        const std::string &name,
+        utils::Verbosity verbosity);
     virtual ~WeightedEvaluator() override;
 
     virtual bool dead_ends_are_reliable() const override;
@@ -35,13 +35,13 @@ private:
     std::shared_ptr<TaskIndependentEvaluator> evaluator;
     int weight;
 protected:
-    std::string get_product_name() const override { return "WeightedEvaluator";}
+    std::string get_product_name() const override {return "WeightedEvaluator";}
 public:
     explicit TaskIndependentWeightedEvaluator(
-                                              std::shared_ptr<TaskIndependentEvaluator> evaluator,
-                                              int weight,
-                                              const std::string &name,
-                                              utils::Verbosity verbosity);
+        std::shared_ptr<TaskIndependentEvaluator> evaluator,
+        int weight,
+        const std::string &name,
+        utils::Verbosity verbosity);
 
     virtual ~TaskIndependentWeightedEvaluator() override = default;
 
@@ -54,9 +54,9 @@ public:
                       int depth = -1) const override;
 
     std::shared_ptr<ConcreteProduct> create_ts(
-            const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const;
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const;
 };
 }
 

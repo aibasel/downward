@@ -54,39 +54,39 @@ TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
 
 
 
-    using ConcreteProduct = LandmarkCutHeuristic;
-    using AbstractProduct = Evaluator;
-    using Concrete = TaskIndependentLandmarkCutHeuristic;
+using ConcreteProduct = LandmarkCutHeuristic;
+using AbstractProduct = Evaluator;
+using Concrete = TaskIndependentLandmarkCutHeuristic;
 
-    shared_ptr<AbstractProduct> Concrete::get_task_specific(
-            [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const {
-        shared_ptr<ConcreteProduct> task_specific_x;
+shared_ptr<AbstractProduct> Concrete::get_task_specific(
+    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
+    shared_ptr<ConcreteProduct> task_specific_x;
 
-        if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-            log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
-                    component_map->at(static_cast<const TaskIndependentComponent *>(this)));
-        } else {
-            log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = create_ts(task, component_map, depth);
-            component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
-                                          (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
-        }
-        return task_specific_x;
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
+            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
+    } else {
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = create_ts(task, component_map, depth);
+        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
+                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
+    return task_specific_x;
+}
 
-    std::shared_ptr<ConcreteProduct> Concrete::create_ts(
-        const shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const {
-return make_shared<LandmarkCutHeuristic>(name,
-                                         verbosity,
-                                         task_transformation->get_task_specific(
+std::shared_ptr<ConcreteProduct> Concrete::create_ts(
+    const shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
+    return make_shared<LandmarkCutHeuristic>(name,
+                                             verbosity,
+                                             task_transformation->get_task_specific(
                                                  task, component_map,
                                                  depth >= 0 ? depth + 1 : depth),
-                                         cache_evaluator_values);
+                                             cache_evaluator_values);
 }
 
 
@@ -112,7 +112,7 @@ public:
         return make_shared<TaskIndependentLandmarkCutHeuristic>(opts.get<string>("name"),
                                                                 opts.get<utils::Verbosity>("verbosity"),
                                                                 opts.get<shared_ptr<TaskIndependentAbstractTask>>(
-                                                                        "transform"),
+                                                                    "transform"),
                                                                 opts.get<bool>("cache_estimates")
                                                                 );
     }

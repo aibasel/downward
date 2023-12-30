@@ -91,7 +91,7 @@ TaskIndependentEvaluator::TaskIndependentEvaluator(const string &name,
                                                    bool use_for_boosting,
                                                    bool use_for_counting_evaluations)
     : TaskIndependentComponent(name, verbosity),
-    use_for_reporting_minima(use_for_reporting_minima),
+      use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations) {
 }
