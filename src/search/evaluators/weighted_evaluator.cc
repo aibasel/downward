@@ -77,19 +77,25 @@ shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::get_task_specific(
     } else {
         log << std::string(depth, ' ') << "Creating task specific WeightedEvaluator..." << endl;
 
-        task_specific_x = make_shared<WeightedEvaluator>(
-                evaluator->get_task_specific(task, component_map, depth),
-            weight,
-            name,
-            verbosity);
+        task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
                                   static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }
 
+    std::shared_ptr<WeightedEvaluator>
+    TaskIndependentWeightedEvaluator::create_ts(const shared_ptr <AbstractTask> &task,
+                                                unique_ptr <ComponentMap> &component_map, int depth) const {
+        return make_shared<WeightedEvaluator>(
+                evaluator->get_task_specific(task, component_map, depth),
+                weight,
+                name,
+                verbosity);
+    }
 
-class WeightedEvaluatorFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentWeightedEvaluator> {
+
+    class WeightedEvaluatorFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentWeightedEvaluator> {
 public:
     WeightedEvaluatorFeature() : TypedFeature("weight") {
         document_subcategory("evaluators_basic");

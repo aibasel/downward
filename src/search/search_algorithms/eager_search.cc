@@ -369,32 +369,7 @@ shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::get_task_specific(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific EagerSearch '" << name << "'..." << endl;
-        vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
-        transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
-                  [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
-                  }
-                  );
-
-        unique_ptr<StateOpenList> _open_list = unique_ptr<StateOpenList>(
-            open_list_factory->create_task_specific(
-                task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
-
-        task_specific_x = make_shared<EagerSearch>(
-                move(_open_list),
-                reopen_closed_nodes,
-                f_evaluator ? f_evaluator->get_task_specific(
-                        task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
-                lazy_evaluator ? lazy_evaluator->get_task_specific(
-                        task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
-                td_evaluators,
-                pruning_method,
-                cost_type,
-                bound,
-                max_time,
-                name,
-                verbosity,
-                task);
+        task_specific_x = create_ts(task, component_map, depth);
 
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
                                   (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
@@ -411,4 +386,35 @@ shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific_roo
     std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
     return get_task_specific(task, component_map, depth);
 }
+
+    std::shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_ts(const shared_ptr <AbstractTask> &task,
+                                                                       unique_ptr <ComponentMap> &component_map,
+                                                                       int depth) const {
+        vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
+        transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
+                  [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
+                      return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+                  }
+        );
+
+        unique_ptr<StateOpenList> _open_list = unique_ptr<StateOpenList>(
+                open_list_factory->create_task_specific(
+                        task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
+
+        return make_shared<EagerSearch>(
+                move(_open_list),
+                reopen_closed_nodes,
+                f_evaluator ? f_evaluator->get_task_specific(
+                        task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
+                lazy_evaluator ? lazy_evaluator->get_task_specific(
+                        task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
+                td_evaluators,
+                pruning_method,
+                cost_type,
+                bound,
+                max_time,
+                name,
+                verbosity,
+                task);
+    }
 }

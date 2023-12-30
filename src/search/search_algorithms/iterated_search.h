@@ -55,10 +55,6 @@ private:
     bool repeat_last_phase;
     bool continue_on_fail;
     bool continue_on_solve;
-
-    std::shared_ptr<IteratedSearch> get_task_specific_IteratedSearch(const std::shared_ptr<AbstractTask> &task,
-                                                                        std::unique_ptr<ComponentMap> &component_map,
-                                                                        int depth = -1) const;
 public:
     explicit TaskIndependentIteratedSearch(
             std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
@@ -80,6 +76,11 @@ public:
     std::shared_ptr<SearchAlgorithm>
     get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
                          int depth = -1) const override;
+
+    std::shared_ptr<IteratedSearch> create_ts(
+            const std::shared_ptr<AbstractTask> &task,
+            std::unique_ptr<ComponentMap> &component_map,
+            int depth) const;
 };
 }
 

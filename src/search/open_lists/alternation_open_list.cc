@@ -59,21 +59,28 @@ shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_ta
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific AlternationOpenListFactory..." << endl;
 
-        vector<shared_ptr<OpenListFactory>> td_open_list_factories(open_list_factories.size());
-        transform(open_list_factories.begin(), open_list_factories.end(), td_open_list_factories.begin(),
-                  [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentOpenListFactory> &eval) {
-                      return eval->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
-                  }
-                  );
-
-        task_specific_x = make_shared<AlternationOpenListFactory>(td_open_list_factories, boost_amount);
+        task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }
 
+    std::shared_ptr<AlternationOpenListFactory>
+    TaskIndependentAlternationOpenListFactory::create_ts(const shared_ptr <AbstractTask> &task,
+                                                         unique_ptr <ComponentMap> &component_map, int depth) const {
 
-template<class Entry>
+        vector<shared_ptr<OpenListFactory>> td_open_list_factories(open_list_factories.size());
+        transform(open_list_factories.begin(), open_list_factories.end(), td_open_list_factories.begin(),
+                  [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentOpenListFactory> &eval) {
+                      return eval->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+                  }
+        );
+
+        return make_shared<AlternationOpenListFactory>(td_open_list_factories, boost_amount);
+    }
+
+
+    template<class Entry>
 void AlternationOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     for (const auto &sublist : open_lists)
