@@ -57,7 +57,7 @@ shared_ptr<LandmarkCutHeuristic> TaskIndependentLandmarkCutHeuristic::create_ts(
         int depth) const {
 return make_shared<LandmarkCutHeuristic>(name,
                                          verbosity,
-                                         task_transformation->create_task_specific(
+                                         task_transformation->get_task_specific(
                                                  task, component_map,
                                                  depth >= 0 ? depth + 1 : depth),
                                          cache_evaluator_values);

@@ -98,7 +98,7 @@ TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory
 }
 
 
-shared_ptr<OpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific(
+shared_ptr<OpenListFactory> TaskIndependentBestFirstOpenListFactory::get_task_specific(
     const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) const {
     shared_ptr<BestFirstOpenListFactory> task_specific_x;
     if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {

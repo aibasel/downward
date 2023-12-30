@@ -420,7 +420,7 @@ void read_root_task(istream &in) {
 
 TaskIndependentRootTask::TaskIndependentRootTask() {
 }
-shared_ptr<AbstractTask> TaskIndependentRootTask::create_task_specific(
+shared_ptr<AbstractTask> TaskIndependentRootTask::get_task_specific(
     [[maybe_unused]] const shared_ptr<AbstractTask> &task,
     [[maybe_unused]] unique_ptr<ComponentMap> &component_map,
     [[maybe_unused]] int depth) const {

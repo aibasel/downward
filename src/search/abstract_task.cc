@@ -20,7 +20,7 @@ TaskIndependentAbstractTask::TaskIndependentAbstractTask() {
 }
 
 
-shared_ptr<AbstractTask> TaskIndependentAbstractTask::create_task_specific(
+shared_ptr<AbstractTask> TaskIndependentAbstractTask::get_task_specific(
     [[maybe_unused]] const shared_ptr<AbstractTask> &task,
     [[maybe_unused]] unique_ptr<ComponentMap> &component_map,
     [[maybe_unused]] int depth) const {

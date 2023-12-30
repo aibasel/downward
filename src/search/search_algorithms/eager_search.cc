@@ -398,7 +398,7 @@ shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific_roo
         );
 
         unique_ptr<StateOpenList> _open_list = unique_ptr<StateOpenList>(
-                open_list_factory->create_task_specific(
+                open_list_factory->get_task_specific(
                         task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
 
         return make_shared<EagerSearch>(

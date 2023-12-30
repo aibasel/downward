@@ -91,14 +91,16 @@ public:
     virtual ~TaskIndependentEagerSearch() override = default;
 
 
-    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_root(const std::shared_ptr<AbstractTask> &task,
-                                                                       int depth = -1) const override;
+    using AbstractProduct = SearchAlgorithm;
+    using ConcreteProduct = EagerSearch;
 
-    std::shared_ptr<SearchAlgorithm>
+    virtual std::shared_ptr<AbstractProduct> create_task_specific_root(const std::shared_ptr<AbstractTask> &task,int depth = -1) const override;
+
+    std::shared_ptr<AbstractProduct>
     get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                         int depth = -1) const override;
+                      int depth = -1) const override;
 
-    std::shared_ptr<EagerSearch> create_ts(
+    std::shared_ptr<ConcreteProduct> create_ts(
             const std::shared_ptr<AbstractTask> &task,
             std::unique_ptr<ComponentMap> &component_map,
             int depth) const;
