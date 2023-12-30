@@ -105,7 +105,7 @@ public:
     explicit TaskIndependentRootTask();
 
     using AbstractProduct = AbstractTask;
-    using ConcreteProduct = RootTask;
+    using ConcreteProduct = AbstractTask;
 
     std::shared_ptr<AbstractProduct>
     get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,

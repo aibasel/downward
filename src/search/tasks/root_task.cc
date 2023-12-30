@@ -421,7 +421,7 @@ void read_root_task(istream &in) {
 TaskIndependentRootTask::TaskIndependentRootTask() {
 }
 
-using ConcreteProduct = RootTask;
+using ConcreteProduct = AbstractTask;
 using AbstractProduct = AbstractTask;
 using Concrete = TaskIndependentRootTask;
 
@@ -447,19 +447,18 @@ shared_ptr<AbstractProduct> Concrete::get_task_specific(
 std::shared_ptr<ConcreteProduct> Concrete::create_ts([[maybe_unused]] const shared_ptr <AbstractTask> &task,
                                                      [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
                                                      [[maybe_unused]] int depth) const {
-    cerr << "Tries to create RootTask in an unimplemented way." << endl;
-    utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    return g_root_task;
 }
 
 
-class RootTaskFeature : public plugins::TypedFeature<TaskIndependentAbstractTask, TaskIndependentAbstractTask> {
+class RootTaskFeature : public plugins::TypedFeature<TaskIndependentAbstractTask, TaskIndependentRootTask> {
 public:
     RootTaskFeature() : TypedFeature("no_transform") {
     }
 
-    virtual shared_ptr<TaskIndependentAbstractTask> create_component(
+    virtual shared_ptr<TaskIndependentRootTask> create_component(
         const plugins::Options &, const utils::Context &) const override {
-        return make_shared<TaskIndependentAbstractTask>();
+        return make_shared<TaskIndependentRootTask>();
     }
 };
 
