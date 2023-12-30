@@ -29,8 +29,12 @@ public:
 
 
 class TaskIndependentOpenListFactory : public TaskIndependentComponent {
+protected:
+    const std::string name;
+    const utils::Verbosity verbosity;
+    mutable utils::LogProxy log;
 public:
-    TaskIndependentOpenListFactory() = default;
+    TaskIndependentOpenListFactory(const std::string name, utils::Verbosity verbosity);
     virtual ~TaskIndependentOpenListFactory() = default;
 
     TaskIndependentOpenListFactory(const TaskIndependentOpenListFactory &) = delete;
