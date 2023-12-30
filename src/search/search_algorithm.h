@@ -97,7 +97,8 @@ class TaskIndependentSearchAlgorithm : public TaskIndependentComponent {
 protected:
 
     const std::string name;
-    mutable utils::Verbosity verbosity;
+    const utils::Verbosity verbosity;
+    mutable utils::LogProxy log;
     PlanManager plan_manager;
     SearchProgress search_progress;
     int bound;

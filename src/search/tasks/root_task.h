@@ -99,12 +99,22 @@ public:
 
 
 class TaskIndependentRootTask : public TaskIndependentAbstractTask {
+protected:
+    virtual std::string get_product_name() const override { return "RootTask"; }
 public:
     explicit TaskIndependentRootTask();
 
-    std::shared_ptr<AbstractTask>
+    using AbstractProduct = AbstractTask;
+    using ConcreteProduct = RootTask;
+
+    std::shared_ptr<AbstractProduct>
     get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                         int depth = -1) const override;
+                      int depth = -1) const override;
+
+    std::shared_ptr<ConcreteProduct> create_ts(
+            const std::shared_ptr<AbstractTask> &task,
+            std::unique_ptr<ComponentMap> &component_map,
+            int depth) const;
 };
 }
 #endif

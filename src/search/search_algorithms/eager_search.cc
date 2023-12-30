@@ -358,36 +358,31 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(
 }
 
 
-shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::get_task_specific(
-    const shared_ptr<AbstractTask> &task,
-    std::unique_ptr<ComponentMap> &component_map,
-    int depth) const {
-    shared_ptr<EagerSearch> task_specific_x;
-    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-        utils::g_log << std::string(depth, ' ') << "Reusing task specific EagerSearch '" << name << "'..." << endl;
-        task_specific_x = dynamic_pointer_cast<EagerSearch>(
-            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
-    } else {
-        utils::g_log << std::string(depth, ' ') << "Creating task specific EagerSearch '" << name << "'..." << endl;
-        task_specific_x = create_ts(task, component_map, depth);
 
-        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
-                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
+    using ConcreteProduct = EagerSearch;
+    using AbstractProduct = SearchAlgorithm;
+    using Concrete = TaskIndependentEagerSearch;
+
+    shared_ptr<AbstractProduct> Concrete::get_task_specific(
+            const std::shared_ptr<AbstractTask> &task,
+            std::unique_ptr<ComponentMap> &component_map,
+            int depth) const {
+        shared_ptr<ConcreteProduct> task_specific_x;
+
+        if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
+            log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+            task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
+                    component_map->at(static_cast<const TaskIndependentComponent *>(this)));
+        } else {
+            log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+            task_specific_x = create_ts(task, component_map, depth);
+            component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
+                                          (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
+        }
+        return task_specific_x;
     }
-    return task_specific_x;
-}
 
-
-
-
-shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific_root(const shared_ptr<AbstractTask> &task,
-                                                                                  int depth) const {
-    utils::g_log << std::string(depth, ' ') << "Creating EagerSearch as root component..." << endl;
-    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return get_task_specific(task, component_map, depth);
-}
-
-    std::shared_ptr<EagerSearch> TaskIndependentEagerSearch::create_ts(const shared_ptr <AbstractTask> &task,
+    std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
                                                                        unique_ptr <ComponentMap> &component_map,
                                                                        int depth) const {
         vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
@@ -417,4 +412,16 @@ shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific_roo
                 verbosity,
                 task);
     }
+
+
+
+
+shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific_root(const shared_ptr<AbstractTask> &task,
+                                                                                  int depth) const {
+    utils::g_log << std::string(depth, ' ') << "Creating EagerSearch as root component..." << endl;
+    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
+    return get_task_specific(task, component_map, depth);
+}
+
+
 }

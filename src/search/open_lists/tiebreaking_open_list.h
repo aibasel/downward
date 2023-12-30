@@ -160,6 +160,8 @@ class TaskIndependentTieBreakingOpenListFactory : public TaskIndependentOpenList
     int size;
     std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators;
     bool allow_unsafe_pruning;
+protected:
+    std::string get_product_name() const override {return "TieBreakingOpenListFactory";}
 public:
     explicit TaskIndependentTieBreakingOpenListFactory(
             std::vector<std::shared_ptr<TaskIndependentEvaluator>> evaluators,

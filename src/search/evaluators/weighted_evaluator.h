@@ -34,6 +34,8 @@ class TaskIndependentWeightedEvaluator : public TaskIndependentEvaluator {
 private:
     std::shared_ptr<TaskIndependentEvaluator> evaluator;
     int weight;
+protected:
+    std::string get_product_name() const override { return "WeightedEvaluator";}
 public:
     explicit TaskIndependentWeightedEvaluator(
                                               std::shared_ptr<TaskIndependentEvaluator> evaluator,

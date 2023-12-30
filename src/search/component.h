@@ -10,6 +10,8 @@ public:
 };
 
 class TaskIndependentComponent {
+protected:
+    virtual std::string get_product_name() const = 0;
 public:
     explicit TaskIndependentComponent() {}
     virtual ~TaskIndependentComponent() = default;

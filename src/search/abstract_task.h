@@ -6,6 +6,7 @@
 
 #include "algorithms/subscriber.h"
 #include "utils/hash.h"
+#include "utils/logging.h"
 
 #include <memory>
 #include <string>
@@ -105,6 +106,10 @@ public:
 };
 
 class TaskIndependentAbstractTask : public TaskIndependentComponent {
+protected:
+    const std::string name;
+    mutable utils::LogProxy log;
+    virtual std::string get_product_name() const override { return "AbstractTask"; }
 public:
     explicit TaskIndependentAbstractTask();
     virtual ~TaskIndependentAbstractTask() override = default;
