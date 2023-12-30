@@ -80,7 +80,6 @@ public:
 };
 
 class TaskIndependentAlternationOpenListFactory : public TaskIndependentOpenListFactory {
-    plugins::Options options; //TODO issue559 remove options field in the long run.
     int boost_amount;
     int size;
     std::vector<std::shared_ptr<TaskIndependentOpenListFactory>> open_list_factories;
