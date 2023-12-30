@@ -205,11 +205,9 @@ TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(OperatorCost cost
                                                                double max_time,
                                                                const string &name,
                                                                utils::Verbosity verbosity)
-    : status(IN_PROGRESS),
+    : TaskIndependentComponent(name, verbosity),
+    status(IN_PROGRESS),
       solution_found(false),
-      name(name),
-      verbosity(verbosity),
-      log(utils::get_log_from_verbosity(verbosity)),
       bound(bound),
       cost_type(cost_type),
       max_time(max_time) {

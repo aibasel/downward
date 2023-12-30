@@ -95,10 +95,6 @@ class TaskIndependentSearchAlgorithm : public TaskIndependentComponent {
     bool solution_found;
     Plan plan;
 protected:
-
-    const std::string name;
-    const utils::Verbosity verbosity;
-    mutable utils::LogProxy log;
     PlanManager plan_manager;
     SearchProgress search_progress;
     int bound;
