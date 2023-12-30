@@ -112,10 +112,6 @@ class TaskIndependentEvaluator : public TaskIndependentComponent {
     const bool use_for_reporting_minima;
     const bool use_for_boosting;
     const bool use_for_counting_evaluations;
-protected:
-    const std::string name;
-    const utils::Verbosity verbosity;
-    mutable utils::LogProxy log;
 public:
     explicit TaskIndependentEvaluator(
         const std::string &name,

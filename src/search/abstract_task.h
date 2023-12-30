@@ -107,8 +107,6 @@ public:
 
 class TaskIndependentAbstractTask : public TaskIndependentComponent {
 protected:
-    const std::string name;
-    mutable utils::LogProxy log;
     virtual std::string get_product_name() const override { return "AbstractTask"; }
 public:
     explicit TaskIndependentAbstractTask();

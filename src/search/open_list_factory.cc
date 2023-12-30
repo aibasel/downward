@@ -16,7 +16,7 @@ unique_ptr<EdgeOpenList> OpenListFactory::create_open_list() {
 
 
 TaskIndependentOpenListFactory::TaskIndependentOpenListFactory(const std::string name, utils::Verbosity verbosity)
- : name(name), verbosity(verbosity), log(utils::get_log_from_verbosity(verbosity))
+ : TaskIndependentComponent(name, verbosity)
 {
 }
 
