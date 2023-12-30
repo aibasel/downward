@@ -84,6 +84,8 @@ class TaskIndependentAlternationOpenListFactory : public TaskIndependentOpenList
     int boost_amount;
     int size;
     std::vector<std::shared_ptr<TaskIndependentOpenListFactory>> open_list_factories;
+protected:
+    std::string get_product_name() const override {return "AlternationOpenListFactory";}
 public:
     explicit TaskIndependentAlternationOpenListFactory(const plugins::Options &opts);
     explicit TaskIndependentAlternationOpenListFactory(

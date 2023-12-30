@@ -209,6 +209,7 @@ TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(OperatorCost cost
       solution_found(false),
       name(name),
       verbosity(verbosity),
+      log(utils::get_log_from_verbosity(verbosity)),
       bound(bound),
       cost_type(cost_type),
       max_time(max_time) {

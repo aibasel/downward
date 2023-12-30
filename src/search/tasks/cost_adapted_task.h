@@ -34,6 +34,8 @@ public:
 
 class TaskIndependentCostAdaptedTask : public TaskIndependentDelegatingTask {
     const OperatorCost cost_type;
+protected:
+    virtual std::string get_product_name() const { return "CostAdaptedTask"; }
 public:
     explicit TaskIndependentCostAdaptedTask(OperatorCost cost_type);
     virtual ~TaskIndependentCostAdaptedTask() override = default;

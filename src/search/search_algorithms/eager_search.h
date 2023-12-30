@@ -74,6 +74,8 @@ private:
     std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator;
 
     std::shared_ptr<PruningMethod> pruning_method;
+protected:
+    std::string get_product_name() const override {return "EagerSearch";}
 public:
     explicit TaskIndependentEagerSearch(
             std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory, //will produce StateOpenList

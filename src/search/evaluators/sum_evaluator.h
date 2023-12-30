@@ -25,6 +25,8 @@ public:
 
 
 class TaskIndependentSumEvaluator : public combining_evaluator::TaskIndependentCombiningEvaluator {
+protected:
+    std::string get_product_name() const override { return "SumEvaluator";}
 public:
     explicit TaskIndependentSumEvaluator(
             std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,

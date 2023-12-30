@@ -55,6 +55,8 @@ private:
     bool repeat_last_phase;
     bool continue_on_fail;
     bool continue_on_solve;
+protected:
+    std::string get_product_name() const override {return "IteratedSearch";}
 public:
     explicit TaskIndependentIteratedSearch(
             std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,

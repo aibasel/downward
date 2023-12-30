@@ -24,6 +24,8 @@ public:
 class TaskIndependentLandmarkCutHeuristic : public TaskIndependentHeuristic {
 private:
     bool cache_evaluator_values;
+protected:
+    std::string get_product_name() const override { return "LandmarkCutHeuristic";}
 public:
     explicit TaskIndependentLandmarkCutHeuristic(const std::string &name,
                                                  utils::Verbosity verbosity,

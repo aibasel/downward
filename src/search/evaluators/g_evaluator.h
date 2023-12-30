@@ -21,7 +21,7 @@ public:
 
 class TaskIndependentGEvaluator : public TaskIndependentEvaluator {
 protected:
-    const std::string product_name = "GEvaluator";
+    std::string get_product_name() const override {return "GEvaluator";}
 public:
     explicit TaskIndependentGEvaluator(const std::string &name,
                                        utils::Verbosity verbosity);

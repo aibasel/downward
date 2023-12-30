@@ -19,6 +19,8 @@ public:
 class TaskIndependentBlindSearchHeuristic : public TaskIndependentHeuristic {
 private:
     bool cache_evaluator_values;
+protected:
+    std::string get_product_name() const override { return "BlindSearchHeuristic";}
 public:
     explicit TaskIndependentBlindSearchHeuristic(const std::string &name,
                                                  utils::Verbosity verbosity,
