@@ -20,15 +20,6 @@ TaskIndependentAbstractTask::TaskIndependentAbstractTask()
     : TaskIndependentComponent("abstract_task", utils::Verbosity::NORMAL) {
 }
 
-
-shared_ptr<AbstractTask> TaskIndependentAbstractTask::get_task_specific(
-    [[maybe_unused]] const shared_ptr<AbstractTask> &task,
-    [[maybe_unused]] unique_ptr<ComponentMap> &component_map,
-    [[maybe_unused]] int depth) const {
-    cerr << "Tries to create AbstractTask in an unimplemented way." << endl;
-    utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-}
-
 static class TaskIndependentAbstractTaskCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentAbstractTask> {
 public:
     TaskIndependentAbstractTaskCategoryPlugin() : TypedCategoryPlugin("AbstractTask") {

@@ -362,7 +362,7 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(
 using ConcreteProduct = EagerSearch;
 using AbstractProduct = SearchAlgorithm;
 using Concrete = TaskIndependentEagerSearch;
-
+// TODO issue559 use templates as 'get_task_specific' is EXACTLY the same for all TI_Components
 shared_ptr<AbstractProduct> Concrete::get_task_specific(
     const std::shared_ptr<AbstractTask> &task,
     std::unique_ptr<ComponentMap> &component_map,
