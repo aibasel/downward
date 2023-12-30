@@ -41,7 +41,7 @@ void Heuristic::add_options_to_feature(plugins::Feature &feature, const string &
         "transform",
         "Optional task transformation for the heuristic."
         " Currently, adapt_costs() and no_transform() are available.",
-        "adapt_costs(normal)"); // TODO: issue559 put default value back to 'no_transform()'.
+        "no_transform()");
     feature.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
 }
 
