@@ -20,7 +20,7 @@ class TaskIndependentBlindSearchHeuristic : public TaskIndependentHeuristic {
 private:
     bool cache_evaluator_values;
 protected:
-    std::string get_product_name() const override { return "BlindSearchHeuristic";}
+    std::string get_product_name() const override {return "BlindSearchHeuristic";}
 public:
     explicit TaskIndependentBlindSearchHeuristic(const std::string &name,
                                                  utils::Verbosity verbosity,
@@ -37,9 +37,9 @@ public:
                       int depth = -1) const override;
 
     std::shared_ptr<ConcreteProduct> create_ts(
-            const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const;
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const;
 };
 }
 

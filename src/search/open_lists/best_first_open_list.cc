@@ -86,45 +86,44 @@ BestFirstOpenListFactory::create_edge_open_list() {
 
 
 TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory(
-    shared_ptr<TaskIndependentEvaluator> evaluator, bool pref_only
-)
+    shared_ptr<TaskIndependentEvaluator> evaluator, bool pref_only)
     : TaskIndependentOpenListFactory("TieBreakingOpenListFactory", utils::Verbosity::NORMAL),
-    pref_only(pref_only), size(0), evaluator(evaluator) {
+      pref_only(pref_only), size(0), evaluator(evaluator) {
 }
 
 
-    using ConcreteProduct = BestFirstOpenListFactory;
-    using AbstractProduct = OpenListFactory;
-    using Concrete = TaskIndependentBestFirstOpenListFactory;
+using ConcreteProduct = BestFirstOpenListFactory;
+using AbstractProduct = OpenListFactory;
+using Concrete = TaskIndependentBestFirstOpenListFactory;
 
-    shared_ptr<AbstractProduct> Concrete::get_task_specific(
-            [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const {
-        shared_ptr<ConcreteProduct> task_specific_x;
+shared_ptr<AbstractProduct> Concrete::get_task_specific(
+    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
+    shared_ptr<ConcreteProduct> task_specific_x;
 
-        if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-            log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
-                    component_map->at(static_cast<const TaskIndependentComponent *>(this)));
-        } else {
-            log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = create_ts(task, component_map, depth);
-            component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
-                                          (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
-        }
-        return task_specific_x;
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
+            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
+    } else {
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = create_ts(task, component_map, depth);
+        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
+                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
+    return task_specific_x;
+}
 
-    std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
-                                                       unique_ptr <ComponentMap> &component_map, int depth) const {
-        return make_shared<BestFirstOpenListFactory>(
-                evaluator->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth),
-                pref_only);
-    }
+std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
+                                                     unique_ptr <ComponentMap> &component_map, int depth) const {
+    return make_shared<BestFirstOpenListFactory>(
+        evaluator->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth),
+        pref_only);
+}
 
 
-    class BestFirstOpenListFeature
+class BestFirstOpenListFeature
     : public plugins::TypedFeature<TaskIndependentOpenListFactory, TaskIndependentBestFirstOpenListFactory> {
 public:
     BestFirstOpenListFeature() : TypedFeature("single") {
@@ -149,9 +148,8 @@ public:
         const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<OpenListFactory>>(context, opts, "sublists");
         return make_shared<TaskIndependentBestFirstOpenListFactory>(
-                                                                    opts.get<shared_ptr<TaskIndependentEvaluator>>(
-                                                                        "eval"),
-                                                                    opts.get<bool>("pref_only"));
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
+            opts.get<bool>("pref_only"));
     }
 };
 

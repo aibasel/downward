@@ -11,7 +11,6 @@
 using namespace std;
 
 namespace parser {
-
 class ConstructContext : public utils::Context {
     std::unordered_map<std::string, plugins::Any> variables;
 public:

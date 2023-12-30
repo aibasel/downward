@@ -15,10 +15,10 @@ WeightedEvaluator::WeightedEvaluator(const plugins::Options &opts)
 }
 
 WeightedEvaluator::WeightedEvaluator(
-        shared_ptr<Evaluator> evaluator,
-        int weight,
-        const string &name,
-        utils::Verbosity verbosity)
+    shared_ptr<Evaluator> evaluator,
+    int weight,
+    const string &name,
+    utils::Verbosity verbosity)
     : Evaluator(name, verbosity,
                 false,
                 false,
@@ -54,10 +54,10 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
 
 
 TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(
-                                                                   shared_ptr<TaskIndependentEvaluator> evaluator,
-                                                                   int weight,
-                                                                   const string &name,
-                                                                   utils::Verbosity verbosity)
+    shared_ptr<TaskIndependentEvaluator> evaluator,
+    int weight,
+    const string &name,
+    utils::Verbosity verbosity)
     : TaskIndependentEvaluator(name, verbosity, false, false,
                                false),
       evaluator(evaluator),
@@ -65,40 +65,40 @@ TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(
 }
 
 
-    using ConcreteProduct = WeightedEvaluator;
-    using AbstractProduct = Evaluator;
-    using Concrete = TaskIndependentWeightedEvaluator;
+using ConcreteProduct = WeightedEvaluator;
+using AbstractProduct = Evaluator;
+using Concrete = TaskIndependentWeightedEvaluator;
 
-    shared_ptr<AbstractProduct> Concrete::get_task_specific(
-            [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const {
-        shared_ptr<ConcreteProduct> task_specific_x;
+shared_ptr<AbstractProduct> Concrete::get_task_specific(
+    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
+    shared_ptr<ConcreteProduct> task_specific_x;
 
-        if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-            log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
-                    component_map->at(static_cast<const TaskIndependentComponent *>(this)));
-        } else {
-            log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = create_ts(task, component_map, depth);
-            component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
-                                          (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
-        }
-        return task_specific_x;
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
+            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
+    } else {
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = create_ts(task, component_map, depth);
+        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
+                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
+    return task_specific_x;
+}
 
-    std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
-                                                unique_ptr <ComponentMap> &component_map, int depth) const {
-        return make_shared<WeightedEvaluator>(
-                evaluator->get_task_specific(task, component_map, depth),
-                weight,
-                name,
-                verbosity);
-    }
+std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
+                                                     unique_ptr <ComponentMap> &component_map, int depth) const {
+    return make_shared<WeightedEvaluator>(
+        evaluator->get_task_specific(task, component_map, depth),
+        weight,
+        name,
+        verbosity);
+}
 
 
-    class WeightedEvaluatorFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentWeightedEvaluator> {
+class WeightedEvaluatorFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentWeightedEvaluator> {
 public:
     WeightedEvaluatorFeature() : TypedFeature("weight") {
         document_subcategory("evaluators_basic");
@@ -115,11 +115,11 @@ public:
         const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<TaskIndependentEvaluator>>(context, opts, "evals");
         return make_shared<TaskIndependentWeightedEvaluator>(
-                                                             opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
-                                                             opts.get<int>("weight"),
-                                                             opts.get<string>("name"),
-                                                             opts.get<utils::Verbosity>("verbosity")
-                                                             );
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
+            opts.get<int>("weight"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity")
+            );
     }
 };
 

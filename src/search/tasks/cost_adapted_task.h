@@ -35,7 +35,7 @@ public:
 class TaskIndependentCostAdaptedTask : public TaskIndependentDelegatingTask {
     const OperatorCost cost_type;
 protected:
-    virtual std::string get_product_name() const { return "CostAdaptedTask"; }
+    virtual std::string get_product_name() const {return "CostAdaptedTask";}
 public:
     explicit TaskIndependentCostAdaptedTask(OperatorCost cost_type);
     virtual ~TaskIndependentCostAdaptedTask() override = default;
@@ -48,9 +48,9 @@ public:
                       int depth = -1) const override;
 
     std::shared_ptr<ConcreteProduct> create_ts(
-            const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const;
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const;
 };
 }
 

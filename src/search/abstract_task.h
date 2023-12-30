@@ -107,14 +107,14 @@ public:
 
 class TaskIndependentAbstractTask : public TaskIndependentComponent {
 protected:
-    virtual std::string get_product_name() const override { return "AbstractTask"; }
+    virtual std::string get_product_name() const override {return "AbstractTask";}
 public:
     explicit TaskIndependentAbstractTask();
     virtual ~TaskIndependentAbstractTask() override = default;
 
     virtual std::shared_ptr<AbstractTask>
     get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                         int depth = -1) const;
+                      int depth = -1) const;
 };
 
 #endif

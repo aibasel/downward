@@ -38,11 +38,11 @@ int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
 
 
 TaskIndependentBlindSearchHeuristic::TaskIndependentBlindSearchHeuristic(
-        const string &name,
-        utils::Verbosity verbosity,
-        shared_ptr<TaskIndependentAbstractTask> task_transformation,
-        bool cache_evaluator_values)
-        : TaskIndependentHeuristic(name, verbosity, task_transformation, cache_evaluator_values) {
+    const string &name,
+    utils::Verbosity verbosity,
+    shared_ptr<TaskIndependentAbstractTask> task_transformation,
+    bool cache_evaluator_values)
+    : TaskIndependentHeuristic(name, verbosity, task_transformation, cache_evaluator_values) {
 }
 
 TaskIndependentBlindSearchHeuristic::~TaskIndependentBlindSearchHeuristic() {
@@ -50,40 +50,40 @@ TaskIndependentBlindSearchHeuristic::~TaskIndependentBlindSearchHeuristic() {
 
 
 
-    using ConcreteProduct = BlindSearchHeuristic;
-    using AbstractProduct = Evaluator;
-    using Concrete = TaskIndependentBlindSearchHeuristic;
+using ConcreteProduct = BlindSearchHeuristic;
+using AbstractProduct = Evaluator;
+using Concrete = TaskIndependentBlindSearchHeuristic;
 
-    shared_ptr<AbstractProduct> Concrete::get_task_specific(
-            [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const {
-        shared_ptr<ConcreteProduct> task_specific_x;
+shared_ptr<AbstractProduct> Concrete::get_task_specific(
+    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
+    shared_ptr<ConcreteProduct> task_specific_x;
 
-        if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-            log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
-                    component_map->at(static_cast<const TaskIndependentComponent *>(this)));
-        } else {
-            log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
-            task_specific_x = create_ts(task, component_map, depth);
-            component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
-                                          (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
-        }
-        return task_specific_x;
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
+            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
+    } else {
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = create_ts(task, component_map, depth);
+        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
+                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
+    return task_specific_x;
+}
 
-    std::shared_ptr<ConcreteProduct> Concrete::create_ts(
-            const shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const {
-        return make_shared<BlindSearchHeuristic>(name,
-                                                 verbosity,
-                                                 task_transformation->get_task_specific(
-                                                         task, component_map,
-                                                         depth >= 0 ? depth + 1 : depth),
-                                                 cache_evaluator_values);
-    }
+std::shared_ptr<ConcreteProduct> Concrete::create_ts(
+    const shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
+    return make_shared<BlindSearchHeuristic>(name,
+                                             verbosity,
+                                             task_transformation->get_task_specific(
+                                                 task, component_map,
+                                                 depth >= 0 ? depth + 1 : depth),
+                                             cache_evaluator_values);
+}
 
 
 class BlindSearchHeuristicFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentBlindSearchHeuristic> {
@@ -107,13 +107,13 @@ public:
     }
 
     virtual shared_ptr<TaskIndependentBlindSearchHeuristic> create_component(
-            const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<TaskIndependentBlindSearchHeuristic>(opts.get<string>("name"),
                                                                 opts.get<utils::Verbosity>("verbosity"),
                                                                 opts.get<shared_ptr<TaskIndependentAbstractTask>>(
-                                                                        "transform"),
+                                                                    "transform"),
                                                                 opts.get<bool>("cache_estimates")
-        );
+                                                                );
     }
 };
 

@@ -18,9 +18,8 @@ protected:
     mutable utils::LogProxy log;
     virtual std::string get_product_name() const = 0;
 public:
-    explicit TaskIndependentComponent(const std::string &name,
-                                      utils::Verbosity verbosity) : name(name),
-                                      verbosity(verbosity), log(utils::get_log_from_verbosity(verbosity)){}
+    explicit TaskIndependentComponent(const std::string &name, utils::Verbosity verbosity)
+        : name(name), verbosity(verbosity), log(utils::get_log_from_verbosity(verbosity)) {}
     virtual ~TaskIndependentComponent() = default;
 };
 

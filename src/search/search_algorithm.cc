@@ -42,12 +42,12 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
 
 
 SearchAlgorithm::SearchAlgorithm(
-        OperatorCost cost_type,
-        int bound,
-        double max_time,
-        const string &name,
-        utils::Verbosity verbosity,
-        const shared_ptr<AbstractTask> &_task)
+    OperatorCost cost_type,
+    int bound,
+    double max_time,
+    const string &name,
+    utils::Verbosity verbosity,
+    const shared_ptr<AbstractTask> &_task)
     : status(IN_PROGRESS),
       solution_found(false),
       task(_task),
@@ -206,7 +206,7 @@ TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(OperatorCost cost
                                                                const string &name,
                                                                utils::Verbosity verbosity)
     : TaskIndependentComponent(name, verbosity),
-    status(IN_PROGRESS),
+      status(IN_PROGRESS),
       solution_found(false),
       bound(bound),
       cost_type(cost_type),

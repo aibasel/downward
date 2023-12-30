@@ -21,9 +21,9 @@ protected:
 public:
     explicit CombiningEvaluator(const plugins::Options &opts);
     explicit CombiningEvaluator(
-            std::vector<std::shared_ptr<Evaluator>> subevaluators,
-            const std::string &name,
-                                utils::Verbosity verbosity);
+        std::vector<std::shared_ptr<Evaluator>> subevaluators,
+        const std::string &name,
+        utils::Verbosity verbosity);
     virtual ~CombiningEvaluator() override;
 
     /*
@@ -57,9 +57,9 @@ protected:
     std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators;
 public:
     explicit TaskIndependentCombiningEvaluator(
-            std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
-            const std::string &name,
-                                               utils::Verbosity verbosity);
+        std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
+        const std::string &name,
+        utils::Verbosity verbosity);
     virtual ~TaskIndependentCombiningEvaluator() override = default;
 };
 }

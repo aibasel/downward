@@ -17,21 +17,21 @@ protected:
 public:
     explicit SumEvaluator(const plugins::Options &opts);
     explicit SumEvaluator(
-            std::vector<std::shared_ptr<Evaluator>> subevaluators,
-            const std::string &name,
-            utils::Verbosity verbosity);
+        std::vector<std::shared_ptr<Evaluator>> subevaluators,
+        const std::string &name,
+        utils::Verbosity verbosity);
     virtual ~SumEvaluator() override;
 };
 
 
 class TaskIndependentSumEvaluator : public combining_evaluator::TaskIndependentCombiningEvaluator {
 protected:
-    std::string get_product_name() const override { return "SumEvaluator";}
+    std::string get_product_name() const override {return "SumEvaluator";}
 public:
     explicit TaskIndependentSumEvaluator(
-            std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
-            const std::string &name,
-                                         utils::Verbosity verbosity);
+        std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
+        const std::string &name,
+        utils::Verbosity verbosity);
 
     virtual ~TaskIndependentSumEvaluator()  override = default;
 
@@ -43,9 +43,9 @@ public:
                       int depth = -1) const override;
 
     std::shared_ptr<ConcreteProduct> create_ts(
-            const std::shared_ptr<AbstractTask> &task,
-            std::unique_ptr<ComponentMap> &component_map,
-            int depth) const;
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const;
 };
 }
 

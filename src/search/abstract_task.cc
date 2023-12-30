@@ -17,7 +17,7 @@ ostream &operator<<(ostream &os, const FactPair &fact_pair) {
 
 
 TaskIndependentAbstractTask::TaskIndependentAbstractTask()
- : TaskIndependentComponent("abstract_task", utils::Verbosity::NORMAL) {
+    : TaskIndependentComponent("abstract_task", utils::Verbosity::NORMAL) {
 }
 
 
