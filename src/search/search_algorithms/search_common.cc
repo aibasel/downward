@@ -79,6 +79,9 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   If w = 0, we omit the h-evaluator altogether:
   we use g instead of g + 0 * h.
 */
+
+// TODO issue559 change this similar to 'create_astar_open_list_factory_and_f_eval'->'create_task_independent_astar_open_list_factory_and_f_eval'
+// also for the others in this file
 static shared_ptr<Evaluator> create_wastar_eval(const plugins::Options &options,
                                                 const shared_ptr<GEval> &g_eval, int w,
                                                 const shared_ptr<Evaluator> &h_eval) {
