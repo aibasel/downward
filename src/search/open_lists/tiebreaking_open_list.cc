@@ -43,7 +43,7 @@ TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFac
 
 
 
-shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific(
+shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::get_task_specific(
     const shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) const {
     shared_ptr<TieBreakingOpenListFactory> task_specific_x;
 

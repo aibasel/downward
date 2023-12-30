@@ -20,18 +20,22 @@ public:
 
 
 class TaskIndependentGEvaluator : public TaskIndependentEvaluator {
+protected:
+    const std::string product_name = "GEvaluator";
 public:
     explicit TaskIndependentGEvaluator(const std::string &name,
                                        utils::Verbosity verbosity);
 
     virtual ~TaskIndependentGEvaluator()  override = default;
 
+    using AbstractProduct = Evaluator;
+    using ConcreteProduct = GEvaluator;
 
-    std::shared_ptr<Evaluator>
+    std::shared_ptr<AbstractProduct>
     get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
                       int depth = -1) const override;
 
-    std::shared_ptr<GEvaluator> create_ts(
+    std::shared_ptr<ConcreteProduct> create_ts(
             const std::shared_ptr<AbstractTask> &task,
             std::unique_ptr<ComponentMap> &component_map,
             int depth) const;

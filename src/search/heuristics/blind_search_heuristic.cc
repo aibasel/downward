@@ -55,7 +55,7 @@ TaskIndependentBlindSearchHeuristic::~TaskIndependentBlindSearchHeuristic() {
             int depth) const {
         return make_shared<BlindSearchHeuristic>(name,
                                                  verbosity,
-                                                 task_transformation->create_task_specific(
+                                                 task_transformation->get_task_specific(
                                                          task, component_map,
                                                          depth >= 0 ? depth + 1 : depth),
                                                  cache_evaluator_values);

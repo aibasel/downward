@@ -91,11 +91,14 @@ public:
         int boost_amount);
     virtual ~TaskIndependentAlternationOpenListFactory() override = default;
 
-    std::shared_ptr<OpenListFactory>
-    create_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                         int depth = -1) const override;
+    using AbstractProduct = OpenListFactory;
+    using ConcreteProduct = AlternationOpenListFactory;
 
-    std::shared_ptr<AlternationOpenListFactory> create_ts(
+    std::shared_ptr<AbstractProduct>
+    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
+                      int depth = -1) const override;
+
+    std::shared_ptr<ConcreteProduct> create_ts(
             const std::shared_ptr<AbstractTask> &task,
             std::unique_ptr<ComponentMap> &component_map,
             int depth) const;

@@ -49,7 +49,7 @@ TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFac
 }
 
 
-shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific(
+shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::get_task_specific(
     const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map, int depth) const {
     shared_ptr<AlternationOpenListFactory> task_specific_x;
     if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
@@ -72,7 +72,7 @@ shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_ta
         vector<shared_ptr<OpenListFactory>> td_open_list_factories(open_list_factories.size());
         transform(open_list_factories.begin(), open_list_factories.end(), td_open_list_factories.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentOpenListFactory> &eval) {
-                      return eval->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+                      return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
                   }
         );
 

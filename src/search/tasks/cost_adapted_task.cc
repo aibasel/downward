@@ -33,7 +33,7 @@ TaskIndependentCostAdaptedTask::TaskIndependentCostAdaptedTask(OperatorCost cost
 }
 
 
-shared_ptr<AbstractTask> TaskIndependentCostAdaptedTask::create_task_specific(
+shared_ptr<AbstractTask> TaskIndependentCostAdaptedTask::get_task_specific(
     [[maybe_unused]] const shared_ptr<AbstractTask> &task,
     [[maybe_unused]] unique_ptr<ComponentMap> &component_map,
     int depth) const {

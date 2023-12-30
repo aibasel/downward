@@ -33,19 +33,20 @@ TaskIndependentGEvaluator::TaskIndependentGEvaluator(const string &name,
                                false){
 }
 
-
-shared_ptr<Evaluator> TaskIndependentGEvaluator::get_task_specific(
+using ConcreteProduct = GEvaluator;
+using AbstractProduct = Evaluator;
+shared_ptr<AbstractProduct> TaskIndependentGEvaluator::get_task_specific(
     [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
     std::unique_ptr<ComponentMap> &component_map,
     int depth) const {
-    shared_ptr<GEvaluator> task_specific_x;
+    shared_ptr<ConcreteProduct> task_specific_x;
 
     if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-        log << std::string(depth, ' ') << "Reusing task specific GEvaluator '" << name << "'..." << endl;
-        task_specific_x = dynamic_pointer_cast<GEvaluator>(
+        log << std::string(depth, ' ') << "Reusing task specific " << product_name << " '" << name << "'..." << endl;
+        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
-        log << std::string(depth, ' ') << "Creating task specific GEvaluator '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Creating task specific " << product_name << " '" << name << "'..." << endl;
         task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
                                   (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
@@ -53,7 +54,7 @@ shared_ptr<Evaluator> TaskIndependentGEvaluator::get_task_specific(
     return task_specific_x;
 }
 
-    std::shared_ptr<GEvaluator> TaskIndependentGEvaluator::create_ts([[maybe_unused]] const shared_ptr <AbstractTask> &task,
+    std::shared_ptr<ConcreteProduct> TaskIndependentGEvaluator::create_ts([[maybe_unused]] const shared_ptr <AbstractTask> &task,
                                                                      [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
                                                                      [[maybe_unused]] int depth) const {
         return make_shared<GEvaluator>(name, verbosity);
