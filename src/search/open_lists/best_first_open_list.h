@@ -86,7 +86,6 @@ class TaskIndependentBestFirstOpenListFactory : public TaskIndependentOpenListFa
 protected:
     std::string get_product_name() const override {return "BestFirstOpenListFactory";}
 public:
-    explicit TaskIndependentBestFirstOpenListFactory(const plugins::Options &opts);
     explicit TaskIndependentBestFirstOpenListFactory(
             std::shared_ptr<TaskIndependentEvaluator> evaluator,
             bool pref_only);
