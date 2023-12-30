@@ -109,7 +109,7 @@ shared_ptr<OpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task
         utils::g_log << std::string(depth, ' ') << "Creating task specific BestFirstOpenListFactory..." << endl;
 
         task_specific_x = make_shared<BestFirstOpenListFactory>(
-            evaluator->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth),
+                evaluator->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth),
             pref_only);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
                                   static_cast<const TaskIndependentComponent *>(this), task_specific_x));

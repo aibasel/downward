@@ -34,7 +34,7 @@ TaskIndependentGEvaluator::TaskIndependentGEvaluator(const string &name,
 }
 
 
-shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific(
+shared_ptr<Evaluator> TaskIndependentGEvaluator::get_task_specific(
     [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
     std::unique_ptr<ComponentMap> &component_map,
     int depth) const {

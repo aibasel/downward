@@ -49,9 +49,9 @@ TaskIndependentSumEvaluator::TaskIndependentSumEvaluator(
 }
 
 
-shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(const shared_ptr<AbstractTask> &task,
-                                                                        std::unique_ptr<ComponentMap> &component_map,
-                                                                        int depth) const {
+shared_ptr<Evaluator> TaskIndependentSumEvaluator::get_task_specific(const std::shared_ptr<AbstractTask> &task,
+                                                                     std::unique_ptr<ComponentMap> &component_map,
+                                                                     int depth) const {
     shared_ptr<SumEvaluator> task_specific_x;
     if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
         log << std::string(depth, ' ') << "Reusing task specific SumEvaluator '" << name << "'..." << endl;
@@ -62,7 +62,7 @@ shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(const sh
         vector<shared_ptr<Evaluator>> td_subevaluators(subevaluators.size());
         transform(subevaluators.begin(), subevaluators.end(), td_subevaluators.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      return eval->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+                      return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
                   }
                   );
         task_specific_x = make_shared<SumEvaluator>(td_subevaluators, name, verbosity);

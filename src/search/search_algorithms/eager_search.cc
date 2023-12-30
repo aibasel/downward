@@ -358,7 +358,7 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(
 }
 
 
-shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(
+shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::get_task_specific(
     const shared_ptr<AbstractTask> &task,
     std::unique_ptr<ComponentMap> &component_map,
     int depth) const {
@@ -372,7 +372,7 @@ shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(
         vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
         transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
                   [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      return eval->create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+                      return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
                   }
                   );
 
@@ -383,9 +383,9 @@ shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(
         task_specific_x = make_shared<EagerSearch>(
                 move(_open_list),
                 reopen_closed_nodes,
-                f_evaluator ? f_evaluator->create_task_specific(
+                f_evaluator ? f_evaluator->get_task_specific(
                         task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
-                lazy_evaluator ? lazy_evaluator->create_task_specific(
+                lazy_evaluator ? lazy_evaluator->get_task_specific(
                         task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
                 td_evaluators,
                 pruning_method,
@@ -409,6 +409,6 @@ shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific_roo
                                                                                   int depth) const {
     utils::g_log << std::string(depth, ' ') << "Creating EagerSearch as root component..." << endl;
     std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return create_task_specific(task, component_map, depth);
+    return get_task_specific(task, component_map, depth);
 }
 }

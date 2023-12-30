@@ -225,7 +225,7 @@ shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific
     const shared_ptr<AbstractTask> &task, int depth) const {
     utils::g_log << std::string(depth, ' ') << "Creating SearchAlgorithm as root component..." << endl;
     std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return create_task_specific(task, component_map, depth);
+    return get_task_specific(task, component_map, depth);
 }
 
 
