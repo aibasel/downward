@@ -46,16 +46,21 @@ shared_ptr<Evaluator> TaskIndependentGEvaluator::get_task_specific(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
         log << std::string(depth, ' ') << "Creating task specific GEvaluator '" << name << "'..." << endl;
-        task_specific_x = make_shared<GEvaluator>(name, verbosity);
+        task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
                                   (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }
 
+    std::shared_ptr<GEvaluator> TaskIndependentGEvaluator::create_ts([[maybe_unused]] const shared_ptr <AbstractTask> &task,
+                                                                     [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
+                                                                     [[maybe_unused]] int depth) const {
+        return make_shared<GEvaluator>(name, verbosity);
+    }
 
 
-class TaskIndependentGEvaluatorFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentGEvaluator> {
+    class TaskIndependentGEvaluatorFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentGEvaluator> {
 public:
     TaskIndependentGEvaluatorFeature() : TypedFeature("g") {
         document_subcategory("evaluators_basic");

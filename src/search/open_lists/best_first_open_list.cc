@@ -108,17 +108,23 @@ shared_ptr<OpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific BestFirstOpenListFactory..." << endl;
 
-        task_specific_x = make_shared<BestFirstOpenListFactory>(
-                evaluator->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth),
-            pref_only);
+        task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
                                   static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }
 
+    std::shared_ptr<BestFirstOpenListFactory>
+    TaskIndependentBestFirstOpenListFactory::create_ts(const shared_ptr <AbstractTask> &task,
+                                                       unique_ptr <ComponentMap> &component_map, int depth) const {
+        return make_shared<BestFirstOpenListFactory>(
+                evaluator->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth),
+                pref_only);
+    }
 
-class BestFirstOpenListFeature
+
+    class BestFirstOpenListFeature
     : public plugins::TypedFeature<TaskIndependentOpenListFactory, TaskIndependentBestFirstOpenListFactory> {
 public:
     BestFirstOpenListFeature() : TypedFeature("single") {

@@ -59,21 +59,28 @@ shared_ptr<Evaluator> TaskIndependentSumEvaluator::get_task_specific(const std::
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
         log << std::string(depth, ' ') << "Creating task specific SumEvaluator '" << name << "'..." << endl;
-        vector<shared_ptr<Evaluator>> td_subevaluators(subevaluators.size());
-        transform(subevaluators.begin(), subevaluators.end(), td_subevaluators.begin(),
-                  [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                      return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
-                  }
-                  );
-        task_specific_x = make_shared<SumEvaluator>(td_subevaluators, name, verbosity);
+
+        task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>(
                                   static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }
 
+    std::shared_ptr<SumEvaluator> TaskIndependentSumEvaluator::create_ts(const shared_ptr <AbstractTask> &task,
+                                                                         unique_ptr <ComponentMap> &component_map,
+                                                                         int depth) const {
+        vector<shared_ptr<Evaluator>> td_subevaluators(subevaluators.size());
+        transform(subevaluators.begin(), subevaluators.end(), td_subevaluators.begin(),
+                  [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
+                      return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+                  }
+        );
+    return make_shared<SumEvaluator>(td_subevaluators, name, verbosity);
+    }
 
-class SumEvaluatorFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentSumEvaluator> {
+
+    class SumEvaluatorFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentSumEvaluator> {
 public:
     SumEvaluatorFeature() : TypedFeature("sum") {
         document_subcategory("evaluators_basic");

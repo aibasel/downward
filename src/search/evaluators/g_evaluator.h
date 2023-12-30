@@ -30,6 +30,11 @@ public:
     std::shared_ptr<Evaluator>
     get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
                       int depth = -1) const override;
+
+    std::shared_ptr<GEvaluator> create_ts(
+            const std::shared_ptr<AbstractTask> &task,
+            std::unique_ptr<ComponentMap> &component_map,
+            int depth) const;
 };
 }
 

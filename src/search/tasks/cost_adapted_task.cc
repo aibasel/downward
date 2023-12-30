@@ -44,15 +44,21 @@ shared_ptr<AbstractTask> TaskIndependentCostAdaptedTask::create_task_specific(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
         utils::g_log << std::string(depth, ' ') << "Creating task specific CostAdaptedTask..." << endl;
-        task_specific_x = make_shared<CostAdaptedTask>(task, cost_type);
+        task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
                                   (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
     }
     return task_specific_x;
 }
 
+    std::shared_ptr<CostAdaptedTask> TaskIndependentCostAdaptedTask::create_ts(const shared_ptr <AbstractTask> &task,
+                                                                               [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
+                                                                               [[maybe_unused]] int depth) const {
+        return make_shared<CostAdaptedTask>(task, cost_type);
+    }
 
-class CostAdaptedTaskFeature : public plugins::TypedFeature<TaskIndependentAbstractTask, TaskIndependentCostAdaptedTask> {
+
+    class CostAdaptedTaskFeature : public plugins::TypedFeature<TaskIndependentAbstractTask, TaskIndependentCostAdaptedTask> {
 public:
     CostAdaptedTaskFeature() : TypedFeature("adapt_costs") {
         document_title("Cost-adapted task");
