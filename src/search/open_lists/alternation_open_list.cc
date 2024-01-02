@@ -14,10 +14,6 @@ using namespace std;
 using utils::ExitCode;
 
 namespace alternation_open_list {
-AlternationOpenListFactory::AlternationOpenListFactory(const plugins::Options &opts)
-    : options(opts), boost_amount(opts.get<int>("boost")), size(0), open_list_factories(opts.get_list<shared_ptr<OpenListFactory>>("sublists")) {
-}
-
 AlternationOpenListFactory::AlternationOpenListFactory(vector<shared_ptr<OpenListFactory>> open_list_factories,
                                                        int boost_amount)
     : boost_amount(boost_amount), size(0), open_list_factories(open_list_factories) {
@@ -87,7 +83,6 @@ void AlternationOpenList<Entry>::do_insertion(
     for (const auto &sublist : open_lists)
         sublist->insert(eval_context, entry);
 }
-
 
 template<class Entry>
 Entry AlternationOpenList<Entry>::remove_min() {

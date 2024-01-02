@@ -19,7 +19,6 @@ class CombiningEvaluator : public Evaluator {
 protected:
     virtual int combine_values(const std::vector<int> &values) = 0;
 public:
-    explicit CombiningEvaluator(const plugins::Options &opts);
     explicit CombiningEvaluator(
         std::vector<std::shared_ptr<Evaluator>> subevaluators,
         const std::string &name,

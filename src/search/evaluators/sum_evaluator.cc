@@ -8,10 +8,6 @@
 using namespace std;
 
 namespace sum_evaluator {
-SumEvaluator::SumEvaluator(const plugins::Options &opts)
-    : CombiningEvaluator(opts) {
-}
-
 
 SumEvaluator::SumEvaluator(
     vector<shared_ptr<Evaluator>> subevaluators,

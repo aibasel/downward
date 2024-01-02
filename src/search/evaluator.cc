@@ -8,17 +8,6 @@
 
 using namespace std;
 
-
-Evaluator::Evaluator(const plugins::Options &opts,
-                     bool use_for_reporting_minima,
-                     bool use_for_boosting,
-                     bool use_for_counting_evaluations)
-    : use_for_reporting_minima(use_for_reporting_minima),
-      use_for_boosting(use_for_boosting),
-      use_for_counting_evaluations(use_for_counting_evaluations),
-      log(utils::get_log_from_options(opts)) {
-}
-
 Evaluator::Evaluator(const string &name,
                      utils::Verbosity verbosity,
                      bool use_for_reporting_minima,
@@ -28,7 +17,7 @@ Evaluator::Evaluator(const string &name,
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
       name(name),
-      log(utils::get_log_from_verbosity(verbosity)) {
+      log(utils::get_log(verbosity)) {
 }
 
 bool Evaluator::dead_ends_are_reliable() const {

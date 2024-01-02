@@ -30,10 +30,7 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit BestFirstOpenList(const plugins::Options &opts);
-    explicit BestFirstOpenList(bool pref_only, std::shared_ptr<Evaluator> evaluator);
-
-    BestFirstOpenList(const std::shared_ptr<Evaluator> &eval, bool preferred_only);
+    explicit BestFirstOpenList(const std::shared_ptr<Evaluator> &eval, bool preferred_only);
     virtual ~BestFirstOpenList() override = default;
 
     virtual Entry remove_min() override;
@@ -46,17 +43,9 @@ public:
         EvaluationContext &eval_context) const override;
 };
 
-template<class Entry>
-BestFirstOpenList<Entry>::BestFirstOpenList(const plugins::Options &opts)
-    : OpenList<Entry>(opts.get<bool>("pref_only")),
-      size(0),
-      evaluator(opts.get<std::shared_ptr<Evaluator>>("eval")) {
-}
-
-
 
 template<class Entry>
-BestFirstOpenList<Entry>::BestFirstOpenList(bool pref_only, std::shared_ptr<Evaluator> evaluator)
+BestFirstOpenList<Entry>::BestFirstOpenList(const std::shared_ptr<Evaluator> &evaluator, bool pref_only)
     : OpenList<Entry>(pref_only),
       size(0),
       evaluator(evaluator) {
@@ -64,12 +53,10 @@ BestFirstOpenList<Entry>::BestFirstOpenList(bool pref_only, std::shared_ptr<Eval
 
 
 class BestFirstOpenListFactory : public OpenListFactory {
-    plugins::Options options;
     bool pref_only;
     int size;
     std::shared_ptr<Evaluator> evaluator;
 public:
-    explicit BestFirstOpenListFactory(const plugins::Options &options);
     explicit BestFirstOpenListFactory(std::shared_ptr<Evaluator> evaluator, bool pref_only);
     virtual ~BestFirstOpenListFactory() override = default;
 

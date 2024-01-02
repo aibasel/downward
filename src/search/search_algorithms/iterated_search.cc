@@ -285,6 +285,5 @@ public:
     }
 };
 
-
 static plugins::FeaturePlugin<TaskIndependentIteratedSearchFeature> _plugin;
 }

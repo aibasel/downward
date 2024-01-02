@@ -20,7 +20,6 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit AlternationOpenList(const plugins::Options &opts);
     explicit AlternationOpenList(
         int boost_amount,
         std::vector<std::shared_ptr<OpenListFactory>> open_list_factories);
@@ -37,19 +36,6 @@ public:
         EvaluationContext &eval_context) const override;
 };
 
-template<class Entry>
-AlternationOpenList<Entry>::AlternationOpenList(const plugins::Options &opts)
-    : boost_amount(opts.get<int>("boost")),
-      size(0) {
-    std::vector<std::shared_ptr<OpenListFactory>> open_list_factories(
-        opts.get_list<std::shared_ptr<OpenListFactory>>("sublists"));
-    open_lists.reserve(open_list_factories.size());
-    for (const auto &factory : open_list_factories)
-        open_lists.push_back(factory->create_open_list<Entry>());
-
-    priorities.resize(open_lists.size(), 0);
-}
-
 
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(int boost_amount,
@@ -64,12 +50,10 @@ AlternationOpenList<Entry>::AlternationOpenList(int boost_amount,
 
 
 class AlternationOpenListFactory : public OpenListFactory {
-    plugins::Options options;
     int boost_amount;
     int size;
     std::vector<std::shared_ptr<OpenListFactory>> open_list_factories;
 public:
-    explicit AlternationOpenListFactory(const plugins::Options &opts);
     explicit AlternationOpenListFactory(std::vector<std::shared_ptr<OpenListFactory>> open_list_factories,
                                         int boost_amount);
 

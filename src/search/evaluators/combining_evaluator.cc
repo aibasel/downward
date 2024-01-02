@@ -9,14 +9,6 @@
 using namespace std;
 
 namespace combining_evaluator {
-CombiningEvaluator::CombiningEvaluator(const plugins::Options &opts)
-    : Evaluator(opts),
-      subevaluators(opts.get_list<shared_ptr<Evaluator>>("evals")) {
-    all_dead_ends_are_reliable = true;
-    for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
-        if (!subevaluator->dead_ends_are_reliable())
-            all_dead_ends_are_reliable = false;
-}
 
 CombiningEvaluator::CombiningEvaluator(
     vector<shared_ptr<Evaluator>> subevaluators,

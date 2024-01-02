@@ -53,7 +53,7 @@ SearchAlgorithm::SearchAlgorithm(
       task(_task),
       task_proxy(*task),
       name(name),
-      log(utils::get_log_from_verbosity(verbosity)),
+      log(utils::get_log(verbosity)),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
       search_space(state_registry, log),
@@ -68,7 +68,6 @@ SearchAlgorithm::SearchAlgorithm(
     }
     task_properties::print_variable_statistics(task_proxy);
 }
-
 
 SearchAlgorithm::~SearchAlgorithm() {
 }
@@ -206,8 +205,6 @@ TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(OperatorCost cost
                                                                const string &name,
                                                                utils::Verbosity verbosity)
     : TaskIndependentComponent(name, verbosity),
-      status(IN_PROGRESS),
-      solution_found(false),
       bound(bound),
       cost_type(cost_type),
       max_time(max_time) {

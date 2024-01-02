@@ -7,10 +7,6 @@
 using namespace std;
 
 namespace g_evaluator {
-GEvaluator::GEvaluator(const plugins::Options &opts)
-    : Evaluator(opts) {
-}
-
 GEvaluator::GEvaluator(const string &name,
                        utils::Verbosity verbosity)
     : Evaluator(name, verbosity, false, false, false) {
