@@ -20,7 +20,7 @@
 using namespace std;
 using utils::ExitCode;
 
-class PruningMethod;
+class TaskIndependentPruningMethod;
 
 static successor_generator::SuccessorGenerator &get_successor_generator(
     const TaskProxy &task_proxy, utils::LogProxy &log) {
@@ -132,7 +132,7 @@ int SearchAlgorithm::get_adjusted_cost(const OperatorProxy &op) const {
    Method doesn't belong here because it's only useful for certain derived classes.
    TODO: Figure out where it belongs and move it there. */
 void SearchAlgorithm::add_pruning_option(plugins::Feature &feature) {
-    feature.add_option<shared_ptr<PruningMethod>>(
+    feature.add_option<shared_ptr<TaskIndependentPruningMethod>>(
         "pruning",
         "Pruning methods can prune or reorder the set of applicable operators in "
         "each state and thereby influence the number and order of successor states "

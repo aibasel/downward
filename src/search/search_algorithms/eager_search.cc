@@ -336,7 +336,7 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(
     shared_ptr<TaskIndependentEvaluator> f_evaluator,
     shared_ptr<TaskIndependentEvaluator> lazy_evaluator,
     vector<shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
-    shared_ptr<PruningMethod> pruning_method,
+    shared_ptr<TaskIndependentPruningMethod> pruning_method,
     OperatorCost cost_type,
     int bound,
     double max_time,
@@ -404,7 +404,8 @@ std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractT
         lazy_evaluator ? lazy_evaluator->get_task_specific(
             task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
         td_evaluators,
-        pruning_method,
+        pruning_method->get_task_specific(
+                task, component_map, depth >= 0 ? depth + 1 : depth),
         cost_type,
         bound,
         max_time,

@@ -11,6 +11,7 @@
 class Evaluator;
 class TaskIndependentEvaluator;
 class PruningMethod;
+class TaskIndependentPruningMethod;
 
 namespace plugins {
 class Feature;
@@ -73,7 +74,7 @@ private:
     std::vector<std::shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators;
     std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator;
 
-    std::shared_ptr<PruningMethod> pruning_method;
+    std::shared_ptr<TaskIndependentPruningMethod> pruning_method;
 protected:
     std::string get_product_name() const override {return "EagerSearch";}
 public:
@@ -83,7 +84,7 @@ public:
         std::shared_ptr<TaskIndependentEvaluator> f_evaluator,
         std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator,
         std::vector<std::shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
-        std::shared_ptr<PruningMethod> pruning_method,
+        std::shared_ptr<TaskIndependentPruningMethod> pruning_method,
         OperatorCost cost_type,
         int bound,
         double max_time,
