@@ -22,7 +22,7 @@ class Options;
 class Feature;
 }
 
-class PruningMethod : public Component{
+class PruningMethod : public Component {
     utils::Timer timer;
     friend class limited_pruning::LimitedPruning;
 
@@ -42,11 +42,10 @@ public:
 };
 
 class TaskIndependentPruningMethod : public TaskIndependentComponent {
-
 public:
     TaskIndependentPruningMethod(
-                                   const std::string &name,
-                                   utils::Verbosity verbosity);
+        const std::string &name,
+        utils::Verbosity verbosity);
     virtual ~TaskIndependentPruningMethod();
 
     virtual std::shared_ptr<PruningMethod>

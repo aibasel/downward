@@ -8,7 +8,6 @@
 using namespace std;
 
 namespace weighted_evaluator {
-
 WeightedEvaluator::WeightedEvaluator(
     shared_ptr<Evaluator> evaluator,
     int weight,

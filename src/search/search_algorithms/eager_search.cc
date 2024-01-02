@@ -405,7 +405,7 @@ std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractT
             task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
         td_evaluators,
         pruning_method->get_task_specific(
-                task, component_map, depth >= 0 ? depth + 1 : depth),
+            task, component_map, depth >= 0 ? depth + 1 : depth),
         cost_type,
         bound,
         max_time,

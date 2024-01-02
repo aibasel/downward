@@ -8,7 +8,6 @@
 using namespace std;
 
 namespace sum_evaluator {
-
 SumEvaluator::SumEvaluator(
     vector<shared_ptr<Evaluator>> subevaluators,
     const string &name,
