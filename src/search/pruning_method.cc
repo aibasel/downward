@@ -76,7 +76,7 @@ void add_pruning_options_to_feature(plugins::Feature &feature, const string &nam
         "normal verbosity for running experiments.");
 }
 
-static class PruningMethodCategoryPlugin : public plugins::TypedCategoryPlugin<PruningMethod> {
+static class PruningMethodCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentPruningMethod> {
 public:
     PruningMethodCategoryPlugin() : TypedCategoryPlugin("PruningMethod") {
         document_synopsis("Prune or reorder applicable operators.");
