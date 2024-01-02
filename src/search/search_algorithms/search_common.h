@@ -55,9 +55,9 @@ extern std::shared_ptr<TaskIndependentOpenListFactory> create_task_independent_s
   directly.
 */
 extern std::shared_ptr<TaskIndependentOpenListFactory> create_task_independent_greedy_open_list_factory(
-            const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &evals,
-            const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &preferred_evaluators,
-            int boost);
+    const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &evals,
+    const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &preferred_evaluators,
+    int boost);
 
 /*
   Create open list factory for the lazy_wastar plugin.
@@ -71,12 +71,12 @@ extern std::shared_ptr<TaskIndependentOpenListFactory> create_task_independent_g
   on g + w * h rather than using h directly.
 */
 extern std::shared_ptr<TaskIndependentOpenListFactory> create_task_independent_wastar_open_list_factory(
-            const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &evals,
-            const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &preferred,
-            int boost,
-            int weight,
-            const std::string &name,
-            const utils::Verbosity &verbosity);
+    const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &evals,
+    const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &preferred,
+    int boost,
+    int weight,
+    const std::string &name,
+    const utils::Verbosity &verbosity);
 
 /*
   Create open list factory and f_evaluator (used for displaying progress

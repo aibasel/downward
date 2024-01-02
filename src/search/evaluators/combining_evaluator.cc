@@ -9,7 +9,6 @@
 using namespace std;
 
 namespace combining_evaluator {
-
 CombiningEvaluator::CombiningEvaluator(
     vector<shared_ptr<Evaluator>> subevaluators,
     const string &name,

@@ -59,7 +59,7 @@ void PruningMethod::print_statistics() const {
 }
 
 TaskIndependentPruningMethod::TaskIndependentPruningMethod(const string &name, utils::Verbosity verbosity)
-        : TaskIndependentComponent(name, verbosity) {
+    : TaskIndependentComponent(name, verbosity) {
 }
 
 TaskIndependentPruningMethod::~TaskIndependentPruningMethod() {
