@@ -29,7 +29,7 @@ protected:
 public:
     explicit TaskIndependentLandmarkCutHeuristic(const std::string &name,
                                                  utils::Verbosity verbosity,
-                                                 std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
+                                                 const std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
                                                  bool cache_evaluator_values);
 
     virtual ~TaskIndependentLandmarkCutHeuristic()  override;

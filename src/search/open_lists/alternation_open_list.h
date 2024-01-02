@@ -20,9 +20,8 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit AlternationOpenList(
-        int boost_amount,
-        std::vector<std::shared_ptr<OpenListFactory>> open_list_factories);
+    explicit AlternationOpenList(std::vector<std::shared_ptr<OpenListFactory>> open_list_factories,
+                                 int boost_amount);
     virtual ~AlternationOpenList() override = default;
 
     virtual Entry remove_min() override;
@@ -38,8 +37,8 @@ public:
 
 
 template<class Entry>
-AlternationOpenList<Entry>::AlternationOpenList(int boost_amount,
-                                                std::vector<std::shared_ptr<OpenListFactory>> open_list_factories)
+AlternationOpenList<Entry>::AlternationOpenList(std::vector<std::shared_ptr<OpenListFactory>> open_list_factories,
+                                                int boost_amount)
     : boost_amount(boost_amount), size(0) {
     open_lists.reserve(open_list_factories.size());
     for (const auto &factory : open_list_factories)

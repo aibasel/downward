@@ -42,7 +42,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(
     const string &name,
     utils::Verbosity verbosity,
-    shared_ptr<TaskIndependentAbstractTask> task_transformation,
+    const shared_ptr<TaskIndependentAbstractTask> task_transformation,
     bool cache_evaluator_values)
     : TaskIndependentHeuristic(name, verbosity, task_transformation, cache_evaluator_values) {
 }
