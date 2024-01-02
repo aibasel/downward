@@ -9,9 +9,10 @@
 
 using namespace std;
 
+// TODO issue559 make this a component, add TI_PruningMethod.
 PruningMethod::PruningMethod(const plugins::Options &opts)
     : timer(false),
-      log(utils::get_log_from_options(opts)),
+      log(utils::get_log(opts.get<utils::Verbosity>("verbosity"))),
       task(nullptr) {
 }
 

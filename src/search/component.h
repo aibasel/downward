@@ -20,7 +20,7 @@ protected:
 public:
     std::string get_name() {return name;}
     explicit TaskIndependentComponent(const std::string &name, utils::Verbosity verbosity)
-        : name(name), verbosity(verbosity), log(utils::get_log_from_verbosity(verbosity)) {}
+        : name(name), verbosity(verbosity), log(utils::get_log(verbosity)) {}
     virtual ~TaskIndependentComponent() = default;
 };
 

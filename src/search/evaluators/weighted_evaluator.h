@@ -15,7 +15,6 @@ class WeightedEvaluator : public Evaluator {
     int weight;
 
 public:
-    explicit WeightedEvaluator(const plugins::Options &opts);
     explicit WeightedEvaluator(
         std::shared_ptr<Evaluator> evaluator,
         int weight,

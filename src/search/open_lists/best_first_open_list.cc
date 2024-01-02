@@ -63,25 +63,19 @@ bool BestFirstOpenList<Entry>::is_reliable_dead_end(
     return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
 }
 
-BestFirstOpenListFactory::BestFirstOpenListFactory(
-    const plugins::Options &options)
-    : options(options) {
-}
-
 BestFirstOpenListFactory::BestFirstOpenListFactory(shared_ptr<Evaluator> evaluator, bool pref_only)
     : pref_only(pref_only), size(0),
       evaluator(evaluator) {
 }
 
-
 unique_ptr<StateOpenList>
 BestFirstOpenListFactory::create_state_open_list() {
-    return make_unique<BestFirstOpenList<StateOpenListEntry>>(options);
+    return make_unique<BestFirstOpenList<StateOpenListEntry>>(evaluator, pref_only);
 }
 
 unique_ptr<EdgeOpenList>
 BestFirstOpenListFactory::create_edge_open_list() {
-    return make_unique<BestFirstOpenList<EdgeOpenListEntry>>(options);
+    return make_unique<BestFirstOpenList<EdgeOpenListEntry>>(evaluator, pref_only);
 }
 
 

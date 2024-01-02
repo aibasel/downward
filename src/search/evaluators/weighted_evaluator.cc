@@ -8,11 +8,6 @@
 using namespace std;
 
 namespace weighted_evaluator {
-WeightedEvaluator::WeightedEvaluator(const plugins::Options &opts)
-    : Evaluator(opts),
-      evaluator(opts.get<shared_ptr<Evaluator>>("eval")),
-      weight(opts.get<int>("weight")) {
-}
 
 WeightedEvaluator::WeightedEvaluator(
     shared_ptr<Evaluator> evaluator,

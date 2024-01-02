@@ -13,8 +13,8 @@ using namespace std;
 
 namespace utils {
 /*
-  NOTE: When adding more options to Log, make sure to adapt the if block in
-  get_log_from_options below to test for *all* default values used for
+  NOTE: We assume 'verbosity' as the only option for Log, make sure to adapt
+  get_log below to test for *all* default values used for
   global_log here. Also add the options to dump_options().
 */
 
@@ -23,25 +23,18 @@ static shared_ptr<Log> global_log = make_shared<Log>(Verbosity::NORMAL);
 LogProxy g_log(global_log);
 
 void add_log_options_to_feature(plugins::Feature &feature, const string &name) {
-    feature.add_option<string>("name",
-                               "Option to specify the components name.",
-                               "\"" + name + "\"");
+    feature.add_option<string>(
+            "name",
+            "Option to specify the components name.",
+            "\"" + name + "\"");
     feature.add_option<Verbosity>(
         "verbosity",
         "Option to specify the verbosity level.",
         "normal");
 }
 
-LogProxy get_log_from_options(const plugins::Options &options) {
-    /* NOTE: We return (a proxy to) the global log if all options match the
-       default values of the global log. */
-    if (options.get<Verbosity>("verbosity") == Verbosity::NORMAL) {
-        return LogProxy(global_log);
-    }
-    return LogProxy(make_shared<Log>(options.get<Verbosity>("verbosity")));
-}
 
-LogProxy get_log_from_verbosity(const Verbosity &verbosity) {
+LogProxy get_log(const Verbosity &verbosity) {
     /* NOTE: We return (a proxy to) the global log if all options match the
        default values of the global log. */
     if (verbosity == Verbosity::NORMAL) {
@@ -51,9 +44,7 @@ LogProxy get_log_from_verbosity(const Verbosity &verbosity) {
 }
 
 LogProxy get_silent_log() {
-    plugins::Options opts;
-    opts.set<utils::Verbosity>("verbosity", utils::Verbosity::SILENT);
-    return utils::get_log_from_options(opts);
+    return LogProxy(make_shared<Log>(utils::Verbosity::SILENT));
 }
 
 ContextError::ContextError(const string &msg)

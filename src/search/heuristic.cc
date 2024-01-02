@@ -23,7 +23,6 @@ Heuristic::Heuristic(const string &name,
       task(task), task_proxy(*task) {
 }
 
-
 Heuristic::~Heuristic() {
 }
 

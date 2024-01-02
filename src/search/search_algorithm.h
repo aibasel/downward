@@ -91,15 +91,10 @@ public:
 
 class TaskIndependentSearchAlgorithm : public TaskIndependentComponent {
     std::string description;
-    SearchStatus status;
-    bool solution_found;
-    Plan plan;
 protected:
     PlanManager plan_manager;
-    SearchProgress search_progress;
     int bound;
     OperatorCost cost_type;
-    bool is_unit_cost;
     double max_time;
 
 public:
