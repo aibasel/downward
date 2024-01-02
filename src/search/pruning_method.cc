@@ -9,10 +9,9 @@
 
 using namespace std;
 
-// TODO issue559 make this a component, add TI_PruningMethod.
-PruningMethod::PruningMethod(const plugins::Options &opts)
+PruningMethod::PruningMethod(const utils::Verbosity verbosity)
     : timer(false),
-      log(utils::get_log(opts.get<utils::Verbosity>("verbosity"))),
+      log(utils::get_log(verbosity)),
       task(nullptr) {
 }
 
@@ -57,6 +56,13 @@ void PruningMethod::print_statistics() const {
             log << "Time for pruning operators: " << timer << endl;
         }
     }
+}
+
+TaskIndependentPruningMethod::TaskIndependentPruningMethod(const string &name, utils::Verbosity verbosity)
+        : TaskIndependentComponent(name, verbosity) {
+}
+
+TaskIndependentPruningMethod::~TaskIndependentPruningMethod() {
 }
 
 void add_pruning_options_to_feature(plugins::Feature &feature, const string &name) {

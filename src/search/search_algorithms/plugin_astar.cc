@@ -52,7 +52,7 @@ public:
             temp.second,
             opts.get<shared_ptr<TaskIndependentEvaluator>>("lazy_evaluator", nullptr),
             vector<shared_ptr<TaskIndependentEvaluator>>(),
-            opts.get<shared_ptr<PruningMethod>>("pruning"),
+            opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning"),
             opts.get<OperatorCost>("cost_type"),
             opts.get<int>("bound"),
             opts.get<double>("max_time"),

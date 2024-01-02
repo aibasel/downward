@@ -1,6 +1,7 @@
 #ifndef PRUNING_METHOD_H
 #define PRUNING_METHOD_H
 
+#include "component.h"
 #include "operator_id.h"
 
 #include "utils/logging.h"
@@ -21,7 +22,7 @@ class Options;
 class Feature;
 }
 
-class PruningMethod {
+class PruningMethod : public Component{
     utils::Timer timer;
     friend class limited_pruning::LimitedPruning;
 
@@ -33,11 +34,24 @@ protected:
     long num_successors_before_pruning;
     long num_successors_after_pruning;
 public:
-    explicit PruningMethod(const plugins::Options &opts);
+    explicit PruningMethod(utils::Verbosity verbosity);
     virtual ~PruningMethod() = default;
     virtual void initialize(const std::shared_ptr<AbstractTask> &task);
     void prune_operators(const State &state, std::vector<OperatorID> &op_ids);
     virtual void print_statistics() const;
+};
+
+class TaskIndependentPruningMethod : public TaskIndependentComponent {
+
+public:
+    TaskIndependentPruningMethod(
+                                   const std::string &name,
+                                   utils::Verbosity verbosity);
+    virtual ~TaskIndependentPruningMethod();
+
+    virtual std::shared_ptr<PruningMethod>
+    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
+                      int depth = -1) const = 0;
 };
 
 extern void add_pruning_options_to_feature(plugins::Feature &feature, const std::string &name);

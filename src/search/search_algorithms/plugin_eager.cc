@@ -37,7 +37,7 @@ public:
             opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
             nullptr,
             opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
-            opts.get<shared_ptr<PruningMethod>>("pruning"),
+            opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning"),
             opts.get<OperatorCost>("cost_type"),
             opts.get<int>("bound"),
             opts.get<double>("max_time"),
