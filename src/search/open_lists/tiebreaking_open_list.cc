@@ -24,12 +24,12 @@ TieBreakingOpenListFactory::TieBreakingOpenListFactory(
 
 unique_ptr<StateOpenList>
 TieBreakingOpenListFactory::create_state_open_list() {
-    return make_unique<TieBreakingOpenList<StateOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
+    return make_unique<TieBreakingOpenList<StateOpenListEntry>>(evaluators, pref_only, allow_unsafe_pruning);
 }
 
 unique_ptr<EdgeOpenList>
 TieBreakingOpenListFactory::create_edge_open_list() {
-    return make_unique<TieBreakingOpenList<EdgeOpenListEntry>>(pref_only, evaluators, allow_unsafe_pruning);
+    return make_unique<TieBreakingOpenList<EdgeOpenListEntry>>(evaluators, pref_only, allow_unsafe_pruning);
 }
 
 

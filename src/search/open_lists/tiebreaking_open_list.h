@@ -32,10 +32,9 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit TieBreakingOpenList(
-        bool pref_only,
-        std::vector<std::shared_ptr<Evaluator>> evaluators,
-        bool allow_unsafe_pruning);
+    explicit TieBreakingOpenList(std::vector<std::shared_ptr<Evaluator>> evaluators,
+                                 bool pref_only,
+                                 bool allow_unsafe_pruning);
     virtual ~TieBreakingOpenList() override = default;
 
     virtual Entry remove_min() override;
@@ -50,8 +49,8 @@ public:
 
 
 template<class Entry>
-TieBreakingOpenList<Entry>::TieBreakingOpenList(bool pref_only,
-                                                std::vector<std::shared_ptr<Evaluator>> evaluators,
+TieBreakingOpenList<Entry>::TieBreakingOpenList(std::vector<std::shared_ptr<Evaluator>> evaluators,
+                                                bool pref_only,
                                                 bool allow_unsafe_pruning)
     : OpenList<Entry>(pref_only),
       size(0), evaluators(evaluators),

@@ -40,7 +40,7 @@ int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
 TaskIndependentBlindSearchHeuristic::TaskIndependentBlindSearchHeuristic(
     const string &name,
     utils::Verbosity verbosity,
-    shared_ptr<TaskIndependentAbstractTask> task_transformation,
+    const shared_ptr<TaskIndependentAbstractTask> task_transformation,
     bool cache_evaluator_values)
     : TaskIndependentHeuristic(name, verbosity, task_transformation, cache_evaluator_values) {
 }

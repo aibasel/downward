@@ -24,7 +24,7 @@ protected:
 public:
     explicit TaskIndependentBlindSearchHeuristic(const std::string &name,
                                                  utils::Verbosity verbosity,
-                                                 std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
+                                                 const std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
                                                  bool cache_evaluator_values);
 
     virtual ~TaskIndependentBlindSearchHeuristic() override;
