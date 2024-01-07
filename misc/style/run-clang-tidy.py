@@ -14,6 +14,12 @@ SRC_DIR = os.path.join(REPO, "src")
 import utils
 
 
+IGNORES = [
+    "'cplex.h' file not found [clang-diagnostic-error]",
+    "'soplex.h' file not found [clang-diagnostic-error]",
+]
+
+
 def check_search_code_with_clang_tidy():
     # clang-tidy needs the CMake files.
     build_dir = os.path.join(REPO, "builds", "clang-tidy")
@@ -85,22 +91,26 @@ def check_search_code_with_clang_tidy():
         "-checks=-*," + ",".join(checks)]
     print("Running clang-tidy: " + " ".join(pipes.quote(x) for x in cmd))
     print()
+    # Don't check returncode here because clang-tidy exits with 1 if it finds any issues.
     try:
-        output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT).decode("utf-8")
-    except subprocess.CalledProcessError as err:
-        print("Failed to run clang-tidy-12. Is it on the PATH?")
-        print("Output:", err.stdout)
-        return False
+        p = subprocess.run(cmd, cwd=DIR, text=True, capture_output=True, check=False)
+    except FileNotFoundError:
+        sys.exit(f"run-clang-tidy-12 not found. Is it on the PATH?")
+    output = f"{p.stdout}\n{p.stderr}"
     errors = re.findall(r"^(.*:\d+:\d+: .*(?:warning|error): .*)$", output, flags=re.M)
-    for error in errors:
-        print(error)
-    if errors:
+    filtered_errors = [error for error in errors if not any(ignore in error for ignore in IGNORES)]
+
+    if filtered_errors:
+        print("Errors and warnings:")
+        for error in filtered_errors:
+            print(error)
         fix_cmd = cmd + [
             "-clang-apply-replacements-binary=clang-apply-replacements-12", "-fix"]
-        print()
-        print("You may be able to fix these issues with the following command: " +
+        print("\nYou may be able to fix some of these issues with the following command:\n" +
             " ".join(pipes.quote(x) for x in fix_cmd))
         sys.exit(1)
+    elif not errors and p.returncode != 0:
+        sys.exit(p.stderr)
 
 
 check_search_code_with_clang_tidy()
