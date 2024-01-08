@@ -14,6 +14,7 @@ SRC_DIR = os.path.join(REPO, "src")
 import utils
 
 
+LIGHTWEIGHT_TYPES = ["StateID"]
 IGNORES = [
     "'cplex.h' file not found [clang-diagnostic-error]",
     "'soplex.h' file not found [clang-diagnostic-error]",
@@ -98,9 +99,9 @@ def check_search_code_with_clang_tidy():
         "readability-static-definition-in-anonymous-namespace",
         "readability-uniqueptr-delete-release",
         ]
-    config = """{CheckOptions: [\
-        {key: performance-unnecessary-value-param.AllowedTypes, value: "StateID"},\
-    ]}""".replace("    ", "")
+    config = f"""{{CheckOptions: [\
+        {{key: performance-unnecessary-value-param.AllowedTypes, value: "{';'.join(LIGHTWEIGHT_TYPES)}"}},\
+    ]}}""".replace("    ", "")
     cmd = [
         "run-clang-tidy-12",
         "-quiet",

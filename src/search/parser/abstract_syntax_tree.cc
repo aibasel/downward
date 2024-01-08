@@ -403,8 +403,8 @@ const plugins::Type &ListNode::get_type(DecorateContext &context) const {
     }
 }
 
-LiteralNode::LiteralNode(Token value)
-    : value(move(value)) {
+LiteralNode::LiteralNode(const Token &value)
+    : value(value) {
 }
 
 DecoratedASTNodePtr LiteralNode::decorate(DecorateContext &context) const {
