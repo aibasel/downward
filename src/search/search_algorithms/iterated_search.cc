@@ -63,7 +63,7 @@ SearchStatus IteratedSearch::step() {
     if (!current_search) {
         return found_solution() ? SOLVED : FAILED;
     }
-    if (pass_bound) {
+    if (pass_bound && best_bound < current_search->get_bound()) {
         current_search->set_bound(best_bound);
     }
     ++phase;
