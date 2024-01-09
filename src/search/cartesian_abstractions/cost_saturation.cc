@@ -190,7 +190,7 @@ bool CostSaturation::state_is_dead_end(const State &state) const {
 void CostSaturation::build_abstractions(
     const vector<shared_ptr<AbstractTask>> &subtasks,
     const utils::CountdownTimer &timer,
-    function<bool()> should_abort) {
+    const function<bool()> &should_abort) {
     int rem_subtasks = subtasks.size();
     for (shared_ptr<AbstractTask> subtask : subtasks) {
         subtask = get_remaining_costs_task(subtask);

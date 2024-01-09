@@ -103,8 +103,8 @@ public:
 
       Returns true iff state is detected as a dead end.
     */
-    bool compute_landmarks(const State &state, CostCallback cost_callback,
-                           LandmarkCallback landmark_callback);
+    bool compute_landmarks(const State &state, const CostCallback &cost_callback,
+                           const LandmarkCallback &landmark_callback);
 };
 
 inline void RelaxedOperator::update_h_max_supporter() {

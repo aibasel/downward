@@ -14,9 +14,11 @@ SRC_DIR = os.path.join(REPO, "src")
 import utils
 
 
+LIGHTWEIGHT_TYPES = ["StateID"]
 IGNORES = [
     "'cplex.h' file not found [clang-diagnostic-error]",
     "'soplex.h' file not found [clang-diagnostic-error]",
+    "local copy 'copied_key' of the variable 'key' is never modified; consider avoiding the copy [performance-unnecessary-copy-initialization]",
 ]
 
 
@@ -47,15 +49,29 @@ def check_search_code_with_clang_tidy():
     # categories instead of deleting them to see which additional checks
     # we could activate.
     checks = [
+        "bugprone-use-after-move",
+
+        # "performance-avoid-endl",
+        # "performance-enum-size",
+        "performance-faster-string-find",
+        "performance-for-range-copy",
+        "performance-implicit-conversion-in-loop",
+        "performance-inefficient-algorithm",
+        # "performance-inefficient-string-concatenation",
+        "performance-inefficient-vector-operation",
         # Enable with CheckTriviallyCopyableMove=0 when we require
         # clang-tidy >= 6.0 (see issue856).
-        # "misc-move-const-arg",
-        "misc-move-constructor-init",
-        "misc-use-after-move",
-
-        "performance-for-range-copy",
-        "performance-implicit-cast-in-loop",
-        "performance-inefficient-vector-operation",
+        # "performance-move-const-arg",
+        #"performance-move-constructor-init",
+        "performance-no-automatic-move",
+        # "performance-no-int-to-ptr",
+        # "performance-noexcept-destructor",
+        # "performance-noexcept-move-constructor",
+        # "performance-noexcept-swap",
+        "performance-trivially-destructible",
+        "performance-type-promotion-in-math-fn",
+        "performance-unnecessary-copy-initialization",
+        "performance-unnecessary-value-param",
 
         "readability-avoid-const-params-in-decls",
         # "readability-braces-around-statements",
@@ -83,12 +99,17 @@ def check_search_code_with_clang_tidy():
         "readability-static-definition-in-anonymous-namespace",
         "readability-uniqueptr-delete-release",
         ]
+    config = f"""{{CheckOptions: [\
+        {{key: performance-unnecessary-value-param.AllowedTypes, value: "{';'.join(LIGHTWEIGHT_TYPES)}"}},\
+    ]}}""".replace("    ", "")
     cmd = [
         "run-clang-tidy-12",
         "-quiet",
         "-p", build_dir,
         "-clang-tidy-binary=clang-tidy-12",
-        "-checks=-*," + ",".join(checks)]
+        "-checks=-*," + ",".join(checks),
+        f"-config={config}",
+    ]
     print("Running clang-tidy: " + " ".join(pipes.quote(x) for x in cmd))
     print()
     # Don't check returncode here because clang-tidy exits with 1 if it finds any issues.

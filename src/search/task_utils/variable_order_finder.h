@@ -42,7 +42,7 @@ public:
     VariableOrderFinder(
         const TaskProxy &task_proxy,
         VariableOrderType variable_order_type,
-        std::shared_ptr<utils::RandomNumberGenerator> rng = nullptr);
+        const std::shared_ptr<utils::RandomNumberGenerator> &rng = nullptr);
     ~VariableOrderFinder() = default;
     bool done() const;
     int next();

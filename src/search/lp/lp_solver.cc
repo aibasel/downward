@@ -107,7 +107,7 @@ const string &LinearProgram::get_objective_name() const {
     return objective_name;
 }
 
-void LinearProgram::set_objective_name(string name) {
+void LinearProgram::set_objective_name(const string &name) {
     objective_name = name;
 }
 
