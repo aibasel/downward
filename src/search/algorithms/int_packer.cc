@@ -1,5 +1,6 @@
 #include "int_packer.h"
 
+#include <algorithm>
 #include <cassert>
 
 using namespace std;
@@ -83,6 +84,8 @@ void IntPacker::set(Bin *buffer, int var, int value) const {
 
 void IntPacker::pack_bins(const vector<int> &ranges) {
     assert(var_infos.empty());
+    assert(all_of(ranges.begin(), ranges.end(),
+                  [](int range) {return range > 1;}));
 
     int num_vars = ranges.size();
     var_infos.resize(num_vars);

@@ -45,6 +45,10 @@ public:
         return !(*this == other);
     }
 
+    bool operator<(const OperatorID &other) const {
+        return index < other.index;
+    }
+
     int hash() const {
         return index;
     }

@@ -28,6 +28,10 @@ public:
         elements.push_back(element);
     }
 
+    void push_back(T &&element) {
+        elements.push_back(std::move(element));
+    }
+
     T &operator[](int index) {
         return elements[index];
     }
