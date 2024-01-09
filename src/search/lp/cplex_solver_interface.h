@@ -11,9 +11,8 @@
 #include <cplex.h>
 
 namespace lp {
-
 template<typename T>
-static T* to_cplex_array(std::vector<T> &v) {
+static T *to_cplex_array(std::vector<T> &v) {
     /*
       CPLEX expects a non-nullptr even for empty arrays but the C++ standard
       does not guarantee any particular value for data for empty vectors (see
