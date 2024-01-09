@@ -62,7 +62,7 @@ def check_search_code_with_clang_tidy():
         # Enable with CheckTriviallyCopyableMove=0 when we require
         # clang-tidy >= 6.0 (see issue856).
         # "performance-move-const-arg",
-        #"performance-move-constructor-init",
+        "performance-move-constructor-init",
         "performance-no-automatic-move",
         # "performance-no-int-to-ptr",
         # "performance-noexcept-destructor",
