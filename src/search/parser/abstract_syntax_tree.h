@@ -89,7 +89,7 @@ public:
 class LiteralNode : public ASTNode {
     Token value;
 public:
-    explicit LiteralNode(Token value);
+    explicit LiteralNode(const Token &value);
     DecoratedASTNodePtr decorate(DecorateContext &context) const override;
     void dump(std::string indent) const override;
     const plugins::Type &get_type(DecorateContext &context) const override;
