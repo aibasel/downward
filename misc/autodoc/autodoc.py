@@ -3,7 +3,6 @@
 import argparse
 import logging
 import os
-from os.path import dirname, join
 import re
 import subprocess
 import sys
