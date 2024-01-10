@@ -173,11 +173,9 @@ PerTaskInformation<int_packer::IntPacker> g_state_packers(
         vector<int> variable_ranges;
         variable_ranges.reserve(variables.size());
         for (VariableProxy var : variables) {
-            /* IntPacker expects all variables to have at least a domain size of
-               two. This is not the case for some domain-abstracted tasks. */
-            int domain_size = max(2, var.get_domain_size());
-            variable_ranges.push_back(domain_size);
+            variable_ranges.push_back(var.get_domain_size());
         }
         return utils::make_unique_ptr<int_packer::IntPacker>(variable_ranges);
-    });
+    }
+    );
 }

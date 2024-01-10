@@ -1,6 +1,5 @@
 #include "int_packer.h"
 
-#include <algorithm>
 #include <cassert>
 
 using namespace std;
@@ -24,6 +23,11 @@ static IntPacker::Bin get_bit_mask(int from, int to) {
 }
 
 static int get_bit_size_for_range(int range) {
+    assert(range >= 1);
+    // Domains in domain-abstracted tasks may have size one.
+    if (range == 1) {
+        return 1;
+    }
     int num_bits = 0;
     while ((1U << num_bits) < static_cast<unsigned int>(range))
         ++num_bits;
@@ -84,8 +88,6 @@ void IntPacker::set(Bin *buffer, int var, int value) const {
 
 void IntPacker::pack_bins(const vector<int> &ranges) {
     assert(var_infos.empty());
-    assert(all_of(ranges.begin(), ranges.end(),
-                  [](int range) {return range > 1;}));
 
     int num_vars = ranges.size();
     var_infos.resize(num_vars);
