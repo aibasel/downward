@@ -26,8 +26,6 @@ TITLE_WHITE_LIST = r"[\w\+-]" # match 'word characters' (including '_'), '+', an
 
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 REPO_ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
-print("Root:", REPO_ROOT_DIR)
-print(os.listdir(REPO_ROOT_DIR))
 
 
 def parse_args():
@@ -121,10 +119,6 @@ def insert_wiki_links(text, titles):
     return text
 
 
-def build_planner(build):
-    subprocess.check_call([sys.executable, "build.py", build, "downward"], cwd=REPO_ROOT_DIR)
-
-
 def get_pages_from_planner(build):
     out = subprocess.check_output(
         ["./fast-downward.py", "--build", build, "--search", "--", "--help", "--txt2tags"],
@@ -167,8 +161,6 @@ if __name__ == '__main__':
     if not args.dry_run and PASSWORD is None:
         logging.critical(f"{ENV_VAR_PASSWORD} not set.")
         sys.exit(1)
-    logging.info("building planner...")
-    build_planner(args.build)
     logging.info("getting new pages from planner...")
     new_doc_pages = get_pages_from_planner(args.build)
     if args.dry_run:
