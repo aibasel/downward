@@ -26,6 +26,8 @@ TITLE_WHITE_LIST = r"[\w\+-]" # match 'word characters' (including '_'), '+', an
 
 SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
 REPO_ROOT_DIR = os.path.dirname(os.path.dirname(SCRIPT_DIR))
+print("Root:", REPO_ROOT_DIR)
+print(os.listdir(REPO_ROOT_DIR))
 
 
 def parse_args():
