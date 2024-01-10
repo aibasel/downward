@@ -33,8 +33,8 @@ string format_conference_reference(
     ostringstream ss;
     ss << "\n\n"
        << format_authors(authors) << ".<<BR>>\n"
-       << " [" << t2t_escape(title) << " " << url << "].<<BR>>\n"
-       << " In //" << t2t_escape(conference) << "//";
+       << "[" << t2t_escape(title) << " " << url << "].<<BR>>\n"
+       << "In //" << t2t_escape(conference) << "//";
     if (!pages.empty())
         ss << ", pp. " << t2t_escape(pages);
     ss << ". ";
@@ -51,8 +51,8 @@ string format_journal_reference(
     ostringstream ss;
     ss << "\n\n"
        << format_authors(authors) << ".<<BR>>\n"
-       << " [" << t2t_escape(title) << " " << url << "].<<BR>>\n"
-       << " //" << t2t_escape(journal) << "// "
+       << "[" << t2t_escape(title) << " " << url << "].<<BR>>\n"
+       << "//" << t2t_escape(journal) << "// "
        << t2t_escape(volume) << ":" << t2t_escape(pages) << ". "
        << t2t_escape(year) << ".\n\n\n";
     return ss.str();
