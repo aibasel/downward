@@ -23,6 +23,11 @@ static IntPacker::Bin get_bit_mask(int from, int to) {
 }
 
 static int get_bit_size_for_range(int range) {
+    assert(range >= 1);
+    // Domains in domain-abstracted tasks may have size one.
+    if (range == 1) {
+        return 1;
+    }
     int num_bits = 0;
     while ((1U << num_bits) < static_cast<unsigned int>(range))
         ++num_bits;
