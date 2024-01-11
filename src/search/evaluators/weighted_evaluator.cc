@@ -2,6 +2,7 @@
 
 #include "../evaluation_context.h"
 #include "../plugins/plugin.h"
+#include "../utils/math.h"
 
 #include <sstream>
 
@@ -35,7 +36,7 @@ EvaluationResult WeightedEvaluator::compute_result(
     EvaluationResult result;
     int value = eval_context.get_evaluator_value_or_infinity(evaluator.get());
     if (value != EvaluationResult::INFTY) {
-        // TODO: Check for overflow?
+        assert (utils::is_product_within_limits(value,weight,numeric_limits<int>::min(),numeric_limits<int>::max()));
         value *= weight;
     }
     result.set_evaluator_value(value);
