@@ -114,12 +114,8 @@ def ensure_conjunction_sat(system, *parts):
 def ensure_cover(system, literal, invariant, inv_vars):
     """Modifies the constraint system such that it is only solvable if the
        invariant covers the literal"""
-    a = invariant.get_covering_assignments(inv_vars, literal)
-    assert len(a) == 1
-    # if invariants could contain several parts of one predicate, this
-    # assertion would not be true but the depending code in parts relies on
-    # this assumption.
-    system.add_assignment_disjunction(a)
+    a = invariant.get_covering_assignment(inv_vars, literal)
+    system.add_assignment_disjunction([a])
 
 
 def ensure_inequality(system, literal1, literal2):
@@ -349,11 +345,25 @@ class Invariant:
     def instantiate(self, parameters):
         return [part.instantiate(parameters) for part in self.parts]
 
-    def get_covering_assignments(self, parameters, atom):
+    def get_covering_assignment(self, parameters, atom):
+        """The parameters are the (current names of the) parameters of the
+           invariant, the atom is the one that should be covered.
+           This is only called for atoms with a predicate for which the
+           invariant has a part. It returns a constraint that requires that
+           each parameter of the invariant matches the corresponding argument
+           of the given atom.
+
+           Example: If the atom is P(?a, ?b, ?c), the invariant part for P
+           is {P 0 2 [1]} and the invariant parameters are given by ["?v0",
+           "?v1"] then the invariant part expressed with these parameters would
+           be P(?v0 ?x ?v1) with ?x being the counted variable. The method thus
+           returns the constraint (?v0 = ?a and ?v2 = ?c).
+           """
         part = self.predicate_to_part[atom.predicate]
-        return [part.get_assignment(parameters, atom)]
-        # if there were more parts for the same predicate the list
-        # contained more than one element
+        return part.get_assignment(parameters, atom)
+        # If there were more parts for the same predicate, we would have to
+        # consider more than one assignment (disjunctively).
+        # We assert earlier that this is not the case.
 
     def check_balance(self, balance_checker, enqueue_func):
         # Check balance for this hypothesis.
@@ -407,26 +417,25 @@ class Invariant:
         return False
 
     def minimal_covering_renamings(self, action, add_effect, inv_vars):
-        """computes the minimal renamings of the action parameters such
+        """Computes the minimal renamings of the action parameters such
            that the add effect is covered by the action.
-           Each renaming is an constraint system"""
+           Each renaming is an constraint system."""
 
         # add_effect must be covered
-        assigs = self.get_covering_assignments(inv_vars, add_effect.literal)
+        assignment = self.get_covering_assignment(inv_vars, add_effect.literal)
 
         # renaming of operator parameters must be minimal
         minimal_renamings = []
         params = [p.name for p in action.parameters]
-        for assignment in assigs:
-            system = constraints.ConstraintSystem()
-            system.add_assignment(assignment)
-            mapping = assignment.get_mapping()
-            if len(params) > 1:
-                for (n1, n2) in itertools.combinations(params, 2):
-                    if mapping.get(n1, n1) != mapping.get(n2, n2):
-                        negative_clause = constraints.NegativeClause([(n1, n2)])
-                        system.add_negative_clause(negative_clause)
-            minimal_renamings.append(system)
+        system = constraints.ConstraintSystem()
+        system.add_assignment(assignment)
+        mapping = assignment.get_mapping()
+        if len(params) > 1:
+            for (n1, n2) in itertools.combinations(params, 2):
+                if mapping.get(n1, n1) != mapping.get(n2, n2):
+                    negative_clause = constraints.NegativeClause([(n1, n2)])
+                    system.add_negative_clause(negative_clause)
+        minimal_renamings.append(system)
         return minimal_renamings
 
     def add_effect_unbalanced(self, action, add_effect, del_effects,
