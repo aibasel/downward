@@ -416,53 +416,82 @@ class Invariant:
                 return True
         return False
 
-    def minimal_covering_renamings(self, action, add_effect, inv_vars):
-        """Computes the minimal renamings of the action parameters such
-           that the add effect is covered by the action.
-           Each renaming is an constraint system."""
-
-        # add_effect must be covered
-        assignment = self.get_covering_assignment(inv_vars, add_effect.literal)
-
-        # renaming of operator parameters must be minimal
-        minimal_renamings = []
-        params = [p.name for p in action.parameters]
-        system = constraints.ConstraintSystem()
-        system.add_assignment(assignment)
-        mapping = assignment.get_mapping()
-        if len(params) > 1:
-            for (n1, n2) in itertools.combinations(params, 2):
-                if mapping.get(n1, n1) != mapping.get(n2, n2):
-                    negative_clause = constraints.NegativeClause([(n1, n2)])
-                    system.add_negative_clause(negative_clause)
-        minimal_renamings.append(system)
-        return minimal_renamings
 
     def add_effect_unbalanced(self, action, add_effect, del_effects,
                               inv_vars, enqueue_func):
+        # We build for every delete effect that is possibly covered by this
+        # invariant a constraint system that will be unsolvable if the delete
+        # effect balances the add effect. Large parts of the constraint system
+        # are independent of the delete effect, so we precompute them first.
 
-        minimal_renamings = self.minimal_covering_renamings(action, add_effect,
-                                                            inv_vars)
-
-        lhs_by_pred = defaultdict(list)
+        # Dictionary add_effect_produced_by_pred describes what must be true so
+        # that the action is applicable and produces the add effect. It is
+        # stored as a map from predicate names to literals (overall
+        # representing a conjunction of these literals).
+        add_effect_produced_by_pred = defaultdict(list)
         for lit in itertools.chain(get_literals(action.precondition),
                                    get_literals(add_effect.condition),
                                    get_literals(add_effect.literal.negate())):
-            lhs_by_pred[lit.predicate].append(lit)
+            add_effect_produced_by_pred[lit.predicate].append(lit)
 
+        # Determine a constraint that minimally relates invariant parameters to
+        # variables and constants so that the add_effect is covered by the
+        # invariant.
+        threat_assignment = self.get_covering_assignment(inv_vars, add_effect.literal)
+        # The assignment can imply equivalences between variables (and with
+        # constants). For example if the invariant part is {p 1 2 3 [0]} and
+        # the add effect is p(?x ?y ?y a) then we would know that the invariant
+        # part is only threatened by the add effect if the first two invariant
+        # parameters are equal (and if ?x and ?y are the action parameters, it
+        # is equal to the second action parameter ?y) and the third invariant
+        # parameter is a.
+
+        # The add effect must be balanced in all threatening action
+        # applications. We thus must adapt the constraint system such that it
+        # prevents restricting solution that set action parameters equal to
+        # each other or to a specific constant (if this is not already
+        # necessary for the threat).
+        constants = set(a for a in add_effect.literal.args if a[0] != "?")
         for del_effect in del_effects:
-            minimal_renamings = self.unbalanced_renamings(
-                del_effect, add_effect, inv_vars, lhs_by_pred, minimal_renamings)
-            if not minimal_renamings:
+            for a in del_effect.literal.args:
+                if a[0] != "?":
+                    constants.add(a)
+        params = [p.name for p in action.parameters]
+        action_param_system = constraints.ConstraintSystem()
+        mapping = threat_assignment.get_mapping()
+        # The assignment is a conjunction of equalities between invariant
+        # parameters and the variables and constants occurring in the
+        # add_effect literal. The mapping maps every term to its representative
+        # in the coarsest equivalence class induced by the equalities.
+        for param in params:
+            if mapping.get(param, param)[0] == "?":
+                # for the add effect being a threat to the invariant, param
+                # does not need to be a specific constant. So we may not bind
+                # it to a constant when balancing the add effect.
+                for c in constants:
+                    negative_clause = constraints.NegativeClause([(param, c)])
+                    action_param_system.add_negative_clause(negative_clause)
+        for (n1, n2) in itertools.combinations(params, 2):
+            if mapping.get(n1, n1) != mapping.get(n2, n2):
+                # n1 and n2 don't have to be equivalent to cover the add
+                # effect, so we require for the solutions that they do not
+                # set n1 and n2 equal.
+                negative_clause = constraints.NegativeClause([(n1, n2)])
+                action_param_system.add_negative_clause(negative_clause)
+        
+        for del_effect in del_effects:
+            if self.balances(del_effect, add_effect, inv_vars,
+                             add_effect_produced_by_pred,
+                             threat_assignment, action_param_system):
                 return False
 
-        # Otherwise, the balance check fails => Generate new candidates.
+        # The balance check fails => Generate new candidates.
         self.refine_candidate(add_effect, action, enqueue_func)
         return True
 
     def refine_candidate(self, add_effect, action, enqueue_func):
-        """refines the candidate for an add effect that is unbalanced in the
-           action and adds the refined one to the queue"""
+        """Refines the candidate for an add effect that is unbalanced in the
+           action and adds the refined one to the queue."""
         part = self.predicate_to_part[add_effect.literal.predicate]
         for del_eff in [eff for eff in action.effects if eff.literal.negated]:
             if del_eff.literal.predicate not in self.predicate_to_part:
@@ -470,57 +499,41 @@ class Invariant:
                                                    del_eff.literal):
                     enqueue_func(Invariant(self.parts.union((match,))))
 
-    def unbalanced_renamings(self, del_effect, add_effect, inv_vars,
-                             lhs_by_pred, unbalanced_renamings):
-        """returns the renamings from unbalanced renamings for which
-           the del_effect does not balance the add_effect."""
+    def balances(self, del_effect, add_effect, inv_vars, produced_by_pred,
+                 threat_assignment, action_param_system):
+        """Returns whether the del_effect is guaranteed to balance the add effect
+           if
+           - produced_by_pred must be true for the add_effect to be produced,
+           - threat_assignment is a constraint of equalities that must be true
+             for the add effect threatening the invariant, and
+           - action_param_system contains contraints that action parameters are
+             not fixed to be equivalent (except the add effect is otherwise not
+             threat)."""
 
         system = constraints.ConstraintSystem()
         ensure_cover(system, del_effect.literal, self, inv_vars)
 
-        # Since we may only rename the quantified variables of the delete effect
-        # we need to check that "renamings" of constants are already implied by
-        # the unbalanced_renaming (of the of the operator parameters). The
-        # following system is used as a helper for this. It builds a conjunction
-        # that formulates that the constants are NOT renamed accordingly. We
-        # below check that this is impossible with each unbalanced renaming.
-        check_constants = False
-        constant_test_system = constraints.ConstraintSystem()
-        for a, b in system.combinatorial_assignments[0][0].equalities:
-            # first 0 because the system was empty before we called ensure_cover
-            # second 0 because ensure_cover only adds assignments with one entry
-            if b[0] != "?":
-                check_constants = True
-                neg_clause = constraints.NegativeClause([(a, b)])
-                constant_test_system.add_negative_clause(neg_clause)
-
         ensure_inequality(system, add_effect.literal, del_effect.literal)
+        # makes sure that the add and the delete effect do not affect the same
+        # atom (so that the delete effect is ignored due to the
+        # add-after-delete semantics).
 
-        still_unbalanced = []
-        for renaming in unbalanced_renamings:
-            if check_constants:
-                new_sys = constant_test_system.combine(renaming)
-                if new_sys.is_solvable():
-                    # it is possible that the operator arguments are not
-                    # mapped to constants as required for covering the delete
-                    # effect
-                    still_unbalanced.append(renaming)
-                    continue
-
-            new_sys = system.combine(renaming)
-            if self.lhs_satisfiable(renaming, lhs_by_pred):
-                implies_system = self.imply_del_effect(del_effect, lhs_by_pred)
-                if not implies_system:
-                    still_unbalanced.append(renaming)
-                    continue
+        new_sys = system.combine(action_param_system)
+        new_sys.add_assignment(threat_assignment)
+        if self.add_effect_potentially_produced(threat_assignment, produced_by_pred):
+            implies_system = self.imply_del_effect(del_effect, produced_by_pred)
+            if not implies_system:
+                return False
                 new_sys = new_sys.combine(implies_system)
             if not new_sys.is_solvable():
-                still_unbalanced.append(renaming)
-        return still_unbalanced
+                return False
+        return True
 
-    def lhs_satisfiable(self, renaming, lhs_by_pred):
-        system = renaming.copy()
-        ensure_conjunction_sat(system, *itertools.chain(lhs_by_pred.values()))
+
+    def add_effect_potentially_produced(self, threat_assignment, produced_by_pred):
+        system = constraints.ConstraintSystem()
+        system.add_assignment(threat_assignment)
+        ensure_conjunction_sat(system, *itertools.chain(produced_by_pred.values()))
         return system.is_solvable()
 
     def imply_del_effect(self, del_effect, lhs_by_pred):
