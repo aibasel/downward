@@ -135,7 +135,7 @@ void LandmarkHeuristic::generate_preferred_operators(
                 set_preferred(op);
             }
             if (lm_graph->contains_conjunctive_landmark(
-                fact_proxy.get_pair())) {
+                    fact_proxy.get_pair())) {
                 vector<LandmarkNode *> conjunctive_landmarks =
                     lm_graph->get_conjunctive_landmarks(fact_proxy.get_pair());
                 for (auto conj_lm : conjunctive_landmarks) {
