@@ -47,9 +47,7 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
            this overrides continue_on_fail.
         */
         if (repeat_last_phase && last_phase_found_solution) {
-            return get_search_algorithm(
-                algorithm_configs.size() -
-                1);
+            return get_search_algorithm(algorithm_configs.size() - 1);
         } else {
             return nullptr;
         }
