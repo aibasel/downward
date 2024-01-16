@@ -239,7 +239,8 @@ class Invariant:
         actions_to_check = set()
         for part in self.parts:
             actions_to_check |= balance_checker.get_threats(part.predicate)
-        for action in actions_to_check:
+        for action in sorted(actions_to_check, key=lambda a: (a.name,
+                                                              a.parameters)):
             heavy_action = balance_checker.get_heavy_action(action)
             if self.operator_too_heavy(heavy_action):
                 return False
