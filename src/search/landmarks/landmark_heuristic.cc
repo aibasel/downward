@@ -118,12 +118,7 @@ void LandmarkHeuristic::compute_landmark_graph(
 
 void LandmarkHeuristic::generate_preferred_operators(
     const State &state, ConstBitsetView &future) {
-    /*
-      Find operators that achieve future landmarks.
-      TODO: Conjunctive landmarks are ignored in *lm_graph->get_node(...)*, so
-       they are ignored when computing preferred operators. We consider this
-       a bug and want to fix it in issue1072.
-    */
+    // Find operators that achieve future landmarks.
     assert(successor_generator);
     vector<OperatorID> applicable_operators;
     successor_generator->generate_applicable_ops(state, applicable_operators);
@@ -138,6 +133,17 @@ void LandmarkHeuristic::generate_preferred_operators(
             LandmarkNode *lm_node = lm_graph->get_node(fact_proxy.get_pair());
             if (lm_node && future.test(lm_node->get_id())) {
                 set_preferred(op);
+            }
+            if (lm_graph->contains_conjunctive_landmark(
+                fact_proxy.get_pair())) {
+                vector<LandmarkNode *> conjunctive_landmarks =
+                    lm_graph->get_conjunctive_landmarks(fact_proxy.get_pair());
+                for (auto conj_lm : conjunctive_landmarks) {
+                    if (future.test(conj_lm->get_id())) {
+                        set_preferred(op);
+                        break;
+                    }
+                }
             }
         }
     }
