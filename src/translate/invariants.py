@@ -40,12 +40,11 @@ def instantiate_factored_mapping(pairs):
     part_mappings = [[list(zip(preimg, perm_img)) for perm_img in itertools.permutations(img)]
                      for (preimg, img) in pairs]
     # all possibilities to pick one bijection for each entry
-    return tools.cartesian_product(part_mappings)
-    # TODO: this has a TODO note in tools. It probably can simply be entirely
-    # replaced by using itertools.product and chain as follows:
-    # for x in itertools.product(*part_mapping):
-    #     for y in itertools.chain(*x):
-    #         yield list(y)
+    if not part_mappings:
+        yield []
+    else:
+        for x in itertools.product(*part_mappings):
+            yield list(itertools.chain.from_iterable(x))
 
 
 def find_unique_variables(action, invariant):
