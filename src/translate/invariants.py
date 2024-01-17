@@ -1,10 +1,12 @@
 from collections import defaultdict
 import itertools
+import logging
 
 import constraints
 import pddl
 import tools
 
+#logging.basicConfig(level=logging.DEBUG)
 # Notes:
 # All parts of an invariant always use all non-counted variables
 # -> the arity of all predicates covered by an invariant is either the
@@ -14,6 +16,7 @@ import tools
 # in every invariant.
 
 def invert_list(alist):
+    """Example: invert_list([?a, ?b, ?a]) = {'?a': [0, 2], '?b': [1]}"""
     result = defaultdict(list)
     for pos, arg in enumerate(alist):
         result[arg].append(pos)
@@ -23,12 +26,12 @@ def invert_list(alist):
 def instantiate_factored_mapping(pairs):
     """Input pairs is a list [(preimg1, img1), ..., (preimgn, imgn)].
        For entry (preimg, img), preimg and img is a list of numbers of the same
-       length. All preimages (and all imgage) are pairwise disjoint, as well as
+       length. All preimages (and all images) are pairwise disjoint, as well as
        the components of each preimage/image.
 
        The function determines all possible bijections between the union of
        preimgs and the union of imgs such that for every entry (preimg, img),
-       values from preimg are mapped to values from img.
+       all values from preimg are mapped to values from img.
        It yields one permutation after the other, each represented as a list
        of pairs (x,y), meaning x is mapped to y.
        """
@@ -113,7 +116,7 @@ def ensure_conjunction_sat(system, *parts):
 
 def ensure_cover(system, literal, invariant, inv_vars):
     """Modifies the constraint system such that it is only solvable if the
-       invariant covers the literal"""
+       invariant covers the literal."""
     a = invariant.get_covering_assignment(inv_vars, literal)
     system.add_assignment_disjunction([a])
 
@@ -125,9 +128,8 @@ def ensure_inequality(system, literal1, literal2):
 
        If the literals have different predicates, there is nothing to do.
        Otherwise we add for P(x, y, z) and P(a, b, c) a contraint
-       (x != a or y != b or z != c)"""
-    if (literal1.predicate == literal2.predicate and
-        literal1.args):
+       (x != a or y != b or z != c)."""
+    if (literal1.predicate == literal2.predicate and literal1.args):
         parts = list(zip(literal1.args, literal2.args))
         system.add_negative_clause(constraints.NegativeClause(parts))
 
@@ -331,7 +333,7 @@ class Invariant:
         return hash(self.parts)
 
     def __str__(self):
-        return "{%s}" % ", ".join(str(part) for part in self.parts)
+        return "{%s}" % ", ".join(sorted(str(part) for part in self.parts))
 
     def __repr__(self):
         return '<Invariant %s>' % self
@@ -373,7 +375,9 @@ class Invariant:
         for action in sorted(actions_to_check, key=lambda a: (a.name,
                                                               a.parameters)):
             heavy_action = balance_checker.get_heavy_action(action)
+            logging.debug(f"Checking Invariant {self} wrt action {action.name}")
             if self.operator_too_heavy(heavy_action):
+                logging.debug("too heavy")
                 return False
             if self.operator_unbalanced(action, enqueue_func):
                 return False
@@ -403,6 +407,7 @@ class Invariant:
         return False
 
     def operator_unbalanced(self, action, enqueue_func):
+        logging.debug(f"Checking Invariant {self} for action {action.name}")
         inv_vars = find_unique_variables(action, self)
         relevant_effs = [eff for eff in action.effects
                          if self.predicate_to_part.get(eff.literal.predicate)]
@@ -414,6 +419,7 @@ class Invariant:
             if self.add_effect_unbalanced(action, eff, del_effects, inv_vars,
                                           enqueue_func):
                 return True
+        logging.debug(f"Balanced")
         return False
 
 
@@ -483,6 +489,7 @@ class Invariant:
             if self.balances(del_effect, add_effect, inv_vars,
                              add_effect_produced_by_pred,
                              threat_assignment, action_param_system):
+                logging.debug(f"Invariant {self}: add effect {add_effect.literal} balanced for action {action.name} by del effect {del_effect.literal}")
                 return False
 
         # The balance check fails => Generate new candidates.
@@ -502,7 +509,7 @@ class Invariant:
     def balances(self, del_effect, add_effect, inv_vars, produced_by_pred,
                  threat_assignment, action_param_system):
         """Returns whether the del_effect is guaranteed to balance the add effect
-           if
+           where the input is such that:
            - produced_by_pred must be true for the add_effect to be produced,
            - threat_assignment is a constraint of equalities that must be true
              for the add effect threatening the invariant, and
@@ -524,9 +531,11 @@ class Invariant:
             implies_system = self.imply_del_effect(del_effect, produced_by_pred)
             if not implies_system:
                 return False
-                new_sys = new_sys.combine(implies_system)
+            new_sys = new_sys.combine(implies_system)
             if not new_sys.is_solvable():
                 return False
+
+        logging.debug(f"{new_sys}")
         return True
 
 
