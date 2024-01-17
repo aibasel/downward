@@ -25,9 +25,10 @@ def invert_list(alist):
 
 def instantiate_factored_mapping(pairs):
     """Input pairs is a list [(preimg1, img1), ..., (preimgn, imgn)].
-       For entry (preimg, img), preimg and img is a list of numbers of the same
-       length. All preimages (and all images) are pairwise disjoint, as well as
-       the components of each preimage/image.
+       For entry (preimg, img), preimg is a list of numbers and img a list of
+       invariant parameters or -1 of the same length. All preimages (and all
+       images) are pairwise disjoint, as well as the components of each
+       preimage/image.
 
        The function determines all possible bijections between the union of
        preimgs and the union of imgs such that for every entry (preimg, img),
@@ -45,22 +46,6 @@ def instantiate_factored_mapping(pairs):
     else:
         for x in itertools.product(*part_mappings):
             yield list(itertools.chain.from_iterable(x))
-
-
-def find_unique_variables(action, invariant):
-    # find unique names for invariant variables
-    params = {p.name for p in action.parameters}
-    for eff in action.effects:
-        params.update([p.name for p in eff.parameters])
-    inv_vars = []
-    counter = itertools.count()
-    for _ in range(invariant.arity()):
-        while True:
-            new_name = "?v%i" % next(counter)
-            if new_name not in params:
-                inv_vars.append(new_name)
-                break
-    return inv_vars
 
 
 def get_literals(condition):
@@ -113,10 +98,10 @@ def ensure_conjunction_sat(system, *parts):
                         system.add_negative_clause(negative_clause)
 
 
-def ensure_cover(system, literal, invariant, inv_vars):
+def ensure_cover(system, literal, invariant):
     """Modifies the constraint system such that it is only solvable if the
        invariant covers the literal."""
-    a = invariant.get_covering_assignment(inv_vars, literal)
+    a = invariant.get_covering_assignment(literal)
     system.add_assignment_disjunction([a])
 
 
@@ -134,63 +119,51 @@ def ensure_inequality(system, literal1, literal2):
 
 
 class InvariantPart:
-    def __init__(self, predicate, order, omitted_pos=-1):
+    def __init__(self, atom, omitted_pos=-1):
         """There is one InvariantPart for every predicate mentioned in the
-           invariant. The parameters of the invariant do not have fixed names
-           in the code (to avoid conflicts with existing variable names in
-           operators), instead we think of the 0th, 1st, 2nd, ...  parameter.
-           The order of the invariant part ties these parameters to the
-           arguments of the predicate: the i-th number n_i in order specifies
-           that the i-th invariant parameter occurs at position n_i as an
-           argument of the predicate. The omitted_pos is the remaining argument
-           position, or -1 if there is none."""
-        self.predicate = predicate
-        self.order = order
+           invariant. The atom of the invariant part has arguments of the form
+           "?@vi" for the invariant parameters and "_" at the omitted position.
+           If no position is omitted, omitted_pos is -1."""
+        self.atom = atom
         self.omitted_pos = omitted_pos
 
     def __eq__(self, other):
         # This implies equality of the omitted_pos component.
-        return self.predicate == other.predicate and self.order == other.order
+        return self.atom == other.atom
 
     def __ne__(self, other):
-        return self.predicate != other.predicate or self.order != other.order
+        return self.atom != other.atom
 
     def __le__(self, other):
-        return self.predicate <= other.predicate or self.order <= other.order
+        return self.atom <= other.atom
 
     def __lt__(self, other):
-        return self.predicate < other.predicate or self.order < other.order
+        return self.atom < other.atom
 
     def __hash__(self):
-        return hash((self.predicate, tuple(self.order)))
+        return hash(self.atom)
 
     def __str__(self):
-        var_string = " ".join(map(str, self.order))
-        omitted_string = ""
-        if self.omitted_pos != -1:
-            omitted_string = " [%d]" % self.omitted_pos
-        return "%s %s%s" % (self.predicate, var_string, omitted_string)
+        return f"{self.atom} [omitted_pos = {self.omitted_pos}]"
 
     def arity(self):
-        return len(self.order)
-
-    def get_assignment(self, parameters, literal):
-        """Returns an assignment constraint that requires the invariant
-           parameters to correspond to the values in which they occur in the
-           literal."""
-        equalities = [(arg, literal.args[argpos])
-                      for arg, argpos in zip(parameters, self.order)]
-        return constraints.Assignment(equalities)
+        if self.omitted_pos == -1:
+            return len(self.atom.args)
+        else:
+            return len(self.atom.args) - 1 
 
     def get_parameters(self, literal):
-        """Returns the values of the invariant parameters in the literal."""
-        return [literal.args[pos] for pos in self.order]
+        """Returns a dictionary, mapping the invariant parameters to the
+           corresponding values in the literal."""
+        return dict((arg, literal.args[pos])
+                    for pos, arg in enumerate(self.atom.args)
+                    if pos != self.omitted_pos)
 
-    def instantiate(self, parameters):
-        args = ["?X"] * (len(self.order) + (self.omitted_pos != -1))
-        for arg, argpos in zip(parameters, self.order):
-            args[argpos] = arg
-        return pddl.Atom(self.predicate, args)
+    def instantiate(self, parameters_tuple):
+        parameters = dict(parameters_tuple)
+        args = [parameters[arg]  if arg != "_" else "?X"
+                for arg in self.atom.args]
+        return pddl.Atom(self.atom.predicate, args)
 
     def possible_mappings(self, own_literal, other_literal):
         """This method is used when an action had an unbalanced add effect
@@ -198,42 +171,36 @@ class InvariantPart:
            other_literal, so we try to refine the invariant such that it also
            covers the delete effect.
 
-           For this purpose, we need to identify all bijections m between
-           argument positions of of other_literal and argument positions of
-           own_literal, such that other_literal can balance own_literal
-           (possibly omitting one argument position of own_literal).
+           From own_literal, we can determine a variable or object for every
+           invariant parameter, where potentially several invariant parameters
+           can have the same value.
 
-           In most cases this is straight-forward, e.g. with own_literal being
-           P(?a, ?b, ?c) and other_literal being Q(?b, ?a, ?c), we would need
-           to map the first position of Q to the second position of P, the
-           second one of Q to the first one of P, and the third to the third
-           one (with 0-indexing represented as [(0,1), (1,0), (2,2)]).
-
-           Most complication stems from the fact that in rare cases arguments
-           in the literals can be repeated, e.g. P(?a, ?b, ?a) and Q(?b, ?a,
-           ?a). In invariants, we don't have repetitions, so we need to
-           identify the more general invariants for which this repetition is
-           a special case (if invariant parameters are equal in its
-           instantiation). So in this example, we need to consider two
-           possible mappings: [(0, 1), (1, 0), (2, 2)] and [(0, 1), (1, 2), (2,
-           1)].
+           From the arguments of other_literal, we determine all possibilities
+           how we can use the invariant parameters as arguments of
+           other_literal so that the values match (possibly covering one
+           parameter with a placeholder/counted variable). Since there also can
+           be duplicates in the argumets of other_literal, we cannot operate on
+           the arguments directly, but instead operate on the positions.
 
            The method returns [] if there is no possible mapping and otherwise
-           yields the mappings one by one.
+           yields the mappings from the positions of other to the invariant
+           variables or -1 one by one.
            """
-        allowed_omissions = len(other_literal.args) - len(self.order)
-        # All parts of an invariant always use all non-counted variables, so
-        # len(self.order) corresponds to the number of invariant parameters
-        # (the arity of the invariant). So we can/must omit allowed_omissions
-        # many arguments of other_literal when matching invariant parameters
-        # with arguments.
+        allowed_omissions = len(other_literal.args) - self.arity()
+        # All parts of an invariant always use all non-counted variables, of
+        # which we have arity many. So we must omit allowed_omissions many
+        # arguments of other_literal when matching invariant parameters with
+        # arguments.
         if allowed_omissions not in (0, 1):
             # There may be at most one counted variable.
             return []
         own_parameters = self.get_parameters(own_literal)
-        # own_parameters is a list containing at position i the value of the
-        # i-th invariant parameter in own_literal.
-        arg_to_ordered_pos = invert_list(own_parameters)
+        # own_parameters is a dictionary mapping the invariant parameters to
+        # the corresponding parameter of own_literal
+        ownarg_to_invariant_parameters = defaultdict(list)
+        for x, y in own_parameters.items():
+            ownarg_to_invariant_parameters[y].append(x)
+
         other_arg_to_pos = invert_list(other_literal.args)
         # other_arg_to_pos maps every argument of other_literal to the
         # lists of positions in which it is occuring in other_literal, e.g.
@@ -247,19 +214,20 @@ class InvariantPart:
         # we remember the correspondance of positions for this value in
         # factored_mapping. If all values can be covered, we instatiate the
         # complete factored_mapping, computing all possibilities to map
-        # positions from own_literal to positions from other_literal.
+        # positions from other_literal to invariant parameters (or -1 if the
+        # position is omitted).
         for key, other_positions in other_arg_to_pos.items():
-            own_positions = arg_to_ordered_pos.get(key, [])
+            inv_params = ownarg_to_invariant_parameters[key]
             # all positions at which key occurs as argument in own_literal
-            len_diff = len(own_positions) - len(other_positions)
+            len_diff = len(inv_params) - len(other_positions)
             if len_diff >= 1 or len_diff <= -2 or len_diff == -1 and not allowed_omissions:
                 # mapping of the literals is not possible with at most one
                 # counted variable.
                 return []
             if len_diff:
-                own_positions.append(-1)
+                inv_params.append(-1)
                 allowed_omissions = 0
-            factored_mapping.append((other_positions, own_positions))
+            factored_mapping.append((other_positions, inv_params))
         return instantiate_factored_mapping(factored_mapping)
 
     def possible_matches(self, own_literal, other_literal):
@@ -272,48 +240,42 @@ class InvariantPart:
            parameter positions of other_literal to the parameter positions of
            own_literal such that the extended invariant can use other_literal
            to balance own_literal. From these position mapping, we can extract
-           the order field for the invariant part.
+           the new the invariant part.
 
-           Consider for an example of the "self" InvariantPart "forall ?u,
-           ?v, ?w(P(?u, ?v, ?w) is non-increasing" and let own_literal be P(?a, ?b,
-           ?c) and other_literal be Q(?b, ?c, ?d, ?a)). The only possible mapping
-           from positions of Q to positions of P (or -1) is [0->1, 1->2, 2->-1,
-           3->0] for which we create a new Invariant Part Q(?v, ?w, _. ?u) with
-           the third argument being counted.
+           Consider for an example of the "self" InvariantPart "forall ?@v0,
+           ?@v1, ?@v2(P(?@v0, ?@v1, ?@v2) is non-increasing" and let
+           own_literal be P(?a, ?b, ?c) and other_literal be Q(?b, ?c, ?d, ?a).
+           The only possible mapping from positions of Q to invariant variables
+           of P (or -1) is [0->?@v1, 1->?@v2, 2->-1, 3->?@v0] for which we
+           create a new Invariant Part Q(?@v1, ?@v2, _. ?@v0) with the third
+           argument being counted.
         """
-        assert self.predicate == own_literal.predicate
+        assert self.atom.predicate == own_literal.predicate
         result = []
         for mapping in self.possible_mappings(own_literal, other_literal):
-            new_order = [None] * len(self.order)
+            args = ["_"] * len(other_literal.args)
             omitted = -1
-            for (other_pos, own_pos) in mapping:
-                if own_pos == -1:
+            for (other_pos, inv_var) in mapping:
+                if inv_var == -1:
                     omitted = other_pos
                 else:
-                    new_order[own_pos] = other_pos
-                    # TODO This only works because in the initial invariant
-                    # candidates the numbering of invariant parameters matches
-                    # the order of the corresponding arguments in the
-                    # predicate. To make this work in general, we need to
-                    # consider a potential order difference in self.order.
-            result.append(InvariantPart(other_literal.predicate, new_order, omitted))
+                    args[other_pos] = inv_var
+            atom = pddl.Atom(other_literal.predicate, args)
+            result.append(InvariantPart(atom, omitted))
         return result
-
-    def matches(self, other, own_literal, other_literal):
-        return self.get_parameters(own_literal) == other.get_parameters(other_literal)
 
 
 class Invariant:
     # An invariant is a logical expression of the type
-    #   forall V1...Vk: sum_(part in parts) weight(part, V1, ..., Vk) <= 1.
+    #   forall ?@v1...?@vk: sum_(part in parts) weight(part, ?@v1, ..., ?@vk) <= 1.
     # k is called the arity of the invariant.
-    # A "part" is a symbolic fact only variable symbols in {V1, ..., Vk, X};
-    # the symbol X may occur at most once.
+    # A "part" is an atom that only contains arguments from {?@v1, ..., ?@vk, _};
+    # the symbol _ may occur at most once.
 
     def __init__(self, parts):
         self.parts = frozenset(parts)
-        self.predicates = {part.predicate for part in parts}
-        self.predicate_to_part = {part.predicate: part for part in parts}
+        self.predicates = {part.atom.predicate for part in parts}
+        self.predicate_to_part = {part.atom.predicate: part for part in parts}
         assert len(self.parts) == len(self.predicates)
 
     def __eq__(self, other):
@@ -346,22 +308,21 @@ class Invariant:
     def instantiate(self, parameters):
         return [part.instantiate(parameters) for part in self.parts]
 
-    def get_covering_assignment(self, parameters, atom):
-        """The parameters are the (current names of the) parameters of the
-           invariant, the atom is the one that should be covered.
-           This is only called for atoms with a predicate for which the
-           invariant has a part. It returns a constraint that requires that
-           each parameter of the invariant matches the corresponding argument
-           of the given atom.
+    def get_covering_assignment(self, literal):
+        """This is only called for atoms with a predicate for which the
+           invariant has a part. It returns an assignment constraint that
+           requires that each parameter of the invariant matches the
+           corresponding argument of the given literal.
 
-           Example: If the atom is P(?a, ?b, ?c), the invariant part for P
-           is {P 0 2 [1]} and the invariant parameters are given by ["?v0",
-           "?v1"] then the invariant part expressed with these parameters would
-           be P(?v0 ?x ?v1) with ?x being the counted variable. The method thus
-           returns the constraint (?v0 = ?a and ?v2 = ?c).
+           Example: If the literal is P(?a, ?b, ?c), the invariant part for P
+           is P(?@v0, _, ?@v1) then the method returns the constraint (?@v0 = ?a
+           and ?@v1 = ?c). It is irrelevant whether the literal is negated.
            """
-        part = self.predicate_to_part[atom.predicate]
-        return part.get_assignment(parameters, atom)
+        part = self.predicate_to_part[literal.predicate]
+        equalities = [(inv_param, literal.args[pos])
+                      for pos, inv_param in enumerate(part.atom.args)
+                      if pos != part.omitted_pos] # alternatively inv_param != "_"
+        return constraints.Assignment(equalities)
         # If there were more parts for the same predicate, we would have to
         # consider more than one assignment (disjunctively).
         # We assert earlier that this is not the case.
@@ -370,7 +331,7 @@ class Invariant:
         # Check balance for this hypothesis.
         actions_to_check = set()
         for part in self.parts:
-            actions_to_check |= balance_checker.get_threats(part.predicate)
+            actions_to_check |= balance_checker.get_threats(part.atom.predicate)
         for action in sorted(actions_to_check, key=lambda a: (a.name,
                                                               a.parameters)):
             heavy_action = balance_checker.get_heavy_action(action)
@@ -386,7 +347,6 @@ class Invariant:
         add_effects = [eff for eff in h_action.effects
                        if not eff.literal.negated and
                        self.predicate_to_part.get(eff.literal.predicate)]
-        inv_vars = find_unique_variables(h_action, self)
 
         if len(add_effects) <= 1:
             return False
@@ -394,8 +354,8 @@ class Invariant:
         for eff1, eff2 in itertools.combinations(add_effects, 2):
             system = constraints.ConstraintSystem()
             ensure_inequality(system, eff1.literal, eff2.literal)
-            ensure_cover(system, eff1.literal, self, inv_vars)
-            ensure_cover(system, eff2.literal, self, inv_vars)
+            ensure_cover(system, eff1.literal, self)
+            ensure_cover(system, eff2.literal, self)
             ensure_conjunction_sat(system, get_literals(h_action.precondition),
                                    get_literals(eff1.condition),
                                    get_literals(eff2.condition),
@@ -407,7 +367,6 @@ class Invariant:
 
     def operator_unbalanced(self, action, enqueue_func):
         logging.debug(f"Checking Invariant {self} for action {action.name}")
-        inv_vars = find_unique_variables(action, self)
         relevant_effs = [eff for eff in action.effects
                          if self.predicate_to_part.get(eff.literal.predicate)]
         add_effects = [eff for eff in relevant_effs
@@ -415,7 +374,7 @@ class Invariant:
         del_effects = [eff for eff in relevant_effs
                        if eff.literal.negated]
         for eff in add_effects:
-            if self.add_effect_unbalanced(action, eff, del_effects, inv_vars,
+            if self.add_effect_unbalanced(action, eff, del_effects,
                                           enqueue_func):
                 return True
         logging.debug(f"Balanced")
@@ -423,7 +382,7 @@ class Invariant:
 
 
     def add_effect_unbalanced(self, action, add_effect, del_effects,
-                              inv_vars, enqueue_func):
+                              enqueue_func):
         # We build for every delete effect that is possibly covered by this
         # invariant a constraint system that will be unsolvable if the delete
         # effect balances the add effect. Large parts of the constraint system
@@ -442,7 +401,7 @@ class Invariant:
         # Determine a constraint that minimally relates invariant parameters to
         # variables and constants so that the add_effect is covered by the
         # invariant.
-        threat_assignment = self.get_covering_assignment(inv_vars, add_effect.literal)
+        threat_assignment = self.get_covering_assignment(add_effect.literal)
         # The assignment can imply equivalences between variables (and with
         # constants). For example if the invariant part is {p 1 2 3 [0]} and
         # the add effect is p(?x ?y ?y a) then we would know that the invariant
@@ -485,7 +444,7 @@ class Invariant:
                 action_param_system.add_negative_clause(negative_clause)
         
         for del_effect in del_effects:
-            if self.balances(del_effect, add_effect, inv_vars,
+            if self.balances(del_effect, add_effect,
                              add_effect_produced_by_pred,
                              threat_assignment, action_param_system):
                 logging.debug(f"Invariant {self}: add effect {add_effect.literal} balanced for action {action.name} by del effect {del_effect.literal}")
@@ -505,7 +464,7 @@ class Invariant:
                                                    del_eff.literal):
                     enqueue_func(Invariant(self.parts.union((match,))))
 
-    def balances(self, del_effect, add_effect, inv_vars, produced_by_pred,
+    def balances(self, del_effect, add_effect, produced_by_pred,
                  threat_assignment, action_param_system):
         """Returns whether the del_effect is guaranteed to balance the add effect
            where the input is such that:
@@ -517,7 +476,7 @@ class Invariant:
              threat)."""
 
         system = constraints.ConstraintSystem()
-        ensure_cover(system, del_effect.literal, self, inv_vars)
+        ensure_cover(system, del_effect.literal, self)
 
         ensure_inequality(system, add_effect.literal, del_effect.literal)
         # makes sure that the add and the delete effect do not affect the same
