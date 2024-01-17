@@ -127,17 +127,20 @@ void LandmarkHeuristic::generate_preferred_operators(
         OperatorProxy op = task_proxy.get_operators()[op_id];
         EffectsProxy effects = op.get_effects();
         for (EffectProxy effect : effects) {
-            if (!does_fire(effect, state))
+            if (!does_fire(effect, state)) {
                 continue;
-            FactProxy fact_proxy = effect.get_fact();
-            LandmarkNode *lm_node = lm_graph->get_node(fact_proxy.get_pair());
+            }
+            FactPair fact = effect.get_fact().get_pair();
+            if (state[fact.var].get_value() == fact.value) {
+                continue;
+            }
+            LandmarkNode *lm_node = lm_graph->get_node(fact);
             if (lm_node && future.test(lm_node->get_id())) {
                 set_preferred(op);
             }
-            if (lm_graph->contains_conjunctive_landmark(
-                    fact_proxy.get_pair())) {
+            if (lm_graph->contains_conjunctive_landmark(fact)) {
                 vector<LandmarkNode *> conjunctive_landmarks =
-                    lm_graph->get_conjunctive_landmarks(fact_proxy.get_pair());
+                    lm_graph->get_conjunctive_landmarks(fact);
                 for (auto conj_lm : conjunctive_landmarks) {
                     if (future.test(conj_lm->get_id())) {
                         set_preferred(op);
