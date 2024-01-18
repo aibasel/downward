@@ -211,11 +211,12 @@ class InvariantPart:
         # and compare the number of occurrences in other_literal to those in
         # own_literal. If the difference of these numbers allows us to cover
         # other_literal with the (still) permitted number of counted variables,
-        # we remember the correspondance of positions for this value in
-        # factored_mapping. If all values can be covered, we instatiate the
-        # complete factored_mapping, computing all possibilities to map
-        # positions from other_literal to invariant parameters (or -1 if the
-        # position is omitted).
+        # we store the correspondance of all argument positions of
+        # other_literal for this value to the invariant parameters at these
+        # positions in factored_mapping. If all values can be covered, we
+        # instatiate the complete factored_mapping, computing all possibilities
+        # to map positions from other_literal to invariant parameters (or -1 if
+        # the position is omitted).
         for key, other_positions in other_arg_to_pos.items():
             inv_params = ownarg_to_invariant_parameters[key]
             # all positions at which key occurs as argument in own_literal
@@ -232,7 +233,7 @@ class InvariantPart:
 
     def possible_matches(self, own_literal, other_literal):
         """This method is used when an action had an unbalanced add effect
-           own_literal. The action has a delete effect on literal
+           on own_literal. The action has a delete effect on literal
            other_literal, so we try to refine the invariant such that it also
            covers the delete effect.
 
@@ -240,10 +241,10 @@ class InvariantPart:
            parameter positions of other_literal to the parameter positions of
            own_literal such that the extended invariant can use other_literal
            to balance own_literal. From these position mapping, we can extract
-           the new the invariant part.
+           the new invariant part.
 
            Consider for an example of the "self" InvariantPart "forall ?@v0,
-           ?@v1, ?@v2(P(?@v0, ?@v1, ?@v2) is non-increasing" and let
+           ?@v1, ?@v2 P(?@v0, ?@v1, ?@v2) is non-increasing" and let
            own_literal be P(?a, ?b, ?c) and other_literal be Q(?b, ?c, ?d, ?a).
            The only possible mapping from positions of Q to invariant variables
            of P (or -1) is [0->?@v1, 1->?@v2, 2->-1, 3->?@v0] for which we
@@ -486,7 +487,7 @@ class Invariant:
         new_sys = system.combine(action_param_system)
         new_sys.add_assignment(threat_assignment)
         if self.add_effect_potentially_produced(threat_assignment, produced_by_pred):
-            implies_system = self.imply_del_effect(del_effect, produced_by_pred)
+            implies_system = self.imply_consumption(del_effect, produced_by_pred)
             if not implies_system:
                 return False
             new_sys = new_sys.combine(implies_system)
@@ -503,19 +504,21 @@ class Invariant:
         ensure_conjunction_sat(system, *itertools.chain(produced_by_pred.values()))
         return system.is_solvable()
 
-    def imply_del_effect(self, del_effect, lhs_by_pred):
-        """returns a constraint system that is solvable if lhs implies
-           the del effect (only if lhs is satisfiable). If a solvable
-           lhs never implies the del effect, return None."""
-        # del_effect.cond and del_effect.atom must be implied by lhs
+    def imply_consumption(self, del_effect, literals_by_pred):
+        """Returns a constraint system that is solvable if the conjunction of
+           literals occurring as values in dictionary literals_by_pred implies
+           the consumption of the atom of the delete effect. We return None if
+           we detect that the constraint system would never be solvable.
+           """
         implies_system = constraints.ConstraintSystem()
         for literal in itertools.chain(get_literals(del_effect.condition),
                                        [del_effect.literal.negate()]):
             poss_assignments = []
-            for match in lhs_by_pred[literal.predicate]:
+            for match in literals_by_pred[literal.predicate]:
                 if match.negated != literal.negated:
                     continue
                 else:
+                    # match implies literal iff they agree on each argument
                     a = constraints.Assignment(list(zip(literal.args, match.args)))
                     poss_assignments.append(a)
             if not poss_assignments:
