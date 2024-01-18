@@ -65,6 +65,7 @@ contributing, and finally by last name.
 - 2022-2023 Remo Christen
 - 2023 Simon Dold
 - 2023 Claudia S. Grundke
+- 2023 Victor Paléologue
 - 2023 Emanuele Tirendi
 - 2021-2022 Dominik Drexler
 - 2016-2020 Cedric Geissmann
