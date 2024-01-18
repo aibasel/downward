@@ -57,7 +57,8 @@ def ensure_conjunction_sat(system, *parts):
 
        We add the following constraints for each literal to the system:
 
-       - for (not (= x y)): x != y (as a NegativeClause with one entry(x,y)),
+       - for (not (= x y)): x != y (as an InequalityDisjunction with one entry
+         (x,y)),
        - for (= x y): x = y
        - for predicates that occur with a positive and negative literal, we
          consider every combination of a positive one (e.g. P(x, y, z)) and
@@ -68,13 +69,14 @@ def ensure_conjunction_sat(system, *parts):
     for literal in itertools.chain(*parts):
         if literal.predicate == "=": # use (in)equalities in conditions
             if literal.negated:
-                n = constraints.NegativeClause([literal.args])
-                system.add_negative_clause(n)
+                d = constraints.InequalityDisjunction([literal.args])
+                system.add_inequality_disjunction(d)
             else:
-                a = constraints.Assignment([literal.args])
+                a = constraints.EqualityConjunction([literal.args])
                 # TODO an assignment x=y expects x to be a variable, not an
                 # object. Do we need to handle this here?
-                system.add_assignment_disjunction([a])
+                print("Hier?", type(a))
+                system.add_equality_DNF([a])
         else:
             if literal.negated:
                 neg[literal.predicate].add(literal)
@@ -87,15 +89,15 @@ def ensure_conjunction_sat(system, *parts):
                 for negatom in neg[pred]:
                     parts = list(zip(negatom.args, posatom.args))
                     if parts:
-                        negative_clause = constraints.NegativeClause(parts)
-                        system.add_negative_clause(negative_clause)
+                        ineq_disj = constraints.InequalityDisjunction(parts)
+                        system.add_inequality_disjunction(ineq_disj)
 
 
 def ensure_cover(system, literal, invariant):
     """Modifies the constraint system such that it is only solvable if the
        invariant covers the literal."""
     a = invariant.get_covering_assignment(literal)
-    system.add_assignment_disjunction([a])
+    system.add_equality_DNF([a])
 
 
 def ensure_inequality(system, literal1, literal2):
@@ -108,7 +110,7 @@ def ensure_inequality(system, literal1, literal2):
        (x != a or y != b or z != c)."""
     if (literal1.predicate == literal2.predicate and literal1.args):
         parts = list(zip(literal1.args, literal2.args))
-        system.add_negative_clause(constraints.NegativeClause(parts))
+        system.add_inequality_disjunction(constraints.InequalityDisjunction(parts))
 
 
 class InvariantPart:
@@ -319,7 +321,7 @@ class Invariant:
         equalities = [(inv_param, literal.args[pos])
                       for pos, inv_param in enumerate(part.atom.args)
                       if pos != part.omitted_pos] # alternatively inv_param != "_"
-        return constraints.Assignment(equalities)
+        return constraints.EqualityConjunction(equalities)
         # If there were more parts for the same predicate, we would have to
         # consider more than one assignment (disjunctively).
         # We assert earlier that this is not the case.
@@ -428,15 +430,15 @@ class Invariant:
                 # does not need to be a specific constant. So we may not bind
                 # it to a constant when balancing the add effect.
                 for c in constants:
-                    negative_clause = constraints.NegativeClause([(param, c)])
-                    action_param_system.add_negative_clause(negative_clause)
+                    ineq_disj = constraints.InequalityDisjunction([(param, c)])
+                    action_param_system.add_inequality_disjunction(ineq_disj)
         for (n1, n2) in itertools.combinations(params, 2):
             if mapping.get(n1, n1) != mapping.get(n2, n2):
                 # n1 and n2 don't have to be equivalent to cover the add
                 # effect, so we require for the solutions that they do not
                 # set n1 and n2 equal.
-                negative_clause = constraints.NegativeClause([(n1, n2)])
-                action_param_system.add_negative_clause(negative_clause)
+                ineq_disj = constraints.InequalityDisjunction([(n1, n2)])
+                action_param_system.add_inequality_disjunction(ineq_disj)
         
         for del_effect in del_effects:
             if self.balances(del_effect, add_effect,
@@ -479,7 +481,7 @@ class Invariant:
         # We will build a system that is solvable if the delete effect is
         # guaranteed to balance the add effect for this invariant.
         system = constraints.ConstraintSystem()
-        system.add_assignment(threat_assignment)
+        system.add_equality_conjunction(threat_assignment)
         # invariant parameters equal the corresponding arguments of the add
         # effect atom.
         
@@ -487,7 +489,7 @@ class Invariant:
         # invariant parameters equal the corresponding arguments of the add
         # effect atom.
         
-        system = system.combine(implies_system)
+        system.extend(implies_system)
         # possible assignments such that a production by the add
         # effect implies a consumption by the delete effect.
         
@@ -496,9 +498,9 @@ class Invariant:
         # delete effect while both atoms are covered by the invariant. However,
         # we did not yet consider add-after-delete semantics and we include
         # possibilities that restrict the action parameters. To prevent these,
-        # we in the following add a number of negative clauses.
+        # we in the following add a number of inequality disjunctions.
 
-        system = system.combine(action_param_system)
+        system.extend(action_param_system)
         # prevent restricting assignments of action parameters (must be
         # balanced independent of the concrete action instantiation).
         
@@ -529,9 +531,9 @@ class Invariant:
                     continue
                 else:
                     # match implies literal iff they agree on each argument
-                    a = constraints.Assignment(list(zip(literal.args, match.args)))
+                    a = constraints.EqualityConjunction(list(zip(literal.args, match.args)))
                     poss_assignments.append(a)
             if not poss_assignments:
                 return None
-            implies_system.add_assignment_disjunction(poss_assignments)
+            implies_system.add_equality_DNF(poss_assignments)
         return implies_system
