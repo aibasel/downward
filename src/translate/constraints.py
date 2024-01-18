@@ -11,16 +11,6 @@ class NegativeClause:
                             for (v1, v2) in self.parts])
         return "(%s)" % disj
 
-    def is_satisfiable(self):
-        for part in self.parts:
-            if part[0] != part[1]:
-                return True
-        return False
-
-    def apply_mapping(self, m):
-        new_parts = [(m.get(v1, v1), m.get(v2, v2)) for (v1, v2) in self.parts]
-        return NegativeClause(new_parts)
-
 
 class Assignment:
     def __init__(self, equalities):
@@ -105,8 +95,11 @@ class ConstraintSystem:
     def _all_clauses_satisfiable(self, assignment):
         mapping = assignment.get_mapping()
         for neg_clause in self.neg_clauses:
-            clause = neg_clause.apply_mapping(mapping)
-            if not clause.is_satisfiable():
+            for inequality in neg_clause.parts:
+                a, b = inequality
+                if mapping.get(a, a) != mapping.get(b, b):
+                    break
+            else:
                 return False
         return True
 

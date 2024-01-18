@@ -385,7 +385,7 @@ class Invariant:
     def add_effect_unbalanced(self, action, add_effect, del_effects,
                               enqueue_func):
         # We build for every delete effect that is possibly covered by this
-        # invariant a constraint system that will be unsolvable if the delete
+        # invariant a constraint system that will be solvable if the delete
         # effect balances the add effect. Large parts of the constraint system
         # are independent of the delete effect, so we precompute them first.
 
@@ -399,17 +399,19 @@ class Invariant:
                                    get_literals(add_effect.literal.negate())):
             add_effect_produced_by_pred[lit.predicate].append(lit)
 
-        # Determine a constraint that minimally relates invariant parameters to
-        # variables and constants so that the add_effect is covered by the
-        # invariant.
+        # threat_assignment is a conjunction of equalities that sets each
+        # invariant parameter equal to its value in add_effect.literal.
         threat_assignment = self.get_covering_assignment(add_effect.literal)
+
+        if not self._can_produce_threat(threat_assignment,
+                                        add_effect_produced_by_pred):
+            return False
+
         # The assignment can imply equivalences between variables (and with
-        # constants). For example if the invariant part is {p 1 2 3 [0]} and
-        # the add effect is p(?x ?y ?y a) then we would know that the invariant
-        # part is only threatened by the add effect if the first two invariant
-        # parameters are equal (and if ?x and ?y are the action parameters, it
-        # is equal to the second action parameter ?y) and the third invariant
-        # parameter is a.
+        # constants). For example if the invariant part is P(_ ?@v0 ?@v1 ?@v2)
+        # and the add effect is P(?x ?y ?y a) then we would know that the
+        # invariant part is only threatened by the add effect if the first two
+        # invariant parameters are equal and the third parameter is a.
 
         # The add effect must be balanced in all threatening action
         # applications. We thus must adapt the constraint system such that it
@@ -475,36 +477,65 @@ class Invariant:
            - action_param_system contains contraints that action parameters are
              not fixed to be equivalent (except the add effect is otherwise not
              threat)."""
+        
+        implies_system = self._imply_consumption(del_effect, produced_by_pred)
+        if not implies_system:
+            # it is impossible to guarantee that every production by add_effect
+            # implies a consumption by del effect.
+            return False
 
+        # We will build a system that is solvable if the delete effect is
+        # guaranteed to balance the add effect for this invariant.
         system = constraints.ConstraintSystem()
+        system.add_assignment(threat_assignment)
+        # invariant parameters equal the corresponding arguments of the add
+        # effect atom.
+        
         ensure_cover(system, del_effect.literal, self)
+        # invariant parameters equal the corresponding arguments of the add
+        # effect atom.
+        
+        system = system.combine(implies_system)
+        # possible assignments such that a production by the add
+        # effect implies a consumption by the delete effect.
+        
+        # So far, the system implicitly represents all possibilities
+        # how every production of the add effect has a consumption by the
+        # delete effect while both atoms are covered by the invariant. However,
+        # we did not yet consider add-after-delete semantics and we include
+        # possibilities that restrict the action parameters. To prevent these,
+        # we in the following add a number of negative clauses.
 
+        system = system.combine(action_param_system)
+        # prevent restricting assignments of action parameters (must be
+        # balanced independent of the concrete action instantiation).
+        
         ensure_inequality(system, add_effect.literal, del_effect.literal)
-        # makes sure that the add and the delete effect do not affect the same
-        # atom (so that the delete effect is ignored due to the
-        # add-after-delete semantics).
+        # if the add effect and the delete effect affect the same predicate
+        # then their arguments must differ in at least one position.
+        
+        if not system.is_solvable():
+            # The system is solvable if there is a consistenst possibility to
+            return False
 
-        new_sys = system.combine(action_param_system)
-        new_sys.add_assignment(threat_assignment)
-        if self.add_effect_potentially_produced(threat_assignment, produced_by_pred):
-            implies_system = self.imply_consumption(del_effect, produced_by_pred)
-            if not implies_system:
-                return False
-            new_sys = new_sys.combine(implies_system)
-            if not new_sys.is_solvable():
-                return False
-
-        logging.debug(f"{new_sys}")
+        logging.debug(f"{system}")
         return True
 
 
-    def add_effect_potentially_produced(self, threat_assignment, produced_by_pred):
+    def _can_produce_threat(self, threat_assignment, produced_by_pred):
+        """Input threat_assignment contains an assignment constraint with
+           equalities between invariant parameters and variables or objects.
+           The values of produced_by_pred are literals (characterizing when an
+           add effect can produce its atom).
+          
+           Return whether it is possible that the add effect can produce
+           a threat for the invariant."""
         system = constraints.ConstraintSystem()
         system.add_assignment(threat_assignment)
         ensure_conjunction_sat(system, *itertools.chain(produced_by_pred.values()))
         return system.is_solvable()
 
-    def imply_consumption(self, del_effect, literals_by_pred):
+    def _imply_consumption(self, del_effect, literals_by_pred):
         """Returns a constraint system that is solvable if the conjunction of
            literals occurring as values in dictionary literals_by_pred implies
            the consumption of the atom of the delete effect. We return None if
