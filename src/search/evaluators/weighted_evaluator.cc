@@ -36,7 +36,7 @@ EvaluationResult WeightedEvaluator::compute_result(
     EvaluationResult result;
     int value = eval_context.get_evaluator_value_or_infinity(evaluator.get());
     if (value != EvaluationResult::INFTY) {
-        assert (utils::is_product_within_limits(value,weight,numeric_limits<int>::min(),numeric_limits<int>::max()));
+        assert(utils::is_product_within_limits(value, weight, numeric_limits<int>::min(), numeric_limits<int>::max()));
         value *= weight;
     }
     result.set_evaluator_value(value);
