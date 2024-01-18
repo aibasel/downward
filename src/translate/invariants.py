@@ -15,13 +15,6 @@ import tools
 # we currently keep the assumption that each predicate occurs at most once
 # in every invariant.
 
-def invert_list(alist):
-    """Example: invert_list([?a, ?b, ?a]) = {'?a': [0, 2], '?b': [1]}"""
-    result = defaultdict(list)
-    for pos, arg in enumerate(alist):
-        result[arg].append(pos)
-    return result
-
 
 def instantiate_factored_mapping(pairs):
     """Input pairs is a list [(preimg1, img1), ..., (preimgn, imgn)].
@@ -201,10 +194,13 @@ class InvariantPart:
         for x, y in own_parameters.items():
             ownarg_to_invariant_parameters[y].append(x)
 
-        other_arg_to_pos = invert_list(other_literal.args)
         # other_arg_to_pos maps every argument of other_literal to the
         # lists of positions in which it is occuring in other_literal, e.g.
         # for P(?a, ?b, ?a), other_arg_to_pos["?a"] = [0, 2].
+        other_arg_to_pos = defaultdict(list)
+        for pos, arg in enumerate(other_literal.args):
+            other_arg_to_pos[arg].append(pos)
+        
         factored_mapping = []
 
         # We iterate over all values occuring as arguments in other_literal
