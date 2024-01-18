@@ -336,9 +336,9 @@ class Invariant:
         for action in sorted(actions_to_check, key=lambda a: (a.name,
                                                               a.parameters)):
             heavy_action = balance_checker.get_heavy_action(action)
-            logging.debug(f"Checking Invariant {self} wrt action {action.name}")
+#            logging.debug(f"Checking Invariant {self} wrt action {action.name}")
             if self.operator_too_heavy(heavy_action):
-                logging.debug("too heavy")
+#                logging.debug("too heavy")
                 return False
             if self.operator_unbalanced(action, enqueue_func):
                 return False
@@ -367,7 +367,7 @@ class Invariant:
         return False
 
     def operator_unbalanced(self, action, enqueue_func):
-        logging.debug(f"Checking Invariant {self} for action {action.name}")
+#        logging.debug(f"Checking Invariant {self} for action {action.name}")
         relevant_effs = [eff for eff in action.effects
                          if self.predicate_to_part.get(eff.literal.predicate)]
         add_effects = [eff for eff in relevant_effs
@@ -378,7 +378,7 @@ class Invariant:
             if self.add_effect_unbalanced(action, eff, del_effects,
                                           enqueue_func):
                 return True
-        logging.debug(f"Balanced")
+#        logging.debug(f"Balanced")
         return False
 
 
@@ -405,6 +405,7 @@ class Invariant:
 
         if not self._can_produce_threat(threat_assignment,
                                         add_effect_produced_by_pred):
+            print("Threat cannot be produced.")
             return False
 
         # The assignment can imply equivalences between variables (and with
@@ -450,7 +451,7 @@ class Invariant:
             if self.balances(del_effect, add_effect,
                              add_effect_produced_by_pred,
                              threat_assignment, action_param_system):
-                logging.debug(f"Invariant {self}: add effect {add_effect.literal} balanced for action {action.name} by del effect {del_effect.literal}")
+#                logging.debug(f"Invariant {self}: add effect {add_effect.literal} balanced for action {action.name} by del effect {del_effect.literal}")
                 return False
 
         # The balance check fails => Generate new candidates.
@@ -518,7 +519,7 @@ class Invariant:
             # The system is solvable if there is a consistenst possibility to
             return False
 
-        logging.debug(f"{system}")
+#        logging.debug(f"{system}")
         return True
 
 
@@ -530,6 +531,8 @@ class Invariant:
           
            Return whether it is possible that the add effect can produce
            a threat for the invariant."""
+        # TODO after profiling: Can be benefit from implementing this directly?
+        # Is it even necessary at all?
         system = constraints.ConstraintSystem()
         system.add_assignment(threat_assignment)
         ensure_conjunction_sat(system, *itertools.chain(produced_by_pred.values()))
