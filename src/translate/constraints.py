@@ -15,12 +15,12 @@ class InequalityDisjunction:
 class EqualityConjunction:
     def __init__(self, equalities):
         self.equalities = tuple(equalities)
-        # represents a conjunction of expressions ?x = ?y or ?x = d
-        # with ?x, ?y being variables and d being a domain value
+        # represents a conjunction of expressions x = y, where x,y are strings
+        # representing objects, variables or invariant parameters.
 
-        self.consistent = None
-        self.mapping = None
-        self.eq_classes = None
+        self._consistent = None
+        self._representative = None # dictionary
+        self._eq_classes = None
 
     def __str__(self):
         conj = " and ".join([f"({v1} = {v2})" for (v1, v2) in self.equalities])
@@ -37,41 +37,46 @@ class EqualityConjunction:
                 c1.update(c2)
                 for elem in c2:
                     eq_classes[elem] = c1
-        self.eq_classes = eq_classes
+        self._eq_classes = eq_classes
 
-    def _compute_mapping(self):
-        if not self.eq_classes:
+    def _compute_representatives(self):
+        if not self._eq_classes:
             self._compute_equivalence_classes()
 
-        # create mapping: each key is mapped to the smallest
-        # element in its equivalence class (with objects being
-        # smaller than variables)
-        mapping = {}
-        for eq_class in self.eq_classes.values():
+        # each element of an equivalence class gets the same representative. If
+        # the equivalence class contains a single object, the representative is
+        # this object. (If it contains more than one object, the assignment is
+        # inconsistent and we don't store representatives.)
+        # (with objects being smaller than variables)
+        representative = {}
+        for eq_class in self._eq_classes.values():
+            if next(iter(eq_class)) in representative:
+                continue # we already processed this equivalence class
             variables = [item for item in eq_class if item.startswith("?")]
             constants = [item for item in eq_class if not item.startswith("?")]
+
             if len(constants) >= 2:
-                self.consistent = False
-                self.mapping = None
+                self._consistent = False
+                self._representative = None
                 return
             if constants:
                 set_val = constants[0]
             else:
-                set_val = min(variables)
+                set_val = variables[0]
             for entry in eq_class:
-                mapping[entry] = set_val
-        self.consistent = True
-        self.mapping = mapping
+                representative[entry] = set_val
+        self._consistent = True
+        self._representative = representative
 
     def is_consistent(self):
-        if self.consistent is None:
-            self._compute_mapping()
-        return self.consistent
+        if self._consistent is None:
+            self._compute_representatives()
+        return self._consistent
 
-    def get_mapping(self):
-        if self.consistent is None:
-            self._compute_mapping()
-        return self.mapping
+    def get_representative(self):
+        if self._consistent is None:
+            self._compute_representatives()
+        return self._representative
 
 
 class ConstraintSystem:
@@ -148,7 +153,7 @@ class ConstraintSystem:
             # combined equality conjunction there is in each inequality
             # disjunction an inequality where the two terms are in different
             # equivalence classes.
-            representative = combined.get_mapping()
+            representative = combined.get_representative()
             for ineq_disjunction in self.ineq_disjunctions:
                 if not inequality_disjunction_ok(ineq_disjunction,
                                                  representative):

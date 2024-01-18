@@ -6,7 +6,7 @@ import constraints
 import pddl
 import tools
 
-#logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 # Notes:
 # All parts of an invariant always use all non-counted variables
 # -> the arity of all predicates covered by an invariant is either the
@@ -145,7 +145,7 @@ class InvariantPart:
         if self.omitted_pos == -1:
             return len(self.atom.args)
         else:
-            return len(self.atom.args) - 1 
+            return len(self.atom.args) - 1
 
     def get_parameters(self, literal):
         """Returns a dictionary, mapping the invariant parameters to the
@@ -156,7 +156,7 @@ class InvariantPart:
 
     def instantiate(self, parameters_tuple):
         parameters = dict(parameters_tuple)
-        args = [parameters[arg]  if arg != "_" else "?X"
+        args = [parameters[arg] if arg != "_" else "?X"
                 for arg in self.atom.args]
         return pddl.Atom(self.atom.predicate, args)
 
@@ -202,7 +202,7 @@ class InvariantPart:
         other_arg_to_pos = defaultdict(list)
         for pos, arg in enumerate(other_literal.args):
             other_arg_to_pos[arg].append(pos)
-        
+
         factored_mapping = []
 
         # We iterate over all values occuring as arguments in other_literal
@@ -379,7 +379,6 @@ class Invariant:
 #        logging.debug(f"Balanced")
         return False
 
-
     def add_effect_unbalanced(self, action, add_effect, del_effects,
                               enqueue_func):
         # We build for every delete effect that is possibly covered by this
@@ -419,13 +418,14 @@ class Invariant:
                     constants.add(a)
         params = [p.name for p in action.parameters]
         action_param_system = constraints.ConstraintSystem()
-        mapping = threat_assignment.get_mapping()
+        representative = threat_assignment.get_representative()
         # The assignment is a conjunction of equalities between invariant
         # parameters and the variables and constants occurring in the
-        # add_effect literal. The mapping maps every term to its representative
-        # in the coarsest equivalence class induced by the equalities.
+        # add_effect literal. Dictionary representative maps every term to its
+        # representative in the finest equivalence relation induced by the
+        # equalities.
         for param in params:
-            if mapping.get(param, param)[0] == "?":
+            if representative.get(param, param)[0] == "?":
                 # for the add effect being a threat to the invariant, param
                 # does not need to be a specific constant. So we may not bind
                 # it to a constant when balancing the add effect.
@@ -433,13 +433,13 @@ class Invariant:
                     ineq_disj = constraints.InequalityDisjunction([(param, c)])
                     action_param_system.add_inequality_disjunction(ineq_disj)
         for (n1, n2) in itertools.combinations(params, 2):
-            if mapping.get(n1, n1) != mapping.get(n2, n2):
+            if representative.get(n1, n1) != representative.get(n2, n2):
                 # n1 and n2 don't have to be equivalent to cover the add
                 # effect, so we require for the solutions that they do not
                 # set n1 and n2 equal.
                 ineq_disj = constraints.InequalityDisjunction([(n1, n2)])
                 action_param_system.add_inequality_disjunction(ineq_disj)
-        
+
         for del_effect in del_effects:
             if self.balances(del_effect, add_effect,
                              add_effect_produced_by_pred,
@@ -471,7 +471,7 @@ class Invariant:
            - action_param_system contains contraints that action parameters are
              not fixed to be equivalent (except the add effect is otherwise not
              threat)."""
-        
+
         implies_system = self._imply_consumption(del_effect, produced_by_pred)
         if not implies_system:
             # it is impossible to guarantee that every production by add_effect
@@ -484,15 +484,15 @@ class Invariant:
         system.add_equality_conjunction(threat_assignment)
         # invariant parameters equal the corresponding arguments of the add
         # effect atom.
-        
+
         ensure_cover(system, del_effect.literal, self)
         # invariant parameters equal the corresponding arguments of the add
         # effect atom.
-        
+
         system.extend(implies_system)
         # possible assignments such that a production by the add
         # effect implies a consumption by the delete effect.
-        
+
         # So far, the system implicitly represents all possibilities
         # how every production of the add effect has a consumption by the
         # delete effect while both atoms are covered by the invariant. However,
@@ -503,18 +503,17 @@ class Invariant:
         system.extend(action_param_system)
         # prevent restricting assignments of action parameters (must be
         # balanced independent of the concrete action instantiation).
-        
+
         ensure_inequality(system, add_effect.literal, del_effect.literal)
         # if the add effect and the delete effect affect the same predicate
         # then their arguments must differ in at least one position.
-        
+
         if not system.is_solvable():
             # The system is solvable if there is a consistenst possibility to
             return False
 
 #        logging.debug(f"{system}")
         return True
-
 
     def _imply_consumption(self, del_effect, literals_by_pred):
         """Returns a constraint system that is solvable if the conjunction of
