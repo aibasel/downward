@@ -50,6 +50,7 @@ DEBUG = False
 ## we only list codes that are used by the translator component of the planner.
 TRANSLATE_OUT_OF_MEMORY = 20
 TRANSLATE_OUT_OF_TIME = 21
+TRANSLATE_INPUT_ERROR = 31
 
 simplified_effect_condition_counter = 0
 added_implied_precondition_counter = 0
@@ -753,3 +754,6 @@ if __name__ == "__main__":
         traceback.print_exc(file=sys.stdout)
         print("=" * 79)
         sys.exit(TRANSLATE_OUT_OF_MEMORY)
+    except pddl_parser.ParseError as e:
+        print(e)
+        sys.exit(TRANSLATE_INPUT_ERROR)
