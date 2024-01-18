@@ -403,11 +403,6 @@ class Invariant:
         # invariant parameter equal to its value in add_effect.literal.
         threat_assignment = self.get_covering_assignment(add_effect.literal)
 
-        if not self._can_produce_threat(threat_assignment,
-                                        add_effect_produced_by_pred):
-            print("Threat cannot be produced.")
-            return False
-
         # The assignment can imply equivalences between variables (and with
         # constants). For example if the invariant part is P(_ ?@v0 ?@v1 ?@v2)
         # and the add effect is P(?x ?y ?y a) then we would know that the
@@ -522,21 +517,6 @@ class Invariant:
 #        logging.debug(f"{system}")
         return True
 
-
-    def _can_produce_threat(self, threat_assignment, produced_by_pred):
-        """Input threat_assignment contains an assignment constraint with
-           equalities between invariant parameters and variables or objects.
-           The values of produced_by_pred are literals (characterizing when an
-           add effect can produce its atom).
-          
-           Return whether it is possible that the add effect can produce
-           a threat for the invariant."""
-        # TODO after profiling: Can be benefit from implementing this directly?
-        # Is it even necessary at all?
-        system = constraints.ConstraintSystem()
-        system.add_assignment(threat_assignment)
-        ensure_conjunction_sat(system, *itertools.chain(produced_by_pred.values()))
-        return system.is_solvable()
 
     def _imply_consumption(self, del_effect, literals_by_pred):
         """Returns a constraint system that is solvable if the conjunction of
