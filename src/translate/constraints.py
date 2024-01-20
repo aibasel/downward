@@ -163,7 +163,7 @@ class ConstraintSystem:
             # inequality disjunction there is an inequality where the two terms
             # are in different equivalence classes.
             representative = combined.get_representative()
-            if any(representative[s][0] != "?" for s in self.not_constant):
+            if any(representative.get(s,s)[0] != "?" for s in self.not_constant):
                 continue
             for ineq_disjunction in self.ineq_disjunctions:
                 if not inequality_disjunction_ok(ineq_disjunction,
