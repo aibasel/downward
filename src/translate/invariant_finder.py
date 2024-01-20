@@ -129,7 +129,7 @@ def useful_groups(invariants, initial_facts):
             inv_vars = [f"?@v{i}" for i in range(invariant.arity())]
             parameters_tuple = tuple((var, parameters[var])
                                      for var in inv_vars)
-            
+
             parameters_tuple = tuple(sorted(x for x in parameters.items()))
             group_key = (invariant, parameters_tuple)
             if group_key not in nonempty_groups:
