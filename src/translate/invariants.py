@@ -109,51 +109,52 @@ def ensure_inequality(system, literal1, literal2):
 
 
 class InvariantPart:
-    def __init__(self, atom, omitted_pos=-1):
+    def __init__(self, predicate, args, omitted_pos=-1):
         """There is one InvariantPart for every predicate mentioned in the
-           invariant. The atom of the invariant part has arguments of the form
-           "?@vi" for the invariant parameters and "_" at the omitted position.
-           If no position is omitted, omitted_pos is -1."""
-        self.atom = atom
+           invariant. The arguments args contain numbers 0,1,... for the
+           invariant parameters and -1 at the omitted position.
+           If no position is omitted, omitted_pos is -1, otherwise it is the
+           index of -1 in args."""
+        self.predicate = predicate
+        self.args = tuple(args)
         self.omitted_pos = omitted_pos
 
     def __eq__(self, other):
         # This implies equality of the omitted_pos component.
-        return self.atom == other.atom
+        return self.predicate == other.predicate and self.args == other.args
 
     def __ne__(self, other):
-        return self.atom != other.atom
+        return self.predicate != other.predicate or self.args != other.args
 
     def __le__(self, other):
-        return self.atom <= other.atom
+        return (self.predicate, self.args) <= (other.predicate, other.args)
 
     def __lt__(self, other):
-        return self.atom < other.atom
+        return (self.predicate, self.args) < (other.predicate, other.args)
 
     def __hash__(self):
-        return hash(self.atom)
+        return hash((self.predicate, self.args))
 
     def __str__(self):
-        return f"{self.atom} [omitted_pos = {self.omitted_pos}]"
+        return f"{self.predicate}({self.args}) [omitted_pos = {self.omitted_pos}]"
 
     def arity(self):
         if self.omitted_pos == -1:
-            return len(self.atom.args)
+            return len(self.args)
         else:
-            return len(self.atom.args) - 1
+            return len(self.args) - 1
 
     def get_parameters(self, literal):
         """Returns a dictionary, mapping the invariant parameters to the
            corresponding values in the literal."""
         return dict((arg, literal.args[pos])
-                    for pos, arg in enumerate(self.atom.args)
+                    for pos, arg in enumerate(self.args)
                     if pos != self.omitted_pos)
 
     def instantiate(self, parameters_tuple):
-        parameters = dict(parameters_tuple)
-        args = [parameters[arg] if arg != "_" else "?X"
-                for arg in self.atom.args]
-        return pddl.Atom(self.atom.predicate, args)
+        args = [parameters_tuple[arg] if arg != -1 else "?X"
+                for arg in self.args]
+        return pddl.Atom(self.predicate, args)
 
     def possible_mappings(self, own_literal, other_literal):
         """This method is used when an action had an unbalanced add effect
@@ -244,18 +245,17 @@ class InvariantPart:
            create a new Invariant Part Q(?@v1, ?@v2, _. ?@v0) with the third
            argument being counted.
         """
-        assert self.atom.predicate == own_literal.predicate
+        assert self.predicate == own_literal.predicate
         result = []
         for mapping in self.possible_mappings(own_literal, other_literal):
-            args = ["_"] * len(other_literal.args)
+            args = [-1] * len(other_literal.args)
             omitted = -1
             for (other_pos, inv_var) in mapping:
                 if inv_var == -1:
                     omitted = other_pos
                 else:
                     args[other_pos] = inv_var
-            atom = pddl.Atom(other_literal.predicate, args)
-            result.append(InvariantPart(atom, omitted))
+            result.append(InvariantPart(other_literal.predicate, args, omitted))
         return result
 
 
@@ -263,13 +263,14 @@ class Invariant:
     # An invariant is a logical expression of the type
     #   forall ?@v1...?@vk: sum_(part in parts) weight(part, ?@v1, ..., ?@vk) <= 1.
     # k is called the arity of the invariant.
-    # A "part" is an atom that only contains arguments from {?@v1, ..., ?@vk, _};
-    # the symbol _ may occur at most once.
+    # A "part" is an atom that only contains arguments from {?@v1, ..., ?@vk, -1}
+    # but instead of ?@vi, we store it as int i;
+    # the symbol -1 may occur at most once.
 
     def __init__(self, parts):
         self.parts = frozenset(parts)
-        self.predicates = {part.atom.predicate for part in parts}
-        self.predicate_to_part = {part.atom.predicate: part for part in parts}
+        self.predicate_to_part = {part.predicate: part for part in parts}
+        self.predicates = set(self.predicate_to_part.keys())
         assert len(self.parts) == len(self.predicates)
 
     def __eq__(self, other):
@@ -315,8 +316,8 @@ class Invariant:
            """
         part = self.predicate_to_part[literal.predicate]
         equalities = [(inv_param, literal.args[pos])
-                      for pos, inv_param in enumerate(part.atom.args)
-                      if pos != part.omitted_pos] # alternatively inv_param != "_"
+                      for pos, inv_param in enumerate(part.args)
+                      if inv_param != -1] # -1 if ommited
         return constraints.EqualityConjunction(equalities)
         # If there were more parts for the same predicate, we would have to
         # consider more than one assignment (disjunctively).
@@ -326,7 +327,7 @@ class Invariant:
         # Check balance for this hypothesis.
         actions_to_check = set()
         for part in self.parts:
-            actions_to_check |= balance_checker.get_threats(part.atom.predicate)
+            actions_to_check |= balance_checker.get_threats(part.predicate)
         for action in actions_to_check:
             heavy_action = balance_checker.get_heavy_action(action)
             if self._operator_too_heavy(heavy_action):
@@ -410,7 +411,8 @@ class Invariant:
         # add_cover. If the equivalence class contains an object, the
         # representative is an object.
         for param in params:
-            if representative.get(param, param)[0] == "?":
+            r = representative.get(param, param)
+            if isinstance(r, int) or r[0] == "?":
                 # for the add effect being a threat to the invariant, param
                 # does not need to be a specific constant. So we may not bind
                 # it to a constant when balancing the add effect. We store this

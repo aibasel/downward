@@ -16,7 +16,8 @@ class EqualityConjunction:
     def __init__(self, equalities):
         self.equalities = tuple(equalities)
         # represents a conjunction of expressions x = y, where x,y are strings
-        # representing objects, variables or invariant parameters.
+        # representing objects or variables or ints, representing invariant
+        # parameters.
 
         self._consistent = None
         self._representative = None # dictionary
@@ -47,13 +48,15 @@ class EqualityConjunction:
         # the equivalence class contains a single object, the representative is
         # this object. (If it contains more than one object, the conjunction is
         # inconsistent and we don't store representatives.)
-        # (with objects being smaller than variables)
+        # (with objects being smaller than variables or invariant parameters)
         representative = {}
         for eq_class in self._eq_classes.values():
             if next(iter(eq_class)) in representative:
                 continue # we already processed this equivalence class
-            variables = [item for item in eq_class if item.startswith("?")]
-            constants = [item for item in eq_class if not item.startswith("?")]
+            variables = [item for item in eq_class if isinstance(item, int) or
+                         item.startswith("?")]
+            constants = [item for item in eq_class if not isinstance(item, int)
+                         and not item.startswith("?")]
 
             if len(constants) >= 2:
                 self._consistent = False
@@ -81,8 +84,8 @@ class EqualityConjunction:
 
 class ConstraintSystem:
     """A ConstraintSystem stores two parts, both talking about the equality or
-       inequality of strings (representing objects, variables or invariant
-       parameters):
+       inequality of strings and ints (strings representing objects or
+       variables, ints representing invariant parameters):
         - equality_DNFs is a list containing lists of EqualityConjunctions.
           Each EqualityConjunction represents an expression of the form
           (x1 = y1 and ... and xn = yn). A list of EqualityConjunctions can be
@@ -163,7 +166,8 @@ class ConstraintSystem:
             # inequality disjunction there is an inequality where the two terms
             # are in different equivalence classes.
             representative = combined.get_representative()
-            if any(representative.get(s, s)[0] != "?"
+            if any(not isinstance(representative.get(s, s), int) and
+                   representative.get(s, s)[0] != "?"
                    for s in self.not_constant):
                 continue
             for ineq_disjunction in self.ineq_disjunctions:
