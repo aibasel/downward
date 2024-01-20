@@ -46,9 +46,6 @@ class TypedObject:
     def __ne__(self, other):
         return not self == other
 
-    def __lt__(self, other):
-        return (self.name, self.type_name) < (other.name, other.type_name)
-
     def __str__(self):
         return "%s: %s" % (self.name, self.type_name)
 
