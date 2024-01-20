@@ -137,7 +137,7 @@ class ConstraintSystem:
         self.ineq_disjunctions.append(ineq_disj)
 
     def add_not_constant(self, not_constant: str) -> None:
-        self.not_constants.append(not_constant)
+        self.not_constant.append(not_constant)
 
     def extend(self, other: "ConstraintSystem") -> None:
         self.equality_DNFs.extend(other.equality_DNFs)
