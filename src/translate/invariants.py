@@ -1,19 +1,16 @@
 from collections import defaultdict
 import itertools
-import logging
 
 import constraints
 import pddl
 import tools
 
-# logging.basicConfig(level=logging.DEBUG)
 # Notes:
 # All parts of an invariant always use all non-counted variables
 # -> the arity of all predicates covered by an invariant is either the
-# number of the invariant variables or this value + 1
+# number of the invariant parameters or this value + 1
 #
-# we currently keep the assumption that each predicate occurs at most once
-# in every invariant.
+# We only consider invariants where each predicate occurs in at most one part.
 
 
 def instantiate_factored_mapping(pairs):
@@ -73,9 +70,6 @@ def ensure_conjunction_sat(system, *parts):
                 system.add_inequality_disjunction(d)
             else:
                 a = constraints.EqualityConjunction([literal.args])
-                # TODO an assignment x=y expects x to be a variable, not an
-                # object. Do we need to handle this here?
-                print("Hier?", type(a))
                 system.add_equality_DNF([a])
         else:
             if literal.negated:
@@ -94,10 +88,11 @@ def ensure_conjunction_sat(system, *parts):
 
 
 def ensure_cover(system, literal, invariant):
-    """Modifies the constraint system such that it is only solvable if the
-       invariant covers the literal."""
-    a = invariant.get_covering_assignment(literal)
-    system.add_equality_DNF([a])
+    """Modifies the constraint system such that in every solution the invariant
+       covers the literal (= invariant parameters are equivalent to the
+       corresponding argument in the literal)."""
+    cover = invariant._get_cover_equivalence_conjunction(literal)
+    system.add_equality_DNF([cover])
 
 
 def ensure_inequality(system, literal1, literal2):
@@ -307,15 +302,16 @@ class Invariant:
     def instantiate(self, parameters):
         return [part.instantiate(parameters) for part in self.parts]
 
-    def get_covering_assignment(self, literal):
+    def _get_cover_equivalence_conjunction(self, literal):
         """This is only called for atoms with a predicate for which the
-           invariant has a part. It returns an assignment constraint that
-           requires that each parameter of the invariant matches the
-           corresponding argument of the given literal.
+           invariant has a part. It returns an equivalence conjunction that
+           requires every invariant parameter to be equal to the corresponding
+           argument of the given literal. For the result, we do not consider
+           whether the literal is negated.
 
            Example: If the literal is P(?a, ?b, ?c), the invariant part for P
            is P(?@v0, _, ?@v1) then the method returns the constraint (?@v0 = ?a
-           and ?@v1 = ?c). It is irrelevant whether the literal is negated.
+           and ?@v1 = ?c).
            """
         part = self.predicate_to_part[literal.predicate]
         equalities = [(inv_param, literal.args[pos])
@@ -334,15 +330,13 @@ class Invariant:
         for action in sorted(actions_to_check, key=lambda a: (a.name,
                                                               a.parameters)):
             heavy_action = balance_checker.get_heavy_action(action)
-#            logging.debug(f"Checking Invariant {self} wrt action {action.name}")
-            if self.operator_too_heavy(heavy_action):
-#                logging.debug("too heavy")
+            if self._operator_too_heavy(heavy_action):
                 return False
-            if self.operator_unbalanced(action, enqueue_func):
+            if self._operator_unbalanced(action, enqueue_func):
                 return False
         return True
 
-    def operator_too_heavy(self, h_action):
+    def _operator_too_heavy(self, h_action):
         add_effects = [eff for eff in h_action.effects
                        if not eff.literal.negated and
                        self.predicate_to_part.get(eff.literal.predicate)]
@@ -364,8 +358,7 @@ class Invariant:
                 return True
         return False
 
-    def operator_unbalanced(self, action, enqueue_func):
-#        logging.debug(f"Checking Invariant {self} for action {action.name}")
+    def _operator_unbalanced(self, action, enqueue_func):
         relevant_effs = [eff for eff in action.effects
                          if self.predicate_to_part.get(eff.literal.predicate)]
         add_effects = [eff for eff in relevant_effs
@@ -373,14 +366,13 @@ class Invariant:
         del_effects = [eff for eff in relevant_effs
                        if eff.literal.negated]
         for eff in add_effects:
-            if self.add_effect_unbalanced(action, eff, del_effects,
-                                          enqueue_func):
+            if self._add_effect_unbalanced(action, eff, del_effects,
+                                           enqueue_func):
                 return True
-#        logging.debug(f"Balanced")
         return False
 
-    def add_effect_unbalanced(self, action, add_effect, del_effects,
-                              enqueue_func):
+    def _add_effect_unbalanced(self, action, add_effect, del_effects,
+                               enqueue_func):
         # We build for every delete effect that is possibly covered by this
         # invariant a constraint system that will be solvable if the delete
         # effect balances the add effect. Large parts of the constraint system
@@ -396,11 +388,11 @@ class Invariant:
                                    get_literals(add_effect.literal.negate())):
             add_effect_produced_by_pred[lit.predicate].append(lit)
 
-        # threat_assignment is a conjunction of equalities that sets each
-        # invariant parameter equal to its value in add_effect.literal.
-        threat_assignment = self.get_covering_assignment(add_effect.literal)
+        # add_cover is an equality conjunction that sets each invariant
+        # parameter equal to its value in add_effect.literal.
+        add_cover = self._get_cover_equivalence_conjunction(add_effect.literal)
 
-        # The assignment can imply equivalences between variables (and with
+        # add_cover can imply equivalences between variables (and with
         # constants). For example if the invariant part is P(_ ?@v0 ?@v1 ?@v2)
         # and the add effect is P(?x ?y ?y a) then we would know that the
         # invariant part is only threatened by the add effect if the first two
@@ -409,49 +401,41 @@ class Invariant:
         # The add effect must be balanced in all threatening action
         # applications. We thus must adapt the constraint system such that it
         # prevents restricting solution that set action parameters equal to
-        # each other or to a specific constant (if this is not already
-        # necessary for the threat).
-        constants = set(a for a in add_effect.literal.args if a[0] != "?")
-        for del_effect in del_effects:
-            for a in del_effect.literal.args:
-                if a[0] != "?":
-                    constants.add(a)
+        # each other or to a specific constant if this is not already
+        # implied by the threat.
         params = [p.name for p in action.parameters]
         action_param_system = constraints.ConstraintSystem()
-        representative = threat_assignment.get_representative()
-        # The assignment is a conjunction of equalities between invariant
-        # parameters and the variables and constants occurring in the
-        # add_effect literal. Dictionary representative maps every term to its
-        # representative in the finest equivalence relation induced by the
-        # equalities.
+        representative = add_cover.get_representative()
+        # Dictionary representative maps every term to its representative in
+        # the finest equivalence relation induced by the equalities in
+        # add_cover. If the equivalence class contains an object, the
+        # representative is an object.
         for param in params:
             if representative.get(param, param)[0] == "?":
                 # for the add effect being a threat to the invariant, param
                 # does not need to be a specific constant. So we may not bind
-                # it to a constant when balancing the add effect.
-                for c in constants:
-                    ineq_disj = constraints.InequalityDisjunction([(param, c)])
-                    action_param_system.add_inequality_disjunction(ineq_disj)
+                # it to a constant when balancing the add effect. We store this
+                # information here.
+                action_param_system.add_not_constant(param)
         for (n1, n2) in itertools.combinations(params, 2):
             if representative.get(n1, n1) != representative.get(n2, n2):
                 # n1 and n2 don't have to be equivalent to cover the add
                 # effect, so we require for the solutions that they do not
-                # set n1 and n2 equal.
+                # make n1 and n2 equvalent.
                 ineq_disj = constraints.InequalityDisjunction([(n1, n2)])
                 action_param_system.add_inequality_disjunction(ineq_disj)
 
         for del_effect in del_effects:
-            if self.balances(del_effect, add_effect,
-                             add_effect_produced_by_pred,
-                             threat_assignment, action_param_system):
-#                logging.debug(f"Invariant {self}: add effect {add_effect.literal} balanced for action {action.name} by del effect {del_effect.literal}")
+            if self._balances(del_effect, add_effect,
+                              add_effect_produced_by_pred, add_cover,
+                              action_param_system):
                 return False
 
-        # The balance check fails => Generate new candidates.
-        self.refine_candidate(add_effect, action, enqueue_func)
+        # The balance check failed => Generate new candidates.
+        self._refine_candidate(add_effect, action, enqueue_func)
         return True
 
-    def refine_candidate(self, add_effect, action, enqueue_func):
+    def _refine_candidate(self, add_effect, action, enqueue_func):
         """Refines the candidate for an add effect that is unbalanced in the
            action and adds the refined one to the queue."""
         part = self.predicate_to_part[add_effect.literal.predicate]
@@ -461,78 +445,79 @@ class Invariant:
                                                    del_eff.literal):
                     enqueue_func(Invariant(self.parts.union((match,))))
 
-    def balances(self, del_effect, add_effect, produced_by_pred,
-                 threat_assignment, action_param_system):
+    def _balances(self, del_effect, add_effect, produced_by_pred,
+                 add_cover, action_param_system):
         """Returns whether the del_effect is guaranteed to balance the add effect
            where the input is such that:
            - produced_by_pred must be true for the add_effect to be produced,
-           - threat_assignment is a constraint of equalities that must be true
-             for the add effect threatening the invariant, and
+           - add_cover is an equality conjunction that sets each invariant
+             parameter equal to its value in add_effect. These equivalences
+             must be true for the add effect threatening the invariant.
            - action_param_system contains contraints that action parameters are
-             not fixed to be equivalent (except the add effect is otherwise not
-             threat)."""
+             not fixed to be equivalent or a certain constant (except the add
+             effect is otherwise not threat)."""
 
-        implies_system = self._imply_consumption(del_effect, produced_by_pred)
-        if not implies_system:
+        balance_system = self._balance_system(add_effect, del_effect,
+                                              produced_by_pred)
+        if not balance_system:
             # it is impossible to guarantee that every production by add_effect
             # implies a consumption by del effect.
             return False
 
-        # We will build a system that is solvable if the delete effect is
-        # guaranteed to balance the add effect for this invariant.
+        # We will overall build a system that is solvable if the delete effect
+        # is guaranteed to balance the add effect for this invariant.
         system = constraints.ConstraintSystem()
-        system.add_equality_conjunction(threat_assignment)
-        # invariant parameters equal the corresponding arguments of the add
-        # effect atom.
+        system.add_equality_conjunction(add_cover)
+        # In every solution, the invariant parameters must equal the
+        # corresponding arguments of the add effect atom.
 
         ensure_cover(system, del_effect.literal, self)
-        # invariant parameters equal the corresponding arguments of the add
-        # effect atom.
+        # In every solution, the invariant parameters must equal the
+        # corresponding arguments of the delete effect atom.
 
-        system.extend(implies_system)
-        # possible assignments such that a production by the add
-        # effect implies a consumption by the delete effect.
-
-        # So far, the system implicitly represents all possibilities
-        # how every production of the add effect has a consumption by the
-        # delete effect while both atoms are covered by the invariant. However,
-        # we did not yet consider add-after-delete semantics and we include
-        # possibilities that restrict the action parameters. To prevent these,
-        # we in the following add a number of inequality disjunctions.
+        system.extend(balance_system)
+        # In every solution a production by the add effect guarantees
+        # a consumption by the delete effect.
 
         system.extend(action_param_system)
-        # prevent restricting assignments of action parameters (must be
-        # balanced independent of the concrete action instantiation).
-
-        ensure_inequality(system, add_effect.literal, del_effect.literal)
-        # if the add effect and the delete effect affect the same predicate
-        # then their arguments must differ in at least one position.
+        # A solution may not restrict action parameters (must be balanced
+        # independent of the concrete action instantiation).
 
         if not system.is_solvable():
-            # The system is solvable if there is a consistenst possibility to
             return False
-
-#        logging.debug(f"{system}")
         return True
 
-    def _imply_consumption(self, del_effect, literals_by_pred):
-        """Returns a constraint system that is solvable if the conjunction of
-           literals occurring as values in dictionary literals_by_pred implies
-           the consumption of the atom of the delete effect. We return None if
-           we detect that the constraint system would never be solvable.
+    def _balance_system(self, add_effect, del_effect, literals_by_pred):
+        """Returns a constraint system that is solvable if
+           - the conjunction of literals occurring as values in dictionary
+             literals_by_pred (characterizing a threat for the invariant
+             through an actual production by add_effect) implies the
+             consumption of the atom of the delete effect, and
+           - the produced and consumed atom are different (otherwise by
+             add-after-delete semantics, the delete effect would not balance
+             the add effect).
+
+           We return None if we detect that the constraint system would never
+           be solvable (by an incomplete cheap test).
            """
-        implies_system = constraints.ConstraintSystem()
+        system = constraints.ConstraintSystem()
         for literal in itertools.chain(get_literals(del_effect.condition),
                                        [del_effect.literal.negate()]):
-            poss_assignments = []
+            possibilities = []
+            # possible equality conjunctions that establish that the literals
+            # in literals_by_pred logically imply the current literal.
             for match in literals_by_pred[literal.predicate]:
-                if match.negated != literal.negated:
-                    continue
-                else:
+                if match.negated == literal.negated:
                     # match implies literal iff they agree on each argument
-                    a = constraints.EqualityConjunction(list(zip(literal.args, match.args)))
-                    poss_assignments.append(a)
-            if not poss_assignments:
+                    ec = constraints.EqualityConjunction(list(zip(literal.args,
+                                                                  match.args)))
+                    possibilities.append(ec)
+            if not possibilities:
                 return None
-            implies_system.add_equality_DNF(poss_assignments)
-        return implies_system
+            system.add_equality_DNF(possibilities)
+
+        # if the add effect and the delete effect affect the same predicate
+        # then their arguments must differ in at least one position (because of
+        # the add-after-delete semantics).
+        ensure_inequality(system, add_effect.literal, del_effect.literal)
+        return system

@@ -45,7 +45,7 @@ class EqualityConjunction:
 
         # each element of an equivalence class gets the same representative. If
         # the equivalence class contains a single object, the representative is
-        # this object. (If it contains more than one object, the assignment is
+        # this object. (If it contains more than one object, the conjunction is
         # inconsistent and we don't store representatives.)
         # (with objects being smaller than variables)
         representative = {}
@@ -89,20 +89,24 @@ class ConstraintSystem:
           interpreted as a disjunction of such expressions.
         - ineq_disjunctions is a list of InequalityDisjunctions. Each of them
           represents a expression of the form (u1 != v1 or ... or um !=i vm).
+        - not_constant is a list of strings.
 
         We say that the system is solvable if we can pick from each list of
         EqualityConjunctions in equality_DNFs one EquivalenceConjunction such
         that the finest equivalence relation induced by all the equivalences in
         the conjunctions is
         - consistent, i.e. no equivalence class contains more than one object,
-          and
         - for every disjunction in ineq_disjunctions there is at least one
           inequality such that the two terms are in different equivalence
-          classes."""
+          classes.
+        - every element of not_constant is not in the same equivalence class
+          as a constant.
+        We refer to the equivalence relation as the solution of the system."""
 
     def __init__(self):
         self.equality_DNFs = []
         self.ineq_disjunctions = []
+        self.not_constant = []
 
     def __str__(self):
         equality_DNFs = []
@@ -111,11 +115,11 @@ class ConstraintSystem:
                                 for eq_conjunction in eq_DNF])
             disj = "(%s)" % disj
             equality_DNFs.append(disj)
-        equality_part = " and\n".join(equality_DNFs)
+        eq_part = " and\n".join(equality_DNFs)
 
         ineq_disjunctions = [str(clause) for clause in self.ineq_disjunctions]
-        inequality_part = " and ".join(ineq_disjunctions)
-        return f"{equality_part} ({inequality_part})"
+        ineq_part = " and ".join(ineq_disjunctions)
+        return f"{eq_part} ({ineq_part}) (not constant {self.not_constant}"
 
     def _combine_equality_conjunctions(self, eq_conjunctions:
                                        Iterable[EqualityConjunction]) -> None:
@@ -132,9 +136,13 @@ class ConstraintSystem:
     def add_inequality_disjunction(self, ineq_disj: InequalityDisjunction):
         self.ineq_disjunctions.append(ineq_disj)
 
+    def add_not_constant(self, not_constant: str) -> None:
+        self.not_constants.append(not_constant)
+
     def extend(self, other: "ConstraintSystem") -> None:
         self.equality_DNFs.extend(other.equality_DNFs)
         self.ineq_disjunctions.extend(other.ineq_disjunctions)
+        self.not_constant.extend(other.not_constant)
 
     def is_solvable(self):
         # cf. top of class for explanation
@@ -150,10 +158,13 @@ class ConstraintSystem:
             if not combined.is_consistent():
                 continue
             # check whether with the finest equivalence relation induced by the
-            # combined equality conjunction there is in each inequality
-            # disjunction an inequality where the two terms are in different
-            # equivalence classes.
+            # combined equality conjunction there is no element of not_constant
+            # in the same equivalence class as a constant and that in each
+            # inequality disjunction there is an inequality where the two terms
+            # are in different equivalence classes.
             representative = combined.get_representative()
+            if any(representative[s][0] != "?" for s in self.not_constant):
+                continue
             for ineq_disjunction in self.ineq_disjunctions:
                 if not inequality_disjunction_ok(ineq_disjunction,
                                                  representative):
