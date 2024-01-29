@@ -74,30 +74,23 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
         break;
     }
 
-    /*
-      Compute the indices at which the merged SCCs can be found when all
-      SCCs have been merged.
-    */
-    int index = num_vars - 1;
-    log << "SCCs of the causal graph:" << endl;
+    if (log.is_at_least_normal()) {
+        log << "SCCs of the causal graph:" << endl;
+    }
     vector<vector<int>> non_singleton_cg_sccs;
-    vector<int> indices_of_merged_sccs;
-    indices_of_merged_sccs.reserve(sccs.size());
     for (const vector<int> &scc : sccs) {
-        log << scc << endl;
+        if (log.is_at_least_normal()) {
+            log << scc << endl;
+        }
         int scc_size = scc.size();
-        if (scc_size == 1) {
-            indices_of_merged_sccs.push_back(scc.front());
-        } else {
-            index += scc_size - 1;
-            indices_of_merged_sccs.push_back(index);
+        if (scc_size != 1) {
             non_singleton_cg_sccs.push_back(scc);
         }
     }
-    if (sccs.size() == 1) {
+    if (log.is_at_least_normal() && sccs.size() == 1) {
         log << "Only one single SCC" << endl;
     }
-    if (static_cast<int>(sccs.size()) == num_vars) {
+    if (log.is_at_least_normal() && static_cast<int>(sccs.size()) == num_vars) {
         log << "Only singleton SCCs" << endl;
         assert(non_singleton_cg_sccs.empty());
     }
@@ -111,8 +104,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
         task_proxy,
         merge_tree_factory,
         merge_selector,
-        move(non_singleton_cg_sccs),
-        move(indices_of_merged_sccs));
+        move(non_singleton_cg_sccs));
 }
 
 bool MergeStrategyFactorySCCs::requires_init_distances() const {
