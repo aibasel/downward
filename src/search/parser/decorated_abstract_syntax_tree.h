@@ -67,7 +67,7 @@ public:
 
     std::string get_key() const;
     const DecoratedASTNode &get_value() const;
-    void dump(std::string indent) const;
+    void dump(const std::string &indent) const;
 
     // TODO: This is here only for the iterated search. Once we switch to builders, we won't need it any more.
     bool is_lazily_constructed() const;
@@ -99,7 +99,7 @@ class DecoratedFunctionCallNode : public DecoratedASTNode {
     std::string unparsed_config;
 public:
     DecoratedFunctionCallNode(
-        std::shared_ptr<const plugins::Feature> feature,
+        const std::shared_ptr<const plugins::Feature> &feature,
         std::vector<FunctionArgument> &&arguments,
         const std::string &unparsed_config);
 
@@ -155,6 +155,20 @@ public:
     virtual std::unique_ptr<DecoratedASTNode> clone() const override;
     virtual std::shared_ptr<DecoratedASTNode> clone_shared() const override;
     BoolLiteralNode(const BoolLiteralNode &other);
+};
+
+class StringLiteralNode : public DecoratedASTNode {
+    std::string value;
+public:
+    StringLiteralNode(const std::string &value);
+
+    plugins::Any construct(ConstructContext &context) const override;
+    void dump(std::string indent) const override;
+
+    // TODO: once we get rid of lazy construction, this should no longer be necessary.
+    virtual std::unique_ptr<DecoratedASTNode> clone() const override;
+    virtual std::shared_ptr<DecoratedASTNode> clone_shared() const override;
+    StringLiteralNode(const StringLiteralNode &other);
 };
 
 class IntLiteralNode : public DecoratedASTNode {

@@ -49,7 +49,7 @@ class CostSaturation {
     void build_abstractions(
         const std::vector<std::shared_ptr<AbstractTask>> &subtasks,
         const utils::CountdownTimer &timer,
-        std::function<bool()> should_abort);
+        const std::function<bool()> &should_abort);
     void print_statistics(utils::Duration init_time) const;
 
 public:

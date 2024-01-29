@@ -10,8 +10,18 @@ For further information:
 - Fast Downward mailing list: <https://groups.google.com/forum/#!forum/fast-downward>
 - Fast Downward main repository: <https://github.com/aibasel/downward>
 
+## Scientific experiments
 
-## Tested software versions
+We recommend to use the [latest release](https://github.com/aibasel/downward/releases/latest) instead of the tip of the main branch.
+The [Downward Lab](https://lab.readthedocs.io/en/stable/) Python package helps running Fast Downward experiments.
+Our separate [benchmark repository](https://github.com/aibasel/downward-benchmarks) contains a collection of planning tasks.
+
+## Supported software versions
+
+The planner is mainly developed under Linux; and all of its features should work with no restrictions under this platform.
+The planner should compile and run correctly on macOS, but we cannot guarantee that it works as well as under Linux.
+The same comment applies for Windows, where additionally some diagnostic features (e.g., reporting peak memory usage when the planner is terminated by a signal) are not supported.
+Setting time and memory limits and running portfolios is not supported under Windows either.
 
 This version of Fast Downward has been tested with the following software versions:
 
@@ -27,11 +37,15 @@ We test LP support with CPLEX 22.1.1 and SoPlex 6.0.3+. On Ubuntu we
 test both CPLEX and SoPlex. On Windows we currently only test CPLEX,
 and on macOS we do not test LP solvers (yet).
 
+## Build instructions
+
+See [BUILD.md](BUILD.md).
+
 
 ## Contributors
 
 The following list includes all people that actively contributed to
-Fast Downward, i.e. all people that appear in some commits in Fast
+Fast Downward, i.e., all people that appear in some commits in Fast
 Downward's history (see below for a history on how Fast Downward
 emerged) or people that influenced the development of such commits.
 Currently, this list is sorted by the last year the person has been
@@ -51,6 +65,7 @@ contributing, and finally by last name.
 - 2022-2023 Remo Christen
 - 2023 Simon Dold
 - 2023 Claudia S. Grundke
+- 2023 Victor Paléologue
 - 2023 Emanuele Tirendi
 - 2021-2022 Dominik Drexler
 - 2016-2020 Cedric Geissmann

@@ -1,7 +1,11 @@
 #include "lp_solver.h"
 
+#ifdef HAS_CPLEX
 #include "cplex_solver_interface.h"
+#endif
+#ifdef HAS_SOPLEX
 #include "soplex_solver_interface.h"
+#endif
 
 #include "../plugins/plugin.h"
 
@@ -17,7 +21,7 @@ void add_lp_solver_option_to_feature(plugins::Feature &feature) {
     feature.document_note(
         "Note",
         "to use an LP solver, you must build the planner with LP support. "
-        "See LPBuildInstructions.");
+        "See [build instructions https://github.com/aibasel/downward/blob/main/BUILD.md].");
 }
 
 LPConstraint::LPConstraint(double lower_bound, double upper_bound)
@@ -103,7 +107,7 @@ const string &LinearProgram::get_objective_name() const {
     return objective_name;
 }
 
-void LinearProgram::set_objective_name(string name) {
+void LinearProgram::set_objective_name(const string &name) {
     objective_name = name;
 }
 
@@ -132,7 +136,7 @@ LPSolver::LPSolver(LPSolverType solver_type) {
         cerr << "Tried to use LP solver " << missing_solver
              << ", but the planner was compiled without support for it."
              << endl
-             << "See https://www.fast-downward.org/LPBuildInstructions\n"
+             << "See https://github.com/aibasel/downward/blob/main/BUILD.md\n"
              << "to install " << missing_solver
              << " and use it in the planner." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
@@ -176,7 +180,7 @@ void LPSolver::set_variable_lower_bound(int index, double bound) {
 }
 
 void LPSolver::set_variable_upper_bound(int index, double bound) {
-    pimpl->set_constraint_upper_bound(index, bound);
+    pimpl->set_variable_upper_bound(index, bound);
 }
 
 void LPSolver::set_mip_gap(double gap) {

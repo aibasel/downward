@@ -4,8 +4,6 @@
 
 #include "../utils/system.h"
 
-#ifdef HAS_SOPLEX
-
 using namespace std;
 using namespace soplex;
 
@@ -57,7 +55,7 @@ SoPlexSolverInterface::SoPlexSolverInterface() : SolverInterface() {
 void SoPlexSolverInterface::load_problem(const LinearProgram &lp) {
     for (const LPVariable &var : lp.get_variables()) {
         if (var.is_integer) {
-            cout << "SoPlex does not support integer variables" << endl;
+            cerr << "SoPlex does not support integer variables" << endl;
             utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
         }
     }
@@ -107,18 +105,18 @@ void SoPlexSolverInterface::set_constraint_upper_bound(int index, double bound) 
 }
 
 void SoPlexSolverInterface::set_variable_lower_bound(int index, double bound) {
-    soplex.changeUpperReal(index, bound);
+    soplex.changeLowerReal(index, bound);
 }
 
 void SoPlexSolverInterface::set_variable_upper_bound(int index, double bound) {
-    soplex.changeLowerReal(index, bound);
+    soplex.changeUpperReal(index, bound);
 }
 
 void SoPlexSolverInterface::set_mip_gap(double /*gap*/) {
     /*
-      There is nothing to do here: Soplex doesn't accept MIPs, so setting a MIP
+      There is nothing to do here: SoPlex doesn't accept MIPs, so setting a MIP
       gap tolerance has no effect. We do not treat it as an error, so solvers
-      can be set up without cheking what problems they will eventually solve.
+      can be set up without checking what problems they will eventually solve.
       Loading a problem with integer variables will lead to an error either way.
      */
 }
@@ -228,5 +226,3 @@ void SoPlexSolverInterface::print_statistics() const {
     soplex.printStatistics(cout);
 }
 }
-
-#endif

@@ -9,8 +9,7 @@ class LandmarkFactoryReasonableOrdersHPS : public LandmarkFactory {
 
     virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
 
-    void approximate_reasonable_orders(
-        const TaskProxy &task_proxy);
+    void approximate_reasonable_orders(const TaskProxy &task_proxy);
     bool interferes(
         const TaskProxy &task_proxy, const Landmark &landmark_a,
         const Landmark &landmark_b) const;

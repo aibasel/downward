@@ -105,10 +105,10 @@ int CGHeuristic::get_transition_cost(const State &state,
     if (start->distances.empty()) {
         // Initialize data of initial node.
         start->distances.resize(dtg->nodes.size(), numeric_limits<int>::max());
-        start->helpful_transitions.resize(dtg->nodes.size(), 0);
+        start->helpful_transitions.resize(dtg->nodes.size(), nullptr);
         start->distances[start_val] = 0;
-        start->reached_from = 0;
-        start->reached_by = 0;
+        start->reached_from = nullptr;
+        start->reached_by = nullptr;
         start->children_state.resize(dtg->local_to_global_child.size());
         for (size_t i = 0; i < dtg->local_to_global_child.size(); ++i) {
             start->children_state[i] =
@@ -188,7 +188,7 @@ int CGHeuristic::get_transition_cost(const State &state,
                         target->reached_from = source;
                         target->reached_by = &label;
 
-                        if (current_helpful_transition == 0) {
+                        if (current_helpful_transition == nullptr) {
                             // This transition starts at the start node;
                             // no helpful transitions recorded yet.
                             start->helpful_transitions[target->value] = &label;

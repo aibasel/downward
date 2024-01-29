@@ -3,9 +3,9 @@ name: Ubuntu
 
 on:
   push:
-    branches: [main, issue*, release-*]
+    branches: [main, release-*]
   pull_request:
-    branches: [main, issue*, release-*]
+    branches: [main, release-*]
 
 # Some notes on file paths: the working directory is $GITHUB_WORKSPACE,
 # which equals /home/runner/work/my-repo-name/my-repo-name. The code is
@@ -29,9 +29,9 @@ jobs:
       CC: ${{ matrix.version.cc }}
       CXX: ${{ matrix.version.cxx }}
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
-      DOWNWARD_CPLEX_ROOT: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex
+      cplex_DIR: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex
       CPLEX_LIB: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/libcplex2211.so
-      DOWNWARD_SOPLEX_ROOT: /home/runner/lib/soplex-6.0.3x
+      soplex_DIR: /home/runner/lib/soplex-6.0.3x
       SOPLEX_LIB: /home/runner/lib/soplex-6.0.3x/lib/
       SOPLEX_INCLUDE: /home/runner/lib/soplex-6.0.3x/include/
     steps:
@@ -57,6 +57,14 @@ jobs:
         run: |
           sudo apt-get -y install ${{ matrix.version.cxx }}
 
+      # TODO: Remove once issue with Ubuntu 22.04 and clang++-14 is resolved.
+      - name: Work around https://github.com/actions/runner-images/issues/8659
+        if: matrix.version.cxx == 'clang++-14'
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-jammy.list
+          sudo apt-get update
+          sudo apt-get install -y --allow-downgrades libc6=2.35-* libc6-dev=2.35-* libstdc++6=12.3.0-* libgcc-s1=12.3.0-*
+
       # Only install CPLEX if its URL/secret is set.
       - name: Install CPLEX
         if: ${{ env.CPLEX_URL != 0 }}
@@ -64,7 +72,7 @@ jobs:
           # We redirect output of wget to hide the secret URLs.
           wget -O cplex_installer $CPLEX_URL &> /dev/null
           chmod +x cplex_installer
-          ./cplex_installer -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR="$(dirname "${DOWNWARD_CPLEX_ROOT}")" -i silent
+          ./cplex_installer -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR="$(dirname "${cplex_DIR}")" -i silent
           rm cplex_installer
 
       # Always install SoPlex
@@ -76,7 +84,7 @@ jobs:
           cd ..
           cmake -S soplex -B build
           cmake --build build
-          cmake --install build --prefix "${DOWNWARD_SOPLEX_ROOT}"
+          cmake --install build --prefix "${soplex_DIR}"
           rm -rf soplex build
 
       - name: Compile planner
@@ -161,7 +169,7 @@ jobs:
       - name: Run driver, translator and search tests
         run: |
           cd misc/
-          tox -e driver,translator,search
+          tox -e driver,translator,search,autodoc
 
       - name: Run CPLEX tests
         if: ${{ env.CPLEX_URL != 0 }}

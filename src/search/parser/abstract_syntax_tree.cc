@@ -183,6 +183,7 @@ void FunctionCallNode::collect_keyword_arguments(
     DecorateContext &context, CollectedArguments &arguments) const {
     unordered_map<string, plugins::ArgumentInfo> argument_infos_by_key;
     for (const plugins::ArgumentInfo &arg_info : argument_infos) {
+        assert(!argument_infos_by_key.contains(arg_info.key));
         argument_infos_by_key.insert({arg_info.key, arg_info});
     }
 
@@ -402,7 +403,7 @@ const plugins::Type &ListNode::get_type(DecorateContext &context) const {
     }
 }
 
-LiteralNode::LiteralNode(Token value)
+LiteralNode::LiteralNode(const Token &value)
     : value(value) {
 }
 
@@ -419,6 +420,8 @@ DecoratedASTNodePtr LiteralNode::decorate(DecorateContext &context) const {
     switch (value.type) {
     case TokenType::BOOLEAN:
         return utils::make_unique_ptr<BoolLiteralNode>(value.content);
+    case TokenType::STRING:
+        return utils::make_unique_ptr<StringLiteralNode>(value.content);
     case TokenType::INTEGER:
         return utils::make_unique_ptr<IntLiteralNode>(value.content);
     case TokenType::FLOAT:
@@ -440,6 +443,8 @@ const plugins::Type &LiteralNode::get_type(DecorateContext &context) const {
     switch (value.type) {
     case TokenType::BOOLEAN:
         return plugins::TypeRegistry::instance()->get_type<bool>();
+    case TokenType::STRING:
+        return plugins::TypeRegistry::instance()->get_type<string>();
     case TokenType::INTEGER:
         return plugins::TypeRegistry::instance()->get_type<int>();
     case TokenType::FLOAT:

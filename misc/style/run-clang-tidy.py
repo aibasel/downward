@@ -14,6 +14,14 @@ SRC_DIR = os.path.join(REPO, "src")
 import utils
 
 
+LIGHTWEIGHT_TYPES = ["StateID"]
+IGNORES = [
+    "'cplex.h' file not found [clang-diagnostic-error]",
+    "'soplex.h' file not found [clang-diagnostic-error]",
+    "local copy 'copied_key' of the variable 'key' is never modified; consider avoiding the copy [performance-unnecessary-copy-initialization]",
+]
+
+
 def check_search_code_with_clang_tidy():
     # clang-tidy needs the CMake files.
     build_dir = os.path.join(REPO, "builds", "clang-tidy")
@@ -41,15 +49,29 @@ def check_search_code_with_clang_tidy():
     # categories instead of deleting them to see which additional checks
     # we could activate.
     checks = [
+        "bugprone-use-after-move",
+
+        # "performance-avoid-endl",
+        # "performance-enum-size",
+        "performance-faster-string-find",
+        "performance-for-range-copy",
+        "performance-implicit-conversion-in-loop",
+        "performance-inefficient-algorithm",
+        # "performance-inefficient-string-concatenation",
+        "performance-inefficient-vector-operation",
         # Enable with CheckTriviallyCopyableMove=0 when we require
         # clang-tidy >= 6.0 (see issue856).
-        # "misc-move-const-arg",
-        "misc-move-constructor-init",
-        "misc-use-after-move",
-
-        "performance-for-range-copy",
-        "performance-implicit-cast-in-loop",
-        "performance-inefficient-vector-operation",
+        # "performance-move-const-arg",
+        "performance-move-constructor-init",
+        "performance-no-automatic-move",
+        # "performance-no-int-to-ptr",
+        # "performance-noexcept-destructor",
+        # "performance-noexcept-move-constructor",
+        # "performance-noexcept-swap",
+        "performance-trivially-destructible",
+        "performance-type-promotion-in-math-fn",
+        "performance-unnecessary-copy-initialization",
+        "performance-unnecessary-value-param",
 
         "readability-avoid-const-params-in-decls",
         # "readability-braces-around-statements",
@@ -77,30 +99,39 @@ def check_search_code_with_clang_tidy():
         "readability-static-definition-in-anonymous-namespace",
         "readability-uniqueptr-delete-release",
         ]
+    config = f"""{{CheckOptions: [\
+        {{key: performance-unnecessary-value-param.AllowedTypes, value: "{';'.join(LIGHTWEIGHT_TYPES)}"}},\
+    ]}}""".replace("    ", "")
     cmd = [
         "run-clang-tidy-12",
         "-quiet",
         "-p", build_dir,
         "-clang-tidy-binary=clang-tidy-12",
-        "-checks=-*," + ",".join(checks)]
+        "-checks=-*," + ",".join(checks),
+        f"-config={config}",
+    ]
     print("Running clang-tidy: " + " ".join(pipes.quote(x) for x in cmd))
     print()
+    # Don't check returncode here because clang-tidy exits with 1 if it finds any issues.
     try:
-        output = subprocess.check_output(cmd, cwd=DIR, stderr=subprocess.STDOUT).decode("utf-8")
-    except subprocess.CalledProcessError as err:
-        print("Failed to run clang-tidy-12. Is it on the PATH?")
-        print("Output:", err.stdout)
-        return False
+        p = subprocess.run(cmd, cwd=DIR, text=True, capture_output=True, check=False)
+    except FileNotFoundError:
+        sys.exit(f"run-clang-tidy-12 not found. Is it on the PATH?")
+    output = f"{p.stdout}\n{p.stderr}"
     errors = re.findall(r"^(.*:\d+:\d+: .*(?:warning|error): .*)$", output, flags=re.M)
-    for error in errors:
-        print(error)
-    if errors:
+    filtered_errors = [error for error in errors if not any(ignore in error for ignore in IGNORES)]
+
+    if filtered_errors:
+        print("Errors and warnings:")
+        for error in filtered_errors:
+            print(error)
         fix_cmd = cmd + [
             "-clang-apply-replacements-binary=clang-apply-replacements-12", "-fix"]
-        print()
-        print("You may be able to fix these issues with the following command: " +
+        print("\nYou may be able to fix some of these issues with the following command:\n" +
             " ".join(pipes.quote(x) for x in fix_cmd))
         sys.exit(1)
+    elif not errors and p.returncode != 0:
+        sys.exit(p.stderr)
 
 
 check_search_code_with_clang_tidy()

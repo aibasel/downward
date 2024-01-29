@@ -60,7 +60,7 @@ public:
     explicit PotentialOptimizer(const plugins::Options &opts);
     ~PotentialOptimizer() = default;
 
-    const std::shared_ptr<AbstractTask> get_task() const;
+    std::shared_ptr<AbstractTask> get_task() const;
     bool potentials_are_bounded() const;
 
     void optimize_for_state(const State &state);

@@ -91,7 +91,7 @@ public:
     const named_vector::NamedVector<LPConstraint> &get_constraints() const;
     double get_infinity() const;
     LPObjectiveSense get_sense() const;
-    void set_objective_name(std::string name);
+    void set_objective_name(const std::string &name);
     const std::string &get_objective_name() const;
 };
 

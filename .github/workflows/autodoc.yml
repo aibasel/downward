@@ -25,7 +25,9 @@ jobs:
 
       - name: Run autodoc
         run: |
+          python3 build.py
           cd misc/autodoc
+          python3 -m pip install -r requirements.txt
           python3 autodoc.py
 
 ...

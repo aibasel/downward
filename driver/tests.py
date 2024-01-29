@@ -5,23 +5,20 @@ Test module for Fast Downward driver script. Run with
 """
 
 import os
+from pathlib import Path
 import subprocess
 import sys
+import traceback
 
 import pytest
 
 from .aliases import ALIASES, PORTFOLIOS
 from .arguments import EXAMPLES
+from .call import check_call
 from . import limits
 from . import returncodes
+from .run_components import get_executable, REL_SEARCH_PATH
 from .util import REPO_ROOT_DIR, find_domain_filename
-
-
-def translate():
-    """Create translated task."""
-    cmd = [sys.executable, "fast-downward.py", "--translate",
-           "misc/tests/benchmarks/gripper/prob01.pddl"]
-    subprocess.check_call(cmd, cwd=REPO_ROOT_DIR)
 
 
 def cleanup():
@@ -29,10 +26,12 @@ def cleanup():
                           cwd=REPO_ROOT_DIR)
 
 
-def run_driver(parameters):
+def teardown_module(module):
     cleanup()
-    translate()
-    cmd = [sys.executable, "fast-downward.py"] + parameters
+
+
+def run_driver(parameters):
+    cmd = [sys.executable, "fast-downward.py", "--keep"] + parameters
     return subprocess.check_call(cmd, cwd=REPO_ROOT_DIR)
 
 
@@ -57,6 +56,53 @@ def test_portfolios():
         parameters = ["--portfolio", portfolio,
                       "--search-time-limit", "30m", "output.sas"]
         run_driver(parameters)
+
+
+def _get_portfolio_configs(portfolio: Path):
+    content = portfolio.read_text()
+    attributes = {}
+    try:
+        exec(content, attributes)
+    except Exception:
+        traceback.print_exc()
+        raise SyntaxError(
+            f"The portfolio {portfolio} could not be loaded.")
+    if "CONFIGS" not in attributes:
+        raise ValueError("portfolios must define CONFIGS")
+    return [config for _, config in attributes["CONFIGS"]]
+
+
+def _convert_to_standalone_config(config):
+    replacements = [
+        ("H_COST_TRANSFORM", "no_transform()"),
+        ("S_COST_TYPE", "normal"),
+        ("BOUND", "infinity"),
+    ]
+    for index, part in enumerate(config):
+        for before, after in replacements:
+            part = part.replace(before, after)
+        config[index] = part
+    return config
+
+
+def _run_search(config):
+    check_call(
+        "search",
+        [get_executable("release", REL_SEARCH_PATH)] + list(config),
+        stdin="output.sas")
+
+
+def _get_all_portfolio_configs():
+    all_configs = set()
+    for portfolio in PORTFOLIOS.values():
+        configs = _get_portfolio_configs(Path(portfolio))
+        all_configs |= set(tuple(_convert_to_standalone_config(config)) for config in configs)
+    return all_configs
+
+
+@pytest.mark.parametrize("config", _get_all_portfolio_configs())
+def test_portfolio_config(config):
+    _run_search(config)
 
 
 @pytest.mark.skipif(not limits.can_set_time_limit(), reason="Cannot set time limits on this system")

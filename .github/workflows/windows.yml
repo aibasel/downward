@@ -3,20 +3,19 @@ name: Windows
 
 on:
   push:
-    branches: [main, issue*, release-*]
+    branches: [main, release-*]
   pull_request:
-    branches: [main, issue*, release-*]
+    branches: [main, release-*]
 
 env:
   ARCH: "x64"
   CC: cl
   CXX: cl
 
-  DOWNWARD_CPLEX_ROOT: D:\a\downward\cplex
-  ZLIB_ROOT: D:\a\downward\zlib
+  cplex_DIR: D:\a\cplex
 
   CPLEX_URL: "${{ secrets.CPLEX2211_WINDOWS_URL }}"
-  ZLIB_URL: "https://www.zlib.net/zlib1213.zip"
+  ZLIB_URL: "https://www.zlib.net/zlib13.zip"
 
 
 jobs:
@@ -54,7 +53,7 @@ jobs:
           cd zlib
 
           echo "Set up zlib include directory"
-          move ../zlib-1.2.13 include
+          move ../zlib-1.3 include
 
           echo "Compile zlib library"
           cd include
@@ -73,11 +72,11 @@ jobs:
           curl.exe --output cplex.exe $ENV:CPLEX_URL
 
           echo "Install CPLEX"
-          Start-Process -FilePath .\cplex.exe -ArgumentList "-f", "D:\a\downward\downward\.github\workflows\misc\cplex2211_windows_installer.properties" -PassThru | Wait-Process
+          Start-Process -FilePath .\cplex.exe -ArgumentList "-f", "$ENV:GITHUB_WORKSPACE\.github\workflows\misc\cplex2211_windows_installer.properties" -PassThru | Wait-Process
           del .\cplex.exe
 
-          echo "Copy the relevant directory to a location which is not magically protected against cmake"
-          Xcopy /E /I ..\cplex_temp\cplex ..\cplex
+          echo "Copy the relevant directory to a location which is not magically protected against CMake"
+          Xcopy /E /I D:\a\cplex_temp\cplex $ENV:cplex_DIR
 
 
       - name: Compile planner

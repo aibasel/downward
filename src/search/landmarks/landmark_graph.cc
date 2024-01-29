@@ -102,9 +102,11 @@ bool LandmarkGraph::contains_landmark(const FactPair &lm) const {
 }
 
 LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark) {
-    assert(all_of(landmark.facts.begin(), landmark.facts.end(), [&](const FactPair &lm_fact) {
-                      return !contains_landmark(lm_fact);
-                  }));
+    assert(landmark.conjunctive
+           || all_of(landmark.facts.begin(), landmark.facts.end(),
+                     [&](const FactPair &lm_fact) {
+                         return !contains_landmark(lm_fact);
+                     }));
     unique_ptr<LandmarkNode> new_node =
         utils::make_unique_ptr<LandmarkNode>(move(landmark));
     LandmarkNode *new_node_p = new_node.get();

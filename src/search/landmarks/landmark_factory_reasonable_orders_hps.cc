@@ -29,7 +29,6 @@ void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<Abs
         log << "approx. reasonable orders" << endl;
     }
     approximate_reasonable_orders(task_proxy);
-    mk_acyclic_graph();
 }
 
 void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
@@ -50,9 +49,6 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
         const Landmark &landmark = node_p->get_landmark();
         if (landmark.disjunctive)
             continue;
-
-        if (landmark.is_true_in_state(initial_state))
-            return;
 
         if (landmark.is_true_in_goal) {
             for (auto &node2_p : lm_graph->get_nodes()) {

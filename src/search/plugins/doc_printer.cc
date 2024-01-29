@@ -118,7 +118,7 @@ void Txt2TagsPrinter::print_usage(const Feature &feature) const {
             argument_help_strings.push_back(arg_help);
         }
         os << utils::join(argument_help_strings, ", ")
-           << ")" << endl << endl << endl;
+           << ")" << endl;
     }
 }
 
@@ -133,11 +133,12 @@ void Txt2TagsPrinter::print_arguments(const Feature &feature) const {
         if (arg_type.is_enum_type()) {
             for (const pair<string, string> &explanation :
                  arg_type.get_documented_enum_values()) {
-                os << " - ``" << explanation.first << "``: "
+                os << "    - ``" << explanation.first << "``: "
                    << explanation.second << endl;
             }
         }
     }
+    os << endl << endl;
 }
 
 void Txt2TagsPrinter::print_notes(const Feature &feature) const {
@@ -153,10 +154,11 @@ void Txt2TagsPrinter::print_notes(const Feature &feature) const {
 
 void Txt2TagsPrinter::print_language_features(const Feature &feature) const {
     if (!feature.get_language_support().empty()) {
-        os << "Language features supported:" << endl;
+        os << "Supported language features:" << endl;
         for (const LanguageSupportInfo &ls : feature.get_language_support()) {
             os << "- **" << ls.feature << ":** " << ls.description << endl;
         }
+        os << endl << endl;
     }
 }
 
@@ -166,6 +168,7 @@ void Txt2TagsPrinter::print_properties(const Feature &feature) const {
         for (const PropertyInfo &prop : feature.get_properties()) {
             os << "- **" << prop.property << ":** " << prop.description << endl;
         }
+        os << endl << endl;
     }
 }
 
@@ -187,6 +190,7 @@ void Txt2TagsPrinter::print_category_synopsis(const string &synopsis,
            << "expressions but are deprecated."
            << endl;
     }
+    os << endl;
 }
 
 void Txt2TagsPrinter::print_category_footer() const {

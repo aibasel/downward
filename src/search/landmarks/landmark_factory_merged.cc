@@ -24,18 +24,18 @@ LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const Landmark &landm
         if (lm_graph->contains_simple_landmark(lm_fact))
             return &lm_graph->get_simple_landmark(lm_fact);
         else
-            return 0;
+            return nullptr;
     } else if (landmark.disjunctive) {
         set<FactPair> lm_facts(landmark.facts.begin(), landmark.facts.end());
         if (lm_graph->contains_identical_disjunctive_landmark(lm_facts))
             return &lm_graph->get_disjunctive_landmark(landmark.facts[0]);
         else
-            return 0;
+            return nullptr;
     } else if (landmark.conjunctive) {
         cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
         utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
-    return 0;
+    return nullptr;
 }
 
 void LandmarkFactoryMerged::generate_landmarks(
@@ -130,7 +130,6 @@ void LandmarkFactoryMerged::generate_landmarks(
 
 void LandmarkFactoryMerged::postprocess() {
     lm_graph->set_landmark_ids();
-    mk_acyclic_graph();
 }
 
 bool LandmarkFactoryMerged::computes_reasonable_orders() const {

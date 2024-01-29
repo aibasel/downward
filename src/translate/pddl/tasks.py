@@ -68,15 +68,22 @@ class Task:
             for axiom in self.axioms:
                 axiom.dump()
 
+
+REQUIREMENT_LABELS = [
+    ":strips", ":adl", ":typing", ":negation", ":equality",
+    ":negative-preconditions", ":disjunctive-preconditions",
+    ":existential-preconditions", ":universal-preconditions",
+    ":quantified-preconditions", ":conditional-effects",
+    ":derived-predicates", ":action-costs"
+]
+
+
 class Requirements:
     def __init__(self, requirements: List[str]):
         self.requirements = requirements
         for req in requirements:
-            assert req in (
-              ":strips", ":adl", ":typing", ":negation", ":equality",
-              ":negative-preconditions", ":disjunctive-preconditions",
-              ":existential-preconditions", ":universal-preconditions",
-              ":quantified-preconditions", ":conditional-effects",
-              ":derived-predicates", ":action-costs"), req
+            if req not in REQUIREMENT_LABELS:
+                raise ValueError(f"Invalid requirement. Got: {req}\n"
+                                 f"Expected: {', '.join(REQUIREMENT_LABELS)}")
     def __str__(self):
         return ", ".join(self.requirements)

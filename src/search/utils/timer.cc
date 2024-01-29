@@ -1,6 +1,7 @@
 #include "timer.h"
 
 #include <ctime>
+#include <iomanip>
 #include <ostream>
 
 #if OPERATING_SYSTEM == LINUX || OPERATING_SYSTEM == OSX
@@ -110,7 +111,7 @@ Duration Timer::reset() {
 }
 
 ostream &operator<<(ostream &os, const Timer &timer) {
-    os << timer();
+    os << fixed << setprecision(6) << timer();
     return os;
 }
 

@@ -609,7 +609,6 @@ void LandmarkFactoryHM::postprocess(const TaskProxy &task_proxy) {
         discard_all_orderings();
 
     calc_achievers(task_proxy);
-    mk_acyclic_graph();
 }
 
 void LandmarkFactoryHM::discard_conjunctive_landmarks() {

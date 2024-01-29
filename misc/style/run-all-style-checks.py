@@ -25,7 +25,7 @@ def check_python_style():
             "flake8",
             # https://flake8.pycqa.org/en/latest/user/error-codes.html
             "--extend-ignore", "E128,E129,E131,E261,E266,E301,E302,E305,E306,E402,E501,E741,F401",
-            "--exclude", "run-clang-tidy.py,txt2tags.py,.tox",
+            "--exclude", "run-clang-tidy.py,txt2tags.py,.tox,.venv",
             "src/translate/", "driver/", "misc/",
             "build.py", "build_configs.py", "fast-downward.py"], cwd=REPO)
     except FileNotFoundError:

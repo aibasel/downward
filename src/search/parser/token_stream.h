@@ -16,11 +16,12 @@ enum class TokenType {
     CLOSING_BRACKET,
     COMMA,
     EQUALS,
+    LET,
+    BOOLEAN,
+    STRING,
     INTEGER,
     FLOAT,
-    BOOLEAN,
-    IDENTIFIER,
-    LET
+    IDENTIFIER
 };
 
 struct Token {

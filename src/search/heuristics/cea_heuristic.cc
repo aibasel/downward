@@ -98,7 +98,7 @@ struct LocalProblemNode {
           cost(-1),
           expanded(false),
           context(context_size, -1),
-          reached_by(0) {
+          reached_by(nullptr) {
     }
 
     ~LocalProblemNode() {
@@ -222,7 +222,7 @@ void ContextEnhancedAdditiveHeuristic::set_up_local_problem(
         to_node.expanded = false;
         to_node.cost = numeric_limits<int>::max();
         to_node.waiting_list.clear();
-        to_node.reached_by = 0;
+        to_node.reached_by = nullptr;
     }
 
     LocalProblemNode *start = &problem->nodes[start_value];
@@ -359,7 +359,7 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
     assert(node->cost >= 0 && node->cost < numeric_limits<int>::max());
     LocalTransition *first_on_path = node->reached_by;
     if (first_on_path) {
-        node->reached_by = 0; // Clear to avoid revisiting this node later.
+        node->reached_by = nullptr; // Clear to avoid revisiting this node later.
         if (first_on_path->target_cost == first_on_path->action_cost) {
             // Transition possibly applicable.
             const ValueTransitionLabel &label = *first_on_path->label;
@@ -425,7 +425,7 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     VariablesProxy vars = task_proxy.get_variables();
     local_problem_index.resize(vars.size());
     for (VariableProxy var : vars)
-        local_problem_index[var.get_id()].resize(var.get_domain_size(), 0);
+        local_problem_index[var.get_id()].resize(var.get_domain_size(), nullptr);
 }
 
 ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
