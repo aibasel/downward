@@ -856,7 +856,7 @@ create_fast_downward_library(
     HELP "Plugin containing the code for operator-counting heuristics"
     SOURCES
         operator_counting/constraint_generator
-        operator_counting/delete_relaxation_constraints
+        operator_counting/delete_relaxation_constraints_if
         operator_counting/lm_cut_constraints
         operator_counting/operator_counting_heuristic
         operator_counting/pho_constraints
