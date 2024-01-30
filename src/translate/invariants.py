@@ -60,7 +60,7 @@ def ensure_conjunction_sat(system, *parts):
        - for predicates that occur with a positive and negative literal, we
          consider every combination of a positive one (e.g. P(x, y, z)) and
          a negative one (e.g. (not P(a, b, c))) and add a constraint
-         (x != y or y != b or z != c)."""
+         (x != a or y != b or z != c)."""
     pos = defaultdict(set)
     neg = defaultdict(set)
     for literal in itertools.chain(*parts):

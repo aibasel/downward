@@ -2,7 +2,6 @@ import itertools
 from typing import Iterable, List, Tuple
 
 class InequalityDisjunction:
-    # disjunction of inequalities
     def __init__(self, parts: List[Tuple[str, str]]):
         self.parts = parts
         assert len(parts)
@@ -15,8 +14,8 @@ class InequalityDisjunction:
 class EqualityConjunction:
     def __init__(self, equalities):
         self.equalities = tuple(equalities)
-        # represents a conjunction of expressions x = y, where x,y are strings
-        # representing objects or variables or ints, representing invariant
+        # A conjunction of expressions x = y, where x,y are either strings
+        # that denote objects or variables, or ints that denote invariant
         # parameters.
 
         self._consistent = None
@@ -44,26 +43,25 @@ class EqualityConjunction:
         if not self._eq_classes:
             self._compute_equivalence_classes()
 
-        # each element of an equivalence class gets the same representative. If
-        # the equivalence class contains a single object, the representative is
-        # this object. (If it contains more than one object, the conjunction is
-        # inconsistent and we don't store representatives.)
-        # (with objects being smaller than variables or invariant parameters)
+        # Choose a representative for each equivalence class. Objects are
+        # prioritized over variables and ints, but at most one object per
+        # equivalence class is allowed (otherwise the conjunction is
+        # inconsistent).
         representative = {}
         for eq_class in self._eq_classes.values():
             if next(iter(eq_class)) in representative:
                 continue # we already processed this equivalence class
             variables = [item for item in eq_class if isinstance(item, int) or
                          item.startswith("?")]
-            constants = [item for item in eq_class if not isinstance(item, int)
-                         and not item.startswith("?")]
+            objects = [item for item in eq_class if not isinstance(item, int)
+                       and not item.startswith("?")]
 
-            if len(constants) >= 2:
+            if len(objects) >= 2:
                 self._consistent = False
                 self._representative = None
                 return
-            if constants:
-                set_val = constants[0]
+            if objects:
+                set_val = objects[0]
             else:
                 set_val = variables[0]
             for entry in eq_class:
@@ -89,7 +87,9 @@ class ConstraintSystem:
         - equality_DNFs is a list containing lists of EqualityConjunctions.
           Each EqualityConjunction represents an expression of the form
           (x1 = y1 and ... and xn = yn). A list of EqualityConjunctions can be
-          interpreted as a disjunction of such expressions.
+          interpreted as a disjunction of such expressions. So
+          self.equality_DNFs represents a formula of the form "⋀ ⋁ ⋀ (x = y)"
+          as a list of lists of EqualityConjunctions.
         - ineq_disjunctions is a list of InequalityDisjunctions. Each of them
           represents a expression of the form (u1 != v1 or ... or um !=i vm).
         - not_constant is a list of strings.
@@ -170,10 +170,8 @@ class ConstraintSystem:
                    representative.get(s, s)[0] != "?"
                    for s in self.not_constant):
                 continue
-            for ineq_disjunction in self.ineq_disjunctions:
-                if not inequality_disjunction_ok(ineq_disjunction,
-                                                 representative):
-                    break
-            else:
-                return True
+            if any(not inequality_disjunction_ok(d, representative)
+                   for d in self.ineq_disjunctions):
+                continue
+            return True
         return False
