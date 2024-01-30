@@ -141,6 +141,10 @@ ALIASES["seq-opt-bjolp"] = [
 ALIASES["seq-opt-lmcut"] = [
     "--search", "astar(lmcut())"]
 
+ALIASES["issue1134-1"] = [
+    "--search",
+    "astar(operatorcounting([delete_relaxation_constraints(use_time_vars=true, use_integer_vars=true)], use_integer_operator_counts=false, lpsolver=cplex, verbosity=normal, transform=no_transform(), cache_estimates=true))"
+] # TODO issue1134 remove
 
 PORTFOLIOS = {}
 for portfolio in os.listdir(PORTFOLIO_DIR):

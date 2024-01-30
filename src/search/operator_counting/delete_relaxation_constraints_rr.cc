@@ -238,32 +238,28 @@ bool DeleteRelaxationConstraintsRR::update_constraints(
 
 class DeleteRelaxationConstraintsRRFeature : public plugins::TypedFeature<ConstraintGenerator, DeleteRelaxationConstraintsRR> {
 public:
-    DeleteRelaxationConstraintsRRFeature() : TypedFeature("delete_relaxation_constraints") {
-        document_title("Delete relaxation constraints");
+    DeleteRelaxationConstraintsRRFeature() : TypedFeature("delete_relaxation_constraints_rr") {
+        document_title("Delete relaxation constraints from Rankooh and Rintanen");
         document_synopsis(
             "Operator-counting constraints based on the delete relaxation. By "
             "default the constraints encode an easy-to-compute relaxation of h^+^. "
             "With the right settings, these constraints can be used to compute the "
             "optimal delete-relaxation heuristic h^+^ (see example below). "
             "For details, see" + utils::format_journal_reference(
-                {"Tatsuya Imai", "Alex Fukunaga"},
-                "On a practical, integer-linear programming model for delete-free"
-                "tasks and its use as a heuristic for cost-optimal planning",
-                "https://www.jair.org/index.php/jair/article/download/10972/26119/",
-                "Journal of Artificial Intelligence Research",
-                "54",
-                "631-677",
-                "2015"));
+                {"Masood Feyzbakhsh Rankooh", "Jussi Rintanen"},
+                "Efficient Computation and Informative Estimation of"
+                "h+ by Integer and Linear Programming"
+                "",
+                "https://ojs.aaai.org/index.php/ICAPS/article/view/19787/19546",
+                "Proceedings of the Thirty-Second International Conference on Automated Planning and Scheduling (ICAPS2022)",
+                "32",
+                "71-79",
+                "2022"));
 
         add_option<bool>(
             "use_time_vars",
             "use variables for time steps. With these additional variables the "
-            "constraints enforce an order between the selected operators. Leaving "
-            "this off (default) corresponds to the time relaxation by Imai and "
-            "Fukunaga. Switching it on, can increase the heuristic value but will "
-            "increase the size of the constraints which has a strong impact on "
-            "runtime. Constraints involving time variables use a big-M encoding, "
-            "so they are more useful if used with integer variables.",
+            "constraints enforce an order between the selected operators.",
             "false");
         add_option<bool>(
             "use_integer_vars",
@@ -277,7 +273,7 @@ public:
         document_note(
             "Example",
             "To compute the optimal delete-relaxation heuristic h^+^, use\n"
-            "{{{\noperatorcounting([delete_relaxation_constraints(use_time_vars=true, "
+            "{{{\noperatorcounting([delete_relaxation_constraints_rr(use_time_vars=true, "
             "use_integer_vars=true)], use_integer_operator_counts=true))\n}}}\n");
     }
 };
