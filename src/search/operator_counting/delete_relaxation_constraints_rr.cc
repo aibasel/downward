@@ -1,9 +1,8 @@
 #include "delete_relaxation_constraints_rr.h"
 
-#include "../task_proxy.h"
-
 #include "../lp/lp_solver.h"
 #include "../plugins/plugin.h"
+#include "../task_proxy.h"
 #include "../utils/markup.h"
 
 #include <cassert>
@@ -11,44 +10,47 @@
 using namespace std;
 
 namespace operator_counting {
-static void add_lp_variables(int count, LPVariables &variables, vector<int> &indices,
-                             double lower, double upper, double objective,
-                             bool is_integer) {
+static void add_lp_variables(int count, LPVariables &variables,
+                             vector<int> &indices, double lower, double upper,
+                             double objective, bool is_integer) {
     for (int i = 0; i < count; ++i) {
         indices.push_back(variables.size());
         variables.emplace_back(lower, upper, objective, is_integer);
     }
 }
 
-
-DeleteRelaxationConstraintsRR::DeleteRelaxationConstraintsRR(const plugins::Options &opts)
+DeleteRelaxationConstraintsRR::DeleteRelaxationConstraintsRR(
+    const plugins::Options &opts)
     : use_time_vars(opts.get<bool>("use_time_vars")),
-      use_integer_vars(opts.get<bool>("use_integer_vars")) {
+      use_integer_vars(opts.get<bool>("use_integer_vars")) {}
+
+int DeleteRelaxationConstraintsRR::get_var_f_defined(FactPair f) {
+    return lp_var_id_f_defined[f.var][f.value];
 }
 
-int DeleteRelaxationConstraintsRR::get_var_op_used(const OperatorProxy &op) {
-    return lp_var_id_op_used[op.get_id()];
+int DeleteRelaxationConstraintsRR::get_var_f_maps_to(FactPair f,
+                                                     const OperatorProxy &op) {
+    return lp_var_id_f_maps_to.at(make_tuple(f.var, f.value, op.get_id()));
 }
 
-int DeleteRelaxationConstraintsRR::get_var_fact_reached(FactPair f) {
-    return lp_var_id_fact_reached[f.var][f.value];
+bool DeleteRelaxationConstraintsRR::is_in_effect(FactPair f,
+                                                 const OperatorProxy &op) {
+    for (EffectProxy eff : op.get_effects()) {
+        if (eff.get_fact().get_pair() == f) {
+            return true;
+        }
+    }
+    return false;
 }
 
-int DeleteRelaxationConstraintsRR::get_var_first_achiever(
-    const OperatorProxy &op, FactPair f) {
-    return lp_var_id_first_achiever[op.get_id()][f.var][f.value];
-}
-
-int DeleteRelaxationConstraintsRR::get_var_op_time(const OperatorProxy &op) {
-    return lp_var_id_op_time[op.get_id()];
-}
-
-int DeleteRelaxationConstraintsRR::get_var_fact_time(FactPair f) {
-    return lp_var_id_fact_time[f.var][f.value];
-}
-
-int DeleteRelaxationConstraintsRR::get_constraint_id(FactPair f) {
-    return constraint_ids[f.var][f.value];
+bool DeleteRelaxationConstraintsRR::is_in_precondition(
+    FactPair f, const OperatorProxy &op) {
+    for (FactProxy pre : op.get_preconditions()) {
+        if (pre.get_pair() == f) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
@@ -58,44 +60,29 @@ void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
     VariablesProxy vars = task_proxy.get_variables();
     int num_vars = vars.size();
 
-    // op_used
-    add_lp_variables(num_ops, variables, lp_var_id_op_used, 0, 1, 0, use_integer_vars);
-
-    // fact_reached
-    lp_var_id_fact_reached.resize(num_vars);
+    lp_var_id_f_defined.resize(num_vars);
     for (VariableProxy var : vars) {
+        int var_id = var.get_id();
+        // Add f_p variable.
         add_lp_variables(var.get_domain_size(), variables,
-                         lp_var_id_fact_reached[var.get_id()],
-                         0, 1, 0, use_integer_vars);
-    }
-
-    // first_achiever
-    lp_var_id_first_achiever.resize(num_ops);
-    for (OperatorProxy op : ops) {
-        lp_var_id_first_achiever[op.get_id()].resize(num_vars);
-        for (VariableProxy var : vars) {
-            add_lp_variables(var.get_domain_size(), variables,
-                             lp_var_id_first_achiever[op.get_id()][var.get_id()],
-                             0, 1, 0, use_integer_vars);
-        }
-    }
-
-    if (use_time_vars) {
-        // op_time
-        add_lp_variables(num_ops, variables, lp_var_id_op_time, 0, num_ops, 0, use_integer_vars);
-
-        // fact_time
-        lp_var_id_fact_time.resize(num_vars);
-        for (VariableProxy var : vars) {
-            add_lp_variables(var.get_domain_size(), variables,
-                             lp_var_id_fact_time[var.get_id()],
-                             0, num_ops, 0, use_integer_vars);
+                         lp_var_id_f_defined[var_id], 0, 1, 0,
+                         use_integer_vars);
+        // Add f_{p,a} variables.
+        for (int value = 0; value < var.get_domain_size(); ++value) {
+            for (OperatorProxy op : ops) {
+                if (is_in_effect(FactPair(var_id, value), op)) {
+                    lp_var_id_f_maps_to.emplace(
+                        make_pair(make_tuple(var_id, value, op.get_id()),
+                                  variables.size()));
+                    variables.emplace_back(0, 1, 0, use_integer_vars);
+                }
+            }
         }
     }
 }
 
-void DeleteRelaxationConstraintsRR::create_constraints(const TaskProxy &task_proxy,
-                                                     lp::LinearProgram &lp) {
+void DeleteRelaxationConstraintsRR::create_constraints(
+    const TaskProxy &task_proxy, lp::LinearProgram &lp) {
     LPVariables &variables = lp.get_variables();
     LPConstraints &constraints = lp.get_constraints();
     double infinity = lp.get_infinity();
@@ -103,115 +90,64 @@ void DeleteRelaxationConstraintsRR::create_constraints(const TaskProxy &task_pro
     VariablesProxy vars = task_proxy.get_variables();
 
     /*
-      All goal facts must be reached (handled in variable bound instead of
-      constraint).
-          R_f = 1 for all goal facts f.
+      f must map a proposition to at most one operator.
+      Constraint (2) in paper.
+    */
+    for (VariableProxy var_p : vars) {
+        for (int value_p = 0; value_p < var_p.get_domain_size(); ++value_p) {
+            constraints.emplace_back(0, 0);
+            FactPair fact_p(var_p.get_id(), value_p);
+            constraints.back().insert(get_var_f_defined(fact_p), -1);
+            for (OperatorProxy op : ops) {
+                if (is_in_effect(fact_p, op))
+                    constraints.back().insert(get_var_f_maps_to(fact_p, op), 1);
+            }
+        }
+    }
+
+    /*
+      Constraint (3) in paper.
+    */
+    for (VariableProxy var_p : vars) {
+        for (int value_p = 0; value_p < var_p.get_domain_size(); ++value_p) {
+            FactPair fact_p(var_p.get_id(), value_p);
+            for (VariableProxy var_q : vars) {
+                for (int value_q = 0; value_q < var_q.get_domain_size();
+                     ++value_q) {
+                    FactPair fact_q(var_q.get_id(), value_q);
+                    constraints.emplace_back(0, 1);
+                    constraints.back().insert(get_var_f_defined(fact_q), 1);
+                    for (OperatorProxy op : ops) {
+                        if (is_in_precondition(fact_q, op) &&
+                            is_in_effect(fact_p, op)) {
+                            constraints.back().insert(
+                                get_var_f_maps_to(fact_p, op), -1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+      Constraint (4) in paper.
     */
     for (FactProxy goal : task_proxy.get_goals()) {
-        variables[get_var_fact_reached(goal.get_pair())].lower_bound = 1;
+        variables[get_var_f_defined(goal.get_pair())].lower_bound = 1;
     }
 
     /*
-      A fact is reached if it has a first achiever or is true in the
-      current state.
-          sum_{o \in achievers(f)} F_{o,f} - R_f >= [s |= f] for each fact f.
+      Constraint (5) in paper.
     */
-    constraint_ids.resize(vars.size());
-    for (VariableProxy var : vars) {
-        int var_id = var.get_id();
-        constraint_ids[var_id].resize(var.get_domain_size());
-        for (int value = 0; value < var.get_domain_size(); ++value) {
-            constraint_ids[var_id][value] = constraints.size();
+    for (OperatorProxy op : ops) {
+        for (EffectProxy eff : op.get_effects()) {
+            FactPair fact_p = eff.get_fact().get_pair();
             constraints.emplace_back(0, infinity);
-            /* We add "- R_f" here, collect the achiever below and adapt
-               the lower bound in each iteration, i.e., in
-               update_constraints. */
-            constraints.back().insert(
-                get_var_fact_reached(FactPair(var_id, value)), -1);
+            constraints.back().insert(get_var_f_maps_to(fact_p, op), -1);
+            constraints.back().insert(op.get_id(), 1);
         }
-    }
-    for (OperatorProxy op : ops) {
-        for (EffectProxy eff : op.get_effects()) {
-            FactPair f = eff.get_fact().get_pair();
-            lp::LPConstraint &constraint = constraints[get_constraint_id(f)];
-            constraint.insert(get_var_first_achiever(op, f), 1);
-        }
-    }
-
-    /*
-      If an operator is a first achiever, it must be used.
-          U_o >= F_{o,f} for each operator o and each of its effects f.
-    */
-    for (OperatorProxy op : ops) {
-        for (EffectProxy eff : op.get_effects()) {
-            FactPair f = eff.get_fact().get_pair();
-            lp::LPConstraint constraint(0, infinity);
-            constraint.insert(get_var_op_used(op), 1);
-            constraint.insert(get_var_first_achiever(op, f), -1);
-            constraints.push_back(constraint);
-        }
-    }
-
-    /*
-      If an operator is used, its preconditions must be reached.
-          R_f >= U_o for each operator o and each of its preconditions f.
-    */
-    for (OperatorProxy op : ops) {
-        for (FactProxy f : op.get_preconditions()) {
-            lp::LPConstraint constraint(0, infinity);
-            constraint.insert(get_var_fact_reached(f.get_pair()), 1);
-            constraint.insert(get_var_op_used(op), -1);
-            constraints.push_back(constraint);
-        }
-    }
-
-    if (use_time_vars) {
-        /*
-          Preconditions must be reached before the operator is used.
-              T_f <= T_o for each operator o and each of its preconditions f.
-        */
-        for (OperatorProxy op : ops) {
-            for (FactProxy f : op.get_preconditions()) {
-                lp::LPConstraint constraint(0, infinity);
-                constraint.insert(get_var_op_time(op), 1);
-                constraint.insert(get_var_fact_time(f.get_pair()), -1);
-                constraints.push_back(constraint);
-            }
-        }
-
-        /*
-          If an operator is a first achiever, its effects are reached in
-          the time step following its use.
-              T_o + 1 <= T_f + M(1 - F_{o,f})
-              for each operator o and each of its effects f.
-          We rewrite this as
-              1 - M <= T_f - T_o - M*F_{o,f} <= infty
-        */
-        int M = ops.size() + 1;
-        for (OperatorProxy op : ops) {
-            for (EffectProxy eff : op.get_effects()) {
-                FactPair f = eff.get_fact().get_pair();
-                lp::LPConstraint constraint(1 - M, infinity);
-                constraint.insert(get_var_fact_time(f), 1);
-                constraint.insert(get_var_op_time(op), -1);
-                constraint.insert(get_var_first_achiever(op, f), -M);
-                constraints.push_back(constraint);
-            }
-        }
-    }
-
-    /*
-      If an operator is used, it must occur at least once.
-          U_o <= C_o for each operator o.
-    */
-    for (OperatorProxy op : ops) {
-        lp::LPConstraint constraint(0, infinity);
-        constraint.insert(op.get_id(), 1);
-        constraint.insert(get_var_op_used(op), -1);
-        constraints.push_back(constraint);
     }
 }
-
 
 void DeleteRelaxationConstraintsRR::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) {
@@ -219,7 +155,6 @@ void DeleteRelaxationConstraintsRR::initialize_constraints(
     create_auxiliary_variables(task_proxy, lp.get_variables());
     create_constraints(task_proxy, lp);
 }
-
 
 bool DeleteRelaxationConstraintsRR::update_constraints(
     const State &state, lp::LPSolver &lp_solver) {
@@ -230,31 +165,38 @@ bool DeleteRelaxationConstraintsRR::update_constraints(
     last_state.clear();
     // Set new bounds.
     for (FactProxy f : state) {
-        lp_solver.set_constraint_lower_bound(get_constraint_id(f.get_pair()), -1);
+        lp_solver.set_constraint_lower_bound(get_constraint_id(f.get_pair()),
+                                             -1);
         last_state.push_back(f.get_pair());
     }
     return false;
 }
 
-class DeleteRelaxationConstraintsRRFeature : public plugins::TypedFeature<ConstraintGenerator, DeleteRelaxationConstraintsRR> {
+class DeleteRelaxationConstraintsRRFeature
+    : public plugins::TypedFeature<ConstraintGenerator,
+                                   DeleteRelaxationConstraintsRR> {
 public:
-    DeleteRelaxationConstraintsRRFeature() : TypedFeature("delete_relaxation_constraints_rr") {
-        document_title("Delete relaxation constraints from Rankooh and Rintanen");
+    DeleteRelaxationConstraintsRRFeature()
+        : TypedFeature("delete_relaxation_constraints_rr") {
+        document_title(
+            "Delete relaxation constraints from Rankooh and Rintanen");
         document_synopsis(
             "Operator-counting constraints based on the delete relaxation. By "
-            "default the constraints encode an easy-to-compute relaxation of h^+^. "
-            "With the right settings, these constraints can be used to compute the "
+            "default the constraints encode an easy-to-compute relaxation of "
+            "h^+^. "
+            "With the right settings, these constraints can be used to compute "
+            "the "
             "optimal delete-relaxation heuristic h^+^ (see example below). "
-            "For details, see" + utils::format_journal_reference(
+            "For details, see" +
+            utils::format_journal_reference(
                 {"Masood Feyzbakhsh Rankooh", "Jussi Rintanen"},
                 "Efficient Computation and Informative Estimation of"
                 "h+ by Integer and Linear Programming"
                 "",
                 "https://ojs.aaai.org/index.php/ICAPS/article/view/19787/19546",
-                "Proceedings of the Thirty-Second International Conference on Automated Planning and Scheduling (ICAPS2022)",
-                "32",
-                "71-79",
-                "2022"));
+                "Proceedings of the Thirty-Second International Conference on "
+                "Automated Planning and Scheduling (ICAPS2022)",
+                "32", "71-79", "2022"));
 
         add_option<bool>(
             "use_time_vars",
@@ -264,17 +206,22 @@ public:
         add_option<bool>(
             "use_integer_vars",
             "restrict auxiliary variables to integer values. These variables "
-            "encode whether operators are used, facts are reached, which operator "
-            "first achieves which fact, and in which order the operators are used. "
-            "Restricting them to integers generally improves the heuristic value "
+            "encode whether operators are used, facts are reached, which "
+            "operator "
+            "first achieves which fact, and in which order the operators are "
+            "used. "
+            "Restricting them to integers generally improves the heuristic "
+            "value "
             "at the cost of increased runtime.",
             "false");
 
         document_note(
             "Example",
             "To compute the optimal delete-relaxation heuristic h^+^, use\n"
-            "{{{\noperatorcounting([delete_relaxation_constraints_rr(use_time_vars=true, "
-            "use_integer_vars=true)], use_integer_operator_counts=true))\n}}}\n");
+            "{{{\noperatorcounting([delete_relaxation_constraints_rr(use_time_"
+            "vars=true, "
+            "use_integer_vars=true)], "
+            "use_integer_operator_counts=true))\n}}}\n");
     }
 };
 

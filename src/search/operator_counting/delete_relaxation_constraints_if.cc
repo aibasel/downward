@@ -95,7 +95,7 @@ void DeleteRelaxationConstraintsIF::create_auxiliary_variables(
 }
 
 void DeleteRelaxationConstraintsIF::create_constraints(const TaskProxy &task_proxy,
-                                                     lp::LinearProgram &lp) {
+                                                       lp::LinearProgram &lp) {
     LPVariables &variables = lp.get_variables();
     LPConstraints &constraints = lp.get_constraints();
     double infinity = lp.get_infinity();
