@@ -54,7 +54,7 @@ enum class ExitCode {
 };
 
 NO_RETURN extern void exit_with(ExitCode returncode);
-NO_RETURN extern void exit_after_receiving_signal(ExitCode returncode);
+NO_RETURN extern void exit_with_reentrant(ExitCode returncode);
 
 int get_peak_memory_in_kb();
 const char *get_exit_code_message_reentrant(ExitCode exitcode);
