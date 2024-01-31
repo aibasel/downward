@@ -246,7 +246,6 @@ class InvariantPart:
            argument being counted.
         """
         assert self.predicate == own_literal.predicate
-        result = []
         for mapping in self.possible_mappings(own_literal, other_literal):
             args = [-1] * len(other_literal.args)
             omitted = -1
@@ -255,8 +254,7 @@ class InvariantPart:
                     omitted = other_pos
                 else:
                     args[other_pos] = inv_var
-            result.append(InvariantPart(other_literal.predicate, args, omitted))
-        return result
+            yield InvariantPart(other_literal.predicate, args, omitted)
 
 
 class Invariant:

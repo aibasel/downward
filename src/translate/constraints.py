@@ -12,8 +12,8 @@ class InequalityDisjunction:
 
 
 class EqualityConjunction:
-    def __init__(self, equalities):
-        self.equalities = tuple(equalities)
+    def __init__(self, equalities: List[Tuple[str, str]]):
+        self.equalities = equalities
         # A conjunction of expressions x = y, where x,y are either strings
         # that denote objects or variables, or ints that denote invariant
         # parameters.
@@ -128,7 +128,7 @@ class ConstraintSystem:
                                        Iterable[EqualityConjunction]) -> None:
         all_eq = itertools.chain.from_iterable(c.equalities
                                                for c in eq_conjunctions)
-        return EqualityConjunction(all_eq)
+        return EqualityConjunction(list(all_eq))
 
     def add_equality_conjunction(self, eq_conjunction: EqualityConjunction):
         self.add_equality_DNF([eq_conjunction])
