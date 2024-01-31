@@ -17,8 +17,8 @@ COUNTED = -1
 def instantiate_factored_mapping(pairs):
     """Input pairs is a list [(preimg1, img1), ..., (preimgn, imgn)].
        For entry (preimg, img), preimg is a list of numbers and img a list of
-       invariant parameters or -1 of the same length. All preimages (and all
-       images) are pairwise disjoint, as well as the components of each
+       invariant parameters or COUNTED of the same length. All preimages (and
+       all images) are pairwise disjoint, as well as the components of each
        preimage/image.
 
        The function determines all possible bijections between the union of
@@ -113,9 +113,9 @@ class InvariantPart:
     def __init__(self, predicate, args, omitted_pos=None):
         """There is one InvariantPart for every predicate mentioned in the
            invariant. The arguments args contain numbers 0,1,... for the
-           invariant parameters and -1 at the omitted position.
+           invariant parameters and COUNTED at the omitted position.
            If no position is omitted, omitted_pos is None, otherwise it is the
-           index of -1 in args."""
+           index of COUNTED in args."""
         self.predicate = predicate
         self.args = tuple(args)
         self.omitted_pos = omitted_pos
@@ -153,7 +153,7 @@ class InvariantPart:
                     if pos != self.omitted_pos)
 
     def instantiate(self, parameters_tuple):
-        args = [parameters_tuple[arg] if arg != -1 else "?X"
+        args = [parameters_tuple[arg] if arg != COUNTED else "?X"
                 for arg in self.args]
         return pddl.Atom(self.predicate, args)
 
@@ -176,7 +176,7 @@ class InvariantPart:
 
            The method returns [] if there is no possible mapping and otherwise
            yields the mappings from the positions of other to the invariant
-           variables or -1 one by one.
+           variables or COUNTED one by one.
            """
         allowed_omissions = len(other_literal.args) - self.arity()
         # All parts of an invariant always use all non-counted variables, of
@@ -210,8 +210,8 @@ class InvariantPart:
         # other_literal for this value to the invariant parameters at these
         # positions in factored_mapping. If all values can be covered, we
         # instatiate the complete factored_mapping, computing all possibilities
-        # to map positions from other_literal to invariant parameters (or -1 if
-        # the position is omitted).
+        # to map positions from other_literal to invariant parameters (or
+        # COUNTED if the position is omitted).
         for key, other_positions in other_arg_to_pos.items():
             inv_params = ownarg_to_invariant_parameters[key]
             # all positions at which key occurs as argument in own_literal
@@ -221,7 +221,7 @@ class InvariantPart:
                 # counted variable.
                 return []
             if len_diff:
-                inv_params.append(-1)
+                inv_params.append(COUNTED)
                 allowed_omissions = 0
             factored_mapping.append((other_positions, inv_params))
         return instantiate_factored_mapping(factored_mapping)
@@ -242,16 +242,16 @@ class InvariantPart:
            ?@v1, ?@v2 P(?@v0, ?@v1, ?@v2) is non-increasing" and let
            own_literal be P(?a, ?b, ?c) and other_literal be Q(?b, ?c, ?d, ?a).
            The only possible mapping from positions of Q to invariant variables
-           of P (or -1) is [0->?@v1, 1->?@v2, 2->-1, 3->?@v0] for which we
-           create a new Invariant Part Q(?@v1, ?@v2, _. ?@v0) with the third
-           argument being counted.
+           of P (or COUNTED) is [0->?@v1, 1->?@v2, 2->COUNTED, 3->?@v0] for
+           which we create a new Invariant Part Q(?@v1, ?@v2, _. ?@v0) with the
+           third argument being counted.
         """
         assert self.predicate == own_literal.predicate
         for mapping in self.possible_mappings(own_literal, other_literal):
-            args = [-1] * len(other_literal.args)
+            args = [COUNTED] * len(other_literal.args)
             omitted = None
             for (other_pos, inv_var) in mapping:
-                if inv_var == -1:
+                if inv_var == COUNTED:
                     omitted = other_pos
                 else:
                     args[other_pos] = inv_var
@@ -262,9 +262,9 @@ class Invariant:
     # An invariant is a logical expression of the type
     #   forall ?@v1...?@vk: sum_(part in parts) weight(part, ?@v1, ..., ?@vk) <= 1.
     # k is called the arity of the invariant.
-    # A "part" is an atom that only contains arguments from {?@v1, ..., ?@vk, -1}
-    # but instead of ?@vi, we store it as int i;
-    # the symbol -1 may occur at most once.
+    # A "part" is an atom that only contains arguments from {?@v1, ..., ?@vk,
+    # COUNTED} but instead of ?@vi, we store it as int i; COUNTED may occur at
+    # most once.
 
     def __init__(self, parts):
         self.parts = frozenset(parts)
@@ -314,9 +314,9 @@ class Invariant:
            and ?@v1 = ?c).
            """
         part = self.predicate_to_part[literal.predicate]
-        equalities = [(inv_param, literal.args[pos])
-                      for pos, inv_param in enumerate(part.args)
-                      if inv_param != -1] # -1 if ommited
+        equalities = [(arg, literal.args[pos])
+                      for pos, arg in enumerate(part.args)
+                      if arg != COUNTED]
         return constraints.EqualityConjunction(equalities)
         # If there were more parts for the same predicate, we would have to
         # consider more than one assignment (disjunctively).

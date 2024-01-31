@@ -82,7 +82,8 @@ def get_initial_invariants(task):
         part = invariants.InvariantPart(predicate.name, all_args, None)
         yield invariants.Invariant((part,))
         for omitted in range(len(predicate.arguments)):
-            inv_args = all_args[0:omitted] + [-1] + all_args[omitted:-1]
+            inv_args = (all_args[0:omitted] + [invariants.COUNTED] +
+                        all_args[omitted:-1])
             part = invariants.InvariantPart(predicate.name, inv_args, omitted)
             yield invariants.Invariant((part,))
 
