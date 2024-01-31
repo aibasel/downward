@@ -3,6 +3,7 @@
 import copy
 
 import pddl
+import pddl_to_prolog
 
 class ConditionProxy:
     def clone_owner(self):
@@ -23,7 +24,19 @@ class PreconditionProxy(ConditionProxy):
     def build_rules(self, rules):
         action = self.owner
         rule_head = get_action_predicate(action)
-        rule_body = condition_to_rule_body(action.parameters, self.condition)
+
+        # if the action cost is based on a primitive numeric expression,
+        # we need to require that it has a value defined in the initial state.
+        # We hand it over to condition_to_rule_body to include this in the rule
+        # body.
+        pne = None
+        if (isinstance(action.cost, pddl.Increase) and
+            isinstance(action.cost.expression,
+                       pddl.PrimitiveNumericExpression)):
+            pne = action.cost.expression
+
+        rule_body = condition_to_rule_body(action.parameters, self.condition,
+                                           pne)
         rules.append((rule_body, rule_head))
     def get_type_map(self):
         return self.owner.type_map
@@ -366,10 +379,13 @@ def build_exploration_rules(task):
         proxy.build_rules(result)
     return result
 
-def condition_to_rule_body(parameters, condition):
+def condition_to_rule_body(parameters, condition, numeric_expression=None):
     result = []
+    # require parameters to be of the right type
     for par in parameters:
         result.append(par.get_atom())
+
+    # require the given condition
     if not isinstance(condition, pddl.Truth):
         if isinstance(condition, pddl.ExistentialCondition):
             for par in condition.parameters:
@@ -388,6 +404,10 @@ def condition_to_rule_body(parameters, condition):
             assert isinstance(part, pddl.Literal), "Condition not normalized: %r" % part
             if not part.negated:
                 result.append(part)
+
+    # require the numeric expression (from the action cost) to be defined.
+    if numeric_expression is not None:
+        result.append(pddl_to_prolog.get_definition_fluent(numeric_expression))
     return result
 
 if __name__ == "__main__":

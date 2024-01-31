@@ -142,6 +142,9 @@ class Rule:
         cond_str = ", ".join(map(str, self.conditions))
         return "%s :- %s." % (self.effect, cond_str)
 
+def get_definition_fluent(pne: pddl.PrimitiveNumericExpression):
+    return pddl.Atom(f"@def-{pne.symbol}", pne.args)
+
 def translate_typed_object(prog, obj, type_dict):
     supertypes = type_dict[obj.type_name].supertype_names
     for type_name in [obj.type_name] + supertypes:
@@ -155,6 +158,10 @@ def translate_facts(prog, task):
         assert isinstance(fact, pddl.Atom) or isinstance(fact, pddl.Assign)
         if isinstance(fact, pddl.Atom):
             prog.add_fact(fact)
+        else:
+            # Add a fact to indicate that the primitive numeric expression in
+            # fact.fluent has been defined.
+            prog.add_fact(get_definition_fluent(fact.fluent))
 
 def translate(task):
     # Note: The function requires that the task has been normalized.
