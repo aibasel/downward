@@ -79,7 +79,7 @@ def get_fluents(task):
 def get_initial_invariants(task):
     for predicate in get_fluents(task):
         all_args = list(range(len(predicate.arguments)))
-        part = invariants.InvariantPart(predicate.name, all_args, -1)
+        part = invariants.InvariantPart(predicate.name, all_args, None)
         yield invariants.Invariant((part,))
         for omitted in range(len(predicate.arguments)):
             inv_args = all_args[0:omitted] + [-1] + all_args[omitted:-1]

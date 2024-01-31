@@ -12,6 +12,7 @@ import tools
 #
 # We only consider invariants where each predicate occurs in at most one part.
 
+COUNTED = -1
 
 def instantiate_factored_mapping(pairs):
     """Input pairs is a list [(preimg1, img1), ..., (preimgn, imgn)].
@@ -109,11 +110,11 @@ def ensure_inequality(system, literal1, literal2):
 
 
 class InvariantPart:
-    def __init__(self, predicate, args, omitted_pos=-1):
+    def __init__(self, predicate, args, omitted_pos=None):
         """There is one InvariantPart for every predicate mentioned in the
            invariant. The arguments args contain numbers 0,1,... for the
            invariant parameters and -1 at the omitted position.
-           If no position is omitted, omitted_pos is -1, otherwise it is the
+           If no position is omitted, omitted_pos is None, otherwise it is the
            index of -1 in args."""
         self.predicate = predicate
         self.args = tuple(args)
@@ -139,7 +140,7 @@ class InvariantPart:
         return f"{self.predicate}({self.args}) [omitted_pos = {self.omitted_pos}]"
 
     def arity(self):
-        if self.omitted_pos == -1:
+        if self.omitted_pos is None:
             return len(self.args)
         else:
             return len(self.args) - 1
@@ -248,7 +249,7 @@ class InvariantPart:
         assert self.predicate == own_literal.predicate
         for mapping in self.possible_mappings(own_literal, other_literal):
             args = [-1] * len(other_literal.args)
-            omitted = -1
+            omitted = None
             for (other_pos, inv_var) in mapping:
                 if inv_var == -1:
                     omitted = other_pos
