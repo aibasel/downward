@@ -49,11 +49,9 @@ void exit_with(ExitCode exitcode) {
     exit(static_cast<int>(exitcode));
 }
 
-void exit_after_receiving_signal(ExitCode exitcode) {
-    /*
-      In signal handlers, we have to use the "safe function" _Exit() rather
-      than the unsafe function exit().
-    */
+void exit_with_reentrant(ExitCode exitcode) {
+    /* In signal handlers or when we run out of memory, we have to use the
+       "safe function" _Exit() rather than the unsafe function exit(). */
     report_exit_code_reentrant(exitcode);
     _Exit(static_cast<int>(exitcode));
 }
