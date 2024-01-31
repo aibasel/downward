@@ -46,6 +46,5 @@ int main(int argc, const char **argv) {
     ExitCode exitcode = search_algorithm->found_solution()
         ? ExitCode::SUCCESS
         : ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
-    utils::report_exit_code_reentrant(exitcode);
-    return static_cast<int>(exitcode);
+    exit_with(exitcode);
 }
