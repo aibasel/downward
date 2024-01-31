@@ -399,11 +399,12 @@ class Invariant:
 
         # The add effect must be balanced in all threatening action
         # applications. We thus must adapt the constraint system such that it
-        # prevents restricting solution that set action parameters equal to
-        # each other or to a specific constant if this is not already
-        # implied by the threat.
-        params = [p.name for p in action.parameters]
-        action_param_system = constraints.ConstraintSystem()
+        # prevents restricting solution that set action parameters or
+        # quantified variables of the add effect equal to each other or to
+        # a specific constant if this is not already implied by the threat.
+        params = [p.name for p in itertools.chain(action.parameters,
+                                                  add_effect.parameters)]
+        param_system = constraints.ConstraintSystem()
         representative = add_cover.get_representative()
         # Dictionary representative maps every term to its representative in
         # the finest equivalence relation induced by the equalities in
@@ -416,19 +417,19 @@ class Invariant:
                 # does not need to be a specific constant. So we may not bind
                 # it to a constant when balancing the add effect. We store this
                 # information here.
-                action_param_system.add_not_constant(param)
+                param_system.add_not_constant(param)
         for (n1, n2) in itertools.combinations(params, 2):
             if representative.get(n1, n1) != representative.get(n2, n2):
                 # n1 and n2 don't have to be equivalent to cover the add
                 # effect, so we require for the solutions that they do not
                 # make n1 and n2 equvalent.
                 ineq_disj = constraints.InequalityDisjunction([(n1, n2)])
-                action_param_system.add_inequality_disjunction(ineq_disj)
+                param_system.add_inequality_disjunction(ineq_disj)
 
         for del_effect in del_effects:
             if self._balances(del_effect, add_effect,
                               add_effect_produced_by_pred, add_cover,
-                              action_param_system):
+                              param_system):
                 return False
 
         # The balance check failed => Generate new candidates.
@@ -446,16 +447,16 @@ class Invariant:
                     enqueue_func(Invariant(self.parts.union((match,))))
 
     def _balances(self, del_effect, add_effect, produced_by_pred,
-                 add_cover, action_param_system):
+                 add_cover, param_system):
         """Returns whether the del_effect is guaranteed to balance the add effect
            where the input is such that:
            - produced_by_pred must be true for the add_effect to be produced,
            - add_cover is an equality conjunction that sets each invariant
              parameter equal to its value in add_effect. These equivalences
              must be true for the add effect threatening the invariant.
-           - action_param_system contains contraints that action parameters are
-             not fixed to be equivalent or a certain constant (except the add
-             effect is otherwise not threat)."""
+           - param_system contains contraints that action and add_effect
+             parameters are not fixed to be equivalent or a certain constant
+             (except the add effect is otherwise not threat)."""
 
         balance_system = self._balance_system(add_effect, del_effect,
                                               produced_by_pred)
@@ -479,7 +480,7 @@ class Invariant:
         # In every solution a production by the add effect guarantees
         # a consumption by the delete effect.
 
-        system.extend(action_param_system)
+        system.extend(param_system)
         # A solution may not restrict action parameters (must be balanced
         # independent of the concrete action instantiation).
 
