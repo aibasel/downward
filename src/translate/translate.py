@@ -554,12 +554,15 @@ def pddl_to_sas(task):
     elif goal_list is None:
         return unsolvable_sas_task("Trivially false goal")
 
+    negative_in_goal = set()
     for item in goal_list:
         assert isinstance(item, pddl.Literal)
+        if item.negated:
+            negative_in_goal.add(item.negate())
 
     with timers.timing("Computing fact groups", block=True):
         groups, mutex_groups, translation_key = fact_groups.compute_groups(
-            task, atoms, reachable_action_params)
+            task, atoms, reachable_action_params, negative_in_goal)
 
     with timers.timing("Building STRIPS to SAS dictionary"):
         ranges, strips_to_sas = strips_to_sas_dictionary(
