@@ -153,7 +153,7 @@ public:
     AdditiveHeuristicFeature() : TypedFeature("add") {
         document_title("Additive heuristic");
 
-        Heuristic::add_options_to_feature(*this);
+        Heuristic::add_options_to_feature(*this, "add");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");

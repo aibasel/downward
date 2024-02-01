@@ -85,6 +85,7 @@ public:
         std::set<Evaluator *> & /*evals*/) override {
     }
 
+    static void add_options_to_feature(plugins::Feature &feature, const std::string &name);
     static void add_options_to_feature(plugins::Feature &feature);
 
     virtual EvaluationResult compute_result(

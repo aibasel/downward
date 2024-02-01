@@ -43,7 +43,7 @@ public:
             "Returns cost of cheapest action for non-goal states, "
             "0 for goal states");
 
-        Heuristic::add_options_to_feature(*this);
+        Heuristic::add_options_to_feature(*this, "blind");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");

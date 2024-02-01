@@ -78,7 +78,7 @@ public:
     FFHeuristicFeature() : TypedFeature("ff") {
         document_title("FF heuristic");
 
-        Heuristic::add_options_to_feature(*this);
+        Heuristic::add_options_to_feature(*this, "ff");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");

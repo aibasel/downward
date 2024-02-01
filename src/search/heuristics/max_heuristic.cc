@@ -107,7 +107,7 @@ public:
     HSPMaxHeuristicFeature() : TypedFeature("hmax") {
         document_title("Max heuristic");
 
-        Heuristic::add_options_to_feature(*this);
+        Heuristic::add_options_to_feature(*this, "hmax");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");

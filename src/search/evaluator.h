@@ -106,6 +106,7 @@ public:
     virtual int get_cached_estimate(const State &state) const;
 };
 
+extern void add_evaluator_options_to_feature(plugins::Feature &feature, const std::string &name);
 extern void add_evaluator_options_to_feature(plugins::Feature &feature);
 
 #endif

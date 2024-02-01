@@ -88,6 +88,12 @@ int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
 }
 
+void add_evaluator_options_to_feature(plugins::Feature &feature, const string &name) {
+    feature.add_option<string>("name",
+                               "name used to identify evaluator in logs",
+                               "\"" + name + "\"");
+    utils::add_log_options_to_feature(feature);
+}
 void add_evaluator_options_to_feature(plugins::Feature &feature) {
     feature.add_option<string>("name",
                                "name used to identify evaluator in logs",
