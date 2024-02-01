@@ -25,7 +25,7 @@ class PreconditionProxy(ConditionProxy):
         action = self.owner
         rule_head = get_action_predicate(action)
 
-        # if the action cost is based on a primitive numeric expression,
+        # If the action cost is based on a primitive numeric expression,
         # we need to require that it has a value defined in the initial state.
         # We hand it over to condition_to_rule_body to include this in the rule
         # body.
@@ -381,11 +381,11 @@ def build_exploration_rules(task):
 
 def condition_to_rule_body(parameters, condition, numeric_expression=None):
     result = []
-    # require parameters to be of the right type
+    # Require parameters to be of the right type.
     for par in parameters:
         result.append(par.get_atom())
 
-    # require the given condition
+    # Require the given condition.
     if not isinstance(condition, pddl.Truth):
         if isinstance(condition, pddl.ExistentialCondition):
             for par in condition.parameters:
@@ -405,7 +405,7 @@ def condition_to_rule_body(parameters, condition, numeric_expression=None):
             if not part.negated:
                 result.append(part)
 
-    # require the numeric expression (from the action cost) to be defined.
+    # Require the primitive numeric expression (from the action cost) to be defined.
     if numeric_expression is not None:
         result.append(pddl_to_prolog.get_definition_fluent(numeric_expression))
     return result
