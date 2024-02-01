@@ -397,7 +397,7 @@ def condition_to_rule_body(parameters: Sequence[pddl.TypedObject],
     for par in parameters:
         result.append(par.get_atom())
 
-    # Require each positive literals in the condition to be reached and
+    # Require each positive literal in the condition to be reached and
     # existentially quantified variables of the condition to be instantiated
     # with objects of the right type.
     if not isinstance(condition, pddl.Truth):
