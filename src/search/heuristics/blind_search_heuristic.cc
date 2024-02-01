@@ -12,10 +12,12 @@
 using namespace std;
 
 namespace blind_search_heuristic {
-BlindSearchHeuristic::BlindSearchHeuristic(const string &name,
-    utils::Verbosity verbosity, const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates)
-    : Heuristic(name, verbosity, transform, cache_estimates),
+BlindSearchHeuristic::BlindSearchHeuristic(const shared_ptr<AbstractTask> &transform,
+                                           bool cache_estimates,
+                                           const string &name,
+                                           utils::Verbosity verbosity
+                                           )
+    : Heuristic(transform, cache_estimates, name, verbosity),
       min_operator_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing blind search heuristic..." << endl;
@@ -52,10 +54,10 @@ public:
 
     virtual shared_ptr<BlindSearchHeuristic> create_component(
             const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<BlindSearchHeuristic>(opts.get<string>("name"),
-                                                 opts.get<utils::Verbosity>("verbosity"),
-                                                 opts.get<shared_ptr<AbstractTask>>("transform"),
-                                                 opts.get<bool>("cache_estimates"));
+        return make_shared<BlindSearchHeuristic>(opts.get<shared_ptr<AbstractTask>>("transform"),
+                                                 opts.get<bool>("cache_estimates"),
+                                                 opts.get<string>("name"),
+                                                 opts.get<utils::Verbosity>("verbosity"));
     }
 };
 

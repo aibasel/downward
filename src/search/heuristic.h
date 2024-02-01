@@ -74,9 +74,11 @@ protected:
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
-    explicit Heuristic(const std::string &name, utils::Verbosity verbosity,
-                       std::shared_ptr<AbstractTask> transform,
-                       bool cache_estimates);
+    explicit Heuristic(std::shared_ptr<AbstractTask> transform,
+                       bool cache_estimates,
+                       const std::string &name,
+                       utils::Verbosity verbosity
+                       );
     explicit Heuristic(const plugins::Options &opts);
 
     virtual void get_path_dependent_evaluators(

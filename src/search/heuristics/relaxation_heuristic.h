@@ -110,10 +110,10 @@ protected:
     Proposition *get_proposition(int var, int value);
     Proposition *get_proposition(const FactProxy &fact);
 public:
-    RelaxationHeuristic(const std::string &name,
-                        utils::Verbosity verbosity,
-                        const std::shared_ptr<AbstractTask> &transform,
-                        bool cache_estimates);
+    RelaxationHeuristic(const std::shared_ptr<AbstractTask> &transform,
+                        bool cache_estimates,
+                        const std::string &name,
+                        utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;
 };
