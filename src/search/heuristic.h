@@ -7,7 +7,6 @@
 #include "task_proxy.h"
 
 #include "algorithms/ordered_set.h"
-#include "tasks/root_task.h"
 
 #include <memory>
 #include <vector>
@@ -79,6 +78,7 @@ public:
                        const std::string &name,
                        utils::Verbosity verbosity);
     explicit Heuristic(const plugins::Options &opts);
+    virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> & /*evals*/) override {

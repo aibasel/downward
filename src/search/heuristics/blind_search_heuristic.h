@@ -13,6 +13,7 @@ public:
                          bool cache_estimates,
                          const std::string &name,
                          utils::Verbosity verbosity);
+    ~BlindSearchHeuristic();
 };
 }
 

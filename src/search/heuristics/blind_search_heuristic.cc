@@ -24,6 +24,9 @@ BlindSearchHeuristic::BlindSearchHeuristic(const shared_ptr<AbstractTask> &trans
     }
 }
 
+BlindSearchHeuristic::~BlindSearchHeuristic() {
+}
+
 int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
     State state = convert_ancestor_state(ancestor_state);
     if (task_properties::is_goal_state(task_proxy, state))

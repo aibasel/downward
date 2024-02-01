@@ -34,6 +34,9 @@ Heuristic::Heuristic(const plugins::Options &opts)
       task_proxy(*task) {
 }
 
+Heuristic::~Heuristic() {
+}
+
 void Heuristic::set_preferred(const OperatorProxy &op) {
     preferred_operators.insert(op.get_ancestor_operator_id(tasks::g_root_task.get()));
 }
