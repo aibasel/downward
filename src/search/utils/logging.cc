@@ -140,4 +140,16 @@ static plugins::TypedEnumPlugin<Verbosity> _enum_plugin({
         {"verbose", "full output"},
         {"debug", "like verbose with additional debug output"}
     });
+
+void Log::add_prefix() const {
+    stream << "[t=";
+    streamsize previous_precision = cout.precision(TIMER_PRECISION);
+    ios_base::fmtflags previous_flags = stream.flags();
+    stream.setf(ios_base::fixed, ios_base::floatfield);
+    stream << g_timer;
+    stream.flags(previous_flags);
+    cout.precision(previous_precision);
+    stream << ", "
+           << get_peak_memory_in_kb() << " KB] ";
+}
 }
