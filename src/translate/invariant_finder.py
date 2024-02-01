@@ -79,9 +79,12 @@ def get_fluents(task):
 def get_initial_invariants(task):
     for predicate in get_fluents(task):
         all_args = list(range(len(predicate.arguments)))
-        for omitted_arg in [-1] + all_args:
-            order = [i for i in all_args if i != omitted_arg]
-            part = invariants.InvariantPart(predicate.name, order, omitted_arg)
+        part = invariants.InvariantPart(predicate.name, all_args, None)
+        yield invariants.Invariant((part,))
+        for omitted in range(len(predicate.arguments)):
+            inv_args = (all_args[0:omitted] + [invariants.COUNTED] +
+                        all_args[omitted:-1])
+            part = invariants.InvariantPart(predicate.name, inv_args, omitted)
             yield invariants.Invariant((part,))
 
 def find_invariants(task, reachable_action_params):
@@ -118,7 +121,13 @@ def useful_groups(invariants, initial_facts):
         if isinstance(atom, pddl.Assign):
             continue
         for invariant in predicate_to_invariants.get(atom.predicate, ()):
-            group_key = (invariant, tuple(invariant.get_parameters(atom)))
+            parameters = invariant.get_parameters(atom)
+            # we need to make the parameters dictionary hashable, so
+            # we store the values as a tuple
+            parameters_tuple = tuple(parameters[var]
+                                     for var in range(invariant.arity()))
+
+            group_key = (invariant, parameters_tuple)
             if group_key not in nonempty_groups:
                 nonempty_groups.add(group_key)
             else:
