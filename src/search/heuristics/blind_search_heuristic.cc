@@ -53,7 +53,7 @@ public:
     }
 
     virtual shared_ptr<BlindSearchHeuristic> create_component(
-            const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<BlindSearchHeuristic>(opts.get<shared_ptr<AbstractTask>>("transform"),
                                                  opts.get<bool>("cache_estimates"),
                                                  opts.get<string>("name"),

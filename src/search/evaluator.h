@@ -23,11 +23,11 @@ protected:
     mutable utils::LogProxy log;
 public:
     explicit Evaluator(
-            bool use_for_reporting_minima,
-            bool use_for_boosting,
-            bool use_for_counting_evaluations,
-            const std::string &name,
-            utils::Verbosity verbosity);
+        bool use_for_reporting_minima,
+        bool use_for_boosting,
+        bool use_for_counting_evaluations,
+        const std::string &name,
+        utils::Verbosity verbosity);
     explicit Evaluator(
         const plugins::Options &opts,
         bool use_for_reporting_minima = false,

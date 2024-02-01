@@ -14,11 +14,11 @@ Evaluator::Evaluator(bool use_for_reporting_minima,
                      bool use_for_counting_evaluations,
                      const string &name,
                      utils::Verbosity verbosity)
-        : name(name),
-          use_for_reporting_minima(use_for_reporting_minima),
-          use_for_boosting(use_for_boosting),
-          use_for_counting_evaluations(use_for_counting_evaluations),
-          log(utils::get_log_from_verbosity(verbosity)) {
+    : name(name),
+      use_for_reporting_minima(use_for_reporting_minima),
+      use_for_boosting(use_for_boosting),
+      use_for_counting_evaluations(use_for_counting_evaluations),
+      log(utils::get_log_from_verbosity(verbosity)) {
 }
 
 
