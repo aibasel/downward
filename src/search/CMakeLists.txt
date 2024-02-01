@@ -857,6 +857,7 @@ create_fast_downward_library(
     SOURCES
         operator_counting/constraint_generator
         operator_counting/delete_relaxation_constraints_if
+        operator_counting/delete_relaxation_constraints_rr
         operator_counting/lm_cut_constraints
         operator_counting/operator_counting_heuristic
         operator_counting/pho_constraints

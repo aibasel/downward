@@ -33,6 +33,10 @@ int DeleteRelaxationConstraintsRR::get_var_f_maps_to(FactPair f,
     return lp_var_id_f_maps_to.at(make_tuple(f.var, f.value, op.get_id()));
 }
 
+int DeleteRelaxationConstraintsRR::get_constraint_id(FactPair f) {
+    return lp_con_id_f_defined[f.var][f.value];
+}
+
 bool DeleteRelaxationConstraintsRR::is_in_effect(FactPair f,
                                                  const OperatorProxy &op) {
     for (EffectProxy eff : op.get_effects()) {
@@ -56,7 +60,6 @@ bool DeleteRelaxationConstraintsRR::is_in_precondition(
 void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
     const TaskProxy &task_proxy, LPVariables &variables) {
     OperatorsProxy ops = task_proxy.get_operators();
-    int num_ops = ops.size();
     VariablesProxy vars = task_proxy.get_variables();
     int num_vars = vars.size();
 
@@ -89,25 +92,23 @@ void DeleteRelaxationConstraintsRR::create_constraints(
     OperatorsProxy ops = task_proxy.get_operators();
     VariablesProxy vars = task_proxy.get_variables();
 
-    /*
-      f must map a proposition to at most one operator.
-      Constraint (2) in paper.
-    */
+    // Constraint (2) in paper.
+    lp_con_id_f_defined.resize(vars.size());
     for (VariableProxy var_p : vars) {
+        lp_con_id_f_defined[var_p.get_id()].resize(var_p.get_domain_size());
         for (int value_p = 0; value_p < var_p.get_domain_size(); ++value_p) {
+            lp_con_id_f_defined[var_p.get_id()][value_p] = constraints.size();
             constraints.emplace_back(0, 0);
             FactPair fact_p(var_p.get_id(), value_p);
-            constraints.back().insert(get_var_f_defined(fact_p), -1);
+            constraints.back().insert(get_var_f_defined(fact_p), 1);
             for (OperatorProxy op : ops) {
                 if (is_in_effect(fact_p, op))
-                    constraints.back().insert(get_var_f_maps_to(fact_p, op), 1);
+                    constraints.back().insert(get_var_f_maps_to(fact_p, op), -1);
             }
         }
     }
 
-    /*
-      Constraint (3) in paper.
-    */
+    // Constraint (3) in paper.
     for (VariableProxy var_p : vars) {
         for (int value_p = 0; value_p < var_p.get_domain_size(); ++value_p) {
             FactPair fact_p(var_p.get_id(), value_p);
@@ -115,6 +116,8 @@ void DeleteRelaxationConstraintsRR::create_constraints(
                 for (int value_q = 0; value_q < var_q.get_domain_size();
                      ++value_q) {
                     FactPair fact_q(var_q.get_id(), value_q);
+                    if (fact_q != fact_p)
+                        break;
                     constraints.emplace_back(0, 1);
                     constraints.back().insert(get_var_f_defined(fact_q), 1);
                     for (OperatorProxy op : ops) {
@@ -129,16 +132,12 @@ void DeleteRelaxationConstraintsRR::create_constraints(
         }
     }
 
-    /*
-      Constraint (4) in paper.
-    */
+    // Constraint (4) in paper.
     for (FactProxy goal : task_proxy.get_goals()) {
         variables[get_var_f_defined(goal.get_pair())].lower_bound = 1;
     }
 
-    /*
-      Constraint (5) in paper.
-    */
+    // Constraint (5) in paper.
     for (OperatorProxy op : ops) {
         for (EffectProxy eff : op.get_effects()) {
             FactPair fact_p = eff.get_fact().get_pair();
@@ -147,6 +146,8 @@ void DeleteRelaxationConstraintsRR::create_constraints(
             constraints.back().insert(op.get_id(), 1);
         }
     }
+
+    // TODO: Implement Constraints (6)-(8).
 }
 
 void DeleteRelaxationConstraintsRR::initialize_constraints(
@@ -159,14 +160,18 @@ void DeleteRelaxationConstraintsRR::initialize_constraints(
 bool DeleteRelaxationConstraintsRR::update_constraints(
     const State &state, lp::LPSolver &lp_solver) {
     // Unset old bounds.
+    int con_id;
     for (FactPair f : last_state) {
-        lp_solver.set_constraint_lower_bound(get_constraint_id(f), 0);
+        con_id = get_constraint_id(f);
+        lp_solver.set_constraint_lower_bound(con_id, 0);
+        lp_solver.set_constraint_upper_bound(con_id, 0);
     }
     last_state.clear();
     // Set new bounds.
     for (FactProxy f : state) {
-        lp_solver.set_constraint_lower_bound(get_constraint_id(f.get_pair()),
-                                             -1);
+        con_id = get_constraint_id(f.get_pair());
+        lp_solver.set_constraint_lower_bound(con_id, 1);
+        lp_solver.set_constraint_upper_bound(con_id, 1);
         last_state.push_back(f.get_pair());
     }
     return false;
