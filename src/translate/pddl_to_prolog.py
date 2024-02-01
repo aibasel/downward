@@ -155,6 +155,10 @@ def translate_facts(prog, task):
         assert isinstance(fact, pddl.Atom) or isinstance(fact, pddl.Assign)
         if isinstance(fact, pddl.Atom):
             prog.add_fact(fact)
+        else:
+            # Add a fact to indicate that the primitive numeric expression in
+            # fact.fluent has been defined.
+            prog.add_fact(normalize.get_pne_definition_predicate(fact.fluent))
 
 def translate(task):
     # Note: The function requires that the task has been normalized.
