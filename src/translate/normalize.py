@@ -1,9 +1,9 @@
 #! /usr/bin/env python3
 
 import copy
+from typing import Sequence
 
 import pddl
-import pddl_to_prolog
 
 class ConditionProxy:
     def clone_owner(self):
@@ -129,6 +129,9 @@ def get_axiom_predicate(axiom):
     if isinstance(axiom.condition, pddl.ExistentialCondition):
         variables += [par.name for par in axiom.condition.parameters]
     return pddl.Atom(name, variables)
+
+def get_pne_definition_predicate(pne: pddl.PrimitiveNumericExpression):
+    return pddl.Atom(f"@def-{pne.symbol}", pne.args)
 
 def all_conditions(task):
     for action in task.actions:
@@ -379,13 +382,24 @@ def build_exploration_rules(task):
         proxy.build_rules(result)
     return result
 
-def condition_to_rule_body(parameters, condition, numeric_expression=None):
+def condition_to_rule_body(parameters: Sequence[pddl.TypedObject],
+                           condition: pddl.conditions.Condition,
+                           pne: pddl.PrimitiveNumericExpression = None):
+    """The rule body requires that
+       - all parameters (including existentially quantified variables in the
+         condition) are instantiated with objecst of the right type,
+       - all positive atoms in the condition (which must be normalized) are
+         true in the Prolog model, and
+       - the primitive numeric expression (from the action cost) has a defined
+         value (in the initial state)."""
     result = []
-    # Require parameters to be of the right type.
+    # Require parameters to be instantiated with objects of the right type.
     for par in parameters:
         result.append(par.get_atom())
 
-    # Require the given condition.
+    # Require each positive literals in the condition to be reached and
+    # existentially quantified variables of the condition to be instantiated
+    # with objects of the right type.
     if not isinstance(condition, pddl.Truth):
         if isinstance(condition, pddl.ExistentialCondition):
             for par in condition.parameters:
@@ -405,9 +419,10 @@ def condition_to_rule_body(parameters, condition, numeric_expression=None):
             if not part.negated:
                 result.append(part)
 
-    # Require the primitive numeric expression (from the action cost) to be defined.
-    if numeric_expression is not None:
-        result.append(pddl_to_prolog.get_definition_fluent(numeric_expression))
+    # Require the primitive numeric expression (from the action cost) to be
+    # defined.
+    if pne is not None:
+        result.append(get_pne_definition_predicate(pne))
     return result
 
 if __name__ == "__main__":
