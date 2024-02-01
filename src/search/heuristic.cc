@@ -46,10 +46,10 @@ State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
 
 void Heuristic::add_options_to_feature(plugins::Feature &feature, const string &name) {
     feature.add_option<shared_ptr<AbstractTask>>(
-            "transform",
-            "Optional task transformation for the heuristic."
-            " Currently, adapt_costs() and no_transform() are available.",
-            "no_transform()");
+        "transform",
+        "Optional task transformation for the heuristic."
+        " Currently, adapt_costs() and no_transform() are available.",
+        "no_transform()");
     feature.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
     add_evaluator_options_to_feature(feature, name);
 }
