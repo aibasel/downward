@@ -2,14 +2,165 @@
 
 #include "../lp/lp_solver.h"
 #include "../plugins/plugin.h"
+#include "../algorithms/priority_queues.h"
 #include "../task_proxy.h"
 #include "../utils/markup.h"
 
 #include <cassert>
+#include <optional>
+#include <vector>
 
 using namespace std;
 
 namespace operator_counting {
+
+class VEGraph {
+    struct Node {
+        vector<FactPair> predecessors;
+        vector<FactPair> successors;
+        bool is_eliminated = false;
+        int in_degree;
+    };
+
+    /*
+      Vertex Elimination Graphs have one node per fact. We index them by
+      variable and value.
+    */
+    vector<vector<Node>> nodes;
+    vector<tuple<FactPair, FactPair, FactPair>> delta;
+    priority_queues::AdaptiveQueue<FactPair> elimination_queue;
+
+    Node &get_node(FactPair fact) {
+        return nodes[fact.var][fact.value];
+    }
+
+    const Node &get_node(FactPair fact) const {
+        return nodes[fact.var][fact.value];
+    }
+
+    void add_edge(FactPair from_fact, FactPair to_fact) {
+        get_node(from_fact).successors.push_back(to_fact);
+        get_node(to_fact).predecessors.push_back(from_fact);
+    }
+
+    void push_fact(FactPair fact) {
+        Node &node = get_node(fact);
+        if (node.is_eliminated) {
+            return;
+        }
+        int in_degree = 0;
+        for (FactPair predecessor : node.predecessors) {
+            if (!get_node(predecessor).is_eliminated) {
+                ++in_degree;
+            }
+        }
+        node.in_degree = in_degree;
+        elimination_queue.push(in_degree, fact);
+    }
+
+    optional<FactPair> pop_fact() {
+        while (!elimination_queue.empty()) {
+            const auto[key, fact] = elimination_queue.pop();
+            Node &node = get_node(fact);
+            if (node.in_degree == key) {
+                return fact;
+            }
+        }
+        return nullopt;
+    }
+
+    void eliminate(FactPair fact) {
+        Node &node = get_node(fact);
+        /*
+          When eliminating the given fact from the graph, we add shorcut edges
+          from all its (non-eliminated) predecessors, to all its
+          (non-eliminated) successors.
+        */
+        for (FactPair predecessor : node.predecessors) {
+            if (get_node(predecessor).is_eliminated) {
+                continue;
+            }
+            for (FactPair successor : node.successors) {
+                if (get_node(successor).is_eliminated) {
+                    continue;
+                }
+                if (successor != predecessor) {
+                    add_edge(predecessor, successor);
+                    delta.push_back(make_tuple(predecessor, fact, successor));
+                }
+            }
+        }
+        node.is_eliminated = true;
+
+        /*
+          The elimination can affect the priority queue which uses the number of
+          incoming edges from non-eliminated nodes as a key. However, this can
+          only change for successors of 'fact'. We add them back into the queue
+          with updated keys and lazily filter out the outdated values.
+        */
+        for (FactPair successor : node.successors) {
+            if (!get_node(successor).is_eliminated) {
+                push_fact(successor);
+            }
+        }
+
+    }
+
+    void initialize_queue() {
+        int num_vars = nodes.size();
+        for (int var = 0; var < num_vars; ++var) {
+            int num_values = nodes[var].size();
+            for (int val = 0; val < num_values; ++val) {
+                push_fact(FactPair(var, val));
+            }
+        }
+    }
+public:
+    VEGraph(const TaskProxy &task_proxy) {
+        nodes.resize(task_proxy.get_variables().size());
+        for (VariableProxy var: task_proxy.get_variables()) {
+            nodes[var.get_id()].resize(var.get_domain_size());
+        }
+        for (OperatorProxy op : task_proxy.get_operators()) {
+            for (FactProxy pre_proxy : op.get_preconditions()) {
+                FactPair pre = pre_proxy.get_pair();
+                for (EffectProxy eff_proxy : op.get_effects()) {
+                    FactPair eff = eff_proxy.get_fact().get_pair();
+                    if (pre != eff) {
+                        add_edge(pre, eff);
+                    }
+                }
+            }
+        }
+    }
+
+    void run() {
+        initialize_queue();
+        while (optional<FactPair> fact = pop_fact()) {
+            eliminate(*fact);
+        }
+    }
+
+    const vector<tuple<FactPair, FactPair, FactPair>> &get_delta() const {
+        return delta;
+    }
+
+    vector<pair<FactPair, FactPair>> copy_edges() const {
+        vector<pair<FactPair, FactPair>> edges;
+        int num_vars = nodes.size();
+        for (int var = 0; var < num_vars; ++var) {
+            int num_values = nodes[var].size();
+            for (int val = 0; val < num_values; ++val) {
+                FactPair fact(var, val);
+                for (FactPair succ : get_node(fact).successors) {
+                    edges.emplace_back(fact, succ);
+                }
+            }
+        }
+        return edges;
+    }
+};
+
 static void add_lp_variables(int count, LPVariables &variables,
                              vector<int> &indices, double lower, double upper,
                              double objective, bool is_integer) {
