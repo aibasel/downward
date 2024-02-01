@@ -116,7 +116,7 @@ class VEGraph {
         }
     }
 public:
-    VEGraph(const TaskProxy &task_proxy) {
+    explicit VEGraph(const TaskProxy &task_proxy) {
         nodes.resize(task_proxy.get_variables().size());
         for (VariableProxy var: task_proxy.get_variables()) {
             nodes[var.get_id()].resize(var.get_domain_size());
