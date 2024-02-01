@@ -29,7 +29,7 @@ void add_log_options_to_feature(plugins::Feature &feature) {
         "normal");
 }
 
-LogProxy get_log_from_verbosity(const Verbosity &verbosity) {
+LogProxy get_log_for_verbosity(const Verbosity &verbosity) {
     if (verbosity == Verbosity::NORMAL) {
         return LogProxy(global_log);
     }

@@ -17,8 +17,7 @@ Heuristic::Heuristic(
     shared_ptr<AbstractTask> transform,
     bool cache_estimates,
     const string &name,
-    utils::Verbosity verbosity
-    )
+    utils::Verbosity verbosity)
     : Evaluator(true, true, true, name, verbosity),
       heuristic_cache(HEntry(NO_VALUE, true)),     //TODO: is true really a good idea here?
       cache_evaluator_values(cache_estimates),

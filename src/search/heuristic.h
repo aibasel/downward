@@ -73,10 +73,11 @@ protected:
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
-    explicit Heuristic(std::shared_ptr<AbstractTask> transform,
-                       bool cache_estimates,
-                       const std::string &name,
-                       utils::Verbosity verbosity);
+    Heuristic(
+        std::shared_ptr<AbstractTask> transform,
+        bool cache_estimates,
+        const std::string &name,
+        utils::Verbosity verbosity);
     explicit Heuristic(const plugins::Options &opts);
     virtual ~Heuristic() override;
 

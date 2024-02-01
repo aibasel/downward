@@ -12,11 +12,11 @@
 using namespace std;
 
 namespace blind_search_heuristic {
-BlindSearchHeuristic::BlindSearchHeuristic(const shared_ptr<AbstractTask> &transform,
-                                           bool cache_estimates,
-                                           const string &name,
-                                           utils::Verbosity verbosity
-                                           )
+BlindSearchHeuristic::BlindSearchHeuristic(
+    const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates,
+    const string &name,
+    utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, name, verbosity),
       min_operator_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {

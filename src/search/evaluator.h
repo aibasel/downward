@@ -22,7 +22,7 @@ class Evaluator {
 protected:
     mutable utils::LogProxy log;
 public:
-    explicit Evaluator(
+    Evaluator(
         bool use_for_reporting_minima,
         bool use_for_boosting,
         bool use_for_counting_evaluations,
