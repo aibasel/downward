@@ -74,7 +74,7 @@ protected:
 
 public:
     Heuristic(
-        std::shared_ptr<AbstractTask> transform,
+        const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates,
         const std::string &name,
         utils::Verbosity verbosity);

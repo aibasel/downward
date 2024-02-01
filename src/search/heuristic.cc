@@ -14,7 +14,7 @@
 
 using namespace std;
 Heuristic::Heuristic(
-    shared_ptr<AbstractTask> transform,
+    const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
     const string &name,
     utils::Verbosity verbosity)
