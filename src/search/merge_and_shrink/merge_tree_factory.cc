@@ -17,10 +17,11 @@ MergeTreeFactory::MergeTreeFactory(
     UpdateOption update_option,
     const string &name,
     utils::Verbosity verbosity)
-    : rng(utils::get_rng(random_seed)),
-      update_option(update_option),
+    :
       name(name),
-      log(utils::get_log_for_verbosity(verbosity)) {
+      log(utils::get_log_for_verbosity(verbosity)),
+      rng(utils::get_rng(random_seed)),
+      update_option(update_option) {
 }
 
 void MergeTreeFactory::dump_options(utils::LogProxy &log) const {

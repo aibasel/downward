@@ -38,6 +38,7 @@ public:
         UpdateOption update_option,
         const std::string &name,
         utils::Verbosity verbosity);
+    virtual ~MergeTreeFactory() = default;
     void dump_options(utils::LogProxy &log) const;
     // Compute a merge tree for the given entire task.
     virtual std::unique_ptr<MergeTree> compute_merge_tree(

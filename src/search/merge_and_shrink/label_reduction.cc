@@ -34,12 +34,13 @@ LabelReduction::LabelReduction(
     const string &name,
     utils::Verbosity verbosity
     )
-    : lr_before_shrinking(before_shrinking),
+    :
+      name(name),
+      lr_before_shrinking(before_shrinking),
       lr_before_merging(before_merging),
       lr_method(method),
       lr_system_order(system_order),
       rng(utils::get_rng(random_seed)),
-      name(name),
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 
