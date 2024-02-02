@@ -1,6 +1,8 @@
 #ifndef MERGE_AND_SHRINK_LABEL_REDUCTION_H
 #define MERGE_AND_SHRINK_LABEL_REDUCTION_H
 
+#include "../utils/logging.h"
+
 #include <memory>
 #include <vector>
 
@@ -54,6 +56,7 @@ enum class LabelReductionSystemOrder {
 };
 
 class LabelReduction {
+    const std::string name;
     // Options for label reduction
     std::vector<int> transition_system_order;
     bool lr_before_shrinking;
@@ -74,8 +77,17 @@ class LabelReduction {
     compute_combinable_equivalence_relation(
         int ts_index,
         const FactoredTransitionSystem &fts) const;
+protected:
+    mutable utils::LogProxy log;
 public:
-    explicit LabelReduction(const plugins::Options &options);
+    LabelReduction(
+        bool before_shrinking,
+        bool before_merging,
+        LabelReductionMethod method,
+        LabelReductionSystemOrder system_order,
+        int random_seed,
+        const std::string &name,
+        utils::Verbosity verbosity);
     void initialize(const TaskProxy &task_proxy);
     bool reduce(
         const std::pair<int, int> &next_merge,
