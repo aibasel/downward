@@ -14,7 +14,7 @@ class RandomNumberGenerator;
 // Add random_seed option to parser.
 extern void add_rng_options(plugins::Feature &feature);
 
-extern std::shared_ptr<RandomNumberGenerator> get_rng(const int seed);
+extern std::shared_ptr<RandomNumberGenerator> get_rng(int seed);
 
 /*
   Return an RNG based on the given options, which can either be the global
