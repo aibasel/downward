@@ -13,7 +13,11 @@ import timers
 
 class BalanceChecker:
     def __init__(self, task, reachable_action_params):
-        self.predicates_to_add_actions = defaultdict(set)
+        self.predicates_to_add_actions = defaultdict(dict)
+        # Conceptionally, predicates_to_add will store for each predicate the
+        # set of actions that have an add effect on the predicate. Since sets
+        # are not stable (introducing non-determinism in the algorithm), we
+        # store the actions as keys in a dictionary (which is stable).
         self.action_to_heavy_action = {}
         for act in task.actions:
             action = self.add_inequality_preconds(act, reachable_action_params)
@@ -27,7 +31,7 @@ class BalanceChecker:
                     too_heavy_effects.append(eff.copy())
                 if not eff.literal.negated:
                     predicate = eff.literal.predicate
-                    self.predicates_to_add_actions[predicate].add(action)
+                    self.predicates_to_add_actions[predicate][action] = True
             if create_heavy_act:
                 heavy_act = pddl.Action(action.name, action.parameters,
                                         action.num_external_parameters,
@@ -38,7 +42,7 @@ class BalanceChecker:
             self.action_to_heavy_action[action] = heavy_act
 
     def get_threats(self, predicate):
-        return self.predicates_to_add_actions.get(predicate, set())
+        return self.predicates_to_add_actions.get(predicate, dict())
 
     def get_heavy_action(self, action):
         return self.action_to_heavy_action[action]

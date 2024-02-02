@@ -324,10 +324,13 @@ class Invariant:
 
     def check_balance(self, balance_checker, enqueue_func):
         # Check balance for this hypothesis.
-        actions_to_check = set()
+        actions_to_check = dict()
+        # We will only use the keys of the dictionary. We do not use a set
+        # because it's not stable and introduces non-determinism in the
+        # invariance analysis.
         for part in self.parts:
-            actions_to_check |= balance_checker.get_threats(part.predicate)
-        for action in actions_to_check:
+            actions_to_check.update(balance_checker.get_threats(part.predicate))
+        for action in actions_to_check.keys():
             heavy_action = balance_checker.get_heavy_action(action)
             if self._operator_too_heavy(heavy_action):
                 return False
