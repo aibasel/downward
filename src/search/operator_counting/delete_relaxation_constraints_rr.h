@@ -18,6 +18,7 @@ class Options;
 }
 
 namespace operator_counting {
+class VEGraph;
 using LPConstraints = named_vector::NamedVector<lp::LPConstraint>;
 using LPVariables = named_vector::NamedVector<lp::LPVariable>;
 
@@ -41,6 +42,8 @@ class DeleteRelaxationConstraintsRR : public ConstraintGenerator {
     //std::unordered_map<std::tuple<int, int, int>, int> lp_var_id_f_maps_to;
     utils::HashMap<std::tuple<int, int, int>, int> lp_var_id_f_maps_to;
 
+    utils::HashMap<std::pair<FactPair, FactPair>, int> lp_var_id_edge;
+
     /*
       Store constraint IDs of Constraints (2) in the paper. We need to
       reference them when updating constraints for a given state. They are
@@ -60,8 +63,8 @@ class DeleteRelaxationConstraintsRR : public ConstraintGenerator {
     bool is_in_precondition(FactPair f, const OperatorProxy &op);
 
     void create_auxiliary_variables(
-        const TaskProxy &task_proxy, LPVariables &variables);
-    void create_constraints(const TaskProxy &task_proxy, lp::LinearProgram &lp);
+        const TaskProxy &task_proxy, LPVariables &variables, VEGraph &ve_graph);
+    void create_constraints(const TaskProxy &task_proxy, lp::LinearProgram &lp, VEGraph &ve_graph);
 public:
     explicit DeleteRelaxationConstraintsRR(const plugins::Options &opts);
 

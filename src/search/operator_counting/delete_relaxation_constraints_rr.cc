@@ -1,5 +1,6 @@
 #include "delete_relaxation_constraints_rr.h"
 
+#include "../algorithms/priority_queues.h"
 #include "../lp/lp_solver.h"
 #include "../plugins/plugin.h"
 #include "../algorithms/priority_queues.h"
@@ -60,7 +61,7 @@ class VEGraph {
 
     optional<FactPair> pop_fact() {
         while (!elimination_queue.empty()) {
-            const auto[key, fact] = elimination_queue.pop();
+            const auto [key, fact] = elimination_queue.pop();
             Node &node = get_node(fact);
             if (node.in_degree == key) {
                 return fact;
@@ -103,7 +104,6 @@ class VEGraph {
                 push_fact(successor);
             }
         }
-
     }
 
     void initialize_queue() {
@@ -115,10 +115,11 @@ class VEGraph {
             }
         }
     }
+
 public:
     explicit VEGraph(const TaskProxy &task_proxy) {
         nodes.resize(task_proxy.get_variables().size());
-        for (VariableProxy var: task_proxy.get_variables()) {
+        for (VariableProxy var : task_proxy.get_variables()) {
             nodes[var.get_id()].resize(var.get_domain_size());
         }
         for (OperatorProxy op : task_proxy.get_operators()) {
@@ -209,7 +210,7 @@ bool DeleteRelaxationConstraintsRR::is_in_precondition(
 }
 
 void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
-    const TaskProxy &task_proxy, LPVariables &variables) {
+    const TaskProxy &task_proxy, LPVariables &variables, VEGraph &ve_graph) {
     OperatorsProxy ops = task_proxy.get_operators();
     VariablesProxy vars = task_proxy.get_variables();
     int num_vars = vars.size();
@@ -233,10 +234,15 @@ void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
             }
         }
     }
+
+    for (pair<FactPair, FactPair> edge : ve_graph.copy_edges()) {
+        lp_var_id_edge.emplace(make_pair(edge, variables.size()));
+        variables.emplace_back(0, 1, 0, use_integer_vars);
+    }
 }
 
 void DeleteRelaxationConstraintsRR::create_constraints(
-    const TaskProxy &task_proxy, lp::LinearProgram &lp) {
+    const TaskProxy &task_proxy, lp::LinearProgram &lp, VEGraph &ve_graph) {
     LPVariables &variables = lp.get_variables();
     LPConstraints &constraints = lp.get_constraints();
     double infinity = lp.get_infinity();
@@ -254,7 +260,8 @@ void DeleteRelaxationConstraintsRR::create_constraints(
             constraints.back().insert(get_var_f_defined(fact_p), 1);
             for (OperatorProxy op : ops) {
                 if (is_in_effect(fact_p, op))
-                    constraints.back().insert(get_var_f_maps_to(fact_p, op), -1);
+                    constraints.back().insert(get_var_f_maps_to(fact_p, op),
+                                              -1);
             }
         }
     }
@@ -298,14 +305,75 @@ void DeleteRelaxationConstraintsRR::create_constraints(
         }
     }
 
-    // TODO: Implement Constraints (6)-(8).
+    // Constraint (6) in paper.
+    for (OperatorProxy op : ops) {
+        for (FactProxy pre_proxy : op.get_preconditions()) {
+            FactPair pre = pre_proxy.get_pair();
+            for (EffectProxy eff_proxy : op.get_effects()) {
+                FactPair eff = eff_proxy.get_fact().get_pair();
+                constraints.emplace_back(0, infinity);
+                constraints.back().insert(
+                    lp_var_id_edge.at(make_pair(pre, eff)), 1);
+                constraints.back().insert(get_var_f_maps_to(eff, op), -1);
+            }
+        }
+    }
+
+    // Constraint (7) in paper.
+    /*
+      TODO: Consider storing the result of cop_edges in VEGraph instead of
+      computing it twice (here and in create_auxiliary_variables)
+    */
+    for (pair<FactPair, FactPair> &edge : ve_graph.copy_edges()) {
+        auto reverse_edge_it =
+            lp_var_id_edge.find(make_pair(edge.second, edge.first));
+        if (reverse_edge_it == lp_var_id_edge.end())
+            continue;
+        int edge_id = lp_var_id_edge.at(edge);
+        int reverse_edge_id = reverse_edge_it->second;
+        constraints.emplace_back(-1, infinity);
+        constraints.back().insert(edge_id, -1);
+        constraints.back().insert(reverse_edge_id, -1);
+    }
+
+    // Constraint (8) in paper.
+    for (const tuple<FactPair, FactPair, FactPair> &edge_triple :
+         ve_graph.get_delta()) {
+        constraints.emplace_back(-1, infinity);
+        constraints.back().insert(
+            lp_var_id_edge.at(
+                make_pair(get<0>(edge_triple), get<1>(edge_triple))),
+            -1);
+        constraints.back().insert(
+            lp_var_id_edge.at(
+                make_pair(get<1>(edge_triple), get<2>(edge_triple))),
+            -1);
+        constraints.back().insert(
+            lp_var_id_edge.at(
+                make_pair(get<0>(edge_triple), get<2>(edge_triple))),
+            1);
+    }
+
+    /*
+      TODO: Implement constraint (9).
+      - define ternary option to replace use_time_vars and use_integer_vars
+      - create timing variables
+      - create constraint
+    */
+    /*
+      TODO: Make sure that objects that are only needed for constraint
+      generation only exist in that context and not beyond. In particular there
+      are lp_var_id_maps that are currently member variables, but should not be.
+    */
 }
 
 void DeleteRelaxationConstraintsRR::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) {
     TaskProxy task_proxy(*task);
-    create_auxiliary_variables(task_proxy, lp.get_variables());
-    create_constraints(task_proxy, lp);
+    VEGraph ve_graph(task_proxy);
+    ve_graph.run();
+    create_auxiliary_variables(task_proxy, lp.get_variables(), ve_graph);
+    create_constraints(task_proxy, lp, ve_graph);
 }
 
 bool DeleteRelaxationConstraintsRR::update_constraints(
