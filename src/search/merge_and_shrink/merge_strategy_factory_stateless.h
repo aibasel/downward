@@ -9,11 +9,13 @@ class MergeSelector;
 class MergeStrategyFactoryStateless : public MergeStrategyFactory {
     std::shared_ptr<MergeSelector> merge_selector;
 protected:
-    virtual std::string name() const override;
+    virtual std::string type() const override;
     virtual void dump_strategy_specific_options() const override;
 public:
-    explicit MergeStrategyFactoryStateless(const plugins::Options &options);
-    virtual ~MergeStrategyFactoryStateless() override = default;
+    MergeStrategyFactoryStateless(
+        std::shared_ptr<MergeSelector> merge_selector,
+        const std::string &name,
+        utils::Verbosity verbosity);
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,
         const FactoredTransitionSystem &fts) override;

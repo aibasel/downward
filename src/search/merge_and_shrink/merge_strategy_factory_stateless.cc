@@ -10,9 +10,11 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
-    const plugins::Options &options)
-    : MergeStrategyFactory(options),
-      merge_selector(options.get<shared_ptr<MergeSelector>>("merge_selector")) {
+    shared_ptr<MergeSelector> merge_selector,
+    const string &name,
+    utils::Verbosity verbosity)
+    : MergeStrategyFactory(name, verbosity),
+      merge_selector(merge_selector) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(
@@ -22,7 +24,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(
     return utils::make_unique_ptr<MergeStrategyStateless>(fts, merge_selector);
 }
 
-string MergeStrategyFactoryStateless::name() const {
+string MergeStrategyFactoryStateless::type() const {
     return "stateless";
 }
 
@@ -52,7 +54,7 @@ public:
         add_option<shared_ptr<MergeSelector>>(
             "merge_selector",
             "The merge selector to be used.");
-        add_merge_strategy_options_to_feature(*this);
+        add_merge_strategy_options_to_feature(*this, "merge_stateless");
 
         document_note(
             "Note",
@@ -67,6 +69,14 @@ public:
             "merge_strategy=merge_stateless(merge_selector=score_based_filtering("
             "scoring_functions=[sf_miasm(<shrinking_options>),total_order(<order_option>)]"
             "\n}}}");
+    }
+
+    virtual shared_ptr<MergeStrategyFactoryStateless> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<MergeStrategyFactoryStateless>(
+            opts.get<shared_ptr<MergeSelector>>("merge_selector"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity"));
     }
 };
 

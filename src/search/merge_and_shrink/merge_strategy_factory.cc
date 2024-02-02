@@ -7,20 +7,23 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeStrategyFactory::MergeStrategyFactory(const plugins::Options &options)
-    : log(utils::get_log_from_options(options)) {
+MergeStrategyFactory::MergeStrategyFactory(
+    const string &name,
+    utils::Verbosity verbosity)
+    : name(name),
+      log(utils::get_log_for_verbosity(verbosity)) {
 }
 
 void MergeStrategyFactory::dump_options() const {
     if (log.is_at_least_normal()) {
         log << "Merge strategy options:" << endl;
-        log << "Type: " << name() << endl;
+        log << "Type: " << type() << endl;
         dump_strategy_specific_options();
     }
 }
 
-void add_merge_strategy_options_to_feature(plugins::Feature &feature) {
-    utils::add_log_options_to_feature(feature);
+void add_merge_strategy_options_to_feature(plugins::Feature &feature, const string &name) {
+    utils::add_log_options_to_feature(feature, name);
 }
 
 static class MergeStrategyFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<MergeStrategyFactory> {

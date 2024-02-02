@@ -18,13 +18,16 @@ class FactoredTransitionSystem;
 class MergeStrategy;
 
 class MergeStrategyFactory {
+    const std::string name;
 protected:
     mutable utils::LogProxy log;
 
-    virtual std::string name() const = 0;
+    virtual std::string type() const = 0;
     virtual void dump_strategy_specific_options() const = 0;
 public:
-    explicit MergeStrategyFactory(const plugins::Options &options);
+    MergeStrategyFactory(
+        const std::string &name,
+        utils::Verbosity verbosity);
     virtual ~MergeStrategyFactory() = default;
     void dump_options() const;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
@@ -34,7 +37,7 @@ public:
     virtual bool requires_goal_distances() const = 0;
 };
 
-extern void add_merge_strategy_options_to_feature(plugins::Feature &feature);
+extern void add_merge_strategy_options_to_feature(plugins::Feature &feature, const std::string &name);
 }
 
 #endif

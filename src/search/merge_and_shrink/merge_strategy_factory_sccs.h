@@ -19,11 +19,15 @@ class MergeStrategyFactorySCCs : public MergeStrategyFactory {
     std::shared_ptr<MergeTreeFactory> merge_tree_factory;
     std::shared_ptr<MergeSelector> merge_selector;
 protected:
-    virtual std::string name() const override;
+    virtual std::string type() const override;
     virtual void dump_strategy_specific_options() const override;
 public:
-    explicit MergeStrategyFactorySCCs(const plugins::Options &options);
-    virtual ~MergeStrategyFactorySCCs() override = default;
+    MergeStrategyFactorySCCs(
+        const OrderOfSCCs &order_of_sccs,
+        const std::shared_ptr<MergeTreeFactory> merge_tree,
+        const std::shared_ptr<MergeSelector> merge_selector,
+        const std::string &name,
+        utils::Verbosity verbosity);
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,
         const FactoredTransitionSystem &fts) override;
