@@ -19,7 +19,7 @@ class MergeStrategyFactorySCCs : public MergeStrategyFactory {
     std::shared_ptr<MergeTreeFactory> merge_tree_factory;
     std::shared_ptr<MergeSelector> merge_selector;
 protected:
-    virtual std::string name() const override;
+    virtual std::string type() const override;
     virtual void dump_strategy_specific_options() const override;
 public:
     explicit MergeStrategyFactorySCCs(const plugins::Options &options);

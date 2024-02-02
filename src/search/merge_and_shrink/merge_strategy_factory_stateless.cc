@@ -22,7 +22,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(
     return utils::make_unique_ptr<MergeStrategyStateless>(fts, merge_selector);
 }
 
-string MergeStrategyFactoryStateless::name() const {
+string MergeStrategyFactoryStateless::type() const {
     return "stateless";
 }
 

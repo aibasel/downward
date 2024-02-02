@@ -11,9 +11,12 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyFactoryPrecomputed::MergeStrategyFactoryPrecomputed(
-    const plugins::Options &options)
-    : MergeStrategyFactory(options),
-      merge_tree_factory(options.get<shared_ptr<MergeTreeFactory>>("merge_tree")) {
+        const shared_ptr<MergeTreeFactory> &merge_tree,
+        const string &name,
+        utils::Verbosity verbosity)
+        : MergeStrategyFactory(name,
+                               verbosity),
+          merge_tree_factory(merge_tree) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strategy(
@@ -31,7 +34,7 @@ bool MergeStrategyFactoryPrecomputed::requires_goal_distances() const {
     return merge_tree_factory->requires_goal_distances();
 }
 
-string MergeStrategyFactoryPrecomputed::name() const {
+string MergeStrategyFactoryPrecomputed::type() const {
     return "precomputed";
 }
 
@@ -56,7 +59,7 @@ public:
         add_option<shared_ptr<MergeTreeFactory>>(
             "merge_tree",
             "The precomputed merge tree.");
-        add_merge_strategy_options_to_feature(*this);
+        add_merge_strategy_options_to_feature(*this, "merge_precomputed");
 
         document_note(
             "Note",
@@ -65,6 +68,13 @@ public:
             "{{{\n"
             "merge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))"
             "\n}}}");
+    }
+    virtual shared_ptr<MergeStrategyFactoryPrecomputed> create_component(
+            const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<MergeStrategyFactoryPrecomputed>(
+                opts.get<shared_ptr<MergeTreeFactory>>("merge_tree"),
+                opts.get<string>("name"),
+                opts.get<utils::Verbosity>("verbosity"));
     }
 };
 

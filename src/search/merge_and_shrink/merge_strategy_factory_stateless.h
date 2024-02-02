@@ -9,7 +9,7 @@ class MergeSelector;
 class MergeStrategyFactoryStateless : public MergeStrategyFactory {
     std::shared_ptr<MergeSelector> merge_selector;
 protected:
-    virtual std::string name() const override;
+    virtual std::string type() const override;
     virtual void dump_strategy_specific_options() const override;
 public:
     explicit MergeStrategyFactoryStateless(const plugins::Options &options);
