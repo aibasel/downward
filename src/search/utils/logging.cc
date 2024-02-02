@@ -22,6 +22,17 @@ static shared_ptr<Log> global_log = make_shared<Log>(Verbosity::NORMAL);
 
 LogProxy g_log(global_log);
 
+void add_log_options_to_feature(plugins::Feature &feature, const string &name) {
+    feature.add_option<string>("name",
+                               "name used to identify evaluator in logs",
+                               "\"" + name + "\"");
+    feature.add_option<Verbosity>(
+            "verbosity",
+            "Option to specify the verbosity level.",
+            "normal");
+}
+
+// TODO 1082 remove this, just keep the one above
 void add_log_options_to_feature(plugins::Feature &feature) {
     feature.add_option<Verbosity>(
         "verbosity",

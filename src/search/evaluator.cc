@@ -22,7 +22,7 @@ Evaluator::Evaluator(
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 
-
+// TODO 1082 remove this, just keep the one above
 Evaluator::Evaluator(const plugins::Options &opts,
                      bool use_for_reporting_minima,
                      bool use_for_boosting,
@@ -89,15 +89,11 @@ int Evaluator::get_cached_estimate(const State &) const {
 }
 
 void add_evaluator_options_to_feature(plugins::Feature &feature, const string &name) {
-    feature.add_option<string>("name",
-                               "name used to identify evaluator in logs",
-                               "\"" + name + "\"");
-    utils::add_log_options_to_feature(feature);
+    utils::add_log_options_to_feature(feature, name);
 }
+
+// TODO 1082 remove this, just keep the one above
 void add_evaluator_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<string>("name",
-                               "name used to identify evaluator in logs",
-                               "\"<Evaluator>\"");
     utils::add_log_options_to_feature(feature);
 }
 
