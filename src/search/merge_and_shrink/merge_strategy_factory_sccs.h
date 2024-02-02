@@ -23,11 +23,11 @@ protected:
     virtual void dump_strategy_specific_options() const override;
 public:
     MergeStrategyFactorySCCs(
-            const OrderOfSCCs &order_of_sccs,
-            const std::shared_ptr<MergeTreeFactory> merge_tree,
-            const std::shared_ptr<MergeSelector> merge_selector,
-            const std::string &name,
-            utils::Verbosity verbosity);
+        const OrderOfSCCs &order_of_sccs,
+        const std::shared_ptr<MergeTreeFactory> merge_tree,
+        const std::shared_ptr<MergeSelector> merge_selector,
+        const std::string &name,
+        utils::Verbosity verbosity);
     explicit MergeStrategyFactorySCCs(const plugins::Options &options);
     virtual ~MergeStrategyFactorySCCs() override = default;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(

@@ -8,13 +8,13 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyFactory::MergeStrategyFactory(
-        const string &name,
-        utils::Verbosity verbosity)
-        : name(name),
-          log(utils::get_log_for_verbosity(verbosity)) {
+    const string &name,
+    utils::Verbosity verbosity)
+    : name(name),
+      log(utils::get_log_for_verbosity(verbosity)) {
 }
 MergeStrategyFactory::MergeStrategyFactory(const plugins::Options &options)
-        : log(utils::get_log_from_options(options)) {
+    : log(utils::get_log_from_options(options)) {
 }
 
 void MergeStrategyFactory::dump_options() const {

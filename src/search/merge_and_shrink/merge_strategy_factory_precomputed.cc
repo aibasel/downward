@@ -11,12 +11,12 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyFactoryPrecomputed::MergeStrategyFactoryPrecomputed(
-        const shared_ptr<MergeTreeFactory> &merge_tree,
-        const string &name,
-        utils::Verbosity verbosity)
-        : MergeStrategyFactory(name,
-                               verbosity),
-          merge_tree_factory(merge_tree) {
+    const shared_ptr<MergeTreeFactory> &merge_tree,
+    const string &name,
+    utils::Verbosity verbosity)
+    : MergeStrategyFactory(name,
+                           verbosity),
+      merge_tree_factory(merge_tree) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strategy(
@@ -70,11 +70,11 @@ public:
             "\n}}}");
     }
     virtual shared_ptr<MergeStrategyFactoryPrecomputed> create_component(
-            const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<MergeStrategyFactoryPrecomputed>(
-                opts.get<shared_ptr<MergeTreeFactory>>("merge_tree"),
-                opts.get<string>("name"),
-                opts.get<utils::Verbosity>("verbosity"));
+            opts.get<shared_ptr<MergeTreeFactory>>("merge_tree"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity"));
     }
 };
 

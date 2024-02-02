@@ -30,14 +30,14 @@ static bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &r
 }
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(
-        const OrderOfSCCs &order_of_sccs,
-        const shared_ptr<MergeTreeFactory> merge_tree,
-        const shared_ptr<MergeSelector> merge_selector,
-        const std::string &name,
-        utils::Verbosity verbosity)
-        : MergeStrategyFactory(name, verbosity),
-          merge_tree_factory(merge_tree),
-          merge_selector(merge_selector) {
+    const OrderOfSCCs &order_of_sccs,
+    const shared_ptr<MergeTreeFactory> merge_tree,
+    const shared_ptr<MergeSelector> merge_selector,
+    const std::string &name,
+    utils::Verbosity verbosity)
+    : MergeStrategyFactory(name, verbosity),
+      merge_tree_factory(merge_tree),
+      merge_selector(merge_selector) {
 }
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const plugins::Options &options)
@@ -216,11 +216,11 @@ public:
                 "and merge_selector!");
         }
         return make_shared<MergeStrategyFactorySCCs>(
-                opts.get<OrderOfSCCs>("order_of_sccs"),
-                opts.get < shared_ptr < MergeTreeFactory >> ("merge_tree", nullptr),
-                opts.get < shared_ptr < MergeSelector >> ("merge_selector", nullptr),
-                opts.get<string>("name"),
-                opts.get<utils::Verbosity>("verbosity"));
+            opts.get<OrderOfSCCs>("order_of_sccs"),
+            opts.get < shared_ptr < MergeTreeFactory >> ("merge_tree", nullptr),
+            opts.get < shared_ptr < MergeSelector >> ("merge_selector", nullptr),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity"));
     }
 };
 
