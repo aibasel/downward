@@ -12,14 +12,20 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeTreeFactory::MergeTreeFactory(const plugins::Options &options)
-    : rng(utils::parse_rng_from_options(options)),
-      update_option(options.get<UpdateOption>("update_option")) {
+MergeTreeFactory::MergeTreeFactory(
+    int random_seed,
+    UpdateOption update_option,
+    const string &name,
+    utils::Verbosity verbosity)
+    : rng(utils::get_rng(random_seed)),
+      update_option(update_option),
+      name(name),
+      log(utils::get_log_for_verbosity(verbosity)) {
 }
 
 void MergeTreeFactory::dump_options(utils::LogProxy &log) const {
     log << "Merge tree options: " << endl;
-    log << "Type: " << name() << endl;
+    log << "Type: " << type() << endl;
     log << "Update option: ";
     switch (update_option) {
     case UpdateOption::USE_FIRST:
@@ -45,7 +51,7 @@ unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
-void MergeTreeFactory::add_options_to_feature(plugins::Feature &feature) {
+void MergeTreeFactory::add_options_to_feature(plugins::Feature &feature, const string &name) {
     utils::add_rng_options(feature);
     feature.add_option<UpdateOption>(
         "update_option",
@@ -53,6 +59,7 @@ void MergeTreeFactory::add_options_to_feature(plugins::Feature &feature) {
         "should it be updated when a merge different to a merge from the "
         "tree is performed.",
         "use_random");
+    utils::add_log_options_to_feature(feature, name);
 }
 
 static class MergeTreeFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<MergeTreeFactory> {

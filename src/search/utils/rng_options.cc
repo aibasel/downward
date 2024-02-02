@@ -17,6 +17,18 @@ void add_rng_options(plugins::Feature &feature) {
         plugins::Bounds("-1", "infinity"));
 }
 
+shared_ptr<RandomNumberGenerator> get_rng(
+    const int seed) {
+    if (seed == -1) {
+        // Use an arbitrary default seed.
+        static shared_ptr<utils::RandomNumberGenerator> rng =
+            make_shared<utils::RandomNumberGenerator>(2011);
+        return rng;
+    } else {
+        return make_shared<RandomNumberGenerator>(seed);
+    }
+}
+
 shared_ptr<RandomNumberGenerator> parse_rng_from_options(
     const plugins::Options &options) {
     int seed = options.get<int>("random_seed");
