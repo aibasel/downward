@@ -25,6 +25,7 @@ Heuristic::Heuristic(
       task_proxy(*task) {
 }
 
+// TODO 1082 remove this, just keep the one above
 Heuristic::Heuristic(const plugins::Options &opts)
     : Evaluator(opts, true, true, true),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
@@ -54,6 +55,7 @@ void Heuristic::add_options_to_feature(plugins::Feature &feature, const string &
     add_evaluator_options_to_feature(feature, name);
 }
 
+// TODO 1082 remove this, just keep the one above
 void Heuristic::add_options_to_feature(plugins::Feature &feature) {
     feature.add_option<shared_ptr<AbstractTask>>(
         "transform",

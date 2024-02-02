@@ -28,7 +28,7 @@ public:
         bool use_for_counting_evaluations,
         const std::string &name,
         utils::Verbosity verbosity);
-    explicit Evaluator(
+    explicit Evaluator(  // TODO 1082 remove this, just keep the one above
         const plugins::Options &opts,
         bool use_for_reporting_minima = false,
         bool use_for_boosting = false,
@@ -107,6 +107,6 @@ public:
 };
 
 extern void add_evaluator_options_to_feature(plugins::Feature &feature, const std::string &name);
-extern void add_evaluator_options_to_feature(plugins::Feature &feature);
+extern void add_evaluator_options_to_feature(plugins::Feature &feature); // TODO 1082 remove this, just keep the one above
 
 #endif

@@ -78,7 +78,7 @@ public:
         bool cache_estimates,
         const std::string &name,
         utils::Verbosity verbosity);
-    explicit Heuristic(const plugins::Options &opts);
+    explicit Heuristic(const plugins::Options &opts); // TODO 1082 remove this, just keep the one above
     virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(
@@ -86,7 +86,7 @@ public:
     }
 
     static void add_options_to_feature(plugins::Feature &feature, const std::string &name);
-    static void add_options_to_feature(plugins::Feature &feature);
+    static void add_options_to_feature(plugins::Feature &feature); // TODO 1082 remove this, just keep the one above
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
