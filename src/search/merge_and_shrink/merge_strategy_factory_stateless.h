@@ -13,9 +13,9 @@ protected:
     virtual void dump_strategy_specific_options() const override;
 public:
     MergeStrategyFactoryStateless(
-            std::shared_ptr<MergeSelector> merge_selector,
-            const std::string &name,
-            utils::Verbosity verbosity);
+        std::shared_ptr<MergeSelector> merge_selector,
+        const std::string &name,
+        utils::Verbosity verbosity);
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,
         const FactoredTransitionSystem &fts) override;
