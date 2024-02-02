@@ -27,9 +27,9 @@ void add_log_options_to_feature(plugins::Feature &feature, const string &name) {
                                "name used to identify evaluator in logs",
                                "\"" + name + "\"");
     feature.add_option<Verbosity>(
-            "verbosity",
-            "Option to specify the verbosity level.",
-            "normal");
+        "verbosity",
+        "Option to specify the verbosity level.",
+        "normal");
 }
 
 // TODO 1082 remove this, just keep the one above
