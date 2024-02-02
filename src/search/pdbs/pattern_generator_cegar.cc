@@ -16,12 +16,18 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorCEGAR::PatternGeneratorCEGAR(const plugins::Options &opts)
-    : PatternGenerator(opts),
-      max_pdb_size(opts.get<int>("max_pdb_size")),
-      max_time(opts.get<double>("max_time")),
-      use_wildcard_plans(opts.get<bool>("use_wildcard_plans")),
-      rng(utils::parse_rng_from_options(opts)) {
+PatternGeneratorCEGAR::PatternGeneratorCEGAR(
+    int max_pdb_size,
+    double max_time,
+    bool use_wildcard_plans,
+    int random_seed,
+    const string &name,
+    utils::Verbosity verbosity)
+    : PatternGenerator(name, verbosity),
+      max_pdb_size(max_pdb_size),
+      max_time(max_time),
+      use_wildcard_plans(use_wildcard_plans),
+      rng(utils::get_rng(random_seed)) {
 }
 
 string PatternGeneratorCEGAR::name() const {
@@ -65,11 +71,23 @@ public:
             "infinity",
             plugins::Bounds("0.0", "infinity"));
         add_cegar_wildcard_option_to_feature(*this);
-        add_generator_options_to_feature(*this);
         utils::add_rng_options(*this);
+        add_generator_options_to_feature(*this, "cegar_pattern");
 
         add_cegar_implementation_notes_to_feature(*this);
     }
+
+    virtual shared_ptr<PatternGeneratorCEGAR> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<PatternGeneratorCEGAR>(
+            opts.get<int>("max_pdb_size"),
+            opts.get<double>("max_time"),
+            opts.get<bool>("use_wildcard_plans"),
+            opts.get<int>("random_seed"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity"));
+    }
+
 };
 
 static plugins::FeaturePlugin<PatternGeneratorCEGARFeature> _plugin;

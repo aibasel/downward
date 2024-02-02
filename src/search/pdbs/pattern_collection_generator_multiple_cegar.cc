@@ -11,9 +11,29 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar(
-    const plugins::Options &opts)
-    : PatternCollectionGeneratorMultiple(opts),
-      use_wildcard_plans(opts.get<bool>("use_wildcard_plans")) {
+    bool use_wildcard_plans,
+    int max_pdb_size,
+    int max_collection_size,
+    double pattern_generation_max_time,
+    double total_max_time,
+    double stagnation_limit,
+    double blacklist_trigger_percentage,
+    bool enable_blacklist_on_stagnation,
+    int random_seed,
+    const string &name,
+    utils::Verbosity verbosity)
+    : PatternCollectionGeneratorMultiple(
+          max_pdb_size,
+          max_collection_size,
+          pattern_generation_max_time,
+          total_max_time,
+          stagnation_limit,
+          blacklist_trigger_percentage,
+          enable_blacklist_on_stagnation,
+          random_seed,
+          name,
+          verbosity),
+      use_wildcard_plans(use_wildcard_plans) {
 }
 
 string PatternCollectionGeneratorMultipleCegar::id() const {
@@ -51,11 +71,28 @@ public:
             "restricted to a single goal variable. See below for descriptions of "
             "the algorithms.");
 
-        add_multiple_options_to_feature(*this);
         add_cegar_wildcard_option_to_feature(*this);
+        add_multiple_options_to_feature(*this, "multiple_cegar");
 
         add_cegar_implementation_notes_to_feature(*this);
         add_multiple_algorithm_implementation_notes_to_feature(*this);
+    }
+
+    virtual shared_ptr<PatternCollectionGeneratorMultipleCegar> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<PatternCollectionGeneratorMultipleCegar>(
+            opts.get<bool>("use_wildcard_plans"),
+            opts.get<int>("max_pdb_size"),
+            opts.get<int>("max_collection_size"),
+            opts.get<double>("pattern_generation_max_time"),
+            opts.get<double>("total_max_time"),
+            opts.get<double>("stagnation_limit"),
+            opts.get<double>("blacklist_trigger_percentage"),
+            opts.get<bool>("enable_blacklist_on_stagnation"),
+            opts.get<int>("random_seed"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity")
+        );
     }
 };
 

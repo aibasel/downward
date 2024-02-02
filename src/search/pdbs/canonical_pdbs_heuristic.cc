@@ -1,7 +1,6 @@
 #include "canonical_pdbs_heuristic.h"
 
 #include "dominance_pruning.h"
-#include "pattern_generator.h"
 #include "utils.h"
 
 #include "../plugins/plugin.h"
@@ -10,15 +9,15 @@
 
 #include <iostream>
 #include <limits>
-#include <memory>
 
 using namespace std;
 
 namespace pdbs {
 static CanonicalPDBs get_canonical_pdbs_from_options(
-    const shared_ptr<AbstractTask> &task, const plugins::Options &opts, utils::LogProxy &log) {
-    shared_ptr<PatternCollectionGenerator> pattern_generator =
-        opts.get<shared_ptr<PatternCollectionGenerator>>("patterns");
+    const shared_ptr<AbstractTask> &task,
+    const shared_ptr<PatternCollectionGenerator> &pattern_generator,
+    double max_time_dominance_pruning,
+    utils::LogProxy &log) {
     utils::Timer timer;
     if (log.is_at_least_normal()) {
         log << "Initializing canonical PDB heuristic..." << endl;
@@ -36,7 +35,6 @@ static CanonicalPDBs get_canonical_pdbs_from_options(
     shared_ptr<vector<PatternClique>> pattern_cliques =
         pattern_collection_info.get_pattern_cliques();
 
-    double max_time_dominance_pruning = opts.get<double>("max_time_dominance_pruning");
     if (max_time_dominance_pruning > 0.0) {
         int num_variables = TaskProxy(*task).get_variables().size();
         /*
@@ -62,9 +60,16 @@ static CanonicalPDBs get_canonical_pdbs_from_options(
     return CanonicalPDBs(pdbs, pattern_cliques);
 }
 
-CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(const plugins::Options &opts)
-    : Heuristic(opts),
-      canonical_pdbs(get_canonical_pdbs_from_options(task, opts, log)) {
+CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(
+        const shared_ptr<PatternCollectionGenerator> &pattern_generator,
+        double max_time_dominance_pruning,
+        const shared_ptr<AbstractTask> &transform,
+        bool cache_estimates,
+        const string &name,
+        utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, name, verbosity),
+      canonical_pdbs(get_canonical_pdbs_from_options(
+          task, pattern_generator, max_time_dominance_pruning, log)) {
 }
 
 int CanonicalPDBsHeuristic::compute_heuristic(const State &ancestor_state) {
@@ -106,7 +111,7 @@ public:
             "pattern generation method",
             "systematic(1)");
         add_canonical_pdbs_options_to_feature(*this);
-        Heuristic::add_options_to_feature(*this);
+        Heuristic::add_options_to_feature(*this, "cpdbs");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
@@ -116,6 +121,17 @@ public:
         document_property("consistent", "yes");
         document_property("safe", "yes");
         document_property("preferred operators", "no");
+    }
+
+    virtual shared_ptr<CanonicalPDBsHeuristic> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<CanonicalPDBsHeuristic>(
+            opts.get<shared_ptr<PatternCollectionGenerator>>("patterns"),
+            opts.get<double>("max_time_dominance_pruning"),
+            opts.get<shared_ptr<AbstractTask>>("transform"),
+            opts.get<bool>("cache_estimates"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity"));
     }
 };
 
