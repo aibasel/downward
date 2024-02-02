@@ -76,6 +76,7 @@ class VEGraph {
           from all its (non-eliminated) predecessors, to all its
           (non-eliminated) successors.
         */
+        vector<tuple<FactPair, FactPair, FactPair>> new_shortcuts;
         for (FactPair predecessor : node.predecessors) {
             if (get_node(predecessor).is_eliminated) {
                 continue;
@@ -84,13 +85,20 @@ class VEGraph {
                 if (get_node(successor).is_eliminated) {
                     continue;
                 }
-                if (successor != predecessor) {
-                    add_edge(predecessor, successor);
-                    delta.push_back(make_tuple(predecessor, fact, successor));
+                // TODO avoid linear scan
+                const vector<FactPair> pre_succs = get_node(predecessor).successors;
+                if (successor != predecessor && find(pre_succs.begin(), pre_succs.end(), successor) == pre_succs.end()) {
+                    new_shortcuts.push_back(make_tuple(predecessor, fact, successor));
                 }
             }
         }
         node.is_eliminated = true;
+
+        for (tuple<FactPair, FactPair, FactPair> shortcut : new_shortcuts) {
+            auto [from, _, to] = shortcut;
+            add_edge(from, to);
+            delta.push_back(shortcut);
+        }
 
         /*
           The elimination can affect the priority queue which uses the number of
@@ -320,7 +328,7 @@ void DeleteRelaxationConstraintsRR::create_constraints(
 
     // Constraint (7) in paper.
     /*
-      TODO: Consider storing the result of cop_edges in VEGraph instead of
+      TODO: Consider storing the result of copy_edges in VEGraph instead of
       computing it twice (here and in create_auxiliary_variables)
     */
     for (pair<FactPair, FactPair> &edge : ve_graph.copy_edges()) {
