@@ -70,6 +70,14 @@ public:
             "scoring_functions=[sf_miasm(<shrinking_options>),total_order(<order_option>)]"
             "\n}}}");
     }
+
+    virtual shared_ptr<MergeStrategyFactoryStateless> create_component(
+            const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<MergeStrategyFactoryStateless>(
+                opts.get<shared_ptr<MergeSelector>>("merge_selector"),
+                opts.get<string>("name"),
+                opts.get<utils::Verbosity>("verbosity"));
+    }
 };
 
 static plugins::FeaturePlugin<MergeStrategyFactoryStatelessFeature> _plugin;

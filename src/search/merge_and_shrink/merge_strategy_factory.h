@@ -28,7 +28,6 @@ public:
     MergeStrategyFactory(
         const std::string &name,
         utils::Verbosity verbosity);
-    explicit MergeStrategyFactory(const plugins::Options &options); // TODO issue1082 remove
     virtual ~MergeStrategyFactory() = default;
     void dump_options() const;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
@@ -39,7 +38,6 @@ public:
 };
 
 extern void add_merge_strategy_options_to_feature(plugins::Feature &feature, const std::string &name);
-extern void add_merge_strategy_options_to_feature(plugins::Feature &feature);     // TODO issu1082 remove
 }
 
 #endif

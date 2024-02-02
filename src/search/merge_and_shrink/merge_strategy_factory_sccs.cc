@@ -36,21 +36,9 @@ MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(
     const std::string &name,
     utils::Verbosity verbosity)
     : MergeStrategyFactory(name, verbosity),
+      order_of_sccs(order_of_sccs),
       merge_tree_factory(merge_tree),
       merge_selector(merge_selector) {
-}
-
-MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const plugins::Options &options)
-    : MergeStrategyFactory(options),
-      order_of_sccs(options.get<OrderOfSCCs>("order_of_sccs")),
-      merge_tree_factory(nullptr),
-      merge_selector(nullptr) {
-    if (options.contains("merge_tree")) {
-        merge_tree_factory = options.get<shared_ptr<MergeTreeFactory>>("merge_tree");
-    }
-    if (options.contains("merge_selector")) {
-        merge_selector = options.get<shared_ptr<MergeSelector>>("merge_selector");
-    }
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
