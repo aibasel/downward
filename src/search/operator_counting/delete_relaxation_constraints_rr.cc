@@ -209,7 +209,7 @@ bool DeleteRelaxationConstraintsRR::is_in_precondition(
 }
 
 void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
-    const TaskProxy &task_proxy, LPVariables &variables, VEGraph &ve_graph) {
+    const TaskProxy &task_proxy, LPVariables &variables, const VEGraph &ve_graph) {
     OperatorsProxy ops = task_proxy.get_operators();
     VariablesProxy vars = task_proxy.get_variables();
     int num_vars = vars.size();
@@ -241,7 +241,7 @@ void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
 }
 
 void DeleteRelaxationConstraintsRR::create_constraints(
-    const TaskProxy &task_proxy, lp::LinearProgram &lp, VEGraph &ve_graph) {
+    const TaskProxy &task_proxy, lp::LinearProgram &lp, const VEGraph &ve_graph) {
     LPVariables &variables = lp.get_variables();
     LPConstraints &constraints = lp.get_constraints();
     double infinity = lp.get_infinity();

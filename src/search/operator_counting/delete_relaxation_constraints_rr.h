@@ -63,8 +63,8 @@ class DeleteRelaxationConstraintsRR : public ConstraintGenerator {
     bool is_in_precondition(FactPair f, const OperatorProxy &op);
 
     void create_auxiliary_variables(
-        const TaskProxy &task_proxy, LPVariables &variables, VEGraph &ve_graph);
-    void create_constraints(const TaskProxy &task_proxy, lp::LinearProgram &lp, VEGraph &ve_graph);
+        const TaskProxy &task_proxy, LPVariables &variables, const VEGraph &ve_graph);
+    void create_constraints(const TaskProxy &task_proxy, lp::LinearProgram &lp, const VEGraph &ve_graph);
 public:
     explicit DeleteRelaxationConstraintsRR(const plugins::Options &opts);
 
