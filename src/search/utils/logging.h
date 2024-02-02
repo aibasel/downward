@@ -132,7 +132,7 @@ extern LogProxy g_log;
 extern void add_log_options_to_feature(plugins::Feature &feature, const std::string &name);
 extern void add_log_options_to_feature(plugins::Feature &feature); // TODO 1082 remove this, just keep the one above
 extern LogProxy get_log_for_verbosity(const Verbosity &verbosity);
-extern LogProxy get_log_from_options(const plugins::Options &options);
+extern LogProxy get_log_from_options(const plugins::Options &options); // TODO 1082 is this still needed?
 extern LogProxy get_silent_log();
 
 class ContextError : public utils::Exception {
