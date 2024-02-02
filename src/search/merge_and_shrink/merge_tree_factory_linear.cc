@@ -17,11 +17,17 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeTreeFactoryLinear::MergeTreeFactoryLinear(const plugins::Options &options)
-    : MergeTreeFactory(options),
-      variable_order_type(
-          options.get<variable_order_finder::VariableOrderType>("variable_order")),
-      rng(utils::parse_rng_from_options(options)) {
+MergeTreeFactoryLinear::MergeTreeFactoryLinear(
+    variable_order_finder::VariableOrderType variable_order,
+    int random_seed,
+    UpdateOption update_option,
+    const std::string &name,
+    utils::Verbosity verbosity)
+    : MergeTreeFactory(random_seed,
+                       update_option,
+                       name,
+                       verbosity),
+      variable_order_type(variable_order) {
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
@@ -98,7 +104,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
         root, rng, update_option);
 }
 
-string MergeTreeFactoryLinear::name() const {
+string MergeTreeFactoryLinear::type() const {
     return "linear";
 }
 
@@ -108,12 +114,12 @@ void MergeTreeFactoryLinear::dump_tree_specific_options(utils::LogProxy &log) co
     }
 }
 
-void MergeTreeFactoryLinear::add_options_to_feature(plugins::Feature &feature) {
-    MergeTreeFactory::add_options_to_feature(feature);
+void MergeTreeFactoryLinear::add_options_to_feature(plugins::Feature &feature, const string &name) {
     feature.add_option<variable_order_finder::VariableOrderType>(
         "variable_order",
         "the order in which atomic transition systems are merged",
         "cg_goal_level");
+    MergeTreeFactory::add_options_to_feature(feature, name);
 }
 
 class MergeTreeFactoryLinearFeature : public plugins::TypedFeature<MergeTreeFactory, MergeTreeFactoryLinear> {
@@ -132,7 +138,17 @@ public:
                 "AAAI Press",
                 "2007"));
 
-        MergeTreeFactoryLinear::add_options_to_feature(*this);
+        MergeTreeFactoryLinear::add_options_to_feature(*this, "linear");
+    }
+
+    virtual shared_ptr<MergeTreeFactoryLinear> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<MergeTreeFactoryLinear>(
+            opts.get<variable_order_finder::VariableOrderType>("variable_order"),
+            opts.get<int>("random_seed"),
+            opts.get<UpdateOption>("update_option"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity"));
     }
 };
 

@@ -1,6 +1,8 @@
 #ifndef MERGE_AND_SHRINK_MERGE_TREE_FACTORY_H
 #define MERGE_AND_SHRINK_MERGE_TREE_FACTORY_H
 
+#include "../utils/logging.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -23,14 +25,19 @@ class MergeTree;
 enum class UpdateOption;
 
 class MergeTreeFactory {
+    const std::string name;
 protected:
+    mutable utils::LogProxy log;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
     UpdateOption update_option;
-    virtual std::string name() const = 0;
+    virtual std::string type() const = 0;
     virtual void dump_tree_specific_options(utils::LogProxy &) const {}
 public:
-    explicit MergeTreeFactory(const plugins::Options &options);
-    virtual ~MergeTreeFactory() = default;
+    MergeTreeFactory(
+        int random_seed,
+        UpdateOption update_option,
+        const std::string &name,
+        utils::Verbosity verbosity);
     void dump_options(utils::LogProxy &log) const;
     // Compute a merge tree for the given entire task.
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
@@ -44,7 +51,7 @@ public:
     virtual bool requires_init_distances() const = 0;
     virtual bool requires_goal_distances() const = 0;
     // Derived classes must call this method in their parsing methods.
-    static void add_options_to_feature(plugins::Feature &feature);
+    static void add_options_to_feature(plugins::Feature &feature, const std::string &name);
 };
 }
 
