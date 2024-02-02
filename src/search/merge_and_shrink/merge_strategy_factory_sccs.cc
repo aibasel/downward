@@ -29,6 +29,17 @@ static bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &r
     return lhs.size() > rhs.size();
 }
 
+MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(
+        const OrderOfSCCs &order_of_sccs,
+        const shared_ptr<MergeTreeFactory> merge_tree,
+        const shared_ptr<MergeSelector> merge_selector,
+        const std::string &name,
+        utils::Verbosity verbosity)
+        : MergeStrategyFactory(name, verbosity),
+          merge_tree_factory(merge_tree),
+          merge_selector(merge_selector) {
+}
+
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(const plugins::Options &options)
     : MergeStrategyFactory(options),
       order_of_sccs(options.get<OrderOfSCCs>("order_of_sccs")),
@@ -193,18 +204,23 @@ public:
             "the fallback merge strategy to use if a stateless strategy should "
             "be used.",
             plugins::ArgumentInfo::NO_DEFAULT);
-        add_merge_strategy_options_to_feature(*this);
+        add_merge_strategy_options_to_feature(*this, "merge_sccs");
     }
 
-    virtual shared_ptr<MergeStrategyFactorySCCs> create_component(const plugins::Options &options, const utils::Context &context) const override {
-        bool merge_tree = options.contains("merge_tree");
-        bool merge_selector = options.contains("merge_selector");
+    virtual shared_ptr<MergeStrategyFactorySCCs> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+        bool merge_tree = opts.contains("merge_tree");
+        bool merge_selector = opts.contains("merge_selector");
         if ((merge_tree && merge_selector) || (!merge_tree && !merge_selector)) {
             context.error(
                 "You have to specify exactly one of the options merge_tree "
                 "and merge_selector!");
         }
-        return make_shared<MergeStrategyFactorySCCs>(options);
+        return make_shared<MergeStrategyFactorySCCs>(
+                opts.get<OrderOfSCCs>("order_of_sccs"),
+                opts.get < shared_ptr < MergeTreeFactory >> ("merge_tree", nullptr),
+                opts.get < shared_ptr < MergeSelector >> ("merge_selector", nullptr),
+                opts.get<string>("name"),
+                opts.get<utils::Verbosity>("verbosity"));
     }
 };
 
