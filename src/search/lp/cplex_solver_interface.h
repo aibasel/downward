@@ -7,6 +7,7 @@
 #include "../algorithms/named_vector.h"
 #include "../utils/memory.h"
 
+#include <cstring>
 #include <cplex.h>
 
 namespace lp {
@@ -144,15 +145,26 @@ public:
         template<typename T>
         explicit CplexNameData(const named_vector::NamedVector<T> &values) {
             if (values.has_names()) {
-                names.resize(values.size());
-                indices.resize(values.size());
+                names.reserve(values.size());
+                indices.reserve(values.size());
                 int num_values = values.size();
                 for (int i = 0; i < num_values; ++i) {
-                    names[i] = values.get_name(i).data();
-                    indices[i] = i;
+                    const std::string &name = values.get_name(i);
+                    if (!name.empty()) {
+                        names.push_back(new char[name.size() + 1]);
+                        std::strcpy(names.back(), name.data());
+                        indices.push_back(i);
+                    }
                 }
             }
         }
+
+        ~CplexNameData() {
+            for (char *name : names) {
+                delete[] name;
+            }
+        }
+
         int size() {return names.size();}
         int *get_indices() {
             if (indices.empty()) {
