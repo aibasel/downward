@@ -24,8 +24,8 @@ protected:
 public:
     MergeStrategyFactorySCCs(
         const OrderOfSCCs &order_of_sccs,
-        const std::shared_ptr<MergeTreeFactory> merge_tree,
-        const std::shared_ptr<MergeSelector> merge_selector,
+        const std::shared_ptr<MergeTreeFactory> &merge_tree,
+        const std::shared_ptr<MergeSelector> &merge_selector,
         const std::string &name,
         utils::Verbosity verbosity);
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(

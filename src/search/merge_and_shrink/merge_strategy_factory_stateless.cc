@@ -10,7 +10,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
-    shared_ptr<MergeSelector> merge_selector,
+    const shared_ptr<MergeSelector> &merge_selector,
     const string &name,
     utils::Verbosity verbosity)
     : MergeStrategyFactory(name, verbosity),

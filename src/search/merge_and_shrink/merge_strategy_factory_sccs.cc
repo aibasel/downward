@@ -31,8 +31,8 @@ static bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &r
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(
     const OrderOfSCCs &order_of_sccs,
-    const shared_ptr<MergeTreeFactory> merge_tree,
-    const shared_ptr<MergeSelector> merge_selector,
+    const shared_ptr<MergeTreeFactory> &merge_tree,
+    const shared_ptr<MergeSelector> &merge_selector,
     const std::string &name,
     utils::Verbosity verbosity)
     : MergeStrategyFactory(name, verbosity),
