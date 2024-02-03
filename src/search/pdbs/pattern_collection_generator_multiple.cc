@@ -16,17 +16,26 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorMultiple::PatternCollectionGeneratorMultiple(
-    const plugins::Options &opts)
-    : PatternCollectionGenerator(opts),
-      max_pdb_size(opts.get<int>("max_pdb_size")),
-      pattern_generation_max_time(opts.get<double>("pattern_generation_max_time")),
-      total_max_time(opts.get<double>("total_max_time")),
-      stagnation_limit(opts.get<double>("stagnation_limit")),
-      blacklisting_start_time(total_max_time * opts.get<double>("blacklist_trigger_percentage")),
-      enable_blacklist_on_stagnation(opts.get<bool>("enable_blacklist_on_stagnation")),
-      rng(utils::parse_rng_from_options(opts)),
-      random_seed(opts.get<int>("random_seed")),
-      remaining_collection_size(opts.get<int>("max_collection_size")),
+    int max_pdb_size,
+    int max_collection_size,
+    double pattern_generation_max_time,
+    double total_max_time,
+    double stagnation_limit,
+    double blacklist_trigger_percentage,
+    bool enable_blacklist_on_stagnation,
+    int random_seed,
+    const string &name,
+    utils::Verbosity verbosity)
+    : PatternCollectionGenerator(name, verbosity),
+      max_pdb_size(max_pdb_size),
+      pattern_generation_max_time(pattern_generation_max_time),
+      total_max_time(total_max_time),
+      stagnation_limit(stagnation_limit),
+      blacklisting_start_time(total_max_time * blacklist_trigger_percentage),
+      enable_blacklist_on_stagnation(enable_blacklist_on_stagnation),
+      rng(utils::get_rng(random_seed)),
+      random_seed(random_seed),
+      remaining_collection_size(max_collection_size),
       blacklisting(false),
       time_point_of_last_new_pattern(0.0) {
 }
@@ -274,7 +283,7 @@ void add_multiple_algorithm_implementation_notes_to_feature(
         true);
 }
 
-void add_multiple_options_to_feature(plugins::Feature &feature) {
+void add_multiple_options_to_feature(plugins::Feature &feature, const string &name) {
     feature.add_option<int>(
         "max_pdb_size",
         "maximum number of states for each pattern database, computed "
@@ -322,7 +331,7 @@ void add_multiple_options_to_feature(plugins::Feature &feature) {
         "generation is terminated already the first time stagnation_limit is "
         "hit.",
         "true");
-    add_generator_options_to_feature(feature);
     utils::add_rng_options(feature);
+    add_generator_options_to_feature(feature, name);
 }
 }

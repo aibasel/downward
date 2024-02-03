@@ -14,8 +14,10 @@ class PatternCollectionGeneratorManual : public PatternCollectionGenerator {
     virtual PatternCollectionInformation compute_patterns(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
-    explicit PatternCollectionGeneratorManual(const plugins::Options &opts);
-    virtual ~PatternCollectionGeneratorManual() = default;
+    explicit PatternCollectionGeneratorManual(
+        const std::vector<Pattern> &patterns,
+        const std::string &name,
+        utils::Verbosity verbosity);
 };
 }
 

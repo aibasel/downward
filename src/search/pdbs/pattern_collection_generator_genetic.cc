@@ -25,14 +25,21 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(
-    const plugins::Options &opts)
-    : PatternCollectionGenerator(opts),
-      pdb_max_size(opts.get<int>("pdb_max_size")),
-      num_collections(opts.get<int>("num_collections")),
-      num_episodes(opts.get<int>("num_episodes")),
-      mutation_probability(opts.get<double>("mutation_probability")),
-      disjoint_patterns(opts.get<bool>("disjoint")),
-      rng(utils::parse_rng_from_options(opts)) {
+    int pdb_max_size,
+    int num_collections,
+    int num_episodes,
+    double mutation_probability,
+    bool disjoint,
+    int random_seed,
+    const string &name,
+    utils::Verbosity verbosity)
+    : PatternCollectionGenerator(name, verbosity),
+      pdb_max_size(pdb_max_size),
+      num_collections(num_collections),
+      num_episodes(num_episodes),
+      mutation_probability(mutation_probability),
+      disjoint_patterns(disjoint),
+      rng(utils::get_rng(random_seed)) {
 }
 
 void PatternCollectionGeneratorGenetic::select(
@@ -345,7 +352,7 @@ public:
             "fitness) if its patterns are not disjoint",
             "false");
         utils::add_rng_options(*this);
-        add_generator_options_to_feature(*this);
+        add_generator_options_to_feature(*this, "genetic");
 
         document_note(
             "Note",
@@ -386,6 +393,20 @@ public:
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
         document_language_support("axioms", "not supported");
+    }
+
+    virtual shared_ptr<PatternCollectionGeneratorGenetic> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<PatternCollectionGeneratorGenetic>(
+            opts.get<int>("pdb_max_size"),
+            opts.get<int>("num_collections"),
+            opts.get<int>("num_episodes"),
+            opts.get<double>("mutation_probability"),
+            opts.get<bool>("disjoint"),
+            opts.get<int>("random_seed"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity")
+        );
     }
 };
 

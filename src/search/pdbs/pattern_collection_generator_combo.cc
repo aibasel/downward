@@ -18,8 +18,12 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(
-    const plugins::Options &opts)
-    : PatternCollectionGenerator(opts), opts(opts) {
+    int max_states,
+    const string &name,
+    utils::Verbosity verbosity)
+    : PatternCollectionGenerator(name, verbosity), max_states(max_states),
+      sub_generator_name(name + "_nested_generator"), verbosity(verbosity) {
+    // TODO 1082 does it make sense to store name and verbosity here? At least name conflicts with the function name().
 }
 
 string PatternCollectionGeneratorCombo::name() const {
@@ -31,7 +35,7 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::compute_patterns(
     TaskProxy task_proxy(*task);
     shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
 
-    PatternGeneratorGreedy large_pattern_generator(opts);
+    PatternGeneratorGreedy large_pattern_generator(max_states, sub_generator_name, verbosity);
     Pattern large_pattern = large_pattern_generator.generate(task).get_pattern();
     set<int> used_vars(large_pattern.begin(), large_pattern.end());
     patterns->push_back(move(large_pattern));
@@ -55,7 +59,16 @@ public:
             "maximum abstraction size for combo strategy",
             "1000000",
             plugins::Bounds("1", "infinity"));
-        add_generator_options_to_feature(*this);
+        add_generator_options_to_feature(*this, "combo");
+    }
+
+    virtual shared_ptr<PatternCollectionGeneratorCombo> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<PatternCollectionGeneratorCombo>(
+            opts.get<int>("max_states"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity")
+        );
     }
 };
 

@@ -14,9 +14,29 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorMultipleRandom::PatternCollectionGeneratorMultipleRandom(
-    const plugins::Options &opts)
-    : PatternCollectionGeneratorMultiple(opts),
-      bidirectional(opts.get<bool>("bidirectional")) {
+    bool bidirectional,
+    int max_pdb_size,
+    int max_collection_size,
+    double pattern_generation_max_time,
+    double total_max_time,
+    double stagnation_limit,
+    double blacklist_trigger_percentage,
+    bool enable_blacklist_on_stagnation,
+    int random_seed,
+    const string &name,
+    utils::Verbosity verbosity)
+    : PatternCollectionGeneratorMultiple(
+          max_pdb_size,
+          max_collection_size,
+          pattern_generation_max_time,
+          total_max_time,
+          stagnation_limit,
+          blacklist_trigger_percentage,
+          enable_blacklist_on_stagnation,
+          random_seed,
+          name,
+          verbosity),
+      bidirectional(bidirectional) {
 }
 
 string PatternCollectionGeneratorMultipleRandom::id() const {
@@ -64,11 +84,28 @@ public:
             "pattern algorithm, called 'single randomized causal graph' (sRCG) "
             "in the paper. See below for descriptions of the algorithms.");
 
-        add_multiple_options_to_feature(*this);
         add_random_pattern_bidirectional_option_to_feature(*this);
+        add_multiple_options_to_feature(*this, "random_patterns");
 
         add_random_pattern_implementation_notes_to_feature(*this);
         add_multiple_algorithm_implementation_notes_to_feature(*this);
+    }
+
+    virtual shared_ptr<PatternCollectionGeneratorMultipleRandom> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<PatternCollectionGeneratorMultipleRandom>(
+            opts.get<bool>("bidirectional"),
+            opts.get<int>("max_pdb_size"),
+            opts.get<int>("max_collection_size"),
+            opts.get<double>("pattern_generation_max_time"),
+            opts.get<double>("total_max_time"),
+            opts.get<double>("stagnation_limit"),
+            opts.get<double>("blacklist_trigger_percentage"),
+            opts.get<bool>("enable_blacklist_on_stagnation"),
+            opts.get<int>("random_seed"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity")
+        );
     }
 };
 

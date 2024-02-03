@@ -16,12 +16,18 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorRandom::PatternGeneratorRandom(const plugins::Options &opts)
-    : PatternGenerator(opts),
-      max_pdb_size(opts.get<int>("max_pdb_size")),
-      max_time(opts.get<double>("max_time")),
-      bidirectional(opts.get<bool>("bidirectional")),
-      rng(utils::parse_rng_from_options(opts)) {
+PatternGeneratorRandom::PatternGeneratorRandom(
+    int max_pdb_size,
+    double max_time,
+    bool bidirectional,
+    int random_seed,
+    const string &name,
+    utils::Verbosity verbosity)
+    : PatternGenerator(name, verbosity),
+      max_pdb_size(max_pdb_size),
+      max_time(max_time),
+      bidirectional(bidirectional),
+      rng(utils::get_rng(random_seed)) {
 }
 
 string PatternGeneratorRandom::name() const {
@@ -70,10 +76,22 @@ public:
             "infinity",
             plugins::Bounds("0.0", "infinity"));
         add_random_pattern_bidirectional_option_to_feature(*this);
-        add_generator_options_to_feature(*this);
         utils::add_rng_options(*this);
+        add_generator_options_to_feature(*this, "random_pattern");
 
         add_random_pattern_implementation_notes_to_feature(*this);
+    }
+
+    virtual shared_ptr<PatternGeneratorRandom> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<PatternGeneratorRandom>(
+            opts.get<int>("max_pdb_size"),
+            opts.get<double>("max_time"),
+            opts.get<bool>("bidirectional"),
+            opts.get<int>("random_seed"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity")
+        );
     }
 };
 

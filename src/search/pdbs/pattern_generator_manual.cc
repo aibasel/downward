@@ -12,8 +12,11 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorManual::PatternGeneratorManual(const plugins::Options &opts)
-    : PatternGenerator(opts), pattern(opts.get_list<int>("pattern")) {
+PatternGeneratorManual::PatternGeneratorManual(
+    const vector<int> pattern,
+    const string &name,
+    const utils::Verbosity verbosity)
+    : PatternGenerator(name, verbosity), pattern(pattern) {
 }
 
 string PatternGeneratorManual::name() const {
@@ -36,7 +39,15 @@ public:
             "pattern",
             "list of variable numbers of the planning task that should be used as "
             "pattern.");
-        add_generator_options_to_feature(*this);
+        add_generator_options_to_feature(*this, "manual_pattern");
+    }
+
+    virtual shared_ptr<PatternGeneratorManual> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<PatternGeneratorManual>(
+            opts.get_list<int>("pattern"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity"));
     }
 };
 

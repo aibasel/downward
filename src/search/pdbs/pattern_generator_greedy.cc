@@ -16,8 +16,9 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorGreedy::PatternGeneratorGreedy(const plugins::Options &opts)
-    : PatternGenerator(opts), max_states(opts.get<int>("max_states")) {
+PatternGeneratorGreedy::PatternGeneratorGreedy(
+    int max_states, const string &name, utils::Verbosity verbosity)
+    : PatternGenerator(name, verbosity), max_states(max_states) {
 }
 
 string PatternGeneratorGreedy::name() const {
@@ -57,7 +58,15 @@ public:
             "maximal number of abstract states in the pattern database.",
             "1000000",
             plugins::Bounds("1", "infinity"));
-        add_generator_options_to_feature(*this);
+        add_generator_options_to_feature(*this, "greedy");
+    }
+
+    virtual shared_ptr<PatternGeneratorGreedy> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<PatternGeneratorGreedy>(
+            opts.get<int>("max_states"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity"));
     }
 };
 
