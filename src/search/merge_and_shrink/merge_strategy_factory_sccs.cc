@@ -33,7 +33,7 @@ MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(
     const OrderOfSCCs &order_of_sccs,
     const shared_ptr<MergeTreeFactory> &merge_tree,
     const shared_ptr<MergeSelector> &merge_selector,
-    const std::string &name,
+    const string &name,
     utils::Verbosity verbosity)
     : MergeStrategyFactory(name, verbosity),
       order_of_sccs(order_of_sccs),

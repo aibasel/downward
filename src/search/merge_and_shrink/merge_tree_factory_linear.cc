@@ -21,7 +21,7 @@ MergeTreeFactoryLinear::MergeTreeFactoryLinear(
     variable_order_finder::VariableOrderType variable_order,
     int random_seed,
     UpdateOption update_option,
-    const std::string &name,
+    const string &name,
     utils::Verbosity verbosity)
     : MergeTreeFactory(random_seed,
                        update_option,
