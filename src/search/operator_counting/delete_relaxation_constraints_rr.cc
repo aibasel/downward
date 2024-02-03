@@ -39,8 +39,12 @@ class VEGraph {
     }
 
     void add_edge(FactPair from_fact, FactPair to_fact) {
-        get_node(from_fact).successors.push_back(to_fact);
-        get_node(to_fact).predecessors.push_back(from_fact);
+        // HACK avoid linear scan
+        const vector<FactPair> pre_succs = get_node(from_fact).successors;
+        if (find(pre_succs.begin(), pre_succs.end(), to_fact) == pre_succs.end())  {
+            get_node(from_fact).successors.push_back(to_fact);
+            get_node(to_fact).predecessors.push_back(from_fact);
+        }
     }
 
     void push_fact(FactPair fact) {
@@ -229,6 +233,13 @@ void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
         add_lp_variables(var.get_domain_size(), variables,
                          lp_var_id_f_defined[var_id], 0, 1, 0,
                          use_integer_vars);
+#ifndef NDEBUG
+        for (int value = 0; value < var.get_domain_size(); ++value) {
+            variables.set_name(lp_var_id_f_defined[var_id][value],
+                               "f_" + var.get_name() + "_"
+                               + var.get_fact(value).get_name());
+        }
+#endif
         // Add f_{p,a} variables.
         for (int value = 0; value < var.get_domain_size(); ++value) {
             for (OperatorProxy op : ops) {
@@ -237,6 +248,13 @@ void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
                         make_pair(make_tuple(var_id, value, op.get_id()),
                                   variables.size()));
                     variables.emplace_back(0, 1, 0, use_integer_vars);
+#ifndef NDEBUG
+                    variables.set_name(variables.size() - 1,
+                                       "f_" + var.get_name() + "_"
+                                       + var.get_fact(value).get_name()
+                                       + "_achieved_by_"
+                                       + op.get_name());
+#endif
                 }
             }
         }
@@ -245,6 +263,20 @@ void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
     for (pair<FactPair, FactPair> edge : ve_graph.copy_edges()) {
         lp_var_id_edge.emplace(make_pair(edge, variables.size()));
         variables.emplace_back(0, 1, 0, use_integer_vars);
+#ifndef NDEBUG
+        auto [f1, f2] = edge;
+        VariableProxy var1 = task_proxy.get_variables()[f1.var];
+        int value1 = f1.value;
+        VariableProxy var2 = task_proxy.get_variables()[f2.var];
+        int value2 = f2.value;
+        variables.set_name(variables.size() - 1,
+                           "e_"
+                           + var1.get_name() + "_"
+                           + var1.get_fact(value1).get_name()
+                           + "_before_"
+                           + var2.get_name() + "_"
+                           + var2.get_fact(value2).get_name());
+#endif
     }
 }
 
@@ -256,77 +288,144 @@ void DeleteRelaxationConstraintsRR::create_constraints(
     OperatorsProxy ops = task_proxy.get_operators();
     VariablesProxy vars = task_proxy.get_variables();
 
-    // Constraint (2) in paper.
+    /*
+      Constraint (2) in paper:
+
+      f_p = [p in s] + sum_{a in A where p in add(a)} f_{p,a}
+      for all facts p.
+
+      Intuition: p is reached iff we selected exactly one achiever for it, or
+      if it is true in state s.
+      Implementation notes: we will set the state-dependent part ([p in s]) in
+      the update function and leave the right-hand side at 0 for now. The first
+      loop creates all constraints and adds the term "f_p", the second loop adds
+      the terms f_{p,a} to the appropriate constraints.
+    */
     lp_con_id_f_defined.resize(vars.size());
     for (VariableProxy var_p : vars) {
-        lp_con_id_f_defined[var_p.get_id()].resize(var_p.get_domain_size());
+        int var_id_p = var_p.get_id();
+        lp_con_id_f_defined[var_id_p].resize(var_p.get_domain_size());
         for (int value_p = 0; value_p < var_p.get_domain_size(); ++value_p) {
-            lp_con_id_f_defined[var_p.get_id()][value_p] = constraints.size();
-            constraints.emplace_back(0, 0);
-            FactPair fact_p(var_p.get_id(), value_p);
-            constraints.back().insert(get_var_f_defined(fact_p), 1);
-            for (OperatorProxy op : ops) {
-                if (is_in_effect(fact_p, op))
-                    constraints.back().insert(get_var_f_maps_to(fact_p, op),
-                                              -1);
-            }
+            lp_con_id_f_defined[var_id_p][value_p] = constraints.size();
+            FactPair fact_p(var_id_p, value_p);
+            lp::LPConstraint constraint(0, 0);
+            constraint.insert(get_var_f_defined(fact_p), 1);
+            constraints.push_back(move(constraint));
+        }
+    }
+    for (OperatorProxy op : ops) {
+        for (EffectProxy eff_proxy : op.get_effects()) {
+            FactPair eff = eff_proxy.get_fact().get_pair();
+            int constraint_id = lp_con_id_f_defined[eff.var][eff.value];
+            lp::LPConstraint &constraint = constraints[constraint_id];
+            constraint.insert(get_var_f_maps_to(eff, op), -1);
         }
     }
 
-    // Constraint (3) in paper.
-    for (VariableProxy var_p : vars) {
-        for (int value_p = 0; value_p < var_p.get_domain_size(); ++value_p) {
-            FactPair fact_p(var_p.get_id(), value_p);
-            for (VariableProxy var_q : vars) {
-                for (int value_q = 0; value_q < var_q.get_domain_size();
-                     ++value_q) {
-                    FactPair fact_q(var_q.get_id(), value_q);
-                    if (fact_q != fact_p)
-                        break;
-                    constraints.emplace_back(0, 1);
-                    constraints.back().insert(get_var_f_defined(fact_q), 1);
-                    for (OperatorProxy op : ops) {
-                        if (is_in_precondition(fact_q, op) &&
-                            is_in_effect(fact_p, op)) {
-                            constraints.back().insert(
-                                get_var_f_maps_to(fact_p, op), -1);
-                        }
-                    }
+    /*
+      Constraint (3) in paper:
+
+      sum_{a in A where q in pre(a) and p in add(a)} f_{p,a} <= f_q
+      for all facts p, q.
+
+      Intuition: If q is the precondition of an action that is selected as an
+      achiever for p, then q must be reached. (Also, at most one action may be
+      selected as the achiever of p.)
+      Implementation notes: if there is no action in the sum for a pair (p, q),
+      the constraint trivializes to 0 <= f_q which is guaranteed by the variable
+      bounds. We thus only loop over pairs (p, q) that occur as effect and
+      precondition in some action.
+    */
+    utils::HashMap<std::pair<FactPair, FactPair>, int> constraint3_ids;
+    for (OperatorProxy op : ops) {
+        for (EffectProxy eff_proxy : op.get_effects()) {
+            FactPair eff = eff_proxy.get_fact().get_pair();
+            for (FactProxy pre_proxy : op.get_preconditions()) {
+                FactPair pre = pre_proxy.get_pair();
+                if (pre == eff) {
+                    continue;
                 }
+                pair<FactPair, FactPair> key = make_pair(pre, eff);
+                if (!constraint3_ids.contains(key)) {
+                    constraint3_ids[key] = constraints.size();
+                    lp::LPConstraint constraint(0, 1);
+                    constraint.insert(get_var_f_defined(pre), 1);
+                    constraints.push_back(move(constraint));
+                }
+                int constraint_id = constraint3_ids[key];
+                lp::LPConstraint &constraint = constraints[constraint_id];
+                constraint.insert(get_var_f_maps_to(eff, op), -1);
             }
         }
     }
 
-    // Constraint (4) in paper.
+    /*
+      Constraint (4) in paper:
+
+      f_p = 1 for all goal facts p.
+
+      Intuition: We have to reach all goal facts.
+      Implementation notes: we don't add a constraint but instead raise the
+      lower bound of the (binary) variable to 1. A further optimization step
+      would be to replace all occurrences of f_p with 1 in all other constraints
+      but this would be more complicated.
+    */
     for (FactProxy goal : task_proxy.get_goals()) {
         variables[get_var_f_defined(goal.get_pair())].lower_bound = 1;
     }
 
-    // Constraint (5) in paper.
+    /*
+      Constraint (5) in paper:
+
+      f_{p,a} <= count_a for all a in A and p in add(a).
+
+      Intuition: if we use an action as an achiever for some fact, we have to
+      use it at least once.
+      Implementation notes: the paper uses a binary variable f_a instead of the
+      operator-counting variable count_a. We can make this change without
+      problems as f_a does not occur in any other constraint.
+    */
     for (OperatorProxy op : ops) {
-        for (EffectProxy eff : op.get_effects()) {
-            FactPair fact_p = eff.get_fact().get_pair();
-            constraints.emplace_back(0, infinity);
-            constraints.back().insert(get_var_f_maps_to(fact_p, op), -1);
-            constraints.back().insert(op.get_id(), 1);
+        for (EffectProxy eff_proxy : op.get_effects()) {
+            FactPair eff = eff_proxy.get_fact().get_pair();
+            lp::LPConstraint constraint(0, infinity);
+            constraint.insert(get_var_f_maps_to(eff, op), -1);
+            constraint.insert(op.get_id(), 1);
+            constraints.push_back(move(constraint));
         }
     }
 
-    // Constraint (6) in paper.
+    /*
+      Constraint (6) in paper:
+
+      f_{p_j,a} <= e_{i,j} for all a in A, p_i in pre(a), and p_j in add(a).
+
+      Intuition: if we use a as the achiever of p_j, then its preconditions (in
+      particular p_i) must be achieved earlier than p_j.
+    */
     for (OperatorProxy op : ops) {
         for (FactProxy pre_proxy : op.get_preconditions()) {
             FactPair pre = pre_proxy.get_pair();
             for (EffectProxy eff_proxy : op.get_effects()) {
                 FactPair eff = eff_proxy.get_fact().get_pair();
-                constraints.emplace_back(0, infinity);
-                constraints.back().insert(
-                    lp_var_id_edge.at(make_pair(pre, eff)), 1);
-                constraints.back().insert(get_var_f_maps_to(eff, op), -1);
+                lp::LPConstraint constraint(0, infinity);
+                constraint.insert(lp_var_id_edge.at(make_pair(pre, eff)), 1);
+                constraint.insert(get_var_f_maps_to(eff, op), -1);
+                constraints.push_back(move(constraint));
             }
         }
     }
 
-    // Constraint (7) in paper.
+    /*
+      Constraint (7) in paper:
+
+      e_{i,j} + e_{j,i} <= 1 for all (p_i, p_j) in E_Pi^*.
+
+      Intuition: if there is a 2-cycle in the elimination graph, we have to
+      avoid it by either ordering i before j or vice versa.
+      Implementation note: the paper is not explicit about this but the
+      constraint only makes sense if the reverse edge is in the graph.
+    */
     /*
       TODO: Consider storing the result of copy_edges in VEGraph instead of
       computing it twice (here and in create_auxiliary_variables)
@@ -338,27 +437,28 @@ void DeleteRelaxationConstraintsRR::create_constraints(
             continue;
         int edge_id = lp_var_id_edge.at(edge);
         int reverse_edge_id = reverse_edge_it->second;
-        constraints.emplace_back(-1, infinity);
-        constraints.back().insert(edge_id, -1);
-        constraints.back().insert(reverse_edge_id, -1);
+        lp::LPConstraint constraint(-infinity, 1);
+        constraint.insert(edge_id, 1);
+        constraint.insert(reverse_edge_id, 1);
+        constraints.push_back(move(constraint));
     }
 
-    // Constraint (8) in paper.
-    for (const tuple<FactPair, FactPair, FactPair> &edge_triple :
-         ve_graph.get_delta()) {
-        constraints.emplace_back(-1, infinity);
-        constraints.back().insert(
-            lp_var_id_edge.at(
-                make_pair(get<0>(edge_triple), get<1>(edge_triple))),
-            -1);
-        constraints.back().insert(
-            lp_var_id_edge.at(
-                make_pair(get<1>(edge_triple), get<2>(edge_triple))),
-            -1);
-        constraints.back().insert(
-            lp_var_id_edge.at(
-                make_pair(get<0>(edge_triple), get<2>(edge_triple))),
-            1);
+    /*
+      Constraint (8) in paper:
+
+      e_{i,j} + e_{j,k} - 1 <= e_{i,k} for all (p_i, p_j, p_k) in Delta.
+
+      Intuition: if we introduced shortcut edge (p_i, p_k) while eliminating p_j
+      cycles involving the new edge represents cycles containing the edges
+      (p_i, p_j) and (p_j, p_k). If we don't order p_i before p_k, we also may
+      not have both p_i ordered before p_j, and p_j ordered before p_k.
+    */
+    for (auto [pi, pj, pk] : ve_graph.get_delta()) {
+        lp::LPConstraint constraint(-infinity, 1);
+        constraint.insert(lp_var_id_edge.at(make_pair(pi, pj)), 1);
+        constraint.insert(lp_var_id_edge.at(make_pair(pj, pk)), 1);
+        constraint.insert(lp_var_id_edge.at(make_pair(pi, pk)), -1);
+        constraints.push_back(move(constraint));
     }
 
     /*
