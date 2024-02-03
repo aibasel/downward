@@ -324,7 +324,7 @@ public:
             opts.get<bool>("only_interesting_patterns"),
             opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity")
-        );
+            );
     }
 };
 

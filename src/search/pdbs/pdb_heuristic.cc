@@ -24,8 +24,7 @@ PDBHeuristic::PDBHeuristic(
     const string &name,
     utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, name, verbosity),
-      pdb(get_pdb_from_generator(task, pattern)){
-
+      pdb(get_pdb_from_generator(task, pattern)) {
 }
 
 int PDBHeuristic::compute_heuristic(const State &ancestor_state) {

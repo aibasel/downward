@@ -49,7 +49,7 @@ public:
             opts.get_list<Pattern>("patterns"),
             opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity")
-        );
+            );
     }
 };
 

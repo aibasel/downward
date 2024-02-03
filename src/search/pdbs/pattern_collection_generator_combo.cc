@@ -68,7 +68,7 @@ public:
             opts.get<int>("max_states"),
             opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity")
-        );
+            );
     }
 };
 

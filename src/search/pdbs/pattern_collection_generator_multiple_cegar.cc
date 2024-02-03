@@ -92,7 +92,7 @@ public:
             opts.get<int>("random_seed"),
             opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity")
-        );
+            );
     }
 };
 

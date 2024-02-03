@@ -87,7 +87,6 @@ public:
             opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity"));
     }
-
 };
 
 static plugins::FeaturePlugin<PatternGeneratorCEGARFeature> _plugin;
