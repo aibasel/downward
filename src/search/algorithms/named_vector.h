@@ -57,14 +57,18 @@ public:
         names[index] = name;
     }
 
-    std::string get_name(int index) const {
+    const std::string &get_name(int index) const {
         assert(index >= 0 && index < size());
         int num_names = names.size();
         if (index < num_names) {
             return names[index];
         } else {
-            // All unspecified names are empty by default.
-            return "";
+            /*
+              All unspecified names are empty by default. We use a static
+              string here to avoid returning a reference to a local object.
+            */
+            static std::string empty = "";
+            return empty;
         }
     }
 

@@ -151,17 +151,11 @@ public:
                 for (int i = 0; i < num_values; ++i) {
                     const std::string &name = values.get_name(i);
                     if (!name.empty()) {
-                        names.push_back(new char[name.size() + 1]);
-                        std::strcpy(names.back(), name.data());
+                        // CPLEX copies the names, so the const_cast should be fine.
+                        names.push_back(const_cast<char *>(name.data()));
                         indices.push_back(i);
                     }
                 }
-            }
-        }
-
-        ~CplexNameData() {
-            for (char *name : names) {
-                delete[] name;
             }
         }
 
