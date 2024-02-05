@@ -7,6 +7,7 @@
 #include "../utils/hash.h"
 
 #include <memory>
+#include <vector>
 
 namespace lp {
 class LPConstraint;
@@ -23,46 +24,62 @@ using LPConstraints = named_vector::NamedVector<lp::LPConstraint>;
 using LPVariables = named_vector::NamedVector<lp::LPVariable>;
 
 class DeleteRelaxationConstraintsRR : public ConstraintGenerator {
+    struct LPVariableIDs {
+        /*
+          The variables f_p in the paper represent if a fact p is reached by the
+          relaxed plan encoded in the LP solution. We only store the offset for
+          each variable (LP variables for different facts of the same variable
+          are consecutive).
+        */
+        std::vector<int> fp_offsets;
+
+        /*
+          The variables f_{p,a} in the paper represent if an action a is used to
+          achieve a fact p in the relaxed plan encoded in the LP solution. The
+          variable is only needed for combinations of p and a where p is an
+          effect of a. We store one hash map for each operator a that maps facts
+          p to LP variable IDs.
+        */
+        std::vector<utils::HashMap<FactPair, int>> fpa_ids;
+
+        /*
+          The variable e_{i,j} in the paper is used as part of the vertex
+          elimination method. It represents that fact p_i is used before fact
+          p_j. Not all pairs of facts have to be ordered, the vertex elimination
+          graph ensures that enough variables are created to exclude all cycles.
+        */
+        utils::HashMap<std::pair<FactPair, FactPair>, int> e_ids;
+
+        int id_of_fp(FactPair f) const;
+        int id_of_fpa(FactPair f, const OperatorProxy &op) const;
+        int id_of_e(std::pair<FactPair, FactPair> edge) const;
+        int has_e(std::pair<FactPair, FactPair> edge) const;
+    };
+
     // TODO: Rework these.
     bool use_time_vars;
     bool use_integer_vars;
-
-    /*
-      A causal partial function f maps a fact to one of its achieving operators.
-    */
-
-    /*
-      [f_p] Is f defined for fact p?
-      Binary, indexed with var.id, value */
-    std::vector<std::vector<int>> lp_var_id_f_defined;
-
-    /*
-      [f_{p,a}] Does f map fact p to operator a?
-      Binary, maps <var.id, value, operator.id> to LP variable index */
-    //std::unordered_map<std::tuple<int, int, int>, int> lp_var_id_f_maps_to;
-    utils::HashMap<std::tuple<int, int, int>, int> lp_var_id_f_maps_to;
-
-    utils::HashMap<std::pair<FactPair, FactPair>, int> lp_var_id_edge;
 
     /*
       Store constraint IDs of Constraints (2) in the paper. We need to
       reference them when updating constraints for a given state. They are
       indexed by the fact p.
     */
-    std::vector<std::vector<int>> lp_con_id_f_defined;
+    std::vector<std::vector<int>> constraint_ids;
 
     /* The state that is currently used for setting the bounds. Remembering
        this makes it faster to unset the bounds when the state changes. */
     std::vector<FactPair> last_state;
 
 
-    int get_var_f_defined(FactPair f);
-    int get_var_f_maps_to(FactPair f, const OperatorProxy &op);
-    int get_constraint_id(FactPair f);
+    int get_constraint_id(FactPair f) const;
 
-    void create_auxiliary_variables(
-        const TaskProxy &task_proxy, LPVariables &variables, const VEGraph &ve_graph);
-    void create_constraints(const TaskProxy &task_proxy, lp::LinearProgram &lp, const VEGraph &ve_graph);
+    LPVariableIDs create_auxiliary_variables(
+        const TaskProxy &task_proxy, const VEGraph &ve_graph,
+        LPVariables &variables) const;
+    void create_constraints(
+        const TaskProxy &task_proxy, const VEGraph &ve_graph,
+        const LPVariableIDs &lp_var_ids, lp::LinearProgram &lp);
 public:
     explicit DeleteRelaxationConstraintsRR(const plugins::Options &opts);
 

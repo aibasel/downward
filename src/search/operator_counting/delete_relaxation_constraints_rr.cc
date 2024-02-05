@@ -161,13 +161,23 @@ public:
     }
 };
 
-static void add_lp_variables(int count, LPVariables &variables,
-                             vector<int> &indices, double lower, double upper,
-                             double objective, bool is_integer) {
-    for (int i = 0; i < count; ++i) {
-        indices.push_back(variables.size());
-        variables.emplace_back(lower, upper, objective, is_integer);
-    }
+int DeleteRelaxationConstraintsRR::LPVariableIDs::id_of_fp(FactPair f) const {
+    return fp_offsets[f.var] + f.value;
+}
+
+int DeleteRelaxationConstraintsRR::LPVariableIDs::id_of_fpa(
+    FactPair f, const OperatorProxy &op) const {
+    return fpa_ids[op.get_id()].at(f);
+}
+
+int DeleteRelaxationConstraintsRR::LPVariableIDs::id_of_e(
+    pair<FactPair, FactPair> edge) const {
+    return e_ids.at(edge);
+}
+
+int DeleteRelaxationConstraintsRR::LPVariableIDs::has_e(
+    pair<FactPair, FactPair> edge) const {
+    return e_ids.find(edge) != e_ids.end();
 }
 
 DeleteRelaxationConstraintsRR::DeleteRelaxationConstraintsRR(
@@ -176,48 +186,39 @@ DeleteRelaxationConstraintsRR::DeleteRelaxationConstraintsRR(
       use_integer_vars(opts.get<bool>("use_integer_vars")) {
 }
 
-int DeleteRelaxationConstraintsRR::get_var_f_defined(FactPair f) {
-    return lp_var_id_f_defined[f.var][f.value];
+int DeleteRelaxationConstraintsRR::get_constraint_id(FactPair f) const {
+    return constraint_ids[f.var][f.value];
 }
 
-int DeleteRelaxationConstraintsRR::get_var_f_maps_to(FactPair f,
-                                                     const OperatorProxy &op) {
-    return lp_var_id_f_maps_to.at(make_tuple(f.var, f.value, op.get_id()));
-}
-
-int DeleteRelaxationConstraintsRR::get_constraint_id(FactPair f) {
-    return lp_con_id_f_defined[f.var][f.value];
-}
-
-void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
-    const TaskProxy &task_proxy, LPVariables &variables, const VEGraph &ve_graph) {
+DeleteRelaxationConstraintsRR::LPVariableIDs
+DeleteRelaxationConstraintsRR::create_auxiliary_variables(
+    const TaskProxy &task_proxy, const VEGraph &ve_graph, LPVariables &variables) const {
     OperatorsProxy ops = task_proxy.get_operators();
-    VariablesProxy vars = task_proxy.get_variables();
-    int num_vars = vars.size();
+    VariablesProxy task_variables = task_proxy.get_variables();
+    int num_vars = task_variables.size();
+    LPVariableIDs lp_var_ids;
 
-    lp_var_id_f_defined.resize(num_vars);
-    for (VariableProxy var : vars) {
-        int var_id = var.get_id();
-        // Add f_p variable.
-        add_lp_variables(var.get_domain_size(), variables,
-                         lp_var_id_f_defined[var_id], 0, 1, 0,
-                         use_integer_vars);
+    // Add f_p variables.
+    lp_var_ids.fp_offsets.reserve(num_vars);
+    for (VariableProxy var : task_variables) {
+        lp_var_ids.fp_offsets.push_back(variables.size());
+        int num_values = var.get_domain_size();
+        for (int value = 0; value < num_values; ++value) {
+            variables.emplace_back(0, 1, 0, use_integer_vars);
 #ifndef NDEBUG
-        for (int value = 0; value < var.get_domain_size(); ++value) {
-            variables.set_name(lp_var_id_f_defined[var_id][value],
+            variables.set_name(variables.size() -1,
                                "f_" + var.get_name() + "_"
                                + var.get_fact(value).get_name());
-        }
 #endif
+        }
     }
 
     // Add f_{p,a} variables.
+    lp_var_ids.fpa_ids.resize(ops.size());
     for (OperatorProxy op : ops) {
         for (EffectProxy eff_proxy : op.get_effects()) {
             FactPair eff = eff_proxy.get_fact().get_pair();
-            lp_var_id_f_maps_to.emplace(
-                make_pair(make_tuple(eff.var, eff.value, op.get_id()),
-                          variables.size()));
+            lp_var_ids.fpa_ids[op.get_id()][eff] = variables.size();
             variables.emplace_back(0, 1, 0, use_integer_vars);
 #ifndef NDEBUG
             variables.set_name(variables.size() - 1,
@@ -227,22 +228,27 @@ void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
         }
     }
 
+    // Add e_{i,j} variables.
     for (pair<FactPair, FactPair> edge : ve_graph.get_edges()) {
-        lp_var_id_edge.emplace(make_pair(edge, variables.size()));
+        lp_var_ids.e_ids[edge] = variables.size();
         variables.emplace_back(0, 1, 0, use_integer_vars);
 #ifndef NDEBUG
         auto [f1, f2] = edge;
-        FactProxy f1_proxy = vars[f1.var].get_fact(f1.value);
-        FactProxy f2_proxy = vars[f1.var].get_fact(f1.value);
+        FactProxy f1_proxy = task_variables[f1.var].get_fact(f1.value);
+        FactProxy f2_proxy = task_variables[f1.var].get_fact(f1.value);
         variables.set_name(variables.size() - 1,
                            "e_" + f1_proxy.get_name()
                            + "_before_" + f2_proxy.get_name());
 #endif
     }
+
+    return lp_var_ids;
 }
 
 void DeleteRelaxationConstraintsRR::create_constraints(
-    const TaskProxy &task_proxy, lp::LinearProgram &lp, const VEGraph &ve_graph) {
+    const TaskProxy &task_proxy, const VEGraph &ve_graph,
+    const DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids,
+    lp::LinearProgram &lp) {
     LPVariables &variables = lp.get_variables();
     LPConstraints &constraints = lp.get_constraints();
     double infinity = lp.get_infinity();
@@ -262,24 +268,24 @@ void DeleteRelaxationConstraintsRR::create_constraints(
       loop creates all constraints and adds the term "f_p", the second loop adds
       the terms f_{p,a} to the appropriate constraints.
     */
-    lp_con_id_f_defined.resize(vars.size());
+    constraint_ids.resize(vars.size());
     for (VariableProxy var_p : vars) {
         int var_id_p = var_p.get_id();
-        lp_con_id_f_defined[var_id_p].resize(var_p.get_domain_size());
+        constraint_ids[var_id_p].resize(var_p.get_domain_size());
         for (int value_p = 0; value_p < var_p.get_domain_size(); ++value_p) {
-            lp_con_id_f_defined[var_id_p][value_p] = constraints.size();
+            constraint_ids[var_id_p][value_p] = constraints.size();
             FactPair fact_p(var_id_p, value_p);
             lp::LPConstraint constraint(0, 0);
-            constraint.insert(get_var_f_defined(fact_p), 1);
+            constraint.insert(lp_var_ids.id_of_fp(fact_p), 1);
             constraints.push_back(move(constraint));
         }
     }
     for (OperatorProxy op : ops) {
         for (EffectProxy eff_proxy : op.get_effects()) {
             FactPair eff = eff_proxy.get_fact().get_pair();
-            int constraint_id = lp_con_id_f_defined[eff.var][eff.value];
+            int constraint_id = constraint_ids[eff.var][eff.value];
             lp::LPConstraint &constraint = constraints[constraint_id];
-            constraint.insert(get_var_f_maps_to(eff, op), -1);
+            constraint.insert(lp_var_ids.id_of_fpa(eff, op), -1);
         }
     }
 
@@ -310,12 +316,12 @@ void DeleteRelaxationConstraintsRR::create_constraints(
                 if (!constraint3_ids.contains(key)) {
                     constraint3_ids[key] = constraints.size();
                     lp::LPConstraint constraint(0, 1);
-                    constraint.insert(get_var_f_defined(pre), 1);
+                    constraint.insert(lp_var_ids.id_of_fp(pre), 1);
                     constraints.push_back(move(constraint));
                 }
                 int constraint_id = constraint3_ids[key];
                 lp::LPConstraint &constraint = constraints[constraint_id];
-                constraint.insert(get_var_f_maps_to(eff, op), -1);
+                constraint.insert(lp_var_ids.id_of_fpa(eff, op), -1);
             }
         }
     }
@@ -332,7 +338,7 @@ void DeleteRelaxationConstraintsRR::create_constraints(
       but this would be more complicated.
     */
     for (FactProxy goal : task_proxy.get_goals()) {
-        variables[get_var_f_defined(goal.get_pair())].lower_bound = 1;
+        variables[lp_var_ids.id_of_fp(goal.get_pair())].lower_bound = 1;
     }
 
     /*
@@ -350,7 +356,7 @@ void DeleteRelaxationConstraintsRR::create_constraints(
         for (EffectProxy eff_proxy : op.get_effects()) {
             FactPair eff = eff_proxy.get_fact().get_pair();
             lp::LPConstraint constraint(0, infinity);
-            constraint.insert(get_var_f_maps_to(eff, op), -1);
+            constraint.insert(lp_var_ids.id_of_fpa(eff, op), -1);
             constraint.insert(op.get_id(), 1);
             constraints.push_back(move(constraint));
         }
@@ -370,8 +376,8 @@ void DeleteRelaxationConstraintsRR::create_constraints(
             for (EffectProxy eff_proxy : op.get_effects()) {
                 FactPair eff = eff_proxy.get_fact().get_pair();
                 lp::LPConstraint constraint(0, infinity);
-                constraint.insert(lp_var_id_edge.at(make_pair(pre, eff)), 1);
-                constraint.insert(get_var_f_maps_to(eff, op), -1);
+                constraint.insert(lp_var_ids.id_of_e(make_pair(pre, eff)), 1);
+                constraint.insert(lp_var_ids.id_of_fpa(eff, op), -1);
                 constraints.push_back(move(constraint));
             }
         }
@@ -388,16 +394,13 @@ void DeleteRelaxationConstraintsRR::create_constraints(
       constraint only makes sense if the reverse edge is in the graph.
     */
     for (const pair<FactPair, FactPair> &edge : ve_graph.get_edges()) {
-        auto reverse_edge_it =
-            lp_var_id_edge.find(make_pair(edge.second, edge.first));
-        if (reverse_edge_it == lp_var_id_edge.end())
-            continue;
-        int edge_id = lp_var_id_edge.at(edge);
-        int reverse_edge_id = reverse_edge_it->second;
-        lp::LPConstraint constraint(-infinity, 1);
-        constraint.insert(edge_id, 1);
-        constraint.insert(reverse_edge_id, 1);
-        constraints.push_back(move(constraint));
+        pair<FactPair, FactPair> reverse_edge = make_pair(edge.second, edge.first);
+        if (lp_var_ids.has_e(reverse_edge)) {
+            lp::LPConstraint constraint(-infinity, 1);
+            constraint.insert(lp_var_ids.id_of_e(edge), 1);
+            constraint.insert(lp_var_ids.id_of_e(reverse_edge), 1);
+            constraints.push_back(move(constraint));
+        }
     }
 
     /*
@@ -412,9 +415,9 @@ void DeleteRelaxationConstraintsRR::create_constraints(
     */
     for (auto [pi, pj, pk] : ve_graph.get_delta()) {
         lp::LPConstraint constraint(-infinity, 1);
-        constraint.insert(lp_var_id_edge.at(make_pair(pi, pj)), 1);
-        constraint.insert(lp_var_id_edge.at(make_pair(pj, pk)), 1);
-        constraint.insert(lp_var_id_edge.at(make_pair(pi, pk)), -1);
+        constraint.insert(lp_var_ids.id_of_e(make_pair(pi, pj)), 1);
+        constraint.insert(lp_var_ids.id_of_e(make_pair(pj, pk)), 1);
+        constraint.insert(lp_var_ids.id_of_e(make_pair(pi, pk)), -1);
         constraints.push_back(move(constraint));
     }
 
@@ -424,19 +427,15 @@ void DeleteRelaxationConstraintsRR::create_constraints(
       - create timing variables
       - create constraint
     */
-    /*
-      TODO: Make sure that objects that are only needed for constraint
-      generation only exist in that context and not beyond. In particular there
-      are lp_var_id_maps that are currently member variables, but should not be.
-    */
 }
 
 void DeleteRelaxationConstraintsRR::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) {
     TaskProxy task_proxy(*task);
     VEGraph ve_graph(task_proxy);
-    create_auxiliary_variables(task_proxy, lp.get_variables(), ve_graph);
-    create_constraints(task_proxy, lp, ve_graph);
+    LPVariableIDs lp_var_ids = create_auxiliary_variables(
+        task_proxy, ve_graph, lp.get_variables());
+    create_constraints(task_proxy, ve_graph, lp_var_ids, lp);
 }
 
 bool DeleteRelaxationConstraintsRR::update_constraints(
