@@ -109,4 +109,6 @@ public:
 extern void add_evaluator_options_to_feature(plugins::Feature &feature, const std::string &name);
 extern void add_evaluator_options_to_feature(plugins::Feature &feature); // TODO 1082 remove this, just keep the one above
 
+static const std::tuple<std::string, utils::Verbosity> get_evaluator_parameters_from_options(const plugins::Options &opts);
+
 #endif

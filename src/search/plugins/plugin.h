@@ -115,6 +115,13 @@ public:
     }
 };
 
+// TODO issue1082 where should this live?
+// Apply the arguments extracted from *parameter_tuple* to make_shared<T>
+template<typename T, typename ...Args>
+std::shared_ptr<T> make_shared_from_tuple(std::tuple<Args...> parameter_tuple){
+       return apply([](auto... args) { return make_shared<T>(args...); }, parameter_tuple);
+}
+
 class Plugin {
 public:
     Plugin();
