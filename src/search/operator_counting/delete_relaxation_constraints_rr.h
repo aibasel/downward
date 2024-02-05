@@ -23,6 +23,10 @@ class VEGraph;
 using LPConstraints = named_vector::NamedVector<lp::LPConstraint>;
 using LPVariables = named_vector::NamedVector<lp::LPVariable>;
 
+enum class AcyclicityType {
+    TIME_LABELS, VERTEX_ELIMINATION, NONE
+};
+
 class DeleteRelaxationConstraintsRR : public ConstraintGenerator {
     struct LPVariableIDs {
         /*
@@ -50,14 +54,21 @@ class DeleteRelaxationConstraintsRR : public ConstraintGenerator {
         */
         utils::HashMap<std::pair<FactPair, FactPair>, int> e_ids;
 
+        /*
+          The variable t_p in the paper is used as part of the time labels
+          method. It represents the time at which fact p is first made true.
+          We store the offsets here, analogous to fp.
+        */
+        std::vector<int> t_offsets;
+
         int id_of_fp(FactPair f) const;
         int id_of_fpa(FactPair f, const OperatorProxy &op) const;
         int id_of_e(std::pair<FactPair, FactPair> edge) const;
         int has_e(std::pair<FactPair, FactPair> edge) const;
+        int id_of_t(FactPair f) const;
     };
 
-    // TODO: Rework these.
-    bool use_time_vars;
+    AcyclicityType acyclicity_type;
     bool use_integer_vars;
 
     /*
@@ -75,11 +86,22 @@ class DeleteRelaxationConstraintsRR : public ConstraintGenerator {
     int get_constraint_id(FactPair f) const;
 
     LPVariableIDs create_auxiliary_variables(
+        const TaskProxy &task_proxy, LPVariables &variables) const;
+    void create_auxiliary_variables_ve(
         const TaskProxy &task_proxy, const VEGraph &ve_graph,
-        LPVariables &variables) const;
+        LPVariables &variables, LPVariableIDs &lp_var_ids) const;
+    void create_auxiliary_variables_tl(
+        const TaskProxy &task_proxy, LPVariables &variables,
+        LPVariableIDs &lp_var_ids) const;
     void create_constraints(
+        const TaskProxy &task_proxy,  const LPVariableIDs &lp_var_ids,
+        lp::LinearProgram &lp);
+    void create_constraints_ve(
         const TaskProxy &task_proxy, const VEGraph &ve_graph,
         const LPVariableIDs &lp_var_ids, lp::LinearProgram &lp);
+    void create_constraints_tl(
+        const TaskProxy &task_proxy, const LPVariableIDs &lp_var_ids,
+        lp::LinearProgram &lp);
 public:
     explicit DeleteRelaxationConstraintsRR(const plugins::Options &opts);
 

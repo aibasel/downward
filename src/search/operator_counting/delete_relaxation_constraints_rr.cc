@@ -180,9 +180,13 @@ int DeleteRelaxationConstraintsRR::LPVariableIDs::has_e(
     return e_ids.find(edge) != e_ids.end();
 }
 
+int DeleteRelaxationConstraintsRR::LPVariableIDs::id_of_t(FactPair f) const {
+    return t_offsets[f.var] + f.value;
+}
+
 DeleteRelaxationConstraintsRR::DeleteRelaxationConstraintsRR(
     const plugins::Options &opts)
-    : use_time_vars(opts.get<bool>("use_time_vars")),
+    : acyclicity_type(opts.get<AcyclicityType>("acyclicity_type")),
       use_integer_vars(opts.get<bool>("use_integer_vars")) {
 }
 
@@ -192,7 +196,7 @@ int DeleteRelaxationConstraintsRR::get_constraint_id(FactPair f) const {
 
 DeleteRelaxationConstraintsRR::LPVariableIDs
 DeleteRelaxationConstraintsRR::create_auxiliary_variables(
-    const TaskProxy &task_proxy, const VEGraph &ve_graph, LPVariables &variables) const {
+    const TaskProxy &task_proxy, LPVariables &variables) const {
     OperatorsProxy ops = task_proxy.get_operators();
     VariablesProxy task_variables = task_proxy.get_variables();
     int num_vars = task_variables.size();
@@ -227,26 +231,51 @@ DeleteRelaxationConstraintsRR::create_auxiliary_variables(
 #endif
         }
     }
+    return lp_var_ids;
+}
 
+void DeleteRelaxationConstraintsRR::create_auxiliary_variables_ve(
+    const TaskProxy &task_proxy, const VEGraph &ve_graph, LPVariables &variables,
+        DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids) const {
     // Add e_{i,j} variables.
     for (pair<FactPair, FactPair> edge : ve_graph.get_edges()) {
         lp_var_ids.e_ids[edge] = variables.size();
         variables.emplace_back(0, 1, 0, use_integer_vars);
 #ifndef NDEBUG
         auto [f1, f2] = edge;
-        FactProxy f1_proxy = task_variables[f1.var].get_fact(f1.value);
-        FactProxy f2_proxy = task_variables[f1.var].get_fact(f1.value);
+        FactProxy f1_proxy = task_proxy.get_variables()[f1.var].get_fact(f1.value);
+        FactProxy f2_proxy = task_proxy.get_variables()[f2.var].get_fact(f2.value);
         variables.set_name(variables.size() - 1,
                            "e_" + f1_proxy.get_name()
                            + "_before_" + f2_proxy.get_name());
 #endif
     }
+}
 
-    return lp_var_ids;
+void DeleteRelaxationConstraintsRR::create_auxiliary_variables_tl(
+    const TaskProxy &task_proxy, LPVariables &variables,
+    DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids) const {
+    int num_facts = 0;
+    for (VariableProxy var : task_proxy.get_variables()) {
+        num_facts += var.get_domain_size();
+    }
+
+    lp_var_ids.t_offsets.resize(task_proxy.get_variables().size());
+    for (VariableProxy var : task_proxy.get_variables()) {
+        lp_var_ids.t_offsets.push_back(variables.size());
+        int num_values = var.get_domain_size();
+        for (int value = 0; value < num_values; ++value) {
+            variables.emplace_back(1, num_facts, 0, use_integer_vars);
+#ifndef NDEBUG
+            variables.set_name(variables.size() - 1,
+                               "t_" + var.get_fact(value).get_name());
+#endif
+        }
+    }
 }
 
 void DeleteRelaxationConstraintsRR::create_constraints(
-    const TaskProxy &task_proxy, const VEGraph &ve_graph,
+    const TaskProxy &task_proxy,
     const DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids,
     lp::LinearProgram &lp) {
     LPVariables &variables = lp.get_variables();
@@ -359,6 +388,15 @@ void DeleteRelaxationConstraintsRR::create_constraints(
             constraints.push_back(move(constraint));
         }
     }
+}
+
+void DeleteRelaxationConstraintsRR::create_constraints_ve(
+    const TaskProxy &task_proxy, const VEGraph &ve_graph,
+    const DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids,
+    lp::LinearProgram &lp) {
+    LPConstraints &constraints = lp.get_constraints();
+    double infinity = lp.get_infinity();
+    OperatorsProxy ops = task_proxy.get_operators();
 
     /*
       Constraint (6) in paper:
@@ -418,22 +456,74 @@ void DeleteRelaxationConstraintsRR::create_constraints(
         constraint.insert(lp_var_ids.id_of_e(make_pair(pi, pk)), -1);
         constraints.push_back(move(constraint));
     }
+}
 
+void DeleteRelaxationConstraintsRR::create_constraints_tl(
+    const TaskProxy &task_proxy,
+    const DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids,
+    lp::LinearProgram &lp) {
     /*
-      TODO: Implement constraint (9).
-      - define ternary option to replace use_time_vars and use_integer_vars
-      - create timing variables
-      - create constraint
+      Constraint (9) in paper:
+
+      t_i - t_j + 1 <= |P|(1 - f_{p_j, a})
+      for all a in A, p_i in pre(a) and p_j in add(a)
+      Equivalent form:
+      t_i - t_j + |P|f_{p_j, a} <= |P| - 1
+
+      Intuition: if a is used to achieve p_j and p_i is one of a's
+      preconditions, we have to achieve p_i before p_j.
     */
+    LPConstraints &constraints = lp.get_constraints();
+    double infinity = lp.get_infinity();
+    int num_facts = 0;
+    for (VariableProxy var : task_proxy.get_variables()) {
+        num_facts += var.get_domain_size();
+    }
+
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        for (FactProxy pre_proxy : op.get_preconditions()) {
+            FactPair pre = pre_proxy.get_pair();
+            for (EffectProxy eff_proxy : op.get_effects()) {
+                FactPair eff = eff_proxy.get_fact().get_pair();
+                if (pre == eff) {
+                    // Prevail conditions are compiled away in the paper.
+                    continue;
+                }
+                lp::LPConstraint constraint(-infinity, num_facts - 1);
+                constraint.insert(lp_var_ids.id_of_t(pre), 1);
+                constraint.insert(lp_var_ids.id_of_t(eff), -1);
+                constraint.insert(lp_var_ids.id_of_fpa(eff, op), num_facts);
+                constraints.push_back(move(constraint));
+            }
+        }
+    }
 }
 
 void DeleteRelaxationConstraintsRR::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) {
     TaskProxy task_proxy(*task);
-    VEGraph ve_graph(task_proxy);
     LPVariableIDs lp_var_ids = create_auxiliary_variables(
-        task_proxy, ve_graph, lp.get_variables());
-    create_constraints(task_proxy, ve_graph, lp_var_ids, lp);
+        task_proxy, lp.get_variables());
+    create_constraints(task_proxy, lp_var_ids, lp);
+
+    switch (acyclicity_type) {
+    case AcyclicityType::VERTEX_ELIMINATION: {
+        VEGraph ve_graph(task_proxy);
+        create_auxiliary_variables_ve(
+            task_proxy, ve_graph, lp.get_variables(), lp_var_ids);
+        create_constraints_ve(task_proxy, ve_graph, lp_var_ids, lp);
+        break;
+    }
+    case AcyclicityType::TIME_LABELS:
+        create_auxiliary_variables_tl(
+            task_proxy, lp.get_variables(), lp_var_ids);
+        create_constraints_tl(task_proxy, lp_var_ids, lp);
+        break;
+    case AcyclicityType::NONE:
+        break;
+    default:
+        ABORT("Unknown AcyclicityType");
+    }
 }
 
 bool DeleteRelaxationConstraintsRR::update_constraints(
@@ -482,32 +572,52 @@ public:
                 "Automated Planning and Scheduling (ICAPS2022)",
                 "32", "71-79", "2022"));
 
-        add_option<bool>(
-            "use_time_vars",
-            "use variables for time steps. With these additional variables the "
-            "constraints enforce an order between the selected operators.",
-            "false");
+        add_option<AcyclicityType>(
+            "acyclicity_type",
+            "The most relaxed version of this constraint only enforces that "
+            "achievers of facts are picked in such a way that all goal facts "
+            "have an achiever, and the preconditions all achievers are either "
+            "true in the current state or have achievers themselves. In this "
+            "version, cycles in the achiever relation can occur. Such cycles "
+            "can be excluded with additional auxilliary varibles and "
+            "constraints.",
+            "vertex_elimination");
         add_option<bool>(
             "use_integer_vars",
             "restrict auxiliary variables to integer values. These variables "
-            "encode whether operators are used, facts are reached, which "
-            "operator "
-            "first achieves which fact, and in which order the operators are "
-            "used. "
-            "Restricting them to integers generally improves the heuristic "
-            "value "
-            "at the cost of increased runtime.",
+            "encode whether facts are reached, which operator first achieves "
+            "which fact, and (depending on the acyclicity_type) in which order "
+            "the operators are used. Restricting them to integers generally "
+            "improves the heuristic value at the cost of increased runtime.",
             "false");
 
         document_note(
             "Example",
-            "To compute the optimal delete-relaxation heuristic h^+^, use\n"
-            "{{{\noperatorcounting([delete_relaxation_constraints_rr(use_time_"
-            "vars=true, "
-            "use_integer_vars=true)], "
+            "To compute the optimal delete-relaxation heuristic h^+^, use"
+            "integer variables and some way of enforcing acyclicity (other "
+            "than \"none\"). For example\n"
+            "{{{\noperatorcounting([delete_relaxation_constraints_rr("
+            "acyclicity_type=vertex_elimination, use_integer_vars=true)], "
             "use_integer_operator_counts=true))\n}}}\n");
     }
 };
 
 static plugins::FeaturePlugin<DeleteRelaxationConstraintsRRFeature> _plugin;
+
+static plugins::TypedEnumPlugin<AcyclicityType> _enum_plugin({
+        {"time_labels",
+         "introduces MIP variables that encode the time at which each fact is "
+         "reached. Acyclicity is enforced with constraints that ensure that "
+         "preconditions of actions are reached before their effects."},
+        {"vertex_elimination",
+         "introduces binary variables based on vertex elimination. These "
+         "variables encode that one fact has to be reached before another "
+         "fact. Instead of adding such variables for every pair of states, "
+         "they are only added for a subset sufficient to ensure acyclicity. "
+         "Constraints enforce that preconditions of actions are reached before "
+         "their effects and that the assignment encodes a valid order."},
+        {"none",
+         "No acyclicity is enforced. The resulting heuristic is a relaxation "
+         "of the delete-relaxation heuristic."}
+    });
 }

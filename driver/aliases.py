@@ -148,7 +148,7 @@ ALIASES["issue1134-if"] = [
 
 ALIASES["issue1134-rr"] = [
     "--search",
-    "astar(operatorcounting([delete_relaxation_constraints_rr(use_time_vars=true, use_integer_vars=true)], use_integer_operator_counts=true, lpsolver=cplex, verbosity=normal, transform=no_transform(), cache_estimates=true))"
+    "astar(operatorcounting([delete_relaxation_constraints_rr(acyclicity_type=vertex_elimination, use_integer_vars=true)], use_integer_operator_counts=true, lpsolver=cplex, verbosity=normal, transform=no_transform(), cache_estimates=true))"
 ] # TODO issue1134 remove
 
 PORTFOLIOS = {}
