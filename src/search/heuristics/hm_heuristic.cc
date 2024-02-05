@@ -12,19 +12,25 @@
 using namespace std;
 
 namespace hm_heuristic {
-HMHeuristic::HMHeuristic(const plugins::Options &opts)
-    : Heuristic(opts),
-      m(opts.get<int>("m")),
-      has_cond_effects(task_properties::has_conditional_effects(task_proxy)),
-      goals(task_properties::get_fact_pairs(task_proxy.get_goals())) {
-    if (log.is_at_least_normal()) {
-        log << "Using h^" << m << "." << endl;
-        log << "The implementation of the h^m heuristic is preliminary." << endl
-            << "It is SLOOOOOOOOOOOW." << endl
-            << "Please do not use this for comparison!" << endl;
+
+    HMHeuristic::HMHeuristic(
+            const int m,
+            const shared_ptr<AbstractTask> &transform,
+            bool cache_estimates,
+            const string &name,
+            utils::Verbosity verbosity)
+            : Heuristic(transform, cache_estimates, name, verbosity),
+              m(m),
+              has_cond_effects(task_properties::has_conditional_effects(task_proxy)),
+              goals(task_properties::get_fact_pairs(task_proxy.get_goals())) {
+        if (log.is_at_least_normal()) {
+            log << "Using h^" << m << "." << endl;
+            log << "The implementation of the h^m heuristic is preliminary." << endl
+                << "It is SLOOOOOOOOOOOW." << endl
+                << "Please do not use this for comparison!" << endl;
+        }
+        generate_all_tuples();
     }
-    generate_all_tuples();
-}
 
 
 bool HMHeuristic::dead_ends_are_reliable() const {
@@ -285,6 +291,12 @@ public:
             "safe",
             "yes for tasks without conditional effects or axioms");
         document_property("preferred operators", "no");
+    }
+
+    virtual shared_ptr<HMHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
+        tuple parameter_tuple = tuple_cat(make_tuple(options.get<int>("m")),
+                                          Heuristic::get_heuristic_parameters_from_options(options));
+        return plugins::make_shared_from_tuple<HMHeuristic>(parameter_tuple);
     }
 };
 

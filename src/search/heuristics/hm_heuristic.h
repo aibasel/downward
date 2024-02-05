@@ -61,7 +61,12 @@ protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 
 public:
-    explicit HMHeuristic(const plugins::Options &opts);
+    HMHeuristic(
+            const int m,
+            const std::shared_ptr<AbstractTask> &transform,
+            bool cache_estimates,
+            const std::string &name,
+            utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;
 };
