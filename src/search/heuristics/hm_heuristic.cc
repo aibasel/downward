@@ -275,7 +275,7 @@ public:
         document_title("h^m heuristic");
 
         add_option<int>("m", "subset size", "2", plugins::Bounds("1", "infinity"));
-        Heuristic::add_options_to_feature(*this);
+        Heuristic::add_options_to_feature(*this, "hm");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "ignored");

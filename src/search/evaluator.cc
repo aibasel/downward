@@ -97,7 +97,7 @@ void add_evaluator_options_to_feature(plugins::Feature &feature) {
     utils::add_log_options_to_feature(feature);
 }
 
-const tuple<std::string, utils::Verbosity> get_evaluator_parameters_from_options(const plugins::Options &opts){
+tuple<std::string, utils::Verbosity> get_evaluator_parameters_from_options(const plugins::Options &opts){
     return utils::get_log_parameters_from_options(opts);
 }
 

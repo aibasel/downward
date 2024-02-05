@@ -67,7 +67,7 @@ void Heuristic::add_options_to_feature(plugins::Feature &feature) {
 }
 
 
-const tuple<shared_ptr<AbstractTask>, bool, string, utils::Verbosity> Heuristic::get_heuristic_parameters_from_options(const plugins::Options &opts){
+tuple<shared_ptr<AbstractTask>, bool, string, utils::Verbosity> Heuristic::get_heuristic_parameters_from_options(const plugins::Options &opts){
     auto parent_parameter_tuple = get_evaluator_parameters_from_options(opts);
     auto own_parameter_tuple = make_tuple(
         opts.get<shared_ptr<AbstractTask>>("transform"),

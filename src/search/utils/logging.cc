@@ -41,7 +41,7 @@ void add_log_options_to_feature(plugins::Feature &feature) {
 }
 
 
-const tuple<string, Verbosity> get_log_parameters_from_options(const plugins::Options &opts){
+tuple<string, Verbosity> get_log_parameters_from_options(const plugins::Options &opts){
     auto own_tuple = make_tuple<string, Verbosity>(
             opts.get<string>("name"), // TODO issue1082 move name into get_evaluator_parameters_from_options and rename it to *description*.
             opts.get<Verbosity>("verbosity")
