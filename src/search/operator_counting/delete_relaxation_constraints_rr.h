@@ -59,8 +59,6 @@ class DeleteRelaxationConstraintsRR : public ConstraintGenerator {
     int get_var_f_defined(FactPair f);
     int get_var_f_maps_to(FactPair f, const OperatorProxy &op);
     int get_constraint_id(FactPair f);
-    bool is_in_effect(FactPair f, const OperatorProxy &op);
-    bool is_in_precondition(FactPair f, const OperatorProxy &op);
 
     void create_auxiliary_variables(
         const TaskProxy &task_proxy, LPVariables &variables, const VEGraph &ve_graph);

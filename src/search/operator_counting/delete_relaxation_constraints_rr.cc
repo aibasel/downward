@@ -28,6 +28,7 @@ class VEGraph {
     */
     vector<vector<Node>> nodes;
     vector<tuple<FactPair, FactPair, FactPair>> delta;
+    utils::HashSet<pair<FactPair, FactPair>> edges;
     priority_queues::AdaptiveQueue<FactPair> elimination_queue;
 
     Node &get_node(FactPair fact) {
@@ -39,11 +40,11 @@ class VEGraph {
     }
 
     void add_edge(FactPair from_fact, FactPair to_fact) {
-        // HACK avoid linear scan
-        const vector<FactPair> pre_succs = get_node(from_fact).successors;
-        if (find(pre_succs.begin(), pre_succs.end(), to_fact) == pre_succs.end())  {
+        pair<FactPair, FactPair> edge = make_pair(from_fact, to_fact);
+        if (!edges.count(edge))  {
             get_node(from_fact).successors.push_back(to_fact);
             get_node(to_fact).predecessors.push_back(from_fact);
+            edges.insert(edge);
         }
     }
 
@@ -89,9 +90,7 @@ class VEGraph {
                 if (get_node(successor).is_eliminated) {
                     continue;
                 }
-                // TODO avoid linear scan
-                const vector<FactPair> pre_succs = get_node(predecessor).successors;
-                if (successor != predecessor && find(pre_succs.begin(), pre_succs.end(), successor) == pre_succs.end()) {
+                if (!edges.count(make_pair(predecessor, successor))) {
                     new_shortcuts.push_back(make_tuple(predecessor, fact, successor));
                 }
             }
@@ -117,18 +116,7 @@ class VEGraph {
         }
     }
 
-    void initialize_queue() {
-        int num_vars = nodes.size();
-        for (int var = 0; var < num_vars; ++var) {
-            int num_values = nodes[var].size();
-            for (int val = 0; val < num_values; ++val) {
-                push_fact(FactPair(var, val));
-            }
-        }
-    }
-
-public:
-    explicit VEGraph(const TaskProxy &task_proxy) {
+    void construct_task_graph(const TaskProxy &task_proxy) {
         nodes.resize(task_proxy.get_variables().size());
         for (VariableProxy var : task_proxy.get_variables()) {
             nodes[var.get_id()].resize(var.get_domain_size());
@@ -146,8 +134,19 @@ public:
         }
     }
 
-    void run() {
-        initialize_queue();
+    void initialize_queue(const TaskProxy &task_proxy) {
+        for (VariableProxy var : task_proxy.get_variables()) {
+            int num_values = var.get_domain_size();
+            for (int val = 0; val < num_values; ++val) {
+                push_fact(var.get_fact(val).get_pair());
+            }
+        }
+    }
+
+public:
+    VEGraph(const TaskProxy &task_proxy) {
+        construct_task_graph(task_proxy);
+        initialize_queue(task_proxy);
         while (optional<FactPair> fact = pop_fact()) {
             eliminate(*fact);
         }
@@ -157,18 +156,7 @@ public:
         return delta;
     }
 
-    vector<pair<FactPair, FactPair>> copy_edges() const {
-        vector<pair<FactPair, FactPair>> edges;
-        int num_vars = nodes.size();
-        for (int var = 0; var < num_vars; ++var) {
-            int num_values = nodes[var].size();
-            for (int val = 0; val < num_values; ++val) {
-                FactPair fact(var, val);
-                for (FactPair succ : get_node(fact).successors) {
-                    edges.emplace_back(fact, succ);
-                }
-            }
-        }
+    const utils::HashSet<pair<FactPair, FactPair>> &get_edges() const {
         return edges;
     }
 };
@@ -185,7 +173,8 @@ static void add_lp_variables(int count, LPVariables &variables,
 DeleteRelaxationConstraintsRR::DeleteRelaxationConstraintsRR(
     const plugins::Options &opts)
     : use_time_vars(opts.get<bool>("use_time_vars")),
-      use_integer_vars(opts.get<bool>("use_integer_vars")) {}
+      use_integer_vars(opts.get<bool>("use_integer_vars")) {
+}
 
 int DeleteRelaxationConstraintsRR::get_var_f_defined(FactPair f) {
     return lp_var_id_f_defined[f.var][f.value];
@@ -198,26 +187,6 @@ int DeleteRelaxationConstraintsRR::get_var_f_maps_to(FactPair f,
 
 int DeleteRelaxationConstraintsRR::get_constraint_id(FactPair f) {
     return lp_con_id_f_defined[f.var][f.value];
-}
-
-bool DeleteRelaxationConstraintsRR::is_in_effect(FactPair f,
-                                                 const OperatorProxy &op) {
-    for (EffectProxy eff : op.get_effects()) {
-        if (eff.get_fact().get_pair() == f) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool DeleteRelaxationConstraintsRR::is_in_precondition(
-    FactPair f, const OperatorProxy &op) {
-    for (FactProxy pre : op.get_preconditions()) {
-        if (pre.get_pair() == f) {
-            return true;
-        }
-    }
-    return false;
 }
 
 void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
@@ -240,42 +209,34 @@ void DeleteRelaxationConstraintsRR::create_auxiliary_variables(
                                + var.get_fact(value).get_name());
         }
 #endif
-        // Add f_{p,a} variables.
-        for (int value = 0; value < var.get_domain_size(); ++value) {
-            for (OperatorProxy op : ops) {
-                if (is_in_effect(FactPair(var_id, value), op)) {
-                    lp_var_id_f_maps_to.emplace(
-                        make_pair(make_tuple(var_id, value, op.get_id()),
-                                  variables.size()));
-                    variables.emplace_back(0, 1, 0, use_integer_vars);
+    }
+
+    // Add f_{p,a} variables.
+    for (OperatorProxy op : ops) {
+        for (EffectProxy eff_proxy : op.get_effects()) {
+            FactPair eff = eff_proxy.get_fact().get_pair();
+            lp_var_id_f_maps_to.emplace(
+                make_pair(make_tuple(eff.var, eff.value, op.get_id()),
+                          variables.size()));
+            variables.emplace_back(0, 1, 0, use_integer_vars);
 #ifndef NDEBUG
-                    variables.set_name(variables.size() - 1,
-                                       "f_" + var.get_name() + "_"
-                                       + var.get_fact(value).get_name()
-                                       + "_achieved_by_"
-                                       + op.get_name());
+            variables.set_name(variables.size() - 1,
+                               "f_" + eff_proxy.get_fact().get_name()
+                               + "_achieved_by_" + op.get_name());
 #endif
-                }
-            }
         }
     }
 
-    for (pair<FactPair, FactPair> edge : ve_graph.copy_edges()) {
+    for (pair<FactPair, FactPair> edge : ve_graph.get_edges()) {
         lp_var_id_edge.emplace(make_pair(edge, variables.size()));
         variables.emplace_back(0, 1, 0, use_integer_vars);
 #ifndef NDEBUG
         auto [f1, f2] = edge;
-        VariableProxy var1 = task_proxy.get_variables()[f1.var];
-        int value1 = f1.value;
-        VariableProxy var2 = task_proxy.get_variables()[f2.var];
-        int value2 = f2.value;
+        FactProxy f1_proxy = vars[f1.var].get_fact(f1.value);
+        FactProxy f2_proxy = vars[f1.var].get_fact(f1.value);
         variables.set_name(variables.size() - 1,
-                           "e_"
-                           + var1.get_name() + "_"
-                           + var1.get_fact(value1).get_name()
-                           + "_before_"
-                           + var2.get_name() + "_"
-                           + var2.get_fact(value2).get_name());
+                           "e_" + f1_proxy.get_name()
+                           + "_before_" + f2_proxy.get_name());
 #endif
     }
 }
@@ -426,11 +387,7 @@ void DeleteRelaxationConstraintsRR::create_constraints(
       Implementation note: the paper is not explicit about this but the
       constraint only makes sense if the reverse edge is in the graph.
     */
-    /*
-      TODO: Consider storing the result of copy_edges in VEGraph instead of
-      computing it twice (here and in create_auxiliary_variables)
-    */
-    for (pair<FactPair, FactPair> &edge : ve_graph.copy_edges()) {
+    for (const pair<FactPair, FactPair> &edge : ve_graph.get_edges()) {
         auto reverse_edge_it =
             lp_var_id_edge.find(make_pair(edge.second, edge.first));
         if (reverse_edge_it == lp_var_id_edge.end())
@@ -478,7 +435,6 @@ void DeleteRelaxationConstraintsRR::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) {
     TaskProxy task_proxy(*task);
     VEGraph ve_graph(task_proxy);
-    ve_graph.run();
     create_auxiliary_variables(task_proxy, lp.get_variables(), ve_graph);
     create_constraints(task_proxy, lp, ve_graph);
 }
