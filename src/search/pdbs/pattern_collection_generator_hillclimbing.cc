@@ -119,9 +119,8 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(
     int min_improvement,
     double max_time,
     int random_seed,
-    const string &name,
     utils::Verbosity verbosity)
-    : PatternCollectionGenerator(name, verbosity),
+    : PatternCollectionGenerator(verbosity),
       pdb_max_size(pdb_max_size),
       collection_max_size(collection_max_size),
       num_samples(num_samples),
@@ -603,7 +602,7 @@ public:
             "optimized for the Evaluator#Canonical_PDB heuristic. It it described "
             "in the following paper:" + paper_references());
         add_hillclimbing_options(*this);
-        add_generator_options_to_feature(*this, "hillclimbing");
+        add_generator_options_to_feature(*this);
     }
 
     virtual shared_ptr<PatternCollectionGeneratorHillclimbing> create_component(const plugins::Options &opts, const utils::Context &context) const override {
@@ -616,7 +615,6 @@ public:
             opts.get<int>("min_improvement"),
             opts.get<double>("max_time"),
             opts.get<int>("random_seed"),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity")
             );
     }
@@ -672,7 +670,6 @@ public:
                 opts.get<int>("min_improvement"),
                 opts.get<double>("max_time"),
                 opts.get<int>("random_seed"),
-                opts.get<string>("name"),
                 opts.get<utils::Verbosity>("verbosity"));
 
         return make_shared<CanonicalPDBsHeuristic>(
@@ -680,7 +677,7 @@ public:
             opts.get<double>("max_time_dominance_pruning"),
             opts.get<shared_ptr<AbstractTask>>("transform"),
             opts.get<bool>("cache_estimates"),
-            opts.get<string>("name"),
+            opts.get<string>("description", "DEFAULT DESCRIPTION"), // TODO issue1082
             opts.get<utils::Verbosity>("verbosity"));
     }
 };

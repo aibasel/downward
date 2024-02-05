@@ -45,14 +45,14 @@ State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
     return task_proxy.convert_ancestor_state(ancestor_state);
 }
 
-void Heuristic::add_options_to_feature(plugins::Feature &feature, const string &name) {
+void Heuristic::add_options_to_feature(plugins::Feature &feature, const string &description) {
     feature.add_option<shared_ptr<AbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic."
         " Currently, adapt_costs() and no_transform() are available.",
         "no_transform()");
     feature.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
-    add_evaluator_options_to_feature(feature, name);
+    add_evaluator_options_to_feature(feature, description);
 }
 
 // TODO 1082 remove this, just keep the one above

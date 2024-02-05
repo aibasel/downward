@@ -8,7 +8,6 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGenerator::PatternCollectionGenerator(
-    const string &name,
     utils::Verbosity verbosity)
     : log(utils::get_log_for_verbosity(verbosity)) {
     // TODO 1082 What should we do with the name here?
@@ -26,7 +25,7 @@ PatternCollectionInformation PatternCollectionGenerator::generate(
     return pci;
 }
 
-PatternGenerator::PatternGenerator(const string &name, utils::Verbosity verbosity)
+PatternGenerator::PatternGenerator(utils::Verbosity verbosity)
     : log(utils::get_log_for_verbosity(verbosity)) {
     // TODO 1082 What should we do with the name here?
 }
@@ -46,8 +45,8 @@ PatternInformation PatternGenerator::generate(
     return pattern_info;
 }
 
-void add_generator_options_to_feature(plugins::Feature &feature, const string &name) {
-    utils::add_log_options_to_feature(feature, name);
+void add_generator_options_to_feature(plugins::Feature &feature) {
+    utils::add_log_options_to_feature(feature);
 }
 
 static class PatternCollectionGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<PatternCollectionGenerator> {

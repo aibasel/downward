@@ -21,9 +21,8 @@ PatternGeneratorRandom::PatternGeneratorRandom(
     double max_time,
     bool bidirectional,
     int random_seed,
-    const string &name,
     utils::Verbosity verbosity)
-    : PatternGenerator(name, verbosity),
+    : PatternGenerator(verbosity),
       max_pdb_size(max_pdb_size),
       max_time(max_time),
       bidirectional(bidirectional),
@@ -77,7 +76,7 @@ public:
             plugins::Bounds("0.0", "infinity"));
         add_random_pattern_bidirectional_option_to_feature(*this);
         utils::add_rng_options(*this);
-        add_generator_options_to_feature(*this, "random_pattern");
+        add_generator_options_to_feature(*this);
 
         add_random_pattern_implementation_notes_to_feature(*this);
     }
@@ -89,7 +88,6 @@ public:
             opts.get<double>("max_time"),
             opts.get<bool>("bidirectional"),
             opts.get<int>("random_seed"),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity")
             );
     }

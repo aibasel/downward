@@ -27,7 +27,6 @@ public:
         double blacklist_trigger_percentage,
         bool enable_blacklist_on_stagnation,
         int random_seed,
-        const std::string &name,
         utils::Verbosity verbosity);
 };
 }

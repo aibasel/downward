@@ -31,9 +31,8 @@ PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(
     double mutation_probability,
     bool disjoint,
     int random_seed,
-    const string &name,
     utils::Verbosity verbosity)
-    : PatternCollectionGenerator(name, verbosity),
+    : PatternCollectionGenerator(verbosity),
       pdb_max_size(pdb_max_size),
       num_collections(num_collections),
       num_episodes(num_episodes),
@@ -352,7 +351,7 @@ public:
             "fitness) if its patterns are not disjoint",
             "false");
         utils::add_rng_options(*this);
-        add_generator_options_to_feature(*this, "genetic");
+        add_generator_options_to_feature(*this);
 
         document_note(
             "Note",
@@ -404,7 +403,6 @@ public:
             opts.get<double>("mutation_probability"),
             opts.get<bool>("disjoint"),
             opts.get<int>("random_seed"),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity")
             );
     }

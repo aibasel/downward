@@ -88,8 +88,11 @@ int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
 }
 
-void add_evaluator_options_to_feature(plugins::Feature &feature, const string &name) {
-    utils::add_log_options_to_feature(feature, name);
+void add_evaluator_options_to_feature(plugins::Feature &feature, const string &description) {
+    feature.add_option<string>("description",
+                               "description used to identify evaluator in logs",
+                               "\"" + description + "\"");
+    utils::add_log_options_to_feature(feature);
 }
 
 // TODO 1082 remove this, just keep the one above
@@ -97,8 +100,10 @@ void add_evaluator_options_to_feature(plugins::Feature &feature) {
     utils::add_log_options_to_feature(feature);
 }
 
-tuple<std::string, utils::Verbosity> get_evaluator_parameters_from_options(const plugins::Options &opts) {
-    return utils::get_log_parameters_from_options(opts);
+tuple<string, utils::Verbosity> get_evaluator_parameters_from_options(const plugins::Options &opts) {
+    auto parent_parameter_tuple = utils::get_log_parameters_from_options(opts);
+    auto own_parameter_tuple = make_tuple(opts.get<string>("description"));
+    return tuple_cat(own_parameter_tuple, parent_parameter_tuple);
 }
 
 static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<Evaluator> {

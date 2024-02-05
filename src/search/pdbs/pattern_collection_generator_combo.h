@@ -10,7 +10,6 @@ namespace pdbs {
    all goal variables that are not in the large pattern. */
 class PatternCollectionGeneratorCombo : public PatternCollectionGenerator {
     int max_states;
-    std::string sub_generator_name;
     utils::Verbosity verbosity;
 
     virtual std::string name() const override;
@@ -19,7 +18,6 @@ class PatternCollectionGeneratorCombo : public PatternCollectionGenerator {
 public:
     PatternCollectionGeneratorCombo(
         int max_states,
-        const std::string &name,
         utils::Verbosity verbosity);
 };
 }

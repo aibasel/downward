@@ -22,9 +22,9 @@ ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
     const shared_ptr<PatternCollectionGenerator> &patterns,
     const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
-    const string &name,
+    const string &description,
     utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, name, verbosity),
+    : Heuristic(transform, cache_estimates, description, verbosity),
       zero_one_pdbs(get_zero_one_pdbs_from_generator(task, patterns)) {
 }
 
@@ -74,7 +74,7 @@ public:
             opts.get<shared_ptr<PatternCollectionGenerator>>("patterns"),
             opts.get<shared_ptr<AbstractTask>>("transform"),
             opts.get<bool>("cache_estimates"),
-            opts.get<string>("name"),
+            opts.get<string>("description"),
             opts.get<utils::Verbosity>("verbosity"));
     }
 };

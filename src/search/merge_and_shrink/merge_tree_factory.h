@@ -25,7 +25,6 @@ class MergeTree;
 enum class UpdateOption;
 
 class MergeTreeFactory {
-    const std::string name;
 protected:
     mutable utils::LogProxy log;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
@@ -36,7 +35,6 @@ public:
     MergeTreeFactory(
         int random_seed,
         UpdateOption update_option,
-        const std::string &name,
         utils::Verbosity verbosity);
     virtual ~MergeTreeFactory() = default;
     void dump_options(utils::LogProxy &log) const;
@@ -52,7 +50,7 @@ public:
     virtual bool requires_init_distances() const = 0;
     virtual bool requires_goal_distances() const = 0;
     // Derived classes must call this method in their parsing methods.
-    static void add_options_to_feature(plugins::Feature &feature, const std::string &name);
+    static void add_options_to_feature(plugins::Feature &feature);
 };
 }
 

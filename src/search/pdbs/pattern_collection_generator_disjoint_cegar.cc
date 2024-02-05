@@ -16,9 +16,8 @@ PatternCollectionGeneratorDisjointCegar::PatternCollectionGeneratorDisjointCegar
     double max_time,
     bool use_wildcard_plans,
     int random_seed,
-    const string &name,
     utils::Verbosity verbosity)
-    : PatternCollectionGenerator(name, verbosity),
+    : PatternCollectionGenerator(verbosity),
       max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
       max_time(max_time),
@@ -82,7 +81,7 @@ public:
             plugins::Bounds("0.0", "infinity"));
         add_cegar_wildcard_option_to_feature(*this);
         utils::add_rng_options(*this);
-        add_generator_options_to_feature(*this, "disjoint_cegar");
+        add_generator_options_to_feature(*this);
 
         add_cegar_implementation_notes_to_feature(*this);
     }
@@ -95,7 +94,6 @@ public:
             opts.get<double>("max_time"),
             opts.get<bool>("use_wildcard_plans"),
             opts.get<int>("random_seed"),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity")
             );
     }

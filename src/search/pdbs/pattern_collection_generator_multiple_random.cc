@@ -23,7 +23,6 @@ PatternCollectionGeneratorMultipleRandom::PatternCollectionGeneratorMultipleRand
     double blacklist_trigger_percentage,
     bool enable_blacklist_on_stagnation,
     int random_seed,
-    const string &name,
     utils::Verbosity verbosity)
     : PatternCollectionGeneratorMultiple(
           max_pdb_size,
@@ -34,7 +33,6 @@ PatternCollectionGeneratorMultipleRandom::PatternCollectionGeneratorMultipleRand
           blacklist_trigger_percentage,
           enable_blacklist_on_stagnation,
           random_seed,
-          name,
           verbosity),
       bidirectional(bidirectional) {
 }
@@ -85,7 +83,7 @@ public:
             "in the paper. See below for descriptions of the algorithms.");
 
         add_random_pattern_bidirectional_option_to_feature(*this);
-        add_multiple_options_to_feature(*this, "random_patterns");
+        add_multiple_options_to_feature(*this);
 
         add_random_pattern_implementation_notes_to_feature(*this);
         add_multiple_algorithm_implementation_notes_to_feature(*this);
@@ -103,7 +101,6 @@ public:
             opts.get<double>("blacklist_trigger_percentage"),
             opts.get<bool>("enable_blacklist_on_stagnation"),
             opts.get<int>("random_seed"),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity")
             );
     }

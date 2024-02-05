@@ -29,8 +29,8 @@ class PatternCollectionGenerator {
 protected:
     mutable utils::LogProxy log;
 public:
-    explicit PatternCollectionGenerator(const std::string &name,
-                                        utils::Verbosity verbosity);
+    explicit PatternCollectionGenerator(
+        utils::Verbosity verbosity);
     virtual ~PatternCollectionGenerator() = default;
 
     PatternCollectionInformation generate(
@@ -44,13 +44,13 @@ class PatternGenerator {
 protected:
     mutable utils::LogProxy log;
 public:
-    explicit PatternGenerator(const std::string &name, utils::Verbosity verbosity);
+    explicit PatternGenerator(utils::Verbosity verbosity);
     virtual ~PatternGenerator() = default;
 
     PatternInformation generate(const std::shared_ptr<AbstractTask> &task);
 };
 
-extern void add_generator_options_to_feature(plugins::Feature &feature, const std::string &name);
+extern void add_generator_options_to_feature(plugins::Feature &feature);
 }
 
 #endif

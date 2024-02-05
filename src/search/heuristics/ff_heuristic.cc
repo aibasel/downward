@@ -98,7 +98,7 @@ public:
         const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<FFHeuristic>(opts.get<shared_ptr<AbstractTask>>("transform"),
                                         opts.get<bool>("cache_estimates"),
-                                        opts.get<string>("name"),
+                                        opts.get<string>("description"),
                                         opts.get<utils::Verbosity>("verbosity"));
     }
 };

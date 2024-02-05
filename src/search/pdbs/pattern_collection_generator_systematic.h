@@ -47,7 +47,6 @@ public:
     PatternCollectionGeneratorSystematic(
         int pattern_max_size,
         bool only_interesting_patterns,
-        const std::string &name,
         utils::Verbosity verbosity);
 };
 }

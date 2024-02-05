@@ -120,7 +120,6 @@ public:
         double mutation_probability,
         bool disjoint,
         int random_seed,
-        const std::string &name,
         utils::Verbosity verbosity);
 };
 }

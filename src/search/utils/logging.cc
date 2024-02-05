@@ -22,17 +22,7 @@ static shared_ptr<Log> global_log = make_shared<Log>(Verbosity::NORMAL);
 
 LogProxy g_log(global_log);
 
-void add_log_options_to_feature(plugins::Feature &feature, const string &name) {
-    feature.add_option<string>("name",
-                               "name used to identify evaluator in logs",
-                               "\"" + name + "\"");
-    feature.add_option<Verbosity>(
-        "verbosity",
-        "Option to specify the verbosity level.",
-        "normal");
-}
 
-// TODO 1082 remove this, just keep the one above
 void add_log_options_to_feature(plugins::Feature &feature) {
     feature.add_option<Verbosity>(
         "verbosity",
@@ -41,11 +31,8 @@ void add_log_options_to_feature(plugins::Feature &feature) {
 }
 
 
-tuple<string, Verbosity> get_log_parameters_from_options(const plugins::Options &opts) {
-    auto own_tuple = make_tuple<string, Verbosity>(
-        opts.get<string>("name"),     // TODO issue1082 move name into get_evaluator_parameters_from_options and rename it to *description*.
-        opts.get<Verbosity>("verbosity")
-        );
+tuple<Verbosity> get_log_parameters_from_options(const plugins::Options &opts) {
+    auto own_tuple = make_tuple<Verbosity>(opts.get<Verbosity>("verbosity"));
     return own_tuple;
 }
 

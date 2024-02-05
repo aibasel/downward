@@ -21,11 +21,9 @@ MergeTreeFactoryLinear::MergeTreeFactoryLinear(
     variable_order_finder::VariableOrderType variable_order,
     int random_seed,
     UpdateOption update_option,
-    const string &name,
     utils::Verbosity verbosity)
     : MergeTreeFactory(random_seed,
                        update_option,
-                       name,
                        verbosity),
       variable_order_type(variable_order) {
 }
@@ -114,12 +112,12 @@ void MergeTreeFactoryLinear::dump_tree_specific_options(utils::LogProxy &log) co
     }
 }
 
-void MergeTreeFactoryLinear::add_options_to_feature(plugins::Feature &feature, const string &name) {
+void MergeTreeFactoryLinear::add_options_to_feature(plugins::Feature &feature) {
     feature.add_option<variable_order_finder::VariableOrderType>(
         "variable_order",
         "the order in which atomic transition systems are merged",
         "cg_goal_level");
-    MergeTreeFactory::add_options_to_feature(feature, name);
+    MergeTreeFactory::add_options_to_feature(feature);
 }
 
 class MergeTreeFactoryLinearFeature : public plugins::TypedFeature<MergeTreeFactory, MergeTreeFactoryLinear> {
@@ -138,7 +136,7 @@ public:
                 "AAAI Press",
                 "2007"));
 
-        MergeTreeFactoryLinear::add_options_to_feature(*this, "linear");
+        MergeTreeFactoryLinear::add_options_to_feature(*this);
     }
 
     virtual shared_ptr<MergeTreeFactoryLinear> create_component(
@@ -147,7 +145,6 @@ public:
             opts.get<variable_order_finder::VariableOrderType>("variable_order"),
             opts.get<int>("random_seed"),
             opts.get<UpdateOption>("update_option"),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity"));
     }
 };

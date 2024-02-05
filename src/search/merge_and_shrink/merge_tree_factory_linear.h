@@ -21,7 +21,6 @@ public:
         variable_order_finder::VariableOrderType variable_order,
         int random_seed,
         UpdateOption update_option,
-        const std::string &name,
         utils::Verbosity verbosity);
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
         const TaskProxy &task_proxy) override;
@@ -38,7 +37,7 @@ public:
         return false;
     }
 
-    static void add_options_to_feature(plugins::Feature &feature, const std::string &name);
+    static void add_options_to_feature(plugins::Feature &feature);
 };
 }
 

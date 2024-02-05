@@ -12,10 +12,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeStrategyFactoryPrecomputed::MergeStrategyFactoryPrecomputed(
     const shared_ptr<MergeTreeFactory> &merge_tree,
-    const string &name,
     utils::Verbosity verbosity)
-    : MergeStrategyFactory(name,
-                           verbosity),
+    : MergeStrategyFactory(verbosity),
       merge_tree_factory(merge_tree) {
 }
 
@@ -59,7 +57,7 @@ public:
         add_option<shared_ptr<MergeTreeFactory>>(
             "merge_tree",
             "The precomputed merge tree.");
-        add_merge_strategy_options_to_feature(*this, "merge_precomputed");
+        add_merge_strategy_options_to_feature(*this);
 
         document_note(
             "Note",
@@ -73,7 +71,6 @@ public:
         const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<MergeStrategyFactoryPrecomputed>(
             opts.get<shared_ptr<MergeTreeFactory>>("merge_tree"),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity"));
     }
 };

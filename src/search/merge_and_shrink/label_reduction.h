@@ -56,7 +56,6 @@ enum class LabelReductionSystemOrder {
 };
 
 class LabelReduction {
-    const std::string name;
     // Options for label reduction
     std::vector<int> transition_system_order;
     bool lr_before_shrinking;
@@ -86,7 +85,6 @@ public:
         LabelReductionMethod method,
         LabelReductionSystemOrder system_order,
         int random_seed,
-        const std::string &name,
         utils::Verbosity verbosity);
     void initialize(const TaskProxy &task_proxy);
     bool reduce(

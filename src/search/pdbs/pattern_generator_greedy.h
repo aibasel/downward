@@ -13,7 +13,6 @@ class PatternGeneratorGreedy : public PatternGenerator {
 public:
     PatternGeneratorGreedy(
         int max_states,
-        const std::string &name,
         utils::Verbosity verbosity);
 };
 }

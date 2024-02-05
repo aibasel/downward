@@ -81,14 +81,13 @@ public:
         double blacklist_trigger_percentage,
         bool enable_blacklist_on_stagnation,
         int random_seed,
-        const std::string &name,
         utils::Verbosity verbosity);
 };
 
 extern void add_multiple_algorithm_implementation_notes_to_feature(
     plugins::Feature &feature);
 extern void add_multiple_options_to_feature(
-    plugins::Feature &feature, const std::string &name);
+    plugins::Feature &feature);
 }
 
 #endif

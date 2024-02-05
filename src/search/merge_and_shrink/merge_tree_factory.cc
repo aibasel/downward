@@ -15,10 +15,8 @@ namespace merge_and_shrink {
 MergeTreeFactory::MergeTreeFactory(
     int random_seed,
     UpdateOption update_option,
-    const string &name,
     utils::Verbosity verbosity)
     :
-      name(name),
       log(utils::get_log_for_verbosity(verbosity)),
       rng(utils::get_rng(random_seed)),
       update_option(update_option) {
@@ -52,7 +50,7 @@ unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
-void MergeTreeFactory::add_options_to_feature(plugins::Feature &feature, const string &name) {
+void MergeTreeFactory::add_options_to_feature(plugins::Feature &feature) {
     utils::add_rng_options(feature);
     feature.add_option<UpdateOption>(
         "update_option",
@@ -60,7 +58,7 @@ void MergeTreeFactory::add_options_to_feature(plugins::Feature &feature, const s
         "should it be updated when a merge different to a merge from the "
         "tree is performed.",
         "use_random");
-    utils::add_log_options_to_feature(feature, name);
+    utils::add_log_options_to_feature(feature);
 }
 
 static class MergeTreeFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<MergeTreeFactory> {

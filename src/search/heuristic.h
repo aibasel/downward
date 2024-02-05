@@ -85,7 +85,7 @@ public:
         std::set<Evaluator *> & /*evals*/) override {
     }
 
-    static void add_options_to_feature(plugins::Feature &feature, const std::string &name);
+    static void add_options_to_feature(plugins::Feature &feature, const std::string &description);
     static void add_options_to_feature(plugins::Feature &feature); // TODO 1082 remove this, just keep the one above
 
     static std::tuple<std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity> get_heuristic_parameters_from_options(const plugins::Options &opts);

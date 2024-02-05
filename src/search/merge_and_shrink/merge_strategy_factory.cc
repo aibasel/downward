@@ -8,10 +8,8 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyFactory::MergeStrategyFactory(
-    const string &name,
     utils::Verbosity verbosity)
-    : name(name),
-      log(utils::get_log_for_verbosity(verbosity)) {
+    : log(utils::get_log_for_verbosity(verbosity)) {
 }
 
 void MergeStrategyFactory::dump_options() const {
@@ -22,8 +20,8 @@ void MergeStrategyFactory::dump_options() const {
     }
 }
 
-void add_merge_strategy_options_to_feature(plugins::Feature &feature, const string &name) {
-    utils::add_log_options_to_feature(feature, name);
+void add_merge_strategy_options_to_feature(plugins::Feature &feature) {
+    utils::add_log_options_to_feature(feature);
 }
 
 static class MergeStrategyFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<MergeStrategyFactory> {

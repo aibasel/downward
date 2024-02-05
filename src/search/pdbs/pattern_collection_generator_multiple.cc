@@ -24,9 +24,8 @@ PatternCollectionGeneratorMultiple::PatternCollectionGeneratorMultiple(
     double blacklist_trigger_percentage,
     bool enable_blacklist_on_stagnation,
     int random_seed,
-    const string &name,
     utils::Verbosity verbosity)
-    : PatternCollectionGenerator(name, verbosity),
+    : PatternCollectionGenerator(verbosity),
       max_pdb_size(max_pdb_size),
       pattern_generation_max_time(pattern_generation_max_time),
       total_max_time(total_max_time),
@@ -283,7 +282,7 @@ void add_multiple_algorithm_implementation_notes_to_feature(
         true);
 }
 
-void add_multiple_options_to_feature(plugins::Feature &feature, const string &name) {
+void add_multiple_options_to_feature(plugins::Feature &feature) {
     feature.add_option<int>(
         "max_pdb_size",
         "maximum number of states for each pattern database, computed "
@@ -332,6 +331,6 @@ void add_multiple_options_to_feature(plugins::Feature &feature, const string &na
         "hit.",
         "true");
     utils::add_rng_options(feature);
-    add_generator_options_to_feature(feature, name);
+    add_generator_options_to_feature(feature);
 }
 }

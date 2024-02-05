@@ -65,9 +65,9 @@ CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(
     double max_time_dominance_pruning,
     const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
-    const string &name,
+    const string &description,
     utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, name, verbosity),
+    : Heuristic(transform, cache_estimates, description, verbosity),
       canonical_pdbs(get_canonical_pdbs_from_options(
                          task, pattern_generator, max_time_dominance_pruning, log)) {
 }
@@ -130,7 +130,7 @@ public:
             opts.get<double>("max_time_dominance_pruning"),
             opts.get<shared_ptr<AbstractTask>>("transform"),
             opts.get<bool>("cache_estimates"),
-            opts.get<string>("name"),
+            opts.get<string>("description"),
             opts.get<utils::Verbosity>("verbosity"));
     }
 };

@@ -11,9 +11,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
     const shared_ptr<MergeSelector> &merge_selector,
-    const string &name,
     utils::Verbosity verbosity)
-    : MergeStrategyFactory(name, verbosity),
+    : MergeStrategyFactory(verbosity),
       merge_selector(merge_selector) {
 }
 
@@ -54,7 +53,7 @@ public:
         add_option<shared_ptr<MergeSelector>>(
             "merge_selector",
             "The merge selector to be used.");
-        add_merge_strategy_options_to_feature(*this, "merge_stateless");
+        add_merge_strategy_options_to_feature(*this);
 
         document_note(
             "Note",
@@ -75,7 +74,6 @@ public:
         const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<MergeStrategyFactoryStateless>(
             opts.get<shared_ptr<MergeSelector>>("merge_selector"),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity"));
     }
 };

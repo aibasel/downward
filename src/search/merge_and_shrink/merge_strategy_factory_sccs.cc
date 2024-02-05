@@ -33,9 +33,8 @@ MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(
     const OrderOfSCCs &order_of_sccs,
     const shared_ptr<MergeTreeFactory> &merge_tree,
     const shared_ptr<MergeSelector> &merge_selector,
-    const string &name,
     utils::Verbosity verbosity)
-    : MergeStrategyFactory(name, verbosity),
+    : MergeStrategyFactory(verbosity),
       order_of_sccs(order_of_sccs),
       merge_tree_factory(merge_tree),
       merge_selector(merge_selector) {
@@ -192,7 +191,7 @@ public:
             "the fallback merge strategy to use if a stateless strategy should "
             "be used.",
             plugins::ArgumentInfo::NO_DEFAULT);
-        add_merge_strategy_options_to_feature(*this, "merge_sccs");
+        add_merge_strategy_options_to_feature(*this);
     }
 
     virtual shared_ptr<MergeStrategyFactorySCCs> create_component(const plugins::Options &opts, const utils::Context &context) const override {
@@ -207,7 +206,6 @@ public:
             opts.get<OrderOfSCCs>("order_of_sccs"),
             opts.get < shared_ptr < MergeTreeFactory >> ("merge_tree", nullptr),
             opts.get < shared_ptr < MergeSelector >> ("merge_selector", nullptr),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity"));
     }
 };

@@ -23,7 +23,6 @@ public:
         double max_time,
         bool bidirectional,
         int random_seed,
-        const std::string &name,
         utils::Verbosity verbosity);
 };
 }

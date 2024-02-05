@@ -16,7 +16,6 @@ class PatternCollectionGeneratorManual : public PatternCollectionGenerator {
 public:
     explicit PatternCollectionGeneratorManual(
         const std::vector<Pattern> &patterns,
-        const std::string &name,
         utils::Verbosity verbosity);
 };
 }

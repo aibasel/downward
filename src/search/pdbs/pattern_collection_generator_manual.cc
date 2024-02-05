@@ -14,9 +14,8 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorManual::PatternCollectionGeneratorManual(
     const vector<Pattern> &patterns,
-    const string &name,
     utils::Verbosity verbosity)
-    : PatternCollectionGenerator(name, verbosity),
+    : PatternCollectionGenerator(verbosity),
       patterns(make_shared<PatternCollection>(patterns)) {
 }
 
@@ -40,14 +39,13 @@ public:
             "patterns",
             "list of patterns (which are lists of variable numbers of the planning "
             "task).");
-        add_generator_options_to_feature(*this, "manual_patterns");
+        add_generator_options_to_feature(*this);
     }
 
     virtual shared_ptr<PatternCollectionGeneratorManual> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<PatternCollectionGeneratorManual>(
             opts.get_list<Pattern>("patterns"),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity")
             );
     }

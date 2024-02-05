@@ -29,7 +29,6 @@ public:
         double max_time,
         bool use_wildcard_plans,
         int random_seed,
-        const std::string &name,
         utils::Verbosity verbosity);
 };
 }

@@ -49,9 +49,8 @@ static void compute_union_pattern(
 PatternCollectionGeneratorSystematic::PatternCollectionGeneratorSystematic(
     int pattern_max_size,
     bool only_interesting_patterns,
-    const string &name,
     utils::Verbosity verbosity)
-    : PatternCollectionGenerator(name, verbosity),
+    : PatternCollectionGenerator(verbosity),
       max_pattern_size(pattern_max_size),
       only_interesting_patterns(only_interesting_patterns) {
 }
@@ -314,7 +313,7 @@ public:
             "Only consider the union of two disjoint patterns if the union has "
             "more information than the individual patterns.",
             "true");
-        add_generator_options_to_feature(*this, "systematic");
+        add_generator_options_to_feature(*this);
     }
 
     virtual shared_ptr<PatternCollectionGeneratorSystematic> create_component(
@@ -322,7 +321,6 @@ public:
         return make_shared<PatternCollectionGeneratorSystematic>(
             opts.get<int>("pattern_max_size"),
             opts.get<bool>("only_interesting_patterns"),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity")
             );
     }

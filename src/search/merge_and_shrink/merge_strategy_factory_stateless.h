@@ -14,7 +14,6 @@ protected:
 public:
     MergeStrategyFactoryStateless(
         const std::shared_ptr<MergeSelector> &merge_selector,
-        const std::string &name,
         utils::Verbosity verbosity);
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,

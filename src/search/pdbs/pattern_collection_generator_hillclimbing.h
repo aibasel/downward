@@ -139,7 +139,6 @@ public:
         int min_improvement,
         double max_time,
         int random_seed,
-        const std::string &name,
         utils::Verbosity verbosity);
 };
 }

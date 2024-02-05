@@ -129,10 +129,9 @@ public:
 */
 extern LogProxy g_log;
 
-extern void add_log_options_to_feature(plugins::Feature &feature, const std::string &name);
-extern void add_log_options_to_feature(plugins::Feature &feature); // TODO 1082 remove this, just keep the one above
+extern void add_log_options_to_feature(plugins::Feature &feature);
 
-extern std::tuple<std::string, Verbosity> get_log_parameters_from_options(const plugins::Options &opts);
+extern std::tuple<Verbosity> get_log_parameters_from_options(const plugins::Options &opts);
 
 
 

@@ -31,11 +31,9 @@ LabelReduction::LabelReduction(
     LabelReductionMethod method,
     LabelReductionSystemOrder system_order,
     int random_seed,
-    const string &name,
     utils::Verbosity verbosity
     )
     :
-      name(name),
       lr_before_shrinking(before_shrinking),
       lr_before_merging(before_merging),
       lr_method(method),
@@ -344,7 +342,7 @@ public:
             "random");
         // Add random_seed option.
         utils::add_rng_options(*this);
-        utils::add_log_options_to_feature(*this, "exact");
+        utils::add_log_options_to_feature(*this);
     }
 
     virtual shared_ptr<LabelReduction> create_component(const plugins::Options &opts, const utils::Context &context) const override {
@@ -361,7 +359,6 @@ public:
             opts.get<LabelReductionMethod>("method"),
             opts.get<LabelReductionSystemOrder>("system_order"),
             opts.get<int>("random_seed"),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity")
             );
     }

@@ -13,9 +13,8 @@ class PatternGeneratorManual : public PatternGenerator {
         const std::shared_ptr<AbstractTask> &task) override;
 public:
     PatternGeneratorManual(
-        const std::vector<int> pattern,
-        const std::string &name,
-        const utils::Verbosity verbosity);
+        const std::vector<int> &pattern,
+        utils::Verbosity verbosity);
 };
 }
 

@@ -21,9 +21,8 @@ PatternGeneratorCEGAR::PatternGeneratorCEGAR(
     double max_time,
     bool use_wildcard_plans,
     int random_seed,
-    const string &name,
     utils::Verbosity verbosity)
-    : PatternGenerator(name, verbosity),
+    : PatternGenerator(verbosity),
       max_pdb_size(max_pdb_size),
       max_time(max_time),
       use_wildcard_plans(use_wildcard_plans),
@@ -72,7 +71,7 @@ public:
             plugins::Bounds("0.0", "infinity"));
         add_cegar_wildcard_option_to_feature(*this);
         utils::add_rng_options(*this);
-        add_generator_options_to_feature(*this, "cegar_pattern");
+        add_generator_options_to_feature(*this);
 
         add_cegar_implementation_notes_to_feature(*this);
     }
@@ -84,7 +83,6 @@ public:
             opts.get<double>("max_time"),
             opts.get<bool>("use_wildcard_plans"),
             opts.get<int>("random_seed"),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity"));
     }
 };

@@ -20,7 +20,6 @@ PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar
     double blacklist_trigger_percentage,
     bool enable_blacklist_on_stagnation,
     int random_seed,
-    const string &name,
     utils::Verbosity verbosity)
     : PatternCollectionGeneratorMultiple(
           max_pdb_size,
@@ -31,7 +30,6 @@ PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar
           blacklist_trigger_percentage,
           enable_blacklist_on_stagnation,
           random_seed,
-          name,
           verbosity),
       use_wildcard_plans(use_wildcard_plans) {
 }
@@ -72,7 +70,7 @@ public:
             "the algorithms.");
 
         add_cegar_wildcard_option_to_feature(*this);
-        add_multiple_options_to_feature(*this, "multiple_cegar");
+        add_multiple_options_to_feature(*this);
 
         add_cegar_implementation_notes_to_feature(*this);
         add_multiple_algorithm_implementation_notes_to_feature(*this);
@@ -90,7 +88,6 @@ public:
             opts.get<double>("blacklist_trigger_percentage"),
             opts.get<bool>("enable_blacklist_on_stagnation"),
             opts.get<int>("random_seed"),
-            opts.get<string>("name"),
             opts.get<utils::Verbosity>("verbosity")
             );
     }
