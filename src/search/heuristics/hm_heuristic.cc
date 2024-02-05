@@ -12,25 +12,24 @@
 using namespace std;
 
 namespace hm_heuristic {
-
-    HMHeuristic::HMHeuristic(
-            const int m,
-            const shared_ptr<AbstractTask> &transform,
-            bool cache_estimates,
-            const string &name,
-            utils::Verbosity verbosity)
-            : Heuristic(transform, cache_estimates, name, verbosity),
-              m(m),
-              has_cond_effects(task_properties::has_conditional_effects(task_proxy)),
-              goals(task_properties::get_fact_pairs(task_proxy.get_goals())) {
-        if (log.is_at_least_normal()) {
-            log << "Using h^" << m << "." << endl;
-            log << "The implementation of the h^m heuristic is preliminary." << endl
-                << "It is SLOOOOOOOOOOOW." << endl
-                << "Please do not use this for comparison!" << endl;
-        }
-        generate_all_tuples();
+HMHeuristic::HMHeuristic(
+    const int m,
+    const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates,
+    const string &name,
+    utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, name, verbosity),
+      m(m),
+      has_cond_effects(task_properties::has_conditional_effects(task_proxy)),
+      goals(task_properties::get_fact_pairs(task_proxy.get_goals())) {
+    if (log.is_at_least_normal()) {
+        log << "Using h^" << m << "." << endl;
+        log << "The implementation of the h^m heuristic is preliminary." << endl
+            << "It is SLOOOOOOOOOOOW." << endl
+            << "Please do not use this for comparison!" << endl;
     }
+    generate_all_tuples();
+}
 
 
 bool HMHeuristic::dead_ends_are_reliable() const {
