@@ -187,7 +187,7 @@ DeleteRelaxationConstraintsRR::DeleteRelaxationConstraintsRR(
 }
 
 int DeleteRelaxationConstraintsRR::get_constraint_id(FactPair f) const {
-    return constraint_ids[f.var][f.value];
+    return constraint_offsets[f.var] + f.value;
 }
 
 DeleteRelaxationConstraintsRR::LPVariableIDs
@@ -268,12 +268,11 @@ void DeleteRelaxationConstraintsRR::create_constraints(
       loop creates all constraints and adds the term "f_p", the second loop adds
       the terms f_{p,a} to the appropriate constraints.
     */
-    constraint_ids.resize(vars.size());
+    constraint_offsets.reserve(vars.size());
     for (VariableProxy var_p : vars) {
         int var_id_p = var_p.get_id();
-        constraint_ids[var_id_p].resize(var_p.get_domain_size());
+        constraint_offsets.push_back(constraints.size());
         for (int value_p = 0; value_p < var_p.get_domain_size(); ++value_p) {
-            constraint_ids[var_id_p][value_p] = constraints.size();
             FactPair fact_p(var_id_p, value_p);
             lp::LPConstraint constraint(0, 0);
             constraint.insert(lp_var_ids.id_of_fp(fact_p), 1);
@@ -283,8 +282,7 @@ void DeleteRelaxationConstraintsRR::create_constraints(
     for (OperatorProxy op : ops) {
         for (EffectProxy eff_proxy : op.get_effects()) {
             FactPair eff = eff_proxy.get_fact().get_pair();
-            int constraint_id = constraint_ids[eff.var][eff.value];
-            lp::LPConstraint &constraint = constraints[constraint_id];
+            lp::LPConstraint &constraint = constraints[get_constraint_id(eff)];
             constraint.insert(lp_var_ids.id_of_fpa(eff, op), -1);
         }
     }

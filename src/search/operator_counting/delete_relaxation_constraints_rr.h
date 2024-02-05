@@ -61,11 +61,11 @@ class DeleteRelaxationConstraintsRR : public ConstraintGenerator {
     bool use_integer_vars;
 
     /*
-      Store constraint IDs of Constraints (2) in the paper. We need to
-      reference them when updating constraints for a given state. They are
-      indexed by the fact p.
+      Store offsets to identify Constraints (2) in the paper. We need to
+      reference them when updating constraints for a given state. The constraint
+      for a fact with variable v and value d has ID (constraint_offsets[v] + d).
     */
-    std::vector<std::vector<int>> constraint_ids;
+    std::vector<int> constraint_offsets;
 
     /* The state that is currently used for setting the bounds. Remembering
        this makes it faster to unset the bounds when the state changes. */
