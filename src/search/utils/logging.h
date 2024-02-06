@@ -131,7 +131,7 @@ extern LogProxy g_log;
 
 extern void add_log_options_to_feature(plugins::Feature &feature);
 
-extern std::tuple<Verbosity> get_log_parameters_from_options(const plugins::Options &opts);
+extern std::shared_ptr<std::tuple<Verbosity>> get_log_parameters_from_options(const plugins::Options &opts);
 
 
 

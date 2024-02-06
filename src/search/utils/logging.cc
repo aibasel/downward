@@ -31,9 +31,9 @@ void add_log_options_to_feature(plugins::Feature &feature) {
 }
 
 
-tuple<Verbosity> get_log_parameters_from_options(const plugins::Options &opts) {
+shared_ptr<tuple<Verbosity>> get_log_parameters_from_options(const plugins::Options &opts) {
     auto own_tuple = make_tuple<Verbosity>(opts.get<Verbosity>("verbosity"));
-    return own_tuple;
+    return make_shared<tuple<Verbosity>>(own_tuple);
 }
 
 

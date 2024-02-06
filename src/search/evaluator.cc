@@ -100,10 +100,10 @@ void add_evaluator_options_to_feature(plugins::Feature &feature) {
     utils::add_log_options_to_feature(feature);
 }
 
-tuple<string, utils::Verbosity> get_evaluator_parameters_from_options(const plugins::Options &opts) {
+shared_ptr<tuple<string, utils::Verbosity>> get_evaluator_parameters_from_options(const plugins::Options &opts) {
     auto parent_parameter_tuple = utils::get_log_parameters_from_options(opts);
     auto own_parameter_tuple = make_tuple(opts.get<string>("description"));
-    return tuple_cat(own_parameter_tuple, parent_parameter_tuple);
+    return make_shared<tuple<string, utils::Verbosity>>(tuple_cat(own_parameter_tuple, *parent_parameter_tuple));
 }
 
 static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<Evaluator> {

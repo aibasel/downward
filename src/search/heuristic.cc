@@ -67,13 +67,13 @@ void Heuristic::add_options_to_feature(plugins::Feature &feature) {
 }
 
 
-tuple<shared_ptr<AbstractTask>, bool, string, utils::Verbosity> Heuristic::get_heuristic_parameters_from_options(const plugins::Options &opts) {
+shared_ptr<tuple<shared_ptr<AbstractTask>, bool, string, utils::Verbosity>> Heuristic::get_heuristic_parameters_from_options(const plugins::Options &opts) {
     auto parent_parameter_tuple = get_evaluator_parameters_from_options(opts);
     auto own_parameter_tuple = make_tuple(
         opts.get<shared_ptr<AbstractTask>>("transform"),
         opts.get<bool>("cache_estimates")
         );
-    return tuple_cat(own_parameter_tuple, parent_parameter_tuple);
+    return make_shared<tuple<shared_ptr<AbstractTask>, bool, string, utils::Verbosity>>(tuple_cat(own_parameter_tuple, *parent_parameter_tuple));
 }
 
 EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
