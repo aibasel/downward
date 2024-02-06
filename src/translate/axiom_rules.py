@@ -55,16 +55,6 @@ class AxiomCluster(object):
 def handle_axioms(operators, axioms, goals, layer_strategy):
     clusters = compute_clusters(axioms, goals, operators)
     axiom_layers = compute_axiom_layers(clusters, layer_strategy)
-
-    # TODO: It would be cleaner if these negated rules were an implementation
-    # detail of the heuristics in the search component that make use of them
-    # rather than part of the translation process. They should be removed in
-    # the future. Similarly, it would be a good idea to remove the notion of
-    # axiom layers and derived variable default values from the output.
-    # (All derived variables should be binary and default to false.)
-    with timers.timing("Computing negative axioms"):
-        compute_negative_axioms(clusters)
-
     axioms = get_axioms(clusters)
     if DEBUG:
         verify_layering_condition(axioms, axiom_layers)
@@ -245,60 +235,6 @@ def compute_axiom_layers(clusters, strategy):
         for variable in cluster.variables:
             layers[variable] = cluster.layer
     return layers
-
-
-def compute_negative_axioms(clusters):
-    for cluster in clusters:
-        if cluster.needed_negatively:
-            if len(cluster.variables) > 1:
-                # If the cluster contains multiple variables, they have a cyclic
-                # positive dependency. In this case, the "obvious" way of
-                # negating the formula defining the derived variable is
-                # semantically wrong. For details, see issue453.
-                #
-                # Therefore, in this case we perform a naive overapproximation
-                # instead, which assumes that derived variables occurring in
-                # such clusters can be false unconditionally. This is good
-                # enough for correctness of the code that uses these negated
-                # axioms (within heuristics of the search component), but loses
-                # accuracy. Negating the rules in an exact
-                # (non-overapproximating) way is possible but more expensive.
-                # Again, see issue453 for details.
-                for variable in cluster.variables:
-                    name = cluster.axioms[variable][0].name
-                    negated_axiom = pddl.PropositionalAxiom(name, [], variable.negate())
-                    cluster.axioms[variable].append(negated_axiom)
-            else:
-                variable = next(iter(cluster.variables))
-                negated_axioms = negate(cluster.axioms[variable])
-                cluster.axioms[variable] += negated_axioms
-
-
-def negate(axioms):
-    assert axioms
-    result = [pddl.PropositionalAxiom(axioms[0].name, [], axioms[0].effect.negate())]
-    for axiom in axioms:
-        condition = axiom.condition
-        if len(condition) == 0:
-            # The derived fact we want to negate is triggered with an
-            # empty condition, so it is always true and its negation
-            # is always false.
-            return []
-        elif len(condition) == 1:  # Handle easy special case quickly.
-            new_literal = condition[0].negate()
-            for result_axiom in result:
-                result_axiom.condition.append(new_literal)
-        else:
-            new_result = []
-            for literal in condition:
-                literal = literal.negate()
-                for result_axiom in result:
-                    new_axiom = result_axiom.clone()
-                    new_axiom.condition.append(literal)
-                    new_result.append(new_axiom)
-            result = new_result
-    result = compute_simplified_axioms(result)
-    return result
 
 
 def get_axioms(clusters):
