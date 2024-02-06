@@ -141,16 +141,6 @@ ALIASES["seq-opt-bjolp"] = [
 ALIASES["seq-opt-lmcut"] = [
     "--search", "astar(lmcut())"]
 
-ALIASES["issue1134-if"] = [
-    "--search",
-    "astar(operatorcounting([delete_relaxation_constraints(use_time_vars=true, use_integer_vars=true)], use_integer_operator_counts=true, lpsolver=cplex, verbosity=normal, transform=no_transform(), cache_estimates=true))"
-] # TODO issue1134 remove
-
-ALIASES["issue1134-rr"] = [
-    "--search",
-    "astar(operatorcounting([delete_relaxation_constraints_rr(acyclicity_type=vertex_elimination, use_integer_vars=true)], use_integer_operator_counts=true, lpsolver=cplex, verbosity=normal, transform=no_transform(), cache_estimates=true))"
-] # TODO issue1134 remove
-
 PORTFOLIOS = {}
 for portfolio in os.listdir(PORTFOLIO_DIR):
     if portfolio == "__pycache__":
