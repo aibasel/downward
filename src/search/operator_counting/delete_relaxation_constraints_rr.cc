@@ -210,7 +210,7 @@ DeleteRelaxationConstraintsRR::create_auxiliary_variables(
         for (int value = 0; value < num_values; ++value) {
             variables.emplace_back(0, 1, 0, use_integer_vars);
 #ifndef NDEBUG
-            variables.set_name(variables.size() -1,
+            variables.set_name(variables.size() - 1,
                                "f_" + var.get_name() + "_"
                                + var.get_fact(value).get_name());
 #endif
@@ -262,7 +262,7 @@ void DeleteRelaxationConstraintsRR::create_auxiliary_variables_tl(
 
     lp_var_ids.t_offsets.resize(task_proxy.get_variables().size());
     for (VariableProxy var : task_proxy.get_variables()) {
-        lp_var_ids.t_offsets.push_back(variables.size());
+        lp_var_ids.t_offsets[var.get_id()] = variables.size();
         int num_values = var.get_domain_size();
         for (int value = 0; value < num_values; ++value) {
             variables.emplace_back(1, num_facts, 0, use_integer_vars);
