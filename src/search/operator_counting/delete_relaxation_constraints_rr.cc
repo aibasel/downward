@@ -331,7 +331,7 @@ void DeleteRelaxationConstraintsRR::create_constraints(
       bounds. We thus only loop over pairs (p, q) that occur as effect and
       precondition in some action.
     */
-    utils::HashMap<std::pair<FactPair, FactPair>, int> constraint3_ids;
+    utils::HashMap<pair<FactPair, FactPair>, int> constraint3_ids;
     for (OperatorProxy op : ops) {
         for (EffectProxy eff_proxy : op.get_effects()) {
             FactPair eff = eff_proxy.get_fact().get_pair();
