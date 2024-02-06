@@ -67,7 +67,7 @@ public:
               All unspecified names are empty by default. We use a static
               string here to avoid returning a reference to a local object.
             */
-            static std::string empty = "";
+            static std::string empty;
             return empty;
         }
     }

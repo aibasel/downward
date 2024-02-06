@@ -237,6 +237,7 @@ DeleteRelaxationConstraintsRR::create_auxiliary_variables(
 void DeleteRelaxationConstraintsRR::create_auxiliary_variables_ve(
     const TaskProxy &task_proxy, const VEGraph &ve_graph, LPVariables &variables,
     DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids) const {
+    utils::unused_variable(task_proxy);
     // Add e_{i,j} variables.
     for (pair<FactPair, FactPair> edge : ve_graph.get_edges()) {
         lp_var_ids.e_ids[edge] = variables.size();
