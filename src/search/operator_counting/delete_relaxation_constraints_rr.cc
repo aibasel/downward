@@ -41,7 +41,7 @@ class VEGraph {
 
     void add_edge(FactPair from_fact, FactPair to_fact) {
         pair<FactPair, FactPair> edge = make_pair(from_fact, to_fact);
-        if (!edges.count(edge))  {
+        if (!edges.count(edge)) {
             get_node(from_fact).successors.push_back(to_fact);
             get_node(to_fact).predecessors.push_back(from_fact);
             edges.insert(edge);
@@ -236,7 +236,7 @@ DeleteRelaxationConstraintsRR::create_auxiliary_variables(
 
 void DeleteRelaxationConstraintsRR::create_auxiliary_variables_ve(
     const TaskProxy &task_proxy, const VEGraph &ve_graph, LPVariables &variables,
-        DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids) const {
+    DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids) const {
     // Add e_{i,j} variables.
     for (pair<FactPair, FactPair> edge : ve_graph.get_edges()) {
         lp_var_ids.e_ids[edge] = variables.size();
@@ -507,7 +507,8 @@ void DeleteRelaxationConstraintsRR::initialize_constraints(
     create_constraints(task_proxy, lp_var_ids, lp);
 
     switch (acyclicity_type) {
-    case AcyclicityType::VERTEX_ELIMINATION: {
+    case AcyclicityType::VERTEX_ELIMINATION:
+    {
         VEGraph ve_graph(task_proxy);
         create_auxiliary_variables_ve(
             task_proxy, ve_graph, lp.get_variables(), lp_var_ids);
@@ -515,12 +516,16 @@ void DeleteRelaxationConstraintsRR::initialize_constraints(
         break;
     }
     case AcyclicityType::TIME_LABELS:
+    {
         create_auxiliary_variables_tl(
             task_proxy, lp.get_variables(), lp_var_ids);
         create_constraints_tl(task_proxy, lp_var_ids, lp);
         break;
+    }
     case AcyclicityType::NONE:
+    {
         break;
+    }
     default:
         ABORT("Unknown AcyclicityType");
     }

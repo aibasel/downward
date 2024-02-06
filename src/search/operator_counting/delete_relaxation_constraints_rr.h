@@ -94,7 +94,7 @@ class DeleteRelaxationConstraintsRR : public ConstraintGenerator {
         const TaskProxy &task_proxy, LPVariables &variables,
         LPVariableIDs &lp_var_ids) const;
     void create_constraints(
-        const TaskProxy &task_proxy,  const LPVariableIDs &lp_var_ids,
+        const TaskProxy &task_proxy, const LPVariableIDs &lp_var_ids,
         lp::LinearProgram &lp);
     void create_constraints_ve(
         const TaskProxy &task_proxy, const VEGraph &ve_graph,
