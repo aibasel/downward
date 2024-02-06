@@ -76,7 +76,7 @@ public:
     Heuristic(
         const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates,
-        const std::string &name,
+        const std::string &description,
         utils::Verbosity verbosity);
     explicit Heuristic(const plugins::Options &opts); // TODO 1082 remove this, just keep the one above
     virtual ~Heuristic() override;
