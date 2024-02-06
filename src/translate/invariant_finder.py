@@ -3,6 +3,7 @@
 
 from collections import deque, defaultdict
 import itertools
+import random
 import time
 from typing import List
 
@@ -104,6 +105,11 @@ def find_invariants(task, reachable_action_params):
             candidates.append(invariant)
             seen_candidates.add(invariant)
 
+    # we want to fix the random seed for the invariant synthesis but don't want
+    # to have this a more global impact. For this reason, we temporary store
+    # the state of the random generator.
+    random_state = random.getstate()
+    random.seed(314159)
     start_time = time.process_time()
     while candidates:
         candidate = candidates.popleft()
@@ -112,6 +118,7 @@ def find_invariants(task, reachable_action_params):
             return
         if candidate.check_balance(balance_checker, enqueue_func):
             yield candidate
+    random.setstate(random_state)
 
 def useful_groups(invariants, initial_facts):
     predicate_to_invariants = defaultdict(list)

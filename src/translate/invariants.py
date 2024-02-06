@@ -1,5 +1,6 @@
 from collections import defaultdict
 import itertools
+from random import randrange
 
 import constraints
 import pddl
@@ -324,12 +325,25 @@ class Invariant:
         # invariance analysis.
         for part in self.parts:
             actions_to_check.update(balance_checker.get_threats(part.predicate))
-        for action in actions_to_check.keys():
+
+        # For a better expected perfomance, we want to randomize the order in
+        # which actions are checked. Since candidates are often already
+        # discarded by an early check, we do not want to shuffle the order but
+        # instead always draw the next action randomly from those we did not
+        # yet consider.
+        actions = list(actions_to_check.keys())
+        unchecked = len(actions)
+        while unchecked:
+            pos = randrange(unchecked)
+            action = actions[pos]
             heavy_action = balance_checker.get_heavy_action(action)
             if self._operator_too_heavy(heavy_action):
                 return False
             if self._operator_unbalanced(action, enqueue_func):
                 return False
+            actions[pos], actions[unchecked - 1] = \
+                actions[unchecked - 1], actions[pos]
+            unchecked -= 1
         return True
 
     def _operator_too_heavy(self, h_action):
