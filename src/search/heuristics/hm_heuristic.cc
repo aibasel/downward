@@ -293,9 +293,10 @@ public:
     }
 
     virtual shared_ptr<HMHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
-        auto parameter_tuple = make_shared<tuple<int, shared_ptr<AbstractTask>, bool, string, utils::Verbosity>>(tuple_cat(make_tuple(options.get<int>("m")),
-                                          *Heuristic::get_heuristic_parameters_from_options(options)));
-        return plugins::make_shared_from_tuple<HMHeuristic>(parameter_tuple);
+        return plugins::make_shared_from_args_tuple_and_args<HMHeuristic>(
+            Heuristic::get_heuristic_parameters_from_options(options),
+            options.get<int>("m")
+            );
     }
 };
 

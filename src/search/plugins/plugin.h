@@ -115,11 +115,17 @@ public:
     }
 };
 
-// TODO issue1082 where should this live?
+// Treats first parameter as pointer to a tuple of arguments for the base class,
+// the rest as singleton arguments for the class T.
+// TODO issue1082 where should this live? optimize with std::forward?
 // Apply the arguments extracted from *parameter_tuple* to make_shared<T>
-template<typename T, typename ... Args>
-std::shared_ptr<T> make_shared_from_tuple(std::shared_ptr<std::tuple<Args...>> parameter_tuple) {
-    return apply([](auto... args) {return make_shared<T>(args ...);}, *parameter_tuple);
+template<typename T, typename ParentTuple, typename ... ChildSingletons>
+std::shared_ptr<T> make_shared_from_args_tuple_and_args(ParentTuple parent_tuple, ChildSingletons ... child_singletons) {
+    return std::apply([](auto ... args) {
+                          return make_shared<T>(args ...);
+                      },
+                      std::tuple_cat(std::make_tuple(child_singletons ...), *parent_tuple)
+                      );
 }
 
 class Plugin {
