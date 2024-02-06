@@ -14,17 +14,15 @@ using namespace std;
 namespace merge_and_shrink {
 MergeTreeFactory::MergeTreeFactory(
     int random_seed,
-    UpdateOption update_option,
-    utils::Verbosity verbosity)
-    :
-      log(utils::get_log_for_verbosity(verbosity)),
-      rng(utils::get_rng(random_seed)),
+    UpdateOption update_option
+    )
+    : rng(utils::get_rng(random_seed)),
       update_option(update_option) {
 }
 
 void MergeTreeFactory::dump_options(utils::LogProxy &log) const {
     log << "Merge tree options: " << endl;
-    log << "Type: " << type() << endl;
+    log << "Type: " << name() << endl;
     log << "Update option: ";
     switch (update_option) {
     case UpdateOption::USE_FIRST:
@@ -58,7 +56,6 @@ void MergeTreeFactory::add_options_to_feature(plugins::Feature &feature) {
         "should it be updated when a merge different to a merge from the "
         "tree is performed.",
         "use_random");
-    utils::add_log_options_to_feature(feature);
 }
 
 static class MergeTreeFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<MergeTreeFactory> {

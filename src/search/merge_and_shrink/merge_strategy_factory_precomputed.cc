@@ -32,7 +32,7 @@ bool MergeStrategyFactoryPrecomputed::requires_goal_distances() const {
     return merge_tree_factory->requires_goal_distances();
 }
 
-string MergeStrategyFactoryPrecomputed::type() const {
+string MergeStrategyFactoryPrecomputed::name() const {
     return "precomputed";
 }
 

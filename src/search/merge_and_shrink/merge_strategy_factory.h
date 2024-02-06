@@ -21,7 +21,7 @@ class MergeStrategyFactory {
 protected:
     mutable utils::LogProxy log;
 
-    virtual std::string type() const = 0;
+    virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options() const = 0;
 public:
     MergeStrategyFactory(

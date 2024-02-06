@@ -76,16 +76,13 @@ class LabelReduction {
     compute_combinable_equivalence_relation(
         int ts_index,
         const FactoredTransitionSystem &fts) const;
-protected:
-    mutable utils::LogProxy log;
 public:
     LabelReduction(
         bool before_shrinking,
         bool before_merging,
         LabelReductionMethod method,
         LabelReductionSystemOrder system_order,
-        int random_seed,
-        utils::Verbosity verbosity);
+        int random_seed);
     void initialize(const TaskProxy &task_proxy);
     bool reduce(
         const std::pair<int, int> &next_merge,

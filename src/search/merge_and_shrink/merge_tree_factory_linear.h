@@ -14,14 +14,13 @@ class MergeTreeFactoryLinear : public MergeTreeFactory {
     variable_order_finder::VariableOrderType variable_order_type;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 protected:
-    virtual std::string type() const override;
+    virtual std::string name() const override;
     virtual void dump_tree_specific_options(utils::LogProxy &log) const override;
 public:
     MergeTreeFactoryLinear(
         variable_order_finder::VariableOrderType variable_order,
         int random_seed,
-        UpdateOption update_option,
-        utils::Verbosity verbosity);
+        UpdateOption update_option);
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
         const TaskProxy &task_proxy) override;
     virtual std::unique_ptr<MergeTree> compute_merge_tree(

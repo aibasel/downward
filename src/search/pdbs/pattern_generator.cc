@@ -10,7 +10,6 @@ namespace pdbs {
 PatternCollectionGenerator::PatternCollectionGenerator(
     utils::Verbosity verbosity)
     : log(utils::get_log_for_verbosity(verbosity)) {
-    // TODO 1082 What should we do with the name here?
 }
 
 PatternCollectionInformation PatternCollectionGenerator::generate(
@@ -25,9 +24,9 @@ PatternCollectionInformation PatternCollectionGenerator::generate(
     return pci;
 }
 
-PatternGenerator::PatternGenerator(utils::Verbosity verbosity)
+PatternGenerator::PatternGenerator(
+    utils::Verbosity verbosity)
     : log(utils::get_log_for_verbosity(verbosity)) {
-    // TODO 1082 What should we do with the name here?
 }
 
 PatternInformation PatternGenerator::generate(

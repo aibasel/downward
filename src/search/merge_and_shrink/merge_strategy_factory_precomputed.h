@@ -9,7 +9,7 @@ class MergeTreeFactory;
 class MergeStrategyFactoryPrecomputed : public MergeStrategyFactory {
     std::shared_ptr<MergeTreeFactory> merge_tree_factory;
 protected:
-    virtual std::string type() const override;
+    virtual std::string name() const override;
     virtual void dump_strategy_specific_options() const override;
 public:
     MergeStrategyFactoryPrecomputed(

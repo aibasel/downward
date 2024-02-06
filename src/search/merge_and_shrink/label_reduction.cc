@@ -30,16 +30,14 @@ LabelReduction::LabelReduction(
     bool before_merging,
     LabelReductionMethod method,
     LabelReductionSystemOrder system_order,
-    int random_seed,
-    utils::Verbosity verbosity
+    int random_seed
     )
     :
       lr_before_shrinking(before_shrinking),
       lr_before_merging(before_merging),
       lr_method(method),
       lr_system_order(system_order),
-      rng(utils::get_rng(random_seed)),
-      log(utils::get_log_for_verbosity(verbosity)) {
+      rng(utils::get_rng(random_seed)) {
 }
 
 bool LabelReduction::initialized() const {
@@ -358,8 +356,7 @@ public:
             opts.get<bool>("before_merging"),
             opts.get<LabelReductionMethod>("method"),
             opts.get<LabelReductionSystemOrder>("system_order"),
-            opts.get<int>("random_seed"),
-            opts.get<utils::Verbosity>("verbosity")
+            opts.get<int>("random_seed")
             );
     }
 };

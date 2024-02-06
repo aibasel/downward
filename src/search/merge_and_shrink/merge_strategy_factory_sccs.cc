@@ -150,7 +150,7 @@ void MergeStrategyFactorySCCs::dump_strategy_specific_options() const {
     }
 }
 
-string MergeStrategyFactorySCCs::type() const {
+string MergeStrategyFactorySCCs::name() const {
     return "sccs";
 }
 

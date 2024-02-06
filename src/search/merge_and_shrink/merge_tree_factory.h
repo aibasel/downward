@@ -26,16 +26,14 @@ enum class UpdateOption;
 
 class MergeTreeFactory {
 protected:
-    mutable utils::LogProxy log;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
     UpdateOption update_option;
-    virtual std::string type() const = 0;
+    virtual std::string name() const = 0;
     virtual void dump_tree_specific_options(utils::LogProxy &) const {}
 public:
     MergeTreeFactory(
         int random_seed,
-        UpdateOption update_option,
-        utils::Verbosity verbosity);
+        UpdateOption update_option);
     virtual ~MergeTreeFactory() = default;
     void dump_options(utils::LogProxy &log) const;
     // Compute a merge tree for the given entire task.

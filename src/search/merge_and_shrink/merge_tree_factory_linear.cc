@@ -20,11 +20,9 @@ namespace merge_and_shrink {
 MergeTreeFactoryLinear::MergeTreeFactoryLinear(
     variable_order_finder::VariableOrderType variable_order,
     int random_seed,
-    UpdateOption update_option,
-    utils::Verbosity verbosity)
+    UpdateOption update_option)
     : MergeTreeFactory(random_seed,
-                       update_option,
-                       verbosity),
+                       update_option),
       variable_order_type(variable_order) {
 }
 
@@ -102,7 +100,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
         root, rng, update_option);
 }
 
-string MergeTreeFactoryLinear::type() const {
+string MergeTreeFactoryLinear::name() const {
     return "linear";
 }
 
@@ -144,8 +142,8 @@ public:
         return make_shared<MergeTreeFactoryLinear>(
             opts.get<variable_order_finder::VariableOrderType>("variable_order"),
             opts.get<int>("random_seed"),
-            opts.get<UpdateOption>("update_option"),
-            opts.get<utils::Verbosity>("verbosity"));
+            opts.get<UpdateOption>("update_option")
+            );
     }
 };
 

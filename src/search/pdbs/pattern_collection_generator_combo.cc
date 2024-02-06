@@ -23,7 +23,6 @@ PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(
     : PatternCollectionGenerator(verbosity),
       max_states(max_states),
       verbosity(verbosity) {
-    // TODO 1082 does it make sense to store name and verbosity here? At least name conflicts with the function name().
 }
 
 string PatternCollectionGeneratorCombo::name() const {
