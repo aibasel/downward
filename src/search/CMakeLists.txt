@@ -682,6 +682,7 @@ create_fast_downward_library(
     SOURCES
         tasks/cost_adapted_task
         tasks/delegating_task
+        tasks/negated_axioms_task
         tasks/root_task
     CORE_LIBRARY
 )
