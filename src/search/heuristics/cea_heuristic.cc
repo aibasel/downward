@@ -5,6 +5,7 @@
 #include "../plugins/plugin.h"
 
 #include "../task_utils/task_properties.h"
+#include "../tasks/negated_axioms_task.h"
 #include "../utils/logging.h"
 
 #include <cassert>
@@ -412,6 +413,12 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     const plugins::Options &opts)
     : Heuristic(opts),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
+
+    if (task_properties::has_axioms(task_proxy)) {
+        task = make_shared<tasks::NegatedAxiomsTask>(tasks::NegatedAxiomsTask(task));
+        task_proxy = TaskProxy(*task);
+    }
+
     if (log.is_at_least_normal()) {
         log << "Initializing context-enhanced additive heuristic..." << endl;
     }

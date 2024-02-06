@@ -1,6 +1,7 @@
 #include "relaxation_heuristic.h"
 
 #include "../task_utils/task_properties.h"
+#include "../tasks/negated_axioms_task.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/timer.h"
@@ -37,6 +38,11 @@ UnaryOperator::UnaryOperator(
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(const plugins::Options &opts)
     : Heuristic(opts) {
+    if (task_properties::has_axioms(task_proxy)) {
+        task = make_shared<tasks::NegatedAxiomsTask>(tasks::NegatedAxiomsTask(task));
+        task_proxy = TaskProxy(*task);
+    }
+
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));
 

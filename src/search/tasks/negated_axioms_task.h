@@ -17,8 +17,8 @@ struct NegatedAxiom {
     std::vector<FactPair> condition;
     std::string name;
 
-    // TODO: move done correctly?
-    NegatedAxiom(FactPair &&head, std::vector<FactPair> &&condition, std::string &&name)
+    // TODO: move constructor?
+    NegatedAxiom(FactPair head, std::vector<FactPair> condition, std::string name)
         : head(head), condition(condition), name(name) {}
 };
 
@@ -26,7 +26,7 @@ class NegatedAxiomsTask : public DelegatingTask {
     std::vector<NegatedAxiom> negated_axioms;
     int negated_axioms_start_index;
 
-    void add_negated_axioms(int var, std::vector<OperatorProxy> axioms);
+    void add_negated_axioms(FactPair head, std::vector<OperatorProxy> &axioms, TaskProxy &task_proxy);
 public:
     NegatedAxiomsTask(
         const std::shared_ptr<AbstractTask> &parent);

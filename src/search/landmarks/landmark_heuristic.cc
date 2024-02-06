@@ -7,7 +7,9 @@
 #include "../plugins/plugin.h"
 #include "../task_utils/successor_generator.h"
 #include "../tasks/cost_adapted_task.h"
+#include "../tasks/negated_axioms_task.h"
 #include "../tasks/root_task.h"
+#include "../task_utils/task_properties.h"
 #include "../utils/markup.h"
 
 using namespace std;
@@ -18,6 +20,11 @@ LandmarkHeuristic::LandmarkHeuristic(
     : Heuristic(opts),
       use_preferred_operators(opts.get<bool>("pref")),
       successor_generator(nullptr) {
+
+    if (task_properties::has_axioms(task_proxy)) {
+        task = make_shared<tasks::NegatedAxiomsTask>(tasks::NegatedAxiomsTask(task));
+        task_proxy = TaskProxy(*task);
+    }
 }
 
 void LandmarkHeuristic::initialize(const plugins::Options &opts) {
@@ -26,8 +33,10 @@ void LandmarkHeuristic::initialize(const plugins::Options &opts) {
       CostAdaptedTask *of the root task*, but there is currently no good
       way to do this, so we use this incomplete, slightly less safe test.
     */
+    // TODO: update comment and cerr message
     if (task != tasks::g_root_task
-        && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr) {
+        && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr
+        && dynamic_cast<tasks::NegatedAxiomsTask *>(task.get()) == nullptr ) {
         cerr << "The landmark heuristics currently only support "
              << "task transformations that modify the operator costs. "
              << "See issues 845 and 686 for details." << endl;
