@@ -64,7 +64,6 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
 public:
     explicit LandmarkFactoryRpgSasp(const plugins::Options &opts);
 
-    virtual bool computes_reasonable_orders() const override;
     virtual bool supports_conditional_effects() const override;
 };
 }
