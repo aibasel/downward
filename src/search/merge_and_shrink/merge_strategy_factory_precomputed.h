@@ -14,7 +14,8 @@ protected:
 public:
     MergeStrategyFactoryPrecomputed(
         const std::shared_ptr<MergeTreeFactory> &merge_tree,
-        utils::Verbosity verbosity);
+        utils::Verbosity verbosity
+        );
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,
         const FactoredTransitionSystem &fts) override;
