@@ -97,8 +97,8 @@ public:
     virtual shared_ptr<FFHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_args_tuple_and_args<FFHeuristic>(
-                Heuristic::get_heuristic_parameters_from_options(opts)
-                );
+            Heuristic::get_heuristic_parameters_from_options(opts)
+            );
     }
 };
 
