@@ -409,8 +409,11 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(
 }
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
-    const plugins::Options &opts)
-    : Heuristic(opts),
+    const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates,
+    const string &name,
+    utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, name, verbosity),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing context-enhanced additive heuristic..." << endl;
@@ -448,7 +451,7 @@ public:
     ContextEnhancedAdditiveHeuristicFeature() : TypedFeature("cea") {
         document_title("Context-enhanced additive heuristic");
 
-        Heuristic::add_options_to_feature(*this);
+        Heuristic::add_options_to_feature(*this, "cea");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");
@@ -462,6 +465,13 @@ public:
         document_property("consistent", "no");
         document_property("safe", "no");
         document_property("preferred operators", "yes");
+    }
+
+    virtual shared_ptr<ContextEnhancedAdditiveHeuristic> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_args_tuple_and_args<ContextEnhancedAdditiveHeuristic>(
+            Heuristic::get_heuristic_parameters_from_options(opts)
+        );
     }
 };
 
