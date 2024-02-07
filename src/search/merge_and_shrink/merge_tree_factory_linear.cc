@@ -139,10 +139,9 @@ public:
 
     virtual shared_ptr<MergeTreeFactoryLinear> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<MergeTreeFactoryLinear>(
-            opts.get<variable_order_finder::VariableOrderType>("variable_order"),
-            opts.get<int>("random_seed"),
-            opts.get<UpdateOption>("update_option")
+        return plugins::make_shared_from_args_tuple_and_args<MergeTreeFactoryLinear>(
+            get_merge_tree_parameters_from_options(opts),
+            opts.get<variable_order_finder::VariableOrderType>("variable_order")
             );
     }
 };

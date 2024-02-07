@@ -122,7 +122,7 @@ public:
 template<typename T, typename ParentTuple, typename ... ChildSingletons>
 std::shared_ptr<T> make_shared_from_args_tuple_and_args(ParentTuple parent_tuple, ChildSingletons ... child_singletons) {
     return std::apply([](auto ... args) {
-                          return make_shared<T>(args ...);
+                          return std::make_shared<T>(args ...);
                       },
                       std::tuple_cat(std::make_tuple(child_singletons ...), *parent_tuple)
                       );

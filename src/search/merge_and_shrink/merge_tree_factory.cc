@@ -58,6 +58,15 @@ void MergeTreeFactory::add_options_to_feature(plugins::Feature &feature) {
         "use_random");
 }
 
+shared_ptr<tuple<int, UpdateOption>> get_merge_tree_parameters_from_options(const plugins::Options &opts) {
+    return make_shared<tuple<int, UpdateOption>>(
+        make_tuple(
+            opts.get<int>("random_seed"),
+            opts.get<UpdateOption>("update_option")
+            )
+        );
+}
+
 static class MergeTreeFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<MergeTreeFactory> {
 public:
     MergeTreeFactoryCategoryPlugin() : TypedCategoryPlugin("MergeTree") {

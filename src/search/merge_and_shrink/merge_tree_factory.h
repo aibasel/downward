@@ -50,6 +50,8 @@ public:
     // Derived classes must call this method in their parsing methods.
     static void add_options_to_feature(plugins::Feature &feature);
 };
+
+extern std::shared_ptr<std::tuple<int, UpdateOption>> get_merge_tree_parameters_from_options(const plugins::Options &opts);
 }
 
 #endif
