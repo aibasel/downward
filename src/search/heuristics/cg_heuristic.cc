@@ -317,7 +317,7 @@ public:
         return plugins::make_shared_from_args_tuple_and_args<CGHeuristic>(
             Heuristic::get_heuristic_parameters_from_options(opts),
             opts.get<int>("max_cache_size")
-        );
+            );
     }
 };
 

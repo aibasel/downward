@@ -471,7 +471,7 @@ public:
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_args_tuple_and_args<ContextEnhancedAdditiveHeuristic>(
             Heuristic::get_heuristic_parameters_from_options(opts)
-        );
+            );
     }
 };
 
