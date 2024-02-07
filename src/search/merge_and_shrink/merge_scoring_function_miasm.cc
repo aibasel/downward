@@ -17,14 +17,21 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
-    const plugins::Options &options)
-    : use_caching(options.get<bool>("use_caching")),
-      shrink_strategy(options.get<shared_ptr<ShrinkStrategy>>("shrink_strategy")),
-      max_states(options.get<int>("max_states")),
-      max_states_before_merge(options.get<int>("max_states_before_merge")),
-      shrink_threshold_before_merge(options.get<int>("threshold_before_merge")),
+    const shared_ptr<ShrinkStrategy> &shrink_strategy,
+    int max_states,
+    int max_states_before_merge,
+    int threshold_before_merge,
+    bool use_caching
+    )
+    : use_caching(use_caching),
+      shrink_strategy(shrink_strategy),
+      max_states(max_states),
+      max_states_before_merge(max_states_before_merge),
+      shrink_threshold_before_merge(threshold_before_merge),
       silent_log(utils::get_silent_log()) {
 }
+
+
 
 vector<double> MergeScoringFunctionMIASM::compute_scores(
     const FactoredTransitionSystem &fts,
@@ -169,7 +176,13 @@ public:
     virtual shared_ptr<MergeScoringFunctionMIASM> create_component(const plugins::Options &options, const utils::Context &context) const override {
         plugins::Options options_copy(options);
         handle_shrink_limit_options_defaults(options_copy, context);
-        return make_shared<MergeScoringFunctionMIASM>(options_copy);
+        return make_shared<MergeScoringFunctionMIASM>(
+            options_copy.get<shared_ptr<ShrinkStrategy>>("shrink_strategy"),
+            options_copy.get<int>("max_states"),
+            options_copy.get<int>("max_states_before_merge"),
+            options_copy.get<int>("threshold_before_merge"),
+            options_copy.get<bool>("use_caching")
+            );
     }
 };
 

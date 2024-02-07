@@ -13,9 +13,9 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeScoringFunctionSingleRandom::MergeScoringFunctionSingleRandom(
-    const plugins::Options &options)
-    : random_seed(options.get<int>("random_seed")),
-      rng(utils::parse_rng_from_options(options)) {
+    int random_seed)
+    : random_seed(random_seed),
+      rng(utils::get_rng(random_seed)) {
 }
 
 vector<double> MergeScoringFunctionSingleRandom::compute_scores(
@@ -55,6 +55,12 @@ public:
             "0, chosen randomly, and infinity to all others.");
 
         utils::add_rng_options(*this);
+    }
+
+    virtual shared_ptr<MergeScoringFunctionSingleRandom> create_component(const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<MergeScoringFunctionSingleRandom>(
+            opts.get<int>("random_seed")
+            );
     }
 };
 

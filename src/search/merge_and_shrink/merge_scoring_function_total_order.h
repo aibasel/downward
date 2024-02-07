@@ -38,8 +38,11 @@ class MergeScoringFunctionTotalOrder : public MergeScoringFunction {
     virtual std::string name() const override;
     virtual void dump_function_specific_options(utils::LogProxy &log) const override;
 public:
-    explicit MergeScoringFunctionTotalOrder(const plugins::Options &options);
-    virtual ~MergeScoringFunctionTotalOrder() override = default;
+    explicit MergeScoringFunctionTotalOrder(
+        AtomicTSOrder atomic_ts_order,
+        ProductTSOrder product_ts_order,
+        bool atomic_before_product,
+        int random_seed);
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;
