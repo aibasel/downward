@@ -85,10 +85,10 @@ search
 │   ├── goal_count_heuristic.h✅
 │   ├── hm_heuristic.cc✅
 │   ├── hm_heuristic.h✅
-│   ├── lm_cut_heuristic.cc
-│   ├── lm_cut_heuristic.h
-│   ├── lm_cut_landmarks.cc
-│   ├── lm_cut_landmarks.h
+│   ├── lm_cut_heuristic.cc✅
+│   ├── lm_cut_heuristic.h✅
+│   ├── lm_cut_landmarks.cc✅
+│   ├── lm_cut_landmarks.h✅
 │   ├── max_heuristic.cc✅
 │   ├── max_heuristic.h✅
 │   ├── relaxation_heuristic.cc✅
