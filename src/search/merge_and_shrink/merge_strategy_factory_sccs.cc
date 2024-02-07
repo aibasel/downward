@@ -202,11 +202,12 @@ public:
                 "You have to specify exactly one of the options merge_tree "
                 "and merge_selector!");
         }
-        return make_shared<MergeStrategyFactorySCCs>(
+        return plugins::make_shared_from_args_tuple_and_args<MergeStrategyFactorySCCs>(
+                get_merge_strategy_parameters_from_options(opts),
             opts.get<OrderOfSCCs>("order_of_sccs"),
-            opts.get < shared_ptr < MergeTreeFactory >> ("merge_tree", nullptr),
-            opts.get < shared_ptr < MergeSelector >> ("merge_selector", nullptr),
-            opts.get<utils::Verbosity>("verbosity"));
+            opts.get<shared_ptr<MergeTreeFactory>> ("merge_tree", nullptr),
+            opts.get<shared_ptr<MergeSelector>> ("merge_selector", nullptr)
+            );
     }
 };
 

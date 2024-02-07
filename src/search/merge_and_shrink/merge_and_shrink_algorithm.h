@@ -57,6 +57,18 @@ class MergeAndShrinkAlgorithm {
         FactoredTransitionSystem &fts,
         const TaskProxy &task_proxy);
 public:
+    MergeAndShrinkAlgorithm(
+            std::shared_ptr<MergeStrategyFactory> merge_strategy,
+            std::shared_ptr<ShrinkStrategy> shrink_strategy,
+            std::shared_ptr<LabelReduction> label_reduction,
+            int max_states,
+            int max_states_before_merge,
+            int threshold_before_merge,
+            bool prune_unreachable_states,
+            bool prune_irrelevant_states,
+            double main_loop_max_time,
+            utils::Verbosity verbosity
+    );
     explicit MergeAndShrinkAlgorithm(const plugins::Options &opts);
     FactoredTransitionSystem build_factored_transition_system(const TaskProxy &task_proxy);
 };

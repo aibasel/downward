@@ -36,6 +36,33 @@ namespace merge_and_shrink {
 static void log_progress(const utils::Timer &timer, const string &msg, utils::LogProxy &log) {
     log << "M&S algorithm timer: " << timer << " (" << msg << ")" << endl;
 }
+MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(
+        shared_ptr<MergeStrategyFactory> merge_strategy,
+        shared_ptr<ShrinkStrategy> shrink_strategy,
+        shared_ptr<LabelReduction> label_reduction,
+        int max_states,
+        int max_states_before_merge,
+        int threshold_before_merge,
+        bool prune_unreachable_states,
+        bool prune_irrelevant_states,
+        double main_loop_max_time,
+        utils::Verbosity verbosity
+    ) :
+        merge_strategy_factory(merge_strategy),
+        shrink_strategy(shrink_strategy),
+        label_reduction(label_reduction),
+        max_states(max_states),
+        max_states_before_merge(max_states_before_merge),
+        shrink_threshold_before_merge(threshold_before_merge),
+        prune_unreachable_states(prune_unreachable_states),
+        prune_irrelevant_states(prune_irrelevant_states),
+        log(utils::get_log_for_verbosity(verbosity)),
+        main_loop_max_time(main_loop_max_time),
+        starting_peak_memory(0) {
+    assert(max_states_before_merge > 0);
+    assert(max_states >= max_states_before_merge);
+    assert(shrink_threshold_before_merge <= max_states_before_merge);
+}
 
 MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(const plugins::Options &opts) :
     merge_strategy_factory(opts.get<shared_ptr<MergeStrategyFactory>>("merge_strategy")),

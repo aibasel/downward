@@ -6,7 +6,6 @@
 #include <memory>
 
 namespace plugins {
-class Options;
 class Feature;
 }
 

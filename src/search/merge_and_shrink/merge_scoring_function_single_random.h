@@ -5,10 +5,6 @@
 
 #include <memory>
 
-namespace plugins {
-class Options;
-}
-
 namespace utils {
 class RandomNumberGenerator;
 }

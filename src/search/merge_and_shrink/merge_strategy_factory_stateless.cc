@@ -72,9 +72,10 @@ public:
 
     virtual shared_ptr<MergeStrategyFactoryStateless> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<MergeStrategyFactoryStateless>(
-            opts.get<shared_ptr<MergeSelector>>("merge_selector"),
-            opts.get<utils::Verbosity>("verbosity"));
+        return plugins::make_shared_from_args_tuple_and_args<MergeStrategyFactoryStateless>(
+                        get_merge_strategy_parameters_from_options(opts),
+            opts.get<shared_ptr<MergeSelector>>("merge_selector")
+            );
     }
 };
 
