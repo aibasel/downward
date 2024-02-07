@@ -19,8 +19,7 @@ protected:
     virtual void dump_selector_specific_options(utils::LogProxy &log) const override;
 public:
     explicit MergeSelectorScoreBasedFiltering(
-            const std::vector<std::shared_ptr<MergeScoringFunction>> &scoring_functions
-            );
+        const std::vector<std::shared_ptr<MergeScoringFunction>> &scoring_functions);
     virtual std::pair<int, int> select_merge(
         const FactoredTransitionSystem &fts,
         const std::vector<int> &indices_subset = std::vector<int>()) const override;

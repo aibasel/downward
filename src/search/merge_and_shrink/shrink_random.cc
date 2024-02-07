@@ -11,8 +11,10 @@
 using namespace std;
 
 namespace merge_and_shrink {
-ShrinkRandom::ShrinkRandom(const plugins::Options &opts)
-    : ShrinkBucketBased(opts) {
+ShrinkRandom::ShrinkRandom(
+    int random_seed
+    )
+    : ShrinkBucketBased(random_seed) {
 }
 
 vector<ShrinkBucketBased::Bucket> ShrinkRandom::partition_into_buckets(
@@ -40,6 +42,13 @@ public:
         document_synopsis("");
 
         ShrinkBucketBased::add_options_to_feature(*this);
+    }
+
+    virtual shared_ptr<ShrinkRandom> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_args_tuple_and_args<ShrinkRandom>(
+            get_shrink_bucket_parameters_from_options(opts)
+            );
     }
 };
 

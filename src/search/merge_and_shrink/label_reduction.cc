@@ -340,7 +340,6 @@ public:
             "random");
         // Add random_seed option.
         utils::add_rng_options(*this);
-        utils::add_log_options_to_feature(*this);
     }
 
     virtual shared_ptr<LabelReduction> create_component(const plugins::Options &opts, const utils::Context &context) const override {

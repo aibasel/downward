@@ -21,34 +21,36 @@ using utils::ExitCode;
 
 namespace merge_and_shrink {
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
-        const shared_ptr<MergeStrategyFactory> &merge_strategy,
-        const shared_ptr<ShrinkStrategy> &shrink_strategy,
-        const shared_ptr<LabelReduction> &label_reduction,
-        int max_states,
-        int max_states_before_merge,
-        int threshold_before_merge,
-        bool prune_unreachable_states,
-        bool prune_irrelevant_states,
-        double main_loop_max_time,
-        const shared_ptr<AbstractTask> &transform,
-        bool cache_estimates,
-        const string &description,
-        utils::Verbosity verbosity
-        )
-        : Heuristic(transform, cache_estimates, description, verbosity) {
+    const shared_ptr<MergeStrategyFactory> &merge_strategy,
+    const shared_ptr<ShrinkStrategy> &shrink_strategy,
+    const shared_ptr<LabelReduction> &label_reduction,
+    int max_states,
+    int max_states_before_merge,
+    int threshold_before_merge,
+    bool prune_unreachable_states,
+    bool prune_irrelevant_states,
+    double main_loop_max_time,
+    const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates,
+    const string &description,
+    utils::Verbosity verbosity
+    )
+    :
+      Heuristic(transform, cache_estimates, description, verbosity) {
     log << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(
-            merge_strategy,
-            shrink_strategy,
-            label_reduction,
-            max_states,
-            max_states_before_merge,
-            threshold_before_merge,
-            prune_unreachable_states,
-            prune_irrelevant_states,
-            main_loop_max_time,
-            verbosity
-            );
+        merge_strategy,
+        shrink_strategy,
+        label_reduction,
+        max_states,
+        max_states_before_merge,
+        threshold_before_merge,
+        prune_unreachable_states,
+        prune_irrelevant_states,
+        main_loop_max_time,
+        verbosity
+        );
+
     FactoredTransitionSystem fts = algorithm.build_factored_transition_system(task_proxy);
     extract_factors(fts);
     log << "Done initializing merge-and-shrink heuristic." << endl << endl;
@@ -196,7 +198,7 @@ public:
                 "2018")
             );
 
-        Heuristic::add_options_to_feature(*this);
+        Heuristic::add_options_to_feature(*this, "merge_and_shrink");
         add_merge_and_shrink_algorithm_options_to_feature(*this);
 
         document_note(
@@ -252,18 +254,19 @@ public:
     virtual shared_ptr<MergeAndShrinkHeuristic> create_component(const plugins::Options &options, const utils::Context &context) const override {
         plugins::Options options_copy(options);
         handle_shrink_limit_options_defaults(options_copy, context);
+
         return plugins::make_shared_from_args_tuple_and_args<MergeAndShrinkHeuristic>(
-                Heuristic::get_heuristic_parameters_from_options(options_copy),
-                options_copy.get<shared_ptr<MergeStrategyFactory>>("merge_strategy"),
-                options_copy.get<shared_ptr<ShrinkStrategy>>("shrink_strategy"),
-                options_copy.get<shared_ptr<LabelReduction>>("label_reduction"),
-                options_copy.get<int>("max_states"),
-                options_copy.get<int>("max_states_before_merge"),
-                options_copy.get<int>("threshold_before_merge"),
-                options_copy.get<bool>("prune_unreachable_states"),
-                options_copy.get<bool>("prune_irrelevant_states"),
-                options_copy.get<double>("main_loop_max_time")
-                );
+            Heuristic::get_heuristic_parameters_from_options(options_copy),
+            options_copy.get<shared_ptr<MergeStrategyFactory>>("merge_strategy"),
+            options_copy.get<shared_ptr<ShrinkStrategy>>("shrink_strategy"),
+            options_copy.get<shared_ptr<LabelReduction>>("label_reduction", nullptr),
+            options_copy.get<int>("max_states"),
+            options_copy.get<int>("max_states_before_merge"),
+            options_copy.get<int>("threshold_before_merge"),
+            options_copy.get<bool>("prune_unreachable_states"),
+            options_copy.get<bool>("prune_irrelevant_states"),
+            options_copy.get<double>("main_loop_max_time")
+            );
     }
 };
 

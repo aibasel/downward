@@ -95,7 +95,7 @@ search
 │   └── relaxation_heuristic.h✅
 ├── landmarks
 ├── lp
-├── merge_and_shrink
+├── merge_and_shrink✅
 │   ├── distances.cc✅
 │   ├── distances.h✅
 │   ├── factored_transition_system.cc✅
@@ -140,34 +140,34 @@ search
 │   ├── merge_strategy_factory_stateless.cc✅
 │   ├── merge_strategy_factory_stateless.h✅
 │   ├── merge_strategy.h✅
-│   ├── merge_strategy_precomputed.cc
-│   ├── merge_strategy_precomputed.h
-│   ├── merge_strategy_sccs.cc
-│   ├── merge_strategy_sccs.h
-│   ├── merge_strategy_stateless.cc
-│   ├── merge_strategy_stateless.h
-│   ├── merge_tree.cc
+│   ├── merge_strategy_precomputed.cc✅
+│   ├── merge_strategy_precomputed.h✅
+│   ├── merge_strategy_sccs.cc✅
+│   ├── merge_strategy_sccs.h✅
+│   ├── merge_strategy_stateless.cc✅
+│   ├── merge_strategy_stateless.h✅
+│   ├── merge_tree.cc✅
 │   ├── merge_tree_factory.cc✅
 │   ├── merge_tree_factory.h✅
 │   ├── merge_tree_factory_linear.cc✅
 │   ├── merge_tree_factory_linear.h✅
-│   ├── merge_tree.h
-│   ├── shrink_bisimulation.cc
-│   ├── shrink_bisimulation.h
-│   ├── shrink_bucket_based.cc
-│   ├── shrink_bucket_based.h
-│   ├── shrink_fh.cc
-│   ├── shrink_fh.h
-│   ├── shrink_random.cc
-│   ├── shrink_random.h
-│   ├── shrink_strategy.cc
-│   ├── shrink_strategy.h
-│   ├── transition_system.cc
-│   ├── transition_system.h
-│   ├── types.cc
-│   ├── types.h
-│   ├── utils.cc
-│   └── utils.h
+│   ├── merge_tree.h✅
+│   ├── shrink_bisimulation.cc✅
+│   ├── shrink_bisimulation.h✅
+│   ├── shrink_bucket_based.cc✅
+│   ├── shrink_bucket_based.h✅
+│   ├── shrink_fh.cc✅
+│   ├── shrink_fh.h✅
+│   ├── shrink_random.cc✅
+│   ├── shrink_random.h✅
+│   ├── shrink_strategy.cc✅
+│   ├── shrink_strategy.h✅
+│   ├── transition_system.cc✅
+│   ├── transition_system.h✅
+│   ├── types.cc✅
+│   ├── types.h✅
+│   ├── utils.cc✅
+│   └── utils.h✅
 ├── open_list_factory.cc
 ├── open_list_factory.h
 ├── open_list.h

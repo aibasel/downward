@@ -51,8 +51,7 @@ protected:
         const TransitionSystem &ts,
         const Distances &Distances) const = 0;
 public:
-    explicit ShrinkBucketBased(const plugins::Options &opts);
-    virtual ~ShrinkBucketBased() override = default;
+    explicit ShrinkBucketBased(int random_seed);
     virtual StateEquivalenceRelation compute_equivalence_relation(
         const TransitionSystem &ts,
         const Distances &distances,
@@ -60,6 +59,8 @@ public:
         utils::LogProxy &log) const override;
     static void add_options_to_feature(plugins::Feature &feature);
 };
+
+extern std::shared_ptr<std::tuple<int>> get_shrink_bucket_parameters_from_options(const plugins::Options &opts);
 }
 
 #endif

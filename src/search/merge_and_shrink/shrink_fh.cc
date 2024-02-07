@@ -19,10 +19,14 @@
 using namespace std;
 
 namespace merge_and_shrink {
-ShrinkFH::ShrinkFH(const plugins::Options &opts)
-    : ShrinkBucketBased(opts),
-      f_start(opts.get<HighLow>("shrink_f")),
-      h_start(opts.get<HighLow>("shrink_h")) {
+ShrinkFH::ShrinkFH(
+    HighLow shrink_f,
+    HighLow shrink_h,
+    int random_seed
+    )
+    : ShrinkBucketBased(random_seed),
+      f_start(shrink_f),
+      h_start(shrink_h) {
 }
 
 vector<ShrinkBucketBased::Bucket> ShrinkFH::partition_into_buckets(
@@ -205,7 +209,6 @@ public:
                 "AAAI Press",
                 "2007"));
 
-        ShrinkBucketBased::add_options_to_feature(*this);
         add_option<ShrinkFH::HighLow>(
             "shrink_f",
             "in which direction the f based shrink priority is ordered",
@@ -214,6 +217,7 @@ public:
             "shrink_h",
             "in which direction the h based shrink priority is ordered",
             "low");
+        ShrinkBucketBased::add_options_to_feature(*this);
 
         document_note(
             "Note",
@@ -241,6 +245,15 @@ public:
             "dead state causes this shrink strategy to always use the map-based "
             "approach for partitioning states rather than the more efficient "
             "vector-based approach.");
+    }
+
+    virtual shared_ptr<ShrinkFH> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_args_tuple_and_args<ShrinkFH>(
+            get_shrink_bucket_parameters_from_options(opts),
+            opts.get<ShrinkFH::HighLow>("shrink_f"),
+            opts.get<ShrinkFH::HighLow>("shrink_h")
+            );
     }
 };
 

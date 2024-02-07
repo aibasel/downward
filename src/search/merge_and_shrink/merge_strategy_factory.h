@@ -17,7 +17,6 @@ namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class MergeStrategy;
 
-// TODO issue1082 check with tox
 class MergeStrategyFactory {
 protected:
     mutable utils::LogProxy log;
@@ -26,8 +25,7 @@ protected:
     virtual void dump_strategy_specific_options() const = 0;
 public:
     MergeStrategyFactory(
-        utils::Verbosity verbosity
-        );
+        utils::Verbosity verbosity);
     virtual ~MergeStrategyFactory() = default;
     void dump_options() const;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
