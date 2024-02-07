@@ -71,9 +71,6 @@ CGCache::CGCache(const TaskProxy &task_proxy, int max_cache_size, utils::LogProx
     }
 }
 
-CGCache::~CGCache() {
-}
-
 int CGCache::compute_required_cache_size(
     int var_id, const vector<int> &depends_on, int max_cache_size) const {
     /*

@@ -24,9 +24,6 @@ BlindSearchHeuristic::BlindSearchHeuristic(
     }
 }
 
-BlindSearchHeuristic::~BlindSearchHeuristic() {
-}
-
 int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
     State state = convert_ancestor_state(ancestor_state);
     if (task_properties::is_goal_state(task_proxy, state))
@@ -57,10 +54,9 @@ public:
 
     virtual shared_ptr<BlindSearchHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<BlindSearchHeuristic>(opts.get<shared_ptr<AbstractTask>>("transform"),
-                                                 opts.get<bool>("cache_estimates"),
-                                                 opts.get<string>("description"),
-                                                 opts.get<utils::Verbosity>("verbosity"));
+        return plugins::make_shared_from_args_tuple_and_args<BlindSearchHeuristic>(
+            Heuristic::get_heuristic_parameters_from_options(opts)
+            );
     }
 };
 
