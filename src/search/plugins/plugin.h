@@ -8,6 +8,7 @@
 
 #include "../utils/strings.h"
 #include "../utils/system.h"
+#include "../utils/tuples.h"
 
 #include <string>
 #include <typeindex>
@@ -125,6 +126,18 @@ std::shared_ptr<T> make_shared_from_args_tuple_and_args(ParentTuple parent_tuple
                           return std::make_shared<T>(args ...);
                       },
                       std::tuple_cat(std::make_tuple(child_singletons ...), *parent_tuple)
+                      );
+}
+
+
+
+template<typename T, typename ... Arguments>
+std::shared_ptr<T> make_shared_from_arg_tuples(Arguments ... arguments) {
+    auto flat_args = utils::flatten_tuple(std::tuple<Arguments...>(arguments...));
+    return std::apply([](auto ... args) {
+                          return std::make_shared<T>(args ...);
+                      },
+                      flat_args
                       );
 }
 
