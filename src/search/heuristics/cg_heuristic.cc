@@ -16,8 +16,13 @@ using namespace std;
 using namespace domain_transition_graph;
 
 namespace cg_heuristic {
-CGHeuristic::CGHeuristic(const plugins::Options &opts)
-    : Heuristic(opts),
+CGHeuristic::CGHeuristic(
+    int max_cache_size,
+    const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates,
+    const string &name,
+    utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, name, verbosity),
       cache_hits(0),
       cache_misses(0),
       helpful_transition_extraction_counter(0),
@@ -26,7 +31,6 @@ CGHeuristic::CGHeuristic(const plugins::Options &opts)
         log << "Initializing causal graph heuristic..." << endl;
     }
 
-    int max_cache_size = opts.get<int>("max_cache_size");
     if (max_cache_size > 0)
         cache = utils::make_unique_ptr<CGCache>(task_proxy, max_cache_size, log);
 
@@ -39,9 +43,6 @@ CGHeuristic::CGHeuristic(const plugins::Options &opts)
         [](int dtg_var, int cond_var) {return dtg_var <= cond_var;};
     DTGFactory factory(task_proxy, false, pruning_condition);
     transition_graphs = factory.build_dtgs();
-}
-
-CGHeuristic::~CGHeuristic() {
 }
 
 bool CGHeuristic::dead_ends_are_reliable() const {
@@ -295,7 +296,7 @@ public:
             "maximum number of cached entries per variable (set to 0 to disable cache)",
             "1000000",
             plugins::Bounds("0", "infinity"));
-        Heuristic::add_options_to_feature(*this);
+        Heuristic::add_options_to_feature(*this, "cg");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");
@@ -309,6 +310,14 @@ public:
         document_property("consistent", "no");
         document_property("safe", "no");
         document_property("preferred operators", "yes");
+    }
+
+    virtual shared_ptr<CGHeuristic> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_args_tuple_and_args<CGHeuristic>(
+            Heuristic::get_heuristic_parameters_from_options(opts),
+            opts.get<int>("max_cache_size")
+        );
     }
 };
 
