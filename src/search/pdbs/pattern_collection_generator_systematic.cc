@@ -318,10 +318,10 @@ public:
 
     virtual shared_ptr<PatternCollectionGeneratorSystematic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<PatternCollectionGeneratorSystematic>(
+        return plugins::make_shared_from_args_tuple_and_args<PatternCollectionGeneratorSystematic>(
+            get_generator_parameters_from_options(opts),
             opts.get<int>("pattern_max_size"),
-            opts.get<bool>("only_interesting_patterns"),
-            opts.get<utils::Verbosity>("verbosity")
+            opts.get<bool>("only_interesting_patterns")
             );
     }
 };

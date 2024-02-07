@@ -78,12 +78,13 @@ public:
 
     virtual shared_ptr<PatternGeneratorCEGAR> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<PatternGeneratorCEGAR>(
+        return plugins::make_shared_from_args_tuple_and_args<PatternGeneratorCEGAR>(
+            get_generator_parameters_from_options(opts),
             opts.get<int>("max_pdb_size"),
             opts.get<double>("max_time"),
             opts.get<bool>("use_wildcard_plans"),
-            opts.get<int>("random_seed"),
-            opts.get<utils::Verbosity>("verbosity"));
+            opts.get<int>("random_seed")
+            );
     }
 };
 

@@ -48,6 +48,10 @@ void add_generator_options_to_feature(plugins::Feature &feature) {
     utils::add_log_options_to_feature(feature);
 }
 
+shared_ptr<tuple<utils::Verbosity>> get_generator_parameters_from_options(const plugins::Options &opts) {
+    return utils::get_log_parameters_from_options(opts);
+}
+
 static class PatternCollectionGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<PatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorCategoryPlugin() : TypedCategoryPlugin("PatternCollectionGenerator") {

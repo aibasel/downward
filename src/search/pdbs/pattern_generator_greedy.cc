@@ -65,9 +65,10 @@ public:
 
     virtual shared_ptr<PatternGeneratorGreedy> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<PatternGeneratorGreedy>(
-            opts.get<int>("max_states"),
-            opts.get<utils::Verbosity>("verbosity"));
+        return plugins::make_shared_from_args_tuple_and_args<PatternGeneratorGreedy>(
+            get_generator_parameters_from_options(opts),
+            opts.get<int>("max_states")
+            );
     }
 };
 

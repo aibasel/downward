@@ -333,4 +333,37 @@ void add_multiple_options_to_feature(plugins::Feature &feature) {
     utils::add_rng_options(feature);
     add_generator_options_to_feature(feature);
 }
+
+shared_ptr<tuple<
+               int,
+               int,
+               double,
+               double,
+               double,
+               double,
+               bool,
+               int,
+               utils::Verbosity>> get_patter_collection_generators_parameters_from_options(const plugins::Options &opts) {
+    auto parent = get_generator_parameters_from_options(opts);
+    tuple own_parameter_tuple = make_tuple(
+        opts.get<int>("max_pdb_size"),
+        opts.get<int>("max_collection_size"),
+        opts.get<double>("pattern_generation_max_time"),
+        opts.get<double>("total_max_time"),
+        opts.get<double>("stagnation_limit"),
+        opts.get<double>("blacklist_trigger_percentage"),
+        opts.get<bool>("enable_blacklist_on_stagnation"),
+        opts.get<int>("random_seed")
+        );
+    return make_shared<tuple<
+                           int,
+                           int,
+                           double,
+                           double,
+                           double,
+                           double,
+                           bool,
+                           int,
+                           utils::Verbosity>>(tuple_cat(own_parameter_tuple, *parent));
+}
 }

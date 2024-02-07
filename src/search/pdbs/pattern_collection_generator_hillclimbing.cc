@@ -647,7 +647,8 @@ public:
           are added. We thus only use dominance pruning on the resulting collection.
         */
         add_canonical_pdbs_options_to_feature(*this);
-        Heuristic::add_options_to_feature(*this);
+        Heuristic::add_options_to_feature(*this, "cpdbs"); // TODO issue1082 this adds a description parameter that is
+                                                           // only used for the heuristic, not for the generator.
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
@@ -663,22 +664,21 @@ public:
         check_hillclimbing_options(opts, context);
 
         shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =
-            make_shared<PatternCollectionGeneratorHillclimbing>(
+            plugins::make_shared_from_args_tuple_and_args<PatternCollectionGeneratorHillclimbing>(
+                get_generator_parameters_from_options(opts),
                 opts.get<int>("pdb_max_size"),
                 opts.get<int>("collection_max_size"),
                 opts.get<int>("num_samples"),
                 opts.get<int>("min_improvement"),
                 opts.get<double>("max_time"),
-                opts.get<int>("random_seed"),
-                opts.get<utils::Verbosity>("verbosity"));
+                opts.get<int>("random_seed")
+                );
 
-        return make_shared<CanonicalPDBsHeuristic>(
+        return plugins::make_shared_from_args_tuple_and_args<CanonicalPDBsHeuristic>(
+            Heuristic::get_heuristic_parameters_from_options(opts),
             pgh,
-            opts.get<double>("max_time_dominance_pruning"),
-            opts.get<shared_ptr<AbstractTask>>("transform"),
-            opts.get<bool>("cache_estimates"),
-            opts.get<string>("description", "DEFAULT DESCRIPTION"), // TODO issue1082
-            opts.get<utils::Verbosity>("verbosity"));
+            opts.get<double>("max_time_dominance_pruning")
+            );
     }
 };
 

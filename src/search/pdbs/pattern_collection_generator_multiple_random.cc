@@ -91,17 +91,9 @@ public:
 
     virtual shared_ptr<PatternCollectionGeneratorMultipleRandom> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<PatternCollectionGeneratorMultipleRandom>(
-            opts.get<bool>("bidirectional"),
-            opts.get<int>("max_pdb_size"),
-            opts.get<int>("max_collection_size"),
-            opts.get<double>("pattern_generation_max_time"),
-            opts.get<double>("total_max_time"),
-            opts.get<double>("stagnation_limit"),
-            opts.get<double>("blacklist_trigger_percentage"),
-            opts.get<bool>("enable_blacklist_on_stagnation"),
-            opts.get<int>("random_seed"),
-            opts.get<utils::Verbosity>("verbosity")
+        return plugins::make_shared_from_args_tuple_and_args<PatternCollectionGeneratorMultipleRandom>(
+            get_patter_collection_generators_parameters_from_options(opts),
+            opts.get<bool>("bidirectional")
             );
     }
 };

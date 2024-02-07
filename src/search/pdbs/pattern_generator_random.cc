@@ -83,12 +83,12 @@ public:
 
     virtual shared_ptr<PatternGeneratorRandom> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<PatternGeneratorRandom>(
+        return plugins::make_shared_from_args_tuple_and_args<PatternGeneratorRandom>(
+            get_generator_parameters_from_options(opts),
             opts.get<int>("max_pdb_size"),
             opts.get<double>("max_time"),
             opts.get<bool>("bidirectional"),
-            opts.get<int>("random_seed"),
-            opts.get<utils::Verbosity>("verbosity")
+            opts.get<int>("random_seed")
             );
     }
 };

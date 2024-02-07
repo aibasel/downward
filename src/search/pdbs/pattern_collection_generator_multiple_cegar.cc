@@ -78,17 +78,9 @@ public:
 
     virtual shared_ptr<PatternCollectionGeneratorMultipleCegar> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<PatternCollectionGeneratorMultipleCegar>(
-            opts.get<bool>("use_wildcard_plans"),
-            opts.get<int>("max_pdb_size"),
-            opts.get<int>("max_collection_size"),
-            opts.get<double>("pattern_generation_max_time"),
-            opts.get<double>("total_max_time"),
-            opts.get<double>("stagnation_limit"),
-            opts.get<double>("blacklist_trigger_percentage"),
-            opts.get<bool>("enable_blacklist_on_stagnation"),
-            opts.get<int>("random_seed"),
-            opts.get<utils::Verbosity>("verbosity")
+        return plugins::make_shared_from_args_tuple_and_args<PatternCollectionGeneratorMultipleCegar>(
+            get_patter_collection_generators_parameters_from_options(opts),
+            opts.get<bool>("use_wildcard_plans")
             );
     }
 };
