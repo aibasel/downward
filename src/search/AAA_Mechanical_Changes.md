@@ -81,8 +81,8 @@ search
 │   ├── domain_transition_graph.h✅
 │   ├── ff_heuristic.cc✅
 │   ├── ff_heuristic.h✅
-│   ├── goal_count_heuristic.cc
-│   ├── goal_count_heuristic.h
+│   ├── goal_count_heuristic.cc✅
+│   ├── goal_count_heuristic.h✅
 │   ├── hm_heuristic.cc✅
 │   ├── hm_heuristic.h✅
 │   ├── lm_cut_heuristic.cc
