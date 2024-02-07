@@ -349,10 +349,6 @@ bool LandmarkFactoryReasonableOrdersHPS::effect_always_happens(
     return eff.empty();
 }
 
-bool LandmarkFactoryReasonableOrdersHPS::computes_reasonable_orders() const {
-    return true;
-}
-
 bool LandmarkFactoryReasonableOrdersHPS::supports_conditional_effects() const {
     return lm_factory->supports_conditional_effects();
 }

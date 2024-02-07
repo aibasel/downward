@@ -12,7 +12,6 @@ class LandmarkFactoryRpgExhaust : public LandmarkFactoryRelaxation {
 public:
     explicit LandmarkFactoryRpgExhaust(const plugins::Options &opts);
 
-    virtual bool computes_reasonable_orders() const override;
     virtual bool supports_conditional_effects() const override;
 };
 }

@@ -132,15 +132,6 @@ void LandmarkFactoryMerged::postprocess() {
     lm_graph->set_landmark_ids();
 }
 
-bool LandmarkFactoryMerged::computes_reasonable_orders() const {
-    for (const shared_ptr<LandmarkFactory> &lm_factory : lm_factories) {
-        if (lm_factory->computes_reasonable_orders()) {
-            return true;
-        }
-    }
-    return false;
-}
-
 bool LandmarkFactoryMerged::supports_conditional_effects() const {
     for (const shared_ptr<LandmarkFactory> &lm_factory : lm_factories) {
         if (!lm_factory->supports_conditional_effects()) {
