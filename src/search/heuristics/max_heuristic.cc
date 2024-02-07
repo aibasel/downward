@@ -126,7 +126,7 @@ public:
     virtual shared_ptr<HSPMaxHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_args_tuple_and_args<HSPMaxHeuristic>(
-                relaxation_heuristic::get_relaxation_heuristic_parameters_from_options(opts));
+            relaxation_heuristic::get_relaxation_heuristic_parameters_from_options(opts));
     }
 };
 
