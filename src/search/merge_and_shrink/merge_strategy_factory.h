@@ -17,6 +17,7 @@ namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class MergeStrategy;
 
+// TODO issue1082 check with tox
 class MergeStrategyFactory {
 protected:
     mutable utils::LogProxy log;
