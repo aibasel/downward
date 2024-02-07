@@ -40,7 +40,7 @@ Mark in the list below what you updated:
 
 - ❌ not updated yet
 - ✅ updated (or no need to update)
-- no mark = not checked if it should be updated
+- ❓ not checked if it should be updated
 
 ```
 search
