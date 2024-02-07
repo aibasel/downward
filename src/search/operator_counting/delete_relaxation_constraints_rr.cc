@@ -27,7 +27,7 @@ class VEGraph {
       variable and value.
     */
     vector<vector<Node>> nodes;
-    vector<tuple<FactPair, FactPair, FactPair>> delta;
+    utils::HashSet<tuple<FactPair, FactPair, FactPair>> delta;
     utils::HashSet<pair<FactPair, FactPair>> edges;
     priority_queues::AdaptiveQueue<FactPair> elimination_queue;
 
@@ -67,7 +67,7 @@ class VEGraph {
         while (!elimination_queue.empty()) {
             const auto [key, fact] = elimination_queue.pop();
             Node &node = get_node(fact);
-            if (node.in_degree == key) {
+            if (node.in_degree == key && !node.is_eliminated) {
                 return fact;
             }
         }
@@ -90,7 +90,7 @@ class VEGraph {
                 if (get_node(successor).is_eliminated) {
                     continue;
                 }
-                if (!edges.count(make_pair(predecessor, successor))) {
+                if (predecessor != successor) {
                     new_shortcuts.push_back(make_tuple(predecessor, fact, successor));
                 }
             }
@@ -100,7 +100,7 @@ class VEGraph {
         for (tuple<FactPair, FactPair, FactPair> shortcut : new_shortcuts) {
             auto [from, _, to] = shortcut;
             add_edge(from, to);
-            delta.push_back(shortcut);
+            delta.insert(shortcut);
         }
 
         /*
@@ -152,7 +152,7 @@ public:
         }
     }
 
-    const vector<tuple<FactPair, FactPair, FactPair>> &get_delta() const {
+    const utils::HashSet<tuple<FactPair, FactPair, FactPair>> &get_delta() const {
         return delta;
     }
 
