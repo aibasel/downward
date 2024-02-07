@@ -7,6 +7,8 @@
 
 #include "../algorithms/sccs.h"
 
+#include <set>
+
 namespace plugins {
 class Options;
 }
@@ -27,6 +29,9 @@ class NegatedAxiomsTask : public DelegatingTask {
     int negated_axioms_start_index;
 
     void add_negated_axioms(FactPair head, std::vector<OperatorProxy> &axioms, TaskProxy &task_proxy);
+    void find_non_dominated_hitting_sets(
+            const std::vector<std::set<FactPair>> &conditions_as_cnf, size_t index,
+            std::set<FactPair> &chosen, std::set<std::set<FactPair>> &results);
 public:
     NegatedAxiomsTask(
         const std::shared_ptr<AbstractTask> &parent);
