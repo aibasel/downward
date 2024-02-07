@@ -16,9 +16,9 @@ const int AdditiveHeuristic::MAX_COST_VALUE;
 AdditiveHeuristic::AdditiveHeuristic(
     const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
-    const string &name,
+    const string &description,
     utils::Verbosity verbosity)
-    : RelaxationHeuristic(transform, cache_estimates, name, verbosity),
+    : RelaxationHeuristic(transform, cache_estimates, description, verbosity),
       did_write_overflow_warning(false) {
     if (log.is_at_least_normal()) {
         log << "Initializing additive heuristic..." << endl;
@@ -171,10 +171,9 @@ public:
 
     virtual shared_ptr<AdditiveHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<AdditiveHeuristic>(opts.get<shared_ptr<AbstractTask>>("transform"),
-                                              opts.get<bool>("cache_estimates"),
-                                              opts.get<string>("description"),
-                                              opts.get<utils::Verbosity>("verbosity"));
+        return plugins::make_shared_from_args_tuple_and_args<AdditiveHeuristic>(
+                Heuristic::get_heuristic_parameters_from_options(opts)
+                );
     }
 };
 

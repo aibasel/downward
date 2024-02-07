@@ -66,8 +66,8 @@ search
 ├── heuristic.cc
 ├── heuristic.h
 ├── heuristics
-│   ├── additive_heuristic.cc
-│   ├── additive_heuristic.h
+│   ├── additive_heuristic.cc✅
+│   ├── additive_heuristic.h✅
 │   ├── array_pool.h
 │   ├── blind_search_heuristic.cc
 │   ├── blind_search_heuristic.h
@@ -79,8 +79,8 @@ search
 │   ├── cg_heuristic.h
 │   ├── domain_transition_graph.cc
 │   ├── domain_transition_graph.h
-│   ├── ff_heuristic.cc
-│   ├── ff_heuristic.h
+│   ├── ff_heuristic.cc✅
+│   ├── ff_heuristic.h✅
 │   ├── goal_count_heuristic.cc
 │   ├── goal_count_heuristic.h
 │   ├── hm_heuristic.cc✅
@@ -89,10 +89,10 @@ search
 │   ├── lm_cut_heuristic.h
 │   ├── lm_cut_landmarks.cc
 │   ├── lm_cut_landmarks.h
-│   ├── max_heuristic.cc
-│   ├── max_heuristic.h
-│   ├── relaxation_heuristic.cc
-│   └── relaxation_heuristic.h
+│   ├── max_heuristic.cc✅
+│   ├── max_heuristic.h✅
+│   ├── relaxation_heuristic.cc✅
+│   └── relaxation_heuristic.h✅
 ├── landmarks
 ├── lp
 ├── merge_and_shrink

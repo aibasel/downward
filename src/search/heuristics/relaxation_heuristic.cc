@@ -38,9 +38,9 @@ UnaryOperator::UnaryOperator(
 RelaxationHeuristic::RelaxationHeuristic(
     const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
-    const string &name,
+    const string &description,
     utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, name, verbosity) {
+    : Heuristic(transform, cache_estimates, description, verbosity) {
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));
 

@@ -14,9 +14,9 @@ namespace ff_heuristic {
 FFHeuristic::FFHeuristic(
     const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
-    const string &name,
+    const string &description,
     utils::Verbosity verbosity)
-    : AdditiveHeuristic(transform, cache_estimates, name, verbosity),
+    : AdditiveHeuristic(transform, cache_estimates, description, verbosity),
       relaxed_plan(task_proxy.get_operators().size(), false) {
     if (log.is_at_least_normal()) {
         log << "Initializing FF heuristic..." << endl;
@@ -96,10 +96,9 @@ public:
 
     virtual shared_ptr<FFHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<FFHeuristic>(opts.get<shared_ptr<AbstractTask>>("transform"),
-                                        opts.get<bool>("cache_estimates"),
-                                        opts.get<string>("description"),
-                                        opts.get<utils::Verbosity>("verbosity"));
+        return plugins::make_shared_from_args_tuple_and_args<FFHeuristic>(
+                Heuristic::get_heuristic_parameters_from_options(opts)
+                );
     }
 };
 
