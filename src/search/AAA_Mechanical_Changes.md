@@ -68,9 +68,9 @@ search
 ├── heuristics
 │   ├── additive_heuristic.cc✅
 │   ├── additive_heuristic.h✅
-│   ├── array_pool.h
-│   ├── blind_search_heuristic.cc
-│   ├── blind_search_heuristic.h
+│   ├── array_pool.h✅
+│   ├── blind_search_heuristic.cc✅
+│   ├── blind_search_heuristic.h✅
 │   ├── cea_heuristic.cc
 │   ├── cea_heuristic.h
 │   ├── cg_cache.cc
