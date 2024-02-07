@@ -148,6 +148,10 @@ void AdditiveHeuristic::compute_heuristic_for_cegar(const State &state) {
     compute_heuristic(state);
 }
 
+shared_ptr<tuple<shared_ptr<AbstractTask>, bool, string, utils::Verbosity>> get_additive_heuristic_parameters_from_options(const plugins::Options &opts) {
+    return relaxation_heuristic::get_relaxation_heuristic_parameters_from_options(opts);
+}
+
 class AdditiveHeuristicFeature : public plugins::TypedFeature<Evaluator, AdditiveHeuristic> {
 public:
     AdditiveHeuristicFeature() : TypedFeature("add") {
