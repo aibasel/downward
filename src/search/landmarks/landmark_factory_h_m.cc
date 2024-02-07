@@ -568,11 +568,13 @@ bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
         variables[fact2.var].get_fact(fact2.value));
 }
 
-LandmarkFactoryHM::LandmarkFactoryHM(const plugins::Options &opts)
-    : LandmarkFactory(opts),
-      m_(opts.get<int>("m")),
-      conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
-      use_orders(opts.get<bool>("use_orders")) {
+LandmarkFactoryHM::LandmarkFactoryHM(
+    const utils::LogProxy &&log, int m, bool conjunctive_landmarks,
+    bool use_orders)
+    : LandmarkFactory(move(log)),
+      m_(m),
+      conjunctive_landmarks(conjunctive_landmarks),
+      use_orders(use_orders) {
 }
 
 void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
@@ -1037,6 +1039,15 @@ public:
         document_language_support(
             "conditional_effects",
             "ignored, i.e. not supported");
+    }
+
+    virtual shared_ptr<LandmarkFactoryHM> create_component(
+        const plugins::Options &options, const utils::Context &) const override {
+        return make_shared<LandmarkFactoryHM>(
+            utils::get_log_from_options(options),
+            options.get<int>("m"),
+            options.get<bool>("conjunctive_landmarks"),
+            options.get<bool>("use_orders"));
     }
 };
 

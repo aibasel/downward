@@ -16,9 +16,10 @@ namespace landmarks {
    that are inferred later.) It's thus best to combine this landmark generation
    method with others, don't use it by itself. */
 
-LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(const plugins::Options &opts)
-    : LandmarkFactoryRelaxation(opts),
-      only_causal_landmarks(opts.get<bool>("only_causal_landmarks")) {
+LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(
+    const utils::LogProxy &&log, bool only_causal_landmarks)
+    : LandmarkFactoryRelaxation(move(log)),
+      only_causal_landmarks(only_causal_landmarks) {
 }
 
 void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
@@ -75,6 +76,13 @@ public:
         document_language_support(
             "conditional_effects",
             "ignored, i.e. not supported");
+    }
+
+    virtual shared_ptr<LandmarkFactoryRpgExhaust> create_component(
+        const plugins::Options &options, const utils::Context &) const override {
+        return make_shared<LandmarkFactoryRpgExhaust>(
+            utils::get_log_from_options(options),
+            options.get<bool>("only_causal_landmarks"));
     }
 };
 

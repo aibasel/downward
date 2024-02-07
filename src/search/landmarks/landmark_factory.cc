@@ -17,8 +17,8 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkFactory::LandmarkFactory(const plugins::Options &opts)
-    : log(utils::get_log_from_options(opts)), lm_graph(nullptr) {
+LandmarkFactory::LandmarkFactory(const utils::LogProxy &&log)
+    : log(move(log)), lm_graph(nullptr) {
 }
 
 /*
@@ -188,8 +188,9 @@ public:
         document_synopsis(
             "A landmark factory specification is either a newly created "
             "instance or a landmark factory that has been defined previously. "
-            "This page describes how one can specify a new landmark factory instance. "
-            "For re-using landmark factories, see OptionSyntax#Landmark_Predefinitions.");
+            "This page describes how one can specify a new landmark factory "
+            "instance. For re-using landmark factories, see "
+            "OptionSyntax#Landmark_Predefinitions.");
         allow_variable_binding();
     }
 }

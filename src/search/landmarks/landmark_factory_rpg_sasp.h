@@ -62,7 +62,9 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
 
     void discard_disjunctive_landmarks();
 public:
-    explicit LandmarkFactoryRpgSasp(const plugins::Options &opts);
+    LandmarkFactoryRpgSasp(
+        const utils::LogProxy &&log, bool disjunctive_landmarks,
+        bool use_orders, bool only_causal_landmarks);
 
     virtual bool computes_reasonable_orders() const override;
     virtual bool supports_conditional_effects() const override;

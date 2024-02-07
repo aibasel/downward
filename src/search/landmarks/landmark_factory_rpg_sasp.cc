@@ -17,11 +17,13 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const plugins::Options &opts)
-    : LandmarkFactoryRelaxation(opts),
-      disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
-      use_orders(opts.get<bool>("use_orders")),
-      only_causal_landmarks(opts.get<bool>("only_causal_landmarks")) {
+LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(
+    const utils::LogProxy &&log, bool disjunctive_landmarks,
+    bool use_orders, bool only_causal_landmarks)
+    : LandmarkFactoryRelaxation(move(log)),
+      disjunctive_landmarks(disjunctive_landmarks),
+      use_orders(use_orders),
+      only_causal_landmarks(only_causal_landmarks) {
 }
 
 void LandmarkFactoryRpgSasp::build_dtg_successors(const TaskProxy &task_proxy) {
@@ -654,6 +656,15 @@ public:
         document_language_support(
             "conditional_effects",
             "supported");
+    }
+
+    virtual shared_ptr<LandmarkFactoryRpgSasp> create_component(
+        const plugins::Options &options, const utils::Context &) const override {
+        return make_shared<LandmarkFactoryRpgSasp>(
+            utils::get_log_from_options(options),
+            options.get<bool>("disjunctive_landmarks"),
+            options.get<bool>("use_orders"),
+            options.get<bool>("only_causal_landmarks"));
     }
 };
 

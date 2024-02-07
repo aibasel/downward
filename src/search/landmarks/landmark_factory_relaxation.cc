@@ -8,8 +8,9 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkFactoryRelaxation::LandmarkFactoryRelaxation(const plugins::Options &opts)
-    : LandmarkFactory(opts) {
+LandmarkFactoryRelaxation::LandmarkFactoryRelaxation(
+    const utils::LogProxy &&log)
+    : LandmarkFactory(move(log)) {
 }
 
 void LandmarkFactoryRelaxation::generate_landmarks(const shared_ptr<AbstractTask> &task) {

@@ -16,9 +16,10 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const plugins::Options &opts)
-    : LandmarkFactoryRelaxation(opts),
-      use_orders(opts.get<bool>("use_orders")) {
+LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(
+    const utils::LogProxy &&log, bool use_orders)
+    : LandmarkFactoryRelaxation(move(log)),
+      use_orders(use_orders) {
 }
 
 void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
@@ -323,6 +324,13 @@ public:
         document_language_support(
             "conditional_effects",
             "We think they are supported, but this is not 100% sure.");
+    }
+
+    virtual shared_ptr<LandmarkFactoryZhuGivan> create_component(
+        const plugins::Options &options, const utils::Context &) const override {
+        return make_shared<LandmarkFactoryZhuGivan>(
+            utils::get_log_from_options(options),
+            options.get<bool>("use_orders"));
     }
 };
 

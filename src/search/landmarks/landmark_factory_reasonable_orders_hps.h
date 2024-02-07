@@ -19,7 +19,9 @@ class LandmarkFactoryReasonableOrdersHPS : public LandmarkFactory {
         const VariablesProxy &variables, const EffectsProxy &effects,
         std::set<FactPair> &eff) const;
 public:
-    LandmarkFactoryReasonableOrdersHPS(const plugins::Options &opts);
+    LandmarkFactoryReasonableOrdersHPS(
+        const utils::LogProxy &&log,
+        std::shared_ptr<LandmarkFactory> &&lm_factory);
 
     virtual bool computes_reasonable_orders() const override;
     virtual bool supports_conditional_effects() const override;

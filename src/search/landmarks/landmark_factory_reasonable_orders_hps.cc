@@ -11,9 +11,9 @@
 
 using namespace std;
 namespace landmarks {
-LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(const plugins::Options &opts)
-    : LandmarkFactory(opts),
-      lm_factory(opts.get<shared_ptr<LandmarkFactory>>("lm_factory")) {
+LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(
+    const utils::LogProxy &&log, std::shared_ptr<LandmarkFactory> &&lm_factory)
+    : LandmarkFactory(move(log)), lm_factory(move(lm_factory)) {
 }
 
 void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<AbstractTask> &task) {
@@ -391,6 +391,13 @@ public:
         document_language_support(
             "conditional_effects",
             "supported if subcomponent supports them");
+    }
+
+    virtual shared_ptr<LandmarkFactoryReasonableOrdersHPS> create_component(
+        const plugins::Options &options, const utils::Context &) const override {
+        return make_shared<LandmarkFactoryReasonableOrdersHPS>(
+            utils::get_log_from_options(options),
+            options.get<shared_ptr<LandmarkFactory>>("lm_factory"));
     }
 };
 
