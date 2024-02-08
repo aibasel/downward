@@ -55,19 +55,6 @@ void add_heuristic_options_to_feature(plugins::Feature &feature, const string &d
     add_evaluator_options_to_feature(feature, description);
 }
 
-/*
-// TODO 1082 remove this, just keep the one above
-void add_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<shared_ptr<AbstractTask>>(
-        "transform",
-        "Optional task transformation for the heuristic."
-        " Currently, adapt_costs() and no_transform() are available.",
-        "no_transform()");
-    feature.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
-    add_evaluator_options_to_feature(feature);
-}
-*/
-
 tuple<shared_ptr<AbstractTask>, bool, string, utils::Verbosity> get_heuristic_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(

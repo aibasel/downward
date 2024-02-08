@@ -93,7 +93,8 @@ public:
     virtual int get_cached_estimate(const State &state) const override;
 };
 
-extern void add_heuristic_options_to_feature(plugins::Feature &feature, const std::string &description);
-extern void add_options_to_feature(plugins::Feature &feature); // TODO 1082 remove this, just keep the one above
-extern std::tuple<std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity> get_heuristic_arguments_from_options(const plugins::Options &opts);
+extern void add_heuristic_options_to_feature(
+    plugins::Feature &feature, const std::string &description);
+extern std::tuple<std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity>
+    get_heuristic_arguments_from_options(const plugins::Options &opts);
 #endif
