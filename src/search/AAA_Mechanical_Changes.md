@@ -73,7 +73,7 @@ search
 ├── ❓ heuristic.h
 ├── ✅ heuristics
 ├── ✅ landmarks
-├── ❌ lp
+├── ✅ lp
 ├── ✅ merge_and_shrink
 ├── ✅ open_list_factory.cc
 ├── ✅ open_list_factory.h
@@ -81,7 +81,7 @@ search
 ├── ❌ open_lists
 ├── ✅ operator_cost.cc
 ├── ✅ operator_cost.h
-├── ❌ operator_counting
+├── ✅ operator_counting
 ├── ✅ operator_id.cc
 ├── ✅ operator_id.h
 ├── ✅ parser

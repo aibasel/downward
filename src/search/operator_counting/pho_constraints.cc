@@ -15,9 +15,8 @@
 using namespace std;
 
 namespace operator_counting {
-PhOConstraints::PhOConstraints(const plugins::Options &opts)
-    : pattern_generator(
-          opts.get<shared_ptr<pdbs::PatternCollectionGenerator>>("patterns")) {
+PhOConstraints::PhOConstraints(const shared_ptr<pdbs::PatternCollectionGenerator> &pattern_generator)
+    : pattern_generator(pattern_generator) {
 }
 
 void PhOConstraints::initialize_constraints(
@@ -83,6 +82,12 @@ public:
             "patterns",
             "pattern generation method",
             "systematic(2)");
+    }
+
+    virtual shared_ptr<PhOConstraints> create_component(
+        const plugins::Options &options, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<PhOConstraints>(
+            options.get<shared_ptr<pdbs::PatternCollectionGenerator>>("patterns"));
     }
 };
 
