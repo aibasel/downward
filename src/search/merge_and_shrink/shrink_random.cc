@@ -46,8 +46,8 @@ public:
 
     virtual shared_ptr<ShrinkRandom> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return plugins::make_shared_from_args_tuple_and_args<ShrinkRandom>(
-            get_shrink_bucket_parameters_from_options(opts)
+        return plugins::make_shared_from_arg_tuples<ShrinkRandom>(
+            get_shrink_bucket_arguments_from_options(opts)
             );
     }
 };

@@ -121,8 +121,8 @@ public:
         return plugins::make_shared_from_arg_tuples<OperatorCountingHeuristic>(
             options.get_list<shared_ptr<ConstraintGenerator>>("constraint_generators"),
             options.get<bool>("use_integer_operator_counts"),
-            lp::get_lp_solver_args_from_options(options),
-            *Heuristic::get_heuristic_parameters_from_options(options)
+            lp::get_lp_solver_arguments_from_options(options),
+            Heuristic::get_heuristic_arguments_from_options(options)
         );
     }
 };

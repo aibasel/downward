@@ -51,8 +51,8 @@ public:
 
     virtual shared_ptr<GoalCountHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return plugins::make_shared_from_args_tuple_and_args<GoalCountHeuristic>(
-            Heuristic::get_heuristic_parameters_from_options(opts)
+        return plugins::make_shared_from_arg_tuples<GoalCountHeuristic>(
+            Heuristic::get_heuristic_arguments_from_options(opts)
             );
     }
 };

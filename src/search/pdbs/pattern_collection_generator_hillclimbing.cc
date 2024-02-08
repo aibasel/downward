@@ -664,20 +664,20 @@ public:
         check_hillclimbing_options(opts, context);
 
         shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =
-            plugins::make_shared_from_args_tuple_and_args<PatternCollectionGeneratorHillclimbing>(
-                get_generator_parameters_from_options(opts),
+            plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorHillclimbing>(
                 opts.get<int>("pdb_max_size"),
                 opts.get<int>("collection_max_size"),
                 opts.get<int>("num_samples"),
                 opts.get<int>("min_improvement"),
                 opts.get<double>("max_time"),
-                opts.get<int>("random_seed")
+                opts.get<int>("random_seed"),
+                get_generator_arguments_from_options(opts)
                 );
 
-        return plugins::make_shared_from_args_tuple_and_args<CanonicalPDBsHeuristic>(
-            Heuristic::get_heuristic_parameters_from_options(opts),
+        return plugins::make_shared_from_arg_tuples<CanonicalPDBsHeuristic>(
             pgh,
-            opts.get<double>("max_time_dominance_pruning")
+            opts.get<double>("max_time_dominance_pruning"),
+            Heuristic::get_heuristic_arguments_from_options(opts)
             );
     }
 };

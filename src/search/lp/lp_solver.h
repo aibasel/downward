@@ -25,7 +25,7 @@ enum class LPObjectiveSense {
 };
 
 void add_lp_solver_option_to_feature(plugins::Feature &feature);
-std::tuple<LPSolverType> get_lp_solver_args_from_options(
+std::tuple<LPSolverType> get_lp_solver_arguments_from_options(
     const plugins::Options &opts);
 
 class LinearProgram;

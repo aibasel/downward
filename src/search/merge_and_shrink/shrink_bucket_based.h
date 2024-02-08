@@ -60,7 +60,7 @@ public:
     static void add_options_to_feature(plugins::Feature &feature);
 };
 
-extern std::shared_ptr<std::tuple<int>> get_shrink_bucket_parameters_from_options(const plugins::Options &opts);
+extern std::tuple<int> get_shrink_bucket_arguments_from_options(const plugins::Options &opts);
 }
 
 #endif

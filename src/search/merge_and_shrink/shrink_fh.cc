@@ -249,10 +249,10 @@ public:
 
     virtual shared_ptr<ShrinkFH> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return plugins::make_shared_from_args_tuple_and_args<ShrinkFH>(
-            get_shrink_bucket_parameters_from_options(opts),
+        return plugins::make_shared_from_arg_tuples<ShrinkFH>(
             opts.get<ShrinkFH::HighLow>("shrink_f"),
-            opts.get<ShrinkFH::HighLow>("shrink_h")
+            opts.get<ShrinkFH::HighLow>("shrink_h"),
+            get_shrink_bucket_arguments_from_options(opts)
             );
     }
 };

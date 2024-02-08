@@ -44,9 +44,9 @@ public:
 
     virtual shared_ptr<PatternGeneratorManual> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return plugins::make_shared_from_args_tuple_and_args<PatternGeneratorManual>(
-            get_generator_parameters_from_options(opts),
-            opts.get_list<int>("pattern")
+        return plugins::make_shared_from_arg_tuples<PatternGeneratorManual>(
+            opts.get_list<int>("pattern"),
+            get_generator_arguments_from_options(opts)
             );
     }
 };

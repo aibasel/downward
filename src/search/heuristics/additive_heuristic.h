@@ -83,8 +83,6 @@ public:
         return get_proposition(var, value)->cost;
     }
 };
-
-extern std::shared_ptr<std::tuple<std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity>> get_additive_heuristic_parameters_from_options(const plugins::Options &opts);
 }
 
 #endif
