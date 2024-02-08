@@ -30,13 +30,10 @@ void add_log_options_to_feature(plugins::Feature &feature) {
         "normal");
 }
 
-
-shared_ptr<tuple<Verbosity>> get_log_parameters_from_options(const plugins::Options &opts) {
+tuple<Verbosity> get_log_arguments_from_options(const plugins::Options &opts) {
     auto own_tuple = make_tuple<Verbosity>(opts.get<Verbosity>("verbosity"));
-    return make_shared<tuple<Verbosity>>(own_tuple);
+    return tuple<Verbosity>(own_tuple);
 }
-
-
 
 LogProxy get_log_for_verbosity(const Verbosity &verbosity) {
     if (verbosity == Verbosity::NORMAL) {

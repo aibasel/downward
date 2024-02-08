@@ -8,6 +8,7 @@
 
 #include "../utils/strings.h"
 #include "../utils/system.h"
+#include "../utils/tuples.h"
 
 #include <string>
 #include <typeindex>
@@ -115,17 +116,19 @@ public:
     }
 };
 
-// Treats first parameter as pointer to a tuple of arguments for the base class,
-// the rest as singleton arguments for the class T.
+/*
+  Expects constructor arguments of T. Consecutive arguments may be grouped in a
+  tuple. All tuples in the arguments will be flattened before calling the
+  constructor. The resulting arguments will be used as arguments to make_shared.
+*/
 // TODO issue1082 where should this live? optimize with std::forward?
-// Apply the arguments extracted from *parameter_tuple* to make_shared<T>
-template<typename T, typename ParentTuple, typename ... ChildSingletons>
-std::shared_ptr<T> make_shared_from_args_tuple_and_args(ParentTuple parent_tuple, ChildSingletons ... child_singletons) {
-    return std::apply([](auto ... args) {
-                          return std::make_shared<T>(args ...);
-                      },
-                      std::tuple_cat(std::make_tuple(child_singletons ...), *parent_tuple)
-                      );
+template<typename T, typename ...Arguments>
+std::shared_ptr<T> make_shared_from_arg_tuples(Arguments...arguments) {
+    return std::apply(
+        [](auto...flattened_args) {
+            return std::make_shared<T>(flattened_args...);
+        },
+        utils::flatten_tuple(std::tuple<Arguments...>(arguments...)));
 }
 
 class Plugin {

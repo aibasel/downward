@@ -305,8 +305,4 @@ void RelaxationHeuristic::simplify() {
         log << " done! [" << unary_operators.size() << " unary operators]" << endl;
     }
 }
-
-shared_ptr<tuple<shared_ptr<AbstractTask>, bool, string, utils::Verbosity>> get_relaxation_heuristic_parameters_from_options(const plugins::Options &opts) {
-    return Heuristic::get_heuristic_parameters_from_options(opts);
-}
 }

@@ -91,9 +91,9 @@ public:
 
     virtual shared_ptr<PatternCollectionGeneratorMultipleRandom> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return plugins::make_shared_from_args_tuple_and_args<PatternCollectionGeneratorMultipleRandom>(
-            get_patter_collection_generators_parameters_from_options(opts),
-            opts.get<bool>("bidirectional")
+        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorMultipleRandom>(
+            opts.get<bool>("bidirectional"),
+            get_multiple_arguments_from_options(opts)
             );
     }
 };

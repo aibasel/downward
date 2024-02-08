@@ -89,16 +89,8 @@ extern void add_multiple_algorithm_implementation_notes_to_feature(
 extern void add_multiple_options_to_feature(
     plugins::Feature &feature);
 
-extern std::shared_ptr<std::tuple<
-                           int,
-                           int,
-                           double,
-                           double,
-                           double,
-                           double,
-                           bool,
-                           int,
-                           utils::Verbosity>> get_patter_collection_generators_parameters_from_options(const plugins::Options &opts);
+extern std::tuple<int, int, double, double, double, double, bool, int, utils::Verbosity>
+    get_multiple_arguments_from_options(const plugins::Options &opts);
 }
 
 #endif

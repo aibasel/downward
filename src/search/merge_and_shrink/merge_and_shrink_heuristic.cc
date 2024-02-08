@@ -255,8 +255,7 @@ public:
         plugins::Options options_copy(options);
         handle_shrink_limit_options_defaults(options_copy, context);
 
-        return plugins::make_shared_from_args_tuple_and_args<MergeAndShrinkHeuristic>(
-            Heuristic::get_heuristic_parameters_from_options(options_copy),
+        return plugins::make_shared_from_arg_tuples<MergeAndShrinkHeuristic>(
             options_copy.get<shared_ptr<MergeStrategyFactory>>("merge_strategy"),
             options_copy.get<shared_ptr<ShrinkStrategy>>("shrink_strategy"),
             options_copy.get<shared_ptr<LabelReduction>>("label_reduction", nullptr),
@@ -265,7 +264,8 @@ public:
             options_copy.get<int>("threshold_before_merge"),
             options_copy.get<bool>("prune_unreachable_states"),
             options_copy.get<bool>("prune_irrelevant_states"),
-            options_copy.get<double>("main_loop_max_time")
+            options_copy.get<double>("main_loop_max_time"),
+            Heuristic::get_heuristic_arguments_from_options(options_copy)
             );
     }
 };

@@ -24,8 +24,9 @@ void add_merge_strategy_options_to_feature(plugins::Feature &feature) {
     utils::add_log_options_to_feature(feature);
 }
 
-shared_ptr<tuple<utils::Verbosity>> get_merge_strategy_parameters_from_options(const plugins::Options &opts) {
-    return utils::get_log_parameters_from_options(opts);
+tuple<utils::Verbosity> get_merge_strategy_arguments_from_options(
+    const plugins::Options &opts) {
+    return utils::get_log_arguments_from_options(opts);
 }
 
 

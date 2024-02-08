@@ -36,7 +36,8 @@ public:
 };
 
 extern void add_merge_strategy_options_to_feature(plugins::Feature &feature);
-extern std::shared_ptr<std::tuple<utils::Verbosity>> get_merge_strategy_parameters_from_options(const plugins::Options &opts);
+extern std::tuple<utils::Verbosity> get_merge_strategy_arguments_from_options(
+    const plugins::Options &opts);
 }
 
 #endif

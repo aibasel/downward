@@ -60,9 +60,9 @@ public:
 
     virtual shared_ptr<PDBHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return plugins::make_shared_from_args_tuple_and_args<PDBHeuristic>(
-            Heuristic::get_heuristic_parameters_from_options(opts),
-            opts.get<shared_ptr<PatternGenerator>>("pattern")
+        return plugins::make_shared_from_arg_tuples<PDBHeuristic>(
+            opts.get<shared_ptr<PatternGenerator>>("pattern"),
+            Heuristic::get_heuristic_arguments_from_options(opts)
             );
     }
 };

@@ -88,13 +88,13 @@ public:
 
     virtual shared_ptr<PatternCollectionGeneratorDisjointCegar> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return plugins::make_shared_from_args_tuple_and_args<PatternCollectionGeneratorDisjointCegar>(
-            get_generator_parameters_from_options(opts),
+        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorDisjointCegar>(
             opts.get<int>("max_pdb_size"),
             opts.get<int>("max_collection_size"),
             opts.get<double>("max_time"),
             opts.get<bool>("use_wildcard_plans"),
-            opts.get<int>("random_seed")
+            opts.get<int>("random_seed"),
+            get_generator_arguments_from_options(opts)
             );
     }
 };

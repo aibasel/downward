@@ -101,7 +101,7 @@ StateEquivalenceRelation ShrinkBucketBased::compute_equivalence_relation(
     return compute_abstraction(buckets, target_size, log);
 }
 
-shared_ptr<tuple<int>> get_shrink_bucket_parameters_from_options(const plugins::Options &opts) {
-    return make_shared<tuple<int>>(make_tuple(opts.get<int>("random_seed")));
+tuple<int> get_shrink_bucket_arguments_from_options(const plugins::Options &opts) {
+    return make_tuple(opts.get<int>("random_seed"));
 }
 }

@@ -118,8 +118,6 @@ public:
 
     virtual bool dead_ends_are_reliable() const override;
 };
-
-std::shared_ptr<std::tuple<std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity>> get_relaxation_heuristic_parameters_from_options(const plugins::Options &opts);
 }
 
 #endif

@@ -396,14 +396,14 @@ public:
 
     virtual shared_ptr<PatternCollectionGeneratorGenetic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return plugins::make_shared_from_args_tuple_and_args<PatternCollectionGeneratorGenetic>(
-            get_generator_parameters_from_options(opts),
+        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorGenetic>(
             opts.get<int>("pdb_max_size"),
             opts.get<int>("num_collections"),
             opts.get<int>("num_episodes"),
             opts.get<double>("mutation_probability"),
             opts.get<bool>("disjoint"),
-            opts.get<int>("random_seed")
+            opts.get<int>("random_seed"),
+            get_generator_arguments_from_options(opts)
             );
     }
 };

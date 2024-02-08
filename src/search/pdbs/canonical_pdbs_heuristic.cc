@@ -125,10 +125,10 @@ public:
 
     virtual shared_ptr<CanonicalPDBsHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        return plugins::make_shared_from_args_tuple_and_args<CanonicalPDBsHeuristic>(
-            Heuristic::get_heuristic_parameters_from_options(opts),
+        return plugins::make_shared_from_arg_tuples<CanonicalPDBsHeuristic>(
             opts.get<shared_ptr<PatternCollectionGenerator>>("patterns"),
-            opts.get<double>("max_time_dominance_pruning")
+            opts.get<double>("max_time_dominance_pruning"),
+            Heuristic::get_heuristic_arguments_from_options(opts)
             );
     }
 };
