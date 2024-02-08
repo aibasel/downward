@@ -17,11 +17,10 @@ namespace tasks {
 struct NegatedAxiom {
     FactPair head;
     std::vector<FactPair> condition;
-    std::string name;
 
     // TODO: move constructor?
-    NegatedAxiom(FactPair head, std::vector<FactPair> condition, std::string name)
-        : head(head), condition(condition), name(name) {}
+    NegatedAxiom(FactPair head, std::vector<FactPair> condition)
+        : head(head), condition(condition) {}
 };
 
 class NegatedAxiomsTask : public DelegatingTask {
@@ -34,7 +33,7 @@ class NegatedAxiomsTask : public DelegatingTask {
         const std::vector<std::set<FactPair>> &conditions_as_cnf, size_t index,
         std::set<FactPair> &chosen, std::set<std::set<FactPair>> &results);
 public:
-    NegatedAxiomsTask(
+    explicit NegatedAxiomsTask(
         const std::shared_ptr<AbstractTask> &parent);
     virtual ~NegatedAxiomsTask() override = default;
 

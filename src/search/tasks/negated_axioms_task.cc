@@ -54,9 +54,10 @@ NegatedAxiomsTask::NegatedAxiomsTask(
     unordered_map<int, vector<int>> positive_dependencies;
     unordered_map<int, vector<int>> axiom_ids_for_var;
     for (OperatorProxy axiom: task_proxy.get_axioms()) {
-        int head_var = axiom.get_effects()[0].get_fact().get_variable().get_id();
+        EffectProxy effect = axiom.get_effects()[0];
+        int head_var = effect.get_fact().get_variable().get_id();
         axiom_ids_for_var[head_var].push_back(axiom.get_id());
-        for (FactProxy condition: axiom.get_effects()[0].get_conditions()) {
+        for (FactProxy condition: effect.get_conditions()) {
             VariableProxy var_proxy = condition.get_variable();
             if (var_proxy.is_derived()) {
                 int var = condition.get_variable().get_id();
@@ -75,8 +76,8 @@ NegatedAxiomsTask::NegatedAxiomsTask(
         int var = to_process.front();
         to_process.pop_front();
         for (int var2: positive_dependencies[var]) {
-            if (needed_negatively.count(var2) == 0) {
-                needed_negatively.insert(var2);
+            auto insert_retval = needed_negatively.insert(var2);
+            if (insert_retval.second) {
                 to_process.push_back(var2);
             }
         }
@@ -89,15 +90,15 @@ NegatedAxiomsTask::NegatedAxiomsTask(
 
     // Build dependency graph and collect relevant axioms for derived values occurring as their default value.
     // TODO: The dependency information is a superset of positive_dependencies from above.
-    // TODO: The graph includes also (unreachable) vertices for non-derived variables.
     vector<vector<int>> dependency_graph;
     dependency_graph.resize(task_proxy.get_variables().size(), {});
 
     for (OperatorProxy axiom: task_proxy.get_axioms()) {
-        FactPair head = axiom.get_effects()[0].get_fact().get_pair();
-        for (FactProxy condition: axiom.get_effects()[0].get_conditions()) {
+        EffectProxy effect = axiom.get_effects()[0];
+        for (FactProxy condition: effect.get_conditions()) {
             if (condition.get_variable().is_derived()) {
-                dependency_graph[condition.get_pair().var].push_back(head.var);
+                int head_var = effect.get_fact().get_variable().get_id();
+                dependency_graph[condition.get_pair().var].push_back(head_var);
             }
         }
     }
@@ -129,8 +130,7 @@ NegatedAxiomsTask::NegatedAxiomsTask(
                (non-overapproximating) way is possible but more expensive.
                Again, see issue453 for details.
             */
-            std::string name = task_proxy.get_variables()[var].get_name() + "_negated";
-            negated_axioms.emplace_back(FactPair(var, default_value), vector<FactPair>(), name);
+            negated_axioms.emplace_back(FactPair(var, default_value), vector<FactPair>());
         } else {
             add_negated_axioms(FactPair(var, default_value), axiom_ids, task_proxy);
         }
@@ -191,10 +191,9 @@ void NegatedAxiomsTask::find_non_dominated_hitting_sets(
 void NegatedAxiomsTask::add_negated_axioms(
     FactPair head, std::vector<int> &axiom_ids, TaskProxy &task_proxy) {
 
-    std::string name = task_proxy.get_variables()[head.var].get_name() + "_negated";
     // If no axioms change the variable to its non-default value then the default is always true.
     if (axiom_ids.empty()) {
-        negated_axioms.emplace_back(head, vector<FactPair>(), name);
+        negated_axioms.emplace_back(head, vector<FactPair>());
         return;
     }
 
@@ -216,9 +215,8 @@ void NegatedAxiomsTask::add_negated_axioms(
     set<set<FactPair>> combinations;
     find_non_dominated_hitting_sets(conditions_as_cnf, 0, chosen, combinations);
 
-    int count = 0;
     for (const set<FactPair> &combination : combinations) {
-        negated_axioms.emplace_back(head, vector<FactPair>(combination.begin(), combination.end()), name + to_string(count++));
+        negated_axioms.emplace_back(head, vector<FactPair>(combination.begin(), combination.end()));
     }
 }
 
@@ -235,7 +233,7 @@ std::string NegatedAxiomsTask::get_operator_name(int index, bool is_axiom) const
         return parent->get_operator_name(index, is_axiom);
     }
 
-    return negated_axioms[index-negated_axioms_start_index].name;
+    return "<axiom>";
 }
 
 int NegatedAxiomsTask::get_num_operator_preconditions(int index, bool is_axiom) const {
