@@ -18,7 +18,7 @@ namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     const plugins::Options &options,
     bool use_preferred_operators,
-    const std::shared_ptr<AbstractTask> &transform,
+    const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
     const string &description,
     utils::Verbosity verbosity)

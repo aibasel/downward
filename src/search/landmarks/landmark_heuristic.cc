@@ -15,7 +15,7 @@ using namespace std;
 namespace landmarks {
 LandmarkHeuristic::LandmarkHeuristic(
     bool use_preferred_operators,
-    const std::shared_ptr<AbstractTask> &transform,
+    const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
     const string &description,
     utils::Verbosity verbosity)

@@ -12,7 +12,7 @@
 using namespace std;
 namespace landmarks {
 LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(
-    std::shared_ptr<LandmarkFactory> &lm_factory, utils::Verbosity verbosity)
+    shared_ptr<LandmarkFactory> &lm_factory, utils::Verbosity verbosity)
     : LandmarkFactory(verbosity), lm_factory(lm_factory) {
 }
 
