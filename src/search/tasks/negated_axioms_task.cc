@@ -5,13 +5,10 @@
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../tasks/root_task.h"
-#include "../utils/system.h"
 
 #include <deque>
 #include <iostream>
-#include <map>
 #include <memory>
-#include <numeric>
 #include <set>
 
 using namespace std;
@@ -55,14 +52,10 @@ NegatedAxiomsTask::NegatedAxiomsTask(
         }
     }
     unordered_map<int, vector<int>> positive_dependencies;
-    unordered_map<int, vector<OperatorProxy>> axioms_for_var;
+    unordered_map<int, vector<int>> axiom_ids_for_var;
     for (OperatorProxy axiom: task_proxy.get_axioms()) {
         int head_var = axiom.get_effects()[0].get_fact().get_variable().get_id();
-        if (axioms_for_var.count(head_var) > 0) {
-            axioms_for_var[head_var].push_back(axiom);
-        } else {
-            axioms_for_var.insert({head_var, {axiom}});
-        }
+        axiom_ids_for_var[head_var].push_back(axiom.get_id());
         for (FactProxy condition: axiom.get_effects()[0].get_conditions()) {
             VariableProxy var_proxy = condition.get_variable();
             if (var_proxy.is_derived()) {
@@ -70,11 +63,7 @@ NegatedAxiomsTask::NegatedAxiomsTask(
                 if (condition.get_value() == var_proxy.get_default_axiom_value()) {
                     needed_negatively.insert(var);
                 } else {
-                    if (positive_dependencies.count(head_var) > 0) {
-                        positive_dependencies[head_var].push_back(var);
-                    } else {
-                        positive_dependencies.insert({head_var, {var}});
-                    }
+                    positive_dependencies[head_var].push_back(var);
                 }
             }
         }
@@ -113,19 +102,17 @@ NegatedAxiomsTask::NegatedAxiomsTask(
         }
     }
 
-    // Get strongly connected components and map all relevant vars to their scc
+    // Get strongly connected components and map vars to their scc.
     vector<vector<int>> sccs = sccs::compute_maximal_sccs(dependency_graph);
-    unordered_map<int, int> var_to_scc;
-    for (size_t i = 0; i < sccs.size(); ++i) {
+    vector<int> var_to_scc(task_proxy.get_variables().size(), -1);
+    for (int i = 0; i < (int) sccs.size(); ++i) {
         for (int var: sccs[i]) {
-            if (needed_negatively.count(var) > 0) {
-                var_to_scc.insert({var, i});
-            }
+            var_to_scc[var] = i;
         }
     }
 
     for (int var: needed_negatively) {
-        vector<OperatorProxy> &axioms = axioms_for_var[var];
+        vector<int> &axiom_ids = axiom_ids_for_var[var];
         int default_value = task_proxy.get_variables()[var].get_default_axiom_value();
 
         if (sccs[var_to_scc[var]].size() > 1) {
@@ -145,7 +132,7 @@ NegatedAxiomsTask::NegatedAxiomsTask(
             std::string name = task_proxy.get_variables()[var].get_name() + "_negated";
             negated_axioms.emplace_back(FactPair(var, default_value), vector<FactPair>(), name);
         } else {
-            add_negated_axioms(FactPair(var, default_value), axioms, task_proxy);
+            add_negated_axioms(FactPair(var, default_value), axiom_ids, task_proxy);
         }
     }
 }
@@ -201,17 +188,20 @@ void NegatedAxiomsTask::find_non_dominated_hitting_sets(
     }
 }
 
-void NegatedAxiomsTask::add_negated_axioms(FactPair head, std::vector<OperatorProxy> &axioms, TaskProxy &task_proxy) {
+void NegatedAxiomsTask::add_negated_axioms(
+    FactPair head, std::vector<int> &axiom_ids, TaskProxy &task_proxy) {
+
     std::string name = task_proxy.get_variables()[head.var].get_name() + "_negated";
     // If no axioms change the variable to its non-default value then the default is always true.
-    if (axioms.empty()) {
+    if (axiom_ids.empty()) {
         negated_axioms.emplace_back(head, vector<FactPair>(), name);
         return;
     }
 
     vector<set<FactPair>> conditions_as_cnf;
-    conditions_as_cnf.reserve(axioms.size());
-    for (OperatorProxy axiom : axioms) {
+    conditions_as_cnf.reserve(axiom_ids.size());
+    for (int axiom_id : axiom_ids) {
+        OperatorProxy axiom = task_proxy.get_axioms()[axiom_id];
         conditions_as_cnf.emplace_back();
         for (FactProxy fact : axiom.get_effects()[0].get_conditions()) {
             for (int i = 0; i < task_proxy.get_variables()[fact.get_variable().get_id()].get_domain_size(); ++i) {
