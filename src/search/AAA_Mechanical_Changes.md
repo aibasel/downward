@@ -101,38 +101,38 @@ search
 │   ├── ✅ relaxation_heuristic.cc
 │   └── ✅ relaxation_heuristic.h
 ├── ❌ landmarks
-│   ├── exploration.cc✅
-│   ├── exploration.h✅
-│   ├── landmark.cc✅
-│   ├── landmark.h✅
-│   ├── landmark_cost_partitioning_algorithms.cc✅
-│   ├── landmark_cost_partitioning_algorithms.h✅
-│   ├── landmark_cost_partitioning_heuristic.cc
-│   ├── landmark_cost_partitioning_heuristic.h❌
-│   ├── landmark_factory.cc✅
-│   ├── landmark_factory.h✅
-│   ├── landmark_factory_h_m.cc✅
-│   ├── landmark_factory_h_m.h✅
-│   ├── landmark_factory_merged.cc✅
-│   ├── landmark_factory_merged.h✅
-│   ├── landmark_factory_reasonable_orders_hps.cc✅
-│   ├── landmark_factory_reasonable_orders_hps.h✅
-│   ├── landmark_factory_relaxation.cc✅
-│   ├── landmark_factory_relaxation.h✅
-│   ├── landmark_factory_rpg_exhaust.cc✅
-│   ├── landmark_factory_rpg_exhaust.h✅
-│   ├── landmark_factory_rpg_sasp.cc✅
-│   ├── landmark_factory_rpg_sasp.h✅
-│   ├── landmark_factory_zhu_givan.cc✅
-│   ├── landmark_factory_zhu_givan.h✅
+│   ├── ✅ exploration.cc
+│   ├── ✅ exploration.h
+│   ├── ✅ landmark.cc
+│   ├── ✅ landmark.h
+│   ├── ✅ landmark_cost_partitioning_algorithms.cc
+│   ├── ✅ landmark_cost_partitioning_algorithms.h
+│   ├── ✅ landmark_cost_partitioning_heuristic.cc
+│   ├── ❌ landmark_cost_partitioning_heuristic.h
+│   ├── ✅ andmark_factory.cc
+│   ├── ✅ andmark_factory.h
+│   ├── ✅ andmark_factory_h_m.cc
+│   ├── ✅ andmark_factory_h_m.h
+│   ├── ✅ andmark_factory_merged.cc
+│   ├── ✅ andmark_factory_merged.h
+│   ├── ✅ andmark_factory_reasonable_orders_hps.cc
+│   ├── ✅ andmark_factory_reasonable_orders_hps.h
+│   ├── ✅ andmark_factory_relaxation.cc
+│   ├── ✅ andmark_factory_relaxation.h
+│   ├── ✅ andmark_factory_rpg_exhaust.cc
+│   ├── ✅ andmark_factory_rpg_exhaust.h
+│   ├── ✅ andmark_factory_rpg_sasp.cc
+│   ├── ✅ andmark_factory_rpg_sasp.h
+│   ├── ✅ andmark_factory_zhu_givan.cc
+│   ├── ✅ andmark_factory_zhu_givan.h
 │   ├── landmark_graph.cc
-│   ├── landmark_graph.h❌
+│   ├── ❌ landmark_graph.h
 │   ├── landmark_heuristic.cc
-│   ├── landmark_heuristic.h❌
-│   ├── landmark_status_manager.cc✅
-│   ├── landmark_status_manager.h✅
+│   ├── ❌ landmark_heuristic.h
+│   ├── ✅ landmark_status_manager.cc
+│   ├── ✅ landmark_status_manager.h
 │   ├── landmark_sum_heuristic.cc
-│   └── landmark_sum_heuristic.h❌
+│   └── ❌ landmark_sum_heuristic.h
 ├── ❌ lp
 ├── ✅ merge_and_shrink
 ├── ✅ open_list_factory.cc

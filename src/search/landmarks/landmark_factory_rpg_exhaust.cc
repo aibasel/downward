@@ -70,8 +70,8 @@ public:
             "Exhaustively checks for each fact if it is a landmark."
             "This check is done using relaxed planning.");
 
-        add_landmark_factory_options_to_feature(*this);
         add_only_causal_landmarks_option_to_feature(*this);
+        add_landmark_factory_options_to_feature(*this);
 
         document_language_support(
             "conditional_effects",
@@ -80,9 +80,9 @@ public:
 
     virtual shared_ptr<LandmarkFactoryRpgExhaust> create_component(
         const plugins::Options &options, const utils::Context &) const override {
-        return make_shared<LandmarkFactoryRpgExhaust>(
-            options.get<bool>("only_causal_landmarks"),
-            options.get<utils::Verbosity>("verbosity"));
+        return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgExhaust>(
+            get_only_causal_landmarks_arguments_from_options(options),
+            get_landmark_factory_arguments_from_options(options));
     }
 };
 

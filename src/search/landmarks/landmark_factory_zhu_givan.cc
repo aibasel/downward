@@ -317,8 +317,8 @@ public:
             "The landmark generation method introduced by "
             "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
 
-        add_landmark_factory_options_to_feature(*this);
         add_use_orders_option_to_feature(*this);
+        add_landmark_factory_options_to_feature(*this);
 
         // TODO: Make sure that conditional effects are indeed supported.
         document_language_support(
@@ -328,9 +328,9 @@ public:
 
     virtual shared_ptr<LandmarkFactoryZhuGivan> create_component(
         const plugins::Options &options, const utils::Context &) const override {
-        return make_shared<LandmarkFactoryZhuGivan>(
-            options.get<bool>("use_orders"),
-            options.get<utils::Verbosity>("verbosity"));
+        return plugins::make_shared_from_arg_tuples<LandmarkFactoryZhuGivan>(
+            get_use_orders_arguments_from_options(options),
+            get_landmark_factory_arguments_from_options(options));
     }
 };
 

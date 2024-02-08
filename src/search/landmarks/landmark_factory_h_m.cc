@@ -1033,8 +1033,8 @@ public:
             "conjunctive_landmarks",
             "keep conjunctive landmarks",
             "true");
-        add_landmark_factory_options_to_feature(*this);
         add_use_orders_option_to_feature(*this);
+        add_landmark_factory_options_to_feature(*this);
 
         document_language_support(
             "conditional_effects",
@@ -1043,11 +1043,11 @@ public:
 
     virtual shared_ptr<LandmarkFactoryHM> create_component(
         const plugins::Options &options, const utils::Context &) const override {
-        return make_shared<LandmarkFactoryHM>(
+        return plugins::make_shared_from_arg_tuples<LandmarkFactoryHM>(
             options.get<int>("m"),
             options.get<bool>("conjunctive_landmarks"),
-            options.get<bool>("use_orders"),
-            options.get<utils::Verbosity>("verbosity"));
+            get_use_orders_arguments_from_options(options),
+            get_landmark_factory_arguments_from_options(options));
     }
 };
 

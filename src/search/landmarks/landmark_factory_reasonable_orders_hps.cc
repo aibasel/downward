@@ -12,8 +12,8 @@
 using namespace std;
 namespace landmarks {
 LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(
-    std::shared_ptr<LandmarkFactory> &&lm_factory, utils::Verbosity verbosity)
-    : LandmarkFactory(verbosity), lm_factory(move(lm_factory)) {
+    std::shared_ptr<LandmarkFactory> &lm_factory, utils::Verbosity verbosity)
+    : LandmarkFactory(verbosity), lm_factory(lm_factory) {
 }
 
 void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<AbstractTask> &task) {
@@ -395,9 +395,9 @@ public:
 
     virtual shared_ptr<LandmarkFactoryReasonableOrdersHPS> create_component(
         const plugins::Options &options, const utils::Context &) const override {
-        return make_shared<LandmarkFactoryReasonableOrdersHPS>(
+        return plugins::make_shared_from_arg_tuples<LandmarkFactoryReasonableOrdersHPS>(
             options.get<shared_ptr<LandmarkFactory>>("lm_factory"),
-            options.get<utils::Verbosity>("verbosity"));
+            get_landmark_factory_arguments_from_options(options));
     }
 };
 

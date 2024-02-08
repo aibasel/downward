@@ -649,9 +649,9 @@ public:
             "disjunctive_landmarks",
             "keep disjunctive landmarks",
             "true");
-        add_landmark_factory_options_to_feature(*this);
         add_use_orders_option_to_feature(*this);
         add_only_causal_landmarks_option_to_feature(*this);
+        add_landmark_factory_options_to_feature(*this);
 
         document_language_support(
             "conditional_effects",
@@ -660,11 +660,11 @@ public:
 
     virtual shared_ptr<LandmarkFactoryRpgSasp> create_component(
         const plugins::Options &options, const utils::Context &) const override {
-        return make_shared<LandmarkFactoryRpgSasp>(
+        return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgSasp>(
             options.get<bool>("disjunctive_landmarks"),
-            options.get<bool>("use_orders"),
-            options.get<bool>("only_causal_landmarks"),
-            options.get<utils::Verbosity>("verbosity"));
+            get_use_orders_arguments_from_options(options),
+            get_only_causal_landmarks_arguments_from_options(options),
+            get_landmark_factory_arguments_from_options(options));
     }
 };
 

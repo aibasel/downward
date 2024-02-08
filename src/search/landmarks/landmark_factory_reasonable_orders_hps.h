@@ -20,7 +20,7 @@ class LandmarkFactoryReasonableOrdersHPS : public LandmarkFactory {
         std::set<FactPair> &eff) const;
 public:
     LandmarkFactoryReasonableOrdersHPS(
-        std::shared_ptr<LandmarkFactory> &&lm_factory,
+        std::shared_ptr<LandmarkFactory> &lm_factory,
         utils::Verbosity verbosity);
 
     virtual bool computes_reasonable_orders() const override;
