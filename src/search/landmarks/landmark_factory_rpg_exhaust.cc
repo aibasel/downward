@@ -17,8 +17,8 @@ namespace landmarks {
    method with others, don't use it by itself. */
 
 LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(
-    const utils::LogProxy &&log, bool only_causal_landmarks)
-    : LandmarkFactoryRelaxation(move(log)),
+    bool only_causal_landmarks, utils::Verbosity verbosity)
+    : LandmarkFactoryRelaxation(verbosity),
       only_causal_landmarks(only_causal_landmarks) {
 }
 
@@ -81,8 +81,8 @@ public:
     virtual shared_ptr<LandmarkFactoryRpgExhaust> create_component(
         const plugins::Options &options, const utils::Context &) const override {
         return make_shared<LandmarkFactoryRpgExhaust>(
-            utils::get_log_from_options(options),
-            options.get<bool>("only_causal_landmarks"));
+            options.get<bool>("only_causal_landmarks"),
+            options.get<utils::Verbosity>("verbosity"));
     }
 };
 

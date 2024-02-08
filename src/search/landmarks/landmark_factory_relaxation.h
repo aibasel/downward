@@ -8,7 +8,7 @@ class Exploration;
 
 class LandmarkFactoryRelaxation : public LandmarkFactory {
 protected:
-    explicit LandmarkFactoryRelaxation(const utils::LogProxy &&log);
+    explicit LandmarkFactoryRelaxation(utils::Verbosity verbosity);
 
     /*
       Test whether the relaxed planning task is solvable without

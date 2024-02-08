@@ -18,9 +18,9 @@ using utils::ExitCode;
 
 namespace landmarks {
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(
-    const utils::LogProxy &&log, bool disjunctive_landmarks,
-    bool use_orders, bool only_causal_landmarks)
-    : LandmarkFactoryRelaxation(move(log)),
+    bool disjunctive_landmarks, bool use_orders,
+    bool only_causal_landmarks, utils::Verbosity verbosity)
+    : LandmarkFactoryRelaxation(verbosity),
       disjunctive_landmarks(disjunctive_landmarks),
       use_orders(use_orders),
       only_causal_landmarks(only_causal_landmarks) {
@@ -661,10 +661,10 @@ public:
     virtual shared_ptr<LandmarkFactoryRpgSasp> create_component(
         const plugins::Options &options, const utils::Context &) const override {
         return make_shared<LandmarkFactoryRpgSasp>(
-            utils::get_log_from_options(options),
             options.get<bool>("disjunctive_landmarks"),
             options.get<bool>("use_orders"),
-            options.get<bool>("only_causal_landmarks"));
+            options.get<bool>("only_causal_landmarks"),
+            options.get<utils::Verbosity>("verbosity"));
     }
 };
 

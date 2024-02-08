@@ -46,7 +46,7 @@ public:
     }
 
 protected:
-    explicit LandmarkFactory(const utils::LogProxy &&log);
+    explicit LandmarkFactory(utils::Verbosity verbosity);
     mutable utils::LogProxy log;
     std::shared_ptr<LandmarkGraph> lm_graph;
     bool achievers_calculated = false;

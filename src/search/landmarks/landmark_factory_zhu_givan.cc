@@ -17,8 +17,8 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(
-    const utils::LogProxy &&log, bool use_orders)
-    : LandmarkFactoryRelaxation(move(log)),
+    bool use_orders, utils::Verbosity verbosity)
+    : LandmarkFactoryRelaxation(verbosity),
       use_orders(use_orders) {
 }
 
@@ -329,8 +329,8 @@ public:
     virtual shared_ptr<LandmarkFactoryZhuGivan> create_component(
         const plugins::Options &options, const utils::Context &) const override {
         return make_shared<LandmarkFactoryZhuGivan>(
-            utils::get_log_from_options(options),
-            options.get<bool>("use_orders"));
+            options.get<bool>("use_orders"),
+            options.get<utils::Verbosity>("verbosity"));
     }
 };
 

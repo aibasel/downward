@@ -75,7 +75,7 @@ public:
         Exploration &exploration) override;
 
 public:
-    LandmarkFactoryZhuGivan(const utils::LogProxy &&log, bool use_orders);
+    LandmarkFactoryZhuGivan(bool use_orders, utils::Verbosity verbosity);
 
     virtual bool computes_reasonable_orders() const override;
     virtual bool supports_conditional_effects() const override;

@@ -14,9 +14,9 @@ namespace landmarks {
 class LandmarkNode;
 
 LandmarkFactoryMerged::LandmarkFactoryMerged(
-    const utils::LogProxy &&log,
-    vector<shared_ptr<LandmarkFactory>> &&lm_factories)
-    : LandmarkFactory(move(log)), lm_factories(move(lm_factories)) {
+    vector<shared_ptr<LandmarkFactory>> &&lm_factories,
+    utils::Verbosity verbosity)
+    : LandmarkFactory(verbosity), lm_factories(move(lm_factories)) {
 }
 
 LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const Landmark &landmark) const {
@@ -178,8 +178,8 @@ public:
     virtual shared_ptr<LandmarkFactoryMerged> create_component(const plugins::Options &options, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<LandmarkFactory>>(context, options, "lm_factories");
         return make_shared<LandmarkFactoryMerged>(
-            utils::get_log_from_options(options),
-            options.get_list<shared_ptr<LandmarkFactory>>("lm_factories"));
+            options.get_list<shared_ptr<LandmarkFactory>>("lm_factories"),
+            options.get<utils::Verbosity>("verbosity"));
     }
 };
 

@@ -569,9 +569,9 @@ bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
 }
 
 LandmarkFactoryHM::LandmarkFactoryHM(
-    const utils::LogProxy &&log, int m, bool conjunctive_landmarks,
-    bool use_orders)
-    : LandmarkFactory(move(log)),
+    int m, bool conjunctive_landmarks, bool use_orders,
+    utils::Verbosity verbosity)
+    : LandmarkFactory(verbosity),
       m_(m),
       conjunctive_landmarks(conjunctive_landmarks),
       use_orders(use_orders) {
@@ -1044,10 +1044,10 @@ public:
     virtual shared_ptr<LandmarkFactoryHM> create_component(
         const plugins::Options &options, const utils::Context &) const override {
         return make_shared<LandmarkFactoryHM>(
-            utils::get_log_from_options(options),
             options.get<int>("m"),
             options.get<bool>("conjunctive_landmarks"),
-            options.get<bool>("use_orders"));
+            options.get<bool>("use_orders"),
+            options.get<utils::Verbosity>("verbosity"));
     }
 };
 
