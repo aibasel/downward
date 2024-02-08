@@ -24,7 +24,11 @@ LandmarkHeuristic::LandmarkHeuristic(
       successor_generator(nullptr) {
 }
 
-void LandmarkHeuristic::initialize(const plugins::Options &initialize_options) {
+void LandmarkHeuristic::initialize(
+    const plugins::Options &lm_factory_option,
+    bool prog_goal,
+    bool prog_gn,
+    bool prog_r) {
     /*
       Actually, we should test if this is the root task or a
       CostAdaptedTask *of the root task*, but there is currently no good
@@ -38,12 +42,12 @@ void LandmarkHeuristic::initialize(const plugins::Options &initialize_options) {
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
-    compute_landmark_graph(initialize_options);
+    compute_landmark_graph(lm_factory_option);
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(
         *lm_graph,
-        initialize_options.get<bool>("prog_goal"),
-        initialize_options.get<bool>("prog_gn"),
-        initialize_options.get<bool>("prog_r"));
+        prog_goal,
+        prog_gn,
+        prog_r);
 
     initial_landmark_graph_has_cycle_of_natural_orderings =
         landmark_graph_has_cycle_of_natural_orderings();
@@ -96,14 +100,14 @@ bool LandmarkHeuristic::depth_first_search_for_cycle_of_natural_orderings(
     return false;
 }
 
-void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &opts) {
+void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &lm_factory_option) {
     utils::Timer lm_graph_timer;
     if (log.is_at_least_normal()) {
         log << "Generating landmark graph..." << endl;
     }
 
     shared_ptr<LandmarkFactory> lm_graph_factory =
-        opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
+        lm_factory_option.get<shared_ptr<LandmarkFactory>>("lm_factory");
     lm_graph = lm_graph_factory->compute_lm_graph(task);
     assert(lm_graph_factory->achievers_are_calculated());
 
@@ -233,29 +237,20 @@ void add_landmark_heuristic_options_to_feature(plugins::Feature &feature,
                               "yes (if enabled; see ``pref`` option)");
 }
 
-tuple<bool, shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
+tuple<bool, bool, bool, bool, shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
 get_landmark_heuristic_arguments_from_options(const plugins::Options &options) {
     return tuple_cat(
-        make_tuple(options.get<bool>("pref")),
+        make_tuple(
+            options.get<bool>("pref"),
+            /*
+              TODO: add_landmark_heuristic_options_to_feature also adds "lm_factory".
+              Here we do not extract it to put it in the argument tuple because we want the lm_factory to be
+              created later.
+             */
+            options.get<bool>("prog_goal"),
+            options.get<bool>("prog_gn"),
+            options.get<bool>("prog_r")
+            ),
         Heuristic::get_heuristic_arguments_from_options(options));
-}
-
-/*
-  TODO: issue1082 aimed to remove the options object from constructors.
-   This is not possible here because we need to wait with initializing the
-   landmark factory until the task is given (e.g., cost transformation).
-   Therefore, we can only extract the landmark factory from the options
-   after this happened, so we allow the landmark heuristics to keep a
-   (small) options object around for that purpose.
-*/
-plugins::Options collect_landmark_heuristic_options(
-    const plugins::Options &options) {
-    plugins::Options lm_options;
-    lm_options.set<shared_ptr<LandmarkFactory>>(
-        "lm_factory", options.get<shared_ptr<LandmarkFactory>>("lm_factory"));
-    lm_options.set<bool>("prog_goal", options.get<bool>("prog_goal"));
-    lm_options.set<bool>("prog_gn", options.get<bool>("prog_gn"));
-    lm_options.set<bool>("prog_r", options.get<bool>("prog_r"));
-    return lm_options;
 }
 }

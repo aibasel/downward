@@ -50,7 +50,6 @@ Mark in the list below what you updated:
 
 ```
 search
-<<<<<<< HEAD
 ├── ✅ abstract_task.cc
 ├── ✅ abstract_task.h
 ├── ✅ algorithms
@@ -73,66 +72,7 @@ search
 ├── ❓ heuristic.cc
 ├── ❓ heuristic.h
 ├── ✅ heuristics
-│   ├── ✅ additive_heuristic.cc
-│   ├── ✅ additive_heuristic.h
-│   ├── ✅ array_pool.h
-│   ├── ✅ blind_search_heuristic.cc
-│   ├── ✅ blind_search_heuristic.h
-│   ├── ✅ cea_heuristic.cc
-│   ├── ✅ cea_heuristic.h
-│   ├── ✅ cg_cache.cc
-│   ├── ✅ cg_cache.h
-│   ├── ✅ cg_heuristic.cc
-│   ├── ✅ cg_heuristic.h
-│   ├── ✅ domain_transition_graph.cc
-│   ├── ✅ domain_transition_graph.h
-│   ├── ✅ ff_heuristic.cc
-│   ├── ✅ ff_heuristic.h
-│   ├── ✅ goal_count_heuristic.cc
-│   ├── ✅ goal_count_heuristic.h
-│   ├── ✅ hm_heuristic.cc
-│   ├── ✅ hm_heuristic.h
-│   ├── ✅ lm_cut_heuristic.cc
-│   ├── ✅ lm_cut_heuristic.h
-│   ├── ✅ lm_cut_landmarks.cc
-│   ├── ✅ lm_cut_landmarks.h
-│   ├── ✅ max_heuristic.cc
-│   ├── ✅ max_heuristic.h
-│   ├── ✅ relaxation_heuristic.cc
-│   └── ✅ relaxation_heuristic.h
 ├── ✅ landmarks
-│   ├── ✅ exploration.cc
-│   ├── ✅ exploration.h
-│   ├── ✅ landmark.cc
-│   ├── ✅ landmark.h
-│   ├── ✅ landmark_cost_partitioning_algorithms.cc
-│   ├── ✅ landmark_cost_partitioning_algorithms.h
-│   ├── ✅ landmark_cost_partitioning_heuristic.cc
-│   ├── ✅ landmark_cost_partitioning_heuristic.h
-│   ├── ✅ landmark_factory.cc
-│   ├── ✅ landmark_factory.h
-│   ├── ✅ landmark_factory_h_m.cc
-│   ├── ✅ landmark_factory_h_m.h
-│   ├── ✅ landmark_factory_merged.cc
-│   ├── ✅ landmark_factory_merged.h
-│   ├── ✅ landmark_factory_reasonable_orders_hps.cc
-│   ├── ✅ landmark_factory_reasonable_orders_hps.h
-│   ├── ✅ landmark_factory_relaxation.cc
-│   ├── ✅ landmark_factory_relaxation.h
-│   ├── ✅ landmark_factory_rpg_exhaust.cc
-│   ├── ✅ landmark_factory_rpg_exhaust.h
-│   ├── ✅ landmark_factory_rpg_sasp.cc
-│   ├── ✅ landmark_factory_rpg_sasp.h
-│   ├── ✅ landmark_factory_zhu_givan.cc
-│   ├── ✅ landmark_factory_zhu_givan.h
-│   ├── ✅ landmark_graph.cc
-│   ├── ✅ landmark_graph.h
-│   ├── ✅ landmark_heuristic.cc
-│   ├── ✅ landmark_heuristic.h
-│   ├── ✅ landmark_status_manager.cc
-│   ├── ✅ landmark_status_manager.h
-│   ├── ✅ landmark_sum_heuristic.cc
-│   └── ✅ landmark_sum_heuristic.h
 ├── ❌ lp
 ├── ✅ merge_and_shrink
 ├── ✅ open_list_factory.cc

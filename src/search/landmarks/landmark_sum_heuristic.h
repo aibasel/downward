@@ -24,8 +24,11 @@ public:
        after this happened, so we allow the landmark heuristics to keep a
        (small) options object around for that purpose.
     */
-    LandmarkSumHeuristic(const plugins::Options &options,
+    LandmarkSumHeuristic(const plugins::Options &lm_factory_options,
                          bool use_preferred_operators,
+                         bool prog_goal,
+                         bool prog_gn,
+                         bool prog_r,
                          const std::shared_ptr<AbstractTask> &transform,
                          bool cache_estimates,
                          const std::string &description,

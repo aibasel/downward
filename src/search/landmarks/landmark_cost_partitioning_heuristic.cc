@@ -16,20 +16,26 @@ using namespace std;
 
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
-    const plugins::Options &options,
+    const plugins::Options &lm_factory_option,
     bool use_preferred_operators,
+    bool prog_goal,
+    bool prog_gn,
+    bool prog_r,
     const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
     const string &description,
-    utils::Verbosity verbosity)
+    utils::Verbosity verbosity,
+    CostPartitioningMethod cost_partitioning,
+    bool alm,
+    lp::LPSolverType lpsolver)
     : LandmarkHeuristic(use_preferred_operators, transform, cache_estimates,
                         description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;
     }
-    check_unsupported_features(options);
-    initialize(options);
-    set_cost_partitioning_algorithm(options);
+    check_unsupported_features(lm_factory_option);
+    initialize(lm_factory_option, prog_goal, prog_gn, prog_r);
+    set_cost_partitioning_algorithm(cost_partitioning, lpsolver, alm);
 }
 
 void LandmarkCostPartitioningHeuristic::check_unsupported_features(
@@ -51,18 +57,19 @@ void LandmarkCostPartitioningHeuristic::check_unsupported_features(
 }
 
 void LandmarkCostPartitioningHeuristic::set_cost_partitioning_algorithm(
-    const plugins::Options &opts) {
-    auto method = opts.get<CostPartitioningMethod>("cost_partitioning");
-    if (method == CostPartitioningMethod::OPTIMAL) {
+    CostPartitioningMethod cost_partitioning,
+    lp::LPSolverType lpsolver,
+    bool alm) {
+    if (cost_partitioning == CostPartitioningMethod::OPTIMAL) {
         cost_partitioning_algorithm =
             utils::make_unique_ptr<OptimalCostPartitioningAlgorithm>(
                 task_properties::get_operator_costs(task_proxy),
-                *lm_graph, opts.get<lp::LPSolverType>("lpsolver"));
-    } else if (method == CostPartitioningMethod::UNIFORM) {
+                *lm_graph, lpsolver);
+    } else if (cost_partitioning == CostPartitioningMethod::UNIFORM) {
         cost_partitioning_algorithm =
             utils::make_unique_ptr<UniformCostPartitioningAlgorithm>(
                 task_properties::get_operator_costs(task_proxy),
-                *lm_graph, opts.get<bool>("alm"));
+                *lm_graph, alm);
     } else {
         ABORT("Unknown cost partitioning method");
     }
@@ -169,18 +176,17 @@ public:
     }
 
     virtual shared_ptr<LandmarkCostPartitioningHeuristic> create_component(
-        const plugins::Options &options, const utils::Context &) const override {
-        plugins::Options lmcp_options =
-            collect_landmark_heuristic_options(options);
-        lmcp_options.set<CostPartitioningMethod>(
-            "cost_partitioning",
-            options.get<CostPartitioningMethod>("cost_partitioning"));
-        lmcp_options.set<bool>("alm", options.get<bool>("alm"));
-        lmcp_options.set<lp::LPSolverType>(
-            "lpsolver", options.get<lp::LPSolverType>("lpsolver"));
+        const plugins::Options &opts, const utils::Context &) const override {
+        plugins::Options lm_factory_options;
+        lm_factory_options.set<shared_ptr<LandmarkFactory>>(
+            "lm_factory", opts.get<shared_ptr<LandmarkFactory>>("lm_factory"));
         return plugins::make_shared_from_arg_tuples<LandmarkCostPartitioningHeuristic>(
-            lmcp_options,
-            get_landmark_heuristic_arguments_from_options(options));
+            lm_factory_options,
+            get_landmark_heuristic_arguments_from_options(opts),
+            opts.get<CostPartitioningMethod>("cost_partitioning"),
+            opts.get<bool>("alm"),
+            lp::get_lp_solver_arguments_from_options(opts)
+            );
     }
 };
 
