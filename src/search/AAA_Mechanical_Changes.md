@@ -96,9 +96,9 @@ search
 ├── ✅ planner.cc
 ├── ✅ plugins
 ├── ❌ potentials
-├── ❌ pruning
-├── ❌ pruning_method.cc
-├── ❌ pruning_method.h
+├── ✅ pruning
+├── ✅ pruning_method.cc
+├── ✅ pruning_method.h
 ├── ❌ search_algorithm.cc
 ├── ❌ search_algorithm.h
 ├── ❌ search_algorithms
@@ -117,7 +117,7 @@ search
 ├── ✅ task_id.h
 ├── ✅ task_proxy.cc
 ├── ✅ task_proxy.h
-├── ❌ tasks
+├── ✅ tasks
 ├── ✅ task_utils
 └── ✅ utils
 
