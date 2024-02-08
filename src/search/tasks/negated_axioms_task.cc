@@ -16,10 +16,10 @@ using utils::ExitCode;
 
 namespace tasks {
 
-NegatedAxiomsTask::NegatedAxiomsTask(
-    const shared_ptr<AbstractTask> &parent)
+NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
     : DelegatingTask(parent),
       negated_axioms_start_index(parent->get_num_axioms()) {
+
     TaskProxy task_proxy(*parent);
 
     // Collect derived variables that occur as their default value.
@@ -71,7 +71,10 @@ NegatedAxiomsTask::NegatedAxiomsTask(
         }
     }
 
-    // All derived variables that occur positively in an axiom for a needed negatively var are also needed negatively.
+    /*
+       Derived variables occurring positively in an axiom for a needed
+       negatively var are also needed negatively.
+    */
     deque<int> to_process(needed_negatively.begin(), needed_negatively.end());
     while (!to_process.empty()) {
         int var = to_process.front();
@@ -84,7 +87,7 @@ NegatedAxiomsTask::NegatedAxiomsTask(
         }
     }
 
-    // If there are no derived variables that occur as their default value we don't need to do anything.
+    // We only compute negated axioms for variables that are needed negatively.
     if (needed_negatively.empty()) {
         return;
     }
@@ -95,7 +98,8 @@ NegatedAxiomsTask::NegatedAxiomsTask(
        cycles because this would imply that the axioms are not
        stratifiable. This would already be detected in the translator.
     */
-    vector<vector<int>> sccs = sccs::compute_maximal_sccs(positive_dependencies);
+    vector<vector<int>> sccs =
+        sccs::compute_maximal_sccs(positive_dependencies);
     vector<int> var_to_scc(task_proxy.get_variables().size(), -1);
     for (int i = 0; i < (int) sccs.size(); ++i) {
         for (int var: sccs[i]) {
@@ -105,7 +109,8 @@ NegatedAxiomsTask::NegatedAxiomsTask(
 
     for (int var: needed_negatively) {
         vector<int> &axiom_ids = axiom_ids_for_var[var];
-        int default_value = task_proxy.get_variables()[var].get_default_axiom_value();
+        int default_value =
+            task_proxy.get_variables()[var].get_default_axiom_value();
 
         if (sccs[var_to_scc[var]].size() > 1) {
             cout << "found cycle" << endl;
@@ -123,26 +128,33 @@ NegatedAxiomsTask::NegatedAxiomsTask(
                an exact (non-overapproximating) way is possible but more
                expensive (again, see issue453).
             */
-            negated_axioms.emplace_back(FactPair(var, default_value), vector<FactPair>());
+            negated_axioms.emplace_back(
+                FactPair(var, default_value), vector<FactPair>());
         } else {
-            add_negated_axioms(FactPair(var, default_value), axiom_ids, task_proxy);
+            add_negated_axioms(
+                FactPair(var, default_value), axiom_ids, task_proxy);
         }
     }
 }
 
 void NegatedAxiomsTask::find_non_dominated_hitting_sets(
-        const vector<set<FactPair>> &conditions_as_cnf, size_t index,
-        set<FactPair> &chosen, set<set<FactPair>> &results) {
+    const vector<set<FactPair>> &conditions_as_cnf, size_t index,
+    set<FactPair> &chosen, set<set<FactPair>> &results) {
+
     if (index == conditions_as_cnf.size()) {
         /*
-           A fact is uniquely used if there is one condition which only this fact covers.
-           The found hitting set is not dominated iff all its facts are uniquely used.
+           Check whether the axiom body denoted in body is dominated.
+           This is the case if there is a fact such that no conjunction
+           in the cnf is covered by *only* this fact, implying that
+           removing the fact from the body would still cover all
+           conjunctions.
         */
         set<FactPair> not_uniquely_used(chosen);
         for (const set<FactPair> &condition : conditions_as_cnf) {
             vector<FactPair> intersection;
             set_intersection(condition.begin(), condition.end(),
-                             chosen.begin(), chosen.end(), back_inserter(intersection));
+                             chosen.begin(), chosen.end(),
+                             back_inserter(intersection));
             if (intersection.size() == 1) {
                 not_uniquely_used.erase(intersection[0]);
             }
@@ -157,13 +169,14 @@ void NegatedAxiomsTask::find_non_dominated_hitting_sets(
     for (const FactPair &fact_pair : conditions) {
         // The current set is covered with the so far chosen elements.
         if (chosen.find(fact_pair) != chosen.end()) {
-            find_non_dominated_hitting_sets(conditions_as_cnf, index+1, chosen, results);
+            find_non_dominated_hitting_sets(
+                conditions_as_cnf, index+1, chosen, results);
             return;
         }
     }
 
     for (const FactPair &elem : conditions) {
-        // If a different fact from the same var is chosen, the axioms is trivially inapplicable.
+        // We don't allow choosing different facts from the same variable.
         bool same_var_occurs_already = false;
         for (const FactPair &f : chosen) {
             if (f.var == elem.var) {
@@ -177,14 +190,18 @@ void NegatedAxiomsTask::find_non_dominated_hitting_sets(
 
         set<FactPair> chosen_new(chosen);
         chosen_new.insert(elem);
-        find_non_dominated_hitting_sets(conditions_as_cnf, index+1, chosen_new, results);
+        find_non_dominated_hitting_sets(
+            conditions_as_cnf, index+1, chosen_new, results);
     }
 }
 
 void NegatedAxiomsTask::add_negated_axioms(
     FactPair head, std::vector<int> &axiom_ids, TaskProxy &task_proxy) {
 
-    // If no axioms change the variable to its non-default value then the default is always true.
+    /*
+      If no axioms change the variable to its non-default value,
+      then the default is always true.
+    */
     if (axiom_ids.empty()) {
         negated_axioms.emplace_back(head, vector<FactPair>());
         return;
@@ -196,9 +213,11 @@ void NegatedAxiomsTask::add_negated_axioms(
         OperatorProxy axiom = task_proxy.get_axioms()[axiom_id];
         conditions_as_cnf.emplace_back();
         for (FactProxy fact : axiom.get_effects()[0].get_conditions()) {
-            for (int i = 0; i < task_proxy.get_variables()[fact.get_variable().get_id()].get_domain_size(); ++i) {
-                if (i != fact.get_value()) {
-                    conditions_as_cnf.back().insert({fact.get_variable().get_id(), i});
+            int var_id = fact.get_variable().get_id();
+            int num_vals = task_proxy.get_variables()[var_id].get_domain_size();
+            for (int value = 0; value < num_vals; ++value) {
+                if (value != fact.get_value()) {
+                    conditions_as_cnf.back().insert({var_id, value});
                 }
             }
         }
@@ -206,10 +225,12 @@ void NegatedAxiomsTask::add_negated_axioms(
 
     set<FactPair> chosen;
     set<set<FactPair>> combinations;
-    find_non_dominated_hitting_sets(conditions_as_cnf, 0, chosen, combinations);
+    find_non_dominated_hitting_sets(
+        conditions_as_cnf, 0, chosen, combinations);
 
-    for (const set<FactPair> &combination : combinations) {
-        negated_axioms.emplace_back(head, vector<FactPair>(combination.begin(), combination.end()));
+    for (const set<FactPair> &c : combinations) {
+        negated_axioms.emplace_back(
+            head, vector<FactPair>(c.begin(), c.end()));
     }
 }
 
