@@ -29,20 +29,26 @@ NegatedAxiomsTask::NegatedAxiomsTask(
     unordered_set<int> needed_negatively;
     State init = task_proxy.get_initial_state();
     for (const FactProxy &goal: task_proxy.get_goals()) {
-        if (goal.get_variable().is_derived() && goal.get_value() == 1) { // TODO: fix the hardcoded 1
+        VariableProxy var_proxy = goal.get_variable();
+        if (var_proxy.is_derived()
+            && goal.get_value() == var_proxy.get_default_axiom_value()) {
             needed_negatively.insert(goal.get_pair().var);
         }
     }
     for (OperatorProxy op: task_proxy.get_operators()) {
         for (FactProxy condition: op.get_preconditions()) {
-            if (condition.get_variable().is_derived() && condition.get_value() == 1) {  // TODO: fix the hardcoded 1
+            VariableProxy var_proxy = condition.get_variable();
+            if (var_proxy.is_derived()
+            && condition.get_value() == var_proxy.get_default_axiom_value()) {
                 needed_negatively.insert(condition.get_pair().var);
             }
         }
 
         for (EffectProxy effect: op.get_effects()) {
             for (FactProxy condition: effect.get_conditions()) {
-                if (condition.get_variable().is_derived() && condition.get_value() == 1) {  // TODO: fix the hardcoded 1
+                VariableProxy var_proxy = condition.get_variable();
+                if (var_proxy.is_derived()
+                && condition.get_value() == var_proxy.get_default_axiom_value()) {
                     needed_negatively.insert(condition.get_pair().var);
                 }
             }
@@ -58,9 +64,10 @@ NegatedAxiomsTask::NegatedAxiomsTask(
             axioms_for_var.insert({head_var, {axiom}});
         }
         for (FactProxy condition: axiom.get_effects()[0].get_conditions()) {
-            if (condition.get_variable().is_derived()) {
+            VariableProxy var_proxy = condition.get_variable();
+            if (var_proxy.is_derived()) {
                 int var = condition.get_variable().get_id();
-                if (condition.get_value() == 1) { // TODO: fix the hardcoded 1
+                if (condition.get_value() == var_proxy.get_default_axiom_value()) {
                     needed_negatively.insert(var);
                 } else {
                     if (positive_dependencies.count(head_var) > 0) {
@@ -119,6 +126,7 @@ NegatedAxiomsTask::NegatedAxiomsTask(
 
     for (int var: needed_negatively) {
         vector<OperatorProxy> &axioms = axioms_for_var[var];
+        int default_value = task_proxy.get_variables()[var].get_default_axiom_value();
 
         if (sccs[var_to_scc[var]].size() > 1) {
             /* If the cluster contains multiple variables, they have a cyclic
@@ -135,14 +143,11 @@ NegatedAxiomsTask::NegatedAxiomsTask(
                Again, see issue453 for details.
             */
             std::string name = task_proxy.get_variables()[var].get_name() + "_negated";
-            // TODO: fix the hardcoded 1
-            negated_axioms.emplace_back(FactPair(var, 1), vector<FactPair>(), name);
+            negated_axioms.emplace_back(FactPair(var, default_value), vector<FactPair>(), name);
         } else {
-            // TODO: fix the hardcoded 1
-            add_negated_axioms(FactPair(var, 1), axioms, task_proxy);
+            add_negated_axioms(FactPair(var, default_value), axioms, task_proxy);
         }
     }
-    cout << negated_axioms.size() << " negated axioms" << endl;
 }
 
 void NegatedAxiomsTask::find_non_dominated_hitting_sets(
