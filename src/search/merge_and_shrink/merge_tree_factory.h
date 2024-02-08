@@ -47,10 +47,10 @@ public:
         const std::vector<int> &indices_subset);
     virtual bool requires_init_distances() const = 0;
     virtual bool requires_goal_distances() const = 0;
-    // Derived classes must call this method in their parsing methods.
-    static void add_options_to_feature(plugins::Feature &feature);
 };
 
+// Derived classes must call this method in their parsing methods.
+extern void add_merge_tree_options_to_feature(plugins::Feature &feature);
 extern std::tuple<int, UpdateOption> get_merge_tree_arguments_from_options(
     const plugins::Options &opts);
 }

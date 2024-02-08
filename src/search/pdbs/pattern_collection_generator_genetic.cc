@@ -350,7 +350,7 @@ public:
             "consider a pattern collection invalid (giving it very low "
             "fitness) if its patterns are not disjoint",
             "false");
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
         add_generator_options_to_feature(*this);
 
         document_note(
@@ -402,7 +402,7 @@ public:
             opts.get<int>("num_episodes"),
             opts.get<double>("mutation_probability"),
             opts.get<bool>("disjoint"),
-            opts.get<int>("random_seed"),
+            utils::get_rng_arguments_from_options(opts),
             get_generator_arguments_from_options(opts)
             );
     }

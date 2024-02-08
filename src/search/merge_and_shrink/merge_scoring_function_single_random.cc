@@ -54,12 +54,12 @@ public:
             "This scoring function assigns exactly one merge candidate a score of "
             "0, chosen randomly, and infinity to all others.");
 
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
     }
 
     virtual shared_ptr<MergeScoringFunctionSingleRandom> create_component(const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<MergeScoringFunctionSingleRandom>(
-            opts.get<int>("random_seed")
+        return plugins::make_shared_from_arg_tuples<MergeScoringFunctionSingleRandom>(
+            utils::get_rng_arguments_from_options(opts)
             );
     }
 };

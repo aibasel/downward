@@ -252,7 +252,7 @@ public:
             "uniformly from the non-dominated buckets; if the option is true, "
             "we weight the buckets with the number of entries.",
             "false");
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
     }
 };
 

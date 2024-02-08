@@ -217,7 +217,7 @@ public:
             "shrink_h",
             "in which direction the h based shrink priority is ordered",
             "low");
-        ShrinkBucketBased::add_options_to_feature(*this);
+        add_shrink_bucket_options_to_feature(*this);
 
         document_note(
             "Note",

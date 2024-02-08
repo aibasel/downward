@@ -178,7 +178,7 @@ public:
             "probability for choosing the next entry randomly",
             "0.2",
             plugins::Bounds("0.0", "1.0"));
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
     }
 };
 

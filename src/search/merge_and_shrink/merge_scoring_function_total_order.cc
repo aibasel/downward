@@ -177,7 +177,7 @@ void MergeScoringFunctionTotalOrder::add_options_to_feature(
         "Consider atomic transition systems before composite ones iff true.",
         "false");
 
-    utils::add_rng_options(feature);
+    utils::add_rng_options_to_feature(feature);
 }
 
 class MergeScoringFunctionTotalOrderFeature : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionTotalOrder> {
@@ -207,11 +207,11 @@ public:
     }
 
     virtual shared_ptr<MergeScoringFunctionTotalOrder> create_component(const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<MergeScoringFunctionTotalOrder>(
+        return plugins::make_shared_from_arg_tuples<MergeScoringFunctionTotalOrder>(
             opts.get<AtomicTSOrder>("atomic_ts_order"),
             opts.get<ProductTSOrder>("product_ts_order"),
             opts.get<bool>("atomic_before_product"),
-            opts.get<int>("random_seed")
+            utils::get_rng_arguments_from_options(opts)
             );
     }
 };

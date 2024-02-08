@@ -48,8 +48,8 @@ unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
-void MergeTreeFactory::add_options_to_feature(plugins::Feature &feature) {
-    utils::add_rng_options(feature);
+void add_merge_tree_options_to_feature(plugins::Feature &feature) {
+    utils::add_rng_options_to_feature(feature);
     feature.add_option<UpdateOption>(
         "update_option",
         "When the merge tree is used within another merge strategy, how "
@@ -59,9 +59,9 @@ void MergeTreeFactory::add_options_to_feature(plugins::Feature &feature) {
 }
 
 tuple<int, UpdateOption> get_merge_tree_arguments_from_options(const plugins::Options &opts) {
-    return make_tuple(
-            opts.get<int>("random_seed"),
-            opts.get<UpdateOption>("update_option")
+    return tuple_cat(
+            utils::get_rng_arguments_from_options(opts),
+            make_tuple(opts.get<UpdateOption>("update_option"))
             );
 }
 

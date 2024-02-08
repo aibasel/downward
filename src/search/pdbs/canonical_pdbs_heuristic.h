@@ -31,6 +31,7 @@ public:
 };
 
 void add_canonical_pdbs_options_to_feature(plugins::Feature &feature);
+std::tuple<double> get_canonical_pdbs_arguments_from_options(plugins::Feature &feature);
 }
 
 #endif

@@ -70,7 +70,7 @@ public:
             "infinity",
             plugins::Bounds("0.0", "infinity"));
         add_cegar_wildcard_option_to_feature(*this);
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
         add_generator_options_to_feature(*this);
 
         add_cegar_implementation_notes_to_feature(*this);
@@ -81,8 +81,8 @@ public:
         return plugins::make_shared_from_arg_tuples<PatternGeneratorCEGAR>(
             opts.get<int>("max_pdb_size"),
             opts.get<double>("max_time"),
-            opts.get<bool>("use_wildcard_plans"),
-            opts.get<int>("random_seed"),
+            get_cegar_wildcard_arguments_from_options(opts),
+            utils::get_rng_arguments_from_options(opts),
             get_generator_arguments_from_options(opts)
             );
     }

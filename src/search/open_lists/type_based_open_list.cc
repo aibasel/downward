@@ -173,7 +173,7 @@ public:
         add_list_option<shared_ptr<Evaluator>>(
             "evaluators",
             "Evaluators used to determine the bucket for each entry.");
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
     }
 
     virtual shared_ptr<TypeBasedOpenListFactory> create_component(const plugins::Options &options, const utils::Context &context) const override {
