@@ -31,8 +31,7 @@ void add_log_options_to_feature(plugins::Feature &feature) {
 }
 
 tuple<Verbosity> get_log_arguments_from_options(const plugins::Options &opts) {
-    auto own_tuple = make_tuple<Verbosity>(opts.get<Verbosity>("verbosity"));
-    return tuple<Verbosity>(own_tuple);
+    return make_tuple<Verbosity>(opts.get<Verbosity>("verbosity"));
 }
 
 LogProxy get_log_for_verbosity(const Verbosity &verbosity) {
