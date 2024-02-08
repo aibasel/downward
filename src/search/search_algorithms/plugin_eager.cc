@@ -26,7 +26,7 @@ public:
             "preferred",
             "use preferred operators of these evaluators",
             "[]");
-        eager_search::add_options_to_feature(*this);
+        eager_search::add_eager_search_options_to_feature(*this);
     }
 };
 

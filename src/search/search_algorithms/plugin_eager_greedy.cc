@@ -19,7 +19,7 @@ public:
         add_option<int>(
             "boost",
             "boost value for preferred operator open lists", "0");
-        eager_search::add_options_to_feature(*this);
+        eager_search::add_eager_search_options_to_feature(*this);
 
         document_note(
             "Open list",

@@ -31,8 +31,8 @@ public:
             "boost value for preferred operator open lists",
             DEFAULT_LAZY_BOOST);
         add_option<int>("w", "evaluator weight", "1");
-        SearchAlgorithm::add_succ_order_options(*this);
-        SearchAlgorithm::add_options_to_feature(*this);
+        add_successors_order_options_to_feature(*this);
+        add_search_algorithm_options_to_feature(*this);
 
         document_note(
             "Open lists",

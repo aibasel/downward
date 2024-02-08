@@ -73,12 +73,6 @@ public:
     int get_bound() {return bound;}
     PlanManager &get_plan_manager() {return plan_manager;}
     std::string get_description() {return description;}
-
-    /* The following three methods should become functions as they
-       do not require access to private/protected class members. */
-    static void add_pruning_option(plugins::Feature &feature);
-    static void add_options_to_feature(plugins::Feature &feature);
-    static void add_succ_order_options(plugins::Feature &feature);
 };
 
 /*
@@ -90,5 +84,14 @@ extern void print_initial_evaluator_values(
 extern void collect_preferred_operators(
     EvaluationContext &eval_context, Evaluator *preferred_operator_evaluator,
     ordered_set::OrderedSet<OperatorID> &preferred_operators);
+
+class PruningMethod;
+
+extern void add_search_pruning_options_to_feature(plugins::Feature &feature);
+extern std::tuple<std::shared_ptr<PruningMethod>> get_pruning_arguments_from_options(const plugins::Options &opts);
+extern void add_search_algorithm_options_to_feature(plugins::Feature &feature);
+extern std::tuple<int, double, utils::Verbosity> get_search_algorithm_arguments_from_options(const plugins::Options &opts);
+extern void add_successors_order_options_to_feature(plugins::Feature &feature);
+extern std::tuple<bool, bool, int> get_successors_order_arguments_from_options(const plugins::Options &opts);
 
 #endif

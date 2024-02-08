@@ -17,8 +17,8 @@ public:
         add_list_option<shared_ptr<Evaluator>>(
             "preferred",
             "use preferred operators of these evaluators", "[]");
-        SearchAlgorithm::add_succ_order_options(*this);
-        SearchAlgorithm::add_options_to_feature(*this);
+        add_successors_order_options_to_feature(*this);
+        add_search_algorithm_options_to_feature(*this);
     }
 
     virtual shared_ptr<lazy_search::LazySearch> create_component(const plugins::Options &options, const utils::Context &) const override {

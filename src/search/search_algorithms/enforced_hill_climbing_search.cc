@@ -286,7 +286,7 @@ public:
             "preferred",
             "use preferred operators of these evaluators",
             "[]");
-        SearchAlgorithm::add_options_to_feature(*this);
+        add_search_algorithm_options_to_feature(*this);
     }
 };
 

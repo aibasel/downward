@@ -157,7 +157,7 @@ public:
             "continue_on_solve",
             "continue search after solution found",
             "true");
-        SearchAlgorithm::add_options_to_feature(*this);
+        add_search_algorithm_options_to_feature(*this);
 
         document_note(
             "Note 1",

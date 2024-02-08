@@ -20,7 +20,6 @@
 using namespace std;
 using utils::ExitCode;
 
-class PruningMethod;
 
 static successor_generator::SuccessorGenerator &get_successor_generator(
     const TaskProxy &task_proxy, utils::LogProxy &log) {
@@ -119,57 +118,7 @@ int SearchAlgorithm::get_adjusted_cost(const OperatorProxy &op) const {
     return get_adjusted_action_cost(op, cost_type, is_unit_cost);
 }
 
-/* TODO: merge this into add_options_to_feature when all search
-         algorithms support pruning.
 
-   Method doesn't belong here because it's only useful for certain derived classes.
-   TODO: Figure out where it belongs and move it there. */
-void SearchAlgorithm::add_pruning_option(plugins::Feature &feature) {
-    feature.add_option<shared_ptr<PruningMethod>>(
-        "pruning",
-        "Pruning methods can prune or reorder the set of applicable operators in "
-        "each state and thereby influence the number and order of successor states "
-        "that are considered.",
-        "null()");
-}
-
-void SearchAlgorithm::add_options_to_feature(plugins::Feature &feature) {
-    ::add_cost_type_option_to_feature(feature);
-    feature.add_option<int>(
-        "bound",
-        "exclusive depth bound on g-values. Cutoffs are always performed according to "
-        "the real cost, regardless of the cost_type parameter", "infinity");
-    feature.add_option<double>(
-        "max_time",
-        "maximum time in seconds the search is allowed to run for. The "
-        "timeout is only checked after each complete search step "
-        "(usually a node expansion), so the actual runtime can be arbitrarily "
-        "longer. Therefore, this parameter should not be used for time-limiting "
-        "experiments. Timed-out searches are treated as failed searches, "
-        "just like incomplete search algorithms that exhaust their search space.",
-        "infinity");
-    utils::add_log_options_to_feature(feature);
-}
-
-/* Method doesn't belong here because it's only useful for certain derived classes.
-   TODO: Figure out where it belongs and move it there. */
-void SearchAlgorithm::add_succ_order_options(plugins::Feature &feature) {
-    vector<string> options;
-    feature.add_option<bool>(
-        "randomize_successors",
-        "randomize the order in which successors are generated",
-        "false");
-    feature.add_option<bool>(
-        "preferred_successors_first",
-        "consider preferred operators first",
-        "false");
-    feature.document_note(
-        "Successor ordering",
-        "When using randomize_successors=true and "
-        "preferred_successors_first=true, randomization happens before "
-        "preferred operators are moved to the front.");
-    utils::add_rng_options_to_feature(feature);
-}
 
 void print_initial_evaluator_values(
     const EvaluationContext &eval_context) {
@@ -180,6 +129,81 @@ void print_initial_evaluator_values(
             }
         }
         );
+}
+
+/* TODO: merge this into add_options_to_feature when all search
+         algorithms support pruning.
+
+   Method doesn't belong here because it's only useful for certain derived classes.
+   TODO: Figure out where it belongs and move it there. */
+void add_search_pruning_options_to_feature(plugins::Feature &feature) {
+    feature.add_option<shared_ptr<PruningMethod>>(
+            "pruning",
+            "Pruning methods can prune or reorder the set of applicable operators in "
+            "each state and thereby influence the number and order of successor states "
+            "that are considered.",
+            "null()");
+}
+
+tuple<shared_ptr<PruningMethod>> get_pruning_arguments_from_options(const plugins::Options &opts) {
+    return make_tuple(opts.get<shared_ptr<PruningMethod>>("pruning"));
+}
+
+void add_search_algorithm_options_to_feature(plugins::Feature &feature) {
+    ::add_cost_type_option_to_feature(feature);
+    feature.add_option<int>(
+            "bound",
+            "exclusive depth bound on g-values. Cutoffs are always performed according to "
+            "the real cost, regardless of the cost_type parameter", "infinity");
+    feature.add_option<double>(
+            "max_time",
+            "maximum time in seconds the search is allowed to run for. The "
+            "timeout is only checked after each complete search step "
+            "(usually a node expansion), so the actual runtime can be arbitrarily "
+            "longer. Therefore, this parameter should not be used for time-limiting "
+            "experiments. Timed-out searches are treated as failed searches, "
+            "just like incomplete search algorithms that exhaust their search space.",
+            "infinity");
+    utils::add_log_options_to_feature(feature);
+}
+
+tuple<int, double, utils::Verbosity> get_search_algorithm_arguments_from_options(const plugins::Options &opts) {
+    return tuple_cat(
+            make_tuple(
+                    opts.get<int>("bound"),
+                            opts.get<double>("max_time")
+                    ),
+                    utils::get_log_arguments_from_options(opts)
+            );
+}
+
+/* Method doesn't belong here because it's only useful for certain derived classes.
+   TODO: Figure out where it belongs and move it there. */
+void add_successors_order_options_to_feature(plugins::Feature &feature) {
+    feature.add_option<bool>(
+            "randomize_successors",
+            "randomize the order in which successors are generated",
+            "false");
+    feature.add_option<bool>(
+            "preferred_successors_first",
+            "consider preferred operators first",
+            "false");
+    feature.document_note(
+            "Successor ordering",
+            "When using randomize_successors=true and "
+            "preferred_successors_first=true, randomization happens before "
+            "preferred operators are moved to the front.");
+    utils::add_rng_options_to_feature(feature);
+}
+
+tuple<bool, bool, int> get_successors_order_arguments_from_options(const plugins::Options &opts) {
+    return tuple_cat(
+            make_tuple(
+                    opts.get<bool>("randomize_successors"),
+                    opts.get<bool>("preferred_successors_first")
+                    ),
+                    utils::get_rng_arguments_from_options(opts)
+                    );
 }
 
 static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<SearchAlgorithm> {

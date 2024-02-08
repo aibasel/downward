@@ -307,8 +307,8 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     }
 }
 
-void add_options_to_feature(plugins::Feature &feature) {
-    SearchAlgorithm::add_pruning_option(feature);
-    SearchAlgorithm::add_options_to_feature(feature);
+void add_eager_search_options_to_feature(plugins::Feature &feature) {
+    add_search_pruning_options_to_feature(feature);
+    add_search_algorithm_options_to_feature(feature);
 }
 }

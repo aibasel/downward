@@ -31,7 +31,7 @@ public:
             "w",
             "evaluator weight",
             "1");
-        eager_search::add_options_to_feature(*this);
+        eager_search::add_eager_search_options_to_feature(*this);
 
         document_note(
             "Open lists and equivalent statements using general eager search",
