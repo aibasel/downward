@@ -37,6 +37,11 @@ public:
     bool operator!=(const StateID &other) const {
         return !(*this == other);
     }
+
+    bool operator<(const StateID &other) const {
+        return value < other.value;
+    }
+
     int hash() const {
         return value;
     }
