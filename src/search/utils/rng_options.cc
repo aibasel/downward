@@ -19,8 +19,8 @@ void add_rng_options_to_feature(plugins::Feature &feature) {
 
 tuple<int> get_rng_arguments_from_options(const plugins::Options &opts) {
     return make_tuple(
-            opts.get<int>("random_seed")
-            );
+        opts.get<int>("random_seed")
+        );
 }
 
 shared_ptr<RandomNumberGenerator> get_rng(int seed) {

@@ -27,7 +27,6 @@ void add_lp_solver_option_to_feature(plugins::Feature &feature) {
 tuple<LPSolverType> get_lp_solver_arguments_from_options(
     const plugins::Options &opts) {
     return make_tuple(opts.get<LPSolverType>("lpsolver"));
-
 }
 
 LPConstraint::LPConstraint(double lower_bound, double upper_bound)

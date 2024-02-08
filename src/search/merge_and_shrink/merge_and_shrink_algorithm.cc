@@ -463,18 +463,17 @@ void add_merge_and_shrink_algorithm_options_to_feature(plugins::Feature &feature
         Bounds("0.0", "infinity"));
 }
 
-tuple<shared_ptr < MergeStrategyFactory >,shared_ptr < ShrinkStrategy >,shared_ptr < LabelReduction >,bool,bool,int,int,int,double> get_merge_and_shrink_algorithm_arguments_from_options(const plugins::Options &opts) {
-
+tuple<shared_ptr < MergeStrategyFactory >, shared_ptr < ShrinkStrategy >, shared_ptr < LabelReduction >, bool, bool, int, int, int, double> get_merge_and_shrink_algorithm_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
-            make_tuple(
-                    opts.get < shared_ptr < MergeStrategyFactory >> ("merge_strategy"),
-                    opts.get < shared_ptr < ShrinkStrategy >> ("shrink_strategy"),
-                    opts.get < shared_ptr < LabelReduction >> ("label_reduction", nullptr),
-                    opts.get<bool>("prune_unreachable_states"),
-                    opts.get<bool>("prune_irrelevant_states")),
-            get_transition_system_size_limit_arguments_from_options(opts),
-            make_tuple(opts.get<double>("main_loop_max_time"))
-    );
+        make_tuple(
+            opts.get < shared_ptr < MergeStrategyFactory >> ("merge_strategy"),
+            opts.get < shared_ptr < ShrinkStrategy >> ("shrink_strategy"),
+            opts.get < shared_ptr < LabelReduction >> ("label_reduction", nullptr),
+            opts.get<bool>("prune_unreachable_states"),
+            opts.get<bool>("prune_irrelevant_states")),
+        get_transition_system_size_limit_arguments_from_options(opts),
+        make_tuple(opts.get<double>("main_loop_max_time"))
+        );
 }
 
 void add_transition_system_size_limit_options_to_feature(plugins::Feature &feature) {
@@ -498,12 +497,12 @@ void add_transition_system_size_limit_options_to_feature(plugins::Feature &featu
         Bounds("-1", "infinity"));
 }
 
-tuple<int,int,int> get_transition_system_size_limit_arguments_from_options(const plugins::Options &opts){
+tuple<int, int, int> get_transition_system_size_limit_arguments_from_options(const plugins::Options &opts) {
     return make_tuple(
-            opts.get<int>("max_states"),
-            opts.get<int>("max_states_before_merge"),
-            opts.get<int>("threshold_before_merge")
-            );
+        opts.get<int>("max_states"),
+        opts.get<int>("max_states_before_merge"),
+        opts.get<int>("threshold_before_merge")
+        );
 }
 
 void handle_shrink_limit_options_defaults(plugins::Options &opts, const utils::Context &context) {

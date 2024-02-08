@@ -563,13 +563,13 @@ void add_hillclimbing_options_to_feature(plugins::Feature &feature) {
 
 tuple<int, int, int, int, double, int> get_hillclimbing_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
-            make_tuple(
-                    opts.get<int>("pdb_max_size"),
-                    opts.get<int>("collection_max_size"),
-                    opts.get<int>("num_samples"),
-                    opts.get<int>("min_improvement"),
-                    opts.get<double>("max_time")),
-            utils::get_rng_arguments_from_options(opts));
+        make_tuple(
+            opts.get<int>("pdb_max_size"),
+            opts.get<int>("collection_max_size"),
+            opts.get<int>("num_samples"),
+            opts.get<int>("min_improvement"),
+            opts.get<double>("max_time")),
+        utils::get_rng_arguments_from_options(opts));
 }
 
 static void check_hillclimbing_options(

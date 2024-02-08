@@ -60,9 +60,9 @@ void add_merge_tree_options_to_feature(plugins::Feature &feature) {
 
 tuple<int, UpdateOption> get_merge_tree_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
-            utils::get_rng_arguments_from_options(opts),
-            make_tuple(opts.get<UpdateOption>("update_option"))
-            );
+        utils::get_rng_arguments_from_options(opts),
+        make_tuple(opts.get<UpdateOption>("update_option"))
+        );
 }
 
 static class MergeTreeFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<MergeTreeFactory> {

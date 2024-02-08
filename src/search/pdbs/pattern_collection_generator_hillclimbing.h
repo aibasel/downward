@@ -144,7 +144,6 @@ public:
 
 extern void add_hillclimbing_options_to_feature(plugins::Feature &feature);
 std::tuple<int, int, int, int, double, int> get_hillclimbing_arguments_from_options(const plugins::Options &opts);
-
 }
 
 #endif

@@ -335,16 +335,16 @@ void add_multiple_options_to_feature(plugins::Feature &feature) {
 }
 
 tuple<int, int, double, double, double, double, bool, int, utils::Verbosity>
-    get_multiple_arguments_from_options(const plugins::Options &opts) {
+get_multiple_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(make_tuple(
-                             opts.get<int>("max_pdb_size"),
-                             opts.get<int>("max_collection_size"),
-                             opts.get<double>("pattern_generation_max_time"),
-                             opts.get<double>("total_max_time"),
-                             opts.get<double>("stagnation_limit"),
-                             opts.get<double>("blacklist_trigger_percentage"),
-                             opts.get<bool>("enable_blacklist_on_stagnation")
-                     ),
+                         opts.get<int>("max_pdb_size"),
+                         opts.get<int>("max_collection_size"),
+                         opts.get<double>("pattern_generation_max_time"),
+                         opts.get<double>("total_max_time"),
+                         opts.get<double>("stagnation_limit"),
+                         opts.get<double>("blacklist_trigger_percentage"),
+                         opts.get<bool>("enable_blacklist_on_stagnation")
+                         ),
                      utils::get_rng_arguments_from_options(opts),
                      get_generator_arguments_from_options(opts));
 }
