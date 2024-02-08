@@ -100,7 +100,7 @@ search
 │   ├── ✅ max_heuristic.h
 │   ├── ✅ relaxation_heuristic.cc
 │   └── ✅ relaxation_heuristic.h
-├── ❌ landmarks
+├── ✅ landmarks
 │   ├── ✅ exploration.cc
 │   ├── ✅ exploration.h
 │   ├── ✅ landmark.cc
@@ -108,7 +108,7 @@ search
 │   ├── ✅ landmark_cost_partitioning_algorithms.cc
 │   ├── ✅ landmark_cost_partitioning_algorithms.h
 │   ├── ✅ landmark_cost_partitioning_heuristic.cc
-│   ├── ❌ landmark_cost_partitioning_heuristic.h
+│   ├── ✅ landmark_cost_partitioning_heuristic.h
 │   ├── ✅ andmark_factory.cc
 │   ├── ✅ andmark_factory.h
 │   ├── ✅ andmark_factory_h_m.cc
@@ -125,14 +125,14 @@ search
 │   ├── ✅ andmark_factory_rpg_sasp.h
 │   ├── ✅ andmark_factory_zhu_givan.cc
 │   ├── ✅ andmark_factory_zhu_givan.h
-│   ├── landmark_graph.cc
-│   ├── ❌ landmark_graph.h
-│   ├── landmark_heuristic.cc
-│   ├── ❌ landmark_heuristic.h
+│   ├── ✅ landmark_graph.cc
+│   ├── ✅ landmark_graph.h
+│   ├── ✅ landmark_heuristic.cc
+│   ├── ✅ landmark_heuristic.h
 │   ├── ✅ landmark_status_manager.cc
 │   ├── ✅ landmark_status_manager.h
-│   ├── landmark_sum_heuristic.cc
-│   └── ❌ landmark_sum_heuristic.h
+│   ├── ✅ landmark_sum_heuristic.cc
+│   └── ✅ landmark_sum_heuristic.h
 ├── ❌ lp
 ├── ✅ merge_and_shrink
 ├── ✅ open_list_factory.cc

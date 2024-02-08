@@ -19,7 +19,13 @@ class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
 
     int get_heuristic_value(const State &ancestor_state) override;
 public:
-    explicit LandmarkCostPartitioningHeuristic(const plugins::Options &opts);
+    LandmarkCostPartitioningHeuristic(
+        const plugins::Options &options,
+        bool use_preferred_operators,
+        const std::shared_ptr<AbstractTask> &transform,
+        bool cache_estimates,
+        const std::string &description,
+        utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;
 };

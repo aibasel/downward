@@ -14,13 +14,17 @@ using namespace std;
 
 namespace landmarks {
 LandmarkHeuristic::LandmarkHeuristic(
-    const plugins::Options &opts)
-    : Heuristic(opts),
-      use_preferred_operators(opts.get<bool>("pref")),
+    bool use_preferred_operators,
+    const std::shared_ptr<AbstractTask> &transform,
+    bool cache_estimates,
+    const string &description,
+    utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, description, verbosity),
+      use_preferred_operators(use_preferred_operators),
       successor_generator(nullptr) {
 }
 
-void LandmarkHeuristic::initialize(const plugins::Options &opts) {
+void LandmarkHeuristic::initialize(const plugins::Options &initialize_options) {
     /*
       Actually, we should test if this is the root task or a
       CostAdaptedTask *of the root task*, but there is currently no good
@@ -34,10 +38,12 @@ void LandmarkHeuristic::initialize(const plugins::Options &opts) {
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
-    compute_landmark_graph(opts);
+    compute_landmark_graph(initialize_options);
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(
-        *lm_graph, opts.get<bool>("prog_goal"),
-        opts.get<bool>("prog_gn"), opts.get<bool>("prog_r"));
+        *lm_graph,
+        initialize_options.get<bool>("prog_goal"),
+        initialize_options.get<bool>("prog_gn"),
+        initialize_options.get<bool>("prog_r"));
 
     initial_landmark_graph_has_cycle_of_natural_orderings =
         landmark_graph_has_cycle_of_natural_orderings();
@@ -190,7 +196,8 @@ void LandmarkHeuristic::notify_state_transition(
     }
 }
 
-void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
+void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature,
+                                               const string &description) {
     feature.document_synopsis(
         "Landmark progression is implemented according to the following paper:"
         + utils::format_conference_reference(
@@ -220,9 +227,27 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
         "prog_gn", "Use greedy-necessary ordering progression.", "true");
     feature.add_option<bool>(
         "prog_r", "Use reasonable ordering progression.", "true");
-    Heuristic::add_options_to_feature(feature);
+    Heuristic::add_options_to_feature(feature, description);
 
     feature.document_property("preferred operators",
                               "yes (if enabled; see ``pref`` option)");
+}
+
+tuple<bool, shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
+LandmarkHeuristic::get_arguments_from_options(const plugins::Options &options) {
+    return tuple_cat(
+        make_tuple(options.get<bool>("pref")),
+        Heuristic::get_heuristic_arguments_from_options(options));
+}
+
+plugins::Options collect_landmark_heuristic_options(
+    const plugins::Options &options) {
+    plugins::Options lm_options;
+    lm_options.set<shared_ptr<LandmarkFactory>>(
+        "lm_factory", options.get<shared_ptr<LandmarkFactory>>("lm_factory"));
+    lm_options.set<bool>("prog_goal", options.get<bool>("prog_goal"));
+    lm_options.set<bool>("prog_gn", options.get<bool>("prog_gn"));
+    lm_options.set<bool>("prog_r", options.get<bool>("prog_r"));
+    return lm_options;
 }
 }
