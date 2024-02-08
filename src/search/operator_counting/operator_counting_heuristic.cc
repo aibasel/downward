@@ -20,7 +20,6 @@ OperatorCountingHeuristic::OperatorCountingHeuristic(
     utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       constraint_generators(constraint_generators),
-      use_integer_operator_counts(use_integer_operator_counts),
       lp_solver(lp_solver_type) {
     lp_solver.set_mip_gap(0);
     named_vector::NamedVector<lp::LPVariable> variables;
