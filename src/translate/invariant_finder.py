@@ -14,11 +14,8 @@ import timers
 
 class BalanceChecker:
     def __init__(self, task, reachable_action_params):
-        self.predicates_to_add_actions = defaultdict(dict)
-        # Conceptionally, predicates_to_add will store for each predicate the
-        # set of actions that have an add effect on the predicate. Since sets
-        # are not stable (introducing non-determinism in the algorithm), we
-        # store the actions as keys in a dictionary (which is stable).
+        self.predicates_to_add_actions = defaultdict(list)
+        self.random = random.Random(314159)
         self.action_to_heavy_action = {}
         for act in task.actions:
             action = self.add_inequality_preconds(act, reachable_action_params)
@@ -32,7 +29,9 @@ class BalanceChecker:
                     too_heavy_effects.append(eff.copy())
                 if not eff.literal.negated:
                     predicate = eff.literal.predicate
-                    self.predicates_to_add_actions[predicate][action] = True
+                    add_actions = self.predicates_to_add_actions[predicate]
+                    if not add_actions or add_actions[-1] is not action:
+                        add_actions.append(action)
             if create_heavy_act:
                 heavy_act = pddl.Action(action.name, action.parameters,
                                         action.num_external_parameters,
@@ -43,7 +42,7 @@ class BalanceChecker:
             self.action_to_heavy_action[action] = heavy_act
 
     def get_threats(self, predicate):
-        return self.predicates_to_add_actions.get(predicate, dict())
+        return self.predicates_to_add_actions.get(predicate, list())
 
     def get_heavy_action(self, action):
         return self.action_to_heavy_action[action]
@@ -105,11 +104,6 @@ def find_invariants(task, reachable_action_params):
             candidates.append(invariant)
             seen_candidates.add(invariant)
 
-    # we want to fix the random seed for the invariant synthesis but don't want
-    # to have this a more global impact. For this reason, we temporary store
-    # the state of the random generator.
-    random_state = random.getstate()
-    random.seed(314159)
     start_time = time.process_time()
     while candidates:
         candidate = candidates.popleft()
@@ -118,7 +112,6 @@ def find_invariants(task, reachable_action_params):
             return
         if candidate.check_balance(balance_checker, enqueue_func):
             yield candidate
-    random.setstate(random_state)
 
 def useful_groups(invariants, initial_facts):
     predicate_to_invariants = defaultdict(list)
@@ -126,7 +119,7 @@ def useful_groups(invariants, initial_facts):
         for predicate in invariant.predicates:
             predicate_to_invariants[predicate].append(invariant)
 
-    nonempty_groups = set()
+    nonempty_groups = dict() # dict instead of set because it is stable
     overcrowded_groups = set()
     for atom in initial_facts:
         if isinstance(atom, pddl.Assign):
@@ -140,10 +133,11 @@ def useful_groups(invariants, initial_facts):
 
             group_key = (invariant, parameters_tuple)
             if group_key not in nonempty_groups:
-                nonempty_groups.add(group_key)
+                nonempty_groups[group_key] = True
             else:
                 overcrowded_groups.add(group_key)
-    useful_groups = nonempty_groups - overcrowded_groups
+    useful_groups = [group_key for group_key in nonempty_groups.keys()
+                     if group_key not in overcrowded_groups]
     for (invariant, parameters) in useful_groups:
         yield [part.instantiate(parameters) for part in sorted(invariant.parts)]
 
