@@ -51,8 +51,9 @@ NegatedAxiomsTask::NegatedAxiomsTask(
             }
         }
     }
-    unordered_map<int, vector<int>> positive_dependencies;
-    unordered_map<int, vector<int>> axiom_ids_for_var;
+
+    vector<vector<int>> positive_dependencies(task_proxy.get_variables().size());
+    vector<vector<int>> axiom_ids_for_var(task_proxy.get_variables().size());
     for (OperatorProxy axiom: task_proxy.get_axioms()) {
         EffectProxy effect = axiom.get_effects()[0];
         int head_var = effect.get_fact().get_variable().get_id();
@@ -88,23 +89,13 @@ NegatedAxiomsTask::NegatedAxiomsTask(
         return;
     }
 
-    // Build dependency graph and collect relevant axioms for derived values occurring as their default value.
-    // TODO: The dependency information is a superset of positive_dependencies from above.
-    vector<vector<int>> dependency_graph;
-    dependency_graph.resize(task_proxy.get_variables().size(), {});
-
-    for (OperatorProxy axiom: task_proxy.get_axioms()) {
-        EffectProxy effect = axiom.get_effects()[0];
-        for (FactProxy condition: effect.get_conditions()) {
-            if (condition.get_variable().is_derived()) {
-                int head_var = effect.get_fact().get_variable().get_id();
-                dependency_graph[condition.get_pair().var].push_back(head_var);
-            }
-        }
-    }
-
-    // Get strongly connected components and map vars to their scc.
-    vector<vector<int>> sccs = sccs::compute_maximal_sccs(dependency_graph);
+    /*
+       Get the sccs induced by positive dependencies.
+       Note that negative dependencies cannot introduce additional
+       cycles because this would imply that the axioms are not
+       stratifiable. This would already be detected in the translator.
+    */
+    vector<vector<int>> sccs = sccs::compute_maximal_sccs(positive_dependencies);
     vector<int> var_to_scc(task_proxy.get_variables().size(), -1);
     for (int i = 0; i < (int) sccs.size(); ++i) {
         for (int var: sccs[i]) {
@@ -117,18 +108,20 @@ NegatedAxiomsTask::NegatedAxiomsTask(
         int default_value = task_proxy.get_variables()[var].get_default_axiom_value();
 
         if (sccs[var_to_scc[var]].size() > 1) {
-            /* If the cluster contains multiple variables, they have a cyclic
-               positive dependency. In this case, the "obvious" way of
-               negating the formula defining the derived variable is
-               semantically wrong. For details, see issue453.
+            cout << "found cycle" << endl;
+            /*
+               If there is a cyclic dependency between several derived
+               variables, the "obvious" way of negating the formula
+               defining the derived variable is semantically wrong
+               (see issue453).
 
-               Therefore, in this case we perform a naive overapproximation
-               instead, which assumes that derived variables occurring in
-               such clusters can be false unconditionally. This is good
-               enough for correctness of the code that uses these negated
-               axioms, but loses accuracy. Negating the rules in an exact
-               (non-overapproximating) way is possible but more expensive.
-               Again, see issue453 for details.
+               In this case we perform a naive overapproximation
+               instead, which assumes that derived variables occurring
+               in the cycle can be false unconditionally. This is good
+               enough for correctness of the code that uses these
+               negated axioms, but loses accuracy. Negating the rules in
+               an exact (non-overapproximating) way is possible but more
+               expensive (again, see issue453).
             */
             negated_axioms.emplace_back(FactPair(var, default_value), vector<FactPair>());
         } else {
