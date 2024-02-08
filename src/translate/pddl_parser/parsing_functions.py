@@ -614,8 +614,6 @@ def parse_init(context, alist):
                                        initial_proposition_values, False)
                 initial_proposition_values[atom] = False
             else:
-                if len(fact) < 1:
-                    context.error(f"Expecting {SYNTAX_LITERAL} for atoms.")
                 atom = pddl.Atom(fact[0], fact[1:])
                 check_atom_consistency(context, atom,
                                        initial_proposition_values, True)
