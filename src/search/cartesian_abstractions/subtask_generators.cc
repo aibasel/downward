@@ -173,7 +173,7 @@ static void add_fact_order_option(plugins::Feature &feature) {
         "order",
         "ordering of goal or landmark facts",
         "hadd_down");
-    utils::add_rng_options(feature);
+    utils::add_rng_options_to_feature(feature);
 }
 
 class TaskDuplicatorFeature : public plugins::TypedFeature<SubtaskGenerator, TaskDuplicator> {

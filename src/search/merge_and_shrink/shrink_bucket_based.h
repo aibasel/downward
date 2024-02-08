@@ -57,9 +57,9 @@ public:
         const Distances &distances,
         int target_size,
         utils::LogProxy &log) const override;
-    static void add_options_to_feature(plugins::Feature &feature);
 };
 
+extern void add_shrink_bucket_options_to_feature(plugins::Feature &feature);
 extern std::tuple<int> get_shrink_bucket_arguments_from_options(const plugins::Options &opts);
 }
 

@@ -115,7 +115,7 @@ void MergeTreeFactoryLinear::add_options_to_feature(plugins::Feature &feature) {
         "variable_order",
         "the order in which atomic transition systems are merged",
         "cg_goal_level");
-    MergeTreeFactory::add_options_to_feature(feature);
+    add_merge_tree_options_to_feature(feature);
 }
 
 class MergeTreeFactoryLinearFeature : public plugins::TypedFeature<MergeTreeFactory, MergeTreeFactoryLinear> {

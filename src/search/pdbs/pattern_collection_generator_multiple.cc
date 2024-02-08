@@ -330,23 +330,22 @@ void add_multiple_options_to_feature(plugins::Feature &feature) {
         "generation is terminated already the first time stagnation_limit is "
         "hit.",
         "true");
-    utils::add_rng_options(feature);
+    utils::add_rng_options_to_feature(feature);
     add_generator_options_to_feature(feature);
 }
 
 tuple<int, int, double, double, double, double, bool, int, utils::Verbosity>
     get_multiple_arguments_from_options(const plugins::Options &opts) {
-    auto generator_args = get_generator_arguments_from_options(opts);
-    tuple multiple_args = make_tuple(
-        opts.get<int>("max_pdb_size"),
-        opts.get<int>("max_collection_size"),
-        opts.get<double>("pattern_generation_max_time"),
-        opts.get<double>("total_max_time"),
-        opts.get<double>("stagnation_limit"),
-        opts.get<double>("blacklist_trigger_percentage"),
-        opts.get<bool>("enable_blacklist_on_stagnation"),
-        opts.get<int>("random_seed")
-        );
-    return tuple_cat(multiple_args, generator_args);
+    return tuple_cat(make_tuple(
+                             opts.get<int>("max_pdb_size"),
+                             opts.get<int>("max_collection_size"),
+                             opts.get<double>("pattern_generation_max_time"),
+                             opts.get<double>("total_max_time"),
+                             opts.get<double>("stagnation_limit"),
+                             opts.get<double>("blacklist_trigger_percentage"),
+                             opts.get<bool>("enable_blacklist_on_stagnation")
+                     ),
+                     utils::get_rng_arguments_from_options(opts),
+                     get_generator_arguments_from_options(opts));
 }
 }

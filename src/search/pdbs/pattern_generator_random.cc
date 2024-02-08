@@ -75,7 +75,7 @@ public:
             "infinity",
             plugins::Bounds("0.0", "infinity"));
         add_random_pattern_bidirectional_option_to_feature(*this);
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
         add_generator_options_to_feature(*this);
 
         add_random_pattern_implementation_notes_to_feature(*this);
@@ -86,8 +86,8 @@ public:
         return plugins::make_shared_from_arg_tuples<PatternGeneratorRandom>(
             opts.get<int>("max_pdb_size"),
             opts.get<double>("max_time"),
-            opts.get<bool>("bidirectional"),
-            opts.get<int>("random_seed"),
+            get_random_pattern_bidirectional_arguments_from_options(opts),
+            utils::get_rng_arguments_from_options(opts),
             get_generator_arguments_from_options(opts)
             );
     }

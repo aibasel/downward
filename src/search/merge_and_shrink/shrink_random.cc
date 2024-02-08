@@ -41,7 +41,7 @@ public:
         document_title("Random");
         document_synopsis("");
 
-        ShrinkBucketBased::add_options_to_feature(*this);
+        add_shrink_bucket_options_to_feature(*this);
     }
 
     virtual shared_ptr<ShrinkRandom> create_component(

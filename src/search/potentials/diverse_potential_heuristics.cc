@@ -163,7 +163,7 @@ public:
             "infinity",
             plugins::Bounds("0", "infinity"));
         prepare_parser_for_admissible_potentials(*this);
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
     }
 
     virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {

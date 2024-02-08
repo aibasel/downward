@@ -339,7 +339,7 @@ public:
             "label_reduction_method.",
             "random");
         // Add random_seed option.
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
     }
 
     virtual shared_ptr<LabelReduction> create_component(const plugins::Options &opts, const utils::Context &context) const override {
@@ -350,12 +350,12 @@ public:
                 "Please turn on at least one of the options "
                 "before_shrinking or before_merging!");
         }
-        return make_shared<LabelReduction>(
+        return plugins::make_shared_from_arg_tuples<LabelReduction>(
             opts.get<bool>("before_shrinking"),
             opts.get<bool>("before_merging"),
             opts.get<LabelReductionMethod>("method"),
             opts.get<LabelReductionSystemOrder>("system_order"),
-            opts.get<int>("random_seed")
+            utils::get_rng_arguments_from_options(opts)
             );
     }
 };

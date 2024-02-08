@@ -168,7 +168,7 @@ void SearchAlgorithm::add_succ_order_options(plugins::Feature &feature) {
         "When using randomize_successors=true and "
         "preferred_successors_first=true, randomization happens before "
         "preferred operators are moved to the front.");
-    utils::add_rng_options(feature);
+    utils::add_rng_options_to_feature(feature);
 }
 
 void print_initial_evaluator_values(

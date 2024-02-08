@@ -466,7 +466,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::compute_pat
     return current_pdbs->get_pattern_collection_information(log);
 }
 
-static void add_hillclimbing_options(plugins::Feature &feature) {
+void add_hillclimbing_options_to_feature(plugins::Feature &feature) {
     feature.document_note(
         "Note",
         "The pattern collection created by the algorithm will always contain "
@@ -558,7 +558,18 @@ static void add_hillclimbing_options(plugins::Feature &feature) {
         "spent for pruning dominated patterns.",
         "infinity",
         plugins::Bounds("0.0", "infinity"));
-    utils::add_rng_options(feature);
+    utils::add_rng_options_to_feature(feature);
+}
+
+tuple<int, int, int, int, double, int> get_hillclimbing_arguments_from_options(const plugins::Options &opts) {
+    return tuple_cat(
+            make_tuple(
+                    opts.get<int>("pdb_max_size"),
+                    opts.get<int>("collection_max_size"),
+                    opts.get<int>("num_samples"),
+                    opts.get<int>("min_improvement"),
+                    opts.get<double>("max_time")),
+            utils::get_rng_arguments_from_options(opts));
 }
 
 static void check_hillclimbing_options(
@@ -601,21 +612,16 @@ public:
             "This algorithm uses hill climbing to generate patterns "
             "optimized for the Evaluator#Canonical_PDB heuristic. It it described "
             "in the following paper:" + paper_references());
-        add_hillclimbing_options(*this);
+        add_hillclimbing_options_to_feature(*this);
         add_generator_options_to_feature(*this);
     }
 
     virtual shared_ptr<PatternCollectionGeneratorHillclimbing> create_component(const plugins::Options &opts, const utils::Context &context) const override {
         check_hillclimbing_options(opts, context);
 
-        return make_shared<PatternCollectionGeneratorHillclimbing>(
-            opts.get<int>("pdb_max_size"),
-            opts.get<int>("collection_max_size"),
-            opts.get<int>("num_samples"),
-            opts.get<int>("min_improvement"),
-            opts.get<double>("max_time"),
-            opts.get<int>("random_seed"),
-            opts.get<utils::Verbosity>("verbosity")
+        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorHillclimbing>(
+            get_hillclimbing_arguments_from_options(opts),
+            get_generator_arguments_from_options(opts)
             );
     }
 };
@@ -638,7 +644,7 @@ public:
             "See also Evaluator#Canonical_PDB and "
             "PatternCollectionGenerator#Hill_climbing for more details.");
 
-        add_hillclimbing_options(*this);
+        add_hillclimbing_options_to_feature(*this);
         /*
           Add, possibly among others, the options for dominance pruning.
           Note that using dominance pruning during hill climbing could lead to fewer
@@ -665,12 +671,7 @@ public:
 
         shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =
             plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorHillclimbing>(
-                opts.get<int>("pdb_max_size"),
-                opts.get<int>("collection_max_size"),
-                opts.get<int>("num_samples"),
-                opts.get<int>("min_improvement"),
-                opts.get<double>("max_time"),
-                opts.get<int>("random_seed"),
+                get_hillclimbing_arguments_from_options(opts),
                 get_generator_arguments_from_options(opts)
                 );
 

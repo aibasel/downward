@@ -126,7 +126,7 @@ public:
             "allow negative costs in cost partitioning",
             "true");
         Heuristic::add_options_to_feature(*this);
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
