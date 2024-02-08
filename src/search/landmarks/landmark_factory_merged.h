@@ -13,7 +13,9 @@ class LandmarkFactoryMerged : public LandmarkFactory {
     void postprocess();
     LandmarkNode *get_matching_landmark(const Landmark &landmark) const;
 public:
-    explicit LandmarkFactoryMerged(const plugins::Options &opts);
+    LandmarkFactoryMerged(
+        std::vector<std::shared_ptr<LandmarkFactory>> &lm_factories,
+        utils::Verbosity verbosity);
 
     virtual bool computes_reasonable_orders() const override;
     virtual bool supports_conditional_effects() const override;

@@ -16,9 +16,10 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(const plugins::Options &opts)
-    : LandmarkFactoryRelaxation(opts),
-      use_orders(opts.get<bool>("use_orders")) {
+LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(
+    bool use_orders, utils::Verbosity verbosity)
+    : LandmarkFactoryRelaxation(verbosity),
+      use_orders(use_orders) {
 }
 
 void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
@@ -316,13 +317,20 @@ public:
             "The landmark generation method introduced by "
             "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
 
-        add_landmark_factory_options_to_feature(*this);
         add_use_orders_option_to_feature(*this);
+        add_landmark_factory_options_to_feature(*this);
 
         // TODO: Make sure that conditional effects are indeed supported.
         document_language_support(
             "conditional_effects",
             "We think they are supported, but this is not 100% sure.");
+    }
+
+    virtual shared_ptr<LandmarkFactoryZhuGivan> create_component(
+        const plugins::Options &options, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<LandmarkFactoryZhuGivan>(
+            get_use_orders_arguments_from_options(options),
+            get_landmark_factory_arguments_from_options(options));
     }
 };
 

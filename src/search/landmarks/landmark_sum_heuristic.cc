@@ -30,16 +30,23 @@ static bool are_dead_ends_reliable(
     return true;
 }
 
-LandmarkSumHeuristic::LandmarkSumHeuristic(const plugins::Options &opts)
-    : LandmarkHeuristic(opts),
+LandmarkSumHeuristic::LandmarkSumHeuristic(
+    const plugins::Options &options,
+    bool use_preferred_operators,
+    const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates,
+    const string &description,
+    utils::Verbosity verbosity)
+    : LandmarkHeuristic(use_preferred_operators, transform, cache_estimates,
+                        description, verbosity),
       dead_ends_reliable(
           are_dead_ends_reliable(
-              opts.get<shared_ptr<LandmarkFactory>>("lm_factory"),
+              options.get<shared_ptr<LandmarkFactory>>("lm_factory"),
               task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark sum heuristic..." << endl;
     }
-    initialize(opts);
+    initialize(options);
     compute_landmark_costs();
 }
 
@@ -136,7 +143,8 @@ public:
                 "127-177",
                 "2010"));
 
-        LandmarkHeuristic::add_options_to_feature(*this);
+        add_landmark_heuristic_options_to_feature(
+            *this, "landmark_sum_heuristic");
 
         document_note(
             "Note on performance for satisficing planning",
@@ -187,6 +195,15 @@ public:
             "yes except on tasks with axioms or on tasks with "
             "conditional effects when using a LandmarkFactory "
             "not supporting them");
+    }
+
+    virtual shared_ptr<LandmarkSumHeuristic> create_component(
+        const plugins::Options &options, const utils::Context &) const override {
+        plugins::Options lm_options =
+            collect_landmark_heuristic_options(options);
+        return plugins::make_shared_from_arg_tuples<LandmarkSumHeuristic>(
+            lm_options,
+            get_landmark_heuristic_arguments_from_options(options));
     }
 };
 

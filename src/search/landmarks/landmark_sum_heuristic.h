@@ -16,7 +16,20 @@ class LandmarkSumHeuristic : public LandmarkHeuristic {
 
     int get_heuristic_value(const State &ancestor_state) override;
 public:
-    explicit LandmarkSumHeuristic(const plugins::Options &opts);
+    /*
+      TODO: issue1082 aimed to remove the options object from constructors.
+       This is not possible here because we need to wait with initializing the
+       landmark factory until the task is given (e.g., cost transformation).
+       Therefore, we can only extract the landmark factory from the options
+       after this happened, so we allow the landmark heuristics to keep a
+       (small) options object around for that purpose.
+    */
+    LandmarkSumHeuristic(const plugins::Options &options,
+                         bool use_preferred_operators,
+                         const std::shared_ptr<AbstractTask> &transform,
+                         bool cache_estimates,
+                         const std::string &description,
+                         utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;
 };

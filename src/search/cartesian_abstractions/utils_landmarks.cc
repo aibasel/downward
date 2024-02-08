@@ -20,13 +20,8 @@ static FactPair get_fact(const Landmark &landmark) {
 }
 
 shared_ptr<LandmarkGraph> get_landmark_graph(const shared_ptr<AbstractTask> &task) {
-    plugins::Options hm_opts;
-    hm_opts.set<int>("m", 1);
-    hm_opts.set<bool>("only_causal_landmarks", false);
-    hm_opts.set<bool>("conjunctive_landmarks", false);
-    hm_opts.set<bool>("use_orders", true);
-    hm_opts.set<utils::Verbosity>("verbosity", utils::Verbosity::SILENT);
-    LandmarkFactoryHM lm_graph_factory(hm_opts);
+    LandmarkFactoryHM lm_graph_factory(
+        1, false, true, utils::Verbosity::SILENT);
 
     return lm_graph_factory.compute_lm_graph(task);
 }

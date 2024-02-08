@@ -13,9 +13,10 @@ using utils::ExitCode;
 namespace landmarks {
 class LandmarkNode;
 
-LandmarkFactoryMerged::LandmarkFactoryMerged(const plugins::Options &opts)
-    : LandmarkFactory(opts),
-      lm_factories(opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories")) {
+LandmarkFactoryMerged::LandmarkFactoryMerged(
+    vector<shared_ptr<LandmarkFactory>> &lm_factories,
+    utils::Verbosity verbosity)
+    : LandmarkFactory(verbosity), lm_factories(lm_factories) {
 }
 
 LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const Landmark &landmark) const {
@@ -176,7 +177,9 @@ public:
 
     virtual shared_ptr<LandmarkFactoryMerged> create_component(const plugins::Options &options, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<LandmarkFactory>>(context, options, "lm_factories");
-        return make_shared<LandmarkFactoryMerged>(options);
+        return plugins::make_shared_from_arg_tuples<LandmarkFactoryMerged>(
+            options.get_list<shared_ptr<LandmarkFactory>>("lm_factories"),
+            get_landmark_factory_arguments_from_options(options));
     }
 };
 

@@ -16,14 +16,20 @@ using namespace std;
 
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
-    const plugins::Options &opts)
-    : LandmarkHeuristic(opts) {
+    const plugins::Options &options,
+    bool use_preferred_operators,
+    const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates,
+    const string &description,
+    utils::Verbosity verbosity)
+    : LandmarkHeuristic(use_preferred_operators, transform, cache_estimates,
+                        description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;
     }
-    check_unsupported_features(opts);
-    initialize(opts);
-    set_cost_partitioning_algorithm(opts);
+    check_unsupported_features(options);
+    initialize(options);
+    set_cost_partitioning_algorithm(options);
 }
 
 void LandmarkCostPartitioningHeuristic::check_unsupported_features(
@@ -107,7 +113,16 @@ public:
                 "IOS Press",
                 "2010"));
 
-        LandmarkHeuristic::add_options_to_feature(*this);
+        /*
+          TODO issue1082: We usually move the options of base classes behind the
+           options of specific implementations. In the case of landmark
+           heuristics, we decided to keep the common options at the front
+           because it feels more natural to specify the landmark factory before
+           the more specific arguments like the used LP solver in the case of
+           an optimal cost partitioning heuristic.
+        */
+        add_landmark_heuristic_options_to_feature(
+            *this, "landmark_cost_partitioning");
         add_option<CostPartitioningMethod>(
             "cost_partitioning",
             "strategy for partitioning operator costs among landmarks",
@@ -151,6 +166,21 @@ public:
         document_property("consistent",
                           "no; see document note about consistency");
         document_property("safe", "yes");
+    }
+
+    virtual shared_ptr<LandmarkCostPartitioningHeuristic> create_component(
+        const plugins::Options &options, const utils::Context &) const override {
+        plugins::Options lmcp_options =
+            collect_landmark_heuristic_options(options);
+        lmcp_options.set<CostPartitioningMethod>(
+            "cost_partitioning",
+            options.get<CostPartitioningMethod>("cost_partitioning"));
+        lmcp_options.set<bool>("alm", options.get<bool>("alm"));
+        lmcp_options.set<lp::LPSolverType>(
+            "lpsolver", options.get<lp::LPSolverType>("lpsolver"));
+        return plugins::make_shared_from_arg_tuples<LandmarkCostPartitioningHeuristic>(
+            lmcp_options,
+            get_landmark_heuristic_arguments_from_options(options));
     }
 };
 
