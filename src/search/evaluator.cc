@@ -103,9 +103,9 @@ void add_evaluator_options_to_feature(plugins::Feature &feature) {
 tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
     const plugins::Options &opts) {
     return tuple_cat(
-            make_tuple(opts.get<string>("description")),
-            utils::get_log_arguments_from_options(opts)
-            );
+        make_tuple(opts.get<string>("description")),
+        utils::get_log_arguments_from_options(opts)
+        );
 }
 
 static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<Evaluator> {

@@ -122,13 +122,13 @@ public:
   constructor. The resulting arguments will be used as arguments to make_shared.
 */
 // TODO issue1082 where should this live? optimize with std::forward?
-template<typename T, typename ...Arguments>
-std::shared_ptr<T> make_shared_from_arg_tuples(Arguments...arguments) {
+template<typename T, typename ... Arguments>
+std::shared_ptr<T> make_shared_from_arg_tuples(Arguments... arguments) {
     return std::apply(
-        [](auto...flattened_args) {
-            return std::make_shared<T>(flattened_args...);
+        [](auto... flattened_args) {
+            return std::make_shared<T>(flattened_args ...);
         },
-        utils::flatten_tuple(std::tuple<Arguments...>(arguments...)));
+        utils::flatten_tuple(std::tuple<Arguments...>(arguments ...)));
 }
 
 class Plugin {

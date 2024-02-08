@@ -335,7 +335,7 @@ void add_multiple_options_to_feature(plugins::Feature &feature) {
 }
 
 tuple<int, int, double, double, double, double, bool, int, utils::Verbosity>
-    get_multiple_arguments_from_options(const plugins::Options &opts) {
+get_multiple_arguments_from_options(const plugins::Options &opts) {
     auto generator_args = get_generator_arguments_from_options(opts);
     tuple multiple_args = make_tuple(
         opts.get<int>("max_pdb_size"),

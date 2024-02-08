@@ -11,13 +11,13 @@ using namespace std;
 
 namespace operator_counting {
 OperatorCountingHeuristic::OperatorCountingHeuristic(
-        const vector<shared_ptr<ConstraintGenerator>> &constraint_generators,
-        bool use_integer_operator_counts,
-        lp::LPSolverType lp_solver_type,
-        const shared_ptr<AbstractTask> &transform,
-        bool cache_estimates,
-        const string &description,
-        utils::Verbosity verbosity)
+    const vector<shared_ptr<ConstraintGenerator>> &constraint_generators,
+    bool use_integer_operator_counts,
+    lp::LPSolverType lp_solver_type,
+    const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates,
+    const string &description,
+    utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       constraint_generators(constraint_generators),
       use_integer_operator_counts(use_integer_operator_counts),
@@ -123,7 +123,7 @@ public:
             options.get<bool>("use_integer_operator_counts"),
             lp::get_lp_solver_arguments_from_options(options),
             Heuristic::get_heuristic_arguments_from_options(options)
-        );
+            );
     }
 };
 
