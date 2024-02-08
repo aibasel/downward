@@ -41,6 +41,10 @@ void add_cost_type_option_to_feature(plugins::Feature &feature) {
         "normal");
 }
 
+OperatorCost get_cost_type_arguments_from_options(const plugins::Options &opts) {
+    return opts.get<OperatorCost>("cost_type");
+}
+
 static plugins::TypedEnumPlugin<OperatorCost> _enum_plugin({
     {"normal", "all actions are accounted for with their real cost"},
     {"one", "all actions are accounted for as unit cost"},
