@@ -44,7 +44,7 @@ public:
     LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
 
-        Heuristic::add_options_to_feature(*this, "lmcut");
+        add_heuristic_options_to_feature(*this, "lmcut");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
@@ -59,7 +59,7 @@ public:
     virtual shared_ptr<LandmarkCutHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkCutHeuristic>(
-            Heuristic::get_heuristic_arguments_from_options(opts)
+            get_heuristic_arguments_from_options(opts)
             );
     }
 };

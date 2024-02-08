@@ -45,7 +45,7 @@ State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
     return task_proxy.convert_ancestor_state(ancestor_state);
 }
 
-void Heuristic::add_options_to_feature(plugins::Feature &feature, const string &description) {
+void add_heuristic_options_to_feature(plugins::Feature &feature, const string &description) {
     feature.add_option<shared_ptr<AbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic."
@@ -55,8 +55,9 @@ void Heuristic::add_options_to_feature(plugins::Feature &feature, const string &
     add_evaluator_options_to_feature(feature, description);
 }
 
+/*
 // TODO 1082 remove this, just keep the one above
-void Heuristic::add_options_to_feature(plugins::Feature &feature) {
+void add_options_to_feature(plugins::Feature &feature) {
     feature.add_option<shared_ptr<AbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic."
@@ -65,16 +66,15 @@ void Heuristic::add_options_to_feature(plugins::Feature &feature) {
     feature.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
     add_evaluator_options_to_feature(feature);
 }
+*/
 
-
-tuple<shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
-Heuristic::get_heuristic_arguments_from_options(const plugins::Options &opts) {
-    auto evaluator_args = get_evaluator_arguments_from_options(opts);
-    auto heuristic_args = make_tuple(
-        opts.get<shared_ptr<AbstractTask>>("transform"),
-        opts.get<bool>("cache_estimates")
-        );
-    return tuple_cat(heuristic_args, evaluator_args);
+tuple<shared_ptr<AbstractTask>, bool, string, utils::Verbosity> get_heuristic_arguments_from_options(const plugins::Options &opts) {
+    return tuple_cat(
+        make_tuple(
+            opts.get<shared_ptr<AbstractTask>>("transform"),
+            opts.get<bool>("cache_estimates")
+            ),
+        get_evaluator_arguments_from_options(opts));
 }
 
 EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {

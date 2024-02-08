@@ -107,7 +107,7 @@ public:
     HSPMaxHeuristicFeature() : TypedFeature("hmax") {
         document_title("Max heuristic");
 
-        Heuristic::add_options_to_feature(*this, "hmax");
+        add_heuristic_options_to_feature(*this, "hmax");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");
@@ -126,7 +126,7 @@ public:
     virtual shared_ptr<HSPMaxHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<HSPMaxHeuristic>(
-            Heuristic::get_heuristic_arguments_from_options(opts));
+            get_heuristic_arguments_from_options(opts));
     }
 };
 

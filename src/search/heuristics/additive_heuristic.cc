@@ -153,7 +153,7 @@ public:
     AdditiveHeuristicFeature() : TypedFeature("add") {
         document_title("Additive heuristic");
 
-        Heuristic::add_options_to_feature(*this, "add");
+        add_heuristic_options_to_feature(*this, "add");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");
@@ -172,7 +172,7 @@ public:
     virtual shared_ptr<AdditiveHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<AdditiveHeuristic>(
-            Heuristic::get_heuristic_arguments_from_options(opts)
+            get_heuristic_arguments_from_options(opts)
             );
     }
 };

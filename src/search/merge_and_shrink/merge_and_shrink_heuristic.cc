@@ -198,7 +198,7 @@ public:
                 "2018")
             );
 
-        Heuristic::add_options_to_feature(*this, "merge_and_shrink");
+        add_heuristic_options_to_feature(*this, "merge_and_shrink");
         add_merge_and_shrink_algorithm_options_to_feature(*this);
 
         document_note(
@@ -257,7 +257,7 @@ public:
 
         return plugins::make_shared_from_arg_tuples<MergeAndShrinkHeuristic>(
             get_merge_and_shrink_algorithm_arguments_from_options(options_copy),
-            Heuristic::get_heuristic_arguments_from_options(options_copy)
+            get_heuristic_arguments_from_options(options_copy)
             );
     }
 };

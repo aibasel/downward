@@ -162,7 +162,7 @@ public:
             "maximum number of potential heuristics",
             "infinity",
             plugins::Bounds("0", "infinity"));
-        prepare_parser_for_admissible_potentials(*this);
+        add_admissible_potentials_options_to_feature(*this, "diverse_potentials");
         utils::add_rng_options_to_feature(*this);
     }
 

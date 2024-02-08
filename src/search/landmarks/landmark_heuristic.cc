@@ -231,7 +231,7 @@ void add_landmark_heuristic_options_to_feature(plugins::Feature &feature,
         "prog_gn", "Use greedy-necessary ordering progression.", "true");
     feature.add_option<bool>(
         "prog_r", "Use reasonable ordering progression.", "true");
-    Heuristic::add_options_to_feature(feature, description);
+    add_heuristic_options_to_feature(feature, description);
 
     feature.document_property("preferred operators",
                               "yes (if enabled; see ``pref`` option)");
@@ -251,6 +251,6 @@ get_landmark_heuristic_arguments_from_options(const plugins::Options &options) {
             options.get<bool>("prog_gn"),
             options.get<bool>("prog_r")
             ),
-        Heuristic::get_heuristic_arguments_from_options(options));
+        get_heuristic_arguments_from_options(options));
 }
 }

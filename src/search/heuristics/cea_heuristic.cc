@@ -451,7 +451,7 @@ public:
     ContextEnhancedAdditiveHeuristicFeature() : TypedFeature("cea") {
         document_title("Context-enhanced additive heuristic");
 
-        Heuristic::add_options_to_feature(*this, "cea");
+        add_heuristic_options_to_feature(*this, "cea");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");
@@ -470,7 +470,7 @@ public:
     virtual shared_ptr<ContextEnhancedAdditiveHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<ContextEnhancedAdditiveHeuristic>(
-            Heuristic::get_heuristic_arguments_from_options(opts)
+            get_heuristic_arguments_from_options(opts)
             );
     }
 };

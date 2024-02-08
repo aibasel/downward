@@ -39,7 +39,7 @@ public:
         document_title("Potential heuristic optimized for initial state");
         document_synopsis(get_admissible_potentials_reference());
 
-        prepare_parser_for_admissible_potentials(*this);
+        add_admissible_potentials_options_to_feature(*this, "initial_state_potential");
     }
 
     virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
@@ -56,7 +56,7 @@ public:
         document_title("Potential heuristic optimized for all states");
         document_synopsis(get_admissible_potentials_reference());
 
-        prepare_parser_for_admissible_potentials(*this);
+        add_admissible_potentials_options_to_feature(*this, "all_states_potential");
     }
 
     virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {

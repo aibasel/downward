@@ -46,7 +46,7 @@ public:
             "pattern",
             "pattern generation method",
             "greedy()");
-        Heuristic::add_options_to_feature(*this, "pdb");
+        add_heuristic_options_to_feature(*this, "pdb");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
@@ -62,7 +62,7 @@ public:
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<PDBHeuristic>(
             opts.get<shared_ptr<PatternGenerator>>("pattern"),
-            Heuristic::get_heuristic_arguments_from_options(opts)
+            get_heuristic_arguments_from_options(opts)
             );
     }
 };

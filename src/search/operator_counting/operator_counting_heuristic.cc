@@ -93,7 +93,7 @@ public:
             "increase the runtime.",
             "false");
         lp::add_lp_solver_option_to_feature(*this);
-        Heuristic::add_options_to_feature(*this, "operatorcounting");
+        add_heuristic_options_to_feature(*this, "operatorcounting");
 
         document_language_support("action costs", "supported");
         document_language_support(
@@ -121,7 +121,7 @@ public:
             options.get_list<shared_ptr<ConstraintGenerator>>("constraint_generators"),
             options.get<bool>("use_integer_operator_counts"),
             lp::get_lp_solver_arguments_from_options(options),
-            Heuristic::get_heuristic_arguments_from_options(options)
+            get_heuristic_arguments_from_options(options)
             );
     }
 };

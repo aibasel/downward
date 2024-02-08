@@ -70,7 +70,7 @@ public:
             "Number of states to sample",
             "1000",
             plugins::Bounds("0", "infinity"));
-        prepare_parser_for_admissible_potentials(*this);
+        add_admissible_potentials_options_to_feature(*this, "sample_based_potentials");
         utils::add_rng_options_to_feature(*this);
     }
 

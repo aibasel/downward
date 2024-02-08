@@ -24,7 +24,7 @@ std::vector<State> sample_without_dead_end_detection(
     utils::RandomNumberGenerator &rng);
 
 std::string get_admissible_potentials_reference();
-void prepare_parser_for_admissible_potentials(plugins::Feature &feature);
+void add_admissible_potentials_options_to_feature(plugins::Feature &feature, const std::string &description);
 }
 
 #endif

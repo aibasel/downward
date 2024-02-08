@@ -296,7 +296,7 @@ public:
             "maximum number of cached entries per variable (set to 0 to disable cache)",
             "1000000",
             plugins::Bounds("0", "infinity"));
-        Heuristic::add_options_to_feature(*this, "cg");
+        add_heuristic_options_to_feature(*this, "cg");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");
@@ -316,7 +316,7 @@ public:
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<CGHeuristic>(
             opts.get<int>("max_cache_size"),
-            Heuristic::get_heuristic_arguments_from_options(opts)
+            get_heuristic_arguments_from_options(opts)
             );
     }
 };

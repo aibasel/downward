@@ -653,8 +653,8 @@ public:
           are added. We thus only use dominance pruning on the resulting collection.
         */
         add_canonical_pdbs_options_to_feature(*this);
-        Heuristic::add_options_to_feature(*this, "cpdbs"); // TODO issue1082 this adds a description parameter that is
-                                                           // only used for the heuristic, not for the generator.
+        add_heuristic_options_to_feature(*this, "cpdbs"); // TODO issue1082 this adds a description parameter that is
+                                                          // only used for the heuristic, not for the generator.
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
@@ -678,7 +678,7 @@ public:
         return plugins::make_shared_from_arg_tuples<CanonicalPDBsHeuristic>(
             pgh,
             opts.get<double>("max_time_dominance_pruning"),
-            Heuristic::get_heuristic_arguments_from_options(opts)
+            get_heuristic_arguments_from_options(opts)
             );
     }
 };

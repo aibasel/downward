@@ -56,7 +56,7 @@ public:
             "patterns",
             "pattern generation method",
             "systematic(1)");
-        Heuristic::add_options_to_feature(*this, "zopdbs");
+        add_heuristic_options_to_feature(*this, "zopdbs");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
@@ -72,7 +72,7 @@ public:
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<ZeroOnePDBsHeuristic>(
             opts.get<shared_ptr<PatternCollectionGenerator>>("patterns"),
-            Heuristic::get_heuristic_arguments_from_options(opts)
+            get_heuristic_arguments_from_options(opts)
             );
     }
 };

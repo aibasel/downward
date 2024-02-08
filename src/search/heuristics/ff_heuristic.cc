@@ -78,7 +78,7 @@ public:
     FFHeuristicFeature() : TypedFeature("ff") {
         document_title("FF heuristic");
 
-        Heuristic::add_options_to_feature(*this, "ff");
+        add_heuristic_options_to_feature(*this, "ff");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");
@@ -97,7 +97,7 @@ public:
     virtual shared_ptr<FFHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<FFHeuristic>(
-            Heuristic::get_heuristic_arguments_from_options(opts)
+            get_heuristic_arguments_from_options(opts)
             );
     }
 };

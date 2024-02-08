@@ -111,7 +111,7 @@ public:
             "pattern generation method",
             "systematic(1)");
         add_canonical_pdbs_options_to_feature(*this);
-        Heuristic::add_options_to_feature(*this, "cpdbs");
+        add_heuristic_options_to_feature(*this, "cpdbs");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
@@ -128,7 +128,7 @@ public:
         return plugins::make_shared_from_arg_tuples<CanonicalPDBsHeuristic>(
             opts.get<shared_ptr<PatternCollectionGenerator>>("patterns"),
             opts.get<double>("max_time_dominance_pruning"),
-            Heuristic::get_heuristic_arguments_from_options(opts)
+            get_heuristic_arguments_from_options(opts)
             );
     }
 };

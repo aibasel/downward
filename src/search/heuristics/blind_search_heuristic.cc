@@ -40,7 +40,7 @@ public:
             "Returns cost of cheapest action for non-goal states, "
             "0 for goal states");
 
-        Heuristic::add_options_to_feature(*this, "blind");
+        add_heuristic_options_to_feature(*this, "blind");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");
@@ -55,7 +55,7 @@ public:
     virtual shared_ptr<BlindSearchHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<BlindSearchHeuristic>(
-            Heuristic::get_heuristic_arguments_from_options(opts)
+            get_heuristic_arguments_from_options(opts)
             );
     }
 };

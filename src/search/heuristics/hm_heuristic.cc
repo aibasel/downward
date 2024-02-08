@@ -274,7 +274,7 @@ public:
         document_title("h^m heuristic");
 
         add_option<int>("m", "subset size", "2", plugins::Bounds("1", "infinity"));
-        Heuristic::add_options_to_feature(*this, "hm");
+        add_heuristic_options_to_feature(*this, "hm");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "ignored");
@@ -295,7 +295,7 @@ public:
     virtual shared_ptr<HMHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<HMHeuristic>(
             options.get<int>("m"),
-            Heuristic::get_heuristic_arguments_from_options(options)
+            get_heuristic_arguments_from_options(options)
             );
     }
 };
