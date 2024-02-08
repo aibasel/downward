@@ -24,11 +24,11 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
     const shared_ptr<MergeStrategyFactory> &merge_strategy,
     const shared_ptr<ShrinkStrategy> &shrink_strategy,
     const shared_ptr<LabelReduction> &label_reduction,
+    bool prune_unreachable_states,
+    bool prune_irrelevant_states,
     int max_states,
     int max_states_before_merge,
     int threshold_before_merge,
-    bool prune_unreachable_states,
-    bool prune_irrelevant_states,
     double main_loop_max_time,
     const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
@@ -251,8 +251,8 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<MergeAndShrinkHeuristic> create_component(const plugins::Options &options, const utils::Context &context) const override {
-        plugins::Options options_copy(options);
+    virtual shared_ptr<MergeAndShrinkHeuristic> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+        plugins::Options options_copy(opts);
         handle_shrink_limit_options_defaults(options_copy, context);
 
         return plugins::make_shared_from_arg_tuples<MergeAndShrinkHeuristic>(
