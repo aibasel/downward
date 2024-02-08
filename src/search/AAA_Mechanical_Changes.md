@@ -7,20 +7,26 @@ Mechanical changes: <TODO issue1082 remove this file>
     - If not there yet, add flat constructors.
       - The flat constructor is not `explicit` if it receives more than one parameter.
       - It expects the arguments in the same order as its base class, new introduced parameter are added to the front.
-    The new introduced parameters are the ones extracted from the options object by the ByOptions-constructor (not by the base class constructor).
-      - If the base class has parameters for its constructor, then add a `get_<baseComponent>_parameters_from_options` function that returns a shared pointer to a tuple with the parameters to call the constructor of that component (in the fitting order). [cf. src/search/heuristic.cc]
-      - If the constructor uses `opts.get_unparsed_configs`, then adjust the 'add_<component>_options_to_feature' to expect a string parameter to forward the fitting default string. You might have to overload the function that eventually calls 'add_<baseComponent>_options_to_feature' with such an additional string parameter. If you do, then mark the old one with `// TODO issue1082 remove` [cf. Heuristic::add_options_to_feature].
+    The new introduced parameters are the ones that have a `feature.add_option<Foo>(
+        "my_bar",
+        "help txt",
+        "my_default");` in the ComponentFeature class.
+      The inherited parameters are the one added to the feature by a `add_xyz_options_to_feature`
+      - If the base class has a `add_<base>_options_to_feature`, then add a `get_<baseComponent>_parameters_from_options` function that returns a tuple with the parameters to call the constructor of that component (in the fitting order). [cf. src/search/evaluator.cc]
+      - If the constructor uses `opts.get_unparsed_configs`, then adjust the `add_<component>_options_to_feature` to expect a string parameter to forward the fitting default string. You might have to overload the function that eventually calls 'add_<baseComponent>_options_to_feature' with such an additional string parameter. If you do, then mark the old one with `// TODO issue1082 remove` [cf. add_evaluator_options_to_feature].
 
 
 - For the chosen class and all its children:
   - Replace the ByOptions-constructor with a flat constructor.
 If needed, use one of the overloaded `add_<whatever>_options` calls to forward the default description. It should be the same as the feature_key (the string used to call the TypedFeature constructor in the XyzFeature constructor).
   - If not already there, add a `create_component` function in the XyzFeature. The body is simply:
-    `return plugins::make_shared_from_args_tuple_and_args<Xyz>(
-get_<baseComponent>_parameters_from_options(opts),
+    `return plugins::make_shared_from_arg_tuples<Xyz>(
 opts.get<int>("a"),
 // ... further new introduced parameters extracted from options
-opts.get<double>("z")
+opts.get<double>("z"),
+get_<A>_parameters_from_options(opts),
+// ... in the oreder as the add_<A-Z>_options_to_feature was called above.
+get_<Z>_parameter_from_options(opts)
 );`
 [cf. src/search/heuristics/hm_heuristic.cc]
   - **ELSE** there is probably something acting on a copy of the options object.
