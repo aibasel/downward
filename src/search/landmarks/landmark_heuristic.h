@@ -51,17 +51,16 @@ public:
         evals.insert(this);
     }
 
-    static void add_options_to_feature(plugins::Feature &feature,
-                                       const std::string &description);
-    static std::tuple<bool, std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity> get_arguments_from_options(
-        const plugins::Options &options);
-
     virtual void notify_initial_state(const State &initial_state) override;
     virtual void notify_state_transition(const State &parent_state,
                                          OperatorID op_id,
                                          const State &state) override;
 };
 
+extern void add_landmark_heuristic_options_to_feature(
+    plugins::Feature &feature, const std::string &description);
+extern std::tuple<bool, std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity> get_landmark_heuristic_arguments_from_options(
+    const plugins::Options &options);
 extern plugins::Options collect_landmark_heuristic_options(
     const plugins::Options &options);
 }

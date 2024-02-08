@@ -143,7 +143,7 @@ public:
                 "127-177",
                 "2010"));
 
-        LandmarkHeuristic::add_options_to_feature(
+        add_landmark_heuristic_options_to_feature(
             *this, "landmark_sum_heuristic");
 
         document_note(
@@ -203,7 +203,7 @@ public:
             collect_landmark_heuristic_options(options);
         return plugins::make_shared_from_arg_tuples<LandmarkSumHeuristic>(
             lm_options,
-            LandmarkHeuristic::get_arguments_from_options(options));
+            get_landmark_heuristic_arguments_from_options(options));
     }
 };
 

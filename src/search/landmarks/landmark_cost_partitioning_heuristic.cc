@@ -113,7 +113,15 @@ public:
                 "IOS Press",
                 "2010"));
 
-        LandmarkHeuristic::add_options_to_feature(
+        /*
+          TODO issue1082: We usually move the options of base classes behind the
+           options of specific implementations. In the case of landmark
+           heuristics, we decided to keep the common options at the front
+           because it feels more natural to specify the landmark factory before
+           the more specific arguments like the used LP solver in the case of
+           an optimal cost partitioning heuristic.
+        */
+        add_landmark_heuristic_options_to_feature(
             *this, "landmark_cost_partitioning");
         add_option<CostPartitioningMethod>(
             "cost_partitioning",
@@ -172,7 +180,7 @@ public:
             "lpsolver", options.get<lp::LPSolverType>("lpsolver"));
         return plugins::make_shared_from_arg_tuples<LandmarkCostPartitioningHeuristic>(
             lmcp_options,
-            LandmarkHeuristic::get_arguments_from_options(options));
+            get_landmark_heuristic_arguments_from_options(options));
     }
 };
 

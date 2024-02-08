@@ -196,7 +196,7 @@ void LandmarkHeuristic::notify_state_transition(
     }
 }
 
-void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature,
+void add_landmark_heuristic_options_to_feature(plugins::Feature &feature,
                                                const string &description) {
     feature.document_synopsis(
         "Landmark progression is implemented according to the following paper:"
@@ -234,12 +234,20 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature,
 }
 
 tuple<bool, shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
-LandmarkHeuristic::get_arguments_from_options(const plugins::Options &options) {
+get_landmark_heuristic_arguments_from_options(const plugins::Options &options) {
     return tuple_cat(
         make_tuple(options.get<bool>("pref")),
         Heuristic::get_heuristic_arguments_from_options(options));
 }
 
+/*
+  TODO: issue1082 aimed to remove the options object from constructors.
+   This is not possible here because we need to wait with initializing the
+   landmark factory until the task is given (e.g., cost transformation).
+   Therefore, we can only extract the landmark factory from the options
+   after this happened, so we allow the landmark heuristics to keep a
+   (small) options object around for that purpose.
+*/
 plugins::Options collect_landmark_heuristic_options(
     const plugins::Options &options) {
     plugins::Options lm_options;

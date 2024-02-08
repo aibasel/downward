@@ -19,6 +19,14 @@ class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
 
     int get_heuristic_value(const State &ancestor_state) override;
 public:
+    /*
+      TODO: issue1082 aimed to remove the options object from constructors.
+       This is not possible here because we need to wait with initializing the
+       landmark factory until the task is given (e.g., cost transformation).
+       Therefore, we can only extract the landmark factory from the options
+       after this happened, so we allow the landmark heuristics to keep a
+       (small) options object around for that purpose.
+    */
     LandmarkCostPartitioningHeuristic(
         const plugins::Options &options,
         bool use_preferred_operators,
