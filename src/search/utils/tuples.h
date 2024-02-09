@@ -14,7 +14,7 @@ auto flatten_tuple(T &&t) {
 
 template<class ... Ts>
 auto flatten_tuple(std::tuple<Ts...> &&t) {
-    constexpr auto tuple_size = std::tuple_size<std::tuple<Ts...>>::value;
+    constexpr std::size_t tuple_size = std::tuple_size<std::tuple<Ts...>>::value;
     return flatten_tuple_elements(std::move(t), std::make_index_sequence<tuple_size>());
 }
 
