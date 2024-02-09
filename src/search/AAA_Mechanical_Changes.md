@@ -101,25 +101,24 @@ search
 ├── ✅ pruning_method.h
 ├── ❌ search_algorithm.cc
 ├── ❌ search_algorithm.h
-├── ❌ search_algorithmss
-│   ├── eager_search.cc
-│   ├── eager_search.h
-│   ├── enforced_hill_climbing_search.cc
-│   ├── enforced_hill_climbing_search.h
-│   ├── iterated_search.cc
-│   ├── iterated_search.h
-│   ├── lazy_search.cc
-│   ├── lazy_search.h
-│   ├── plugin_astar.cc
-│   ├── plugin_eager.cc
-│   ├── plugin_eager_greedy.cc
-│   ├── plugin_eager_wastar.cc
-│   ├── plugin_lazy.cc
-│   ├── plugin_lazy_greedy.cc
-│   ├── plugin_lazy_wastar.cc
-│   ├── search_common.cc
-│   └── search_common.h
-
+├── ❓ search_algorithmss
+│      ├── ✅ eager_search.cc
+│      ├── ✅ eager_search.h
+│      ├── ✅ enforced_hill_climbing_search.cc
+│      ├── ✅ enforced_hill_climbing_search.h
+│      ├── ❓ iterated_search.cc
+│      ├── ❓ iterated_search.h
+│      ├── ✅ lazy_search.cc
+│      ├── ✅ lazy_search.h
+│      ├── ✅ plugin_astar.cc
+│      ├── ✅ plugin_eager.cc
+│      ├── ✅ plugin_eager_greedy.cc
+│      ├── ✅ plugin_eager_wastar.cc
+│      ├── ✅ plugin_lazy.cc
+│      ├── ✅ plugin_lazy_greedy.cc
+│      ├── ✅ plugin_lazy_wastar.cc
+│      ├── ❓ search_common.cc
+│      └── ❓ search_common.h
 ├── ✅ search_node_info.cc
 ├── ✅ search_node_info.h
 ├── ✅ search_progress.cc
