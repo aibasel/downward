@@ -9,6 +9,11 @@ namespace tiebreaking_open_list {
 class TieBreakingOpenListFactory : public OpenListFactory {
     plugins::Options options;
 public:
+    TieBreakingOpenListFactory(
+            bool pref_only,
+            std::vector<std::shared_ptr<Evaluator>> evals,
+            bool unsafe_pruning
+            );
     explicit TieBreakingOpenListFactory(const plugins::Options &options);
     virtual ~TieBreakingOpenListFactory() override = default;
 
