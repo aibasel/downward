@@ -55,7 +55,7 @@ search
 ├── ✅ algorithms
 ├── ✅ axioms.cc
 ├── ✅ axioms.h
-├── ❌ cartesian_abstractions
+├── ✅ cartesian_abstractions
 ├── ✅ cmake
 ├── ✅ CMakeLists.txt
 ├── ✅ command_line.cc
