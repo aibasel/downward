@@ -161,7 +161,7 @@ unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
 
 
 void NegatedAxiomsTask::add_negated_axioms_for_var(
-    FactPair head, std::vector<int> &axiom_ids) {
+    FactPair head, vector<int> &axiom_ids) {
     TaskProxy task_proxy(*parent);
 
     /*
@@ -203,8 +203,8 @@ void NegatedAxiomsTask::add_negated_axioms_for_var(
 
 
 void NegatedAxiomsTask::collect_non_dominated_hitting_sets_recursively(
-    const std::vector<std::set<FactPair>> &conditions_as_cnf, size_t index,
-    std::set<FactPair> &hitting_set, std::set<std::set<FactPair>> &results) {
+    const vector<set<FactPair>> &conditions_as_cnf, size_t index,
+    set<FactPair> &hitting_set, set<set<FactPair>> &results) {
     if (index == conditions_as_cnf.size()) {
         /*
            Check whether the axiom body denoted in body is dominated.
@@ -268,7 +268,7 @@ int NegatedAxiomsTask::get_operator_cost(int index, bool is_axiom) const {
     return 0;
 }
 
-std::string NegatedAxiomsTask::get_operator_name(int index, bool is_axiom) const {
+string NegatedAxiomsTask::get_operator_name(int index, bool is_axiom) const {
     if (!is_axiom || index < negated_axioms_start_index) {
         return parent->get_operator_name(index, is_axiom);
     }
