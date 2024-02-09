@@ -129,7 +129,7 @@ SharedTasks GoalDecomposition::get_subtasks(
 
 
 LandmarkDecomposition::LandmarkDecomposition(
-        FactOrder fact_order, bool combine_facts, int random_seed)
+    FactOrder fact_order, bool combine_facts, int random_seed)
     : fact_order(fact_order),
       combine_facts(combine_facts),
       rng(utils::get_rng(random_seed)) {
