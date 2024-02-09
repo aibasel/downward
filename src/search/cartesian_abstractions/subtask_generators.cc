@@ -94,8 +94,8 @@ static Facts filter_and_order_facts(
 }
 
 
-TaskDuplicator::TaskDuplicator(const plugins::Options &opts)
-    : num_copies(opts.get<int>("copies")) {
+TaskDuplicator::TaskDuplicator(int num_copies)
+    : num_copies(num_copies) {
 }
 
 SharedTasks TaskDuplicator::get_subtasks(
@@ -108,9 +108,9 @@ SharedTasks TaskDuplicator::get_subtasks(
     return subtasks;
 }
 
-GoalDecomposition::GoalDecomposition(const plugins::Options &opts)
-    : fact_order(opts.get<FactOrder>("order")),
-      rng(utils::parse_rng_from_options(opts)) {
+GoalDecomposition::GoalDecomposition(FactOrder fact_order, int random_seed)
+    : fact_order(fact_order),
+      rng(utils::get_rng(random_seed)) {
 }
 
 SharedTasks GoalDecomposition::get_subtasks(
@@ -128,10 +128,11 @@ SharedTasks GoalDecomposition::get_subtasks(
 }
 
 
-LandmarkDecomposition::LandmarkDecomposition(const plugins::Options &opts)
-    : fact_order(opts.get<FactOrder>("order")),
-      combine_facts(opts.get<bool>("combine_facts")),
-      rng(utils::parse_rng_from_options(opts)) {
+LandmarkDecomposition::LandmarkDecomposition(
+        FactOrder fact_order, bool combine_facts, int random_seed)
+    : fact_order(fact_order),
+      combine_facts(combine_facts),
+      rng(utils::get_rng(random_seed)) {
 }
 
 shared_ptr<AbstractTask> LandmarkDecomposition::build_domain_abstracted_task(
@@ -176,6 +177,11 @@ static void add_fact_order_option(plugins::Feature &feature) {
     utils::add_rng_options_to_feature(feature);
 }
 
+static tuple<FactOrder, int> get_fact_order_arguments_from_options(const plugins::Options &opts) {
+    return tuple_cat(make_tuple(opts.get<FactOrder>("order")),
+                     utils::get_rng_arguments_from_options(opts));
+}
+
 class TaskDuplicatorFeature : public plugins::TypedFeature<SubtaskGenerator, TaskDuplicator> {
 public:
     TaskDuplicatorFeature() : TypedFeature("original") {
@@ -185,6 +191,12 @@ public:
             "1",
             plugins::Bounds("1", "infinity"));
     }
+
+    virtual shared_ptr<TaskDuplicator> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<TaskDuplicator>(
+            opts.get<int>("copies"));
+    }
 };
 
 static plugins::FeaturePlugin<TaskDuplicatorFeature> _plugin_original;
@@ -193,6 +205,12 @@ class GoalDecompositionFeature : public plugins::TypedFeature<SubtaskGenerator, 
 public:
     GoalDecompositionFeature() : TypedFeature("goals") {
         add_fact_order_option(*this);
+    }
+
+    virtual shared_ptr<GoalDecomposition> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<GoalDecomposition>(
+            get_fact_order_arguments_from_options(opts));
     }
 };
 
@@ -207,6 +225,13 @@ public:
             "combine_facts",
             "combine landmark facts with domain abstraction",
             "true");
+    }
+
+    virtual shared_ptr<LandmarkDecomposition> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<LandmarkDecomposition>(
+            get_fact_order_arguments_from_options(opts),
+            opts.get<bool>("combine_facts"));
     }
 };
 
