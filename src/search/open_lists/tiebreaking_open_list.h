@@ -10,8 +10,8 @@ class TieBreakingOpenListFactory : public OpenListFactory {
     plugins::Options options;
 public:
     TieBreakingOpenListFactory(
+            const std::vector<std::shared_ptr<Evaluator>> &evals,
             bool pref_only,
-            std::vector<std::shared_ptr<Evaluator>> evals,
             bool unsafe_pruning
             );
     explicit TieBreakingOpenListFactory(const plugins::Options &options);
