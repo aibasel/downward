@@ -18,8 +18,8 @@ struct NegatedAxiom {
     FactPair head;
     std::vector<FactPair> condition;
 
-    // TODO: move constructor?
-    NegatedAxiom(FactPair head, std::vector<FactPair> condition)
+    // TODO: clang suggested moving the second argument, is this correct? (clang doesn't complain at least :))
+    NegatedAxiom(FactPair head, std::vector<FactPair> &&condition)
         : head(head), condition(condition) {}
 };
 
