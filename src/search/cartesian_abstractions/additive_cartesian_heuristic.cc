@@ -45,8 +45,8 @@ AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
     const std::string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       heuristic_functions(generate_heuristic_functions(
-          subtasks, max_states, max_transitions, max_time, pick,
-          use_general_costs, random_seed, transform, log)) {
+                              subtasks, max_states, max_transitions, max_time, pick,
+                              use_general_costs, random_seed, transform, log)) {
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const State &ancestor_state) {

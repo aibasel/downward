@@ -285,8 +285,8 @@ public:
     virtual shared_ptr<DeleteRelaxationConstraints> create_component(
         const plugins::Options &options, const utils::Context &) const override {
         return make_shared<DeleteRelaxationConstraints>(
-                    options.get<bool>("use_time_vars"),
-                    options.get<bool>("use_integer_vars"));
+            options.get<bool>("use_time_vars"),
+            options.get<bool>("use_integer_vars"));
     }
 };
 
