@@ -22,37 +22,8 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
 
     TaskProxy task_proxy(*parent);
 
-    // Collect derived variables that occur as their default value.
-    unordered_set<int> needed_negatively;
-    State init = task_proxy.get_initial_state();
-    for (const FactProxy &goal: task_proxy.get_goals()) {
-        VariableProxy var_proxy = goal.get_variable();
-        if (var_proxy.is_derived()
-            && goal.get_value() == var_proxy.get_default_axiom_value()) {
-            needed_negatively.insert(goal.get_pair().var);
-        }
-    }
-    for (OperatorProxy op: task_proxy.get_operators()) {
-        for (FactProxy condition: op.get_preconditions()) {
-            VariableProxy var_proxy = condition.get_variable();
-            if (var_proxy.is_derived()
-            && condition.get_value() == var_proxy.get_default_axiom_value()) {
-                needed_negatively.insert(condition.get_pair().var);
-            }
-        }
-
-        for (EffectProxy effect: op.get_effects()) {
-            for (FactProxy condition: effect.get_conditions()) {
-                VariableProxy var_proxy = condition.get_variable();
-                if (var_proxy.is_derived()
-                && condition.get_value() == var_proxy.get_default_axiom_value()) {
-                    needed_negatively.insert(condition.get_pair().var);
-                }
-            }
-        }
-    }
-
-    vector<vector<int>> positive_dependencies(task_proxy.get_variables().size());
+    vector<vector<int>> pos_dependencies(task_proxy.get_variables().size());
+    vector<vector<int>> neg_dependencies(task_proxy.get_variables().size());
     vector<vector<int>> axiom_ids_for_var(task_proxy.get_variables().size());
     for (OperatorProxy axiom: task_proxy.get_axioms()) {
         EffectProxy effect = axiom.get_effects()[0];
@@ -63,43 +34,28 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
             if (var_proxy.is_derived()) {
                 int var = condition.get_variable().get_id();
                 if (condition.get_value() == var_proxy.get_default_axiom_value()) {
-                    needed_negatively.insert(var);
+                    neg_dependencies[head_var].push_back(var);
                 } else {
-                    positive_dependencies[head_var].push_back(var);
+                    pos_dependencies[head_var].push_back(var);
                 }
             }
         }
     }
+    unordered_set<int> needed_negatively =
+            collect_needed_negatively(pos_dependencies, neg_dependencies);
 
-    /*
-       Derived variables occurring positively in an axiom for a needed
-       negatively var are also needed negatively.
-    */
-    deque<int> to_process(needed_negatively.begin(), needed_negatively.end());
-    while (!to_process.empty()) {
-        int var = to_process.front();
-        to_process.pop_front();
-        for (int var2: positive_dependencies[var]) {
-            auto insert_retval = needed_negatively.insert(var2);
-            if (insert_retval.second) {
-                to_process.push_back(var2);
-            }
-        }
-    }
-
-    // We only compute negated axioms for variables that are needed negatively.
-    if (needed_negatively.empty()) {
-        return;
-    }
+    /* TODO: I removed the return if needed_negatively is empty.
+       It is somewhat wasteful if we have a big graph to compute the sccs,
+       but probably should not be an issue. */
 
     /*
        Get the sccs induced by positive dependencies.
        Note that negative dependencies cannot introduce additional
        cycles because this would imply that the axioms are not
-       stratifiable. This would already be detected in the translator.
+       stratifiable, which is already checked in the translator.
     */
     vector<vector<int>> sccs =
-        sccs::compute_maximal_sccs(positive_dependencies);
+        sccs::compute_maximal_sccs(pos_dependencies);
     vector<int> var_to_scc(task_proxy.get_variables().size(), -1);
     for (int i = 0; i < (int) sccs.size(); ++i) {
         for (int var: sccs[i]) {
@@ -113,7 +69,6 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
             task_proxy.get_variables()[var].get_default_axiom_value();
 
         if (sccs[var_to_scc[var]].size() > 1) {
-            cout << "found cycle" << endl;
             /*
                If there is a cyclic dependency between several derived
                variables, the "obvious" way of negating the formula
@@ -131,72 +86,83 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
             negated_axioms.emplace_back(
                 FactPair(var, default_value), vector<FactPair>());
         } else {
-            add_negated_axioms(
-                FactPair(var, default_value), axiom_ids, task_proxy);
+            add_negated_axioms_for_var(
+                FactPair(var, default_value), axiom_ids);
         }
     }
 }
 
-void NegatedAxiomsTask::find_non_dominated_hitting_sets(
-    const vector<set<FactPair>> &conditions_as_cnf, size_t index,
-    set<FactPair> &chosen, set<set<FactPair>> &results) {
 
-    if (index == conditions_as_cnf.size()) {
-        /*
-           Check whether the axiom body denoted in body is dominated.
-           This is the case if there is a fact such that no conjunction
-           in the cnf is covered by *only* this fact, implying that
-           removing the fact from the body would still cover all
-           conjunctions.
-        */
-        set<FactPair> not_uniquely_used(chosen);
-        for (const set<FactPair> &condition : conditions_as_cnf) {
-            vector<FactPair> intersection;
-            set_intersection(condition.begin(), condition.end(),
-                             chosen.begin(), chosen.end(),
-                             back_inserter(intersection));
-            if (intersection.size() == 1) {
-                not_uniquely_used.erase(intersection[0]);
+unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
+    const vector<vector<int>> &positive_dependencies,
+    const vector<vector<int>> &negative_dependencies) {
+
+    // Stores which derived variables are needed positively or negatively.
+    set<pair<int,bool>> needed;
+
+    // TODO: Should we store the proxy in the class? Pass it through methods?
+    TaskProxy task_proxy(*parent);
+
+    // Collect derived variables that occur as their default value.
+    for (const FactProxy &goal: task_proxy.get_goals()) {
+        VariableProxy var_proxy = goal.get_variable();
+        if (var_proxy.is_derived()
+            && goal.get_value() == var_proxy.get_default_axiom_value()) {
+            needed.emplace(goal.get_pair().var, false);
+        }
+    }
+    for (OperatorProxy op: task_proxy.get_operators()) {
+        for (FactProxy condition: op.get_preconditions()) {
+            VariableProxy var_proxy = condition.get_variable();
+            if (var_proxy.is_derived()
+            && condition.get_value() == var_proxy.get_default_axiom_value()) {
+                needed.emplace(condition.get_pair().var, false);
             }
         }
-        if (not_uniquely_used.empty()) {
-            results.insert(chosen);
-        }
-        return;
-    }
 
-    const set<FactPair> &conditions = conditions_as_cnf[index];
-    for (const FactPair &fact_pair : conditions) {
-        // The current set is covered with the so far chosen elements.
-        if (chosen.find(fact_pair) != chosen.end()) {
-            find_non_dominated_hitting_sets(
-                conditions_as_cnf, index+1, chosen, results);
-            return;
-        }
-    }
-
-    for (const FactPair &elem : conditions) {
-        // We don't allow choosing different facts from the same variable.
-        bool same_var_occurs_already = false;
-        for (const FactPair &f : chosen) {
-            if (f.var == elem.var) {
-                same_var_occurs_already = true;
-                break;
+        for (EffectProxy effect: op.get_effects()) {
+            for (FactProxy condition: effect.get_conditions()) {
+                VariableProxy var_proxy = condition.get_variable();
+                if (var_proxy.is_derived()
+                && condition.get_value() == var_proxy.get_default_axiom_value()) {
+                    needed.emplace(condition.get_pair().var, false);
+                }
             }
         }
-        if (same_var_occurs_already) {
-            continue;
-        }
-
-        set<FactPair> chosen_new(chosen);
-        chosen_new.insert(elem);
-        find_non_dominated_hitting_sets(
-            conditions_as_cnf, index+1, chosen_new, results);
     }
+
+    deque<pair<int,bool>> to_process(needed.begin(), needed.end());
+    while (!to_process.empty()) {
+        int var = to_process.front().first;
+        bool truth_value = to_process.front().second;
+        to_process.pop_front();
+        for (int pos_dep : positive_dependencies[var]) {
+            auto insert_retval = needed.emplace(pos_dep, truth_value);
+            if (insert_retval.second) {
+                to_process.emplace_back(pos_dep, truth_value);
+            }
+        }
+        for (int neg_dep : negative_dependencies[var]) {
+            auto insert_retval = needed.emplace(neg_dep, !truth_value);
+            if (insert_retval.second) {
+                to_process.emplace_back(neg_dep, !truth_value);
+            }
+        }
+    }
+
+    unordered_set<int> needed_negatively;
+    for (pair<int,bool> entry : needed) {
+        if (!entry.second) {
+            needed_negatively.insert(entry.first);
+        }
+    }
+    return needed_negatively;
 }
 
-void NegatedAxiomsTask::add_negated_axioms(
-    FactPair head, std::vector<int> &axiom_ids, TaskProxy &task_proxy) {
+
+void NegatedAxiomsTask::add_negated_axioms_for_var(
+    FactPair head, std::vector<int> &axiom_ids) {
+    TaskProxy task_proxy(*parent);
 
     /*
       If no axioms change the variable to its non-default value,
@@ -223,16 +189,77 @@ void NegatedAxiomsTask::add_negated_axioms(
         }
     }
 
-    set<FactPair> chosen;
-    set<set<FactPair>> combinations;
-    find_non_dominated_hitting_sets(
-        conditions_as_cnf, 0, chosen, combinations);
+    // We can see multiplying out the cnf as collecting all hitting sets.
+    set<FactPair> current;
+    set<set<FactPair>> hitting_sets;
+    collect_non_dominated_hitting_sets_recursively(
+            conditions_as_cnf, 0, current, hitting_sets);
 
-    for (const set<FactPair> &c : combinations) {
+    for (const set<FactPair> &c : hitting_sets) {
         negated_axioms.emplace_back(
             head, vector<FactPair>(c.begin(), c.end()));
     }
 }
+
+
+void NegatedAxiomsTask::collect_non_dominated_hitting_sets_recursively(
+    const std::vector<std::set<FactPair>> &conditions_as_cnf, size_t index,
+    std::set<FactPair> &hitting_set, std::set<std::set<FactPair>> &results) {
+
+    if (index == conditions_as_cnf.size()) {
+        /*
+           Check whether the axiom body denoted in body is dominated.
+           This is the case if there is a fact such that no conjunction
+           in the cnf is covered by *only* this fact, implying that
+           removing the fact from the body would still cover all
+           conjunctions.
+        */
+        set<FactPair> not_uniquely_used(hitting_set);
+        for (const set<FactPair> &condition : conditions_as_cnf) {
+            vector<FactPair> intersection;
+            set_intersection(condition.begin(), condition.end(),
+                             hitting_set.begin(), hitting_set.end(),
+                             back_inserter(intersection));
+            if (intersection.size() == 1) {
+                not_uniquely_used.erase(intersection[0]);
+            }
+        }
+        if (not_uniquely_used.empty()) {
+            results.insert(hitting_set);
+        }
+        return;
+    }
+
+    const set<FactPair> &conditions = conditions_as_cnf[index];
+    for (const FactPair &fact_pair : conditions) {
+        // The current set is covered with the current hitting set elements.
+        if (hitting_set.find(fact_pair) != hitting_set.end()) {
+            collect_non_dominated_hitting_sets_recursively(
+                conditions_as_cnf, index + 1, hitting_set, results);
+            return;
+        }
+    }
+
+    for (const FactPair &elem : conditions) {
+        // We don't allow choosing different facts from the same variable.
+        bool same_var_occurs_already = false;
+        for (const FactPair &f : hitting_set) {
+            if (f.var == elem.var) {
+                same_var_occurs_already = true;
+                break;
+            }
+        }
+        if (same_var_occurs_already) {
+            continue;
+        }
+
+        set<FactPair> chosen_new(hitting_set);
+        chosen_new.insert(elem);
+        collect_non_dominated_hitting_sets_recursively(
+            conditions_as_cnf, index + 1, chosen_new, results);
+    }
+}
+
 
 int NegatedAxiomsTask::get_operator_cost(int index, bool is_axiom) const {
     if (!is_axiom || index < negated_axioms_start_index) {

@@ -27,11 +27,14 @@ class NegatedAxiomsTask : public DelegatingTask {
     std::vector<NegatedAxiom> negated_axioms;
     int negated_axioms_start_index;
 
-    void add_negated_axioms(
-        FactPair head, std::vector<int> &axioms, TaskProxy &task_proxy);
-    void find_non_dominated_hitting_sets(
+    std::unordered_set<int> collect_needed_negatively(
+        const std::vector<std::vector<int>> &positive_dependencies,
+        const std::vector<std::vector<int>> &negative_dependencies);
+    void add_negated_axioms_for_var(
+        FactPair head, std::vector<int> &axiom_ids);
+    void collect_non_dominated_hitting_sets_recursively(
         const std::vector<std::set<FactPair>> &conditions_as_cnf, size_t index,
-        std::set<FactPair> &chosen, std::set<std::set<FactPair>> &results);
+        std::set<FactPair> &hitting_set, std::set<std::set<FactPair>> &results);
 public:
     explicit NegatedAxiomsTask(
         const std::shared_ptr<AbstractTask> &parent);
