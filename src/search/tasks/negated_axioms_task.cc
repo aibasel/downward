@@ -15,11 +15,9 @@ using namespace std;
 using utils::ExitCode;
 
 namespace tasks {
-
 NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
     : DelegatingTask(parent),
       negated_axioms_start_index(parent->get_num_axioms()) {
-
     TaskProxy task_proxy(*parent);
 
     vector<vector<int>> pos_dependencies(task_proxy.get_variables().size());
@@ -42,7 +40,7 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
         }
     }
     unordered_set<int> needed_negatively =
-            collect_needed_negatively(pos_dependencies, neg_dependencies);
+        collect_needed_negatively(pos_dependencies, neg_dependencies);
 
     /* TODO: I removed the return if needed_negatively is empty.
        It is somewhat wasteful if we have a big graph to compute the sccs,
@@ -57,7 +55,7 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
     vector<vector<int>> sccs =
         sccs::compute_maximal_sccs(pos_dependencies);
     vector<int> var_to_scc(task_proxy.get_variables().size(), -1);
-    for (int i = 0; i < (int) sccs.size(); ++i) {
+    for (int i = 0; i < (int)sccs.size(); ++i) {
         for (int var: sccs[i]) {
             var_to_scc[var] = i;
         }
@@ -96,9 +94,8 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
 unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
     const vector<vector<int>> &positive_dependencies,
     const vector<vector<int>> &negative_dependencies) {
-
     // Stores which derived variables are needed positively or negatively.
-    set<pair<int,bool>> needed;
+    set<pair<int, bool>> needed;
 
     // TODO: Should we store the proxy in the class? Pass it through methods?
     TaskProxy task_proxy(*parent);
@@ -115,7 +112,7 @@ unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
         for (FactProxy condition: op.get_preconditions()) {
             VariableProxy var_proxy = condition.get_variable();
             if (var_proxy.is_derived()
-            && condition.get_value() == var_proxy.get_default_axiom_value()) {
+                && condition.get_value() == var_proxy.get_default_axiom_value()) {
                 needed.emplace(condition.get_pair().var, false);
             }
         }
@@ -124,14 +121,14 @@ unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
             for (FactProxy condition: effect.get_conditions()) {
                 VariableProxy var_proxy = condition.get_variable();
                 if (var_proxy.is_derived()
-                && condition.get_value() == var_proxy.get_default_axiom_value()) {
+                    && condition.get_value() == var_proxy.get_default_axiom_value()) {
                     needed.emplace(condition.get_pair().var, false);
                 }
             }
         }
     }
 
-    deque<pair<int,bool>> to_process(needed.begin(), needed.end());
+    deque<pair<int, bool>> to_process(needed.begin(), needed.end());
     while (!to_process.empty()) {
         int var = to_process.front().first;
         bool truth_value = to_process.front().second;
@@ -151,7 +148,7 @@ unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
     }
 
     unordered_set<int> needed_negatively;
-    for (pair<int,bool> entry : needed) {
+    for (pair<int, bool> entry : needed) {
         if (!entry.second) {
             needed_negatively.insert(entry.first);
         }
@@ -193,7 +190,7 @@ void NegatedAxiomsTask::add_negated_axioms_for_var(
     set<FactPair> current;
     set<set<FactPair>> hitting_sets;
     collect_non_dominated_hitting_sets_recursively(
-            conditions_as_cnf, 0, current, hitting_sets);
+        conditions_as_cnf, 0, current, hitting_sets);
 
     for (const set<FactPair> &c : hitting_sets) {
         negated_axioms.emplace_back(
@@ -205,7 +202,6 @@ void NegatedAxiomsTask::add_negated_axioms_for_var(
 void NegatedAxiomsTask::collect_non_dominated_hitting_sets_recursively(
     const std::vector<std::set<FactPair>> &conditions_as_cnf, size_t index,
     std::set<FactPair> &hitting_set, std::set<std::set<FactPair>> &results) {
-
     if (index == conditions_as_cnf.size()) {
         /*
            Check whether the axiom body denoted in body is dominated.
@@ -282,15 +278,15 @@ int NegatedAxiomsTask::get_num_operator_preconditions(int index, bool is_axiom) 
         return parent->get_num_operator_preconditions(index, is_axiom);
     }
 
-    return negated_axioms[index-negated_axioms_start_index].condition.size();
+    return negated_axioms[index - negated_axioms_start_index].condition.size();
 }
 
 FactPair NegatedAxiomsTask::get_operator_precondition(
-        int op_index, int fact_index, bool is_axiom) const {
+    int op_index, int fact_index, bool is_axiom) const {
     if (!is_axiom || (op_index < negated_axioms_start_index)) {
         return parent->get_operator_precondition(op_index, fact_index, is_axiom);
     }
-    return negated_axioms[op_index-negated_axioms_start_index].condition[fact_index];
+    return negated_axioms[op_index - negated_axioms_start_index].condition[fact_index];
 }
 
 int NegatedAxiomsTask::get_num_operator_effects(int op_index, bool is_axiom) const {
@@ -302,7 +298,7 @@ int NegatedAxiomsTask::get_num_operator_effects(int op_index, bool is_axiom) con
 }
 
 int NegatedAxiomsTask::get_num_operator_effect_conditions(
-        int op_index, int eff_index, bool is_axiom) const {
+    int op_index, int eff_index, bool is_axiom) const {
     if (!is_axiom || op_index < negated_axioms_start_index) {
         return parent->get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
     }
@@ -311,19 +307,19 @@ int NegatedAxiomsTask::get_num_operator_effect_conditions(
 }
 
 FactPair NegatedAxiomsTask::get_operator_effect_condition(
-        int op_index, int eff_index, int cond_index, bool is_axiom) const {
+    int op_index, int eff_index, int cond_index, bool is_axiom) const {
     assert(!is_axiom || op_index < negated_axioms_start_index);
     return parent->get_operator_effect_condition(op_index, eff_index, cond_index, is_axiom);
 }
 
 FactPair NegatedAxiomsTask::get_operator_effect(
-        int op_index, int eff_index, bool is_axiom) const {
+    int op_index, int eff_index, bool is_axiom) const {
     if (!is_axiom || op_index < negated_axioms_start_index) {
         return parent->get_operator_effect(op_index, eff_index, is_axiom);
     }
 
     assert(eff_index == 0);
-    return negated_axioms[op_index-negated_axioms_start_index].head;
+    return negated_axioms[op_index - negated_axioms_start_index].head;
 }
 
 int NegatedAxiomsTask::convert_operator_index_to_parent(int index) const {

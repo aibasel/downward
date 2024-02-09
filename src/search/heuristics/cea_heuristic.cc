@@ -413,7 +413,6 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     const plugins::Options &opts)
     : Heuristic(opts),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
-
     if (task_properties::has_axioms(task_proxy)) {
         task = make_shared<tasks::NegatedAxiomsTask>(tasks::NegatedAxiomsTask(task));
         task_proxy = TaskProxy(*task);

@@ -23,7 +23,6 @@ CGHeuristic::CGHeuristic(const plugins::Options &opts)
       cache_misses(0),
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
-
     if (task_properties::has_axioms(task_proxy)) {
         task = make_shared<tasks::NegatedAxiomsTask>(tasks::NegatedAxiomsTask(task));
         task_proxy = TaskProxy(*task);
