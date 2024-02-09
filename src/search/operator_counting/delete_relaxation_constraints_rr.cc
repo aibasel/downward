@@ -557,7 +557,7 @@ class DeleteRelaxationConstraintsRRFeature
                                    DeleteRelaxationConstraintsRR> {
 public:
     DeleteRelaxationConstraintsRRFeature()
-        : TypedFeature("delete_relaxation_constraints_rr") {
+        : TypedFeature("delete_relaxation_rr_constraints") {
         document_title(
             "Delete relaxation constraints from Rankooh and Rintanen");
         document_synopsis(
@@ -602,9 +602,17 @@ public:
             "To compute the optimal delete-relaxation heuristic h^+^, use"
             "integer variables and some way of enforcing acyclicity (other "
             "than \"none\"). For example\n"
-            "{{{\noperatorcounting([delete_relaxation_constraints_rr("
+            "{{{\noperatorcounting([delete_relaxation_rr_constraints("
             "acyclicity_type=vertex_elimination, use_integer_vars=true)], "
             "use_integer_operator_counts=true))\n}}}\n");
+        document_note(
+            "Note",
+            "While the delete-relaxation constraints by Imai and Fukunaga "
+            "(accessible via option {{{delete_relaxation_if_constraints}}}) "
+            "serve a similar purpose to the constraints implemented here, we "
+            "recommend using this formulation as it can generally be solved "
+            "more efficiently, in particular in case of the h^+^ "
+            "configuration, and some relaxations offer tighter bounds.\n");
     }
 };
 
