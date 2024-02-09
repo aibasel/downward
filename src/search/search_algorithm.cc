@@ -40,26 +40,26 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
 }
 
 SearchAlgorithm::SearchAlgorithm(
-        OperatorCost cost_type,
-        int bound,
-        double max_time,
-        const string &description,
-        utils::Verbosity verbosity
-        )
-        : description(description),
-          status(IN_PROGRESS),
-          solution_found(false),
-          task(tasks::g_root_task),
-          task_proxy(*task),
-          log(utils::get_log_for_verbosity(verbosity)),
-          state_registry(task_proxy),
-          successor_generator(get_successor_generator(task_proxy, log)),
-          search_space(state_registry, log),
-          statistics(log),
-          bound(bound),
-          cost_type(cost_type),
-          is_unit_cost(task_properties::is_unit_cost(task_proxy)),
-          max_time(max_time) {
+    OperatorCost cost_type,
+    int bound,
+    double max_time,
+    const string &description,
+    utils::Verbosity verbosity
+    )
+    : description(description),
+      status(IN_PROGRESS),
+      solution_found(false),
+      task(tasks::g_root_task),
+      task_proxy(*task),
+      log(utils::get_log_for_verbosity(verbosity)),
+      state_registry(task_proxy),
+      successor_generator(get_successor_generator(task_proxy, log)),
+      search_space(state_registry, log),
+      statistics(log),
+      bound(bound),
+      cost_type(cost_type),
+      is_unit_cost(task_properties::is_unit_cost(task_proxy)),
+      max_time(max_time) {
     if (bound < 0) {
         cerr << "error: negative cost bound " << bound << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
@@ -166,11 +166,11 @@ void print_initial_evaluator_values(
    TODO: Figure out where it belongs and move it there. */
 void add_search_pruning_options_to_feature(plugins::Feature &feature) {
     feature.add_option<shared_ptr<PruningMethod>>(
-            "pruning",
-            "Pruning methods can prune or reorder the set of applicable operators in "
-            "each state and thereby influence the number and order of successor states "
-            "that are considered.",
-            "null()");
+        "pruning",
+        "Pruning methods can prune or reorder the set of applicable operators in "
+        "each state and thereby influence the number and order of successor states "
+        "that are considered.",
+        "null()");
 }
 
 tuple<shared_ptr<PruningMethod>> get_search_pruning_arguments_from_options(const plugins::Options &opts) {
@@ -180,18 +180,18 @@ tuple<shared_ptr<PruningMethod>> get_search_pruning_arguments_from_options(const
 void add_search_algorithm_options_to_feature(plugins::Feature &feature, const string &description) {
     ::add_cost_type_options_to_feature(feature);
     feature.add_option<int>(
-            "bound",
-            "exclusive depth bound on g-values. Cutoffs are always performed according to "
-            "the real cost, regardless of the cost_type parameter", "infinity");
+        "bound",
+        "exclusive depth bound on g-values. Cutoffs are always performed according to "
+        "the real cost, regardless of the cost_type parameter", "infinity");
     feature.add_option<double>(
-            "max_time",
-            "maximum time in seconds the search is allowed to run for. The "
-            "timeout is only checked after each complete search step "
-            "(usually a node expansion), so the actual runtime can be arbitrarily "
-            "longer. Therefore, this parameter should not be used for time-limiting "
-            "experiments. Timed-out searches are treated as failed searches, "
-            "just like incomplete search algorithms that exhaust their search space.",
-            "infinity");
+        "max_time",
+        "maximum time in seconds the search is allowed to run for. The "
+        "timeout is only checked after each complete search step "
+        "(usually a node expansion), so the actual runtime can be arbitrarily "
+        "longer. Therefore, this parameter should not be used for time-limiting "
+        "experiments. Timed-out searches are treated as failed searches, "
+        "just like incomplete search algorithms that exhaust their search space.",
+        "infinity");
     feature.add_option<string>("description",
                                "description used to identify search algorithm in logs",
                                "\"" + description + "\"");
@@ -200,43 +200,43 @@ void add_search_algorithm_options_to_feature(plugins::Feature &feature, const st
 
 tuple<OperatorCost, int, double, string, utils::Verbosity> get_search_algorithm_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
-            ::get_cost_type_arguments_from_options(opts),
-            make_tuple(
-                    opts.get<int>("bound"),
-                    opts.get<double>("max_time"),
-                    opts.get<string>("description")
-                    ),
-            utils::get_log_arguments_from_options(opts)
-            );
+        ::get_cost_type_arguments_from_options(opts),
+        make_tuple(
+            opts.get<int>("bound"),
+            opts.get<double>("max_time"),
+            opts.get<string>("description")
+            ),
+        utils::get_log_arguments_from_options(opts)
+        );
 }
 
 /* Method doesn't belong here because it's only useful for certain derived classes.
    TODO: Figure out where it belongs and move it there. */
 void add_successors_order_options_to_feature(plugins::Feature &feature) {
     feature.add_option<bool>(
-            "randomize_successors",
-            "randomize the order in which successors are generated",
-            "false");
+        "randomize_successors",
+        "randomize the order in which successors are generated",
+        "false");
     feature.add_option<bool>(
-            "preferred_successors_first",
-            "consider preferred operators first",
-            "false");
+        "preferred_successors_first",
+        "consider preferred operators first",
+        "false");
     feature.document_note(
-            "Successor ordering",
-            "When using randomize_successors=true and "
-            "preferred_successors_first=true, randomization happens before "
-            "preferred operators are moved to the front.");
+        "Successor ordering",
+        "When using randomize_successors=true and "
+        "preferred_successors_first=true, randomization happens before "
+        "preferred operators are moved to the front.");
     utils::add_rng_options_to_feature(feature);
 }
 
 tuple<bool, bool, int> get_successors_order_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
-            make_tuple(
-                    opts.get<bool>("randomize_successors"),
-                    opts.get<bool>("preferred_successors_first")
-                    ),
-                    utils::get_rng_arguments_from_options(opts)
-                    );
+        make_tuple(
+            opts.get<bool>("randomize_successors"),
+            opts.get<bool>("preferred_successors_first")
+            ),
+        utils::get_rng_arguments_from_options(opts)
+        );
 }
 
 static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<SearchAlgorithm> {

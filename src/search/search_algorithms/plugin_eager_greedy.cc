@@ -69,12 +69,12 @@ public:
         options_copy.set("f_eval", evaluator);
 
         return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
-                options_copy.get<shared_ptr<OpenListFactory>>("open"),
-                options_copy.get<bool>("reopen_closed"),
-                options_copy.get<shared_ptr<Evaluator>>("f_eval", nullptr),
-                options_copy.get_list<shared_ptr<Evaluator>>("preferred"),
-                eager_search::get_eager_search_arguments_from_options(options_copy)
-        );
+            options_copy.get<shared_ptr<OpenListFactory>>("open"),
+            options_copy.get<bool>("reopen_closed"),
+            options_copy.get<shared_ptr<Evaluator>>("f_eval", nullptr),
+            options_copy.get_list<shared_ptr<Evaluator>>("preferred"),
+            eager_search::get_eager_search_arguments_from_options(options_copy)
+            );
     }
 };
 

@@ -66,23 +66,23 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
 
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
-        shared_ptr<Evaluator> h,
-        PreferredUsage preferred_usage,
-        vector<shared_ptr<Evaluator>> preferred,
-        OperatorCost cost_type,
-        int bound,
-        double max_time,
-        const string &description,
-        utils::Verbosity verbosity
-        )
-        : SearchAlgorithm(cost_type, bound, max_time, description, verbosity),
-          evaluator(h),
-          preferred_operator_evaluators(preferred),
-          preferred_usage(preferred_usage),
-          current_eval_context(state_registry.get_initial_state(), &statistics),
-          current_phase_start_g(-1),
-          num_ehc_phases(0),
-          last_num_expanded(-1) {
+    shared_ptr<Evaluator> h,
+    PreferredUsage preferred_usage,
+    vector<shared_ptr<Evaluator>> preferred,
+    OperatorCost cost_type,
+    int bound,
+    double max_time,
+    const string &description,
+    utils::Verbosity verbosity
+    )
+    : SearchAlgorithm(cost_type, bound, max_time, description, verbosity),
+      evaluator(h),
+      preferred_operator_evaluators(preferred),
+      preferred_usage(preferred_usage),
+      current_eval_context(state_registry.get_initial_state(), &statistics),
+      current_phase_start_g(-1),
+      num_ehc_phases(0),
+      last_num_expanded(-1) {
     for (const shared_ptr<Evaluator> &eval : preferred_operator_evaluators) {
         eval->get_path_dependent_evaluators(path_dependent_evaluators);
     }
@@ -94,10 +94,10 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     }
     use_preferred = find(preferred_operator_evaluators.begin(),
                          preferred_operator_evaluators.end(), evaluator) !=
-                    preferred_operator_evaluators.end();
+        preferred_operator_evaluators.end();
 
     open_list = create_ehc_open_list_factory(
-            verbosity, use_preferred, preferred_usage)->create_edge_open_list();
+        verbosity, use_preferred, preferred_usage)->create_edge_open_list();
 }
 
 
@@ -297,11 +297,11 @@ public:
 
     virtual shared_ptr<EnforcedHillClimbingSearch> create_component(const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<EnforcedHillClimbingSearch>(
-                opts.get<shared_ptr<Evaluator>>("h"),
-                opts.get<PreferredUsage>("preferred_usage"),
-                opts.get_list<shared_ptr<Evaluator>>("preferred"),
-                get_search_algorithm_arguments_from_options(opts)
-        );
+            opts.get<shared_ptr<Evaluator>>("h"),
+            opts.get<PreferredUsage>("preferred_usage"),
+            opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            get_search_algorithm_arguments_from_options(opts)
+            );
     }
 };
 

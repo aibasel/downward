@@ -23,12 +23,12 @@ public:
 
     virtual shared_ptr<lazy_search::LazySearch> create_component(const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<lazy_search::LazySearch>(
-                opts.get<shared_ptr<OpenListFactory>>("open"),
-                opts.get<bool>("reopen_closed"),
-                opts.get_list<shared_ptr<Evaluator>>("preferred"),
-                get_successors_order_arguments_from_options(opts),
-                get_search_algorithm_arguments_from_options(opts)
-                );
+            opts.get<shared_ptr<OpenListFactory>>("open"),
+            opts.get<bool>("reopen_closed"),
+            opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            get_successors_order_arguments_from_options(opts),
+            get_search_algorithm_arguments_from_options(opts)
+            );
     }
 };
 

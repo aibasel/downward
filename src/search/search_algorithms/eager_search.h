@@ -38,18 +38,17 @@ protected:
 
 public:
     explicit EagerSearch(
-            std::shared_ptr<OpenListFactory> open,
-            bool reopen_closed,
-            std::shared_ptr<Evaluator> f_eval,
-            std::vector<std::shared_ptr<Evaluator>> preferred,
-            std::shared_ptr<PruningMethod> pruning,
-            std::shared_ptr<Evaluator> lazy_evaluator,
-            OperatorCost cost_type,
-            int bound,
-            double max_time,
-            const std::string &description,
-            utils::Verbosity verbosity
-            );
+        std::shared_ptr<OpenListFactory> open,
+        bool reopen_closed,
+        std::shared_ptr<Evaluator> f_eval,
+        std::vector<std::shared_ptr<Evaluator>> preferred,
+        std::shared_ptr<PruningMethod> pruning,
+        std::shared_ptr<Evaluator> lazy_evaluator,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const std::string &description,
+        utils::Verbosity verbosity);
     explicit EagerSearch(const plugins::Options &opts); // TODO issue1082 remove this
 
     virtual void print_statistics() const override;
@@ -59,7 +58,6 @@ public:
 
 extern void add_eager_search_options_to_feature(plugins::Feature &feature, const std::string &description);
 extern std::tuple<std::shared_ptr<PruningMethod>, std::shared_ptr<Evaluator>, OperatorCost, int, double, std::string, utils::Verbosity> get_eager_search_arguments_from_options(const plugins::Options &opts);
-
 }
 
 #endif
