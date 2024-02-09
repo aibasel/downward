@@ -38,11 +38,11 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
 }
 
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
-    const std::vector<std::shared_ptr<SubtaskGenerator>> &subtasks,
+    const vector<shared_ptr<SubtaskGenerator>> &subtasks,
     int max_states, int max_transitions, double max_time, PickSplit pick,
     bool use_general_costs, int random_seed,
-    const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const std::string &description, utils::Verbosity verbosity)
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       heuristic_functions(generate_heuristic_functions(
                               subtasks, max_states, max_transitions, max_time, pick,
