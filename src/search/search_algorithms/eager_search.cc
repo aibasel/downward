@@ -19,7 +19,34 @@
 using namespace std;
 
 namespace eager_search {
-EagerSearch::EagerSearch(const plugins::Options &opts)
+EagerSearch::EagerSearch(
+        shared_ptr<OpenListFactory> open,
+    bool reopen_closed,
+    shared_ptr<Evaluator> f_eval,
+    vector<shared_ptr<Evaluator>> preferred,
+        shared_ptr<PruningMethod> pruning,
+        shared_ptr<Evaluator> lazy_evaluator,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const string &description,
+        utils::Verbosity verbosity
+)
+        : SearchAlgorithm(cost_type, bound, max_time, description, verbosity),
+          reopen_closed_nodes(reopen_closed),
+          open_list(open->
+                  create_state_open_list()),
+          f_evaluator(f_eval), // default nullptr
+          preferred_operator_evaluators(preferred),
+          lazy_evaluator(lazy_evaluator), // default nullptr
+          pruning_method(pruning) {
+    if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
+        cerr << "lazy_evaluator must cache its estimates" << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
+}
+
+EagerSearch::EagerSearch(const plugins::Options &opts) // TODO issue1082 remove this
     : SearchAlgorithm(opts),
       reopen_closed_nodes(opts.get<bool>("reopen_closed")),
       open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
@@ -307,8 +334,16 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     }
 }
 
-void add_eager_search_options_to_feature(plugins::Feature &feature) {
+void add_eager_search_options_to_feature(plugins::Feature &feature, const string &description) {
     add_search_pruning_options_to_feature(feature);
-    add_search_algorithm_options_to_feature(feature);
+    add_search_algorithm_options_to_feature(feature, description);
+}
+
+tuple<shared_ptr<PruningMethod>, shared_ptr<Evaluator>, OperatorCost, int, double, string, utils::Verbosity> get_eager_search_arguments_from_options(const plugins::Options &opts) {
+    return tuple_cat(
+            get_search_pruning_arguments_from_options(opts),
+            make_tuple(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
+            get_search_algorithm_arguments_from_options(opts)
+            );
 }
 }

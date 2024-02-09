@@ -19,7 +19,7 @@ public:
         add_option<int>(
             "boost",
             "boost value for preferred operator open lists", "0");
-        eager_search::add_eager_search_options_to_feature(*this);
+        eager_search::add_eager_search_options_to_feature(*this, "eager_greedy");
 
         document_note(
             "Open list",
@@ -34,7 +34,7 @@ public:
         document_note(
             "Closed nodes",
             "Closed node are not re-opened");
-        document_note(
+        document_note( // TODO issue1082 confirm this
             "Equivalent statements using general eager search",
             "\n```\n--evaluator h2=eval2\n"
             "--search eager_greedy([eval1, h2], preferred=h2, boost=100)\n```\n"
@@ -68,7 +68,13 @@ public:
         shared_ptr<Evaluator> evaluator = nullptr;
         options_copy.set("f_eval", evaluator);
 
-        return make_shared<eager_search::EagerSearch>(options_copy);
+        return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
+                options_copy.get<shared_ptr<OpenListFactory>>("open"),
+                options_copy.get<bool>("reopen_closed"),
+                options_copy.get<shared_ptr<Evaluator>>("f_eval", nullptr),
+                options_copy.get_list<shared_ptr<Evaluator>>("preferred"),
+                eager_search::get_eager_search_arguments_from_options(options_copy)
+        );
     }
 };
 

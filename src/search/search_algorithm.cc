@@ -39,6 +39,34 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
     return successor_generator;
 }
 
+SearchAlgorithm::SearchAlgorithm(
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const string &description,
+        utils::Verbosity verbosity
+        )
+        : description(description),
+          status(IN_PROGRESS),
+          solution_found(false),
+          task(tasks::g_root_task),
+          task_proxy(*task),
+          log(utils::get_log_for_verbosity(verbosity)),
+          state_registry(task_proxy),
+          successor_generator(get_successor_generator(task_proxy, log)),
+          search_space(state_registry, log),
+          statistics(log),
+          bound(bound),
+          cost_type(cost_type),
+          is_unit_cost(task_properties::is_unit_cost(task_proxy)),
+          max_time(max_time) {
+    if (bound < 0) {
+        cerr << "error: negative cost bound " << bound << endl;
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+    }
+    task_properties::print_variable_statistics(task_proxy);
+}
+
 SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts)
     : description(opts.get_unparsed_config()),
       status(IN_PROGRESS),
@@ -145,12 +173,12 @@ void add_search_pruning_options_to_feature(plugins::Feature &feature) {
             "null()");
 }
 
-tuple<shared_ptr<PruningMethod>> get_pruning_arguments_from_options(const plugins::Options &opts) {
+tuple<shared_ptr<PruningMethod>> get_search_pruning_arguments_from_options(const plugins::Options &opts) {
     return make_tuple(opts.get<shared_ptr<PruningMethod>>("pruning"));
 }
 
-void add_search_algorithm_options_to_feature(plugins::Feature &feature) {
-    ::add_cost_type_option_to_feature(feature);
+void add_search_algorithm_options_to_feature(plugins::Feature &feature, const string &description) {
+    ::add_cost_type_options_to_feature(feature);
     feature.add_option<int>(
             "bound",
             "exclusive depth bound on g-values. Cutoffs are always performed according to "
@@ -164,16 +192,21 @@ void add_search_algorithm_options_to_feature(plugins::Feature &feature) {
             "experiments. Timed-out searches are treated as failed searches, "
             "just like incomplete search algorithms that exhaust their search space.",
             "infinity");
+    feature.add_option<string>("description",
+                               "description used to identify search algorithm in logs",
+                               "\"" + description + "\"");
     utils::add_log_options_to_feature(feature);
 }
 
-tuple<int, double, utils::Verbosity> get_search_algorithm_arguments_from_options(const plugins::Options &opts) {
+tuple<OperatorCost, int, double, string, utils::Verbosity> get_search_algorithm_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
+            ::get_cost_type_arguments_from_options(opts),
             make_tuple(
                     opts.get<int>("bound"),
-                            opts.get<double>("max_time")
+                    opts.get<double>("max_time"),
+                    opts.get<string>("description")
                     ),
-                    utils::get_log_arguments_from_options(opts)
+            utils::get_log_arguments_from_options(opts)
             );
 }
 

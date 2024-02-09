@@ -34,7 +34,7 @@ public:
         document_synopsis(
             "A cost-adapting transformation of the root task.");
 
-        add_cost_type_option_to_feature(*this);
+        add_cost_type_options_to_feature(*this);
     }
 
     virtual shared_ptr<CostAdaptedTask> create_component(const plugins::Options &options, const utils::Context &) const override {
