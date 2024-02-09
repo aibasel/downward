@@ -103,26 +103,29 @@ unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
     // Collect derived variables that occur as their default value.
     for (const FactProxy &goal: task_proxy.get_goals()) {
         VariableProxy var_proxy = goal.get_variable();
-        if (var_proxy.is_derived()
-            && goal.get_value() == var_proxy.get_default_axiom_value()) {
-            needed.emplace(goal.get_pair().var, false);
+        if (var_proxy.is_derived()) {
+            bool non_default =
+                goal.get_value() != var_proxy.get_default_axiom_value();
+            needed.emplace(goal.get_pair().var, non_default);
         }
     }
     for (OperatorProxy op: task_proxy.get_operators()) {
         for (FactProxy condition: op.get_preconditions()) {
             VariableProxy var_proxy = condition.get_variable();
-            if (var_proxy.is_derived()
-                && condition.get_value() == var_proxy.get_default_axiom_value()) {
-                needed.emplace(condition.get_pair().var, false);
+            if (var_proxy.is_derived()) {
+                bool non_default =
+                    condition.get_value() != var_proxy.get_default_axiom_value();
+                needed.emplace(condition.get_pair().var, non_default);
             }
         }
 
         for (EffectProxy effect: op.get_effects()) {
             for (FactProxy condition: effect.get_conditions()) {
                 VariableProxy var_proxy = condition.get_variable();
-                if (var_proxy.is_derived()
-                    && condition.get_value() == var_proxy.get_default_axiom_value()) {
-                    needed.emplace(condition.get_pair().var, false);
+                if (var_proxy.is_derived()) {
+                    bool non_default =
+                        condition.get_value() != var_proxy.get_default_axiom_value();
+                    needed.emplace(condition.get_pair().var, non_default);
                 }
             }
         }
@@ -131,18 +134,18 @@ unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
     deque<pair<int, bool>> to_process(needed.begin(), needed.end());
     while (!to_process.empty()) {
         int var = to_process.front().first;
-        bool truth_value = to_process.front().second;
+        bool non_default = to_process.front().second;
         to_process.pop_front();
         for (int pos_dep : positive_dependencies[var]) {
-            auto insert_retval = needed.emplace(pos_dep, truth_value);
+            auto insert_retval = needed.emplace(pos_dep, non_default);
             if (insert_retval.second) {
-                to_process.emplace_back(pos_dep, truth_value);
+                to_process.emplace_back(pos_dep, non_default);
             }
         }
         for (int neg_dep : negative_dependencies[var]) {
-            auto insert_retval = needed.emplace(neg_dep, !truth_value);
+            auto insert_retval = needed.emplace(neg_dep, !non_default);
             if (insert_retval.second) {
-                to_process.emplace_back(neg_dep, !truth_value);
+                to_process.emplace_back(neg_dep, !non_default);
             }
         }
     }
@@ -337,8 +340,10 @@ public:
     NegatedAxiomsTaskFeature() : TypedFeature("negated_axioms") {
         document_title("negated axioms task");
         document_synopsis(
-            "A task transformation that adds rules for when the a derived variable retains its default value. "
-            "This can be useful and even needed for correctness for heuristics that treat axioms as normal operators.");
+            "A task transformation that adds rules for when the a "
+            "derived variable retains its default value. "
+            "This can be useful and even needed for correctness for "
+            "heuristics that treat axioms as normal operators.");
 
         add_cost_type_option_to_feature(*this);
     }
