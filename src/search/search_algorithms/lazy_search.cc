@@ -18,9 +18,9 @@ using namespace std;
 
 namespace lazy_search {
 LazySearch::LazySearch(
-    shared_ptr<OpenListFactory> open,
+    const shared_ptr<OpenListFactory> &open,
     bool reopen_closed,
-    vector<shared_ptr<Evaluator>> &preferred,
+    const vector<shared_ptr<Evaluator>> &preferred,
     bool randomize_successors,
     bool preferred_successors_first,
     int random_seed,

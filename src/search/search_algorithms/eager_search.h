@@ -38,12 +38,12 @@ protected:
 
 public:
     explicit EagerSearch(
-        std::shared_ptr<OpenListFactory> open,
+        const std::shared_ptr<OpenListFactory> &open,
         bool reopen_closed,
-        std::shared_ptr<Evaluator> f_eval,
-        std::vector<std::shared_ptr<Evaluator>> preferred,
-        std::shared_ptr<PruningMethod> pruning,
-        std::shared_ptr<Evaluator> lazy_evaluator,
+        const std::shared_ptr<Evaluator> &f_eval,
+        const std::vector<std::shared_ptr<Evaluator>> &preferred,
+        const std::shared_ptr<PruningMethod> &pruning,
+        const std::shared_ptr<Evaluator> &lazy_evaluator,
         OperatorCost cost_type,
         int bound,
         double max_time,

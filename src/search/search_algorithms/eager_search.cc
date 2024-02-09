@@ -20,12 +20,12 @@ using namespace std;
 
 namespace eager_search {
 EagerSearch::EagerSearch(
-    shared_ptr<OpenListFactory> open,
+    const shared_ptr<OpenListFactory> &open,
     bool reopen_closed,
-    shared_ptr<Evaluator> f_eval,
-    vector<shared_ptr<Evaluator>> preferred,
-    shared_ptr<PruningMethod> pruning,
-    shared_ptr<Evaluator> lazy_evaluator,
+    const shared_ptr<Evaluator> &f_eval,
+    const vector<shared_ptr<Evaluator>> &preferred,
+    const shared_ptr<PruningMethod> &pruning,
+    const shared_ptr<Evaluator> &lazy_evaluator,
     OperatorCost cost_type,
     int bound,
     double max_time,

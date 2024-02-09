@@ -50,9 +50,9 @@ protected:
 
 public:
     LazySearch(
-        std::shared_ptr<OpenListFactory> open,
+        const std::shared_ptr<OpenListFactory> &open,
         bool reopen_closed,
-        std::vector<std::shared_ptr<Evaluator>> &evaluators,
+        const std::vector<std::shared_ptr<Evaluator>> &evaluators,
         bool randomize_successors,
         bool preferred_successors_first,
         int random_seed,

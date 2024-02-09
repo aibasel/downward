@@ -66,9 +66,9 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
 
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
-    shared_ptr<Evaluator> h,
+    const shared_ptr<Evaluator> &h,
     PreferredUsage preferred_usage,
-    vector<shared_ptr<Evaluator>> preferred,
+    const vector<shared_ptr<Evaluator>> &preferred,
     OperatorCost cost_type,
     int bound,
     double max_time,
