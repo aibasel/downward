@@ -30,8 +30,8 @@ class CostSaturation {
     const int max_states;
     const int max_non_looping_transitions;
     const double max_time;
-    const bool use_general_costs;
     const PickSplit pick_split;
+    const bool use_general_costs;
     utils::RandomNumberGenerator &rng;
     utils::LogProxy &log;
 
@@ -58,8 +58,8 @@ public:
         int max_states,
         int max_non_looping_transitions,
         double max_time,
-        bool use_general_costs,
         PickSplit pick_split,
+        bool use_general_costs,
         utils::RandomNumberGenerator &rng,
         utils::LogProxy &log);
 

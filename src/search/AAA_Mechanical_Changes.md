@@ -73,7 +73,7 @@ search
 ├── ❓ heuristic.h
 ├── ✅ heuristics
 ├── ✅ landmarks
-├── ❌ lp
+├── ✅ lp
 ├── ✅ merge_and_shrink
 ├── ✅ open_list_factory.cc
 ├── ✅ open_list_factory.h
@@ -81,7 +81,7 @@ search
 ├── ❌ open_lists
 ├── ✅ operator_cost.cc
 ├── ✅ operator_cost.h
-├── ❌ operator_counting
+├── ✅ operator_counting
 ├── ✅ operator_id.cc
 ├── ✅ operator_id.h
 ├── ✅ parser
@@ -96,9 +96,9 @@ search
 ├── ✅ planner.cc
 ├── ✅ plugins
 ├── ❌ potentials
-├── ❌ pruning
-├── ❌ pruning_method.cc
-├── ❌ pruning_method.h
+├── ✅ pruning
+├── ✅ pruning_method.cc
+├── ✅ pruning_method.h
 ├── ❌ search_algorithm.cc
 ├── ❌ search_algorithm.h
 ├── ❌ search_algorithmss
@@ -135,7 +135,7 @@ search
 ├── ✅ task_id.h
 ├── ✅ task_proxy.cc
 ├── ✅ task_proxy.h
-├── ❌ tasks
+├── ✅ tasks
 ├── ✅ task_utils
 └── ✅ utils
 

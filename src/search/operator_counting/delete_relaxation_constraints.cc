@@ -21,9 +21,10 @@ static void add_lp_variables(int count, LPVariables &variables, vector<int> &ind
 }
 
 
-DeleteRelaxationConstraints::DeleteRelaxationConstraints(const plugins::Options &opts)
-    : use_time_vars(opts.get<bool>("use_time_vars")),
-      use_integer_vars(opts.get<bool>("use_integer_vars")) {
+DeleteRelaxationConstraints::DeleteRelaxationConstraints(bool use_time_vars,
+                                                         bool use_integer_vars)
+    : use_time_vars(use_time_vars),
+      use_integer_vars(use_integer_vars) {
 }
 
 int DeleteRelaxationConstraints::get_var_op_used(const OperatorProxy &op) {
@@ -279,6 +280,13 @@ public:
             "To compute the optimal delete-relaxation heuristic h^+^, use\n"
             "{{{\noperatorcounting([delete_relaxation_constraints(use_time_vars=true, "
             "use_integer_vars=true)], use_integer_operator_counts=true))\n}}}\n");
+    }
+
+    virtual shared_ptr<DeleteRelaxationConstraints> create_component(
+        const plugins::Options &options, const utils::Context &) const override {
+        return make_shared<DeleteRelaxationConstraints>(
+                    options.get<bool>("use_time_vars"),
+                    options.get<bool>("use_integer_vars"));
     }
 };
 

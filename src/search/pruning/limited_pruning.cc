@@ -6,12 +6,16 @@
 using namespace std;
 
 namespace limited_pruning {
-LimitedPruning::LimitedPruning(const plugins::Options &opts)
-    : PruningMethod(opts),
-      pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")),
-      min_required_pruning_ratio(opts.get<double>("min_required_pruning_ratio")),
+LimitedPruning::LimitedPruning(
+        const shared_ptr<PruningMethod> &pruning,
+        double min_required_pruning_ratio,
+        int expansions_before_checking_pruning_ratio,
+        utils::Verbosity verbosity)
+    : PruningMethod(verbosity),
+      pruning_method(pruning),
+      min_required_pruning_ratio(min_required_pruning_ratio),
       num_expansions_before_checking_pruning_ratio(
-          opts.get<int>("expansions_before_checking_pruning_ratio")),
+          expansions_before_checking_pruning_ratio),
       num_pruning_calls(0),
       is_pruning_disabled(false) {
 }
@@ -82,6 +86,15 @@ public:
             "{{{\npruning=limited_pruning(pruning=atom_centric_stubborn_sets(),"
             "min_required_pruning_ratio=0.2,expansions_before_checking_pruning_ratio=1000)\n}}}\n"
             "in an eager search such as astar.");
+    }
+
+    virtual shared_ptr<LimitedPruning> create_component(
+        const plugins::Options &options, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<LimitedPruning>(
+            options.get<shared_ptr<PruningMethod>>("pruning"),
+            options.get<double>("min_required_pruning_ratio"),
+            options.get<int>("expansions_before_checking_pruning_ratio"),
+            get_pruning_arguments_from_options(options));
     }
 };
 

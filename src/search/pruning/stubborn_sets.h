@@ -54,7 +54,7 @@ protected:
 
     virtual void compute_stubborn_set(const State &state) = 0;
 public:
-    explicit StubbornSets(const plugins::Options &opts);
+    explicit StubbornSets(utils::Verbosity verbosity);
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 };
 

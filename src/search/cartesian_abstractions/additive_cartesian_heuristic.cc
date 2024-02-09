@@ -17,31 +17,36 @@ using namespace std;
 
 namespace cartesian_abstractions {
 static vector<CartesianHeuristicFunction> generate_heuristic_functions(
-    const plugins::Options &opts, utils::LogProxy &log) {
+    const vector<shared_ptr<SubtaskGenerator>> &subtask_generators, int max_states,
+    int max_transitions, double max_time, PickSplit pick, bool use_general_costs,
+    int random_seed, const shared_ptr<AbstractTask> &transform, utils::LogProxy &log) {
     if (log.is_at_least_normal()) {
         log << "Initializing additive Cartesian heuristic..." << endl;
     }
-    vector<shared_ptr<SubtaskGenerator>> subtask_generators =
-        opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks");
     shared_ptr<utils::RandomNumberGenerator> rng =
-        utils::parse_rng_from_options(opts);
+        utils::get_rng(random_seed);
     CostSaturation cost_saturation(
         subtask_generators,
-        opts.get<int>("max_states"),
-        opts.get<int>("max_transitions"),
-        opts.get<double>("max_time"),
-        opts.get<bool>("use_general_costs"),
-        opts.get<PickSplit>("pick"),
+        max_states,
+        max_transitions,
+        max_time,
+        pick,
+        use_general_costs,
         *rng,
         log);
-    return cost_saturation.generate_heuristic_functions(
-        opts.get<shared_ptr<AbstractTask>>("transform"));
+    return cost_saturation.generate_heuristic_functions(transform);
 }
 
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
-    const plugins::Options &opts)
-    : Heuristic(opts),
-      heuristic_functions(generate_heuristic_functions(opts, log)) {
+    const std::vector<std::shared_ptr<SubtaskGenerator>> &subtasks,
+    int max_states, int max_transitions, double max_time, PickSplit pick,
+    bool use_general_costs, int random_seed,
+    const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const std::string &description, utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, description, verbosity),
+      heuristic_functions(generate_heuristic_functions(
+          subtasks, max_states, max_transitions, max_time, pick,
+          use_general_costs, random_seed, transform, log)) {
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const State &ancestor_state) {
@@ -125,8 +130,8 @@ public:
             "use_general_costs",
             "allow negative costs in cost partitioning",
             "true");
-        add_heuristic_options_to_feature(*this, "cegar");
         utils::add_rng_options_to_feature(*this);
+        add_heuristic_options_to_feature(*this, "cegar");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
@@ -136,6 +141,19 @@ public:
         document_property("consistent", "yes");
         document_property("safe", "yes");
         document_property("preferred operators", "no");
+    }
+
+    virtual shared_ptr<AdditiveCartesianHeuristic> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<AdditiveCartesianHeuristic>(
+            opts.get<vector<shared_ptr<SubtaskGenerator>>>("subtasks"),
+            opts.get<int>("max_states"),
+            opts.get<int>("max_transitions"),
+            opts.get<double>("max_time"),
+            opts.get<PickSplit>("pick"),
+            opts.get<bool>("use_general_costs"),
+            utils::get_rng_arguments_from_options(opts),
+            get_heuristic_arguments_from_options(opts));
     }
 };
 
