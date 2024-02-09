@@ -13,6 +13,6 @@ class Options;
 enum OperatorCost {NORMAL = 0, ONE = 1, PLUSONE = 2, MAX_OPERATOR_COST};
 
 int get_adjusted_action_cost(const OperatorProxy &op, OperatorCost cost_type, bool is_unit_cost);
-void add_cost_type_options_to_feature(plugins::Feature &feature);
-std::tuple<OperatorCost> get_cost_type_arguments_from_options(const plugins::Options &opts);
+extern void add_cost_type_options_to_feature(plugins::Feature &feature);
+extern std::tuple<OperatorCost> get_cost_type_arguments_from_options(const plugins::Options &opts);
 #endif

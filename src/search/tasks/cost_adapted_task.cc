@@ -38,7 +38,7 @@ public:
     }
 
     virtual shared_ptr<CostAdaptedTask> create_component(const plugins::Options &options, const utils::Context &) const override {
-        return make_shared<CostAdaptedTask>(
+        return plugins::make_shared_from_arg_tuples<CostAdaptedTask>(
             g_root_task,
             get_cost_type_arguments_from_options(options));
     }

@@ -6,7 +6,7 @@
 #include "utils/system.h"
 
 #include <cstdlib>
-#include <vector>
+
 using namespace std;
 
 static int get_adjusted_action_cost(int cost, OperatorCost cost_type, bool is_unit_cost) {
