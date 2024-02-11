@@ -46,7 +46,7 @@ protected:
 
 public:
     EpsilonGreedyOpenList(
-            const std::shared_ptr<Evaluator> &eval,
+            const shared_ptr<Evaluator> &eval,
             bool pref_only,
             double epsilon,
             int random_seed
@@ -145,7 +145,7 @@ void EpsilonGreedyOpenList<Entry>::clear() {
 }
 
 EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
-        const std::shared_ptr<Evaluator> &eval,
+        const shared_ptr<Evaluator> &eval,
         bool pref_only,
         double epsilon,
         int random_seed

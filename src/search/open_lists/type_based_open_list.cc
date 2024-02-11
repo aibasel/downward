@@ -139,13 +139,13 @@ void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
     }
 }
 
-    TypeBasedOpenListFactory::TypeBasedOpenListFactory(
-            const std::vector<std::shared_ptr<Evaluator>> &evaluators,
-    int random_seed
-    ) : evaluators(evaluators),
-    random_seed(random_seed) {
+TypeBasedOpenListFactory::TypeBasedOpenListFactory(
+        const vector<shared_ptr<Evaluator>> &evaluators,
+int random_seed
+) : evaluators(evaluators),
+random_seed(random_seed) {
 
-    }
+}
 
 
 TypeBasedOpenListFactory::TypeBasedOpenListFactory(

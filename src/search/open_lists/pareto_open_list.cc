@@ -44,7 +44,7 @@ protected:
 
 public:
     ParetoOpenList(
-            const std::vector<std::shared_ptr<Evaluator>> &evals,
+            const vector<shared_ptr<Evaluator>> &evals,
             bool pref_only,
             bool state_uniform_selection,
             int random_seed
@@ -62,7 +62,7 @@ public:
 
     template<class Entry>
     ParetoOpenList<Entry>::ParetoOpenList(
-            const std::vector<std::shared_ptr<Evaluator>> &evals,
+            const vector<shared_ptr<Evaluator>> &evals,
             bool pref_only,
             bool state_uniform_selection,
             int random_seed
