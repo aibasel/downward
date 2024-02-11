@@ -6,10 +6,13 @@
 
 namespace alternation_open_list {
 class AlternationOpenListFactory : public OpenListFactory {
-    plugins::Options options;
+    std::vector<std::shared_ptr<OpenListFactory>> sublists;
+    int boost;
 public:
-    explicit AlternationOpenListFactory(const plugins::Options &options);
-    virtual ~AlternationOpenListFactory() override = default;
+    AlternationOpenListFactory(
+            const std::vector<std::shared_ptr<OpenListFactory>> &sublists,
+            int boost
+            );
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;

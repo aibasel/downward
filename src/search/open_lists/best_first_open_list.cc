@@ -27,9 +27,7 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit BestFirstOpenList(const plugins::Options &opts);
-    BestFirstOpenList(const shared_ptr<Evaluator> &eval, bool preferred_only);
-    virtual ~BestFirstOpenList() override = default;
+    BestFirstOpenList(const shared_ptr<Evaluator> &evaluator, bool preferred_only);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
@@ -41,13 +39,6 @@ public:
         EvaluationContext &eval_context) const override;
 };
 
-
-template<class Entry>
-BestFirstOpenList<Entry>::BestFirstOpenList(const plugins::Options &opts)
-    : OpenList<Entry>(opts.get<bool>("pref_only")),
-      size(0),
-      evaluator(opts.get<shared_ptr<Evaluator>>("eval")) {
-}
 
 template<class Entry>
 BestFirstOpenList<Entry>::BestFirstOpenList(
@@ -110,18 +101,21 @@ bool BestFirstOpenList<Entry>::is_reliable_dead_end(
 }
 
 BestFirstOpenListFactory::BestFirstOpenListFactory(
-    const plugins::Options &options)
-    : options(options) {
+        const shared_ptr<Evaluator> &eval,
+        bool pref_only
+        )
+        : eval(eval),
+          pref_only(pref_only) {
 }
 
 unique_ptr<StateOpenList>
 BestFirstOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<BestFirstOpenList<StateOpenListEntry>>(options);
+    return utils::make_unique_ptr<BestFirstOpenList<StateOpenListEntry>>(eval, pref_only);
 }
 
 unique_ptr<EdgeOpenList>
 BestFirstOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<BestFirstOpenList<EdgeOpenListEntry>>(options);
+    return utils::make_unique_ptr<BestFirstOpenList<EdgeOpenListEntry>>(eval, pref_only);
 }
 
 class BestFirstOpenListFeature : public plugins::TypedFeature<OpenListFactory, BestFirstOpenListFactory> {
@@ -143,6 +137,13 @@ public:
             "values to buckets. Pushing and popping from a bucket runs in constant "
             "time. Therefore, inserting and removing an entry from the open list "
             "takes time O(log(n)), where n is the number of buckets.");
+    }
+
+    virtual shared_ptr<BestFirstOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<BestFirstOpenListFactory>(
+                opts.get<shared_ptr<Evaluator>>("eval"),
+                opts.get<bool>("pref_only")
+        );
     }
 };
 

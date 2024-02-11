@@ -21,18 +21,12 @@ using WeightedEval = weighted_evaluator::WeightedEvaluator;
 
 shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
     const shared_ptr<Evaluator> &eval, bool pref_only) {
-    plugins::Options options;
-    options.set("eval", eval);
-    options.set("pref_only", pref_only);
-    return make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(options);
+    return plugins::make_shared_from_arg_tuples<standard_scalar_open_list::BestFirstOpenListFactory>(eval, pref_only);
 }
 
 static shared_ptr<OpenListFactory> create_alternation_open_list_factory(
     const vector<shared_ptr<OpenListFactory>> &subfactories, int boost) {
-    plugins::Options options;
-    options.set("sublists", subfactories);
-    options.set("boost", boost);
-    return make_shared<alternation_open_list::AlternationOpenListFactory>(options);
+    return plugins::make_shared_from_arg_tuples<alternation_open_list::AlternationOpenListFactory>(subfactories, boost);
 }
 
 /*
@@ -63,6 +57,7 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory_aux(
 
 shared_ptr<OpenListFactory> create_greedy_open_list_factory(
     const plugins::Options &options) {
+    utils::g_log << "create_greedy_open_list_factory" << endl;
     return create_alternation_open_list_factory_aux(
         options.get_list<shared_ptr<Evaluator>>("evals"),
         options.get_list<shared_ptr<Evaluator>>("preferred"),
@@ -106,6 +101,7 @@ static shared_ptr<Evaluator> create_wastar_eval(const plugins::Options &options,
 
 shared_ptr<OpenListFactory> create_wastar_open_list_factory(
     const plugins::Options &options) {
+    utils::g_log << "create_wastar_open_list_factory" << endl;
     vector<shared_ptr<Evaluator>> base_evals =
         options.get_list<shared_ptr<Evaluator>>("evals");
     int w = options.get<int>("w");
@@ -140,12 +136,8 @@ create_astar_open_list_factory_and_f_eval(const plugins::Options &opts) {
     shared_ptr<Evaluator> f = make_shared<SumEval>(f_evaluator_options);
     vector<shared_ptr<Evaluator>> evals = {f, h};
 
-    plugins::Options options;
-    options.set("evals", evals);
-    options.set("pref_only", false);
-    options.set("unsafe_pruning", false);
     shared_ptr<OpenListFactory> open =
-        make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(options);
+        plugins::make_shared_from_arg_tuples<tiebreaking_open_list::TieBreakingOpenListFactory>(evals, false, false);
     return make_pair(open, f);
 }
 }

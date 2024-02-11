@@ -39,7 +39,7 @@ extern std::shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory
   Create open list factory for the eager_greedy or lazy_greedy plugins.
 
   Uses "evals", "preferred" and "boost" from the passed-in Options
-  object to construct an open list factory of the appropriate type.
+  object to construct an open list factory of the appropriate type. // TODO issue1082 edit this comment
 
   This is usually an alternation open list with:
   - one sublist for each evaluator, considering all successors

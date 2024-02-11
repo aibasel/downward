@@ -26,10 +26,15 @@
 
 namespace type_based_open_list {
 class TypeBasedOpenListFactory : public OpenListFactory {
+    std::vector<std::shared_ptr<Evaluator>> evaluators;
+    int random_seed;
     plugins::Options options;
 public:
+    TypeBasedOpenListFactory(
+            const std::vector<std::shared_ptr<Evaluator>> &evaluators,
+    int random_seed
+            );
     explicit TypeBasedOpenListFactory(const plugins::Options &options);
-    virtual ~TypeBasedOpenListFactory() override = default;
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;
