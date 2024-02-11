@@ -6,29 +6,46 @@
 using namespace std;
 
 namespace plugin_eager {
-class EagerSearchFeature : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
+class TaskIndependentEagerSearchFeature : public plugins::TypedFeature<TaskIndependentSearchAlgorithm, eager_search::TaskIndependentEagerSearch> {
 public:
-    EagerSearchFeature() : TypedFeature("eager") {
+    TaskIndependentEagerSearchFeature() : TypedFeature("eager") {
         document_title("Eager best-first search");
         document_synopsis("");
 
-        add_option<shared_ptr<OpenListFactory>>("open", "open list");
+        add_option<shared_ptr<TaskIndependentOpenListFactory>>("open", "open list");
         add_option<bool>(
             "reopen_closed",
             "reopen closed nodes",
             "false");
-        add_option<shared_ptr<Evaluator>>(
+        add_option<shared_ptr<TaskIndependentEvaluator>>(
             "f_eval",
             "set evaluator for jump statistics. "
             "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
             plugins::ArgumentInfo::NO_DEFAULT);
-        add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "preferred",
             "use preferred operators of these evaluators",
             "[]");
-        eager_search::add_options_to_feature(*this);
+        eager_search::add_options_to_feature(*this, "eager");
+    }
+
+    virtual shared_ptr<eager_search::TaskIndependentEagerSearch>
+    create_component(const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<eager_search::TaskIndependentEagerSearch>(
+            opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
+            opts.get<bool>("reopen_closed"),
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
+            nullptr,
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
+            opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning"),
+            opts.get<OperatorCost>("cost_type"),
+            opts.get<int>("bound"),
+            opts.get<double>("max_time"),
+            opts.get<string>("name"),
+            opts.get<utils::Verbosity>("verbosity")
+            );
     }
 };
 
-static plugins::FeaturePlugin<EagerSearchFeature> _plugin;
+static plugins::FeaturePlugin<TaskIndependentEagerSearchFeature> _plugin;
 }

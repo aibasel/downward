@@ -21,91 +21,9 @@ namespace tasks {
 static const int PRE_FILE_VERSION = 3;
 shared_ptr<AbstractTask> g_root_task = nullptr;
 
-struct ExplicitVariable {
-    int domain_size;
-    string name;
-    vector<string> fact_names;
-    int axiom_layer;
-    int axiom_default_value;
-
-    explicit ExplicitVariable(istream &in);
-};
 
 
-struct ExplicitEffect {
-    FactPair fact;
-    vector<FactPair> conditions;
 
-    ExplicitEffect(int var, int value, vector<FactPair> &&conditions);
-};
-
-
-struct ExplicitOperator {
-    vector<FactPair> preconditions;
-    vector<ExplicitEffect> effects;
-    int cost;
-    string name;
-    bool is_an_axiom;
-
-    void read_pre_post(istream &in);
-    ExplicitOperator(istream &in, bool is_an_axiom, bool use_metric);
-};
-
-
-class RootTask : public AbstractTask {
-    vector<ExplicitVariable> variables;
-    // TODO: think about using hash sets here.
-    vector<vector<set<FactPair>>> mutexes;
-    vector<ExplicitOperator> operators;
-    vector<ExplicitOperator> axioms;
-    vector<int> initial_state_values;
-    vector<FactPair> goals;
-
-    const ExplicitVariable &get_variable(int var) const;
-    const ExplicitEffect &get_effect(int op_id, int effect_id, bool is_axiom) const;
-    const ExplicitOperator &get_operator_or_axiom(int index, bool is_axiom) const;
-
-public:
-    explicit RootTask(istream &in);
-
-    virtual int get_num_variables() const override;
-    virtual string get_variable_name(int var) const override;
-    virtual int get_variable_domain_size(int var) const override;
-    virtual int get_variable_axiom_layer(int var) const override;
-    virtual int get_variable_default_axiom_value(int var) const override;
-    virtual string get_fact_name(const FactPair &fact) const override;
-    virtual bool are_facts_mutex(
-        const FactPair &fact1, const FactPair &fact2) const override;
-
-    virtual int get_operator_cost(int index, bool is_axiom) const override;
-    virtual string get_operator_name(
-        int index, bool is_axiom) const override;
-    virtual int get_num_operators() const override;
-    virtual int get_num_operator_preconditions(
-        int index, bool is_axiom) const override;
-    virtual FactPair get_operator_precondition(
-        int op_index, int fact_index, bool is_axiom) const override;
-    virtual int get_num_operator_effects(
-        int op_index, bool is_axiom) const override;
-    virtual int get_num_operator_effect_conditions(
-        int op_index, int eff_index, bool is_axiom) const override;
-    virtual FactPair get_operator_effect_condition(
-        int op_index, int eff_index, int cond_index, bool is_axiom) const override;
-    virtual FactPair get_operator_effect(
-        int op_index, int eff_index, bool is_axiom) const override;
-    virtual int convert_operator_index(
-        int index, const AbstractTask *ancestor_task) const override;
-
-    virtual int get_num_axioms() const override;
-
-    virtual int get_num_goals() const override;
-    virtual FactPair get_goal_fact(int index) const override;
-
-    virtual vector<int> get_initial_state_values() const override;
-    virtual void convert_ancestor_state_values(
-        vector<int> &values,
-        const AbstractTask *ancestor_task) const override;
-};
 
 
 static void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables) {
@@ -497,13 +415,50 @@ void read_root_task(istream &in) {
     g_root_task = make_shared<RootTask>(in);
 }
 
-class RootTaskFeature : public plugins::TypedFeature<AbstractTask, AbstractTask> {
+
+
+
+TaskIndependentRootTask::TaskIndependentRootTask() {
+}
+
+using ConcreteProduct = AbstractTask;
+using AbstractProduct = AbstractTask;
+using Concrete = TaskIndependentRootTask;
+// TODO issue559 use templates as 'get_task_specific' is EXACTLY the same for all TI_Components
+shared_ptr<AbstractProduct> Concrete::get_task_specific(
+    const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
+    shared_ptr<ConcreteProduct> task_specific_x;
+
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
+            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
+    } else {
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = create_ts(task, component_map, depth);
+        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
+                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
+    }
+    return task_specific_x;
+}
+
+std::shared_ptr<ConcreteProduct> Concrete::create_ts([[maybe_unused]] const shared_ptr <AbstractTask> &task,
+                                                     [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
+                                                     [[maybe_unused]] int depth) const {
+    return g_root_task;
+}
+
+
+class RootTaskFeature : public plugins::TypedFeature<TaskIndependentAbstractTask, TaskIndependentRootTask> {
 public:
     RootTaskFeature() : TypedFeature("no_transform") {
     }
 
-    virtual shared_ptr<AbstractTask> create_component(const plugins::Options &, const utils::Context &) const override {
-        return g_root_task;
+    virtual shared_ptr<TaskIndependentRootTask> create_component(
+        const plugins::Options &, const utils::Context &) const override {
+        return make_shared<TaskIndependentRootTask>();
     }
 };
 

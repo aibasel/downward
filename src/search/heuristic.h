@@ -15,7 +15,6 @@ class TaskProxy;
 
 namespace plugins {
 class Feature;
-class Options;
 }
 
 class Heuristic : public Evaluator {
@@ -73,14 +72,17 @@ protected:
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
-    explicit Heuristic(const plugins::Options &opts);
+    explicit Heuristic(const std::string &name,
+                       utils::Verbosity verbosity,
+                       const std::shared_ptr<AbstractTask> task,
+                       bool cache_evaluator_values);
     virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> & /*evals*/) override {
     }
 
-    static void add_options_to_feature(plugins::Feature &feature);
+    static void add_options_to_feature(plugins::Feature &feature, const std::string &name);
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
@@ -89,5 +91,19 @@ public:
     virtual bool is_estimate_cached(const State &state) const override;
     virtual int get_cached_estimate(const State &state) const override;
 };
+
+
+class TaskIndependentHeuristic : public TaskIndependentEvaluator {
+protected:
+    bool cache_evaluator_values;
+    std::shared_ptr<TaskIndependentAbstractTask> task_transformation;
+public:
+    explicit TaskIndependentHeuristic(const std::string &name,
+                                      utils::Verbosity verbosity,
+                                      const std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
+                                      bool cache_evaluator_values);
+    virtual ~TaskIndependentHeuristic() = default;
+};
+
 
 #endif

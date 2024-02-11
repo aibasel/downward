@@ -159,16 +159,18 @@ Features RawRegistry::collect_features(
 
         const Type &type = feature.get_type();
         if (type == TypeRegistry::NO_TYPE) {
-            errors.push_back(
-                "Missing Plugin for type of feature '" + feature_key + "'.");
+            cout << "WARNING: Missing Plugin for type of feature '" + feature_key + "'." << endl; // TODO issue559
+            //errors.push_back(
+            //    "Missing Plugin for type of feature '" + feature_key + "'.");
         }
 
         unordered_map<string, int> parameter_occurrences;
         for (const ArgumentInfo &arg_info : feature.get_arguments()) {
             if (arg_info.type == TypeRegistry::NO_TYPE) {
-                errors.push_back(
-                    "Missing Plugin for type of parameter '" + arg_info.key
-                    + "' of feature '" + feature_key + "'.");
+                cout << "WARNING: Missing Plugin for type of argument '" + arg_info.key + "' of feature '" + feature_key + "'." << endl; // TODO issue559
+                //errors.push_back(
+                //    "Missing Plugin for type of argument '" + arg_info.key
+                //    + "' of feature '" + feature_key + "'.");
             }
             ++parameter_occurrences[arg_info.key];
         }

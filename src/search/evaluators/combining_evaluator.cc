@@ -1,16 +1,23 @@
 #include "combining_evaluator.h"
 
 #include "../evaluation_context.h"
-#include "../evaluation_result.h"
 
 #include "../plugins/plugin.h"
+
+#include <utility>
 
 using namespace std;
 
 namespace combining_evaluator {
-CombiningEvaluator::CombiningEvaluator(const plugins::Options &opts)
-    : Evaluator(opts),
-      subevaluators(opts.get_list<shared_ptr<Evaluator>>("evals")) {
+CombiningEvaluator::CombiningEvaluator(
+    vector<shared_ptr<Evaluator>> subevaluators,
+    const string &name,
+    utils::Verbosity verbosity)
+    : Evaluator(name,
+                verbosity,
+                false,
+                false,
+                false) {
     all_dead_ends_are_reliable = true;
     for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
         if (!subevaluator->dead_ends_are_reliable())
@@ -52,9 +59,20 @@ void CombiningEvaluator::get_path_dependent_evaluators(
     for (auto &subevaluator : subevaluators)
         subevaluator->get_path_dependent_evaluators(evals);
 }
-void add_combining_evaluator_options_to_feature(plugins::Feature &feature) {
-    feature.add_list_option<shared_ptr<Evaluator>>(
+
+
+void add_combining_evaluator_options_to_feature(plugins::Feature &feature, const string &name) {
+    feature.add_list_option<shared_ptr<TaskIndependentEvaluator>>(
         "evals", "at least one evaluator");
-    add_evaluator_options_to_feature(feature);
+    add_evaluator_options_to_feature(feature, name);
+}
+
+
+TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(
+    vector<shared_ptr<TaskIndependentEvaluator>> subevaluators,
+    const string &name,
+    utils::Verbosity verbosity)
+    : TaskIndependentEvaluator(name, verbosity, false, false, false),
+      subevaluators(subevaluators) {
 }
 }

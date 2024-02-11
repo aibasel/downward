@@ -18,10 +18,14 @@
   to eager and lazy search.
 */
 
+#include "../utils/logging.h"
+
 #include <memory>
 
 class Evaluator;
+class TaskIndependentEvaluator;
 class OpenListFactory;
+class TaskIndependentOpenListFactory;
 
 namespace plugins {
 class Options;
@@ -32,8 +36,8 @@ namespace search_common {
   Create a standard scalar open list factory with the given "eval" and
   "pref_only" options.
 */
-extern std::shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
-    const std::shared_ptr<Evaluator> &eval, bool pref_only);
+extern std::shared_ptr<TaskIndependentOpenListFactory> create_task_independent_standard_scalar_open_list_factory(
+    const std::shared_ptr<TaskIndependentEvaluator> &eval, bool pref_only);
 
 /*
   Create open list factory for the eager_greedy or lazy_greedy plugins.
@@ -50,8 +54,10 @@ extern std::shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory
   for the alternation open list, then that sublist is returned
   directly.
 */
-extern std::shared_ptr<OpenListFactory> create_greedy_open_list_factory(
-    const plugins::Options &opts);
+extern std::shared_ptr<TaskIndependentOpenListFactory> create_task_independent_greedy_open_list_factory(
+    const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &evals,
+    const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &preferred_evaluators,
+    int boost);
 
 /*
   Create open list factory for the lazy_wastar plugin.
@@ -64,8 +70,13 @@ extern std::shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   documentation there), except that the open lists use evalators based
   on g + w * h rather than using h directly.
 */
-extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
-    const plugins::Options &opts);
+extern std::shared_ptr<TaskIndependentOpenListFactory> create_task_independent_wastar_open_list_factory(
+    const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &evals,
+    const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &preferred,
+    int boost,
+    int weight,
+    const std::string &name,
+    const utils::Verbosity &verbosity);
 
 /*
   Create open list factory and f_evaluator (used for displaying progress
@@ -75,8 +86,11 @@ extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
   ordered primarily on g + h and secondarily on h. Uses "eval" from
   the passed-in Options object as the h evaluator.
 */
-extern std::pair<std::shared_ptr<OpenListFactory>, const std::shared_ptr<Evaluator>>
-create_astar_open_list_factory_and_f_eval(const plugins::Options &opts);
+
+std::pair<std::shared_ptr<TaskIndependentOpenListFactory>, const std::shared_ptr<TaskIndependentEvaluator>>
+create_task_independent_astar_open_list_factory_and_f_eval(const std::string &name,
+                                                           const utils::Verbosity &verbosity,
+                                                           const std::shared_ptr<TaskIndependentEvaluator> &eval);
 }
 
 #endif

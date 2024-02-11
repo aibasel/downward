@@ -9,17 +9,18 @@
 #include "tasks/root_task.h"
 
 #include <cassert>
-#include <cstdlib>
-#include <limits>
 
 using namespace std;
 
-Heuristic::Heuristic(const plugins::Options &opts)
-    : Evaluator(opts, true, true, true),
+
+Heuristic::Heuristic(const string &name,
+                     utils::Verbosity verbosity,
+                     const shared_ptr<AbstractTask> task,
+                     bool cache_evaluator_values)
+    : Evaluator(name, verbosity, true, true, true),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
-      cache_evaluator_values(opts.get<bool>("cache_estimates")),
-      task(opts.get<shared_ptr<AbstractTask>>("transform")),
-      task_proxy(*task) {
+      cache_evaluator_values(cache_evaluator_values),
+      task(task), task_proxy(*task) {
 }
 
 Heuristic::~Heuristic() {
@@ -33,9 +34,9 @@ State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
     return task_proxy.convert_ancestor_state(ancestor_state);
 }
 
-void Heuristic::add_options_to_feature(plugins::Feature &feature) {
-    add_evaluator_options_to_feature(feature);
-    feature.add_option<shared_ptr<AbstractTask>>(
+void Heuristic::add_options_to_feature(plugins::Feature &feature, const string &name) {
+    add_evaluator_options_to_feature(feature, name);
+    feature.add_option<shared_ptr<TaskIndependentAbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic."
         " Currently, adapt_costs() and no_transform() are available.",
@@ -106,4 +107,13 @@ bool Heuristic::is_estimate_cached(const State &state) const {
 int Heuristic::get_cached_estimate(const State &state) const {
     assert(is_estimate_cached(state));
     return heuristic_cache[state].h;
+}
+
+TaskIndependentHeuristic::TaskIndependentHeuristic(const string &name,
+                                                   utils::Verbosity verbosity,
+                                                   const shared_ptr<TaskIndependentAbstractTask> task_transformation,
+                                                   bool cache_evaluator_values
+                                                   )
+    : TaskIndependentEvaluator(name, verbosity, true, true, true),
+      cache_evaluator_values(cache_evaluator_values), task_transformation(task_transformation) {
 }

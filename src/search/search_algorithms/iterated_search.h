@@ -10,7 +10,7 @@
 
 namespace iterated_search {
 class IteratedSearch : public SearchAlgorithm {
-    std::vector<parser::LazyValue> algorithm_configs;
+    std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms;
 
     bool pass_bound;
     bool repeat_last_phase;
@@ -22,17 +22,70 @@ class IteratedSearch : public SearchAlgorithm {
     int best_bound;
     bool iterated_found_solution;
 
-    std::shared_ptr<SearchAlgorithm> get_search_algorithm(int algorithm_configs_index);
     std::shared_ptr<SearchAlgorithm> create_current_phase();
     SearchStatus step_return_value();
 
     virtual SearchStatus step() override;
 
 public:
-    IteratedSearch(const plugins::Options &opts);
+    IteratedSearch(
+        std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+        bool pass_bound,
+        bool repeat_last_phase,
+        bool continue_on_fail,
+        bool continue_on_solve,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const std::string &name,
+        utils::Verbosity verbosity,
+        const std::shared_ptr<AbstractTask> &task);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
+};
+
+
+
+class TaskIndependentIteratedSearch : public TaskIndependentSearchAlgorithm {
+private:
+    std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms;
+
+    bool pass_bound;
+    bool repeat_last_phase;
+    bool continue_on_fail;
+    bool continue_on_solve;
+protected:
+    std::string get_product_name() const override {return "IteratedSearch";}
+public:
+    explicit TaskIndependentIteratedSearch(
+        std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+        bool pass_bound,
+        bool repeat_last_phase,
+        bool continue_on_fail,
+        bool continue_on_solve,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const std::string &name,
+        utils::Verbosity verbosity);
+
+    virtual ~TaskIndependentIteratedSearch() override = default;
+
+    using AbstractProduct = SearchAlgorithm;
+    using ConcreteProduct = IteratedSearch;
+
+    std::shared_ptr<AbstractProduct> create_task_specific_root(const std::shared_ptr<AbstractTask> &task,
+                                                               int depth = -1) const override;
+
+    std::shared_ptr<AbstractProduct>
+    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
+                      int depth = -1) const override;
+
+    std::shared_ptr<ConcreteProduct> create_ts(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const;
 };
 }
 

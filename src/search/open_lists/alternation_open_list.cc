@@ -14,44 +14,68 @@ using namespace std;
 using utils::ExitCode;
 
 namespace alternation_open_list {
-template<class Entry>
-class AlternationOpenList : public OpenList<Entry> {
-    vector<unique_ptr<OpenList<Entry>>> open_lists;
-    vector<int> priorities;
-
-    const int boost_amount;
-protected:
-    virtual void do_insertion(EvaluationContext &eval_context,
-                              const Entry &entry) override;
-
-public:
-    explicit AlternationOpenList(const plugins::Options &opts);
-    virtual ~AlternationOpenList() override = default;
-
-    virtual Entry remove_min() override;
-    virtual bool empty() const override;
-    virtual void clear() override;
-    virtual void boost_preferred() override;
-    virtual void get_path_dependent_evaluators(
-        set<Evaluator *> &evals) override;
-    virtual bool is_dead_end(
-        EvaluationContext &eval_context) const override;
-    virtual bool is_reliable_dead_end(
-        EvaluationContext &eval_context) const override;
-};
-
-
-template<class Entry>
-AlternationOpenList<Entry>::AlternationOpenList(const plugins::Options &opts)
-    : boost_amount(opts.get<int>("boost")) {
-    vector<shared_ptr<OpenListFactory>> open_list_factories(
-        opts.get_list<shared_ptr<OpenListFactory>>("sublists"));
-    open_lists.reserve(open_list_factories.size());
-    for (const auto &factory : open_list_factories)
-        open_lists.push_back(factory->create_open_list<Entry>());
-
-    priorities.resize(open_lists.size(), 0);
+AlternationOpenListFactory::AlternationOpenListFactory(vector<shared_ptr<OpenListFactory>> open_list_factories,
+                                                       int boost_amount)
+    : boost_amount(boost_amount), size(0), open_list_factories(open_list_factories) {
 }
+
+
+unique_ptr<StateOpenList>
+AlternationOpenListFactory::create_state_open_list() {
+    return make_unique<AlternationOpenList<StateOpenListEntry>>(open_list_factories, boost_amount);
+}
+
+
+unique_ptr<EdgeOpenList>
+AlternationOpenListFactory::create_edge_open_list() {
+    return make_unique<AlternationOpenList<EdgeOpenListEntry>>(open_list_factories, boost_amount);
+}
+
+
+TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFactory(
+    vector<shared_ptr<TaskIndependentOpenListFactory>> open_list_factories,
+    int boost_amount
+    )
+    : TaskIndependentOpenListFactory("AlternationOpenListFactory", utils::Verbosity::NORMAL),
+      boost_amount(boost_amount), size(0), open_list_factories(open_list_factories) {
+}
+
+
+using ConcreteProduct = AlternationOpenListFactory;
+using AbstractProduct = OpenListFactory;
+using Concrete = TaskIndependentAlternationOpenListFactory;
+// TODO issue559 use templates as 'get_task_specific' is EXACTLY the same for all TI_Components
+shared_ptr<AbstractProduct> Concrete::get_task_specific(
+    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
+    shared_ptr<ConcreteProduct> task_specific_x;
+
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
+            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
+    } else {
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = create_ts(task, component_map, depth);
+        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
+                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
+    }
+    return task_specific_x;
+}
+
+std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
+                                                     unique_ptr <ComponentMap> &component_map, int depth) const {
+    vector<shared_ptr<OpenListFactory>> td_open_list_factories(open_list_factories.size());
+    transform(open_list_factories.begin(), open_list_factories.end(), td_open_list_factories.begin(),
+              [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentOpenListFactory> &eval) {
+                  return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+              }
+              );
+
+    return make_shared<AlternationOpenListFactory>(td_open_list_factories, boost_amount);
+}
+
 
 template<class Entry>
 void AlternationOpenList<Entry>::do_insertion(
@@ -127,28 +151,14 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
 }
 
 
-AlternationOpenListFactory::AlternationOpenListFactory(const plugins::Options &options)
-    : options(options) {
-}
-
-unique_ptr<StateOpenList>
-AlternationOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<AlternationOpenList<StateOpenListEntry>>(options);
-}
-
-unique_ptr<EdgeOpenList>
-AlternationOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<AlternationOpenList<EdgeOpenListEntry>>(options);
-}
-
-class AlternationOpenListFeature : public plugins::TypedFeature<OpenListFactory, AlternationOpenListFactory> {
+class AlternationOpenListFeature : public plugins::TypedFeature<TaskIndependentOpenListFactory, TaskIndependentAlternationOpenListFactory> {
 public:
     AlternationOpenListFeature() : TypedFeature("alt") {
         document_title("Alternation open list");
         document_synopsis(
             "alternates between several open lists.");
 
-        add_list_option<shared_ptr<OpenListFactory>>(
+        add_list_option<shared_ptr<TaskIndependentOpenListFactory>>(
             "sublists",
             "open lists between which this one alternates");
         add_option<int>(
@@ -158,9 +168,11 @@ public:
             "0");
     }
 
-    virtual shared_ptr<AlternationOpenListFactory> create_component(const plugins::Options &options, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<OpenListFactory>>(context, options, "sublists");
-        return make_shared<AlternationOpenListFactory>(options);
+    virtual shared_ptr<TaskIndependentAlternationOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<TaskIndependentOpenListFactory>>(context, opts, "sublists");
+        return make_shared<TaskIndependentAlternationOpenListFactory>(
+            opts.get_list<shared_ptr<TaskIndependentOpenListFactory>>("sublists"),
+            opts.get<int>("boost"));
     }
 };
 

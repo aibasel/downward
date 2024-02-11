@@ -7,56 +7,10 @@
 #include "../utils/memory.h"
 
 #include <cassert>
-#include <deque>
-#include <map>
 
 using namespace std;
 
 namespace standard_scalar_open_list {
-template<class Entry>
-class BestFirstOpenList : public OpenList<Entry> {
-    typedef deque<Entry> Bucket;
-
-    map<int, Bucket> buckets;
-    int size;
-
-    shared_ptr<Evaluator> evaluator;
-
-protected:
-    virtual void do_insertion(EvaluationContext &eval_context,
-                              const Entry &entry) override;
-
-public:
-    explicit BestFirstOpenList(const plugins::Options &opts);
-    BestFirstOpenList(const shared_ptr<Evaluator> &eval, bool preferred_only);
-    virtual ~BestFirstOpenList() override = default;
-
-    virtual Entry remove_min() override;
-    virtual bool empty() const override;
-    virtual void clear() override;
-    virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
-    virtual bool is_dead_end(
-        EvaluationContext &eval_context) const override;
-    virtual bool is_reliable_dead_end(
-        EvaluationContext &eval_context) const override;
-};
-
-
-template<class Entry>
-BestFirstOpenList<Entry>::BestFirstOpenList(const plugins::Options &opts)
-    : OpenList<Entry>(opts.get<bool>("pref_only")),
-      size(0),
-      evaluator(opts.get<shared_ptr<Evaluator>>("eval")) {
-}
-
-template<class Entry>
-BestFirstOpenList<Entry>::BestFirstOpenList(
-    const shared_ptr<Evaluator> &evaluator, bool preferred_only)
-    : OpenList<Entry>(preferred_only),
-      size(0),
-      evaluator(evaluator) {
-}
-
 template<class Entry>
 void BestFirstOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
@@ -109,29 +63,69 @@ bool BestFirstOpenList<Entry>::is_reliable_dead_end(
     return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
 }
 
-BestFirstOpenListFactory::BestFirstOpenListFactory(
-    const plugins::Options &options)
-    : options(options) {
+BestFirstOpenListFactory::BestFirstOpenListFactory(shared_ptr<Evaluator> evaluator, bool pref_only)
+    : pref_only(pref_only), size(0),
+      evaluator(evaluator) {
 }
 
 unique_ptr<StateOpenList>
 BestFirstOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<BestFirstOpenList<StateOpenListEntry>>(options);
+    return make_unique<BestFirstOpenList<StateOpenListEntry>>(evaluator, pref_only);
 }
 
 unique_ptr<EdgeOpenList>
 BestFirstOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<BestFirstOpenList<EdgeOpenListEntry>>(options);
+    return make_unique<BestFirstOpenList<EdgeOpenListEntry>>(evaluator, pref_only);
 }
 
-class BestFirstOpenListFeature : public plugins::TypedFeature<OpenListFactory, BestFirstOpenListFactory> {
+
+TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory(
+    shared_ptr<TaskIndependentEvaluator> evaluator, bool pref_only)
+    : TaskIndependentOpenListFactory("TieBreakingOpenListFactory", utils::Verbosity::NORMAL),
+      pref_only(pref_only), size(0), evaluator(evaluator) {
+}
+
+
+using ConcreteProduct = BestFirstOpenListFactory;
+using AbstractProduct = OpenListFactory;
+using Concrete = TaskIndependentBestFirstOpenListFactory;
+// TODO issue559 use templates as 'get_task_specific' is EXACTLY the same for all TI_Components
+shared_ptr<AbstractProduct> Concrete::get_task_specific(
+    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
+    shared_ptr<ConcreteProduct> task_specific_x;
+
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
+            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
+    } else {
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = create_ts(task, component_map, depth);
+        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
+                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
+    }
+    return task_specific_x;
+}
+
+std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
+                                                     unique_ptr <ComponentMap> &component_map, int depth) const {
+    return make_shared<BestFirstOpenListFactory>(
+        evaluator->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth),
+        pref_only);
+}
+
+
+class BestFirstOpenListFeature
+    : public plugins::TypedFeature<TaskIndependentOpenListFactory, TaskIndependentBestFirstOpenListFactory> {
 public:
     BestFirstOpenListFeature() : TypedFeature("single") {
         document_title("Best-first open list");
         document_synopsis(
             "Open list that uses a single evaluator and FIFO tiebreaking.");
 
-        add_option<shared_ptr<Evaluator>>("eval", "evaluator");
+        add_option<shared_ptr<TaskIndependentEvaluator>>("eval", "evaluator");
         add_option<bool>(
             "pref_only",
             "insert only nodes generated by preferred operators", "false");
@@ -143,6 +137,13 @@ public:
             "values to buckets. Pushing and popping from a bucket runs in constant "
             "time. Therefore, inserting and removing an entry from the open list "
             "takes time O(log(n)), where n is the number of buckets.");
+    }
+    virtual shared_ptr<TaskIndependentBestFirstOpenListFactory> create_component(
+        const plugins::Options &opts, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<OpenListFactory>>(context, opts, "sublists");
+        return make_shared<TaskIndependentBestFirstOpenListFactory>(
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
+            opts.get<bool>("pref_only"));
     }
 };
 

@@ -9,9 +9,9 @@
 
 using namespace std;
 
-PruningMethod::PruningMethod(const plugins::Options &opts)
+PruningMethod::PruningMethod(const utils::Verbosity verbosity)
     : timer(false),
-      log(utils::get_log_from_options(opts)),
+      log(utils::get_log(verbosity)),
       task(nullptr) {
 }
 
@@ -58,8 +58,15 @@ void PruningMethod::print_statistics() const {
     }
 }
 
-void add_pruning_options_to_feature(plugins::Feature &feature) {
-    utils::add_log_options_to_feature(feature);
+TaskIndependentPruningMethod::TaskIndependentPruningMethod(const string &name, utils::Verbosity verbosity)
+    : TaskIndependentComponent(name, verbosity) {
+}
+
+TaskIndependentPruningMethod::~TaskIndependentPruningMethod() {
+}
+
+void add_pruning_options_to_feature(plugins::Feature &feature, const string &name) {
+    utils::add_log_options_to_feature(feature, name);
     feature.document_note(
         "Note on verbosity parameter",
         "Setting verbosity to verbose or higher enables time measurements "
@@ -69,7 +76,7 @@ void add_pruning_options_to_feature(plugins::Feature &feature) {
         "normal verbosity for running experiments.");
 }
 
-static class PruningMethodCategoryPlugin : public plugins::TypedCategoryPlugin<PruningMethod> {
+static class PruningMethodCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentPruningMethod> {
 public:
     PruningMethodCategoryPlugin() : TypedCategoryPlugin("PruningMethod") {
         document_synopsis("Prune or reorder applicable operators.");

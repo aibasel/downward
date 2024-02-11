@@ -15,9 +15,14 @@ ostream &operator<<(ostream &os, const FactPair &fact_pair) {
     return os;
 }
 
-static class AbstractTaskCategoryPlugin : public plugins::TypedCategoryPlugin<AbstractTask> {
+
+TaskIndependentAbstractTask::TaskIndependentAbstractTask()
+    : TaskIndependentComponent("abstract_task", utils::Verbosity::NORMAL) {
+}
+
+static class TaskIndependentAbstractTaskCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentAbstractTask> {
 public:
-    AbstractTaskCategoryPlugin() : TypedCategoryPlugin("AbstractTask") {
+    TaskIndependentAbstractTaskCategoryPlugin() : TypedCategoryPlugin("AbstractTask") {
         // TODO: Replace empty string by synopsis for the wiki page.
         document_synopsis("");
     }

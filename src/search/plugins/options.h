@@ -70,14 +70,6 @@ class Options {
     std::string unparsed_config;
 public:
     explicit Options();
-    /*
-      TODO: we only need the copy constructor for cases where we need to modify
-      the options after parsing (see merge_and_shrink_heuristic.cc for an
-      example). This should no longer be necessary once we switch to builders.
-      At this time, the constructor can probably be deleted.
-    */
-    Options(const Options &other) = default;
-
     template<typename T>
     void set(const std::string &key, T value) {
         storage[key] = value;

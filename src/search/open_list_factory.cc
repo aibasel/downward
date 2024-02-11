@@ -4,7 +4,6 @@
 
 using namespace std;
 
-
 template<>
 unique_ptr<StateOpenList> OpenListFactory::create_open_list() {
     return create_state_open_list();
@@ -15,7 +14,12 @@ unique_ptr<EdgeOpenList> OpenListFactory::create_open_list() {
     return create_edge_open_list();
 }
 
-static class OpenListFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<OpenListFactory> {
+
+TaskIndependentOpenListFactory::TaskIndependentOpenListFactory(const std::string name, utils::Verbosity verbosity)
+    : TaskIndependentComponent(name, verbosity) {
+}
+
+static class OpenListFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentOpenListFactory> {
 public:
     OpenListFactoryCategoryPlugin() : TypedCategoryPlugin("OpenList") {
         // TODO: use document_synopsis() for the wiki page.

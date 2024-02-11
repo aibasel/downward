@@ -6,7 +6,6 @@
 #include "../pruning_method.h"
 
 #include "../algorithms/ordered_set.h"
-#include "../plugins/options.h"
 #include "../task_utils/successor_generator.h"
 #include "../utils/logging.h"
 
@@ -19,15 +18,32 @@
 using namespace std;
 
 namespace eager_search {
-EagerSearch::EagerSearch(const plugins::Options &opts)
-    : SearchAlgorithm(opts),
-      reopen_closed_nodes(opts.get<bool>("reopen_closed")),
-      open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
-                create_state_open_list()),
-      f_evaluator(opts.get<shared_ptr<Evaluator>>("f_eval", nullptr)),
-      preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
-      lazy_evaluator(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
-      pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
+EagerSearch::EagerSearch(
+    unique_ptr<StateOpenList> open_list,
+    bool reopen_closed_nodes,
+    shared_ptr<Evaluator> f_evaluator,
+    shared_ptr<Evaluator> lazy_evaluator,
+    vector<shared_ptr<Evaluator>> preferred_operator_evaluators,
+    shared_ptr<PruningMethod> pruning_method,
+    OperatorCost cost_type,
+    int bound,
+    double max_time,
+    const string &name,
+    utils::Verbosity verbosity,
+    const shared_ptr<AbstractTask> &task
+    )
+    : SearchAlgorithm(cost_type,
+                      bound,
+                      max_time,
+                      name,
+                      verbosity,
+                      task),
+      reopen_closed_nodes(reopen_closed_nodes),
+      open_list(std::move(open_list)),
+      f_evaluator(f_evaluator),
+      preferred_operator_evaluators(preferred_operator_evaluators),
+      lazy_evaluator(lazy_evaluator),
+      pruning_method(pruning_method) {
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
@@ -35,7 +51,8 @@ EagerSearch::EagerSearch(const plugins::Options &opts)
 }
 
 void EagerSearch::initialize() {
-    log << "Conducting best first search"
+    log << name + ": "
+        << "Conducting best first search"
         << (reopen_closed_nodes ? " with" : " without")
         << " reopening closed nodes, (real) bound = " << bound
         << endl;
@@ -307,8 +324,103 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     }
 }
 
-void add_options_to_feature(plugins::Feature &feature) {
+void add_options_to_feature(plugins::Feature &feature, const string &name) {
     SearchAlgorithm::add_pruning_option(feature);
-    SearchAlgorithm::add_options_to_feature(feature);
+    SearchAlgorithm::add_options_to_feature(feature, name);
+}
+
+
+TaskIndependentEagerSearch::TaskIndependentEagerSearch(
+    shared_ptr<TaskIndependentOpenListFactory> open_list_factory,
+    bool reopen_closed_nodes,
+    shared_ptr<TaskIndependentEvaluator> f_evaluator,
+    shared_ptr<TaskIndependentEvaluator> lazy_evaluator,
+    vector<shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
+    shared_ptr<TaskIndependentPruningMethod> pruning_method,
+    OperatorCost cost_type,
+    int bound,
+    double max_time,
+    const string &name,
+    utils::Verbosity verbosity
+    )
+    : TaskIndependentSearchAlgorithm(cost_type,
+                                     bound,
+                                     max_time,
+                                     name,
+                                     verbosity
+                                     ),
+      reopen_closed_nodes(reopen_closed_nodes),
+      open_list_factory(std::move(open_list_factory)),
+      f_evaluator(f_evaluator),
+      preferred_operator_evaluators(preferred_operator_evaluators),
+      lazy_evaluator(lazy_evaluator),
+      pruning_method(pruning_method) {
+}
+
+
+
+using ConcreteProduct = EagerSearch;
+using AbstractProduct = SearchAlgorithm;
+using Concrete = TaskIndependentEagerSearch;
+// TODO issue559 use templates as 'get_task_specific' is EXACTLY the same for all TI_Components
+shared_ptr<AbstractProduct> Concrete::get_task_specific(
+    const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
+    shared_ptr<ConcreteProduct> task_specific_x;
+
+    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
+            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
+    } else {
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        task_specific_x = create_ts(task, component_map, depth);
+        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
+                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
+    }
+    return task_specific_x;
+}
+
+std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
+                                                     unique_ptr <ComponentMap> &component_map,
+                                                     int depth) const {
+    vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
+    transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
+              [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
+                  return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+              }
+              );
+
+    unique_ptr<StateOpenList> _open_list = unique_ptr<StateOpenList>(
+        open_list_factory->get_task_specific(
+            task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
+
+    return make_shared<EagerSearch>(
+        move(_open_list),
+        reopen_closed_nodes,
+        f_evaluator ? f_evaluator->get_task_specific(
+            task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
+        lazy_evaluator ? lazy_evaluator->get_task_specific(
+            task, component_map, depth >= 0 ? depth + 1 : depth) : nullptr,
+        td_evaluators,
+        pruning_method->get_task_specific(
+            task, component_map, depth >= 0 ? depth + 1 : depth),
+        cost_type,
+        bound,
+        max_time,
+        name,
+        verbosity,
+        task);
+}
+
+
+
+
+shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific_root(const shared_ptr<AbstractTask> &task,
+                                                                                  int depth) const {
+    utils::g_log << std::string(depth, ' ') << "Creating EagerSearch as root component..." << endl;
+    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
+    return get_task_specific(task, component_map, depth);
 }
 }

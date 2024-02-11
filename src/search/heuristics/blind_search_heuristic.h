@@ -9,8 +9,37 @@ class BlindSearchHeuristic : public Heuristic {
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    BlindSearchHeuristic(const plugins::Options &opts);
+    BlindSearchHeuristic(const std::string &name,
+                         utils::Verbosity verbosity,
+                         const std::shared_ptr<AbstractTask> task,
+                         bool cache_evaluator_values);
     ~BlindSearchHeuristic();
+};
+
+class TaskIndependentBlindSearchHeuristic : public TaskIndependentHeuristic {
+private:
+    bool cache_evaluator_values;
+protected:
+    std::string get_product_name() const override {return "BlindSearchHeuristic";}
+public:
+    explicit TaskIndependentBlindSearchHeuristic(const std::string &name,
+                                                 utils::Verbosity verbosity,
+                                                 const std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
+                                                 bool cache_evaluator_values);
+
+    virtual ~TaskIndependentBlindSearchHeuristic() override;
+
+    using AbstractProduct = Evaluator;
+    using ConcreteProduct = BlindSearchHeuristic;
+
+    std::shared_ptr<AbstractProduct>
+    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
+                      int depth = -1) const override;
+
+    std::shared_ptr<ConcreteProduct> create_ts(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const;
 };
 }
 

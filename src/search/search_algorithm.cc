@@ -20,7 +20,7 @@
 using namespace std;
 using utils::ExitCode;
 
-class PruningMethod;
+class TaskIndependentPruningMethod;
 
 static successor_generator::SuccessorGenerator &get_successor_generator(
     const TaskProxy &task_proxy, utils::LogProxy &log) {
@@ -40,25 +40,32 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
     return successor_generator;
 }
 
-SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts)
-    : description(opts.get_unparsed_config()),
-      status(IN_PROGRESS),
+
+SearchAlgorithm::SearchAlgorithm(
+    OperatorCost cost_type,
+    int bound,
+    double max_time,
+    const string &name,
+    utils::Verbosity verbosity,
+    const shared_ptr<AbstractTask> &_task)
+    : status(IN_PROGRESS),
       solution_found(false),
-      task(tasks::g_root_task),
+      task(_task),
       task_proxy(*task),
-      log(utils::get_log_from_options(opts)),
+      name(name),
+      log(utils::get_log(verbosity)),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
       search_space(state_registry, log),
       statistics(log),
-      cost_type(opts.get<OperatorCost>("cost_type")),
+      bound(bound),
+      cost_type(cost_type),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
-      max_time(opts.get<double>("max_time")) {
-    if (opts.get<int>("bound") < 0) {
-        cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
+      max_time(max_time) {
+    if (bound < 0) {
+        cerr << "error: negative cost bound " << bound << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
-    bound = opts.get<int>("bound");
     task_properties::print_variable_statistics(task_proxy);
 }
 
@@ -100,7 +107,7 @@ void SearchAlgorithm::search() {
 
 bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
-        log << "Solution found!" << endl;
+        log << "Solution found! (by '" << name << "')" << endl;
         Plan plan;
         search_space.trace_path(state, plan);
         set_plan(plan);
@@ -125,7 +132,7 @@ int SearchAlgorithm::get_adjusted_cost(const OperatorProxy &op) const {
    Method doesn't belong here because it's only useful for certain derived classes.
    TODO: Figure out where it belongs and move it there. */
 void SearchAlgorithm::add_pruning_option(plugins::Feature &feature) {
-    feature.add_option<shared_ptr<PruningMethod>>(
+    feature.add_option<shared_ptr<TaskIndependentPruningMethod>>(
         "pruning",
         "Pruning methods can prune or reorder the set of applicable operators in "
         "each state and thereby influence the number and order of successor states "
@@ -133,7 +140,7 @@ void SearchAlgorithm::add_pruning_option(plugins::Feature &feature) {
         "null()");
 }
 
-void SearchAlgorithm::add_options_to_feature(plugins::Feature &feature) {
+void SearchAlgorithm::add_options_to_feature(plugins::Feature &feature, const string &name) {
     ::add_cost_type_option_to_feature(feature);
     feature.add_option<int>(
         "bound",
@@ -148,7 +155,7 @@ void SearchAlgorithm::add_options_to_feature(plugins::Feature &feature) {
         "experiments. Timed-out searches are treated as failed searches, "
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
-    utils::add_log_options_to_feature(feature);
+    utils::add_log_options_to_feature(feature, name);
 }
 
 /* Method doesn't belong here because it's only useful for certain derived classes.
@@ -182,7 +189,7 @@ void print_initial_evaluator_values(
         );
 }
 
-static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<SearchAlgorithm> {
+static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentSearchAlgorithm> {
 public:
     SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("SearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.
@@ -190,6 +197,33 @@ public:
     }
 }
 _category_plugin;
+
+
+TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(OperatorCost cost_type,
+                                                               int bound,
+                                                               double max_time,
+                                                               const string &name,
+                                                               utils::Verbosity verbosity)
+    : TaskIndependentComponent(name, verbosity),
+      bound(bound),
+      cost_type(cost_type),
+      max_time(max_time) {
+    if (bound < 0) {
+        cerr << "error: negative cost bound " << bound << endl;
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+    }
+}
+
+TaskIndependentSearchAlgorithm::~TaskIndependentSearchAlgorithm() {
+}
+
+shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific_root(
+    const shared_ptr<AbstractTask> &task, int depth) const {
+    utils::g_log << std::string(depth, ' ') << "Creating SearchAlgorithm as root component..." << endl;
+    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
+    return get_task_specific(task, component_map, depth);
+}
+
 
 void collect_preferred_operators(
     EvaluationContext &eval_context,

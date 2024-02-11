@@ -129,8 +129,9 @@ public:
 */
 extern LogProxy g_log;
 
-extern void add_log_options_to_feature(plugins::Feature &feature);
-extern LogProxy get_log_from_options(const plugins::Options &options);
+extern void add_log_options_to_feature(plugins::Feature &feature, const std::string &name);
+extern LogProxy get_log(const Verbosity &verbosity);
+
 extern LogProxy get_silent_log();
 
 class ContextError : public utils::Exception {
@@ -141,7 +142,6 @@ public:
 class Context {
 protected:
     static const std::string INDENT;
-    size_t initial_stack_size = 0;  // TODO: Can be removed once we got rid of LazyValues
     std::vector<std::string> block_stack;
 
 public:
