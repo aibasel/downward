@@ -19,6 +19,8 @@
 */
 
 #include <memory>
+#include <vector>
+#include "../utils/logging.h"
 
 class Evaluator;
 class OpenListFactory;
@@ -65,7 +67,12 @@ extern std::shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   on g + w * h rather than using h directly.
 */
 extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
-    const plugins::Options &opts);
+            const std::vector<std::shared_ptr<Evaluator>> &base_evals,
+            const std::vector<std::shared_ptr<Evaluator>> &preferred,
+            int boost,
+            int weight,
+            utils::Verbosity verbosity
+    );
 
 /*
   Create open list factory and f_evaluator (used for displaying progress
