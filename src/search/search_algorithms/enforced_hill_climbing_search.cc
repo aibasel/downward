@@ -42,7 +42,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
         plugins::Options options;
         options.set("eval", g_evaluator);
         options.set("pref_only", false);
-        return make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(options);  // TODO issue 1082 after OpenLists
+        return make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(g_evaluator, false);  // TODO issue 1082 after OpenLists
     } else {
         /*
           TODO: Reduce code duplication with search_common.cc,
