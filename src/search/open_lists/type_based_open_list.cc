@@ -34,9 +34,8 @@ protected:
 
 public:
     explicit TypeBasedOpenList(
-            const vector<shared_ptr<Evaluator>> &evaluators,
-            int random_seed
-            );
+        const vector<shared_ptr<Evaluator>> &evaluators,
+        int random_seed);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
@@ -68,14 +67,14 @@ void TypeBasedOpenList<Entry>::do_insertion(
     }
 }
 
-    template<class Entry>
-    TypeBasedOpenList<Entry>::TypeBasedOpenList(
-            const vector<shared_ptr<Evaluator>> &evaluators,
-            int random_seed
-            )
-            : rng(utils::get_rng(random_seed)),
-              evaluators(evaluators) {
-    }
+template<class Entry>
+TypeBasedOpenList<Entry>::TypeBasedOpenList(
+    const vector<shared_ptr<Evaluator>> &evaluators,
+    int random_seed
+    )
+    : rng(utils::get_rng(random_seed)),
+      evaluators(evaluators) {
+}
 
 template<class Entry>
 Entry TypeBasedOpenList<Entry>::remove_min() {
@@ -139,18 +138,11 @@ void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
     }
 }
 
-    TypeBasedOpenListFactory::TypeBasedOpenListFactory(
-            const std::vector<std::shared_ptr<Evaluator>> &evaluators,
+TypeBasedOpenListFactory::TypeBasedOpenListFactory(
+    const vector<shared_ptr<Evaluator>> &evaluators,
     int random_seed
     ) : evaluators(evaluators),
-    random_seed(random_seed) {
-
-    }
-
-
-TypeBasedOpenListFactory::TypeBasedOpenListFactory(
-    const plugins::Options &options)
-    : options(options) {
+        random_seed(random_seed) {
 }
 
 unique_ptr<StateOpenList>
@@ -193,9 +185,9 @@ public:
     virtual shared_ptr<TypeBasedOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, opts, "evaluators");
         return plugins::make_shared_from_arg_tuples<TypeBasedOpenListFactory>(
-                opts.get_list<shared_ptr<Evaluator>>("evaluators"),
-                utils::get_rng_arguments_from_options(opts)
-                );
+            opts.get_list<shared_ptr<Evaluator>>("evaluators"),
+            utils::get_rng_arguments_from_options(opts)
+            );
     }
 };
 

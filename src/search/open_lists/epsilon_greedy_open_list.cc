@@ -46,12 +46,10 @@ protected:
 
 public:
     EpsilonGreedyOpenList(
-            const std::shared_ptr<Evaluator> &eval,
-            bool pref_only,
-            double epsilon,
-            int random_seed
-            );
-    virtual ~EpsilonGreedyOpenList() override = default;
+        const shared_ptr<Evaluator> &eval,
+        bool pref_only,
+        double epsilon,
+        int random_seed);
 
     virtual Entry remove_min() override;
     virtual bool is_dead_end(
@@ -87,17 +85,17 @@ void EpsilonGreedyOpenList<Entry>::do_insertion(
 
 template<class Entry>
 EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(
-        const std::shared_ptr<Evaluator> &eval,
-        bool pref_only,
-        double epsilon,
-        int random_seed
-)
-        : OpenList<Entry>(pref_only),
-          rng(utils::get_rng(random_seed)),
-          evaluator(eval),
-          epsilon(epsilon),
-          size(0),
-          next_id(0) {
+    const shared_ptr<Evaluator> &eval,
+    bool pref_only,
+    double epsilon,
+    int random_seed
+    )
+    : OpenList<Entry>(pref_only),
+      rng(utils::get_rng(random_seed)),
+      evaluator(eval),
+      epsilon(epsilon),
+      size(0),
+      next_id(0) {
 }
 
 template<class Entry>
@@ -146,34 +144,33 @@ void EpsilonGreedyOpenList<Entry>::clear() {
 }
 
 EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
-        const std::shared_ptr<Evaluator> &eval,
-        bool pref_only,
-        double epsilon,
-        int random_seed
-) :
+    const shared_ptr<Evaluator> &eval,
+    bool pref_only,
+    double epsilon,
+    int random_seed
+    ) :
     eval(eval),
     pref_only(pref_only),
     epsilon(epsilon),
     random_seed(random_seed) {
-
 }
 
 unique_ptr<StateOpenList>
 EpsilonGreedyOpenListFactory::create_state_open_list() {
     return utils::make_unique_ptr<EpsilonGreedyOpenList<StateOpenListEntry>>(
-            eval,
-            pref_only,
-            epsilon,
-            random_seed);
+        eval,
+        pref_only,
+        epsilon,
+        random_seed);
 }
 
 unique_ptr<EdgeOpenList>
 EpsilonGreedyOpenListFactory::create_edge_open_list() {
     return utils::make_unique_ptr<EpsilonGreedyOpenList<EdgeOpenListEntry>>(
-            eval,
-            pref_only,
-            epsilon,
-            random_seed);
+        eval,
+        pref_only,
+        epsilon,
+        random_seed);
 }
 
 class EpsilonGreedyOpenListFeature : public plugins::TypedFeature<OpenListFactory, EpsilonGreedyOpenListFactory> {
@@ -209,11 +206,11 @@ public:
 
     virtual shared_ptr<EpsilonGreedyOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<EpsilonGreedyOpenListFactory>(
-                opts.get<shared_ptr<Evaluator>>("eval"),
-                opts.get<bool>("pref_only"),
-                opts.get<double>("epsilon"),
-                utils::get_rng_arguments_from_options(opts)
-        );
+            opts.get<shared_ptr<Evaluator>>("eval"),
+            opts.get<bool>("pref_only"),
+            opts.get<double>("epsilon"),
+            utils::get_rng_arguments_from_options(opts)
+            );
     }
 };
 

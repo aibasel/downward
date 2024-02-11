@@ -31,22 +31,11 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
 
     if (!use_preferred ||
         preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
-        /*
-          TODO: Reduce code duplication with search_common.cc,
-          function create_standard_scalar_open_list_factory.
-
-          It would probably make sense to add a factory function or
-          constructor that encapsulates this work to the standard
-          scalar open list code.
-        */
-        plugins::Options options;
-        options.set("eval", g_evaluator);
-        options.set("pref_only", false);
-        return make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(g_evaluator, false);  // TODO issue 1082 after OpenLists
+        return make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(g_evaluator, false);
     } else {
         /*
           TODO: Reduce code duplication with search_common.cc,
-          function create_astar_open_list_factory_and_f_eval.
+          function create_astar_open_list_factory_and_f_eval.  TODO: issue1082 update comment
 
           It would probably make sense to add a factory function or
           constructor that encapsulates this work to the tie-breaking
@@ -56,11 +45,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
         pref_evaluator_options.set<utils::Verbosity>(
             "verbosity", verbosity);
         vector<shared_ptr<Evaluator>> evals = {g_evaluator, make_shared<PrefEval>(pref_evaluator_options)}; // TODO issue 1082 after Evaluators
-        plugins::Options options;
-        options.set("evals", evals);
-        options.set("pref_only", false);
-        options.set("unsafe_pruning", true);
-        return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(evals, false, true);  // TODO issue 1082 after OpenLists
+        return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(evals, false, true);
     }
 }
 

@@ -81,7 +81,13 @@ public:
         plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, opts, "evals");
 
         return plugins::make_shared_from_arg_tuples<lazy_search::LazySearch>(
-            search_common::create_wastar_open_list_factory(opts),
+            search_common::create_wastar_open_list_factory(
+                opts.get_list<shared_ptr<Evaluator>>("evals"),
+                opts.get_list<shared_ptr<Evaluator>>("preferred"),
+                opts.get<int>("boost"),
+                opts.get<int>("w"),
+                opts.get<utils::Verbosity>("verbosity")
+                ),
             opts.get<bool>("reopen_closed"),
             opts.get_list<shared_ptr<Evaluator>>("preferred"),
             get_successors_order_arguments_from_options(opts),
