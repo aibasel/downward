@@ -64,15 +64,15 @@ public:
         plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, opts, "evals");
 
         return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
-                search_common::create_greedy_open_list_factory(
-                        opts.get_list<shared_ptr<Evaluator>>("evals"),
-                        opts.get_list<shared_ptr<Evaluator>>("preferred"),
-                        opts.get<int>("boost")
-                        ),
-                false,
-                nullptr,
+            search_common::create_greedy_open_list_factory(
+                opts.get_list<shared_ptr<Evaluator>>("evals"),
                 opts.get_list<shared_ptr<Evaluator>>("preferred"),
-                eager_search::get_eager_search_arguments_from_options(opts)
+                opts.get<int>("boost")
+                ),
+            false,
+            nullptr,
+            opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            eager_search::get_eager_search_arguments_from_options(opts)
             );
     }
 };

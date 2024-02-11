@@ -45,14 +45,13 @@ public:
     }
 
     virtual shared_ptr<eager_search::EagerSearch> create_component(const plugins::Options &opts, const utils::Context &) const override {
-
         return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
-                search_common::create_wastar_open_list_factory(
-                        opts.get_list<shared_ptr<Evaluator>>("evals"),
-                        opts.get_list<shared_ptr<Evaluator>>("preferred"),
-                        opts.get<int>("boost"),
-                        opts.get<int>("w"),
-                        opts.get<utils::Verbosity>("verbosity")
+            search_common::create_wastar_open_list_factory(
+                opts.get_list<shared_ptr<Evaluator>>("evals"),
+                opts.get_list<shared_ptr<Evaluator>>("preferred"),
+                opts.get<int>("boost"),
+                opts.get<int>("w"),
+                opts.get<utils::Verbosity>("verbosity")
                 ),
             opts.get<bool>("reopen_closed"),
             opts.get<shared_ptr<Evaluator>>("f_eval", nullptr),

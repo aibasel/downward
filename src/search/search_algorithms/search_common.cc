@@ -56,9 +56,9 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory_aux(
 }
 
 shared_ptr<OpenListFactory> create_greedy_open_list_factory(
-        const vector<shared_ptr<Evaluator>> &evals,
-        const vector<shared_ptr<Evaluator>> &preferred_evaluators,
-        int boost) {
+    const vector<shared_ptr<Evaluator>> &evals,
+    const vector<shared_ptr<Evaluator>> &preferred_evaluators,
+    int boost) {
     return create_alternation_open_list_factory_aux(
         evals,
         preferred_evaluators,
@@ -101,12 +101,11 @@ static shared_ptr<Evaluator> create_wastar_eval(utils::Verbosity verbosity,
 }
 
 shared_ptr<OpenListFactory> create_wastar_open_list_factory(
-        const std::vector<std::shared_ptr<Evaluator>> &base_evals,
-        const std::vector<std::shared_ptr<Evaluator>> &preferred,
-        int boost,
-        int weight,
-        utils::Verbosity verbosity) {
-
+    const std::vector<std::shared_ptr<Evaluator>> &base_evals,
+    const std::vector<std::shared_ptr<Evaluator>> &preferred,
+    int boost,
+    int weight,
+    utils::Verbosity verbosity) {
     plugins::Options g_evaluator_options; // TODO issue1082 remove this
     g_evaluator_options.set<utils::Verbosity>(
         "verbosity", verbosity);
@@ -115,10 +114,10 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
     f_evals.reserve(base_evals.size());
     for (const shared_ptr<Evaluator> &eval : base_evals)
         f_evals.push_back(create_wastar_eval(
-                verbosity,
-                g_eval,
-                weight,
-                eval));
+                              verbosity,
+                              g_eval,
+                              weight,
+                              eval));
 
     return create_alternation_open_list_factory_aux(
         f_evals,
@@ -128,9 +127,9 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 
 pair<shared_ptr<OpenListFactory>, const shared_ptr<Evaluator>>
 create_astar_open_list_factory_and_f_eval(
-        const shared_ptr<Evaluator> &eval,
-        utils::Verbosity verbosity
-        ) {
+    const shared_ptr<Evaluator> &eval,
+    utils::Verbosity verbosity
+    ) {
     plugins::Options g_evaluator_options; // TODO issue1082 remove this
     g_evaluator_options.set<utils::Verbosity>(
         "verbosity", verbosity);

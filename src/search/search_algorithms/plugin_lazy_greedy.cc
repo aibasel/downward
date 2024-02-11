@@ -73,10 +73,10 @@ public:
     virtual shared_ptr<lazy_search::LazySearch> create_component(const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<lazy_search::LazySearch>(
             search_common::create_greedy_open_list_factory(
-                    opts.get_list<shared_ptr<Evaluator>>("evals"),
-                    opts.get_list<shared_ptr<Evaluator>>("preferred"),
-                    opts.get<int>("boost")
-            ),
+                opts.get_list<shared_ptr<Evaluator>>("evals"),
+                opts.get_list<shared_ptr<Evaluator>>("preferred"),
+                opts.get<int>("boost")
+                ),
             opts.get<bool>("reopen_closed"),
             opts.get_list<shared_ptr<Evaluator>>("preferred"),
             get_successors_order_arguments_from_options(opts),

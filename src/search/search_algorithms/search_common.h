@@ -45,10 +45,9 @@ extern std::shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory
   directly.
 */
 extern std::shared_ptr<OpenListFactory> create_greedy_open_list_factory(
-            const std::vector<std::shared_ptr<Evaluator>> &evals,
-            const std::vector<std::shared_ptr<Evaluator>> &preferred_evaluators,
-            int boost
-            );
+    const std::vector<std::shared_ptr<Evaluator>> &evals,
+    const std::vector<std::shared_ptr<Evaluator>> &preferred_evaluators,
+    int boost);
 
 /*
   Create open list factory for the lazy_wastar plugin.
@@ -58,12 +57,11 @@ extern std::shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   on g + w * h rather than using h directly.
 */
 extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
-            const std::vector<std::shared_ptr<Evaluator>> &base_evals,
-            const std::vector<std::shared_ptr<Evaluator>> &preferred,
-            int boost,
-            int weight,
-            utils::Verbosity verbosity
-    );
+    const std::vector<std::shared_ptr<Evaluator>> &base_evals,
+    const std::vector<std::shared_ptr<Evaluator>> &preferred,
+    int boost,
+    int weight,
+    utils::Verbosity verbosity);
 
 /*
   Create open list factory and f_evaluator (used for displaying progress
@@ -74,8 +72,8 @@ extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 */
 extern std::pair<std::shared_ptr<OpenListFactory>, const std::shared_ptr<Evaluator>>
 create_astar_open_list_factory_and_f_eval(
-        const std::shared_ptr<Evaluator> &h_eval,
-        utils::Verbosity verbosity);
+    const std::shared_ptr<Evaluator> &h_eval,
+    utils::Verbosity verbosity);
 }
 
 #endif
