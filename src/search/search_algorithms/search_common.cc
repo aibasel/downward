@@ -85,14 +85,14 @@ static shared_ptr<Evaluator> create_wastar_eval(utils::Verbosity verbosity,
     if (weight == 1) {
         w_h_eval = h_eval;
     } else {
-        plugins::Options weighted_evaluator_options;
+        plugins::Options weighted_evaluator_options; // TODO issue1082 remove this
         weighted_evaluator_options.set<utils::Verbosity>(
             "verbosity", verbosity);
         weighted_evaluator_options.set<shared_ptr<Evaluator>>("eval", h_eval);
         weighted_evaluator_options.set<int>("weight", weight);
         w_h_eval = make_shared<WeightedEval>(weighted_evaluator_options);
     }
-    plugins::Options sum_evaluator_options;
+    plugins::Options sum_evaluator_options; // TODO issue1082 remove this
     sum_evaluator_options.set<utils::Verbosity>(
         "verbosity", verbosity);
     sum_evaluator_options.set<vector<shared_ptr<Evaluator>>>(
@@ -107,7 +107,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
         int weight,
         utils::Verbosity verbosity) {
 
-    plugins::Options g_evaluator_options;
+    plugins::Options g_evaluator_options; // TODO issue1082 remove this
     g_evaluator_options.set<utils::Verbosity>(
         "verbosity", verbosity);
     shared_ptr<GEval> g_eval = make_shared<GEval>(g_evaluator_options);
@@ -127,15 +127,18 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 }
 
 pair<shared_ptr<OpenListFactory>, const shared_ptr<Evaluator>>
-create_astar_open_list_factory_and_f_eval(const plugins::Options &opts) {
-    plugins::Options g_evaluator_options;
+create_astar_open_list_factory_and_f_eval(
+        const shared_ptr<Evaluator> &eval,
+        utils::Verbosity verbosity
+        ) {
+    plugins::Options g_evaluator_options; // TODO issue1082 remove this
     g_evaluator_options.set<utils::Verbosity>(
-        "verbosity", opts.get<utils::Verbosity>("verbosity"));
+        "verbosity", verbosity);
     shared_ptr<GEval> g = make_shared<GEval>(g_evaluator_options);
-    shared_ptr<Evaluator> h = opts.get<shared_ptr<Evaluator>>("eval");
-    plugins::Options f_evaluator_options;
+    shared_ptr<Evaluator> h = eval;
+    plugins::Options f_evaluator_options; // TODO issue1082 remove this
     f_evaluator_options.set<utils::Verbosity>(
-        "verbosity", opts.get<utils::Verbosity>("verbosity"));
+        "verbosity", verbosity);
     f_evaluator_options.set<vector<shared_ptr<Evaluator>>>(
         "evals", vector<shared_ptr<Evaluator>>({g, h}));
     shared_ptr<Evaluator> f = make_shared<SumEval>(f_evaluator_options);

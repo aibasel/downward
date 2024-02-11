@@ -40,7 +40,8 @@ public:
 
     virtual shared_ptr<eager_search::EagerSearch> create_component(const plugins::Options &opts, const utils::Context &) const override {
         plugins::Options options_copy(opts);
-        auto temp = search_common::create_astar_open_list_factory_and_f_eval(opts);
+        auto temp = search_common::create_astar_open_list_factory_and_f_eval(opts.get<shared_ptr<Evaluator>>("eval"),
+                                                                             opts.get<utils::Verbosity>("verbosity"));
         options_copy.set("open", temp.first);
         options_copy.set("f_eval", temp.second);
         options_copy.set("reopen_closed", true);
