@@ -85,7 +85,7 @@ void EpsilonGreedyOpenList<Entry>::do_insertion(
 
 template<class Entry>
 EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(
-    const std::shared_ptr<Evaluator> &eval,
+    const shared_ptr<Evaluator> &eval,
     bool pref_only,
     double epsilon,
     int random_seed
