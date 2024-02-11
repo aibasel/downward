@@ -145,12 +145,6 @@ TypeBasedOpenListFactory::TypeBasedOpenListFactory(
         random_seed(random_seed) {
 }
 
-
-TypeBasedOpenListFactory::TypeBasedOpenListFactory(
-    const plugins::Options &options)
-    : options(options) {
-}
-
 unique_ptr<StateOpenList>
 TypeBasedOpenListFactory::create_state_open_list() {
     return utils::make_unique_ptr<TypeBasedOpenList<StateOpenListEntry>>(evaluators, random_seed);
