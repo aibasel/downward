@@ -56,11 +56,13 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory_aux(
 }
 
 shared_ptr<OpenListFactory> create_greedy_open_list_factory(
-    const plugins::Options &options) {
+        const vector<shared_ptr<Evaluator>> &evals,
+        const vector<shared_ptr<Evaluator>> &preferred_evaluators,
+        int boost) {
     return create_alternation_open_list_factory_aux(
-        options.get_list<shared_ptr<Evaluator>>("evals"),
-        options.get_list<shared_ptr<Evaluator>>("preferred"),
-        options.get<int>("boost"));
+        evals,
+        preferred_evaluators,
+        boost);
 }
 
 /*

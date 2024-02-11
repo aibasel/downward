@@ -60,20 +60,19 @@ public:
             "```\n--search eager(single(eval1))\n```\n", true);
     }
 
-    virtual shared_ptr<eager_search::EagerSearch> create_component(const plugins::Options &options, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, options, "evals");
-        plugins::Options options_copy(options);
-        options_copy.set("open", search_common::create_greedy_open_list_factory(options_copy));
-        options_copy.set("reopen_closed", false);
-        shared_ptr<Evaluator> evaluator = nullptr;
-        options_copy.set("f_eval", evaluator);
+    virtual shared_ptr<eager_search::EagerSearch> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, opts, "evals");
 
         return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
-            options_copy.get<shared_ptr<OpenListFactory>>("open"),
-            options_copy.get<bool>("reopen_closed"),
-            options_copy.get<shared_ptr<Evaluator>>("f_eval", nullptr),
-            options_copy.get_list<shared_ptr<Evaluator>>("preferred"),
-            eager_search::get_eager_search_arguments_from_options(options_copy)
+                search_common::create_greedy_open_list_factory(
+                        opts.get_list<shared_ptr<Evaluator>>("evals"),
+                        opts.get_list<shared_ptr<Evaluator>>("preferred"),
+                        opts.get<int>("boost")
+                        ),
+                false,
+                nullptr,
+                opts.get_list<shared_ptr<Evaluator>>("preferred"),
+                eager_search::get_eager_search_arguments_from_options(opts)
             );
     }
 };

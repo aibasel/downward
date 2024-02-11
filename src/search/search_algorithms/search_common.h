@@ -53,7 +53,10 @@ extern std::shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory
   directly.
 */
 extern std::shared_ptr<OpenListFactory> create_greedy_open_list_factory(
-    const plugins::Options &opts);
+            const std::vector<std::shared_ptr<Evaluator>> &evals,
+            const std::vector<std::shared_ptr<Evaluator>> &preferred_evaluators,
+            int boost
+            );
 
 /*
   Create open list factory for the lazy_wastar plugin.
