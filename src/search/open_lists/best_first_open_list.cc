@@ -99,13 +99,13 @@ bool BestFirstOpenList<Entry>::is_reliable_dead_end(
     return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
 }
 
-    BestFirstOpenListFactory::BestFirstOpenListFactory(
-            const shared_ptr<Evaluator> &eval,
-            bool pref_only
+BestFirstOpenListFactory::BestFirstOpenListFactory(
+    const shared_ptr<Evaluator> &eval,
+    bool pref_only
     )
-            : eval(eval),
-              pref_only(pref_only) {
-    }
+    : eval(eval),
+      pref_only(pref_only) {
+}
 
 unique_ptr<StateOpenList>
 BestFirstOpenListFactory::create_state_open_list() {
@@ -141,11 +141,10 @@ public:
 
     virtual shared_ptr<BestFirstOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<BestFirstOpenListFactory>(
-                opts.get<shared_ptr<Evaluator>>("eval"),
-                opts.get<bool>("pref_only")
-        );
+            opts.get<shared_ptr<Evaluator>>("eval"),
+            opts.get<bool>("pref_only")
+            );
     }
-
 };
 
 static plugins::FeaturePlugin<BestFirstOpenListFeature> _plugin;

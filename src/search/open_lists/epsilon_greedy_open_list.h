@@ -48,11 +48,10 @@ class EpsilonGreedyOpenListFactory : public OpenListFactory {
     int random_seed;
 public:
     EpsilonGreedyOpenListFactory(
-    const std::shared_ptr<Evaluator> &eval,
-    bool pref_only,
-    double epsilon,
-    int random_seed
-            );
+        const std::shared_ptr<Evaluator> &eval,
+        bool pref_only,
+        double epsilon,
+        int random_seed);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;

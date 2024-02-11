@@ -31,9 +31,8 @@ class TypeBasedOpenListFactory : public OpenListFactory {
     plugins::Options options;
 public:
     TypeBasedOpenListFactory(
-            const std::vector<std::shared_ptr<Evaluator>> &evaluators,
-    int random_seed
-            );
+        const std::vector<std::shared_ptr<Evaluator>> &evaluators,
+        int random_seed);
     explicit TypeBasedOpenListFactory(const plugins::Options &options);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
