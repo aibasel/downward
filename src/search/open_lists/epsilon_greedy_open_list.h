@@ -44,10 +44,17 @@
 
 namespace epsilon_greedy_open_list {
 class EpsilonGreedyOpenListFactory : public OpenListFactory {
-    plugins::Options options;
+    std::shared_ptr<Evaluator> eval;
+    bool pref_only;
+    double epsilon;
+    int random_seed;
 public:
-    explicit EpsilonGreedyOpenListFactory(const plugins::Options &options);
-    virtual ~EpsilonGreedyOpenListFactory() override = default;
+    EpsilonGreedyOpenListFactory(
+    const std::shared_ptr<Evaluator> &eval,
+    bool pref_only,
+    double epsilon,
+    int random_seed
+            );
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;
