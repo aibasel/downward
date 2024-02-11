@@ -135,7 +135,7 @@ create_astar_open_list_factory_and_f_eval(const plugins::Options &opts) {
     vector<shared_ptr<Evaluator>> evals = {f, h};
 
     shared_ptr<OpenListFactory> open =
-        plugins::make_shared_from_arg_tuples<tiebreaking_open_list::TieBreakingOpenListFactory>(evals, false, false);
+        make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(evals, false, false);
     return make_pair(open, f);
 }
 }
