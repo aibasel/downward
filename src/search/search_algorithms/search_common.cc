@@ -33,10 +33,10 @@ static shared_ptr<OpenListFactory> create_alternation_open_list_factory_aux(
         vector<shared_ptr<OpenListFactory>> subfactories;
         for (const shared_ptr<Evaluator> &evaluator : evals) {
             subfactories.push_back(
-                    make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(evaluator, false));
+                make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(evaluator, false));
             if (!preferred_evaluators.empty()) {
                 subfactories.push_back(
-                        make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(evaluator, true));
+                    make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(evaluator, true));
             }
         }
         return make_shared<alternation_open_list::AlternationOpenListFactory>(subfactories, boost);
@@ -86,11 +86,11 @@ static shared_ptr<Evaluator> create_wastar_eval(utils::Verbosity verbosity,
 }
 
 shared_ptr<OpenListFactory> create_wastar_open_list_factory(
-        const vector<shared_ptr<Evaluator>> &base_evals,
-        const vector<shared_ptr<Evaluator>> &preferred,
-        int boost,
-        int weight,
-        utils::Verbosity verbosity) {
+    const vector<shared_ptr<Evaluator>> &base_evals,
+    const vector<shared_ptr<Evaluator>> &preferred,
+    int boost,
+    int weight,
+    utils::Verbosity verbosity) {
     plugins::Options g_evaluator_options; // TODO issue1082 remove this
     g_evaluator_options.set<utils::Verbosity>(
         "verbosity", verbosity);
