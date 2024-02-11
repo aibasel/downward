@@ -60,7 +60,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
         options.set("evals", evals);
         options.set("pref_only", false);
         options.set("unsafe_pruning", true);
-        return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(options);  // TODO issue 1082 after OpenLists
+        return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(evals, false, true);  // TODO issue 1082 after OpenLists
     }
 }
 

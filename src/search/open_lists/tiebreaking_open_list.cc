@@ -37,8 +37,11 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit TieBreakingOpenList(const plugins::Options &opts);
-    virtual ~TieBreakingOpenList() override = default;
+    TieBreakingOpenList(
+            const vector<shared_ptr<Evaluator>> &evals,
+            bool pref_only,
+            bool unsafe_pruning
+            );
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
@@ -52,11 +55,16 @@ public:
 
 
 template<class Entry>
-TieBreakingOpenList<Entry>::TieBreakingOpenList(const plugins::Options &opts)
-    : OpenList<Entry>(opts.get<bool>("pref_only")),
-      size(0), evaluators(opts.get_list<shared_ptr<Evaluator>>("evals")),
-      allow_unsafe_pruning(opts.get<bool>("unsafe_pruning")) {
+TieBreakingOpenList<Entry>::TieBreakingOpenList(
+        const vector<shared_ptr<Evaluator>> &evals,
+        bool pref_only,
+        bool unsafe_pruning
+        )
+        : OpenList<Entry>(pref_only),
+          size(0), evaluators(evals),
+          allow_unsafe_pruning(unsafe_pruning) {
 }
+
 
 template<class Entry>
 void TieBreakingOpenList<Entry>::do_insertion(
@@ -137,18 +145,30 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
     return false;
 }
 
-TieBreakingOpenListFactory::TieBreakingOpenListFactory(const plugins::Options &options)
-    : options(options) {
+TieBreakingOpenListFactory::TieBreakingOpenListFactory(
+        const vector<shared_ptr<Evaluator>> &evals,
+        bool pref_only,
+        bool unsafe_pruning
+        )
+        : evals(evals),
+        pref_only(pref_only),
+        unsafe_pruning(unsafe_pruning){
 }
 
 unique_ptr<StateOpenList>
 TieBreakingOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<TieBreakingOpenList<StateOpenListEntry>>(options);
+    return utils::make_unique_ptr<TieBreakingOpenList<StateOpenListEntry>>(
+    evals,
+    pref_only,
+    unsafe_pruning);
 }
 
 unique_ptr<EdgeOpenList>
 TieBreakingOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<TieBreakingOpenList<EdgeOpenListEntry>>(options);
+    return utils::make_unique_ptr<TieBreakingOpenList<EdgeOpenListEntry>>(
+            evals,
+            pref_only,
+            unsafe_pruning);
 }
 
 class TieBreakingOpenListFeature : public plugins::TypedFeature<OpenListFactory, TieBreakingOpenListFactory> {
@@ -167,9 +187,13 @@ public:
             "true");
     }
 
-    virtual shared_ptr<TieBreakingOpenListFactory> create_component(const plugins::Options &options, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, options, "evals");
-        return make_shared<TieBreakingOpenListFactory>(options);
+    virtual shared_ptr<TieBreakingOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, opts, "evals");
+        return plugins::make_shared_from_arg_tuples<TieBreakingOpenListFactory>(
+                opts.get_list<shared_ptr<Evaluator>>("evals"),
+                opts.get<bool>("pref_only"),
+                opts.get<bool>("unsafe_pruning")
+        );
     }
 };
 
