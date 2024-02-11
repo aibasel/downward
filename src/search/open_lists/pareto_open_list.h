@@ -3,8 +3,6 @@
 
 #include "../open_list_factory.h"
 
-#include "../plugins/options.h"
-
 namespace pareto_open_list {
 class ParetoOpenListFactory : public OpenListFactory {
     std::vector<std::shared_ptr<Evaluator>> evals;

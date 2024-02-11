@@ -3,8 +3,6 @@
 
 #include "../open_list_factory.h"
 
-#include "../plugins/options.h"
-
 /*
     Epsilon-greedy open list based on Valenzano et al. (ICAPS 2014).
 

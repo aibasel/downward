@@ -2,7 +2,6 @@
 #define OPEN_LISTS_ALTERNATION_OPEN_LIST_H
 
 #include "../open_list_factory.h"
-#include "../plugins/options.h"
 
 namespace alternation_open_list {
 class AlternationOpenListFactory : public OpenListFactory {
