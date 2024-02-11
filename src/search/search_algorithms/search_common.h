@@ -27,12 +27,6 @@ class OpenListFactory;
 
 namespace search_common {
 /*
-  Create a standard scalar open list factory.
-*/
-extern std::shared_ptr<OpenListFactory> create_standard_scalar_open_list_factory(
-    const std::shared_ptr<Evaluator> &eval, bool pref_only);
-
-/*
   Create open list factory for the eager_greedy or lazy_greedy plugins.
 
   This is usually an alternation open list with:

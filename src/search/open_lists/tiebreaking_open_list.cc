@@ -64,7 +64,6 @@ TieBreakingOpenList<Entry>::TieBreakingOpenList(
       allow_unsafe_pruning(unsafe_pruning) {
 }
 
-
 template<class Entry>
 void TieBreakingOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {

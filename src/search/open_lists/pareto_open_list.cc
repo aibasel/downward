@@ -226,7 +226,6 @@ bool ParetoOpenList<Entry>::is_reliable_dead_end(
     return false;
 }
 
-
 ParetoOpenListFactory::ParetoOpenListFactory(
     const vector<shared_ptr<Evaluator>> &evals,
     bool pref_only,

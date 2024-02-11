@@ -48,8 +48,7 @@ AlternationOpenList<Entry>::AlternationOpenList(
     int boost
     )
     : boost_amount(boost) {
-    vector<shared_ptr<OpenListFactory>> open_list_factories(
-        sublists);
+    vector<shared_ptr<OpenListFactory>> open_list_factories(sublists);
     open_lists.reserve(open_list_factories.size());
     for (const auto &factory : open_list_factories) {
         open_lists.push_back(factory->create_open_list<Entry>());
