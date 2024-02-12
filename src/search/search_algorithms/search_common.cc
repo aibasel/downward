@@ -112,21 +112,20 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
 
 pair<shared_ptr<OpenListFactory>, const shared_ptr<Evaluator>>
 create_astar_open_list_factory_and_f_eval(
-    const shared_ptr<Evaluator> &eval,
+    const shared_ptr<Evaluator> &h_eval,
     utils::Verbosity verbosity
     ) {
     plugins::Options g_evaluator_options; // TODO issue1082 remove this
     g_evaluator_options.set<utils::Verbosity>(
         "verbosity", verbosity);
     shared_ptr<GEval> g = make_shared<GEval>(g_evaluator_options);
-    shared_ptr<Evaluator> h = eval;
     plugins::Options f_evaluator_options; // TODO issue1082 remove this
     f_evaluator_options.set<utils::Verbosity>(
         "verbosity", verbosity);
     f_evaluator_options.set<vector<shared_ptr<Evaluator>>>(
-        "evals", vector<shared_ptr<Evaluator>>({g, h}));
+        "evals", vector<shared_ptr<Evaluator>>({g, h_eval}));
     shared_ptr<Evaluator> f = make_shared<SumEval>(f_evaluator_options);
-    vector<shared_ptr<Evaluator>> evals = {f, h};
+    vector<shared_ptr<Evaluator>> evals = {f, h_eval};
 
     shared_ptr<OpenListFactory> open =
         make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(evals, false, false);
