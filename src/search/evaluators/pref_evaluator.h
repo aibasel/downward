@@ -9,8 +9,13 @@
 namespace pref_evaluator {
 class PrefEvaluator : public Evaluator {
 public:
-    explicit PrefEvaluator(const plugins::Options &opts);
-    virtual ~PrefEvaluator() override;
+    explicit PrefEvaluator(const plugins::Options &opts); // TODO issue1082 remove this
+    PrefEvaluator(
+        bool use_for_reporting_minima,
+        bool use_for_boosting,
+        bool use_for_counting_evaluations,
+        const std::string &description,
+        utils::Verbosity verbosity);
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;

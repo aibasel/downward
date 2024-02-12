@@ -6,9 +6,14 @@
 namespace g_evaluator {
 class GEvaluator : public Evaluator {
 public:
-    explicit GEvaluator(const plugins::Options &opts);
-    virtual ~GEvaluator() override = default;
-
+    explicit GEvaluator(const plugins::Options &opts); // TODO issue1082: remove this
+    GEvaluator(
+        bool use_for_reporting_minima,
+        bool use_for_boosting,
+        bool use_for_counting_evaluations,
+        const std::string &description,
+        utils::Verbosity verbosity);
+    
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
 

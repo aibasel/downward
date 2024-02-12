@@ -108,6 +108,10 @@ tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
         );
 }
 
+tuple<bool, bool, bool> get_evaluator_default_arguments() {
+    return make_tuple<bool ,bool, bool>(false, false, false);
+}
+
 static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<Evaluator> {
 public:
     EvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {

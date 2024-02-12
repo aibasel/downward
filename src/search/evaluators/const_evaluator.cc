@@ -8,6 +8,15 @@ namespace const_evaluator {
 ConstEvaluator::ConstEvaluator(const plugins::Options &opts)
     : Evaluator(opts), value(opts.get<int>("value")) {
 }
+ConstEvaluator::ConstEvaluator(
+    int value,
+    bool use_for_reporting_minima,
+    bool use_for_boosting,
+    bool use_for_counting_evaluations,
+    const string &description,
+    utils::Verbosity verbosity)
+    : Evaluator(use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations, description, verbosity), value(value) {
+}
 
 EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
     EvaluationResult result;
@@ -27,7 +36,16 @@ public:
             "the constant value",
             "1",
             plugins::Bounds("0", "infinity"));
-        add_evaluator_options_to_feature(*this);
+        add_evaluator_options_to_feature(*this, "const");
+    }
+
+    virtual shared_ptr<ConstEvaluator> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<ConstEvaluator>(
+            opts.get<int>("value"),
+            get_evaluator_default_arguments(),
+            get_evaluator_arguments_from_options(opts)
+        );
     }
 };
 

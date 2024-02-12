@@ -16,8 +16,19 @@ CombiningEvaluator::CombiningEvaluator(const plugins::Options &opts)
         if (!subevaluator->dead_ends_are_reliable())
             all_dead_ends_are_reliable = false;
 }
-
-CombiningEvaluator::~CombiningEvaluator() {
+CombiningEvaluator::CombiningEvaluator(
+    vector<shared_ptr<Evaluator>> evals,
+    bool use_for_reporting_minima,
+    bool use_for_boosting,
+    bool use_for_counting_evaluations,
+    const string &description,
+    utils::Verbosity verbosity)
+    : Evaluator(use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations, description, verbosity),
+      subevaluators(evals) {
+    all_dead_ends_are_reliable = true;
+    for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
+        if (!subevaluator->dead_ends_are_reliable())
+            all_dead_ends_are_reliable = false;
 }
 
 bool CombiningEvaluator::dead_ends_are_reliable() const {
@@ -52,9 +63,17 @@ void CombiningEvaluator::get_path_dependent_evaluators(
     for (auto &subevaluator : subevaluators)
         subevaluator->get_path_dependent_evaluators(evals);
 }
-void add_combining_evaluator_options_to_feature(plugins::Feature &feature) {
+void add_combining_evaluator_options_to_feature(plugins::Feature &feature, const string &description) {
     feature.add_list_option<shared_ptr<Evaluator>>(
         "evals", "at least one evaluator");
-    add_evaluator_options_to_feature(feature);
+    add_evaluator_options_to_feature(feature, description);
+}
+
+tuple<vector<shared_ptr<Evaluator>>, bool, bool, bool, const string, utils::Verbosity> get_combining_evaluator_arguments_from_options(const plugins::Options &options) {
+    return tuple_cat(
+        make_tuple(options.get_list<shared_ptr<Evaluator>>("evals")),
+        get_evaluator_default_arguments(),
+        get_evaluator_arguments_from_options(options)
+    );
 }
 }
