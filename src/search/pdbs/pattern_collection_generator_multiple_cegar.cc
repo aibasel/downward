@@ -13,7 +13,8 @@ namespace pdbs {
 PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar(
     const plugins::Options &opts)
     : PatternCollectionGeneratorMultiple(opts),
-      use_wildcard_plans(opts.get<bool>("use_wildcard_plans")) {
+      use_wildcard_plans(opts.get<bool>("use_wildcard_plans")),
+      use_restricted_goal(opts.get<bool>("use_restricted_goal")) {
 }
 
 string PatternCollectionGeneratorMultipleCegar::id() const {
@@ -32,6 +33,7 @@ PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
         max_pdb_size,
         max_time,
         use_wildcard_plans,
+        use_restricted_goal,
         silent_log,
         rng,
         task,
@@ -52,7 +54,7 @@ public:
             "the algorithms.");
 
         add_multiple_options_to_feature(*this);
-        add_cegar_wildcard_option_to_feature(*this);
+        add_cegar_options_to_feature(*this);
 
         add_cegar_implementation_notes_to_feature(*this);
         add_multiple_algorithm_implementation_notes_to_feature(*this);
