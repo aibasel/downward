@@ -11,7 +11,13 @@ PrefEvaluator::PrefEvaluator(const plugins::Options &opts)
     : Evaluator(opts) {
 }
 
-PrefEvaluator::~PrefEvaluator() {
+PrefEvaluator::PrefEvaluator(
+    bool use_for_reporting_minima,
+    bool use_for_boosting,
+    bool use_for_counting_evaluations,
+    const string &description,
+    utils::Verbosity verbosity)
+    : Evaluator(use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations, description, verbosity) {
 }
 
 EvaluationResult PrefEvaluator::compute_result(
@@ -31,7 +37,14 @@ public:
         document_title("Preference evaluator");
         document_synopsis("Returns 0 if preferred is true and 1 otherwise.");
 
-        add_evaluator_options_to_feature(*this);
+        add_evaluator_options_to_feature(*this, "pref");
+    }
+
+    virtual shared_ptr<PrefEvaluator> create_component(const plugins::Options &options, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<PrefEvaluator>(
+            get_evaluator_default_arguments(),
+            get_evaluator_arguments_from_options(options)
+        );
     }
 };
 

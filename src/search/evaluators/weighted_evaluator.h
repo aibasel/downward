@@ -15,8 +15,15 @@ class WeightedEvaluator : public Evaluator {
     int w;
 
 public:
-    explicit WeightedEvaluator(const plugins::Options &opts);
-    virtual ~WeightedEvaluator() override;
+    explicit WeightedEvaluator(const plugins::Options &opts); // TODO issue1082 remove this
+    WeightedEvaluator(
+        std::shared_ptr<Evaluator> eval,
+        int weight,
+        bool use_for_reporting_minima,
+        bool use_for_boosting,
+        bool use_for_counting_evaluations,
+        const std::string &description,
+        utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;
     virtual EvaluationResult compute_result(
