@@ -47,9 +47,7 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
            this overrides continue_on_fail.
         */
         if (repeat_last_phase && last_phase_found_solution) {
-            return get_search_algorithm(
-                algorithm_configs.size() -
-                1);
+            return get_search_algorithm(algorithm_configs.size() - 1);
         } else {
             return nullptr;
         }
@@ -63,7 +61,7 @@ SearchStatus IteratedSearch::step() {
     if (!current_search) {
         return found_solution() ? SOLVED : FAILED;
     }
-    if (pass_bound) {
+    if (pass_bound && best_bound < current_search->get_bound()) {
         current_search->set_bound(best_bound);
     }
     ++phase;
@@ -184,6 +182,18 @@ public:
             "(using heuristic predefinition) between iterations, "
             "the path data (that is, landmark status for each visited state) "
             "will be saved between iterations.");
+        document_note(
+            "Semantics of Search Bounds",
+            "The definition of our interfaces for search algorithms allow to "
+            "set bounds for the iterated search and all its component search "
+            "algorithms individually. We do not see a reasonable use case "
+            "where setting a bound for a component search algorithm is "
+            "advisable. If this is done anyways, the bound of said search "
+            "iteration is set to the minimum of that bound and the overall "
+            "bound on the iterated search. This can be particularly relevant "
+            "when the option `pass_bound` is set to true in which case the "
+            "bound of the iterated search is updated whenever a better "
+            "solution is found by one of its components.");
     }
 
     virtual shared_ptr<IteratedSearch> create_component(const plugins::Options &options, const utils::Context &context) const override {
