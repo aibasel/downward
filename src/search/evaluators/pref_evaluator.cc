@@ -7,10 +7,6 @@
 using namespace std;
 
 namespace pref_evaluator {
-PrefEvaluator::PrefEvaluator(const plugins::Options &opts)
-    : Evaluator(opts) {
-}
-
 PrefEvaluator::PrefEvaluator(
     bool use_for_reporting_minima,
     bool use_for_boosting,

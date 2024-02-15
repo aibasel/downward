@@ -7,11 +7,8 @@
 using namespace std;
 
 namespace sum_evaluator {
-SumEvaluator::SumEvaluator(const plugins::Options &opts)
-    : CombiningEvaluator(opts) {
-}
 SumEvaluator::SumEvaluator(
-    vector<shared_ptr<Evaluator>> evals,
+    const vector<shared_ptr<Evaluator>> &evals,
     bool use_for_reporting_minima,
     bool use_for_boosting,
     bool use_for_counting_evaluations,

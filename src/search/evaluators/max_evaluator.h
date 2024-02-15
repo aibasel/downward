@@ -15,9 +15,8 @@ protected:
     virtual int combine_values(const std::vector<int> &values) override;
 
 public:
-    explicit MaxEvaluator(const plugins::Options &opts); // TODO issue1082 remove this
     MaxEvaluator(
-        std::vector<std::shared_ptr<Evaluator>> evals,
+        const std::vector<std::shared_ptr<Evaluator>> &evals,
         bool use_for_reporting_minima,
         bool use_for_boosting,
         bool use_for_counting_evaluations,

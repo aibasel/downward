@@ -5,9 +5,6 @@
 using namespace std;
 
 namespace const_evaluator {
-ConstEvaluator::ConstEvaluator(const plugins::Options &opts)
-    : Evaluator(opts), value(opts.get<int>("value")) {
-}
 ConstEvaluator::ConstEvaluator(
     int value,
     bool use_for_reporting_minima,

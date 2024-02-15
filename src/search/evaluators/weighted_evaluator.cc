@@ -10,13 +10,8 @@
 using namespace std;
 
 namespace weighted_evaluator {
-WeightedEvaluator::WeightedEvaluator(const plugins::Options &opts)
-    : Evaluator(opts),
-      evaluator(opts.get<shared_ptr<Evaluator>>("eval")),
-      w(opts.get<int>("weight")) {
-}
 WeightedEvaluator::WeightedEvaluator(
-    shared_ptr<Evaluator> eval,
+    const shared_ptr<Evaluator> &eval,
     int weight,
     bool use_for_reporting_minima,
     bool use_for_boosting,

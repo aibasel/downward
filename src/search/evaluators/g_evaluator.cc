@@ -7,9 +7,6 @@
 using namespace std;
 
 namespace g_evaluator {
-GEvaluator::GEvaluator(const plugins::Options &opts)
-    : Evaluator(opts) {
-}
 GEvaluator::GEvaluator(bool use_for_reporting_minima,
                        bool use_for_boosting,
                        bool use_for_counting_evaluations,

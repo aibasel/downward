@@ -16,7 +16,6 @@ protected:
         EvaluationContext &eval_context) override;
 
 public:
-    explicit ConstEvaluator(const plugins::Options &opts); // TODO issue1082: remove this
     ConstEvaluator(
         int value,
         bool use_for_reporting_minima,

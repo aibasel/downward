@@ -6,7 +6,6 @@
 namespace g_evaluator {
 class GEvaluator : public Evaluator {
 public:
-    explicit GEvaluator(const plugins::Options &opts); // TODO issue1082: remove this
     GEvaluator(
         bool use_for_reporting_minima,
         bool use_for_boosting,

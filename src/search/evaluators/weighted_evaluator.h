@@ -15,9 +15,8 @@ class WeightedEvaluator : public Evaluator {
     int w;
 
 public:
-    explicit WeightedEvaluator(const plugins::Options &opts); // TODO issue1082 remove this
     WeightedEvaluator(
-        std::shared_ptr<Evaluator> eval,
+        const std::shared_ptr<Evaluator> &eval,
         int weight,
         bool use_for_reporting_minima,
         bool use_for_boosting,

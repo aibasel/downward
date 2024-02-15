@@ -9,7 +9,6 @@
 namespace pref_evaluator {
 class PrefEvaluator : public Evaluator {
 public:
-    explicit PrefEvaluator(const plugins::Options &opts); // TODO issue1082 remove this
     PrefEvaluator(
         bool use_for_reporting_minima,
         bool use_for_boosting,
