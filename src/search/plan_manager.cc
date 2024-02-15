@@ -4,6 +4,7 @@
 
 #include "task_utils/task_properties.h"
 #include "utils/logging.h"
+#include "utils/system.h"
 
 #include <fstream>
 #include <iostream>
@@ -68,4 +69,11 @@ void PlanManager::save_plan(
     utils::g_log << "Plan length: " << plan.size() << " step(s)." << endl;
     utils::g_log << "Plan cost: " << plan_cost << endl;
     ++num_previously_generated_plans;
+    /*
+      Call an external program whenever a plan is found. This functionality is
+      added for the AIPlan4EU project, but the present solution is intended to
+      be temporary. As soon as the python interface is integrated it should be
+      possible to do this in a more principled way.
+    */
+    utils::call_hook(filename.str());
 }

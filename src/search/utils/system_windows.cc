@@ -73,6 +73,30 @@ void report_exit_code_reentrant(ExitCode exitcode) {
 int get_process_id() {
     return _getpid();
 }
+
+void execute_hook(const char *const &callback, const string &plan_filename) {
+    /*
+      By default *system* calls "cmd /C", we add the flag "/S" here to make sure
+      that quotes are always handled the same way. By quoting both the entire
+      command as well as the arguments within the command, whitespace in the
+      arguments should be handled correctly.
+    */
+    string command = "cmd /S /C \""
+        "\"" + string(callback) + "\" "
+        "\"" + plan_filename + "\""
+        "\"";
+    int status = system(command.c_str());
+    if (status == -1) {
+        ABORT("The command interpreter calling the plan hook '" +
+              string(callback) + "' failed with the following error: " +
+              string(strerror(errno)));
+    }
+    if (status != 0) {
+        ABORT("The command interpreter calling the plan hook '" +
+              string(callback) + "' exited with non-zero exit code " +
+              to_string(status));
+    }
+}
 }
 
 #endif
