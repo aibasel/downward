@@ -74,6 +74,6 @@ tuple<vector<shared_ptr<Evaluator>>, bool, bool, bool, const string, utils::Verb
         make_tuple(options.get_list<shared_ptr<Evaluator>>("evals")),
         get_evaluator_default_arguments(),
         get_evaluator_arguments_from_options(options)
-    );
+        );
 }
 }

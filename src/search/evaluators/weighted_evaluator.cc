@@ -69,7 +69,7 @@ public:
             options.get<int>("weight"),
             get_evaluator_default_arguments(),
             get_evaluator_arguments_from_options(options)
-        );
+            );
     }
 };
 

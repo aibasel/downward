@@ -44,7 +44,7 @@ public:
         return plugins::make_shared_from_arg_tuples<PrefEvaluator>(
             get_evaluator_default_arguments(),
             get_evaluator_arguments_from_options(options)
-        );
+            );
     }
 };
 

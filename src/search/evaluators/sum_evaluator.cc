@@ -17,7 +17,7 @@ SumEvaluator::SumEvaluator(
     bool use_for_counting_evaluations,
     const string &description,
     utils::Verbosity verbosity
-)
+    )
     : CombiningEvaluator(evals, use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations, description, verbosity) {
 }
 

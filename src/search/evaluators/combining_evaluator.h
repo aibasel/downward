@@ -52,7 +52,7 @@ public:
 extern void add_combining_evaluator_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<std::vector<std::shared_ptr<Evaluator>>, bool, bool, bool, const std::string, utils::Verbosity>
-    get_combining_evaluator_arguments_from_options(const plugins::Options &options);
+get_combining_evaluator_arguments_from_options(const plugins::Options &options);
 }
 
 #endif

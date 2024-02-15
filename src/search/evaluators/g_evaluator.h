@@ -13,7 +13,7 @@ public:
         bool use_for_counting_evaluations,
         const std::string &description,
         utils::Verbosity verbosity);
-    
+
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
 

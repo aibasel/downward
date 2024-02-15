@@ -45,7 +45,7 @@ public:
             opts.get<int>("value"),
             get_evaluator_default_arguments(),
             get_evaluator_arguments_from_options(opts)
-        );
+            );
     }
 };
 
