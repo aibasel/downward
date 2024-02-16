@@ -20,15 +20,15 @@ static int get_undefined_value(VariableProxy var) {
 }
 
 PotentialOptimizer::PotentialOptimizer(
-        const shared_ptr<AbstractTask> &transform,
-        lp::LPSolverType lpsolver,
-        double max_potential
-        )
-        : task(transform),
-          task_proxy(*task),
-          lp_solver(lpsolver),
-          max_potential(max_potential),
-          num_lp_vars(0) {
+    const shared_ptr<AbstractTask> &transform,
+    lp::LPSolverType lpsolver,
+    double max_potential
+    )
+    : task(transform),
+      task_proxy(*task),
+      lp_solver(lpsolver),
+      max_potential(max_potential),
+      num_lp_vars(0) {
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);
     initialize();

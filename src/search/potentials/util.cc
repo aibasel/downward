@@ -69,9 +69,9 @@ void add_admissible_potentials_options_to_feature(plugins::Feature &feature, con
 
 tuple<double, lp::LPSolverType, shared_ptr<AbstractTask>, bool, string, utils::Verbosity> get_admissible_potential_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
-            make_tuple(opts.get<double>("max_potential")),
-    lp::get_lp_solver_arguments_from_options(opts),
-    get_heuristic_arguments_from_options(opts)
-            );
+        make_tuple(opts.get<double>("max_potential")),
+        lp::get_lp_solver_arguments_from_options(opts),
+        get_heuristic_arguments_from_options(opts)
+        );
 }
 }

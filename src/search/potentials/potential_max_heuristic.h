@@ -20,11 +20,11 @@ protected:
 
 public:
     PotentialMaxHeuristic(
-            std::vector<std::unique_ptr<PotentialFunction>> &&functions,
-            const std::shared_ptr<AbstractTask> &transform,
-            bool cache_estimates,
-            const std::string &description,
-            utils::Verbosity verbosity);
+        std::vector<std::unique_ptr<PotentialFunction>> &&functions,
+        const std::shared_ptr<AbstractTask> &transform,
+        bool cache_estimates,
+        const std::string &description,
+        utils::Verbosity verbosity);
 };
 }
 

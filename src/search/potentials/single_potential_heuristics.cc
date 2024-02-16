@@ -15,14 +15,14 @@ enum class OptimizeFor {
 };
 
 static unique_ptr<PotentialFunction> create_potential_function(
-        const shared_ptr<AbstractTask> &transform,
-        lp::LPSolverType lpsolver,
-        double max_potential,
-        OptimizeFor opt_func) {
+    const shared_ptr<AbstractTask> &transform,
+    lp::LPSolverType lpsolver,
+    double max_potential,
+    OptimizeFor opt_func) {
     PotentialOptimizer optimizer(
-            transform,
-            lpsolver,
-            max_potential);
+        transform,
+        lpsolver,
+        max_potential);
     const AbstractTask &task = *transform;
     TaskProxy task_proxy(task);
     switch (opt_func) {
@@ -50,16 +50,16 @@ public:
 
     virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<PotentialHeuristic>(
-                create_potential_function(
-        opts.get<shared_ptr<AbstractTask>>("transform"),
-        opts.get<lp::LPSolverType>("lpsolver"),
-        opts.get<double>("max_potential"),
-        OptimizeFor::INITIAL_STATE),
+            create_potential_function(
                 opts.get<shared_ptr<AbstractTask>>("transform"),
-        opts.get<bool>("cache_estimates"),
-        opts.get<string>("description"),
-                opts.get<utils::Verbosity>("verbosity")
-        );
+                opts.get<lp::LPSolverType>("lpsolver"),
+                opts.get<double>("max_potential"),
+                OptimizeFor::INITIAL_STATE),
+            opts.get<shared_ptr<AbstractTask>>("transform"),
+            opts.get<bool>("cache_estimates"),
+            opts.get<string>("description"),
+            opts.get<utils::Verbosity>("verbosity")
+            );
     }
 };
 
@@ -77,10 +77,10 @@ public:
 
     virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &opts, const utils::Context &) const override {
         return make_shared<PotentialHeuristic>(create_potential_function(
-                opts.get<shared_ptr<AbstractTask>>("transform"),
-                opts.get<lp::LPSolverType>("lpsolver"),
-                opts.get<double>("max_potential"),
-                        OptimizeFor::ALL_STATES),
+                                                   opts.get<shared_ptr<AbstractTask>>("transform"),
+                                                   opts.get<lp::LPSolverType>("lpsolver"),
+                                                   opts.get<double>("max_potential"),
+                                                   OptimizeFor::ALL_STATES),
                                                opts.get<shared_ptr<AbstractTask>>("transform"),
                                                opts.get<bool>("cache_estimates"),
                                                opts.get<string>("description"),
