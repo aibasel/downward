@@ -49,7 +49,7 @@ public:
         double max_time,
         const std::string &description,
         utils::Verbosity verbosity);
-        
+
     virtual void print_statistics() const override;
 
     void dump_search_space() const;
