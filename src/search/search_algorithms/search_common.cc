@@ -5,7 +5,6 @@
 #include "../evaluators/g_evaluator.h"
 #include "../evaluators/sum_evaluator.h"
 #include "../evaluators/weighted_evaluator.h"
-#include "../plugins/options.h"
 #include "../open_lists/alternation_open_list.h"
 #include "../open_lists/best_first_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"

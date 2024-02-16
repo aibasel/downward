@@ -39,9 +39,9 @@ LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
 }
 
 void LandmarkCostPartitioningHeuristic::check_unsupported_features(
-    const plugins::Options &opts) {
+    const plugins::Options &lm_factory_option) {
     shared_ptr<LandmarkFactory> lm_graph_factory =
-        opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
+        lm_factory_option.get<shared_ptr<LandmarkFactory>>("lm_factory");
 
     if (task_properties::has_axioms(task_proxy)) {
         cerr << "Cost partitioning does not support axioms." << endl;

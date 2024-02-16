@@ -32,7 +32,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
     } else {
         /*
           TODO: Reduce code duplication with search_common.cc,
-          function create_astar_open_list_factory_and_f_eval.  TODO: issue1082 update comment
+          function create_astar_open_list_factory_and_f_eval.
 
           It would probably make sense to add a factory function or
           constructor that encapsulates this work to the tie-breaking

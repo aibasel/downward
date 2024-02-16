@@ -83,11 +83,6 @@ void add_evaluator_options_to_feature(plugins::Feature &feature, const string &d
     utils::add_log_options_to_feature(feature);
 }
 
-// TODO 1082 remove this, just keep the one above
-void add_evaluator_options_to_feature(plugins::Feature &feature) {
-    utils::add_log_options_to_feature(feature);
-}
-
 tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
     const plugins::Options &opts) {
     return tuple_cat(

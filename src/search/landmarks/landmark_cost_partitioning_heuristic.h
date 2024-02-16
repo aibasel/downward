@@ -15,7 +15,7 @@ enum class CostPartitioningMethod {
 class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
     std::unique_ptr<CostPartitioningAlgorithm> cost_partitioning_algorithm;
 
-    void check_unsupported_features(const plugins::Options &opts); // TODO issue1082 this needs Options to construct the lm_factory later.
+    void check_unsupported_features(const plugins::Options &lm_factory_option); // TODO issue1082 this needs Options to construct the lm_factory later.
     void set_cost_partitioning_algorithm(CostPartitioningMethod cost_partitioning,
                                          lp::LPSolverType lpsolver,
                                          bool alm);
@@ -32,7 +32,7 @@ public:
        This should be handled by issue559 eventually.
     */
     LandmarkCostPartitioningHeuristic(
-        const plugins::Options &options,
+        const plugins::Options &lm_factory_option,
         bool use_preferred_operators,
         bool prog_goal,
         bool prog_gn,

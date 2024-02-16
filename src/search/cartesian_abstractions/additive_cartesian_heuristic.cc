@@ -146,7 +146,7 @@ public:
     virtual shared_ptr<AdditiveCartesianHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<AdditiveCartesianHeuristic>(
-            opts.get<vector<shared_ptr<SubtaskGenerator>>>("subtasks"), // TODO issue1082 why not get_list?
+            opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks"),
             opts.get<int>("max_states"),
             opts.get<int>("max_transitions"),
             opts.get<double>("max_time"),
