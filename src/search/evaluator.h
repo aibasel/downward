@@ -28,11 +28,6 @@ public:
         bool use_for_counting_evaluations,
         const std::string &description,
         utils::Verbosity verbosity);
-    explicit Evaluator(  // TODO 1082 remove this, just keep the one above
-        const plugins::Options &opts,
-        bool use_for_reporting_minima = false,
-        bool use_for_boosting = false,
-        bool use_for_counting_evaluations = false);
     virtual ~Evaluator() = default;
 
     /*

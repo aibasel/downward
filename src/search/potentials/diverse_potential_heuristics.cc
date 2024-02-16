@@ -178,7 +178,7 @@ public:
     }
 
     virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<PotentialMaxHeuristic>( // TODO issue1082 use make_shared_from_arg_tuples
+        return make_shared<PotentialMaxHeuristic>( // TODO issue1082 use make_shared_from_arg_tuples, move creation of potential functions into constructor
             DiversePotentialHeuristics(
                 opts.get<int>("num_samples"),
                 opts.get<int>("max_num_heuristics"),

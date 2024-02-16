@@ -67,13 +67,13 @@ SearchAlgorithm::SearchAlgorithm(
     task_properties::print_variable_statistics(task_proxy);
 }
 
-SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts)
+SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts) // TODO issue1082 needed for iterated search
     : description(opts.get_unparsed_config()),
       status(IN_PROGRESS),
       solution_found(false),
       task(tasks::g_root_task),
       task_proxy(*task),
-      log(utils::get_log_from_options(opts)),
+      log(utils::get_log_for_verbosity(opts.get<utils::Verbosity>("verbosity"))),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
       search_space(state_registry, log),

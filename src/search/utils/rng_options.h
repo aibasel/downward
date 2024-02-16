@@ -21,9 +21,6 @@ extern std::tuple<int> get_rng_arguments_from_options(const plugins::Options &op
   "add_rng_options_to_feature()".
 */
 extern std::shared_ptr<RandomNumberGenerator> get_rng(int seed);
-// TODO 1082 remove this, just keep the one above
-extern std::shared_ptr<RandomNumberGenerator> parse_rng_from_options(
-    const plugins::Options &options);
 }
 
 #endif

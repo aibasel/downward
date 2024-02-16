@@ -66,7 +66,7 @@ public:
         double max_time,
         const std::string &description,
         utils::Verbosity verbosity);
-    explicit SearchAlgorithm(const plugins::Options &opts);
+    explicit SearchAlgorithm(const plugins::Options &opts); // TODO issue1082 needed for iterated search
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();

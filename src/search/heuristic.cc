@@ -25,15 +25,6 @@ Heuristic::Heuristic(
       task_proxy(*task) {
 }
 
-// TODO 1082 remove this, just keep the one above
-Heuristic::Heuristic(const plugins::Options &opts)
-    : Evaluator(opts, true, true, true),
-      heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
-      cache_evaluator_values(opts.get<bool>("cache_estimates")),
-      task(opts.get<shared_ptr<AbstractTask>>("transform")),
-      task_proxy(*task) {
-}
-
 Heuristic::~Heuristic() {
 }
 
