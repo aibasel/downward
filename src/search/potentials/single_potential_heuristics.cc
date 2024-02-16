@@ -15,9 +15,15 @@ enum class OptimizeFor {
 };
 
 static unique_ptr<PotentialFunction> create_potential_function(
-    const plugins::Options &opts, OptimizeFor opt_func) {
-    PotentialOptimizer optimizer(opts);
-    const AbstractTask &task = *opts.get<shared_ptr<AbstractTask>>("transform");
+        const shared_ptr<AbstractTask> &transform,
+        lp::LPSolverType lpsolver,
+        double max_potential,
+        OptimizeFor opt_func) {
+    PotentialOptimizer optimizer(
+            transform,
+            lpsolver,
+            max_potential);
+    const AbstractTask &task = *transform;
     TaskProxy task_proxy(task);
     switch (opt_func) {
     case OptimizeFor::INITIAL_STATE:
@@ -42,8 +48,18 @@ public:
         add_admissible_potentials_options_to_feature(*this, "initial_state_potential");
     }
 
-    virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
-        return make_shared<PotentialHeuristic>(options, create_potential_function(options, OptimizeFor::INITIAL_STATE));
+    virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<PotentialHeuristic>(
+                create_potential_function(
+        opts.get<shared_ptr<AbstractTask>>("transform"),
+        opts.get<lp::LPSolverType>("lpsolver"),
+        opts.get<double>("max_potential"),
+        OptimizeFor::INITIAL_STATE),
+                opts.get<shared_ptr<AbstractTask>>("transform"),
+        opts.get<bool>("cache_estimates"),
+        opts.get<string>("description"),
+                opts.get<utils::Verbosity>("verbosity")
+        );
     }
 };
 
@@ -59,8 +75,17 @@ public:
         add_admissible_potentials_options_to_feature(*this, "all_states_potential");
     }
 
-    virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
-        return make_shared<PotentialHeuristic>(options, create_potential_function(options, OptimizeFor::ALL_STATES));
+    virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<PotentialHeuristic>(create_potential_function(
+                opts.get<shared_ptr<AbstractTask>>("transform"),
+                opts.get<lp::LPSolverType>("lpsolver"),
+                opts.get<double>("max_potential"),
+                        OptimizeFor::ALL_STATES),
+                                               opts.get<shared_ptr<AbstractTask>>("transform"),
+                                               opts.get<bool>("cache_estimates"),
+                                               opts.get<string>("description"),
+                                               opts.get<utils::Verbosity>("verbosity")
+                                               );
     }
 };
 

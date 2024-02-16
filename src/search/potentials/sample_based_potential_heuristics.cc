@@ -41,12 +41,20 @@ static void optimize_for_samples(
   sets of samples.
 */
 static vector<unique_ptr<PotentialFunction>> create_sample_based_potential_functions(
-    const plugins::Options &opts) {
+            int num_samples,
+            int num_heuristics,
+            double max_potential,
+            lp::LPSolverType lpsolver,
+            const shared_ptr<AbstractTask> &transform,
+            int random_seed
+        ) {
     vector<unique_ptr<PotentialFunction>> functions;
-    PotentialOptimizer optimizer(opts);
-    shared_ptr<utils::RandomNumberGenerator> rng(utils::parse_rng_from_options(opts));
-    for (int i = 0; i < opts.get<int>("num_heuristics"); ++i) {
-        optimize_for_samples(optimizer, opts.get<int>("num_samples"), *rng);
+    PotentialOptimizer optimizer(transform,
+                                 lpsolver,
+                                 max_potential);
+    shared_ptr<utils::RandomNumberGenerator> rng(utils::get_rng(random_seed));
+    for (int i = 0; i < num_heuristics; ++i) {
+        optimize_for_samples(optimizer, num_samples, *rng);
         functions.push_back(optimizer.get_potential_function());
     }
     return functions;
@@ -74,9 +82,21 @@ public:
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
-        return make_shared<PotentialMaxHeuristic>(
-            options, create_sample_based_potential_functions(options));
+    virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<PotentialMaxHeuristic>( // TODO issue1082 use make_shared_from_arg_tuples
+                create_sample_based_potential_functions(
+                        opts.get<int>("num_samples"),
+                opts.get<int>("num_heuristics"),
+                opts.get<double>("max_potential"),
+                opts.get<lp::LPSolverType>("lpsolver"),
+                opts.get<shared_ptr<AbstractTask>>("transform"),
+        opts.get<int>("random_seed")
+                        ),
+                opts.get<shared_ptr<AbstractTask>>("transform"),
+                opts.get<bool>("cache_estimates"),
+                opts.get<string>("description"),
+                opts.get<utils::Verbosity>("verbosity")
+        );
     }
 };
 
