@@ -50,6 +50,16 @@ def check_cc_files():
     return subprocess.call(["./check-cc-file.py"] + cc_files, cwd=DIR) == 0
 
 
+def check_parameter_orders():
+    """
+    Currently, we only check that there is no "std::" in .cc files.
+    """
+    search_dir = os.path.join(SRC_DIR, "search")
+    cc_files = utils.get_src_files(search_dir, (".cc",))
+    print("Checking Component Parameters of {} *.cc files".format(len(cc_files)))
+    return subprocess.call(["./check-parameter-order.py"] + cc_files, cwd=DIR) == 0
+
+
 def check_cplusplus_style():
     return subprocess.call(["./run-uncrustify.py"], cwd=DIR) == 0
 
