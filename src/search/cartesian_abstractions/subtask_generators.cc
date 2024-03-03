@@ -94,8 +94,8 @@ static Facts filter_and_order_facts(
 }
 
 
-TaskDuplicator::TaskDuplicator(int num_copies)
-    : num_copies(num_copies) {
+TaskDuplicator::TaskDuplicator(int copies)
+    : num_copies(copies) {
 }
 
 SharedTasks TaskDuplicator::get_subtasks(
@@ -108,8 +108,8 @@ SharedTasks TaskDuplicator::get_subtasks(
     return subtasks;
 }
 
-GoalDecomposition::GoalDecomposition(FactOrder fact_order, int random_seed)
-    : fact_order(fact_order),
+GoalDecomposition::GoalDecomposition(FactOrder order, int random_seed)
+    : fact_order(order),
       rng(utils::get_rng(random_seed)) {
 }
 
@@ -129,8 +129,8 @@ SharedTasks GoalDecomposition::get_subtasks(
 
 
 LandmarkDecomposition::LandmarkDecomposition(
-    FactOrder fact_order, bool combine_facts, int random_seed)
-    : fact_order(fact_order),
+    FactOrder order, int random_seed, bool combine_facts)
+    : fact_order(order),
       combine_facts(combine_facts),
       rng(utils::get_rng(random_seed)) {
 }
