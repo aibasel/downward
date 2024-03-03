@@ -14,16 +14,6 @@ def parse_args():
     parser.add_argument("cc_file", nargs="+")
     return parser.parse_args()
 
-def check_constructor(cc_file):
-    source_without_comments = subprocess.check_output(
-        ["gcc", "-fpreprocessed", "-dD", "-E", cc_file]).decode("utf-8")
-    errors = []
-    for line in source_without_comments.splitlines():
-        if re.search(CONTRUCTOR_REGEX, line):
-            errors.append("Found Constructor from\n {}: {}".format(
-                cc_file, line.strip()))
-    return errors
-
 def extract_component_class(input_string):
     # The regex pattern to find text within < >
     pattern = r'<(.*?)>'
