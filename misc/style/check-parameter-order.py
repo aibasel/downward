@@ -14,19 +14,14 @@ def parse_args():
     parser.add_argument("cc_file", nargs="+")
     return parser.parse_args()
 
-def extract_component_class(input_string):
-    # The regex pattern to find text within < >
+def extract_cpp_class(input_string):
     pattern = r'<(.*?)>'
-    # Search for the pattern in the input string
     match = re.search(pattern, input_string)
-    # If a match is found, return the first group (the content inside < >)
-    if match:
-        return match.group(1)
-    # If no match is found, return None or an empty string
-    return None
+    assert match
+    return match.group(1)
 
 
-def check_concrete_constructor2(cc_file, class_name, naive=False):
+def get_constructor_parameters(cc_file, class_name):
     with open(cc_file, 'r') as file:
         content = file.read()
     pattern = rf'{class_name}\s*\((.*?)\)'
@@ -39,17 +34,11 @@ def check_concrete_constructor2(cc_file, class_name, naive=False):
         return (False, "")
 
 def extract_balanced_parentheses(s, feature_name):
-
     position = s.find(feature_name + "(")
-
-    if position != -1:
-        s = s[position:]
-    else:
-        print("'" + feature_name + "(' not found in the string.")
-
+    assert position != -1
+    s = s[position + len(feature_name) + 1::]
     s = s.split(')\\n-')[0]
-
-    return s[len(feature_name)+1::]
+    return s
 
 def remove_balanced_brackets(s):
     stack = []
@@ -66,18 +55,7 @@ def remove_balanced_brackets(s):
             result.append(c)
     return ''.join(result)
 
-def extract_feature_paras(s, feature_name):
-    s = str(s)
-
-    in_parenthesis = extract_balanced_parentheses(s, feature_name)
-
-    in_parenthesis_2 = remove_balanced_brackets(in_parenthesis)
-    result = re.sub(r'=.*?,', ',', in_parenthesis_2 + ",").split()
-
-    return result
-
-
-def extract_feature_name_and_class(cc_file, args, num):
+def extract_feature_name_and_cpp_class(cc_file, args, num):
     source_without_comments = subprocess.check_output(
         ["gcc", "-fpreprocessed", "-dD", "-E", cc_file]).decode("utf-8")
 
@@ -106,94 +84,88 @@ def extract_feature_name_and_class(cc_file, args, num):
             class_error_msgs.append(class_error_msg)
     return feature_names[num], class_names[num], other_namespaces[num], feature_error_msgs[num] + class_error_msgs[num]
 
-def get_feature_paras(feature_name):
-    result = subprocess.run(["./../../builds/release/bin/downward", "--help", "--txt2tags", "{}".format(feature_name)], stdout=subprocess.PIPE)
+def get_feature_parameters(feature_name):
+    doc_Entry = subprocess.run(["./../../builds/release/bin/downward", "--help", "--txt2tags", "{}".format(feature_name)], stdout=subprocess.PIPE).stdout
+    doc_Entry = str(doc_Entry)
+    in_parenthesis = extract_balanced_parentheses(doc_Entry, feature_name)
+    in_parenthesis = remove_balanced_brackets(in_parenthesis)
+    result = re.sub(r'=.*?,', ',', in_parenthesis + ",").split()
+    return result
 
-    feature_paras = extract_feature_paras(result.stdout, feature_name)
-    return feature_paras
-
-def get_class_paras(class_name, other_namespace, cc_file, args):
-    b, s = check_concrete_constructor2(cc_file, class_name)
-    if not b:
+def get_cpp_class_parameters(class_name, other_namespace, cc_file, args):
+    found_in_file, parameters = get_constructor_parameters(cc_file, class_name)
+    if not found_in_file:
+        # check in all files
         for cc_file2 in args.cc_file:
-            b, s = check_concrete_constructor2(cc_file2, class_name, naive=True)
-            if b:
+            found_in_file, parameters = get_constructor_parameters(cc_file2, class_name)
+            if found_in_file:
                 break
 
-    if b:
-        s = s.replace("\n", "") + ","
-        s = s.split()
-        s = [word for word in s if "," in word]
-        s = [re.sub(C_VAR_PATTERN, '', word) + "," for word in s]
-        return s
+    if found_in_file:
+        parameters = parameters.replace("\n", "") + ","
+        parameters = parameters.split()
+        parameters = [word for word in parameters if "," in word]
+        parameters = [re.sub(C_VAR_PATTERN, '', word) + "," for word in parameters]
+        return parameters
     else:
-        print("<<<<<<<<<<<not found: " + class_name)
+        # assume default constructor
         return [","]
 
-def check_create_component(cc_file):
+def get_create_component_lines(cc_file):
     source_without_comments = subprocess.check_output(
         ["gcc", "-fpreprocessed", "-dD", "-E", cc_file]).decode("utf-8")
-    out = []
+    lines = []
     for line in source_without_comments.splitlines():
         if re.search(CREATE_COMPONENT_REGEX, line):
-            out.append("Found Create_Component from\n {}: {}".format(
-                cc_file, line.strip()))
-    return out
+            lines.append(line.strip())
+    return lines
 
-def print_component_paras(cc_file, args):
+def compare_component_parameters(cc_file, args):
     found_error = False
-    error = ""
-    component_creations = check_create_component(cc_file)
-    if not component_creations == []:
-        for i, component_creation in enumerate(component_creations):
-            component_class = extract_component_class(component_creation)
-            error += ". . .\n"
-            error += ". .\n"
-            error += ".\n"
-            error += "\n"
-            error += ".\n"
-            error += ". .\n"
-            error += ". . .\n"
-            error += "= = = " + component_class + " = = =\n"
-            feature_name, class_name, other_namespace, error_msg = extract_feature_name_and_class(cc_file, args, i)
-            error += error_msg + "\n"
-            feature_paras = get_feature_paras(feature_name)
+    error_msg = ""
+    create_component_lines = get_create_component_lines(cc_file)
+    if not create_component_lines == []:
+        for i, create_component_line in enumerate(create_component_lines):
+            feature_name, cpp_class, other_namespace, extracted_error_msg = extract_feature_name_and_cpp_class(cc_file, args, i)
+            error_msg += "\n\n=====================================\n= = = " + cpp_class + " = = =\n"
+            error_msg += extracted_error_msg + "\n"
+            feature_parameters = get_feature_parameters(feature_name)
 
-            error += "== FEATURE PARAS '" + feature_name + "'==\n"
-            error += str(feature_paras) + "\n"
+            error_msg += "== FEATURE PARAMETERS '" + feature_name + "'==\n"
+            error_msg += str(feature_parameters) + "\n"
 
-            class_paras = get_class_paras(class_name, other_namespace, cc_file, args)
+            cpp_class_parameters = get_cpp_class_parameters(cpp_class, other_namespace, cc_file, args)
 
-            error += "== CLASS PARAS '" + class_name + "'==\n"
-            error += str(class_paras) + "\n"
+            error_msg += "== CLASS PARAMETERS '" + cpp_class + "'==\n"
+            error_msg += str(cpp_class_parameters) + "\n"
 
-            if feature_paras != class_paras:
+            if feature_parameters != cpp_class_parameters:
                 found_error = True
-                if not len(feature_paras) == len(class_paras):
-                    error += "Wrong sizes\n"
-                for i in range(min(len(feature_paras), len(class_paras))):
-                    if feature_paras[i] != class_paras[i]:
-                        error += feature_paras[i] + " =/= " + class_paras[i] + "\n"
-                error += cc_file + "\n"
+                if not len(feature_parameters) == len(cpp_class_parameters):
+                    error_msg += "Wrong sizes\n"
+                for i in range(min(len(feature_parameters), len(cpp_class_parameters))):
+                    if feature_parameters[i] != cpp_class_parameters[i]:
+                        error_msg += feature_parameters[i] + " =/= " + cpp_class_parameters[i] + "\n"
+                error_msg += cc_file + "\n"
 
-    return found_error, error,
+    return found_error, error_msg
 
 def main():
     args = parse_args()
     errors = []
     for cc_file in args.cc_file:
-        found_error, error = print_component_paras(cc_file, args)
+        found_error, error = compare_component_parameters(cc_file, args)
         if found_error:
             errors.append(error)
-    print("#########################################################")
-    print("#########################################################")
-    print("#########################################################")
-    print("#########################################################")
-    print("#########################################################")
-    print(".: ERRORS :.")
-    for error in errors:
-        print(error)
     if errors:
+        print("#########################################################")
+        print("#########################################################")
+        print("#########################################################")
+        print("#########################################################")
+        print("#########################################################")
+        print(".: ERRORS :.")
+        for error in errors:
+            print(error)
         sys.exit(1)
 
 
