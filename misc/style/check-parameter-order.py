@@ -77,21 +77,34 @@ def extract_feature_paras(s, feature_name):
     return result
 
 
-def extract_feature_name_and_class(cc_file, args):
+def extract_feature_name_and_class(cc_file, args, num):
     source_without_comments = subprocess.check_output(
         ["gcc", "-fpreprocessed", "-dD", "-E", cc_file]).decode("utf-8")
-    feature_name = []
-    feature_class = []
+
     name_pattern = r'TypedFeature\("([^"]*)"\)'
     class_pattern = r'TypedFeature<(.*?)>'
+
+    feature_names = []
+    class_names = []
+    other_namespaces = []
+    feature_error_msgs = []
+    class_error_msgs = []
     for line in source_without_comments.splitlines():
         if re.search(name_pattern, line):
             feature_name = re.search(name_pattern, line).group(1)
+            feature_error_msg = "feature_name: " + feature_name + "\n"
+            feature_names.append(feature_name)
+            feature_error_msgs.append(feature_error_msg)
+
         if re.search(class_pattern, line):
             feature_class = re.search(class_pattern, line).group(1)
-    class_name = feature_class.split()[-1].split("::")[-1]
-    other_namespace = len(feature_class.split()[-1].split("::")) == 2
-    return feature_name, class_name, other_namespace
+            class_name = feature_class.split()[-1].split("::")[-1]
+            other_namespace = len(feature_class.split()[-1].split("::")) == 2
+            class_error_msg = "class_name: " + class_name + "\n"
+            class_names.append(class_name)
+            other_namespaces.append(other_namespace)
+            class_error_msgs.append(class_error_msg)
+    return feature_names[num], class_names[num], other_namespaces[num], feature_error_msgs[num] + class_error_msgs[num]
 
 def get_feature_paras(feature_name):
     result = subprocess.run(["./../../builds/release/bin/downward", "--help", "--txt2tags", "{}".format(feature_name)], stdout=subprocess.PIPE)
@@ -120,19 +133,19 @@ def get_class_paras(class_name, other_namespace, cc_file, args):
 def check_create_component(cc_file):
     source_without_comments = subprocess.check_output(
         ["gcc", "-fpreprocessed", "-dD", "-E", cc_file]).decode("utf-8")
-    errors = []
+    out = []
     for line in source_without_comments.splitlines():
         if re.search(CREATE_COMPONENT_REGEX, line):
-            errors.append("Found Create_Component from\n {}: {}".format(
+            out.append("Found Create_Component from\n {}: {}".format(
                 cc_file, line.strip()))
-    return errors
+    return out
 
 def print_component_paras(cc_file, args):
     found_error = False
     error = ""
     component_creations = check_create_component(cc_file)
     if not component_creations == []:
-        for component_creation in component_creations:
+        for i, component_creation in enumerate(component_creations):
             component_class = extract_component_class(component_creation)
             error += ". . .\n"
             error += ". .\n"
@@ -142,7 +155,8 @@ def print_component_paras(cc_file, args):
             error += ". .\n"
             error += ". . .\n"
             error += "= = = " + component_class + " = = =\n"
-            feature_name, class_name, other_namespace = extract_feature_name_and_class(cc_file, args)
+            feature_name, class_name, other_namespace, error_msg = extract_feature_name_and_class(cc_file, args, i)
+            error += error_msg + "\n"
             feature_paras = get_feature_paras(feature_name)
 
             error += "== FEATURE PARAS '" + feature_name + "'==\n"
