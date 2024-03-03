@@ -50,26 +50,6 @@ LazySearch::LazySearch(
     */
 }
 
-LazySearch::LazySearch(const plugins::Options &opts)
-    : SearchAlgorithm(opts),
-      open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
-                create_edge_open_list()),
-      reopen_closed_nodes(opts.get<bool>("reopen_closed")),
-      randomize_successors(opts.get<bool>("randomize_successors")),
-      preferred_successors_first(opts.get<bool>("preferred_successors_first")),
-      rng(utils::parse_rng_from_options(opts)),
-      current_state(state_registry.get_initial_state()),
-      current_predecessor_id(StateID::no_state),
-      current_operator_id(OperatorID::no_operator),
-      current_g(0),
-      current_real_g(0),
-      current_eval_context(current_state, 0, true, &statistics) {
-    /*
-      We initialize current_eval_context in such a way that the initial node
-      counts as "preferred".
-    */
-}
-
 void LazySearch::initialize() {
     log << "Conducting lazy best first search, (real) bound = " << bound << endl;
 

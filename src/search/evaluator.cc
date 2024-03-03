@@ -22,18 +22,6 @@ Evaluator::Evaluator(
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 
-// TODO 1082 remove this, just keep the one above
-Evaluator::Evaluator(const plugins::Options &opts,
-                     bool use_for_reporting_minima,
-                     bool use_for_boosting,
-                     bool use_for_counting_evaluations)
-    : description(opts.get_unparsed_config()),
-      use_for_reporting_minima(use_for_reporting_minima),
-      use_for_boosting(use_for_boosting),
-      use_for_counting_evaluations(use_for_counting_evaluations),
-      log(utils::get_log_from_options(opts)) {
-}
-
 bool Evaluator::dead_ends_are_reliable() const {
     return true;
 }
@@ -92,11 +80,6 @@ void add_evaluator_options_to_feature(plugins::Feature &feature, const string &d
     feature.add_option<string>("description",
                                "description used to identify evaluator in logs",
                                "\"" + description + "\"");
-    utils::add_log_options_to_feature(feature);
-}
-
-// TODO 1082 remove this, just keep the one above
-void add_evaluator_options_to_feature(plugins::Feature &feature) {
     utils::add_log_options_to_feature(feature);
 }
 

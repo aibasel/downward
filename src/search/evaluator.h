@@ -28,11 +28,6 @@ public:
         bool use_for_counting_evaluations,
         const std::string &description,
         utils::Verbosity verbosity);
-    explicit Evaluator(  // TODO 1082 remove this, just keep the one above
-        const plugins::Options &opts,
-        bool use_for_reporting_minima = false,
-        bool use_for_boosting = false,
-        bool use_for_counting_evaluations = false);
     virtual ~Evaluator() = default;
 
     /*
@@ -107,7 +102,6 @@ public:
 };
 
 extern void add_evaluator_options_to_feature(plugins::Feature &feature, const std::string &description);
-extern void add_evaluator_options_to_feature(plugins::Feature &feature); // TODO 1082 remove this, just keep the one above
 
 extern std::tuple<std::string, utils::Verbosity> get_evaluator_arguments_from_options(const plugins::Options &opts);
 extern std::tuple<bool, bool, bool> get_evaluator_default_arguments();

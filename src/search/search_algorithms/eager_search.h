@@ -49,7 +49,6 @@ public:
         double max_time,
         const std::string &description,
         utils::Verbosity verbosity);
-    explicit EagerSearch(const plugins::Options &opts); // TODO issue1082 remove this
 
     virtual void print_statistics() const override;
 

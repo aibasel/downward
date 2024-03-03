@@ -33,9 +33,4 @@ shared_ptr<RandomNumberGenerator> get_rng(int seed) {
         return make_shared<RandomNumberGenerator>(seed);
     }
 }
-
-shared_ptr<RandomNumberGenerator> parse_rng_from_options(
-    const plugins::Options &options) {
-    return get_rng(options.get<int>("random_seed"));
-}
 }

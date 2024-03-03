@@ -61,7 +61,6 @@ public:
         double max_time,
         const std::string &description,
         utils::Verbosity verbosity);
-    explicit LazySearch(const plugins::Options &opts);
 
     virtual void print_statistics() const override;
 };

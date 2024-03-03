@@ -66,11 +66,11 @@ search
 ├── ✅ evaluation_result.h
 ├── ✅ evaluator_cache.cc
 ├── ✅ evaluator_cache.h
-├── ❓ evaluator.cc
-├── ❓ evaluator.h
+├── ✅ evaluator.cc
+├── ✅ evaluator.h
 ├── ✅ evaluators
-├── ❓ heuristic.cc
-├── ❓ heuristic.h
+├── ✅ heuristic.cc
+├── ✅ heuristic.h
 ├── ✅ heuristics
 ├── ✅ landmarks
 ├── ✅ lp
@@ -78,7 +78,7 @@ search
 ├── ✅ open_list_factory.cc
 ├── ✅ open_list_factory.h
 ├── ✅ open_list.h
-├── ❌ open_lists
+├── ✅ open_lists
 ├── ✅ operator_cost.cc
 ├── ✅ operator_cost.h
 ├── ✅ operator_counting
@@ -95,7 +95,7 @@ search
 ├── ✅ plan_manager.h
 ├── ✅ planner.cc
 ├── ✅ plugins
-├── ❌ potentials
+├── ✅ potentials
 ├── ✅ pruning
 ├── ✅ pruning_method.cc
 ├── ✅ pruning_method.h
@@ -117,8 +117,8 @@ search
 │      ├── ✅ plugin_lazy.cc
 │      ├── ✅ plugin_lazy_greedy.cc
 │      ├── ✅ plugin_lazy_wastar.cc
-│      ├── ❓ search_common.cc
-│      └── ❓ search_common.h
+│      ├── ✅ search_common.cc
+│      └── ✅ search_common.h
 ├── ✅ search_node_info.cc
 ├── ✅ search_node_info.h
 ├── ✅ search_progress.cc
