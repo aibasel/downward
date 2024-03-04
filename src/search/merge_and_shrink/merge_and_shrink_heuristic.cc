@@ -198,8 +198,8 @@ public:
                 "2018")
             );
 
-        add_heuristic_options_to_feature(*this, "merge_and_shrink");
         add_merge_and_shrink_algorithm_options_to_feature(*this);
+        add_heuristic_options_to_feature(*this, "merge_and_shrink");
 
         document_note(
             "Note",
