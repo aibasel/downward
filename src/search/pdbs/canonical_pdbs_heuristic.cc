@@ -61,7 +61,7 @@ static CanonicalPDBs get_canonical_pdbs_from_options(
 }
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(
-    const shared_ptr<PatternCollectionGenerator> &pattern_generator,
+    const shared_ptr<PatternCollectionGenerator> &patterns,
     double max_time_dominance_pruning,
     const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
@@ -69,7 +69,7 @@ CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(
     utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       canonical_pdbs(get_canonical_pdbs_from_options(
-                         task, pattern_generator, max_time_dominance_pruning, log)) {
+                         task, patterns, max_time_dominance_pruning, log)) {
 }
 
 int CanonicalPDBsHeuristic::compute_heuristic(const State &ancestor_state) {

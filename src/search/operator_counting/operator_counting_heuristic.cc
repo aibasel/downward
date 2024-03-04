@@ -13,14 +13,14 @@ namespace operator_counting {
 OperatorCountingHeuristic::OperatorCountingHeuristic(
     const vector<shared_ptr<ConstraintGenerator>> &constraint_generators,
     bool use_integer_operator_counts,
-    lp::LPSolverType lp_solver_type,
+    lp::LPSolverType lpsolver,
     const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
     const string &description,
     utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       constraint_generators(constraint_generators),
-      lp_solver(lp_solver_type) {
+      lp_solver(lpsolver) {
     lp_solver.set_mip_gap(0);
     named_vector::NamedVector<lp::LPVariable> variables;
     double infinity = lp_solver.get_infinity();
