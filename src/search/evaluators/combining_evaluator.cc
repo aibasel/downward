@@ -10,12 +10,9 @@ using namespace std;
 namespace combining_evaluator {
 CombiningEvaluator::CombiningEvaluator(
     const vector<shared_ptr<Evaluator>> &evals,
-    bool use_for_reporting_minima,
-    bool use_for_boosting,
-    bool use_for_counting_evaluations,
     const string &description,
     utils::Verbosity verbosity)
-    : Evaluator(use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations, description, verbosity),
+    : Evaluator(false, false, false, description, verbosity),
       subevaluators(evals) {
     all_dead_ends_are_reliable = true;
     for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
@@ -61,11 +58,10 @@ void add_combining_evaluator_options_to_feature(plugins::Feature &feature, const
     add_evaluator_options_to_feature(feature, description);
 }
 
-tuple<vector<shared_ptr<Evaluator>>, bool, bool, bool, const string, utils::Verbosity> get_combining_evaluator_arguments_from_options(const plugins::Options &options) {
+tuple<vector<shared_ptr<Evaluator>>, const string, utils::Verbosity> get_combining_evaluator_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
-        make_tuple(options.get_list<shared_ptr<Evaluator>>("evals")),
-        get_evaluator_default_arguments(),
-        get_evaluator_arguments_from_options(options)
+        make_tuple(opts.get_list<shared_ptr<Evaluator>>("evals")),
+        get_evaluator_arguments_from_options(opts)
         );
 }
 }

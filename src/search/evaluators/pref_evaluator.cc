@@ -8,12 +8,9 @@ using namespace std;
 
 namespace pref_evaluator {
 PrefEvaluator::PrefEvaluator(
-    bool use_for_reporting_minima,
-    bool use_for_boosting,
-    bool use_for_counting_evaluations,
     const string &description,
     utils::Verbosity verbosity)
-    : Evaluator(use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations, description, verbosity) {
+    : Evaluator(false, false, false, description, verbosity) {
 }
 
 EvaluationResult PrefEvaluator::compute_result(
@@ -38,7 +35,6 @@ public:
 
     virtual shared_ptr<PrefEvaluator> create_component(const plugins::Options &options, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<PrefEvaluator>(
-            get_evaluator_default_arguments(),
             get_evaluator_arguments_from_options(options)
             );
     }

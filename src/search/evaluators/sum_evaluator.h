@@ -17,9 +17,6 @@ protected:
 public:
     SumEvaluator(
         const std::vector<std::shared_ptr<Evaluator>> &evals,
-        bool use_for_reporting_minima,
-        bool use_for_boosting,
-        bool use_for_counting_evaluations,
         const std::string &description,
         utils::Verbosity verbosity);
 };

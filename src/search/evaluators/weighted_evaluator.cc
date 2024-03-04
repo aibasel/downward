@@ -13,12 +13,9 @@ namespace weighted_evaluator {
 WeightedEvaluator::WeightedEvaluator(
     const shared_ptr<Evaluator> &eval,
     int weight,
-    bool use_for_reporting_minima,
-    bool use_for_boosting,
-    bool use_for_counting_evaluations,
     const string &description,
     utils::Verbosity verbosity)
-    : Evaluator(use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations, description, verbosity),
+    : Evaluator(false, false, false, description, verbosity),
       evaluator(eval),
       w(weight) {
 }
@@ -62,7 +59,6 @@ public:
         return plugins::make_shared_from_arg_tuples<WeightedEvaluator>(
             options.get<shared_ptr<Evaluator>>("eval"),
             options.get<int>("weight"),
-            get_evaluator_default_arguments(),
             get_evaluator_arguments_from_options(options)
             );
     }

@@ -24,7 +24,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
       ignore costs since EHC is supposed to implement a breadth-first
       search, not a uniform-cost search. So this seems to be a bug.
     */
-    shared_ptr<Evaluator> g_evaluator = make_shared<GEval>(false, false, false, "ehc.g_eval", verbosity);
+    shared_ptr<Evaluator> g_evaluator = make_shared<GEval>("ehc.g_eval", verbosity);
 
     if (!use_preferred ||
         preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
@@ -38,7 +38,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
           constructor that encapsulates this work to the tie-breaking
           open list code.
         */
-        vector<shared_ptr<Evaluator>> evals = {g_evaluator, make_shared<PrefEval>(false, false, false, "ehc.pref_eval", verbosity)};
+        vector<shared_ptr<Evaluator>> evals = {g_evaluator, make_shared<PrefEval>("ehc.pref_eval", verbosity)};
         return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(evals, false, true);
     }
 }

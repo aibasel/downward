@@ -72,9 +72,9 @@ static shared_ptr<Evaluator> create_wastar_eval(utils::Verbosity verbosity,
     if (weight == 1) {
         w_h_eval = h_eval;
     } else {
-        w_h_eval = make_shared<WeightedEval>(h_eval, weight, false, false, false, "wastar.w_h_eval", verbosity);
+        w_h_eval = make_shared<WeightedEval>(h_eval, weight, "wastar.w_h_eval", verbosity);
     }
-    return make_shared<SumEval>(vector<shared_ptr<Evaluator>>({g_eval, w_h_eval}), false, false, false, "wastar.eval", verbosity);
+    return make_shared<SumEval>(vector<shared_ptr<Evaluator>>({g_eval, w_h_eval}), "wastar.eval", verbosity);
 }
 
 shared_ptr<OpenListFactory> create_wastar_open_list_factory(
@@ -83,7 +83,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
     int boost,
     int weight,
     utils::Verbosity verbosity) {
-    shared_ptr<GEval> g_eval = make_shared<GEval>(false, false, false, "wastar.g_eval", verbosity);
+    shared_ptr<GEval> g_eval = make_shared<GEval>("wastar.g_eval", verbosity);
     vector<shared_ptr<Evaluator>> f_evals;
     f_evals.reserve(base_evals.size());
     for (const shared_ptr<Evaluator> &eval : base_evals)
@@ -104,8 +104,8 @@ create_astar_open_list_factory_and_f_eval(
     const shared_ptr<Evaluator> &h_eval,
     utils::Verbosity verbosity
     ) {
-    shared_ptr<GEval> g = make_shared<GEval>(false, false, false, "astar.g_eval", verbosity);
-    shared_ptr<Evaluator> f = make_shared<SumEval>(vector<shared_ptr<Evaluator>>({g, h_eval}), false, false, false, "astar.f_eval", verbosity);
+    shared_ptr<GEval> g = make_shared<GEval>("astar.g_eval", verbosity);
+    shared_ptr<Evaluator> f = make_shared<SumEval>(vector<shared_ptr<Evaluator>>({g, h_eval}), "astar.f_eval", verbosity);
     vector<shared_ptr<Evaluator>> evals = {f, h_eval};
 
     shared_ptr<OpenListFactory> open =

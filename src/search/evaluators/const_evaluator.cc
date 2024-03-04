@@ -7,12 +7,9 @@ using namespace std;
 namespace const_evaluator {
 ConstEvaluator::ConstEvaluator(
     int value,
-    bool use_for_reporting_minima,
-    bool use_for_boosting,
-    bool use_for_counting_evaluations,
     const string &description,
     utils::Verbosity verbosity)
-    : Evaluator(use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations, description, verbosity), value(value) {
+    : Evaluator(false, false, false, description, verbosity), value(value) {
 }
 
 EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
@@ -40,7 +37,6 @@ public:
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<ConstEvaluator>(
             opts.get<int>("value"),
-            get_evaluator_default_arguments(),
             get_evaluator_arguments_from_options(opts)
             );
     }

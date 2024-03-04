@@ -7,12 +7,9 @@
 using namespace std;
 
 namespace g_evaluator {
-GEvaluator::GEvaluator(bool use_for_reporting_minima,
-                       bool use_for_boosting,
-                       bool use_for_counting_evaluations,
-                       const string &description,
+GEvaluator::GEvaluator(const string &description,
                        utils::Verbosity verbosity)
-    : Evaluator(use_for_reporting_minima, use_for_boosting, use_for_counting_evaluations, description, verbosity) {
+    : Evaluator(false, false, false, description, verbosity) {
 }
 
 
@@ -35,7 +32,6 @@ public:
     virtual shared_ptr<GEvaluator> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<GEvaluator>(
-            get_evaluator_default_arguments(),
             get_evaluator_arguments_from_options(opts)
             );
     }

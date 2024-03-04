@@ -21,9 +21,6 @@ protected:
 public:
     CombiningEvaluator(
         const std::vector<std::shared_ptr<Evaluator>> &evals,
-        bool use_for_reporting_minima,
-        bool use_for_boosting,
-        bool use_for_counting_evaluations,
         const std::string &description,
         utils::Verbosity verbosity);
 
@@ -50,7 +47,7 @@ public:
 
 extern void add_combining_evaluator_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<std::vector<std::shared_ptr<Evaluator>>, bool, bool, bool, const std::string, utils::Verbosity>
+extern std::tuple<std::vector<std::shared_ptr<Evaluator>>, const std::string, utils::Verbosity>
 get_combining_evaluator_arguments_from_options(const plugins::Options &options);
 }
 
