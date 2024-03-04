@@ -6,6 +6,12 @@ import re
 import subprocess
 import sys
 
+SHART_HANDS = {
+                "ipdb" : "cpdbs(hillclimbing())",
+
+
+}
+
 CONTRUCTOR_REGEX = r"\b(\w+)(?:\s*::\s*\1\b)+"
 CREATE_COMPONENT_REGEX = r"(^|\s|\W)create_component"
 C_VAR_PATTERN = r'[^a-zA-Z0-9_]' # overapproximation
@@ -139,7 +145,9 @@ def compare_component_parameters(cc_file, args):
             error_msg += "== CLASS PARAMETERS '" + cpp_class + "'==\n"
             error_msg += str(cpp_class_parameters) + "\n"
 
-            if feature_parameters != cpp_class_parameters:
+            if feature_name in SHART_HANDS:
+                print(f"feature_name '{feature_name}' would trigger an error if it was not marked as shorthand")
+            if feature_parameters != cpp_class_parameters and feature_name not in SHART_HANDS :
                 found_error = True
                 if not len(feature_parameters) == len(cpp_class_parameters):
                     error_msg += "Wrong sizes\n"
