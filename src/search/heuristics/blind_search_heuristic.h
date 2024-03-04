@@ -12,7 +12,7 @@ public:
     BlindSearchHeuristic(
         const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates,
-        const std::string &name,
+        const std::string &description,
         utils::Verbosity verbosity);
 };
 }

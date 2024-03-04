@@ -11,9 +11,9 @@ namespace goal_count_heuristic {
 GoalCountHeuristic::GoalCountHeuristic(
     const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
-    const string &name,
+    const string &description,
     utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, name, verbosity) {
+    : Heuristic(transform, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing goal count heuristic..." << endl;
     }

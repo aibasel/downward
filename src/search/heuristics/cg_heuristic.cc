@@ -20,9 +20,9 @@ CGHeuristic::CGHeuristic(
     int max_cache_size,
     const shared_ptr<AbstractTask> &transform,
     bool cache_estimates,
-    const string &name,
+    const string &description,
     utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, name, verbosity),
+    : Heuristic(transform, cache_estimates, description, verbosity),
       cache_hits(0),
       cache_misses(0),
       helpful_transition_extraction_counter(0),
