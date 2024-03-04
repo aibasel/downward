@@ -7,10 +7,23 @@ import subprocess
 import sys
 
 SHART_HANDS = {
-                "ipdb" : "cpdbs(hillclimbing())",
+                "ipdb": "cpdbs(hillclimbing())",
+                "astar": "eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false), reopen_closed=true, f_eval=sum([g(), h]))",
+                "lazy_greedy": "lazy(alt([single(h1), single(h1, pref_only=true), single(h2), single(h2, pref_only=true)], boost=100), preferred=h2)",
+                "lazy_wastar": "lazy(single(sum([g(), weight(eval1, 2)])), reopen_closed=true)",
+                "eager_greedy": "eager(single(eval1))",
+                "eager_wastar": """ See corresponding notes for "(Weighted) A* search (lazy)" """,
 
 
 }
+
+TEMPORARY_EXCEPTIONS = [
+    "iteraded"
+]
+
+PERMANENT_EXCEPTIONS = [
+    "adapt_costs"
+]
 
 CONTRUCTOR_REGEX = r"\b(\w+)(?:\s*::\s*\1\b)+"
 CREATE_COMPONENT_REGEX = r"(^|\s|\W)create_component"
@@ -147,7 +160,11 @@ def compare_component_parameters(cc_file, args):
 
             if feature_name in SHART_HANDS:
                 print(f"feature_name '{feature_name}' would trigger an error if it was not marked as shorthand")
-            if feature_parameters != cpp_class_parameters and feature_name not in SHART_HANDS :
+            elif feature_name in PERMANENT_EXCEPTIONS:
+                print(f"feature_name '{feature_name}' would trigger an error if it was not marked as PERMANENT_EXCEPTION")
+            elif feature_name in TEMPORARY_EXCEPTIONS:
+                print(f"feature_name '{feature_name}' would trigger an error if it was not marked as TEMPORARY_EXCEPTION")
+            elif feature_parameters != cpp_class_parameters:
                 found_error = True
                 if not len(feature_parameters) == len(cpp_class_parameters):
                     error_msg += "Wrong sizes\n"
