@@ -31,7 +31,7 @@ static bool are_dead_ends_reliable(
 }
 
 LandmarkSumHeuristic::LandmarkSumHeuristic(
-    const plugins::Options &lm_factory_option,
+    const shared_ptr<LandmarkFactory> &lm_factory,
     bool use_preferred_operators,
     bool prog_goal,
     bool prog_gn,
@@ -44,12 +44,12 @@ LandmarkSumHeuristic::LandmarkSumHeuristic(
                         description, verbosity),
       dead_ends_reliable(
           are_dead_ends_reliable(
-              lm_factory_option.get<shared_ptr<LandmarkFactory>>("lm_factory"),
+              lm_factory,
               task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark sum heuristic..." << endl;
     }
-    initialize(lm_factory_option, prog_goal, prog_gn, prog_r);
+    initialize(lm_factory, prog_goal, prog_gn, prog_r);
     compute_landmark_costs();
 }
 
@@ -202,11 +202,7 @@ public:
 
     virtual shared_ptr<LandmarkSumHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        plugins::Options lm_factory_options;
-        lm_factory_options.set<shared_ptr<LandmarkFactory>>(
-            "lm_factory", opts.get<shared_ptr<LandmarkFactory>>("lm_factory"));
         return plugins::make_shared_from_arg_tuples<LandmarkSumHeuristic>(
-            lm_factory_options,
             get_landmark_heuristic_arguments_from_options(opts));
     }
 };

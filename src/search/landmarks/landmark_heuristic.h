@@ -31,10 +31,8 @@ protected:
     std::unique_ptr<LandmarkStatusManager> lm_status_manager;
     std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;
 
-    // TODO this needs lm_factory_options to construct the lm_factory later.
-    // This should be handled by issue559 eventually.
-    void initialize(const plugins::Options &lm_factory_option, bool prog_goal, bool prog_gn, bool prog_r);
-    void compute_landmark_graph(const plugins::Options &lm_factory_option);
+    void initialize(const std::shared_ptr<LandmarkFactory> &lm_factory, bool prog_goal, bool prog_gn, bool prog_r);
+    void compute_landmark_graph(const std::shared_ptr<LandmarkFactory> &lm_factory);
 
     virtual int get_heuristic_value(const State &ancestor_state) = 0;
 
@@ -61,7 +59,7 @@ public:
 
 extern void add_landmark_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<bool, bool, bool, bool, std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity> get_landmark_heuristic_arguments_from_options(
+extern std::tuple<std::shared_ptr<LandmarkFactory>, bool, bool, bool, bool, std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity> get_landmark_heuristic_arguments_from_options(
     const plugins::Options &options);
 }
 

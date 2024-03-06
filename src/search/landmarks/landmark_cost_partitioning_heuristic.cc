@@ -16,7 +16,7 @@ using namespace std;
 
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
-    const plugins::Options &lm_factory_option,
+    const shared_ptr<LandmarkFactory> &lm_factory,
     bool use_preferred_operators,
     bool prog_goal,
     bool prog_gn,
@@ -33,22 +33,19 @@ LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;
     }
-    check_unsupported_features(lm_factory_option);
-    initialize(lm_factory_option, prog_goal, prog_gn, prog_r);
+    check_unsupported_features(lm_factory);
+    initialize(lm_factory, prog_goal, prog_gn, prog_r);
     set_cost_partitioning_algorithm(cost_partitioning, lpsolver, alm);
 }
 
 void LandmarkCostPartitioningHeuristic::check_unsupported_features(
-    const plugins::Options &lm_factory_option) {
-    shared_ptr<LandmarkFactory> lm_graph_factory =
-        lm_factory_option.get<shared_ptr<LandmarkFactory>>("lm_factory");
-
+    const shared_ptr<LandmarkFactory> &lm_factory) {
     if (task_properties::has_axioms(task_proxy)) {
         cerr << "Cost partitioning does not support axioms." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
-    if (!lm_graph_factory->supports_conditional_effects()
+    if (!lm_factory->supports_conditional_effects()
         && task_properties::has_conditional_effects(task_proxy)) {
         cerr << "Conditional effects not supported by the landmark "
              << "generation method." << endl;
@@ -177,11 +174,7 @@ public:
 
     virtual shared_ptr<LandmarkCostPartitioningHeuristic> create_component(
         const plugins::Options &opts, const utils::Context &) const override {
-        plugins::Options lm_factory_options;
-        lm_factory_options.set<shared_ptr<LandmarkFactory>>(
-            "lm_factory", opts.get<shared_ptr<LandmarkFactory>>("lm_factory"));
         return plugins::make_shared_from_arg_tuples<LandmarkCostPartitioningHeuristic>(
-            lm_factory_options,
             get_landmark_heuristic_arguments_from_options(opts),
             opts.get<CostPartitioningMethod>("cost_partitioning"),
             opts.get<bool>("alm"),

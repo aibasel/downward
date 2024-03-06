@@ -25,7 +25,7 @@ LandmarkHeuristic::LandmarkHeuristic(
 }
 
 void LandmarkHeuristic::initialize(
-    const plugins::Options &lm_factory_option,
+    const shared_ptr<LandmarkFactory> &lm_factory,
     bool prog_goal,
     bool prog_gn,
     bool prog_r) {
@@ -42,7 +42,7 @@ void LandmarkHeuristic::initialize(
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
-    compute_landmark_graph(lm_factory_option);
+    compute_landmark_graph(lm_factory);
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(
         *lm_graph,
         prog_goal,
@@ -100,16 +100,14 @@ bool LandmarkHeuristic::depth_first_search_for_cycle_of_natural_orderings(
     return false;
 }
 
-void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &lm_factory_option) {
+void LandmarkHeuristic::compute_landmark_graph(const shared_ptr<LandmarkFactory> &lm_factory) {
     utils::Timer lm_graph_timer;
     if (log.is_at_least_normal()) {
         log << "Generating landmark graph..." << endl;
     }
 
-    shared_ptr<LandmarkFactory> lm_graph_factory =
-        lm_factory_option.get<shared_ptr<LandmarkFactory>>("lm_factory");
-    lm_graph = lm_graph_factory->compute_lm_graph(task);
-    assert(lm_graph_factory->achievers_are_calculated());
+    lm_graph = lm_factory->compute_lm_graph(task);
+    assert(lm_factory->achievers_are_calculated());
 
     if (log.is_at_least_normal()) {
         log << "Landmark graph generation time: " << lm_graph_timer << endl;
@@ -237,20 +235,16 @@ void add_landmark_heuristic_options_to_feature(plugins::Feature &feature,
                               "yes (if enabled; see ``pref`` option)");
 }
 
-tuple<bool, bool, bool, bool, shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
-get_landmark_heuristic_arguments_from_options(const plugins::Options &options) {
+tuple<shared_ptr<LandmarkFactory>, bool, bool, bool, bool, shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
+get_landmark_heuristic_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
-            options.get<bool>("pref"),
-            /*
-              TODO: add_landmark_heuristic_options_to_feature also adds "lm_factory".
-              Here we do not extract it to put it in the argument tuple because we want the lm_factory to be
-              created later.
-             */
-            options.get<bool>("prog_goal"),
-            options.get<bool>("prog_gn"),
-            options.get<bool>("prog_r")
+            opts.get<shared_ptr<LandmarkFactory>>("lm_factory"),
+            opts.get<bool>("pref"),
+            opts.get<bool>("prog_goal"),
+            opts.get<bool>("prog_gn"),
+            opts.get<bool>("prog_r")
             ),
-        get_heuristic_arguments_from_options(options));
+        get_heuristic_arguments_from_options(opts));
 }
 }
