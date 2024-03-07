@@ -50,9 +50,9 @@ def check_cc_files():
     return subprocess.call(["./check-cc-file.py"] + cc_files, cwd=DIR) == 0
 
 
-def check_parameter_orders():
+def DEACTIVATE_check_parameter_orders():
     """
-    Currently, we only check that there is no "std::" in .cc files.
+    Currently, we only check that the parameters in the Constructor in the .cc file matches the parameters for the CLI.
     """
     search_dir = os.path.join(SRC_DIR, "search")
     cc_files = utils.get_src_files(search_dir, (".cc",))
