@@ -6,7 +6,7 @@ import re
 import subprocess
 import sys
 
-SHART_HANDS = {
+SHORT_HANDS = {
                 "ipdb": "cpdbs(hillclimbing())",
                 "astar": "eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false), reopen_closed=true, f_eval=sum([g(), h]))",
                 "lazy_greedy": "lazy(alt([single(h1), single(h1, pref_only=true), single(h2), single(h2, pref_only=true)], boost=100), preferred=h2)",
@@ -18,14 +18,18 @@ SHART_HANDS = {
 }
 
 TEMPORARY_EXCEPTIONS = [
-    "iteraded"
+    "iterated",
+    "eager",
+    "sample_base_potentials",
+    "initial_state_potential",
+    "all_states_potential",
+    "diverse_potentials",
 ]
 
 PERMANENT_EXCEPTIONS = [
     "adapt_costs"
 ]
 
-CONTRUCTOR_REGEX = r"\b(\w+)(?:\s*::\s*\1\b)+"
 CREATE_COMPONENT_REGEX = r"(^|\s|\W)create_component"
 C_VAR_PATTERN = r'[^a-zA-Z0-9_]' # overapproximation
 def parse_args():
@@ -52,27 +56,29 @@ def get_constructor_parameters(cc_file, class_name):
     else:
         return (False, "")
 
-def extract_balanced_parentheses(s, feature_name):
+def matching(opening, closing):
+    return (opening, closing) == ('(',')') or (opening, closing) == ('[',']')
+
+def extract_feature_parameter_list(feature_name):
+    s = str(subprocess.run(["./../../builds/release/bin/downward", "--help", "--txt2tags", "{}".format(feature_name)], stdout=subprocess.PIPE).stdout)
     position = s.find(feature_name + "(")
     assert position != -1
-    s = s[position + len(feature_name) + 1::]
-    s = s.split(')\\n-')[0]
-    return s
-
-def remove_balanced_brackets(s):
-    stack = []
+    s = s[position + len(feature_name) +1 ::] # start after the first '('
+    stack = ['(']
     result = []
     for c in s:
-        if c == '[':
+        if c == '(' or c == "[":
             stack.append(c)
-        elif c == ']':
-            if stack and stack[-1] == '[':
-                stack.pop()
-            else:
-                result.append(c)
-        elif not stack:
+        elif c == ')' or c == "]":
+            assert matching(stack[-1], c)
+            stack.pop()
+            if not stack:
+                break
+        if len(stack) == 1: # not within nested parenthesis/brackets
             result.append(c)
-    return ''.join(result)
+    result = ''.join(result)
+    result = re.sub(r'=.*?,', ',', result + ",").split()
+    return result
 
 def extract_feature_name_and_cpp_class(cc_file, args, num):
     source_without_comments = subprocess.check_output(
@@ -102,14 +108,6 @@ def extract_feature_name_and_cpp_class(cc_file, args, num):
             other_namespaces.append(other_namespace)
             class_error_msgs.append(class_error_msg)
     return feature_names[num], class_names[num], other_namespaces[num], feature_error_msgs[num] + class_error_msgs[num]
-
-def get_feature_parameters(feature_name):
-    doc_Entry = subprocess.run(["./../../builds/release/bin/downward", "--help", "--txt2tags", "{}".format(feature_name)], stdout=subprocess.PIPE).stdout
-    doc_Entry = str(doc_Entry)
-    in_parenthesis = extract_balanced_parentheses(doc_Entry, feature_name)
-    in_parenthesis = remove_balanced_brackets(in_parenthesis)
-    result = re.sub(r'=.*?,', ',', in_parenthesis + ",").split()
-    return result
 
 def get_cpp_class_parameters(class_name, other_namespace, cc_file, args):
     found_in_file, parameters = get_constructor_parameters(cc_file, class_name)
@@ -148,7 +146,7 @@ def compare_component_parameters(cc_file, args):
             feature_name, cpp_class, other_namespace, extracted_error_msg = extract_feature_name_and_cpp_class(cc_file, args, i)
             error_msg += "\n\n=====================================\n= = = " + cpp_class + " = = =\n"
             error_msg += extracted_error_msg + "\n"
-            feature_parameters = get_feature_parameters(feature_name)
+            feature_parameters = extract_feature_parameter_list(feature_name)
 
             error_msg += "== FEATURE PARAMETERS '" + feature_name + "'==\n"
             error_msg += str(feature_parameters) + "\n"
@@ -158,7 +156,7 @@ def compare_component_parameters(cc_file, args):
             error_msg += "== CLASS PARAMETERS '" + cpp_class + "'==\n"
             error_msg += str(cpp_class_parameters) + "\n"
 
-            if feature_name in SHART_HANDS:
+            if feature_name in SHORT_HANDS: # TODO set comparison
                 print(f"feature_name '{feature_name}' would trigger an error if it was not marked as shorthand")
             elif feature_name in PERMANENT_EXCEPTIONS:
                 print(f"feature_name '{feature_name}' would trigger an error if it was not marked as PERMANENT_EXCEPTION")
