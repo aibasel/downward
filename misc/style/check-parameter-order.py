@@ -20,7 +20,7 @@ SHORT_HANDS = {
 TEMPORARY_EXCEPTIONS = [
     "iterated",
     "eager",
-    "sample_base_potentials",
+    "sample_based_potentials",
     "initial_state_potential",
     "all_states_potential",
     "diverse_potentials",
