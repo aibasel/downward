@@ -57,13 +57,13 @@ def get_constructor_parameters(cc_file, class_name):
         return (False, "")
 
 def matching(opening, closing):
-    return (opening, closing) == ('(',')') or (opening, closing) == ('[',']')
+    return (opening, closing) == ('(', ')') or (opening, closing) == ('[', ']')
 
 def extract_feature_parameter_list(feature_name):
     s = str(subprocess.run(["./../../builds/release/bin/downward", "--help", "--txt2tags", "{}".format(feature_name)], stdout=subprocess.PIPE).stdout)
     position = s.find(feature_name + "(")
     assert position != -1
-    s = s[position + len(feature_name) +1 ::] # start after the first '('
+    s = s[position + len(feature_name) + 1::] # start after the first '('
     stack = ['(']
     result = []
     for c in s:
