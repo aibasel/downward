@@ -32,7 +32,7 @@ static bool are_dead_ends_reliable(
 
 LandmarkSumHeuristic::LandmarkSumHeuristic(
     const shared_ptr<LandmarkFactory> &lm_factory,
-    bool use_preferred_operators,
+    bool pref,
     bool prog_goal,
     bool prog_gn,
     bool prog_r,
@@ -40,7 +40,7 @@ LandmarkSumHeuristic::LandmarkSumHeuristic(
     bool cache_estimates,
     const string &description,
     utils::Verbosity verbosity)
-    : LandmarkHeuristic(use_preferred_operators, transform, cache_estimates,
+    : LandmarkHeuristic(pref, transform, cache_estimates,
                         description, verbosity),
       dead_ends_reliable(
           are_dead_ends_reliable(

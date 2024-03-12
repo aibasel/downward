@@ -17,7 +17,7 @@ using namespace std;
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     const shared_ptr<LandmarkFactory> &lm_factory,
-    bool use_preferred_operators,
+    bool pref,
     bool prog_goal,
     bool prog_gn,
     bool prog_r,
@@ -28,7 +28,7 @@ LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     CostPartitioningMethod cost_partitioning,
     bool alm,
     lp::LPSolverType lpsolver)
-    : LandmarkHeuristic(use_preferred_operators, transform, cache_estimates,
+    : LandmarkHeuristic(pref, transform, cache_estimates,
                         description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;
