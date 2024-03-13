@@ -175,6 +175,9 @@ def compare_component_parameters(cc_file, args):
 
 def main():
     print(str(subprocess.run(["pwd"], stdout=subprocess.PIPE).stdout))
+    # print(str(subprocess.run(["tree", "-L", "3"], stdout=subprocess.PIPE).stdout))
+    tree = subprocess.run(["tree", "-L", "4"], stdout=subprocess.PIPE, text=True)
+    print(tree.stdout)
     args = parse_args()
     errors = []
     for cc_file in args.cc_file:
