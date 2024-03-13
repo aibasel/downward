@@ -60,7 +60,6 @@ def matching(opening, closing):
     return (opening, closing) == ('(', ')') or (opening, closing) == ('[', ']')
 
 def extract_feature_parameter_list(feature_name):
-    print(str(subprocess.run(["pwd"], stdout=subprocess.PIPE).stdout))
     s = str(subprocess.run(["./../../builds/release/bin/downward", "--help", "--txt2tags", "{}".format(feature_name)], stdout=subprocess.PIPE).stdout)
     position = s.find(feature_name + "(")
     assert position != -1
