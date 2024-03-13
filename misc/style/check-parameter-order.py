@@ -174,6 +174,7 @@ def compare_component_parameters(cc_file, args):
     return found_error, error_msg
 
 def main():
+    print(str(subprocess.run(["pwd"], stdout=subprocess.PIPE).stdout))
     args = parse_args()
     errors = []
     for cc_file in args.cc_file:
