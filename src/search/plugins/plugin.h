@@ -8,6 +8,7 @@
 
 #include "../utils/strings.h"
 #include "../utils/system.h"
+#include "../utils/tuples.h"
 
 #include <string>
 #include <typeindex>
@@ -114,6 +115,21 @@ public:
         return Any(ptr);
     }
 };
+
+/*
+  Expects constructor arguments of T. Consecutive arguments may be grouped in a
+  tuple. All tuples in the arguments will be flattened before calling the
+  constructor. The resulting arguments will be used as arguments to make_shared.
+*/
+// TODO issue1082 where should this live? optimize with std::forward?
+template<typename T, typename ... Arguments>
+std::shared_ptr<T> make_shared_from_arg_tuples(Arguments... arguments) {
+    return std::apply(
+        [](auto... flattened_args) {
+            return std::make_shared<T>(flattened_args ...);
+        },
+        utils::flatten_tuple(std::tuple<Arguments...>(arguments ...)));
+}
 
 class Plugin {
 public:

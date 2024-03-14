@@ -10,9 +10,10 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
-    const plugins::Options &options)
-    : MergeStrategyFactory(options),
-      merge_selector(options.get<shared_ptr<MergeSelector>>("merge_selector")) {
+    const shared_ptr<MergeSelector> &merge_selector,
+    utils::Verbosity verbosity)
+    : MergeStrategyFactory(verbosity),
+      merge_selector(merge_selector) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(
@@ -67,6 +68,14 @@ public:
             "merge_strategy=merge_stateless(merge_selector=score_based_filtering("
             "scoring_functions=[sf_miasm(<shrinking_options>),total_order(<order_option>)]"
             "\n}}}");
+    }
+
+    virtual shared_ptr<MergeStrategyFactoryStateless> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<MergeStrategyFactoryStateless>(
+            opts.get<shared_ptr<MergeSelector>>("merge_selector"),
+            get_merge_strategy_arguments_from_options(opts)
+            );
     }
 };
 

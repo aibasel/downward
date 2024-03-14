@@ -18,8 +18,11 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorCombo::PatternCollectionGeneratorCombo(
-    const plugins::Options &opts)
-    : PatternCollectionGenerator(opts), opts(opts) {
+    int max_states,
+    utils::Verbosity verbosity)
+    : PatternCollectionGenerator(verbosity),
+      max_states(max_states),
+      verbosity(verbosity) {
 }
 
 string PatternCollectionGeneratorCombo::name() const {
@@ -31,7 +34,7 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::compute_patterns(
     TaskProxy task_proxy(*task);
     shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
 
-    PatternGeneratorGreedy large_pattern_generator(opts);
+    PatternGeneratorGreedy large_pattern_generator(max_states, verbosity);
     Pattern large_pattern = large_pattern_generator.generate(task).get_pattern();
     set<int> used_vars(large_pattern.begin(), large_pattern.end());
     patterns->push_back(move(large_pattern));
@@ -56,6 +59,14 @@ public:
             "1000000",
             plugins::Bounds("1", "infinity"));
         add_generator_options_to_feature(*this);
+    }
+
+    virtual shared_ptr<PatternCollectionGeneratorCombo> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorCombo>(
+            opts.get<int>("max_states"),
+            get_generator_arguments_from_options(opts)
+            );
     }
 };
 

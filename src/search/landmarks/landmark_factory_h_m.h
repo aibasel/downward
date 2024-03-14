@@ -138,7 +138,8 @@ class LandmarkFactoryHM : public LandmarkFactory {
     void print_proposition(const VariablesProxy &variables, const FactPair &fluent) const;
 
 public:
-    explicit LandmarkFactoryHM(const plugins::Options &opts);
+    LandmarkFactoryHM(int m, bool conjunctive_landmarks,
+                      bool use_orders, utils::Verbosity verbosity);
 
     virtual bool supports_conditional_effects() const override;
 };

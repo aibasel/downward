@@ -34,12 +34,13 @@ public:
         document_synopsis(
             "A cost-adapting transformation of the root task.");
 
-        add_cost_type_option_to_feature(*this);
+        add_cost_type_options_to_feature(*this);
     }
 
     virtual shared_ptr<CostAdaptedTask> create_component(const plugins::Options &options, const utils::Context &) const override {
-        OperatorCost cost_type = options.get<OperatorCost>("cost_type");
-        return make_shared<CostAdaptedTask>(g_root_task, cost_type);
+        return plugins::make_shared_from_arg_tuples<CostAdaptedTask>(
+            g_root_task,
+            get_cost_type_arguments_from_options(options));
     }
 };
 

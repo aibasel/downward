@@ -102,8 +102,8 @@ static void get_conflicting_vars(const vector<FactPair> &facts1,
     }
 }
 
-StubbornSetsEC::StubbornSetsEC(const plugins::Options &opts)
-    : StubbornSetsActionCentric(opts) {
+StubbornSetsEC::StubbornSetsEC(utils::Verbosity verbosity)
+    : StubbornSetsActionCentric(verbosity) {
 }
 
 void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
@@ -345,6 +345,12 @@ public:
                 "AAAI Press",
                 "2013"));
         add_pruning_options_to_feature(*this);
+    }
+
+    virtual shared_ptr<StubbornSetsEC> create_component(
+        const plugins::Options &options, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<StubbornSetsEC>(
+            get_pruning_arguments_from_options(options));
     }
 };
 

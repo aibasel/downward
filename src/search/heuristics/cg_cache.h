@@ -27,7 +27,6 @@ public:
     static const int NOT_COMPUTED = -2;
 
     CGCache(const TaskProxy &task_proxy, int max_cache_size, utils::LogProxy &log);
-    ~CGCache();
 
     bool is_cached(int var) const {
         return !cache[var].empty();

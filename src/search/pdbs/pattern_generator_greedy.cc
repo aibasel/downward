@@ -16,8 +16,11 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorGreedy::PatternGeneratorGreedy(const plugins::Options &opts)
-    : PatternGenerator(opts), max_states(opts.get<int>("max_states")) {
+PatternGeneratorGreedy::PatternGeneratorGreedy(
+    int max_states,
+    utils::Verbosity verbosity)
+    : PatternGenerator(verbosity),
+      max_states(max_states) {
 }
 
 string PatternGeneratorGreedy::name() const {
@@ -58,6 +61,14 @@ public:
             "1000000",
             plugins::Bounds("1", "infinity"));
         add_generator_options_to_feature(*this);
+    }
+
+    virtual shared_ptr<PatternGeneratorGreedy> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<PatternGeneratorGreedy>(
+            opts.get<int>("max_states"),
+            get_generator_arguments_from_options(opts)
+            );
     }
 };
 

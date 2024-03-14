@@ -6,8 +6,8 @@
 using namespace std;
 
 namespace stubborn_sets {
-StubbornSets::StubbornSets(const plugins::Options &opts)
-    : PruningMethod(opts),
+StubbornSets::StubbornSets(utils::Verbosity verbosity)
+    : PruningMethod(verbosity),
       num_operators(-1) {
 }
 

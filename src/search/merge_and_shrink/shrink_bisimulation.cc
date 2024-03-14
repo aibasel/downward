@@ -93,9 +93,12 @@ struct Signature {
 };
 
 
-ShrinkBisimulation::ShrinkBisimulation(const plugins::Options &opts)
-    : greedy(opts.get<bool>("greedy")),
-      at_limit(opts.get<AtLimit>("at_limit")) {
+ShrinkBisimulation::ShrinkBisimulation(
+    bool greedy,
+    AtLimit at_limit
+    )
+    : greedy(greedy),
+      at_limit(at_limit) {
 }
 
 int ShrinkBisimulation::initialize_groups(
@@ -419,6 +422,14 @@ public:
             "with label reduction, this strategy performed best when used with "
             "label reduction before shrinking (and no label reduction before "
             "merging).");
+    }
+
+    virtual shared_ptr<ShrinkBisimulation> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return make_shared<ShrinkBisimulation>(
+            opts.get<bool>("greedy"),
+            opts.get<AtLimit>("at_limit")
+            );
     }
 };
 

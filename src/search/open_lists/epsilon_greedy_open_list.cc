@@ -45,8 +45,11 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit EpsilonGreedyOpenList(const plugins::Options &opts);
-    virtual ~EpsilonGreedyOpenList() override = default;
+    EpsilonGreedyOpenList(
+        const shared_ptr<Evaluator> &eval,
+        bool pref_only,
+        double epsilon,
+        int random_seed);
 
     virtual Entry remove_min() override;
     virtual bool is_dead_end(
@@ -81,11 +84,16 @@ void EpsilonGreedyOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(const plugins::Options &opts)
-    : OpenList<Entry>(opts.get<bool>("pref_only")),
-      rng(utils::parse_rng_from_options(opts)),
-      evaluator(opts.get<shared_ptr<Evaluator>>("eval")),
-      epsilon(opts.get<double>("epsilon")),
+EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(
+    const shared_ptr<Evaluator> &eval,
+    bool pref_only,
+    double epsilon,
+    int random_seed
+    )
+    : OpenList<Entry>(pref_only),
+      rng(utils::get_rng(random_seed)),
+      evaluator(eval),
+      epsilon(epsilon),
       size(0),
       next_id(0) {
 }
@@ -136,18 +144,33 @@ void EpsilonGreedyOpenList<Entry>::clear() {
 }
 
 EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
-    const plugins::Options &options)
-    : options(options) {
+    const shared_ptr<Evaluator> &eval,
+    bool pref_only,
+    double epsilon,
+    int random_seed
+    ) :
+    eval(eval),
+    pref_only(pref_only),
+    epsilon(epsilon),
+    random_seed(random_seed) {
 }
 
 unique_ptr<StateOpenList>
 EpsilonGreedyOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<EpsilonGreedyOpenList<StateOpenListEntry>>(options);
+    return utils::make_unique_ptr<EpsilonGreedyOpenList<StateOpenListEntry>>(
+        eval,
+        pref_only,
+        epsilon,
+        random_seed);
 }
 
 unique_ptr<EdgeOpenList>
 EpsilonGreedyOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<EpsilonGreedyOpenList<EdgeOpenListEntry>>(options);
+    return utils::make_unique_ptr<EpsilonGreedyOpenList<EdgeOpenListEntry>>(
+        eval,
+        pref_only,
+        epsilon,
+        random_seed);
 }
 
 class EpsilonGreedyOpenListFeature : public plugins::TypedFeature<OpenListFactory, EpsilonGreedyOpenListFactory> {
@@ -178,7 +201,16 @@ public:
             "probability for choosing the next entry randomly",
             "0.2",
             plugins::Bounds("0.0", "1.0"));
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
+    }
+
+    virtual shared_ptr<EpsilonGreedyOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<EpsilonGreedyOpenListFactory>(
+            opts.get<shared_ptr<Evaluator>>("eval"),
+            opts.get<bool>("pref_only"),
+            opts.get<double>("epsilon"),
+            utils::get_rng_arguments_from_options(opts)
+            );
     }
 };
 

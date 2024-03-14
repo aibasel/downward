@@ -11,9 +11,27 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar(
-    const plugins::Options &opts)
-    : PatternCollectionGeneratorMultiple(opts),
-      use_wildcard_plans(opts.get<bool>("use_wildcard_plans")) {
+    bool use_wildcard_plans,
+    int max_pdb_size,
+    int max_collection_size,
+    double pattern_generation_max_time,
+    double total_max_time,
+    double stagnation_limit,
+    double blacklist_trigger_percentage,
+    bool enable_blacklist_on_stagnation,
+    int random_seed,
+    utils::Verbosity verbosity)
+    : PatternCollectionGeneratorMultiple(
+          max_pdb_size,
+          max_collection_size,
+          pattern_generation_max_time,
+          total_max_time,
+          stagnation_limit,
+          blacklist_trigger_percentage,
+          enable_blacklist_on_stagnation,
+          random_seed,
+          verbosity),
+      use_wildcard_plans(use_wildcard_plans) {
 }
 
 string PatternCollectionGeneratorMultipleCegar::id() const {
@@ -51,11 +69,19 @@ public:
             "restricted to a single goal variable. See below for descriptions of "
             "the algorithms.");
 
-        add_multiple_options_to_feature(*this);
         add_cegar_wildcard_option_to_feature(*this);
+        add_multiple_options_to_feature(*this);
 
         add_cegar_implementation_notes_to_feature(*this);
         add_multiple_algorithm_implementation_notes_to_feature(*this);
+    }
+
+    virtual shared_ptr<PatternCollectionGeneratorMultipleCegar> create_component(
+        const plugins::Options &opts, const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorMultipleCegar>(
+            get_cegar_wildcard_arguments_from_options(opts),
+            get_multiple_arguments_from_options(opts)
+            );
     }
 };
 
