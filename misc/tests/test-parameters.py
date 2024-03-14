@@ -1,10 +1,20 @@
 #! /usr/bin/env python3
 
+HELP = """\
+Check that parameters for the command line features match the parameters of the C++ constructors.
+Use txt2tags to compare the parameters mentioned in the wiki to the parameters in the corresponding .cc file. 
+"""
 
 import argparse
+import os
+import os.path
 import re
 import subprocess
 import sys
+
+DIR = os.path.dirname(os.path.abspath(__file__))
+REPO = os.path.dirname(os.path.dirname(DIR))
+SRC_DIR = os.path.join(REPO, "src")
 
 SHORT_HANDS = {
                 "ipdb": "cpdbs(hillclimbing())",
@@ -32,10 +42,19 @@ PERMANENT_EXCEPTIONS = [
 
 CREATE_COMPONENT_REGEX = r"(^|\s|\W)create_component"
 C_VAR_PATTERN = r'[^a-zA-Z0-9_]' # overapproximation
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("cc_file", nargs="+")
-    return parser.parse_args()
+
+
+def get_src_files(path, extensions, ignore_dirs=None):
+    ignore_dirs = ignore_dirs or []
+    src_files = []
+    for root, dirs, files in os.walk(path):
+        for ignore_dir in ignore_dirs:
+            if ignore_dir in dirs:
+                dirs.remove(ignore_dir)
+        src_files.extend([
+            os.path.join(root, file)
+            for file in files if file.endswith(extensions)])
+    return src_files
 
 def extract_cpp_class(input_string):
     pattern = r'<(.*?)>'
@@ -80,7 +99,7 @@ def extract_feature_parameter_list(feature_name):
     result = re.sub(r'=.*?,', ',', result + ",").split()
     return result
 
-def extract_feature_name_and_cpp_class(cc_file, args, num):
+def extract_feature_name_and_cpp_class(cc_file, cc_files, cwd, num):
     source_without_comments = subprocess.check_output(
         ["gcc", "-fpreprocessed", "-dD", "-E", cc_file]).decode("utf-8")
 
@@ -109,11 +128,11 @@ def extract_feature_name_and_cpp_class(cc_file, args, num):
             class_error_msgs.append(class_error_msg)
     return feature_names[num], class_names[num], other_namespaces[num], feature_error_msgs[num] + class_error_msgs[num]
 
-def get_cpp_class_parameters(class_name, other_namespace, cc_file, args):
+def get_cpp_class_parameters(class_name, other_namespace, cc_file, cc_files, cwd):
     found_in_file, parameters = get_constructor_parameters(cc_file, class_name)
     if not found_in_file:
         # check in all files
-        for cc_file2 in args.cc_file:
+        for cc_file2 in cc_files:
             found_in_file, parameters = get_constructor_parameters(cc_file2, class_name)
             if found_in_file:
                 break
@@ -137,13 +156,13 @@ def get_create_component_lines(cc_file):
             lines.append(line.strip())
     return lines
 
-def compare_component_parameters(cc_file, args):
+def compare_component_parameters(cc_file, cc_files, cwd):
     found_error = False
     error_msg = ""
     create_component_lines = get_create_component_lines(cc_file)
     if not create_component_lines == []:
         for i, create_component_line in enumerate(create_component_lines):
-            feature_name, cpp_class, other_namespace, extracted_error_msg = extract_feature_name_and_cpp_class(cc_file, args, i)
+            feature_name, cpp_class, other_namespace, extracted_error_msg = extract_feature_name_and_cpp_class(cc_file, cc_files, cwd, i)
             error_msg += "\n\n=====================================\n= = = " + cpp_class + " = = =\n"
             error_msg += extracted_error_msg + "\n"
             feature_parameters = extract_feature_parameter_list(feature_name)
@@ -151,17 +170,17 @@ def compare_component_parameters(cc_file, args):
             error_msg += "== FEATURE PARAMETERS '" + feature_name + "'==\n"
             error_msg += str(feature_parameters) + "\n"
 
-            cpp_class_parameters = get_cpp_class_parameters(cpp_class, other_namespace, cc_file, args)
+            cpp_class_parameters = get_cpp_class_parameters(cpp_class, other_namespace, cc_file, cc_files, cwd)
 
             error_msg += "== CLASS PARAMETERS '" + cpp_class + "'==\n"
             error_msg += str(cpp_class_parameters) + "\n"
 
             if feature_name in SHORT_HANDS: # TODO set comparison
-                print(f"feature_name '{feature_name}' would trigger an error if it was not marked as shorthand")
+                print(f"feature_name '{feature_name}' is ignored because it is marked as shorthand")
             elif feature_name in PERMANENT_EXCEPTIONS:
-                print(f"feature_name '{feature_name}' would trigger an error if it was not marked as PERMANENT_EXCEPTION")
+                print(f"feature_name '{feature_name}' is ignored because it is marked as PERMANENT_EXCEPTION")
             elif feature_name in TEMPORARY_EXCEPTIONS:
-                print(f"feature_name '{feature_name}' would trigger an error if it was not marked as TEMPORARY_EXCEPTION")
+                print(f"feature_name '{feature_name}' is ignored because it is marked as TEMPORARY_EXCEPTION")
             elif feature_parameters != cpp_class_parameters:
                 found_error = True
                 if not len(feature_parameters) == len(cpp_class_parameters):
@@ -173,15 +192,10 @@ def compare_component_parameters(cc_file, args):
 
     return found_error, error_msg
 
-def main():
-    print(str(subprocess.run(["pwd"], stdout=subprocess.PIPE).stdout))
-    # print(str(subprocess.run(["tree", "-L", "3"], stdout=subprocess.PIPE).stdout))
-    tree = subprocess.run(["tree", "../../../..", "-L", "4"], stdout=subprocess.PIPE, text=True)
-    print(tree.stdout)
-    args = parse_args()
+def main2(cc_files, cwd):
     errors = []
-    for cc_file in args.cc_file:
-        found_error, error = compare_component_parameters(cc_file, args)
+    for cc_file in cc_files:
+        found_error, error = compare_component_parameters(cc_file, cc_files, cwd)
         if found_error:
             errors.append(error)
     if errors:
@@ -194,6 +208,19 @@ def main():
         for error in errors:
             print(error)
         sys.exit(1)
+
+
+
+
+def main():
+    """
+    Currently, we only check that the parameters in the Constructor in the .cc file
+    matches the parameters for the CLI.
+    """
+    search_dir = os.path.join(SRC_DIR, "search")
+    cc_files = get_src_files(search_dir, (".cc",))
+    print("Checking Component Parameters of {} *.cc files".format(len(cc_files)))
+    return main2(cc_files, cwd=DIR) == 0
 
 
 if __name__ == "__main__":
