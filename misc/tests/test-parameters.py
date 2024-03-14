@@ -2,7 +2,7 @@
 
 HELP = """\
 Check that parameters for the command line features match the parameters of the C++ constructors.
-Use txt2tags to compare the parameters mentioned in the wiki to the parameters in the corresponding .cc file. 
+Use txt2tags to compare the parameters mentioned in the wiki to the parameters in the corresponding .cc file.
 """
 
 import argparse
@@ -208,9 +208,6 @@ def main2(cc_files, cwd):
         for error in errors:
             print(error)
         sys.exit(1)
-
-
-
 
 def main():
     """
