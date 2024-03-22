@@ -62,6 +62,9 @@ def handle_axioms(operators, axioms, goals, layer_strategy):
     # the future. Similarly, it would be a good idea to remove the notion of
     # axiom layers and derived variable default values from the output.
     # (All derived variables should be binary and default to false.)
+# Malte Helmert suggested commenting out the following 2 lines
+# in conjunction with the blind heuristic this is sound
+# we instead introduce a commandline option changing compute_negative_axioms()
     with timers.timing("Computing negative axioms"):
         compute_negative_axioms(clusters)
 
@@ -270,7 +273,11 @@ def compute_negative_axioms(clusters):
                     cluster.axioms[variable].append(negated_axiom)
             else:
                 variable = next(iter(cluster.variables))
-                negated_axioms = negate(cluster.axioms[variable])
+                if options.approximate_negative_always:
+                    name = cluster.axioms[variable][0].name
+                    negated_axioms = [pddl.PropositionalAxiom(name, [], variable.negate())]
+                else:
+                    negated_axioms = negate(cluster.axioms[variable])
                 cluster.axioms[variable] += negated_axioms
 
 
