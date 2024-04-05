@@ -44,7 +44,7 @@ public:
             "If only one evaluator and no preferred operator evaluator is used, "
             "the search does not use an alternation open list "
             "but a standard open list with only one queue.");
-        document_note( // TODO issue1082 confirm this
+        document_note(
             "Equivalent statements using general lazy search",
             "\n```\n--evaluator h2=eval2\n"
             "--search lazy_greedy([eval1, h2], preferred=[h2], boost=100)\n```\n"
