@@ -67,7 +67,7 @@ SearchAlgorithm::SearchAlgorithm(
     task_properties::print_variable_statistics(task_proxy);
 }
 
-SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts) // TODO objections object is needed for iterated search, the prototype for issue559 resolves this
+SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts) // TODO options object is needed for iterated search, the prototype for issue559 resolves this
     : description(opts.get_unparsed_config()),
       status(IN_PROGRESS),
       solution_found(false),
