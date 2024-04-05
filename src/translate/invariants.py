@@ -8,38 +8,35 @@ import tools
 # Notes:
 # All parts of an invariant always use all non-counted variables
 # -> the arity of all predicates covered by an invariant is either the
-# number of the invariant variables or this value + 1
+# number of the invariant parameters or this value + 1
 #
-# we currently keep the assumption that each predicate occurs at most once
-# in every invariant.
+# We only consider invariants where each predicate occurs in at most one part.
 
-def invert_list(alist):
-    result = defaultdict(list)
-    for pos, arg in enumerate(alist):
-        result[arg].append(pos)
-    return result
-
+COUNTED = -1
 
 def instantiate_factored_mapping(pairs):
+    """Input pairs is a list [(preimg1, img1), ..., (preimgn, imgn)].
+       For entry (preimg, img), preimg is a list of numbers and img a list of
+       invariant parameters or COUNTED of the same length. All preimages (and
+       all images) are pairwise disjoint, as well as the components of each
+       preimage/image.
+
+       The function determines all possible bijections between the union of
+       preimgs and the union of imgs such that for every entry (preimg, img),
+       all values from preimg are mapped to values from img.
+       It yields one permutation after the other, each represented as a list
+       of pairs (x,y), meaning x is mapped to y.
+       """
+    # for every entry (preimg, img) in pairs, determine all possible bijections
+    # from preimg to img.
     part_mappings = [[list(zip(preimg, perm_img)) for perm_img in itertools.permutations(img)]
                      for (preimg, img) in pairs]
-    return tools.cartesian_product(part_mappings)
-
-
-def find_unique_variables(action, invariant):
-    # find unique names for invariant variables
-    params = {p.name for p in action.parameters}
-    for eff in action.effects:
-        params.update([p.name for p in eff.parameters])
-    inv_vars = []
-    counter = itertools.count()
-    for _ in range(invariant.arity()):
-        while True:
-            new_name = "?v%i" % next(counter)
-            if new_name not in params:
-                inv_vars.append(new_name)
-                break
-    return inv_vars
+    # all possibilities to pick one bijection for each entry
+    if not part_mappings:
+        yield []
+    else:
+        for x in itertools.product(*part_mappings):
+            yield list(itertools.chain.from_iterable(x))
 
 
 def get_literals(condition):
@@ -54,17 +51,27 @@ def ensure_conjunction_sat(system, *parts):
        conjunction of all parts is satisfiable.
 
        Each part must be an iterator, generator, or an iterable over
-       literals."""
+       literals.
+
+       We add the following constraints for each literal to the system:
+
+       - for (not (= x y)): x != y (as an InequalityDisjunction with one entry
+         (x,y)),
+       - for (= x y): x = y
+       - for predicates that occur with a positive and negative literal, we
+         consider every combination of a positive one (e.g. P(x, y, z)) and
+         a negative one (e.g. (not P(a, b, c))) and add a constraint
+         (x != a or y != b or z != c)."""
     pos = defaultdict(set)
     neg = defaultdict(set)
     for literal in itertools.chain(*parts):
         if literal.predicate == "=": # use (in)equalities in conditions
             if literal.negated:
-                n = constraints.NegativeClause([literal.args])
-                system.add_negative_clause(n)
+                d = constraints.InequalityDisjunction([literal.args])
+                system.add_inequality_disjunction(d)
             else:
-                a = constraints.Assignment([literal.args])
-                system.add_assignment_disjunction([a])
+                a = constraints.EqualityConjunction([literal.args])
+                system.add_equality_DNF([a])
         else:
             if literal.negated:
                 neg[literal.predicate].add(literal)
@@ -77,125 +84,192 @@ def ensure_conjunction_sat(system, *parts):
                 for negatom in neg[pred]:
                     parts = list(zip(negatom.args, posatom.args))
                     if parts:
-                        negative_clause = constraints.NegativeClause(parts)
-                        system.add_negative_clause(negative_clause)
+                        ineq_disj = constraints.InequalityDisjunction(parts)
+                        system.add_inequality_disjunction(ineq_disj)
 
 
-def ensure_cover(system, literal, invariant, inv_vars):
-    """Modifies the constraint system such that it is only solvable if the
-       invariant covers the literal"""
-    a = invariant.get_covering_assignments(inv_vars, literal)
-    assert len(a) == 1
-    # if invariants could contain several parts of one predicate, this would
-    # not be true but the depending code in parts relies on this assumption
-    system.add_assignment_disjunction(a)
+def ensure_cover(system, literal, invariant):
+    """Modifies the constraint system such that in every solution the invariant
+       covers the literal (= invariant parameters are equivalent to the
+       corresponding argument in the literal)."""
+    cover = invariant._get_cover_equivalence_conjunction(literal)
+    system.add_equality_DNF([cover])
 
 
 def ensure_inequality(system, literal1, literal2):
     """Modifies the constraint system such that it is only solvable if the
        literal instantiations are not equal (ignoring whether one is negated and
-       the other is not)"""
-    if (literal1.predicate == literal2.predicate and
-        literal1.args):
+       the other is not).
+
+       If the literals have different predicates, there is nothing to do.
+       Otherwise we add for P(x, y, z) and P(a, b, c) a contraint
+       (x != a or y != b or z != c)."""
+    if (literal1.predicate == literal2.predicate and literal1.args):
         parts = list(zip(literal1.args, literal2.args))
-        system.add_negative_clause(constraints.NegativeClause(parts))
+        system.add_inequality_disjunction(constraints.InequalityDisjunction(parts))
 
 
 class InvariantPart:
-    def __init__(self, predicate, order, omitted_pos=-1):
+    def __init__(self, predicate, args, omitted_pos=None):
+        """There is one InvariantPart for every predicate mentioned in the
+           invariant. The arguments args contain numbers 0,1,... for the
+           invariant parameters and COUNTED at the omitted position.
+           If no position is omitted, omitted_pos is None, otherwise it is the
+           index of COUNTED in args."""
         self.predicate = predicate
-        self.order = order
+        self.args = tuple(args)
         self.omitted_pos = omitted_pos
 
     def __eq__(self, other):
         # This implies equality of the omitted_pos component.
-        return self.predicate == other.predicate and self.order == other.order
+        return self.predicate == other.predicate and self.args == other.args
 
     def __ne__(self, other):
-        return self.predicate != other.predicate or self.order != other.order
+        return self.predicate != other.predicate or self.args != other.args
 
     def __le__(self, other):
-        return self.predicate <= other.predicate or self.order <= other.order
+        return (self.predicate, self.args) <= (other.predicate, other.args)
 
     def __lt__(self, other):
-        return self.predicate < other.predicate or self.order < other.order
+        return (self.predicate, self.args) < (other.predicate, other.args)
 
     def __hash__(self):
-        return hash((self.predicate, tuple(self.order)))
+        return hash((self.predicate, self.args))
 
     def __str__(self):
-        var_string = " ".join(map(str, self.order))
-        omitted_string = ""
-        if self.omitted_pos != -1:
-            omitted_string = " [%d]" % self.omitted_pos
-        return "%s %s%s" % (self.predicate, var_string, omitted_string)
+        return f"{self.predicate}({self.args}) [omitted_pos = {self.omitted_pos}]"
 
     def arity(self):
-        return len(self.order)
-
-    def get_assignment(self, parameters, literal):
-        equalities = [(arg, literal.args[argpos])
-                      for arg, argpos in zip(parameters, self.order)]
-        return constraints.Assignment(equalities)
+        if self.omitted_pos is None:
+            return len(self.args)
+        else:
+            return len(self.args) - 1
 
     def get_parameters(self, literal):
-        return [literal.args[pos] for pos in self.order]
+        """Returns a dictionary, mapping the invariant parameters to the
+           corresponding values in the literal."""
+        return dict((arg, literal.args[pos])
+                    for pos, arg in enumerate(self.args)
+                    if pos != self.omitted_pos)
 
-    def instantiate(self, parameters):
-        args = ["?X"] * (len(self.order) + (self.omitted_pos != -1))
-        for arg, argpos in zip(parameters, self.order):
-            args[argpos] = arg
+    def instantiate(self, parameters_tuple):
+        args = [parameters_tuple[arg] if arg != COUNTED else "?X"
+                for arg in self.args]
         return pddl.Atom(self.predicate, args)
 
     def possible_mappings(self, own_literal, other_literal):
-        allowed_omissions = len(other_literal.args) - len(self.order)
+        """This method is used when an action had an unbalanced add effect
+           own_literal. The action has a delete effect on literal
+           other_literal, so we try to refine the invariant such that it also
+           covers the delete effect.
+
+           From own_literal, we can determine a variable or object for every
+           invariant parameter, where potentially several invariant parameters
+           can have the same value.
+
+           From the arguments of other_literal, we determine all possibilities
+           how we can use the invariant parameters as arguments of
+           other_literal so that the values match (possibly covering one
+           parameter with a placeholder/counted variable). Since there also can
+           be duplicates in the argumets of other_literal, we cannot operate on
+           the arguments directly, but instead operate on the positions.
+
+           The method returns [] if there is no possible mapping and otherwise
+           yields the mappings from the positions of other to the invariant
+           variables or COUNTED one by one.
+           """
+        allowed_omissions = len(other_literal.args) - self.arity()
+        # All parts of an invariant always use all non-counted variables, of
+        # which we have arity many. So we must omit allowed_omissions many
+        # arguments of other_literal when matching invariant parameters with
+        # arguments.
         if allowed_omissions not in (0, 1):
+            # There may be at most one counted variable.
             return []
         own_parameters = self.get_parameters(own_literal)
-        arg_to_ordered_pos = invert_list(own_parameters)
-        other_arg_to_pos = invert_list(other_literal.args)
+        # own_parameters is a dictionary mapping the invariant parameters to
+        # the corresponding parameter of own_literal
+        ownarg_to_invariant_parameters = defaultdict(list)
+        for x, y in own_parameters.items():
+            ownarg_to_invariant_parameters[y].append(x)
+
+        # other_arg_to_pos maps every argument of other_literal to the
+        # lists of positions in which it is occuring in other_literal, e.g.
+        # for P(?a, ?b, ?a), other_arg_to_pos["?a"] = [0, 2].
+        other_arg_to_pos = defaultdict(list)
+        for pos, arg in enumerate(other_literal.args):
+            other_arg_to_pos[arg].append(pos)
+
         factored_mapping = []
 
+        # We iterate over all values occuring as arguments in other_literal
+        # and compare the number of occurrences in other_literal to those in
+        # own_literal. If the difference of these numbers allows us to cover
+        # other_literal with the (still) permitted number of counted variables,
+        # we store the correspondance of all argument positions of
+        # other_literal for this value to the invariant parameters at these
+        # positions in factored_mapping. If all values can be covered, we
+        # instatiate the complete factored_mapping, computing all possibilities
+        # to map positions from other_literal to invariant parameters (or
+        # COUNTED if the position is omitted).
         for key, other_positions in other_arg_to_pos.items():
-            own_positions = arg_to_ordered_pos.get(key, [])
-            len_diff = len(own_positions) - len(other_positions)
+            inv_params = ownarg_to_invariant_parameters[key]
+            # all positions at which key occurs as argument in own_literal
+            len_diff = len(inv_params) - len(other_positions)
             if len_diff >= 1 or len_diff <= -2 or len_diff == -1 and not allowed_omissions:
+                # mapping of the literals is not possible with at most one
+                # counted variable.
                 return []
             if len_diff:
-                own_positions.append(-1)
+                inv_params.append(COUNTED)
                 allowed_omissions = 0
-            factored_mapping.append((other_positions, own_positions))
+            factored_mapping.append((other_positions, inv_params))
         return instantiate_factored_mapping(factored_mapping)
 
     def possible_matches(self, own_literal, other_literal):
-        assert self.predicate == own_literal.predicate
-        result = []
-        for mapping in self.possible_mappings(own_literal, other_literal):
-            new_order = [None] * len(self.order)
-            omitted = -1
-            for (key, value) in mapping:
-                if value == -1:
-                    omitted = key
-                else:
-                    new_order[value] = key
-            result.append(InvariantPart(other_literal.predicate, new_order, omitted))
-        return result
+        """This method is used when an action had an unbalanced add effect
+           on own_literal. The action has a delete effect on literal
+           other_literal, so we try to refine the invariant such that it also
+           covers the delete effect.
 
-    def matches(self, other, own_literal, other_literal):
-        return self.get_parameters(own_literal) == other.get_parameters(other_literal)
+           For this purpose, we consider all possible mappings from the
+           parameter positions of other_literal to the parameter positions of
+           own_literal such that the extended invariant can use other_literal
+           to balance own_literal. From these position mapping, we can extract
+           the new invariant part.
+
+           Consider for an example of the "self" InvariantPart "forall ?@v0,
+           ?@v1, ?@v2 P(?@v0, ?@v1, ?@v2) is non-increasing" and let
+           own_literal be P(?a, ?b, ?c) and other_literal be Q(?b, ?c, ?d, ?a).
+           The only possible mapping from positions of Q to invariant variables
+           of P (or COUNTED) is [0->?@v1, 1->?@v2, 2->COUNTED, 3->?@v0] for
+           which we create a new Invariant Part Q(?@v1, ?@v2, _. ?@v0) with the
+           third argument being counted.
+        """
+        assert self.predicate == own_literal.predicate
+        for mapping in self.possible_mappings(own_literal, other_literal):
+            args = [COUNTED] * len(other_literal.args)
+            omitted = None
+            for (other_pos, inv_var) in mapping:
+                if inv_var == COUNTED:
+                    omitted = other_pos
+                else:
+                    args[other_pos] = inv_var
+            yield InvariantPart(other_literal.predicate, args, omitted)
 
 
 class Invariant:
     # An invariant is a logical expression of the type
-    #   forall V1...Vk: sum_(part in parts) weight(part, V1, ..., Vk) <= 1.
+    #   forall ?@v1...?@vk: sum_(part in parts) weight(part, ?@v1, ..., ?@vk) <= 1.
     # k is called the arity of the invariant.
-    # A "part" is a symbolic fact only variable symbols in {V1, ..., Vk, X};
-    # the symbol X may occur at most once.
+    # A "part" is an atom that only contains arguments from {?@v1, ..., ?@vk,
+    # COUNTED} but instead of ?@vi, we store it as int i; COUNTED may occur at
+    # most once.
 
     def __init__(self, parts):
         self.parts = frozenset(parts)
-        self.predicates = {part.predicate for part in parts}
         self.predicate_to_part = {part.predicate: part for part in parts}
+        self.predicates = set(self.predicate_to_part.keys())
         assert len(self.parts) == len(self.predicates)
 
     def __eq__(self, other):
@@ -204,17 +278,11 @@ class Invariant:
     def __ne__(self, other):
         return self.parts != other.parts
 
-    def __lt__(self, other):
-        return self.parts < other.parts
-
-    def __le__(self, other):
-        return self.parts <= other.parts
-
     def __hash__(self):
         return hash(self.parts)
 
     def __str__(self):
-        return "{%s}" % ", ".join(str(part) for part in self.parts)
+        return "{%s}" % ", ".join(sorted(str(part) for part in self.parts))
 
     def __repr__(self):
         return '<Invariant %s>' % self
@@ -228,30 +296,57 @@ class Invariant:
     def instantiate(self, parameters):
         return [part.instantiate(parameters) for part in self.parts]
 
-    def get_covering_assignments(self, parameters, atom):
-        part = self.predicate_to_part[atom.predicate]
-        return [part.get_assignment(parameters, atom)]
-        # if there were more parts for the same predicate the list
-        # contained more than one element
+    def _get_cover_equivalence_conjunction(self, literal):
+        """This is only called for atoms with a predicate for which the
+           invariant has a part. It returns an equivalence conjunction that
+           requires every invariant parameter to be equal to the corresponding
+           argument of the given literal. For the result, we do not consider
+           whether the literal is negated.
+
+           Example: If the literal is P(?a, ?b, ?c), the invariant part for P
+           is P(?@v0, _, ?@v1) then the method returns the constraint (?@v0 = ?a
+           and ?@v1 = ?c).
+           """
+        part = self.predicate_to_part[literal.predicate]
+        equalities = [(arg, literal.args[pos])
+                      for pos, arg in enumerate(part.args)
+                      if arg != COUNTED]
+        return constraints.EqualityConjunction(equalities)
+        # If there were more parts for the same predicate, we would have to
+        # consider more than one assignment (disjunctively).
+        # We assert earlier that this is not the case.
 
     def check_balance(self, balance_checker, enqueue_func):
         # Check balance for this hypothesis.
-        actions_to_check = set()
-        for part in self.parts:
-            actions_to_check |= balance_checker.get_threats(part.predicate)
-        for action in actions_to_check:
+        actions_to_check = dict()
+        # We will only use the keys of the dictionary. We do not use a set
+        # because it's not stable and introduces non-determinism in the
+        # invariance analysis.
+        for part in sorted(self.parts):
+            for a in balance_checker.get_threats(part.predicate):
+                actions_to_check[a] = True
+
+        actions = list(actions_to_check.keys())
+        while actions:
+            # For a better expected perfomance, we want to randomize the order
+            # in which actions are checked. Since candidates are often already
+            # discarded by an early check, we do not want to shuffle the order
+            # but instead always draw the next action randomly from those we
+            # did not yet consider.
+            pos = balance_checker.random.randrange(len(actions))
+            actions[pos], actions[-1] = actions[-1], actions[pos]
+            action = actions.pop()
             heavy_action = balance_checker.get_heavy_action(action)
-            if self.operator_too_heavy(heavy_action):
+            if self._operator_too_heavy(heavy_action):
                 return False
-            if self.operator_unbalanced(action, enqueue_func):
+            if self._operator_unbalanced(action, enqueue_func):
                 return False
         return True
 
-    def operator_too_heavy(self, h_action):
+    def _operator_too_heavy(self, h_action):
         add_effects = [eff for eff in h_action.effects
                        if not eff.literal.negated and
                        self.predicate_to_part.get(eff.literal.predicate)]
-        inv_vars = find_unique_variables(h_action, self)
 
         if len(add_effects) <= 1:
             return False
@@ -259,8 +354,8 @@ class Invariant:
         for eff1, eff2 in itertools.combinations(add_effects, 2):
             system = constraints.ConstraintSystem()
             ensure_inequality(system, eff1.literal, eff2.literal)
-            ensure_cover(system, eff1.literal, self, inv_vars)
-            ensure_cover(system, eff2.literal, self, inv_vars)
+            ensure_cover(system, eff1.literal, self)
+            ensure_cover(system, eff2.literal, self)
             ensure_conjunction_sat(system, get_literals(h_action.precondition),
                                    get_literals(eff1.condition),
                                    get_literals(eff2.condition),
@@ -270,8 +365,7 @@ class Invariant:
                 return True
         return False
 
-    def operator_unbalanced(self, action, enqueue_func):
-        inv_vars = find_unique_variables(action, self)
+    def _operator_unbalanced(self, action, enqueue_func):
         relevant_effs = [eff for eff in action.effects
                          if self.predicate_to_part.get(eff.literal.predicate)]
         add_effects = [eff for eff in relevant_effs
@@ -279,59 +373,80 @@ class Invariant:
         del_effects = [eff for eff in relevant_effs
                        if eff.literal.negated]
         for eff in add_effects:
-            if self.add_effect_unbalanced(action, eff, del_effects, inv_vars,
-                                          enqueue_func):
+            if self._add_effect_unbalanced(action, eff, del_effects,
+                                           enqueue_func):
                 return True
         return False
 
-    def minimal_covering_renamings(self, action, add_effect, inv_vars):
-        """computes the minimal renamings of the action parameters such
-           that the add effect is covered by the action.
-           Each renaming is an constraint system"""
+    def _add_effect_unbalanced(self, action, add_effect, del_effects,
+                               enqueue_func):
+        # We build for every delete effect that is possibly covered by this
+        # invariant a constraint system that will be solvable if the delete
+        # effect balances the add effect. Large parts of the constraint system
+        # are independent of the delete effect, so we precompute them first.
 
-        # add_effect must be covered
-        assigs = self.get_covering_assignments(inv_vars, add_effect.literal)
-
-        # renaming of operator parameters must be minimal
-        minimal_renamings = []
-        params = [p.name for p in action.parameters]
-        for assignment in assigs:
-            system = constraints.ConstraintSystem()
-            system.add_assignment(assignment)
-            mapping = assignment.get_mapping()
-            if len(params) > 1:
-                for (n1, n2) in itertools.combinations(params, 2):
-                    if mapping.get(n1, n1) != mapping.get(n2, n2):
-                        negative_clause = constraints.NegativeClause([(n1, n2)])
-                        system.add_negative_clause(negative_clause)
-            minimal_renamings.append(system)
-        return minimal_renamings
-
-    def add_effect_unbalanced(self, action, add_effect, del_effects,
-                              inv_vars, enqueue_func):
-
-        minimal_renamings = self.minimal_covering_renamings(action, add_effect,
-                                                            inv_vars)
-
-        lhs_by_pred = defaultdict(list)
+        # Dictionary add_effect_produced_by_pred describes what must be true so
+        # that the action is applicable and produces the add effect. It is
+        # stored as a map from predicate names to literals (overall
+        # representing a conjunction of these literals).
+        add_effect_produced_by_pred = defaultdict(list)
         for lit in itertools.chain(get_literals(action.precondition),
                                    get_literals(add_effect.condition),
                                    get_literals(add_effect.literal.negate())):
-            lhs_by_pred[lit.predicate].append(lit)
+            add_effect_produced_by_pred[lit.predicate].append(lit)
+
+        # add_cover is an equality conjunction that sets each invariant
+        # parameter equal to its value in add_effect.literal.
+        add_cover = self._get_cover_equivalence_conjunction(add_effect.literal)
+
+        # add_cover can imply equivalences between variables (and with
+        # constants). For example if the invariant part is P(_ ?@v0 ?@v1 ?@v2)
+        # and the add effect is P(?x ?y ?y a) then we would know that the
+        # invariant part is only threatened by the add effect if the first two
+        # invariant parameters are equal and the third parameter is a.
+
+        # The add effect must be balanced in all threatening action
+        # applications. We thus must adapt the constraint system such that it
+        # prevents restricting solution that set action parameters or
+        # quantified variables of the add effect equal to each other or to
+        # a specific constant if this is not already implied by the threat.
+        params = [p.name for p in itertools.chain(action.parameters,
+                                                  add_effect.parameters)]
+        param_system = constraints.ConstraintSystem()
+        representative = add_cover.get_representative()
+        # Dictionary representative maps every term to its representative in
+        # the finest equivalence relation induced by the equalities in
+        # add_cover. If the equivalence class contains an object, the
+        # representative is an object.
+        for param in params:
+            r = representative.get(param, param)
+            if isinstance(r, int) or r[0] == "?":
+                # for the add effect being a threat to the invariant, param
+                # does not need to be a specific constant. So we may not bind
+                # it to a constant when balancing the add effect. We store this
+                # information here.
+                param_system.add_not_constant(param)
+        for (n1, n2) in itertools.combinations(params, 2):
+            if representative.get(n1, n1) != representative.get(n2, n2):
+                # n1 and n2 don't have to be equivalent to cover the add
+                # effect, so we require for the solutions that they do not
+                # make n1 and n2 equvalent.
+                ineq_disj = constraints.InequalityDisjunction([(n1, n2)])
+                param_system.add_inequality_disjunction(ineq_disj)
 
         for del_effect in del_effects:
-            minimal_renamings = self.unbalanced_renamings(
-                del_effect, add_effect, inv_vars, lhs_by_pred, minimal_renamings)
-            if not minimal_renamings:
+            if self._balances(del_effect, add_effect,
+                              add_effect_produced_by_pred, add_cover,
+                              param_system):
                 return False
 
-        # Otherwise, the balance check fails => Generate new candidates.
-        self.refine_candidate(add_effect, action, enqueue_func)
+        # The balance check failed => Generate new candidates.
+        self._refine_candidate(add_effect, action, enqueue_func)
         return True
 
-    def refine_candidate(self, add_effect, action, enqueue_func):
-        """refines the candidate for an add effect that is unbalanced in the
-           action and adds the refined one to the queue"""
+    def _refine_candidate(self, add_effect, action, enqueue_func):
+        """Refines the candidate for an add effect that is unbalanced in the
+           action and adds the refined one to the queue."""
         part = self.predicate_to_part[add_effect.literal.predicate]
         for del_eff in [eff for eff in action.effects if eff.literal.negated]:
             if del_eff.literal.predicate not in self.predicate_to_part:
@@ -339,75 +454,79 @@ class Invariant:
                                                    del_eff.literal):
                     enqueue_func(Invariant(self.parts.union((match,))))
 
-    def unbalanced_renamings(self, del_effect, add_effect, inv_vars,
-                             lhs_by_pred, unbalanced_renamings):
-        """returns the renamings from unbalanced renamings for which
-           the del_effect does not balance the add_effect."""
+    def _balances(self, del_effect, add_effect, produced_by_pred,
+                 add_cover, param_system):
+        """Returns whether the del_effect is guaranteed to balance the add effect
+           where the input is such that:
+           - produced_by_pred must be true for the add_effect to be produced,
+           - add_cover is an equality conjunction that sets each invariant
+             parameter equal to its value in add_effect. These equivalences
+             must be true for the add effect threatening the invariant.
+           - param_system contains contraints that action and add_effect
+             parameters are not fixed to be equivalent or a certain constant
+             (except the add effect is otherwise not threat)."""
 
+        balance_system = self._balance_system(add_effect, del_effect,
+                                              produced_by_pred)
+        if not balance_system:
+            # it is impossible to guarantee that every production by add_effect
+            # implies a consumption by del effect.
+            return False
+
+        # We will overall build a system that is solvable if the delete effect
+        # is guaranteed to balance the add effect for this invariant.
         system = constraints.ConstraintSystem()
-        ensure_cover(system, del_effect.literal, self, inv_vars)
+        system.add_equality_conjunction(add_cover)
+        # In every solution, the invariant parameters must equal the
+        # corresponding arguments of the add effect atom.
 
-        # Since we may only rename the quantified variables of the delete effect
-        # we need to check that "renamings" of constants are already implied by
-        # the unbalanced_renaming (of the of the operator parameters). The
-        # following system is used as a helper for this. It builds a conjunction
-        # that formulates that the constants are NOT renamed accordingly. We
-        # below check that this is impossible with each unbalanced renaming.
-        check_constants = False
-        constant_test_system = constraints.ConstraintSystem()
-        for a, b in system.combinatorial_assignments[0][0].equalities:
-            # first 0 because the system was empty before we called ensure_cover
-            # second 0 because ensure_cover only adds assignments with one entry
-            if b[0] != "?":
-                check_constants = True
-                neg_clause = constraints.NegativeClause([(a, b)])
-                constant_test_system.add_negative_clause(neg_clause)
+        ensure_cover(system, del_effect.literal, self)
+        # In every solution, the invariant parameters must equal the
+        # corresponding arguments of the delete effect atom.
 
-        ensure_inequality(system, add_effect.literal, del_effect.literal)
+        system.extend(balance_system)
+        # In every solution a production by the add effect guarantees
+        # a consumption by the delete effect.
 
-        still_unbalanced = []
-        for renaming in unbalanced_renamings:
-            if check_constants:
-                new_sys = constant_test_system.combine(renaming)
-                if new_sys.is_solvable():
-                    # it is possible that the operator arguments are not
-                    # mapped to constants as required for covering the delete
-                    # effect
-                    still_unbalanced.append(renaming)
-                    continue
+        system.extend(param_system)
+        # A solution may not restrict action parameters (must be balanced
+        # independent of the concrete action instantiation).
 
-            new_sys = system.combine(renaming)
-            if self.lhs_satisfiable(renaming, lhs_by_pred):
-                implies_system = self.imply_del_effect(del_effect, lhs_by_pred)
-                if not implies_system:
-                    still_unbalanced.append(renaming)
-                    continue
-                new_sys = new_sys.combine(implies_system)
-            if not new_sys.is_solvable():
-                still_unbalanced.append(renaming)
-        return still_unbalanced
+        if not system.is_solvable():
+            return False
+        return True
 
-    def lhs_satisfiable(self, renaming, lhs_by_pred):
-        system = renaming.copy()
-        ensure_conjunction_sat(system, *itertools.chain(lhs_by_pred.values()))
-        return system.is_solvable()
+    def _balance_system(self, add_effect, del_effect, literals_by_pred):
+        """Returns a constraint system that is solvable if
+           - the conjunction of literals occurring as values in dictionary
+             literals_by_pred (characterizing a threat for the invariant
+             through an actual production by add_effect) implies the
+             consumption of the atom of the delete effect, and
+           - the produced and consumed atom are different (otherwise by
+             add-after-delete semantics, the delete effect would not balance
+             the add effect).
 
-    def imply_del_effect(self, del_effect, lhs_by_pred):
-        """returns a constraint system that is solvable if lhs implies
-           the del effect (only if lhs is satisfiable). If a solvable
-           lhs never implies the del effect, return None."""
-        # del_effect.cond and del_effect.atom must be implied by lhs
-        implies_system = constraints.ConstraintSystem()
+           We return None if we detect that the constraint system would never
+           be solvable (by an incomplete cheap test).
+           """
+        system = constraints.ConstraintSystem()
         for literal in itertools.chain(get_literals(del_effect.condition),
                                        [del_effect.literal.negate()]):
-            poss_assignments = []
-            for match in lhs_by_pred[literal.predicate]:
-                if match.negated != literal.negated:
-                    continue
-                else:
-                    a = constraints.Assignment(list(zip(literal.args, match.args)))
-                    poss_assignments.append(a)
-            if not poss_assignments:
+            possibilities = []
+            # possible equality conjunctions that establish that the literals
+            # in literals_by_pred logically imply the current literal.
+            for match in literals_by_pred[literal.predicate]:
+                if match.negated == literal.negated:
+                    # match implies literal iff they agree on each argument
+                    ec = constraints.EqualityConjunction(list(zip(literal.args,
+                                                                  match.args)))
+                    possibilities.append(ec)
+            if not possibilities:
                 return None
-            implies_system.add_assignment_disjunction(poss_assignments)
-        return implies_system
+            system.add_equality_DNF(possibilities)
+
+        # if the add effect and the delete effect affect the same predicate
+        # then their arguments must differ in at least one position (because of
+        # the add-after-delete semantics).
+        ensure_inequality(system, add_effect.literal, del_effect.literal)
+        return system

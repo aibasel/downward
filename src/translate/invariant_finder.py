@@ -3,6 +3,7 @@
 
 from collections import deque, defaultdict
 import itertools
+import random
 import time
 from typing import List
 
@@ -13,7 +14,8 @@ import timers
 
 class BalanceChecker:
     def __init__(self, task, reachable_action_params):
-        self.predicates_to_add_actions = defaultdict(set)
+        self.predicates_to_add_actions = defaultdict(list)
+        self.random = random.Random(314159)
         self.action_to_heavy_action = {}
         for act in task.actions:
             action = self.add_inequality_preconds(act, reachable_action_params)
@@ -27,7 +29,9 @@ class BalanceChecker:
                     too_heavy_effects.append(eff.copy())
                 if not eff.literal.negated:
                     predicate = eff.literal.predicate
-                    self.predicates_to_add_actions[predicate].add(action)
+                    add_actions = self.predicates_to_add_actions[predicate]
+                    if not add_actions or add_actions[-1] is not action:
+                        add_actions.append(action)
             if create_heavy_act:
                 heavy_act = pddl.Action(action.name, action.parameters,
                                         action.num_external_parameters,
@@ -38,7 +42,7 @@ class BalanceChecker:
             self.action_to_heavy_action[action] = heavy_act
 
     def get_threats(self, predicate):
-        return self.predicates_to_add_actions.get(predicate, set())
+        return self.predicates_to_add_actions.get(predicate, list())
 
     def get_heavy_action(self, action):
         return self.action_to_heavy_action[action]
@@ -79,9 +83,12 @@ def get_fluents(task):
 def get_initial_invariants(task):
     for predicate in get_fluents(task):
         all_args = list(range(len(predicate.arguments)))
-        for omitted_arg in [-1] + all_args:
-            order = [i for i in all_args if i != omitted_arg]
-            part = invariants.InvariantPart(predicate.name, order, omitted_arg)
+        part = invariants.InvariantPart(predicate.name, all_args, None)
+        yield invariants.Invariant((part,))
+        for omitted in range(len(predicate.arguments)):
+            inv_args = (all_args[0:omitted] + [invariants.COUNTED] +
+                        all_args[omitted:-1])
+            part = invariants.InvariantPart(predicate.name, inv_args, omitted)
             yield invariants.Invariant((part,))
 
 def find_invariants(task, reachable_action_params):
@@ -112,25 +119,32 @@ def useful_groups(invariants, initial_facts):
         for predicate in invariant.predicates:
             predicate_to_invariants[predicate].append(invariant)
 
-    nonempty_groups = set()
+    nonempty_groups = dict() # dict instead of set because it is stable
     overcrowded_groups = set()
     for atom in initial_facts:
         if isinstance(atom, pddl.Assign):
             continue
         for invariant in predicate_to_invariants.get(atom.predicate, ()):
-            group_key = (invariant, tuple(invariant.get_parameters(atom)))
+            parameters = invariant.get_parameters(atom)
+            # we need to make the parameters dictionary hashable, so
+            # we store the values as a tuple
+            parameters_tuple = tuple(parameters[var]
+                                     for var in range(invariant.arity()))
+
+            group_key = (invariant, parameters_tuple)
             if group_key not in nonempty_groups:
-                nonempty_groups.add(group_key)
+                nonempty_groups[group_key] = True
             else:
                 overcrowded_groups.add(group_key)
-    useful_groups = nonempty_groups - overcrowded_groups
+    useful_groups = [group_key for group_key in nonempty_groups.keys()
+                     if group_key not in overcrowded_groups]
     for (invariant, parameters) in useful_groups:
         yield [part.instantiate(parameters) for part in sorted(invariant.parts)]
 
 # returns a list of mutex groups (parameters instantiated, counted variables not)
 def get_groups(task, reachable_action_params=None) -> List[List[pddl.Atom]]:
     with timers.timing("Finding invariants", block=True):
-        invariants = sorted(find_invariants(task, reachable_action_params))
+        invariants = list(find_invariants(task, reachable_action_params))
     with timers.timing("Checking invariant weight"):
         result = list(useful_groups(invariants, task.init))
     return result

@@ -1010,10 +1010,6 @@ void LandmarkFactoryHM::generate_landmarks(
     postprocess(task_proxy);
 }
 
-bool LandmarkFactoryHM::computes_reasonable_orders() const {
-    return false;
-}
-
 bool LandmarkFactoryHM::supports_conditional_effects() const {
     return false;
 }

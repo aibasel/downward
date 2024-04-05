@@ -66,7 +66,6 @@ public:
         bool disjunctive_landmarks, bool use_orders,
         bool only_causal_landmarks, utils::Verbosity verbosity);
 
-    virtual bool computes_reasonable_orders() const override;
     virtual bool supports_conditional_effects() const override;
 };
 }

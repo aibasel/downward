@@ -573,8 +573,7 @@ def parse_axioms_and_actions(context, entries, type_dict, predicate_dict):
 
 def parse_init(context, alist):
     initial = []
-    initial_true = set()
-    initial_false = set()
+    initial_proposition_values = dict()
     initial_assignments = dict()
     for no, fact in enumerate(alist[1:], start=1):
         with context.layer(f"Parsing {no}. element in init block"):
@@ -611,15 +610,16 @@ def parse_init(context, alist):
                 if not isinstance(fact, list) or not fact:
                     context.error("Invalid negated fact.", syntax=SYNTAX_LITERAL_NEGATED)
                 atom = pddl.Atom(fact[0], fact[1:])
-                check_atom_consistency(context, atom, initial_false, initial_true, False)
-                initial_false.add(atom)
+                check_atom_consistency(context, atom,
+                                       initial_proposition_values, False)
+                initial_proposition_values[atom] = False
             else:
-                if len(fact) < 1:
-                    context.error(f"Expecting {SYNTAX_LITERAL} for atoms.")
                 atom = pddl.Atom(fact[0], fact[1:])
-                check_atom_consistency(context, atom, initial_true, initial_false)
-                initial_true.add(atom)
-    initial.extend(initial_true)
+                check_atom_consistency(context, atom,
+                                       initial_proposition_values, True)
+                initial_proposition_values[atom] = True
+    initial.extend(atom for atom, val in initial_proposition_values.items()
+                   if val is True)
     return initial
 
 
@@ -802,14 +802,18 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
             assert False, "This line should be unreachable"
 
 
-def check_atom_consistency(context, atom, same_truth_value, other_truth_value, atom_is_true=True):
-    if atom in other_truth_value:
-        context.error(f"Error in initial state specification\n"
-                      f"Reason: {atom} is true and false.")
-    if atom in same_truth_value:
-        if not atom_is_true:
-            atom = atom.negate()
-        print(f"Warning: {atom} is specified twice in initial state specification")
+def check_atom_consistency(context, atom, initial_proposition_values,
+                           atom_value):
+    if atom in initial_proposition_values:
+        prev_value = initial_proposition_values[atom]
+        if prev_value != atom_value:
+            context.error(f"Error in initial state specification\n"
+                          f"Reason: {atom} is true and false.")
+        else:
+            if atom_value is False:
+                atom = atom.negate()
+            print(f"Warning: {atom} is specified twice in initial state specification")
+
 
 def check_for_duplicates(context, elements, errmsg, finalmsg):
     seen = set()
