@@ -655,6 +655,7 @@ public:
         add_canonical_pdbs_options_to_feature(*this);
         add_heuristic_options_to_feature(*this, "cpdbs"); // TODO issue1082 this adds a description parameter that is
                                                           // only used for the heuristic, not for the generator.
+                                                          // Do we need to change that?
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
