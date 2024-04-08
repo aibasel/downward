@@ -106,9 +106,10 @@ public:
     }
 
     virtual shared_ptr<StubbornSetsSimple> create_component(
-        const plugins::Options &options, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<StubbornSetsSimple>(
-            get_pruning_arguments_from_options(options));
+            get_pruning_arguments_from_options(opts));
     }
 };
 

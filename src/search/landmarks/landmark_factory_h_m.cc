@@ -568,9 +568,8 @@ bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
         variables[fact2.var].get_fact(fact2.value));
 }
 
-LandmarkFactoryHM::LandmarkFactoryHM(
-    int m, bool conjunctive_landmarks, bool use_orders,
-    utils::Verbosity verbosity)
+LandmarkFactoryHM::LandmarkFactoryHM(int m, bool conjunctive_landmarks,
+    bool use_orders, utils::Verbosity verbosity)
     : LandmarkFactory(verbosity),
       m_(m),
       conjunctive_landmarks(conjunctive_landmarks),
@@ -1038,12 +1037,13 @@ public:
     }
 
     virtual shared_ptr<LandmarkFactoryHM> create_component(
-        const plugins::Options &options, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryHM>(
-            options.get<int>("m"),
-            options.get<bool>("conjunctive_landmarks"),
-            get_use_orders_arguments_from_options(options),
-            get_landmark_factory_arguments_from_options(options));
+            opts.get<int>("m"),
+            opts.get<bool>("conjunctive_landmarks"),
+            get_use_orders_arguments_from_options(opts),
+            get_landmark_factory_arguments_from_options(opts));
     }
 };
 

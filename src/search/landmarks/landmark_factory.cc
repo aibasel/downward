@@ -168,8 +168,9 @@ void add_landmark_factory_options_to_feature(plugins::Feature &feature) {
 }
 
 tuple<utils::Verbosity>
-get_landmark_factory_arguments_from_options(const plugins::Options &options) {
-    return utils::get_log_arguments_from_options(options);
+get_landmark_factory_arguments_from_options(
+    const plugins::Options &opts) {
+    return utils::get_log_arguments_from_options(opts);
 }
 
 void add_use_orders_option_to_feature(plugins::Feature &feature) {
@@ -179,8 +180,9 @@ void add_use_orders_option_to_feature(plugins::Feature &feature) {
         "true");
 }
 
-bool get_use_orders_arguments_from_options(const plugins::Options &options) {
-    return options.get<bool>("use_orders");
+bool get_use_orders_arguments_from_options(
+    const plugins::Options &opts) {
+    return opts.get<bool>("use_orders");
 }
 
 void add_only_causal_landmarks_option_to_feature(
@@ -192,8 +194,8 @@ void add_only_causal_landmarks_option_to_feature(
 }
 
 bool get_only_causal_landmarks_arguments_from_options(
-    const plugins::Options &options) {
-    return options.get<bool>("only_causal_landmarks");
+    const plugins::Options &opts) {
+    return opts.get<bool>("only_causal_landmarks");
 }
 
 static class LandmarkFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<LandmarkFactory> {

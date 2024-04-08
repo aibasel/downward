@@ -11,9 +11,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-ShrinkRandom::ShrinkRandom(
-    int random_seed
-    )
+ShrinkRandom::ShrinkRandom(int random_seed)
     : ShrinkBucketBased(random_seed) {
 }
 
@@ -45,7 +43,8 @@ public:
     }
 
     virtual shared_ptr<ShrinkRandom> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<ShrinkRandom>(
             get_shrink_bucket_arguments_from_options(opts)
             );

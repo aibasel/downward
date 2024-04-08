@@ -12,12 +12,9 @@
 using namespace std;
 
 namespace hm_heuristic {
-HMHeuristic::HMHeuristic(
-    int m,
-    const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates,
-    const string &description,
-    utils::Verbosity verbosity)
+HMHeuristic::HMHeuristic(int m,
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       m(m),
       has_cond_effects(task_properties::has_conditional_effects(task_proxy)),
@@ -292,10 +289,12 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<HMHeuristic> create_component(const plugins::Options &options, const utils::Context &) const override {
+    virtual shared_ptr<HMHeuristic> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<HMHeuristic>(
-            options.get<int>("m"),
-            get_heuristic_arguments_from_options(options)
+            opts.get<int>("m"),
+            get_heuristic_arguments_from_options(opts)
             );
     }
 };

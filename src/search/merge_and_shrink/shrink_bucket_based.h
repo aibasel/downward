@@ -59,8 +59,10 @@ public:
         utils::LogProxy &log) const override;
 };
 
-extern void add_shrink_bucket_options_to_feature(plugins::Feature &feature);
-extern std::tuple<int> get_shrink_bucket_arguments_from_options(const plugins::Options &opts);
+extern void add_shrink_bucket_options_to_feature(
+    plugins::Feature &feature);
+extern std::tuple<int> get_shrink_bucket_arguments_from_options(
+    const plugins::Options &opts);
 }
 
 #endif

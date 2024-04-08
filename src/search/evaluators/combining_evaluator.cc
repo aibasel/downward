@@ -10,8 +10,7 @@ using namespace std;
 namespace combining_evaluator {
 CombiningEvaluator::CombiningEvaluator(
     const vector<shared_ptr<Evaluator>> &evals,
-    const string &description,
-    utils::Verbosity verbosity)
+    const string &description, utils::Verbosity verbosity)
     : Evaluator(false, false, false, description, verbosity),
       subevaluators(evals) {
     all_dead_ends_are_reliable = true;
@@ -52,13 +51,16 @@ void CombiningEvaluator::get_path_dependent_evaluators(
     for (auto &subevaluator : subevaluators)
         subevaluator->get_path_dependent_evaluators(evals);
 }
-void add_combining_evaluator_options_to_feature(plugins::Feature &feature, const string &description) {
+void add_combining_evaluator_options_to_feature(
+    plugins::Feature &feature, const string &description) {
     feature.add_list_option<shared_ptr<Evaluator>>(
         "evals", "at least one evaluator");
     add_evaluator_options_to_feature(feature, description);
 }
 
-tuple<vector<shared_ptr<Evaluator>>, const string, utils::Verbosity> get_combining_evaluator_arguments_from_options(const plugins::Options &opts) {
+tuple<vector<shared_ptr<Evaluator>>, const string, utils::Verbosity>
+get_combining_evaluator_arguments_from_options(
+    const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(opts.get_list<shared_ptr<Evaluator>>("evals")),
         get_evaluator_arguments_from_options(opts)

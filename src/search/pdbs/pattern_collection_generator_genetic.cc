@@ -25,12 +25,8 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(
-    int pdb_max_size,
-    int num_collections,
-    int num_episodes,
-    double mutation_probability,
-    bool disjoint,
-    int random_seed,
+    int pdb_max_size, int num_collections, int num_episodes,
+    double mutation_probability, bool disjoint, int random_seed,
     utils::Verbosity verbosity)
     : PatternCollectionGenerator(verbosity),
       pdb_max_size(pdb_max_size),
@@ -395,7 +391,8 @@ public:
     }
 
     virtual shared_ptr<PatternCollectionGeneratorGenetic> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorGenetic>(
             opts.get<int>("pdb_max_size"),
             opts.get<int>("num_collections"),

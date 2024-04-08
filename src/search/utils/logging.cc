@@ -22,7 +22,6 @@ static shared_ptr<Log> global_log = make_shared<Log>(Verbosity::NORMAL);
 
 LogProxy g_log(global_log);
 
-
 void add_log_options_to_feature(plugins::Feature &feature) {
     feature.add_option<Verbosity>(
         "verbosity",
@@ -30,7 +29,8 @@ void add_log_options_to_feature(plugins::Feature &feature) {
         "normal");
 }
 
-tuple<Verbosity> get_log_arguments_from_options(const plugins::Options &opts) {
+tuple<Verbosity> get_log_arguments_from_options(
+    const plugins::Options &opts) {
     return make_tuple<Verbosity>(opts.get<Verbosity>("verbosity"));
 }
 

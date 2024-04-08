@@ -11,11 +11,8 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorDisjointCegar::PatternCollectionGeneratorDisjointCegar(
-    int max_pdb_size,
-    int max_collection_size,
-    double max_time,
-    bool use_wildcard_plans,
-    int random_seed,
+    int max_pdb_size, int max_collection_size, double max_time,
+    bool use_wildcard_plans, int random_seed,
     utils::Verbosity verbosity)
     : PatternCollectionGenerator(verbosity),
       max_pdb_size(max_pdb_size),
@@ -87,7 +84,8 @@ public:
     }
 
     virtual shared_ptr<PatternCollectionGeneratorDisjointCegar> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorDisjointCegar>(
             opts.get<int>("max_pdb_size"),
             opts.get<int>("max_collection_size"),

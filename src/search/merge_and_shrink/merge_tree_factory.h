@@ -31,9 +31,7 @@ protected:
     virtual std::string name() const = 0;
     virtual void dump_tree_specific_options(utils::LogProxy &) const {}
 public:
-    MergeTreeFactory(
-        int random_seed,
-        UpdateOption update_option);
+    MergeTreeFactory(int random_seed, UpdateOption update_option);
     virtual ~MergeTreeFactory() = default;
     void dump_options(utils::LogProxy &log) const;
     // Compute a merge tree for the given entire task.
@@ -50,9 +48,10 @@ public:
 };
 
 // Derived classes must call this method in their parsing methods.
-extern void add_merge_tree_options_to_feature(plugins::Feature &feature);
-extern std::tuple<int, UpdateOption> get_merge_tree_arguments_from_options(
-    const plugins::Options &opts);
+extern void add_merge_tree_options_to_feature(
+    plugins::Feature &feature);
+extern std::tuple<int, UpdateOption>
+get_merge_tree_arguments_from_options(const plugins::Options &opts);
 }
 
 #endif

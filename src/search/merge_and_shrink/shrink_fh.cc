@@ -19,11 +19,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-ShrinkFH::ShrinkFH(
-    HighLow shrink_f,
-    HighLow shrink_h,
-    int random_seed
-    )
+ShrinkFH::ShrinkFH(HighLow shrink_f, HighLow shrink_h, int random_seed)
     : ShrinkBucketBased(random_seed),
       f_start(shrink_f),
       h_start(shrink_h) {
@@ -248,7 +244,8 @@ public:
     }
 
     virtual shared_ptr<ShrinkFH> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<ShrinkFH>(
             opts.get<ShrinkFH::HighLow>("shrink_f"),
             opts.get<ShrinkFH::HighLow>("shrink_h"),

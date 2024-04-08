@@ -41,7 +41,8 @@ void add_cost_type_options_to_feature(plugins::Feature &feature) {
         "normal");
 }
 
-tuple<OperatorCost> get_cost_type_arguments_from_options(const plugins::Options &opts) {
+tuple<OperatorCost> get_cost_type_arguments_from_options(
+    const plugins::Options &opts) {
     return make_tuple(opts.get<OperatorCost>("cost_type"));
 }
 

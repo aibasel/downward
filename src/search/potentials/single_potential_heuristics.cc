@@ -16,13 +16,9 @@ enum class OptimizeFor {
 
 static unique_ptr<PotentialFunction> create_potential_function(
     const shared_ptr<AbstractTask> &transform,
-    lp::LPSolverType lpsolver,
-    double max_potential,
+    lp::LPSolverType lpsolver, double max_potential,
     OptimizeFor opt_func) {
-    PotentialOptimizer optimizer(
-        transform,
-        lpsolver,
-        max_potential);
+    PotentialOptimizer optimizer(transform, lpsolver, max_potential);
     const AbstractTask &task = *transform;
     TaskProxy task_proxy(task);
     switch (opt_func) {
@@ -45,10 +41,13 @@ public:
         document_title("Potential heuristic optimized for initial state");
         document_synopsis(get_admissible_potentials_reference());
 
-        add_admissible_potentials_options_to_feature(*this, "initial_state_potential");
+        add_admissible_potentials_options_to_feature(
+            *this, "initial_state_potential");
     }
 
-    virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &opts, const utils::Context &) const override {
+    virtual shared_ptr<PotentialHeuristic> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return make_shared<PotentialHeuristic>( // TODO issue1082 use make_shared_from_arg_tuples, move creation of potential functions into constructor
             create_potential_function(
                 opts.get<shared_ptr<AbstractTask>>("transform"),
@@ -72,20 +71,24 @@ public:
         document_title("Potential heuristic optimized for all states");
         document_synopsis(get_admissible_potentials_reference());
 
-        add_admissible_potentials_options_to_feature(*this, "all_states_potential");
+        add_admissible_potentials_options_to_feature(
+            *this, "all_states_potential");
     }
 
-    virtual shared_ptr<PotentialHeuristic> create_component(const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<PotentialHeuristic>(create_potential_function( // TODO issue1082 use make_shared_from_arg_tuples, move creation of potential functions into constructor
-                                                   opts.get<shared_ptr<AbstractTask>>("transform"),
-                                                   opts.get<lp::LPSolverType>("lpsolver"),
-                                                   opts.get<double>("max_potential"),
-                                                   OptimizeFor::ALL_STATES),
-                                               opts.get<shared_ptr<AbstractTask>>("transform"),
-                                               opts.get<bool>("cache_estimates"),
-                                               opts.get<string>("description"),
-                                               opts.get<utils::Verbosity>("verbosity")
-                                               );
+    virtual shared_ptr<PotentialHeuristic> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return make_shared<PotentialHeuristic>( // TODO issue1082 use make_shared_from_arg_tuples, move creation of potential functions into constructor
+            create_potential_function(
+                opts.get<shared_ptr<AbstractTask>>("transform"),
+                opts.get<lp::LPSolverType>("lpsolver"),
+                opts.get<double>("max_potential"),
+                OptimizeFor::ALL_STATES),
+            opts.get<shared_ptr<AbstractTask>>("transform"),
+            opts.get<bool>("cache_estimates"),
+            opts.get<string>("description"),
+            opts.get<utils::Verbosity>("verbosity")
+            );
     }
 };
 

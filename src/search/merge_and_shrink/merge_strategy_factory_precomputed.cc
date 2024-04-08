@@ -68,7 +68,8 @@ public:
             "\n}}}");
     }
     virtual shared_ptr<MergeStrategyFactoryPrecomputed> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<MergeStrategyFactoryPrecomputed>(
             opts.get<shared_ptr<MergeTreeFactory>>("merge_tree"),
             get_merge_strategy_arguments_from_options(opts)

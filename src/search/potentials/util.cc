@@ -44,7 +44,8 @@ string get_admissible_potentials_reference() {
         "2015");
 }
 
-void add_admissible_potentials_options_to_feature(plugins::Feature &feature, const string &description) {
+void add_admissible_potentials_options_to_feature(
+    plugins::Feature &feature, const string &description) {
     feature.document_language_support("action costs", "supported");
     feature.document_language_support("conditional effects", "not supported");
     feature.document_language_support("axioms", "not supported");
@@ -67,7 +68,10 @@ void add_admissible_potentials_options_to_feature(plugins::Feature &feature, con
 }
 
 
-tuple<double, lp::LPSolverType, shared_ptr<AbstractTask>, bool, string, utils::Verbosity> get_admissible_potential_arguments_from_options(const plugins::Options &opts) {
+tuple<double, lp::LPSolverType, shared_ptr<AbstractTask>, bool, string,
+    utils::Verbosity>
+get_admissible_potential_arguments_from_options(
+    const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(opts.get<double>("max_potential")),
         lp::get_lp_solver_arguments_from_options(opts),

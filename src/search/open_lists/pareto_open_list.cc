@@ -43,11 +43,8 @@ protected:
                               const Entry &entry) override;
 
 public:
-    ParetoOpenList(
-        const vector<shared_ptr<Evaluator>> &evals,
-        bool pref_only,
-        bool state_uniform_selection,
-        int random_seed);
+    ParetoOpenList(const vector<shared_ptr<Evaluator>> &evals,
+        bool pref_only, bool state_uniform_selection, int random_seed);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
@@ -61,11 +58,8 @@ public:
 
 template<class Entry>
 ParetoOpenList<Entry>::ParetoOpenList(
-    const vector<shared_ptr<Evaluator>> &evals,
-    bool pref_only,
-    bool state_uniform_selection,
-    int random_seed
-    )
+    const vector<shared_ptr<Evaluator>> &evals, bool pref_only,
+    bool state_uniform_selection, int random_seed)
     : OpenList<Entry>(pref_only),
       rng(utils::get_rng(random_seed)),
       state_uniform_selection(state_uniform_selection),
@@ -227,25 +221,24 @@ bool ParetoOpenList<Entry>::is_reliable_dead_end(
 }
 
 ParetoOpenListFactory::ParetoOpenListFactory(
-    const vector<shared_ptr<Evaluator>> &evals,
-    bool pref_only,
-    bool state_uniform_selection,
-    int random_seed
-    ) :
-    evals(evals),
-    pref_only(pref_only),
-    state_uniform_selection(state_uniform_selection),
-    random_seed(random_seed) {
+    const vector<shared_ptr<Evaluator>> &evals, bool pref_only,
+    bool state_uniform_selection, int random_seed)
+    : evals(evals),
+      pref_only(pref_only),
+      state_uniform_selection(state_uniform_selection),
+       random_seed(random_seed) {
 }
 
 unique_ptr<StateOpenList>
 ParetoOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<ParetoOpenList<StateOpenListEntry>>(evals, pref_only, state_uniform_selection, random_seed);
+    return utils::make_unique_ptr<ParetoOpenList<StateOpenListEntry>>(
+        evals, pref_only, state_uniform_selection, random_seed);
 }
 
 unique_ptr<EdgeOpenList>
 ParetoOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<ParetoOpenList<EdgeOpenListEntry>>(evals, pref_only, state_uniform_selection, random_seed);
+    return utils::make_unique_ptr<ParetoOpenList<EdgeOpenListEntry>>(
+        evals, pref_only, state_uniform_selection, random_seed);
 }
 
 class ParetoOpenListFeature : public plugins::TypedFeature<OpenListFactory, ParetoOpenListFactory> {
@@ -270,7 +263,9 @@ public:
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<ParetoOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &) const override {
+    virtual shared_ptr<ParetoOpenListFactory> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<ParetoOpenListFactory>(
             opts.get_list<shared_ptr<Evaluator>>("evals"),
             opts.get<bool>("pref_only"),

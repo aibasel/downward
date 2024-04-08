@@ -69,9 +69,7 @@ void TypeBasedOpenList<Entry>::do_insertion(
 
 template<class Entry>
 TypeBasedOpenList<Entry>::TypeBasedOpenList(
-    const vector<shared_ptr<Evaluator>> &evaluators,
-    int random_seed
-    )
+    const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
     : rng(utils::get_rng(random_seed)),
       evaluators(evaluators) {
 }
@@ -139,20 +137,21 @@ void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
 }
 
 TypeBasedOpenListFactory::TypeBasedOpenListFactory(
-    const vector<shared_ptr<Evaluator>> &evaluators,
-    int random_seed
-    ) : evaluators(evaluators),
-        random_seed(random_seed) {
+    const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
+    : evaluators(evaluators),
+      random_seed(random_seed) {
 }
 
 unique_ptr<StateOpenList>
 TypeBasedOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<TypeBasedOpenList<StateOpenListEntry>>(evaluators, random_seed);
+    return utils::make_unique_ptr<TypeBasedOpenList<StateOpenListEntry>>(
+        evaluators, random_seed);
 }
 
 unique_ptr<EdgeOpenList>
 TypeBasedOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<TypeBasedOpenList<EdgeOpenListEntry>>(evaluators, random_seed);
+    return utils::make_unique_ptr<TypeBasedOpenList<EdgeOpenListEntry>>(
+        evaluators, random_seed);
 }
 
 class TypeBasedOpenListFeature : public plugins::TypedFeature<OpenListFactory, TypeBasedOpenListFactory> {
@@ -182,8 +181,11 @@ public:
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TypeBasedOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, opts, "evaluators");
+    virtual shared_ptr<TypeBasedOpenListFactory> create_component(
+        const plugins::Options &opts,
+        const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(
+            context, opts, "evaluators");
         return plugins::make_shared_from_arg_tuples<TypeBasedOpenListFactory>(
             opts.get_list<shared_ptr<Evaluator>>("evaluators"),
             utils::get_rng_arguments_from_options(opts)

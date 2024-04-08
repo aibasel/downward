@@ -31,8 +31,10 @@ protected:
     std::unique_ptr<LandmarkStatusManager> lm_status_manager;
     std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;
 
-    void initialize(const std::shared_ptr<LandmarkFactory> &lm_factory, bool prog_goal, bool prog_gn, bool prog_r);
-    void compute_landmark_graph(const std::shared_ptr<LandmarkFactory> &lm_factory);
+    void initialize(const std::shared_ptr<LandmarkFactory> &lm_factory,
+        bool prog_goal, bool prog_gn, bool prog_r);
+    void compute_landmark_graph(
+            const std::shared_ptr<LandmarkFactory> &lm_factory);
 
     virtual int get_heuristic_value(const State &ancestor_state) = 0;
 
@@ -41,10 +43,9 @@ protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     LandmarkHeuristic(bool use_preferred_operators,
-                      const std::shared_ptr<AbstractTask> &transform,
-                      bool cache_estimates,
-                      const std::string &description,
-                      utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &transform,
+        bool cache_estimates, const std::string &description,
+        utils::Verbosity verbosity);
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) override {
@@ -59,8 +60,10 @@ public:
 
 extern void add_landmark_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<std::shared_ptr<LandmarkFactory>, bool, bool, bool, bool, std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity> get_landmark_heuristic_arguments_from_options(
-    const plugins::Options &options);
+extern std::tuple<std::shared_ptr<LandmarkFactory>, bool, bool, bool,
+    bool, std::shared_ptr<AbstractTask>, bool, std::string,
+    utils::Verbosity> get_landmark_heuristic_arguments_from_options(
+    const plugins::Options &opts);
 }
 
 #endif

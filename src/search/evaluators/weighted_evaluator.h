@@ -12,13 +12,11 @@ class Options;
 namespace weighted_evaluator {
 class WeightedEvaluator : public Evaluator {
     std::shared_ptr<Evaluator> evaluator;
-    int w;
+    int weight;
 
 public:
-    WeightedEvaluator(
-        const std::shared_ptr<Evaluator> &eval,
-        int weight,
-        const std::string &description,
+    WeightedEvaluator(const std::shared_ptr<Evaluator> &eval,
+        int weight, const std::string &description,
         utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;

@@ -93,10 +93,7 @@ struct Signature {
 };
 
 
-ShrinkBisimulation::ShrinkBisimulation(
-    bool greedy,
-    AtLimit at_limit
-    )
+ShrinkBisimulation::ShrinkBisimulation(bool greedy, AtLimit at_limit)
     : greedy(greedy),
       at_limit(at_limit) {
 }
@@ -425,7 +422,8 @@ public:
     }
 
     virtual shared_ptr<ShrinkBisimulation> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return make_shared<ShrinkBisimulation>(
             opts.get<bool>("greedy"),
             opts.get<AtLimit>("at_limit")

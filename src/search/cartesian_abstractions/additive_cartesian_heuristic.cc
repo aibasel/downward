@@ -17,36 +17,31 @@ using namespace std;
 
 namespace cartesian_abstractions {
 static vector<CartesianHeuristicFunction> generate_heuristic_functions(
-    const vector<shared_ptr<SubtaskGenerator>> &subtask_generators, int max_states,
-    int max_transitions, double max_time, PickSplit pick, bool use_general_costs,
-    int random_seed, const shared_ptr<AbstractTask> &transform, utils::LogProxy &log) {
+    const vector<shared_ptr<SubtaskGenerator>> &subtask_generators,
+    int max_states, int max_transitions, double max_time,
+    PickSplit pick, bool use_general_costs, int random_seed,
+    const shared_ptr<AbstractTask> &transform, utils::LogProxy &log) {
     if (log.is_at_least_normal()) {
         log << "Initializing additive Cartesian heuristic..." << endl;
     }
     shared_ptr<utils::RandomNumberGenerator> rng =
         utils::get_rng(random_seed);
-    CostSaturation cost_saturation(
-        subtask_generators,
-        max_states,
-        max_transitions,
-        max_time,
-        pick,
-        use_general_costs,
-        *rng,
-        log);
+    CostSaturation cost_saturation(subtask_generators, max_states,
+    max_transitions, max_time, pick, use_general_costs, *rng, log);
     return cost_saturation.generate_heuristic_functions(transform);
 }
 
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
     const vector<shared_ptr<SubtaskGenerator>> &subtasks,
-    int max_states, int max_transitions, double max_time, PickSplit pick,
-    bool use_general_costs, int random_seed,
+    int max_states, int max_transitions, double max_time,
+    PickSplit pick, bool use_general_costs, int random_seed,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       heuristic_functions(generate_heuristic_functions(
-                              subtasks, max_states, max_transitions, max_time, pick,
-                              use_general_costs, random_seed, transform, log)) {
+                              subtasks, max_states, max_transitions,
+                              max_time, pick,use_general_costs,
+                              random_seed, transform, log)) {
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const State &ancestor_state) {
@@ -144,7 +139,8 @@ public:
     }
 
     virtual shared_ptr<AdditiveCartesianHeuristic> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<AdditiveCartesianHeuristic>(
             opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks"),
             opts.get<int>("max_states"),

@@ -7,8 +7,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeStrategyFactory::MergeStrategyFactory(
-    utils::Verbosity verbosity)
+MergeStrategyFactory::MergeStrategyFactory(utils::Verbosity verbosity)
     : log(utils::get_log_for_verbosity(verbosity)) {
 }
 

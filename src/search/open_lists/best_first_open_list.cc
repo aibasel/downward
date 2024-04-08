@@ -100,21 +100,21 @@ bool BestFirstOpenList<Entry>::is_reliable_dead_end(
 }
 
 BestFirstOpenListFactory::BestFirstOpenListFactory(
-    const shared_ptr<Evaluator> &eval,
-    bool pref_only
-    )
+    const shared_ptr<Evaluator> &eval, bool pref_only)
     : eval(eval),
       pref_only(pref_only) {
 }
 
 unique_ptr<StateOpenList>
 BestFirstOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<BestFirstOpenList<StateOpenListEntry>>(eval, pref_only);
+    return utils::make_unique_ptr<BestFirstOpenList<StateOpenListEntry>>(
+        eval, pref_only);
 }
 
 unique_ptr<EdgeOpenList>
 BestFirstOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<BestFirstOpenList<EdgeOpenListEntry>>(eval, pref_only);
+    return utils::make_unique_ptr<BestFirstOpenList<EdgeOpenListEntry>>(
+        eval, pref_only);
 }
 
 class BestFirstOpenListFeature : public plugins::TypedFeature<OpenListFactory, BestFirstOpenListFactory> {
@@ -139,7 +139,9 @@ public:
     }
 
 
-    virtual shared_ptr<BestFirstOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &) const override {
+    virtual shared_ptr<BestFirstOpenListFactory> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<BestFirstOpenListFactory>(
             opts.get<shared_ptr<Evaluator>>("eval"),
             opts.get<bool>("pref_only")

@@ -13,13 +13,11 @@
 #include <limits>
 
 using namespace std;
-Heuristic::Heuristic(
-    const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates,
-    const string &description,
+Heuristic::Heuristic(const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates, const string &description,
     utils::Verbosity verbosity)
     : Evaluator(true, true, true, description, verbosity),
-      heuristic_cache(HEntry(NO_VALUE, true)),     //TODO: is true really a good idea here?
+      heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_evaluator_values(cache_estimates),
       task(transform),
       task_proxy(*task) {
@@ -36,7 +34,8 @@ State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
     return task_proxy.convert_ancestor_state(ancestor_state);
 }
 
-void add_heuristic_options_to_feature(plugins::Feature &feature, const string &description) {
+void add_heuristic_options_to_feature(
+    plugins::Feature &feature, const string &description) {
     feature.add_option<shared_ptr<AbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic."
@@ -46,7 +45,8 @@ void add_heuristic_options_to_feature(plugins::Feature &feature, const string &d
     add_evaluator_options_to_feature(feature, description);
 }
 
-tuple<shared_ptr<AbstractTask>, bool, string, utils::Verbosity> get_heuristic_arguments_from_options(const plugins::Options &opts) {
+tuple<shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
+get_heuristic_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
             opts.get<shared_ptr<AbstractTask>>("transform"),

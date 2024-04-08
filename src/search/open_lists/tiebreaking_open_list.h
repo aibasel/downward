@@ -11,8 +11,7 @@ class TieBreakingOpenListFactory : public OpenListFactory {
 public:
     TieBreakingOpenListFactory(
         const std::vector<std::shared_ptr<Evaluator>> &evals,
-        bool pref_only,
-        bool unsafe_pruning);
+        bool pref_only, bool unsafe_pruning);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;

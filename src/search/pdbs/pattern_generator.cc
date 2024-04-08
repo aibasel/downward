@@ -24,8 +24,7 @@ PatternCollectionInformation PatternCollectionGenerator::generate(
     return pci;
 }
 
-PatternGenerator::PatternGenerator(
-    utils::Verbosity verbosity)
+PatternGenerator::PatternGenerator(utils::Verbosity verbosity)
     : log(utils::get_log_for_verbosity(verbosity)) {
 }
 
@@ -48,7 +47,8 @@ void add_generator_options_to_feature(plugins::Feature &feature) {
     utils::add_log_options_to_feature(feature);
 }
 
-tuple<utils::Verbosity> get_generator_arguments_from_options(const plugins::Options &opts) {
+tuple<utils::Verbosity> get_generator_arguments_from_options(
+    const plugins::Options &opts) {
     return utils::get_log_arguments_from_options(opts);
 }
 

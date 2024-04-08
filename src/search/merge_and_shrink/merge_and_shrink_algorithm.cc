@@ -39,26 +39,21 @@ static void log_progress(const utils::Timer &timer, const string &msg, utils::Lo
 MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(
     const shared_ptr<MergeStrategyFactory> &merge_strategy,
     const shared_ptr<ShrinkStrategy> &shrink_strategy,
-    const shared_ptr<LabelReduction> &label_reduction,
-    int max_states,
-    int max_states_before_merge,
-    int threshold_before_merge,
-    bool prune_unreachable_states,
-    bool prune_irrelevant_states,
-    double main_loop_max_time,
-    utils::Verbosity verbosity
-    ) :
-    merge_strategy_factory(merge_strategy),
-    shrink_strategy(shrink_strategy),
-    label_reduction(label_reduction),
-    max_states(max_states),
-    max_states_before_merge(max_states_before_merge),
-    shrink_threshold_before_merge(threshold_before_merge),
-    prune_unreachable_states(prune_unreachable_states),
-    prune_irrelevant_states(prune_irrelevant_states),
-    log(utils::get_log_for_verbosity(verbosity)),
-    main_loop_max_time(main_loop_max_time),
-    starting_peak_memory(0) {
+    const shared_ptr<LabelReduction> &label_reduction, int max_states,
+    int max_states_before_merge, int threshold_before_merge,
+    bool prune_unreachable_states, bool prune_irrelevant_states,
+    double main_loop_max_time, utils::Verbosity verbosity)
+    : merge_strategy_factory(merge_strategy),
+      shrink_strategy(shrink_strategy),
+      label_reduction(label_reduction),
+      max_states(max_states),
+      max_states_before_merge(max_states_before_merge),
+      shrink_threshold_before_merge(threshold_before_merge),
+      prune_unreachable_states(prune_unreachable_states),
+      prune_irrelevant_states(prune_irrelevant_states),
+      log(utils::get_log_for_verbosity(verbosity)),
+      main_loop_max_time(main_loop_max_time),
+      starting_peak_memory(0) {
     assert(max_states_before_merge > 0);
     assert(max_states >= max_states_before_merge);
     assert(shrink_threshold_before_merge <= max_states_before_merge);
@@ -463,12 +458,15 @@ void add_merge_and_shrink_algorithm_options_to_feature(plugins::Feature &feature
         Bounds("0.0", "infinity"));
 }
 
-tuple<shared_ptr < MergeStrategyFactory >, shared_ptr < ShrinkStrategy >, shared_ptr < LabelReduction >, bool, bool, int, int, int, double> get_merge_and_shrink_algorithm_arguments_from_options(const plugins::Options &opts) {
+tuple<shared_ptr<MergeStrategyFactory>, shared_ptr<ShrinkStrategy>,
+    shared_ptr<LabelReduction>, bool, bool, int, int, int, double>
+    get_merge_and_shrink_algorithm_arguments_from_options(
+        const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
-            opts.get < shared_ptr < MergeStrategyFactory >> ("merge_strategy"),
-            opts.get < shared_ptr < ShrinkStrategy >> ("shrink_strategy"),
-            opts.get < shared_ptr < LabelReduction >> ("label_reduction", nullptr),
+            opts.get<shared_ptr<MergeStrategyFactory>>("merge_strategy"),
+            opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy"),
+            opts.get<shared_ptr<LabelReduction>>("label_reduction", nullptr),
             opts.get<bool>("prune_unreachable_states"),
             opts.get<bool>("prune_irrelevant_states")),
         get_transition_system_size_limit_arguments_from_options(opts),
@@ -497,7 +495,9 @@ void add_transition_system_size_limit_options_to_feature(plugins::Feature &featu
         Bounds("-1", "infinity"));
 }
 
-tuple<int, int, int> get_transition_system_size_limit_arguments_from_options(const plugins::Options &opts) {
+tuple<int, int, int>
+get_transition_system_size_limit_arguments_from_options(
+    const plugins::Options &opts) {
     return make_tuple(
         opts.get<int>("max_states"),
         opts.get<int>("max_states_before_merge"),

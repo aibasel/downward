@@ -5,11 +5,10 @@
 using namespace std;
 
 namespace const_evaluator {
-ConstEvaluator::ConstEvaluator(
-    int value,
-    const string &description,
+ConstEvaluator::ConstEvaluator(int value, const string &description,
     utils::Verbosity verbosity)
-    : Evaluator(false, false, false, description, verbosity), value(value) {
+    : Evaluator(false, false, false, description, verbosity),
+      value(value) {
 }
 
 EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
@@ -34,7 +33,8 @@ public:
     }
 
     virtual shared_ptr<ConstEvaluator> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<ConstEvaluator>(
             opts.get<int>("value"),
             get_evaluator_arguments_from_options(opts)

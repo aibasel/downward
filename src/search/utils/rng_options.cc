@@ -17,7 +17,8 @@ void add_rng_options_to_feature(plugins::Feature &feature) {
         plugins::Bounds("-1", "infinity"));
 }
 
-tuple<int> get_rng_arguments_from_options(const plugins::Options &opts) {
+tuple<int> get_rng_arguments_from_options(
+    const plugins::Options &opts) {
     return make_tuple(
         opts.get<int>("random_seed")
         );

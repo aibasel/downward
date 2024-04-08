@@ -8,8 +8,7 @@ using namespace std;
 
 namespace pref_evaluator {
 PrefEvaluator::PrefEvaluator(
-    const string &description,
-    utils::Verbosity verbosity)
+    const string &description, utils::Verbosity verbosity)
     : Evaluator(false, false, false, description, verbosity) {
 }
 
@@ -33,9 +32,11 @@ public:
         add_evaluator_options_to_feature(*this, "pref");
     }
 
-    virtual shared_ptr<PrefEvaluator> create_component(const plugins::Options &options, const utils::Context &) const override {
+    virtual shared_ptr<PrefEvaluator> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<PrefEvaluator>(
-            get_evaluator_arguments_from_options(options)
+            get_evaluator_arguments_from_options(opts)
             );
     }
 };

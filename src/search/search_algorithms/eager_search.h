@@ -37,26 +37,25 @@ protected:
     virtual SearchStatus step() override;
 
 public:
-    explicit EagerSearch(
-        const std::shared_ptr<OpenListFactory> &open,
-        bool reopen_closed,
-        const std::shared_ptr<Evaluator> &f_eval,
+    explicit EagerSearch(const std::shared_ptr<OpenListFactory> &open,
+        bool reopen_closed, const std::shared_ptr<Evaluator> &f_eval,
         const std::vector<std::shared_ptr<Evaluator>> &preferred,
         const std::shared_ptr<PruningMethod> &pruning,
         const std::shared_ptr<Evaluator> &lazy_evaluator,
-        OperatorCost cost_type,
-        int bound,
-        double max_time,
-        const std::string &description,
-        utils::Verbosity verbosity);
+        OperatorCost cost_type, int bound, double max_time,
+        const std::string &description, utils::Verbosity verbosity);
 
     virtual void print_statistics() const override;
 
     void dump_search_space() const;
 };
 
-extern void add_eager_search_options_to_feature(plugins::Feature &feature, const std::string &description);
-extern std::tuple<std::shared_ptr<PruningMethod>, std::shared_ptr<Evaluator>, OperatorCost, int, double, std::string, utils::Verbosity> get_eager_search_arguments_from_options(const plugins::Options &opts);
+extern void add_eager_search_options_to_feature(
+    plugins::Feature &feature, const std::string &description);
+extern std::tuple<std::shared_ptr<PruningMethod>,
+    std::shared_ptr<Evaluator>, OperatorCost, int, double, std::string,
+    utils::Verbosity> 
+get_eager_search_arguments_from_options(const plugins::Options &opts);
 }
 
 #endif

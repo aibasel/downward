@@ -19,10 +19,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeTreeFactoryLinear::MergeTreeFactoryLinear(
     variable_order_finder::VariableOrderType variable_order,
-    int random_seed,
-    UpdateOption update_option)
-    : MergeTreeFactory(random_seed,
-                       update_option),
+    int random_seed, UpdateOption update_option)
+    : MergeTreeFactory(random_seed, update_option),
       variable_order_type(variable_order) {
 }
 
@@ -138,9 +136,11 @@ public:
     }
 
     virtual shared_ptr<MergeTreeFactoryLinear> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<MergeTreeFactoryLinear>(
-            opts.get<variable_order_finder::VariableOrderType>("variable_order"),
+            opts.get<variable_order_finder::VariableOrderType>(
+                "variable_order"),
             get_merge_tree_arguments_from_options(opts)
             );
     }

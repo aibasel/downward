@@ -13,22 +13,17 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkHeuristic::LandmarkHeuristic(
-    bool use_preferred_operators,
-    const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates,
-    const string &description,
-    utils::Verbosity verbosity)
+LandmarkHeuristic::LandmarkHeuristic(bool use_preferred_operators,
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       use_preferred_operators(use_preferred_operators),
       successor_generator(nullptr) {
 }
 
 void LandmarkHeuristic::initialize(
-    const shared_ptr<LandmarkFactory> &lm_factory,
-    bool prog_goal,
-    bool prog_gn,
-    bool prog_r) {
+    const shared_ptr<LandmarkFactory> &lm_factory, bool prog_goal,
+    bool prog_gn, bool prog_r) {
     /*
       Actually, we should test if this is the root task or a
       CostAdaptedTask *of the root task*, but there is currently no good
@@ -44,10 +39,7 @@ void LandmarkHeuristic::initialize(
 
     compute_landmark_graph(lm_factory);
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(
-        *lm_graph,
-        prog_goal,
-        prog_gn,
-        prog_r);
+        *lm_graph, prog_goal, prog_gn, prog_r);
 
     initial_landmark_graph_has_cycle_of_natural_orderings =
         landmark_graph_has_cycle_of_natural_orderings();
@@ -100,7 +92,8 @@ bool LandmarkHeuristic::depth_first_search_for_cycle_of_natural_orderings(
     return false;
 }
 
-void LandmarkHeuristic::compute_landmark_graph(const shared_ptr<LandmarkFactory> &lm_factory) {
+void LandmarkHeuristic::compute_landmark_graph(
+    const shared_ptr<LandmarkFactory> &lm_factory) {
     utils::Timer lm_graph_timer;
     if (log.is_at_least_normal()) {
         log << "Generating landmark graph..." << endl;
@@ -198,8 +191,8 @@ void LandmarkHeuristic::notify_state_transition(
     }
 }
 
-void add_landmark_heuristic_options_to_feature(plugins::Feature &feature,
-                                               const string &description) {
+void add_landmark_heuristic_options_to_feature(
+    plugins::Feature &feature, const string &description) {
     feature.document_synopsis(
         "Landmark progression is implemented according to the following paper:"
         + utils::format_conference_reference(
@@ -235,8 +228,10 @@ void add_landmark_heuristic_options_to_feature(plugins::Feature &feature,
                               "yes (if enabled; see ``pref`` option)");
 }
 
-tuple<shared_ptr<LandmarkFactory>, bool, bool, bool, bool, shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
-get_landmark_heuristic_arguments_from_options(const plugins::Options &opts) {
+tuple<shared_ptr<LandmarkFactory>, bool, bool, bool, bool,
+    shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
+get_landmark_heuristic_arguments_from_options(
+    const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
             opts.get<shared_ptr<LandmarkFactory>>("lm_factory"),

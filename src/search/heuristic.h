@@ -73,10 +73,8 @@ protected:
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
-    Heuristic(
-        const std::shared_ptr<AbstractTask> &transform,
-        bool cache_estimates,
-        const std::string &description,
+    Heuristic(const std::shared_ptr<AbstractTask> &transform,
+        bool cache_estimates, const std::string &description,
         utils::Verbosity verbosity);
     virtual ~Heuristic() override;
 
@@ -94,6 +92,7 @@ public:
 
 extern void add_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity>
+extern std::tuple<
+    std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity>
 get_heuristic_arguments_from_options(const plugins::Options &opts);
 #endif

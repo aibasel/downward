@@ -11,7 +11,8 @@
 using namespace std;
 
 namespace operator_counting {
-StateEquationConstraints::StateEquationConstraints(utils::Verbosity verbosity)
+StateEquationConstraints::StateEquationConstraints(
+    utils::Verbosity verbosity)
     : log(utils::get_log_for_verbosity(verbosity)) {
 }
 
@@ -160,9 +161,10 @@ public:
     }
 
     virtual shared_ptr<StateEquationConstraints> create_component(
-        const plugins::Options &options, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<StateEquationConstraints>(
-            utils::get_log_arguments_from_options(options));
+            utils::get_log_arguments_from_options(opts));
     }
 };
 

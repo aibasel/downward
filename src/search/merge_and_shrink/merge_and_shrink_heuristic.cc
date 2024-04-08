@@ -24,33 +24,17 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
     const shared_ptr<MergeStrategyFactory> &merge_strategy,
     const shared_ptr<ShrinkStrategy> &shrink_strategy,
     const shared_ptr<LabelReduction> &label_reduction,
-    bool prune_unreachable_states,
-    bool prune_irrelevant_states,
-    int max_states,
-    int max_states_before_merge,
-    int threshold_before_merge,
-    double main_loop_max_time,
-    const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates,
-    const string &description,
-    utils::Verbosity verbosity
-    )
-    :
-      Heuristic(transform, cache_estimates, description, verbosity) {
+    bool prune_unreachable_states, bool prune_irrelevant_states,
+    int max_states, int max_states_before_merge,
+    int threshold_before_merge, double main_loop_max_time,
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, description, verbosity) {
     log << "Initializing merge-and-shrink heuristic..." << endl;
-    MergeAndShrinkAlgorithm algorithm(
-        merge_strategy,
-        shrink_strategy,
-        label_reduction,
-        max_states,
-        max_states_before_merge,
-        threshold_before_merge,
-        prune_unreachable_states,
-        prune_irrelevant_states,
-        main_loop_max_time,
-        verbosity
-        );
-
+    MergeAndShrinkAlgorithm algorithm(merge_strategy, shrink_strategy,
+        label_reduction, max_states, max_states_before_merge,
+        threshold_before_merge, prune_unreachable_states,
+        prune_irrelevant_states, main_loop_max_time, verbosity);
     FactoredTransitionSystem fts = algorithm.build_factored_transition_system(task_proxy);
     extract_factors(fts);
     log << "Done initializing merge-and-shrink heuristic." << endl << endl;
@@ -251,7 +235,9 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<MergeAndShrinkHeuristic> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+    virtual shared_ptr<MergeAndShrinkHeuristic> create_component(
+        const plugins::Options &opts,
+        const utils::Context &context) const override {
         plugins::Options options_copy(opts);
         handle_shrink_limit_options_defaults(options_copy, context);
 

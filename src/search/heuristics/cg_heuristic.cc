@@ -16,12 +16,9 @@ using namespace std;
 using namespace domain_transition_graph;
 
 namespace cg_heuristic {
-CGHeuristic::CGHeuristic(
-    int max_cache_size,
-    const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates,
-    const string &description,
-    utils::Verbosity verbosity)
+CGHeuristic::CGHeuristic(int max_cache_size,
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       cache_hits(0),
       cache_misses(0),
@@ -313,7 +310,8 @@ public:
     }
 
     virtual shared_ptr<CGHeuristic> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<CGHeuristic>(
             opts.get<int>("max_cache_size"),
             get_heuristic_arguments_from_options(opts)

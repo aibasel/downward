@@ -38,7 +38,9 @@ extern void add_random_pattern_implementation_notes_to_feature(
     plugins::Feature &feature);
 extern void add_random_pattern_bidirectional_option_to_feature(
     plugins::Feature &feature);
-extern std::tuple<bool> get_random_pattern_bidirectional_arguments_from_options(const plugins::Options &opts);
+extern std::tuple<bool>
+get_random_pattern_bidirectional_arguments_from_options(
+    const plugins::Options &opts);
 }
 
 #endif

@@ -17,11 +17,8 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
-    AtomicTSOrder atomic_ts_order,
-    ProductTSOrder product_ts_order,
-    bool atomic_before_product,
-    int random_seed
-    )
+    AtomicTSOrder atomic_ts_order, ProductTSOrder product_ts_order,
+    bool atomic_before_product, int random_seed)
     : atomic_ts_order(atomic_ts_order),
       product_ts_order(product_ts_order),
       atomic_before_product(atomic_before_product),
@@ -206,7 +203,9 @@ public:
         MergeScoringFunctionTotalOrder::add_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeScoringFunctionTotalOrder> create_component(const plugins::Options &opts, const utils::Context &) const override {
+    virtual shared_ptr<MergeScoringFunctionTotalOrder> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<MergeScoringFunctionTotalOrder>(
             opts.get<AtomicTSOrder>("atomic_ts_order"),
             opts.get<ProductTSOrder>("product_ts_order"),

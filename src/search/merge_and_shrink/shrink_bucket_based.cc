@@ -101,7 +101,8 @@ void add_shrink_bucket_options_to_feature(plugins::Feature &feature) {
     utils::add_rng_options_to_feature(feature);
 }
 
-tuple<int> get_shrink_bucket_arguments_from_options(const plugins::Options &opts) {
+tuple<int> get_shrink_bucket_arguments_from_options(
+    const plugins::Options &opts) {
     return utils::get_rng_arguments_from_options(opts);
 }
 }

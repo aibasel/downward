@@ -19,8 +19,7 @@ protected:
 public:
     MergeTreeFactoryLinear(
         variable_order_finder::VariableOrderType variable_order,
-        int random_seed,
-        UpdateOption update_option);
+        int random_seed, UpdateOption update_option);
     virtual std::unique_ptr<MergeTree> compute_merge_tree(
         const TaskProxy &task_proxy) override;
     virtual std::unique_ptr<MergeTree> compute_merge_tree(

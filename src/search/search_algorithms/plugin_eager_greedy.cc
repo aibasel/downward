@@ -19,7 +19,8 @@ public:
         add_option<int>(
             "boost",
             "boost value for preferred operator open lists", "0");
-        eager_search::add_eager_search_options_to_feature(*this, "eager_greedy");
+        eager_search::add_eager_search_options_to_feature(
+            *this, "eager_greedy");
 
         document_note(
             "Open list",
@@ -60,8 +61,11 @@ public:
             "```\n--search eager(single(eval1))\n```\n", true);
     }
 
-    virtual shared_ptr<eager_search::EagerSearch> create_component(const plugins::Options &opts, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, opts, "evals");
+    virtual shared_ptr<eager_search::EagerSearch> create_component(
+        const plugins::Options &opts,
+        const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(
+            context, opts, "evals");
 
         return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
             search_common::create_greedy_open_list_factory(

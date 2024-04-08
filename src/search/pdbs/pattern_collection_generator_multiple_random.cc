@@ -14,26 +14,16 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorMultipleRandom::PatternCollectionGeneratorMultipleRandom(
-    bool bidirectional,
-    int max_pdb_size,
-    int max_collection_size,
-    double pattern_generation_max_time,
-    double total_max_time,
-    double stagnation_limit,
-    double blacklist_trigger_percentage,
-    bool enable_blacklist_on_stagnation,
-    int random_seed,
+    bool bidirectional, int max_pdb_size, int max_collection_size,
+    double pattern_generation_max_time, double total_max_time,
+    double stagnation_limit, double blacklist_trigger_percentage,
+    bool enable_blacklist_on_stagnation, int random_seed,
     utils::Verbosity verbosity)
-    : PatternCollectionGeneratorMultiple(
-          max_pdb_size,
-          max_collection_size,
-          pattern_generation_max_time,
-          total_max_time,
-          stagnation_limit,
-          blacklist_trigger_percentage,
-          enable_blacklist_on_stagnation,
-          random_seed,
-          verbosity),
+    : PatternCollectionGeneratorMultiple(max_pdb_size,
+          max_collection_size, pattern_generation_max_time,
+          total_max_time, stagnation_limit,
+          blacklist_trigger_percentage, enable_blacklist_on_stagnation,
+          random_seed, verbosity),
       bidirectional(bidirectional) {
 }
 
@@ -89,8 +79,9 @@ public:
         add_multiple_algorithm_implementation_notes_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorMultipleRandom> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+    virtual shared_ptr<PatternCollectionGeneratorMultipleRandom>
+        create_component(const plugins::Options &opts,
+            const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorMultipleRandom>(
             get_random_pattern_bidirectional_arguments_from_options(opts),
             get_multiple_arguments_from_options(opts)

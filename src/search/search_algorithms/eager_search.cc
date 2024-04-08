@@ -19,23 +19,17 @@
 using namespace std;
 
 namespace eager_search {
-EagerSearch::EagerSearch(
-    const shared_ptr<OpenListFactory> &open,
-    bool reopen_closed,
-    const shared_ptr<Evaluator> &f_eval,
+EagerSearch::EagerSearch(const shared_ptr<OpenListFactory> &open,
+    bool reopen_closed, const shared_ptr<Evaluator> &f_eval,
     const vector<shared_ptr<Evaluator>> &preferred,
     const shared_ptr<PruningMethod> &pruning,
-    const shared_ptr<Evaluator> &lazy_evaluator,
-    OperatorCost cost_type,
-    int bound,
-    double max_time,
-    const string &description,
-    utils::Verbosity verbosity
-    )
-    : SearchAlgorithm(cost_type, bound, max_time, description, verbosity),
+    const shared_ptr<Evaluator> &lazy_evaluator, OperatorCost cost_type,
+    int bound, double max_time, const string &description,
+    utils::Verbosity verbosity)
+    : SearchAlgorithm(
+        cost_type, bound, max_time, description, verbosity),
       reopen_closed_nodes(reopen_closed),
-      open_list(open->
-                create_state_open_list()),
+      open_list(open->create_state_open_list()),
       f_evaluator(f_eval),     // default nullptr
       preferred_operator_evaluators(preferred),
       lazy_evaluator(lazy_evaluator),     // default nullptr
@@ -319,15 +313,19 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     }
 }
 
-void add_eager_search_options_to_feature(plugins::Feature &feature, const string &description) {
+void add_eager_search_options_to_feature(
+    plugins::Feature &feature, const string &description) {
     add_search_pruning_options_to_feature(feature);
     add_search_algorithm_options_to_feature(feature, description);
 }
 
-tuple<shared_ptr<PruningMethod>, shared_ptr<Evaluator>, OperatorCost, int, double, string, utils::Verbosity> get_eager_search_arguments_from_options(const plugins::Options &opts) {
+tuple<shared_ptr<PruningMethod>, shared_ptr<Evaluator>, OperatorCost, 
+    int, double, string, utils::Verbosity> 
+get_eager_search_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         get_search_pruning_arguments_from_options(opts),
-        make_tuple(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
+        make_tuple(opts.get<shared_ptr<Evaluator>>(
+            "lazy_evaluator", nullptr)),
         get_search_algorithm_arguments_from_options(opts)
         );
 }

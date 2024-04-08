@@ -47,8 +47,7 @@ static void compute_union_pattern(
 
 
 PatternCollectionGeneratorSystematic::PatternCollectionGeneratorSystematic(
-    int pattern_max_size,
-    bool only_interesting_patterns,
+    int pattern_max_size, bool only_interesting_patterns,
     utils::Verbosity verbosity)
     : PatternCollectionGenerator(verbosity),
       max_pattern_size(pattern_max_size),
@@ -316,8 +315,10 @@ public:
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorSystematic> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+    virtual shared_ptr<PatternCollectionGeneratorSystematic>
+        create_component(
+            const plugins::Options &opts,
+            const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorSystematic>(
             opts.get<int>("pattern_max_size"),
             opts.get<bool>("only_interesting_patterns"),

@@ -21,8 +21,8 @@ static void add_lp_variables(int count, LPVariables &variables, vector<int> &ind
 }
 
 
-DeleteRelaxationConstraints::DeleteRelaxationConstraints(bool use_time_vars,
-                                                         bool use_integer_vars)
+DeleteRelaxationConstraints::DeleteRelaxationConstraints(
+    bool use_time_vars, bool use_integer_vars)
     : use_time_vars(use_time_vars),
       use_integer_vars(use_integer_vars) {
 }
@@ -283,10 +283,11 @@ public:
     }
 
     virtual shared_ptr<DeleteRelaxationConstraints> create_component(
-        const plugins::Options &options, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return make_shared<DeleteRelaxationConstraints>(
-            options.get<bool>("use_time_vars"),
-            options.get<bool>("use_integer_vars"));
+            opts.get<bool>("use_time_vars"),
+            opts.get<bool>("use_integer_vars"));
     }
 };
 

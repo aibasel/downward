@@ -13,8 +13,7 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorManual::PatternCollectionGeneratorManual(
-    const vector<Pattern> &patterns,
-    utils::Verbosity verbosity)
+    const vector<Pattern> &patterns, utils::Verbosity verbosity)
     : PatternCollectionGenerator(verbosity),
       patterns(make_shared<PatternCollection>(patterns)) {
 }
@@ -42,8 +41,10 @@ public:
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorManual> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+    virtual shared_ptr<PatternCollectionGeneratorManual>
+        create_component(
+            const plugins::Options &opts,
+            const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorManual>(
             opts.get_list<Pattern>("patterns"),
             get_generator_arguments_from_options(opts)

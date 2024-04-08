@@ -16,8 +16,7 @@ namespace pdbs {
 static CanonicalPDBs get_canonical_pdbs_from_options(
     const shared_ptr<AbstractTask> &task,
     const shared_ptr<PatternCollectionGenerator> &pattern_generator,
-    double max_time_dominance_pruning,
-    utils::LogProxy &log) {
+    double max_time_dominance_pruning, utils::LogProxy &log) {
     utils::Timer timer;
     if (log.is_at_least_normal()) {
         log << "Initializing canonical PDB heuristic..." << endl;
@@ -63,13 +62,12 @@ static CanonicalPDBs get_canonical_pdbs_from_options(
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(
     const shared_ptr<PatternCollectionGenerator> &patterns,
     double max_time_dominance_pruning,
-    const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates,
-    const string &description,
-    utils::Verbosity verbosity)
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
-      canonical_pdbs(get_canonical_pdbs_from_options(
-                         task, patterns, max_time_dominance_pruning, log)) {
+      canonical_pdbs(
+        get_canonical_pdbs_from_options(
+            task, patterns, max_time_dominance_pruning, log)) {
 }
 
 int CanonicalPDBsHeuristic::compute_heuristic(const State &ancestor_state) {
@@ -124,9 +122,11 @@ public:
     }
 
     virtual shared_ptr<CanonicalPDBsHeuristic> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<CanonicalPDBsHeuristic>(
-            opts.get<shared_ptr<PatternCollectionGenerator>>("patterns"),
+            opts.get<shared_ptr<PatternCollectionGenerator>>(
+                "patterns"),
             opts.get<double>("max_time_dominance_pruning"),
             get_heuristic_arguments_from_options(opts)
             );

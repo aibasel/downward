@@ -65,10 +65,8 @@ protected:
     // Common part of h^add and h^ff computation.
     int compute_add_and_ff(const State &state);
 public:
-    AdditiveHeuristic(
-        const std::shared_ptr<AbstractTask> &transform,
-        bool cache_estimates,
-        const std::string &description,
+    AdditiveHeuristic(const std::shared_ptr<AbstractTask> &transform,
+        bool cache_estimates, const std::string &description,
         utils::Verbosity verbosity);
 
     /*

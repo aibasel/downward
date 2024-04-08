@@ -17,8 +17,7 @@ class PatternCollectionGeneratorCombo : public PatternCollectionGenerator {
         const std::shared_ptr<AbstractTask> &task) override;
 public:
     PatternCollectionGeneratorCombo(
-        int max_states,
-        utils::Verbosity verbosity);
+        int max_states, utils::Verbosity verbosity);
 };
 }
 

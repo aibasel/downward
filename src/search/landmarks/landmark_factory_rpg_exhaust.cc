@@ -75,10 +75,11 @@ public:
     }
 
     virtual shared_ptr<LandmarkFactoryRpgExhaust> create_component(
-        const plugins::Options &options, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgExhaust>(
-            get_only_causal_landmarks_arguments_from_options(options),
-            get_landmark_factory_arguments_from_options(options));
+            get_only_causal_landmarks_arguments_from_options(opts),
+            get_landmark_factory_arguments_from_options(opts));
     }
 };
 

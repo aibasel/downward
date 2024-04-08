@@ -52,8 +52,7 @@ protected:
 public:
     ContextEnhancedAdditiveHeuristic(
         const std::shared_ptr<AbstractTask> &transform,
-        bool cache_estimates,
-        const std::string &description,
+        bool cache_estimates, const std::string &description,
         utils::Verbosity verbosity);
     ~ContextEnhancedAdditiveHeuristic();
     virtual bool dead_ends_are_reliable() const override;

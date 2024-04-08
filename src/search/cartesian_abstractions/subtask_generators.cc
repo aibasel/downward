@@ -177,7 +177,8 @@ static void add_fact_order_option(plugins::Feature &feature) {
     utils::add_rng_options_to_feature(feature);
 }
 
-static tuple<FactOrder, int> get_fact_order_arguments_from_options(const plugins::Options &opts) {
+static tuple<FactOrder, int> get_fact_order_arguments_from_options(
+    const plugins::Options &opts) {
     return tuple_cat(make_tuple(opts.get<FactOrder>("order")),
                      utils::get_rng_arguments_from_options(opts));
 }
@@ -193,7 +194,8 @@ public:
     }
 
     virtual shared_ptr<TaskDuplicator> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<TaskDuplicator>(
             opts.get<int>("copies"));
     }
@@ -208,7 +210,8 @@ public:
     }
 
     virtual shared_ptr<GoalDecomposition> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<GoalDecomposition>(
             get_fact_order_arguments_from_options(opts));
     }
@@ -228,7 +231,8 @@ public:
     }
 
     virtual shared_ptr<LandmarkDecomposition> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkDecomposition>(
             get_fact_order_arguments_from_options(opts),
             opts.get<bool>("combine_facts"));

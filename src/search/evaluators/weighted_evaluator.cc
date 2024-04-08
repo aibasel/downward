@@ -10,14 +10,11 @@
 using namespace std;
 
 namespace weighted_evaluator {
-WeightedEvaluator::WeightedEvaluator(
-    const shared_ptr<Evaluator> &eval,
-    int weight,
-    const string &description,
-    utils::Verbosity verbosity)
+WeightedEvaluator::WeightedEvaluator(const shared_ptr<Evaluator> &eval,
+    int weight, const string &description, utils::Verbosity verbosity)
     : Evaluator(false, false, false, description, verbosity),
       evaluator(eval),
-      w(weight) {
+      weight(weight) {
 }
 
 
@@ -32,7 +29,7 @@ EvaluationResult WeightedEvaluator::compute_result(
     int value = eval_context.get_evaluator_value_or_infinity(evaluator.get());
     if (value != EvaluationResult::INFTY) {
         // TODO: Check for overflow?
-        value *= w;
+        value *= weight;
     }
     result.set_evaluator_value(value);
     return result;
@@ -55,11 +52,13 @@ public:
         add_evaluator_options_to_feature(*this, "weight");
     }
 
-    virtual shared_ptr<WeightedEvaluator> create_component(const plugins::Options &options, const utils::Context &) const override {
+    virtual shared_ptr<WeightedEvaluator> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<WeightedEvaluator>(
-            options.get<shared_ptr<Evaluator>>("eval"),
-            options.get<int>("weight"),
-            get_evaluator_arguments_from_options(options)
+            opts.get<shared_ptr<Evaluator>>("eval"),
+            opts.get<int>("weight"),
+            get_evaluator_arguments_from_options(opts)
             );
     }
 };

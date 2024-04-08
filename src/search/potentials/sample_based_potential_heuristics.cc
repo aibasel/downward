@@ -40,19 +40,14 @@ static void optimize_for_samples(
   Compute multiple potential functions that are optimized for different
   sets of samples.
 */
-static vector<unique_ptr<PotentialFunction>> create_sample_based_potential_functions(
-    int num_samples,
-    int num_heuristics,
-    double max_potential,
-    lp::LPSolverType lpsolver,
-    const shared_ptr<AbstractTask> &transform,
-    int random_seed
-    ) {
+static vector<unique_ptr<PotentialFunction>>
+create_sample_based_potential_functions(int num_samples,
+    int num_heuristics, double max_potential, lp::LPSolverType lpsolver,
+    const shared_ptr<AbstractTask> &transform, int random_seed) {
     vector<unique_ptr<PotentialFunction>> functions;
-    PotentialOptimizer optimizer(transform,
-                                 lpsolver,
-                                 max_potential);
-    shared_ptr<utils::RandomNumberGenerator> rng(utils::get_rng(random_seed));
+    PotentialOptimizer optimizer(transform, lpsolver, max_potential);
+    shared_ptr<utils::RandomNumberGenerator> rng(
+        utils::get_rng(random_seed));
     for (int i = 0; i < num_heuristics; ++i) {
         optimize_for_samples(optimizer, num_samples, *rng);
         functions.push_back(optimizer.get_potential_function());
@@ -78,11 +73,14 @@ public:
             "Number of states to sample",
             "1000",
             plugins::Bounds("0", "infinity"));
-        add_admissible_potentials_options_to_feature(*this, "sample_based_potentials");
+        add_admissible_potentials_options_to_feature(
+            *this, "sample_based_potentials");
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &opts, const utils::Context &) const override {
+    virtual shared_ptr<PotentialMaxHeuristic> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return make_shared<PotentialMaxHeuristic>( // TODO issue1082 use make_shared_from_arg_tuples, move creation of potential functions into constructor
             create_sample_based_potential_functions(
                 opts.get<int>("num_samples"),

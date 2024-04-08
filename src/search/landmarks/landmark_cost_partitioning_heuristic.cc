@@ -16,20 +16,14 @@ using namespace std;
 
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
-    const shared_ptr<LandmarkFactory> &lm_factory,
-    bool pref,
-    bool prog_goal,
-    bool prog_gn,
-    bool prog_r,
-    const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates,
-    const string &description,
-    utils::Verbosity verbosity,
-    CostPartitioningMethod cost_partitioning,
-    bool alm,
+    const shared_ptr<LandmarkFactory> &lm_factory, bool pref,
+    bool prog_goal, bool prog_gn, bool prog_r,
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity,
+    CostPartitioningMethod cost_partitioning, bool alm,
     lp::LPSolverType lpsolver)
-    : LandmarkHeuristic(pref, transform, cache_estimates,
-                        description, verbosity) {
+    : LandmarkHeuristic(
+        pref, transform, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;
     }
@@ -54,8 +48,7 @@ void LandmarkCostPartitioningHeuristic::check_unsupported_features(
 }
 
 void LandmarkCostPartitioningHeuristic::set_cost_partitioning_algorithm(
-    CostPartitioningMethod cost_partitioning,
-    lp::LPSolverType lpsolver,
+    CostPartitioningMethod cost_partitioning, lp::LPSolverType lpsolver,
     bool alm) {
     if (cost_partitioning == CostPartitioningMethod::OPTIMAL) {
         cost_partitioning_algorithm =
@@ -172,8 +165,9 @@ public:
         document_property("safe", "yes");
     }
 
-    virtual shared_ptr<LandmarkCostPartitioningHeuristic> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+    virtual shared_ptr<LandmarkCostPartitioningHeuristic>
+    create_component(const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkCostPartitioningHeuristic>(
             get_landmark_heuristic_arguments_from_options(opts),
             opts.get<CostPartitioningMethod>("cost_partitioning"),

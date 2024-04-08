@@ -1,8 +1,6 @@
 #ifndef MERGE_AND_SHRINK_LABEL_REDUCTION_H
 #define MERGE_AND_SHRINK_LABEL_REDUCTION_H
 
-#include "../utils/logging.h"
-
 #include <memory>
 #include <vector>
 
@@ -77,12 +75,9 @@ class LabelReduction {
         int ts_index,
         const FactoredTransitionSystem &fts) const;
 public:
-    LabelReduction(
-        bool before_shrinking,
-        bool before_merging,
+    LabelReduction(bool before_shrinking, bool before_merging,
         LabelReductionMethod method,
-        LabelReductionSystemOrder system_order,
-        int random_seed);
+        LabelReductionSystemOrder system_order, int random_seed);
     void initialize(const TaskProxy &task_proxy);
     bool reduce(
         const std::pair<int, int> &next_merge,

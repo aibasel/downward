@@ -9,12 +9,9 @@
 using namespace std;
 
 
-Evaluator::Evaluator(
-    bool use_for_reporting_minima,
-    bool use_for_boosting,
-    bool use_for_counting_evaluations,
-    const string &description,
-    utils::Verbosity verbosity)
+Evaluator::Evaluator(bool use_for_reporting_minima,
+    bool use_for_boosting, bool use_for_counting_evaluations,
+    const string &description, utils::Verbosity verbosity)
     : description(description),
       use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
@@ -76,9 +73,11 @@ int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
 }
 
-void add_evaluator_options_to_feature(plugins::Feature &feature, const string &description) {
+void add_evaluator_options_to_feature(
+    plugins::Feature &feature, const string &description) {
     feature.add_option<string>("description",
-                               "description used to identify evaluator in logs",
+                               "description used to identify evaluator"
+                               " in logs",
                                "\"" + description + "\"");
     utils::add_log_options_to_feature(feature);
 }

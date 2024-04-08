@@ -19,7 +19,8 @@ static FactPair get_fact(const Landmark &landmark) {
     return landmark.facts[0];
 }
 
-shared_ptr<LandmarkGraph> get_landmark_graph(const shared_ptr<AbstractTask> &task) {
+shared_ptr<LandmarkGraph> get_landmark_graph(
+    const shared_ptr<AbstractTask> &task) {
     LandmarkFactoryHM lm_graph_factory(
         1, false, true, utils::Verbosity::SILENT);
 

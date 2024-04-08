@@ -18,11 +18,8 @@ class PatternGeneratorCEGAR : public PatternGenerator {
     virtual PatternInformation compute_pattern(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
-    PatternGeneratorCEGAR(
-        int max_pdb_size,
-        double max_time,
-        bool use_wildcard_plans,
-        int random_seed,
+    PatternGeneratorCEGAR(int max_pdb_size, double max_time,
+        bool use_wildcard_plans, int random_seed,
         utils::Verbosity verbosity);
 };
 }

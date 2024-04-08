@@ -23,7 +23,8 @@ static bool contain_conflicting_fact(const vector<FactPair> &facts1,
     return false;
 }
 
-StubbornSetsActionCentric::StubbornSetsActionCentric(utils::Verbosity verbosity)
+StubbornSetsActionCentric::StubbornSetsActionCentric(
+    utils::Verbosity verbosity)
     : StubbornSets(verbosity) {
 }
 

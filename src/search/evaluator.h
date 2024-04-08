@@ -22,12 +22,9 @@ class Evaluator {
 protected:
     mutable utils::LogProxy log;
 public:
-    Evaluator(
-        bool use_for_reporting_minima,
-        bool use_for_boosting,
+    Evaluator(bool use_for_reporting_minima, bool use_for_boosting,
         bool use_for_counting_evaluations,
-        const std::string &description,
-        utils::Verbosity verbosity);
+        const std::string &description, utils::Verbosity verbosity);
     virtual ~Evaluator() = default;
 
     /*
@@ -101,8 +98,10 @@ public:
     virtual int get_cached_estimate(const State &state) const;
 };
 
-extern void add_evaluator_options_to_feature(plugins::Feature &feature, const std::string &description);
+extern void add_evaluator_options_to_feature(
+  plugins::Feature &feature, const std::string &description);
 
-extern std::tuple<std::string, utils::Verbosity> get_evaluator_arguments_from_options(const plugins::Options &opts);
+extern std::tuple<std::string, utils::Verbosity> 
+get_evaluator_arguments_from_options(const plugins::Options &opts);
 extern std::tuple<bool, bool, bool> get_evaluator_default_arguments();
 #endif

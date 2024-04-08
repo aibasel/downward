@@ -323,10 +323,11 @@ public:
     }
 
     virtual shared_ptr<LandmarkFactoryZhuGivan> create_component(
-        const plugins::Options &options, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryZhuGivan>(
-            get_use_orders_arguments_from_options(options),
-            get_landmark_factory_arguments_from_options(options));
+            get_use_orders_arguments_from_options(opts),
+            get_landmark_factory_arguments_from_options(opts));
     }
 };
 

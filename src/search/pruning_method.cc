@@ -69,7 +69,8 @@ void add_pruning_options_to_feature(plugins::Feature &feature) {
         "normal verbosity for running experiments.");
 }
 
-tuple<utils::Verbosity> get_pruning_arguments_from_options(const plugins::Options &opts) {
+tuple<utils::Verbosity> get_pruning_arguments_from_options(
+    const plugins::Options &opts) {
     return utils::get_log_arguments_from_options(opts);
 }
 

@@ -15,15 +15,11 @@
 using namespace std;
 
 namespace potentials {
-DiversePotentialHeuristics::DiversePotentialHeuristics(
-    int num_samples,
-    int max_num_heuristics,
-    double max_potential,
+DiversePotentialHeuristics::DiversePotentialHeuristics(int num_samples,
+    int max_num_heuristics, double max_potential,
     lp::LPSolverType lpsolver,
-    const shared_ptr<AbstractTask> &transform,
-    int random_seed,
-    utils::Verbosity verbosity
-    )
+    const shared_ptr<AbstractTask> &transform, int random_seed,
+    utils::Verbosity verbosity)
     : optimizer(
           transform,
           lpsolver,
@@ -177,7 +173,9 @@ public:
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PotentialMaxHeuristic> create_component(const plugins::Options &opts, const utils::Context &) const override {
+    virtual shared_ptr<PotentialMaxHeuristic> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return make_shared<PotentialMaxHeuristic>( // TODO issue1082 use make_shared_from_arg_tuples, move creation of potential functions into constructor
             DiversePotentialHeuristics(
                 opts.get<int>("num_samples"),

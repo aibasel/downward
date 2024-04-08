@@ -14,7 +14,8 @@ namespace cartesian_abstractions {
 unique_ptr<additive_heuristic::AdditiveHeuristic> create_additive_heuristic(
     const shared_ptr<AbstractTask> &task) {
     return utils::make_unique_ptr<additive_heuristic::AdditiveHeuristic>(
-        task, false, "h^add within CEGAR abstractions", utils::Verbosity::SILENT);
+        task, false, "h^add within CEGAR abstractions",
+        utils::Verbosity::SILENT);
 }
 
 static bool operator_applicable(

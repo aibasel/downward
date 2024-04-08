@@ -113,12 +113,8 @@ static vector<vector<int>> compute_relevant_neighbours(const TaskProxy &task_pro
 
 
 PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(
-    int pdb_max_size,
-    int collection_max_size,
-    int num_samples,
-    int min_improvement,
-    double max_time,
-    int random_seed,
+    int pdb_max_size, int collection_max_size, int num_samples,
+    int min_improvement, double max_time, int random_seed,
     utils::Verbosity verbosity)
     : PatternCollectionGenerator(verbosity),
       pdb_max_size(pdb_max_size),
@@ -561,7 +557,9 @@ void add_hillclimbing_options_to_feature(plugins::Feature &feature) {
     utils::add_rng_options_to_feature(feature);
 }
 
-tuple<int, int, int, int, double, int> get_hillclimbing_arguments_from_options(const plugins::Options &opts) {
+tuple<int, int, int, int, double, int>
+    get_hillclimbing_arguments_from_options(
+        const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
             opts.get<int>("pdb_max_size"),
@@ -616,9 +614,10 @@ public:
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorHillclimbing> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+    virtual shared_ptr<PatternCollectionGeneratorHillclimbing> 
+        create_component(const plugins::Options &opts,
+            const utils::Context &context) const override {
         check_hillclimbing_options(opts, context);
-
         return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorHillclimbing>(
             get_hillclimbing_arguments_from_options(opts),
             get_generator_arguments_from_options(opts)
@@ -653,9 +652,7 @@ public:
           are added. We thus only use dominance pruning on the resulting collection.
         */
         add_canonical_pdbs_options_to_feature(*this);
-        add_heuristic_options_to_feature(*this, "cpdbs"); // TODO issue1082 this adds a description parameter that is
-                                                          // only used for the heuristic, not for the generator.
-                                                          // Do we need to change that?
+        add_heuristic_options_to_feature(*this, "cpdbs");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
@@ -667,7 +664,9 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<CanonicalPDBsHeuristic> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+    virtual shared_ptr<CanonicalPDBsHeuristic> create_component(
+        const plugins::Options &opts,
+        const utils::Context &context) const override {
         check_hillclimbing_options(opts, context);
 
         shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =

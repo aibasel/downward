@@ -16,11 +16,8 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorRandom::PatternGeneratorRandom(
-    int max_pdb_size,
-    double max_time,
-    bool bidirectional,
-    int random_seed,
+PatternGeneratorRandom::PatternGeneratorRandom(int max_pdb_size,
+    double max_time, bool bidirectional, int random_seed,
     utils::Verbosity verbosity)
     : PatternGenerator(verbosity),
       max_pdb_size(max_pdb_size),
@@ -82,7 +79,8 @@ public:
     }
 
     virtual shared_ptr<PatternGeneratorRandom> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<PatternGeneratorRandom>(
             opts.get<int>("max_pdb_size"),
             opts.get<double>("max_time"),

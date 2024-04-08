@@ -117,11 +117,13 @@ public:
 };
 
 /*
-  Expects constructor arguments of T. Consecutive arguments may be grouped in a
-  tuple. All tuples in the arguments will be flattened before calling the
-  constructor. The resulting arguments will be used as arguments to make_shared.
+  Expects constructor arguments of T. Consecutive arguments may be 
+  grouped in a tuple. All tuples in the arguments will be flattened
+  before calling the constructor. The resulting arguments will be used
+  as arguments to make_shared.
 */
-// TODO issue1082 where should this live? optimize with std::forward?
+// TODO issue1082 where should this live?
+// TODO issue1082 optimize with std::forward?
 template<typename T, typename ... Arguments>
 std::shared_ptr<T> make_shared_from_arg_tuples(Arguments... arguments) {
     return std::apply(

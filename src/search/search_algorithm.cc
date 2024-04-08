@@ -39,13 +39,9 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
     return successor_generator;
 }
 
-SearchAlgorithm::SearchAlgorithm(
-    OperatorCost cost_type,
-    int bound,
-    double max_time,
-    const string &description,
-    utils::Verbosity verbosity
-    )
+SearchAlgorithm::SearchAlgorithm(OperatorCost cost_type, int bound,
+    double max_time, const string &description,
+    utils::Verbosity verbosity)
     : description(description),
       status(IN_PROGRESS),
       solution_found(false),
@@ -73,7 +69,8 @@ SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts) // TODO options o
       solution_found(false),
       task(tasks::g_root_task),
       task_proxy(*task),
-      log(utils::get_log_for_verbosity(opts.get<utils::Verbosity>("verbosity"))),
+      log(utils::get_log_for_verbosity(
+        opts.get<utils::Verbosity>("verbosity"))),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
       search_space(state_registry, log),
@@ -173,11 +170,14 @@ void add_search_pruning_options_to_feature(plugins::Feature &feature) {
         "null()");
 }
 
-tuple<shared_ptr<PruningMethod>> get_search_pruning_arguments_from_options(const plugins::Options &opts) {
+tuple<shared_ptr<PruningMethod>>
+get_search_pruning_arguments_from_options(
+    const plugins::Options &opts) {
     return make_tuple(opts.get<shared_ptr<PruningMethod>>("pruning"));
 }
 
-void add_search_algorithm_options_to_feature(plugins::Feature &feature, const string &description) {
+void add_search_algorithm_options_to_feature(
+    plugins::Feature &feature, const string &description) {
     ::add_cost_type_options_to_feature(feature);
     feature.add_option<int>(
         "bound",
@@ -193,12 +193,15 @@ void add_search_algorithm_options_to_feature(plugins::Feature &feature, const st
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
     feature.add_option<string>("description",
-                               "description used to identify search algorithm in logs",
+                               "description used to identify search"
+                               " algorithm in logs",
                                "\"" + description + "\"");
     utils::add_log_options_to_feature(feature);
 }
 
-tuple<OperatorCost, int, double, string, utils::Verbosity> get_search_algorithm_arguments_from_options(const plugins::Options &opts) {
+tuple<OperatorCost, int, double, string, utils::Verbosity>
+get_search_algorithm_arguments_from_options(
+    const plugins::Options &opts) {
     return tuple_cat(
         ::get_cost_type_arguments_from_options(opts),
         make_tuple(
@@ -212,7 +215,8 @@ tuple<OperatorCost, int, double, string, utils::Verbosity> get_search_algorithm_
 
 /* Method doesn't belong here because it's only useful for certain derived classes.
    TODO: Figure out where it belongs and move it there. */
-void add_successors_order_options_to_feature(plugins::Feature &feature) {
+void add_successors_order_options_to_feature(
+    plugins::Feature &feature) {
     feature.add_option<bool>(
         "randomize_successors",
         "randomize the order in which successors are generated",
@@ -229,7 +233,8 @@ void add_successors_order_options_to_feature(plugins::Feature &feature) {
     utils::add_rng_options_to_feature(feature);
 }
 
-tuple<bool, bool, int> get_successors_order_arguments_from_options(const plugins::Options &opts) {
+tuple<bool, bool, int> get_successors_order_arguments_from_options(
+    const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
             opts.get<bool>("randomize_successors"),

@@ -25,15 +25,10 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
-LabelReduction::LabelReduction(
-    bool before_shrinking,
-    bool before_merging,
-    LabelReductionMethod method,
-    LabelReductionSystemOrder system_order,
-    int random_seed
-    )
-    :
-      lr_before_shrinking(before_shrinking),
+LabelReduction::LabelReduction(bool before_shrinking,
+    bool before_merging, LabelReductionMethod method,
+    LabelReductionSystemOrder system_order, int random_seed)
+    : lr_before_shrinking(before_shrinking),
       lr_before_merging(before_merging),
       lr_method(method),
       lr_system_order(system_order),
@@ -342,7 +337,9 @@ public:
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<LabelReduction> create_component(const plugins::Options &opts, const utils::Context &context) const override {
+    virtual shared_ptr<LabelReduction> create_component(
+        const plugins::Options &opts,
+        const utils::Context &context) const override {
         bool lr_before_shrinking = opts.get<bool>("before_shrinking");
         bool lr_before_merging = opts.get<bool>("before_merging");
         if (!lr_before_shrinking && !lr_before_merging) {

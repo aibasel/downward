@@ -13,9 +13,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeTreeFactory::MergeTreeFactory(
-    int random_seed,
-    UpdateOption update_option
-    )
+    int random_seed, UpdateOption update_option)
     : rng(utils::get_rng(random_seed)),
       update_option(update_option) {
 }
@@ -58,7 +56,8 @@ void add_merge_tree_options_to_feature(plugins::Feature &feature) {
         "use_random");
 }
 
-tuple<int, UpdateOption> get_merge_tree_arguments_from_options(const plugins::Options &opts) {
+tuple<int, UpdateOption> get_merge_tree_arguments_from_options(
+    const plugins::Options &opts) {
     return tuple_cat(
         utils::get_rng_arguments_from_options(opts),
         make_tuple(opts.get<UpdateOption>("update_option"))

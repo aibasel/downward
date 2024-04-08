@@ -655,12 +655,13 @@ public:
     }
 
     virtual shared_ptr<LandmarkFactoryRpgSasp> create_component(
-        const plugins::Options &options, const utils::Context &) const override {
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgSasp>(
-            options.get<bool>("disjunctive_landmarks"),
-            get_use_orders_arguments_from_options(options),
-            get_only_causal_landmarks_arguments_from_options(options),
-            get_landmark_factory_arguments_from_options(options));
+            opts.get<bool>("disjunctive_landmarks"),
+            get_use_orders_arguments_from_options(opts),
+            get_only_causal_landmarks_arguments_from_options(opts),
+            get_landmark_factory_arguments_from_options(opts));
     }
 };
 
