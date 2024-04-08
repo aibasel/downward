@@ -17,10 +17,10 @@ PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar
     bool enable_blacklist_on_stagnation, int random_seed,
     utils::Verbosity verbosity)
     : PatternCollectionGeneratorMultiple(max_pdb_size,
-          max_collection_size, pattern_generation_max_time,
-          total_max_time, stagnation_limit,
-          blacklist_trigger_percentage, enable_blacklist_on_stagnation,
-          random_seed, verbosity),
+                                         max_collection_size, pattern_generation_max_time,
+                                         total_max_time, stagnation_limit,
+                                         blacklist_trigger_percentage, enable_blacklist_on_stagnation,
+                                         random_seed, verbosity),
       use_wildcard_plans(use_wildcard_plans) {
 }
 
@@ -67,9 +67,9 @@ public:
     }
 
     virtual shared_ptr<PatternCollectionGeneratorMultipleCegar>
-        create_component(
-            const plugins::Options &opts,
-            const utils::Context &) const override {
+    create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorMultipleCegar>(
             get_cegar_wildcard_arguments_from_options(opts),
             get_multiple_arguments_from_options(opts)

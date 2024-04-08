@@ -66,8 +66,8 @@ CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(
     const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       canonical_pdbs(
-        get_canonical_pdbs_from_options(
-            task, patterns, max_time_dominance_pruning, log)) {
+          get_canonical_pdbs_from_options(
+              task, patterns, max_time_dominance_pruning, log)) {
 }
 
 int CanonicalPDBsHeuristic::compute_heuristic(const State &ancestor_state) {

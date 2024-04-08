@@ -74,8 +74,8 @@ protected:
 
 public:
     Heuristic(const std::shared_ptr<AbstractTask> &transform,
-        bool cache_estimates, const std::string &description,
-        utils::Verbosity verbosity);
+              bool cache_estimates, const std::string &description,
+              utils::Verbosity verbosity);
     virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(

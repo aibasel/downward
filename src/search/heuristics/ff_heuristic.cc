@@ -12,10 +12,10 @@ using namespace std;
 namespace ff_heuristic {
 // construction and destruction
 FFHeuristic::FFHeuristic(const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates, const string &description,
-    utils::Verbosity verbosity)
+                         bool cache_estimates, const string &description,
+                         utils::Verbosity verbosity)
     : AdditiveHeuristic(
-        transform, cache_estimates, description, verbosity),
+          transform, cache_estimates, description, verbosity),
       relaxed_plan(task_proxy.get_operators().size(), false) {
     if (log.is_at_least_normal()) {
         log << "Initializing FF heuristic..." << endl;

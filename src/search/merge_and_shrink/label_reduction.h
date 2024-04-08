@@ -76,8 +76,8 @@ class LabelReduction {
         const FactoredTransitionSystem &fts) const;
 public:
     LabelReduction(bool before_shrinking, bool before_merging,
-        LabelReductionMethod method,
-        LabelReductionSystemOrder system_order, int random_seed);
+                   LabelReductionMethod method,
+                   LabelReductionSystemOrder system_order, int random_seed);
     void initialize(const TaskProxy &task_proxy);
     bool reduce(
         const std::pair<int, int> &next_merge,

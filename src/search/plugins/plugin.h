@@ -117,7 +117,7 @@ public:
 };
 
 /*
-  Expects constructor arguments of T. Consecutive arguments may be 
+  Expects constructor arguments of T. Consecutive arguments may be
   grouped in a tuple. All tuples in the arguments will be flattened
   before calling the constructor. The resulting arguments will be used
   as arguments to make_shared.

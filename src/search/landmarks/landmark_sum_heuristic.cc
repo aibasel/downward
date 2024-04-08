@@ -36,9 +36,9 @@ LandmarkSumHeuristic::LandmarkSumHeuristic(
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : LandmarkHeuristic(
-        pref, transform, cache_estimates, description, verbosity),
+          pref, transform, cache_estimates, description, verbosity),
       dead_ends_reliable(
-        are_dead_ends_reliable(lm_factory, task_proxy)) {
+          are_dead_ends_reliable(lm_factory, task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark sum heuristic..." << endl;
     }

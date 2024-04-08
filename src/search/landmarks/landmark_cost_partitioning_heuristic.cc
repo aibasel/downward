@@ -23,7 +23,7 @@ LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     CostPartitioningMethod cost_partitioning, bool alm,
     lp::LPSolverType lpsolver)
     : LandmarkHeuristic(
-        pref, transform, cache_estimates, description, verbosity) {
+          pref, transform, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;
     }
@@ -167,7 +167,7 @@ public:
 
     virtual shared_ptr<LandmarkCostPartitioningHeuristic>
     create_component(const plugins::Options &opts,
-        const utils::Context &) const override {
+                     const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkCostPartitioningHeuristic>(
             get_landmark_heuristic_arguments_from_options(opts),
             opts.get<CostPartitioningMethod>("cost_partitioning"),

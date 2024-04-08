@@ -23,7 +23,7 @@ protected:
 public:
     OperatorCountingHeuristic(
         const std::vector<std::shared_ptr<ConstraintGenerator>>
-            &constraint_generators,
+        &constraint_generators,
         bool use_integer_operator_counts, lp::LPSolverType lpsolver,
         const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates, const std::string &description,

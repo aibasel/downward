@@ -23,8 +23,8 @@ protected:
     mutable utils::LogProxy log;
 public:
     Evaluator(bool use_for_reporting_minima, bool use_for_boosting,
-        bool use_for_counting_evaluations,
-        const std::string &description, utils::Verbosity verbosity);
+              bool use_for_counting_evaluations,
+              const std::string &description, utils::Verbosity verbosity);
     virtual ~Evaluator() = default;
 
     /*
@@ -99,9 +99,9 @@ public:
 };
 
 extern void add_evaluator_options_to_feature(
-  plugins::Feature &feature, const std::string &description);
+    plugins::Feature &feature, const std::string &description);
 
-extern std::tuple<std::string, utils::Verbosity> 
+extern std::tuple<std::string, utils::Verbosity>
 get_evaluator_arguments_from_options(const plugins::Options &opts);
 extern std::tuple<bool, bool, bool> get_evaluator_default_arguments();
 #endif

@@ -6,7 +6,7 @@ using namespace std;
 
 namespace const_evaluator {
 ConstEvaluator::ConstEvaluator(int value, const string &description,
-    utils::Verbosity verbosity)
+                               utils::Verbosity verbosity)
     : Evaluator(false, false, false, description, verbosity),
       value(value) {
 }

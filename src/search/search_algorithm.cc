@@ -40,8 +40,8 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
 }
 
 SearchAlgorithm::SearchAlgorithm(OperatorCost cost_type, int bound,
-    double max_time, const string &description,
-    utils::Verbosity verbosity)
+                                 double max_time, const string &description,
+                                 utils::Verbosity verbosity)
     : description(description),
       status(IN_PROGRESS),
       solution_found(false),
@@ -70,7 +70,7 @@ SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts) // TODO options o
       task(tasks::g_root_task),
       task_proxy(*task),
       log(utils::get_log_for_verbosity(
-        opts.get<utils::Verbosity>("verbosity"))),
+              opts.get<utils::Verbosity>("verbosity"))),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
       search_space(state_registry, log),

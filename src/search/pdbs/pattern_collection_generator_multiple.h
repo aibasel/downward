@@ -73,11 +73,11 @@ class PatternCollectionGeneratorMultiple : public PatternCollectionGenerator {
         const std::shared_ptr<AbstractTask> &task) override;
 public:
     PatternCollectionGeneratorMultiple(int max_pdb_size,
-        int max_collection_size, double pattern_generation_max_time,
-        double total_max_time, double stagnation_limit,
-        double blacklist_trigger_percentage,
-        bool enable_blacklist_on_stagnation, int random_seed,
-        utils::Verbosity verbosity);
+                                       int max_collection_size, double pattern_generation_max_time,
+                                       double total_max_time, double stagnation_limit,
+                                       double blacklist_trigger_percentage,
+                                       bool enable_blacklist_on_stagnation, int random_seed,
+                                       utils::Verbosity verbosity);
 };
 
 extern void add_multiple_algorithm_implementation_notes_to_feature(
@@ -85,7 +85,7 @@ extern void add_multiple_algorithm_implementation_notes_to_feature(
 extern void add_multiple_options_to_feature(plugins::Feature &feature);
 
 extern std::tuple<int, int, double, double, double, double, bool, int,
-    utils::Verbosity>
+                  utils::Verbosity>
 get_multiple_arguments_from_options(const plugins::Options &opts);
 }
 

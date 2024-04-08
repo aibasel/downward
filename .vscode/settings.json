@@ -1,0 +1,6 @@
+{
+    "cmake.sourceDirectory": "/home/dolsim00/developing-FD/downward/src",
+    "files.associations": {
+        "tuple": "cpp"
+    }
+}

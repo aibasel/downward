@@ -467,7 +467,7 @@ public:
 
     virtual shared_ptr<ContextEnhancedAdditiveHeuristic>
     create_component(const plugins::Options &opts,
-        const utils::Context &) const override {
+                     const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<ContextEnhancedAdditiveHeuristic>(
             get_heuristic_arguments_from_options(opts)
             );

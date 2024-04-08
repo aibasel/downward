@@ -69,7 +69,7 @@ void add_admissible_potentials_options_to_feature(
 
 
 tuple<double, lp::LPSolverType, shared_ptr<AbstractTask>, bool, string,
-    utils::Verbosity>
+      utils::Verbosity>
 get_admissible_potential_arguments_from_options(
     const plugins::Options &opts) {
     return tuple_cat(

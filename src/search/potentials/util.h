@@ -32,7 +32,7 @@ std::string get_admissible_potentials_reference();
 void add_admissible_potentials_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 std::tuple<double, lp::LPSolverType, std::shared_ptr<AbstractTask>,
-    bool, std::string, utils::Verbosity>
+           bool, std::string, utils::Verbosity>
 get_admissible_potential_arguments_from_options(
     const plugins::Options &opts);
 }

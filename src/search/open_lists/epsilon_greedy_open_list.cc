@@ -46,7 +46,7 @@ protected:
 
 public:
     EpsilonGreedyOpenList(const shared_ptr<Evaluator> &eval,
-        bool pref_only, double epsilon, int random_seed);
+                          bool pref_only, double epsilon, int random_seed);
 
     virtual Entry remove_min() override;
     virtual bool is_dead_end(

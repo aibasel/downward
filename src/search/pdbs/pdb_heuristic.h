@@ -17,7 +17,7 @@ public:
     /*
       Important: It is assumed that the pattern (passed via
       pattern_generator) is sorted, contains no duplicates and is small
-      enough so that the number of abstract states is below 
+      enough so that the number of abstract states is below
       numeric_limits<int>::max()
       Parameters:
        operator_costs: Can specify individual operator costs for each

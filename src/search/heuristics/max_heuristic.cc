@@ -26,7 +26,7 @@ HSPMaxHeuristic::HSPMaxHeuristic(
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : RelaxationHeuristic(
-        transform, cache_estimates, description, verbosity) {
+          transform, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing HSP max heuristic..." << endl;
     }

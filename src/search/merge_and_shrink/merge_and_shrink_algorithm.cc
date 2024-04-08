@@ -459,9 +459,9 @@ void add_merge_and_shrink_algorithm_options_to_feature(plugins::Feature &feature
 }
 
 tuple<shared_ptr<MergeStrategyFactory>, shared_ptr<ShrinkStrategy>,
-    shared_ptr<LabelReduction>, bool, bool, int, int, int, double>
-    get_merge_and_shrink_algorithm_arguments_from_options(
-        const plugins::Options &opts) {
+      shared_ptr<LabelReduction>, bool, bool, int, int, int, double>
+get_merge_and_shrink_algorithm_arguments_from_options(
+    const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
             opts.get<shared_ptr<MergeStrategyFactory>>("merge_strategy"),

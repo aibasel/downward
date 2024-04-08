@@ -92,7 +92,7 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
     f_evals.reserve(base_evals.size());
     for (const shared_ptr<Evaluator> &eval : base_evals)
         f_evals.push_back(create_wastar_eval(
-            verbosity, g_eval, weight, eval));
+                              verbosity, g_eval, weight, eval));
 
     return create_alternation_open_list_factory_aux(
         f_evals,
@@ -105,9 +105,9 @@ create_astar_open_list_factory_and_f_eval(
     const shared_ptr<Evaluator> &h_eval, utils::Verbosity verbosity
     ) {
     shared_ptr<GEval> g = make_shared<GEval>("astar.g_eval", verbosity);
-    shared_ptr<Evaluator> f = 
+    shared_ptr<Evaluator> f =
         make_shared<SumEval>(vector<shared_ptr<Evaluator>>(
-            {g, h_eval}), "astar.f_eval", verbosity);
+                                 {g, h_eval}), "astar.f_eval", verbosity);
     vector<shared_ptr<Evaluator>> evals = {f, h_eval};
 
     shared_ptr<OpenListFactory> open =

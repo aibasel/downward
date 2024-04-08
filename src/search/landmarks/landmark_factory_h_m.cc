@@ -569,7 +569,7 @@ bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
 }
 
 LandmarkFactoryHM::LandmarkFactoryHM(int m, bool conjunctive_landmarks,
-    bool use_orders, utils::Verbosity verbosity)
+                                     bool use_orders, utils::Verbosity verbosity)
     : LandmarkFactory(verbosity),
       m_(m),
       conjunctive_landmarks(conjunctive_landmarks),

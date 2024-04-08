@@ -76,7 +76,7 @@ public:
 
 public:
     LandmarkFactoryZhuGivan(bool use_orders,
-        utils::Verbosity verbosity);
+                            utils::Verbosity verbosity);
 
     virtual bool supports_conditional_effects() const override;
 };

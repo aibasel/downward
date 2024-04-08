@@ -14,8 +14,8 @@ using namespace std;
 
 namespace landmarks {
 LandmarkHeuristic::LandmarkHeuristic(bool use_preferred_operators,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
+                                     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+                                     const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       use_preferred_operators(use_preferred_operators),
       successor_generator(nullptr) {
@@ -229,7 +229,7 @@ void add_landmark_heuristic_options_to_feature(
 }
 
 tuple<shared_ptr<LandmarkFactory>, bool, bool, bool, bool,
-    shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
+      shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
 get_landmark_heuristic_arguments_from_options(
     const plugins::Options &opts) {
     return tuple_cat(

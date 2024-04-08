@@ -43,7 +43,7 @@ public:
         const plugins::Options &opts,
         const utils::Context &) const override {
         plugins::Options options_copy(opts);
-        auto temp = 
+        auto temp =
             search_common::create_astar_open_list_factory_and_f_eval(
                 opts.get<shared_ptr<Evaluator>>("eval"),
                 opts.get<utils::Verbosity>("verbosity"));

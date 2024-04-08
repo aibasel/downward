@@ -44,7 +44,7 @@ protected:
 
 public:
     ParetoOpenList(const vector<shared_ptr<Evaluator>> &evals,
-        bool pref_only, bool state_uniform_selection, int random_seed);
+                   bool pref_only, bool state_uniform_selection, int random_seed);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
@@ -226,7 +226,7 @@ ParetoOpenListFactory::ParetoOpenListFactory(
     : evals(evals),
       pref_only(pref_only),
       state_uniform_selection(state_uniform_selection),
-       random_seed(random_seed) {
+      random_seed(random_seed) {
 }
 
 unique_ptr<StateOpenList>

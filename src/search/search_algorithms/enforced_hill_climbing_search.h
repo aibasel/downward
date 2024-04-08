@@ -61,10 +61,10 @@ protected:
 
 public:
     EnforcedHillClimbingSearch(const std::shared_ptr<Evaluator> &h,
-        PreferredUsage preferred_usage,
-        const std::vector<std::shared_ptr<Evaluator>> &preferred,
-        OperatorCost cost_type, int bound, double max_time,
-        const std::string &description, utils::Verbosity verbosity);
+                               PreferredUsage preferred_usage,
+                               const std::vector<std::shared_ptr<Evaluator>> &preferred,
+                               OperatorCost cost_type, int bound, double max_time,
+                               const std::string &description, utils::Verbosity verbosity);
 
     virtual void print_statistics() const override;
 };

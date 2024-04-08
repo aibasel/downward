@@ -24,9 +24,9 @@ class PatternCollectionGeneratorDisjointCegar : public PatternCollectionGenerato
         const std::shared_ptr<AbstractTask> &task) override;
 public:
     PatternCollectionGeneratorDisjointCegar(int max_pdb_size,
-        int max_collection_size, double max_time,
-        bool use_wildcard_plans, int random_seed,
-        utils::Verbosity verbosity);
+                                            int max_collection_size, double max_time,
+                                            bool use_wildcard_plans, int random_seed,
+                                            utils::Verbosity verbosity);
 };
 }
 

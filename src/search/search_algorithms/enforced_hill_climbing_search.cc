@@ -56,7 +56,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     OperatorCost cost_type, int bound, double max_time,
     const string &description, utils::Verbosity verbosity)
     : SearchAlgorithm(
-        cost_type, bound, max_time, description, verbosity),
+          cost_type, bound, max_time, description, verbosity),
       evaluator(h),
       preferred_operator_evaluators(preferred),
       preferred_usage(preferred_usage),

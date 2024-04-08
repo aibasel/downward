@@ -1,0 +1,1176 @@
+Checking 472 files with uncrustify.
+feature_name 'ipdb' would trigger an error if it was not marked as shorthand
+feature_name 'adapt_costs' would trigger an error if it was not marked as PERMANENT_EXCEPTION
+feature_name 'eager_wastar' would trigger an error if it was not marked as shorthand
+feature_name 'eager_greedy' would trigger an error if it was not marked as shorthand
+feature_name 'iterated' would trigger an error if it was not marked as TEMPORARY_EXCEPTION
+feature_name 'lazy_wastar' would trigger an error if it was not marked as shorthand
+feature_name 'lazy_greedy' would trigger an error if it was not marked as shorthand
+feature_name 'astar' would trigger an error if it was not marked as shorthand
+#########################################################
+#########################################################
+#########################################################
+#########################################################
+#########################################################
+.: ERRORS :.
+
+
+=====================================
+= = = EpsilonGreedyOpenListFactory = = =
+feature_name: epsilon_greedy
+class_name: EpsilonGreedyOpenListFactory
+
+== FEATURE PARAMETERS 'epsilon_greedy'==
+[',']
+== CLASS PARAMETERS 'EpsilonGreedyOpenListFactory'==
+['eval,', 'pref_only,', 'epsilon,', 'random_seed,']
+Wrong sizes
+, =/= eval,
+/home/dolsim00/developing-FD/downward/src/search/open_lists/epsilon_greedy_open_list.cc
+
+
+
+=====================================
+= = = AlternationOpenListFactory = = =
+feature_name: alt
+class_name: AlternationOpenListFactory
+
+== FEATURE PARAMETERS 'alt'==
+[',']
+== CLASS PARAMETERS 'AlternationOpenListFactory'==
+['sublists,', 'boost,']
+Wrong sizes
+, =/= sublists,
+/home/dolsim00/developing-FD/downward/src/search/open_lists/alternation_open_list.cc
+
+
+
+=====================================
+= = = TieBreakingOpenListFactory = = =
+feature_name: tiebreaking
+class_name: TieBreakingOpenListFactory
+
+== FEATURE PARAMETERS 'tiebreaking'==
+[',']
+== CLASS PARAMETERS 'TieBreakingOpenListFactory'==
+['evals,', 'pref_only,', 'unsafe_pruning,']
+Wrong sizes
+, =/= evals,
+/home/dolsim00/developing-FD/downward/src/search/open_lists/tiebreaking_open_list.cc
+
+
+
+=====================================
+= = = ParetoOpenListFactory = = =
+feature_name: pareto
+class_name: ParetoOpenListFactory
+
+== FEATURE PARAMETERS 'pareto'==
+[',']
+== CLASS PARAMETERS 'ParetoOpenListFactory'==
+['evals,', 'pref_only,', 'state_uniform_selection,', 'random_seed,']
+Wrong sizes
+, =/= evals,
+/home/dolsim00/developing-FD/downward/src/search/open_lists/pareto_open_list.cc
+
+
+
+=====================================
+= = = BestFirstOpenListFactory = = =
+feature_name: single
+class_name: BestFirstOpenListFactory
+
+== FEATURE PARAMETERS 'single'==
+[',']
+== CLASS PARAMETERS 'BestFirstOpenListFactory'==
+['eval,', 'pref_only,']
+Wrong sizes
+, =/= eval,
+/home/dolsim00/developing-FD/downward/src/search/open_lists/best_first_open_list.cc
+
+
+
+=====================================
+= = = TypeBasedOpenListFactory = = =
+feature_name: type_based
+class_name: TypeBasedOpenListFactory
+
+== FEATURE PARAMETERS 'type_based'==
+[',']
+== CLASS PARAMETERS 'TypeBasedOpenListFactory'==
+['evaluators,', 'random_seed,']
+Wrong sizes
+, =/= evaluators,
+/home/dolsim00/developing-FD/downward/src/search/open_lists/type_based_open_list.cc
+
+
+
+=====================================
+= = = AdditiveCartesianHeuristic = = =
+feature_name: cegar
+class_name: AdditiveCartesianHeuristic
+
+== FEATURE PARAMETERS 'cegar'==
+[',']
+== CLASS PARAMETERS 'AdditiveCartesianHeuristic'==
+['subtasks,', 'max_states,', 'max_transitions,', 'max_time,', 'pick,', 'use_general_costs,', 'random_seed,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= subtasks,
+/home/dolsim00/developing-FD/downward/src/search/cartesian_abstractions/additive_cartesian_heuristic.cc
+
+
+
+=====================================
+= = = TaskDuplicator = = =
+feature_name: original
+class_name: TaskDuplicator
+
+== FEATURE PARAMETERS 'original'==
+[',']
+== CLASS PARAMETERS 'TaskDuplicator'==
+['copies,']
+, =/= copies,
+/home/dolsim00/developing-FD/downward/src/search/cartesian_abstractions/subtask_generators.cc
+
+
+=====================================
+= = = GoalDecomposition = = =
+feature_name: goals
+class_name: GoalDecomposition
+
+== FEATURE PARAMETERS 'goals'==
+[',']
+== CLASS PARAMETERS 'GoalDecomposition'==
+['order,', 'random_seed,']
+Wrong sizes
+, =/= order,
+/home/dolsim00/developing-FD/downward/src/search/cartesian_abstractions/subtask_generators.cc
+
+
+=====================================
+= = = LandmarkDecomposition = = =
+feature_name: landmarks
+class_name: LandmarkDecomposition
+
+== FEATURE PARAMETERS 'landmarks'==
+[',']
+== CLASS PARAMETERS 'LandmarkDecomposition'==
+['order,', 'random_seed,', 'combine_facts,']
+Wrong sizes
+, =/= order,
+/home/dolsim00/developing-FD/downward/src/search/cartesian_abstractions/subtask_generators.cc
+
+
+
+=====================================
+= = = WeightedEvaluator = = =
+feature_name: weight
+class_name: WeightedEvaluator
+
+== FEATURE PARAMETERS 'weight'==
+[',']
+== CLASS PARAMETERS 'WeightedEvaluator'==
+['eval,', 'weight,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= eval,
+/home/dolsim00/developing-FD/downward/src/search/evaluators/weighted_evaluator.cc
+
+
+
+=====================================
+= = = PrefEvaluator = = =
+feature_name: pref
+class_name: PrefEvaluator
+
+== FEATURE PARAMETERS 'pref'==
+[',']
+== CLASS PARAMETERS 'PrefEvaluator'==
+['description,', 'verbosity,']
+Wrong sizes
+, =/= description,
+/home/dolsim00/developing-FD/downward/src/search/evaluators/pref_evaluator.cc
+
+
+
+=====================================
+= = = ConstEvaluator = = =
+feature_name: const
+class_name: ConstEvaluator
+
+== FEATURE PARAMETERS 'const'==
+[',']
+== CLASS PARAMETERS 'ConstEvaluator'==
+['value,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= value,
+/home/dolsim00/developing-FD/downward/src/search/evaluators/const_evaluator.cc
+
+
+
+=====================================
+= = = GEvaluator = = =
+feature_name: g
+class_name: GEvaluator
+
+== FEATURE PARAMETERS 'g'==
+[',']
+== CLASS PARAMETERS 'GEvaluator'==
+['description,', 'verbosity,']
+Wrong sizes
+, =/= description,
+/home/dolsim00/developing-FD/downward/src/search/evaluators/g_evaluator.cc
+
+
+
+=====================================
+= = = MaxEvaluator = = =
+feature_name: max
+class_name: MaxEvaluator
+
+== FEATURE PARAMETERS 'max'==
+[',']
+== CLASS PARAMETERS 'MaxEvaluator'==
+['evals,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= evals,
+/home/dolsim00/developing-FD/downward/src/search/evaluators/max_evaluator.cc
+
+
+
+=====================================
+= = = SumEvaluator = = =
+feature_name: sum
+class_name: SumEvaluator
+
+== FEATURE PARAMETERS 'sum'==
+[',']
+== CLASS PARAMETERS 'SumEvaluator'==
+['evals,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= evals,
+/home/dolsim00/developing-FD/downward/src/search/evaluators/sum_evaluator.cc
+
+
+
+=====================================
+= = = GoalCountHeuristic = = =
+feature_name: goalcount
+class_name: GoalCountHeuristic
+
+== FEATURE PARAMETERS 'goalcount'==
+[',']
+== CLASS PARAMETERS 'GoalCountHeuristic'==
+['transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= transform,
+/home/dolsim00/developing-FD/downward/src/search/heuristics/goal_count_heuristic.cc
+
+
+
+=====================================
+= = = CGHeuristic = = =
+feature_name: cg
+class_name: CGHeuristic
+
+== FEATURE PARAMETERS 'cg'==
+[',']
+== CLASS PARAMETERS 'CGHeuristic'==
+['max_cache_size,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= max_cache_size,
+/home/dolsim00/developing-FD/downward/src/search/heuristics/cg_heuristic.cc
+
+
+
+=====================================
+= = = FFHeuristic = = =
+feature_name: ff
+class_name: FFHeuristic
+
+== FEATURE PARAMETERS 'ff'==
+[',']
+== CLASS PARAMETERS 'FFHeuristic'==
+['transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= transform,
+/home/dolsim00/developing-FD/downward/src/search/heuristics/ff_heuristic.cc
+
+
+
+=====================================
+= = = LandmarkCutHeuristic = = =
+feature_name: lmcut
+class_name: LandmarkCutHeuristic
+
+== FEATURE PARAMETERS 'lmcut'==
+[',']
+== CLASS PARAMETERS 'LandmarkCutHeuristic'==
+['transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= transform,
+/home/dolsim00/developing-FD/downward/src/search/heuristics/lm_cut_heuristic.cc
+
+
+
+=====================================
+= = = HMHeuristic = = =
+feature_name: hm
+class_name: HMHeuristic
+
+== FEATURE PARAMETERS 'hm'==
+[',']
+== CLASS PARAMETERS 'HMHeuristic'==
+['m,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= m,
+/home/dolsim00/developing-FD/downward/src/search/heuristics/hm_heuristic.cc
+
+
+
+=====================================
+= = = HSPMaxHeuristic = = =
+feature_name: hmax
+class_name: HSPMaxHeuristic
+
+== FEATURE PARAMETERS 'hmax'==
+[',']
+== CLASS PARAMETERS 'HSPMaxHeuristic'==
+['transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= transform,
+/home/dolsim00/developing-FD/downward/src/search/heuristics/max_heuristic.cc
+
+
+
+=====================================
+= = = ContextEnhancedAdditiveHeuristic = = =
+feature_name: cea
+class_name: ContextEnhancedAdditiveHeuristic
+
+== FEATURE PARAMETERS 'cea'==
+[',']
+== CLASS PARAMETERS 'ContextEnhancedAdditiveHeuristic'==
+['transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= transform,
+/home/dolsim00/developing-FD/downward/src/search/heuristics/cea_heuristic.cc
+
+
+
+=====================================
+= = = BlindSearchHeuristic = = =
+feature_name: blind
+class_name: BlindSearchHeuristic
+
+== FEATURE PARAMETERS 'blind'==
+[',']
+== CLASS PARAMETERS 'BlindSearchHeuristic'==
+['transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= transform,
+/home/dolsim00/developing-FD/downward/src/search/heuristics/blind_search_heuristic.cc
+
+
+
+=====================================
+= = = AdditiveHeuristic = = =
+feature_name: add
+class_name: AdditiveHeuristic
+
+== FEATURE PARAMETERS 'add'==
+[',']
+== CLASS PARAMETERS 'AdditiveHeuristic'==
+['transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= transform,
+/home/dolsim00/developing-FD/downward/src/search/heuristics/additive_heuristic.cc
+
+
+
+=====================================
+= = = PDBHeuristic = = =
+feature_name: pdb
+class_name: PDBHeuristic
+
+== FEATURE PARAMETERS 'pdb'==
+[',']
+== CLASS PARAMETERS 'PDBHeuristic'==
+['pattern,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= pattern,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/pdb_heuristic.cc
+
+
+
+=====================================
+= = = ZeroOnePDBsHeuristic = = =
+feature_name: zopdbs
+class_name: ZeroOnePDBsHeuristic
+
+== FEATURE PARAMETERS 'zopdbs'==
+[',']
+== CLASS PARAMETERS 'ZeroOnePDBsHeuristic'==
+['patterns,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= patterns,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/zero_one_pdbs_heuristic.cc
+
+
+
+=====================================
+= = = PatternCollectionGeneratorSystematic = = =
+feature_name: systematic
+class_name: PatternCollectionGeneratorSystematic
+
+== FEATURE PARAMETERS 'systematic'==
+[',']
+== CLASS PARAMETERS 'PatternCollectionGeneratorSystematic'==
+['pattern_max_size,', 'only_interesting_patterns,', 'verbosity,']
+Wrong sizes
+, =/= pattern_max_size,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/pattern_collection_generator_systematic.cc
+
+
+
+=====================================
+= = = PatternCollectionGeneratorManual = = =
+feature_name: manual_patterns
+class_name: PatternCollectionGeneratorManual
+
+== FEATURE PARAMETERS 'manual_patterns'==
+[',']
+== CLASS PARAMETERS 'PatternCollectionGeneratorManual'==
+['patterns,', 'verbosity,']
+Wrong sizes
+, =/= patterns,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/pattern_collection_generator_manual.cc
+
+
+
+=====================================
+= = = PatternCollectionGeneratorGenetic = = =
+feature_name: genetic
+class_name: PatternCollectionGeneratorGenetic
+
+== FEATURE PARAMETERS 'genetic'==
+[',']
+== CLASS PARAMETERS 'PatternCollectionGeneratorGenetic'==
+['pdb_max_size,', 'num_collections,', 'num_episodes,', 'mutation_probability,', 'disjoint,', 'random_seed,', 'verbosity,']
+Wrong sizes
+, =/= pdb_max_size,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/pattern_collection_generator_genetic.cc
+
+
+
+=====================================
+= = = PatternGeneratorRandom = = =
+feature_name: random_pattern
+class_name: PatternGeneratorRandom
+
+== FEATURE PARAMETERS 'random_pattern'==
+[',']
+== CLASS PARAMETERS 'PatternGeneratorRandom'==
+['max_pdb_size,', 'max_time,', 'bidirectional,', 'random_seed,', 'verbosity,']
+Wrong sizes
+, =/= max_pdb_size,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/pattern_generator_random.cc
+
+
+
+=====================================
+= = = PatternCollectionGeneratorHillclimbing = = =
+feature_name: hillclimbing
+class_name: PatternCollectionGeneratorHillclimbing
+
+== FEATURE PARAMETERS 'hillclimbing'==
+[',']
+== CLASS PARAMETERS 'PatternCollectionGeneratorHillclimbing'==
+['pdb_max_size,', 'collection_max_size,', 'num_samples,', 'min_improvement,', 'max_time,', 'random_seed,', 'verbosity,']
+Wrong sizes
+, =/= pdb_max_size,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/pattern_collection_generator_hillclimbing.cc
+
+
+=====================================
+= = = CanonicalPDBsHeuristic = = =
+feature_name: ipdb
+class_name: CanonicalPDBsHeuristic
+
+== FEATURE PARAMETERS 'ipdb'==
+[',']
+== CLASS PARAMETERS 'CanonicalPDBsHeuristic'==
+['patterns,', 'max_time_dominance_pruning,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+
+
+
+=====================================
+= = = PatternCollectionGeneratorMultipleRandom = = =
+feature_name: random_patterns
+class_name: PatternCollectionGeneratorMultipleRandom
+
+== FEATURE PARAMETERS 'random_patterns'==
+[',']
+== CLASS PARAMETERS 'PatternCollectionGeneratorMultipleRandom'==
+['bidirectional,', 'max_pdb_size,', 'max_collection_size,', 'pattern_generation_max_time,', 'total_max_time,', 'stagnation_limit,', 'blacklist_trigger_percentage,', 'enable_blacklist_on_stagnation,', 'random_seed,', 'verbosity,']
+Wrong sizes
+, =/= bidirectional,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/pattern_collection_generator_multiple_random.cc
+
+
+
+=====================================
+= = = PatternCollectionGeneratorDisjointCegar = = =
+feature_name: disjoint_cegar
+class_name: PatternCollectionGeneratorDisjointCegar
+
+== FEATURE PARAMETERS 'disjoint_cegar'==
+[',']
+== CLASS PARAMETERS 'PatternCollectionGeneratorDisjointCegar'==
+['max_pdb_size,', 'max_collection_size,', 'max_time,', 'use_wildcard_plans,', 'random_seed,', 'verbosity,']
+Wrong sizes
+, =/= max_pdb_size,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/pattern_collection_generator_disjoint_cegar.cc
+
+
+
+=====================================
+= = = PatternCollectionGeneratorCombo = = =
+feature_name: combo
+class_name: PatternCollectionGeneratorCombo
+
+== FEATURE PARAMETERS 'combo'==
+[',']
+== CLASS PARAMETERS 'PatternCollectionGeneratorCombo'==
+['max_states,', 'verbosity,']
+Wrong sizes
+, =/= max_states,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/pattern_collection_generator_combo.cc
+
+
+
+=====================================
+= = = CanonicalPDBsHeuristic = = =
+feature_name: cpdbs
+class_name: CanonicalPDBsHeuristic
+
+== FEATURE PARAMETERS 'cpdbs'==
+[',']
+== CLASS PARAMETERS 'CanonicalPDBsHeuristic'==
+['patterns,', 'max_time_dominance_pruning,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= patterns,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/canonical_pdbs_heuristic.cc
+
+
+
+=====================================
+= = = PatternCollectionGeneratorMultipleCegar = = =
+feature_name: multiple_cegar
+class_name: PatternCollectionGeneratorMultipleCegar
+
+== FEATURE PARAMETERS 'multiple_cegar'==
+[',']
+== CLASS PARAMETERS 'PatternCollectionGeneratorMultipleCegar'==
+['use_wildcard_plans,', 'max_pdb_size,', 'max_collection_size,', 'pattern_generation_max_time,', 'total_max_time,', 'stagnation_limit,', 'blacklist_trigger_percentage,', 'enable_blacklist_on_stagnation,', 'random_seed,', 'verbosity,']
+Wrong sizes
+, =/= use_wildcard_plans,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/pattern_collection_generator_multiple_cegar.cc
+
+
+
+=====================================
+= = = PatternGeneratorCEGAR = = =
+feature_name: cegar_pattern
+class_name: PatternGeneratorCEGAR
+
+== FEATURE PARAMETERS 'cegar_pattern'==
+[',']
+== CLASS PARAMETERS 'PatternGeneratorCEGAR'==
+['max_pdb_size,', 'max_time,', 'use_wildcard_plans,', 'random_seed,', 'verbosity,']
+Wrong sizes
+, =/= max_pdb_size,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/pattern_generator_cegar.cc
+
+
+
+=====================================
+= = = PatternGeneratorGreedy = = =
+feature_name: greedy
+class_name: PatternGeneratorGreedy
+
+== FEATURE PARAMETERS 'greedy'==
+[',']
+== CLASS PARAMETERS 'PatternGeneratorGreedy'==
+['max_states,', 'verbosity,']
+Wrong sizes
+, =/= max_states,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/pattern_generator_greedy.cc
+
+
+
+=====================================
+= = = PatternGeneratorManual = = =
+feature_name: manual_pattern
+class_name: PatternGeneratorManual
+
+== FEATURE PARAMETERS 'manual_pattern'==
+[',']
+== CLASS PARAMETERS 'PatternGeneratorManual'==
+['pattern,', 'verbosity,']
+Wrong sizes
+, =/= pattern,
+/home/dolsim00/developing-FD/downward/src/search/pdbs/pattern_generator_manual.cc
+
+
+
+=====================================
+= = = LabelReduction = = =
+feature_name: exact
+class_name: LabelReduction
+
+== FEATURE PARAMETERS 'exact'==
+[',']
+== CLASS PARAMETERS 'LabelReduction'==
+['before_shrinking,', 'before_merging,', 'method,', 'system_order,', 'random_seed,']
+Wrong sizes
+, =/= before_shrinking,
+/home/dolsim00/developing-FD/downward/src/search/merge_and_shrink/label_reduction.cc
+
+
+
+=====================================
+= = = MergeScoringFunctionMIASM = = =
+feature_name: sf_miasm
+class_name: MergeScoringFunctionMIASM
+
+== FEATURE PARAMETERS 'sf_miasm'==
+[',']
+== CLASS PARAMETERS 'MergeScoringFunctionMIASM'==
+['shrink_strategy,', 'max_states,', 'max_states_before_merge,', 'threshold_before_merge,', 'use_caching,']
+Wrong sizes
+, =/= shrink_strategy,
+/home/dolsim00/developing-FD/downward/src/search/merge_and_shrink/merge_scoring_function_miasm.cc
+
+
+
+=====================================
+= = = MergeStrategyFactoryPrecomputed = = =
+feature_name: merge_precomputed
+class_name: MergeStrategyFactoryPrecomputed
+
+== FEATURE PARAMETERS 'merge_precomputed'==
+[',']
+== CLASS PARAMETERS 'MergeStrategyFactoryPrecomputed'==
+['merge_tree,', 'verbosity,']
+Wrong sizes
+, =/= merge_tree,
+/home/dolsim00/developing-FD/downward/src/search/merge_and_shrink/merge_strategy_factory_precomputed.cc
+
+
+
+=====================================
+= = = ShrinkBisimulation = = =
+feature_name: shrink_bisimulation
+class_name: ShrinkBisimulation
+
+== FEATURE PARAMETERS 'shrink_bisimulation'==
+[',']
+== CLASS PARAMETERS 'ShrinkBisimulation'==
+['greedy,', 'at_limit,']
+Wrong sizes
+, =/= greedy,
+/home/dolsim00/developing-FD/downward/src/search/merge_and_shrink/shrink_bisimulation.cc
+
+
+
+=====================================
+= = = MergeStrategyFactorySCCs = = =
+feature_name: merge_sccs
+class_name: MergeStrategyFactorySCCs
+
+== FEATURE PARAMETERS 'merge_sccs'==
+[',']
+== CLASS PARAMETERS 'MergeStrategyFactorySCCs'==
+['order_of_sccs,', 'merge_tree,', 'merge_selector,', 'verbosity,']
+Wrong sizes
+, =/= order_of_sccs,
+/home/dolsim00/developing-FD/downward/src/search/merge_and_shrink/merge_strategy_factory_sccs.cc
+
+
+
+=====================================
+= = = MergeTreeFactoryLinear = = =
+feature_name: linear
+class_name: MergeTreeFactoryLinear
+
+== FEATURE PARAMETERS 'linear'==
+[',']
+== CLASS PARAMETERS 'MergeTreeFactoryLinear'==
+['variable_order,', 'random_seed,', 'update_option,']
+Wrong sizes
+, =/= variable_order,
+/home/dolsim00/developing-FD/downward/src/search/merge_and_shrink/merge_tree_factory_linear.cc
+
+
+
+=====================================
+= = = ShrinkRandom = = =
+feature_name: shrink_random
+class_name: ShrinkRandom
+
+== FEATURE PARAMETERS 'shrink_random'==
+[',']
+== CLASS PARAMETERS 'ShrinkRandom'==
+['random_seed,']
+, =/= random_seed,
+/home/dolsim00/developing-FD/downward/src/search/merge_and_shrink/shrink_random.cc
+
+
+
+=====================================
+= = = MergeScoringFunctionTotalOrder = = =
+feature_name: total_order
+class_name: MergeScoringFunctionTotalOrder
+
+== FEATURE PARAMETERS 'total_order'==
+[',']
+== CLASS PARAMETERS 'MergeScoringFunctionTotalOrder'==
+['atomic_ts_order,', 'product_ts_order,', 'atomic_before_product,', 'random_seed,']
+Wrong sizes
+, =/= atomic_ts_order,
+/home/dolsim00/developing-FD/downward/src/search/merge_and_shrink/merge_scoring_function_total_order.cc
+
+
+
+=====================================
+= = = MergeSelectorScoreBasedFiltering = = =
+feature_name: score_based_filtering
+class_name: MergeSelectorScoreBasedFiltering
+
+== FEATURE PARAMETERS 'score_based_filtering'==
+[',']
+== CLASS PARAMETERS 'MergeSelectorScoreBasedFiltering'==
+['scoring_functions,']
+, =/= scoring_functions,
+/home/dolsim00/developing-FD/downward/src/search/merge_and_shrink/merge_selector_score_based_filtering.cc
+
+
+
+=====================================
+= = = ShrinkFH = = =
+feature_name: shrink_fh
+class_name: ShrinkFH
+
+== FEATURE PARAMETERS 'shrink_fh'==
+[',']
+== CLASS PARAMETERS 'ShrinkFH'==
+['shrink_f,', 'shrink_h,', 'random_seed,']
+Wrong sizes
+, =/= shrink_f,
+/home/dolsim00/developing-FD/downward/src/search/merge_and_shrink/shrink_fh.cc
+
+
+
+=====================================
+= = = MergeScoringFunctionSingleRandom = = =
+feature_name: single_random
+class_name: MergeScoringFunctionSingleRandom
+
+== FEATURE PARAMETERS 'single_random'==
+[',']
+== CLASS PARAMETERS 'MergeScoringFunctionSingleRandom'==
+['random_seed,']
+, =/= random_seed,
+/home/dolsim00/developing-FD/downward/src/search/merge_and_shrink/merge_scoring_function_single_random.cc
+
+
+
+=====================================
+= = = MergeAndShrinkHeuristic = = =
+feature_name: merge_and_shrink
+class_name: MergeAndShrinkHeuristic
+
+== FEATURE PARAMETERS 'merge_and_shrink'==
+[',']
+== CLASS PARAMETERS 'MergeAndShrinkHeuristic'==
+['merge_strategy,', 'shrink_strategy,', 'label_reduction,', 'prune_unreachable_states,', 'prune_irrelevant_states,', 'max_states,', 'max_states_before_merge,', 'threshold_before_merge,', 'main_loop_max_time,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= merge_strategy,
+/home/dolsim00/developing-FD/downward/src/search/merge_and_shrink/merge_and_shrink_heuristic.cc
+
+
+
+=====================================
+= = = MergeStrategyFactoryStateless = = =
+feature_name: merge_stateless
+class_name: MergeStrategyFactoryStateless
+
+== FEATURE PARAMETERS 'merge_stateless'==
+[',']
+== CLASS PARAMETERS 'MergeStrategyFactoryStateless'==
+['merge_selector,', 'verbosity,']
+Wrong sizes
+, =/= merge_selector,
+/home/dolsim00/developing-FD/downward/src/search/merge_and_shrink/merge_strategy_factory_stateless.cc
+
+
+
+=====================================
+= = = PhOConstraints = = =
+feature_name: pho_constraints
+class_name: PhOConstraints
+
+== FEATURE PARAMETERS 'pho_constraints'==
+[',']
+== CLASS PARAMETERS 'PhOConstraints'==
+['pattern_generator,']
+, =/= pattern_generator,
+/home/dolsim00/developing-FD/downward/src/search/operator_counting/pho_constraints.cc
+
+
+
+=====================================
+= = = OperatorCountingHeuristic = = =
+feature_name: operatorcounting
+class_name: OperatorCountingHeuristic
+
+== FEATURE PARAMETERS 'operatorcounting'==
+[',']
+== CLASS PARAMETERS 'OperatorCountingHeuristic'==
+['constraint_generators,', 'use_integer_operator_counts,', 'lpsolver,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= constraint_generators,
+/home/dolsim00/developing-FD/downward/src/search/operator_counting/operator_counting_heuristic.cc
+
+
+
+=====================================
+= = = DeleteRelaxationConstraints = = =
+feature_name: delete_relaxation_constraints
+class_name: DeleteRelaxationConstraints
+
+== FEATURE PARAMETERS 'delete_relaxation_constraints'==
+[',']
+== CLASS PARAMETERS 'DeleteRelaxationConstraints'==
+['use_time_vars,', 'use_integer_vars,']
+Wrong sizes
+, =/= use_time_vars,
+/home/dolsim00/developing-FD/downward/src/search/operator_counting/delete_relaxation_constraints.cc
+
+
+
+=====================================
+= = = StateEquationConstraints = = =
+feature_name: state_equation_constraints
+class_name: StateEquationConstraints
+
+== FEATURE PARAMETERS 'state_equation_constraints'==
+[',']
+== CLASS PARAMETERS 'StateEquationConstraints'==
+['verbosity,']
+, =/= verbosity,
+/home/dolsim00/developing-FD/downward/src/search/operator_counting/state_equation_constraints.cc
+
+
+
+=====================================
+= = = PotentialHeuristic = = =
+feature_name: initial_state_potential
+class_name: PotentialHeuristic
+
+== FEATURE PARAMETERS 'initial_state_potential'==
+[',']
+== CLASS PARAMETERS 'PotentialHeuristic'==
+['function,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= function,
+/home/dolsim00/developing-FD/downward/src/search/potentials/single_potential_heuristics.cc
+
+
+=====================================
+= = = PotentialHeuristic = = =
+feature_name: all_states_potential
+class_name: PotentialHeuristic
+
+== FEATURE PARAMETERS 'all_states_potential'==
+[',']
+== CLASS PARAMETERS 'PotentialHeuristic'==
+['function,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= function,
+/home/dolsim00/developing-FD/downward/src/search/potentials/single_potential_heuristics.cc
+
+
+
+=====================================
+= = = PotentialMaxHeuristic = = =
+feature_name: sample_based_potentials
+class_name: PotentialMaxHeuristic
+
+== FEATURE PARAMETERS 'sample_based_potentials'==
+[',']
+== CLASS PARAMETERS 'PotentialMaxHeuristic'==
+['functions,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= functions,
+/home/dolsim00/developing-FD/downward/src/search/potentials/sample_based_potential_heuristics.cc
+
+
+
+=====================================
+= = = PotentialMaxHeuristic = = =
+feature_name: diverse_potentials
+class_name: PotentialMaxHeuristic
+
+== FEATURE PARAMETERS 'diverse_potentials'==
+[',']
+== CLASS PARAMETERS 'PotentialMaxHeuristic'==
+['functions,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= functions,
+/home/dolsim00/developing-FD/downward/src/search/potentials/diverse_potential_heuristics.cc
+
+
+
+=====================================
+= = = LandmarkCostPartitioningHeuristic = = =
+feature_name: landmark_cost_partitioning
+class_name: LandmarkCostPartitioningHeuristic
+
+== FEATURE PARAMETERS 'landmark_cost_partitioning'==
+[',']
+== CLASS PARAMETERS 'LandmarkCostPartitioningHeuristic'==
+['lm_factory,', 'use_preferred_operators,', 'prog_goal,', 'prog_gn,', 'prog_r,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,', 'cost_partitioning,', 'alm,', 'lpsolver,']
+Wrong sizes
+, =/= lm_factory,
+/home/dolsim00/developing-FD/downward/src/search/landmarks/landmark_cost_partitioning_heuristic.cc
+
+
+
+=====================================
+= = = LandmarkSumHeuristic = = =
+feature_name: landmark_sum
+class_name: LandmarkSumHeuristic
+
+== FEATURE PARAMETERS 'landmark_sum'==
+[',']
+== CLASS PARAMETERS 'LandmarkSumHeuristic'==
+['lm_factory,', 'use_preferred_operators,', 'prog_goal,', 'prog_gn,', 'prog_r,', 'transform,', 'cache_estimates,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= lm_factory,
+/home/dolsim00/developing-FD/downward/src/search/landmarks/landmark_sum_heuristic.cc
+
+
+
+=====================================
+= = = LandmarkFactoryHM = = =
+feature_name: lm_hm
+class_name: LandmarkFactoryHM
+
+== FEATURE PARAMETERS 'lm_hm'==
+[',']
+== CLASS PARAMETERS 'LandmarkFactoryHM'==
+['m,', 'conjunctive_landmarks,', 'use_orders,', 'verbosity,']
+Wrong sizes
+, =/= m,
+/home/dolsim00/developing-FD/downward/src/search/landmarks/landmark_factory_h_m.cc
+
+
+
+=====================================
+= = = LandmarkFactoryRpgExhaust = = =
+feature_name: lm_exhaust
+class_name: LandmarkFactoryRpgExhaust
+
+== FEATURE PARAMETERS 'lm_exhaust'==
+[',']
+== CLASS PARAMETERS 'LandmarkFactoryRpgExhaust'==
+['only_causal_landmarks,', 'verbosity,']
+Wrong sizes
+, =/= only_causal_landmarks,
+/home/dolsim00/developing-FD/downward/src/search/landmarks/landmark_factory_rpg_exhaust.cc
+
+
+
+=====================================
+= = = LandmarkFactoryRpgSasp = = =
+feature_name: lm_rhw
+class_name: LandmarkFactoryRpgSasp
+
+== FEATURE PARAMETERS 'lm_rhw'==
+[',']
+== CLASS PARAMETERS 'LandmarkFactoryRpgSasp'==
+['disjunctive_landmarks,', 'use_orders,', 'only_causal_landmarks,', 'verbosity,']
+Wrong sizes
+, =/= disjunctive_landmarks,
+/home/dolsim00/developing-FD/downward/src/search/landmarks/landmark_factory_rpg_sasp.cc
+
+
+
+=====================================
+= = = LandmarkFactoryMerged = = =
+feature_name: lm_merged
+class_name: LandmarkFactoryMerged
+
+== FEATURE PARAMETERS 'lm_merged'==
+[',']
+== CLASS PARAMETERS 'LandmarkFactoryMerged'==
+['lm_factories,', 'verbosity,']
+Wrong sizes
+, =/= lm_factories,
+/home/dolsim00/developing-FD/downward/src/search/landmarks/landmark_factory_merged.cc
+
+
+
+=====================================
+= = = LandmarkFactoryReasonableOrdersHPS = = =
+feature_name: lm_reasonable_orders_hps
+class_name: LandmarkFactoryReasonableOrdersHPS
+
+== FEATURE PARAMETERS 'lm_reasonable_orders_hps'==
+[',']
+== CLASS PARAMETERS 'LandmarkFactoryReasonableOrdersHPS'==
+['lm_factory,', 'verbosity,']
+Wrong sizes
+, =/= lm_factory,
+/home/dolsim00/developing-FD/downward/src/search/landmarks/landmark_factory_reasonable_orders_hps.cc
+
+
+
+=====================================
+= = = LandmarkFactoryZhuGivan = = =
+feature_name: lm_zg
+class_name: LandmarkFactoryZhuGivan
+
+== FEATURE PARAMETERS 'lm_zg'==
+[',']
+== CLASS PARAMETERS 'LandmarkFactoryZhuGivan'==
+['use_orders,', 'verbosity,']
+Wrong sizes
+, =/= use_orders,
+/home/dolsim00/developing-FD/downward/src/search/landmarks/landmark_factory_zhu_givan.cc
+
+
+
+=====================================
+= = = NullPruningMethod = = =
+feature_name: null
+class_name: NullPruningMethod
+
+== FEATURE PARAMETERS 'null'==
+[',']
+== CLASS PARAMETERS 'NullPruningMethod'==
+['verbosity,']
+, =/= verbosity,
+/home/dolsim00/developing-FD/downward/src/search/pruning/null_pruning_method.cc
+
+
+
+=====================================
+= = = StubbornSetsAtomCentric = = =
+feature_name: atom_centric_stubborn_sets
+class_name: StubbornSetsAtomCentric
+
+== FEATURE PARAMETERS 'atom_centric_stubborn_sets'==
+[',']
+== CLASS PARAMETERS 'StubbornSetsAtomCentric'==
+['use_sibling_shortcut,', 'atom_selection_strategy,', 'verbosity,']
+Wrong sizes
+, =/= use_sibling_shortcut,
+/home/dolsim00/developing-FD/downward/src/search/pruning/stubborn_sets_atom_centric.cc
+
+
+
+=====================================
+= = = StubbornSetsEC = = =
+feature_name: stubborn_sets_ec
+class_name: StubbornSetsEC
+
+== FEATURE PARAMETERS 'stubborn_sets_ec'==
+[',']
+== CLASS PARAMETERS 'StubbornSetsEC'==
+['verbosity,']
+, =/= verbosity,
+/home/dolsim00/developing-FD/downward/src/search/pruning/stubborn_sets_ec.cc
+
+
+
+=====================================
+= = = LimitedPruning = = =
+feature_name: limited_pruning
+class_name: LimitedPruning
+
+== FEATURE PARAMETERS 'limited_pruning'==
+[',']
+== CLASS PARAMETERS 'LimitedPruning'==
+['pruning,', 'min_required_pruning_ratio,', 'expansions_before_checking_pruning_ratio,', 'verbosity,']
+Wrong sizes
+, =/= pruning,
+/home/dolsim00/developing-FD/downward/src/search/pruning/limited_pruning.cc
+
+
+
+=====================================
+= = = StubbornSetsSimple = = =
+feature_name: stubborn_sets_simple
+class_name: StubbornSetsSimple
+
+== FEATURE PARAMETERS 'stubborn_sets_simple'==
+[',']
+== CLASS PARAMETERS 'StubbornSetsSimple'==
+['verbosity,']
+, =/= verbosity,
+/home/dolsim00/developing-FD/downward/src/search/pruning/stubborn_sets_simple.cc
+
+
+
+=====================================
+= = = LazySearch = = =
+feature_name: lazy
+class_name: LazySearch
+
+== FEATURE PARAMETERS 'lazy'==
+[',']
+== CLASS PARAMETERS 'LazySearch'==
+['open,', 'reopen_closed,', 'preferred,', 'randomize_successors,', 'preferred_successors_first,', 'random_seed,', 'cost_type,', 'bound,', 'max_time,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= open,
+/home/dolsim00/developing-FD/downward/src/search/search_algorithms/plugin_lazy.cc
+
+
+
+=====================================
+= = = EagerSearch = = =
+feature_name: eager
+class_name: EagerSearch
+
+== FEATURE PARAMETERS 'eager'==
+[',']
+== CLASS PARAMETERS 'EagerSearch'==
+['open,', 'reopen_closed,', 'f_eval,', 'preferred,', 'pruning,', 'lazy_evaluator,', 'cost_type,', 'bound,', 'max_time,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= open,
+/home/dolsim00/developing-FD/downward/src/search/search_algorithms/plugin_eager.cc
+
+
+
+=====================================
+= = = EnforcedHillClimbingSearch = = =
+feature_name: ehc
+class_name: EnforcedHillClimbingSearch
+
+== FEATURE PARAMETERS 'ehc'==
+[',']
+== CLASS PARAMETERS 'EnforcedHillClimbingSearch'==
+['h,', 'preferred_usage,', 'preferred,', 'cost_type,', 'bound,', 'max_time,', 'description,', 'verbosity,']
+Wrong sizes
+, =/= h,
+/home/dolsim00/developing-FD/downward/src/search/search_algorithms/enforced_hill_climbing_search.cc
+
+Running check_cc_files
+Checking style of 231 *.cc files
+Running check_cplusplus_style
+Running check_include_guard_convention
+Running check_parameter_orders
+Checking Component Parameters of 231 *.cc files
+Running check_python_style
