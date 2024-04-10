@@ -57,8 +57,9 @@ class PotentialOptimizer {
     void extract_lp_solution();
 
 public:
-    PotentialOptimizer(const std::shared_ptr<AbstractTask> &transform,
-                       lp::LPSolverType lpsolver, double max_potential);
+    PotentialOptimizer(
+        const std::shared_ptr<AbstractTask> &transform,
+        lp::LPSolverType lpsolver, double max_potential);
     ~PotentialOptimizer() = default;
 
     std::shared_ptr<AbstractTask> get_task() const;

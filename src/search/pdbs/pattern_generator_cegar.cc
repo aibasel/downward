@@ -16,9 +16,9 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorCEGAR::PatternGeneratorCEGAR(int max_pdb_size,
-                                             double max_time, bool use_wildcard_plans, int random_seed,
-                                             utils::Verbosity verbosity)
+PatternGeneratorCEGAR::PatternGeneratorCEGAR(
+    int max_pdb_size, double max_time, bool use_wildcard_plans,
+    int random_seed, utils::Verbosity verbosity)
     : PatternGenerator(verbosity),
       max_pdb_size(max_pdb_size),
       max_time(max_time),

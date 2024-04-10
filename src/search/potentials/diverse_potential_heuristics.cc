@@ -15,11 +15,11 @@
 using namespace std;
 
 namespace potentials {
-DiversePotentialHeuristics::DiversePotentialHeuristics(int num_samples,
-                                                       int max_num_heuristics, double max_potential,
-                                                       lp::LPSolverType lpsolver,
-                                                       const shared_ptr<AbstractTask> &transform, int random_seed,
-                                                       utils::Verbosity verbosity)
+DiversePotentialHeuristics::DiversePotentialHeuristics(
+    int num_samples, int max_num_heuristics, double max_potential,
+    lp::LPSolverType lpsolver,
+    const shared_ptr<AbstractTask> &transform, int random_seed,
+    utils::Verbosity verbosity)
     : optimizer(
           transform,
           lpsolver,

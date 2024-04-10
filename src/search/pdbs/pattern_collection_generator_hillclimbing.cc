@@ -558,8 +558,7 @@ void add_hillclimbing_options_to_feature(plugins::Feature &feature) {
 }
 
 tuple<int, int, int, int, double, int>
-get_hillclimbing_arguments_from_options(
-    const plugins::Options &opts) {
+get_hillclimbing_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
             opts.get<int>("pdb_max_size"),

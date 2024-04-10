@@ -26,8 +26,9 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
     }
     shared_ptr<utils::RandomNumberGenerator> rng =
         utils::get_rng(random_seed);
-    CostSaturation cost_saturation(subtask_generators, max_states,
-                                   max_transitions, max_time, pick, use_general_costs, *rng, log);
+    CostSaturation cost_saturation(
+        subtask_generators, max_states, max_transitions, max_time, pick,
+        use_general_costs, *rng, log);
     return cost_saturation.generate_heuristic_functions(transform);
 }
 

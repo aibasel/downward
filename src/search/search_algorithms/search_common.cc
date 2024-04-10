@@ -106,8 +106,9 @@ create_astar_open_list_factory_and_f_eval(
     ) {
     shared_ptr<GEval> g = make_shared<GEval>("astar.g_eval", verbosity);
     shared_ptr<Evaluator> f =
-        make_shared<SumEval>(vector<shared_ptr<Evaluator>>(
-                                 {g, h_eval}), "astar.f_eval", verbosity);
+        make_shared<SumEval>(
+            vector<shared_ptr<Evaluator>>({g, h_eval}),
+            "astar.f_eval", verbosity);
     vector<shared_ptr<Evaluator>> evals = {f, h_eval};
 
     shared_ptr<OpenListFactory> open =

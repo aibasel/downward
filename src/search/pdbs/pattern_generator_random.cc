@@ -16,9 +16,9 @@
 using namespace std;
 
 namespace pdbs {
-PatternGeneratorRandom::PatternGeneratorRandom(int max_pdb_size,
-                                               double max_time, bool bidirectional, int random_seed,
-                                               utils::Verbosity verbosity)
+PatternGeneratorRandom::PatternGeneratorRandom(
+    int max_pdb_size, double max_time, bool bidirectional,
+    int random_seed, utils::Verbosity verbosity)
     : PatternGenerator(verbosity),
       max_pdb_size(max_pdb_size),
       max_time(max_time),

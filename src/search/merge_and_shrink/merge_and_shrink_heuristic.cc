@@ -31,10 +31,11 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
     const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity) {
     log << "Initializing merge-and-shrink heuristic..." << endl;
-    MergeAndShrinkAlgorithm algorithm(merge_strategy, shrink_strategy,
-                                      label_reduction, max_states, max_states_before_merge,
-                                      threshold_before_merge, prune_unreachable_states,
-                                      prune_irrelevant_states, main_loop_max_time, verbosity);
+    MergeAndShrinkAlgorithm algorithm(
+        merge_strategy, shrink_strategy, label_reduction, max_states,
+        max_states_before_merge, threshold_before_merge,
+        prune_unreachable_states, prune_irrelevant_states,
+        main_loop_max_time, verbosity);
     FactoredTransitionSystem fts = algorithm.build_factored_transition_system(task_proxy);
     extract_factors(fts);
     log << "Done initializing merge-and-shrink heuristic." << endl << endl;

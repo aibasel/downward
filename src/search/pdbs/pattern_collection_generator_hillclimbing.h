@@ -132,9 +132,10 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     virtual PatternCollectionInformation compute_patterns(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
-    PatternCollectionGeneratorHillclimbing(int pdb_max_size,
-                                           int collection_max_size, int num_samples, int min_improvement,
-                                           double max_time, int random_seed, utils::Verbosity verbosity);
+    PatternCollectionGeneratorHillclimbing(
+        int pdb_max_size, int collection_max_size, int num_samples,
+        int min_improvement, double max_time, int random_seed,
+        utils::Verbosity verbosity);
 };
 
 extern void add_hillclimbing_options_to_feature(

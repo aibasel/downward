@@ -37,8 +37,9 @@ protected:
                               const Entry &entry) override;
 
 public:
-    TieBreakingOpenList(const vector<shared_ptr<Evaluator>> &evals,
-                        bool pref_only, bool unsafe_pruning);
+    TieBreakingOpenList(
+        const vector<shared_ptr<Evaluator>> &evals, bool pref_only,
+        bool unsafe_pruning);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;

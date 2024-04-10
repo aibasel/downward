@@ -60,8 +60,9 @@ protected:
     bool check_goal_and_set_plan(const State &state);
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
-    SearchAlgorithm(OperatorCost cost_type, int bound, double max_time,
-                    const std::string &description, utils::Verbosity verbosity);
+    SearchAlgorithm(
+        OperatorCost cost_type, int bound, double max_time,
+        const std::string &description, utils::Verbosity verbosity);
     explicit SearchAlgorithm(const plugins::Options &opts); // TODO options object is needed for iterated search, the prototype for issue559 resolves this
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;

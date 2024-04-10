@@ -25,9 +25,10 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
-LabelReduction::LabelReduction(bool before_shrinking,
-                               bool before_merging, LabelReductionMethod method,
-                               LabelReductionSystemOrder system_order, int random_seed)
+LabelReduction::LabelReduction(
+    bool before_shrinking, bool before_merging,
+    LabelReductionMethod method, LabelReductionSystemOrder system_order,
+    int random_seed)
     : lr_before_shrinking(before_shrinking),
       lr_before_merging(before_merging),
       lr_method(method),

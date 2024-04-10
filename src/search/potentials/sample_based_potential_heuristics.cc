@@ -41,9 +41,10 @@ static void optimize_for_samples(
   sets of samples.
 */
 static vector<unique_ptr<PotentialFunction>>
-create_sample_based_potential_functions(int num_samples,
-                                        int num_heuristics, double max_potential, lp::LPSolverType lpsolver,
-                                        const shared_ptr<AbstractTask> &transform, int random_seed) {
+create_sample_based_potential_functions(
+    int num_samples, int num_heuristics, double max_potential,
+    lp::LPSolverType lpsolver,
+    const shared_ptr<AbstractTask> &transform, int random_seed) {
     vector<unique_ptr<PotentialFunction>> functions;
     PotentialOptimizer optimizer(transform, lpsolver, max_potential);
     shared_ptr<utils::RandomNumberGenerator> rng(

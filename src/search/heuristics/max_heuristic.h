@@ -33,9 +33,10 @@ class HSPMaxHeuristic : public relaxation_heuristic::RelaxationHeuristic {
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    HSPMaxHeuristic(const std::shared_ptr<AbstractTask> &transform,
-                    bool cache_estimates, const std::string &description,
-                    utils::Verbosity verbosity);
+    HSPMaxHeuristic(
+        const std::shared_ptr<AbstractTask> &transform,
+        bool cache_estimates, const std::string &description,
+        utils::Verbosity verbosity);
 };
 }
 

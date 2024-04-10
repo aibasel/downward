@@ -12,9 +12,10 @@
 using namespace std;
 
 namespace hm_heuristic {
-HMHeuristic::HMHeuristic(int m,
-                         const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-                         const string &description, utils::Verbosity verbosity)
+HMHeuristic::HMHeuristic(
+    int m, const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates, const string &description,
+    utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       m(m),
       has_cond_effects(task_properties::has_conditional_effects(task_proxy)),

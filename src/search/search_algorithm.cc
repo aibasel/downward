@@ -39,9 +39,9 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
     return successor_generator;
 }
 
-SearchAlgorithm::SearchAlgorithm(OperatorCost cost_type, int bound,
-                                 double max_time, const string &description,
-                                 utils::Verbosity verbosity)
+SearchAlgorithm::SearchAlgorithm(
+    OperatorCost cost_type, int bound, double max_time,
+    const string &description, utils::Verbosity verbosity)
     : description(description),
       status(IN_PROGRESS),
       solution_found(false),
@@ -192,10 +192,10 @@ void add_search_algorithm_options_to_feature(
         "experiments. Timed-out searches are treated as failed searches, "
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
-    feature.add_option<string>("description",
-                               "description used to identify search"
-                               " algorithm in logs",
-                               "\"" + description + "\"");
+    feature.add_option<string>(
+        "description",
+        "description used to identify search algorithm in logs",
+        "\"" + description + "\"");
     utils::add_log_options_to_feature(feature);
 }
 

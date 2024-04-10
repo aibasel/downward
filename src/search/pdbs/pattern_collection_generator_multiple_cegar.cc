@@ -16,11 +16,10 @@ PatternCollectionGeneratorMultipleCegar::PatternCollectionGeneratorMultipleCegar
     double stagnation_limit, double blacklist_trigger_percentage,
     bool enable_blacklist_on_stagnation, int random_seed,
     utils::Verbosity verbosity)
-    : PatternCollectionGeneratorMultiple(max_pdb_size,
-                                         max_collection_size, pattern_generation_max_time,
-                                         total_max_time, stagnation_limit,
-                                         blacklist_trigger_percentage, enable_blacklist_on_stagnation,
-                                         random_seed, verbosity),
+    : PatternCollectionGeneratorMultiple(
+        max_pdb_size, max_collection_size, pattern_generation_max_time,
+        total_max_time, stagnation_limit, blacklist_trigger_percentage,
+        enable_blacklist_on_stagnation, random_seed, verbosity),
       use_wildcard_plans(use_wildcard_plans) {
 }
 
