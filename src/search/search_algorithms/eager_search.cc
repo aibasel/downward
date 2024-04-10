@@ -28,7 +28,7 @@ EagerSearch::EagerSearch(
     int bound, double max_time, const string &description,
     utils::Verbosity verbosity)
     : SearchAlgorithm(
-        cost_type, bound, max_time, description, verbosity),
+          cost_type, bound, max_time, description, verbosity),
       reopen_closed_nodes(reopen_closed),
       open_list(open->create_state_open_list()),
       f_evaluator(f_eval),     // default nullptr

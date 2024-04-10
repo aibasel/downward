@@ -114,7 +114,7 @@ class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
         const std::shared_ptr<AbstractTask> &task) override;
 public:
     PatternCollectionGeneratorGenetic(
-        int pdb_max_size, int num_collections, int num_episodes, 
+        int pdb_max_size, int num_collections, int num_episodes,
         double mutation_probability, bool disjoint, int random_seed,
         utils::Verbosity verbosity);
 };
