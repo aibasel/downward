@@ -154,7 +154,8 @@ string MergeStrategyFactorySCCs::name() const {
     return "sccs";
 }
 
-class MergeStrategyFactorySCCsFeature : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactorySCCs> {
+class MergeStrategyFactorySCCsFeature
+    : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactorySCCs> {
 public:
     MergeStrategyFactorySCCsFeature() : TypedFeature("merge_sccs") {
         document_title("Merge strategy SSCs");

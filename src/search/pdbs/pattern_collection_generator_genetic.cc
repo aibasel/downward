@@ -299,7 +299,8 @@ PatternCollectionInformation PatternCollectionGeneratorGenetic::compute_patterns
     return PatternCollectionInformation(task_proxy, best_patterns, log);
 }
 
-class PatternCollectionGeneratorGeneticFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorGenetic> {
+class PatternCollectionGeneratorGeneticFeature
+    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorGenetic> {
 public:
     PatternCollectionGeneratorGeneticFeature() : TypedFeature("genetic") {
         document_title("Genetic Algorithm Patterns");

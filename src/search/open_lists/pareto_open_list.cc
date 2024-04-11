@@ -242,7 +242,8 @@ ParetoOpenListFactory::create_edge_open_list() {
         evals, pref_only, state_uniform_selection, random_seed);
 }
 
-class ParetoOpenListFeature : public plugins::TypedFeature<OpenListFactory, ParetoOpenListFactory> {
+class ParetoOpenListFeature
+    : public plugins::TypedFeature<OpenListFactory, ParetoOpenListFactory> {
 public:
     ParetoOpenListFeature() : TypedFeature("pareto") {
         document_title("Pareto open list");

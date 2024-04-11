@@ -31,7 +31,8 @@ int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
         return min_operator_cost;
 }
 
-class BlindSearchHeuristicFeature : public plugins::TypedFeature<Evaluator, BlindSearchHeuristic> {
+class BlindSearchHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, BlindSearchHeuristic> {
 public:
     BlindSearchHeuristicFeature() : TypedFeature("blind") {
         document_title("Blind heuristic");

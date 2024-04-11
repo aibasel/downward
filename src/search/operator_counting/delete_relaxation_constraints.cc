@@ -237,7 +237,8 @@ bool DeleteRelaxationConstraints::update_constraints(
     return false;
 }
 
-class DeleteRelaxationConstraintsFeature : public plugins::TypedFeature<ConstraintGenerator, DeleteRelaxationConstraints> {
+class DeleteRelaxationConstraintsFeature
+    : public plugins::TypedFeature<ConstraintGenerator, DeleteRelaxationConstraints> {
 public:
     DeleteRelaxationConstraintsFeature() : TypedFeature("delete_relaxation_constraints") {
         document_title("Delete relaxation constraints");

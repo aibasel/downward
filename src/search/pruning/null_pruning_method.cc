@@ -15,7 +15,8 @@ void NullPruningMethod::initialize(const shared_ptr<AbstractTask> &task) {
     log << "pruning method: none" << endl;
 }
 
-class NullPruningMethodFeature : public plugins::TypedFeature<PruningMethod, NullPruningMethod> {
+class NullPruningMethodFeature
+    : public plugins::TypedFeature<PruningMethod, NullPruningMethod> {
 public:
     NullPruningMethodFeature() : TypedFeature("null") {
         // document_group("");

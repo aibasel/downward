@@ -31,7 +31,8 @@ PatternInformation PatternGeneratorManual::compute_pattern(
     return pattern_info;
 }
 
-class PatternGeneratorManualFeature : public plugins::TypedFeature<PatternGenerator, PatternGeneratorManual> {
+class PatternGeneratorManualFeature
+    : public plugins::TypedFeature<PatternGenerator, PatternGeneratorManual> {
 public:
     PatternGeneratorManualFeature() : TypedFeature("manual_pattern") {
         add_list_option<int>(

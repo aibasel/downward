@@ -59,7 +59,8 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
     return result;
 }
 
-class PatternCollectionGeneratorMultipleRandomFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorMultipleRandom> {
+class PatternCollectionGeneratorMultipleRandomFeature
+    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorMultipleRandom> {
 public:
     PatternCollectionGeneratorMultipleRandomFeature() : TypedFeature("random_patterns") {
         document_title("Multiple Random Patterns");

@@ -290,7 +290,8 @@ void LabelReduction::dump_options(utils::LogProxy &log) const {
     }
 }
 
-class LabelReductionFeature : public plugins::TypedFeature<LabelReduction, LabelReduction> {
+class LabelReductionFeature
+    : public plugins::TypedFeature<LabelReduction, LabelReduction> {
 public:
     LabelReductionFeature() : TypedFeature("exact") {
         document_title("Exact generalized label reduction");

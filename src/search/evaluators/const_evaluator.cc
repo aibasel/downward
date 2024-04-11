@@ -17,7 +17,8 @@ EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
     return result;
 }
 
-class ConstEvaluatorFeature : public plugins::TypedFeature<Evaluator, ConstEvaluator> {
+class ConstEvaluatorFeature
+    : public plugins::TypedFeature<Evaluator, ConstEvaluator> {
 public:
     ConstEvaluatorFeature() : TypedFeature("const") {
         document_subcategory("evaluators_basic");

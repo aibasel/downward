@@ -50,7 +50,8 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::compute_patterns(
     return pci;
 }
 
-class PatternCollectionGeneratorComboFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorCombo> {
+class PatternCollectionGeneratorComboFeature
+    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorCombo> {
 public:
     PatternCollectionGeneratorComboFeature() : TypedFeature("combo") {
         add_option<int>(

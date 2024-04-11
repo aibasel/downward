@@ -164,7 +164,8 @@ TieBreakingOpenListFactory::create_edge_open_list() {
         unsafe_pruning);
 }
 
-class TieBreakingOpenListFeature : public plugins::TypedFeature<OpenListFactory, TieBreakingOpenListFactory> {
+class TieBreakingOpenListFeature
+    : public plugins::TypedFeature<OpenListFactory, TieBreakingOpenListFactory> {
 public:
     TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
         document_title("Tie-breaking open list");

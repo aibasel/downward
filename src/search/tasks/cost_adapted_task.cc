@@ -27,7 +27,8 @@ int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
     return get_adjusted_action_cost(op, cost_type, parent_is_unit_cost);
 }
 
-class CostAdaptedTaskFeature : public plugins::TypedFeature<AbstractTask, CostAdaptedTask> {
+class CostAdaptedTaskFeature
+    : public plugins::TypedFeature<AbstractTask, CostAdaptedTask> {
 public:
     CostAdaptedTaskFeature() : TypedFeature("adapt_costs") {
         document_title("Cost-adapted task");

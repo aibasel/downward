@@ -22,7 +22,8 @@ EvaluationResult PrefEvaluator::compute_result(
     return result;
 }
 
-class PrefEvaluatorFeature : public plugins::TypedFeature<Evaluator, PrefEvaluator> {
+class PrefEvaluatorFeature
+    : public plugins::TypedFeature<Evaluator, PrefEvaluator> {
 public:
     PrefEvaluatorFeature() : TypedFeature("pref") {
         document_subcategory("evaluators_basic");

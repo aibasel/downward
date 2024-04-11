@@ -99,7 +99,8 @@ string MergeScoringFunctionMIASM::name() const {
     return "miasm";
 }
 
-class MergeScoringFunctionMIASMFeature : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionMIASM> {
+class MergeScoringFunctionMIASMFeature
+    : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionMIASM> {
 public:
     MergeScoringFunctionMIASMFeature() : TypedFeature("sf_miasm") {
         document_title("MIASM");

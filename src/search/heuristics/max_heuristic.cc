@@ -101,7 +101,8 @@ int HSPMaxHeuristic::compute_heuristic(const State &ancestor_state) {
     return total_cost;
 }
 
-class HSPMaxHeuristicFeature : public plugins::TypedFeature<Evaluator, HSPMaxHeuristic> {
+class HSPMaxHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, HSPMaxHeuristic> {
 public:
     HSPMaxHeuristicFeature() : TypedFeature("hmax") {
         document_title("Max heuristic");

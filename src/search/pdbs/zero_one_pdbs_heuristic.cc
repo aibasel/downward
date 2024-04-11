@@ -34,7 +34,8 @@ int ZeroOnePDBsHeuristic::compute_heuristic(const State &ancestor_state) {
     return h;
 }
 
-class ZeroOnePDBsHeuristicFeature : public plugins::TypedFeature<Evaluator, ZeroOnePDBsHeuristic> {
+class ZeroOnePDBsHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, ZeroOnePDBsHeuristic> {
 public:
     ZeroOnePDBsHeuristicFeature() : TypedFeature("zopdbs") {
         document_subcategory("heuristics_pdb");

@@ -444,7 +444,8 @@ bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
     return false;
 }
 
-class ContextEnhancedAdditiveHeuristicFeature : public plugins::TypedFeature<Evaluator, ContextEnhancedAdditiveHeuristic> {
+class ContextEnhancedAdditiveHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, ContextEnhancedAdditiveHeuristic> {
 public:
     ContextEnhancedAdditiveHeuristicFeature() : TypedFeature("cea") {
         document_title("Context-enhanced additive heuristic");

@@ -56,7 +56,8 @@ create_sample_based_potential_functions(
     return functions;
 }
 
-class SampleBasedPotentialMaxHeuristicFeature : public plugins::TypedFeature<Evaluator, PotentialMaxHeuristic> {
+class SampleBasedPotentialMaxHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, PotentialMaxHeuristic> {
 public:
     SampleBasedPotentialMaxHeuristicFeature() : TypedFeature("sample_based_potentials") {
         document_subcategory("heuristics_potentials");

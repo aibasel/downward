@@ -47,7 +47,8 @@ PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
         move(blacklisted_variables));
 }
 
-class PatternCollectionGeneratorMultipleCegarFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorMultipleCegar> {
+class PatternCollectionGeneratorMultipleCegarFeature
+    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorMultipleCegar> {
 public:
     PatternCollectionGeneratorMultipleCegarFeature() : TypedFeature("multiple_cegar") {
         document_title("Multiple CEGAR");

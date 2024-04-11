@@ -154,7 +154,8 @@ TypeBasedOpenListFactory::create_edge_open_list() {
         evaluators, random_seed);
 }
 
-class TypeBasedOpenListFeature : public plugins::TypedFeature<OpenListFactory, TypeBasedOpenListFactory> {
+class TypeBasedOpenListFeature
+    : public plugins::TypedFeature<OpenListFactory, TypeBasedOpenListFactory> {
 public:
     TypeBasedOpenListFeature() : TypedFeature("type_based") {
         document_title("Type-based open list");

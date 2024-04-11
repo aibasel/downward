@@ -41,7 +41,8 @@ bool MergeStrategyFactoryStateless::requires_goal_distances() const {
     return merge_selector->requires_goal_distances();
 }
 
-class MergeStrategyFactoryStatelessFeature : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactoryStateless> {
+class MergeStrategyFactoryStatelessFeature
+    : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactoryStateless> {
 public:
     MergeStrategyFactoryStatelessFeature() : TypedFeature("merge_stateless") {
         document_title("Stateless merge strategy");

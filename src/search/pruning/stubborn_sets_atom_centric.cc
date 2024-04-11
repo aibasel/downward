@@ -245,7 +245,8 @@ void StubbornSetsAtomCentric::handle_stubborn_operator(const State &state, int o
     }
 }
 
-class StubbornSetsAtomCentricFeature : public plugins::TypedFeature<PruningMethod, StubbornSetsAtomCentric> {
+class StubbornSetsAtomCentricFeature
+    : public plugins::TypedFeature<PruningMethod, StubbornSetsAtomCentric> {
 public:
     StubbornSetsAtomCentricFeature() : TypedFeature("atom_centric_stubborn_sets") {
         document_title("Atom-centric stubborn sets");

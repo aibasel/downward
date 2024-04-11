@@ -58,7 +58,8 @@ bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
     return false;
 }
 
-class LandmarkFactoryRpgExhaustFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgExhaust> {
+class LandmarkFactoryRpgExhaustFeature
+    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgExhaust> {
 public:
     LandmarkFactoryRpgExhaustFeature() : TypedFeature("lm_exhaust") {
         document_title("Exhaustive Landmarks");

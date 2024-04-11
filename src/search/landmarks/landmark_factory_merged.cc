@@ -143,7 +143,8 @@ bool LandmarkFactoryMerged::supports_conditional_effects() const {
     return true;
 }
 
-class LandmarkFactoryMergedFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryMerged> {
+class LandmarkFactoryMergedFeature
+    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryMerged> {
 public:
     LandmarkFactoryMergedFeature() : TypedFeature("lm_merged") {
         document_title("Merged Landmarks");

@@ -102,7 +102,8 @@ bool MergeSelectorScoreBasedFiltering::requires_goal_distances() const {
     return false;
 }
 
-class MergeSelectorScoreBasedFilteringFeature : public plugins::TypedFeature<MergeSelector, MergeSelectorScoreBasedFiltering> {
+class MergeSelectorScoreBasedFilteringFeature
+    : public plugins::TypedFeature<MergeSelector, MergeSelectorScoreBasedFiltering> {
 public:
     MergeSelectorScoreBasedFilteringFeature() : TypedFeature("score_based_filtering") {
         document_title("Score based filtering merge selector");

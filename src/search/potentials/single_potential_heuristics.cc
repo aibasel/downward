@@ -34,7 +34,8 @@ static unique_ptr<PotentialFunction> create_potential_function(
     return optimizer.get_potential_function();
 }
 
-class InitialStatePotentialHeuristicFeature : public plugins::TypedFeature<Evaluator, PotentialHeuristic> {
+class InitialStatePotentialHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, PotentialHeuristic> {
 public:
     InitialStatePotentialHeuristicFeature() : TypedFeature("initial_state_potential") {
         document_subcategory("heuristics_potentials");
@@ -64,7 +65,8 @@ public:
 
 static plugins::FeaturePlugin<InitialStatePotentialHeuristicFeature> _plugin_initial_state;
 
-class AllStatesPotentialHeuristicFeature : public plugins::TypedFeature<Evaluator, PotentialHeuristic> {
+class AllStatesPotentialHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, PotentialHeuristic> {
 public:
     AllStatesPotentialHeuristicFeature() : TypedFeature("all_states_potential") {
         document_subcategory("heuristics_potentials");

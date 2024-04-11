@@ -42,7 +42,8 @@ void MergeStrategyFactoryPrecomputed::dump_strategy_specific_options() const {
     }
 }
 
-class MergeStrategyFactoryPrecomputedFeature : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactoryPrecomputed> {
+class MergeStrategyFactoryPrecomputedFeature
+    : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactoryPrecomputed> {
 public:
     MergeStrategyFactoryPrecomputedFeature() : TypedFeature("merge_precomputed") {
         document_title("Precomputed merge strategy");

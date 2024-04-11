@@ -284,7 +284,8 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     }
 }
 
-class CGHeuristicFeature : public plugins::TypedFeature<Evaluator, CGHeuristic> {
+class CGHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, CGHeuristic> {
 public:
     CGHeuristicFeature() : TypedFeature("cg") {
         document_title("Causal graph heuristic");

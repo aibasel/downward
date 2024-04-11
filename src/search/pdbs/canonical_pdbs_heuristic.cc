@@ -91,7 +91,8 @@ void add_canonical_pdbs_options_to_feature(plugins::Feature &feature) {
         plugins::Bounds("0.0", "infinity"));
 }
 
-class CanonicalPDBsHeuristicFeature : public plugins::TypedFeature<Evaluator, CanonicalPDBsHeuristic> {
+class CanonicalPDBsHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, CanonicalPDBsHeuristic> {
 public:
     CanonicalPDBsHeuristicFeature() : TypedFeature("cpdbs") {
         document_subcategory("heuristics_pdb");

@@ -1014,7 +1014,8 @@ bool LandmarkFactoryHM::supports_conditional_effects() const {
     return false;
 }
 
-class LandmarkFactoryHMFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryHM> {
+class LandmarkFactoryHMFeature
+    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryHM> {
 public:
     LandmarkFactoryHMFeature() : TypedFeature("lm_hm") {
         // document_group("");

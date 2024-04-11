@@ -73,7 +73,8 @@ void StubbornSetsSimple::handle_stubborn_operator(const State &state,
     }
 }
 
-class StubbornSetsSimpleFeature : public plugins::TypedFeature<PruningMethod, StubbornSetsSimple> {
+class StubbornSetsSimpleFeature
+    : public plugins::TypedFeature<PruningMethod, StubbornSetsSimple> {
 public:
     StubbornSetsSimpleFeature() : TypedFeature("stubborn_sets_simple") {
         document_title("Stubborn sets simple");

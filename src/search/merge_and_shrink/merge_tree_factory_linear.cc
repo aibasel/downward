@@ -116,7 +116,8 @@ void MergeTreeFactoryLinear::add_options_to_feature(plugins::Feature &feature) {
     add_merge_tree_options_to_feature(feature);
 }
 
-class MergeTreeFactoryLinearFeature : public plugins::TypedFeature<MergeTreeFactory, MergeTreeFactoryLinear> {
+class MergeTreeFactoryLinearFeature
+    : public plugins::TypedFeature<MergeTreeFactory, MergeTreeFactoryLinear> {
 public:
     MergeTreeFactoryLinearFeature() : TypedFeature("linear") {
         document_title("Linear merge trees");

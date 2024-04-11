@@ -189,7 +189,8 @@ void ShrinkFH::dump_strategy_specific_options(utils::LogProxy &log) const {
     }
 }
 
-class ShrinkFHFeature : public plugins::TypedFeature<ShrinkStrategy, ShrinkFH> {
+class ShrinkFHFeature
+    : public plugins::TypedFeature<ShrinkStrategy, ShrinkFH> {
 public:
     ShrinkFHFeature() : TypedFeature("shrink_fh") {
         document_title("f-preserving shrink strategy");

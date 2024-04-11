@@ -44,7 +44,8 @@ PatternInformation PatternGeneratorCEGAR::compute_pattern(
         goals[0]);
 }
 
-class PatternGeneratorCEGARFeature : public plugins::TypedFeature<PatternGenerator, PatternGeneratorCEGAR> {
+class PatternGeneratorCEGARFeature
+    : public plugins::TypedFeature<PatternGenerator, PatternGeneratorCEGAR> {
 public:
     PatternGeneratorCEGARFeature() : TypedFeature("cegar_pattern") {
         document_title("CEGAR");

@@ -22,7 +22,8 @@ int MaxEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
-class MaxEvaluatorFeature : public plugins::TypedFeature<Evaluator, MaxEvaluator> {
+class MaxEvaluatorFeature
+    : public plugins::TypedFeature<Evaluator, MaxEvaluator> {
 public:
     MaxEvaluatorFeature() : TypedFeature("max") {
         document_subcategory("evaluators_basic");

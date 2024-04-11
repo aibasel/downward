@@ -159,7 +159,8 @@ EpsilonGreedyOpenListFactory::create_edge_open_list() {
         eval, pref_only, epsilon, random_seed);
 }
 
-class EpsilonGreedyOpenListFeature : public plugins::TypedFeature<OpenListFactory, EpsilonGreedyOpenListFactory> {
+class EpsilonGreedyOpenListFeature
+    : public plugins::TypedFeature<OpenListFactory, EpsilonGreedyOpenListFactory> {
 public:
     EpsilonGreedyOpenListFeature() : TypedFeature("epsilon_greedy") {
         document_title("Epsilon-greedy open list");

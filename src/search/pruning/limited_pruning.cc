@@ -53,7 +53,8 @@ void LimitedPruning::prune(
     pruning_method->prune(state, op_ids);
 }
 
-class LimitedPruningFeature : public plugins::TypedFeature<PruningMethod, LimitedPruning> {
+class LimitedPruningFeature
+    : public plugins::TypedFeature<PruningMethod, LimitedPruning> {
 public:
     LimitedPruningFeature() : TypedFeature("limited_pruning") {
         document_title("Limited pruning");

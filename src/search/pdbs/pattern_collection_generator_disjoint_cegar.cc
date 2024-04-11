@@ -43,7 +43,8 @@ PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::compute_pa
         move(goals));
 }
 
-class PatternCollectionGeneratorDisjointCegarFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorDisjointCegar> {
+class PatternCollectionGeneratorDisjointCegarFeature
+    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorDisjointCegar> {
 public:
     PatternCollectionGeneratorDisjointCegarFeature() : TypedFeature("disjoint_cegar") {
         document_title("Disjoint CEGAR");

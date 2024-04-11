@@ -117,7 +117,8 @@ BestFirstOpenListFactory::create_edge_open_list() {
         eval, pref_only);
 }
 
-class BestFirstOpenListFeature : public plugins::TypedFeature<OpenListFactory, BestFirstOpenListFactory> {
+class BestFirstOpenListFeature
+    : public plugins::TypedFeature<OpenListFactory, BestFirstOpenListFactory> {
 public:
     BestFirstOpenListFeature() : TypedFeature("single") {
         document_title("Best-first open list");

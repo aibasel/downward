@@ -376,7 +376,8 @@ void ShrinkBisimulation::dump_strategy_specific_options(utils::LogProxy &log) co
     }
 }
 
-class ShrinkBisimulationFeature : public plugins::TypedFeature<ShrinkStrategy, ShrinkBisimulation> {
+class ShrinkBisimulationFeature
+    : public plugins::TypedFeature<ShrinkStrategy, ShrinkBisimulation> {
 public:
     ShrinkBisimulationFeature() : TypedFeature("shrink_bisimulation") {
         document_title("Bismulation based shrink strategy");

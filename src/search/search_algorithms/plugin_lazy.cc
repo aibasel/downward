@@ -6,7 +6,8 @@
 using namespace std;
 
 namespace plugin_lazy {
-class LazySearchFeature : public plugins::TypedFeature<SearchAlgorithm, lazy_search::LazySearch> {
+class LazySearchFeature
+    : public plugins::TypedFeature<SearchAlgorithm, lazy_search::LazySearch> {
 public:
     LazySearchFeature() : TypedFeature("lazy") {
         document_title("Lazy best-first search");

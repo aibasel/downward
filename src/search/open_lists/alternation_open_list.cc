@@ -145,7 +145,8 @@ AlternationOpenListFactory::create_edge_open_list() {
         sublists, boost);
 }
 
-class AlternationOpenListFeature : public plugins::TypedFeature<OpenListFactory, AlternationOpenListFactory> {
+class AlternationOpenListFeature
+    : public plugins::TypedFeature<OpenListFactory, AlternationOpenListFactory> {
 public:
     AlternationOpenListFeature() : TypedFeature("alt") {
         document_title("Alternation open list");

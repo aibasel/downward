@@ -601,7 +601,8 @@ static basic_string<char> paper_references() {
         "2012");
 }
 
-class PatternCollectionGeneratorHillclimbingFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorHillclimbing> {
+class PatternCollectionGeneratorHillclimbingFeature
+    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorHillclimbing> {
 public:
     PatternCollectionGeneratorHillclimbingFeature() : TypedFeature("hillclimbing") {
         document_title("Hill climbing");
@@ -626,7 +627,8 @@ public:
 
 static plugins::FeaturePlugin<PatternCollectionGeneratorHillclimbingFeature> _plugin;
 
-class IPDBFeature : public plugins::TypedFeature<Evaluator, CanonicalPDBsHeuristic> {
+class IPDBFeature
+    : public plugins::TypedFeature<Evaluator, CanonicalPDBsHeuristic> {
 public:
     IPDBFeature() : TypedFeature("ipdb") {
         document_subcategory("heuristics_pdb");

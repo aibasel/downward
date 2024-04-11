@@ -177,7 +177,8 @@ void MergeScoringFunctionTotalOrder::add_options_to_feature(
     utils::add_rng_options_to_feature(feature);
 }
 
-class MergeScoringFunctionTotalOrderFeature : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionTotalOrder> {
+class MergeScoringFunctionTotalOrderFeature
+    : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionTotalOrder> {
 public:
     MergeScoringFunctionTotalOrderFeature() : TypedFeature("total_order") {
         document_title("Total order");

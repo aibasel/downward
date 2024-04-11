@@ -134,7 +134,8 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &ancestor_state) {
     return heuristic;
 }
 
-class MergeAndShrinkHeuristicFeature : public plugins::TypedFeature<Evaluator, MergeAndShrinkHeuristic> {
+class MergeAndShrinkHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, MergeAndShrinkHeuristic> {
 public:
     MergeAndShrinkHeuristicFeature() : TypedFeature("merge_and_shrink") {
         document_title("Merge-and-shrink heuristic");

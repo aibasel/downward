@@ -49,7 +49,8 @@ PatternInformation PatternGeneratorRandom::compute_pattern(
     return PatternInformation(task_proxy, pattern, log);
 }
 
-class PatternGeneratorRandomFeature : public plugins::TypedFeature<PatternGenerator, PatternGeneratorRandom> {
+class PatternGeneratorRandomFeature
+    : public plugins::TypedFeature<PatternGenerator, PatternGeneratorRandom> {
 public:
     PatternGeneratorRandomFeature() : TypedFeature("random_pattern") {
         document_title("Random Pattern");

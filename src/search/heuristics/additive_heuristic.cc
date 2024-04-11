@@ -147,7 +147,8 @@ void AdditiveHeuristic::compute_heuristic_for_cegar(const State &state) {
     compute_heuristic(state);
 }
 
-class AdditiveHeuristicFeature : public plugins::TypedFeature<Evaluator, AdditiveHeuristic> {
+class AdditiveHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, AdditiveHeuristic> {
 public:
     AdditiveHeuristicFeature() : TypedFeature("add") {
         document_title("Additive heuristic");

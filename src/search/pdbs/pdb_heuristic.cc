@@ -33,7 +33,8 @@ int PDBHeuristic::compute_heuristic(const State &ancestor_state) {
     return h;
 }
 
-class PDBHeuristicFeature : public plugins::TypedFeature<Evaluator, PDBHeuristic> {
+class PDBHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, PDBHeuristic> {
 public:
     PDBHeuristicFeature() : TypedFeature("pdb") {
         document_subcategory("heuristics_pdb");

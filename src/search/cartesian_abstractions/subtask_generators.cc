@@ -183,7 +183,8 @@ static tuple<FactOrder, int> get_fact_order_arguments_from_options(
                      utils::get_rng_arguments_from_options(opts));
 }
 
-class TaskDuplicatorFeature : public plugins::TypedFeature<SubtaskGenerator, TaskDuplicator> {
+class TaskDuplicatorFeature
+    : public plugins::TypedFeature<SubtaskGenerator, TaskDuplicator> {
 public:
     TaskDuplicatorFeature() : TypedFeature("original") {
         add_option<int>(
@@ -203,7 +204,8 @@ public:
 
 static plugins::FeaturePlugin<TaskDuplicatorFeature> _plugin_original;
 
-class GoalDecompositionFeature : public plugins::TypedFeature<SubtaskGenerator, GoalDecomposition> {
+class GoalDecompositionFeature
+    : public plugins::TypedFeature<SubtaskGenerator, GoalDecomposition> {
 public:
     GoalDecompositionFeature() : TypedFeature("goals") {
         add_fact_order_option(*this);
@@ -220,7 +222,8 @@ public:
 static plugins::FeaturePlugin<GoalDecompositionFeature> _plugin_goals;
 
 
-class LandmarkDecompositionFeature : public plugins::TypedFeature<SubtaskGenerator, LandmarkDecomposition> {
+class LandmarkDecompositionFeature
+    : public plugins::TypedFeature<SubtaskGenerator, LandmarkDecomposition> {
 public:
     LandmarkDecompositionFeature() : TypedFeature("landmarks") {
         add_fact_order_option(*this);

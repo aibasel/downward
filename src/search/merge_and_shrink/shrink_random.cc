@@ -33,7 +33,8 @@ string ShrinkRandom::name() const {
     return "random";
 }
 
-class ShrinkRandomFeature : public plugins::TypedFeature<ShrinkStrategy, ShrinkRandom> {
+class ShrinkRandomFeature
+    : public plugins::TypedFeature<ShrinkStrategy, ShrinkRandom> {
 public:
     ShrinkRandomFeature() : TypedFeature("shrink_random") {
         document_title("Random");

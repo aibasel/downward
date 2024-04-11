@@ -31,7 +31,8 @@ PatternCollectionInformation PatternCollectionGeneratorManual::compute_patterns(
     return PatternCollectionInformation(task_proxy, patterns, log);
 }
 
-class PatternCollectionGeneratorManualFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorManual> {
+class PatternCollectionGeneratorManualFeature
+    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorManual> {
 public:
     PatternCollectionGeneratorManualFeature() : TypedFeature("manual_patterns") {
         add_list_option<Pattern>(

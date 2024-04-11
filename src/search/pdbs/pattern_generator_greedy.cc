@@ -51,7 +51,8 @@ PatternInformation PatternGeneratorGreedy::compute_pattern(const shared_ptr<Abst
     return PatternInformation(task_proxy, move(pattern), log);
 }
 
-class PatternGeneratorGreedyFeature : public plugins::TypedFeature<PatternGenerator, PatternGeneratorGreedy> {
+class PatternGeneratorGreedyFeature
+    : public plugins::TypedFeature<PatternGenerator, PatternGeneratorGreedy> {
 public:
     PatternGeneratorGreedyFeature() : TypedFeature("greedy") {
         add_option<int>(

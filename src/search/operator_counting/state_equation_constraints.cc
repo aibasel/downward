@@ -119,7 +119,8 @@ bool StateEquationConstraints::update_constraints(const State &state,
     return false;
 }
 
-class StateEquationConstraintsFeature : public plugins::TypedFeature<ConstraintGenerator, StateEquationConstraints> {
+class StateEquationConstraintsFeature
+    : public plugins::TypedFeature<ConstraintGenerator, StateEquationConstraints> {
 public:
     StateEquationConstraintsFeature() : TypedFeature("state_equation_constraints") {
         document_title("State equation constraints");

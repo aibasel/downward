@@ -62,7 +62,8 @@ bool PhOConstraints::update_constraints(const State &state,
     return false;
 }
 
-class PhOConstraintsFeature : public plugins::TypedFeature<ConstraintGenerator, PhOConstraints> {
+class PhOConstraintsFeature
+    : public plugins::TypedFeature<ConstraintGenerator, PhOConstraints> {
 public:
     PhOConstraintsFeature() : TypedFeature("pho_constraints") {
         document_title("Posthoc optimization constraints");

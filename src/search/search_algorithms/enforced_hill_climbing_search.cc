@@ -258,7 +258,8 @@ void EnforcedHillClimbingSearch::print_statistics() const {
     }
 }
 
-class EnforcedHillClimbingSearchFeature : public plugins::TypedFeature<SearchAlgorithm, EnforcedHillClimbingSearch> {
+class EnforcedHillClimbingSearchFeature
+    : public plugins::TypedFeature<SearchAlgorithm, EnforcedHillClimbingSearch> {
 public:
     EnforcedHillClimbingSearchFeature() : TypedFeature("ehc") {
         document_title("Lazy enforced hill-climbing");

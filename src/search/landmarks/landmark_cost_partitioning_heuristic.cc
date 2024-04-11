@@ -83,7 +83,8 @@ bool LandmarkCostPartitioningHeuristic::dead_ends_are_reliable() const {
     return true;
 }
 
-class LandmarkCostPartitioningHeuristicFeature : public plugins::TypedFeature<Evaluator, LandmarkCostPartitioningHeuristic> {
+class LandmarkCostPartitioningHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, LandmarkCostPartitioningHeuristic> {
 public:
     LandmarkCostPartitioningHeuristicFeature() : TypedFeature("landmark_cost_partitioning") {
         document_title("Landmark cost partitioning heuristic");
@@ -111,12 +112,12 @@ public:
                 "2010"));
 
         /*
-          TODO issue1082: We usually move the options of base classes behind the
-           options of specific implementations. In the case of landmark
-           heuristics, we decided to keep the common options at the front
-           because it feels more natural to specify the landmark factory before
-           the more specific arguments like the used LP solver in the case of
-           an optimal cost partitioning heuristic.
+          We usually have the options of base classes behind the options
+          of specific implementations. In the case of landmark
+          heuristics, we decided to have the common options at the front
+          because it feels more natural to specify the landmark factory
+          before the more specific arguments like the used LP solver in
+          the case of an optimal cost partitioning heuristic.
         */
         add_landmark_heuristic_options_to_feature(
             *this, "landmark_cost_partitioning");

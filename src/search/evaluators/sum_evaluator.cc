@@ -23,7 +23,8 @@ int SumEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
-class SumEvaluatorFeature : public plugins::TypedFeature<Evaluator, SumEvaluator> {
+class SumEvaluatorFeature
+    : public plugins::TypedFeature<Evaluator, SumEvaluator> {
 public:
     SumEvaluatorFeature() : TypedFeature("sum") {
         document_subcategory("evaluators_basic");

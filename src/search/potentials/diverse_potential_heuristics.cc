@@ -151,7 +151,8 @@ DiversePotentialHeuristics::find_functions() {
     return move(diverse_functions);
 }
 
-class DiversePotentialMaxHeuristicFeature : public plugins::TypedFeature<Evaluator, PotentialMaxHeuristic> {
+class DiversePotentialMaxHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, PotentialMaxHeuristic> {
 public:
     DiversePotentialMaxHeuristicFeature() : TypedFeature("diverse_potentials") {
         document_subcategory("heuristics_potentials");

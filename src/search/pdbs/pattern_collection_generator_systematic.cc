@@ -285,7 +285,8 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::compute_patte
     return PatternCollectionInformation(task_proxy, patterns, log);
 }
 
-class PatternCollectionGeneratorSystematicFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorSystematic> {
+class PatternCollectionGeneratorSystematicFeature
+    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorSystematic> {
 public:
     PatternCollectionGeneratorSystematicFeature() : TypedFeature("systematic") {
         document_title("Systematically generated patterns");

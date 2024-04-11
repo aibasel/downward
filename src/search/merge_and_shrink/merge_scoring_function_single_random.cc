@@ -46,7 +46,8 @@ void MergeScoringFunctionSingleRandom::dump_function_specific_options(
     }
 }
 
-class MergeScoringFunctionSingleRandomFeature : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionSingleRandom> {
+class MergeScoringFunctionSingleRandomFeature
+    : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionSingleRandom> {
 public:
     MergeScoringFunctionSingleRandomFeature() : TypedFeature("single_random") {
         document_title("Single random");

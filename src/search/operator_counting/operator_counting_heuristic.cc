@@ -55,7 +55,8 @@ int OperatorCountingHeuristic::compute_heuristic(const State &ancestor_state) {
     return result;
 }
 
-class OperatorCountingHeuristicFeature : public plugins::TypedFeature<Evaluator, OperatorCountingHeuristic> {
+class OperatorCountingHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, OperatorCountingHeuristic> {
 public:
     OperatorCountingHeuristicFeature() : TypedFeature("operatorcounting") {
         document_title("Operator-counting heuristic");

@@ -305,7 +305,8 @@ bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
     return true;
 }
 
-class LandmarkFactoryZhuGivanFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryZhuGivan> {
+class LandmarkFactoryZhuGivanFeature
+    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryZhuGivan> {
 public:
     LandmarkFactoryZhuGivanFeature() : TypedFeature("lm_zg") {
         document_title("Zhu/Givan Landmarks");
