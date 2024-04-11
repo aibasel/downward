@@ -49,7 +49,7 @@ public:
     virtual shared_ptr<PotentialHeuristic> create_component(
         const plugins::Options &opts,
         const utils::Context &) const override {
-        return make_shared<PotentialHeuristic>( // TODO issue1082 use make_shared_from_arg_tuples, move creation of potential functions into constructor
+        return make_shared<PotentialHeuristic>(
             create_potential_function(
                 opts.get<shared_ptr<AbstractTask>>("transform"),
                 opts.get<lp::LPSolverType>("lpsolver"),
@@ -80,7 +80,7 @@ public:
     virtual shared_ptr<PotentialHeuristic> create_component(
         const plugins::Options &opts,
         const utils::Context &) const override {
-        return make_shared<PotentialHeuristic>( // TODO issue1082 use make_shared_from_arg_tuples, move creation of potential functions into constructor
+        return make_shared<PotentialHeuristic>(
             create_potential_function(
                 opts.get<shared_ptr<AbstractTask>>("transform"),
                 opts.get<lp::LPSolverType>("lpsolver"),
