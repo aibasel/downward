@@ -14,7 +14,7 @@ namespace landmarks {
 class LandmarkNode;
 
 LandmarkFactoryMerged::LandmarkFactoryMerged(
-    vector<shared_ptr<LandmarkFactory>> &lm_factories,
+    const vector<shared_ptr<LandmarkFactory>> &lm_factories,
     utils::Verbosity verbosity)
     : LandmarkFactory(verbosity),
       lm_factories(lm_factories) {
