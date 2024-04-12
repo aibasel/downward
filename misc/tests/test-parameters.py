@@ -2,7 +2,7 @@
 
 HELP = """\
 Check that parameters for the command line features match the parameters
- of the C++ constructors. Use txt2tags to compare the parameters 
+ of the C++ constructors. Use txt2tags to compare the parameters
  mentioned in the wiki to the parameters in the corresponding .cc file.
 """
 
@@ -83,14 +83,14 @@ def get_constructor_parameters(cc_file, class_name):
         return (False, "")
 
 def matching(opening, closing):
-    return ((opening, closing) == ('(', ')') or 
+    return ((opening, closing) == ('(', ')') or
         (opening, closing) == ('[', ']'))
 
 def extract_feature_parameter_list(feature_name):
     s = str(subprocess.run(["./../../builds/release/bin/downward",
-                            "--help", "--txt2tags", 
+                            "--help", "--txt2tags",
                             "{}".format(feature_name)],
-                            stdout=subprocess.PIPE).stdout)
+                           stdout=subprocess.PIPE).stdout)
     position = s.find(feature_name + "(")
     assert position != -1
     s = s[position + len(feature_name) + 1::] # start after the first '('
@@ -133,7 +133,7 @@ def extract_feature_name_and_cpp_class(cc_file, cc_files, cwd, num):
             feature_class = re.search(class_pattern, line).group(1)
             class_name = feature_class.split()[-1].split("::")[-1]
             other_namespace = (len(feature_class.split()[-1].split("::"))
-                                == 2)
+                               == 2)
             class_error_msg = "class_name: " + class_name + "\n"
             class_names.append(class_name)
             other_namespaces.append(other_namespace)
@@ -142,7 +142,7 @@ def extract_feature_name_and_cpp_class(cc_file, cc_files, cwd, num):
            feature_error_msgs[num] + class_error_msgs[num])
 
 def get_cpp_class_parameters(
-    class_name, other_namespace, cc_file, cc_files, cwd):
+        class_name, other_namespace, cc_file, cc_files, cwd):
     found_in_file, parameters = get_constructor_parameters(
         cc_file, class_name)
     if not found_in_file:
@@ -158,7 +158,7 @@ def get_cpp_class_parameters(
         parameters = parameters.split()
         parameters = [word for word in parameters if "," in word]
         parameters = [re.sub(C_VAR_PATTERN, '', word) + ","
-                        for word in parameters]
+                      for word in parameters]
         return parameters
     else:
         # assume default constructor
@@ -179,7 +179,7 @@ def compare_component_parameters(cc_file, cc_files, cwd):
     create_component_lines = get_create_component_lines(cc_file)
     if not create_component_lines == []:
         for i, create_component_line in enumerate(
-            create_component_lines):
+                create_component_lines):
             (feature_name, cpp_class, other_namespace,
             extracted_error_msg) = (
                 extract_feature_name_and_cpp_class(
@@ -217,7 +217,7 @@ def compare_component_parameters(cc_file, cc_files, cwd):
                 for i in range(min(len(feature_parameters),
                                 len(cpp_class_parameters))):
                     if feature_parameters[i] != cpp_class_parameters[i]:
-                        error_msg += (feature_parameters[i] + 
+                        error_msg += (feature_parameters[i] +
                             " =/= " + cpp_class_parameters[i] + "\n")
                 error_msg += cc_file + "\n"
 
@@ -249,7 +249,7 @@ def main():
     search_dir = os.path.join(SRC_DIR, "search")
     cc_files = get_src_files(search_dir, (".cc",))
     print("Checking Component Parameters of"
-            " {} *.cc files".format(len(cc_files)))
+          " {} *.cc files".format(len(cc_files)))
     return main2(cc_files, cwd=DIR) == 0
 
 
