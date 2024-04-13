@@ -168,7 +168,7 @@ jobs:
 
       - name: Run driver, translator and search tests
         run: |
-          cd ../..
+          cd ../../_PipelineMapping
           pwd
           ls
           tree . -L 3
