@@ -122,7 +122,6 @@ public:
   before calling the constructor. The resulting arguments will be used
   as arguments to make_shared.
 */
-// TODO issue1082 where should this live?
 template<typename T, typename ... Arguments>
 std::shared_ptr<T> make_shared_from_arg_tuples(Arguments... arguments) {
     return std::apply(
