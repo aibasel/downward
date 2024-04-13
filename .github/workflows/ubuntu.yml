@@ -168,6 +168,9 @@ jobs:
 
       - name: Run driver, translator and search tests
         run: |
+          pwd
+          ls
+          tree . -L 2
           cd misc/
           tox -e driver,translator,search,parameters,autodoc
 
