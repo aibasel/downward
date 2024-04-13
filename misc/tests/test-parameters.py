@@ -253,6 +253,10 @@ def main():
         print("WARNING: Not .cc files found.")
         print("search_dir: ", search_dir)
         print(str(subprocess.run(["pwd"], stdout=subprocess.PIPE).stdout))
+        tree = subprocess.run(["cd", "~"+str(search_dir),], stdout=subprocess.PIPE, text=True)
+        print(tree.stdout)
+        tree = subprocess.run(["ls", "~"+str(search_dir),], stdout=subprocess.PIPE, text=True)
+        print(tree.stdout)
         tree = subprocess.run(["tree", str(search_dir), "-L", "2"], stdout=subprocess.PIPE, text=True)
         print(tree.stdout)
     print("Checking Component Parameters of"
