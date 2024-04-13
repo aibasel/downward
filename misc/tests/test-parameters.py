@@ -248,6 +248,13 @@ def main():
     """
     search_dir = os.path.join(SRC_DIR, "search")
     cc_files = get_src_files(search_dir, (".cc",))
+    # assert len(cc_files) > 0
+    if not len(cc_files) > 0:
+        print("WARNING: Not .cc files found.") 
+
+        print(str(subprocess.run(["pwd"], stdout=subprocess.PIPE).stdout))
+        tree = subprocess.run(["tree", search_dir, "-L", "2"], stdout=subprocess.PIPE, text=True)
+        print(tree.stdout)
     print("Checking Component Parameters of"
           " {} *.cc files".format(len(cc_files)))
     return main2(cc_files, cwd=DIR) == 0
