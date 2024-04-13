@@ -168,10 +168,11 @@ jobs:
 
       - name: Run driver, translator and search tests
         run: |
+          cd ..
           pwd
           ls
           tree . -L 2
-          cd misc/
+          cd downward/misc/
           tox -e driver,translator,search,parameters,autodoc
 
       - name: Run CPLEX tests
