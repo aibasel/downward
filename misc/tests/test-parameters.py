@@ -251,8 +251,8 @@ def main():
     # assert len(cc_files) > 0
     if not len(cc_files) > 0:
         print("WARNING: Not .cc files found.")
-        print("search_dir: ", search_dir)
-        tree = subprocess.run(["tree", str(search_dir), "-L", "2"], stdout=subprocess.PIPE, text=True)
+        print("search_dir wo trailing / : ", search_dir)
+        tree = subprocess.run(["tree", str(search_dir)+"/", "-L", "2"], stdout=subprocess.PIPE, text=True)
         print("tree:\n", tree.stdout)
     print("Checking Component Parameters of"
           " {} *.cc files".format(len(cc_files)))
