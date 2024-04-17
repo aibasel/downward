@@ -98,7 +98,7 @@ jobs:
         # only need to archive that one.
         if: ${{ matrix.version.run_tox_tests }}
         run: |
-          files_to_archive="fast-downward.py driver misc builds/debug/bin/ \
+          files_to_archive="fast-downward.py driver misc src builds/debug/bin/ \
                             builds/release/bin/ ${SOPLEX_LIB} ${SOPLEX_INCLUDE}"
           if [[ ! -z "${CPLEX_URL}" ]]; then
             files_to_archive="${files_to_archive} ${CPLEX_LIB}"
