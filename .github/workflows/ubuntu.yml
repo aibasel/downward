@@ -168,11 +168,7 @@ jobs:
 
       - name: Run driver, translator and search tests
         run: |
-          cd ../../_PipelineMapping
-          pwd
-          ls
-          tree . -L 3
-          cd downward/misc/
+          cd misc/
           tox -e driver,translator,search,parameters,autodoc
 
       - name: Run CPLEX tests
