@@ -46,7 +46,7 @@ bool is_exit_code_error_reentrant(ExitCode exitcode) {
 
 void exit_with(ExitCode exitcode) {
     report_exit_code_reentrant(exitcode);
-    exit(static_cast<int>(exitcode));
+    throw ExitException(exitcode);
 }
 
 void exit_with_reentrant(ExitCode exitcode) {

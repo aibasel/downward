@@ -53,6 +53,18 @@ enum class ExitCode {
     SEARCH_UNSUPPORTED = 34
 };
 
+class ExitException : public std::exception {
+    ExitCode exitcode;
+public:
+    explicit ExitException(ExitCode exitcode)
+        : exitcode(exitcode) {
+    }
+
+    ExitCode get_exitcode() const {
+        return exitcode;
+    }
+};
+
 NO_RETURN extern void exit_with(ExitCode returncode);
 NO_RETURN extern void exit_with_reentrant(ExitCode returncode);
 
