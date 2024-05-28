@@ -72,6 +72,7 @@ int get_peak_memory_in_kb();
 const char *get_exit_code_message_reentrant(ExitCode exitcode);
 bool is_exit_code_error_reentrant(ExitCode exitcode);
 void register_event_handlers();
+void report_exit_code(ExitCode exitcode);
 void report_exit_code_reentrant(ExitCode exitcode);
 int get_process_id();
 }

@@ -44,8 +44,21 @@ bool is_exit_code_error_reentrant(ExitCode exitcode) {
     }
 }
 
+void report_exit_code(ExitCode exitcode) {
+    const char *message = get_exit_code_message_reentrant(exitcode);
+    bool is_error = is_exit_code_error_reentrant(exitcode);
+    if (message) {
+        ostream &stream = is_error ? cerr : cout;
+        stream << message << endl;
+    } else {
+        cerr << "Exitcode: " << static_cast<int>(exitcode) << endl
+             << "Unknown exitcode." << endl;
+        abort();
+    }
+}
+
 void exit_with(ExitCode exitcode) {
-    report_exit_code_reentrant(exitcode);
+    report_exit_code(exitcode);
     throw ExitException(exitcode);
 }
 

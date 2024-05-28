@@ -58,16 +58,9 @@ void register_event_handlers() {
 }
 
 void report_exit_code_reentrant(ExitCode exitcode) {
-    const char *message = get_exit_code_message_reentrant(exitcode);
-    bool is_error = is_exit_code_error_reentrant(exitcode);
-    if (message) {
-        ostream &stream = is_error ? cerr : cout;
-        stream << message << endl;
-    } else {
-        cerr << "Exitcode: " << static_cast<int>(exitcode) << endl
-             << "Unknown exitcode." << endl;
-        abort();
-    }
+    /* We call a function that uses ostreams even though this is unsafe in
+       reentrant code, because we don't know how to do it otherwise on Windows. */
+    report_exit_code(exitcode);
 }
 
 int get_process_id() {
