@@ -57,6 +57,10 @@ def parse_args():
         help="How to assign layers to derived variables. 'min' attempts to put as "
         "many variables into the same layer as possible, while 'max' puts each variable "
         "into its own layer unless it is part of a cycle.")
+
+    argparser.add_argument(
+        "--approximate-negative-always", dest="approximate_negative_always", action="store_true",
+        help="Always use approximate negative axioms.")
     return argparser.parse_args()
 
 
