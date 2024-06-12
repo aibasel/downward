@@ -57,6 +57,11 @@ LandmarkNode &LandmarkGraph::get_disjunctive_landmark(const FactPair &fact) cons
     return *(disjunctive_landmarks_to_nodes.find(fact)->second);
 }
 
+const vector<LandmarkNode *> &LandmarkGraph::get_conjunctive_landmarks(
+    const FactPair &fact) const {
+    assert(contains_conjunctive_landmark(fact));
+    return conjunctive_landmarks_to_nodes.find(fact)->second;
+}
 
 bool LandmarkGraph::contains_simple_landmark(const FactPair &lm) const {
     return simple_landmarks_to_nodes.count(lm) != 0;
@@ -64,6 +69,10 @@ bool LandmarkGraph::contains_simple_landmark(const FactPair &lm) const {
 
 bool LandmarkGraph::contains_disjunctive_landmark(const FactPair &lm) const {
     return disjunctive_landmarks_to_nodes.count(lm) != 0;
+}
+
+bool LandmarkGraph::contains_conjunctive_landmark(const FactPair &lm) const {
+    return conjunctive_landmarks_to_nodes.count(lm) != 0;
 }
 
 bool LandmarkGraph::contains_overlapping_disjunctive_landmark(
@@ -118,6 +127,15 @@ LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark) {
         }
         ++num_disjunctive_landmarks;
     } else if (lm.conjunctive) {
+        for (const FactPair &lm_fact : lm.facts) {
+            auto it = conjunctive_landmarks_to_nodes.find(lm_fact);
+            if (it == conjunctive_landmarks_to_nodes.end()) {
+                conjunctive_landmarks_to_nodes.emplace(
+                    lm_fact, vector<LandmarkNode *>{new_node_p});
+            } else {
+                (it->second).push_back(new_node_p);
+            }
+        }
         ++num_conjunctive_landmarks;
     } else {
         simple_landmarks_to_nodes.emplace(lm.facts.front(), new_node_p);
@@ -144,6 +162,14 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
         }
     } else if (landmark.conjunctive) {
         --num_conjunctive_landmarks;
+        for (const FactPair &lm_fact : landmark.facts) {
+            vector<LandmarkNode *> *conjunctive_landmarks_vector =
+                &(conjunctive_landmarks_to_nodes.find(lm_fact)->second);
+            auto it = find(conjunctive_landmarks_vector->begin(),
+                           conjunctive_landmarks_vector->end(), node);
+            assert(it != conjunctive_landmarks_vector->end());
+            conjunctive_landmarks_vector->erase(it);
+        }
     } else {
         simple_landmarks_to_nodes.erase(landmark.facts[0]);
     }
