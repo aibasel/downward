@@ -76,6 +76,7 @@ unordered_set<int> PatternCollectionGeneratorMultiple::get_blacklisted_variables
 }
 
 void PatternCollectionGeneratorMultiple::handle_generated_pattern(
+    const TaskProxy &task_proxy,
     PatternInformation &&pattern_info,
     set<Pattern> &generated_patterns,
     shared_ptr<PDBCollection> &generated_pdbs,
@@ -90,7 +91,7 @@ void PatternCollectionGeneratorMultiple::handle_generated_pattern(
           PDB, update collection size and reset time_point_of_last_new_pattern.
         */
         time_point_of_last_new_pattern = timer.get_elapsed_time();
-        shared_ptr<PatternDatabase> pdb = pattern_info.get_pdb();
+        shared_ptr<PatternDatabase> pdb = pattern_info.get_pdb(task_proxy);
         remaining_collection_size -= pdb->get_size();
         generated_pdbs->push_back(move(pdb));
     }
@@ -216,6 +217,7 @@ PatternCollectionInformation PatternCollectionGeneratorMultiple::compute_pattern
             goals[goal_index],
             move(blacklisted_variables));
         handle_generated_pattern(
+            task_proxy,
             move(pattern_info),
             generated_patterns,
             generated_pdbs,
