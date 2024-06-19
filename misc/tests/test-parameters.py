@@ -223,7 +223,7 @@ def compare_component_parameters(cc_file, cc_files, cwd):
 
     return found_error, error_msg
 
-def main2(cc_files, cwd):
+def error_check(cc_files, cwd):
     errors = []
     for cc_file in cc_files:
         found_error, error = compare_component_parameters(
@@ -248,23 +248,10 @@ def main():
     """
     search_dir = os.path.join(SRC_DIR, "search")
     cc_files = get_src_files(search_dir, (".cc",))
-    # assert len(cc_files) > 0
-    if not len(cc_files) > 0:
-        print("WARNING: No .cc files found.")
-        print("search_dir: ", search_dir)
-
-        print("pwd: ", str(subprocess.run(["pwd"], stdout=subprocess.PIPE).stdout))
-        tree = subprocess.run(["ls", str(search_dir)+"/../../.."], stdout=subprocess.PIPE, text=True)
-        print("ls-3:\n", tree.stdout)
-        tree = subprocess.run(["ls", str(search_dir)+"/../.."], stdout=subprocess.PIPE, text=True)
-        print("ls-2:\n", tree.stdout)
-        tree = subprocess.run(["ls", str(search_dir)+"/.."], stdout=subprocess.PIPE, text=True)
-        print("ls-1:\n", tree.stdout)
-        tree = subprocess.run(["ls", str(search_dir)], stdout=subprocess.PIPE, text=True)
-        print("ls-0:\n", tree.stdout)
+    assert len(cc_files) > 0
     print("Checking Component Parameters of"
           " {} *.cc files".format(len(cc_files)))
-    return main2(cc_files, cwd=DIR) == 0
+    return error_check(cc_files, cwd=DIR) == 0
 
 
 if __name__ == "__main__":
