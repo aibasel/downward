@@ -30,8 +30,6 @@ SHORT_HANDS = {
                 "eager_greedy": "eager(single(eval1))",
                 "eager_wastar": """ See corresponding notes for"""
                             """ "(Weighted) A* search (lazy)" """,
-
-
 }
 
 TEMPORARY_EXCEPTIONS = [
@@ -49,7 +47,6 @@ PERMANENT_EXCEPTIONS = [
 
 CREATE_COMPONENT_REGEX = r"(^|\s|\W)create_component"
 C_VAR_PATTERN = r'[^a-zA-Z0-9_]' # overapproximation
-
 
 def get_src_files(path, extensions, ignore_dirs=None):
     ignore_dirs = ignore_dirs or []
@@ -69,13 +66,11 @@ def extract_cpp_class(input_string):
     assert match
     return match.group(1)
 
-
 def get_constructor_parameters(cc_file, class_name):
     with open(cc_file, 'r') as file:
         content = file.read()
     pattern = rf'{class_name}\s*\((.*?)\)'
     match = re.search(pattern, content, re.DOTALL)
-
     if match:
         parameters = match.group(1).strip()
         return (True, parameters)
@@ -108,15 +103,14 @@ def extract_feature_parameter_list(feature_name):
             result.append(c)
     result = ''.join(result)
     result = re.sub(r'=.*?,', ',', result + ",").split()
+    result = [re.sub(',', '', word) for word in result]
     return result
 
 def extract_feature_name_and_cpp_class(cc_file, cc_files, cwd, num):
     source_without_comments = subprocess.check_output(
         ["gcc", "-fpreprocessed", "-dD", "-E", cc_file]).decode("utf-8")
-
     name_pattern = r'TypedFeature\("([^"]*)"\)'
-    class_pattern = r'TypedFeature<(.*?)>'
-
+    class_pattern = r'TypedFeature<(.*?)> {'
     feature_names = []
     class_names = []
     other_namespaces = []
@@ -128,7 +122,6 @@ def extract_feature_name_and_cpp_class(cc_file, cc_files, cwd, num):
             feature_error_msg = "feature_name: " + feature_name + "\n"
             feature_names.append(feature_name)
             feature_error_msgs.append(feature_error_msg)
-
         if re.search(class_pattern, line):
             feature_class = re.search(class_pattern, line).group(1)
             class_name = feature_class.split()[-1].split("::")[-1]
@@ -152,17 +145,16 @@ def get_cpp_class_parameters(
                 cc_file2, class_name)
             if found_in_file:
                 break
-
     if found_in_file:
         parameters = parameters.replace("\n", "") + ","
         parameters = parameters.split()
         parameters = [word for word in parameters if "," in word]
-        parameters = [re.sub(C_VAR_PATTERN, '', word) + ","
+        parameters = [re.sub(C_VAR_PATTERN, '', word)
                       for word in parameters]
         return parameters
     else:
         # assume default constructor
-        return [","]
+        return ['']
 
 def get_create_component_lines(cc_file):
     source_without_comments = subprocess.check_output(
@@ -189,18 +181,13 @@ def compare_component_parameters(cc_file, cc_files, cwd):
             error_msg += extracted_error_msg + "\n"
             feature_parameters = extract_feature_parameter_list(
                 feature_name)
-
             error_msg += ("== FEATURE PARAMETERS '"
                          + feature_name + "'==\n")
             error_msg += str(feature_parameters) + "\n"
-
             cpp_class_parameters = get_cpp_class_parameters(
-
                 cpp_class, other_namespace, cc_file, cc_files, cwd)
-
             error_msg += "== CLASS PARAMETERS '" + cpp_class + "'==\n"
             error_msg += str(cpp_class_parameters) + "\n"
-
             if feature_name in SHORT_HANDS:
                 print(f"feature_name '{feature_name}' is ignored"
                     " because it is marked as shorthand")
@@ -220,7 +207,6 @@ def compare_component_parameters(cc_file, cc_files, cwd):
                         error_msg += (feature_parameters[i] +
                             " =/= " + cpp_class_parameters[i] + "\n")
                 error_msg += cc_file + "\n"
-
     return found_error, error_msg
 
 def error_check(cc_files, cwd):
@@ -252,7 +238,6 @@ def main():
     print("Checking Component Parameters of"
           " {} *.cc files".format(len(cc_files)))
     return error_check(cc_files, cwd=DIR) == 0
-
 
 if __name__ == "__main__":
     main()
