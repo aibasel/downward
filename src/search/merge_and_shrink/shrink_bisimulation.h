@@ -3,10 +3,6 @@
 
 #include "shrink_strategy.h"
 
-namespace plugins {
-class Options;
-}
-
 namespace merge_and_shrink {
 struct Signature;
 
@@ -39,8 +35,7 @@ protected:
     virtual void dump_strategy_specific_options(utils::LogProxy &log) const override;
     virtual std::string name() const override;
 public:
-    explicit ShrinkBisimulation(const plugins::Options &opts);
-    virtual ~ShrinkBisimulation() override = default;
+    explicit ShrinkBisimulation(bool greedy, AtLimit at_limit);
     virtual StateEquivalenceRelation compute_equivalence_relation(
         const TransitionSystem &ts,
         const Distances &distances,

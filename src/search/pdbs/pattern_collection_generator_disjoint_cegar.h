@@ -23,7 +23,10 @@ class PatternCollectionGeneratorDisjointCegar : public PatternCollectionGenerato
     virtual PatternCollectionInformation compute_patterns(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
-    explicit PatternCollectionGeneratorDisjointCegar(const plugins::Options &opts);
+    PatternCollectionGeneratorDisjointCegar(
+        int max_pdb_size, int max_collection_size, double max_time,
+        bool use_wildcard_plans, int random_seed,
+        utils::Verbosity verbosity);
 };
 }
 

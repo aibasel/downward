@@ -39,7 +39,8 @@ string MergeScoringFunctionGoalRelevance::name() const {
     return "goal relevance";
 }
 
-class MergeScoringFunctionGoalRelevanceFeature : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionGoalRelevance> {
+class MergeScoringFunctionGoalRelevanceFeature
+    : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionGoalRelevance> {
 public:
     MergeScoringFunctionGoalRelevanceFeature() : TypedFeature("goal_relevance") {
         document_title("Goal relevance scoring");

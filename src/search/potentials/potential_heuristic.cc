@@ -8,13 +8,13 @@ using namespace std;
 
 namespace potentials {
 PotentialHeuristic::PotentialHeuristic(
-    const plugins::Options &opts, unique_ptr<PotentialFunction> function)
-    : Heuristic(opts),
+    unique_ptr<PotentialFunction> function,
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, description, verbosity),
       function(move(function)) {
 }
 
-PotentialHeuristic::~PotentialHeuristic() {
-}
 
 int PotentialHeuristic::compute_heuristic(const State &ancestor_state) {
     State state = convert_ancestor_state(ancestor_state);

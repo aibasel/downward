@@ -17,12 +17,13 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
-    const plugins::Options &options)
-    : atomic_ts_order(options.get<AtomicTSOrder>("atomic_ts_order")),
-      product_ts_order(options.get<ProductTSOrder>("product_ts_order")),
-      atomic_before_product(options.get<bool>("atomic_before_product")),
-      random_seed(options.get<int>("random_seed")),
-      rng(utils::parse_rng_from_options(options)) {
+    AtomicTSOrder atomic_ts_order, ProductTSOrder product_ts_order,
+    bool atomic_before_product, int random_seed)
+    : atomic_ts_order(atomic_ts_order),
+      product_ts_order(product_ts_order),
+      atomic_before_product(atomic_before_product),
+      random_seed(random_seed),
+      rng(utils::get_rng(random_seed)) {
 }
 
 vector<double> MergeScoringFunctionTotalOrder::compute_scores(
@@ -173,10 +174,11 @@ void MergeScoringFunctionTotalOrder::add_options_to_feature(
         "Consider atomic transition systems before composite ones iff true.",
         "false");
 
-    utils::add_rng_options(feature);
+    utils::add_rng_options_to_feature(feature);
 }
 
-class MergeScoringFunctionTotalOrderFeature : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionTotalOrder> {
+class MergeScoringFunctionTotalOrderFeature
+    : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionTotalOrder> {
 public:
     MergeScoringFunctionTotalOrderFeature() : TypedFeature("total_order") {
         document_title("Total order");
@@ -200,6 +202,17 @@ public:
             "to emulate the corresponding (precomputed) linear merge strategies "
             "reverse level/level (independently of the other options).");
         MergeScoringFunctionTotalOrder::add_options_to_feature(*this);
+    }
+
+    virtual shared_ptr<MergeScoringFunctionTotalOrder> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<MergeScoringFunctionTotalOrder>(
+            opts.get<AtomicTSOrder>("atomic_ts_order"),
+            opts.get<ProductTSOrder>("product_ts_order"),
+            opts.get<bool>("atomic_before_product"),
+            utils::get_rng_arguments_from_options(opts)
+            );
     }
 };
 

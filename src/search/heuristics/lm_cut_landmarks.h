@@ -88,7 +88,6 @@ public:
     using LandmarkCallback = std::function<void (const Landmark &, int)>;
 
     LandmarkCutLandmarks(const TaskProxy &task_proxy);
-    virtual ~LandmarkCutLandmarks();
 
     /*
       Compute LM-cut landmarks for the given state.

@@ -27,19 +27,23 @@ int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
     return get_adjusted_action_cost(op, cost_type, parent_is_unit_cost);
 }
 
-class CostAdaptedTaskFeature : public plugins::TypedFeature<AbstractTask, CostAdaptedTask> {
+class CostAdaptedTaskFeature
+    : public plugins::TypedFeature<AbstractTask, CostAdaptedTask> {
 public:
     CostAdaptedTaskFeature() : TypedFeature("adapt_costs") {
         document_title("Cost-adapted task");
         document_synopsis(
             "A cost-adapting transformation of the root task.");
 
-        add_cost_type_option_to_feature(*this);
+        add_cost_type_options_to_feature(*this);
     }
 
-    virtual shared_ptr<CostAdaptedTask> create_component(const plugins::Options &options, const utils::Context &) const override {
-        OperatorCost cost_type = options.get<OperatorCost>("cost_type");
-        return make_shared<CostAdaptedTask>(g_root_task, cost_type);
+    virtual shared_ptr<CostAdaptedTask> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<CostAdaptedTask>(
+            g_root_task,
+            get_cost_type_arguments_from_options(opts));
     }
 };
 

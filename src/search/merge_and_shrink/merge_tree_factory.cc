@@ -12,9 +12,10 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeTreeFactory::MergeTreeFactory(const plugins::Options &options)
-    : rng(utils::parse_rng_from_options(options)),
-      update_option(options.get<UpdateOption>("update_option")) {
+MergeTreeFactory::MergeTreeFactory(
+    int random_seed, UpdateOption update_option)
+    : rng(utils::get_rng(random_seed)),
+      update_option(update_option) {
 }
 
 void MergeTreeFactory::dump_options(utils::LogProxy &log) const {
@@ -45,14 +46,22 @@ unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
     utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
 }
 
-void MergeTreeFactory::add_options_to_feature(plugins::Feature &feature) {
-    utils::add_rng_options(feature);
+void add_merge_tree_options_to_feature(plugins::Feature &feature) {
+    utils::add_rng_options_to_feature(feature);
     feature.add_option<UpdateOption>(
         "update_option",
         "When the merge tree is used within another merge strategy, how "
         "should it be updated when a merge different to a merge from the "
         "tree is performed.",
         "use_random");
+}
+
+tuple<int, UpdateOption> get_merge_tree_arguments_from_options(
+    const plugins::Options &opts) {
+    return tuple_cat(
+        utils::get_rng_arguments_from_options(opts),
+        make_tuple(opts.get<UpdateOption>("update_option"))
+        );
 }
 
 static class MergeTreeFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<MergeTreeFactory> {

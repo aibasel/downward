@@ -1,5 +1,6 @@
 #include "shrink_bucket_based.h"
 
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -11,12 +12,8 @@
 using namespace std;
 
 namespace merge_and_shrink {
-ShrinkBucketBased::ShrinkBucketBased(const plugins::Options &opts)
-    : rng(utils::parse_rng_from_options(opts)) {
-}
-
-void ShrinkBucketBased::add_options_to_feature(plugins::Feature &feature) {
-    utils::add_rng_options(feature);
+ShrinkBucketBased::ShrinkBucketBased(int random_seed)
+    : rng(utils::get_rng(random_seed)) {
 }
 
 StateEquivalenceRelation ShrinkBucketBased::compute_abstraction(
@@ -98,5 +95,14 @@ StateEquivalenceRelation ShrinkBucketBased::compute_equivalence_relation(
     utils::LogProxy &log) const {
     vector<Bucket> buckets = partition_into_buckets(ts, distances);
     return compute_abstraction(buckets, target_size, log);
+}
+
+void add_shrink_bucket_options_to_feature(plugins::Feature &feature) {
+    utils::add_rng_options_to_feature(feature);
+}
+
+tuple<int> get_shrink_bucket_arguments_from_options(
+    const plugins::Options &opts) {
+    return utils::get_rng_arguments_from_options(opts);
 }
 }

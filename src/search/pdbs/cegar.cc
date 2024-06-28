@@ -786,4 +786,8 @@ void add_cegar_wildcard_option_to_feature(plugins::Feature &feature) {
         "plans which are sequences of single operators",
         "true");
 }
+tuple<bool> get_cegar_wildcard_arguments_from_options(
+    const plugins::Options &opts) {
+    return make_tuple(opts.get<bool>("use_wildcard_plans"));
+}
 }

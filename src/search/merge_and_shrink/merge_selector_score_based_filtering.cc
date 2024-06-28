@@ -11,10 +11,8 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(
-    const plugins::Options &options)
-    : merge_scoring_functions(
-          options.get_list<shared_ptr<MergeScoringFunction>>(
-              "scoring_functions")) {
+    const vector<shared_ptr<MergeScoringFunction>> &scoring_functions)
+    : merge_scoring_functions(scoring_functions) {
 }
 
 static vector<pair<int, int>> get_remaining_candidates(
@@ -104,7 +102,8 @@ bool MergeSelectorScoreBasedFiltering::requires_goal_distances() const {
     return false;
 }
 
-class MergeSelectorScoreBasedFilteringFeature : public plugins::TypedFeature<MergeSelector, MergeSelectorScoreBasedFiltering> {
+class MergeSelectorScoreBasedFilteringFeature
+    : public plugins::TypedFeature<MergeSelector, MergeSelectorScoreBasedFiltering> {
 public:
     MergeSelectorScoreBasedFilteringFeature() : TypedFeature("score_based_filtering") {
         document_title("Score based filtering merge selector");
@@ -116,6 +115,15 @@ public:
         add_list_option<shared_ptr<MergeScoringFunction>>(
             "scoring_functions",
             "The list of scoring functions used to compute scores for candidates.");
+    }
+
+    virtual shared_ptr<MergeSelectorScoreBasedFiltering>
+    create_component(const plugins::Options &opts,
+                     const utils::Context &) const override {
+        return make_shared<MergeSelectorScoreBasedFiltering>(
+            opts.get_list<shared_ptr<MergeScoringFunction>>(
+                "scoring_functions")
+            );
     }
 };
 

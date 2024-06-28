@@ -103,4 +103,9 @@ void add_random_pattern_bidirectional_option_to_feature(plugins::Feature &featur
         "predecessor.",
         "true");
 }
+
+tuple<bool> get_random_pattern_bidirectional_arguments_from_options(
+    const plugins::Options &opts) {
+    return make_tuple(opts.get<bool>("bidirectional"));
+}
 }

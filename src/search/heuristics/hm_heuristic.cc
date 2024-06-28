@@ -12,9 +12,12 @@
 using namespace std;
 
 namespace hm_heuristic {
-HMHeuristic::HMHeuristic(const plugins::Options &opts)
-    : Heuristic(opts),
-      m(opts.get<int>("m")),
+HMHeuristic::HMHeuristic(
+    int m, const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates, const string &description,
+    utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, description, verbosity),
+      m(m),
       has_cond_effects(task_properties::has_conditional_effects(task_proxy)),
       goals(task_properties::get_fact_pairs(task_proxy.get_goals())) {
     if (log.is_at_least_normal()) {
@@ -263,13 +266,14 @@ void HMHeuristic::dump_table() const {
     }
 }
 
-class HMHeuristicFeature : public plugins::TypedFeature<Evaluator, HMHeuristic> {
+class HMHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, HMHeuristic> {
 public:
     HMHeuristicFeature() : TypedFeature("hm") {
         document_title("h^m heuristic");
 
         add_option<int>("m", "subset size", "2", plugins::Bounds("1", "infinity"));
-        Heuristic::add_options_to_feature(*this);
+        add_heuristic_options_to_feature(*this, "hm");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "ignored");
@@ -285,6 +289,15 @@ public:
             "safe",
             "yes for tasks without conditional effects or axioms");
         document_property("preferred operators", "no");
+    }
+
+    virtual shared_ptr<HMHeuristic> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<HMHeuristic>(
+            opts.get<int>("m"),
+            get_heuristic_arguments_from_options(opts)
+            );
     }
 };
 

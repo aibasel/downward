@@ -3,8 +3,6 @@
 
 #include "../open_list_factory.h"
 
-#include "../plugins/plugin.h"
-
 /*
   Type-based open list based on Xie et al. (AAAI 2014; see detailed
   reference in plug-in documentation).
@@ -26,10 +24,12 @@
 
 namespace type_based_open_list {
 class TypeBasedOpenListFactory : public OpenListFactory {
-    plugins::Options options;
+    std::vector<std::shared_ptr<Evaluator>> evaluators;
+    int random_seed;
 public:
-    explicit TypeBasedOpenListFactory(const plugins::Options &options);
-    virtual ~TypeBasedOpenListFactory() override = default;
+    TypeBasedOpenListFactory(
+        const std::vector<std::shared_ptr<Evaluator>> &evaluators,
+        int random_seed);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;

@@ -568,11 +568,13 @@ bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
         variables[fact2.var].get_fact(fact2.value));
 }
 
-LandmarkFactoryHM::LandmarkFactoryHM(const plugins::Options &opts)
-    : LandmarkFactory(opts),
-      m_(opts.get<int>("m")),
-      conjunctive_landmarks(opts.get<bool>("conjunctive_landmarks")),
-      use_orders(opts.get<bool>("use_orders")) {
+LandmarkFactoryHM::LandmarkFactoryHM(
+    int m, bool conjunctive_landmarks, bool use_orders,
+    utils::Verbosity verbosity)
+    : LandmarkFactory(verbosity),
+      m_(m),
+      conjunctive_landmarks(conjunctive_landmarks),
+      use_orders(use_orders) {
 }
 
 void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
@@ -1012,7 +1014,8 @@ bool LandmarkFactoryHM::supports_conditional_effects() const {
     return false;
 }
 
-class LandmarkFactoryHMFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryHM> {
+class LandmarkFactoryHMFeature
+    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryHM> {
 public:
     LandmarkFactoryHMFeature() : TypedFeature("lm_hm") {
         // document_group("");
@@ -1027,12 +1030,22 @@ public:
             "conjunctive_landmarks",
             "keep conjunctive landmarks",
             "true");
-        add_landmark_factory_options_to_feature(*this);
         add_use_orders_option_to_feature(*this);
+        add_landmark_factory_options_to_feature(*this);
 
         document_language_support(
             "conditional_effects",
             "ignored, i.e. not supported");
+    }
+
+    virtual shared_ptr<LandmarkFactoryHM> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<LandmarkFactoryHM>(
+            opts.get<int>("m"),
+            opts.get<bool>("conjunctive_landmarks"),
+            get_use_orders_arguments_from_options(opts),
+            get_landmark_factory_arguments_from_options(opts));
     }
 };
 

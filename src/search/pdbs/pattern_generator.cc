@@ -7,8 +7,9 @@
 using namespace std;
 
 namespace pdbs {
-PatternCollectionGenerator::PatternCollectionGenerator(const plugins::Options &opts)
-    : log(utils::get_log_from_options(opts)) {
+PatternCollectionGenerator::PatternCollectionGenerator(
+    utils::Verbosity verbosity)
+    : log(utils::get_log_for_verbosity(verbosity)) {
 }
 
 PatternCollectionInformation PatternCollectionGenerator::generate(
@@ -23,8 +24,8 @@ PatternCollectionInformation PatternCollectionGenerator::generate(
     return pci;
 }
 
-PatternGenerator::PatternGenerator(const plugins::Options &opts)
-    : log(utils::get_log_from_options(opts)) {
+PatternGenerator::PatternGenerator(utils::Verbosity verbosity)
+    : log(utils::get_log_for_verbosity(verbosity)) {
 }
 
 PatternInformation PatternGenerator::generate(
@@ -44,6 +45,11 @@ PatternInformation PatternGenerator::generate(
 
 void add_generator_options_to_feature(plugins::Feature &feature) {
     utils::add_log_options_to_feature(feature);
+}
+
+tuple<utils::Verbosity> get_generator_arguments_from_options(
+    const plugins::Options &opts) {
+    return utils::get_log_arguments_from_options(opts);
 }
 
 static class PatternCollectionGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<PatternCollectionGenerator> {

@@ -17,11 +17,13 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(const plugins::Options &opts)
-    : LandmarkFactoryRelaxation(opts),
-      disjunctive_landmarks(opts.get<bool>("disjunctive_landmarks")),
-      use_orders(opts.get<bool>("use_orders")),
-      only_causal_landmarks(opts.get<bool>("only_causal_landmarks")) {
+LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(
+    bool disjunctive_landmarks, bool use_orders,
+    bool only_causal_landmarks, utils::Verbosity verbosity)
+    : LandmarkFactoryRelaxation(verbosity),
+      disjunctive_landmarks(disjunctive_landmarks),
+      use_orders(use_orders),
+      only_causal_landmarks(only_causal_landmarks) {
 }
 
 void LandmarkFactoryRpgSasp::build_dtg_successors(const TaskProxy &task_proxy) {
@@ -631,7 +633,8 @@ bool LandmarkFactoryRpgSasp::supports_conditional_effects() const {
     return true;
 }
 
-class LandmarkFactoryRpgSaspFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgSasp> {
+class LandmarkFactoryRpgSaspFeature
+    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgSasp> {
 public:
     LandmarkFactoryRpgSaspFeature() : TypedFeature("lm_rhw") {
         document_title("RHW Landmarks");
@@ -643,13 +646,23 @@ public:
             "disjunctive_landmarks",
             "keep disjunctive landmarks",
             "true");
-        add_landmark_factory_options_to_feature(*this);
         add_use_orders_option_to_feature(*this);
         add_only_causal_landmarks_option_to_feature(*this);
+        add_landmark_factory_options_to_feature(*this);
 
         document_language_support(
             "conditional_effects",
             "supported");
+    }
+
+    virtual shared_ptr<LandmarkFactoryRpgSasp> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgSasp>(
+            opts.get<bool>("disjunctive_landmarks"),
+            get_use_orders_arguments_from_options(opts),
+            get_only_causal_landmarks_arguments_from_options(opts),
+            get_landmark_factory_arguments_from_options(opts));
     }
 };
 

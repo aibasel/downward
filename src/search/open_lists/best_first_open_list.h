@@ -3,8 +3,6 @@
 
 #include "../open_list_factory.h"
 
-#include "../plugins/options.h"
-
 /*
   Open list indexed by a single int, using FIFO tie-breaking.
 
@@ -13,10 +11,11 @@
 
 namespace standard_scalar_open_list {
 class BestFirstOpenListFactory : public OpenListFactory {
-    plugins::Options options;
+    std::shared_ptr<Evaluator> eval;
+    bool pref_only;
 public:
-    explicit BestFirstOpenListFactory(const plugins::Options &options);
-    virtual ~BestFirstOpenListFactory() override = default;
+    BestFirstOpenListFactory(
+        const std::shared_ptr<Evaluator> &eval, bool pref_only);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;

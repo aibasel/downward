@@ -24,7 +24,8 @@ class PhOConstraints : public ConstraintGenerator {
     int constraint_offset;
     std::shared_ptr<pdbs::PDBCollection> pdbs;
 public:
-    explicit PhOConstraints(const plugins::Options &opts);
+    explicit PhOConstraints(
+        const std::shared_ptr<pdbs::PatternCollectionGenerator> &patterns);
 
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) override;

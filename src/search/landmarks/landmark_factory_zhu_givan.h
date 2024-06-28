@@ -75,7 +75,8 @@ public:
         Exploration &exploration) override;
 
 public:
-    explicit LandmarkFactoryZhuGivan(const plugins::Options &opts);
+    LandmarkFactoryZhuGivan(
+        bool use_orders, utils::Verbosity verbosity);
 
     virtual bool supports_conditional_effects() const override;
 };

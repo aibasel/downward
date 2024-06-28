@@ -14,9 +14,17 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorMultipleRandom::PatternCollectionGeneratorMultipleRandom(
-    const plugins::Options &opts)
-    : PatternCollectionGeneratorMultiple(opts),
-      bidirectional(opts.get<bool>("bidirectional")) {
+    bool bidirectional, int max_pdb_size, int max_collection_size,
+    double pattern_generation_max_time, double total_max_time,
+    double stagnation_limit, double blacklist_trigger_percentage,
+    bool enable_blacklist_on_stagnation, int random_seed,
+    utils::Verbosity verbosity)
+    : PatternCollectionGeneratorMultiple(
+          max_pdb_size, max_collection_size,
+          pattern_generation_max_time, total_max_time, stagnation_limit,
+          blacklist_trigger_percentage, enable_blacklist_on_stagnation,
+          random_seed, verbosity),
+      bidirectional(bidirectional) {
 }
 
 string PatternCollectionGeneratorMultipleRandom::id() const {
@@ -51,7 +59,8 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
     return result;
 }
 
-class PatternCollectionGeneratorMultipleRandomFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorMultipleRandom> {
+class PatternCollectionGeneratorMultipleRandomFeature
+    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorMultipleRandom> {
 public:
     PatternCollectionGeneratorMultipleRandomFeature() : TypedFeature("random_patterns") {
         document_title("Multiple Random Patterns");
@@ -64,11 +73,20 @@ public:
             "pattern algorithm, called 'single randomized causal graph' (sRCG) "
             "in the paper. See below for descriptions of the algorithms.");
 
-        add_multiple_options_to_feature(*this);
         add_random_pattern_bidirectional_option_to_feature(*this);
+        add_multiple_options_to_feature(*this);
 
         add_random_pattern_implementation_notes_to_feature(*this);
         add_multiple_algorithm_implementation_notes_to_feature(*this);
+    }
+
+    virtual shared_ptr<PatternCollectionGeneratorMultipleRandom>
+    create_component(const plugins::Options &opts,
+                     const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorMultipleRandom>(
+            get_random_pattern_bidirectional_arguments_from_options(opts),
+            get_multiple_arguments_from_options(opts)
+            );
     }
 };
 

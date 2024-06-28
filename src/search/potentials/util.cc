@@ -44,7 +44,8 @@ string get_admissible_potentials_reference() {
         "2015");
 }
 
-void prepare_parser_for_admissible_potentials(plugins::Feature &feature) {
+void add_admissible_potentials_options_to_feature(
+    plugins::Feature &feature, const string &description) {
     feature.document_language_support("action costs", "supported");
     feature.document_language_support("conditional effects", "not supported");
     feature.document_language_support("axioms", "not supported");
@@ -63,6 +64,18 @@ void prepare_parser_for_admissible_potentials(plugins::Feature &feature) {
         "1e8",
         plugins::Bounds("0.0", "infinity"));
     lp::add_lp_solver_option_to_feature(feature);
-    Heuristic::add_options_to_feature(feature);
+    add_heuristic_options_to_feature(feature, description);
+}
+
+
+tuple<double, lp::LPSolverType, shared_ptr<AbstractTask>, bool, string,
+      utils::Verbosity>
+get_admissible_potential_arguments_from_options(
+    const plugins::Options &opts) {
+    return tuple_cat(
+        make_tuple(opts.get<double>("max_potential")),
+        lp::get_lp_solver_arguments_from_options(opts),
+        get_heuristic_arguments_from_options(opts)
+        );
 }
 }

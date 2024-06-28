@@ -100,7 +100,8 @@ string MergeScoringFunctionDFP::name() const {
     return "dfp";
 }
 
-class MergeScoringFunctionDFPFeature : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionDFP> {
+class MergeScoringFunctionDFPFeature
+    : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionDFP> {
 public:
     MergeScoringFunctionDFPFeature() : TypedFeature("dfp") {
         document_title("DFP scoring");

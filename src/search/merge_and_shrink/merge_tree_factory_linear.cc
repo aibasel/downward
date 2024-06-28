@@ -17,11 +17,11 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeTreeFactoryLinear::MergeTreeFactoryLinear(const plugins::Options &options)
-    : MergeTreeFactory(options),
-      variable_order_type(
-          options.get<variable_order_finder::VariableOrderType>("variable_order")),
-      rng(utils::parse_rng_from_options(options)) {
+MergeTreeFactoryLinear::MergeTreeFactoryLinear(
+    variable_order_finder::VariableOrderType variable_order,
+    int random_seed, UpdateOption update_option)
+    : MergeTreeFactory(random_seed, update_option),
+      variable_order_type(variable_order) {
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
@@ -109,14 +109,15 @@ void MergeTreeFactoryLinear::dump_tree_specific_options(utils::LogProxy &log) co
 }
 
 void MergeTreeFactoryLinear::add_options_to_feature(plugins::Feature &feature) {
-    MergeTreeFactory::add_options_to_feature(feature);
     feature.add_option<variable_order_finder::VariableOrderType>(
         "variable_order",
         "the order in which atomic transition systems are merged",
         "cg_goal_level");
+    add_merge_tree_options_to_feature(feature);
 }
 
-class MergeTreeFactoryLinearFeature : public plugins::TypedFeature<MergeTreeFactory, MergeTreeFactoryLinear> {
+class MergeTreeFactoryLinearFeature
+    : public plugins::TypedFeature<MergeTreeFactory, MergeTreeFactoryLinear> {
 public:
     MergeTreeFactoryLinearFeature() : TypedFeature("linear") {
         document_title("Linear merge trees");
@@ -133,6 +134,16 @@ public:
                 "2007"));
 
         MergeTreeFactoryLinear::add_options_to_feature(*this);
+    }
+
+    virtual shared_ptr<MergeTreeFactoryLinear> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<MergeTreeFactoryLinear>(
+            opts.get<variable_order_finder::VariableOrderType>(
+                "variable_order"),
+            get_merge_tree_arguments_from_options(opts)
+            );
     }
 };
 

@@ -7,8 +7,8 @@
 using namespace std;
 
 namespace stubborn_sets_simple {
-StubbornSetsSimple::StubbornSetsSimple(const plugins::Options &opts)
-    : StubbornSetsActionCentric(opts) {
+StubbornSetsSimple::StubbornSetsSimple(utils::Verbosity verbosity)
+    : StubbornSetsActionCentric(verbosity) {
 }
 
 void StubbornSetsSimple::initialize(const shared_ptr<AbstractTask> &task) {
@@ -73,7 +73,8 @@ void StubbornSetsSimple::handle_stubborn_operator(const State &state,
     }
 }
 
-class StubbornSetsSimpleFeature : public plugins::TypedFeature<PruningMethod, StubbornSetsSimple> {
+class StubbornSetsSimpleFeature
+    : public plugins::TypedFeature<PruningMethod, StubbornSetsSimple> {
 public:
     StubbornSetsSimpleFeature() : TypedFeature("stubborn_sets_simple") {
         document_title("Stubborn sets simple");
@@ -103,6 +104,13 @@ public:
                 "AAAI Press",
                 "2014"));
         add_pruning_options_to_feature(*this);
+    }
+
+    virtual shared_ptr<StubbornSetsSimple> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<StubbornSetsSimple>(
+            get_pruning_arguments_from_options(opts));
     }
 };
 

@@ -113,7 +113,10 @@ class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
     virtual PatternCollectionInformation compute_patterns(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
-    explicit PatternCollectionGeneratorGenetic(const plugins::Options &opts);
+    PatternCollectionGeneratorGenetic(
+        int pdb_max_size, int num_collections, int num_episodes,
+        double mutation_probability, bool disjoint, int random_seed,
+        utils::Verbosity verbosity);
 };
 }
 

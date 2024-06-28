@@ -25,12 +25,15 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
-LabelReduction::LabelReduction(const plugins::Options &options)
-    : lr_before_shrinking(options.get<bool>("before_shrinking")),
-      lr_before_merging(options.get<bool>("before_merging")),
-      lr_method(options.get<LabelReductionMethod>("method")),
-      lr_system_order(options.get<LabelReductionSystemOrder>("system_order")),
-      rng(utils::parse_rng_from_options(options)) {
+LabelReduction::LabelReduction(
+    bool before_shrinking, bool before_merging,
+    LabelReductionMethod method, LabelReductionSystemOrder system_order,
+    int random_seed)
+    : lr_before_shrinking(before_shrinking),
+      lr_before_merging(before_merging),
+      lr_method(method),
+      lr_system_order(system_order),
+      rng(utils::get_rng(random_seed)) {
 }
 
 bool LabelReduction::initialized() const {
@@ -287,7 +290,8 @@ void LabelReduction::dump_options(utils::LogProxy &log) const {
     }
 }
 
-class LabelReductionFeature : public plugins::TypedFeature<LabelReduction, LabelReduction> {
+class LabelReductionFeature
+    : public plugins::TypedFeature<LabelReduction, LabelReduction> {
 public:
     LabelReductionFeature() : TypedFeature("exact") {
         document_title("Exact generalized label reduction");
@@ -332,18 +336,26 @@ public:
             "label_reduction_method.",
             "random");
         // Add random_seed option.
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<LabelReduction> create_component(const plugins::Options &options, const utils::Context &context) const override {
-        bool lr_before_shrinking = options.get<bool>("before_shrinking");
-        bool lr_before_merging = options.get<bool>("before_merging");
+    virtual shared_ptr<LabelReduction> create_component(
+        const plugins::Options &opts,
+        const utils::Context &context) const override {
+        bool lr_before_shrinking = opts.get<bool>("before_shrinking");
+        bool lr_before_merging = opts.get<bool>("before_merging");
         if (!lr_before_shrinking && !lr_before_merging) {
             context.error(
                 "Please turn on at least one of the options "
                 "before_shrinking or before_merging!");
         }
-        return make_shared<LabelReduction>(options);
+        return plugins::make_shared_from_arg_tuples<LabelReduction>(
+            opts.get<bool>("before_shrinking"),
+            opts.get<bool>("before_merging"),
+            opts.get<LabelReductionMethod>("method"),
+            opts.get<LabelReductionSystemOrder>("system_order"),
+            utils::get_rng_arguments_from_options(opts)
+            );
     }
 };
 
