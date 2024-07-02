@@ -161,41 +161,41 @@ public:
     }
 };
 
-int DeleteRelaxationConstraintsRR::LPVariableIDs::id_of_fp(FactPair f) const {
+int DeleteRelaxationRRConstraints::LPVariableIDs::id_of_fp(FactPair f) const {
     return fp_offsets[f.var] + f.value;
 }
 
-int DeleteRelaxationConstraintsRR::LPVariableIDs::id_of_fpa(
+int DeleteRelaxationRRConstraints::LPVariableIDs::id_of_fpa(
     FactPair f, const OperatorProxy &op) const {
     return fpa_ids[op.get_id()].at(f);
 }
 
-int DeleteRelaxationConstraintsRR::LPVariableIDs::id_of_e(
+int DeleteRelaxationRRConstraints::LPVariableIDs::id_of_e(
     pair<FactPair, FactPair> edge) const {
     return e_ids.at(edge);
 }
 
-int DeleteRelaxationConstraintsRR::LPVariableIDs::has_e(
+int DeleteRelaxationRRConstraints::LPVariableIDs::has_e(
     pair<FactPair, FactPair> edge) const {
     return e_ids.find(edge) != e_ids.end();
 }
 
-int DeleteRelaxationConstraintsRR::LPVariableIDs::id_of_t(FactPair f) const {
+int DeleteRelaxationRRConstraints::LPVariableIDs::id_of_t(FactPair f) const {
     return t_offsets[f.var] + f.value;
 }
 
-DeleteRelaxationConstraintsRR::DeleteRelaxationConstraintsRR(
+DeleteRelaxationRRConstraints::DeleteRelaxationRRConstraints(
     const plugins::Options &opts)
     : acyclicity_type(opts.get<AcyclicityType>("acyclicity_type")),
       use_integer_vars(opts.get<bool>("use_integer_vars")) {
 }
 
-int DeleteRelaxationConstraintsRR::get_constraint_id(FactPair f) const {
+int DeleteRelaxationRRConstraints::get_constraint_id(FactPair f) const {
     return constraint_offsets[f.var] + f.value;
 }
 
-DeleteRelaxationConstraintsRR::LPVariableIDs
-DeleteRelaxationConstraintsRR::create_auxiliary_variables(
+DeleteRelaxationRRConstraints::LPVariableIDs
+DeleteRelaxationRRConstraints::create_auxiliary_variables(
     const TaskProxy &task_proxy, LPVariables &variables) const {
     OperatorsProxy ops = task_proxy.get_operators();
     VariablesProxy task_variables = task_proxy.get_variables();
@@ -234,9 +234,9 @@ DeleteRelaxationConstraintsRR::create_auxiliary_variables(
     return lp_var_ids;
 }
 
-void DeleteRelaxationConstraintsRR::create_auxiliary_variables_ve(
+void DeleteRelaxationRRConstraints::create_auxiliary_variables_ve(
     const TaskProxy &task_proxy, const VEGraph &ve_graph, LPVariables &variables,
-    DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids) const {
+    DeleteRelaxationRRConstraints::LPVariableIDs &lp_var_ids) const {
     utils::unused_variable(task_proxy);
     // Add e_{i,j} variables.
     for (pair<FactPair, FactPair> edge : ve_graph.get_edges()) {
@@ -253,9 +253,9 @@ void DeleteRelaxationConstraintsRR::create_auxiliary_variables_ve(
     }
 }
 
-void DeleteRelaxationConstraintsRR::create_auxiliary_variables_tl(
+void DeleteRelaxationRRConstraints::create_auxiliary_variables_tl(
     const TaskProxy &task_proxy, LPVariables &variables,
-    DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids) const {
+    DeleteRelaxationRRConstraints::LPVariableIDs &lp_var_ids) const {
     int num_facts = 0;
     for (VariableProxy var : task_proxy.get_variables()) {
         num_facts += var.get_domain_size();
@@ -275,9 +275,9 @@ void DeleteRelaxationConstraintsRR::create_auxiliary_variables_tl(
     }
 }
 
-void DeleteRelaxationConstraintsRR::create_constraints(
+void DeleteRelaxationRRConstraints::create_constraints(
     const TaskProxy &task_proxy,
-    const DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids,
+    const DeleteRelaxationRRConstraints::LPVariableIDs &lp_var_ids,
     lp::LinearProgram &lp) {
     LPVariables &variables = lp.get_variables();
     LPConstraints &constraints = lp.get_constraints();
@@ -391,9 +391,9 @@ void DeleteRelaxationConstraintsRR::create_constraints(
     }
 }
 
-void DeleteRelaxationConstraintsRR::create_constraints_ve(
+void DeleteRelaxationRRConstraints::create_constraints_ve(
     const TaskProxy &task_proxy, const VEGraph &ve_graph,
-    const DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids,
+    const DeleteRelaxationRRConstraints::LPVariableIDs &lp_var_ids,
     lp::LinearProgram &lp) {
     LPConstraints &constraints = lp.get_constraints();
     double infinity = lp.get_infinity();
@@ -459,9 +459,9 @@ void DeleteRelaxationConstraintsRR::create_constraints_ve(
     }
 }
 
-void DeleteRelaxationConstraintsRR::create_constraints_tl(
+void DeleteRelaxationRRConstraints::create_constraints_tl(
     const TaskProxy &task_proxy,
-    const DeleteRelaxationConstraintsRR::LPVariableIDs &lp_var_ids,
+    const DeleteRelaxationRRConstraints::LPVariableIDs &lp_var_ids,
     lp::LinearProgram &lp) {
     /*
       Constraint (9) in paper:
@@ -500,7 +500,7 @@ void DeleteRelaxationConstraintsRR::create_constraints_tl(
     }
 }
 
-void DeleteRelaxationConstraintsRR::initialize_constraints(
+void DeleteRelaxationRRConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) {
     TaskProxy task_proxy(*task);
     LPVariableIDs lp_var_ids = create_auxiliary_variables(
@@ -532,7 +532,7 @@ void DeleteRelaxationConstraintsRR::initialize_constraints(
     }
 }
 
-bool DeleteRelaxationConstraintsRR::update_constraints(
+bool DeleteRelaxationRRConstraints::update_constraints(
     const State &state, lp::LPSolver &lp_solver) {
     // Unset old bounds.
     int con_id;
@@ -552,11 +552,11 @@ bool DeleteRelaxationConstraintsRR::update_constraints(
     return false;
 }
 
-class DeleteRelaxationConstraintsRRFeature
+class DeleteRelaxationRRConstraintsFeature
     : public plugins::TypedFeature<ConstraintGenerator,
-                                   DeleteRelaxationConstraintsRR> {
+                                   DeleteRelaxationRRConstraints> {
 public:
-    DeleteRelaxationConstraintsRRFeature()
+    DeleteRelaxationRRConstraintsFeature()
         : TypedFeature("delete_relaxation_rr_constraints") {
         document_title(
             "Delete relaxation constraints from Rankooh and Rintanen");
@@ -616,7 +616,7 @@ public:
     }
 };
 
-static plugins::FeaturePlugin<DeleteRelaxationConstraintsRRFeature> _plugin;
+static plugins::FeaturePlugin<DeleteRelaxationRRConstraintsFeature> _plugin;
 
 static plugins::TypedEnumPlugin<AcyclicityType> _enum_plugin({
         {"time_labels",

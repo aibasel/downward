@@ -1,5 +1,5 @@
-#ifndef OPERATOR_COUNTING_DELETE_RELAXATION_CONSTRAINTS_RR_H
-#define OPERATOR_COUNTING_DELETE_RELAXATION_CONSTRAINTS_RR_H
+#ifndef OPERATOR_COUNTING_DELETE_RELAXATION_RR_CONSTRAINTS_H
+#define OPERATOR_COUNTING_DELETE_RELAXATION_RR_CONSTRAINTS_H
 
 #include  "constraint_generator.h"
 
@@ -27,7 +27,7 @@ enum class AcyclicityType {
     TIME_LABELS, VERTEX_ELIMINATION, NONE
 };
 
-class DeleteRelaxationConstraintsRR : public ConstraintGenerator {
+class DeleteRelaxationRRConstraints : public ConstraintGenerator {
     struct LPVariableIDs {
         /*
           The variables f_p in the paper represent if a fact p is reached by the
@@ -103,7 +103,7 @@ class DeleteRelaxationConstraintsRR : public ConstraintGenerator {
         const TaskProxy &task_proxy, const LPVariableIDs &lp_var_ids,
         lp::LinearProgram &lp);
 public:
-    explicit DeleteRelaxationConstraintsRR(const plugins::Options &opts);
+    explicit DeleteRelaxationRRConstraints(const plugins::Options &opts);
 
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task,

@@ -21,37 +21,37 @@ static void add_lp_variables(int count, LPVariables &variables, vector<int> &ind
 }
 
 
-DeleteRelaxationConstraintsIF::DeleteRelaxationConstraintsIF(const plugins::Options &opts)
+DeleteRelaxationIFConstraints::DeleteRelaxationIFConstraints(const plugins::Options &opts)
     : use_time_vars(opts.get<bool>("use_time_vars")),
       use_integer_vars(opts.get<bool>("use_integer_vars")) {
 }
 
-int DeleteRelaxationConstraintsIF::get_var_op_used(const OperatorProxy &op) {
+int DeleteRelaxationIFConstraints::get_var_op_used(const OperatorProxy &op) {
     return lp_var_id_op_used[op.get_id()];
 }
 
-int DeleteRelaxationConstraintsIF::get_var_fact_reached(FactPair f) {
+int DeleteRelaxationIFConstraints::get_var_fact_reached(FactPair f) {
     return lp_var_id_fact_reached[f.var][f.value];
 }
 
-int DeleteRelaxationConstraintsIF::get_var_first_achiever(
+int DeleteRelaxationIFConstraints::get_var_first_achiever(
     const OperatorProxy &op, FactPair f) {
     return lp_var_id_first_achiever[op.get_id()][f.var][f.value];
 }
 
-int DeleteRelaxationConstraintsIF::get_var_op_time(const OperatorProxy &op) {
+int DeleteRelaxationIFConstraints::get_var_op_time(const OperatorProxy &op) {
     return lp_var_id_op_time[op.get_id()];
 }
 
-int DeleteRelaxationConstraintsIF::get_var_fact_time(FactPair f) {
+int DeleteRelaxationIFConstraints::get_var_fact_time(FactPair f) {
     return lp_var_id_fact_time[f.var][f.value];
 }
 
-int DeleteRelaxationConstraintsIF::get_constraint_id(FactPair f) {
+int DeleteRelaxationIFConstraints::get_constraint_id(FactPair f) {
     return constraint_ids[f.var][f.value];
 }
 
-void DeleteRelaxationConstraintsIF::create_auxiliary_variables(
+void DeleteRelaxationIFConstraints::create_auxiliary_variables(
     const TaskProxy &task_proxy, LPVariables &variables) {
     OperatorsProxy ops = task_proxy.get_operators();
     int num_ops = ops.size();
@@ -94,7 +94,7 @@ void DeleteRelaxationConstraintsIF::create_auxiliary_variables(
     }
 }
 
-void DeleteRelaxationConstraintsIF::create_constraints(const TaskProxy &task_proxy,
+void DeleteRelaxationIFConstraints::create_constraints(const TaskProxy &task_proxy,
                                                        lp::LinearProgram &lp) {
     LPVariables &variables = lp.get_variables();
     LPConstraints &constraints = lp.get_constraints();
@@ -213,7 +213,7 @@ void DeleteRelaxationConstraintsIF::create_constraints(const TaskProxy &task_pro
 }
 
 
-void DeleteRelaxationConstraintsIF::initialize_constraints(
+void DeleteRelaxationIFConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) {
     TaskProxy task_proxy(*task);
     create_auxiliary_variables(task_proxy, lp.get_variables());
@@ -221,7 +221,7 @@ void DeleteRelaxationConstraintsIF::initialize_constraints(
 }
 
 
-bool DeleteRelaxationConstraintsIF::update_constraints(
+bool DeleteRelaxationIFConstraints::update_constraints(
     const State &state, lp::LPSolver &lp_solver) {
     // Unset old bounds.
     for (FactPair f : last_state) {
@@ -236,9 +236,9 @@ bool DeleteRelaxationConstraintsIF::update_constraints(
     return false;
 }
 
-class DeleteRelaxationConstraintsIFFeature : public plugins::TypedFeature<ConstraintGenerator, DeleteRelaxationConstraintsIF> {
+class DeleteRelaxationIFConstraintsFeature : public plugins::TypedFeature<ConstraintGenerator, DeleteRelaxationIFConstraints> {
 public:
-    DeleteRelaxationConstraintsIFFeature() : TypedFeature("delete_relaxation_if_constraints") {
+    DeleteRelaxationIFConstraintsFeature() : TypedFeature("delete_relaxation_if_constraints") {
         document_title("Delete relaxation constraints");
         document_synopsis(
             "Operator-counting constraints based on the delete relaxation. By "
@@ -287,5 +287,5 @@ public:
     }
 };
 
-static plugins::FeaturePlugin<DeleteRelaxationConstraintsIFFeature> _plugin;
+static plugins::FeaturePlugin<DeleteRelaxationIFConstraintsFeature> _plugin;
 }
