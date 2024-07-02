@@ -26,7 +26,7 @@ namespace utils {
   that are "fed" to the main hashing function (implemented in class
   HashState) one by one. This allows a compositional approach to
   hashing. For example, the code for a pair p is the concatenation of
-  code(x.first) and code(x.second).
+  code(p.first) and code(p.second).
 
   A simpler compositional approach to hashing would first hash the
   components of an object and then combine the hash values, and this
@@ -256,6 +256,11 @@ void feed(HashState &hash_state, const std::vector<T> &vec) {
     for (const T &item : vec) {
         feed(hash_state, item);
     }
+}
+
+template<typename ... T>
+void feed(HashState &hash_state, const std::tuple<T...> &t) {
+    std::apply([&](auto &&... element) {((feed(hash_state, element)), ...);}, t);
 }
 
 

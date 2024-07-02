@@ -1,4 +1,4 @@
-#include "delete_relaxation_constraints.h"
+#include "delete_relaxation_if_constraints.h"
 
 #include "../task_proxy.h"
 
@@ -21,37 +21,37 @@ static void add_lp_variables(int count, LPVariables &variables, vector<int> &ind
 }
 
 
-DeleteRelaxationConstraints::DeleteRelaxationConstraints(const plugins::Options &opts)
+DeleteRelaxationIFConstraints::DeleteRelaxationIFConstraints(const plugins::Options &opts)
     : use_time_vars(opts.get<bool>("use_time_vars")),
       use_integer_vars(opts.get<bool>("use_integer_vars")) {
 }
 
-int DeleteRelaxationConstraints::get_var_op_used(const OperatorProxy &op) {
+int DeleteRelaxationIFConstraints::get_var_op_used(const OperatorProxy &op) {
     return lp_var_id_op_used[op.get_id()];
 }
 
-int DeleteRelaxationConstraints::get_var_fact_reached(FactPair f) {
+int DeleteRelaxationIFConstraints::get_var_fact_reached(FactPair f) {
     return lp_var_id_fact_reached[f.var][f.value];
 }
 
-int DeleteRelaxationConstraints::get_var_first_achiever(
+int DeleteRelaxationIFConstraints::get_var_first_achiever(
     const OperatorProxy &op, FactPair f) {
     return lp_var_id_first_achiever[op.get_id()][f.var][f.value];
 }
 
-int DeleteRelaxationConstraints::get_var_op_time(const OperatorProxy &op) {
+int DeleteRelaxationIFConstraints::get_var_op_time(const OperatorProxy &op) {
     return lp_var_id_op_time[op.get_id()];
 }
 
-int DeleteRelaxationConstraints::get_var_fact_time(FactPair f) {
+int DeleteRelaxationIFConstraints::get_var_fact_time(FactPair f) {
     return lp_var_id_fact_time[f.var][f.value];
 }
 
-int DeleteRelaxationConstraints::get_constraint_id(FactPair f) {
+int DeleteRelaxationIFConstraints::get_constraint_id(FactPair f) {
     return constraint_ids[f.var][f.value];
 }
 
-void DeleteRelaxationConstraints::create_auxiliary_variables(
+void DeleteRelaxationIFConstraints::create_auxiliary_variables(
     const TaskProxy &task_proxy, LPVariables &variables) {
     OperatorsProxy ops = task_proxy.get_operators();
     int num_ops = ops.size();
@@ -94,8 +94,8 @@ void DeleteRelaxationConstraints::create_auxiliary_variables(
     }
 }
 
-void DeleteRelaxationConstraints::create_constraints(const TaskProxy &task_proxy,
-                                                     lp::LinearProgram &lp) {
+void DeleteRelaxationIFConstraints::create_constraints(const TaskProxy &task_proxy,
+                                                       lp::LinearProgram &lp) {
     LPVariables &variables = lp.get_variables();
     LPConstraints &constraints = lp.get_constraints();
     double infinity = lp.get_infinity();
@@ -213,7 +213,7 @@ void DeleteRelaxationConstraints::create_constraints(const TaskProxy &task_proxy
 }
 
 
-void DeleteRelaxationConstraints::initialize_constraints(
+void DeleteRelaxationIFConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) {
     TaskProxy task_proxy(*task);
     create_auxiliary_variables(task_proxy, lp.get_variables());
@@ -221,7 +221,7 @@ void DeleteRelaxationConstraints::initialize_constraints(
 }
 
 
-bool DeleteRelaxationConstraints::update_constraints(
+bool DeleteRelaxationIFConstraints::update_constraints(
     const State &state, lp::LPSolver &lp_solver) {
     // Unset old bounds.
     for (FactPair f : last_state) {
@@ -236,9 +236,9 @@ bool DeleteRelaxationConstraints::update_constraints(
     return false;
 }
 
-class DeleteRelaxationConstraintsFeature : public plugins::TypedFeature<ConstraintGenerator, DeleteRelaxationConstraints> {
+class DeleteRelaxationIFConstraintsFeature : public plugins::TypedFeature<ConstraintGenerator, DeleteRelaxationIFConstraints> {
 public:
-    DeleteRelaxationConstraintsFeature() : TypedFeature("delete_relaxation_constraints") {
+    DeleteRelaxationIFConstraintsFeature() : TypedFeature("delete_relaxation_if_constraints") {
         document_title("Delete relaxation constraints");
         document_synopsis(
             "Operator-counting constraints based on the delete relaxation. By "
@@ -277,10 +277,15 @@ public:
         document_note(
             "Example",
             "To compute the optimal delete-relaxation heuristic h^+^, use\n"
-            "{{{\noperatorcounting([delete_relaxation_constraints(use_time_vars=true, "
+            "{{{\noperatorcounting([delete_relaxation_if_constraints(use_time_vars=true, "
             "use_integer_vars=true)], use_integer_operator_counts=true))\n}}}\n");
+        document_note(
+            "Note",
+            "For best performance we recommend using the alternative "
+            "formulation by Rankooh and Rintanen, accessible through the "
+            "option {{{delete_relaxation_rr_constraints}}}.\n");
     }
 };
 
-static plugins::FeaturePlugin<DeleteRelaxationConstraintsFeature> _plugin;
+static plugins::FeaturePlugin<DeleteRelaxationIFConstraintsFeature> _plugin;
 }
