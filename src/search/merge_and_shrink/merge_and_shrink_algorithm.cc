@@ -39,10 +39,11 @@ static void log_progress(const utils::Timer &timer, const string &msg, utils::Lo
 MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(
     const shared_ptr<MergeStrategyFactory> &merge_strategy,
     const shared_ptr<ShrinkStrategy> &shrink_strategy,
-    const shared_ptr<LabelReduction> &label_reduction, int max_states,
-    int max_states_before_merge, int threshold_before_merge,
+    const shared_ptr<LabelReduction> &label_reduction,
     bool prune_unreachable_states, bool prune_irrelevant_states,
-    double main_loop_max_time, utils::Verbosity verbosity)
+    int max_states, int max_states_before_merge,
+    int threshold_before_merge, double main_loop_max_time,
+    utils::Verbosity verbosity)
     : merge_strategy_factory(merge_strategy),
       shrink_strategy(shrink_strategy),
       label_reduction(label_reduction),

@@ -61,9 +61,9 @@ public:
         const std::shared_ptr<MergeStrategyFactory> &merge_strategy,
         const std::shared_ptr<ShrinkStrategy> &shrink_strategy,
         const std::shared_ptr<LabelReduction> &label_reduction,
+        bool prune_unreachable_states, bool prune_irrelevant_states,
         int max_states, int max_states_before_merge,
-        int threshold_before_merge, bool prune_unreachable_states,
-        bool prune_irrelevant_states, double main_loop_max_time,
+        int threshold_before_merge, double main_loop_max_time,
         utils::Verbosity verbosity);
     FactoredTransitionSystem build_factored_transition_system(const TaskProxy &task_proxy);
 };
