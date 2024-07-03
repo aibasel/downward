@@ -1,10 +1,9 @@
 #include "negated_axioms_task.h"
 
-#include "../operator_cost.h"
+#include "../task_proxy.h"
 
+#include "../algorithms/sccs.h"
 #include "../plugins/plugin.h"
-#include "../task_utils/task_properties.h"
-#include "../tasks/root_task.h"
 
 #include <deque>
 #include <iostream>
@@ -14,12 +13,41 @@
 using namespace std;
 using utils::ExitCode;
 
+/*
+  This task transformation adds explicit axioms for how the default value
+  of derived variables can be achieved. In general this is done as follows:
+  Given derived variable v with n axioms v <- c_1, ..., v <- c_n, add axioms
+  that together represent ¬v <- ¬c_1 ^ ... ^ ¬c_n.
+
+  Notes:
+   - THE TRANSFORMATION CAN BE SLOW! The rule ¬v <- ¬c_1 ^ ... ^ ¬c_n must
+   be split up into axioms whose conditions are simple conjunctions. Since
+   all c_i are also simple conjunctions, this amounts to converting a CNF
+   to a DNF.
+   - The tranformation is not exact. For derived variables v that have cyclic
+   dependencies, the general approach is incorrect. We instead trivially
+   overapproximate such cases with the axiom ¬v <- T.
+   - The search ignores axioms that set the derived variable to their default
+   value. The task transformation is thus only meant for heuristics that need
+   to know how to achieve the default value.
+ */
+
 namespace tasks {
 NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
     : DelegatingTask(parent),
       negated_axioms_start_index(parent->get_num_axioms()) {
     TaskProxy task_proxy(*parent);
 
+    /*
+      pos/neg_dependencies store for each derived variable v which
+      derived variables appear positively/negatively in an axiom
+      making v true.
+      axiom_ids_for_var stores for each derived variable v which
+      axioms making v true.
+      Note that the vectors go over *all* variables (also non-derived ones),
+      but only the indices that correspond to a variable ID of a derived
+      variable actually have content.
+     */
     vector<vector<int>> pos_dependencies(task_proxy.get_variables().size());
     vector<vector<int>> neg_dependencies(task_proxy.get_variables().size());
     vector<vector<int>> axiom_ids_for_var(task_proxy.get_variables().size());
@@ -27,11 +55,11 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
         EffectProxy effect = axiom.get_effects()[0];
         int head_var = effect.get_fact().get_variable().get_id();
         axiom_ids_for_var[head_var].push_back(axiom.get_id());
-        for (FactProxy condition: effect.get_conditions()) {
-            VariableProxy var_proxy = condition.get_variable();
+        for (FactProxy cond: effect.get_conditions()) {
+            VariableProxy var_proxy = cond.get_variable();
             if (var_proxy.is_derived()) {
-                int var = condition.get_variable().get_id();
-                if (condition.get_value() == var_proxy.get_default_axiom_value()) {
+                int var = cond.get_variable().get_id();
+                if (cond.get_value() == var_proxy.get_default_axiom_value()) {
                     neg_dependencies[head_var].push_back(var);
                 } else {
                     pos_dependencies[head_var].push_back(var);
@@ -39,34 +67,32 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
             }
         }
     }
-    unordered_set<int> needed_negatively =
-        collect_needed_negatively(pos_dependencies, neg_dependencies);
-
-    /* TODO: I removed the return if needed_negatively is empty.
-       It is somewhat wasteful if we have a big graph to compute the sccs,
-       but probably should not be an issue. */
 
     /*
        Get the sccs induced by positive dependencies.
-       Note that negative dependencies cannot introduce additional
-       cycles because this would imply that the axioms are not
-       stratifiable, which is already checked in the translator.
+       We do not include negative dependencies because they cannot
+       introduce additional cycles (this would imply that the axioms
+       are not stratifiable, which is already checked in the translator).
     */
     vector<vector<int>> sccs =
         sccs::compute_maximal_sccs(pos_dependencies);
-    vector<int> var_to_scc(task_proxy.get_variables().size(), -1);
+    vector<vector<int> *> var_to_scc(
+        task_proxy.get_variables().size(), nullptr);
     for (int i = 0; i < (int)sccs.size(); ++i) {
         for (int var: sccs[i]) {
-            var_to_scc[var] = i;
+            var_to_scc[var] = &sccs[i];
         }
     }
+
+    unordered_set<int> needed_negatively =
+        collect_needed_negatively(pos_dependencies, neg_dependencies, sccs);
 
     for (int var: needed_negatively) {
         vector<int> &axiom_ids = axiom_ids_for_var[var];
         int default_value =
             task_proxy.get_variables()[var].get_default_axiom_value();
 
-        if (sccs[var_to_scc[var]].size() > 1) {
+        if (var_to_scc[var]->size() > 1) {
             /*
                If there is a cyclic dependency between several derived
                variables, the "obvious" way of negating the formula
@@ -90,14 +116,26 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
     }
 }
 
-
+/*
+  Collect for which derived variables it is relevant to know how they
+  can become false.
+  In general this derived variable v is needed negatively if
+    (a) v appears negatively in the goal or an operator condition
+    (b) v appears positively in the body of an axiom for a variable v'
+    that is needed negatively
+    (c) v appears negatively in the body of an axiom for a variable v'
+    that is needed positively.
+  We will however not consider case (c) if v' is in an scc with size>1.
+  This is because for such v' we overapproximate the axioms for ¬v by
+  the trivial v' <- T, meaning v is actually not needed for these rules.
+ */
 unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
     const vector<vector<int>> &positive_dependencies,
-    const vector<vector<int>> &negative_dependencies) {
+    const vector<vector<int>> &negative_dependencies,
+    const vector<vector<int>> &sccs) {
     // Stores which derived variables are needed positively or negatively.
     set<pair<int, bool>> needed;
 
-    // TODO: Should we store the proxy in the class? Pass it through methods?
     TaskProxy task_proxy(*parent);
 
     // Collect derived variables that occur as their default value.
@@ -118,7 +156,6 @@ unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
                 needed.emplace(condition.get_pair().var, non_default);
             }
         }
-
         for (EffectProxy effect: op.get_effects()) {
             for (FactProxy condition: effect.get_conditions()) {
                 VariableProxy var_proxy = condition.get_variable();
@@ -136,6 +173,15 @@ unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
         int var = to_process.front().first;
         bool non_default = to_process.front().second;
         to_process.pop_front();
+
+        /*
+          var has cyclic dependencies -> negated axioms will have the form
+          "¬var <- T" and thus not depend on anything.
+        */
+        if (sccs[var].size() > 1) {
+            continue;
+        }
+
         for (int pos_dep : positive_dependencies[var]) {
             auto insert_retval = needed.emplace(pos_dep, non_default);
             if (insert_retval.second) {
@@ -332,27 +378,4 @@ int NegatedAxiomsTask::convert_operator_index_to_parent(int index) const {
 int NegatedAxiomsTask::get_num_axioms() const {
     return parent->get_num_axioms() + negated_axioms.size();
 }
-
-
-// TODO: should we even offer this as a Feature? Can we just leave this out if we only want it used internally?
-class NegatedAxiomsTaskFeature : public plugins::TypedFeature<AbstractTask, NegatedAxiomsTask> {
-public:
-    NegatedAxiomsTaskFeature() : TypedFeature("negated_axioms") {
-        document_title("negated axioms task");
-        document_synopsis(
-            "A task transformation that adds rules for when the a "
-            "derived variable retains its default value. "
-            "This can be useful and even needed for correctness for "
-            "heuristics that treat axioms as normal operators.");
-
-        add_cost_type_option_to_feature(*this);
-    }
-
-    virtual shared_ptr<NegatedAxiomsTask> create_component(const plugins::Options &, const utils::Context &) const override {
-        // TODO: actually pass parent task?
-        return make_shared<NegatedAxiomsTask>(g_root_task);
-    }
-};
-
-static plugins::FeaturePlugin<NegatedAxiomsTaskFeature> _plugin;
 }

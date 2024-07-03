@@ -29,16 +29,18 @@ LandmarkHeuristic::LandmarkHeuristic(
 void LandmarkHeuristic::initialize(const plugins::Options &opts) {
     /*
       Actually, we should test if this is the root task or a
-      CostAdaptedTask *of the root task*, but there is currently no good
-      way to do this, so we use this incomplete, slightly less safe test.
+      task that *only* transforms costs and/or adds negated axioms.
+      However, there is currently no good way to do this, so we use
+      this incomplete, slightly less safe test.
     */
     // TODO: update comment and cerr message
     if (task != tasks::g_root_task
         && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr
         && dynamic_cast<tasks::NegatedAxiomsTask *>(task.get()) == nullptr) {
         cerr << "The landmark heuristics currently only support "
-             << "task transformations that modify the operator costs. "
-             << "See issues 845 and 686 for details." << endl;
+             << "task transformations that modify the operator costs "
+                "or add negated axioms.See issues 845 and 686 "
+                "for details." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 

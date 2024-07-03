@@ -3,10 +3,6 @@
 
 #include "delegating_task.h"
 
-#include "../task_proxy.h" // TODO: can we get rid of this include?
-
-#include "../algorithms/sccs.h"
-
 #include <set>
 
 namespace plugins {
@@ -29,7 +25,8 @@ class NegatedAxiomsTask : public DelegatingTask {
 
     std::unordered_set<int> collect_needed_negatively(
         const std::vector<std::vector<int>> &positive_dependencies,
-        const std::vector<std::vector<int>> &negative_dependencies);
+        const std::vector<std::vector<int>> &negative_dependencies,
+        const std::vector<std::vector<int>> &sccs);
     void add_negated_axioms_for_var(
         FactPair head, std::vector<int> &axiom_ids);
     void collect_non_dominated_hitting_sets_recursively(
