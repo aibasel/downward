@@ -104,5 +104,4 @@ extern void add_evaluator_options_to_feature(
 
 extern std::tuple<std::string, utils::Verbosity>
 get_evaluator_arguments_from_options(const plugins::Options &opts);
-extern std::tuple<bool, bool, bool> get_evaluator_default_arguments();
 #endif
