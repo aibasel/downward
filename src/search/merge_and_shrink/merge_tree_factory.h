@@ -1,8 +1,6 @@
 #ifndef MERGE_AND_SHRINK_MERGE_TREE_FACTORY_H
 #define MERGE_AND_SHRINK_MERGE_TREE_FACTORY_H
 
-#include "../utils/logging.h"
-
 #include <memory>
 #include <string>
 #include <vector>
