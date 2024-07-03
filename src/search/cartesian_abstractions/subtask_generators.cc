@@ -34,7 +34,9 @@ class SortFactsByIncreasingHaddValues {
 public:
     explicit SortFactsByIncreasingHaddValues(
         const shared_ptr<AbstractTask> &task)
-        : hadd(create_additive_heuristic(task)) {
+        : hadd(utils::make_unique_ptr<additive_heuristic::AdditiveHeuristic>(
+        task, false, "h^add within CEGAR abstractions",
+        utils::Verbosity::SILENT)) {
         TaskProxy task_proxy(*task);
         hadd->compute_heuristic_for_cegar(task_proxy.get_initial_state());
     }

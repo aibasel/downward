@@ -126,7 +126,7 @@ def extract_feature_name_and_cpp_class(cc_file, cc_files, cwd, num):
             class_error_msg = "class_name: " + class_name + "\n"
             class_names.append(class_name)
             class_error_msgs.append(class_error_msg)
-    return (feature_names[num], class_names[num], 
+    return (feature_names[num], class_names[num],
            feature_error_msgs[num] + class_error_msgs[num])
 
 def get_cpp_class_parameters(
@@ -183,13 +183,13 @@ def compare_component_parameters(cc_file, cc_files, cwd):
                 print(f"feature_name '{feature_name}' is ignored"
                     " because it is marked as TEMPORARY_EXCEPTION")
             elif feature_parameters != cpp_class_parameters:
-                error_msg += ( "\n\n=====================================\n"
+                error_msg += ("\n\n=====================================\n"
                     + "= = = " + cpp_class + " = = =\n"
                     + extracted_error_msg + "\n"
                     + "== FEATURE PARAMETERS '"
                     + feature_name + "' ==\n"
                     + str(feature_parameters) + "\n"
-                    + "== CLASS PARAMETERS '" 
+                    + "== CLASS PARAMETERS '"
                     + cpp_class + "' ==\n"
                     + str(cpp_class_parameters) + "\n")
                 if not len(feature_parameters) == len(cpp_class_parameters):
