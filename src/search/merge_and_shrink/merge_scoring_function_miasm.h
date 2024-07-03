@@ -12,7 +12,7 @@ namespace merge_and_shrink {
 class ShrinkStrategy;
 class MergeScoringFunctionMIASM : public MergeScoringFunction {
     const bool use_caching;
-    const std::shared_ptr<ShrinkStrategy> &shrink_strategy;
+    std::shared_ptr<ShrinkStrategy> shrink_strategy;
     const int max_states;
     const int max_states_before_merge;
     const int shrink_threshold_before_merge;
@@ -23,7 +23,7 @@ class MergeScoringFunctionMIASM : public MergeScoringFunction {
     virtual void dump_function_specific_options(utils::LogProxy &log) const override;
 public:
     MergeScoringFunctionMIASM(
-        const std::shared_ptr<ShrinkStrategy> &shrink_strategy,
+        std::shared_ptr<ShrinkStrategy> shrink_strategy,
         int max_states, int max_states_before_merge,
         int threshold_before_merge, bool use_caching);
     virtual std::vector<double> compute_scores(
