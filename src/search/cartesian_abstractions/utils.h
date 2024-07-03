@@ -17,7 +17,6 @@ class AdditiveHeuristic;
 }
 
 namespace cartesian_abstractions {
-
 /*
   The set of relaxed-reachable facts is the possibly-before set of facts that
   can be reached in the delete-relaxation before 'fact' is reached the first

@@ -11,7 +11,6 @@
 using namespace std;
 
 namespace cartesian_abstractions {
-
 static bool operator_applicable(
     const OperatorProxy &op, const utils::HashSet<FactProxy> &facts) {
     for (FactProxy precondition : op.get_preconditions()) {
