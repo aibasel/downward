@@ -6,8 +6,6 @@
 
 #include "../heuristic.h"
 
-#include <memory>
-
 namespace plugins {
 class Feature;
 }
@@ -31,7 +29,7 @@ public:
 
 void add_canonical_pdbs_options_to_feature(plugins::Feature &feature);
 std::tuple<double> get_canonical_pdbs_arguments_from_options(
-    plugins::Feature &feature);
+    const plugins::Options &opts);
 }
 
 #endif

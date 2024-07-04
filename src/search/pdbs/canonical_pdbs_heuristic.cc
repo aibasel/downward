@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <limits>
+#include <memory>
 
 using namespace std;
 
@@ -91,6 +92,11 @@ void add_canonical_pdbs_options_to_feature(plugins::Feature &feature) {
         plugins::Bounds("0.0", "infinity"));
 }
 
+tuple<double> get_canonical_pdbs_arguments_from_options(
+        const plugins::Options &opts) {
+return make_tuple(opts.get<double>("max_time_dominance_pruning"));
+}
+
 class CanonicalPDBsHeuristicFeature
     : public plugins::TypedFeature<Evaluator, CanonicalPDBsHeuristic> {
 public:
@@ -128,7 +134,7 @@ public:
         return plugins::make_shared_from_arg_tuples<CanonicalPDBsHeuristic>(
             opts.get<shared_ptr<PatternCollectionGenerator>>(
                 "patterns"),
-            opts.get<double>("max_time_dominance_pruning"),
+            get_canonical_pdbs_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts)
             );
     }
