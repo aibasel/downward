@@ -13,7 +13,7 @@
 using namespace std;
 
 namespace pdbs {
-static CanonicalPDBs get_canonical_pdbs_from_options(
+static CanonicalPDBs get_canonical_pdbs(
     const shared_ptr<AbstractTask> &task,
     const shared_ptr<PatternCollectionGenerator> &pattern_generator,
     double max_time_dominance_pruning, utils::LogProxy &log) {
@@ -66,7 +66,7 @@ CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(
     const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       canonical_pdbs(
-          get_canonical_pdbs_from_options(
+          get_canonical_pdbs(
               task, patterns, max_time_dominance_pruning, log)) {
 }
 
