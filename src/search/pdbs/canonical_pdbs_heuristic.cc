@@ -93,8 +93,8 @@ void add_canonical_pdbs_options_to_feature(plugins::Feature &feature) {
 }
 
 tuple<double> get_canonical_pdbs_arguments_from_options(
-        const plugins::Options &opts) {
-return make_tuple(opts.get<double>("max_time_dominance_pruning"));
+    const plugins::Options &opts) {
+    return make_tuple(opts.get<double>("max_time_dominance_pruning"));
 }
 
 class CanonicalPDBsHeuristicFeature
