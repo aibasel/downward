@@ -13,25 +13,6 @@
 using namespace std;
 using utils::ExitCode;
 
-/*
-  This task transformation adds explicit axioms for how the default value
-  of derived variables can be achieved. In general this is done as follows:
-  Given derived variable v with n axioms v <- c_1, ..., v <- c_n, add axioms
-  that together represent ¬v <- ¬c_1 ^ ... ^ ¬c_n.
-
-  Notes:
-   - THE TRANSFORMATION CAN BE SLOW! The rule ¬v <- ¬c_1 ^ ... ^ ¬c_n must
-   be split up into axioms whose conditions are simple conjunctions. Since
-   all c_i are also simple conjunctions, this amounts to converting a CNF
-   to a DNF.
-   - The tranformation is not exact. For derived variables v that have cyclic
-   dependencies, the general approach is incorrect. We instead trivially
-   overapproximate such cases with the axiom ¬v <- T.
-   - The search ignores axioms that set the derived variable to their default
-   value. The task transformation is thus only meant for heuristics that need
-   to know how to achieve the default value.
- */
-
 namespace tasks {
 NegatedAxiomsTask::NegatedAxiomsTask(
     const shared_ptr<AbstractTask> &parent,
@@ -125,23 +106,25 @@ NegatedAxiomsTask::NegatedAxiomsTask(
 
 /*
   Collect for which derived variables it is relevant to know how they
-  can become false.
-  In general a derived variable v is needed negatively if
+  can obtain their default value.
+  In general a derived variable v is "needed negatively" (that is, in
+  its default value) if
     (a) v appears negatively in the goal or an operator condition
     (b) v appears positively in the body of an axiom for a variable v'
     that is needed negatively
     (c) v appears negatively in the body of an axiom for a variable v'
     that is needed positively.
-  We will however not consider case (b) if v' is in an scc with size>1.
-  This is because for such v' we overapproximate the axioms for ¬v by
-  the trivial v' <- T, meaning v is actually not needed for these rules.
- */
+  We will however not consider case (b) if we already know that the
+  axioms for the default value of v' will be trivially overapproximated
+  with an empty body (in this case, the default value of v' does not
+  depend on anything).
+*/
 unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
     const vector<vector<int>> &positive_dependencies,
     const vector<vector<int>> &negative_dependencies,
     const vector<vector<int> *> &var_to_scc) {
     // Stores which derived variables are needed positively or negatively.
-    set<pair<int, bool>> needed;
+    utils::HashSet<pair<int, bool>> needed;
 
     TaskProxy task_proxy(*parent);
 
@@ -248,7 +231,7 @@ void NegatedAxiomsTask::add_negated_axioms_for_var(
 
     // We can see multiplying out the cnf as collecting all hitting sets.
     set<FactPair> current;
-    set<int> current_vars;
+    unordered_set<int> current_vars;
     set<set<FactPair>> hitting_sets;
     collect_non_dominated_hitting_sets_recursively(
         conditions_as_cnf, 0, current, current_vars, hitting_sets);
@@ -262,11 +245,11 @@ void NegatedAxiomsTask::add_negated_axioms_for_var(
 
 void NegatedAxiomsTask::collect_non_dominated_hitting_sets_recursively(
     const vector<set<FactPair>> &conditions_as_cnf, size_t index,
-    set<FactPair> &hitting_set, set<int> &hitting_set_vars,
+    set<FactPair> &hitting_set, unordered_set<int> &hitting_set_vars,
     set<set<FactPair>> &results) {
     if (index == conditions_as_cnf.size()) {
         /*
-           Check whether the hitting set denoted in hitting set is dominated.
+           Check whether the hitting set denoted in hitting_set is dominated.
            If we find a fact f in hitting set such that no conjunction in
            the cnf is covered by *only* f, then we could remove f and the
            resulting set would still be a hitting set that dominates the
@@ -291,8 +274,8 @@ void NegatedAxiomsTask::collect_non_dominated_hitting_sets_recursively(
     const set<FactPair> &conditions = conditions_as_cnf[index];
     for (const FactPair &elem : conditions) {
         /*
-          The current condition is covered with the current hitting set
-          elements, we continue with the next condition.
+          If the current condition is covered with the current hitting
+          set elements, we continue with the next condition.
         */
         if (hitting_set.find(elem) != hitting_set.end()) {
             collect_non_dominated_hitting_sets_recursively(

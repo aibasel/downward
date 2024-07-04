@@ -9,6 +9,29 @@ namespace plugins {
 class Options;
 }
 
+/*
+  This task transformation adds explicit axioms for how the default value
+  of derived variables can be achieved. In general this is done as follows:
+  Given derived variable v with n axioms v <- c_1, ..., v <- c_n, add axioms
+  that together represent ¬v <- ¬c_1 ^ ... ^ ¬c_n.
+
+  Notes:
+   - THE TRANSFORMATION CAN BE SLOW! The rule ¬v <- ¬c_1 ^ ... ^ ¬c_n must
+   be split up into axioms whose conditions are simple conjunctions. Since
+   all c_i are also simple conjunctions, this amounts to converting a CNF
+   to a DNF.
+   - To address the potential exponential blowup, we provide an option
+   to instead add trivial default values axioms, i.e. axioms that assign
+   the default value and have an empty body. This guarantees short runtime
+   but loses information.
+   - The transformation is not exact. For derived variables v that have cyclic
+   dependencies, the general approach is incorrect. We instead trivially
+   overapproximate such cases with an axiom with an empty body.
+   - The search ignores axioms that set the derived variable to their default
+   value. The task transformation is thus only meant for heuristics that need
+   to know how to achieve the default value.
+ */
+
 namespace tasks {
 struct NegatedAxiom {
     FactPair head;
@@ -31,7 +54,8 @@ class NegatedAxiomsTask : public DelegatingTask {
         FactPair head, std::vector<int> &axiom_ids);
     void collect_non_dominated_hitting_sets_recursively(
         const std::vector<std::set<FactPair>> &conditions_as_cnf, size_t index,
-        std::set<FactPair> &hitting_set, std::set<int> &hitting_set_vars,
+        std::set<FactPair> &hitting_set,
+        std::unordered_set<int> &hitting_set_vars,
         std::set<std::set<FactPair>> &results);
 public:
     explicit NegatedAxiomsTask(
