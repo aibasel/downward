@@ -85,7 +85,7 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
     }
 
     unordered_set<int> needed_negatively =
-        collect_needed_negatively(pos_dependencies, neg_dependencies, sccs);
+        collect_needed_negatively(pos_dependencies, neg_dependencies, var_to_scc);
 
     for (int var: needed_negatively) {
         vector<int> &axiom_ids = axiom_ids_for_var[var];
@@ -132,7 +132,7 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
 unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
     const vector<vector<int>> &positive_dependencies,
     const vector<vector<int>> &negative_dependencies,
-    const vector<vector<int>> &sccs) {
+    const vector<vector<int> *> &var_to_scc) {
     // Stores which derived variables are needed positively or negatively.
     set<pair<int, bool>> needed;
 
@@ -178,7 +178,7 @@ unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
           var has cyclic dependencies -> negated axioms will have the form
           "¬var <- T" and thus not depend on anything.
         */
-        if (sccs[var].size() > 1) {
+        if (var_to_scc[var]->size() > 1) {
             continue;
         }
 

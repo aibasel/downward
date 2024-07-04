@@ -26,7 +26,7 @@ class NegatedAxiomsTask : public DelegatingTask {
     std::unordered_set<int> collect_needed_negatively(
         const std::vector<std::vector<int>> &positive_dependencies,
         const std::vector<std::vector<int>> &negative_dependencies,
-        const std::vector<std::vector<int>> &sccs);
+        const std::vector<std::vector<int> *> &var_to_scc);
     void add_negated_axioms_for_var(
         FactPair head, std::vector<int> &axiom_ids);
     void collect_non_dominated_hitting_sets_recursively(
