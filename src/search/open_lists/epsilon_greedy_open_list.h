@@ -43,9 +43,9 @@
 namespace epsilon_greedy_open_list {
 class EpsilonGreedyOpenListFactory : public OpenListFactory {
     std::shared_ptr<Evaluator> eval;
-    bool pref_only;
     double epsilon;
     int random_seed;
+    bool pref_only;
 public:
     EpsilonGreedyOpenListFactory(
         const std::shared_ptr<Evaluator> &eval, double epsilon,

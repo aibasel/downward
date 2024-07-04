@@ -6,9 +6,9 @@
 namespace pareto_open_list {
 class ParetoOpenListFactory : public OpenListFactory {
     std::vector<std::shared_ptr<Evaluator>> evals;
-    bool pref_only;
     bool state_uniform_selection;
     int random_seed;
+    bool pref_only;
 public:
     ParetoOpenListFactory(
         const std::vector<std::shared_ptr<Evaluator>> &evals,

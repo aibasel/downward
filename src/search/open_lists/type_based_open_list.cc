@@ -20,8 +20,8 @@ using namespace std;
 namespace type_based_open_list {
 template<class Entry>
 class TypeBasedOpenList : public OpenList<Entry> {
-    shared_ptr<utils::RandomNumberGenerator> rng;
     vector<shared_ptr<Evaluator>> evaluators;
+    shared_ptr<utils::RandomNumberGenerator> rng;
 
     using Key = vector<int>;
     using Bucket = vector<Entry>;
@@ -70,8 +70,8 @@ void TypeBasedOpenList<Entry>::do_insertion(
 template<class Entry>
 TypeBasedOpenList<Entry>::TypeBasedOpenList(
     const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
-    : rng(utils::get_rng(random_seed)),
-      evaluators(evaluators) {
+    : evaluators(evaluators),
+      rng(utils::get_rng(random_seed)) {
 }
 
 template<class Entry>

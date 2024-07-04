@@ -144,8 +144,8 @@ TieBreakingOpenListFactory::TieBreakingOpenListFactory(
     const vector<shared_ptr<Evaluator>> &evals,
     bool unsafe_pruning, bool pref_only)
     : evals(evals),
-      pref_only(pref_only),
-      unsafe_pruning(unsafe_pruning) {
+      unsafe_pruning(unsafe_pruning),
+      pref_only(pref_only) {
 }
 
 unique_ptr<StateOpenList>

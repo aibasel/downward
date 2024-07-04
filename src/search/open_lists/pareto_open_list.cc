@@ -225,9 +225,9 @@ ParetoOpenListFactory::ParetoOpenListFactory(
     const vector<shared_ptr<Evaluator>> &evals,
     bool state_uniform_selection, int random_seed, bool pref_only)
     : evals(evals),
-      pref_only(pref_only),
       state_uniform_selection(state_uniform_selection),
-      random_seed(random_seed) {
+      random_seed(random_seed),
+      pref_only(pref_only) {
 }
 
 unique_ptr<StateOpenList>

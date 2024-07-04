@@ -6,8 +6,8 @@
 namespace tiebreaking_open_list {
 class TieBreakingOpenListFactory : public OpenListFactory {
     std::vector<std::shared_ptr<Evaluator>> evals;
-    bool pref_only;
     bool unsafe_pruning;
+    bool pref_only;
 public:
     TieBreakingOpenListFactory(
         const std::vector<std::shared_ptr<Evaluator>> &evals,

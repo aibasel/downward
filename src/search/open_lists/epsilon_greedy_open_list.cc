@@ -142,9 +142,9 @@ EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
     const shared_ptr<Evaluator> &eval, double epsilon,
     int random_seed, bool pref_only)
     : eval(eval),
-      pref_only(pref_only),
       epsilon(epsilon),
-      random_seed(random_seed) {
+      random_seed(random_seed),
+      pref_only(pref_only) {
 }
 
 unique_ptr<StateOpenList>
