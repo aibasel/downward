@@ -16,6 +16,7 @@ class Options;
   that together represent ¬v <- ¬c_1 ^ ... ^ ¬c_n.
 
   Notes:
+   - We assume that derived variables are binary.
    - THE TRANSFORMATION CAN BE SLOW! The rule ¬v <- ¬c_1 ^ ... ^ ¬c_n must
    be split up into axioms whose conditions are simple conjunctions. Since
    all c_i are also simple conjunctions, this amounts to converting a CNF

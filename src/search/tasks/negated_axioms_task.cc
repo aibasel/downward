@@ -172,7 +172,7 @@ unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
           pair) doesn't depend on anything.
         */
         if ((non_default) &&
-            (simple_default_axioms || var_to_scc[var]->size() > 1) ) {
+            (simple_default_axioms || var_to_scc[var]->size() > 1)) {
             continue;
         }
 
@@ -334,7 +334,7 @@ FactPair NegatedAxiomsTask::get_operator_precondition(
 
     assert(fact_index == 0);
     FactPair head = negated_axioms[op_index - negated_axioms_start_index].head;
-    return FactPair(head.var, 1-head.value);
+    return FactPair(head.var, 1 - head.value);
 }
 
 int NegatedAxiomsTask::get_num_operator_effects(int op_index, bool is_axiom) const {

@@ -319,5 +319,4 @@ void RelaxationHeuristic::add_options_to_feature(plugins::Feature &feature) {
         "a potentially expensive precomputation.",
         "false");
 }
-
 }

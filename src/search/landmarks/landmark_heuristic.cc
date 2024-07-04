@@ -40,8 +40,8 @@ void LandmarkHeuristic::initialize(const plugins::Options &opts) {
         && dynamic_cast<tasks::NegatedAxiomsTask *>(task.get()) == nullptr) {
         cerr << "The landmark heuristics currently only support "
              << "task transformations that modify the operator costs "
-                "or add negated axioms. See issues 845 and 686 "
-                "for details." << endl;
+             << "or add negated axioms. See issues 845 and 686 "
+             << "for details." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
