@@ -6,8 +6,6 @@
 
 #include "../heuristic.h"
 
-#include <memory>
-
 namespace pdbs {
 class PatternDatabase;
 
