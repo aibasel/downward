@@ -21,7 +21,7 @@ MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
     int max_states_before_merge, int threshold_before_merge,
     bool use_caching)
     : use_caching(use_caching),
-      shrink_strategy(shrink_strategy),
+      shrink_strategy(move(shrink_strategy)),
       max_states(max_states),
       max_states_before_merge(max_states_before_merge),
       shrink_threshold_before_merge(threshold_before_merge),
