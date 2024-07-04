@@ -74,6 +74,7 @@ public:
     FFHeuristicFeature() : TypedFeature("ff") {
         document_title("FF heuristic");
 
+        relaxation_heuristic::RelaxationHeuristic::add_options_to_feature(*this);
         Heuristic::add_options_to_feature(*this);
 
         document_language_support("action costs", "supported");

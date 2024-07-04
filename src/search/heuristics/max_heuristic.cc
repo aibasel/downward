@@ -103,6 +103,7 @@ public:
     HSPMaxHeuristicFeature() : TypedFeature("hmax") {
         document_title("Max heuristic");
 
+        relaxation_heuristic::RelaxationHeuristic::add_options_to_feature(*this);
         Heuristic::add_options_to_feature(*this);
 
         document_language_support("action costs", "supported");

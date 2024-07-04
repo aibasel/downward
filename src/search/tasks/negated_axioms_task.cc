@@ -33,8 +33,11 @@ using utils::ExitCode;
  */
 
 namespace tasks {
-NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
+NegatedAxiomsTask::NegatedAxiomsTask(
+    const shared_ptr<AbstractTask> &parent,
+    bool simple_default_axioms)
     : DelegatingTask(parent),
+      simple_default_axioms(simple_default_axioms),
       negated_axioms_start_index(parent->get_num_axioms()) {
     TaskProxy task_proxy(*parent);
 
@@ -74,13 +77,17 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
        introduce additional cycles (this would imply that the axioms
        are not stratifiable, which is already checked in the translator).
     */
-    vector<vector<int>> sccs =
-        sccs::compute_maximal_sccs(pos_dependencies);
-    vector<vector<int> *> var_to_scc(
-        task_proxy.get_variables().size(), nullptr);
-    for (int i = 0; i < (int)sccs.size(); ++i) {
-        for (int var: sccs[i]) {
-            var_to_scc[var] = &sccs[i];
+    vector<vector<int>> sccs;
+    vector<vector<int> *> var_to_scc;
+    // We don't need the sccs if we set rules "¬v <- T" everywhere.
+    if (!simple_default_axioms) {
+        sccs = sccs::compute_maximal_sccs(pos_dependencies);
+        var_to_scc = vector<vector<int> *>(
+            task_proxy.get_variables().size(), nullptr);
+        for (int i = 0; i < (int)sccs.size(); ++i) {
+            for (int var: sccs[i]) {
+                var_to_scc[var] = &sccs[i];
+            }
         }
     }
 
@@ -92,7 +99,7 @@ NegatedAxiomsTask::NegatedAxiomsTask(const shared_ptr<AbstractTask> &parent)
         int default_value =
             task_proxy.get_variables()[var].get_default_axiom_value();
 
-        if (var_to_scc[var]->size() > 1) {
+        if (simple_default_axioms || var_to_scc[var]->size() > 1) {
             /*
                If there is a cyclic dependency between several derived
                variables, the "obvious" way of negating the formula
@@ -175,10 +182,14 @@ unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
         to_process.pop_front();
 
         /*
-          var has cyclic dependencies -> negated axioms will have the form
-          "¬var <- T" and thus not depend on anything.
+          If we process a default value and already know that the rule we
+          will introduce will have an empty body (either because we trivially
+          overapproximate everything or because the variable has cyclic
+          dependencies), then the rule (and thus the current variable/value
+          pair) doesn't depend on anything.
         */
-        if (var_to_scc[var]->size() > 1) {
+        if ((non_default) &&
+            (simple_default_axioms || var_to_scc[var]->size() > 1) ) {
             continue;
         }
 

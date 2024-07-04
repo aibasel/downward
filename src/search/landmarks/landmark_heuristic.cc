@@ -21,7 +21,9 @@ LandmarkHeuristic::LandmarkHeuristic(
       use_preferred_operators(opts.get<bool>("pref")),
       successor_generator(nullptr) {
     if (task_properties::has_axioms(task_proxy)) {
-        task = make_shared<tasks::NegatedAxiomsTask>(tasks::NegatedAxiomsTask(task));
+        bool simple_default_axioms = opts.get<bool>("simple_default_axioms");
+        task = make_shared<tasks::NegatedAxiomsTask>(
+            tasks::NegatedAxiomsTask(task, simple_default_axioms));
         task_proxy = TaskProxy(*task);
     }
 }
@@ -230,6 +232,12 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
         "prog_gn", "Use greedy-necessary ordering progression.", "true");
     feature.add_option<bool>(
         "prog_r", "Use reasonable ordering progression.", "true");
+    feature.add_option<bool>(
+        "simple_default_axioms",
+        "For derived variables that need negated axioms, introduce the trivial"
+        "rule with an empty body. This makes the heuristic weaker but avoids"
+        "a potentially expensive precomputation.",
+        "false");
     Heuristic::add_options_to_feature(feature);
 
     feature.document_property("preferred operators",

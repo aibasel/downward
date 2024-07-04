@@ -1,5 +1,6 @@
 #include "relaxation_heuristic.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../tasks/negated_axioms_task.h"
 #include "../utils/collections.h"
@@ -39,7 +40,9 @@ UnaryOperator::UnaryOperator(
 RelaxationHeuristic::RelaxationHeuristic(const plugins::Options &opts)
     : Heuristic(opts) {
     if (task_properties::has_axioms(task_proxy)) {
-        task = make_shared<tasks::NegatedAxiomsTask>(tasks::NegatedAxiomsTask(task));
+        bool simple_default_axioms = opts.get<bool>("simple_default_axioms");
+        task = make_shared<tasks::NegatedAxiomsTask>(
+            tasks::NegatedAxiomsTask(task, simple_default_axioms));
         task_proxy = TaskProxy(*task);
     }
 
@@ -307,4 +310,14 @@ void RelaxationHeuristic::simplify() {
         log << " done! [" << unary_operators.size() << " unary operators]" << endl;
     }
 }
+
+void RelaxationHeuristic::add_options_to_feature(plugins::Feature &feature) {
+    feature.add_option<bool>(
+        "simple_default_axioms",
+        "For derived variables that need negated axioms, introduce the trivial"
+        "rule with an empty body. This makes the heuristic weaker but avoids"
+        "a potentially expensive precomputation.",
+        "false");
+}
+
 }

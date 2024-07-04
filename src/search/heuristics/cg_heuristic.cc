@@ -24,7 +24,9 @@ CGHeuristic::CGHeuristic(const plugins::Options &opts)
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (task_properties::has_axioms(task_proxy)) {
-        task = make_shared<tasks::NegatedAxiomsTask>(tasks::NegatedAxiomsTask(task));
+        bool simple_default_axioms = opts.get<bool>("simple_default_axioms");
+        task = make_shared<tasks::NegatedAxiomsTask>(
+            tasks::NegatedAxiomsTask(task, simple_default_axioms));
         task_proxy = TaskProxy(*task);
     }
 
@@ -301,6 +303,12 @@ public:
             "maximum number of cached entries per variable (set to 0 to disable cache)",
             "1000000",
             plugins::Bounds("0", "infinity"));
+        add_option<bool>(
+            "simple_default_axioms",
+            "For derived variables that need negated axioms, introduce the trivial"
+            "rule with an empty body. This makes the heuristic weaker but avoids"
+            "a potentially expensive precomputation.",
+            "false");
         Heuristic::add_options_to_feature(*this);
 
         document_language_support("action costs", "supported");

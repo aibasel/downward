@@ -20,6 +20,7 @@ struct NegatedAxiom {
 };
 
 class NegatedAxiomsTask : public DelegatingTask {
+    bool simple_default_axioms;
     std::vector<NegatedAxiom> negated_axioms;
     int negated_axioms_start_index;
 
@@ -34,7 +35,8 @@ class NegatedAxiomsTask : public DelegatingTask {
         std::set<FactPair> &hitting_set, std::set<std::set<FactPair>> &results);
 public:
     explicit NegatedAxiomsTask(
-        const std::shared_ptr<AbstractTask> &parent);
+        const std::shared_ptr<AbstractTask> &parent,
+        bool simple_default_axioms);
     virtual ~NegatedAxiomsTask() override = default;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;

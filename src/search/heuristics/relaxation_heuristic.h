@@ -113,6 +113,8 @@ public:
     explicit RelaxationHeuristic(const plugins::Options &options);
 
     virtual bool dead_ends_are_reliable() const override;
+
+    static void add_options_to_feature(plugins::Feature &feature);
 };
 }
 
