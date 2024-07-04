@@ -112,15 +112,17 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<OperatorCountingHeuristic> create_component(const plugins::Options &options, const utils::Context &context) const override {
+    virtual shared_ptr<OperatorCountingHeuristic> create_component(
+            const plugins::Options &opts,
+            const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<ConstraintGenerator>>(
-            context, options, "constraint_generators");
+            context, opts, "constraint_generators");
         return plugins::make_shared_from_arg_tuples<OperatorCountingHeuristic>(
-            options.get_list<shared_ptr<ConstraintGenerator>>(
+            opts.get_list<shared_ptr<ConstraintGenerator>>(
                 "constraint_generators"),
-            options.get<bool>("use_integer_operator_counts"),
-            lp::get_lp_solver_arguments_from_options(options),
-            get_heuristic_arguments_from_options(options)
+            opts.get<bool>("use_integer_operator_counts"),
+            lp::get_lp_solver_arguments_from_options(opts),
+            get_heuristic_arguments_from_options(opts)
             );
     }
 };
