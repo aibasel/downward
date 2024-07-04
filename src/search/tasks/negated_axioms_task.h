@@ -14,7 +14,6 @@ struct NegatedAxiom {
     FactPair head;
     std::vector<FactPair> condition;
 
-    // TODO: clang suggested moving the second argument, is this correct? (clang doesn't complain at least :))
     NegatedAxiom(FactPair head, std::vector<FactPair> &&condition)
         : head(head), condition(condition) {}
 };
@@ -32,7 +31,8 @@ class NegatedAxiomsTask : public DelegatingTask {
         FactPair head, std::vector<int> &axiom_ids);
     void collect_non_dominated_hitting_sets_recursively(
         const std::vector<std::set<FactPair>> &conditions_as_cnf, size_t index,
-        std::set<FactPair> &hitting_set, std::set<std::set<FactPair>> &results);
+        std::set<FactPair> &hitting_set, std::set<int> &hitting_set_vars,
+        std::set<std::set<FactPair>> &results);
 public:
     explicit NegatedAxiomsTask(
         const std::shared_ptr<AbstractTask> &parent,
@@ -51,8 +51,6 @@ public:
         int op_index, int eff_index, int cond_index, bool is_axiom) const override;
     virtual FactPair get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const override;
-    // TODO: Is this only called for actual operators or also axioms? I assume so because there is no bool is_axiom...
-    virtual int convert_operator_index_to_parent(int index) const override;
 
     virtual int get_num_axioms() const override;
 };

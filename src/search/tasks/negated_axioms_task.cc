@@ -126,13 +126,13 @@ NegatedAxiomsTask::NegatedAxiomsTask(
 /*
   Collect for which derived variables it is relevant to know how they
   can become false.
-  In general this derived variable v is needed negatively if
+  In general a derived variable v is needed negatively if
     (a) v appears negatively in the goal or an operator condition
     (b) v appears positively in the body of an axiom for a variable v'
     that is needed negatively
     (c) v appears negatively in the body of an axiom for a variable v'
     that is needed positively.
-  We will however not consider case (c) if v' is in an scc with size>1.
+  We will however not consider case (b) if v' is in an scc with size>1.
   This is because for such v' we overapproximate the axioms for ¬v by
   the trivial v' <- T, meaning v is actually not needed for these rules.
  */
@@ -248,9 +248,10 @@ void NegatedAxiomsTask::add_negated_axioms_for_var(
 
     // We can see multiplying out the cnf as collecting all hitting sets.
     set<FactPair> current;
+    set<int> current_vars;
     set<set<FactPair>> hitting_sets;
     collect_non_dominated_hitting_sets_recursively(
-        conditions_as_cnf, 0, current, hitting_sets);
+        conditions_as_cnf, 0, current, current_vars, hitting_sets);
 
     for (const set<FactPair> &c : hitting_sets) {
         negated_axioms.emplace_back(
@@ -261,14 +262,15 @@ void NegatedAxiomsTask::add_negated_axioms_for_var(
 
 void NegatedAxiomsTask::collect_non_dominated_hitting_sets_recursively(
     const vector<set<FactPair>> &conditions_as_cnf, size_t index,
-    set<FactPair> &hitting_set, set<set<FactPair>> &results) {
+    set<FactPair> &hitting_set, set<int> &hitting_set_vars,
+    set<set<FactPair>> &results) {
     if (index == conditions_as_cnf.size()) {
         /*
-           Check whether the axiom body denoted in body is dominated.
-           This is the case if there is a fact such that no conjunction
-           in the cnf is covered by *only* this fact, implying that
-           removing the fact from the body would still cover all
-           conjunctions.
+           Check whether the hitting set denoted in hitting set is dominated.
+           If we find a fact f in hitting set such that no conjunction in
+           the cnf is covered by *only* f, then we could remove f and the
+           resulting set would still be a hitting set that dominates the
+           current one.
         */
         set<FactPair> not_uniquely_used(hitting_set);
         for (const set<FactPair> &condition : conditions_as_cnf) {
@@ -287,32 +289,32 @@ void NegatedAxiomsTask::collect_non_dominated_hitting_sets_recursively(
     }
 
     const set<FactPair> &conditions = conditions_as_cnf[index];
-    for (const FactPair &fact_pair : conditions) {
-        // The current set is covered with the current hitting set elements.
-        if (hitting_set.find(fact_pair) != hitting_set.end()) {
+    for (const FactPair &elem : conditions) {
+        /*
+          The current condition is covered with the current hitting set
+          elements, we continue with the next condition.
+        */
+        if (hitting_set.find(elem) != hitting_set.end()) {
             collect_non_dominated_hitting_sets_recursively(
-                conditions_as_cnf, index + 1, hitting_set, results);
+                conditions_as_cnf, index + 1, hitting_set, hitting_set_vars,
+                results);
             return;
         }
     }
 
     for (const FactPair &elem : conditions) {
         // We don't allow choosing different facts from the same variable.
-        bool same_var_occurs_already = false;
-        for (const FactPair &f : hitting_set) {
-            if (f.var == elem.var) {
-                same_var_occurs_already = true;
-                break;
-            }
-        }
-        if (same_var_occurs_already) {
+        if (hitting_set_vars.find(elem.var) != hitting_set_vars.end()) {
             continue;
         }
 
-        set<FactPair> chosen_new(hitting_set);
-        chosen_new.insert(elem);
+        hitting_set.insert(elem);
+        hitting_set_vars.insert(elem.var);
         collect_non_dominated_hitting_sets_recursively(
-            conditions_as_cnf, index + 1, chosen_new, results);
+            conditions_as_cnf, index + 1, hitting_set, hitting_set_vars,
+            results);
+        hitting_set.erase(elem);
+        hitting_set_vars.erase(elem.var);
     }
 }
 
@@ -330,7 +332,7 @@ string NegatedAxiomsTask::get_operator_name(int index, bool is_axiom) const {
         return parent->get_operator_name(index, is_axiom);
     }
 
-    return "<axiom>";
+    return "";
 }
 
 int NegatedAxiomsTask::get_num_operator_preconditions(int index, bool is_axiom) const {
@@ -338,7 +340,7 @@ int NegatedAxiomsTask::get_num_operator_preconditions(int index, bool is_axiom) 
         return parent->get_num_operator_preconditions(index, is_axiom);
     }
 
-    return negated_axioms[index - negated_axioms_start_index].condition.size();
+    return 1;
 }
 
 FactPair NegatedAxiomsTask::get_operator_precondition(
@@ -346,7 +348,10 @@ FactPair NegatedAxiomsTask::get_operator_precondition(
     if (!is_axiom || (op_index < negated_axioms_start_index)) {
         return parent->get_operator_precondition(op_index, fact_index, is_axiom);
     }
-    return negated_axioms[op_index - negated_axioms_start_index].condition[fact_index];
+
+    assert(fact_index == 0);
+    FactPair head = negated_axioms[op_index - negated_axioms_start_index].head;
+    return FactPair(head.var, 1-head.value);
 }
 
 int NegatedAxiomsTask::get_num_operator_effects(int op_index, bool is_axiom) const {
@@ -360,16 +365,23 @@ int NegatedAxiomsTask::get_num_operator_effects(int op_index, bool is_axiom) con
 int NegatedAxiomsTask::get_num_operator_effect_conditions(
     int op_index, int eff_index, bool is_axiom) const {
     if (!is_axiom || op_index < negated_axioms_start_index) {
-        return parent->get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
+        return parent->get_num_operator_effect_conditions(
+            op_index, eff_index, is_axiom);
     }
 
-    return 0;
+    assert(eff_index == 0);
+    return negated_axioms[op_index - negated_axioms_start_index].condition.size();
 }
 
 FactPair NegatedAxiomsTask::get_operator_effect_condition(
     int op_index, int eff_index, int cond_index, bool is_axiom) const {
-    assert(!is_axiom || op_index < negated_axioms_start_index);
-    return parent->get_operator_effect_condition(op_index, eff_index, cond_index, is_axiom);
+    if (!is_axiom || op_index < negated_axioms_start_index) {
+        return parent->get_operator_effect_condition(
+            op_index, eff_index, cond_index, is_axiom);
+    }
+
+    assert(eff_index == 0);
+    return negated_axioms[op_index - negated_axioms_start_index].condition[cond_index];
 }
 
 FactPair NegatedAxiomsTask::get_operator_effect(
@@ -380,10 +392,6 @@ FactPair NegatedAxiomsTask::get_operator_effect(
 
     assert(eff_index == 0);
     return negated_axioms[op_index - negated_axioms_start_index].head;
-}
-
-int NegatedAxiomsTask::convert_operator_index_to_parent(int index) const {
-    return index;
 }
 
 int NegatedAxiomsTask::get_num_axioms() const {
