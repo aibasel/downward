@@ -112,8 +112,8 @@ jobs:
     strategy:
       matrix:
         version:
-          - {ubuntu: ubuntu-20.04, python: '3.8'}
           - {ubuntu: ubuntu-22.04, python: '3.10'}
+          - {ubuntu: ubuntu-24.04, python: '3.10'}
     env:
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
     steps:
