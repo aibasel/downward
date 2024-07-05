@@ -11,7 +11,7 @@ jobs:
     name: Autodoc
     if: github.repository == 'aibasel/downward'
     timeout-minutes: 60
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       DOWNWARD_AUTODOC_PASSWORD: ${{ secrets.DOWNWARD_AUTODOC_PASSWORD }}
     steps:
