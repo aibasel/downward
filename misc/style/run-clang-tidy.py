@@ -103,10 +103,10 @@ def check_search_code_with_clang_tidy():
         {{key: performance-unnecessary-value-param.AllowedTypes, value: "{';'.join(LIGHTWEIGHT_TYPES)}"}},\
     ]}}""".replace("    ", "")
     cmd = [
-        "run-clang-tidy-14",
+        "run-clang-tidy-15",
         "-quiet",
         "-p", build_dir,
-        "-clang-tidy-binary=clang-tidy-14",
+        "-clang-tidy-binary=clang-tidy-15",
         "-checks=-*," + ",".join(checks),
         f"-config={config}",
     ]
@@ -116,7 +116,7 @@ def check_search_code_with_clang_tidy():
     try:
         p = subprocess.run(cmd, cwd=DIR, text=True, capture_output=True, check=False)
     except FileNotFoundError:
-        sys.exit(f"run-clang-tidy-14 not found. Is it on the PATH?")
+        sys.exit(f"run-clang-tidy-15 not found. Is it on the PATH?")
     output = f"{p.stdout}\n{p.stderr}"
     errors = re.findall(r"^(.*:\d+:\d+: .*(?:warning|error): .*)$", output, flags=re.M)
     filtered_errors = [error for error in errors if not any(ignore in error for ignore in IGNORES)]
@@ -126,7 +126,7 @@ def check_search_code_with_clang_tidy():
         for error in filtered_errors:
             print(error)
         fix_cmd = cmd + [
-            "-clang-apply-replacements-binary=clang-apply-replacements-14", "-fix"]
+            "-clang-apply-replacements-binary=clang-apply-replacements-15", "-fix"]
         print("\nYou may be able to fix some of these issues with the following command:\n" +
             " ".join(pipes.quote(x) for x in fix_cmd))
         sys.exit(1)

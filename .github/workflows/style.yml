@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip3 install tox
-          sudo apt-get -y install clang-tidy-14
+          sudo apt-get -y install clang-tidy-15
 
       - name: Install uncrustify
         run: |
