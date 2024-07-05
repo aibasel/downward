@@ -129,7 +129,8 @@ void IteratedSearch::save_plan_if_necessary() {
     // each successful search iteration.
 }
 
-class IteratedSearchFeature : public plugins::TypedFeature<SearchAlgorithm, IteratedSearch> {
+class IteratedSearchFeature
+    : public plugins::TypedFeature<SearchAlgorithm, IteratedSearch> {
 public:
     IteratedSearchFeature() : TypedFeature("iterated") {
         document_title("Iterated search");
@@ -157,7 +158,7 @@ public:
             "continue_on_solve",
             "continue search after solution found",
             "true");
-        SearchAlgorithm::add_options_to_feature(*this);
+        add_search_algorithm_options_to_feature(*this, "iterated");
 
         document_note(
             "Note 1",

@@ -21,9 +21,10 @@ static void add_lp_variables(int count, LPVariables &variables, vector<int> &ind
 }
 
 
-DeleteRelaxationIFConstraints::DeleteRelaxationIFConstraints(const plugins::Options &opts)
-    : use_time_vars(opts.get<bool>("use_time_vars")),
-      use_integer_vars(opts.get<bool>("use_integer_vars")) {
+DeleteRelaxationIFConstraints::DeleteRelaxationIFConstraints(
+    bool use_time_vars, bool use_integer_vars)
+    : use_time_vars(use_time_vars),
+      use_integer_vars(use_integer_vars) {
 }
 
 int DeleteRelaxationIFConstraints::get_var_op_used(const OperatorProxy &op) {
@@ -236,7 +237,8 @@ bool DeleteRelaxationIFConstraints::update_constraints(
     return false;
 }
 
-class DeleteRelaxationIFConstraintsFeature : public plugins::TypedFeature<ConstraintGenerator, DeleteRelaxationIFConstraints> {
+class DeleteRelaxationIFConstraintsFeature
+    : public plugins::TypedFeature<ConstraintGenerator, DeleteRelaxationIFConstraints> {
 public:
     DeleteRelaxationIFConstraintsFeature() : TypedFeature("delete_relaxation_if_constraints") {
         document_title("Delete relaxation constraints");
@@ -284,6 +286,14 @@ public:
             "For best performance we recommend using the alternative "
             "formulation by Rankooh and Rintanen, accessible through the "
             "option {{{delete_relaxation_rr_constraints}}}.\n");
+    }
+
+    virtual shared_ptr<DeleteRelaxationIFConstraints> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return make_shared<DeleteRelaxationIFConstraints>(
+            opts.get<bool>("use_time_vars"),
+            opts.get<bool>("use_integer_vars"));
     }
 };
 

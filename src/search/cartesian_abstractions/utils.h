@@ -17,9 +17,6 @@ class AdditiveHeuristic;
 }
 
 namespace cartesian_abstractions {
-extern std::unique_ptr<additive_heuristic::AdditiveHeuristic>
-create_additive_heuristic(const std::shared_ptr<AbstractTask> &task);
-
 /*
   The set of relaxed-reachable facts is the possibly-before set of facts that
   can be reached in the delete-relaxation before 'fact' is reached the first

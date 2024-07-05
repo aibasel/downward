@@ -20,8 +20,8 @@ using namespace std;
 namespace type_based_open_list {
 template<class Entry>
 class TypeBasedOpenList : public OpenList<Entry> {
-    shared_ptr<utils::RandomNumberGenerator> rng;
     vector<shared_ptr<Evaluator>> evaluators;
+    shared_ptr<utils::RandomNumberGenerator> rng;
 
     using Key = vector<int>;
     using Bucket = vector<Entry>;
@@ -33,8 +33,9 @@ protected:
         EvaluationContext &eval_context, const Entry &entry) override;
 
 public:
-    explicit TypeBasedOpenList(const plugins::Options &opts);
-    virtual ~TypeBasedOpenList() override = default;
+    explicit TypeBasedOpenList(
+        const vector<shared_ptr<Evaluator>> &evaluators,
+        int random_seed);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
@@ -67,9 +68,10 @@ void TypeBasedOpenList<Entry>::do_insertion(
 }
 
 template<class Entry>
-TypeBasedOpenList<Entry>::TypeBasedOpenList(const plugins::Options &opts)
-    : rng(utils::parse_rng_from_options(opts)),
-      evaluators(opts.get_list<shared_ptr<Evaluator>>("evaluators")) {
+TypeBasedOpenList<Entry>::TypeBasedOpenList(
+    const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
+    : evaluators(evaluators),
+      rng(utils::get_rng(random_seed)) {
 }
 
 template<class Entry>
@@ -135,21 +137,25 @@ void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
 }
 
 TypeBasedOpenListFactory::TypeBasedOpenListFactory(
-    const plugins::Options &options)
-    : options(options) {
+    const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
+    : evaluators(evaluators),
+      random_seed(random_seed) {
 }
 
 unique_ptr<StateOpenList>
 TypeBasedOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<TypeBasedOpenList<StateOpenListEntry>>(options);
+    return utils::make_unique_ptr<TypeBasedOpenList<StateOpenListEntry>>(
+        evaluators, random_seed);
 }
 
 unique_ptr<EdgeOpenList>
 TypeBasedOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<TypeBasedOpenList<EdgeOpenListEntry>>(options);
+    return utils::make_unique_ptr<TypeBasedOpenList<EdgeOpenListEntry>>(
+        evaluators, random_seed);
 }
 
-class TypeBasedOpenListFeature : public plugins::TypedFeature<OpenListFactory, TypeBasedOpenListFactory> {
+class TypeBasedOpenListFeature
+    : public plugins::TypedFeature<OpenListFactory, TypeBasedOpenListFactory> {
 public:
     TypeBasedOpenListFeature() : TypedFeature("type_based") {
         document_title("Type-based open list");
@@ -173,12 +179,18 @@ public:
         add_list_option<shared_ptr<Evaluator>>(
             "evaluators",
             "Evaluators used to determine the bucket for each entry.");
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TypeBasedOpenListFactory> create_component(const plugins::Options &options, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, options, "evaluators");
-        return make_shared<TypeBasedOpenListFactory>(options);
+    virtual shared_ptr<TypeBasedOpenListFactory> create_component(
+        const plugins::Options &opts,
+        const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(
+            context, opts, "evaluators");
+        return plugins::make_shared_from_arg_tuples<TypeBasedOpenListFactory>(
+            opts.get_list<shared_ptr<Evaluator>>("evaluators"),
+            utils::get_rng_arguments_from_options(opts)
+            );
     }
 };
 

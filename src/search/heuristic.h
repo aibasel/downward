@@ -73,14 +73,15 @@ protected:
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
-    explicit Heuristic(const plugins::Options &opts);
+    Heuristic(
+        const std::shared_ptr<AbstractTask> &transform,
+        bool cache_estimates, const std::string &description,
+        utils::Verbosity verbosity);
     virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> & /*evals*/) override {
     }
-
-    static void add_options_to_feature(plugins::Feature &feature);
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
@@ -90,4 +91,9 @@ public:
     virtual int get_cached_estimate(const State &state) const override;
 };
 
+extern void add_heuristic_options_to_feature(
+    plugins::Feature &feature, const std::string &description);
+extern std::tuple<
+    std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity>
+get_heuristic_arguments_from_options(const plugins::Options &opts);
 #endif

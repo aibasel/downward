@@ -22,8 +22,11 @@ namespace max_heuristic {
  */
 
 // construction and destruction
-HSPMaxHeuristic::HSPMaxHeuristic(const plugins::Options &opts)
-    : RelaxationHeuristic(opts) {
+HSPMaxHeuristic::HSPMaxHeuristic(
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
+    : RelaxationHeuristic(
+          transform, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing HSP max heuristic..." << endl;
     }
@@ -98,12 +101,13 @@ int HSPMaxHeuristic::compute_heuristic(const State &ancestor_state) {
     return total_cost;
 }
 
-class HSPMaxHeuristicFeature : public plugins::TypedFeature<Evaluator, HSPMaxHeuristic> {
+class HSPMaxHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, HSPMaxHeuristic> {
 public:
     HSPMaxHeuristicFeature() : TypedFeature("hmax") {
         document_title("Max heuristic");
 
-        Heuristic::add_options_to_feature(*this);
+        add_heuristic_options_to_feature(*this, "hmax");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");
@@ -117,6 +121,13 @@ public:
         document_property("consistent", "yes for tasks without axioms");
         document_property("safe", "yes for tasks without axioms");
         document_property("preferred operators", "no");
+    }
+
+    virtual shared_ptr<HSPMaxHeuristic> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<HSPMaxHeuristic>(
+            get_heuristic_arguments_from_options(opts));
     }
 };
 

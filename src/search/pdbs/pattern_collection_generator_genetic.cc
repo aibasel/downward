@@ -25,14 +25,16 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(
-    const plugins::Options &opts)
-    : PatternCollectionGenerator(opts),
-      pdb_max_size(opts.get<int>("pdb_max_size")),
-      num_collections(opts.get<int>("num_collections")),
-      num_episodes(opts.get<int>("num_episodes")),
-      mutation_probability(opts.get<double>("mutation_probability")),
-      disjoint_patterns(opts.get<bool>("disjoint")),
-      rng(utils::parse_rng_from_options(opts)) {
+    int pdb_max_size, int num_collections, int num_episodes,
+    double mutation_probability, bool disjoint, int random_seed,
+    utils::Verbosity verbosity)
+    : PatternCollectionGenerator(verbosity),
+      pdb_max_size(pdb_max_size),
+      num_collections(num_collections),
+      num_episodes(num_episodes),
+      mutation_probability(mutation_probability),
+      disjoint_patterns(disjoint),
+      rng(utils::get_rng(random_seed)) {
 }
 
 void PatternCollectionGeneratorGenetic::select(
@@ -297,7 +299,8 @@ PatternCollectionInformation PatternCollectionGeneratorGenetic::compute_patterns
     return PatternCollectionInformation(task_proxy, best_patterns, log);
 }
 
-class PatternCollectionGeneratorGeneticFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorGenetic> {
+class PatternCollectionGeneratorGeneticFeature
+    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorGenetic> {
 public:
     PatternCollectionGeneratorGeneticFeature() : TypedFeature("genetic") {
         document_title("Genetic Algorithm Patterns");
@@ -344,7 +347,7 @@ public:
             "consider a pattern collection invalid (giving it very low "
             "fitness) if its patterns are not disjoint",
             "false");
-        utils::add_rng_options(*this);
+        utils::add_rng_options_to_feature(*this);
         add_generator_options_to_feature(*this);
 
         document_note(
@@ -386,6 +389,20 @@ public:
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "not supported");
         document_language_support("axioms", "not supported");
+    }
+
+    virtual shared_ptr<PatternCollectionGeneratorGenetic> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorGenetic>(
+            opts.get<int>("pdb_max_size"),
+            opts.get<int>("num_collections"),
+            opts.get<int>("num_episodes"),
+            opts.get<double>("mutation_probability"),
+            opts.get<bool>("disjoint"),
+            utils::get_rng_arguments_from_options(opts),
+            get_generator_arguments_from_options(opts)
+            );
     }
 };
 

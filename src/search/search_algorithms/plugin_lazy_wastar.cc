@@ -8,7 +8,8 @@ using namespace std;
 namespace plugin_lazy_wastar {
 static const string DEFAULT_LAZY_BOOST = "1000";
 
-class LazyWAstarSearchFeature : public plugins::TypedFeature<SearchAlgorithm, lazy_search::LazySearch> {
+class LazyWAstarSearchFeature
+    : public plugins::TypedFeature<SearchAlgorithm, lazy_search::LazySearch> {
 public:
     LazyWAstarSearchFeature() : TypedFeature("lazy_wastar") {
         document_title("(Weighted) A* search (lazy)");
@@ -31,8 +32,8 @@ public:
             "boost value for preferred operator open lists",
             DEFAULT_LAZY_BOOST);
         add_option<int>("w", "evaluator weight", "1");
-        SearchAlgorithm::add_succ_order_options(*this);
-        SearchAlgorithm::add_options_to_feature(*this);
+        add_successors_order_options_to_feature(*this);
+        add_search_algorithm_options_to_feature(*this, "lazy_wastar");
 
         document_note(
             "Open lists",
@@ -77,15 +78,25 @@ public:
             true);
     }
 
-    virtual shared_ptr<lazy_search::LazySearch> create_component(const plugins::Options &options, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(context, options, "evals");
-        plugins::Options options_copy(options);
-        options_copy.set("open", search_common::create_wastar_open_list_factory(options_copy));
-        shared_ptr<lazy_search::LazySearch> search_algorithm = make_shared<lazy_search::LazySearch>(options_copy);
-        // TODO: The following two lines look fishy. See similar comment in _parse.
-        vector<shared_ptr<Evaluator>> preferred_list = options_copy.get_list<shared_ptr<Evaluator>>("preferred");
-        search_algorithm->set_preferred_operator_evaluators(preferred_list);
-        return search_algorithm;
+    virtual shared_ptr<lazy_search::LazySearch> create_component(
+        const plugins::Options &opts,
+        const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(
+            context, opts, "evals");
+
+        return plugins::make_shared_from_arg_tuples<lazy_search::LazySearch>(
+            search_common::create_wastar_open_list_factory(
+                opts.get_list<shared_ptr<Evaluator>>("evals"),
+                opts.get_list<shared_ptr<Evaluator>>("preferred"),
+                opts.get<int>("boost"),
+                opts.get<int>("w"),
+                opts.get<utils::Verbosity>("verbosity")
+                ),
+            opts.get<bool>("reopen_closed"),
+            opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            get_successors_order_arguments_from_options(opts),
+            get_search_algorithm_arguments_from_options(opts)
+            );
     }
 };
 
