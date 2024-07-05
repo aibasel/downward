@@ -89,7 +89,7 @@ static shared_ptr<SearchAlgorithm> parse_cmd_line_aux(const vector<string> &args
     SearchPtr search_algorithm = nullptr;
     // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
-        string arg = args[i];
+        const string &arg = args[i];
         bool is_last = (i == args.size() - 1);
         if (arg == "--search") {
             if (search_algorithm)
@@ -97,7 +97,7 @@ static shared_ptr<SearchAlgorithm> parse_cmd_line_aux(const vector<string> &args
             if (is_last)
                 input_error("missing argument after --search");
             ++i;
-            string search_arg = args[i];
+            const string &search_arg = args[i];
             try {
                 parser::TokenStream tokens = parser::split_tokens(search_arg);
                 parser::ASTNodePtr parsed = parser::parse(tokens);
@@ -112,7 +112,7 @@ static shared_ptr<SearchAlgorithm> parse_cmd_line_aux(const vector<string> &args
             bool txt2tags = false;
             vector<string> plugin_names;
             for (size_t j = i + 1; j < args.size(); ++j) {
-                string help_arg = args[j];
+                const string &help_arg = args[j];
                 if (help_arg == "--txt2tags") {
                     txt2tags = true;
                 } else {
