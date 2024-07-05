@@ -47,7 +47,9 @@ target_compile_options(common_cxx_warnings INTERFACE
 target_link_libraries(common_cxx_flags INTERFACE common_cxx_warnings)
 
 set(v15_or_later "$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,15>")
+set(using_clang "$<CXX_COMPILER_ID:Clang>")
 set(using_apple_clang "$<CXX_COMPILER_ID:AppleClang>")
-set(ignored_std_warning "$<AND:${using_apple_clang},${v15_or_later}>")
+set(using_clang_like "$<OR:${using_clang},${using_apple_clang}>")
+set(should_ignore_std_warning "$<AND:${using_clang_like},${v15_or_later}>")
 target_compile_options(common_cxx_warnings INTERFACE
-    "$<${ignored_std_warning}:-Wno-unqualified-std-cast-call>")
+    "$<${should_ignore_std_warning}:-Wno-unqualified-std-cast-call>")
