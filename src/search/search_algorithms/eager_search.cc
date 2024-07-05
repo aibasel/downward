@@ -317,6 +317,8 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
 void add_eager_search_options_to_feature(
     plugins::Feature &feature, const string &description) {
     add_search_pruning_options_to_feature(feature);
+    // We do not add a lazy_evaluator options here
+    // because it is only used for astar but not the other plugins.
     add_search_algorithm_options_to_feature(feature, description);
 }
 
