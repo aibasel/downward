@@ -14,26 +14,26 @@ using namespace std;
 using utils::ExitCode;
 
 namespace tasks {
-NegatedAxiomsTask::NegatedAxiomsTask(
+DefaultValueAxiomsTask::DefaultValueAxiomsTask(
     const shared_ptr<AbstractTask> &parent,
     bool simple_default_axioms)
     : DelegatingTask(parent),
-      simple_default_axioms(simple_default_axioms),
-      negated_axioms_start_index(parent->get_num_axioms()) {
+      simple_default_value_axioms(simple_default_axioms),
+      default_value_axioms_start_index(parent->get_num_axioms()) {
     TaskProxy task_proxy(*parent);
 
     /*
-      pos/neg_dependencies store for each derived variable v which
-      derived variables appear positively/negatively in an axiom
-      making v true.
+      (non)default_dependencies store for each derived variable v which
+      derived variables appear with their (non)default value in an axiom
+      setting v to their nondefault value.
       axiom_ids_for_var stores for each derived variable v which
-      axioms making v true.
+      axioms set v to their nondefault value.
       Note that the vectors go over *all* variables (also non-derived ones),
       but only the indices that correspond to a variable ID of a derived
       variable actually have content.
      */
-    vector<vector<int>> pos_dependencies(task_proxy.get_variables().size());
-    vector<vector<int>> neg_dependencies(task_proxy.get_variables().size());
+    vector<vector<int>> nondefault_dependencies(task_proxy.get_variables().size());
+    vector<vector<int>> default_dependencies(task_proxy.get_variables().size());
     vector<vector<int>> axiom_ids_for_var(task_proxy.get_variables().size());
     for (OperatorProxy axiom: task_proxy.get_axioms()) {
         EffectProxy effect = axiom.get_effects()[0];
@@ -44,25 +44,25 @@ NegatedAxiomsTask::NegatedAxiomsTask(
             if (var_proxy.is_derived()) {
                 int var = cond.get_variable().get_id();
                 if (cond.get_value() == var_proxy.get_default_axiom_value()) {
-                    neg_dependencies[head_var].push_back(var);
+                    default_dependencies[head_var].push_back(var);
                 } else {
-                    pos_dependencies[head_var].push_back(var);
+                    nondefault_dependencies[head_var].push_back(var);
                 }
             }
         }
     }
 
     /*
-       Get the sccs induced by positive dependencies.
-       We do not include negative dependencies because they cannot
+       Get the sccs induced by nondefault dependencies.
+       We do not include default dependencies because they cannot
        introduce additional cycles (this would imply that the axioms
        are not stratifiable, which is already checked in the translator).
     */
     vector<vector<int>> sccs;
     vector<vector<int> *> var_to_scc;
-    // We don't need the sccs if we set rules "¬v <- T" everywhere.
+    // We don't need the sccs if we set axioms "v=default <- {}" everywhere.
     if (!simple_default_axioms) {
-        sccs = sccs::compute_maximal_sccs(pos_dependencies);
+        sccs = sccs::compute_maximal_sccs(nondefault_dependencies);
         var_to_scc = vector<vector<int> *>(
             task_proxy.get_variables().size(), nullptr);
         for (int i = 0; i < (int)sccs.size(); ++i) {
@@ -72,10 +72,10 @@ NegatedAxiomsTask::NegatedAxiomsTask(
         }
     }
 
-    unordered_set<int> needed_negatively =
-        collect_needed_negatively(pos_dependencies, neg_dependencies, var_to_scc);
+    unordered_set<int> default_value_needed = get_default_value_needed(
+        nondefault_dependencies, default_dependencies, var_to_scc);
 
-    for (int var: needed_negatively) {
+    for (int var: default_value_needed) {
         vector<int> &axiom_ids = axiom_ids_for_var[var];
         int default_value =
             task_proxy.get_variables()[var].get_default_axiom_value();
@@ -91,39 +91,43 @@ NegatedAxiomsTask::NegatedAxiomsTask(
                instead, which assumes that derived variables occurring
                in the cycle can be false unconditionally. This is good
                enough for correctness of the code that uses these
-               negated axioms, but loses accuracy. Negating the rules in
-               an exact (non-overapproximating) way is possible but more
-               expensive (again, see issue453).
+               default value axioms, but loses accuracy. Negating the
+               axioms in an exact (non-overapproximating) way is possible
+               but more expensive (again, see issue453).
             */
-            negated_axioms.emplace_back(
+            default_value_axioms.emplace_back(
                 FactPair(var, default_value), vector<FactPair>());
         } else {
-            add_negated_axioms_for_var(
-                FactPair(var, default_value), axiom_ids);
+            add_default_value_axioms_for_var(
+                    FactPair(var, default_value), axiom_ids);
         }
     }
 }
 
 /*
   Collect for which derived variables it is relevant to know how they
-  can obtain their default value.
-  In general a derived variable v is "needed negatively" (that is, in
-  its default value) if
-    (a) v appears negatively in the goal or an operator condition
-    (b) v appears positively in the body of an axiom for a variable v'
-    that is needed negatively
-    (c) v appears negatively in the body of an axiom for a variable v'
-    that is needed positively.
-  We will however not consider case (b) if we already know that the
-  axioms for the default value of v' will be trivially overapproximated
-  with an empty body (in this case, the default value of v' does not
-  depend on anything).
+  can obtain their default value. This is done by tracking for all
+  derived variables which of their value are needed.
+
+  Initially, we know that var=val is needed if it appears in a goal or
+  operator condition. Then we iteratively do the following:
+  a) If var=val is needed and var'=nondefault is in the body of an
+     axiom setting var=nondefault, then var'=val is needed.
+  b) If var=val is needed and var'=default is in the body of an axiom
+     setting var=nondefault, then var'=!val is needed, where
+       - !val=nondefault if val=default
+       - !val=default if val=nondefault
+  (var and var' are always derived variables.)
+
+  If var=default is needed but we already know that the axioms we will
+  introduce for var=default are going to have an empty body, then we don't
+  apply a)/b) (because the axiom for var=default will not depend on anything).
 */
-unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
-    const vector<vector<int>> &positive_dependencies,
-    const vector<vector<int>> &negative_dependencies,
+unordered_set<int> DefaultValueAxiomsTask::get_default_value_needed(
+    const vector<vector<int>> &nondefault_dependencies,
+    const vector<vector<int>> &default_dependencies,
     const vector<vector<int> *> &var_to_scc) {
-    // Stores which derived variables are needed positively or negatively.
+    // Store which derived vars are needed default (true) / nondefault(false).
     utils::HashSet<pair<int, bool>> needed;
 
     TaskProxy task_proxy(*parent);
@@ -132,27 +136,27 @@ unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
     for (const FactProxy &goal: task_proxy.get_goals()) {
         VariableProxy var_proxy = goal.get_variable();
         if (var_proxy.is_derived()) {
-            bool non_default =
-                goal.get_value() != var_proxy.get_default_axiom_value();
-            needed.emplace(goal.get_pair().var, non_default);
+            bool default_value =
+                goal.get_value() == var_proxy.get_default_axiom_value();
+            needed.emplace(goal.get_pair().var, default_value);
         }
     }
     for (OperatorProxy op: task_proxy.get_operators()) {
         for (FactProxy condition: op.get_preconditions()) {
             VariableProxy var_proxy = condition.get_variable();
             if (var_proxy.is_derived()) {
-                bool non_default =
-                    condition.get_value() != var_proxy.get_default_axiom_value();
-                needed.emplace(condition.get_pair().var, non_default);
+                bool default_value =
+                    condition.get_value() == var_proxy.get_default_axiom_value();
+                needed.emplace(condition.get_pair().var, default_value);
             }
         }
         for (EffectProxy effect: op.get_effects()) {
             for (FactProxy condition: effect.get_conditions()) {
                 VariableProxy var_proxy = condition.get_variable();
                 if (var_proxy.is_derived()) {
-                    bool non_default =
-                        condition.get_value() != var_proxy.get_default_axiom_value();
-                    needed.emplace(condition.get_pair().var, non_default);
+                    bool default_value =
+                        condition.get_value() == var_proxy.get_default_axiom_value();
+                    needed.emplace(condition.get_pair().var, default_value);
                 }
             }
         }
@@ -161,46 +165,46 @@ unordered_set<int> NegatedAxiomsTask::collect_needed_negatively(
     deque<pair<int, bool>> to_process(needed.begin(), needed.end());
     while (!to_process.empty()) {
         int var = to_process.front().first;
-        bool non_default = to_process.front().second;
+        bool default_value = to_process.front().second;
         to_process.pop_front();
 
         /*
-          If we process a default value and already know that the rule we
-          will introduce will have an empty body (either because we trivially
+          If we process a default value and already know that the axiom we
+          will introduce has an empty body (either because we trivially
           overapproximate everything or because the variable has cyclic
-          dependencies), then the rule (and thus the current variable/value
+          dependencies), then the axiom (and thus the current variable/value
           pair) doesn't depend on anything.
         */
-        if ((non_default) &&
-            (simple_default_axioms || var_to_scc[var]->size() > 1)) {
+        if ((default_value) &&
+            (simple_default_value_axioms || var_to_scc[var]->size() > 1)) {
             continue;
         }
 
-        for (int pos_dep : positive_dependencies[var]) {
-            auto insert_retval = needed.emplace(pos_dep, non_default);
+        for (int nondefault_dep : nondefault_dependencies[var]) {
+            auto insert_retval = needed.emplace(nondefault_dep, default_value);
             if (insert_retval.second) {
-                to_process.emplace_back(pos_dep, non_default);
+                to_process.emplace_back(nondefault_dep, default_value);
             }
         }
-        for (int neg_dep : negative_dependencies[var]) {
-            auto insert_retval = needed.emplace(neg_dep, !non_default);
+        for (int default_dep : default_dependencies[var]) {
+            auto insert_retval = needed.emplace(default_dep, !default_value);
             if (insert_retval.second) {
-                to_process.emplace_back(neg_dep, !non_default);
+                to_process.emplace_back(default_dep, !default_value);
             }
         }
     }
 
-    unordered_set<int> needed_negatively;
+    unordered_set<int> default_needed;
     for (pair<int, bool> entry : needed) {
-        if (!entry.second) {
-            needed_negatively.insert(entry.first);
+        if (entry.second) {
+            default_needed.insert(entry.first);
         }
     }
-    return needed_negatively;
+    return default_needed;
 }
 
 
-void NegatedAxiomsTask::add_negated_axioms_for_var(
+void DefaultValueAxiomsTask::add_default_value_axioms_for_var(
     FactPair head, vector<int> &axiom_ids) {
     TaskProxy task_proxy(*parent);
 
@@ -209,7 +213,7 @@ void NegatedAxiomsTask::add_negated_axioms_for_var(
       then the default is always true.
     */
     if (axiom_ids.empty()) {
-        negated_axioms.emplace_back(head, vector<FactPair>());
+        default_value_axioms.emplace_back(head, vector<FactPair>());
         return;
     }
 
@@ -237,28 +241,27 @@ void NegatedAxiomsTask::add_negated_axioms_for_var(
         conditions_as_cnf, 0, current, current_vars, hitting_sets);
 
     for (const set<FactPair> &c : hitting_sets) {
-        negated_axioms.emplace_back(
+        default_value_axioms.emplace_back(
             head, vector<FactPair>(c.begin(), c.end()));
     }
 }
 
 
-void NegatedAxiomsTask::collect_non_dominated_hitting_sets_recursively(
-    const vector<set<FactPair>> &conditions_as_cnf, size_t index,
-    set<FactPair> &hitting_set, unordered_set<int> &hitting_set_vars,
-    set<set<FactPair>> &results) {
-    if (index == conditions_as_cnf.size()) {
+void DefaultValueAxiomsTask::collect_non_dominated_hitting_sets_recursively(
+        const vector<set<FactPair>> &set_of_sets, size_t index,
+        set<FactPair> &hitting_set, unordered_set<int> &hitting_set_vars,
+        set<set<FactPair>> &results) {
+    if (index == set_of_sets.size()) {
         /*
-           Check whether the hitting set denoted in hitting_set is dominated.
-           If we find a fact f in hitting set such that no conjunction in
-           the cnf is covered by *only* f, then we could remove f and the
-           resulting set would still be a hitting set that dominates the
-           current one.
+           Check whether the hitting set is dominated.
+           If we find a fact f in hitting_set such that no set in the
+           set of sets is covered by *only* f, then hitting_set \ {f}
+           is still a hitting set that dominates hitting_set.
         */
         set<FactPair> not_uniquely_used(hitting_set);
-        for (const set<FactPair> &condition : conditions_as_cnf) {
+        for (const set<FactPair> &set : set_of_sets) {
             vector<FactPair> intersection;
-            set_intersection(condition.begin(), condition.end(),
+            set_intersection(set.begin(), set.end(),
                              hitting_set.begin(), hitting_set.end(),
                              back_inserter(intersection));
             if (intersection.size() == 1) {
@@ -271,21 +274,21 @@ void NegatedAxiomsTask::collect_non_dominated_hitting_sets_recursively(
         return;
     }
 
-    const set<FactPair> &conditions = conditions_as_cnf[index];
-    for (const FactPair &elem : conditions) {
+    const set<FactPair> &set = set_of_sets[index];
+    for (const FactPair &elem : set) {
         /*
-          If the current condition is covered with the current hitting
-          set elements, we continue with the next condition.
+          If the current set is covered with the current hitting set
+          elements, we continue with the next set.
         */
         if (hitting_set.find(elem) != hitting_set.end()) {
             collect_non_dominated_hitting_sets_recursively(
-                conditions_as_cnf, index + 1, hitting_set, hitting_set_vars,
-                results);
+                    set_of_sets, index + 1, hitting_set, hitting_set_vars,
+                    results);
             return;
         }
     }
 
-    for (const FactPair &elem : conditions) {
+    for (const FactPair &elem : set) {
         // We don't allow choosing different facts from the same variable.
         if (hitting_set_vars.find(elem.var) != hitting_set_vars.end()) {
             continue;
@@ -294,90 +297,90 @@ void NegatedAxiomsTask::collect_non_dominated_hitting_sets_recursively(
         hitting_set.insert(elem);
         hitting_set_vars.insert(elem.var);
         collect_non_dominated_hitting_sets_recursively(
-            conditions_as_cnf, index + 1, hitting_set, hitting_set_vars,
-            results);
+                set_of_sets, index + 1, hitting_set, hitting_set_vars,
+                results);
         hitting_set.erase(elem);
         hitting_set_vars.erase(elem.var);
     }
 }
 
 
-int NegatedAxiomsTask::get_operator_cost(int index, bool is_axiom) const {
-    if (!is_axiom || index < negated_axioms_start_index) {
+int DefaultValueAxiomsTask::get_operator_cost(int index, bool is_axiom) const {
+    if (!is_axiom || index < default_value_axioms_start_index) {
         return parent->get_operator_cost(index, is_axiom);
     }
 
     return 0;
 }
 
-string NegatedAxiomsTask::get_operator_name(int index, bool is_axiom) const {
-    if (!is_axiom || index < negated_axioms_start_index) {
+string DefaultValueAxiomsTask::get_operator_name(int index, bool is_axiom) const {
+    if (!is_axiom || index < default_value_axioms_start_index) {
         return parent->get_operator_name(index, is_axiom);
     }
 
     return "";
 }
 
-int NegatedAxiomsTask::get_num_operator_preconditions(int index, bool is_axiom) const {
-    if (!is_axiom || index < negated_axioms_start_index) {
+int DefaultValueAxiomsTask::get_num_operator_preconditions(int index, bool is_axiom) const {
+    if (!is_axiom || index < default_value_axioms_start_index) {
         return parent->get_num_operator_preconditions(index, is_axiom);
     }
 
     return 1;
 }
 
-FactPair NegatedAxiomsTask::get_operator_precondition(
+FactPair DefaultValueAxiomsTask::get_operator_precondition(
     int op_index, int fact_index, bool is_axiom) const {
-    if (!is_axiom || (op_index < negated_axioms_start_index)) {
+    if (!is_axiom || (op_index < default_value_axioms_start_index)) {
         return parent->get_operator_precondition(op_index, fact_index, is_axiom);
     }
 
     assert(fact_index == 0);
-    FactPair head = negated_axioms[op_index - negated_axioms_start_index].head;
+    FactPair head = default_value_axioms[op_index - default_value_axioms_start_index].head;
     return FactPair(head.var, 1 - head.value);
 }
 
-int NegatedAxiomsTask::get_num_operator_effects(int op_index, bool is_axiom) const {
-    if (!is_axiom || op_index < negated_axioms_start_index) {
+int DefaultValueAxiomsTask::get_num_operator_effects(int op_index, bool is_axiom) const {
+    if (!is_axiom || op_index < default_value_axioms_start_index) {
         return parent->get_num_operator_effects(op_index, is_axiom);
     }
 
     return 1;
 }
 
-int NegatedAxiomsTask::get_num_operator_effect_conditions(
+int DefaultValueAxiomsTask::get_num_operator_effect_conditions(
     int op_index, int eff_index, bool is_axiom) const {
-    if (!is_axiom || op_index < negated_axioms_start_index) {
+    if (!is_axiom || op_index < default_value_axioms_start_index) {
         return parent->get_num_operator_effect_conditions(
             op_index, eff_index, is_axiom);
     }
 
     assert(eff_index == 0);
-    return negated_axioms[op_index - negated_axioms_start_index].condition.size();
+    return default_value_axioms[op_index - default_value_axioms_start_index].condition.size();
 }
 
-FactPair NegatedAxiomsTask::get_operator_effect_condition(
+FactPair DefaultValueAxiomsTask::get_operator_effect_condition(
     int op_index, int eff_index, int cond_index, bool is_axiom) const {
-    if (!is_axiom || op_index < negated_axioms_start_index) {
+    if (!is_axiom || op_index < default_value_axioms_start_index) {
         return parent->get_operator_effect_condition(
             op_index, eff_index, cond_index, is_axiom);
     }
 
     assert(eff_index == 0);
-    return negated_axioms[op_index - negated_axioms_start_index].condition[cond_index];
+    return default_value_axioms[op_index - default_value_axioms_start_index].condition[cond_index];
 }
 
-FactPair NegatedAxiomsTask::get_operator_effect(
+FactPair DefaultValueAxiomsTask::get_operator_effect(
     int op_index, int eff_index, bool is_axiom) const {
-    if (!is_axiom || op_index < negated_axioms_start_index) {
+    if (!is_axiom || op_index < default_value_axioms_start_index) {
         return parent->get_operator_effect(op_index, eff_index, is_axiom);
     }
 
     assert(eff_index == 0);
-    return negated_axioms[op_index - negated_axioms_start_index].head;
+    return default_value_axioms[op_index - default_value_axioms_start_index].head;
 }
 
-int NegatedAxiomsTask::get_num_axioms() const {
-    return parent->get_num_axioms() + negated_axioms.size();
+int DefaultValueAxiomsTask::get_num_axioms() const {
+    return parent->get_num_axioms() + default_value_axioms.size();
 }
 }

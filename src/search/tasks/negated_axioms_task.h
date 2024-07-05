@@ -34,35 +34,35 @@ class Options;
  */
 
 namespace tasks {
-struct NegatedAxiom {
+struct DefaultValueAxiom {
     FactPair head;
     std::vector<FactPair> condition;
 
-    NegatedAxiom(FactPair head, std::vector<FactPair> &&condition)
+    DefaultValueAxiom(FactPair head, std::vector<FactPair> &&condition)
         : head(head), condition(condition) {}
 };
 
-class NegatedAxiomsTask : public DelegatingTask {
-    bool simple_default_axioms;
-    std::vector<NegatedAxiom> negated_axioms;
-    int negated_axioms_start_index;
+class DefaultValueAxiomsTask : public DelegatingTask {
+    bool simple_default_value_axioms;
+    std::vector<DefaultValueAxiom> default_value_axioms;
+    int default_value_axioms_start_index;
 
-    std::unordered_set<int> collect_needed_negatively(
-        const std::vector<std::vector<int>> &positive_dependencies,
-        const std::vector<std::vector<int>> &negative_dependencies,
+    std::unordered_set<int> get_default_value_needed(
+        const std::vector<std::vector<int>> &nondefault_dependencies,
+        const std::vector<std::vector<int>> &default_dependencies,
         const std::vector<std::vector<int> *> &var_to_scc);
-    void add_negated_axioms_for_var(
+    void add_default_value_axioms_for_var(
         FactPair head, std::vector<int> &axiom_ids);
     void collect_non_dominated_hitting_sets_recursively(
-        const std::vector<std::set<FactPair>> &conditions_as_cnf, size_t index,
+        const std::vector<std::set<FactPair>> &set_of_sets, size_t index,
         std::set<FactPair> &hitting_set,
         std::unordered_set<int> &hitting_set_vars,
         std::set<std::set<FactPair>> &results);
 public:
-    explicit NegatedAxiomsTask(
+    explicit DefaultValueAxiomsTask(
         const std::shared_ptr<AbstractTask> &parent,
         bool simple_default_axioms);
-    virtual ~NegatedAxiomsTask() override = default;
+    virtual ~DefaultValueAxiomsTask() override = default;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;
     virtual std::string get_operator_name(int index, bool is_axiom) const override;

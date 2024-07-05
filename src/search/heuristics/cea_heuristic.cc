@@ -414,9 +414,9 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     : Heuristic(opts),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (task_properties::has_axioms(task_proxy)) {
-        bool simple_default_axioms = opts.get<bool>("simple_default_axioms");
-        task = make_shared<tasks::NegatedAxiomsTask>(
-            tasks::NegatedAxiomsTask(task, simple_default_axioms));
+        bool simple = opts.get<bool>("simple_default_value_axioms");
+        task = make_shared<tasks::DefaultValueAxiomsTask>(
+            tasks::DefaultValueAxiomsTask(task, simple));
         task_proxy = TaskProxy(*task);
     }
 
@@ -457,7 +457,7 @@ public:
         document_title("Context-enhanced additive heuristic");
 
         add_option<bool>(
-            "simple_default_axioms",
+            "simple_default_value_axioms",
             "For derived variables that need negated axioms, introduce the trivial"
             "rule with an empty body. This makes the heuristic weaker but avoids"
             "a potentially expensive precomputation.",

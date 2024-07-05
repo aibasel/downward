@@ -21,9 +21,9 @@ LandmarkHeuristic::LandmarkHeuristic(
       use_preferred_operators(opts.get<bool>("pref")),
       successor_generator(nullptr) {
     if (task_properties::has_axioms(task_proxy)) {
-        bool simple_default_axioms = opts.get<bool>("simple_default_axioms");
-        task = make_shared<tasks::NegatedAxiomsTask>(
-            tasks::NegatedAxiomsTask(task, simple_default_axioms));
+        bool simple = opts.get<bool>("simple_default_value_axioms");
+        task = make_shared<tasks::DefaultValueAxiomsTask>(
+            tasks::DefaultValueAxiomsTask(task, simple));
         task_proxy = TaskProxy(*task);
     }
 }
@@ -37,7 +37,7 @@ void LandmarkHeuristic::initialize(const plugins::Options &opts) {
     */
     if (task != tasks::g_root_task
         && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr
-        && dynamic_cast<tasks::NegatedAxiomsTask *>(task.get()) == nullptr) {
+        && dynamic_cast<tasks::DefaultValueAxiomsTask *>(task.get()) == nullptr) {
         cerr << "The landmark heuristics currently only support "
              << "task transformations that modify the operator costs "
              << "or add negated axioms. See issues 845 and 686 "
@@ -232,7 +232,7 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
     feature.add_option<bool>(
         "prog_r", "Use reasonable ordering progression.", "true");
     feature.add_option<bool>(
-        "simple_default_axioms",
+        "simple_default_value_axioms",
         "For derived variables that need negated axioms, introduce the trivial"
         "rule with an empty body. This makes the heuristic weaker but avoids"
         "a potentially expensive precomputation.",
