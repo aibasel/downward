@@ -99,7 +99,7 @@ DefaultValueAxiomsTask::DefaultValueAxiomsTask(
                 FactPair(var, default_value), vector<FactPair>());
         } else {
             add_default_value_axioms_for_var(
-                    FactPair(var, default_value), axiom_ids);
+                FactPair(var, default_value), axiom_ids);
         }
     }
 }
@@ -248,9 +248,9 @@ void DefaultValueAxiomsTask::add_default_value_axioms_for_var(
 
 
 void DefaultValueAxiomsTask::collect_non_dominated_hitting_sets_recursively(
-        const vector<set<FactPair>> &set_of_sets, size_t index,
-        set<FactPair> &hitting_set, unordered_set<int> &hitting_set_vars,
-        set<set<FactPair>> &results) {
+    const vector<set<FactPair>> &set_of_sets, size_t index,
+    set<FactPair> &hitting_set, unordered_set<int> &hitting_set_vars,
+    set<set<FactPair>> &results) {
     if (index == set_of_sets.size()) {
         /*
            Check whether the hitting set is dominated.
@@ -282,8 +282,8 @@ void DefaultValueAxiomsTask::collect_non_dominated_hitting_sets_recursively(
         */
         if (hitting_set.find(elem) != hitting_set.end()) {
             collect_non_dominated_hitting_sets_recursively(
-                    set_of_sets, index + 1, hitting_set, hitting_set_vars,
-                    results);
+                set_of_sets, index + 1, hitting_set, hitting_set_vars,
+                results);
             return;
         }
     }
@@ -297,8 +297,8 @@ void DefaultValueAxiomsTask::collect_non_dominated_hitting_sets_recursively(
         hitting_set.insert(elem);
         hitting_set_vars.insert(elem.var);
         collect_non_dominated_hitting_sets_recursively(
-                set_of_sets, index + 1, hitting_set, hitting_set_vars,
-                results);
+            set_of_sets, index + 1, hitting_set, hitting_set_vars,
+            results);
         hitting_set.erase(elem);
         hitting_set_vars.erase(elem.var);
     }
