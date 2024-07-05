@@ -4,6 +4,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/markup.h"
+#include "../utils/strings.h"
 
 #include <cmath>
 
@@ -24,6 +25,9 @@ OperatorCountingHeuristic::OperatorCountingHeuristic(
     for (OperatorProxy op : task_proxy.get_operators()) {
         int op_cost = op.get_cost();
         variables.push_back(lp::LPVariable(0, infinity, op_cost, use_integer_operator_counts));
+#ifndef NDEBUG
+        variables.set_name(op.get_id(), op.get_name());
+#endif
     }
     lp::LinearProgram lp(lp::LPObjectiveSense::MINIMIZE, move(variables), {}, infinity);
     for (const auto &generator : constraint_generators) {
