@@ -681,8 +681,8 @@ create_fast_downward_library(
     HELP "Core task transformations"
     SOURCES
         tasks/cost_adapted_task
-        tasks/delegating_task
-        tasks/negated_axioms_task
+	tasks/default_value_axioms_task
+	tasks/delegating_task
         tasks/root_task
     CORE_LIBRARY
 )

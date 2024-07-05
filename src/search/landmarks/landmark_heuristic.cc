@@ -7,7 +7,7 @@
 #include "../plugins/plugin.h"
 #include "../task_utils/successor_generator.h"
 #include "../tasks/cost_adapted_task.h"
-#include "../tasks/negated_axioms_task.h"
+#include "../tasks/default_value_axioms_task.h"
 #include "../tasks/root_task.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/markup.h"

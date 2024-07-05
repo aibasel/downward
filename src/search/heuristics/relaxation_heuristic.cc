@@ -2,7 +2,7 @@
 
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
-#include "../tasks/negated_axioms_task.h"
+#include "../tasks/default_value_axioms_task.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/timer.h"
