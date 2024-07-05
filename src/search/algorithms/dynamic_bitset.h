@@ -17,7 +17,7 @@ class DynamicBitset {
         "Block type must be unsigned");
 
     std::vector<Block> blocks;
-    const std::size_t num_bits;
+    std::size_t num_bits;
 
     static const Block zeros;
     static const Block ones;
@@ -55,13 +55,40 @@ class DynamicBitset {
     }
 
 public:
+    explicit DynamicBitset()
+        : blocks(0, zeros),
+          num_bits(0) {
+    }
     explicit DynamicBitset(std::size_t num_bits)
         : blocks(compute_num_blocks(num_bits), zeros),
           num_bits(num_bits) {
     }
+    // copy constructor
+    DynamicBitset(const DynamicBitset &other)
+	: blocks(other.blocks),
+	  num_bits(other.num_bits) {
+    }
+    // copy assignment operator
+    DynamicBitset& operator=(const DynamicBitset& other) {
+        if (this == &other) {
+            return *this;
+        }
+	blocks = other.blocks;
+	num_bits = other.num_bits;
+        return *this;
+    }
+
 
     std::size_t size() const {
         return num_bits;
+    }
+
+    void resize(std::size_t _num_bits){
+	if (num_bits != _num_bits){
+	    num_bits = _num_bits;
+	    std::size_t num_blocks = compute_num_blocks(num_bits);
+	    blocks.resize(num_blocks, zeros);
+	}
     }
 
     /*
