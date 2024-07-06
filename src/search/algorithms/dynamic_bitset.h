@@ -4,6 +4,7 @@
 #include <cassert>
 #include <limits>
 #include <vector>
+#include <bit>
 
 /*
   Poor man's version of boost::dynamic_bitset, mostly copied from there.
@@ -99,9 +100,12 @@ public:
     */
     int count() const {
         int result = 0;
-        for (std::size_t pos = 0; pos < num_bits; ++pos) {
-            result += static_cast<int>(test(pos));
-        }
+        // for (std::size_t pos = 0; pos < num_bits; ++pos) {
+        //     result += static_cast<int>(test(pos));
+        // }
+	for (Block blk : blocks){
+	    result += std::popcount(blk);
+	}
         return result;
     }
 
