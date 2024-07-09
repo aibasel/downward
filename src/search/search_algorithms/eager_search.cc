@@ -155,8 +155,7 @@ SearchStatus EagerSearch::step() {
 
             if (lazy_evaluator->is_estimate_cached(s)) {
                 int old_h = lazy_evaluator->get_cached_estimate(s);
-                int new_h = eval_context.get_evaluator_value_or_infinity(
-                    lazy_evaluator.get());
+                int new_h = eval_context.get_evaluator_value_or_infinity(lazy_evaluator.get());
                 if (open_list->is_dead_end(eval_context)) {
                     node->mark_as_dead_end();
                     statistics.inc_dead_ends();
@@ -192,8 +191,7 @@ SearchStatus EagerSearch::step() {
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node->get_g(), false, &statistics, true);
     ordered_set::OrderedSet<OperatorID> preferred_operators;
-    for (const shared_ptr<Evaluator> &preferred_operator_evaluator :
-         preferred_operator_evaluators) {
+    for (const shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
         collect_preferred_operators(eval_context,
                                     preferred_operator_evaluator.get(),
                                     preferred_operators);
@@ -227,8 +225,8 @@ SearchStatus EagerSearch::step() {
             // TODO: Make this less fragile.
             int succ_g = node->get_g() + get_adjusted_cost(op);
 
-            EvaluationContext succ_eval_context(succ_state, succ_g,
-                                                is_preferred, &statistics);
+            EvaluationContext succ_eval_context(
+                succ_state, succ_g, is_preferred, &statistics);
             statistics.inc_evaluated_states();
 
             if (open_list->is_dead_end(succ_eval_context)) {
