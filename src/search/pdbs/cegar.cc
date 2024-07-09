@@ -798,7 +798,8 @@ void add_cegar_options_to_feature(plugins::Feature &feature) {
         "use_restricted_goal",
         "if true, CEGAR considers only those variables for goal flaws that are "
         "used to initialize the pattern collection; otherwise all goal "
-        "variables can occur in goal flaws");
+        "variables can occur in goal flaws",
+        "false");
 }
 
 tuple<bool, bool> get_cegar_arguments_from_options(
