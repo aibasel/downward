@@ -139,22 +139,24 @@ SearchStatus EagerSearch::step() {
               With lazy evaluators (and only with these) we can have dead nodes
               in the open list.
 
-              For example, consider a state s that is reached twice before it is expanded.
-              The first time we insert it into the open list, we compute a finite
-              heuristic value. The second time we insert it, the cached value is reused.
+              For example, consider a state s that is reached twice before it is
+              expanded. The first time we insert it into the open list, we
+              compute a finite heuristic value. The second time we insert it,
+              the cached value is reused.
 
-              During first expansion, the heuristic value is recomputed and might become
-              infinite, for example because the reevaluation uses a stronger heuristic or
-              because the heuristic is path-dependent and we have accumulated more
-              information in the meantime. Then upon second expansion we have a dead-end
-              node which we must ignore.
+              During first expansion, the heuristic value is recomputed and
+              might become infinite, for example because the reevaluation uses a
+              stronger heuristic or because the heuristic is path-dependent and
+              we have accumulated more information in the meantime. Then upon
+              second expansion we have a dead-end node which we must ignore.
             */
             if (node->is_dead_end())
                 continue;
 
             if (lazy_evaluator->is_estimate_cached(s)) {
                 int old_h = lazy_evaluator->get_cached_estimate(s);
-                int new_h = eval_context.get_evaluator_value_or_infinity(lazy_evaluator.get());
+                int new_h = eval_context.get_evaluator_value_or_infinity(
+                    lazy_evaluator.get());
                 if (open_list->is_dead_end(eval_context)) {
                     node->mark_as_dead_end();
                     statistics.inc_dead_ends();
@@ -190,7 +192,8 @@ SearchStatus EagerSearch::step() {
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node->get_g(), false, &statistics, true);
     ordered_set::OrderedSet<OperatorID> preferred_operators;
-    for (const shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
+    for (const shared_ptr<Evaluator> &preferred_operator_evaluator :
+         preferred_operator_evaluators) {
         collect_preferred_operators(eval_context,
                                     preferred_operator_evaluator.get(),
                                     preferred_operators);
@@ -224,8 +227,8 @@ SearchStatus EagerSearch::step() {
             // TODO: Make this less fragile.
             int succ_g = node->get_g() + get_adjusted_cost(op);
 
-            EvaluationContext succ_eval_context(
-                succ_state, succ_g, is_preferred, &statistics);
+            EvaluationContext succ_eval_context(succ_state, succ_g,
+                                                is_preferred, &statistics);
             statistics.inc_evaluated_states();
 
             if (open_list->is_dead_end(succ_eval_context)) {
@@ -233,7 +236,7 @@ SearchStatus EagerSearch::step() {
                 statistics.inc_dead_ends();
                 continue;
             }
-            succ_node.open(*node, op, get_adjusted_cost(op));
+            succ_node.open_new_node(*node, op, get_adjusted_cost(op));
 
             open_list->insert(succ_eval_context, succ_state.get_id());
             if (search_progress.check_progress(succ_eval_context)) {
@@ -242,7 +245,7 @@ SearchStatus EagerSearch::step() {
             }
         } else if (succ_node.get_g() > node->get_g() + get_adjusted_cost(op)) {
             // We found a new cheapest path to an open or closed state.
-            if (reopen_closed_nodes) {
+            if (succ_node.is_open() || reopen_closed_nodes) {
                 if (succ_node.is_closed()) {
                     /*
                       TODO: It would be nice if we had a way to test
@@ -252,8 +255,12 @@ SearchStatus EagerSearch::step() {
                       consistent heuristic).
                     */
                     statistics.inc_reopened();
+                    succ_node.reopen_closed_node(*node, op,
+                                                 get_adjusted_cost(op));
+                } else {
+                    succ_node.update_open_node_parent(*node, op,
+                                                      get_adjusted_cost(op));
                 }
-                succ_node.reopen(*node, op, get_adjusted_cost(op));
 
                 EvaluationContext succ_eval_context(
                     succ_state, succ_node.get_g(), is_preferred, &statistics);
@@ -277,10 +284,11 @@ SearchStatus EagerSearch::step() {
                 */
                 open_list->insert(succ_eval_context, succ_state.get_id());
             } else {
-                // If we do not reopen closed nodes, we just update the parent pointers.
-                // Note that this could cause an incompatibility between
-                // the g-value and the actual path that is traced back.
-                succ_node.update_parent(*node, op, get_adjusted_cost(op));
+                // If we do not reopen closed nodes, we just update the parent
+                // pointers. Note that this could cause an incompatibility
+                // between the g-value and the actual path that is traced back.
+                succ_node.update_open_node_parent(*node, op,
+                                                  get_adjusted_cost(op));
             }
         }
     }
