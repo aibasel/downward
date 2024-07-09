@@ -11,6 +11,21 @@
 #include <cplex.h>
 
 namespace lp {
+template<typename T>
+static T *to_cplex_array(std::vector<T> &v) {
+    /*
+      CPLEX expects a non-nullptr even for empty arrays but the C++ standard
+      does not guarantee any particular value for data for empty vectors (see
+      issue1111).
+    */
+    if (v.empty()) {
+        static T dummy;
+        return &dummy;
+    } else {
+        return v.data();
+    }
+}
+
 class CplexSolverInterface : public SolverInterface {
     CPXENVptr env;
     CPXLPptr problem;
@@ -90,10 +105,10 @@ public:
         void assign_row_by_row(
             const named_vector::NamedVector<LPConstraint> &constraints);
 
-        double *get_coefficients() {return coefficients.data();}
-        int *get_indices() {return indices.data();}
-        int *get_starts() {return starts.data();}
-        int *get_counts() {return counts.data();}
+        double *get_coefficients() {return to_cplex_array(coefficients);}
+        int *get_indices() {return to_cplex_array(indices);}
+        int *get_starts() {return to_cplex_array(starts);}
+        int *get_counts() {return to_cplex_array(counts);}
         int get_num_nonzeros() {return coefficients.size();}
     };
 
@@ -108,10 +123,10 @@ public:
         std::vector<double> objective;
 public:
         void assign(const named_vector::NamedVector<LPVariable> &variables);
-        double *get_lb() {return lb.data();}
-        double *get_ub() {return ub.data();}
-        char *get_type() {return type.data();}
-        double *get_objective() {return objective.data();}
+        double *get_lb() {return to_cplex_array(lb);}
+        double *get_ub() {return to_cplex_array(ub);}
+        char *get_type() {return to_cplex_array(type);}
+        double *get_objective() {return to_cplex_array(objective);}
     };
 
     class CplexRowsInfo {
@@ -131,10 +146,10 @@ public:
         std::vector<int> range_indices;
 public:
         void assign(const named_vector::NamedVector<LPConstraint> &constraints, int offset = 0, bool dense_range_values = true);
-        double *get_rhs() {return rhs.data();}
-        char *get_sense() {return sense.data();}
-        double *get_range_values() {return range_values.data();}
-        int *get_range_indices() {return range_indices.data();}
+        double *get_rhs() {return to_cplex_array(rhs);}
+        char *get_sense() {return to_cplex_array(sense);}
+        double *get_range_values() {return to_cplex_array(range_values);}
+        int *get_range_indices() {return to_cplex_array(range_indices);}
         int get_num_ranged_rows() {return range_indices.size();}
     };
 
