@@ -26,16 +26,16 @@ class AxiomDependencies(object):
                     else:
                         self.positive_dependencies[head].add(body_atom)
 
-    # Remove all information for variables whose literals are not necessary.
+    # Remove all information for variables that are not necessary.
     # We do not need to remove single entries from the dicts because if the key
     # (= head of an axiom) is relevant, then all its values (= body of axiom)
     # must be relevant by definition.
-    def remove_unnecessary_variables(self, necessary_literals):
-        for var in self.derived_variables.copy():
-            if var not in necessary_literals and var.negate() not in necessary_literals:
-                self.derived_variables.remove(var)
+    def remove_unnecessary_variables(self, necessary_atoms):
+        for var in self.derived_variables:
+            if var not in necessary_atoms:
                 self.positive_dependencies.pop(var, None)
                 self.negative_dependencies.pop(var, None)
+        self.derived_variables &= necessary_atoms
 
 
 class AxiomCluster(object):
@@ -48,7 +48,6 @@ class AxiomCluster(object):
         # in the body.
         self.positive_children = set()
         self.negative_children = set()
-        self.needed_negatively = False
         self.layer = 0
 
 
@@ -61,40 +60,34 @@ def handle_axioms(operators, axioms, goals, layer_strategy):
     return axioms, axiom_layers
 
 
-def compute_necessary_literals(dependencies, goals, operators):
-    necessary_literals = set()
+def compute_necessary_atoms(dependencies, goals, operators):
+    necessary_atoms = set()
 
     for g in goals:
-        if g.positive() in dependencies.derived_variables:
-            necessary_literals.add(g)
+        g = g.positive()
+        if g in dependencies.derived_variables:
+            necessary_atoms.add(g)
 
     for op in operators:
-        derived_preconditions = (l for l in op.precondition if l.positive()
+        derived_preconditions = (l.positive() for l in op.precondition if l.positive()
                                  in dependencies.derived_variables)
-        necessary_literals.update(derived_preconditions)
+        necessary_atoms.update(derived_preconditions)
 
         for condition, effect in chain(op.add_effects, op.del_effects):
             for c in condition:
-                if c.positive() in dependencies.derived_variables:
-                    necessary_literals.add(c)
-                    necessary_literals.add(c.negate())
+                c_atom = c.positive()
+                if c_atom in dependencies.derived_variables:
+                    necessary_atoms.add(c_atom)
 
-    literals_to_process = list(necessary_literals)
-    while literals_to_process:
-        l = literals_to_process.pop()
-        atom = l.positive()
-        for body_atom in dependencies.positive_dependencies[atom]:
-            l2 = body_atom.negate() if l.negated else body_atom
-            if l2 not in necessary_literals:
-                literals_to_process.append(l2)
-                necessary_literals.add(l2)
-        for body_atom in dependencies.negative_dependencies[atom]:
-            l2 = body_atom if l.negated else body_atom.negate()
-            if l2 not in necessary_literals:
-                literals_to_process.append(l2)
-                necessary_literals.add(l2)
-
-    return necessary_literals
+    atoms_to_process = list(necessary_atoms)
+    while atoms_to_process:
+        atom = atoms_to_process.pop()
+        for body_atom in chain(dependencies.positive_dependencies[atom],
+                               dependencies.negative_dependencies[atom]):
+            if body_atom not in necessary_atoms:
+                atoms_to_process.append(body_atom)
+                necessary_atoms.add(body_atom)
+    return necessary_atoms
 
 
 # Compute strongly connected components of the dependency graph.
@@ -157,19 +150,17 @@ def compute_clusters(axioms, goals, operators):
     dependencies = AxiomDependencies(axioms)
 
     # Compute necessary literals and prune unnecessary vars from dependencies.
-    necessary_literals = compute_necessary_literals(dependencies, goals, operators)
-    dependencies.remove_unnecessary_variables(necessary_literals)
+    necessary_atoms = compute_necessary_atoms(dependencies, goals, operators)
+    dependencies.remove_unnecessary_variables(necessary_atoms)
 
     groups = get_strongly_connected_components(dependencies)
     clusters = [AxiomCluster(group) for group in groups]
 
-    # Compute mapping from variables to their clusters and set needed_negatively.
+    # Compute mapping from variables to their clusters.
     variable_to_cluster = {}
     for cluster in clusters:
         for variable in cluster.variables:
             variable_to_cluster[variable] = cluster
-            if variable.negate() in necessary_literals:
-                cluster.needed_negatively = True
 
     # Assign axioms to their clusters.
     for axiom in axioms:
