@@ -392,7 +392,7 @@ def parse_args():
     driver_other = parser.add_argument_group(
         title="other driver options")
     driver_other.add_argument(
-        "--alias",
+        "--alias", choices=aliases.ALIASES,
         help="run a config with an alias (e.g. seq-sat-lama-2011)")
     driver_other.add_argument(
         "--build",
@@ -451,6 +451,12 @@ def parse_args():
     # because the argument is a filename; in exceptional cases, "--"
     # can be used as an explicit separator. For example, "./fast-downward.py --
     # --help" passes "--help" to the search code.
+
+    try:
+        import argcomplete
+        argcomplete.autocomplete(parser)
+    except ImportError:
+        pass
 
     args = parser.parse_args()
 
