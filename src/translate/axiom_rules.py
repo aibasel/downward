@@ -239,13 +239,12 @@ def get_axioms(clusters):
 def verify_layering_condition(axioms, axiom_layers):
     # This function is only used for debugging.
     variables_in_heads = set()
-    literals_in_heads = set()
     variables_with_layers = set()
 
     for axiom in axioms:
         head = axiom.effect
-        variables_in_heads.add(head.positive())
-        literals_in_heads.add(head)
+        assert not head.negated
+        variables_in_heads.add(head)
     variables_with_layers = set(axiom_layers.keys())
 
     # 1. A variable has a defined layer iff it appears in a head.
@@ -262,39 +261,20 @@ def verify_layering_condition(axioms, axiom_layers):
         assert isinstance(layer, int)
         assert layer >= 0
 
-    # 2. For every rule head <- ... cond ... where cond is a literal
-    #    of a derived variable where the layer of head is equal to
-    #    the layer of cond, cond occurs with the same polarity in heads.
-    #
-    # Note regarding issue454 and issue453: Because of the negated axioms
-    # mentioned in these issues, a derived variable may appear with *both*
-    # polarities in heads. This makes this test less strong than it would
-    # be otherwise. When these issues are addressed and axioms only occur
-    # with one polarity in heads, this test will remain correct in its
-    # current form, but it will be able to detect more violations of the
-    # layering property.
+    # 2. For every rule head <- ... cond ... where cond is a literal of
+    #    a derived variable, the layer of cond is strictly smaller than the
+    #    layer of cond or it is equal and cond is an atom (not a negative
+    #    literal).
     print("Verifying 2...")
     for axiom in axioms:
         head = axiom.effect
-        head_positive = head.positive()
+        head_layer = axiom_layers[head]
         body = axiom.condition
         for cond in body:
             cond_positive = cond.positive()
-            if (cond_positive in variables_in_heads and
-                axiom_layers[cond_positive] == axiom_layers[head_positive]):
-                assert cond in literals_in_heads
-
-    # 3. For every rule head <- ... cond ... where cond is a literal
-    #    of a derived variable, the layer of head is greater or equal
-    #    to the layer of cond.
-    print("Verifying 3...")
-    for axiom in axioms:
-        head = axiom.effect
-        head_positive = head.positive()
-        body = axiom.condition
-        for cond in body:
-            cond_positive = cond.positive()
-            if cond_positive in variables_in_heads:
+            if cond_positive in variables_in_heads: # cond is derived variable
+                cond_layer = axiom_layers[cond_positive]
+                assert (cond_layer <= head_layer), (cond_layer, head_layer)
                 # We need the assertion to be on a single line for
                 # our error handler to be able to print the line.
-                assert (axiom_layers[cond_positive] <= axiom_layers[head_positive]), (axiom_layers[cond_positive], axiom_layers[head_positive])
+                assert (not cond.negated or cond_layer < head_layer), (cond_layer, head_layer)
