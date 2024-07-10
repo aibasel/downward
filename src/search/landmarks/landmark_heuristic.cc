@@ -137,16 +137,22 @@ void LandmarkHeuristic::generate_preferred_operators(
             LandmarkNode *lm_node = lm_graph->get_node(fact);
             if (lm_node && future.test(lm_node->get_id())) {
                 set_preferred(op);
+                break;
             }
+            bool pref = false;
             if (lm_graph->contains_conjunctive_landmark(fact)) {
                 vector<LandmarkNode *> conjunctive_landmarks =
                     lm_graph->get_conjunctive_landmarks(fact);
                 for (auto conj_lm : conjunctive_landmarks) {
                     if (future.test(conj_lm->get_id())) {
                         set_preferred(op);
+                        pref = true;
                         break;
                     }
                 }
+            }
+            if (pref) {
+                break;
             }
         }
     }
