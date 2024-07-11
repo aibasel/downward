@@ -416,8 +416,6 @@ void read_root_task(istream &in) {
 }
 
 
-
-
 TaskIndependentRootTask::TaskIndependentRootTask() {
 }
 
@@ -432,11 +430,11 @@ shared_ptr<AbstractProduct> Concrete::get_task_specific(
     shared_ptr<ConcreteProduct> task_specific_x;
 
     if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
-        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
                                   (static_cast<const TaskIndependentComponent *>(this), task_specific_x));

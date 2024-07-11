@@ -54,5 +54,7 @@ public:
 };
 
 extern void add_pruning_options_to_feature(plugins::Feature &feature, const std::string &name);
+extern std::tuple<std::string, utils::Verbosity> get_pruning_arguments_from_options(
+    const plugins::Options &opts);
 
 #endif

@@ -53,12 +53,11 @@ BestFirstOpenList<Entry>::BestFirstOpenList(const std::shared_ptr<Evaluator> &ev
 
 
 class BestFirstOpenListFactory : public OpenListFactory {
+    std::shared_ptr<Evaluator> eval;
     bool pref_only;
-    int size;
-    std::shared_ptr<Evaluator> evaluator;
 public:
-    explicit BestFirstOpenListFactory(std::shared_ptr<Evaluator> evaluator, bool pref_only);
-    virtual ~BestFirstOpenListFactory() override = default;
+    BestFirstOpenListFactory(
+        const std::shared_ptr<Evaluator> &eval, bool pref_only);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;

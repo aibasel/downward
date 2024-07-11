@@ -20,7 +20,8 @@ public:
             "lazy_evaluator",
             "An evaluator that re-evaluates a state before it is expanded.",
             plugins::ArgumentInfo::NO_DEFAULT);
-        eager_search::add_options_to_feature(*this, "astar");
+        eager_search::add_eager_search_options_to_feature(
+            *this, "astar");
 
         document_note(
             "lazy_evaluator",
@@ -38,26 +39,29 @@ public:
             "```\n", true);
     }
 
-    virtual shared_ptr<eager_search::TaskIndependentEagerSearch>
-    create_component(const plugins::Options &opts, const utils::Context &) const override {
-        utils::Verbosity _verbosity = opts.get<utils::Verbosity>("verbosity");
-        string _name = opts.get<string>("name");
-        pair<shared_ptr<TaskIndependentOpenListFactory>, shared_ptr<TaskIndependentEvaluator>> temp =
-            search_common::create_task_independent_astar_open_list_factory_and_f_eval(_name,
-                                                                                      _verbosity,
-                                                                                      opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"));
-        return make_shared<eager_search::TaskIndependentEagerSearch>(
-            temp.first,
-            true,
-            temp.second,
-            opts.get<shared_ptr<TaskIndependentEvaluator>>("lazy_evaluator", nullptr),
-            vector<shared_ptr<TaskIndependentEvaluator>>(),
-            opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning"),
-            opts.get<OperatorCost>("cost_type"),
-            opts.get<int>("bound"),
-            opts.get<double>("max_time"),
-            _name,
-            _verbosity);
+    virtual shared_ptr<eager_search::TaskIndependentEagerSearch> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        plugins::Options options_copy(opts);
+        auto temp =
+            search_common::create_task_independent_astar_open_list_factory_and_f_eval(
+                    opts.get<string>("name"),
+                opts.get<utils::Verbosity>("verbosity"),
+                opts.get<shared_ptr<TaskIndependentEvaluator>>("eval")
+                );
+        options_copy.set("open", temp.first);
+        options_copy.set("f_eval", temp.second);
+        options_copy.set("reopen_closed", true);
+        vector<shared_ptr<TaskIndependentEvaluator>> preferred_list;
+        options_copy.set("preferred", preferred_list);
+        return plugins::make_shared_from_arg_tuples<eager_search::TaskIndependentEagerSearch>(
+            options_copy.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
+            options_copy.get<bool>("reopen_closed"),
+            options_copy.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
+            options_copy.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
+            eager_search::get_eager_search_arguments_from_options(
+                options_copy)
+            );
     }
 };
 

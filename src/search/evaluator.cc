@@ -8,16 +8,16 @@
 
 using namespace std;
 
-Evaluator::Evaluator(const string &name,
-                     utils::Verbosity verbosity,
-                     bool use_for_reporting_minima,
-                     bool use_for_boosting,
-                     bool use_for_counting_evaluations)
+
+Evaluator::Evaluator(
+    bool use_for_reporting_minima, bool use_for_boosting,
+    bool use_for_counting_evaluations, const string &description,
+    utils::Verbosity verbosity)
     : use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
-      name(name),
-      log(utils::get_log(verbosity)) {
+      description(description),
+      log(utils::get_log_for_verbosity(verbosity)) {
 }
 
 bool Evaluator::dead_ends_are_reliable() const {
@@ -28,7 +28,7 @@ void Evaluator::report_value_for_initial_state(
     const EvaluationResult &result) const {
     if (log.is_at_least_normal()) {
         assert(use_for_reporting_minima);
-        log << "Initial heuristic value for " << name << ": ";
+        log << "Initial heuristic value for " << description << ": ";
         if (result.is_infinite())
             log << "infinity";
         else
@@ -41,13 +41,13 @@ void Evaluator::report_new_minimum_value(
     const EvaluationResult &result) const {
     if (log.is_at_least_normal()) {
         assert(use_for_reporting_minima);
-        log << "New best heuristic value for " << name << ": "
+        log << "New best heuristic value for " << description << ": "
             << result.get_evaluator_value() << endl;
     }
 }
 
-const string &Evaluator::get_name() const {
-    return name;
+const string &Evaluator::get_description() const {
+    return description;
 }
 
 bool Evaluator::is_used_for_reporting_minima() const {
@@ -85,9 +85,20 @@ TaskIndependentEvaluator::TaskIndependentEvaluator(const string &name,
       use_for_counting_evaluations(use_for_counting_evaluations) {
 }
 
+void add_evaluator_options_to_feature(
+    plugins::Feature &feature, const string &description) {
+    //feature.add_option<string>(
+    //    "description",
+    //    "description used to identify evaluator in logs",
+    //    "\"" + description + "\"");
+    utils::add_log_options_to_feature(feature, description);
+}
 
-void add_evaluator_options_to_feature(plugins::Feature &feature, const string &name) {
-    utils::add_log_options_to_feature(feature, name);
+tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
+    const plugins::Options &opts) {
+    return tuple_cat(
+        utils::get_log_arguments_from_options(opts)
+        );
 }
 
 static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentEvaluator> {

@@ -33,10 +33,14 @@ void add_log_options_to_feature(plugins::Feature &feature, const string &name) {
         "normal");
 }
 
+tuple<string, Verbosity> get_log_arguments_from_options(
+    const plugins::Options &opts) {
+    return make_tuple(
+opts.get<string>("name"),
+            opts.get<Verbosity>("verbosity"));
+}
 
-LogProxy get_log(const Verbosity &verbosity) {
-    /* NOTE: We return (a proxy to) the global log if all options match the
-       default values of the global log. */
+LogProxy get_log_for_verbosity(const Verbosity &verbosity) {
     if (verbosity == Verbosity::NORMAL) {
         return LogProxy(global_log);
     }
@@ -44,7 +48,7 @@ LogProxy get_log(const Verbosity &verbosity) {
 }
 
 LogProxy get_silent_log() {
-    return LogProxy(make_shared<Log>(utils::Verbosity::SILENT));
+    return utils::get_log_for_verbosity(utils::Verbosity::SILENT);
 }
 
 ContextError::ContextError(const string &msg)

@@ -29,11 +29,11 @@ shared_ptr<AbstractProduct> Concrete::get_task_specific(
     shared_ptr<ConcreteProduct> task_specific_x;
 
     if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
-        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
                                   (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
@@ -59,9 +59,10 @@ public:
     }
 
     virtual shared_ptr<TaskIndependentNullPruningMethod> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<TaskIndependentNullPruningMethod>(opts.get<string>("name"),
-                                                             opts.get<utils::Verbosity>("verbosity"));
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<TaskIndependentNullPruningMethod>(
+                get_pruning_arguments_from_options(opts));
     }
 };
 

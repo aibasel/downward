@@ -11,13 +11,15 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorDisjointCegar::PatternCollectionGeneratorDisjointCegar(
-    const plugins::Options &opts)
-    : PatternCollectionGenerator(opts),
-      max_pdb_size(opts.get<int>("max_pdb_size")),
-      max_collection_size(opts.get<int>("max_collection_size")),
-      max_time(opts.get<double>("max_time")),
-      use_wildcard_plans(opts.get<bool>("use_wildcard_plans")),
-      rng(utils::parse_rng_from_options(opts)) {
+    int max_pdb_size, int max_collection_size, double max_time,
+    bool use_wildcard_plans, int random_seed,
+    utils::Verbosity verbosity)
+    : PatternCollectionGenerator(verbosity),
+      max_pdb_size(max_pdb_size),
+      max_collection_size(max_collection_size),
+      max_time(max_time),
+      use_wildcard_plans(use_wildcard_plans),
+      rng(utils::get_rng(random_seed)) {
 }
 
 string PatternCollectionGeneratorDisjointCegar::name() const {
@@ -41,7 +43,8 @@ PatternCollectionInformation PatternCollectionGeneratorDisjointCegar::compute_pa
         move(goals));
 }
 
-class PatternCollectionGeneratorDisjointCegarFeature : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorDisjointCegar> {
+class PatternCollectionGeneratorDisjointCegarFeature
+    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorDisjointCegar> {
 public:
     PatternCollectionGeneratorDisjointCegarFeature() : TypedFeature("disjoint_cegar") {
         document_title("Disjoint CEGAR");
@@ -75,10 +78,23 @@ public:
             "infinity",
             plugins::Bounds("0.0", "infinity"));
         add_cegar_wildcard_option_to_feature(*this);
+        utils::add_rng_options_to_feature(*this);
         add_generator_options_to_feature(*this);
-        utils::add_rng_options(*this);
 
         add_cegar_implementation_notes_to_feature(*this);
+    }
+
+    virtual shared_ptr<PatternCollectionGeneratorDisjointCegar> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorDisjointCegar>(
+            opts.get<int>("max_pdb_size"),
+            opts.get<int>("max_collection_size"),
+            opts.get<double>("max_time"),
+            get_cegar_wildcard_arguments_from_options(opts),
+            utils::get_rng_arguments_from_options(opts),
+            get_generator_arguments_from_options(opts)
+            );
     }
 };
 

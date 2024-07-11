@@ -7,9 +7,8 @@
 namespace g_evaluator {
 class GEvaluator : public Evaluator {
 public:
-    explicit GEvaluator(const std::string &name,
-                        utils::Verbosity verbosity);
-    virtual ~GEvaluator() override = default;
+    GEvaluator(
+        const std::string &description, utils::Verbosity verbosity);
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;

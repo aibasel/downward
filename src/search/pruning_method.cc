@@ -9,9 +9,9 @@
 
 using namespace std;
 
-PruningMethod::PruningMethod(const utils::Verbosity verbosity)
+PruningMethod::PruningMethod(utils::Verbosity verbosity)
     : timer(false),
-      log(utils::get_log(verbosity)),
+      log(utils::get_log_for_verbosity(verbosity)),
       task(nullptr) {
 }
 
@@ -74,6 +74,11 @@ void add_pruning_options_to_feature(plugins::Feature &feature, const string &nam
         "significant overhead, up to 30% in configurations like blind search "
         "with the no pruning method (`null`). We recommend using at most "
         "normal verbosity for running experiments.");
+}
+
+tuple<string, utils::Verbosity> get_pruning_arguments_from_options(
+    const plugins::Options &opts) {
+    return utils::get_log_arguments_from_options(opts);
 }
 
 static class PruningMethodCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentPruningMethod> {

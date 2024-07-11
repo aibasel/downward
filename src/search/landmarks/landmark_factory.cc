@@ -17,8 +17,8 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkFactory::LandmarkFactory(const plugins::Options &opts)
-    : log(utils::get_log_from_options(opts)), lm_graph(nullptr) {
+LandmarkFactory::LandmarkFactory(utils::Verbosity verbosity)
+    : log(utils::get_log_for_verbosity(verbosity)), lm_graph(nullptr) {
 }
 
 /*
@@ -167,11 +167,22 @@ void add_landmark_factory_options_to_feature(plugins::Feature &feature) {
     utils::add_log_options_to_feature(feature);
 }
 
+tuple<utils::Verbosity>
+get_landmark_factory_arguments_from_options(
+    const plugins::Options &opts) {
+    return utils::get_log_arguments_from_options(opts);
+}
+
 void add_use_orders_option_to_feature(plugins::Feature &feature) {
     feature.add_option<bool>(
         "use_orders",
         "use orders between landmarks",
         "true");
+}
+
+bool get_use_orders_arguments_from_options(
+    const plugins::Options &opts) {
+    return opts.get<bool>("use_orders");
 }
 
 void add_only_causal_landmarks_option_to_feature(
@@ -182,14 +193,20 @@ void add_only_causal_landmarks_option_to_feature(
         "false");
 }
 
+bool get_only_causal_landmarks_arguments_from_options(
+    const plugins::Options &opts) {
+    return opts.get<bool>("only_causal_landmarks");
+}
+
 static class LandmarkFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<LandmarkFactory> {
 public:
     LandmarkFactoryCategoryPlugin() : TypedCategoryPlugin("LandmarkFactory") {
         document_synopsis(
             "A landmark factory specification is either a newly created "
             "instance or a landmark factory that has been defined previously. "
-            "This page describes how one can specify a new landmark factory instance. "
-            "For re-using landmark factories, see OptionSyntax#Landmark_Predefinitions.");
+            "This page describes how one can specify a new landmark factory "
+            "instance. For re-using landmark factories, see "
+            "OptionSyntax#Landmark_Predefinitions.");
         allow_variable_binding();
     }
 }

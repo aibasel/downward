@@ -50,13 +50,13 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
            this overrides continue_on_fail.
         */
         if (repeat_last_phase && last_phase_found_solution) {
-            log << "Starting search: '" << search_algorithms[search_algorithms.size() - 1]->get_name() << "'" << endl;
+            log << "Starting search: '" << search_algorithms[search_algorithms.size() - 1]->get_description() << "'" << endl;
             return search_algorithms[search_algorithms.size() - 1]->create_task_specific_root(task, 1);
         } else {
             return nullptr;
         }
     }
-    log << "Starting search: '" << search_algorithms[phase]->get_name() << "'" << endl;
+    log << "Starting search: '" << search_algorithms[phase]->get_description() << "'" << endl;
     return search_algorithms[phase]->create_task_specific_root(task, 1);
 }
 
@@ -170,11 +170,11 @@ shared_ptr<AbstractProduct> Concrete::get_task_specific(
     shared_ptr<ConcreteProduct> task_specific_x;
 
     if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
-        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
                                   (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
@@ -193,7 +193,7 @@ std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractT
                                        cost_type,
                                        bound,
                                        max_time,
-                                       name,
+                                       description,
                                        verbosity,
                                        task);
 }
@@ -237,7 +237,7 @@ public:
             "continue_on_solve",
             "continue search after solution found",
             "true");
-        SearchAlgorithm::add_options_to_feature(*this, "iterated_search");
+        add_search_algorithm_options_to_feature(*this, "iterated");
 
         document_note(
             "Note 1",

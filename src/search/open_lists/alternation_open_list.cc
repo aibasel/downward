@@ -14,21 +14,16 @@ using namespace std;
 using utils::ExitCode;
 
 namespace alternation_open_list {
-AlternationOpenListFactory::AlternationOpenListFactory(vector<shared_ptr<OpenListFactory>> open_list_factories,
-                                                       int boost_amount)
-    : boost_amount(boost_amount), size(0), open_list_factories(open_list_factories) {
-}
-
 
 unique_ptr<StateOpenList>
 AlternationOpenListFactory::create_state_open_list() {
-    return make_unique<AlternationOpenList<StateOpenListEntry>>(open_list_factories, boost_amount);
+    return make_unique<AlternationOpenList<StateOpenListEntry>>(sublists, boost);
 }
 
 
 unique_ptr<EdgeOpenList>
 AlternationOpenListFactory::create_edge_open_list() {
-    return make_unique<AlternationOpenList<EdgeOpenListEntry>>(open_list_factories, boost_amount);
+    return make_unique<AlternationOpenList<EdgeOpenListEntry>>(sublists, boost);
 }
 
 
@@ -52,11 +47,11 @@ shared_ptr<AbstractProduct> Concrete::get_task_specific(
     shared_ptr<ConcreteProduct> task_specific_x;
 
     if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
-        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
                                   (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
@@ -150,8 +145,18 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
     return false;
 }
 
+AlternationOpenListFactory::AlternationOpenListFactory(
+    const vector<shared_ptr<OpenListFactory>> &sublists, int boost)
+    : sublists(sublists),
+      boost(boost) {
+}
 
-class AlternationOpenListFeature : public plugins::TypedFeature<TaskIndependentOpenListFactory, TaskIndependentAlternationOpenListFactory> {
+
+class AlternationOpenListFeature : 
+    public plugins::TypedFeature<
+      TaskIndependentOpenListFactory, 
+      TaskIndependentAlternationOpenListFactory> {
+
 public:
     AlternationOpenListFeature() : TypedFeature("alt") {
         document_title("Alternation open list");
@@ -168,11 +173,15 @@ public:
             "0");
     }
 
-    virtual shared_ptr<TaskIndependentAlternationOpenListFactory> create_component(const plugins::Options &opts, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<TaskIndependentOpenListFactory>>(context, opts, "sublists");
-        return make_shared<TaskIndependentAlternationOpenListFactory>(
+    virtual shared_ptr<TaskIndependentAlternationOpenListFactory> create_component(
+        const plugins::Options &opts,
+        const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<TaskIndependentOpenListFactory>>(
+            context, opts, "sublists");
+        return plugins::make_shared_from_arg_tuples<TaskIndependentAlternationOpenListFactory>(
             opts.get_list<shared_ptr<TaskIndependentOpenListFactory>>("sublists"),
-            opts.get<int>("boost"));
+            opts.get<int>("boost")
+            );
     }
 };
 

@@ -40,20 +40,19 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
     return successor_generator;
 }
 
-
 SearchAlgorithm::SearchAlgorithm(
     OperatorCost cost_type,
     int bound,
     double max_time,
-    const string &name,
+    const string &description,
     utils::Verbosity verbosity,
     const shared_ptr<AbstractTask> &_task)
     : status(IN_PROGRESS),
       solution_found(false),
       task(_task),
       task_proxy(*task),
-      name(name),
-      log(utils::get_log(verbosity)),
+      description(description),
+      log(utils::get_log_for_verbosity(verbosity)),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
       search_space(state_registry, log),
@@ -107,7 +106,7 @@ void SearchAlgorithm::search() {
 
 bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
-        log << "Solution found! (by '" << name << "')" << endl;
+        log << "Solution found! (by '" << description << "')" << endl;
         Plan plan;
         search_space.trace_path(state, plan);
         set_plan(plan);
@@ -126,12 +125,25 @@ int SearchAlgorithm::get_adjusted_cost(const OperatorProxy &op) const {
     return get_adjusted_action_cost(op, cost_type, is_unit_cost);
 }
 
+
+
+void print_initial_evaluator_values(
+    const EvaluationContext &eval_context) {
+    eval_context.get_cache().for_each_evaluator_result(
+        [] (const Evaluator *eval, const EvaluationResult &result) {
+            if (eval->is_used_for_reporting_minima()) {
+                eval->report_value_for_initial_state(result);
+            }
+        }
+        );
+}
+
 /* TODO: merge this into add_options_to_feature when all search
          algorithms support pruning.
 
    Method doesn't belong here because it's only useful for certain derived classes.
    TODO: Figure out where it belongs and move it there. */
-void SearchAlgorithm::add_pruning_option(plugins::Feature &feature) {
+void add_search_pruning_options_to_feature(plugins::Feature &feature) {
     feature.add_option<shared_ptr<TaskIndependentPruningMethod>>(
         "pruning",
         "Pruning methods can prune or reorder the set of applicable operators in "
@@ -140,8 +152,15 @@ void SearchAlgorithm::add_pruning_option(plugins::Feature &feature) {
         "null()");
 }
 
-void SearchAlgorithm::add_options_to_feature(plugins::Feature &feature, const string &name) {
-    ::add_cost_type_option_to_feature(feature);
+tuple<shared_ptr<TaskIndependentPruningMethod>>
+get_search_pruning_arguments_from_options(
+    const plugins::Options &opts) {
+    return make_tuple(opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning"));
+}
+
+void add_search_algorithm_options_to_feature(
+    plugins::Feature &feature, const string &description) {
+    ::add_cost_type_options_to_feature(feature);
     feature.add_option<int>(
         "bound",
         "exclusive depth bound on g-values. Cutoffs are always performed according to "
@@ -155,13 +174,26 @@ void SearchAlgorithm::add_options_to_feature(plugins::Feature &feature, const st
         "experiments. Timed-out searches are treated as failed searches, "
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
-    utils::add_log_options_to_feature(feature, name);
+    utils::add_log_options_to_feature(feature, description);
+}
+
+tuple<OperatorCost, int, double, string, utils::Verbosity>
+get_search_algorithm_arguments_from_options(
+    const plugins::Options &opts) {
+    return tuple_cat(
+        ::get_cost_type_arguments_from_options(opts),
+        make_tuple(
+            opts.get<int>("bound"),
+            opts.get<double>("max_time")
+            ),
+        utils::get_log_arguments_from_options(opts)
+        );
 }
 
 /* Method doesn't belong here because it's only useful for certain derived classes.
    TODO: Figure out where it belongs and move it there. */
-void SearchAlgorithm::add_succ_order_options(plugins::Feature &feature) {
-    vector<string> options;
+void add_successors_order_options_to_feature(
+    plugins::Feature &feature) {
     feature.add_option<bool>(
         "randomize_successors",
         "randomize the order in which successors are generated",
@@ -175,17 +207,17 @@ void SearchAlgorithm::add_succ_order_options(plugins::Feature &feature) {
         "When using randomize_successors=true and "
         "preferred_successors_first=true, randomization happens before "
         "preferred operators are moved to the front.");
-    utils::add_rng_options(feature);
+    utils::add_rng_options_to_feature(feature);
 }
 
-void print_initial_evaluator_values(
-    const EvaluationContext &eval_context) {
-    eval_context.get_cache().for_each_evaluator_result(
-        [] (const Evaluator *eval, const EvaluationResult &result) {
-            if (eval->is_used_for_reporting_minima()) {
-                eval->report_value_for_initial_state(result);
-            }
-        }
+tuple<bool, bool, int> get_successors_order_arguments_from_options(
+    const plugins::Options &opts) {
+    return tuple_cat(
+        make_tuple(
+            opts.get<bool>("randomize_successors"),
+            opts.get<bool>("preferred_successors_first")
+            ),
+        utils::get_rng_arguments_from_options(opts)
         );
 }
 
@@ -219,8 +251,9 @@ TaskIndependentSearchAlgorithm::~TaskIndependentSearchAlgorithm() {
 
 shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific_root(
     const shared_ptr<AbstractTask> &task, int depth) const {
-    utils::g_log << std::string(depth, ' ') << "Creating SearchAlgorithm as root component..." << endl;
-    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
+    utils::g_log << string(depth, ' ') 
+        << "Creating SearchAlgorithm as root component..." << endl;
+    unique_ptr<ComponentMap> component_map = make_unique<ComponentMap>();
     return get_task_specific(task, component_map, depth);
 }
 

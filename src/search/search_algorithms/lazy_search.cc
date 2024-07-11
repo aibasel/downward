@@ -17,14 +17,20 @@
 using namespace std;
 
 namespace lazy_search {
-LazySearch::LazySearch(const plugins::Options &opts)
-    : SearchAlgorithm(opts),
-      open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
-                create_edge_open_list()),
-      reopen_closed_nodes(opts.get<bool>("reopen_closed")),
-      randomize_successors(opts.get<bool>("randomize_successors")),
-      preferred_successors_first(opts.get<bool>("preferred_successors_first")),
-      rng(utils::parse_rng_from_options(opts)),
+LazySearch::LazySearch(
+    const shared_ptr<OpenListFactory> &open, bool reopen_closed,
+    const vector<shared_ptr<Evaluator>> &preferred,
+    bool randomize_successors, bool preferred_successors_first,
+    int random_seed, OperatorCost cost_type, int bound, double max_time,
+    const string &description, utils::Verbosity verbosity)
+    : SearchAlgorithm(
+          cost_type, bound, max_time, description, verbosity),
+      open_list(open->create_edge_open_list()),
+      reopen_closed_nodes(reopen_closed),
+      randomize_successors(randomize_successors),
+      preferred_successors_first(preferred_successors_first),
+      rng(utils::get_rng(random_seed)),
+      preferred_operator_evaluators(preferred),
       current_state(state_registry.get_initial_state()),
       current_predecessor_id(StateID::no_state),
       current_operator_id(OperatorID::no_operator),
@@ -35,11 +41,6 @@ LazySearch::LazySearch(const plugins::Options &opts)
       We initialize current_eval_context in such a way that the initial node
       counts as "preferred".
     */
-}
-
-void LazySearch::set_preferred_operator_evaluators(
-    vector<shared_ptr<Evaluator>> &evaluators) {
-    preferred_operator_evaluators = evaluators;
 }
 
 void LazySearch::initialize() {

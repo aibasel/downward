@@ -10,21 +10,14 @@ using namespace std;
 
 namespace combining_evaluator {
 CombiningEvaluator::CombiningEvaluator(
-    vector<shared_ptr<Evaluator>> subevaluators,
-    const string &name,
-    utils::Verbosity verbosity)
-    : Evaluator(name,
-                verbosity,
-                false,
-                false,
-                false) {
+    const vector<shared_ptr<Evaluator>> &evals,
+    const string &description, utils::Verbosity verbosity)
+    : Evaluator(false, false, false, description, verbosity),
+      subevaluators(evals) {
     all_dead_ends_are_reliable = true;
     for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
         if (!subevaluator->dead_ends_are_reliable())
             all_dead_ends_are_reliable = false;
-}
-
-CombiningEvaluator::~CombiningEvaluator() {
 }
 
 bool CombiningEvaluator::dead_ends_are_reliable() const {
@@ -61,18 +54,27 @@ void CombiningEvaluator::get_path_dependent_evaluators(
 }
 
 
-void add_combining_evaluator_options_to_feature(plugins::Feature &feature, const string &name) {
-    feature.add_list_option<shared_ptr<TaskIndependentEvaluator>>(
-        "evals", "at least one evaluator");
-    add_evaluator_options_to_feature(feature, name);
-}
-
-
 TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(
     vector<shared_ptr<TaskIndependentEvaluator>> subevaluators,
-    const string &name,
+    const string &description,
     utils::Verbosity verbosity)
-    : TaskIndependentEvaluator(name, verbosity, false, false, false),
+    : TaskIndependentEvaluator(description, verbosity, false, false, false),
       subevaluators(subevaluators) {
+      }
+
+void add_combining_evaluator_options_to_feature(
+    plugins::Feature &feature, const string &description) {
+    feature.add_list_option<shared_ptr<TaskIndependentEvaluator>>(
+        "evals", "at least one evaluator");
+    add_evaluator_options_to_feature(feature, description);
+}
+
+tuple<vector<shared_ptr<TaskIndependentEvaluator>>, const string, utils::Verbosity>
+get_combining_evaluator_arguments_from_options(
+    const plugins::Options &opts) {
+    return tuple_cat(
+        make_tuple(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals")),
+        get_evaluator_arguments_from_options(opts)
+        );
 }
 }

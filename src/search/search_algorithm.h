@@ -32,7 +32,6 @@ class SuccessorGenerator;
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchAlgorithm : public Component {
-    std::string description;
     SearchStatus status;
     bool solution_found;
     Plan plan;
@@ -41,8 +40,7 @@ protected:
     const std::shared_ptr<AbstractTask> task;
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
-
-    const std::string name;
+    const std::string description;
     mutable utils::LogProxy log;
     PlanManager plan_manager;
     StateRegistry state_registry;
@@ -66,9 +64,10 @@ public:
         OperatorCost cost_type,
         int bound,
         double max_time,
-        const std::string &name,
+        const std::string &description,
         utils::Verbosity verbosity,
         const std::shared_ptr<AbstractTask> &task);
+    explicit SearchAlgorithm(const plugins::Options &opts); // TODO options object is needed for iterated search, the prototype for issue559 resolves this
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
@@ -81,17 +80,11 @@ public:
     int get_bound() {return bound;}
     PlanManager &get_plan_manager() {return plan_manager;}
     std::string get_description() {return description;}
-
-    /* The following three methods should become functions as they
-       do not require access to private/protected class members. */
-    static void add_pruning_option(plugins::Feature &feature);
-    static void add_options_to_feature(plugins::Feature &feature, const std::string &name);
-    static void add_succ_order_options(plugins::Feature &feature);
 };
 
 class TaskIndependentSearchAlgorithm : public TaskIndependentComponent {
-    std::string description;
 protected:
+    std::string description;
     PlanManager plan_manager;
     int bound;
     OperatorCost cost_type;
@@ -101,7 +94,7 @@ public:
     TaskIndependentSearchAlgorithm(OperatorCost cost_type,
                                    int bound,
                                    double max_time,
-                                   const std::string &name,
+                                   const std::string &description,
                                    utils::Verbosity verbosity);
     virtual ~TaskIndependentSearchAlgorithm();
 
@@ -124,5 +117,23 @@ extern void print_initial_evaluator_values(
 extern void collect_preferred_operators(
     EvaluationContext &eval_context, Evaluator *preferred_operator_evaluator,
     ordered_set::OrderedSet<OperatorID> &preferred_operators);
+
+class TaskIndependentPruningMethod;
+
+extern void add_search_pruning_options_to_feature(
+    plugins::Feature &feature);
+extern std::tuple<std::shared_ptr<TaskIndependentPruningMethod>>
+get_search_pruning_arguments_from_options(const plugins::Options &opts);
+extern void add_search_algorithm_options_to_feature(
+    plugins::Feature &feature, const std::string &description);
+extern std::tuple<
+    OperatorCost, int, double, std::string, utils::Verbosity>
+get_search_algorithm_arguments_from_options(
+    const plugins::Options &opts);
+extern void add_successors_order_options_to_feature(
+    plugins::Feature &feature);
+extern std::tuple<bool, bool, int>
+get_successors_order_arguments_from_options(
+    const plugins::Options &opts);
 
 #endif

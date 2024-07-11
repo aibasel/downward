@@ -7,10 +7,11 @@
 using namespace std;
 
 namespace g_evaluator {
-GEvaluator::GEvaluator(const string &name,
+GEvaluator::GEvaluator(const string &description,
                        utils::Verbosity verbosity)
-    : Evaluator(name, verbosity, false, false, false) {
+    : Evaluator(false, false, false, description, verbosity) {
 }
+
 
 EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
     EvaluationResult result;
@@ -40,11 +41,11 @@ shared_ptr<AbstractProduct> Concrete::get_task_specific(
     shared_ptr<ConcreteProduct> task_specific_x;
 
     if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
-        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
                                   (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
@@ -55,7 +56,7 @@ shared_ptr<AbstractProduct> Concrete::get_task_specific(
 std::shared_ptr<ConcreteProduct> Concrete::create_ts([[maybe_unused]] const shared_ptr <AbstractTask> &task,
                                                      [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
                                                      [[maybe_unused]] int depth) const {
-    return make_shared<GEvaluator>(name, verbosity);
+    return make_shared<GEvaluator>(description, verbosity);
 }
 
 
@@ -66,13 +67,15 @@ public:
         document_title("g-value evaluator");
         document_synopsis(
             "Returns the g-value (path cost) of the search node.");
-        add_evaluator_options_to_feature(*this, "g_eval");
+        add_evaluator_options_to_feature(*this, "g");
     }
 
     virtual shared_ptr<TaskIndependentGEvaluator> create_component(
-        const plugins::Options &opts, const utils::Context &) const override {
-        return make_shared<TaskIndependentGEvaluator>(opts.get<string>("name"),
-                                                      opts.get<utils::Verbosity>("verbosity"));
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<TaskIndependentGEvaluator>(
+            get_evaluator_arguments_from_options(opts)
+            );
     }
 };
 

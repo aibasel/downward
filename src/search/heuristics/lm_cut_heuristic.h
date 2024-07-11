@@ -14,11 +14,10 @@ class LandmarkCutHeuristic : public Heuristic {
 
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    explicit LandmarkCutHeuristic(const std::string &name,
-                                  utils::Verbosity verbosity,
-                                  const std::shared_ptr<AbstractTask> task,
-                                  bool cache_evaluator_values);
-    virtual ~LandmarkCutHeuristic() override;
+    LandmarkCutHeuristic(
+        const std::shared_ptr<AbstractTask> &transform,
+        bool cache_estimates, const std::string &description,
+        utils::Verbosity verbosity);
 };
 
 class TaskIndependentLandmarkCutHeuristic : public TaskIndependentHeuristic {
@@ -27,10 +26,12 @@ private:
 protected:
     std::string get_product_name() const override {return "LandmarkCutHeuristic";}
 public:
-    explicit TaskIndependentLandmarkCutHeuristic(const std::string &name,
-                                                 utils::Verbosity verbosity,
-                                                 const std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
-                                                 bool cache_evaluator_values);
+    TaskIndependentLandmarkCutHeuristic(
+            const std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
+            bool cache_evaluator_valuesconst,
+            const std::string &name,
+            utils::Verbosity verbosity
+            );
 
     virtual ~TaskIndependentLandmarkCutHeuristic()  override;
 

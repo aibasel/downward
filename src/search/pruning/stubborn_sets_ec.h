@@ -32,7 +32,7 @@ protected:
     virtual void initialize_stubborn_set(const State &state) override;
     virtual void handle_stubborn_operator(const State &state, int op_no) override;
 public:
-    explicit StubbornSetsEC(const plugins::Options &opts);
+    explicit StubbornSetsEC(utils::Verbosity verbosity);
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 };
 }

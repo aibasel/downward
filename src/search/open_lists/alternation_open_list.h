@@ -48,15 +48,14 @@ AlternationOpenList<Entry>::AlternationOpenList(std::vector<std::shared_ptr<Open
 }
 
 
-class AlternationOpenListFactory : public OpenListFactory {
-    int boost_amount;
-    int size;
-    std::vector<std::shared_ptr<OpenListFactory>> open_list_factories;
-public:
-    explicit AlternationOpenListFactory(std::vector<std::shared_ptr<OpenListFactory>> open_list_factories,
-                                        int boost_amount);
 
-    virtual ~AlternationOpenListFactory() override = default;
+class AlternationOpenListFactory : public OpenListFactory {
+    std::vector<std::shared_ptr<OpenListFactory>> sublists;
+    int boost;
+public:
+    AlternationOpenListFactory(
+        const std::vector<std::shared_ptr<OpenListFactory>> &sublists,
+        int boost);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;

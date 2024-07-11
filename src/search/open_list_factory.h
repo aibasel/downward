@@ -4,6 +4,8 @@
 #include "component.h"
 #include "open_list.h"
 
+#include "plugins/plugin.h"
+
 #include <memory>
 
 
@@ -39,4 +41,8 @@ public:
     get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
                       int depth = -1) const = 0;
 };
+extern void add_open_list_options_to_feature(
+    plugins::Feature &feature);
+extern std::tuple<bool>
+get_open_list_arguments_from_options(const plugins::Options &opts);
 #endif

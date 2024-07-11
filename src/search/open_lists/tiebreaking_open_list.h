@@ -141,15 +141,13 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
 
 class TieBreakingOpenListFactory : public OpenListFactory {
     bool pref_only;
-    int size;
     std::vector<std::shared_ptr<Evaluator>> evaluators;
-    bool allow_unsafe_pruning;
+    bool unsafe_pruning;
 public:
-    explicit TieBreakingOpenListFactory(
-        std::vector<std::shared_ptr<Evaluator>> evaluators,
+    TieBreakingOpenListFactory(
+        const std::vector<std::shared_ptr<Evaluator>> &evals,
         bool pref_only,
-        bool allow_unsafe_pruning);
-    virtual ~TieBreakingOpenListFactory() override = default;
+        bool unsafe_pruning);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;

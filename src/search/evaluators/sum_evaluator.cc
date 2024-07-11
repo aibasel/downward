@@ -9,19 +9,10 @@ using namespace std;
 
 namespace sum_evaluator {
 SumEvaluator::SumEvaluator(
-    vector<shared_ptr<Evaluator>> subevaluators,
-    const string &name,
-    utils::Verbosity verbosity)
-    : CombiningEvaluator(
-          subevaluators,
-          name,
-          verbosity) {
-}
-
-
-
-SumEvaluator::~SumEvaluator() {
-}
+    const vector<shared_ptr<Evaluator>> &evals,
+    const string &description, utils::Verbosity verbosity)
+    : CombiningEvaluator(evals, description, verbosity) {
+    }
 
 int SumEvaluator::combine_values(const vector<int> &values) {
     int result = 0;
@@ -55,11 +46,11 @@ shared_ptr<AbstractProduct> Concrete::get_task_specific(
     shared_ptr<ConcreteProduct> task_specific_x;
 
     if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
-        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
                                   (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
@@ -76,7 +67,7 @@ std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractT
                   return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
               }
               );
-    return make_shared<SumEvaluator>(td_subevaluators, name, verbosity);
+    return make_shared<SumEvaluator>(td_subevaluators, description, verbosity);
 }
 
 
@@ -86,18 +77,18 @@ public:
         document_subcategory("evaluators_basic");
         document_title("Sum evaluator");
         document_synopsis("Calculates the sum of the sub-evaluators.");
-
-        combining_evaluator::add_combining_evaluator_options_to_feature(*this, "sum_eval");
+        combining_evaluator::add_combining_evaluator_options_to_feature(
+            *this, "sum");
     }
 
     virtual shared_ptr<TaskIndependentSumEvaluator> create_component(
-        const plugins::Options &opts, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<TaskIndependentEvaluator>>(context, opts, "evals");
-        return make_shared<TaskIndependentSumEvaluator>(
-            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
-            opts.get<string>("name"),
-            opts.get<utils::Verbosity>("verbosity")
-            );
+        const plugins::Options &opts,
+        const utils::Context &context) const override {
+        plugins::verify_list_non_empty<shared_ptr<TaskIndependentEvaluator>>(
+            context, opts, "evals");
+        return plugins::make_shared_from_arg_tuples<TaskIndependentSumEvaluator>(
+            combining_evaluator::get_combining_evaluator_arguments_from_options(
+                opts));
     }
 };
 

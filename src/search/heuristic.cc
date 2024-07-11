@@ -11,16 +11,15 @@
 #include <cassert>
 
 using namespace std;
-
-
-Heuristic::Heuristic(const string &name,
-                     utils::Verbosity verbosity,
-                     const shared_ptr<AbstractTask> task,
-                     bool cache_evaluator_values)
-    : Evaluator(name, verbosity, true, true, true),
+Heuristic::Heuristic(
+    const shared_ptr<AbstractTask> task,
+    bool cache_estimates, const string &description,
+    utils::Verbosity verbosity)
+    : Evaluator(true, true, true, description, verbosity),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
-      cache_evaluator_values(cache_evaluator_values),
-      task(task), task_proxy(*task) {
+      cache_evaluator_values(cache_estimates),
+      task(task),
+      task_proxy(*task) {
 }
 
 Heuristic::~Heuristic() {
@@ -34,14 +33,25 @@ State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
     return task_proxy.convert_ancestor_state(ancestor_state);
 }
 
-void Heuristic::add_options_to_feature(plugins::Feature &feature, const string &name) {
-    add_evaluator_options_to_feature(feature, name);
+void add_heuristic_options_to_feature(
+    plugins::Feature &feature, const string &description) {
     feature.add_option<shared_ptr<TaskIndependentAbstractTask>>(
         "transform",
         "Optional task transformation for the heuristic."
         " Currently, adapt_costs() and no_transform() are available.",
         "no_transform()");
     feature.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
+    add_evaluator_options_to_feature(feature, description);
+}
+
+tuple<shared_ptr<TaskIndependentAbstractTask>, bool, string, utils::Verbosity>
+get_heuristic_arguments_from_options(const plugins::Options &opts) {
+    return tuple_cat(
+        make_tuple(
+            opts.get<shared_ptr<TaskIndependentAbstractTask>>("transform"),
+            opts.get<bool>("cache_estimates")
+            ),
+        get_evaluator_arguments_from_options(opts));
 }
 
 EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {

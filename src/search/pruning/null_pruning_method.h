@@ -17,7 +17,9 @@ class TaskIndependentNullPruningMethod : public TaskIndependentPruningMethod {
 protected:
     std::string get_product_name() const override {return "NullPruning";}
 public:
-    explicit TaskIndependentNullPruningMethod(const std::string &name, utils::Verbosity verbosity);
+    TaskIndependentNullPruningMethod(
+            const std::string &description,
+            utils::Verbosity verbosity);
 
     virtual ~TaskIndependentNullPruningMethod() override = default;
 

@@ -21,29 +21,17 @@
 #include "../utils/logging.h"
 
 #include <memory>
+#include <vector>
+#include "../utils/logging.h"
 
 class Evaluator;
 class TaskIndependentEvaluator;
 class OpenListFactory;
 class TaskIndependentOpenListFactory;
 
-namespace plugins {
-class Options;
-}
-
 namespace search_common {
 /*
-  Create a standard scalar open list factory with the given "eval" and
-  "pref_only" options.
-*/
-extern std::shared_ptr<TaskIndependentOpenListFactory> create_task_independent_standard_scalar_open_list_factory(
-    const std::shared_ptr<TaskIndependentEvaluator> &eval, bool pref_only);
-
-/*
   Create open list factory for the eager_greedy or lazy_greedy plugins.
-
-  Uses "evals", "preferred" and "boost" from the passed-in Options
-  object to construct an open list factory of the appropriate type.
 
   This is usually an alternation open list with:
   - one sublist for each evaluator, considering all successors
@@ -62,10 +50,6 @@ extern std::shared_ptr<TaskIndependentOpenListFactory> create_task_independent_g
 /*
   Create open list factory for the lazy_wastar plugin.
 
-  Uses "evals", "preferred", "boost" and "w" from the passed-in
-  Options object to construct an open list factory of the appropriate
-  type.
-
   This works essentially the same way as parse_greedy (see
   documentation there), except that the open lists use evalators based
   on g + w * h rather than using h directly.
@@ -83,8 +67,7 @@ extern std::shared_ptr<TaskIndependentOpenListFactory> create_task_independent_w
   statistics) for A* search.
 
   The resulting open list factory produces a tie-breaking open list
-  ordered primarily on g + h and secondarily on h. Uses "eval" from
-  the passed-in Options object as the h evaluator.
+  ordered primarily on g + h and secondarily on h.
 */
 
 std::pair<std::shared_ptr<TaskIndependentOpenListFactory>, const std::shared_ptr<TaskIndependentEvaluator>>

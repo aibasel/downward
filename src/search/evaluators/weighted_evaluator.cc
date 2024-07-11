@@ -10,21 +10,13 @@ using namespace std;
 
 namespace weighted_evaluator {
 WeightedEvaluator::WeightedEvaluator(
-    shared_ptr<Evaluator> evaluator,
-    int weight,
-    const string &name,
-    utils::Verbosity verbosity)
-    : Evaluator(name, verbosity,
-                false,
-                false,
-                false
-                ),
-      evaluator(evaluator),
+    const shared_ptr<Evaluator> &eval, int weight,
+    const string &description, utils::Verbosity verbosity)
+    : Evaluator(false, false, false, description, verbosity),
+      evaluator(eval),
       weight(weight) {
 }
 
-WeightedEvaluator::~WeightedEvaluator() {
-}
 
 bool WeightedEvaluator::dead_ends_are_reliable() const {
     return evaluator->dead_ends_are_reliable();
@@ -71,11 +63,11 @@ shared_ptr<AbstractProduct> Concrete::get_task_specific(
     shared_ptr<ConcreteProduct> task_specific_x;
 
     if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
             component_map->at(static_cast<const TaskIndependentComponent *>(this)));
     } else {
-        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << name << "'..." << endl;
+        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << description << "'..." << endl;
         task_specific_x = create_ts(task, component_map, depth);
         component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
                                   (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
@@ -88,7 +80,7 @@ std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractT
     return make_shared<WeightedEvaluator>(
         evaluator->get_task_specific(task, component_map, depth),
         weight,
-        name,
+        description,
         verbosity);
 }
 
@@ -103,17 +95,16 @@ public:
 
         add_option<shared_ptr<TaskIndependentEvaluator>>("eval", "evaluator");
         add_option<int>("weight", "weight");
-        add_evaluator_options_to_feature(*this, "weighted_eval");
+        add_evaluator_options_to_feature(*this, "weight");
     }
 
     virtual shared_ptr<TaskIndependentWeightedEvaluator> create_component(
-        const plugins::Options &opts, const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<TaskIndependentEvaluator>>(context, opts, "evals");
-        return make_shared<TaskIndependentWeightedEvaluator>(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<TaskIndependentWeightedEvaluator>(
             opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
             opts.get<int>("weight"),
-            opts.get<string>("name"),
-            opts.get<utils::Verbosity>("verbosity")
+            get_evaluator_arguments_from_options(opts)
             );
     }
 };

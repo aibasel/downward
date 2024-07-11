@@ -24,7 +24,7 @@ protected:
     virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options() const = 0;
 public:
-    explicit MergeStrategyFactory(const plugins::Options &options);
+    MergeStrategyFactory(utils::Verbosity verbosity);
     virtual ~MergeStrategyFactory() = default;
     void dump_options() const;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
@@ -35,6 +35,9 @@ public:
 };
 
 extern void add_merge_strategy_options_to_feature(plugins::Feature &feature);
+extern std::tuple<utils::Verbosity>
+get_merge_strategy_arguments_from_options(
+    const plugins::Options &opts);
 }
 
 #endif

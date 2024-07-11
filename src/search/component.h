@@ -13,14 +13,14 @@ public:
 
 class TaskIndependentComponent {
 protected:
-    const std::string name;
+    const std::string description;
     const utils::Verbosity verbosity;
     mutable utils::LogProxy log;
     virtual std::string get_product_name() const = 0;
 public:
-    std::string get_name() {return name;}
-    explicit TaskIndependentComponent(const std::string &name, utils::Verbosity verbosity)
-        : name(name), verbosity(verbosity), log(utils::get_log(verbosity)) {}
+    std::string get_description() {return description;}
+    explicit TaskIndependentComponent(const std::string &description, utils::Verbosity verbosity)
+        : description(description), verbosity(verbosity), log(utils::get_log_for_verbosity(verbosity)) {}
     virtual ~TaskIndependentComponent() = default;
 };
 

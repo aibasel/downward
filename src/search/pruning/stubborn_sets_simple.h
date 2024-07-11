@@ -26,7 +26,7 @@ protected:
     virtual void handle_stubborn_operator(const State &state,
                                           int op_no) override;
 public:
-    explicit StubbornSetsSimple(const plugins::Options &opts);
+    explicit StubbornSetsSimple(utils::Verbosity verbosity);
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 };
 }

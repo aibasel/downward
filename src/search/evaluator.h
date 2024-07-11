@@ -21,15 +21,13 @@ class Evaluator : public Component {
     const bool use_for_boosting;
     const bool use_for_counting_evaluations;
 protected:
-    const std::string name;
+    const std::string description;
     mutable utils::LogProxy log;
 public:
-    explicit Evaluator(
-        const std::string &name,
-        utils::Verbosity verbosity,
-        bool use_for_reporting_minima,
-        bool use_for_boosting,
-        bool use_for_counting_evaluations);
+    Evaluator(
+        bool use_for_reporting_minima, bool use_for_boosting,
+        bool use_for_counting_evaluations,
+        const std::string &description, utils::Verbosity verbosity);
     virtual ~Evaluator() = default;
 
     /*
@@ -89,7 +87,7 @@ public:
     void report_value_for_initial_state(const EvaluationResult &result) const;
     void report_new_minimum_value(const EvaluationResult &result) const;
 
-    const std::string &get_name() const;
+    const std::string &get_description() const;
     bool is_used_for_reporting_minima() const;
     bool is_used_for_boosting() const;
     bool is_used_for_counting_evaluations() const;
@@ -122,6 +120,9 @@ public:
 };
 
 
-extern void add_evaluator_options_to_feature(plugins::Feature &feature, const std::string &name);
+extern void add_evaluator_options_to_feature(
+    plugins::Feature &feature, const std::string &description);
 
+extern std::tuple<std::string, utils::Verbosity>
+get_evaluator_arguments_from_options(const plugins::Options &opts);
 #endif

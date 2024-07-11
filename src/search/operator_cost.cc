@@ -6,7 +6,7 @@
 #include "utils/system.h"
 
 #include <cstdlib>
-#include <vector>
+
 using namespace std;
 
 static int get_adjusted_action_cost(int cost, OperatorCost cost_type, bool is_unit_cost) {
@@ -32,13 +32,18 @@ int get_adjusted_action_cost(const OperatorProxy &op, OperatorCost cost_type, bo
         return get_adjusted_action_cost(op.get_cost(), cost_type, is_unit_cost);
 }
 
-void add_cost_type_option_to_feature(plugins::Feature &feature) {
+void add_cost_type_options_to_feature(plugins::Feature &feature) {
     feature.add_option<OperatorCost>(
         "cost_type",
         "Operator cost adjustment type. "
         "No matter what this setting is, axioms will always be considered "
         "as actions of cost 0 by the heuristics that treat axioms as actions.",
         "normal");
+}
+
+tuple<OperatorCost> get_cost_type_arguments_from_options(
+    const plugins::Options &opts) {
+    return make_tuple(opts.get<OperatorCost>("cost_type"));
 }
 
 static plugins::TypedEnumPlugin<OperatorCost> _enum_plugin({

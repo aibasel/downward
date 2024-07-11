@@ -5,7 +5,6 @@
 #include "../evaluators/g_evaluator.h"
 #include "../evaluators/sum_evaluator.h"
 #include "../evaluators/weighted_evaluator.h"
-#include "../plugins/options.h"
 #include "../open_lists/alternation_open_list.h"
 #include "../open_lists/best_first_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
@@ -37,6 +36,13 @@ static shared_ptr<TaskIndependentOpenListFactory> create_task_independent_altern
     }
 }
 
+shared_ptr<TaskIndependentOpenListFactory> create_task_independent_greedy_open_list_factory(
+    const vector<shared_ptr<TaskIndependentEvaluator>> &evals,
+    const vector<shared_ptr<TaskIndependentEvaluator>> &preferred_evaluators,
+    int boost) {
+    return create_task_independent_alternation_open_list_factory_aux(
+        evals, preferred_evaluators, boost);
+}
 
 /*
   Helper function for creating a single g + w * h evaluator
