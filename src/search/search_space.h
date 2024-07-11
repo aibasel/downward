@@ -45,6 +45,9 @@ public:
     void update_open_node_parent(const SearchNode &parent_node,
                                  const OperatorProxy &parent_op,
                                  int adjusted_cost);
+    void update_closed_node_parent(const SearchNode &parent_node,
+                                 const OperatorProxy &parent_op,
+                                 int adjusted_cost);
     void close();
     void mark_as_dead_end();
 

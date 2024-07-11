@@ -243,26 +243,24 @@ SearchStatus EagerSearch::step() {
             }
         } else if (succ_node.get_g() > node->get_g() + get_adjusted_cost(op)) {
             // We found a new cheapest path to an open or closed state.
-            if (succ_node.is_open() || reopen_closed_nodes) {
-                if (succ_node.is_closed()) {
-                    /*
-                      TODO: It would be nice if we had a way to test
-                      that reopening is expected behaviour, i.e., exit
-                      with an error when this is something where
-                      reopening should not occur (e.g. A* with a
-                      consistent heuristic).
-                    */
-                    statistics.inc_reopened();
-                    succ_node.reopen_closed_node(*node, op,
-                                                 get_adjusted_cost(op));
-                } else {
-                    succ_node.update_open_node_parent(*node, op,
-                                                      get_adjusted_cost(op));
-                }
-
+            if (succ_node.is_open()) {
+                succ_node.update_open_node_parent(
+                    *node, op, get_adjusted_cost(op));
                 EvaluationContext succ_eval_context(
                     succ_state, succ_node.get_g(), is_preferred, &statistics);
-
+                open_list->insert(succ_eval_context, succ_state.get_id());
+            } else if (succ_node.is_closed() && reopen_closed_nodes) {
+                /*
+                  TODO: It would be nice if we had a way to test
+                  that reopening is expected behaviour, i.e., exit
+                  with an error when this is something where
+                  reopening should not occur (e.g. A* with a
+                  consistent heuristic).
+                */
+                statistics.inc_reopened();
+                succ_node.reopen_closed_node(*node, op, get_adjusted_cost(op));
+                EvaluationContext succ_eval_context(
+                    succ_state, succ_node.get_g(), is_preferred, &statistics);
                 /*
                   Note: our old code used to retrieve the h value from
                   the search node here. Our new code recomputes it as
@@ -282,15 +280,14 @@ SearchStatus EagerSearch::step() {
                 */
                 open_list->insert(succ_eval_context, succ_state.get_id());
             } else {
-                // If we do not reopen closed nodes, we just update the parent
-                // pointers. Note that this could cause an incompatibility
-                // between the g-value and the actual path that is traced back.
-                succ_node.update_open_node_parent(*node, op,
-                                                  get_adjusted_cost(op));
+                assert(succ_node.is_closed() && !reopen_closed_nodes);
+                succ_node.update_closed_node_parent(
+                    *node, op, get_adjusted_cost(op));
             }
+        } else {
+            // We found a more expensive path to an open or closed state.
         }
     }
-
     return IN_PROGRESS;
 }
 

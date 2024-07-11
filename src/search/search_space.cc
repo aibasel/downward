@@ -85,6 +85,13 @@ void SearchNode::update_open_node_parent(const SearchNode &parent_node,
     update_parent(parent_node, parent_op, adjusted_cost);
 }
 
+void SearchNode::update_closed_node_parent(const SearchNode &parent_node,
+                                           const OperatorProxy &parent_op,
+                                           int adjusted_cost) {
+    assert(info.status == SearchNodeInfo::CLOSED);
+    update_parent(parent_node, parent_op, adjusted_cost);
+}
+
 void SearchNode::close() {
     assert(info.status == SearchNodeInfo::OPEN);
     info.status = SearchNodeInfo::CLOSED;
