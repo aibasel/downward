@@ -148,14 +148,35 @@ static void check_magic(istream &in, const string &magic) {
     }
 }
 
+static int verify_and_get_int(istream &in, const string &name) {
+    string input;
+    in >> input;
+    std::string::size_type sz;
+    int number;
+    bool conversion_failed = false;
+    try {
+        number = std::stoi(input, &sz);
+    }
+    catch (std::exception& e) {
+        conversion_failed = true;
+    }
+    if (conversion_failed || !input.substr(sz).empty()) {
+        cerr << "Expect number for " << name
+        << ", got " << input << "." << endl
+        << "Exiting." << endl;
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+    }
+    return number;
+}
+
 static vector<FactPair> read_facts(istream &in) {
-    int count;
-    in >> count;
+    int count = verify_and_get_int(in, "number of conditions");
     vector<FactPair> conditions;
     conditions.reserve(count);
     for (int i = 0; i < count; ++i) {
         FactPair condition = FactPair::no_fact;
-        in >> condition.var >> condition.value;
+        condition.var = verify_and_get_int(in, "condition variable");
+        condition.value = verify_and_get_int(in, "condition value");
         conditions.push_back(condition);
     }
     return conditions;
@@ -164,8 +185,8 @@ static vector<FactPair> read_facts(istream &in) {
 ExplicitVariable::ExplicitVariable(istream &in) {
     check_magic(in, "begin_variable");
     in >> name;
-    in >> axiom_layer;
-    in >> domain_size;
+    axiom_layer = verify_and_get_int(in, "variable axiom layer");
+    domain_size = verify_and_get_int(in, "variable domain size");
     in >> ws;
     fact_names.resize(domain_size);
     for (int i = 0; i < domain_size; ++i)
@@ -182,8 +203,10 @@ ExplicitEffect::ExplicitEffect(
 
 void ExplicitOperator::read_pre_post(istream &in) {
     vector<FactPair> conditions = read_facts(in);
-    int var, value_pre, value_post;
-    in >> var >> value_pre >> value_post;
+    // TODO: this is also used for axioms, then it should say "affected by axiom"
+    int var = verify_and_get_int(in, "variable affected by effect");
+    int value_pre = verify_and_get_int(in, "variable value precondition");
+    int value_post = verify_and_get_int(in, "variable value postcondition");
     if (value_pre != -1) {
         preconditions.emplace_back(var, value_pre);
     }
@@ -197,15 +220,13 @@ ExplicitOperator::ExplicitOperator(istream &in, bool is_an_axiom, bool use_metri
         in >> ws;
         getline(in, name);
         preconditions = read_facts(in);
-        int count;
-        in >> count;
+        int count = verify_and_get_int(in, "number of operator effects");
         effects.reserve(count);
         for (int i = 0; i < count; ++i) {
             read_pre_post(in);
         }
 
-        int op_cost;
-        in >> op_cost;
+        int op_cost = verify_and_get_int(in, "operator cost");
         cost = use_metric ? op_cost : 1;
         check_magic(in, "end_operator");
     } else {
@@ -219,9 +240,8 @@ ExplicitOperator::ExplicitOperator(istream &in, bool is_an_axiom, bool use_metri
 }
 
 static void read_and_verify_version(istream &in) {
-    int version;
     check_magic(in, "begin_version");
-    in >> version;
+    int version = verify_and_get_int(in, "version number");
     check_magic(in, "end_version");
     if (version != PRE_FILE_VERSION) {
         cerr << "Expected translator output file version " << PRE_FILE_VERSION
@@ -234,14 +254,23 @@ static void read_and_verify_version(istream &in) {
 static bool read_metric(istream &in) {
     bool use_metric;
     check_magic(in, "begin_metric");
-    in >> use_metric;
+    string use_metric_string;
+    in >> use_metric_string;
+    if (use_metric_string == "1") {
+        use_metric = true;
+    } else if (use_metric_string == "0") {
+        use_metric = false;
+    } else {
+        cerr << "Expected boolean for metric, got " << use_metric_string << "." << endl
+        << "Exiting." << endl;
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+    }
     check_magic(in, "end_metric");
     return use_metric;
 }
 
 static vector<ExplicitVariable> read_variables(istream &in) {
-    int count;
-    in >> count;
+    int count = verify_and_get_int(in, "variable count");
     vector<ExplicitVariable> variables;
     variables.reserve(count);
     for (int i = 0; i < count; ++i) {
@@ -255,8 +284,7 @@ static vector<vector<set<FactPair>>> read_mutexes(istream &in, const vector<Expl
     for (size_t i = 0; i < variables.size(); ++i)
         inconsistent_facts[i].resize(variables[i].domain_size);
 
-    int num_mutex_groups;
-    in >> num_mutex_groups;
+    int num_mutex_groups = verify_and_get_int(in, "number of mutex groups");
 
     /*
       NOTE: Mutex groups can overlap, in which case the same mutex
@@ -267,14 +295,12 @@ static vector<vector<set<FactPair>>> read_mutexes(istream &in, const vector<Expl
     */
     for (int i = 0; i < num_mutex_groups; ++i) {
         check_magic(in, "begin_mutex_group");
-        int num_facts;
-        in >> num_facts;
+        int num_facts = verify_and_get_int(in, "number of facts in mutex group");
         vector<FactPair> invariant_group;
         invariant_group.reserve(num_facts);
         for (int j = 0; j < num_facts; ++j) {
-            int var;
-            int value;
-            in >> var >> value;
+            int var = verify_and_get_int(in, "variable number of mutex atom");
+            int value = verify_and_get_int(in, "value of mutex atom");
             invariant_group.emplace_back(var, value);
         }
         check_magic(in, "end_mutex_group");
@@ -313,8 +339,7 @@ static vector<FactPair> read_goal(istream &in) {
 static vector<ExplicitOperator> read_actions(
     istream &in, bool is_axiom, bool use_metric,
     const vector<ExplicitVariable> &variables) {
-    int count;
-    in >> count;
+    int count = verify_and_get_int(in, is_axiom ? "number of axioms" : "number of operators");
     vector<ExplicitOperator> actions;
     actions.reserve(count);
     for (int i = 0; i < count; ++i) {
@@ -335,7 +360,7 @@ RootTask::RootTask(istream &in) {
     initial_state_values.resize(num_variables);
     check_magic(in, "begin_state");
     for (int i = 0; i < num_variables; ++i) {
-        in >> initial_state_values[i];
+        initial_state_values[i] = verify_and_get_int(in, "initial state variable value");
     }
     check_magic(in, "end_state");
 
