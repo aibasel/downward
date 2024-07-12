@@ -10,12 +10,16 @@
   Poor man's version of boost::dynamic_bitset, mostly copied from there.
 */
 
+class BitsetView;
+
 namespace dynamic_bitset {
 template<typename Block = unsigned int>
 class DynamicBitset {
     static_assert(
         !std::numeric_limits<Block>::is_signed,
         "Block type must be unsigned");
+
+    friend class ::BitsetView;	// in ../per_state_bitset.h , global namespace
 
     std::vector<Block> blocks;
     std::size_t num_bits;

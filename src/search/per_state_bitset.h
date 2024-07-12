@@ -2,6 +2,7 @@
 #define PER_STATE_BITSET_H
 
 #include "per_state_array.h"
+#include "algorithms/dynamic_bitset.h"
 
 #include <vector>
 
@@ -42,6 +43,9 @@ public:
 
 
 class BitsetView {
+
+    friend class dynamic_bitset::DynamicBitset<BitsetMath::Block>;
+
     ArrayView<BitsetMath::Block> data;
     int num_bits;
 public:
@@ -71,15 +75,27 @@ public:
     void update_andc(const BitsetView &other);
     void update_orc(const BitsetView &other);
     void update_xor(const BitsetView &other);
-    BitsetView& operator&=(const BitsetView &other);
-    BitsetView& operator|=(const BitsetView &other);
-    BitsetView& operator^=(const BitsetView &other);
+    void copy_from(const dynamic_bitset::DynamicBitset<BitsetMath::Block>& other);
+    void update_and(const dynamic_bitset::DynamicBitset<BitsetMath::Block> &other);
+    void update_or(const dynamic_bitset::DynamicBitset<BitsetMath::Block> &other);
+    void update_andc(const dynamic_bitset::DynamicBitset<BitsetMath::Block> &other);
+    void update_orc(const dynamic_bitset::DynamicBitset<BitsetMath::Block> &other);
+    void update_xor(const dynamic_bitset::DynamicBitset<BitsetMath::Block> &other);
+    template<class T>
+    BitsetView& operator&=(const T &other);
+    template<class T>
+    BitsetView& operator|=(const T &other);
+    template<class T>
+    BitsetView& operator^=(const T &other);
 };
 
 BitsetView operator~(BitsetView copy);
-BitsetView operator&&(BitsetView copy, const BitsetView &other);
-BitsetView operator||(BitsetView copy, const BitsetView &other);
-BitsetView operator^(BitsetView copy, const BitsetView &other);
+template<class T>
+BitsetView operator&&(BitsetView copy, const T &other);
+template<class T>
+BitsetView operator||(BitsetView copy, const T &other);
+template<class T>
+BitsetView operator^(BitsetView copy, const T &other);
 
 
 class PerStateBitset {
