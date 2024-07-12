@@ -9,6 +9,8 @@
 #include "tasks/root_task.h"
 
 #include <cassert>
+#include <cstdlib>
+#include <limits>
 
 using namespace std;
 Heuristic::Heuristic(

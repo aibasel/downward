@@ -58,7 +58,7 @@ protected:
 public:
     TaskIndependentCombiningEvaluator(
         std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
-        const std::string &name,
+        const std::string &description,
         utils::Verbosity verbosity);
     virtual ~TaskIndependentCombiningEvaluator() override = default;
 };
