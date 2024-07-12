@@ -62,7 +62,7 @@ static shared_ptr<TaskIndependentEvaluator> create_task_independent_wastar_eval(
     int weight,
     const shared_ptr<TaskIndependentEvaluator> &h_eval,
     const string &description,
-    const utils::Verbosity verbosity) {
+    utils::Verbosity verbosity) {
     if (weight == 0) {
         return g_eval;
     }
@@ -84,7 +84,7 @@ shared_ptr<TaskIndependentOpenListFactory> create_task_independent_wastar_open_l
     int boost,
     int weight,
     const string &description,
-    const utils::Verbosity &verbosity) {
+    utils::Verbosity verbosity) {
     shared_ptr<g_evaluator::TaskIndependentGEvaluator> g_eval =
         make_shared<g_evaluator::TaskIndependentGEvaluator>(description + ".g_eval", verbosity);
     vector<shared_ptr<TaskIndependentEvaluator>> f_evals;
