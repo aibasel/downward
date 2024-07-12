@@ -19,7 +19,7 @@ TaskIndependentAbstractTask::TaskIndependentAbstractTask()
     : TaskIndependentComponent("abstract_task", utils::Verbosity::NORMAL) {
 }
 
-static class AbstractTaskCategoryPlugin : public plugins::TypedCategoryPlugin<AbstractTask> {
+static class AbstractTaskCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentAbstractTask> {
 public:
     AbstractTaskCategoryPlugin() : TypedCategoryPlugin("AbstractTask") {
         // TODO: Replace empty string by synopsis for the wiki page.
