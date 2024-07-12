@@ -95,7 +95,7 @@ protected:
     bool cache_evaluator_values;
     std::shared_ptr<TaskIndependentAbstractTask> task_transformation;
 public:
-    TaskIndependentHeuristic(const std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
+    TaskIndependentHeuristic(const std::shared_ptr<TaskIndependentAbstractTask> &task_transformation,
                                       bool cache_evaluator_values,
                                       const std::string &description,
                                       utils::Verbosity verbosity);

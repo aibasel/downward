@@ -121,7 +121,7 @@ int Heuristic::get_cached_estimate(const State &state) const {
     return heuristic_cache[state].h;
 }
 
-TaskIndependentHeuristic::TaskIndependentHeuristic(const shared_ptr<TaskIndependentAbstractTask> task_transformation,
+TaskIndependentHeuristic::TaskIndependentHeuristic(const shared_ptr<TaskIndependentAbstractTask> &task_transformation,
                                                    bool cache_evaluator_values,
                                                    const string &description,
                                                    utils::Verbosity verbosity)
