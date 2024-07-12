@@ -125,6 +125,12 @@ static void check_facts(const vector<FactPair> &facts, const vector<ExplicitVari
     }
 }
 
+static void check_facts(const set<FactPair> &facts, const vector<ExplicitVariable> &variables) {
+    for (FactPair fact : facts) {
+        check_fact(fact, variables);
+    }
+}
+
 static void check_facts(const ExplicitOperator &action, const vector<ExplicitVariable> &variables) {
     check_facts(action.preconditions, variables);
     for (const ExplicitEffect &eff : action.effects) {
@@ -356,6 +362,11 @@ RootTask::RootTask(istream &in) {
     int num_variables = variables.size();
 
     mutexes = read_mutexes(in, variables);
+    for (int i = 0; i < mutexes.size(); ++i) {
+        for (int j = 0; j < mutexes[i].size(); ++j) {
+            check_facts(mutexes[i][j], variables);
+        }
+    }
 
     initial_state_values.resize(num_variables);
     check_magic(in, "begin_state");
@@ -365,6 +376,7 @@ RootTask::RootTask(istream &in) {
     check_magic(in, "end_state");
 
     for (int i = 0; i < num_variables; ++i) {
+        check_fact(FactPair(i, initial_state_values[i]), variables);
         variables[i].axiom_default_value = initial_state_values[i];
     }
 
