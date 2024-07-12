@@ -84,7 +84,7 @@ BestFirstOpenListFactory::create_edge_open_list() {
 TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory(
     shared_ptr<TaskIndependentEvaluator> evaluator, bool pref_only)
     : TaskIndependentOpenListFactory("TieBreakingOpenListFactory", utils::Verbosity::NORMAL),
-      pref_only(pref_only), size(0), evaluator(evaluator) {
+      evaluator(evaluator), pref_only(pref_only) {
 }
 
 

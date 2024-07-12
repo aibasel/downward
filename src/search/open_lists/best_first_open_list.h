@@ -70,7 +70,6 @@ public:
 class TaskIndependentBestFirstOpenListFactory : public TaskIndependentOpenListFactory {
     std::shared_ptr<TaskIndependentEvaluator> evaluator;
     bool pref_only;
-    int size;
 protected:
     std::string get_product_name() const override {return "BestFirstOpenListFactory";}
 public:

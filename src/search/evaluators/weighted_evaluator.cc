@@ -42,13 +42,13 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
 
 
 TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(
-    shared_ptr<TaskIndependentEvaluator> evaluator,
+    const shared_ptr<TaskIndependentEvaluator> &eval,
     int weight,
     const string &description,
     utils::Verbosity verbosity)
     : TaskIndependentEvaluator(false, false,
                                false, description, verbosity),
-      evaluator(evaluator),
+      evaluator(eval),
       weight(weight) {
 }
 

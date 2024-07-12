@@ -34,7 +34,7 @@ protected:
     std::string get_product_name() const override {return "WeightedEvaluator";}
 public:
     explicit TaskIndependentWeightedEvaluator(
-        std::shared_ptr<TaskIndependentEvaluator> evaluator,
+        const std::shared_ptr<TaskIndependentEvaluator> &eval,
         int weight,
         const std::string &description,
         utils::Verbosity verbosity);
