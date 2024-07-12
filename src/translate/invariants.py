@@ -278,12 +278,6 @@ class Invariant:
     def __ne__(self, other):
         return self.parts != other.parts
 
-    def __lt__(self, other):
-        return self.parts < other.parts
-
-    def __le__(self, other):
-        return self.parts <= other.parts
-
     def __hash__(self):
         return hash(self.parts)
 
@@ -324,10 +318,24 @@ class Invariant:
 
     def check_balance(self, balance_checker, enqueue_func):
         # Check balance for this hypothesis.
-        actions_to_check = set()
-        for part in self.parts:
-            actions_to_check |= balance_checker.get_threats(part.predicate)
-        for action in actions_to_check:
+        actions_to_check = dict()
+        # We will only use the keys of the dictionary. We do not use a set
+        # because it's not stable and introduces non-determinism in the
+        # invariance analysis.
+        for part in sorted(self.parts):
+            for a in balance_checker.get_threats(part.predicate):
+                actions_to_check[a] = True
+
+        actions = list(actions_to_check.keys())
+        while actions:
+            # For a better expected perfomance, we want to randomize the order
+            # in which actions are checked. Since candidates are often already
+            # discarded by an early check, we do not want to shuffle the order
+            # but instead always draw the next action randomly from those we
+            # did not yet consider.
+            pos = balance_checker.random.randrange(len(actions))
+            actions[pos], actions[-1] = actions[-1], actions[pos]
+            action = actions.pop()
             heavy_action = balance_checker.get_heavy_action(action)
             if self._operator_too_heavy(heavy_action):
                 return False

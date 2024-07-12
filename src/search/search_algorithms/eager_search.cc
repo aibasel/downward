@@ -19,15 +19,22 @@
 using namespace std;
 
 namespace eager_search {
-EagerSearch::EagerSearch(const plugins::Options &opts)
-    : SearchAlgorithm(opts),
-      reopen_closed_nodes(opts.get<bool>("reopen_closed")),
-      open_list(opts.get<shared_ptr<OpenListFactory>>("open")->
-                create_state_open_list()),
-      f_evaluator(opts.get<shared_ptr<Evaluator>>("f_eval", nullptr)),
-      preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
-      lazy_evaluator(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
-      pruning_method(opts.get<shared_ptr<PruningMethod>>("pruning")) {
+EagerSearch::EagerSearch(
+    const shared_ptr<OpenListFactory> &open, bool reopen_closed,
+    const shared_ptr<Evaluator> &f_eval,
+    const vector<shared_ptr<Evaluator>> &preferred,
+    const shared_ptr<PruningMethod> &pruning,
+    const shared_ptr<Evaluator> &lazy_evaluator, OperatorCost cost_type,
+    int bound, double max_time, const string &description,
+    utils::Verbosity verbosity)
+    : SearchAlgorithm(
+          cost_type, bound, max_time, description, verbosity),
+      reopen_closed_nodes(reopen_closed),
+      open_list(open->create_state_open_list()),
+      f_evaluator(f_eval),     // default nullptr
+      preferred_operator_evaluators(preferred),
+      lazy_evaluator(lazy_evaluator),     // default nullptr
+      pruning_method(pruning) {
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
@@ -307,8 +314,22 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     }
 }
 
-void add_options_to_feature(plugins::Feature &feature) {
-    SearchAlgorithm::add_pruning_option(feature);
-    SearchAlgorithm::add_options_to_feature(feature);
+void add_eager_search_options_to_feature(
+    plugins::Feature &feature, const string &description) {
+    add_search_pruning_options_to_feature(feature);
+    // We do not add a lazy_evaluator options here
+    // because it is only used for astar but not the other plugins.
+    add_search_algorithm_options_to_feature(feature, description);
+}
+
+tuple<shared_ptr<PruningMethod>, shared_ptr<Evaluator>, OperatorCost,
+      int, double, string, utils::Verbosity>
+get_eager_search_arguments_from_options(const plugins::Options &opts) {
+    return tuple_cat(
+        get_search_pruning_arguments_from_options(opts),
+        make_tuple(opts.get<shared_ptr<Evaluator>>(
+                       "lazy_evaluator", nullptr)),
+        get_search_algorithm_arguments_from_options(opts)
+        );
 }
 }

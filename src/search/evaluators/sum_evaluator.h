@@ -15,8 +15,9 @@ class SumEvaluator : public combining_evaluator::CombiningEvaluator {
 protected:
     virtual int combine_values(const std::vector<int> &values) override;
 public:
-    explicit SumEvaluator(const plugins::Options &opts);
-    virtual ~SumEvaluator() override;
+    SumEvaluator(
+        const std::vector<std::shared_ptr<Evaluator>> &evals,
+        const std::string &description, utils::Verbosity verbosity);
 };
 }
 

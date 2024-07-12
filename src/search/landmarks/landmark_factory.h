@@ -32,13 +32,6 @@ public:
 
     std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task);
 
-    /*
-      TODO: Currently reasonable orders are not supported for admissible landmark count
-      heuristics, which is why the heuristic needs to know whether the factory computes
-      reasonable orders. Once issue383 is dealt with we should be able to use reasonable
-      orders for admissible heuristics and this method can be removed.
-    */
-    virtual bool computes_reasonable_orders() const = 0;
     virtual bool supports_conditional_effects() const = 0;
 
     bool achievers_are_calculated() const {
@@ -46,7 +39,7 @@ public:
     }
 
 protected:
-    explicit LandmarkFactory(const plugins::Options &opts);
+    explicit LandmarkFactory(utils::Verbosity verbosity);
     mutable utils::LogProxy log;
     std::shared_ptr<LandmarkGraph> lm_graph;
     bool achievers_calculated = false;
@@ -71,8 +64,14 @@ private:
 };
 
 extern void add_landmark_factory_options_to_feature(plugins::Feature &feature);
+extern std::tuple<utils::Verbosity> get_landmark_factory_arguments_from_options(
+    const plugins::Options &opts);
 extern void add_use_orders_option_to_feature(plugins::Feature &feature);
+extern bool get_use_orders_arguments_from_options(
+    const plugins::Options &opts);
 extern void add_only_causal_landmarks_option_to_feature(plugins::Feature &feature);
+extern bool get_only_causal_landmarks_arguments_from_options(
+    const plugins::Options &opts);
 }
 
 #endif

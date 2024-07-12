@@ -18,31 +18,20 @@ using GEval = g_evaluator::GEvaluator;
 using PrefEval = pref_evaluator::PrefEvaluator;
 
 static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
-    const plugins::Options &opts, bool use_preferred, PreferredUsage preferred_usage) {
+    utils::Verbosity verbosity, bool use_preferred,
+    PreferredUsage preferred_usage) {
     /*
       TODO: this g-evaluator should probably be set up to always
       ignore costs since EHC is supposed to implement a breadth-first
       search, not a uniform-cost search. So this seems to be a bug.
     */
-    plugins::Options g_evaluator_options;
-    g_evaluator_options.set<utils::Verbosity>(
-        "verbosity", opts.get<utils::Verbosity>("verbosity"));
-    shared_ptr<Evaluator> g_evaluator = make_shared<GEval>(g_evaluator_options);
+    shared_ptr<Evaluator> g_evaluator = make_shared<GEval>(
+        "ehc.g_eval", verbosity);
 
     if (!use_preferred ||
         preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
-        /*
-          TODO: Reduce code duplication with search_common.cc,
-          function create_standard_scalar_open_list_factory.
-
-          It would probably make sense to add a factory function or
-          constructor that encapsulates this work to the standard
-          scalar open list code.
-        */
-        plugins::Options options;
-        options.set("eval", g_evaluator);
-        options.set("pref_only", false);
-        return make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(options);
+        return make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(
+            g_evaluator, false);
     } else {
         /*
           TODO: Reduce code duplication with search_common.cc,
@@ -52,25 +41,25 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
           constructor that encapsulates this work to the tie-breaking
           open list code.
         */
-        plugins::Options pref_evaluator_options;
-        pref_evaluator_options.set<utils::Verbosity>(
-            "verbosity", opts.get<utils::Verbosity>("verbosity"));
-        vector<shared_ptr<Evaluator>> evals = {g_evaluator, make_shared<PrefEval>(pref_evaluator_options)};
-        plugins::Options options;
-        options.set("evals", evals);
-        options.set("pref_only", false);
-        options.set("unsafe_pruning", true);
-        return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(options);
+        vector<shared_ptr<Evaluator>> evals = {
+            g_evaluator, make_shared<PrefEval>(
+                "ehc.pref_eval", verbosity)};
+        return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(
+            evals, false, true);
     }
 }
 
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
-    const plugins::Options &opts)
-    : SearchAlgorithm(opts),
-      evaluator(opts.get<shared_ptr<Evaluator>>("h")),
-      preferred_operator_evaluators(opts.get_list<shared_ptr<Evaluator>>("preferred")),
-      preferred_usage(opts.get<PreferredUsage>("preferred_usage")),
+    const shared_ptr<Evaluator> &h, PreferredUsage preferred_usage,
+    const vector<shared_ptr<Evaluator>> &preferred,
+    OperatorCost cost_type, int bound, double max_time,
+    const string &description, utils::Verbosity verbosity)
+    : SearchAlgorithm(
+          cost_type, bound, max_time, description, verbosity),
+      evaluator(h),
+      preferred_operator_evaluators(preferred),
+      preferred_usage(preferred_usage),
       current_eval_context(state_registry.get_initial_state(), &statistics),
       current_phase_start_g(-1),
       num_ehc_phases(0),
@@ -89,11 +78,9 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
         preferred_operator_evaluators.end();
 
     open_list = create_ehc_open_list_factory(
-        opts, use_preferred, preferred_usage)->create_edge_open_list();
+        verbosity, use_preferred, preferred_usage)->create_edge_open_list();
 }
 
-EnforcedHillClimbingSearch::~EnforcedHillClimbingSearch() {
-}
 
 void EnforcedHillClimbingSearch::reach_state(
     const State &parent, OperatorID op_id, const State &state) {
@@ -271,7 +258,8 @@ void EnforcedHillClimbingSearch::print_statistics() const {
     }
 }
 
-class EnforcedHillClimbingSearchFeature : public plugins::TypedFeature<SearchAlgorithm, EnforcedHillClimbingSearch> {
+class EnforcedHillClimbingSearchFeature
+    : public plugins::TypedFeature<SearchAlgorithm, EnforcedHillClimbingSearch> {
 public:
     EnforcedHillClimbingSearchFeature() : TypedFeature("ehc") {
         document_title("Lazy enforced hill-climbing");
@@ -286,7 +274,18 @@ public:
             "preferred",
             "use preferred operators of these evaluators",
             "[]");
-        SearchAlgorithm::add_options_to_feature(*this);
+        add_search_algorithm_options_to_feature(*this, "ehc");
+    }
+
+    virtual shared_ptr<EnforcedHillClimbingSearch> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<EnforcedHillClimbingSearch>(
+            opts.get<shared_ptr<Evaluator>>("h"),
+            opts.get<PreferredUsage>("preferred_usage"),
+            opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            get_search_algorithm_arguments_from_options(opts)
+            );
     }
 };
 

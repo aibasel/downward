@@ -57,12 +57,28 @@ class MergeAndShrinkAlgorithm {
         FactoredTransitionSystem &fts,
         const TaskProxy &task_proxy);
 public:
-    explicit MergeAndShrinkAlgorithm(const plugins::Options &opts);
+    MergeAndShrinkAlgorithm(
+        const std::shared_ptr<MergeStrategyFactory> &merge_strategy,
+        const std::shared_ptr<ShrinkStrategy> &shrink_strategy,
+        const std::shared_ptr<LabelReduction> &label_reduction,
+        bool prune_unreachable_states, bool prune_irrelevant_states,
+        int max_states, int max_states_before_merge,
+        int threshold_before_merge, double main_loop_max_time,
+        utils::Verbosity verbosity);
     FactoredTransitionSystem build_factored_transition_system(const TaskProxy &task_proxy);
 };
 
 extern void add_merge_and_shrink_algorithm_options_to_feature(plugins::Feature &feature);
+std::tuple<std::shared_ptr<MergeStrategyFactory>,
+           std::shared_ptr<ShrinkStrategy>,
+           std::shared_ptr<LabelReduction>, bool, bool, int, int, int,
+           double>
+get_merge_and_shrink_algorithm_arguments_from_options(
+    const plugins::Options &opts);
 extern void add_transition_system_size_limit_options_to_feature(plugins::Feature &feature);
+std::tuple<int, int, int>
+get_transition_system_size_limit_arguments_from_options(
+    const plugins::Options &opts);
 extern void handle_shrink_limit_options_defaults(plugins::Options &opts, const utils::Context &context);
 }
 

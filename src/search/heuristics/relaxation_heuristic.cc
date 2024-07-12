@@ -35,17 +35,37 @@ UnaryOperator::UnaryOperator(
       operator_no(operator_no) {
 }
 
+void add_relaxation_heuristic_options_to_feature(
+    plugins::Feature &feature, const string &description) {
+    feature.add_option<bool>(
+        "simple_default_value_axioms",
+        "For derived variables that need negated axioms, introduce the trivial"
+        "rule with an empty body. This makes the heuristic weaker but avoids"
+        "a potentially expensive precomputation.",
+        "false");
+    add_heuristic_options_to_feature(feature, description);
+}
+
+tuple<bool, shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
+get_relaxation_heuristic_arguments_from_options(const plugins::Options &opts) {
+    return tuple_cat(
+        make_tuple(opts.get<bool>("simple_default_value_axioms")),
+        get_heuristic_arguments_from_options(opts));
+}
+
 
 // construction and destruction
-RelaxationHeuristic::RelaxationHeuristic(const plugins::Options &opts)
-    : Heuristic(opts) {
+
+RelaxationHeuristic::RelaxationHeuristic(
+    bool simple_default_value_axioms,
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, description, verbosity) {
     if (task_properties::has_axioms(task_proxy)) {
-        bool simple = opts.get<bool>("simple_default_value_axioms");
         task = make_shared<tasks::DefaultValueAxiomsTask>(
-            tasks::DefaultValueAxiomsTask(task, simple));
+            tasks::DefaultValueAxiomsTask(task, simple_default_value_axioms));
         task_proxy = TaskProxy(*task);
     }
-
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));
 
@@ -309,14 +329,5 @@ void RelaxationHeuristic::simplify() {
     if (log.is_at_least_normal()) {
         log << " done! [" << unary_operators.size() << " unary operators]" << endl;
     }
-}
-
-void RelaxationHeuristic::add_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<bool>(
-        "simple_default_value_axioms",
-        "For derived variables that need negated axioms, introduce the trivial"
-        "rule with an empty body. This makes the heuristic weaker but avoids"
-        "a potentially expensive precomputation.",
-        "false");
 }
 }

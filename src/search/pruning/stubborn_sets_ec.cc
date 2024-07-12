@@ -102,8 +102,8 @@ static void get_conflicting_vars(const vector<FactPair> &facts1,
     }
 }
 
-StubbornSetsEC::StubbornSetsEC(const plugins::Options &opts)
-    : StubbornSetsActionCentric(opts) {
+StubbornSetsEC::StubbornSetsEC(utils::Verbosity verbosity)
+    : StubbornSetsActionCentric(verbosity) {
 }
 
 void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
@@ -324,7 +324,8 @@ void StubbornSetsEC::handle_stubborn_operator(const State &state, int op_no) {
     }
 }
 
-class StubbornSetsECFeature : public plugins::TypedFeature<PruningMethod, StubbornSetsEC> {
+class StubbornSetsECFeature
+    : public plugins::TypedFeature<PruningMethod, StubbornSetsEC> {
 public:
     StubbornSetsECFeature() : TypedFeature("stubborn_sets_ec") {
         document_title("StubbornSetsEC");
@@ -345,6 +346,13 @@ public:
                 "AAAI Press",
                 "2013"));
         add_pruning_options_to_feature(*this);
+    }
+
+    virtual shared_ptr<StubbornSetsEC> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<StubbornSetsEC>(
+            get_pruning_arguments_from_options(opts));
     }
 };
 

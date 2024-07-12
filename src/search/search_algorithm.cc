@@ -20,7 +20,6 @@
 using namespace std;
 using utils::ExitCode;
 
-class PruningMethod;
 
 static successor_generator::SuccessorGenerator &get_successor_generator(
     const TaskProxy &task_proxy, utils::LogProxy &log) {
@@ -40,13 +39,38 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
     return successor_generator;
 }
 
-SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts)
+SearchAlgorithm::SearchAlgorithm(
+    OperatorCost cost_type, int bound, double max_time,
+    const string &description, utils::Verbosity verbosity)
+    : description(description),
+      status(IN_PROGRESS),
+      solution_found(false),
+      task(tasks::g_root_task),
+      task_proxy(*task),
+      log(utils::get_log_for_verbosity(verbosity)),
+      state_registry(task_proxy),
+      successor_generator(get_successor_generator(task_proxy, log)),
+      search_space(state_registry, log),
+      statistics(log),
+      bound(bound),
+      cost_type(cost_type),
+      is_unit_cost(task_properties::is_unit_cost(task_proxy)),
+      max_time(max_time) {
+    if (bound < 0) {
+        cerr << "error: negative cost bound " << bound << endl;
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+    }
+    task_properties::print_variable_statistics(task_proxy);
+}
+
+SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts) // TODO options object is needed for iterated search, the prototype for issue559 resolves this
     : description(opts.get_unparsed_config()),
       status(IN_PROGRESS),
       solution_found(false),
       task(tasks::g_root_task),
       task_proxy(*task),
-      log(utils::get_log_from_options(opts)),
+      log(utils::get_log_for_verbosity(
+              opts.get<utils::Verbosity>("verbosity"))),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
       search_space(state_registry, log),
@@ -119,12 +143,25 @@ int SearchAlgorithm::get_adjusted_cost(const OperatorProxy &op) const {
     return get_adjusted_action_cost(op, cost_type, is_unit_cost);
 }
 
+
+
+void print_initial_evaluator_values(
+    const EvaluationContext &eval_context) {
+    eval_context.get_cache().for_each_evaluator_result(
+        [] (const Evaluator *eval, const EvaluationResult &result) {
+            if (eval->is_used_for_reporting_minima()) {
+                eval->report_value_for_initial_state(result);
+            }
+        }
+        );
+}
+
 /* TODO: merge this into add_options_to_feature when all search
          algorithms support pruning.
 
    Method doesn't belong here because it's only useful for certain derived classes.
    TODO: Figure out where it belongs and move it there. */
-void SearchAlgorithm::add_pruning_option(plugins::Feature &feature) {
+void add_search_pruning_options_to_feature(plugins::Feature &feature) {
     feature.add_option<shared_ptr<PruningMethod>>(
         "pruning",
         "Pruning methods can prune or reorder the set of applicable operators in "
@@ -133,8 +170,15 @@ void SearchAlgorithm::add_pruning_option(plugins::Feature &feature) {
         "null()");
 }
 
-void SearchAlgorithm::add_options_to_feature(plugins::Feature &feature) {
-    ::add_cost_type_option_to_feature(feature);
+tuple<shared_ptr<PruningMethod>>
+get_search_pruning_arguments_from_options(
+    const plugins::Options &opts) {
+    return make_tuple(opts.get<shared_ptr<PruningMethod>>("pruning"));
+}
+
+void add_search_algorithm_options_to_feature(
+    plugins::Feature &feature, const string &description) {
+    ::add_cost_type_options_to_feature(feature);
     feature.add_option<int>(
         "bound",
         "exclusive depth bound on g-values. Cutoffs are always performed according to "
@@ -148,13 +192,31 @@ void SearchAlgorithm::add_options_to_feature(plugins::Feature &feature) {
         "experiments. Timed-out searches are treated as failed searches, "
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
+    feature.add_option<string>(
+        "description",
+        "description used to identify search algorithm in logs",
+        "\"" + description + "\"");
     utils::add_log_options_to_feature(feature);
+}
+
+tuple<OperatorCost, int, double, string, utils::Verbosity>
+get_search_algorithm_arguments_from_options(
+    const plugins::Options &opts) {
+    return tuple_cat(
+        ::get_cost_type_arguments_from_options(opts),
+        make_tuple(
+            opts.get<int>("bound"),
+            opts.get<double>("max_time"),
+            opts.get<string>("description")
+            ),
+        utils::get_log_arguments_from_options(opts)
+        );
 }
 
 /* Method doesn't belong here because it's only useful for certain derived classes.
    TODO: Figure out where it belongs and move it there. */
-void SearchAlgorithm::add_succ_order_options(plugins::Feature &feature) {
-    vector<string> options;
+void add_successors_order_options_to_feature(
+    plugins::Feature &feature) {
     feature.add_option<bool>(
         "randomize_successors",
         "randomize the order in which successors are generated",
@@ -168,17 +230,17 @@ void SearchAlgorithm::add_succ_order_options(plugins::Feature &feature) {
         "When using randomize_successors=true and "
         "preferred_successors_first=true, randomization happens before "
         "preferred operators are moved to the front.");
-    utils::add_rng_options(feature);
+    utils::add_rng_options_to_feature(feature);
 }
 
-void print_initial_evaluator_values(
-    const EvaluationContext &eval_context) {
-    eval_context.get_cache().for_each_evaluator_result(
-        [] (const Evaluator *eval, const EvaluationResult &result) {
-            if (eval->is_used_for_reporting_minima()) {
-                eval->report_value_for_initial_state(result);
-            }
-        }
+tuple<bool, bool, int> get_successors_order_arguments_from_options(
+    const plugins::Options &opts) {
+    return tuple_cat(
+        make_tuple(
+            opts.get<bool>("randomize_successors"),
+            opts.get<bool>("preferred_successors_first")
+            ),
+        utils::get_rng_arguments_from_options(opts)
         );
 }
 

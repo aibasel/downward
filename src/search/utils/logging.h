@@ -130,7 +130,10 @@ public:
 extern LogProxy g_log;
 
 extern void add_log_options_to_feature(plugins::Feature &feature);
-extern LogProxy get_log_from_options(const plugins::Options &options);
+extern std::tuple<Verbosity> get_log_arguments_from_options(
+    const plugins::Options &opts);
+
+extern LogProxy get_log_for_verbosity(const Verbosity &verbosity);
 extern LogProxy get_silent_log();
 
 class ContextError : public utils::Exception {

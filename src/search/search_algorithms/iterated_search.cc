@@ -47,9 +47,7 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
            this overrides continue_on_fail.
         */
         if (repeat_last_phase && last_phase_found_solution) {
-            return get_search_algorithm(
-                algorithm_configs.size() -
-                1);
+            return get_search_algorithm(algorithm_configs.size() - 1);
         } else {
             return nullptr;
         }
@@ -63,7 +61,7 @@ SearchStatus IteratedSearch::step() {
     if (!current_search) {
         return found_solution() ? SOLVED : FAILED;
     }
-    if (pass_bound) {
+    if (pass_bound && best_bound < current_search->get_bound()) {
         current_search->set_bound(best_bound);
     }
     ++phase;
@@ -129,7 +127,8 @@ void IteratedSearch::save_plan_if_necessary() {
     // each successful search iteration.
 }
 
-class IteratedSearchFeature : public plugins::TypedFeature<SearchAlgorithm, IteratedSearch> {
+class IteratedSearchFeature
+    : public plugins::TypedFeature<SearchAlgorithm, IteratedSearch> {
 public:
     IteratedSearchFeature() : TypedFeature("iterated") {
         document_title("Iterated search");
@@ -142,8 +141,10 @@ public:
             true);
         add_option<bool>(
             "pass_bound",
-            "use bound from previous search. The bound is the real cost "
-            "of the plan found before, regardless of the cost_type parameter.",
+            "use the bound of iterated search as a bound for its component "
+            "search algorithms, unless these already have a lower bound set. "
+            "The iterated search bound is tightened whenever a component finds "
+            "a cheaper plan.",
             "true");
         add_option<bool>(
             "repeat_last",
@@ -157,7 +158,7 @@ public:
             "continue_on_solve",
             "continue search after solution found",
             "true");
-        SearchAlgorithm::add_options_to_feature(*this);
+        add_search_algorithm_options_to_feature(*this, "iterated");
 
         document_note(
             "Note 1",

@@ -17,16 +17,19 @@ using namespace std;
 using namespace domain_transition_graph;
 
 namespace cg_heuristic {
-CGHeuristic::CGHeuristic(const plugins::Options &opts)
-    : Heuristic(opts),
+CGHeuristic::CGHeuristic(
+    int max_cache_size, bool simple_default_value_axioms,
+    const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates, const string &description,
+    utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, description, verbosity),
       cache_hits(0),
       cache_misses(0),
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (task_properties::has_axioms(task_proxy)) {
-        bool simple = opts.get<bool>("simple_default_value_axioms");
         task = make_shared<tasks::DefaultValueAxiomsTask>(
-            tasks::DefaultValueAxiomsTask(task, simple));
+            tasks::DefaultValueAxiomsTask(task, simple_default_value_axioms));
         task_proxy = TaskProxy(*task);
     }
 
@@ -34,7 +37,6 @@ CGHeuristic::CGHeuristic(const plugins::Options &opts)
         log << "Initializing causal graph heuristic..." << endl;
     }
 
-    int max_cache_size = opts.get<int>("max_cache_size");
     if (max_cache_size > 0)
         cache = utils::make_unique_ptr<CGCache>(task_proxy, max_cache_size, log);
 
@@ -47,9 +49,6 @@ CGHeuristic::CGHeuristic(const plugins::Options &opts)
         [](int dtg_var, int cond_var) {return dtg_var <= cond_var;};
     DTGFactory factory(task_proxy, false, pruning_condition);
     transition_graphs = factory.build_dtgs();
-}
-
-CGHeuristic::~CGHeuristic() {
 }
 
 bool CGHeuristic::dead_ends_are_reliable() const {
@@ -293,7 +292,8 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
     }
 }
 
-class CGHeuristicFeature : public plugins::TypedFeature<Evaluator, CGHeuristic> {
+class CGHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, CGHeuristic> {
 public:
     CGHeuristicFeature() : TypedFeature("cg") {
         document_title("Causal graph heuristic");
@@ -309,7 +309,7 @@ public:
             "rule with an empty body. This makes the heuristic weaker but avoids"
             "a potentially expensive precomputation.",
             "false");
-        Heuristic::add_options_to_feature(*this);
+        add_heuristic_options_to_feature(*this, "cg");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");
@@ -323,6 +323,16 @@ public:
         document_property("consistent", "no");
         document_property("safe", "no");
         document_property("preferred operators", "yes");
+    }
+
+    virtual shared_ptr<CGHeuristic> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<CGHeuristic>(
+            opts.get<int>("max_cache_size"),
+            opts.get<bool>("simple_default_value_axioms"),
+            get_heuristic_arguments_from_options(opts)
+            );
     }
 };
 

@@ -16,27 +16,31 @@ using namespace std;
 
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
-    const plugins::Options &opts)
-    : LandmarkHeuristic(opts) {
+    const shared_ptr<LandmarkFactory> &lm_factory, bool pref,
+    bool prog_goal, bool prog_gn, bool prog_r,
+    bool simple_default_value_axioms,
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity,
+    CostPartitioningMethod cost_partitioning, bool alm,
+    lp::LPSolverType lpsolver)
+    : LandmarkHeuristic(
+          simple_default_value_axioms, pref, transform, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;
     }
-    check_unsupported_features(opts);
-    initialize(opts);
-    set_cost_partitioning_algorithm(opts);
+    check_unsupported_features(lm_factory);
+    initialize(lm_factory, prog_goal, prog_gn, prog_r);
+    set_cost_partitioning_algorithm(cost_partitioning, lpsolver, alm);
 }
 
 void LandmarkCostPartitioningHeuristic::check_unsupported_features(
-    const plugins::Options &opts) {
-    shared_ptr<LandmarkFactory> lm_graph_factory =
-        opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
-
+    const shared_ptr<LandmarkFactory> &lm_factory) {
     if (task_properties::has_axioms(task_proxy)) {
         cerr << "Cost partitioning does not support axioms." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
-    if (!lm_graph_factory->supports_conditional_effects()
+    if (!lm_factory->supports_conditional_effects()
         && task_properties::has_conditional_effects(task_proxy)) {
         cerr << "Conditional effects not supported by the landmark "
              << "generation method." << endl;
@@ -45,18 +49,18 @@ void LandmarkCostPartitioningHeuristic::check_unsupported_features(
 }
 
 void LandmarkCostPartitioningHeuristic::set_cost_partitioning_algorithm(
-    const plugins::Options &opts) {
-    auto method = opts.get<CostPartitioningMethod>("cost_partitioning");
-    if (method == CostPartitioningMethod::OPTIMAL) {
+    CostPartitioningMethod cost_partitioning, lp::LPSolverType lpsolver,
+    bool alm) {
+    if (cost_partitioning == CostPartitioningMethod::OPTIMAL) {
         cost_partitioning_algorithm =
             utils::make_unique_ptr<OptimalCostPartitioningAlgorithm>(
                 task_properties::get_operator_costs(task_proxy),
-                *lm_graph, opts.get<lp::LPSolverType>("lpsolver"));
-    } else if (method == CostPartitioningMethod::UNIFORM) {
+                *lm_graph, lpsolver);
+    } else if (cost_partitioning == CostPartitioningMethod::UNIFORM) {
         cost_partitioning_algorithm =
             utils::make_unique_ptr<UniformCostPartitioningAlgorithm>(
                 task_properties::get_operator_costs(task_proxy),
-                *lm_graph, opts.get<bool>("alm"));
+                *lm_graph, alm);
     } else {
         ABORT("Unknown cost partitioning method");
     }
@@ -80,7 +84,8 @@ bool LandmarkCostPartitioningHeuristic::dead_ends_are_reliable() const {
     return true;
 }
 
-class LandmarkCostPartitioningHeuristicFeature : public plugins::TypedFeature<Evaluator, LandmarkCostPartitioningHeuristic> {
+class LandmarkCostPartitioningHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, LandmarkCostPartitioningHeuristic> {
 public:
     LandmarkCostPartitioningHeuristicFeature() : TypedFeature("landmark_cost_partitioning") {
         document_title("Landmark cost partitioning heuristic");
@@ -107,7 +112,16 @@ public:
                 "IOS Press",
                 "2010"));
 
-        LandmarkHeuristic::add_options_to_feature(*this);
+        /*
+          We usually have the options of base classes behind the options
+          of specific implementations. In the case of landmark
+          heuristics, we decided to have the common options at the front
+          because it feels more natural to specify the landmark factory
+          before the more specific arguments like the used LP solver in
+          the case of an optimal cost partitioning heuristic.
+        */
+        add_landmark_heuristic_options_to_feature(
+            *this, "landmark_cost_partitioning");
         add_option<CostPartitioningMethod>(
             "cost_partitioning",
             "strategy for partitioning operator costs among landmarks",
@@ -151,6 +165,17 @@ public:
         document_property("consistent",
                           "no; see document note about consistency");
         document_property("safe", "yes");
+    }
+
+    virtual shared_ptr<LandmarkCostPartitioningHeuristic>
+    create_component(const plugins::Options &opts,
+                     const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<LandmarkCostPartitioningHeuristic>(
+            get_landmark_heuristic_arguments_from_options(opts),
+            opts.get<CostPartitioningMethod>("cost_partitioning"),
+            opts.get<bool>("alm"),
+            lp::get_lp_solver_arguments_from_options(opts)
+            );
     }
 };
 

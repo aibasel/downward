@@ -54,6 +54,7 @@ struct UnaryOperator {
 
 static_assert(sizeof(UnaryOperator) == 28, "UnaryOperator has wrong size");
 
+
 class RelaxationHeuristic : public Heuristic {
     void build_unary_operators(const OperatorProxy &op);
     void simplify();
@@ -110,12 +111,19 @@ protected:
     Proposition *get_proposition(int var, int value);
     Proposition *get_proposition(const FactProxy &fact);
 public:
-    explicit RelaxationHeuristic(const plugins::Options &options);
+    RelaxationHeuristic(
+        bool simple_default_value_axioms,
+        const std::shared_ptr<AbstractTask> &transform,
+        bool cache_estimates, const std::string &description,
+        utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;
-
-    static void add_options_to_feature(plugins::Feature &feature);
 };
-}
 
+extern void add_relaxation_heuristic_options_to_feature(
+    plugins::Feature &feature, const std::string &description);
+extern std::tuple<
+    bool, std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity>
+get_relaxation_heuristic_arguments_from_options(const plugins::Options &opts);
+}
 #endif

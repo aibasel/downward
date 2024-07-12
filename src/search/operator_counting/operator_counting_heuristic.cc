@@ -4,33 +4,36 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/markup.h"
+#include "../utils/strings.h"
 
 #include <cmath>
 
 using namespace std;
 
 namespace operator_counting {
-OperatorCountingHeuristic::OperatorCountingHeuristic(const plugins::Options &opts)
-    : Heuristic(opts),
-      constraint_generators(
-          opts.get_list<shared_ptr<ConstraintGenerator>>("constraint_generators")),
-      lp_solver(opts.get<lp::LPSolverType>("lpsolver")),
-      use_integer_operator_counts(opts.get<bool>("use_integer_operator_counts")) {
+OperatorCountingHeuristic::OperatorCountingHeuristic(
+    const vector<shared_ptr<ConstraintGenerator>> &constraint_generators,
+    bool use_integer_operator_counts, lp::LPSolverType lpsolver,
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, description, verbosity),
+      constraint_generators(constraint_generators),
+      lp_solver(lpsolver) {
     lp_solver.set_mip_gap(0);
     named_vector::NamedVector<lp::LPVariable> variables;
     double infinity = lp_solver.get_infinity();
     for (OperatorProxy op : task_proxy.get_operators()) {
         int op_cost = op.get_cost();
         variables.push_back(lp::LPVariable(0, infinity, op_cost, use_integer_operator_counts));
+#ifndef NDEBUG
+        variables.set_name(op.get_id(), op.get_name());
+#endif
     }
     lp::LinearProgram lp(lp::LPObjectiveSense::MINIMIZE, move(variables), {}, infinity);
     for (const auto &generator : constraint_generators) {
         generator->initialize_constraints(task, lp);
     }
     lp_solver.load_problem(lp);
-}
-
-OperatorCountingHeuristic::~OperatorCountingHeuristic() {
 }
 
 int OperatorCountingHeuristic::compute_heuristic(const State &ancestor_state) {
@@ -56,7 +59,8 @@ int OperatorCountingHeuristic::compute_heuristic(const State &ancestor_state) {
     return result;
 }
 
-class OperatorCountingHeuristicFeature : public plugins::TypedFeature<Evaluator, OperatorCountingHeuristic> {
+class OperatorCountingHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, OperatorCountingHeuristic> {
 public:
     OperatorCountingHeuristicFeature() : TypedFeature("operatorcounting") {
         document_title("Operator-counting heuristic");
@@ -91,7 +95,7 @@ public:
             "increase the runtime.",
             "false");
         lp::add_lp_solver_option_to_feature(*this);
-        Heuristic::add_options_to_feature(*this);
+        add_heuristic_options_to_feature(*this, "operatorcounting");
 
         document_language_support("action costs", "supported");
         document_language_support(
@@ -112,10 +116,18 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<OperatorCountingHeuristic> create_component(const plugins::Options &options, const utils::Context &context) const override {
+    virtual shared_ptr<OperatorCountingHeuristic> create_component(
+        const plugins::Options &opts,
+        const utils::Context &context) const override {
         plugins::verify_list_non_empty<shared_ptr<ConstraintGenerator>>(
-            context, options, "constraint_generators");
-        return make_shared<OperatorCountingHeuristic>(options);
+            context, opts, "constraint_generators");
+        return plugins::make_shared_from_arg_tuples<OperatorCountingHeuristic>(
+            opts.get_list<shared_ptr<ConstraintGenerator>>(
+                "constraint_generators"),
+            opts.get<bool>("use_integer_operator_counts"),
+            lp::get_lp_solver_arguments_from_options(opts),
+            get_heuristic_arguments_from_options(opts)
+            );
     }
 };
 

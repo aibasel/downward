@@ -53,6 +53,18 @@ enum class ExitCode {
     SEARCH_UNSUPPORTED = 34
 };
 
+class ExitException : public std::exception {
+    ExitCode exitcode;
+public:
+    explicit ExitException(ExitCode exitcode)
+        : exitcode(exitcode) {
+    }
+
+    ExitCode get_exitcode() const {
+        return exitcode;
+    }
+};
+
 NO_RETURN extern void exit_with(ExitCode returncode);
 NO_RETURN extern void exit_with_reentrant(ExitCode returncode);
 
@@ -60,6 +72,7 @@ int get_peak_memory_in_kb();
 const char *get_exit_code_message_reentrant(ExitCode exitcode);
 bool is_exit_code_error_reentrant(ExitCode exitcode);
 void register_event_handlers();
+void report_exit_code(ExitCode exitcode);
 void report_exit_code_reentrant(ExitCode exitcode);
 int get_process_id();
 }

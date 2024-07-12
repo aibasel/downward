@@ -11,9 +11,11 @@
 
 using namespace std;
 namespace landmarks {
-LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(const plugins::Options &opts)
-    : LandmarkFactory(opts),
-      lm_factory(opts.get<shared_ptr<LandmarkFactory>>("lm_factory")) {
+LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(
+    const shared_ptr<LandmarkFactory> &lm_factory,
+    utils::Verbosity verbosity)
+    : LandmarkFactory(verbosity),
+      lm_factory(lm_factory) {
 }
 
 void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<AbstractTask> &task) {
@@ -349,15 +351,12 @@ bool LandmarkFactoryReasonableOrdersHPS::effect_always_happens(
     return eff.empty();
 }
 
-bool LandmarkFactoryReasonableOrdersHPS::computes_reasonable_orders() const {
-    return true;
-}
-
 bool LandmarkFactoryReasonableOrdersHPS::supports_conditional_effects() const {
     return lm_factory->supports_conditional_effects();
 }
 
-class LandmarkFactoryReasonableOrdersHPSFeature : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryReasonableOrdersHPS> {
+class LandmarkFactoryReasonableOrdersHPSFeature
+    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryReasonableOrdersHPS> {
 public:
     LandmarkFactoryReasonableOrdersHPSFeature() : TypedFeature("lm_reasonable_orders_hps") {
         document_title("HPS Orders");
@@ -391,6 +390,14 @@ public:
         document_language_support(
             "conditional_effects",
             "supported if subcomponent supports them");
+    }
+
+    virtual shared_ptr<LandmarkFactoryReasonableOrdersHPS> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<LandmarkFactoryReasonableOrdersHPS>(
+            opts.get<shared_ptr<LandmarkFactory>>("lm_factory"),
+            get_landmark_factory_arguments_from_options(opts));
     }
 };
 

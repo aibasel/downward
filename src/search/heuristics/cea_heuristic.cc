@@ -410,13 +410,14 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(
 }
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
-    const plugins::Options &opts)
-    : Heuristic(opts),
+    bool simple_default_value_axioms, const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates, const string &description,
+    utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, description, verbosity),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (task_properties::has_axioms(task_proxy)) {
-        bool simple = opts.get<bool>("simple_default_value_axioms");
         task = make_shared<tasks::DefaultValueAxiomsTask>(
-            tasks::DefaultValueAxiomsTask(task, simple));
+            tasks::DefaultValueAxiomsTask(task, simple_default_value_axioms));
         task_proxy = TaskProxy(*task);
     }
 
@@ -451,7 +452,8 @@ bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
     return false;
 }
 
-class ContextEnhancedAdditiveHeuristicFeature : public plugins::TypedFeature<Evaluator, ContextEnhancedAdditiveHeuristic> {
+class ContextEnhancedAdditiveHeuristicFeature
+    : public plugins::TypedFeature<Evaluator, ContextEnhancedAdditiveHeuristic> {
 public:
     ContextEnhancedAdditiveHeuristicFeature() : TypedFeature("cea") {
         document_title("Context-enhanced additive heuristic");
@@ -462,8 +464,7 @@ public:
             "rule with an empty body. This makes the heuristic weaker but avoids"
             "a potentially expensive precomputation.",
             "false");
-
-        Heuristic::add_options_to_feature(*this);
+        add_heuristic_options_to_feature(*this, "cea");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");
@@ -477,6 +478,15 @@ public:
         document_property("consistent", "no");
         document_property("safe", "no");
         document_property("preferred operators", "yes");
+    }
+
+    virtual shared_ptr<ContextEnhancedAdditiveHeuristic>
+    create_component(const plugins::Options &opts,
+                     const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<ContextEnhancedAdditiveHeuristic>(
+            opts.get<bool>("simple_default_value_axioms"),
+            get_heuristic_arguments_from_options(opts)
+            );
     }
 };
 

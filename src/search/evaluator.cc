@@ -9,15 +9,15 @@
 using namespace std;
 
 
-Evaluator::Evaluator(const plugins::Options &opts,
-                     bool use_for_reporting_minima,
-                     bool use_for_boosting,
-                     bool use_for_counting_evaluations)
-    : description(opts.get_unparsed_config()),
+Evaluator::Evaluator(
+    bool use_for_reporting_minima, bool use_for_boosting,
+    bool use_for_counting_evaluations, const string &description,
+    utils::Verbosity verbosity)
+    : description(description),
       use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
-      log(utils::get_log_from_options(opts)) {
+      log(utils::get_log_for_verbosity(verbosity)) {
 }
 
 bool Evaluator::dead_ends_are_reliable() const {
@@ -74,8 +74,21 @@ int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
 }
 
-void add_evaluator_options_to_feature(plugins::Feature &feature) {
+void add_evaluator_options_to_feature(
+    plugins::Feature &feature, const string &description) {
+    feature.add_option<string>(
+        "description",
+        "description used to identify evaluator in logs",
+        "\"" + description + "\"");
     utils::add_log_options_to_feature(feature);
+}
+
+tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
+    const plugins::Options &opts) {
+    return tuple_cat(
+        make_tuple(opts.get<string>("description")),
+        utils::get_log_arguments_from_options(opts)
+        );
 }
 
 static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<Evaluator> {

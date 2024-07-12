@@ -6,7 +6,8 @@
 using namespace std;
 
 namespace plugin_eager_wastar {
-class EagerWAstarSearchFeature : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
+class EagerWAstarSearchFeature
+    : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
 public:
     EagerWAstarSearchFeature() : TypedFeature("eager_wastar") {
         document_title("Eager weighted A* search");
@@ -31,7 +32,8 @@ public:
             "w",
             "evaluator weight",
             "1");
-        eager_search::add_options_to_feature(*this);
+        eager_search::add_eager_search_options_to_feature(
+            *this, "eager_wastar");
 
         document_note(
             "Open lists and equivalent statements using general eager search",
@@ -44,10 +46,22 @@ public:
             "is **not** equivalent to\n```\n--search astar(h())\n```\n");
     }
 
-    virtual shared_ptr<eager_search::EagerSearch> create_component(const plugins::Options &options, const utils::Context &) const override {
-        plugins::Options options_copy(options);
-        options_copy.set("open", search_common::create_wastar_open_list_factory(options));
-        return make_shared<eager_search::EagerSearch>(options_copy);
+    virtual shared_ptr<eager_search::EagerSearch> create_component(
+        const plugins::Options &opts,
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
+            search_common::create_wastar_open_list_factory(
+                opts.get_list<shared_ptr<Evaluator>>("evals"),
+                opts.get_list<shared_ptr<Evaluator>>("preferred"),
+                opts.get<int>("boost"),
+                opts.get<int>("w"),
+                opts.get<utils::Verbosity>("verbosity")
+                ),
+            opts.get<bool>("reopen_closed"),
+            opts.get<shared_ptr<Evaluator>>("f_eval", nullptr),
+            opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            eager_search::get_eager_search_arguments_from_options(opts)
+            );
     }
 };
 

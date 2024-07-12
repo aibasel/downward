@@ -16,19 +16,23 @@ using namespace std;
 
 namespace landmarks {
 LandmarkHeuristic::LandmarkHeuristic(
-    const plugins::Options &opts)
-    : Heuristic(opts),
-      use_preferred_operators(opts.get<bool>("pref")),
+    bool simple_default_value_axioms,
+    bool use_preferred_operators,
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
+    : Heuristic(transform, cache_estimates, description, verbosity),
+      use_preferred_operators(use_preferred_operators),
       successor_generator(nullptr) {
     if (task_properties::has_axioms(task_proxy)) {
-        bool simple = opts.get<bool>("simple_default_value_axioms");
         task = make_shared<tasks::DefaultValueAxiomsTask>(
-            tasks::DefaultValueAxiomsTask(task, simple));
+            tasks::DefaultValueAxiomsTask(task, simple_default_value_axioms));
         task_proxy = TaskProxy(*task);
     }
 }
 
-void LandmarkHeuristic::initialize(const plugins::Options &opts) {
+void LandmarkHeuristic::initialize(
+    const shared_ptr<LandmarkFactory> &lm_factory, bool prog_goal,
+    bool prog_gn, bool prog_r) {
     /*
       Actually, we should test if this is the root task or a
       task that *only* transforms costs and/or adds negated axioms.
@@ -45,10 +49,9 @@ void LandmarkHeuristic::initialize(const plugins::Options &opts) {
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
-    compute_landmark_graph(opts);
+    compute_landmark_graph(lm_factory);
     lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(
-        *lm_graph, opts.get<bool>("prog_goal"),
-        opts.get<bool>("prog_gn"), opts.get<bool>("prog_r"));
+        *lm_graph, prog_goal, prog_gn, prog_r);
 
     initial_landmark_graph_has_cycle_of_natural_orderings =
         landmark_graph_has_cycle_of_natural_orderings();
@@ -101,16 +104,15 @@ bool LandmarkHeuristic::depth_first_search_for_cycle_of_natural_orderings(
     return false;
 }
 
-void LandmarkHeuristic::compute_landmark_graph(const plugins::Options &opts) {
+void LandmarkHeuristic::compute_landmark_graph(
+    const shared_ptr<LandmarkFactory> &lm_factory) {
     utils::Timer lm_graph_timer;
     if (log.is_at_least_normal()) {
         log << "Generating landmark graph..." << endl;
     }
 
-    shared_ptr<LandmarkFactory> lm_graph_factory =
-        opts.get<shared_ptr<LandmarkFactory>>("lm_factory");
-    lm_graph = lm_graph_factory->compute_lm_graph(task);
-    assert(lm_graph_factory->achievers_are_calculated());
+    lm_graph = lm_factory->compute_lm_graph(task);
+    assert(lm_factory->achievers_are_calculated());
 
     if (log.is_at_least_normal()) {
         log << "Landmark graph generation time: " << lm_graph_timer << endl;
@@ -201,7 +203,8 @@ void LandmarkHeuristic::notify_state_transition(
     }
 }
 
-void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
+void add_landmark_heuristic_options_to_feature(
+    plugins::Feature &feature, const string &description) {
     feature.document_synopsis(
         "Landmark progression is implemented according to the following paper:"
         + utils::format_conference_reference(
@@ -237,9 +240,25 @@ void LandmarkHeuristic::add_options_to_feature(plugins::Feature &feature) {
         "rule with an empty body. This makes the heuristic weaker but avoids"
         "a potentially expensive precomputation.",
         "false");
-    Heuristic::add_options_to_feature(feature);
+    add_heuristic_options_to_feature(feature, description);
 
     feature.document_property("preferred operators",
                               "yes (if enabled; see ``pref`` option)");
+}
+
+tuple<shared_ptr<LandmarkFactory>, bool, bool, bool, bool, bool,
+      shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
+get_landmark_heuristic_arguments_from_options(
+    const plugins::Options &opts) {
+    return tuple_cat(
+        make_tuple(
+            opts.get<shared_ptr<LandmarkFactory>>("lm_factory"),
+            opts.get<bool>("pref"),
+            opts.get<bool>("prog_goal"),
+            opts.get<bool>("prog_gn"),
+            opts.get<bool>("prog_r"),
+            opts.get<bool>("simple_default_value_axioms")
+            ),
+        get_heuristic_arguments_from_options(opts));
 }
 }
