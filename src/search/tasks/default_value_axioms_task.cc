@@ -3,7 +3,6 @@
 #include "../task_proxy.h"
 
 #include "../algorithms/sccs.h"
-#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 
 #include <deque>

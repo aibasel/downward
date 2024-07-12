@@ -577,6 +577,8 @@ create_fast_downward_library(
     SOURCES
         heuristics/array_pool
         heuristics/relaxation_heuristic
+    DEPENDS
+        default_value_axioms_task
     DEPENDENCY_ONLY
 )
 
@@ -606,6 +608,7 @@ create_fast_downward_library(
     SOURCES
         heuristics/cea_heuristic
     DEPENDS
+        default_value_axioms_task
         domain_transition_graph
         priority_queues
         task_properties
@@ -617,6 +620,7 @@ create_fast_downward_library(
     SOURCES heuristics/cg_heuristic
             heuristics/cg_cache
     DEPENDS
+        default_value_axioms_task
         domain_transition_graph
         priority_queues
         task_properties
@@ -682,8 +686,7 @@ create_fast_downward_library(
     HELP "Core task transformations"
     SOURCES
         tasks/cost_adapted_task
-	tasks/default_value_axioms_task
-	tasks/delegating_task
+        tasks/delegating_task
         tasks/root_task
     CORE_LIBRARY
 )
@@ -697,6 +700,18 @@ create_fast_downward_library(
         tasks/modified_goals_task
         tasks/modified_operator_costs_task
     DEPENDS
+        task_properties
+    DEPENDENCY_ONLY
+)
+
+create_fast_downward_library(
+    NAME default_value_axioms_task
+    HELP "Task transformation adding axioms for the default value of derived variables"
+    SOURCES
+        tasks/default_value_axioms_task
+    DEPENDS
+        core_tasks
+        sccs
         task_properties
     DEPENDENCY_ONLY
 )
@@ -847,6 +862,7 @@ create_fast_downward_library(
         landmarks/landmark_sum_heuristic
         landmarks/util
     DEPENDS
+        default_value_axioms_task
         lp_solver
         priority_queues
         successor_generator
