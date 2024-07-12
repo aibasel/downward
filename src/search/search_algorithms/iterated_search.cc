@@ -279,7 +279,7 @@ public:
             opts.get<OperatorCost>("cost_type"),
             opts.get<int>("bound"),
             opts.get<double>("max_time"),
-            opts.get<string>("name"),
+            opts.get<string>("description"),
             opts.get<utils::Verbosity>("verbosity")
             );
     }

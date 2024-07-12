@@ -46,7 +46,7 @@ public:
         auto temp =
             search_common::create_task_independent_astar_open_list_factory_and_f_eval(
                 opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
-                    opts.get<string>("name"),
+                opts.get<string>("description"),
                 opts.get<utils::Verbosity>("verbosity")
                 );
         options_copy.set("open", temp.first);

@@ -143,8 +143,8 @@ ALIASES["seq-opt-lmcut"] = [
 
 ALIASES["issue559_test1"] = [
     "--search",
-    "let(h, lmcut(name=\"AllTimeLMcut\"),"
-    " iterated([astar(name=\"ASTAR_1\",eval=h),"
+    "let(h, lmcut(description=\"AllTimeLMcut\"),"
+    " iterated([astar(description=\"ASTAR_1\",eval=h),"
     "           eager(tiebreaking([sum([g(\"my_G_Eval\"), "
     "                                   h]), "
     "                              h],"
@@ -156,8 +156,8 @@ ALIASES["issue559_test1"] = [
     "          ]))"] # TODO issue559 remove this
 ALIASES["issue559_test2"] = [
     "--search",
-    "let(h, lmcut(name=\"AllTimeLMcut\"),"
-    " iterated([astar(name=\"ASTAR_1\",eval=h),"
+    "let(h, lmcut(description=\"AllTimeLMcut\"),"
+    " iterated([astar(description=\"ASTAR_1\",eval=h),"
     "           eager(tiebreaking([sum([g(\"my_G_Eval\"), "
     "                                   h]), "
     "                              h],"
@@ -171,12 +171,12 @@ ALIASES["issue559_test2"] = [
     "                              blind()],"
     "                             unsafe_pruning=false"
     "                            )"
-    "                 ,name=\"eager3\")"
+    "                 ,description=\"eager3\")"
     "          ],pass_bound=false))"] # TODO issue559 remove this
 ALIASES["issue559_test3"] = [
     "--search",
-    "let(h, lmcut(name=\"AllTimeLMcut\"),"
-    " iterated([astar(name=\"ASTAR_1\",eval=h),"
+    "let(h, lmcut(description=\"AllTimeLMcut\"),"
+    " iterated([astar(description=\"ASTAR_1\",eval=h),"
     "           eager(tiebreaking([sum([g(\"my_G_Eval\"), "
     "                                   h]), "
     "                              h],"
@@ -190,13 +190,13 @@ ALIASES["issue559_test3"] = [
     "                              blind()],"
     "                             unsafe_pruning=false"
     "                            )"
-    "                 ,name=\"eager3\")"
+    "                 ,description=\"eager3\")"
     "          ],pass_bound=false))"] # TODO issue559 remove this
 ALIASES["issue559_test4"] = [
     "--search",
-    "let(h, lmcut(name=\"AllTimeLMcut\"),"
+    "let(h, lmcut(description=\"AllTimeLMcut\"),"
     " iterated("
-    "[iterated([astar(name=\"ASTAR_1\",eval=h),"
+    "[iterated([astar(description=\"ASTAR_1\",eval=h),"
     "          eager(tiebreaking([sum([g(\"my_G_Eval\"), "
     "                                   h]), "
     "                              h],"
@@ -211,7 +211,7 @@ ALIASES["issue559_test4"] = [
     "                              blind()],"
     "                             unsafe_pruning=false"
     "                            )"
-    "                 ,name=\"eager3\")"
+    "                 ,description=\"eager3\")"
     "          ])"
     "],pass_bound=false))"] # TODO issue559 remove this
 
