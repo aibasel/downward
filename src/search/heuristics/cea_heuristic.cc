@@ -414,8 +414,8 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     bool cache_estimates, const string &description,
     utils::Verbosity verbosity)
     : Heuristic(tasks::get_default_value_axioms_task_if_needed(
-      transform, simple_default_value_axioms),
-      cache_estimates, description, verbosity),
+                    transform, simple_default_value_axioms),
+                cache_estimates, description, verbosity),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing context-enhanced additive heuristic..." << endl;

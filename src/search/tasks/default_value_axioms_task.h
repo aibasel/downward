@@ -81,8 +81,8 @@ public:
 };
 
 extern std::shared_ptr<AbstractTask> get_default_value_axioms_task_if_needed(
-        const std::shared_ptr<AbstractTask> &task,
-        bool simple_default_value_axioms);
+    const std::shared_ptr<AbstractTask> &task,
+    bool simple_default_value_axioms);
 }
 
 #endif

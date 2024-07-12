@@ -23,8 +23,8 @@ CGHeuristic::CGHeuristic(
     bool cache_estimates, const string &description,
     utils::Verbosity verbosity)
     : Heuristic(tasks::get_default_value_axioms_task_if_needed(
-      transform, simple_default_value_axioms),
-      cache_estimates, description, verbosity),
+                    transform, simple_default_value_axioms),
+                cache_estimates, description, verbosity),
       cache_hits(0),
       cache_misses(0),
       helpful_transition_extraction_counter(0),
