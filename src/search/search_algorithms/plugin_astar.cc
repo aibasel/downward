@@ -45,9 +45,9 @@ public:
         plugins::Options options_copy(opts);
         auto temp =
             search_common::create_task_independent_astar_open_list_factory_and_f_eval(
+                opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
                     opts.get<string>("name"),
-                opts.get<utils::Verbosity>("verbosity"),
-                opts.get<shared_ptr<TaskIndependentEvaluator>>("eval")
+                opts.get<utils::Verbosity>("verbosity")
                 );
         options_copy.set("open", temp.first);
         options_copy.set("f_eval", temp.second);
