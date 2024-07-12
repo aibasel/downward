@@ -21,10 +21,10 @@ private:
 protected:
     std::string get_product_name() const override {return "BlindSearchHeuristic";}
 public:
-    explicit TaskIndependentBlindSearchHeuristic(
+    TaskIndependentBlindSearchHeuristic(
                                                  const std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
                                                  bool cache_evaluator_values,
-            const std::string &name,
+                                                 const std::string &description,
                                                  utils::Verbosity verbosity);
 
     virtual ~TaskIndependentBlindSearchHeuristic() override;

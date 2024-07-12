@@ -5,6 +5,7 @@
 
 using namespace std;
 
+
 template<>
 unique_ptr<StateOpenList> OpenListFactory::create_open_list() {
     return create_state_open_list();
@@ -16,8 +17,8 @@ unique_ptr<EdgeOpenList> OpenListFactory::create_open_list() {
 }
 
 TaskIndependentOpenListFactory::TaskIndependentOpenListFactory(
-        const string name, utils::Verbosity verbosity)
-    : TaskIndependentComponent(name, verbosity) {
+        const string &description, utils::Verbosity verbosity)
+    : TaskIndependentComponent(description, verbosity) {
 }
 
 void add_open_list_options_to_feature(

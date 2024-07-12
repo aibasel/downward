@@ -73,10 +73,9 @@ protected:
 
 public:
     Heuristic(
-                       const std::shared_ptr<AbstractTask> task,
+        const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates, const std::string &description,
-        utils::Verbosity verbosity
-        );
+        utils::Verbosity verbosity);
     virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(
@@ -91,16 +90,15 @@ public:
     virtual int get_cached_estimate(const State &state) const override;
 };
 
-
 class TaskIndependentHeuristic : public TaskIndependentEvaluator {
 protected:
     bool cache_evaluator_values;
     std::shared_ptr<TaskIndependentAbstractTask> task_transformation;
 public:
-    explicit TaskIndependentHeuristic(const std::string &name,
-                                      utils::Verbosity verbosity,
-                                      const std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
-                                      bool cache_evaluator_values);
+    TaskIndependentHeuristic(const std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
+                                      bool cache_evaluator_values,
+                                      const std::string &description,
+                                      utils::Verbosity verbosity);
     virtual ~TaskIndependentHeuristic() = default;
 };
 

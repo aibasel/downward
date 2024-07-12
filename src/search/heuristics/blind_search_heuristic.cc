@@ -32,19 +32,16 @@ int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 
-
-
 TaskIndependentBlindSearchHeuristic::TaskIndependentBlindSearchHeuristic(
     const shared_ptr<TaskIndependentAbstractTask> task_transformation,
     bool cache_evaluator_values,
-    const string &name,
+    const string &description,
     utils::Verbosity verbosity)
-    : TaskIndependentHeuristic(name, verbosity, task_transformation, cache_evaluator_values) {
+    : TaskIndependentHeuristic(task_transformation, cache_evaluator_values, description, verbosity) {
 }
 
 TaskIndependentBlindSearchHeuristic::~TaskIndependentBlindSearchHeuristic() {
 }
-
 
 
 using ConcreteProduct = BlindSearchHeuristic;
@@ -79,13 +76,14 @@ std::shared_ptr<ConcreteProduct> Concrete::create_ts(
                                                  task, component_map,
                                                  depth >= 0 ? depth + 1 : depth),
                                             cache_evaluator_values,
-            description,
-                                             verbosity
+                                            description,
+                                            verbosity
                                             );
 }
 
 
-class BlindSearchHeuristicFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentBlindSearchHeuristic> {
+class BlindSearchHeuristicFeature
+    : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentBlindSearchHeuristic> {
 public:
     BlindSearchHeuristicFeature() : TypedFeature("blind") {
         document_title("Blind heuristic");

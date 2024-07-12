@@ -41,17 +41,14 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
 }
 
 SearchAlgorithm::SearchAlgorithm(
-    OperatorCost cost_type,
-    int bound,
-    double max_time,
-    const string &description,
-    utils::Verbosity verbosity,
+    OperatorCost cost_type, int bound, double max_time,
+    const string &description, utils::Verbosity verbosity,
     const shared_ptr<AbstractTask> &_task)
-    : status(IN_PROGRESS),
+    : description(description),
+      status(IN_PROGRESS),
       solution_found(false),
       task(_task),
       task_proxy(*task),
-      description(description),
       log(utils::get_log_for_verbosity(verbosity)),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),

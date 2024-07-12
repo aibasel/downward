@@ -5,7 +5,6 @@
 
 #include <memory>
 
-
 namespace lm_cut_heuristic {
 class LandmarkCutLandmarks;
 
@@ -29,7 +28,7 @@ public:
     TaskIndependentLandmarkCutHeuristic(
             const std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
             bool cache_evaluator_valuesconst,
-            const std::string &name,
+            const std::string &description,
             utils::Verbosity verbosity
             );
 

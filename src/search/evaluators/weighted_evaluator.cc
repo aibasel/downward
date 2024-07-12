@@ -1,9 +1,10 @@
 #include "weighted_evaluator.h"
 
 #include "../evaluation_context.h"
+#include "../evaluation_result.h"
 #include "../plugins/plugin.h"
-#include "../utils/math.h"
 
+#include <cstdlib>
 #include <sstream>
 
 using namespace std;
@@ -43,10 +44,10 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
 TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(
     shared_ptr<TaskIndependentEvaluator> evaluator,
     int weight,
-    const string &name,
+    const string &description,
     utils::Verbosity verbosity)
-    : TaskIndependentEvaluator(name, verbosity, false, false,
-                               false),
+    : TaskIndependentEvaluator(false, false,
+                               false, description, verbosity),
       evaluator(evaluator),
       weight(weight) {
 }
@@ -85,7 +86,8 @@ std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractT
 }
 
 
-class WeightedEvaluatorFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentWeightedEvaluator> {
+class WeightedEvaluatorFeature
+    : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentWeightedEvaluator> {
 public:
     WeightedEvaluatorFeature() : TypedFeature("weight") {
         document_subcategory("evaluators_basic");

@@ -38,9 +38,9 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(
     const shared_ptr<TaskIndependentAbstractTask> task_transformation,
     bool cache_evaluator_values,
-    const string &name,
+    const string &description,
     utils::Verbosity verbosity)
-    : TaskIndependentHeuristic(name, verbosity, task_transformation, cache_evaluator_values) {
+    : TaskIndependentHeuristic(task_transformation, cache_evaluator_values, description, verbosity) {
 }
 
 TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
@@ -88,7 +88,8 @@ std::shared_ptr<ConcreteProduct> Concrete::create_ts(
 }
 
 
-class LandmarkCutHeuristicFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentLandmarkCutHeuristic> {
+class LandmarkCutHeuristicFeature
+    : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentLandmarkCutHeuristic> {
 public:
     LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");

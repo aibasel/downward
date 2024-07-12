@@ -30,7 +30,7 @@ EagerSearch::EagerSearch(
           cost_type, bound, max_time, description, verbosity, task),
       reopen_closed_nodes(reopen_closed),
       open_list(move(open)),
-      f_evaluator(f_eval),    // default nullptr
+      f_evaluator(f_eval),     // default nullptr
       preferred_operator_evaluators(preferred),
       lazy_evaluator(lazy_evaluator),     // default nullptr
       pruning_method(pruning) {

@@ -36,7 +36,7 @@ public:
     explicit TaskIndependentWeightedEvaluator(
         std::shared_ptr<TaskIndependentEvaluator> evaluator,
         int weight,
-        const std::string &name,
+        const std::string &description,
         utils::Verbosity verbosity);
 
     virtual ~TaskIndependentWeightedEvaluator() override = default;

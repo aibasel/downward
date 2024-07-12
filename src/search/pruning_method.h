@@ -44,7 +44,7 @@ public:
 class TaskIndependentPruningMethod : public TaskIndependentComponent {
 public:
     TaskIndependentPruningMethod(
-        const std::string &name,
+        const std::string &description,
         utils::Verbosity verbosity);
     virtual ~TaskIndependentPruningMethod();
 
@@ -53,7 +53,7 @@ public:
                       int depth = -1) const = 0;
 };
 
-extern void add_pruning_options_to_feature(plugins::Feature &feature, const std::string &name);
+extern void add_pruning_options_to_feature(plugins::Feature &feature, const std::string &description);
 extern std::tuple<std::string, utils::Verbosity> get_pruning_arguments_from_options(
     const plugins::Options &opts);
 

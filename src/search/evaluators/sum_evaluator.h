@@ -25,7 +25,7 @@ class TaskIndependentSumEvaluator : public combining_evaluator::TaskIndependentC
 protected:
     std::string get_product_name() const override {return "SumEvaluator";}
 public:
-    explicit TaskIndependentSumEvaluator(
+    TaskIndependentSumEvaluator(
         std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
         const std::string &name,
         utils::Verbosity verbosity);

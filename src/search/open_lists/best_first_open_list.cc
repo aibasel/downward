@@ -138,6 +138,8 @@ public:
             "time. Therefore, inserting and removing an entry from the open list "
             "takes time O(log(n)), where n is the number of buckets.");
     }
+
+
     virtual shared_ptr<TaskIndependentBestFirstOpenListFactory> create_component(
         const plugins::Options &opts,
         const utils::Context &) const override {

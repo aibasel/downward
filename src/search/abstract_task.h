@@ -6,7 +6,6 @@
 
 #include "algorithms/subscriber.h"
 #include "utils/hash.h"
-#include "utils/logging.h"
 
 #include <memory>
 #include <string>

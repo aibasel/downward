@@ -17,11 +17,11 @@ class Options;
 }
 
 class Evaluator : public Component {
+    const std::string description;
     const bool use_for_reporting_minima;
     const bool use_for_boosting;
     const bool use_for_counting_evaluations;
 protected:
-    const std::string description;
     mutable utils::LogProxy log;
 public:
     Evaluator(
@@ -107,11 +107,9 @@ class TaskIndependentEvaluator : public TaskIndependentComponent {
     const bool use_for_counting_evaluations;
 public:
     explicit TaskIndependentEvaluator(
-        const std::string &name,
-        utils::Verbosity verbosity,
-        bool use_for_reporting_minima,
-        bool use_for_boosting,
-        bool use_for_counting_evaluations);
+        bool use_for_reporting_minima, bool use_for_boosting,
+        bool use_for_counting_evaluations,
+        const std::string &description, utils::Verbosity verbosity);
     virtual ~TaskIndependentEvaluator() = default;
 
     virtual std::shared_ptr<Evaluator>

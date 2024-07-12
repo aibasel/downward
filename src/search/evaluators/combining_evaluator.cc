@@ -1,10 +1,9 @@
 #include "combining_evaluator.h"
 
 #include "../evaluation_context.h"
+#include "../evaluation_result.h"
 
 #include "../plugins/plugin.h"
-
-#include <utility>
 
 using namespace std;
 
@@ -58,7 +57,7 @@ TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(
     vector<shared_ptr<TaskIndependentEvaluator>> subevaluators,
     const string &description,
     utils::Verbosity verbosity)
-    : TaskIndependentEvaluator(description, verbosity, false, false, false),
+    : TaskIndependentEvaluator(false, false, false, description, verbosity),
       subevaluators(subevaluators) {
       }
 

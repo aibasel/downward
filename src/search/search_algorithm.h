@@ -32,6 +32,9 @@ class SuccessorGenerator;
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
 class SearchAlgorithm : public Component {
+protected:
+    std::string description;
+private:
     SearchStatus status;
     bool solution_found;
     Plan plan;
@@ -40,7 +43,7 @@ protected:
     const std::shared_ptr<AbstractTask> task;
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
-    const std::string description;
+
     mutable utils::LogProxy log;
     PlanManager plan_manager;
     StateRegistry state_registry;
@@ -61,13 +64,9 @@ protected:
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
     SearchAlgorithm(
-        OperatorCost cost_type,
-        int bound,
-        double max_time,
-        const std::string &description,
-        utils::Verbosity verbosity,
+        OperatorCost cost_type, int bound, double max_time,
+        const std::string &description, utils::Verbosity verbosity,
         const std::shared_ptr<AbstractTask> &task);
-    explicit SearchAlgorithm(const plugins::Options &opts); // TODO options object is needed for iterated search, the prototype for issue559 resolves this
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();

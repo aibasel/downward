@@ -58,15 +58,15 @@ void PruningMethod::print_statistics() const {
     }
 }
 
-TaskIndependentPruningMethod::TaskIndependentPruningMethod(const string &name, utils::Verbosity verbosity)
-    : TaskIndependentComponent(name, verbosity) {
+TaskIndependentPruningMethod::TaskIndependentPruningMethod(const string &description, utils::Verbosity verbosity)
+    : TaskIndependentComponent(description, verbosity) {
 }
 
 TaskIndependentPruningMethod::~TaskIndependentPruningMethod() {
 }
 
-void add_pruning_options_to_feature(plugins::Feature &feature, const string &name) {
-    utils::add_log_options_to_feature(feature, name);
+void add_pruning_options_to_feature(plugins::Feature &feature, const string &description) {
+    utils::add_log_options_to_feature(feature, description);
     feature.document_note(
         "Note on verbosity parameter",
         "Setting verbosity to verbose or higher enables time measurements "

@@ -1,7 +1,7 @@
 #include "g_evaluator.h"
 
 #include "../evaluation_context.h"
-
+#include "../evaluation_result.h"
 #include "../plugins/plugin.h"
 
 using namespace std;
@@ -20,14 +20,14 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
 }
 
 
-
 TaskIndependentGEvaluator::TaskIndependentGEvaluator(const string &name,
                                                      utils::Verbosity verbosity)
-    : TaskIndependentEvaluator(name,
-                               verbosity,
+    : TaskIndependentEvaluator(
                                false,
                                false,
-                               false) {
+                               false,
+                               name,
+                               verbosity) {
 }
 
 using ConcreteProduct = GEvaluator;
@@ -60,9 +60,10 @@ std::shared_ptr<ConcreteProduct> Concrete::create_ts([[maybe_unused]] const shar
 }
 
 
-class TaskIndependentGEvaluatorFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentGEvaluator> {
+class GEvaluatorFeature
+    : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentGEvaluator> {
 public:
-    TaskIndependentGEvaluatorFeature() : TypedFeature("g") {
+    GEvaluatorFeature() : TypedFeature("g") {
         document_subcategory("evaluators_basic");
         document_title("g-value evaluator");
         document_synopsis(
@@ -79,5 +80,5 @@ public:
     }
 };
 
-static plugins::FeaturePlugin<TaskIndependentGEvaluatorFeature> _plugin;
+static plugins::FeaturePlugin<GEvaluatorFeature> _plugin;
 }

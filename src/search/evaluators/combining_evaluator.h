@@ -52,8 +52,6 @@ get_combining_evaluator_arguments_from_options(
     const plugins::Options &opts);
 
 
-
-
 class TaskIndependentCombiningEvaluator : public TaskIndependentEvaluator {
 protected:
     std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators;
@@ -65,4 +63,5 @@ public:
     virtual ~TaskIndependentCombiningEvaluator() override = default;
 };
 }
+
 #endif

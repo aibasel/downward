@@ -3,7 +3,6 @@
 #include "../plugins/plugin.h"
 
 #include <cassert>
-#include <utility>
 
 using namespace std;
 
@@ -12,7 +11,7 @@ SumEvaluator::SumEvaluator(
     const vector<shared_ptr<Evaluator>> &evals,
     const string &description, utils::Verbosity verbosity)
     : CombiningEvaluator(evals, description, verbosity) {
-    }
+}
 
 int SumEvaluator::combine_values(const vector<int> &values) {
     int result = 0;
@@ -71,12 +70,14 @@ std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractT
 }
 
 
-class SumEvaluatorFeature : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentSumEvaluator> {
+class SumEvaluatorFeature
+    : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentSumEvaluator> {
 public:
     SumEvaluatorFeature() : TypedFeature("sum") {
         document_subcategory("evaluators_basic");
         document_title("Sum evaluator");
         document_synopsis("Calculates the sum of the sub-evaluators.");
+
         combining_evaluator::add_combining_evaluator_options_to_feature(
             *this, "sum");
     }

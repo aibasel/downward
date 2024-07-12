@@ -145,6 +145,7 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
     return false;
 }
 
+
 AlternationOpenListFactory::AlternationOpenListFactory(
     const vector<shared_ptr<OpenListFactory>> &sublists, int boost)
     : sublists(sublists),
@@ -152,11 +153,8 @@ AlternationOpenListFactory::AlternationOpenListFactory(
 }
 
 
-class AlternationOpenListFeature : 
-    public plugins::TypedFeature<
-      TaskIndependentOpenListFactory, 
-      TaskIndependentAlternationOpenListFactory> {
-
+class AlternationOpenListFeature
+    : public plugins::TypedFeature<TaskIndependentOpenListFactory, TaskIndependentAlternationOpenListFactory> {
 public:
     AlternationOpenListFeature() : TypedFeature("alt") {
         document_title("Alternation open list");

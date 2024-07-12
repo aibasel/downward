@@ -2,10 +2,14 @@
 #define OPEN_LISTS_BEST_FIRST_OPEN_LIST_H
 
 #include "../evaluator.h"
+#include "../open_list.h"
 #include "../open_list_factory.h"
 
 #include "../plugins/options.h"
+#include "../plugins/plugin.h"
+#include "../utils/memory.h"
 
+#include <cassert>
 #include <deque>
 #include <map>
 
@@ -30,9 +34,8 @@ protected:
                               const Entry &entry) override;
 
 public:
-    explicit BestFirstOpenList(const std::shared_ptr<Evaluator> &eval, bool preferred_only);
-    virtual ~BestFirstOpenList() override = default;
-
+    BestFirstOpenList(const std::shared_ptr<Evaluator> &eval, bool preferred_only);
+    
     virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
@@ -43,10 +46,10 @@ public:
         EvaluationContext &eval_context) const override;
 };
 
-
 template<class Entry>
-BestFirstOpenList<Entry>::BestFirstOpenList(const std::shared_ptr<Evaluator> &evaluator, bool pref_only)
-    : OpenList<Entry>(pref_only),
+BestFirstOpenList<Entry>::BestFirstOpenList(
+    const std::shared_ptr<Evaluator> &evaluator, bool preferred_only)
+    : OpenList<Entry>(preferred_only),
       size(0),
       evaluator(evaluator) {
 }
@@ -65,13 +68,13 @@ public:
 
 
 class TaskIndependentBestFirstOpenListFactory : public TaskIndependentOpenListFactory {
+    std::shared_ptr<TaskIndependentEvaluator> evaluator;
     bool pref_only;
     int size;
-    std::shared_ptr<TaskIndependentEvaluator> evaluator;
 protected:
     std::string get_product_name() const override {return "BestFirstOpenListFactory";}
 public:
-    explicit TaskIndependentBestFirstOpenListFactory(
+    TaskIndependentBestFirstOpenListFactory(
         std::shared_ptr<TaskIndependentEvaluator> evaluator,
         bool pref_only);
     virtual ~TaskIndependentBestFirstOpenListFactory() override = default;

@@ -12,13 +12,13 @@
 
 using namespace std;
 Heuristic::Heuristic(
-    const shared_ptr<AbstractTask> task,
+    const shared_ptr<AbstractTask> &transform,
     bool cache_estimates, const string &description,
     utils::Verbosity verbosity)
     : Evaluator(true, true, true, description, verbosity),
       heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
       cache_evaluator_values(cache_estimates),
-      task(task),
+      task(transform),
       task_proxy(*task) {
 }
 
@@ -119,11 +119,10 @@ int Heuristic::get_cached_estimate(const State &state) const {
     return heuristic_cache[state].h;
 }
 
-TaskIndependentHeuristic::TaskIndependentHeuristic(const string &name,
-                                                   utils::Verbosity verbosity,
-                                                   const shared_ptr<TaskIndependentAbstractTask> task_transformation,
-                                                   bool cache_evaluator_values
-                                                   )
-    : TaskIndependentEvaluator(name, verbosity, true, true, true),
+TaskIndependentHeuristic::TaskIndependentHeuristic(const shared_ptr<TaskIndependentAbstractTask> task_transformation,
+                                                   bool cache_evaluator_values,
+                                                   const string &description,
+                                                   utils::Verbosity verbosity)
+    : TaskIndependentEvaluator(true, true, true, description, verbosity),
       cache_evaluator_values(cache_evaluator_values), task_transformation(task_transformation) {
 }

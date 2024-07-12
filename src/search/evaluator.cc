@@ -13,10 +13,10 @@ Evaluator::Evaluator(
     bool use_for_reporting_minima, bool use_for_boosting,
     bool use_for_counting_evaluations, const string &description,
     utils::Verbosity verbosity)
-    : use_for_reporting_minima(use_for_reporting_minima),
+    : description(description),
+      use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
-      description(description),
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 
@@ -74,12 +74,11 @@ int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
 }
 
-TaskIndependentEvaluator::TaskIndependentEvaluator(const string &name,
-                                                   utils::Verbosity verbosity,
-                                                   bool use_for_reporting_minima,
-                                                   bool use_for_boosting,
-                                                   bool use_for_counting_evaluations)
-    : TaskIndependentComponent(name, verbosity),
+TaskIndependentEvaluator::TaskIndependentEvaluator(
+        bool use_for_reporting_minima, bool use_for_boosting,
+        bool use_for_counting_evaluations,
+        const std::string &description, utils::Verbosity verbosity)
+    : TaskIndependentComponent(description, verbosity),
       use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations) {
@@ -87,10 +86,6 @@ TaskIndependentEvaluator::TaskIndependentEvaluator(const string &name,
 
 void add_evaluator_options_to_feature(
     plugins::Feature &feature, const string &description) {
-    //feature.add_option<string>(
-    //    "description",
-    //    "description used to identify evaluator in logs",
-    //    "\"" + description + "\"");
     utils::add_log_options_to_feature(feature, description);
 }
 
