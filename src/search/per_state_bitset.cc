@@ -63,6 +63,14 @@ int BitsetView::count() const {
     return result;
 }
 
+void BitsetView::copy_from(const BitsetView& other) {
+    assert(num_bits == other.num_bits);
+    // for (int i = 0; i < data.size(); i++){
+    // 	data[i] = other.data[i];
+    // }
+    data.copy_from(other.data);
+}
+
 static vector<BitsetMath::Block> pack_bit_vector(const vector<bool> &bits) {
     int num_bits = bits.size();
     int num_blocks = BitsetMath::compute_num_blocks(num_bits);

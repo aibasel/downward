@@ -63,6 +63,7 @@ public:
     void intersect(const BitsetView &other);
     int size() const;
     int count() const;
+    void copy_from(const BitsetView& other);
 };
 
 
