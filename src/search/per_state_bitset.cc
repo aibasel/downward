@@ -55,6 +55,13 @@ int BitsetView::size() const {
     return num_bits;
 }
 
+int BitsetView::count() const {
+    int result = 0;
+    for (int i = 0; i < data.size(); i++){
+	result += std::popcount(data[i]);
+    }
+    return result;
+}
 
 static vector<BitsetMath::Block> pack_bit_vector(const vector<bool> &bits) {
     int num_bits = bits.size();

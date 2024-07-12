@@ -62,6 +62,7 @@ public:
     bool test(int index) const;
     void intersect(const BitsetView &other);
     int size() const;
+    int count() const;
 };
 
 
