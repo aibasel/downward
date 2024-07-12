@@ -154,6 +154,38 @@ public:
         }
         return true;
     }
+
+    void update_and(const DynamicBitset &other) {
+        assert(size() == other.size());
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+	    blocks[i] &= other.blocks[i];
+        }
+    }
+    void update_or(const DynamicBitset &other) {
+        assert(size() == other.size());
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+	    blocks[i] |= other.blocks[i];
+        }
+    }
+    void update_andc(const DynamicBitset &other) { // and complement
+        assert(size() == other.size());
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+	    blocks[i] &= ~(other.blocks[i]);
+        }
+    }
+    void update_orc(const DynamicBitset &other) { // or complement
+        assert(size() == other.size());
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+	    blocks[i] |= ~(other.blocks[i]);
+        }
+    }
+    void update_xor(const DynamicBitset &other) {
+        assert(size() == other.size());
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+	    blocks[i] ^= other.blocks[i];
+        }
+    }
+
 };
 
 template<typename Block>
