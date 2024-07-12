@@ -54,7 +54,6 @@ struct UnaryOperator {
 
 static_assert(sizeof(UnaryOperator) == 28, "UnaryOperator has wrong size");
 
-
 class RelaxationHeuristic : public Heuristic {
     void build_unary_operators(const OperatorProxy &op);
     void simplify();

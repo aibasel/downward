@@ -22,17 +22,13 @@ CGHeuristic::CGHeuristic(
     const shared_ptr<AbstractTask> &transform,
     bool cache_estimates, const string &description,
     utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, description, verbosity),
+    : Heuristic(tasks::get_default_value_axioms_task_if_needed(
+      transform, simple_default_value_axioms),
+      cache_estimates, description, verbosity),
       cache_hits(0),
       cache_misses(0),
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
-    if (task_properties::has_axioms(task_proxy)) {
-        task = make_shared<tasks::DefaultValueAxiomsTask>(
-            tasks::DefaultValueAxiomsTask(task, simple_default_value_axioms));
-        task_proxy = TaskProxy(*task);
-    }
-
     if (log.is_at_least_normal()) {
         log << "Initializing causal graph heuristic..." << endl;
     }

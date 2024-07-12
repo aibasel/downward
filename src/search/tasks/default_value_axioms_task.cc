@@ -4,6 +4,7 @@
 
 #include "../algorithms/sccs.h"
 #include "../plugins/plugin.h"
+#include "../task_utils/task_properties.h"
 
 #include <deque>
 #include <iostream>
@@ -382,5 +383,16 @@ FactPair DefaultValueAxiomsTask::get_operator_effect(
 
 int DefaultValueAxiomsTask::get_num_axioms() const {
     return parent->get_num_axioms() + default_value_axioms.size();
+}
+
+shared_ptr<AbstractTask> get_default_value_axioms_task_if_needed(
+        const std::shared_ptr<AbstractTask> &task,
+        bool simple_default_value_axioms) {
+    TaskProxy proxy(*task);
+    if (task_properties::has_axioms(proxy)) {
+        return make_shared<tasks::DefaultValueAxiomsTask>(
+                DefaultValueAxiomsTask(task, simple_default_value_axioms));
+    }
+    return task;
 }
 }

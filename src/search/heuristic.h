@@ -55,8 +55,7 @@ protected:
     bool cache_evaluator_values;
 
     // Hold a reference to the task implementation and pass it to objects that need it.
-    // TODO: reinstate const if possible
-    std::shared_ptr<AbstractTask> task;
+    const std::shared_ptr<AbstractTask> task;
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
 

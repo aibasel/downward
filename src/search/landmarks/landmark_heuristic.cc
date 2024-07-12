@@ -9,7 +9,6 @@
 #include "../tasks/cost_adapted_task.h"
 #include "../tasks/default_value_axioms_task.h"
 #include "../tasks/root_task.h"
-#include "../task_utils/task_properties.h"
 #include "../utils/markup.h"
 
 using namespace std;
@@ -20,14 +19,11 @@ LandmarkHeuristic::LandmarkHeuristic(
     bool use_preferred_operators,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, description, verbosity),
+    : Heuristic(tasks::get_default_value_axioms_task_if_needed(
+      transform, simple_default_value_axioms),
+      cache_estimates, description, verbosity),
       use_preferred_operators(use_preferred_operators),
       successor_generator(nullptr) {
-    if (task_properties::has_axioms(task_proxy)) {
-        task = make_shared<tasks::DefaultValueAxiomsTask>(
-            tasks::DefaultValueAxiomsTask(task, simple_default_value_axioms));
-        task_proxy = TaskProxy(*task);
-    }
 }
 
 void LandmarkHeuristic::initialize(
