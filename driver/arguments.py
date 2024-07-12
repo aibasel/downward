@@ -5,6 +5,7 @@ import sys
 
 from . import aliases
 from . import returncodes
+from . import tab_completion
 from . import util
 
 
@@ -394,7 +395,7 @@ def parse_args():
     driver_other.add_argument(
         "--alias", choices=aliases.ALIASES,
         help="run a config with an alias (e.g. seq-sat-lama-2011)")
-    driver_other.add_argument(
+    build_arg = driver_other.add_argument(
         "--build",
         help="BUILD can be a predefined build name like release "
             "(default) and debug, a custom build name, or the path to "
@@ -403,6 +404,7 @@ def parse_args():
             "this path does not exist, it tries the directory "
             "'<repo>/builds/BUILD/bin', where the build script creates "
             "them by default.")
+    tab_completion.add_build_arg_completer(build_arg)
     driver_other.add_argument(
         "--debug", action="store_true",
         help="alias for --build=debug --validate")
@@ -441,9 +443,10 @@ def parse_args():
         "--cleanup", action="store_true",
         help="clean up temporary files (translator output and plan files) and exit")
 
-    parser.add_argument(
+    planner_args = parser.add_argument(
         "planner_args", nargs=argparse.REMAINDER,
         help="file names and options passed on to planner components")
+    tab_completion.add_planner_args_completer(planner_args)
 
     # Using argparse.REMAINDER relies on the fact that the first
     # argument that doesn't belong to the driver doesn't look like an
@@ -452,12 +455,7 @@ def parse_args():
     # can be used as an explicit separator. For example, "./fast-downward.py --
     # --help" passes "--help" to the search code.
 
-    try:
-        import argcomplete
-        argcomplete.autocomplete(parser)
-    except ImportError:
-        pass
-
+    tab_completion.enable(parser)
     args = parser.parse_args()
 
     if args.sas_file:
