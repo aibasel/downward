@@ -64,6 +64,11 @@ public:
     int size() const;
     int count() const;
     void copy_from(const BitsetView& other);
+    void update_and(const BitsetView &other);
+    void update_or(const BitsetView &other);
+    void update_andc(const BitsetView &other);
+    void update_orc(const BitsetView &other);
+    void update_xor(const BitsetView &other);
 };
 
 

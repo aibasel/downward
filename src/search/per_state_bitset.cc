@@ -71,6 +71,38 @@ void BitsetView::copy_from(const BitsetView& other) {
     data.copy_from(other.data);
 }
 
+
+void BitsetView::update_and(const BitsetView &other) {
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] &= other.data[i];
+    }
+}
+void BitsetView::update_or(const BitsetView &other) {
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] |= other.data[i];
+    }
+}
+void BitsetView::update_andc(const BitsetView &other) { // and complement
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] &= ~(other.data[i]);
+    }
+}
+void BitsetView::update_orc(const BitsetView &other) { // or complement
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] |= ~(other.data[i]);
+    }
+}
+void BitsetView::update_xor(const BitsetView &other) {
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] ^= other.data[i];
+    }
+}
+
 static vector<BitsetMath::Block> pack_bit_vector(const vector<bool> &bits) {
     int num_bits = bits.size();
     int num_blocks = BitsetMath::compute_num_blocks(num_bits);
