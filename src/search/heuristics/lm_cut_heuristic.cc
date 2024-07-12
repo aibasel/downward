@@ -3,7 +3,11 @@
 #include "lm_cut_landmarks.h"
 
 #include "../tasks/cost_adapted_task.h"
+#include "../task_proxy.h"
 #include "../plugins/plugin.h"
+#include "../task_utils/task_properties.h"
+#include "../utils/logging.h"
+#include "../utils/memory.h"
 
 #include <iostream>
 
@@ -36,18 +40,15 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 
 
 TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(
-    const shared_ptr<TaskIndependentAbstractTask> task_transformation,
-    bool cache_evaluator_values,
+    const shared_ptr<TaskIndependentAbstractTask> transform,
+    bool cache_estimates,
     const string &description,
     utils::Verbosity verbosity)
-    : TaskIndependentHeuristic(task_transformation, cache_evaluator_values, description, verbosity) {
+    : TaskIndependentHeuristic(transform, cache_estimates, description, verbosity) {
 }
 
 TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
 }
-
-
-
 
 
 using ConcreteProduct = LandmarkCutHeuristic;

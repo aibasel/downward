@@ -5,6 +5,7 @@
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <limits>
 #include <utility>
@@ -33,11 +34,11 @@ int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
 
 
 TaskIndependentBlindSearchHeuristic::TaskIndependentBlindSearchHeuristic(
-    const shared_ptr<TaskIndependentAbstractTask> task_transformation,
-    bool cache_evaluator_values,
+    const shared_ptr<TaskIndependentAbstractTask> transform,
+    bool cache_estimates,
     const string &description,
     utils::Verbosity verbosity)
-    : TaskIndependentHeuristic(task_transformation, cache_evaluator_values, description, verbosity) {
+    : TaskIndependentHeuristic(transform, cache_estimates, description, verbosity) {
 }
 
 TaskIndependentBlindSearchHeuristic::~TaskIndependentBlindSearchHeuristic() {

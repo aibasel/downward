@@ -22,8 +22,8 @@ protected:
     std::string get_product_name() const override {return "BlindSearchHeuristic";}
 public:
     TaskIndependentBlindSearchHeuristic(
-                                                 const std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
-                                                 bool cache_evaluator_values,
+                                                 const std::shared_ptr<TaskIndependentAbstractTask> transform,
+                                                 bool cache_estimates,
                                                  const std::string &description,
                                                  utils::Verbosity verbosity);
 

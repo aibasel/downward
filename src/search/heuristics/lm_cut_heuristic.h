@@ -26,8 +26,8 @@ protected:
     std::string get_product_name() const override {return "LandmarkCutHeuristic";}
 public:
     TaskIndependentLandmarkCutHeuristic(
-            const std::shared_ptr<TaskIndependentAbstractTask> task_transformation,
-            bool cache_evaluator_valuesconst,
+            const std::shared_ptr<TaskIndependentAbstractTask> transform,
+            bool cache_estimates,
             const std::string &description,
             utils::Verbosity verbosity
             );
