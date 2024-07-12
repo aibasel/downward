@@ -15,18 +15,6 @@ using utils::ExitCode;
 
 namespace alternation_open_list {
 
-unique_ptr<StateOpenList>
-AlternationOpenListFactory::create_state_open_list() {
-    return make_unique<AlternationOpenList<StateOpenListEntry>>(sublists, boost);
-}
-
-
-unique_ptr<EdgeOpenList>
-AlternationOpenListFactory::create_edge_open_list() {
-    return make_unique<AlternationOpenList<EdgeOpenListEntry>>(sublists, boost);
-}
-
-
 TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFactory(
     vector<shared_ptr<TaskIndependentOpenListFactory>> open_list_factories,
     int boost_amount
@@ -151,6 +139,18 @@ AlternationOpenListFactory::AlternationOpenListFactory(
     : sublists(sublists),
       boost(boost) {
 }
+
+unique_ptr<StateOpenList>
+AlternationOpenListFactory::create_state_open_list() {
+    return make_unique<AlternationOpenList<StateOpenListEntry>>(sublists, boost);
+}
+
+
+unique_ptr<EdgeOpenList>
+AlternationOpenListFactory::create_edge_open_list() {
+    return make_unique<AlternationOpenList<EdgeOpenListEntry>>(sublists, boost);
+}
+
 
 
 class AlternationOpenListFeature
