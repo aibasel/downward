@@ -184,6 +184,44 @@ shared_ptr<SearchAlgorithm> parse_cmd_line(
     return parse_cmd_line_aux(args);
 }
 
+vector<string> complete_args(const string &current_word, const vector<string> &args) {
+    assert(!args.empty()); // args[0] is always the program name.
+    const string &last_arg = args.back();
+    vector<string> suggestions;
+    if (find(args.begin(), args.end(), "--help") != args.end()) {
+        suggestions.push_back("--txt2tags");
+        plugins::Registry registry = plugins::RawRegistry::instance()->construct_registry();
+        for (const shared_ptr<const plugins::Feature> &feature : registry.get_features()) {
+            suggestions.push_back(feature->get_key());
+        }
+    } else if (last_arg == "--internal-plan-file") {
+        // suggest filename starting with current_word
+    } else if (last_arg == "--internal-previous-portfolio-plans") {
+        // no suggestions, integer expected
+    } else if (last_arg == "--search") {
+        // suggestions in search string based on current_word
+    } else {
+        // not completing an argument
+        suggestions.push_back("--help");
+        suggestions.push_back("--search");
+        suggestions.push_back("--internal-plan-file");
+        suggestions.push_back("--internal-previous-portfolio-plans");
+        suggestions.push_back("--if-unit-cost");
+        suggestions.push_back("--if-non-unit-cost");
+        suggestions.push_back("--always");
+        // remove suggestions not starting with current_word
+    }
+
+    if (!current_word.empty()) {
+        // Suggest only words that match with current_word
+        suggestions.erase(
+            remove_if(suggestions.begin(), suggestions.end(),
+            [&](const string &value) {
+                return !value.starts_with(current_word);
+            }), suggestions.end());
+    }
+    return suggestions;
+}
 
 string usage(const string &progname) {
     return "usage: \n" +
