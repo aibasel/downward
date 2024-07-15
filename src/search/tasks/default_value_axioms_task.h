@@ -16,6 +16,10 @@ class Options;
   that together represent ¬v <- ¬c_1 ^ ... ^ ¬c_n.
 
   Notes:
+   - Technically, this transformation is illegal since it adds axioms which set
+   derived variables to their default value. Do not use it for search; the
+   axiom evaluator expects that all axioms set variables to their non-default
+   values (checked with an assertion).
    - We assume that derived variables are binary.
    - THE TRANSFORMATION CAN BE SLOW! The rule ¬v <- ¬c_1 ^ ... ^ ¬c_n must
    be split up into axioms whose conditions are simple conjunctions. Since
