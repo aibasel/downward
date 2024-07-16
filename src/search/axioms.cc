@@ -32,7 +32,7 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
             assert(effect.value != variables[effect.var].get_default_axiom_value());
             AxiomLiteral *eff_literal = &axiom_literals[effect.var][effect.value];
             rules.emplace_back(
-                    num_conditions, effect.var, effect.value, eff_literal);
+                num_conditions, effect.var, effect.value, eff_literal);
         }
 
         // Cross-reference rules and literals

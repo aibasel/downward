@@ -24,7 +24,7 @@ LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     CostPartitioningMethod cost_partitioning, bool alm,
     lp::LPSolverType lpsolver)
     : LandmarkHeuristic(
-        axiom_handling, pref, transform, cache_estimates, description, verbosity) {
+          axiom_handling, pref, transform, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;
     }

@@ -399,27 +399,27 @@ shared_ptr<AbstractTask> get_default_value_axioms_task_if_needed(
 
 void add_axioms_option_to_feature(plugins::Feature &feature) {
     feature.add_option<AxiomHandlingType>(
-            "axioms",
-            "How to compute axioms that describe how the negated "
-            "(=default) value of a derived variable can be achieved.",
-            "approximate_negative_cycles");
+        "axioms",
+        "How to compute axioms that describe how the negated "
+        "(=default) value of a derived variable can be achieved.",
+        "approximate_negative_cycles");
 }
 std::tuple<AxiomHandlingType> get_axioms_arguments_from_options(
-        const plugins::Options &opts) {
+    const plugins::Options &opts) {
     return make_tuple<AxiomHandlingType>(
         opts.get<AxiomHandlingType>("axioms"));
 }
 
 static plugins::TypedEnumPlugin<AxiomHandlingType> _enum_plugin({
-    {"approximate_negative",
-     "Overapproximate negated axioms for all derived variables by "
-     "setting an empty condition, indicating the default value can "
-     "always be achieved for free."},
-    {"approximate_negative_cycles",
-     "Overapproximate negated axioms for all derived variables which "
-     "have cyclic dependencies by setting an empty condition, "
-     "indicating the default value can always be achieved for free."
-     "For all other derived variables, the negated axioms are computed"
-     "exactly."}
+        {"approximate_negative",
+         "Overapproximate negated axioms for all derived variables by "
+         "setting an empty condition, indicating the default value can "
+         "always be achieved for free."},
+        {"approximate_negative_cycles",
+         "Overapproximate negated axioms for all derived variables which "
+         "have cyclic dependencies by setting an empty condition, "
+         "indicating the default value can always be achieved for free."
+         "For all other derived variables, the negated axioms are computed"
+         "exactly."}
     });
 }

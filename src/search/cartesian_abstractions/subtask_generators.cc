@@ -36,7 +36,7 @@ public:
         const shared_ptr<AbstractTask> &task)
         : hadd(utils::make_unique_ptr<additive_heuristic::AdditiveHeuristic>(
                    tasks::AxiomHandlingType::APPROXIMATE_NEGATIVE, task,
-                   false, "h^add within CEGAR abstractions", 
+                   false, "h^add within CEGAR abstractions",
                    utils::Verbosity::SILENT)) {
         TaskProxy task_proxy(*task);
         hadd->compute_heuristic_for_cegar(task_proxy.get_initial_state());
