@@ -72,6 +72,11 @@ void BitsetView::copy_from(const BitsetView& other) {
 }
 
 
+void BitsetView::update_not() {
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] = ~data[i];
+    }
+}
 void BitsetView::update_and(const BitsetView &other) {
     assert(size() == other.size());
     for (int i = 0; i < data.size(); ++i) {
