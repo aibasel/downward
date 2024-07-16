@@ -39,7 +39,7 @@ public:
         const plugins::Options &opts,
         const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<TaskIndependentNullPruningMethod>(
-                get_pruning_arguments_from_options(opts));
+            get_pruning_arguments_from_options(opts));
     }
 };
 

@@ -24,11 +24,10 @@ private:
     bool cache_evaluator_values;
 public:
     TaskIndependentLandmarkCutHeuristic(
-            const std::shared_ptr<TaskIndependentAbstractTask> transform,
-            bool cache_estimates,
-            const std::string &description,
-            utils::Verbosity verbosity
-            );
+        const std::shared_ptr<TaskIndependentAbstractTask> transform,
+        bool cache_estimates,
+        const std::string &description,
+        utils::Verbosity verbosity);
 
     virtual ~TaskIndependentLandmarkCutHeuristic()  override;
 

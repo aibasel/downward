@@ -36,7 +36,6 @@ public:
     virtual ~TaskIndependentOpenListFactory() = default;
 
     TaskIndependentOpenListFactory(const TaskIndependentOpenListFactory &) = delete;
-
 };
 
 extern void add_open_list_options_to_feature(

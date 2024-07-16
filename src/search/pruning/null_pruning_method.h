@@ -16,8 +16,8 @@ public:
 class TaskIndependentNullPruningMethod : public TaskIndependentPruningMethod {
 public:
     TaskIndependentNullPruningMethod(
-            const std::string &description,
-            utils::Verbosity verbosity);
+        const std::string &description,
+        utils::Verbosity verbosity);
 
     virtual ~TaskIndependentNullPruningMethod() override = default;
 

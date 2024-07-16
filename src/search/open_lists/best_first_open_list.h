@@ -35,7 +35,7 @@ protected:
 
 public:
     BestFirstOpenList(const std::shared_ptr<Evaluator> &eval, bool preferred_only);
-    
+
     virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;

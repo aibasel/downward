@@ -56,13 +56,13 @@ std::shared_ptr<Evaluator> TaskIndependentLandmarkCutHeuristic::create_ts(
     std::unique_ptr<ComponentMap> &component_map,
     int depth) const {
     return make_shared<LandmarkCutHeuristic>(
-                                             task_transformation->get_task_specific(
-                                                 task, component_map,
-                                                 depth >= 0 ? depth + 1 : depth),
-                                             cache_evaluator_values,
-                                             description,
-                                             verbosity
-                                             );
+        task_transformation->get_task_specific(
+            task, component_map,
+            depth >= 0 ? depth + 1 : depth),
+        cache_evaluator_values,
+        description,
+        verbosity
+        );
 }
 
 

@@ -11,7 +11,6 @@
 using namespace std;
 
 namespace standard_scalar_open_list {
-
 template<class Entry>
 void BestFirstOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
@@ -88,7 +87,7 @@ TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory
 }
 
 std::shared_ptr<OpenListFactory> TaskIndependentBestFirstOpenListFactory::create_ts(const shared_ptr <AbstractTask> &task,
-                                                     unique_ptr <ComponentMap> &component_map, int depth) const {
+                                                                                    unique_ptr <ComponentMap> &component_map, int depth) const {
     return make_shared<BestFirstOpenListFactory>(
         evaluator->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth),
         pref_only);

@@ -158,8 +158,8 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(
 }
 
 std::shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_ts(const shared_ptr <AbstractTask> &task,
-                                                     [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
-                                                     [[maybe_unused]] int depth) const {
+                                                                          [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
+                                                                          [[maybe_unused]] int depth) const {
     return make_shared<IteratedSearch>(search_algorithms,
                                        pass_bound,
                                        repeat_last_phase,

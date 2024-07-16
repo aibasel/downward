@@ -23,16 +23,16 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
 TaskIndependentGEvaluator::TaskIndependentGEvaluator(const string &description,
                                                      utils::Verbosity verbosity)
     : TaskIndependentEvaluator(
-                               false,
-                               false,
-                               false,
-                               description,
-                               verbosity) {
+          false,
+          false,
+          false,
+          description,
+          verbosity) {
 }
 
 std::shared_ptr<Evaluator> TaskIndependentGEvaluator::create_ts([[maybe_unused]] const shared_ptr <AbstractTask> &task,
-                                                     [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
-                                                     [[maybe_unused]] int depth) const {
+                                                                [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
+                                                                [[maybe_unused]] int depth) const {
     return make_shared<GEvaluator>(description, verbosity);
 }
 

@@ -20,10 +20,10 @@ private:
     bool cache_evaluator_values;
 public:
     TaskIndependentBlindSearchHeuristic(
-                                                 const std::shared_ptr<TaskIndependentAbstractTask> transform,
-                                                 bool cache_estimates,
-                                                 const std::string &description,
-                                                 utils::Verbosity verbosity);
+        const std::shared_ptr<TaskIndependentAbstractTask> transform,
+        bool cache_estimates,
+        const std::string &description,
+        utils::Verbosity verbosity);
 
     virtual ~TaskIndependentBlindSearchHeuristic() override;
 

@@ -96,9 +96,9 @@ protected:
     std::shared_ptr<TaskIndependentAbstractTask> task_transformation;
 public:
     TaskIndependentHeuristic(const std::shared_ptr<TaskIndependentAbstractTask> &task_transformation,
-                                      bool cache_evaluator_values,
-                                      const std::string &description,
-                                      utils::Verbosity verbosity);
+                             bool cache_evaluator_values,
+                             const std::string &description,
+                             utils::Verbosity verbosity);
     virtual ~TaskIndependentHeuristic() = default;
 };
 

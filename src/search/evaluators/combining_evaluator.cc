@@ -59,7 +59,7 @@ TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(
     utils::Verbosity verbosity)
     : TaskIndependentEvaluator(false, false, false, description, verbosity),
       subevaluators(subevaluators) {
-      }
+}
 
 void add_combining_evaluator_options_to_feature(
     plugins::Feature &feature, const string &description) {
