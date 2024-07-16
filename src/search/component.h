@@ -1,5 +1,5 @@
-#ifndef FAST_DOWNWARD_COMPONENT_H
-#define FAST_DOWNWARD_COMPONENT_H
+#ifndef COMPONENT_H
+#define COMPONENT_H
 
 #include "utils/logging.h"
 #include "utils/hash.h"
