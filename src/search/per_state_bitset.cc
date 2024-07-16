@@ -108,6 +108,19 @@ void BitsetView::update_xor(const BitsetView &other) {
     }
 }
 
+BitsetView& BitsetView::operator&=(const BitsetView &other){
+    update_and(other);
+    return *this;
+}
+BitsetView& BitsetView::operator|=(const BitsetView &other){
+    update_or(other);
+    return *this;
+}
+BitsetView& BitsetView::operator^=(const BitsetView &other){
+    update_xor(other);
+    return *this;
+}
+
 static vector<BitsetMath::Block> pack_bit_vector(const vector<bool> &bits) {
     int num_bits = bits.size();
     int num_blocks = BitsetMath::compute_num_blocks(num_bits);

@@ -70,6 +70,9 @@ public:
     void update_andc(const BitsetView &other);
     void update_orc(const BitsetView &other);
     void update_xor(const BitsetView &other);
+    BitsetView& operator&=(const BitsetView &other);
+    BitsetView& operator|=(const BitsetView &other);
+    BitsetView& operator^=(const BitsetView &other);
 };
 
 
