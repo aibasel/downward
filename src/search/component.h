@@ -13,15 +13,11 @@ public:
     virtual ~Component() = default;
 };
 
-class TaskIndependentComponentBase {
-    public :
-        virtual std::string get_description() const {return "baseClass";}
-        virtual ~TaskIndependentComponentBase() = default;
-};
+class TaskIndependentComponentBase { };
 
-using ComponentMap = utils::HashMap<const TaskIndependentComponentBase*, std::shared_ptr<Component>>;
+using ComponentMap = utils::HashMap<const TaskIndependentComponentBase *, std::shared_ptr<Component>>;
 
-template <typename AbstractProduct>
+template<typename AbstractProduct>
 class TaskIndependentComponent : public TaskIndependentComponentBase {
 protected:
     const std::string description;
@@ -39,7 +35,7 @@ public:
         [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map, int depth) const {
         std::shared_ptr<AbstractProduct> task_specific_x;
-        const TaskIndependentComponentBase *key = static_cast<const TaskIndependentComponentBase*>(this);
+        const TaskIndependentComponentBase *key = static_cast<const TaskIndependentComponentBase *>(this);
         if (component_map->count(key)) {
             log << std::string(depth, ' ')
                 << "Reusing task specific component '" << description
