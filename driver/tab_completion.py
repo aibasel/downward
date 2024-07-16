@@ -1,3 +1,4 @@
+import argparse
 from pathlib import Path
 import subprocess
 
@@ -87,7 +88,7 @@ def add_build_arg_completer(build_arg):
     build_arg.completer = _build_arg_completion
 
 
-def _planner_args_completion(prefix, parsed_args, **kwargs):
+def _planner_args_completion(prefix, parser, parsed_args, **kwargs):
     if HAS_ARGCOMPLETE:
         if parsed_args.build and parsed_args.debug:
             argcomplete.warn("The option --debug is an alias for --build=debug "
@@ -132,9 +133,23 @@ def _planner_args_completion(prefix, parsed_args, **kwargs):
 
             else:
                 completions.append("--search-options")
-                completions.append("--great-translate-options")
 
-        if len(filenames) < 2 and not double_dash_in_options and not curr_options:
+                tranlator_arguments = Path(util.REPO_ROOT_DIR) / "builds" / build / "bin" / "translate" / "arguments.py"
+                import importlib.util
+                import sys
+                spec = importlib.util.spec_from_file_location("arguments", tranlator_arguments)
+                arguments = importlib.util.module_from_spec(spec)
+                sys.modules["arguments"] = arguments
+                spec.loader.exec_module(arguments)
+
+                # We create a new parser that will handle the autocompletion
+                # for the translator
+                new_parser = argparse.ArgumentParser()
+                arguments.add_args(new_parser, False)
+                new_parser.add_argument("--search-options", action="store_false")
+                argcomplete.autocomplete(new_parser)
+
+        if len(filenames) < 2 and not double_dash_in_options and not curr_options and "--translate-options" not in options and not "--search-options" not in options:
             file_completer = argcomplete.FilesCompleter()
             completions += file_completer(prefix, **kwargs)
 
