@@ -16,9 +16,9 @@ using utils::ExitCode;
 namespace tasks {
 DefaultValueAxiomsTask::DefaultValueAxiomsTask(
     const shared_ptr<AbstractTask> &parent,
-    AxiomHandlingType axiom_handling)
+    AxiomHandlingType axioms)
     : DelegatingTask(parent),
-      axiom_handling(axiom_handling),
+      axioms(axioms),
       default_value_axioms_start_index(parent->get_num_axioms()) {
     TaskProxy task_proxy(*parent);
 
@@ -61,7 +61,7 @@ DefaultValueAxiomsTask::DefaultValueAxiomsTask(
     vector<vector<int>> sccs;
     vector<vector<int> *> var_to_scc;
     // We don't need the sccs if we set axioms "v=default <- {}" everywhere.
-    if (axiom_handling == AxiomHandlingType::APPROXIMATE_NEGATIVE_CYCLES) {
+    if (axioms == AxiomHandlingType::APPROXIMATE_NEGATIVE_CYCLES) {
         sccs = sccs::compute_maximal_sccs(nondefault_dependencies);
         var_to_scc = vector<vector<int> *>(
             task_proxy.get_variables().size(), nullptr);
@@ -80,7 +80,7 @@ DefaultValueAxiomsTask::DefaultValueAxiomsTask(
         int default_value =
             task_proxy.get_variables()[var].get_default_axiom_value();
 
-        if (axiom_handling == AxiomHandlingType::APPROXIMATE_NEGATIVE
+        if (axioms == AxiomHandlingType::APPROXIMATE_NEGATIVE
             || var_to_scc[var]->size() > 1) {
             /*
                If there is a cyclic dependency between several derived
@@ -177,7 +177,7 @@ unordered_set<int> DefaultValueAxiomsTask::get_default_value_needed(
           pair) doesn't depend on anything.
         */
         if ((default_value) &&
-            (axiom_handling == AxiomHandlingType::APPROXIMATE_NEGATIVE
+            (axioms == AxiomHandlingType::APPROXIMATE_NEGATIVE
              || var_to_scc[var]->size() > 1)) {
             continue;
         }
@@ -388,11 +388,11 @@ int DefaultValueAxiomsTask::get_num_axioms() const {
 
 shared_ptr<AbstractTask> get_default_value_axioms_task_if_needed(
     const shared_ptr<AbstractTask> &task,
-    AxiomHandlingType axiom_handling) {
+    AxiomHandlingType axioms) {
     TaskProxy proxy(*task);
     if (task_properties::has_axioms(proxy)) {
         return make_shared<tasks::DefaultValueAxiomsTask>(
-            DefaultValueAxiomsTask(task, axiom_handling));
+            DefaultValueAxiomsTask(task, axioms));
     }
     return task;
 }

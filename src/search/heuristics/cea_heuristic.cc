@@ -409,11 +409,11 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(
 }
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
-    tasks::AxiomHandlingType axiom_handling,
+    tasks::AxiomHandlingType axioms,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : Heuristic(tasks::get_default_value_axioms_task_if_needed(
-                    transform, axiom_handling),
+                    transform, axioms),
                 cache_estimates, description, verbosity),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {

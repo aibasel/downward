@@ -49,7 +49,7 @@ struct DefaultValueAxiom {
 };
 
 class DefaultValueAxiomsTask : public DelegatingTask {
-    AxiomHandlingType axiom_handling;
+    AxiomHandlingType axioms;
     std::vector<DefaultValueAxiom> default_value_axioms;
     int default_value_axioms_start_index;
 
@@ -67,7 +67,7 @@ class DefaultValueAxiomsTask : public DelegatingTask {
 public:
     explicit DefaultValueAxiomsTask(
         const std::shared_ptr<AbstractTask> &parent,
-        AxiomHandlingType axiom_handling);
+        AxiomHandlingType axioms);
     virtual ~DefaultValueAxiomsTask() override = default;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;
@@ -88,7 +88,7 @@ public:
 
 extern std::shared_ptr<AbstractTask> get_default_value_axioms_task_if_needed(
     const std::shared_ptr<AbstractTask> &task,
-    AxiomHandlingType axiom_handling);
+    AxiomHandlingType axioms);
 extern void add_axioms_option_to_feature(plugins::Feature &feature);
 extern std::tuple<AxiomHandlingType> get_axioms_arguments_from_options(
     const plugins::Options &opts);

@@ -14,11 +14,11 @@ namespace additive_heuristic {
 const int AdditiveHeuristic::MAX_COST_VALUE;
 
 AdditiveHeuristic::AdditiveHeuristic(
-    tasks::AxiomHandlingType axiom_handling,
+    tasks::AxiomHandlingType axioms,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : RelaxationHeuristic(
-          axiom_handling, transform, cache_estimates, description,
+          axioms, transform, cache_estimates, description,
           verbosity),
       did_write_overflow_warning(false) {
     if (log.is_at_least_normal()) {

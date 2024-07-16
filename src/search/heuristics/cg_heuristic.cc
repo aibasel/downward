@@ -17,12 +17,12 @@ using namespace domain_transition_graph;
 
 namespace cg_heuristic {
 CGHeuristic::CGHeuristic(
-    int max_cache_size, tasks::AxiomHandlingType axiom_handling,
+    int max_cache_size, tasks::AxiomHandlingType axioms,
     const shared_ptr<AbstractTask> &transform,
     bool cache_estimates, const string &description,
     utils::Verbosity verbosity)
     : Heuristic(tasks::get_default_value_axioms_task_if_needed(
-                    transform, axiom_handling),
+                    transform, axioms),
                 cache_estimates, description, verbosity),
       cache_hits(0),
       cache_misses(0),

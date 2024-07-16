@@ -112,7 +112,7 @@ protected:
     Proposition *get_proposition(const FactProxy &fact);
 public:
     RelaxationHeuristic(
-        tasks::AxiomHandlingType axiom_handling,
+        tasks::AxiomHandlingType axioms,
         const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates, const std::string &description,
         utils::Verbosity verbosity);

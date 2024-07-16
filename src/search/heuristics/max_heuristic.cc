@@ -23,11 +23,11 @@ namespace max_heuristic {
 
 // construction and destruction
 HSPMaxHeuristic::HSPMaxHeuristic(
-    tasks::AxiomHandlingType axiom_handling,
+    tasks::AxiomHandlingType axioms,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : RelaxationHeuristic(
-          axiom_handling, transform, cache_estimates, description,
+          axioms, transform, cache_estimates, description,
           verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing HSP max heuristic..." << endl;

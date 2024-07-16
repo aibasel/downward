@@ -26,7 +26,7 @@ public:
     LandmarkCostPartitioningHeuristic(
         const std::shared_ptr<LandmarkFactory> &lm_factory, bool pref,
         bool prog_goal, bool prog_gn, bool prog_r,
-        tasks::AxiomHandlingType axiom_handling,
+        tasks::AxiomHandlingType axioms,
         const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates, const std::string &description,
         utils::Verbosity verbosity,
