@@ -205,6 +205,28 @@ public:
 };
 
 template<typename Block>
+DynamicBitset<Block> operator~(DynamicBitset<Block> copy){
+    copy.update_not();
+    return copy;
+}
+template<typename Block>
+DynamicBitset<Block> operator&&(DynamicBitset<Block> copy, const DynamicBitset<Block> &other){
+    copy &= other;
+    return copy;
+}
+template<typename Block>
+DynamicBitset<Block> operator||(DynamicBitset<Block> copy, const DynamicBitset<Block> &other){
+    copy |= other;
+    return copy;
+}
+template<typename Block>
+DynamicBitset<Block> operator^(DynamicBitset<Block> copy, const DynamicBitset<Block> &other){
+    copy ^= other;
+    return copy;
+}
+
+
+template<typename Block>
 const Block DynamicBitset<Block>::zeros = Block(0);
 
 template<typename Block>
