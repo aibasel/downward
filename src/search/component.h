@@ -13,7 +13,8 @@ public:
     virtual ~Component() = default;
 };
 
-class TaskIndependentComponentBase { };
+class TaskIndependentComponentBase {
+};
 
 using ComponentMap = utils::HashMap<const TaskIndependentComponentBase *, std::shared_ptr<Component>>;
 
