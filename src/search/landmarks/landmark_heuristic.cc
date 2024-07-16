@@ -7,7 +7,6 @@
 #include "../plugins/plugin.h"
 #include "../task_utils/successor_generator.h"
 #include "../tasks/cost_adapted_task.h"
-#include "../tasks/default_value_axioms_task.h"
 #include "../tasks/root_task.h"
 #include "../utils/markup.h"
 
@@ -15,12 +14,11 @@ using namespace std;
 
 namespace landmarks {
 LandmarkHeuristic::LandmarkHeuristic(
-    bool simple_default_value_axioms,
-    bool use_preferred_operators,
+    tasks::AxiomHandlingType axiom_handling, bool use_preferred_operators,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : Heuristic(tasks::get_default_value_axioms_task_if_needed(
-                    transform, simple_default_value_axioms),
+                    transform, axiom_handling),
                 cache_estimates, description, verbosity),
       use_preferred_operators(use_preferred_operators),
       successor_generator(nullptr) {
@@ -40,7 +38,7 @@ void LandmarkHeuristic::initialize(
         && dynamic_cast<tasks::DefaultValueAxiomsTask *>(task.get()) == nullptr) {
         cerr << "The landmark heuristics currently only support "
              << "task transformations that modify the operator costs "
-             << "or add negated axioms. See issues 845 and 686 "
+             << "or add negated axioms. See issues 845, 686 and 454 "
              << "for details." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
@@ -230,20 +228,16 @@ void add_landmark_heuristic_options_to_feature(
         "prog_gn", "Use greedy-necessary ordering progression.", "true");
     feature.add_option<bool>(
         "prog_r", "Use reasonable ordering progression.", "true");
-    feature.add_option<bool>(
-        "simple_default_value_axioms",
-        "For derived variables that need negated axioms, introduce the trivial"
-        "rule with an empty body. This makes the heuristic weaker but avoids"
-        "a potentially expensive precomputation.",
-        "false");
+    tasks::add_axioms_option_to_feature(feature);
     add_heuristic_options_to_feature(feature, description);
 
     feature.document_property("preferred operators",
                               "yes (if enabled; see ``pref`` option)");
 }
 
-tuple<shared_ptr<LandmarkFactory>, bool, bool, bool, bool, bool,
-      shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
+tuple<shared_ptr<LandmarkFactory>, bool, bool, bool, bool,
+      tasks::AxiomHandlingType, shared_ptr<AbstractTask>, bool, string,
+      utils::Verbosity>
 get_landmark_heuristic_arguments_from_options(
     const plugins::Options &opts) {
     return tuple_cat(
@@ -252,9 +246,8 @@ get_landmark_heuristic_arguments_from_options(
             opts.get<bool>("pref"),
             opts.get<bool>("prog_goal"),
             opts.get<bool>("prog_gn"),
-            opts.get<bool>("prog_r"),
-            opts.get<bool>("simple_default_value_axioms")
-            ),
+            opts.get<bool>("prog_r")),
+        tasks::get_axioms_arguments_from_options(opts),
         get_heuristic_arguments_from_options(opts));
 }
 }

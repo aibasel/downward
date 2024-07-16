@@ -4,6 +4,7 @@
 #include "../heuristic.h"
 
 #include "../algorithms/priority_queues.h"
+#include "../tasks/default_value_axioms_task.h"
 
 #include <memory>
 #include <string>
@@ -45,7 +46,7 @@ protected:
 public:
     explicit CGHeuristic(
         int max_cache_size,
-        bool simple_default_value_axioms,
+        tasks::AxiomHandlingType axiom_hanlding,
         const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates, const std::string &description,
         utils::Verbosity verbosity);

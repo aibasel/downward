@@ -706,7 +706,8 @@ create_fast_downward_library(
 
 create_fast_downward_library(
     NAME default_value_axioms_task
-    HELP "Task transformation adding axioms for the default value of derived variables"
+    HELP "Task transformation adding axioms describing under which "
+         "circumstances a derived variable is set to its default value."
     SOURCES
         tasks/default_value_axioms_task
     DEPENDS

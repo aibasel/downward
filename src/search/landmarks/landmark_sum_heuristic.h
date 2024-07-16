@@ -19,7 +19,7 @@ public:
     LandmarkSumHeuristic(
         const std::shared_ptr<LandmarkFactory> &lm_factory, bool pref,
         bool prog_goal, bool prog_gn, bool prog_r,
-        bool simple_default_value_axioms,
+        tasks::AxiomHandlingType axiom_handling,
         const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates, const std::string &description,
         utils::Verbosity verbosity);

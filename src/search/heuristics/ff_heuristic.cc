@@ -12,11 +12,11 @@ using namespace std;
 namespace ff_heuristic {
 // construction and destruction
 FFHeuristic::FFHeuristic(
-    bool simple_default_value_axioms,
+    tasks::AxiomHandlingType axiom_handling,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : AdditiveHeuristic(
-          simple_default_value_axioms, transform, cache_estimates, description,
+          axiom_handling, transform, cache_estimates, description,
           verbosity),
       relaxed_plan(task_proxy.get_operators().size(), false) {
     if (log.is_at_least_normal()) {

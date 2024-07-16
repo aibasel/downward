@@ -16,9 +16,9 @@ using utils::ExitCode;
 namespace tasks {
 DefaultValueAxiomsTask::DefaultValueAxiomsTask(
     const shared_ptr<AbstractTask> &parent,
-    bool simple_default_axioms)
+    AxiomHandlingType axiom_handling)
     : DelegatingTask(parent),
-      simple_default_value_axioms(simple_default_axioms),
+      axiom_handling(axiom_handling),
       default_value_axioms_start_index(parent->get_num_axioms()) {
     TaskProxy task_proxy(*parent);
 
@@ -61,7 +61,7 @@ DefaultValueAxiomsTask::DefaultValueAxiomsTask(
     vector<vector<int>> sccs;
     vector<vector<int> *> var_to_scc;
     // We don't need the sccs if we set axioms "v=default <- {}" everywhere.
-    if (!simple_default_axioms) {
+    if (axiom_handling == AxiomHandlingType::APPROXIMATE_NEGATIVE_CYCLES) {
         sccs = sccs::compute_maximal_sccs(nondefault_dependencies);
         var_to_scc = vector<vector<int> *>(
             task_proxy.get_variables().size(), nullptr);
@@ -80,7 +80,8 @@ DefaultValueAxiomsTask::DefaultValueAxiomsTask(
         int default_value =
             task_proxy.get_variables()[var].get_default_axiom_value();
 
-        if (simple_default_axioms || var_to_scc[var]->size() > 1) {
+        if (axiom_handling == AxiomHandlingType::APPROXIMATE_NEGATIVE
+            || var_to_scc[var]->size() > 1) {
             /*
                If there is a cyclic dependency between several derived
                variables, the "obvious" way of negating the formula
@@ -176,7 +177,8 @@ unordered_set<int> DefaultValueAxiomsTask::get_default_value_needed(
           pair) doesn't depend on anything.
         */
         if ((default_value) &&
-            (simple_default_value_axioms || var_to_scc[var]->size() > 1)) {
+            (axiom_handling == AxiomHandlingType::APPROXIMATE_NEGATIVE
+             || var_to_scc[var]->size() > 1)) {
             continue;
         }
 
@@ -386,12 +388,38 @@ int DefaultValueAxiomsTask::get_num_axioms() const {
 
 shared_ptr<AbstractTask> get_default_value_axioms_task_if_needed(
     const shared_ptr<AbstractTask> &task,
-    bool simple_default_value_axioms) {
+    AxiomHandlingType axiom_handling) {
     TaskProxy proxy(*task);
     if (task_properties::has_axioms(proxy)) {
         return make_shared<tasks::DefaultValueAxiomsTask>(
-            DefaultValueAxiomsTask(task, simple_default_value_axioms));
+            DefaultValueAxiomsTask(task, axiom_handling));
     }
     return task;
 }
+
+void add_axioms_option_to_feature(plugins::Feature &feature) {
+    feature.add_option<AxiomHandlingType>(
+            "axioms",
+            "How to compute axioms that describe how the negated "
+            "(=default) value of a derived variable can be achieved.",
+            "approximate_negative_cycles");
+}
+std::tuple<AxiomHandlingType> get_axioms_arguments_from_options(
+        const plugins::Options &opts) {
+    return make_tuple<AxiomHandlingType>(
+        opts.get<AxiomHandlingType>("axioms"));
+}
+
+static plugins::TypedEnumPlugin<AxiomHandlingType> _enum_plugin({
+    {"approximate_negative",
+     "Overapproximate negated axioms for all derived variables by "
+     "setting an empty condition, indicating the default value can "
+     "always be achieved for free."},
+    {"approximate_negative_cycles",
+     "Overapproximate negated axioms for all derived variables which "
+     "have cyclic dependencies by setting an empty condition, "
+     "indicating the default value can always be achieved for free."
+     "For all other derived variables, the negated axioms are computed"
+     "exactly."}
+    });
 }

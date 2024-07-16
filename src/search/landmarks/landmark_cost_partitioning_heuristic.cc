@@ -18,13 +18,13 @@ namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     const shared_ptr<LandmarkFactory> &lm_factory, bool pref,
     bool prog_goal, bool prog_gn, bool prog_r,
-    bool simple_default_value_axioms,
+    tasks::AxiomHandlingType axiom_handling,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity,
     CostPartitioningMethod cost_partitioning, bool alm,
     lp::LPSolverType lpsolver)
     : LandmarkHeuristic(
-          simple_default_value_axioms, pref, transform, cache_estimates, description, verbosity) {
+        axiom_handling, pref, transform, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;
     }

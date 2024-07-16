@@ -5,7 +5,6 @@
 #include "../plugins/plugin.h"
 
 #include "../task_utils/task_properties.h"
-#include "../tasks/default_value_axioms_task.h"
 #include "../utils/logging.h"
 
 #include <cassert>
@@ -410,11 +409,11 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(
 }
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
-    bool simple_default_value_axioms, const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates, const string &description,
-    utils::Verbosity verbosity)
+    tasks::AxiomHandlingType axiom_handling,
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
     : Heuristic(tasks::get_default_value_axioms_task_if_needed(
-                    transform, simple_default_value_axioms),
+                    transform, axiom_handling),
                 cache_estimates, description, verbosity),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
@@ -454,12 +453,7 @@ public:
     ContextEnhancedAdditiveHeuristicFeature() : TypedFeature("cea") {
         document_title("Context-enhanced additive heuristic");
 
-        add_option<bool>(
-            "simple_default_value_axioms",
-            "For derived variables that need negated axioms, introduce the trivial"
-            "rule with an empty body. This makes the heuristic weaker but avoids"
-            "a potentially expensive precomputation.",
-            "false");
+        tasks::add_axioms_option_to_feature(*this);
         add_heuristic_options_to_feature(*this, "cea");
 
         document_language_support("action costs", "supported");
@@ -480,7 +474,7 @@ public:
     create_component(const plugins::Options &opts,
                      const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<ContextEnhancedAdditiveHeuristic>(
-            opts.get<bool>("simple_default_value_axioms"),
+            tasks::get_axioms_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts)
             );
     }

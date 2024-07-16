@@ -33,7 +33,7 @@ protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     FFHeuristic(
-        bool simple_default_value_axioms,
+        tasks::AxiomHandlingType axiom_handling,
         const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates, const std::string &description,
         utils::Verbosity verbosity);

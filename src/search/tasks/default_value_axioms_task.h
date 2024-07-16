@@ -3,11 +3,9 @@
 
 #include "delegating_task.h"
 
-#include <set>
+#include "../plugins/plugin.h"
 
-namespace plugins {
-class Options;
-}
+#include <set>
 
 /*
   This task transformation adds explicit axioms for how the default value
@@ -38,6 +36,10 @@ class Options;
  */
 
 namespace tasks {
+enum class AxiomHandlingType {
+    APPROXIMATE_NEGATIVE, APPROXIMATE_NEGATIVE_CYCLES
+};
+
 struct DefaultValueAxiom {
     FactPair head;
     std::vector<FactPair> condition;
@@ -47,7 +49,7 @@ struct DefaultValueAxiom {
 };
 
 class DefaultValueAxiomsTask : public DelegatingTask {
-    bool simple_default_value_axioms;
+    AxiomHandlingType axiom_handling;
     std::vector<DefaultValueAxiom> default_value_axioms;
     int default_value_axioms_start_index;
 
@@ -65,7 +67,7 @@ class DefaultValueAxiomsTask : public DelegatingTask {
 public:
     explicit DefaultValueAxiomsTask(
         const std::shared_ptr<AbstractTask> &parent,
-        bool simple_default_axioms);
+        AxiomHandlingType axiom_handling);
     virtual ~DefaultValueAxiomsTask() override = default;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;
@@ -86,7 +88,10 @@ public:
 
 extern std::shared_ptr<AbstractTask> get_default_value_axioms_task_if_needed(
     const std::shared_ptr<AbstractTask> &task,
-    bool simple_default_value_axioms);
+    AxiomHandlingType axiom_handling);
+extern void add_axioms_option_to_feature(plugins::Feature &feature);
+extern std::tuple<AxiomHandlingType> get_axioms_arguments_from_options(
+        const plugins::Options &opts);
 }
 
 #endif
