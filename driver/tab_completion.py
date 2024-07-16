@@ -108,37 +108,30 @@ def _planner_args_completion(prefix, parsed_args, **kwargs):
         if not options and not (len(filenames) == 2 and double_dash_in_options):
             completions.append("--")
 
-        if filenames:
-            completions += ["--translate-options", "--search-options"]
-            translate_options = []
-            search_options = []
-            mode = "SEARCH"
+        translate_options = []
+        search_options = []
 
-            curr_options = search_options
-            for option in options:
-                if option == "--translate-options":
-                    curr_options = translate_options
-                    mode = "TRANSLATE"
-                elif option == "--search-options":
-                    curr_options = search_options
-                    mode = "SEARCH"
-                else:
-                    curr_options.append(option)
-
-            if mode == "SEARCH":
-                downward = Path(util.REPO_ROOT_DIR) / "builds" / build / "bin" / "downward"
-                if not downward.exists():
-                    argcomplete.warn("Search binary does not exists.")
-                    exit(1)
-
-                unpacked_search_options = " ".join([f"\"{o}\"" for o in search_options])
-                cmd = f"{downward} --bash-complete \"{prefix}\" \"downward\" {unpacked_search_options}"
-                # argcomplete.warn(cmd)
-                p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
-                stdout, _ = p.communicate()
-
-                completions += stdout.split()
+        curr_options = search_options
+        for option in options:
+            if option == "--translate-options":
+                curr_options = translate_options
+            elif option == "--search-options":
+                curr_options = search_options
             else:
+                curr_options.append(option)
+
+        if filenames:
+            if curr_options is search_options:
+                completions.append("--translate-options")
+
+                downward = Path(util.REPO_ROOT_DIR) / "builds" / build / "bin" / "downward"
+                if downward.exists():
+                    cmd = [str(downward), "--bash-complete", prefix, str(downward)] + search_options
+                    output = subprocess.check_output(cmd, text=True)
+                    completions += output.split()
+
+            else:
+                completions.append("--search-options")
                 completions.append("--great-translate-options")
 
         if len(filenames) < 2 and not double_dash_in_options and not curr_options:
