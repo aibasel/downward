@@ -404,7 +404,7 @@ void add_axioms_option_to_feature(plugins::Feature &feature) {
         "(=default) value of a derived variable can be achieved.",
         "approximate_negative_cycles");
 }
-std::tuple<AxiomHandlingType> get_axioms_arguments_from_options(
+tuple<AxiomHandlingType> get_axioms_arguments_from_options(
     const plugins::Options &opts) {
     return make_tuple<AxiomHandlingType>(
         opts.get<AxiomHandlingType>("axioms"));
