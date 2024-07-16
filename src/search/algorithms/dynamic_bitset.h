@@ -190,7 +190,18 @@ public:
 	    blocks[i] ^= other.blocks[i];
         }
     }
-
+    DynamicBitset& operator&=(const DynamicBitset &other){
+	update_and(other);
+	return *this;
+    }
+    DynamicBitset& operator|=(const DynamicBitset &other){
+	update_or(other);
+	return *this;
+    }
+    DynamicBitset& operator^=(const DynamicBitset &other){
+	update_xor(other);
+	return *this;
+    }
 };
 
 template<typename Block>
