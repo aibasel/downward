@@ -1,6 +1,5 @@
 from pathlib import Path
 import subprocess
-import sys
 
 from . import util
 
@@ -110,19 +109,23 @@ def _planner_args_completion(prefix, parsed_args, **kwargs):
             completions.append("--")
 
         if filenames:
+            completions += ["--translate-options", "--search-options"]
             translate_options = []
             search_options = []
+            mode = "SEARCH"
 
             curr_options = search_options
             for option in options:
                 if option == "--translate-options":
                     curr_options = translate_options
+                    mode = "TRANSLATE"
                 elif option == "--search-options":
                     curr_options = search_options
+                    mode = "SEARCH"
                 else:
                     curr_options.append(option)
 
-            if curr_options == search_options:
+            if mode == "SEARCH":
                 downward = Path(util.REPO_ROOT_DIR) / "builds" / build / "bin" / "downward"
                 if not downward.exists():
                     argcomplete.warn("Search binary does not exists.")
@@ -130,7 +133,7 @@ def _planner_args_completion(prefix, parsed_args, **kwargs):
 
                 unpacked_search_options = " ".join([f"\"{o}\"" for o in search_options])
                 cmd = f"{downward} --bash-complete \"{prefix}\" \"downward\" {unpacked_search_options}"
-                #argcomplete.warn(cmd)
+                # argcomplete.warn(cmd)
                 p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
                 stdout, _ = p.communicate()
 

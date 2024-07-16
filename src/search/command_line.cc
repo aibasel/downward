@@ -216,9 +216,9 @@ vector<string> complete_args(const string &current_word, const vector<string> &a
         // Suggest only words that match with current_word
         suggestions.erase(
             remove_if(suggestions.begin(), suggestions.end(),
-            [&](const string &value) {
-                return !value.starts_with(current_word);
-            }), suggestions.end());
+                      [&](const string &value) {
+                          return !value.starts_with(current_word);
+                      }), suggestions.end());
     }
     return suggestions;
 }
