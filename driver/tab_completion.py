@@ -146,7 +146,7 @@ def _planner_args_completion(prefix, parser, parsed_args, **kwargs):
                 # for the translator
                 new_parser = argparse.ArgumentParser()
                 arguments.add_args(new_parser, False)
-                new_parser.add_argument("--search-options", action="store_false")
+                new_parser.add_argument("--search-options", action="store_true")
                 argcomplete.autocomplete(new_parser)
 
         if len(filenames) < 2 and not double_dash_in_options and not curr_options and "--translate-options" not in options and not "--search-options" not in options:
