@@ -2,9 +2,9 @@
 #define FAST_DOWNWARD_COMPONENT_H
 
 #include "utils/logging.h"
+#include "utils/hash.h"
 
 #include <memory>
-#include <unordered_map>
 
 class AbstractTask;
 
@@ -13,41 +13,38 @@ public:
     virtual ~Component() = default;
 };
 
-using UniqueKey = int;
-using ComponentMap = std::unordered_map<UniqueKey, std::shared_ptr<Component>>;
+class TaskIndependentComponentBase {
+    public :
+        virtual std::string get_description() const {return "baseClass";}
+        virtual ~TaskIndependentComponentBase() = default;
+};
 
-static UniqueKey create_unique_key() {
-    static int key = 0; //TODO unique ptr
-    ++key;
-    return key;
-}
+using ComponentMap = utils::HashMap<const TaskIndependentComponentBase*, std::shared_ptr<Component>>;
 
 template <typename AbstractProduct>
-class TaskIndependentComponent {
+class TaskIndependentComponent : public TaskIndependentComponentBase {
 protected:
-    const UniqueKey key;
     const std::string description;
     const utils::Verbosity verbosity;
     mutable utils::LogProxy log;
 public:
     explicit TaskIndependentComponent(const std::string &description,
                                       utils::Verbosity verbosity)
-        : key(create_unique_key()), description(description),
+        : description(description),
           verbosity(verbosity), log(utils::get_log_for_verbosity(verbosity)) {
     }
     virtual ~TaskIndependentComponent() = default;
-
     std::string get_description() const {return description;}
     std::shared_ptr<AbstractProduct> get_task_specific(
         [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map, int depth) const {
         std::shared_ptr<AbstractProduct> task_specific_x;
-
-        if (false && component_map->count(key)) { //TODO issue559 remove "fasle &&"
+        const TaskIndependentComponentBase *key = static_cast<const TaskIndependentComponentBase*>(this);
+        if (component_map->count(key)) {
             log << std::string(depth, ' ')
                 << "Reusing task specific component '" << description
                 << "'..." << std::endl;
-            task_specific_x = std::dynamic_pointer_cast<AbstractProduct>(component_map->at(key));
+            task_specific_x = dynamic_pointer_cast<AbstractProduct>(component_map->at(key));
         } else {
             log << std::string(depth, ' ')
                 << "Creating task specific component '" << description
