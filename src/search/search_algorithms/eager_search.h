@@ -70,8 +70,6 @@ private:
     std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator;
 
     std::shared_ptr<TaskIndependentPruningMethod> pruning_method;
-protected:
-    std::string get_product_name() const override {return "EagerSearch";}
 public:
     TaskIndependentEagerSearch(
         std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory,
@@ -88,21 +86,13 @@ public:
 
     virtual ~TaskIndependentEagerSearch() override = default;
 
-
-    using AbstractProduct = SearchAlgorithm;
-    using ConcreteProduct = EagerSearch;
-
-    virtual std::shared_ptr<AbstractProduct>
+    virtual std::shared_ptr<SearchAlgorithm>
     create_task_specific_root(const std::shared_ptr<AbstractTask> &task, int depth = -1) const override;
 
-    std::shared_ptr<AbstractProduct>
-    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                      int depth = -1) const override;
-
-    std::shared_ptr<ConcreteProduct> create_ts(
+    std::shared_ptr<SearchAlgorithm> create_ts(
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
-        int depth) const;
+        int depth) const override;
 };
 
 

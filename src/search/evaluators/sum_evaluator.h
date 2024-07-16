@@ -22,27 +22,17 @@ public:
 
 
 class TaskIndependentSumEvaluator : public combining_evaluator::TaskIndependentCombiningEvaluator {
-protected:
-    std::string get_product_name() const override {return "SumEvaluator";}
 public:
     TaskIndependentSumEvaluator(
-        std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
-        const std::string &name,
-        utils::Verbosity verbosity);
+        const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &subevaluators,
+        const std::string &description, utils::Verbosity verbosity);
 
-    virtual ~TaskIndependentSumEvaluator()  override = default;
+    virtual ~TaskIndependentSumEvaluator() override = default;
 
-    using AbstractProduct = Evaluator;
-    using ConcreteProduct = SumEvaluator;
-
-    std::shared_ptr<AbstractProduct>
-    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                      int depth = -1) const override;
-
-    std::shared_ptr<ConcreteProduct> create_ts(
+    virtual std::shared_ptr<Evaluator> create_ts(
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
-        int depth) const;
+        int depth) const override;
 };
 }
 

@@ -81,7 +81,7 @@ public:
     std::string get_description() {return description;}
 };
 
-class TaskIndependentSearchAlgorithm : public TaskIndependentComponent {
+class TaskIndependentSearchAlgorithm : public TaskIndependentComponent<SearchAlgorithm> {
 protected:
     std::string description;
     PlanManager plan_manager;
@@ -100,11 +100,7 @@ public:
     PlanManager &get_plan_manager() {return plan_manager;}
 
     virtual std::shared_ptr<SearchAlgorithm> create_task_specific_root(
-        const std::shared_ptr<AbstractTask> &task, int depth = -1) const;
-
-    virtual std::shared_ptr<SearchAlgorithm>
-    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                      int depth = -1) const = 0;
+        const std::shared_ptr<AbstractTask> &task, int depth = -1) const = 0;
 };
 
 /*

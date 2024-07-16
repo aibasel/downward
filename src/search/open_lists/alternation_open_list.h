@@ -72,25 +72,16 @@ class TaskIndependentAlternationOpenListFactory : public TaskIndependentOpenList
     int boost_amount;
     int size;
     std::vector<std::shared_ptr<TaskIndependentOpenListFactory>> open_list_factories;
-protected:
-    std::string get_product_name() const override {return "AlternationOpenListFactory";}
 public:
     explicit TaskIndependentAlternationOpenListFactory(
         std::vector<std::shared_ptr<TaskIndependentOpenListFactory>> open_list_factories,
         int boost_amount);
     virtual ~TaskIndependentAlternationOpenListFactory() override = default;
 
-    using AbstractProduct = OpenListFactory;
-    using ConcreteProduct = AlternationOpenListFactory;
-
-    std::shared_ptr<AbstractProduct>
-    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                      int depth = -1) const override;
-
-    std::shared_ptr<ConcreteProduct> create_ts(
+    std::shared_ptr<OpenListFactory> create_ts(
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
-        int depth) const;
+        int depth) const override;
 };
 }
 

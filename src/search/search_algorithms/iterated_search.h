@@ -55,8 +55,6 @@ private:
     bool repeat_last_phase;
     bool continue_on_fail;
     bool continue_on_solve;
-protected:
-    std::string get_product_name() const override {return "IteratedSearch";}
 public:
     explicit TaskIndependentIteratedSearch(
         std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
@@ -72,20 +70,13 @@ public:
 
     virtual ~TaskIndependentIteratedSearch() override = default;
 
-    using AbstractProduct = SearchAlgorithm;
-    using ConcreteProduct = IteratedSearch;
-
-    std::shared_ptr<AbstractProduct> create_task_specific_root(const std::shared_ptr<AbstractTask> &task,
+    std::shared_ptr<SearchAlgorithm> create_task_specific_root(const std::shared_ptr<AbstractTask> &task,
                                                                int depth = -1) const override;
 
-    std::shared_ptr<AbstractProduct>
-    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                      int depth = -1) const override;
-
-    std::shared_ptr<ConcreteProduct> create_ts(
+    std::shared_ptr<SearchAlgorithm> create_ts(
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
-        int depth) const;
+        int depth) const override;
 };
 }
 

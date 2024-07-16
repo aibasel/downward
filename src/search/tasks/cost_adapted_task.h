@@ -31,26 +31,16 @@ public:
     virtual int get_operator_cost(int index, bool is_axiom) const override;
 };
 
-
 class TaskIndependentCostAdaptedTask : public TaskIndependentDelegatingTask {
     const OperatorCost cost_type;
-protected:
-    virtual std::string get_product_name() const override {return "CostAdaptedTask";}
 public:
     explicit TaskIndependentCostAdaptedTask(OperatorCost cost_type);
     virtual ~TaskIndependentCostAdaptedTask() override = default;
 
-    using AbstractProduct = AbstractTask;
-    using ConcreteProduct = CostAdaptedTask;
-
-    std::shared_ptr<AbstractProduct>
-    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                      int depth = -1) const override;
-
-    std::shared_ptr<ConcreteProduct> create_ts(
+    std::shared_ptr<AbstractTask> create_ts(
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
-        int depth) const;
+        int depth) const override;
 };
 }
 

@@ -30,16 +30,13 @@ public:
 };
 
 
-class TaskIndependentOpenListFactory : public TaskIndependentComponent {
+class TaskIndependentOpenListFactory : public TaskIndependentComponent<OpenListFactory> {
 public:
     TaskIndependentOpenListFactory(const std::string &description, utils::Verbosity verbosity);
     virtual ~TaskIndependentOpenListFactory() = default;
 
     TaskIndependentOpenListFactory(const TaskIndependentOpenListFactory &) = delete;
 
-    virtual std::shared_ptr<OpenListFactory>
-    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                      int depth = -1) const = 0;
 };
 
 extern void add_open_list_options_to_feature(

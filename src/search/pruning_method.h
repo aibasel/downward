@@ -41,16 +41,12 @@ public:
     virtual void print_statistics() const;
 };
 
-class TaskIndependentPruningMethod : public TaskIndependentComponent {
+class TaskIndependentPruningMethod : public TaskIndependentComponent<PruningMethod> {
 public:
     TaskIndependentPruningMethod(
         const std::string &description,
         utils::Verbosity verbosity);
     virtual ~TaskIndependentPruningMethod();
-
-    virtual std::shared_ptr<PruningMethod>
-    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                      int depth = -1) const = 0;
 };
 
 extern void add_pruning_options_to_feature(plugins::Feature &feature, const std::string &description);

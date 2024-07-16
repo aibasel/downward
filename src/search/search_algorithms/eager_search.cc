@@ -47,7 +47,6 @@ void EagerSearch::initialize() {
         << " reopening closed nodes, (real) bound = " << bound
         << endl;
     assert(open_list);
-
     set<Evaluator *> evals;
     open_list->get_path_dependent_evaluators(evals);
 
@@ -343,32 +342,7 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(
       pruning_method(pruning_method) {
 }
 
-
-
-using ConcreteProduct = EagerSearch;
-using AbstractProduct = SearchAlgorithm;
-using Concrete = TaskIndependentEagerSearch;
-// TODO issue559 use templates as 'get_task_specific' is EXACTLY the same for all TI_Components
-shared_ptr<AbstractProduct> Concrete::get_task_specific(
-    const std::shared_ptr<AbstractTask> &task,
-    std::unique_ptr<ComponentMap> &component_map,
-    int depth) const {
-    shared_ptr<ConcreteProduct> task_specific_x;
-
-    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << description << "'..." << endl;
-        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
-            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
-    } else {
-        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << description << "'..." << endl;
-        task_specific_x = create_ts(task, component_map, depth);
-        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
-                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
-    }
-    return task_specific_x;
-}
-
-std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
+std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_ts(const shared_ptr <AbstractTask> &task,
                                                      unique_ptr <ComponentMap> &component_map,
                                                      int depth) const {
     vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());

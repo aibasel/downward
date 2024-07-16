@@ -231,9 +231,9 @@ _category_plugin;
 TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(OperatorCost cost_type,
                                                                int bound,
                                                                double max_time,
-                                                               const string &name,
+                                                               const string &description,
                                                                utils::Verbosity verbosity)
-    : TaskIndependentComponent(name, verbosity),
+    : TaskIndependentComponent(description, verbosity),
       bound(bound),
       cost_type(cost_type),
       max_time(max_time) {
@@ -245,15 +245,6 @@ TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(OperatorCost cost
 
 TaskIndependentSearchAlgorithm::~TaskIndependentSearchAlgorithm() {
 }
-
-shared_ptr<SearchAlgorithm> TaskIndependentSearchAlgorithm::create_task_specific_root(
-    const shared_ptr<AbstractTask> &task, int depth) const {
-    utils::g_log << string(depth, ' ') 
-        << "Creating SearchAlgorithm as root component..." << endl;
-    unique_ptr<ComponentMap> component_map = make_unique<ComponentMap>();
-    return get_task_specific(task, component_map, depth);
-}
-
 
 void collect_preferred_operators(
     EvaluationContext &eval_context,

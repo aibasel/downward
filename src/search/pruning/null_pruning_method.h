@@ -14,8 +14,6 @@ public:
 };
 
 class TaskIndependentNullPruningMethod : public TaskIndependentPruningMethod {
-protected:
-    std::string get_product_name() const override {return "NullPruning";}
 public:
     TaskIndependentNullPruningMethod(
             const std::string &description,
@@ -23,17 +21,10 @@ public:
 
     virtual ~TaskIndependentNullPruningMethod() override = default;
 
-    using AbstractProduct = PruningMethod;
-    using ConcreteProduct = NullPruningMethod;
-
-    std::shared_ptr<AbstractProduct>
-    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                      int depth = -1) const override;
-
-    std::shared_ptr<ConcreteProduct> create_ts(
+    std::shared_ptr<PruningMethod> create_ts(
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
-        int depth) const;
+        int depth) const override;
 };
 }
 

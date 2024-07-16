@@ -101,7 +101,7 @@ public:
     virtual int get_cached_estimate(const State &state) const;
 };
 
-class TaskIndependentEvaluator : public TaskIndependentComponent {
+class TaskIndependentEvaluator : public TaskIndependentComponent<Evaluator> {
     const bool use_for_reporting_minima;
     const bool use_for_boosting;
     const bool use_for_counting_evaluations;
@@ -111,10 +111,6 @@ public:
         bool use_for_counting_evaluations,
         const std::string &description, utils::Verbosity verbosity);
     virtual ~TaskIndependentEvaluator() = default;
-
-    virtual std::shared_ptr<Evaluator>
-    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                      int depth = -1) const = 0;
 };
 
 

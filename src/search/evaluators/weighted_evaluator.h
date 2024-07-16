@@ -30,8 +30,6 @@ class TaskIndependentWeightedEvaluator : public TaskIndependentEvaluator {
 private:
     std::shared_ptr<TaskIndependentEvaluator> evaluator;
     int weight;
-protected:
-    std::string get_product_name() const override {return "WeightedEvaluator";}
 public:
     explicit TaskIndependentWeightedEvaluator(
         const std::shared_ptr<TaskIndependentEvaluator> &eval,
@@ -41,18 +39,10 @@ public:
 
     virtual ~TaskIndependentWeightedEvaluator() override = default;
 
-    using AbstractProduct = Evaluator;
-    using ConcreteProduct = WeightedEvaluator;
-
-
-    std::shared_ptr<AbstractProduct>
-    get_task_specific(const std::shared_ptr<AbstractTask> &task, std::unique_ptr<ComponentMap> &component_map,
-                      int depth = -1) const override;
-
-    std::shared_ptr<ConcreteProduct> create_ts(
+    std::shared_ptr<Evaluator> create_ts(
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
-        int depth) const;
+        int depth) const override;
 };
 }
 

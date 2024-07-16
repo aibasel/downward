@@ -157,32 +157,7 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(
       continue_on_solve(continue_on_solve) {
 }
 
-
-
-using ConcreteProduct = IteratedSearch;
-using AbstractProduct = SearchAlgorithm;
-using Concrete = TaskIndependentIteratedSearch;
-// TODO issue559 use templates as 'get_task_specific' is EXACTLY the same for all TI_Components
-shared_ptr<AbstractProduct> Concrete::get_task_specific(
-    const std::shared_ptr<AbstractTask> &task,
-    std::unique_ptr<ComponentMap> &component_map,
-    int depth) const {
-    shared_ptr<ConcreteProduct> task_specific_x;
-
-    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << description << "'..." << endl;
-        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
-            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
-    } else {
-        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << description << "'..." << endl;
-        task_specific_x = create_ts(task, component_map, depth);
-        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
-                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
-    }
-    return task_specific_x;
-}
-
-std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
+std::shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_ts(const shared_ptr <AbstractTask> &task,
                                                      [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
                                                      [[maybe_unused]] int depth) const {
     return make_shared<IteratedSearch>(search_algorithms,

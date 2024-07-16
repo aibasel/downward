@@ -23,31 +23,7 @@ TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFac
       boost_amount(boost_amount), size(0), open_list_factories(open_list_factories) {
 }
 
-
-using ConcreteProduct = AlternationOpenListFactory;
-using AbstractProduct = OpenListFactory;
-using Concrete = TaskIndependentAlternationOpenListFactory;
-// TODO issue559 use templates as 'get_task_specific' is EXACTLY the same for all TI_Components
-shared_ptr<AbstractProduct> Concrete::get_task_specific(
-    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
-    std::unique_ptr<ComponentMap> &component_map,
-    int depth) const {
-    shared_ptr<ConcreteProduct> task_specific_x;
-
-    if (component_map->count(static_cast<const TaskIndependentComponent *>(this))) {
-        log << std::string(depth, ' ') << "Reusing task specific " << get_product_name() << " '" << description << "'..." << endl;
-        task_specific_x = dynamic_pointer_cast<ConcreteProduct>(
-            component_map->at(static_cast<const TaskIndependentComponent *>(this)));
-    } else {
-        log << std::string(depth, ' ') << "Creating task specific " << get_product_name() << " '" << description << "'..." << endl;
-        task_specific_x = create_ts(task, component_map, depth);
-        component_map->insert(make_pair<const TaskIndependentComponent *, std::shared_ptr<Component>>
-                                  (static_cast<const TaskIndependentComponent *>(this), task_specific_x));
-    }
-    return task_specific_x;
-}
-
-std::shared_ptr<ConcreteProduct> Concrete::create_ts(const shared_ptr <AbstractTask> &task,
+std::shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_ts(const shared_ptr <AbstractTask> &task,
                                                      unique_ptr <ComponentMap> &component_map, int depth) const {
     vector<shared_ptr<OpenListFactory>> td_open_list_factories(open_list_factories.size());
     transform(open_list_factories.begin(), open_list_factories.end(), td_open_list_factories.begin(),
