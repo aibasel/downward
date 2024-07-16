@@ -121,6 +121,23 @@ BitsetView& BitsetView::operator^=(const BitsetView &other){
     return *this;
 }
 
+BitsetView operator~(BitsetView copy){
+    copy.update_not();
+    return copy;
+}
+BitsetView operator&&(BitsetView copy, const BitsetView &other){
+    copy &= other;
+    return copy;
+}
+BitsetView operator||(BitsetView copy, const BitsetView &other){
+    copy |= other;
+    return copy;
+}
+BitsetView operator^(BitsetView copy, const BitsetView &other){
+    copy ^= other;
+    return copy;
+}
+
 static vector<BitsetMath::Block> pack_bit_vector(const vector<bool> &bits) {
     int num_bits = bits.size();
     int num_blocks = BitsetMath::compute_num_blocks(num_bits);

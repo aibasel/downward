@@ -75,6 +75,11 @@ public:
     BitsetView& operator^=(const BitsetView &other);
 };
 
+BitsetView operator~(BitsetView copy);
+BitsetView operator&&(BitsetView copy, const BitsetView &other);
+BitsetView operator||(BitsetView copy, const BitsetView &other);
+BitsetView operator^(BitsetView copy, const BitsetView &other);
+
 
 class PerStateBitset {
     int num_bits_per_entry;
