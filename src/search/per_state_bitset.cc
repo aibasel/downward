@@ -63,6 +63,15 @@ int BitsetView::count() const {
     return result;
 }
 
+bool BitsetView::any() const {
+    for (int i = 0; i < data.size(); i++){
+	if (data[i] != 0){
+	    return true;
+	}
+    }
+    return false;
+}
+
 void BitsetView::copy_from(const BitsetView& other) {
     assert(num_bits == other.num_bits);
     // for (int i = 0; i < data.size(); i++){
