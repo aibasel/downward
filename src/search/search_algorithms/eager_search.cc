@@ -217,12 +217,14 @@ SearchStatus EagerSearch::step() {
             continue;
 
         if (succ_node.is_new()) {
-            // We have not seen this state before.
-            // Evaluate and create a new node.
+            /*
+              We have not seen this state before.
+              Evaluate and create a new node.
 
-            // Careful: succ_node.get_g() is not available here yet,
-            // hence the stupid computation of succ_g.
-            // TODO: Make this less fragile.
+              Careful: succ_node.get_g() is not available here yet,
+              hence the stupid computation of succ_g.
+              TODO: Make this less fragile.
+            */
             int succ_g = node->get_g() + get_adjusted_cost(op);
 
             EvaluationContext succ_eval_context(
@@ -280,6 +282,11 @@ SearchStatus EagerSearch::step() {
                 */
                 open_list->insert(succ_eval_context, succ_state.get_id());
             } else {
+                /*
+                  If we do not reopen closed nodes, we just update the parent
+                  pointers. Note that this could cause an incompatibility
+                  between the g-value and the actual path that is traced back.
+                */
                 assert(succ_node.is_closed() && !reopen_closed_nodes);
                 succ_node.update_closed_node_parent(
                     *node, op, get_adjusted_cost(op));
