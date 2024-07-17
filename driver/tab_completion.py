@@ -111,10 +111,14 @@ def _planner_args_completion(prefix, parsed_args, **kwargs):
 
                 downward = Path(util.REPO_ROOT_DIR) / "builds" / build / "bin" / "downward"
                 if downward.exists():
-                    cmd = [str(downward), "--bash-complete", prefix, str(downward)] + search_options
+                    simulated_commandline = [str(downward)] + search_options + [prefix]
+                    comp_line = " ".join(simulated_commandline)
+                    comp_point = str(len(comp_line))
+                    comp_cword = str(len(simulated_commandline) - 1)
+                    cmd = [str(downward), "--bash-complete",
+                           comp_point, comp_line, comp_cword] + simulated_commandline
                     output = subprocess.check_output(cmd, text=True)
                     completions += output.split()
-
             else:
                 tranlator_arguments_path = Path(util.REPO_ROOT_DIR) / "builds" / build / "bin" / "translate" / "arguments.py"
                 if tranlator_arguments_path.exists():

@@ -14,24 +14,12 @@ using utils::ExitCode;
 
 int main(int argc, const char **argv) {
     try {
-        if (static_cast<string>(argv[1]) == "--bash-complete") {
-            if (argc < 3) {
-                utils::g_log << "TODO error" << endl;
-                utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-            }
-            string current_word = static_cast<string>(argv[2]);
-            vector<string> args;
-            args.reserve(argc - 3);
-            for (int i = 3; i < argc; ++i) {
-                args.emplace_back(argv[i]);
-            }
-            for (const string &suggestion : complete_args(current_word, args)) {
-                cout << suggestion << endl;
-            }
-            // Do not use exit_with here because it will generate additional output.
-            exit(0);
-        }
-
+        /*
+          We have to handle tab completion before registering event handlers
+          because event handlers will print to stdout when the program exits
+          and everything on stdout counts as a suggestion for tab completion.
+        */
+        handle_tab_completion(argc, argv);
         utils::register_event_handlers();
 
         if (argc < 2) {

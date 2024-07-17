@@ -184,11 +184,13 @@ shared_ptr<SearchAlgorithm> parse_cmd_line(
     return parse_cmd_line_aux(args);
 }
 
-vector<string> complete_args(const string &current_word, const vector<string> &args) {
-    assert(!args.empty()); // args[0] is always the program name.
-    const string &last_arg = args.back();
+static vector<string> complete_args(
+    const vector<string> &parsed_args, const string &current_word,
+    int /*cursor_pos*/) {
+    assert(!parsed_args.empty()); // args[0] is always the program name.
+    const string &last_arg = parsed_args.back();
     vector<string> suggestions;
-    if (find(args.begin(), args.end(), "--help") != args.end()) {
+    if (find(parsed_args.begin(), parsed_args.end(), "--help") != parsed_args.end()) {
         suggestions.push_back("--txt2tags");
         plugins::Registry registry = plugins::RawRegistry::instance()->construct_registry();
         for (const shared_ptr<const plugins::Feature> &feature : registry.get_features()) {
@@ -200,6 +202,10 @@ vector<string> complete_args(const string &current_word, const vector<string> &a
         // no suggestions, integer expected
     } else if (last_arg == "--search") {
         // suggestions in search string based on current_word
+        plugins::Registry registry = plugins::RawRegistry::instance()->construct_registry();
+        for (const shared_ptr<const plugins::Feature> &feature : registry.get_features()) {
+            suggestions.push_back(feature->get_key() + "(");
+        }
     } else {
         // not completing an argument
         suggestions.push_back("--help");
@@ -221,6 +227,70 @@ vector<string> complete_args(const string &current_word, const vector<string> &a
                       }), suggestions.end());
     }
     return suggestions;
+}
+
+void handle_tab_completion(int argc, const char **argv) {
+    if (argc < 2 || static_cast<string>(argv[1]) != "--bash-complete") {
+        return;
+    }
+    if (argc < 5) {
+        input_error(
+            "The option --bash-complete is only meant to be called "
+            "internally to generate suggestions for tab completion.\n"
+            "Usage:\n    ./downward --bash-complete "
+            "$COMP_POINT \"$COMP_LINE\" $COMP_CWORD ${COMP_WORDS[@]}\n"
+            "where the environment variables have their usual meaning for bash completion:\n"
+            "$COMP_POINT is the position of the cursor in the command line.\n"
+            "$COMP_LINE is the current command line.\n"
+            "$COMP_CWORD is an index into ${COMP_WORDS} of the word under the cursor.\n"
+            "$COMP_WORDS is the current command line split into words.\n"
+        );
+    }
+    int cursor_pos = parse_int_arg("COMP_POINT", static_cast<string>(argv[2]));
+    const string command_line = static_cast<string>(argv[3]);
+    int cursor_word_index = parse_int_arg("COMP_CWORD", static_cast<string>(argv[4]));
+    vector<string> words;
+    words.reserve(argc - 5);
+    for (int i = 5; i < argc; ++i) {
+        words.emplace_back(argv[i]);
+    }
+
+    vector<string> parsed_args;
+    string current_word;
+    int pos = 0;
+    int end = static_cast<int>(command_line.size());
+    int num_words = static_cast<int>(words.size());
+    for (int i = 0; i < num_words; ++i) {
+        current_word = words[i];
+        int word_len = static_cast<int>(current_word.size());
+        if (command_line.substr(pos, word_len) != current_word) {
+            input_error("Expected '" + current_word + "' in $COMP_LINE at position "
+                        + to_string(pos));
+        }
+        if (i == cursor_word_index) {
+            if (cursor_pos < 0 || cursor_pos > word_len) {
+                input_error("Inconsistent information in COMP_LINE and COMP_WORDS");
+            }
+            break;
+        }
+
+        // Skip word
+        pos += word_len;
+        cursor_pos -= word_len;
+        parsed_args.push_back(current_word);
+
+        // Skip whitespace between words.
+        while (pos < end && isspace(command_line[pos])) {
+            ++pos;
+            --cursor_pos;
+        }
+    }
+
+    for (const string &suggestion : complete_args(parsed_args, current_word, cursor_pos)) {
+        cout << suggestion << endl;
+    }
+    // Do not use exit_with here because it would generate additional output.
+    exit(0);
 }
 
 string usage(const string &progname) {
