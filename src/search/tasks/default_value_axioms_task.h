@@ -23,16 +23,13 @@
    be split up into axioms whose conditions are simple conjunctions. Since
    all c_i are also simple conjunctions, this amounts to converting a CNF
    to a DNF.
-   - To address the potential exponential blowup, we provide an option
-   to instead add trivial default values axioms, i.e. axioms that assign
-   the default value and have an empty body. This guarantees short runtime
-   but loses information.
    - The transformation is not exact. For derived variables v that have cyclic
    dependencies, the general approach is incorrect. We instead trivially
-   overapproximate such cases with an axiom with an empty body.
-   - The search ignores axioms that set the derived variable to their default
-   value. The task transformation is thus only meant for heuristics that need
-   to know how to achieve the default value.
+   overapproximate such cases with "¬v <- T" (see issue453).
+   - If you wish to avoid the combinatorial explosion from converting a
+   CNF to a DNF, you can set the option "axioms" to "approximate_negative";
+   this will use the trivial overapproximation "¬v <- T" for *all* derived
+   variables. Note that this can negatively impact the heuristic values.
  */
 
 namespace tasks {
