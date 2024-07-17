@@ -13,45 +13,6 @@ except ImportError:
     HAS_ARGCOMPLETE = False
 
 
-def _rindex(seq, element):
-    """Like list.index, but gives the index of the *last* occurrence."""
-    seq = list(reversed(seq))
-    reversed_index = seq.index(element)
-    return len(seq) - 1 - reversed_index
-
-
-def _split_off_filenames(planner_args):
-    """Given the list of arguments to be passed on to the planner
-    components, split it into a prefix of filenames and a suffix of
-    options. Returns a pair (filenames, options).
-
-    If a "--" separator is present, the last such separator serves as
-    the border between filenames and options. The separator itself is
-    not returned. (This implies that "--" can be a filename, but never
-    an option to a planner component.)
-
-    If no such separator is present, the first argument that begins
-    with "-" and consists of at least two characters starts the list
-    of options, and all previous arguments are filenames."""
-
-    double_dash_in_options = False
-    if "--" in planner_args:
-        separator_pos = _rindex(planner_args, "--")
-        num_filenames = separator_pos
-        del planner_args[separator_pos]
-        double_dash_in_options = True
-    else:
-        num_filenames = 0
-        for arg in planner_args:
-            # We treat "-" by itself as a filename because by common
-            # convention it denotes stdin or stdout, and we might want
-            # to support this later.
-            if arg.startswith("-") and arg != "-":
-                break
-            num_filenames += 1
-    return planner_args[:num_filenames], planner_args[num_filenames:], double_dash_in_options
-
-
 def complete_build_arg(prefix, parsed_args, **kwargs):
     if parsed_args.debug:
         argcomplete.warn("The option --debug is an alias for --build=debug. Do no specify both --debug and --build.")
@@ -76,37 +37,32 @@ def complete_planner_args(prefix, parsed_args, **kwargs):
         else:
             build = "release"
 
-    filenames, options, double_dash_in_options = _split_off_filenames(parsed_args.planner_args)
+    # Get some information from planner_args before it is deleted in split_planner_args().
+    planner_args = parsed_args.planner_args
+    num_planner_args = len(planner_args)
+    mode_switches = ["--translate-options", "--search-options"]
+    last_option_was_mode_switch = planner_args and (planner_args[-1] in mode_switches)
+    double_dash_in_options = "--" in planner_args
+
+    current_mode = util.split_planner_args(parsed_args)
+    num_filenames = len(parsed_args.filenames)
+    has_only_filename_options = (num_filenames == num_planner_args)
+    has_only_filename_or_double_dash_options = (num_filenames + int(double_dash_in_options) == num_planner_args)
+    can_use_double_dash = (1 <= num_planner_args <= 2) and has_only_filename_or_double_dash_options
 
     completions = []
 
-    if not options and not (len(filenames) == 2 and double_dash_in_options):
+    if can_use_double_dash:
         completions.append("--")
 
-    translate_options = []
-    search_options = []
-    last_option_was_mode_switch = False
-
-    curr_options = search_options
-    for option in options:
-        if option == "--translate-options":
-            curr_options = translate_options
-            last_option_was_mode_switch = True
-        elif option == "--search-options":
-            curr_options = search_options
-            last_option_was_mode_switch = True
-        else:
-            curr_options.append(option)
-            last_option_was_mode_switch = False
-
-    if filenames:
-        if curr_options is search_options:
+    if parsed_args.filenames:
+        if current_mode == "search":
             if not last_option_was_mode_switch:
                 completions.append("--translate-options")
 
             downward = Path(util.REPO_ROOT_DIR) / "builds" / build / "bin" / "downward"
             if downward.exists():
-                simulated_commandline = [str(downward)] + search_options + [prefix]
+                simulated_commandline = [str(downward)] + parsed_args.search_options + [prefix]
                 comp_line = " ".join(simulated_commandline)
                 comp_point = str(len(comp_line))
                 comp_cword = str(len(simulated_commandline) - 1)
@@ -130,7 +86,7 @@ def complete_planner_args(prefix, parsed_args, **kwargs):
                     translator_parser.add_argument("--search-options", action="store_true")
                 argcomplete.autocomplete(translator_parser)
 
-    if len(filenames) < 2 and not double_dash_in_options and not translate_options and not search_options and not last_option_was_mode_switch:
+    if has_only_filename_options and len(parsed_args.filenames) < 2:
         file_completer = argcomplete.FilesCompleter()
         completions += file_completer(prefix, **kwargs)
 
