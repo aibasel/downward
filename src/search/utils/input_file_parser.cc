@@ -62,7 +62,11 @@ void InputFileParser::read_magic_line(const string &magic) { // TODO: name?
 }
 
 void InputFileParser::error(const string &message) const {
-    cerr << "Error reading input file:" << endl;
+    cerr << "Error reading input file ";
+    if (line_number > 0) {
+        cerr <<  "line " << line_number;
+    }
+    cerr << "." << endl; 
     if (context != "") {
         cerr << "Context: " << context << endl;
     }
@@ -71,8 +75,8 @@ void InputFileParser::error(const string &message) const {
     utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
 }
     
-InputFileLine::InputFileLine(const shared_ptr<InputFileParser> input_file, const string &line, int line_number)
-: input_file(input_file), line(line) {
+InputFileLine::InputFileLine(const shared_ptr<InputFileParser> file_parser, const string &line, int line_number)
+: file_parser(file_parser), line(line) {
     this->line_number = line_number;
 }
 
@@ -83,14 +87,8 @@ const string& InputFileLine::get_line() const {
     return line;
 }
 
-void InputFileLine::error(const string &cause) const {
-    ostringstream message;
-    message << "Line " << line_number << ": " << cause << ".";
-    input_file->error(message.str());
-}
-
-InputFileLineParser::InputFileLineParser(const shared_ptr<InputFileParser>input_file, const shared_ptr<InputFileLine> line)
-: input_file(input_file), line(line) {
+InputFileLineParser::InputFileLineParser(const shared_ptr<InputFileParser>file_parser, const shared_ptr<InputFileLine> line)
+: file_parser(file_parser), line(line) {
     tokens = split_line(line->get_line());
     token_number = 0;
 }
@@ -104,20 +102,20 @@ const vector<string>& InputFileLineParser::get_tokens() const {
     
 InputFileToken InputFileLineParser::read_token() {
     if (token_number > tokens.size()) {
-        line->error("unexpected end of line");
+        file_parser->error("unexpected end of line");
     }
     ++token_number;
-    return InputFileToken(input_file, line, tokens[token_number - 1], token_number);
+    return InputFileToken(file_parser, line, tokens[token_number - 1], token_number);
 }
 
 void InputFileLineParser::check_last_token() {
     if (token_number > tokens.size()) {
-        line->error("expected end of line");
+        file_parser->error("expected end of line");
     }
 }
 
-InputFileToken::InputFileToken(const shared_ptr<InputFileParser> input_file, const shared_ptr<InputFileLine> line, const string &token, int token_number)
-    : input_file(input_file), line(line), token(token) {
+InputFileToken::InputFileToken(const shared_ptr<InputFileParser> file_parser, const shared_ptr<InputFileLine> line, const string &token, int token_number)
+    : file_parser(file_parser), line(line), token(token) {
     this->token_number = token_number;
 }
 
@@ -137,6 +135,6 @@ int InputFileToken::parse_int(const string &cause) const {
         }
     } catch (exception &e) {
     }
-    line->error("expected number; cause: " + cause);
+    file_parser->error("expected number; cause: " + cause);
 }
 }

@@ -190,7 +190,6 @@ ExplicitEffect::ExplicitEffect(
 void ExplicitOperator::read_pre_post(utils::InputFileParser &in) {
     utils::InputFileLineParser line = in.parse_line();
     vector<FactPair> conditions = read_facts(line);
-    // TODO: this is also used for axioms, then it should say "affected by axiom"
     int var = line.read_token().parse_int("variable affected by effect");
     int value_pre = line.read_token().parse_int("variable value precondition");
     int value_post = line.read_token().parse_int("variable value postcondition");
@@ -253,15 +252,14 @@ static void read_and_verify_version(utils::InputFileParser &in) {
 static bool read_metric(utils::InputFileParser &in) {
     in.set_context("metric_section");
     in.read_magic_line("begin_metric");
-    utils::InputFileLine metric_line = in.read_line();
-    string use_metric_string = metric_line.get_line();
+    string use_metric_string = in.read_line().get_line();
     bool use_metric = false;
     if (use_metric_string == "1") {
         use_metric = true;
     } else if (use_metric_string == "0") {
         use_metric = false;
     } else {
-        metric_line.error("expected boolean");
+        in.error("expected boolean");
     }
     in.read_magic_line("end_metric");
     return use_metric;
