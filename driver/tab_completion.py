@@ -123,7 +123,8 @@ def _planner_args_completion(prefix, parser, parsed_args, **kwargs):
 
         if filenames:
             if curr_options is search_options:
-                completions.append("--translate-options")
+                if search_options:
+                    completions.append("--translate-options")
 
                 downward = Path(util.REPO_ROOT_DIR) / "builds" / build / "bin" / "downward"
                 if downward.exists():
@@ -132,8 +133,6 @@ def _planner_args_completion(prefix, parser, parsed_args, **kwargs):
                     completions += output.split()
 
             else:
-                completions.append("--search-options")
-
                 tranlator_arguments = Path(util.REPO_ROOT_DIR) / "builds" / build / "bin" / "translate" / "arguments.py"
                 import importlib.util
                 import sys
@@ -146,10 +145,11 @@ def _planner_args_completion(prefix, parser, parsed_args, **kwargs):
                 # for the translator
                 new_parser = argparse.ArgumentParser()
                 arguments.add_args(new_parser, False)
-                new_parser.add_argument("--search-options", action="store_true")
+                if curr_options:
+                    new_parser.add_argument("--search-options", action="store_true")
                 argcomplete.autocomplete(new_parser)
 
-        if len(filenames) < 2 and not double_dash_in_options and not curr_options and "--translate-options" not in options and not "--search-options" not in options:
+        if len(filenames) < 2 and not double_dash_in_options and not translate_options and not search_options:
             file_completer = argcomplete.FilesCompleter()
             completions += file_completer(prefix, **kwargs)
 
