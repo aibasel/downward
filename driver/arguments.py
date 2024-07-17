@@ -404,7 +404,7 @@ def parse_args():
             "this path does not exist, it tries the directory "
             "'<repo>/builds/BUILD/bin', where the build script creates "
             "them by default.")
-    tab_completion.add_build_arg_completer(build_arg)
+    build_arg.completer = tab_completion.complete_build_arg
     driver_other.add_argument(
         "--debug", action="store_true",
         help="alias for --build=debug --validate")
@@ -446,7 +446,7 @@ def parse_args():
     planner_args = parser.add_argument(
         "planner_args", nargs=argparse.REMAINDER,
         help="file names and options passed on to planner components")
-    tab_completion.add_planner_args_completer(planner_args)
+    planner_args.completer = tab_completion.complete_planner_args
 
     # Using argparse.REMAINDER relies on the fact that the first
     # argument that doesn't belong to the driver doesn't look like an
