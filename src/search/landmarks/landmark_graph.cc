@@ -128,13 +128,7 @@ LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark) {
         ++num_disjunctive_landmarks;
     } else if (lm.conjunctive) {
         for (const FactPair &lm_fact : lm.facts) {
-            auto it = conjunctive_landmarks_to_nodes.find(lm_fact);
-            if (it == conjunctive_landmarks_to_nodes.end()) {
-                conjunctive_landmarks_to_nodes.emplace(
-                    lm_fact, vector<LandmarkNode *>{new_node_p});
-            } else {
-                (it->second).push_back(new_node_p);
-            }
+            conjunctive_landmarks_to_nodes[lm_fact].emplace_back(new_node_p);
         }
         ++num_conjunctive_landmarks;
     } else {
