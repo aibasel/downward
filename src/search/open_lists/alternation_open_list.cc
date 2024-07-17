@@ -23,7 +23,7 @@ TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFac
 }
 
 std::shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific(const shared_ptr <AbstractTask> &task,
-                                                                                      unique_ptr <ComponentMap> &component_map, int depth) const {
+                                                                                                 unique_ptr <ComponentMap> &component_map, int depth) const {
     vector<shared_ptr<OpenListFactory>> td_open_list_factories(open_list_factories.size());
     transform(open_list_factories.begin(), open_list_factories.end(), td_open_list_factories.begin(),
               [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentOpenListFactory> &eval) {

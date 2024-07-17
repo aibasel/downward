@@ -420,8 +420,8 @@ TaskIndependentRootTask::TaskIndependentRootTask() {
 }
 
 std::shared_ptr<AbstractTask> TaskIndependentRootTask::create_task_specific([[maybe_unused]] const shared_ptr <AbstractTask> &task,
-                                                                 [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
-                                                                 [[maybe_unused]] int depth) const {
+                                                                            [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
+                                                                            [[maybe_unused]] int depth) const {
     return g_root_task;
 }
 

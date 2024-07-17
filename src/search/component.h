@@ -17,7 +17,7 @@ class TaskIndependentComponentBase {
 };
 
 using ComponentMap = utils::HashMap<const TaskIndependentComponentBase *,
-      std::shared_ptr<Component>>;
+                                    std::shared_ptr<Component>>;
 
 template<typename AbstractProduct>
 class TaskIndependentComponent : public TaskIndependentComponentBase {
