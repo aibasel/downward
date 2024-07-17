@@ -706,8 +706,7 @@ create_fast_downward_library(
 
 create_fast_downward_library(
     NAME default_value_axioms_task
-    HELP "Task transformation adding axioms describing under which "
-         "circumstances a derived variable is set to its default value."
+    HELP "Task transformation adding axioms describing under which circumstances a derived variable is set to its default value."
     SOURCES
         tasks/default_value_axioms_task
     DEPENDS
@@ -955,8 +954,7 @@ create_fast_downward_library(
 
 create_fast_downward_library(
     NAME sccs
-    HELP "Algorithm to compute the strongly connected components (SCCs) of a "
-         "directed graph."
+    HELP "Algorithm to compute the strongly connected components (SCCs) of a directed graph."
     SOURCES
         algorithms/sccs
     DEPENDENCY_ONLY
