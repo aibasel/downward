@@ -1,9 +1,10 @@
-def add_args(argparser, add_file_args=True):
-    if add_file_args:
-        argparser.add_argument(
-            "domain", help="path to domain pddl file")
-        argparser.add_argument(
-            "task", help="path to task pddl file")
+def add_file_arguments(argparser):
+    argparser.add_argument(
+        "domain", help="path to domain pddl file")
+    argparser.add_argument(
+        "task", help="path to task pddl file")
+
+def add_options(argparser):
     argparser.add_argument(
         "--relaxed", dest="generate_relaxed_task", action="store_true",
         help="output relaxed task (no delete effects)")

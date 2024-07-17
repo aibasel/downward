@@ -18,7 +18,8 @@ def copy_args_to_module(args):
 
 def setup():
     argparser = argparse.ArgumentParser()
-    arguments.add_args(argparser)
+    arguments.add_file_arguments(argparser)
+    arguments.add_options(argparser)
 
     if HAS_ARGCOMPLETE:
         argcomplete.autocomplete(argparser)
