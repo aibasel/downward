@@ -18,7 +18,7 @@ void NullPruningMethod::initialize(const shared_ptr<AbstractTask> &task) {
 TaskIndependentNullPruningMethod::TaskIndependentNullPruningMethod(const std::string &name, utils::Verbosity verbosity)
     : TaskIndependentPruningMethod(name, verbosity) {}
 
-shared_ptr<PruningMethod> TaskIndependentNullPruningMethod::create_ts(
+shared_ptr<PruningMethod> TaskIndependentNullPruningMethod::create_task_specific(
     [[maybe_unused]] const shared_ptr <AbstractTask> &task,
     [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
     [[maybe_unused]] int depth) const {

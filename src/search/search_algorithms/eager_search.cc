@@ -342,7 +342,7 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(
       pruning_method(pruning_method) {
 }
 
-std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_ts(const shared_ptr <AbstractTask> &task,
+std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(const shared_ptr <AbstractTask> &task,
                                                                        unique_ptr <ComponentMap> &component_map,
                                                                        int depth) const {
     vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());

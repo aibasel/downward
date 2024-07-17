@@ -32,7 +32,7 @@ TaskIndependentCostAdaptedTask::TaskIndependentCostAdaptedTask(OperatorCost cost
     : cost_type(cost_type) {
 }
 
-std::shared_ptr<AbstractTask> TaskIndependentCostAdaptedTask::create_ts(const shared_ptr <AbstractTask> &task,
+std::shared_ptr<AbstractTask> TaskIndependentCostAdaptedTask::create_task_specific(const shared_ptr <AbstractTask> &task,
                                                                         [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
                                                                         [[maybe_unused]] int depth) const {
     return make_shared<CostAdaptedTask>(task, cost_type);

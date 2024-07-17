@@ -33,7 +33,7 @@ TaskIndependentSumEvaluator::TaskIndependentSumEvaluator(
           verbosity) {
 }
 
-std::shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_ts(
+std::shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(
     const shared_ptr <AbstractTask> &task,
     unique_ptr <ComponentMap> &component_map, int depth) const {
     vector<shared_ptr<Evaluator>> td_subevaluators(subevaluators.size());

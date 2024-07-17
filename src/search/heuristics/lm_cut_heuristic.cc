@@ -51,7 +51,7 @@ TaskIndependentLandmarkCutHeuristic::TaskIndependentLandmarkCutHeuristic(
 TaskIndependentLandmarkCutHeuristic::~TaskIndependentLandmarkCutHeuristic() {
 }
 
-std::shared_ptr<Evaluator> TaskIndependentLandmarkCutHeuristic::create_ts(
+std::shared_ptr<Evaluator> TaskIndependentLandmarkCutHeuristic::create_task_specific(
     const shared_ptr<AbstractTask> &task,
     std::unique_ptr<ComponentMap> &component_map,
     int depth) const {

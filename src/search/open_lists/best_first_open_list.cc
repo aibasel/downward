@@ -86,7 +86,7 @@ TaskIndependentBestFirstOpenListFactory::TaskIndependentBestFirstOpenListFactory
       evaluator(evaluator), pref_only(pref_only) {
 }
 
-std::shared_ptr<OpenListFactory> TaskIndependentBestFirstOpenListFactory::create_ts(const shared_ptr <AbstractTask> &task,
+std::shared_ptr<OpenListFactory> TaskIndependentBestFirstOpenListFactory::create_task_specific(const shared_ptr <AbstractTask> &task,
                                                                                     unique_ptr <ComponentMap> &component_map, int depth) const {
     return make_shared<BestFirstOpenListFactory>(
         evaluator->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth),

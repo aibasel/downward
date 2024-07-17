@@ -29,7 +29,7 @@ public:
 
     virtual ~TaskIndependentSumEvaluator() override = default;
 
-    virtual std::shared_ptr<Evaluator> create_ts(
+    virtual std::shared_ptr<Evaluator> create_task_specific(
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
         int depth) const override;

@@ -22,7 +22,7 @@ TaskIndependentAlternationOpenListFactory::TaskIndependentAlternationOpenListFac
       boost_amount(boost_amount), size(0), open_list_factories(open_list_factories) {
 }
 
-std::shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_ts(const shared_ptr <AbstractTask> &task,
+std::shared_ptr<OpenListFactory> TaskIndependentAlternationOpenListFactory::create_task_specific(const shared_ptr <AbstractTask> &task,
                                                                                       unique_ptr <ComponentMap> &component_map, int depth) const {
     vector<shared_ptr<OpenListFactory>> td_open_list_factories(open_list_factories.size());
     transform(open_list_factories.begin(), open_list_factories.end(), td_open_list_factories.begin(),

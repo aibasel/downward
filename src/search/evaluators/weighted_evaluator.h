@@ -39,7 +39,7 @@ public:
 
     virtual ~TaskIndependentWeightedEvaluator() override = default;
 
-    std::shared_ptr<Evaluator> create_ts(
+    std::shared_ptr<Evaluator> create_task_specific(
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
         int depth) const override;

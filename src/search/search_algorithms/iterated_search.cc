@@ -157,7 +157,7 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(
       continue_on_solve(continue_on_solve) {
 }
 
-std::shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_ts(const shared_ptr <AbstractTask> &task,
+std::shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_specific(const shared_ptr <AbstractTask> &task,
                                                                           [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
                                                                           [[maybe_unused]] int depth) const {
     return make_shared<IteratedSearch>(search_algorithms,

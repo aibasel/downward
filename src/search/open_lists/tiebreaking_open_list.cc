@@ -23,7 +23,7 @@ TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFac
       pref_only(pref_only), size(0), evals(evals), allow_unsafe_pruning(allow_unsafe_pruning) {
 }
 
-std::shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_ts(const shared_ptr <AbstractTask> &task,
+std::shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific(const shared_ptr <AbstractTask> &task,
                                                                                       unique_ptr <ComponentMap> &component_map, int depth) const {
     vector<shared_ptr<Evaluator>> ts_evaluators(evals.size());
 
