@@ -4,6 +4,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+from argcomplete.completers import FilesCompleter
+
 from . import util
 
 try:
@@ -55,7 +57,7 @@ def complete_planner_args(prefix, parsed_args, **kwargs):
     if can_use_double_dash:
         completions.append("--")
 
-    if parsed_args.filenames:
+    if parsed_args.filenames or double_dash_in_options:
         if current_mode == "search":
             if not last_option_was_mode_switch:
                 completions.append("--translate-options")
@@ -67,24 +69,36 @@ def complete_planner_args(prefix, parsed_args, **kwargs):
                 comp_point = str(len(comp_line))
                 comp_cword = str(len(simulated_commandline) - 1)
                 cmd = [str(downward), "--bash-complete",
-                        comp_point, comp_line, comp_cword] + simulated_commandline
+                       comp_point, comp_line, comp_cword] + simulated_commandline
                 output = subprocess.check_output(cmd, text=True)
                 completions += output.split()
         else:
+            if not last_option_was_mode_switch:
+                completions.append("--search-options")
+
             tranlator_arguments_path = Path(util.REPO_ROOT_DIR) / "builds" / build / "bin" / "translate" / "arguments.py"
             if tranlator_arguments_path.exists():
+                simulated_commandline = [str(tranlator_arguments_path)] + parsed_args.translate_options + [prefix]
+                comp_line = " ".join(simulated_commandline)
+                comp_point = str(len(comp_line))
+
                 spec = importlib.util.spec_from_file_location("arguments", tranlator_arguments_path)
-                tranlator_arguments = importlib.util.module_from_spec(spec)
-                sys.modules["arguments"] = tranlator_arguments
-                spec.loader.exec_module(tranlator_arguments)
+                translator_arguments = importlib.util.module_from_spec(spec)
+                sys.modules["arguments"] = translator_arguments
+                spec.loader.exec_module(translator_arguments)
 
                 # We create a new parser that will handle the autocompletion
                 # for the translator
                 translator_parser = argparse.ArgumentParser()
-                tranlator_arguments.add_options(translator_parser)
-                if not last_option_was_mode_switch:
-                    translator_parser.add_argument("--search-options", action="store_true")
-                argcomplete.autocomplete(translator_parser)
+                translator_arguments.add_options(translator_parser)
+
+                class CustomInputFinder(argcomplete.finders.CompletionFinder):
+                    def get_completions(self, comp_line, comp_point):
+                        cword_prequote, cword_prefix, _, comp_words, last_wordbreak_pos = argcomplete.lexers.split_line(comp_line, comp_point)
+                        return self._get_completions(comp_words, cword_prefix, cword_prequote, last_wordbreak_pos)
+
+                translator_finder = CustomInputFinder(translator_parser)
+                completions += translator_finder.get_completions(comp_line, comp_point)
 
     if has_only_filename_options and len(parsed_args.filenames) < 2:
         file_completer = argcomplete.FilesCompleter()
