@@ -275,7 +275,10 @@ SearchStatus EagerSearch::step() {
                     *node, op, get_adjusted_cost(op));
             }
         } else {
-            // We found a more expensive path to an open or closed state.
+            /*
+              We found an equally or more expensive path to an open or closed
+              state.
+            */
         }
     }
     return IN_PROGRESS;
