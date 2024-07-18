@@ -263,23 +263,6 @@ SearchStatus EagerSearch::step() {
                 succ_node.reopen_closed_node(*node, op, get_adjusted_cost(op));
                 EvaluationContext succ_eval_context(
                     succ_state, succ_node.get_g(), is_preferred, &statistics);
-                /*
-                  Note: our old code used to retrieve the h value from
-                  the search node here. Our new code recomputes it as
-                  necessary, thus avoiding the incredible ugliness of
-                  the old "set_evaluator_value" approach, which also
-                  did not generalize properly to settings with more
-                  than one evaluator.
-
-                  Reopening should not happen all that frequently, so
-                  the performance impact of this is hopefully not that
-                  large. In the medium term, we want the evaluators to
-                  remember evaluator values for states themselves if
-                  desired by the user, so that such recomputations
-                  will just involve a look-up by the Evaluator object
-                  rather than a recomputation of the evaluator value
-                  from scratch.
-                */
                 open_list->insert(succ_eval_context, succ_state.get_id());
             } else {
                 /*
