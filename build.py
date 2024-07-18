@@ -1,11 +1,19 @@
 #!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
 
+import argparse
 import errno
 import os
 import subprocess
 import sys
 
 import build_configs
+
+try:
+    import argcomplete
+    HAS_ARGCOMPLETE = True
+except ImportError:
+    HAS_ARGCOMPLETE = False
 
 CONFIGS = {config: params for config, params in build_configs.__dict__.items()
            if not config.startswith("_")}
@@ -24,7 +32,27 @@ except AttributeError:
     # Number of available CPUs as a fall-back (may be None)
     NUM_CPUS = os.cpu_count()
 
-def print_usage():
+
+class RawHelpFormatter(argparse.HelpFormatter):
+    """Preserve newlines and spacing."""
+    def _fill_text(self, text, width, indent):
+        return ''.join([indent + line for line in text.splitlines(True)])
+
+    def _format_args(self, action, default_metavar):
+        """Show explicit help for remaining args instead of "..."."""
+        if action.nargs == argparse.REMAINDER:
+            return "[BUILD ...] [CMAKE_OPTION ...]"
+        else:
+            return argparse.HelpFormatter._format_args(self, action, default_metavar)
+
+
+def parse_args():
+    description = f"""Build one or more predefined build configurations of Fast Downward. Each build
+uses CMake to compile the code. Build configurations differ in the parameters
+they pass to CMake. By default, the build uses all available cores if this
+number can be determined. Use the "-j" option for CMake to override this
+default behaviour.
+"""
     script_name = os.path.basename(__file__)
     configs = []
     for name, args in sorted(CONFIGS.items()):
@@ -34,37 +62,37 @@ def print_usage():
             name += " (default with --debug)"
         configs.append(name + "\n    " + " ".join(args))
     configs_string = "\n  ".join(configs)
-    cmake_name = os.path.basename(CMAKE)
-    generator_name = CMAKE_GENERATOR.lower()
-    default_config_name = DEFAULT_CONFIG_NAME
-    debug_config_name = DEBUG_CONFIG_NAME
-    print(f"""Usage: {script_name} [BUILD [BUILD ...]] [--all] [--debug] [MAKE_OPTIONS]
-
-Build one or more predefined build configurations of Fast Downward. Each build
-uses {cmake_name} to compile the code using {generator_name} . Build configurations
-differ in the parameters they pass to {cmake_name}. By default, the build uses all
-available cores if this number can be determined. Use the "-j" option for
-{cmake_name} to override this default behaviour.
-
-Build configurations
+    epilog = f"""build configurations:
   {configs_string}
 
---all         Alias to build all build configurations.
---debug       Alias to build the default debug build configuration.
---help        Print this message and exit.
+example usage:
+  {script_name}                     # build {DEFAULT_CONFIG_NAME} with #cores parallel processes
+  {script_name} -j4                 # build {DEFAULT_CONFIG_NAME} with 4 parallel processes
+  {script_name} debug               # build debug
+  {script_name} --debug             # build {DEBUG_CONFIG_NAME}
+  {script_name} release debug       # build release and debug configs
+  {script_name} --all VERBOSE=true  # build all build configs with detailed logs
+"""
 
-Make options
-  All other parameters are forwarded to the build step.
+    parser = argparse.ArgumentParser(
+        description=description, epilog=epilog, formatter_class=RawHelpFormatter)
+    parser.add_argument("--debug", action="store_true",
+                        help="alias to build the default debug build configuration")
+    parser.add_argument("--all", action="store_true",
+                        help="alias to build all build configurations")
+    remaining_args = parser.add_argument("arguments", nargs=argparse.REMAINDER,
+                        help="build configurations (see below) or build options")
+    remaining_args.completer = complete_arguments
 
-Example usage:
-  ./{script_name}                     # build {default_config_name} in #cores threads
-  ./{script_name} -j4                 # build {default_config_name} in 4 threads
-  ./{script_name} debug               # build debug
-  ./{script_name} --debug             # build {debug_config_name}
-  ./{script_name} release debug       # build release and debug configs
-  ./{script_name} --all VERBOSE=true  # build all build configs with detailed logs
-""")
+    if HAS_ARGCOMPLETE:
+        argcomplete.autocomplete(parser)
+    args = parser.parse_args()
+    return args
 
+def complete_arguments(prefix, parsed_args, **kwargs):
+    split_args(parsed_args)
+    unused_configs = set(CONFIGS) - set(parsed_args.config_names)
+    return sorted([c for c in unused_configs if c.startswith(prefix)])
 
 def get_project_root_path():
     import __main__
@@ -114,25 +142,28 @@ def build(config_name, configure_parameters, build_parameters):
     print(f"Built configuration {config_name} successfully.")
 
 
-def main():
-    config_names = []
-    build_parameters = []
-    for arg in sys.argv[1:]:
-        if arg == "--help" or arg == "-h":
-            print_usage()
-            sys.exit(0)
-        elif arg == "--debug":
-            config_names.append(DEBUG_CONFIG_NAME)
-        elif arg == "--all":
-            config_names.extend(sorted(CONFIGS.keys()))
-        elif arg in CONFIGS:
-            config_names.append(arg)
+def split_args(args):
+    args.config_names = []
+    args.build_parameters = []
+    for arg in args.arguments:
+        if arg in CONFIGS:
+            args.config_names.append(arg)
         else:
-            build_parameters.append(arg)
-    if not config_names:
-        config_names.append(DEFAULT_CONFIG_NAME)
-    for config_name in config_names:
-        build(config_name, CONFIGS[config_name], build_parameters)
+            args.build_parameters.append(arg)
+
+    if args.debug:
+        args.config_names.append(DEBUG_CONFIG_NAME)
+    if args.all:
+        args.config_names.extend(sorted(CONFIGS.keys()))
+    if not args.config_names:
+        args.config_names.append(DEFAULT_CONFIG_NAME)
+
+
+def main():
+    args = parse_args()
+    split_args(args)
+    for config_name in args.config_names:
+        build(config_name, CONFIGS[config_name], args.build_parameters)
 
 
 if __name__ == "__main__":
