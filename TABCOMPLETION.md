@@ -30,5 +30,5 @@ function _downward_complete() {
     COMPREPLY=( $( "$1" --bash-complete \
                    "$COMP_POINT" "$COMP_LINE" "$COMP_CWORD" ${COMP_WORDS[@]}))
 }
-complete -o nosort -F _downward_complete downward
+complete -o nosort -o default -o bashdefault -F _downward_complete downward
 ```

@@ -185,37 +185,6 @@ shared_ptr<SearchAlgorithm> parse_cmd_line(
     return parse_cmd_line_aux(args);
 }
 
-static void complete_filename(const string &prefix, vector<string> &suggestions) {
-    // Split into directory and file_prefix
-    filesystem::path prefix_path(prefix);
-    if (!filesystem::is_directory(prefix_path)) {
-        prefix_path = prefix_path.parent_path();
-    }
-
-    vector<filesystem::path> path_suggestions;
-    if (prefix_path.empty()) {
-        for (const auto &entry : filesystem::directory_iterator(filesystem::current_path())) {
-            path_suggestions.push_back(entry.path().filename());
-        }
-    } else if (filesystem::is_directory(prefix_path)) {
-        for (const auto &entry : filesystem::directory_iterator(prefix_path)) {
-            path_suggestions.push_back(entry.path());
-        }
-    }
-
-    for (const filesystem::path &path : path_suggestions) {
-        string suggestion = path.string();
-        if (filesystem::is_directory(path)) {
-            /*
-              Append preferred separator ("/" or "\") to directories based on
-              operating system.
-            */
-            suggestion += filesystem::path::preferred_separator;
-        }
-        suggestions.push_back(suggestion);
-    }
-}
-
 static vector<string> complete_args(
     const vector<string> &parsed_args, const string &current_word,
     int cursor_pos) {
@@ -230,10 +199,12 @@ static vector<string> complete_args(
             suggestions.push_back(feature->get_key());
         }
     } else if (last_arg == "--internal-plan-file") {
-        // Suggest filename starting with current_word
-        complete_filename(prefix, suggestions);
+        /* Suggest filename starting with current_word.
+           Handeled by default bash completion. */
+        exit(1);
     } else if (last_arg == "--internal-previous-portfolio-plans") {
-        // no suggestions, integer expected
+        /* We want no suggestions and expect an integer
+           but we cannot avoid the default bash completion. */
     } else if (last_arg == "--search") {
         // suggestions in search string based on current_word
         plugins::Registry registry = plugins::RawRegistry::instance()->construct_registry();
@@ -284,10 +255,12 @@ void handle_tab_completion(int argc, const char **argv) {
     const string command_line = static_cast<string>(argv[3]);
     int cursor_word_index = parse_int_arg("COMP_CWORD", static_cast<string>(argv[4]));
     vector<string> words;
-    words.reserve(argc - 5);
+    words.reserve(argc - 4);
     for (int i = 5; i < argc; ++i) {
         words.emplace_back(argv[i]);
     }
+    // Sentinal for cases where the cursor is after the last word.
+    words.push_back("");
 
     vector<string> parsed_args;
     string current_word;
