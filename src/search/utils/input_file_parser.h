@@ -2,6 +2,7 @@
 #define UTILS_INPUT_FILE_PARSER_H
 
 #include <memory>
+#include <regex>
 
 namespace utils {
 class InputFileLine;
@@ -11,51 +12,29 @@ class InputFileToken;
 class InputFileParser {
     std::istream &stream;
     std::string context;
-    int line_number;
+    int line_number = 0;
+    size_t token_number;
+    std::string line;
+    std::vector<std::string> tokens;
+    bool may_start_line = true;
+    const std::regex only_whitespaces;
 public:
     explicit InputFileParser(std::istream &stream);
     ~InputFileParser();
+
     void set_context(const std::string &context);
-    InputFileLine read_line();
-    InputFileLineParser parse_line();
-    InputFileToken parse_single_token_line();
+    std::string read(const std::string &message); // TODO: templates
+    int read_int(const std::string &message); // TODO: templates
+    std::string read_line(const std::string &message); // TODO: templates
+    int read_line_int(const std::string &message); // TODO: templates
     void read_magic_line(const std::string &magic);
+    void confirm_end_of_line();
+    void confirm_end_of_file();
     void error(const std::string &message) const;
-};
-
-class InputFileLine {
-    const std::shared_ptr<InputFileParser> file_parser;
-    const std::string line;
-    int line_number;
-public:
-    InputFileLine(const std::shared_ptr<InputFileParser> file_parser, const std::string &line, int line_number);
-    ~InputFileLine();
-    const std::string& get_line() const;
-};
-
-class InputFileLineParser {
-    const std::shared_ptr<InputFileParser> file_parser;
-    const std::shared_ptr<InputFileLine> line;
-    std::vector<std::string> tokens;
-    int token_number;
-public:
-    InputFileLineParser(const std::shared_ptr<InputFileParser> file_parser, const std::shared_ptr<InputFileLine> line);
-    ~InputFileLineParser();
-    const std::vector<std::string>& get_tokens() const;
-    InputFileToken read_token();
-    void check_last_token();
-};
-
-class InputFileToken {
-    const std::shared_ptr<InputFileParser> file_parser;
-    const std::shared_ptr<InputFileLine> line;
-    const std::string token;
-    int token_number;
-public:
-    InputFileToken(const std::shared_ptr<InputFileParser> file_parser, const std::shared_ptr<InputFileLine> line, const std::string &token, int token_number);
-    ~InputFileToken();
-    const std::string& get_token() const;
-    int parse_int(const std::string &cause) const;
+private:
+    std::string find_next_line(bool throw_error_on_failure=true);
+    void initialize_tokens();
+    int parse_int(const std::string &str, const std::string &cause);
 };
 }
 #endif
