@@ -185,9 +185,43 @@ shared_ptr<SearchAlgorithm> parse_cmd_line(
     return parse_cmd_line_aux(args);
 }
 
+static void complete_filename(const string &prefix, vector<string> &suggestions) {
+    // Split into directory and file_prefix
+    string partial_filename = "";
+    filesystem::path prefix_path(prefix);
+    if (!filesystem::is_directory(prefix_path)) {
+        partial_filename = prefix_path.filename();
+        prefix_path = prefix_path.parent_path();
+    }
+
+    vector<filesystem::path> path_suggestions;
+    if (prefix_path.empty()) {
+        for (const auto &entry : filesystem::directory_iterator(filesystem::current_path())) {
+            path_suggestions.push_back(entry.path().filename());
+        }
+    } else if (filesystem::is_directory(prefix_path)) {
+        for (const auto &entry : filesystem::directory_iterator(prefix_path)) {
+            path_suggestions.push_back(entry.path());
+        }
+    }
+
+    for (const filesystem::path &path : path_suggestions) {
+        string suggestion = path.string();
+        if (filesystem::is_directory(path)) {
+            /*
+              Append preferred separator ("/" or "\") to directories based on
+              operating system.
+            */
+            suggestion += filesystem::path::preferred_separator;
+        }
+        suggestions.push_back(suggestion);
+    }
+}
+
 static vector<string> complete_args(
     const vector<string> &parsed_args, const string &current_word,
-    int /*cursor_pos*/) {
+    int cursor_pos) {
+    string prefix = current_word.substr(0, cursor_pos);
     assert(!parsed_args.empty()); // args[0] is always the program name.
     const string &last_arg = parsed_args.back();
     vector<string> suggestions;
@@ -199,32 +233,7 @@ static vector<string> complete_args(
         }
     } else if (last_arg == "--internal-plan-file") {
         // Suggest filename starting with current_word
-
-        // Split into directory and file_prefix
-        string directory = ".";
-        string file_prefix = current_word;
-        auto last_slash_pos = current_word.find_last_of("/\\");
-        if (last_slash_pos != string::npos) {
-            directory = current_word.substr(0, last_slash_pos);
-            file_prefix = current_word.substr(last_slash_pos + 1);
-        }
-
-        // Add file and directory names to suggestions
-        for (const auto &entry : filesystem::directory_iterator(directory)) {
-            string path = entry.path().string();
-
-            // Append preferred separator ("/" or "\") to directories base on
-            // operating system
-            if (entry.is_directory()) {
-                path += filesystem::path::preferred_separator;
-            }
-
-            // Remove "./" prefix when not present in prefix
-            if (last_slash_pos == string::npos && directory == "." && path.starts_with("/\\")) {
-                path = path.substr(2);
-            }
-            suggestions.push_back(path);
-        }
+        complete_filename(prefix, suggestions);
     } else if (last_arg == "--internal-previous-portfolio-plans") {
         // no suggestions, integer expected
     } else if (last_arg == "--search") {
