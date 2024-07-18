@@ -61,7 +61,7 @@ def complete_planner_args(prefix, parsed_args, **kwargs):
             if not last_option_was_mode_switch:
                 completions.append("--translate-options")
 
-            downward = bin_dir  / "downward"
+            downward = bin_dir / "downward"
             if downward.exists():
                 completions += get_completions_from_downward(
                     downward, parsed_args.search_options, prefix)
@@ -87,9 +87,10 @@ def get_completions_from_downward(downward, options, prefix):
     comp_point = str(len(comp_line))
     comp_cword = str(len(simulated_commandline) - 1)
     cmd = [str(downward), "--bash-complete",
-            comp_point, comp_line, comp_cword] + simulated_commandline
+           comp_point, comp_line, comp_cword] + simulated_commandline
     output = subprocess.check_output(cmd, text=True)
     return output.split()
+
 
 def get_completions_from_translator(translator, options, prefix):
     simulated_commandline = [str(translator)] + options + [prefix]

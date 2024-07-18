@@ -12,6 +12,7 @@
 #include "utils/strings.h"
 
 #include <algorithm>
+#include <filesystem>
 #include <sstream>
 #include <vector>
 
@@ -197,7 +198,32 @@ static vector<string> complete_args(
             suggestions.push_back(feature->get_key());
         }
     } else if (last_arg == "--internal-plan-file") {
-        // suggest filename starting with current_word
+        // Suggest filename starting with current_word
+
+        // Split into directory and file_prefix
+        string directory = ".";
+        string file_prefix = current_word;
+        auto last_slash_pos = current_word.find_last_of("/\\");
+        if (last_slash_pos != string::npos) {
+            directory = current_word.substr(0, last_slash_pos);
+            file_prefix = current_word.substr(last_slash_pos + 1);
+        }
+
+        // Add file and directory names to suggestions
+        for (const auto& entry : filesystem::directory_iterator(directory)) {
+            string path = entry.path().string();
+
+            // Append slash to directories
+            if (entry.is_directory()) {
+                path += "/"; 
+            }
+            
+            // Remove "./" prefix when not present in prefix
+            if (last_slash_pos == string::npos && directory == "." && path.starts_with("./")) {
+                    path = path.substr(2);
+            }
+            suggestions.push_back(path);
+        }
     } else if (last_arg == "--internal-previous-portfolio-plans") {
         // no suggestions, integer expected
     } else if (last_arg == "--search") {
@@ -244,7 +270,7 @@ void handle_tab_completion(int argc, const char **argv) {
             "$COMP_LINE is the current command line.\n"
             "$COMP_CWORD is an index into ${COMP_WORDS} of the word under the cursor.\n"
             "$COMP_WORDS is the current command line split into words.\n"
-        );
+            );
     }
     int cursor_pos = parse_int_arg("COMP_POINT", static_cast<string>(argv[2]));
     const string command_line = static_cast<string>(argv[3]);
