@@ -210,17 +210,18 @@ static vector<string> complete_args(
         }
 
         // Add file and directory names to suggestions
-        for (const auto& entry : filesystem::directory_iterator(directory)) {
+        for (const auto &entry : filesystem::directory_iterator(directory)) {
             string path = entry.path().string();
 
-            // Append slash to directories
+            // Append preferred separator ("/" or "\") to directories base on
+            // operating system
             if (entry.is_directory()) {
-                path += "/"; 
+                path += filesystem::path::preferred_separator;
             }
-            
+
             // Remove "./" prefix when not present in prefix
-            if (last_slash_pos == string::npos && directory == "." && path.starts_with("./")) {
-                    path = path.substr(2);
+            if (last_slash_pos == string::npos && directory == "." && path.starts_with("/\\")) {
+                path = path.substr(2);
             }
             suggestions.push_back(path);
         }
