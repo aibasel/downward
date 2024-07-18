@@ -20,7 +20,15 @@ activate-global-python-argcomplete
 
 Restart your shell afterwards.
 
-## Completion for Search Component
+## Completion for search component
 
+You can also enable tab completion for the search binary by adding the following to your `.bashrc` or `.zshrc`.
 
-
+```bash
+function _downward_complete() {
+    local IFS=$'\n'
+    COMPREPLY=( $( "$1" --bash-complete \
+                   "$COMP_POINT" "$COMP_LINE" "$COMP_CWORD" ${COMP_WORDS[@]}))
+}
+complete -o nosort -F _downward_complete downward
+```
