@@ -187,10 +187,8 @@ shared_ptr<SearchAlgorithm> parse_cmd_line(
 
 static void complete_filename(const string &prefix, vector<string> &suggestions) {
     // Split into directory and file_prefix
-    string partial_filename = "";
     filesystem::path prefix_path(prefix);
     if (!filesystem::is_directory(prefix_path)) {
-        partial_filename = prefix_path.filename();
         prefix_path = prefix_path.parent_path();
     }
 
