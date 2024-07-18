@@ -1,0 +1,2 @@
+#pragma once
+#define VERSION_STRING "@VERSION_STRING@"
