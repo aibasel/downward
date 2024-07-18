@@ -46,6 +46,15 @@ set_up_options()
 project(downward LANGUAGES CXX)
 add_executable(downward planner.cc)
 
+# write git SHA1 hash into a header file
+execute_process(
+  COMMAND git log -1 "--format=format:\"%H\"%n" HEAD
+  OUTPUT_VARIABLE GIT_REVISION
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+configure_file(git_revision.h.in git_revision.h)
+target_include_directories(downward PUBLIC "${PROJECT_BINARY_DIR}")
+
 # On Windows we have to copy all DLLs next to the generated binary.
 if (WIN32)
     copy_dlls_to_binary_dir_after_build(downward)

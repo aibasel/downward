@@ -1,3 +1,4 @@
+#include "git_revision.h"
 #include "command_line.h"
 #include "search_algorithm.h"
 
@@ -15,6 +16,8 @@ using utils::ExitCode;
 int main(int argc, const char **argv) {
     try {
         utils::register_event_handlers();
+
+	utils::g_log << "Fast Downward build " << GIT_REVISION << endl;
 
         if (argc < 2) {
             utils::g_log << usage(argv[0]) << endl;
