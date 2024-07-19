@@ -269,13 +269,13 @@ static vector<ExplicitVariable> read_variables(utils::InputFileParser &file_pars
     return variables;
 }
 
-static vector<vector<set<FactPair>>> read_mutexes(utils::InputFileParser &in, const vector<ExplicitVariable> &variables) {
-    in.set_context("mutex section");
+static vector<vector<set<FactPair>>> read_mutexes(utils::InputFileParser &file_parser, const vector<ExplicitVariable> &variables) {
+    file_parser.set_context("mutex section");
     vector<vector<set<FactPair>>> inconsistent_facts(variables.size());
     for (size_t i = 0; i < variables.size(); ++i)
         inconsistent_facts[i].resize(variables[i].domain_size);
 
-    int num_mutex_groups = in.read_line_int("number of mutex groups");
+    int num_mutex_groups = file_parser.read_line_int("number of mutex groups");
 
     /*
       NOTE: Mutex groups can overlap, in which case the same mutex
@@ -285,17 +285,24 @@ static vector<vector<set<FactPair>>> read_mutexes(utils::InputFileParser &in, co
       aware of.
     */
     for (int i = 0; i < num_mutex_groups; ++i) {
-        in.read_magic_line("begin_mutex_group");
-        int num_facts = in.read_line_int("number of facts in mutex group");
+        file_parser.read_magic_line("begin_mutex_group");
+        int num_facts = file_parser.read_line_int("number of facts in mutex group");
+        if (num_facts < 1) {
+            file_parser.error("Number of facts in mutex group is less than 1, should be at least 1.");
+        }
         vector<FactPair> invariant_group;
         invariant_group.reserve(num_facts);
         for (int j = 0; j < num_facts; ++j) {
-            int var = in.read_int("variable number of mutex atom");
-            int value = in.read_int("value of mutex atom");
-            in.confirm_end_of_line();
+            int var = file_parser.read_int("variable number of mutex atom");
+            int value = file_parser.read_int("value of mutex atom");
+            file_parser.confirm_end_of_line();
             invariant_group.emplace_back(var, value);
         }
-        in.read_magic_line("end_mutex_group");
+        file_parser.read_magic_line("end_mutex_group");
+        set<FactPair> invariant_group_set(invariant_group.begin(), invariant_group.end());
+        if (invariant_group_set.size() != invariant_group.size()) {
+            file_parser.error("Mutex group may not contain the same fact more than once.");
+        }
         for (const FactPair &fact1 : invariant_group) {
             for (const FactPair &fact2 : invariant_group) {
                 if (fact1.var != fact2.var) {
