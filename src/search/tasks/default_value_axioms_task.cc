@@ -23,9 +23,9 @@ DefaultValueAxiomsTask::DefaultValueAxiomsTask(
     TaskProxy task_proxy(*parent);
 
     /*
-      (non)default_dependencies store for each derived variable v which
-      derived variables appear with their (non)default value in an axiom
-      setting v to their nondefault value.
+      (non)default_dependencies store for each variable v all derived
+      variables that appear with their (non)default value in the body of
+      an axiom that sets v.
       axiom_ids_for_var stores for each derived variable v which
       axioms set v to their nondefault value.
       Note that the vectors go over *all* variables (also non-derived ones),
@@ -72,8 +72,10 @@ DefaultValueAxiomsTask::DefaultValueAxiomsTask(
         }
     }
 
-    unordered_set<int> default_value_needed = get_default_value_needed(
-        nondefault_dependencies, default_dependencies, var_to_scc);
+    unordered_set<int> default_value_needed =
+        get_vars_with_relevant_default_value(nondefault_dependencies,
+                                             default_dependencies,
+                                             var_to_scc);
 
     for (int var: default_value_needed) {
         vector<int> &axiom_ids = axiom_ids_for_var[var];
@@ -108,7 +110,7 @@ DefaultValueAxiomsTask::DefaultValueAxiomsTask(
 /*
   Collect for which derived variables it is relevant to know how they
   can obtain their default value. This is done by tracking for all
-  derived variables which of their value are needed.
+  derived variables which of their values are needed.
 
   Initially, we know that var=val is needed if it appears in a goal or
   operator condition. Then we iteratively do the following:
@@ -124,7 +126,7 @@ DefaultValueAxiomsTask::DefaultValueAxiomsTask(
   introduce for var=default are going to have an empty body, then we don't
   apply a)/b) (because the axiom for var=default will not depend on anything).
 */
-unordered_set<int> DefaultValueAxiomsTask::get_default_value_needed(
+unordered_set<int> DefaultValueAxiomsTask::get_vars_with_relevant_default_value(
     const vector<vector<int>> &nondefault_dependencies,
     const vector<vector<int>> &default_dependencies,
     const vector<vector<int> *> &var_to_scc) {
@@ -404,6 +406,7 @@ void add_axioms_option_to_feature(plugins::Feature &feature) {
         "(=default) value of a derived variable can be achieved.",
         "approximate_negative_cycles");
 }
+
 tuple<AxiomHandlingType> get_axioms_arguments_from_options(
     const plugins::Options &opts) {
     return make_tuple<AxiomHandlingType>(

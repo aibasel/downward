@@ -50,7 +50,7 @@ class DefaultValueAxiomsTask : public DelegatingTask {
     std::vector<DefaultValueAxiom> default_value_axioms;
     int default_value_axioms_start_index;
 
-    std::unordered_set<int> get_default_value_needed(
+    std::unordered_set<int> get_vars_with_relevant_default_value(
         const std::vector<std::vector<int>> &nondefault_dependencies,
         const std::vector<std::vector<int>> &default_dependencies,
         const std::vector<std::vector<int> *> &var_to_scc);
