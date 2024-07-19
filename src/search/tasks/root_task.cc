@@ -29,7 +29,7 @@ struct ExplicitVariable {
     int axiom_layer;
     int axiom_default_value;
 
-    explicit ExplicitVariable(utils::InputFileParser &in);
+    explicit ExplicitVariable(utils::InputFileParser &file_parser);
 };
 
 
@@ -158,15 +158,18 @@ static vector<FactPair> read_facts(utils::InputFileParser &in, bool read_from_si
     return conditions;
 }
 
-ExplicitVariable::ExplicitVariable(utils::InputFileParser &in) {
-    in.read_magic_line("begin_variable");
-    name = in.read_line("variable name");
-    axiom_layer = in.read_line_int("variable axiom layer");
-    domain_size = in.read_line_int("variable domain size");
+ExplicitVariable::ExplicitVariable(utils::InputFileParser &file_parser) {
+    file_parser.read_magic_line("begin_variable");
+    name = file_parser.read_line("variable name");
+    axiom_layer = file_parser.read_line_int("variable axiom layer");
+    domain_size = file_parser.read_line_int("variable domain size");
+    if (domain_size < 1) {
+        file_parser.error("Domain size is less than 1, should be at least 1.");
+    }
     fact_names.resize(domain_size);
     for (int i = 0; i < domain_size; ++i)
-        fact_names[i] = in.read_line("fact name");
-    in.read_magic_line("end_variable");
+        fact_names[i] = file_parser.read_line("fact name");
+    file_parser.read_magic_line("end_variable");
 }
 
 
@@ -252,13 +255,16 @@ static bool read_metric(utils::InputFileParser &in) {
     return use_metric;
 }
 
-static vector<ExplicitVariable> read_variables(utils::InputFileParser &in) {
-    in.set_context("variable_section");
-    int count = in.read_line_int("variable count");
+static vector<ExplicitVariable> read_variables(utils::InputFileParser &file_parser) {
+    file_parser.set_context("variable_section");
+    int count = file_parser.read_line_int("variable count");
+    if (count < 1) {
+        file_parser.error("Number of variables is less than 1, should be at least 1.");
+    }
     vector<ExplicitVariable> variables;
     variables.reserve(count);
     for (int i = 0; i < count; ++i) {
-        variables.emplace_back(in);
+        variables.emplace_back(file_parser);
     }
     return variables;
 }
