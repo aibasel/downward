@@ -86,7 +86,12 @@ example usage:
 
     if HAS_ARGCOMPLETE:
         argcomplete.autocomplete(parser)
-    args = parser.parse_args()
+    args, unparsed_args = parser.parse_known_args()
+
+    if hasattr(args, "remaining_args"):
+        args.remaining_args += unparsed_args
+    else:
+        args.remaining_args = unparsed_args
     return args
 
 
@@ -152,7 +157,7 @@ def split_args(args):
     for arg in args.arguments:
         if arg in CONFIGS:
             args.config_names.append(arg)
-        else:
+        elif arg != "--":
             args.build_parameters.append(arg)
 
     if args.debug:
