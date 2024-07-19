@@ -5,6 +5,7 @@
 
 #include "../heuristic.h"
 
+#include "../tasks/default_value_axioms_task.h"
 #include "../utils/collections.h"
 
 #include <cassert>
@@ -111,12 +112,18 @@ protected:
     Proposition *get_proposition(const FactProxy &fact);
 public:
     RelaxationHeuristic(
+        tasks::AxiomHandlingType axioms,
         const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates, const std::string &description,
         utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;
 };
-}
 
+extern void add_relaxation_heuristic_options_to_feature(
+    plugins::Feature &feature, const std::string &description);
+extern std::tuple<tasks::AxiomHandlingType, std::shared_ptr<AbstractTask>,
+                  bool, std::string, utils::Verbosity>
+get_relaxation_heuristic_arguments_from_options(const plugins::Options &opts);
+}
 #endif

@@ -66,6 +66,7 @@ protected:
     int compute_add_and_ff(const State &state);
 public:
     AdditiveHeuristic(
+        tasks::AxiomHandlingType axioms,
         const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates, const std::string &description,
         utils::Verbosity verbosity);

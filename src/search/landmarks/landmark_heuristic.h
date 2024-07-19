@@ -3,6 +3,8 @@
 
 # include "../heuristic.h"
 
+#include "../tasks/default_value_axioms_task.h"
+
 class ConstBitsetView;
 
 namespace successor_generator {
@@ -44,6 +46,7 @@ protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     LandmarkHeuristic(
+        tasks::AxiomHandlingType axioms,
         bool use_preferred_operators,
         const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates, const std::string &description,
@@ -63,8 +66,9 @@ public:
 extern void add_landmark_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<std::shared_ptr<LandmarkFactory>, bool, bool, bool,
-                  bool, std::shared_ptr<AbstractTask>, bool,
-                  std::string, utils::Verbosity>
+                  bool, tasks::AxiomHandlingType,
+                  std::shared_ptr<AbstractTask>, bool, std::string,
+                  utils::Verbosity>
 get_landmark_heuristic_arguments_from_options(
     const plugins::Options &opts);
 }

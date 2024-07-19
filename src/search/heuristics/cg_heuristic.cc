@@ -17,10 +17,13 @@ using namespace domain_transition_graph;
 
 namespace cg_heuristic {
 CGHeuristic::CGHeuristic(
-    int max_cache_size, const shared_ptr<AbstractTask> &transform,
+    int max_cache_size, tasks::AxiomHandlingType axioms,
+    const shared_ptr<AbstractTask> &transform,
     bool cache_estimates, const string &description,
     utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, description, verbosity),
+    : Heuristic(tasks::get_default_value_axioms_task_if_needed(
+                    transform, axioms),
+                cache_estimates, description, verbosity),
       cache_hits(0),
       cache_misses(0),
       helpful_transition_extraction_counter(0),
@@ -295,6 +298,7 @@ public:
             "maximum number of cached entries per variable (set to 0 to disable cache)",
             "1000000",
             plugins::Bounds("0", "infinity"));
+        tasks::add_axioms_option_to_feature(*this);
         add_heuristic_options_to_feature(*this, "cg");
 
         document_language_support("action costs", "supported");
@@ -316,6 +320,7 @@ public:
         const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<CGHeuristic>(
             opts.get<int>("max_cache_size"),
+            tasks::get_axioms_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts)
             );
     }
