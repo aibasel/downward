@@ -205,11 +205,9 @@ static vector<string> complete_args(
         /* We want no suggestions and expect an integer
            but we cannot avoid the default bash completion. */
     } else if (last_arg == "--search") {
-        // suggestions in search string based on current_word
-        plugins::Registry registry = plugins::RawRegistry::instance()->construct_registry();
-        for (const shared_ptr<const plugins::Feature> &feature : registry.get_features()) {
-            suggestions.push_back(feature->get_key() + "(");
-        }
+        /* Return suggestions for the search string based on current_word.
+           Not implemented at the moment. */
+        exit(1);
     } else {
         // not completing an argument
         suggestions.push_back("--help");

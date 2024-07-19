@@ -47,7 +47,7 @@ class RawHelpFormatter(argparse.HelpFormatter):
 
 
 def parse_args():
-    description = f"""Build one or more predefined build configurations of Fast Downward. Each build
+    description = """Build one or more predefined build configurations of Fast Downward. Each build
 uses CMake to compile the code. Build configurations differ in the parameters
 they pass to CMake. By default, the build uses all available cores if this
 number can be determined. Use the "-j" option for CMake to override this
@@ -89,10 +89,12 @@ example usage:
     args = parser.parse_args()
     return args
 
+
 def complete_arguments(prefix, parsed_args, **kwargs):
     split_args(parsed_args)
     unused_configs = set(CONFIGS) - set(parsed_args.config_names)
     return sorted([c for c in unused_configs if c.startswith(prefix)])
+
 
 def get_project_root_path():
     import __main__
@@ -110,6 +112,7 @@ def get_src_path():
 def get_build_path(config_name):
     return os.path.join(get_builds_path(), config_name)
 
+
 def try_run(cmd):
     print(f'Executing command "{" ".join(cmd)}"')
     try:
@@ -121,6 +124,7 @@ def try_run(cmd):
             sys.exit(1)
         else:
             raise
+
 
 def build(config_name, configure_parameters, build_parameters):
     print(f"Building configuration {config_name}.")
@@ -160,9 +164,9 @@ def split_args(args):
 def main():
     args = parse_args()
     split_args(args)
-    for config_name in args.config_names:
+    for config_name in args.config_names or [DEFAULT_CONFIG_NAME]:
         build(config_name, CONFIGS[config_name],
-              args.build_parameters or [DEFAULT_CONFIG_NAME])
+              args.build_parameters)
 
 
 if __name__ == "__main__":
