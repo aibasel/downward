@@ -155,15 +155,14 @@ def split_args(args):
         args.config_names.append(DEBUG_CONFIG_NAME)
     if args.all:
         args.config_names.extend(sorted(CONFIGS.keys()))
-    if not args.config_names:
-        args.config_names.append(DEFAULT_CONFIG_NAME)
 
 
 def main():
     args = parse_args()
     split_args(args)
     for config_name in args.config_names:
-        build(config_name, CONFIGS[config_name], args.build_parameters)
+        build(config_name, CONFIGS[config_name],
+              args.build_parameters or [DEFAULT_CONFIG_NAME])
 
 
 if __name__ == "__main__":
