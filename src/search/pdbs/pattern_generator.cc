@@ -19,8 +19,9 @@ PatternCollectionInformation PatternCollectionGenerator::generate(
     }
     utils::Timer timer;
     PatternCollectionInformation pci = compute_patterns(task);
+    TaskProxy task_proxy(*task);
     dump_pattern_collection_generation_statistics(
-        name(), timer(), pci, log);
+        task_proxy, name(), timer(), pci, log);
     return pci;
 }
 
@@ -35,7 +36,9 @@ PatternInformation PatternGenerator::generate(
     }
     utils::Timer timer;
     PatternInformation pattern_info = compute_pattern(task);
+    TaskProxy task_proxy(*task);
     dump_pattern_generation_statistics(
+        task_proxy,
         name(),
         timer.stop(),
         pattern_info,

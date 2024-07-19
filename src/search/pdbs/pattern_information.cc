@@ -13,8 +13,7 @@ PatternInformation::PatternInformation(
     const TaskProxy &task_proxy,
     Pattern pattern,
     utils::LogProxy &log)
-    : task_proxy(task_proxy),
-      pattern(move(pattern)),
+    : pattern(move(pattern)),
       pdb(nullptr) {
     validate_and_normalize_pattern(task_proxy, this->pattern, log);
 }
@@ -23,7 +22,7 @@ bool PatternInformation::information_is_valid() const {
     return !pdb || pdb->get_pattern() == pattern;
 }
 
-void PatternInformation::create_pdb_if_missing() {
+void PatternInformation::create_pdb_if_missing(const TaskProxy &task_proxy) {
     if (!pdb) {
         pdb = compute_pdb(task_proxy, pattern);
     }
@@ -38,8 +37,9 @@ const Pattern &PatternInformation::get_pattern() const {
     return pattern;
 }
 
-shared_ptr<PatternDatabase> PatternInformation::get_pdb() {
-    create_pdb_if_missing();
+shared_ptr<PatternDatabase> PatternInformation::get_pdb(
+    const TaskProxy &task_proxy) {
+    create_pdb_if_missing(task_proxy);
     return pdb;
 }
 }
