@@ -1,4 +1,4 @@
-## Completion for Fast Downward
+## Tab completion for Fast Downward
 
 We support tab completion for bash and zsh based on the python package [argcomplete](https://pypi.org/project/argcomplete/) which can be installed via apt
 
@@ -12,19 +12,13 @@ or pip
 pip install argcomplete
 ```
 
-We recommand to globally enable tab completion for argcomplete as follows. This will enable argcomplete for all python programs which use argcomplete. You can find local alternatives in the [argcomplete documentation](https://pypi.org/project/argcomplete/#activating-global-completion).
+After the installation, add the following commands to your `.bashrc` or `.zshrc`. Depending on your installation replace `register-python-argcomplete` with `register-python-argcomplete3`.
 
-```bash
-activate-global-python-argcomplete
 ```
+eval "$(register-python-argcomplete fast-downward.py)"
+eval "$(register-python-argcomplete build.py)"
+eval "$(register-python-argcomplete translate.py)"
 
-Restart your shell afterwards.
-
-## Completion for search component
-
-You can also enable tab completion for the search binary by adding the following to your `.bashrc` or `.zshrc`.
-
-```bash
 function _downward_complete() {
     local IFS=$'\n'
     COMPREPLY=( $( "$1" --bash-complete \
@@ -32,3 +26,5 @@ function _downward_complete() {
 }
 complete -o nosort -o default -o bashdefault -F _downward_complete downward
 ```
+
+Restart your shell afterwards.
