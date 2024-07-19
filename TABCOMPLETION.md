@@ -1,20 +1,14 @@
 ## Tab completion for Fast Downward
 
-We support tab completion for bash and zsh based on the python package [argcomplete](https://pypi.org/project/argcomplete/) which can be installed via apt
+We support tab completion for bash and zsh based on the python package [argcomplete](https://pypi.org/project/argcomplete/). For full support, use at least version 3.3 which can be installed via `pip`.
 
 ```bash
-sudo apt install python3-argcomplete
-```
-
-or pip
-
-```bash
-pip install argcomplete
+pip install argcomplete>=3.3
 ```
 
 After the installation, add the following commands to your `.bashrc` or `.zshrc`. Depending on your installation replace `register-python-argcomplete` with `register-python-argcomplete3`.
 
-```
+```bash
 eval "$(register-python-argcomplete fast-downward.py)"
 eval "$(register-python-argcomplete build.py)"
 eval "$(register-python-argcomplete translate.py)"
