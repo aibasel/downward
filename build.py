@@ -4,6 +4,7 @@
 import argparse
 import errno
 import os
+from pathlib import Path
 import subprocess
 import sys
 
@@ -14,6 +15,9 @@ try:
     HAS_ARGCOMPLETE = True
 except ImportError:
     HAS_ARGCOMPLETE = False
+
+PROJECT_ROOT_PATH = Path(__file__).parent
+SRC_PATH = PROJECT_ROOT_PATH / "src"
 
 CONFIGS = {config: params for config, params in build_configs.__dict__.items()
            if not config.startswith("_")}
@@ -36,7 +40,7 @@ except AttributeError:
 class RawHelpFormatter(argparse.HelpFormatter):
     """Preserve newlines and spacing."""
     def _fill_text(self, text, width, indent):
-        return ''.join([indent + line for line in text.splitlines(True)])
+        return "".join([indent + line for line in text.splitlines(True)])
 
     def _format_args(self, action, default_metavar):
         """Show explicit help for remaining args instead of "..."."""
@@ -86,40 +90,30 @@ example usage:
 
     if HAS_ARGCOMPLETE:
         argcomplete.autocomplete(parser)
-    args, unparsed_args = parser.parse_known_args()
 
-    if hasattr(args, "remaining_args"):
-        args.remaining_args += unparsed_args
-    else:
-        args.remaining_args = unparsed_args
+    # With calls like 'build.py -j4' the parser would try to interpret '-j4' as
+    # an option and fail to parse. We use parse_known_args to parse everything
+    # we recognize and add everything else to the list of arguments. 
+    args, unparsed_args = parser.parse_known_args()
+    args.arguments = unparsed_args + args.arguments
+
     return args
 
 
 def complete_arguments(prefix, parsed_args, **kwargs):
+    # This will modify parsed_args in place. This is not a problem because the
+    # process will stop after generating suggestions for the tab completion.
     split_args(parsed_args)
     unused_configs = set(CONFIGS) - set(parsed_args.config_names)
     return sorted([c for c in unused_configs if c.startswith(prefix)])
 
 
-def get_project_root_path():
-    import __main__
-    return os.path.dirname(__main__.__file__)
-
-
-def get_builds_path():
-    return os.path.join(get_project_root_path(), "builds")
-
-
-def get_src_path():
-    return os.path.join(get_project_root_path(), "src")
-
-
 def get_build_path(config_name):
-    return os.path.join(get_builds_path(), config_name)
+    return PROJECT_ROOT_PATH / "builds" / config_name
 
 
 def try_run(cmd):
-    print(f'Executing command "{" ".join(cmd)}"')
+    print(f"Executing command '{" ".join(cmd)}'")
     try:
         subprocess.check_call(cmd)
     except OSError as exc:
@@ -135,7 +129,7 @@ def build(config_name, configure_parameters, build_parameters):
     print(f"Building configuration {config_name}.")
 
     build_path = get_build_path(config_name)
-    generator_cmd = [CMAKE, "-S", get_src_path(), "-B", build_path]
+    generator_cmd = [CMAKE, "-S", str(SRC_PATH), "-B", str(build_path)]
     if CMAKE_GENERATOR:
         generator_cmd += ["-G", CMAKE_GENERATOR]
     generator_cmd += configure_parameters
