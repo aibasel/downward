@@ -4,6 +4,7 @@ from pathlib import Path
 import subprocess
 import sys
 
+from . import returncodes
 from . import util
 
 try:
@@ -13,22 +14,27 @@ except ImportError:
     HAS_ARGCOMPLETE = False
 
 
+def abort_tab_completion(warning):
+    argcomplete.warn(warning)
+    exit(returncodes.DRIVER_INPUT_ERROR)
+
+
 def complete_build_arg(prefix, parsed_args, **kwargs):
     if parsed_args.debug:
-        argcomplete.warn("The option --debug is an alias for --build=debug. Do no specify both --debug and --build.")
-        exit(1)
+        abort_tab_completion(
+            "The option --debug is an alias for --build=debug. Do no specify "
+            "both --debug and --build.")
 
-    builds_folder = Path(util.REPO_ROOT_DIR) / "builds"
-    if not builds_folder.exists():
-        argcomplete.warn("No build exists.")
-        exit(1)
-    return [p.name for p in builds_folder.iterdir() if p.is_dir()]
+    if not Path(util.BUILDS_DIR).exists():
+        abort_tab_completion("No build exists.")
+    return [p.name for p in Path(util.BUILDS_DIR).iterdir() if p.is_dir()]
 
 
 def complete_planner_args(prefix, parsed_args, **kwargs):
     if parsed_args.build and parsed_args.debug:
-        argcomplete.warn("The option --debug is an alias for --build=debug. Do no specify both --debug and --build.")
-        exit(1)
+        abort_tab_completion(
+            "The option --debug is an alias for --build=debug. Do no specify "
+            "both --debug and --build.")
 
     build = parsed_args.build
     if not build:
@@ -56,7 +62,7 @@ def complete_planner_args(prefix, parsed_args, **kwargs):
         completions.append("--")
 
     if parsed_args.filenames or double_dash_in_options:
-        bin_dir = Path(util.REPO_ROOT_DIR) / "builds" / build / "bin"
+        bin_dir = Path(util.BUILDS_DIR) / build / "bin"
         if current_mode == "search":
             if not last_option_was_mode_switch:
                 completions.append("--translate-options")
