@@ -93,7 +93,7 @@ example usage:
 
     # With calls like 'build.py -j4' the parser would try to interpret '-j4' as
     # an option and fail to parse. We use parse_known_args to parse everything
-    # we recognize and add everything else to the list of arguments. 
+    # we recognize and add everything else to the list of arguments.
     args, unparsed_args = parser.parse_known_args()
     args.arguments = unparsed_args + args.arguments
 
@@ -113,7 +113,7 @@ def get_build_path(config_name):
 
 
 def try_run(cmd):
-    print(f"Executing command '{" ".join(cmd)}'")
+    print(f"""Executing command '{" ".join(cmd)}'""")
     try:
         subprocess.check_call(cmd)
     except OSError as exc:
@@ -135,7 +135,7 @@ def build(config_name, configure_parameters, build_parameters):
     generator_cmd += configure_parameters
     try_run(generator_cmd)
 
-    build_cmd = [CMAKE, "--build", build_path]
+    build_cmd = [CMAKE, "--build", str(build_path)]
     if NUM_CPUS:
         build_cmd += ["-j", f"{NUM_CPUS}"]
     if build_parameters:

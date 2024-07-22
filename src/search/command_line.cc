@@ -231,8 +231,52 @@ static vector<string> complete_args(
     return suggestions;
 }
 
+static vector<int> get_word_starts(const string &command_line, const vector<string> &words) {
+    vector<int> word_starts;
+    word_starts.reserve(words.size());
+    int pos = 0;
+    int end = static_cast<int>(command_line.size());
+    for (const string &word : words) {
+        int word_len = static_cast<int>(word.size());
+        if (command_line.substr(pos, word_len) != word) {
+            input_error("Expected '" + word + "' in command line at position "
+                        + to_string(pos));
+        }
+        word_starts.push_back(pos);
+
+        // Skip word
+        pos += word_len;
+
+        // Skip whitespace between words.
+        while (pos < end && isspace(command_line[pos])) {
+            ++pos;
+        }
+    }
+    return word_starts;
+}
+
+static int get_position_in_current_word(
+    int cursor_word_index, const string &command_line,
+    int cursor_pos, const vector<string> &words) {
+    vector<int> word_starts = get_word_starts(command_line, words);
+
+    assert(utils::in_bounds(cursor_word_index, words));
+    const string &current_word = words[cursor_word_index];
+    int len_current_word = static_cast<int>(current_word.size());
+    assert(utils::in_bounds(cursor_word_index, word_starts));
+    int current_word_start = word_starts[cursor_word_index];
+    int position_in_current_word = cursor_pos - current_word_start;
+
+    if (position_in_current_word < 0 || position_in_current_word > len_current_word) {
+        input_error("Cursor position out-of-bounds: "
+                    + to_string(current_word_start) + " " + to_string(position_in_current_word) + ".");
+    }
+
+    return position_in_current_word;
+}
+
 void handle_tab_completion(int argc, const char **argv) {
-    if (argc < 2 || static_cast<string>(argv[1]) != "--bash-complete") {
+    if (argc < 2 || string(argv[1]) != "--bash-complete") {
         return;
     }
     if (argc < 5) {
@@ -248,49 +292,23 @@ void handle_tab_completion(int argc, const char **argv) {
             "$COMP_WORDS is the current command line split into words.\n"
             );
     }
-    int cursor_pos = parse_int_arg("COMP_POINT", static_cast<string>(argv[2]));
-    const string command_line = static_cast<string>(argv[3]);
-    int cursor_word_index = parse_int_arg("COMP_CWORD", static_cast<string>(argv[4]));
-    vector<string> words;
-    words.reserve(argc - 4);
-    for (int i = 5; i < argc; ++i) {
-        words.emplace_back(argv[i]);
-    }
-    // Sentinal for cases where the cursor is after the last word.
+    int cursor_pos = parse_int_arg("COMP_POINT", argv[2]);
+    string command_line(argv[3]);
+    int cursor_word_index = parse_int_arg("COMP_CWORD", argv[4]);
+    vector<string> words(&argv[5], &argv[argc]);
+    // Sentinel for cases where the cursor is after the last word.
     words.push_back("");
 
-    vector<string> parsed_args;
-    string current_word;
-    int pos = 0;
-    int end = static_cast<int>(command_line.size());
-    int num_words = static_cast<int>(words.size());
-    for (int i = 0; i < num_words; ++i) {
-        current_word = words[i];
-        int word_len = static_cast<int>(current_word.size());
-        if (command_line.substr(pos, word_len) != current_word) {
-            input_error("Expected '" + current_word + "' in $COMP_LINE at position "
-                        + to_string(pos));
-        }
-        if (i == cursor_word_index) {
-            if (cursor_pos < 0 || cursor_pos > word_len) {
-                input_error("Inconsistent information in COMP_LINE and COMP_WORDS");
-            }
-            break;
-        }
-
-        // Skip word
-        pos += word_len;
-        cursor_pos -= word_len;
-        parsed_args.push_back(current_word);
-
-        // Skip whitespace between words.
-        while (pos < end && isspace(command_line[pos])) {
-            ++pos;
-            --cursor_pos;
-        }
+    if (!utils::in_bounds(cursor_word_index, words)) {
+        input_error("Cursor word index out-of-bounds.");
     }
 
-    for (const string &suggestion : complete_args(parsed_args, current_word, cursor_pos)) {
+    vector<string> preceding_words(words.begin(), words.begin() + cursor_word_index);
+    const string &current_word = words[cursor_word_index];
+    int pos_in_word = get_position_in_current_word(
+        cursor_word_index, command_line, cursor_pos, words);
+
+    for (const string &suggestion : complete_args(preceding_words, current_word, pos_in_word)) {
         cout << suggestion << endl;
     }
     // Do not use exit_with here because it would generate additional output.

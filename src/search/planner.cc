@@ -28,7 +28,7 @@ int main(int argc, const char **argv) {
         }
 
         bool unit_cost = false;
-        if (static_cast<string>(argv[1]) != "--help") {
+        if (string(argv[1]) != "--help") {
             utils::g_log << "reading input..." << endl;
             tasks::read_root_task(cin);
             utils::g_log << "done reading input!" << endl;
