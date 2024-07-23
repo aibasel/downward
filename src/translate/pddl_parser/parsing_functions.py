@@ -297,7 +297,7 @@ def parse_literal(context, alist, type_dict, predicate_dict, negated=False):
 
         if arity != len(alist) - 1:
             context.error(f"Predicate '{predicate_name}' of arity {arity} used"
-                          f" with {len(alist) -1} arguments.", alist)
+                          f" with {len(alist) - 1} arguments.", alist)
 
         if negated:
             return pddl.NegatedAtom(pred_id, alist[1:])

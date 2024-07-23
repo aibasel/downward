@@ -1,6 +1,6 @@
-import errno
 import logging
-import os.path
+import os
+from pathlib import Path
 import shutil
 import subprocess
 import sys
@@ -20,35 +20,35 @@ else:
     returncodes.exit_with_driver_unsupported_error("Unsupported OS: " + os.name)
 
 # TODO: We might want to turn translate into a module and call it with "python3 -m translate".
-REL_TRANSLATE_PATH = os.path.join("translate", "translate.py")
-REL_SEARCH_PATH = f"downward{BINARY_EXT}"
+REL_TRANSLATE_PATH = Path("translate") / "translate.py"
+REL_SEARCH_PATH = Path(f"downward{BINARY_EXT}")
 # Older versions of VAL use lower case, newer versions upper case. We prefer the
 # older version because this is what our build instructions recommend.
-VALIDATE = (shutil.which(f"validate{BINARY_EXT}") or
-            shutil.which(f"Validate{BINARY_EXT}"))
+VALIDATE = Path(shutil.which(f"validate{BINARY_EXT}") or
+                shutil.which(f"Validate{BINARY_EXT}"))
 
 
-def get_executable(build, rel_path):
+def get_executable(build: str, rel_path: Path):
     # First, consider 'build' to be a path directly to the binaries.
     # The path can be absolute or relative to the current working
     # directory.
-    build_dir = build
-    if not os.path.exists(build_dir):
+    build_dir = Path(build)
+    if not build_dir.exists():
         # If build is not a full path to the binaries, it might be the
         # name of a build in our standard directory structure.
         # in this case, the binaries are in
         #   '<repo-root>/builds/<buildname>/bin'.
-        build_dir = os.path.join(util.BUILDS_DIR, build, "bin")
-        if not os.path.exists(build_dir):
+        build_dir = util.BUILDS_DIR / build / "bin"
+        if not build_dir.exists():
             returncodes.exit_with_driver_input_error(
-                "Could not find build '{build}' at {build_dir}. "
-                "Please run './build.py {build}'.".format(**locals()))
+                f"Could not find build '{build}' at {build_dir}. "
+                f"Please run './build.py {build}'.")
 
-    abs_path = os.path.join(build_dir, rel_path)
-    if not os.path.exists(abs_path):
+    abs_path = build_dir / rel_path
+    if not abs_path.exists():
         returncodes.exit_with_driver_input_error(
-            "Could not find '{rel_path}' in build '{build}'. "
-            "Please run './build.py {build}'.".format(**locals()))
+            f"Could not find '{rel_path}' in build '{build}'. "
+            f"Please run './build.py {build}'.")
 
     return abs_path
 
@@ -115,7 +115,7 @@ def run_search(args):
 
     if args.portfolio:
         assert not args.search_options
-        logging.info("search portfolio: %s" % args.portfolio)
+        logging.info(f"search portfolio: {args.portfolio}")
         return portfolio_runner.run(
             args.portfolio, executable, args.search_input, plan_manager,
             time_limit, memory_limit)
@@ -150,25 +150,15 @@ def run_validate(args):
             "Error: Trying to run validate but it was not found on the PATH.")
 
     logging.info("Running validate.")
-    num_files = len(args.filenames)
-    if num_files == 1:
-        task, = args.filenames
-        domain = util.find_domain_filename(task)
-    elif num_files == 2:
-        domain, task = args.filenames
-    else:
-        returncodes.exit_with_driver_input_error("validate needs one or two PDDL input files.")
-
     plan_files = list(PlanManager(args.plan_file).get_existing_plans())
     if not plan_files:
         print("Not running validate since no plans found.")
         return (0, True)
-    validate_inputs = [domain, task] + plan_files
 
     try:
         call.check_call(
             "validate",
-            [VALIDATE] + validate_inputs,
+            [VALIDATE] + args.validate_inputs + plan_files,
             time_limit=args.validate_time_limit,
             memory_limit=args.validate_memory_limit)
     except OSError as err:
