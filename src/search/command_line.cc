@@ -268,8 +268,8 @@ static int get_position_in_current_word(
     int position_in_current_word = cursor_pos - current_word_start;
 
     if (position_in_current_word < 0 || position_in_current_word > len_current_word) {
-        input_error("Cursor position out-of-bounds: "
-                    + to_string(current_word_start) + " " + to_string(position_in_current_word) + ".");
+        input_error("Cursor position out-of-bounds: " +
+                    to_string(position_in_current_word) + ".");
     }
 
     return position_in_current_word;
@@ -300,7 +300,8 @@ void handle_tab_completion(int argc, const char **argv) {
     words.push_back("");
 
     if (!utils::in_bounds(cursor_word_index, words)) {
-        input_error("Cursor word index out-of-bounds.");
+        input_error("Cursor word index out-of-bounds: " +
+                    to_string(cursor_word_index) + ".");
     }
 
     vector<string> preceding_words(words.begin(), words.begin() + cursor_word_index);
