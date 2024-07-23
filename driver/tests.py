@@ -4,6 +4,7 @@ Test module for Fast Downward driver script. Run with
     py.test driver/tests.py
 """
 
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -126,7 +127,7 @@ def test_hard_time_limit():
 
 def test_automatic_domain_file_name_computation():
     benchmarks_dir = REPO_ROOT_DIR / "benchmarks"
-    for dirpath, dirnames, filenames in benchmarks_dir.walk():
+    for dirpath, dirnames, filenames in os.walk(benchmarks_dir):
         for filename in filenames:
             if "domain" not in filename:
                 assert find_domain_path(dirpath / filename)
