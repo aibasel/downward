@@ -24,8 +24,9 @@ REL_TRANSLATE_PATH = Path("translate") / "translate.py"
 REL_SEARCH_PATH = Path(f"downward{BINARY_EXT}")
 # Older versions of VAL use lower case, newer versions upper case. We prefer the
 # older version because this is what our build instructions recommend.
-VALIDATE = Path(shutil.which(f"validate{BINARY_EXT}") or
-                shutil.which(f"Validate{BINARY_EXT}"))
+_VALIDATE_NAME = (shutil.which(f"validate{BINARY_EXT}") or
+                  shutil.which(f"Validate{BINARY_EXT}"))
+VALIDATE = Path(_VALIDATE_NAME) if _VALIDATE_NAME else None
 
 
 def get_executable(build: str, rel_path: Path):
