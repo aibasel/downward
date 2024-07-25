@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
     v.memory = 2048
   end
 
-  config.vm.box = "ubuntu/jammy64"
+  config.vm.box = "ubuntu/noble64"
 
   # To compile the planner with support for CPLEX, download the 64-bit Linux
   # installer of CPLEX 22.1.1 and set the environment variable
@@ -56,9 +56,8 @@ Vagrant.configure("2") do |config|
 		export soplex_DIR="/opt/soplex"
 	EOM
     source /etc/profile.d/downward-soplex.sh
-    git clone --branch master https://github.com/scipopt/soplex.git soplex
+    git clone --depth 1 --branch release-710 https://github.com/scipopt/soplex.git soplex
     cd soplex
-    git checkout a5df081
     cmake -DCMAKE_INSTALL_PREFIX="$soplex_DIR" -S . -B build
     cmake --build build
     cmake --install build
