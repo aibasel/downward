@@ -5,13 +5,15 @@ import re
 from . import returncodes
 
 
-_PLAN_INFO_REGEX = re.compile(r"; cost = (\d+) \((unit cost|general cost)\)")
+_PLAN_INFO_REGEX = re.compile(r"; cost = (\d+) \((unit cost|general cost)\)\n")
 
 
 def _read_last_line(path: Path):
-    lines = path.read_text().splitlines()
-    if lines:
-        return lines[-1]
+    line = None
+    with path.open() as input_file:
+        for line in input_file:
+            pass
+    return line
 
 
 def _parse_plan(plan_path: Path):
