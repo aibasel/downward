@@ -84,7 +84,7 @@ def complete_planner_args(prefix, parsed_args, **kwargs):
 
     if has_only_filename_options and len(parsed_args.filenames) < 2:
         file_completer = argcomplete.FilesCompleter()
-        completions.update({f : "" for f in file_completer(prefix, **kwargs)})
+        completions.update({f: "" for f in file_completer(prefix, **kwargs)})
 
     return completions
 
@@ -130,7 +130,7 @@ def _get_completions_from_downward(downward, options, prefix):
     cmd = [str(downward), "--bash-complete", # TODO: "--ifs", entry_separator, "--dfs", help_separator,
            comp_point, comp_line, comp_cword] + simulated_commandline
     output = subprocess.check_output(cmd, text=True)
-    return _split_argcomplete_ouput(output, "\n", ":") #TODO: entry_separator, help_separator)
+    return _split_argcomplete_ouput(output, "\n", ":") # TODO: entry_separator, help_separator)
 
 
 def _get_completions_from_translator(translator, options, prefix):
