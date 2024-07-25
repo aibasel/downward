@@ -291,16 +291,16 @@ EmptyListType TypeRegistry::EMPTY_LIST_TYPE;
 BasicType TypeRegistry::NO_TYPE = BasicType(typeid(void), "<no type>");
 
 TypeRegistry::TypeRegistry() {
-    insert_basic_type<bool>();
-    insert_basic_type<string>();
-    insert_basic_type<int>();
-    insert_basic_type<double>();
+    insert_basic_type<bool>("bool");
+    insert_basic_type<string>("string");
+    insert_basic_type<int>("int");
+    insert_basic_type<double>("double");
 }
 
 template<typename T>
-void TypeRegistry::insert_basic_type() {
+void TypeRegistry::insert_basic_type(const string &name) {
     type_index type = typeid(T);
-    registered_types[type] = utils::make_unique_ptr<BasicType>(type, utils::get_type_name<T>());
+    registered_types[type] = utils::make_unique_ptr<BasicType>(type, name);
 }
 
 const FeatureType &TypeRegistry::create_feature_type(const CategoryPlugin &plugin) {
