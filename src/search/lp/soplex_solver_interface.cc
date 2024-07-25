@@ -143,8 +143,10 @@ void SoPlexSolverInterface::print_failure_analysis() const {
     case SPxSolverBase<double>::Status::NOT_INIT:
         cout << "Not initialized" << endl;
         break;
+#if SOPLEX_VERSION < 700
     case SPxSolverBase<double>::Status::ABORT_EXDECOMP:
     case SPxSolverBase<double>::Status::ABORT_DECOMP:
+#endif
     case SPxSolverBase<double>::Status::ABORT_CYCLING:
     case SPxSolverBase<double>::Status::ABORT_TIME:
     case SPxSolverBase<double>::Status::ABORT_ITER:

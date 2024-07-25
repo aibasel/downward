@@ -561,8 +561,7 @@ if(USE_LP)
         target_sources(lp_solver INTERFACE lp/cplex_solver_interface.h lp/cplex_solver_interface.cc)
     endif()
 
-    # TODO: we actually require a version greater than 6.0.3 but it is not released yet.
-    find_package(soplex 6.0.3 QUIET)
+    find_package(soplex 7.1.0 QUIET)
     if (SOPLEX_FOUND)
         message(STATUS "Found SoPlex: ${SOPLEX_INCLUDE_DIRS}")
         target_link_libraries(lp_solver INTERFACE libsoplex)

@@ -175,6 +175,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
 
         // Retrieve incoming edges from disj_lm
         vector<LandmarkNode *> predecessors;
+        predecessors.reserve(disj_lm->parents.size());
         for (auto &pred : disj_lm->parents) {
             predecessors.push_back(pred.first);
         }
