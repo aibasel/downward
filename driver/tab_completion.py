@@ -1,8 +1,10 @@
 import argparse
 import importlib.util
+import os
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 
 from . import returncodes
 from . import util
@@ -56,71 +58,86 @@ def complete_planner_args(prefix, parsed_args, **kwargs):
     has_only_filename_or_double_dash_options = (num_filenames + int(double_dash_in_options) == num_planner_args)
     can_use_double_dash = (1 <= num_planner_args <= 2) and has_only_filename_or_double_dash_options
 
-    completions = []
+    completions = {}
 
     if can_use_double_dash:
-        completions.append("--")
+        completions["--"] = ""
 
     if parsed_args.filenames or double_dash_in_options:
         bin_dir = Path(util.BUILDS_DIR) / build / "bin"
         if current_mode == "search":
             if not last_option_was_mode_switch:
-                completions.append("--translate-options")
+                completions["--translate-options"] = ""
 
             downward = bin_dir / "downward"
             if downward.exists():
-                completions += get_completions_from_downward(
-                    downward, parsed_args.search_options, prefix)
+                completions.update(_get_completions_from_downward(
+                    downward, parsed_args.search_options, prefix))
         else:
             if not last_option_was_mode_switch:
-                completions.append("--search-options")
+                completions["--search-options"] = ""
 
             translator = bin_dir / "translate" / "translate.py"
             if translator.exists():
-                completions += get_completions_from_translator(
-                    translator, parsed_args.translate_options, prefix)
+                completions.update(_get_completions_from_translator(
+                    translator, parsed_args.translate_options, prefix))
 
     if has_only_filename_options and len(parsed_args.filenames) < 2:
         file_completer = argcomplete.FilesCompleter()
-        completions += file_completer(prefix, **kwargs)
+        completions.update({f : "" for f in file_completer(prefix, **kwargs)})
 
     return completions
 
 
-def get_completions_from_downward(downward, options, prefix):
+def _get_field_separators(env):
+    entry_separator = env.get("IFS", "\n")
+    help_separator = env.get("_ARGCOMPLETE_DFS")
+    if env.get("_ARGCOMPLETE_SHELL") == "zsh":
+        # Argcomplete always uses ":" on zsh, even if another value is set in
+        # _ARGCOMPLETE_DFS.
+        help_separator = ":"
+    return entry_separator, help_separator
+
+
+def _split_argcomplete_ouput(content, entry_separator, help_separator):
+    suggestions = {}
+    for line in content.split(entry_separator):
+        if help_separator and help_separator in line:
+            suggestion, help = line.split(help_separator, 1)
+            suggestions[suggestion] = help
+        else:
+            suggestions[line] = ""
+    return suggestions
+
+
+def _call_argcomplete(python_file, comp_line, comp_point):
+    with tempfile.NamedTemporaryFile(mode="r") as f:
+        env = os.environ.copy()
+        env["COMP_LINE"] = comp_line
+        env["COMP_POINT"] = str(comp_point)
+        env["_ARGCOMPLETE"] = "1"
+        env["_ARGCOMPLETE_STDOUT_FILENAME"] = f.name
+        subprocess.check_call([sys.executable, python_file], env=env)
+        entry_separator, help_separator = _get_field_separators(env)
+        return _split_argcomplete_ouput(f.read(), entry_separator, help_separator)
+
+def _get_completions_from_downward(downward, options, prefix):
+    # TODO: entry_separator, help_separator = _get_field_separators(os.environ)
     simulated_commandline = [str(downward)] + options + [prefix]
     comp_line = " ".join(simulated_commandline)
     comp_point = str(len(comp_line))
     comp_cword = str(len(simulated_commandline) - 1)
-    cmd = [str(downward), "--bash-complete",
+    cmd = [str(downward), "--bash-complete", # TODO: "--ifs", entry_separator, "--dfs", help_separator,
            comp_point, comp_line, comp_cword] + simulated_commandline
     output = subprocess.check_output(cmd, text=True)
-    return output.splitlines()
+    return _split_argcomplete_ouput(output, "\n", ":") #TODO: entry_separator, help_separator)
 
 
-def get_completions_from_translator(translator, options, prefix):
-    simulated_commandline = [str(translator)] + options + [prefix]
+def _get_completions_from_translator(translator, options, prefix):
+    simulated_commandline = [str(translator), "dummy_domain", "dummy_problem"] + options + [prefix]
     comp_line = " ".join(simulated_commandline)
     comp_point = len(comp_line)
-
-    translator_argument_path = translator.parent / "arguments.py"
-    spec = importlib.util.spec_from_file_location("arguments", translator_argument_path)
-    translator_arguments = importlib.util.module_from_spec(spec)
-    sys.modules["arguments"] = translator_arguments
-    spec.loader.exec_module(translator_arguments)
-
-    # We create a new parser that will handle the autocompletion
-    # for the translator
-    translator_parser = argparse.ArgumentParser()
-    translator_arguments.add_options(translator_parser)
-
-    class CustomInputFinder(argcomplete.finders.CompletionFinder):
-        def get_completions(self, comp_line, comp_point):
-            cword_prequote, cword_prefix, _, comp_words, last_wordbreak_pos = argcomplete.lexers.split_line(comp_line, comp_point)
-            return self._get_completions(comp_words, cword_prefix, cword_prequote, last_wordbreak_pos)
-
-    translator_finder = CustomInputFinder(translator_parser)
-    return translator_finder.get_completions(comp_line, comp_point)
+    return _call_argcomplete(translator, comp_line, comp_point)
 
 
 def enable(parser):
