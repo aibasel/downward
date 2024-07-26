@@ -122,15 +122,16 @@ def _call_argcomplete(python_file, comp_line, comp_point):
         return _split_argcomplete_ouput(f.read(), entry_separator, help_separator)
 
 def _get_completions_from_downward(downward, options, prefix):
-    # TODO: entry_separator, help_separator = _get_field_separators(os.environ)
+    entry_separator, help_separator = _get_field_separators(os.environ)
+    help_separator = help_separator or ":"
     simulated_commandline = [str(downward)] + options + [prefix]
     comp_line = " ".join(simulated_commandline)
     comp_point = str(len(comp_line))
     comp_cword = str(len(simulated_commandline) - 1)
-    cmd = [str(downward), "--bash-complete", # TODO: "--ifs", entry_separator, "--dfs", help_separator,
+    cmd = [str(downward), "--bash-complete", entry_separator, help_separator,
            comp_point, comp_line, comp_cword] + simulated_commandline
     output = subprocess.check_output(cmd, text=True)
-    return _split_argcomplete_ouput(output, "\n", ":") # TODO: entry_separator, help_separator)
+    return _split_argcomplete_ouput(output, entry_separator, help_separator)
 
 
 def _get_completions_from_translator(translator, options, prefix):

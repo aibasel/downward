@@ -14,11 +14,31 @@ eval "$(register-python-argcomplete build.py)"
 eval "$(register-python-argcomplete translate.py)"
 
 function _downward_complete() {
-    local IFS=$'\n'
-    COMPREPLY=( $( "$1" --bash-complete \
-                   "$COMP_POINT" "$COMP_LINE" "$COMP_CWORD" ${COMP_WORDS[@]}))
+    local IFS=$'\013'
+    if [[ -n "${ZSH_VERSION-}" ]]; then
+        local DFS=":"
+        local completions
+        local COMP_CWORD=$((CURRENT - 1))
+        completions=( $( "${words[1]}" --bash-complete \
+                         "$IFS" "$DFS" "$CURSOR" "$BUFFER" "$COMP_CWORD" ${words[@]}))
+        if [[ $? == 0 ]]; then
+            _describe "${words[1]}" completions -o nosort
+        fi
+    else
+        local DFS=""
+        COMPREPLY=( $( "$1" --bash-complete \
+                    "$IFS" "$DFS" "$COMP_POINT" "$COMP_LINE" "$COMP_CWORD" ${COMP_WORDS[@]}))
+        if [[ $? != 0 ]]; then
+            unset COMPREPLY
+        fi
+    fi
 }
-complete -o nosort -o default -o bashdefault -F _downward_complete downward
+
+if [[ -n "${ZSH_VERSION-}" ]]; then
+    compdef _downward_complete downward
+else
+    complete -o nosort -F _downward_complete downward
+fi
 ```
 
 Restart your shell afterwards.
