@@ -10,9 +10,14 @@ import subprocess
 import sys
 
 
+def _replace_paths_with_strings(cmd):
+    return [str(x) for x in cmd]
+
+
 def print_call_settings(nick, cmd, stdin, time_limit, memory_limit):
+    cmd = _replace_paths_with_strings(cmd)
     if stdin is not None:
-        stdin = shlex.quote(stdin)
+        stdin = shlex.quote(str(stdin))
     logging.info("{} stdin: {}".format(nick, stdin))
     limits.print_limits(nick, time_limit, memory_limit)
 
@@ -47,6 +52,7 @@ def _get_preexec_function(time_limit, memory_limit):
 
 
 def check_call(nick, cmd, stdin=None, time_limit=None, memory_limit=None):
+    cmd = _replace_paths_with_strings(cmd)
     print_call_settings(nick, cmd, stdin, time_limit, memory_limit)
 
     kwargs = {"preexec_fn": _get_preexec_function(time_limit, memory_limit)}
@@ -60,6 +66,7 @@ def check_call(nick, cmd, stdin=None, time_limit=None, memory_limit=None):
 
 
 def get_error_output_and_returncode(nick, cmd, time_limit=None, memory_limit=None):
+    cmd = _replace_paths_with_strings(cmd)
     print_call_settings(nick, cmd, None, time_limit, memory_limit)
 
     preexec_fn = _get_preexec_function(time_limit, memory_limit)
