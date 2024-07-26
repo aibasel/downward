@@ -314,7 +314,7 @@ void handle_tab_completion(int argc, const char **argv) {
         cursor_word_index, command_line, cursor_pos, words);
 
     for (const auto &[suggestion, description] : complete_args(
-        preceding_words, current_word, pos_in_word)) {
+             preceding_words, current_word, pos_in_word)) {
         cout << suggestion;
         if (!description.empty() && !help_separator.empty()) {
             cout << help_separator << description;
