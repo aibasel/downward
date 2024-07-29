@@ -1,5 +1,3 @@
-import argparse
-import importlib.util
 import os
 from pathlib import Path
 import subprocess
@@ -8,6 +6,7 @@ import tempfile
 
 from . import returncodes
 from . import util
+from .run_components import get_search_executable, get_translate_executable
 
 try:
     import argcomplete
@@ -16,28 +15,13 @@ except ImportError:
     HAS_ARGCOMPLETE = False
 
 
-def abort_tab_completion(warning):
-    argcomplete.warn(warning)
-    exit(returncodes.DRIVER_INPUT_ERROR)
-
-
 def complete_build_arg(prefix, parsed_args, **kwargs):
-    if parsed_args.debug:
-        abort_tab_completion(
-            "The option --debug is an alias for --build=debug. Do no specify "
-            "both --debug and --build.")
-
-    if not Path(util.BUILDS_DIR).exists():
-        abort_tab_completion("No build exists.")
-    return [p.name for p in Path(util.BUILDS_DIR).iterdir() if p.is_dir()]
+    if not util.BUILDS_DIR.exists():
+        return []
+    return [p.name for p in util.BUILDS_DIR.iterdir() if p.is_dir()]
 
 
 def complete_planner_args(prefix, parsed_args, **kwargs):
-    if parsed_args.build and parsed_args.debug:
-        abort_tab_completion(
-            "The option --debug is an alias for --build=debug. Do no specify "
-            "both --debug and --build.")
-
     build = parsed_args.build
     if not build:
         if parsed_args.debug:
@@ -48,8 +32,6 @@ def complete_planner_args(prefix, parsed_args, **kwargs):
     # Get some information from planner_args before it is deleted in split_planner_args().
     planner_args = parsed_args.planner_args
     num_planner_args = len(planner_args)
-    mode_switches = ["--translate-options", "--search-options"]
-    last_option_was_mode_switch = planner_args and (planner_args[-1] in mode_switches)
     double_dash_in_options = "--" in planner_args
 
     current_mode = util.split_planner_args(parsed_args)
@@ -64,21 +46,18 @@ def complete_planner_args(prefix, parsed_args, **kwargs):
         completions["--"] = ""
 
     if parsed_args.filenames or double_dash_in_options:
-        bin_dir = Path(util.BUILDS_DIR) / build / "bin"
         if current_mode == "search":
-            if not last_option_was_mode_switch:
-                completions["--translate-options"] = ""
+            completions["--translate-options"] = ""
 
-            downward = bin_dir / "downward"
-            if downward.exists():
+            downward = get_search_executable(build, exit_on_failure=False)
+            if downward and downward.exists():
                 completions.update(_get_completions_from_downward(
                     downward, parsed_args.search_options, prefix))
         else:
-            if not last_option_was_mode_switch:
-                completions["--search-options"] = ""
+            completions["--search-options"] = ""
 
-            translator = bin_dir / "translate" / "translate.py"
-            if translator.exists():
+            translator = get_translate_executable(build, exit_on_failure=False)
+            if translator and translator.exists():
                 completions.update(_get_completions_from_translator(
                     translator, parsed_args.translate_options, prefix))
 
@@ -135,7 +114,7 @@ def _get_completions_from_downward(downward, options, prefix):
 
 
 def _get_completions_from_translator(translator, options, prefix):
-    simulated_commandline = [str(translator), "dummy_domain", "dummy_problem"] + options + [prefix]
+    simulated_commandline = [str(translator)] + options + [prefix]
     comp_line = " ".join(simulated_commandline)
     comp_point = len(comp_line)
     return _call_argcomplete(translator, comp_line, comp_point)
