@@ -22,12 +22,7 @@ def complete_build_arg(prefix, parsed_args, **kwargs):
 
 
 def complete_planner_args(prefix, parsed_args, **kwargs):
-    build = parsed_args.build
-    if not build:
-        if parsed_args.debug:
-            build = "debug"
-        else:
-            build = "release"
+    util.set_default_build(parsed_args)
 
     # Get some information from planner_args before it is deleted in split_planner_args().
     planner_args = parsed_args.planner_args
@@ -49,14 +44,14 @@ def complete_planner_args(prefix, parsed_args, **kwargs):
         if current_mode == "search":
             completions["--translate-options"] = ""
 
-            downward = get_search_executable(build, exit_on_failure=False)
+            downward = get_search_executable(parsed_args.build, exit_on_failure=False)
             if downward and downward.exists():
                 completions.update(_get_completions_from_downward(
                     downward, parsed_args.search_options, prefix))
         else:
             completions["--search-options"] = ""
 
-            translator = get_translate_executable(build, exit_on_failure=False)
+            translator = get_translate_executable(parsed_args.build, exit_on_failure=False)
             if translator and translator.exists():
                 completions.update(_get_completions_from_translator(
                     translator, parsed_args.translate_options, prefix))

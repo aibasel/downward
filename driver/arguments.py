@@ -409,12 +409,8 @@ def parse_args():
         print_usage_and_exit_with_driver_input_error(
             parser, "The option --debug is an alias for --build=debug "
                      "--validate. Do no specify both --debug and --build.")
-    if not args.build:
-        if args.debug:
-            args.build = "debug"
-        else:
-            args.build = "release"
 
+    util.set_default_build(args)
     util.split_planner_args(args)
 
     _check_mutex_args(parser, [

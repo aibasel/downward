@@ -77,6 +77,17 @@ def _split_off_filenames(planner_args):
     return planner_args[:num_filenames], planner_args[num_filenames:]
 
 
+def set_default_build(args):
+    """If no build is specified, set args.build to the default build. This is
+    typically 'release' but can be changed to 'debug' with the option
+    '--debug'. This function modifies args directly."""
+    if not args.build:
+        if args.debug:
+            args.build = "debug"
+        else:
+            args.build = "release"
+
+
 def split_planner_args(args):
     """Partition args.planner_args, the list of arguments for the
     planner components, into args.filenames, args.translate_options
