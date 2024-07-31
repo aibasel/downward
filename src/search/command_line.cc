@@ -184,6 +184,146 @@ shared_ptr<SearchAlgorithm> parse_cmd_line(
     return parse_cmd_line_aux(args);
 }
 
+static vector<pair<string, string>> complete_args(
+    const vector<string> &parsed_args, const string &current_word,
+    int cursor_pos) {
+    string prefix = current_word.substr(0, cursor_pos);
+    assert(!parsed_args.empty()); // args[0] is always the program name.
+    const string &last_arg = parsed_args.back();
+    vector<pair<string, string>> suggestions;
+    if (find(parsed_args.begin(), parsed_args.end(), "--help") != parsed_args.end()) {
+        suggestions.emplace_back("--txt2tags", "");
+        plugins::Registry registry = plugins::RawRegistry::instance()->construct_registry();
+        for (const shared_ptr<const plugins::Feature> &feature : registry.get_features()) {
+            suggestions.emplace_back(feature->get_key(), feature->get_title());
+        }
+    } else if (last_arg == "--internal-plan-file") {
+        /* Suggest filename starting with current_word.
+           Handeled by default bash completion. */
+        exit(1);
+    } else if (last_arg == "--internal-previous-portfolio-plans") {
+        /* We want no suggestions and expect an integer
+           but we cannot avoid the default bash completion. */
+    } else if (last_arg == "--search") {
+        /* Return suggestions for the search string based on current_word.
+           Not implemented at the moment. */
+        exit(1);
+    } else {
+        // not completing an argument
+        suggestions.emplace_back("--help", "");
+        suggestions.emplace_back("--search", "");
+        suggestions.emplace_back("--internal-plan-file", "");
+        suggestions.emplace_back("--internal-previous-portfolio-plans", "");
+        suggestions.emplace_back("--if-unit-cost", "");
+        suggestions.emplace_back("--if-non-unit-cost", "");
+        suggestions.emplace_back("--always", "");
+        // remove suggestions not starting with current_word
+    }
+
+    if (!current_word.empty()) {
+        // Suggest only words that match with current_word
+        suggestions.erase(
+            remove_if(suggestions.begin(), suggestions.end(),
+                      [&](const pair<string, string> &value) {
+                          return !value.first.starts_with(current_word);
+                      }), suggestions.end());
+    }
+    return suggestions;
+}
+
+static vector<int> get_word_starts(const string &command_line, const vector<string> &words) {
+    vector<int> word_starts;
+    word_starts.reserve(words.size());
+    int pos = 0;
+    int end = static_cast<int>(command_line.size());
+    for (const string &word : words) {
+        int word_len = static_cast<int>(word.size());
+        if (command_line.substr(pos, word_len) != word) {
+            input_error("Expected '" + word + "' in command line at position "
+                        + to_string(pos));
+        }
+        word_starts.push_back(pos);
+
+        // Skip word
+        pos += word_len;
+
+        // Skip whitespace between words.
+        while (pos < end && isspace(command_line[pos])) {
+            ++pos;
+        }
+    }
+    return word_starts;
+}
+
+static int get_position_in_current_word(
+    int cursor_word_index, const string &command_line,
+    int cursor_pos, const vector<string> &words) {
+    vector<int> word_starts = get_word_starts(command_line, words);
+
+    assert(utils::in_bounds(cursor_word_index, words));
+    const string &current_word = words[cursor_word_index];
+    int len_current_word = static_cast<int>(current_word.size());
+    assert(utils::in_bounds(cursor_word_index, word_starts));
+    int current_word_start = word_starts[cursor_word_index];
+    int position_in_current_word = cursor_pos - current_word_start;
+
+    if (position_in_current_word < 0 || position_in_current_word > len_current_word) {
+        input_error("Cursor position out-of-bounds: " +
+                    to_string(position_in_current_word) + ".");
+    }
+
+    return position_in_current_word;
+}
+
+void handle_tab_completion(int argc, const char **argv) {
+    if (argc < 2 || string(argv[1]) != "--bash-complete") {
+        return;
+    }
+    if (argc < 7) {
+        input_error(
+            "The option --bash-complete is only meant to be called "
+            "internally to generate suggestions for tab completion.\n"
+            "Usage:\n    ./downward --bash-complete $IFS $DFS\n"
+            "$COMP_POINT \"$COMP_LINE\" $COMP_CWORD ${COMP_WORDS[@]}\n"
+            "where the environment variables have their usual meaning for bash completion:\n"
+            "$IFS is a character used to separate different suggestions.\n"
+            "$DFS is a character used within a suggestion to separate the value from its description.\n"
+            "$COMP_POINT is the position of the cursor in the command line.\n"
+            "$COMP_LINE is the current command line.\n"
+            "$COMP_CWORD is an index into ${COMP_WORDS} of the word under the cursor.\n"
+            "$COMP_WORDS is the current command line split into words.\n"
+            );
+    }
+    string entry_separator(argv[2]);
+    string help_separator(argv[3]);
+    int cursor_pos = parse_int_arg("COMP_POINT", argv[4]);
+    string command_line(argv[5]);
+    int cursor_word_index = parse_int_arg("COMP_CWORD", argv[6]);
+    vector<string> words(&argv[7], &argv[argc]);
+    // Sentinel for cases where the cursor is after the last word.
+    words.push_back("");
+
+    if (!utils::in_bounds(cursor_word_index, words)) {
+        input_error("Cursor word index out-of-bounds: " +
+                    to_string(cursor_word_index) + ".");
+    }
+
+    vector<string> preceding_words(words.begin(), words.begin() + cursor_word_index);
+    const string &current_word = words[cursor_word_index];
+    int pos_in_word = get_position_in_current_word(
+        cursor_word_index, command_line, cursor_pos, words);
+
+    for (const auto &[suggestion, description] : complete_args(
+             preceding_words, current_word, pos_in_word)) {
+        cout << suggestion;
+        if (!description.empty() && !help_separator.empty()) {
+            cout << help_separator << description;
+        }
+        cout << entry_separator;
+    }
+    // Do not use exit_with here because it would generate additional output.
+    exit(0);
+}
 
 string usage(const string &progname) {
     return "usage: \n" +
