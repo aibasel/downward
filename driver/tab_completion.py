@@ -66,7 +66,7 @@ def _get_field_separators(env):
     return entry_separator, help_separator
 
 
-def _split_argcomplete_ouput(content, entry_separator, help_separator):
+def _split_argcomplete_output(content, entry_separator, help_separator):
     suggestions = {}
     for line in content.split(entry_separator):
         if help_separator and help_separator in line:
@@ -103,7 +103,7 @@ def _call_argcomplete(cmd, comp_line, comp_point):
         env["_ARGCOMPLETE_STDOUT_FILENAME"] = f.name
         subprocess.check_call(cmd, env=env)
         entry_separator, help_separator = _get_field_separators(env)
-        return _split_argcomplete_ouput(f.read(), entry_separator, help_separator)
+        return _split_argcomplete_output(f.read(), entry_separator, help_separator)
 
 def _get_completions_from_downward(build, options, prefix):
     try:
@@ -118,7 +118,7 @@ def _get_completions_from_downward(build, options, prefix):
     cmd = [str(x) for x in search_command] + ["--bash-complete", entry_separator, help_separator,
            comp_point, comp_line, comp_cword] + comp_words
     output = subprocess.check_output(cmd, text=True)
-    return _split_argcomplete_ouput(output, entry_separator, help_separator)
+    return _split_argcomplete_output(output, entry_separator, help_separator)
 
 
 def _get_completions_from_translator(build, options, prefix):
