@@ -30,15 +30,21 @@ _VALIDATE_NAME = (shutil.which(f"validate{BINARY_EXT}") or
 _VALIDATE_PATH = Path(_VALIDATE_NAME) if _VALIDATE_NAME else None
 
 
-def get_search_executable(build: str, exit_on_failure=True):
-    return _get_executable(build, _REL_SEARCH_PATH, exit_on_failure)
+class MissingBuildError(Exception):
+    pass
 
 
-def get_translate_executable(build: str, exit_on_failure=True):
-    return _get_executable(build, _REL_TRANSLATE_PATH, exit_on_failure)
+def get_search_command(build: str):
+    return [_get_executable(build, _REL_SEARCH_PATH)]
 
 
-def _get_executable(build: str, rel_path: Path, exit_on_failure=True):
+def get_translate_command(build: str):
+    assert sys.executable, "Path to interpreter could not be found"
+    abs_path = _get_executable(build, _REL_TRANSLATE_PATH)
+    return [sys.executable, abs_path]
+
+
+def _get_executable(build: str, rel_path: Path):
     # First, consider 'build' to be a path directly to the binaries.
     # The path can be absolute or relative to the current working
     # directory.
@@ -50,21 +56,15 @@ def _get_executable(build: str, rel_path: Path, exit_on_failure=True):
         #   '<repo-root>/builds/<buildname>/bin'.
         build_dir = util.BUILDS_DIR / build / "bin"
         if not build_dir.exists():
-            if exit_on_failure:
-                returncodes.exit_with_driver_input_error(
-                    f"Could not find build '{build}' at {build_dir}. "
-                    f"Please run './build.py {build}'.")
-            else:
-                return None
+            raise MissingBuildError(
+                f"Could not find build '{build}' at {build_dir}. "
+                f"Please run './build.py {build}'.")
 
     abs_path = build_dir / rel_path
     if not abs_path.exists():
-        if exit_on_failure:
-            returncodes.exit_with_driver_input_error(
-                f"Could not find '{rel_path}' in build '{build}'. "
-                f"Please run './build.py {build}'.")
-        else:
-            return None
+        raise MissingBuildError(
+            f"Could not find '{rel_path}' in build '{build}'. "
+            f"Please run './build.py {build}'.")
 
     return abs_path
 
@@ -75,13 +75,14 @@ def run_translate(args):
         args.translate_time_limit, args.overall_time_limit)
     memory_limit = limits.get_memory_limit(
         args.translate_memory_limit, args.overall_memory_limit)
-    translate = get_translate_executable(args.build)
-    assert sys.executable, "Path to interpreter could not be found"
-    cmd = [sys.executable] + [translate] + args.translate_inputs + args.translate_options
+    try:
+        translate_command = get_translate_command(args.build)
+    except MissingBuildError as e:
+        returncodes.exit_with_driver_input_error(e)
 
     stderr, returncode = call.get_error_output_and_returncode(
         "translator",
-        cmd,
+        translate_command + args.translate_inputs + args.translate_options,
         time_limit=time_limit,
         memory_limit=memory_limit)
 
@@ -121,7 +122,10 @@ def run_search(args):
         args.search_time_limit, args.overall_time_limit)
     memory_limit = limits.get_memory_limit(
         args.search_memory_limit, args.overall_memory_limit)
-    executable = get_search_executable(args.build)
+    try:
+        search_command = get_search_command(args.build)
+    except MissingBuildError as e:
+        returncodes.exit_with_driver_input_error(e)
 
     plan_manager = PlanManager(
         args.plan_file,
@@ -133,7 +137,7 @@ def run_search(args):
         assert not args.search_options
         logging.info(f"search portfolio: {args.portfolio}")
         return portfolio_runner.run(
-            args.portfolio, executable, args.search_input, plan_manager,
+            args.portfolio, search_command, args.search_input, plan_manager,
             time_limit, memory_limit)
     else:
         if not args.search_options:
@@ -144,7 +148,7 @@ def run_search(args):
         try:
             call.check_call(
                 "search",
-                [executable] + args.search_options,
+                search_command + args.search_options,
                 stdin=args.search_input,
                 time_limit=time_limit,
                 memory_limit=memory_limit)

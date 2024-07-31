@@ -1,12 +1,10 @@
 import os
-from pathlib import Path
 import subprocess
 import sys
 import tempfile
 
-from . import returncodes
 from . import util
-from .run_components import get_search_executable, get_translate_executable
+from .run_components import get_search_command, get_translate_command, MissingBuildError
 
 try:
     import argcomplete
@@ -16,9 +14,10 @@ except ImportError:
 
 
 def complete_build_arg(prefix, parsed_args, **kwargs):
-    if not util.BUILDS_DIR.exists():
+    try:
+        return [p.name for p in util.BUILDS_DIR.iterdir() if p.is_dir()]
+    except OSError:
         return []
-    return [p.name for p in util.BUILDS_DIR.iterdir() if p.is_dir()]
 
 
 def complete_planner_args(prefix, parsed_args, **kwargs):
@@ -43,18 +42,12 @@ def complete_planner_args(prefix, parsed_args, **kwargs):
     if parsed_args.filenames or double_dash_in_options:
         if current_mode == "search":
             completions["--translate-options"] = ""
-
-            downward = get_search_executable(parsed_args.build, exit_on_failure=False)
-            if downward and downward.exists():
-                completions.update(_get_completions_from_downward(
-                    downward, parsed_args.search_options, prefix))
+            completions.update(_get_completions_from_downward(
+                parsed_args.build, parsed_args.search_options, prefix))
         else:
             completions["--search-options"] = ""
-
-            translator = get_translate_executable(parsed_args.build, exit_on_failure=False)
-            if translator and translator.exists():
-                completions.update(_get_completions_from_translator(
-                    translator, parsed_args.translate_options, prefix))
+            completions.update(_get_completions_from_translator(
+                parsed_args.build, parsed_args.translate_options, prefix))
 
     if has_only_filename_options and len(parsed_args.filenames) < 2:
         file_completer = argcomplete.FilesCompleter()
@@ -84,35 +77,65 @@ def _split_argcomplete_ouput(content, entry_separator, help_separator):
     return suggestions
 
 
-def _call_argcomplete(python_file, comp_line, comp_point):
+def _get_bash_completion_args(cmd, options, prefix):
+    """
+    Return values for four environment variables, bash uses as part of tab
+    completion when cmd is called with parsed arguments args, and the unparsed
+    prefix of a word to be completed prefix.
+    COMP_POINT: the cursor position within COMP_LINE
+    COMP_LINE: the full command line as a string
+    COMP_CWORD: an index into COMP_WORDS to the word under the cursor.
+    COMP_WORDS: the command line as list of words
+    """
+    comp_words = [str(x) for x in cmd] + options + [prefix]
+    comp_line = " ".join(comp_words)
+    comp_point = str(len(comp_line))
+    comp_cword = str(len(comp_words) - 1)
+    return comp_point, comp_line, comp_cword, comp_words
+
+
+def _call_argcomplete(cmd, comp_line, comp_point):
     with tempfile.NamedTemporaryFile(mode="r") as f:
         env = os.environ.copy()
         env["COMP_LINE"] = comp_line
-        env["COMP_POINT"] = str(comp_point)
+        env["COMP_POINT"] = comp_point
         env["_ARGCOMPLETE"] = "1"
         env["_ARGCOMPLETE_STDOUT_FILENAME"] = f.name
-        subprocess.check_call([sys.executable, python_file], env=env)
+        subprocess.check_call(cmd, env=env)
         entry_separator, help_separator = _get_field_separators(env)
         return _split_argcomplete_ouput(f.read(), entry_separator, help_separator)
 
-def _get_completions_from_downward(downward, options, prefix):
+def _get_completions_from_downward(build, options, prefix):
+    try:
+        search_command = get_search_command(build)
+    except MissingBuildError:
+        return {}
+
     entry_separator, help_separator = _get_field_separators(os.environ)
     help_separator = help_separator or ":"
-    simulated_commandline = [str(downward)] + options + [prefix]
-    comp_line = " ".join(simulated_commandline)
-    comp_point = str(len(comp_line))
-    comp_cword = str(len(simulated_commandline) - 1)
-    cmd = [str(downward), "--bash-complete", entry_separator, help_separator,
-           comp_point, comp_line, comp_cword] + simulated_commandline
+    comp_point, comp_line, comp_cword, comp_words = _get_bash_completion_args(
+        search_command, options, prefix)
+    cmd = [str(x) for x in search_command] + ["--bash-complete", entry_separator, help_separator,
+           comp_point, comp_line, comp_cword] + comp_words
     output = subprocess.check_output(cmd, text=True)
     return _split_argcomplete_ouput(output, entry_separator, help_separator)
 
 
-def _get_completions_from_translator(translator, options, prefix):
-    simulated_commandline = [str(translator)] + options + [prefix]
-    comp_line = " ".join(simulated_commandline)
-    comp_point = len(comp_line)
-    return _call_argcomplete(translator, comp_line, comp_point)
+def _get_completions_from_translator(build, options, prefix):
+    try:
+        translate_command = get_translate_command(build)
+    except MissingBuildError:
+        return {}
+
+    # We add domain and problem as dummy file names because otherwise, the
+    # translators tab completion will suggest filenames which we don't want at
+    # this point. Technically, file names should come after any options we
+    # complete but to consider them in the completion, they have to be to the
+    # left of the cursor position and to the left of any options that take
+    # parameters.
+    comp_point, comp_line, _, _ = _get_bash_completion_args(
+        translate_command, ["domain", "problem"] + options, prefix)
+    return _call_argcomplete(translate_command, comp_line, comp_point)
 
 
 def enable(parser):
