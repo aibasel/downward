@@ -98,7 +98,7 @@ jobs:
 
       - name: Upload archive
         if: ${{ matrix.version.run_tox_tests }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.4.0
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
           path: archive.tar.gz
@@ -118,7 +118,7 @@ jobs:
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
     steps:
       - name: Download archive
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4.1.8
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
 
