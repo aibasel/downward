@@ -3,7 +3,7 @@
 We support tab completion for bash and zsh based on the python package [argcomplete](https://pypi.org/project/argcomplete/). For full support, use at least version 3.3 which can be installed via `pip`.
 
 ```bash
-pip install argcomplete>=3.3
+pip install "argcomplete>=3.3"
 ```
 
 After the installation, tab completion has to be enabled in one of two ways.
