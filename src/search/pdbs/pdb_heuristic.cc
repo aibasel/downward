@@ -40,7 +40,7 @@ static basic_string<char> paper_references() {
         "Planning with Pattern Databases",
         "https://aaai.org/papers/7280-ecp-01-2001/",
         "Proceedings of the Sixth European Conference on Planning (ECP 2001)",
-        "84--90",
+        "84-90",
         "AAAI Press",
         "2001") +
            "For implementation notes, see:" + utils::format_conference_reference(
