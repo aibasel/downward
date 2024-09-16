@@ -53,7 +53,7 @@ public:
         document_synopsis(
             "Computes dictionaries for state-to-goal distances in "
             "state space abstractions based on projections. "
-            "First used in domain idependent planning by:"
+            "First used in domain independent planning by:"
             + paper_references());
 
         add_option<shared_ptr<PatternGenerator>>(
