@@ -33,13 +33,27 @@ int PDBHeuristic::compute_heuristic(const State &ancestor_state) {
     return h;
 }
 
+static basic_string<char> paper_references() {
+    return utils::format_conference_reference(
+        {"Stefan Edelkamp"},
+        "Planning with Pattern Databases",
+        "https://ecp01.icaps-conference.org/papers/A-longpapers/2/edelkamp.pdf",
+        "Proceedings of the Sixth European Conference on Planning (ECP 2001)",
+        "84--90",
+        "AAAI Press",
+        "2001");
+}
 class PDBHeuristicFeature
     : public plugins::TypedFeature<Evaluator, PDBHeuristic> {
 public:
     PDBHeuristicFeature() : TypedFeature("pdb") {
         document_subcategory("heuristics_pdb");
         document_title("Pattern database heuristic");
-        document_synopsis("TODO");
+        document_synopsis(
+            "Computes dictionaries for state-to-goal distances in"
+            "state space abstractions based on projections."
+            "First used in domain idependent planning by:"
+            + paper_references());
 
         add_option<shared_ptr<PatternGenerator>>(
             "pattern",
