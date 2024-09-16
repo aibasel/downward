@@ -51,8 +51,8 @@ public:
         document_subcategory("heuristics_pdb");
         document_title("Pattern database heuristic");
         document_synopsis(
-            "Computes dictionaries for state-to-goal distances in"
-            "state space abstractions based on projections."
+            "Computes dictionaries for state-to-goal distances in "
+            "state space abstractions based on projections. "
             "First used in domain idependent planning by:"
             + paper_references());
 
