@@ -3,6 +3,7 @@
 #include "pattern_database.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/markup.h"
 
 #include <limits>
 #include <memory>
