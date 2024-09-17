@@ -3,6 +3,7 @@
 #include "pattern_database.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/markup.h"
 
 #include <limits>
 #include <memory>
@@ -33,13 +34,37 @@ int PDBHeuristic::compute_heuristic(const State &ancestor_state) {
     return h;
 }
 
+static basic_string<char> paper_references() {
+    return utils::format_conference_reference(
+        {"Stefan Edelkamp"},
+        "Planning with Pattern Databases",
+        "https://aaai.org/papers/7280-ecp-01-2001/",
+        "Proceedings of the Sixth European Conference on Planning (ECP 2001)",
+        "84-90",
+        "AAAI Press",
+        "2001") +
+           "For implementation notes, see:" + utils::format_conference_reference(
+        {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
+        "Efficient Implementation of Pattern Database Heuristics for"
+        " Classical Planning",
+        "https://ai.dmi.unibas.ch/papers/sievers-et-al-socs2012.pdf",
+        "Proceedings of the Fifth Annual Symposium on Combinatorial"
+        " Search (SoCS 2012)",
+        "105-111",
+        "AAAI Press",
+        "2012");
+}
 class PDBHeuristicFeature
     : public plugins::TypedFeature<Evaluator, PDBHeuristic> {
 public:
     PDBHeuristicFeature() : TypedFeature("pdb") {
         document_subcategory("heuristics_pdb");
         document_title("Pattern database heuristic");
-        document_synopsis("TODO");
+        document_synopsis(
+            "Computes goal distance in "
+            "state space abstractions based on projections. "
+            "First used in domain-independent planning by:"
+            + paper_references());
 
         add_option<shared_ptr<PatternGenerator>>(
             "pattern",
