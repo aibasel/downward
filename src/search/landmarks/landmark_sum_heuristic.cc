@@ -31,14 +31,15 @@ static bool are_dead_ends_reliable(
 }
 
 LandmarkSumHeuristic::LandmarkSumHeuristic(
+    tasks::AxiomHandlingType axioms,
     const shared_ptr<LandmarkFactory> &lm_factory, bool pref,
     bool prog_goal, bool prog_gn, bool prog_r,
-    tasks::AxiomHandlingType axioms,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : LandmarkHeuristic(
-          axioms, pref, transform, cache_estimates,
-          description, verbosity),
+          pref,
+          tasks::get_default_value_axioms_task_if_needed(transform, axioms),
+          cache_estimates, description, verbosity),
       dead_ends_reliable(
           are_dead_ends_reliable(lm_factory, task_proxy)) {
     if (log.is_at_least_normal()) {
@@ -142,6 +143,7 @@ public:
                 "127-177",
                 "2010"));
 
+        tasks::add_axioms_option_to_feature(*this);
         add_landmark_heuristic_options_to_feature(
             *this, "landmark_sum_heuristic");
 
@@ -199,6 +201,7 @@ public:
         const plugins::Options &opts,
         const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkSumHeuristic>(
+            tasks::get_axioms_arguments_from_options(opts),
             get_landmark_heuristic_arguments_from_options(opts));
     }
 };

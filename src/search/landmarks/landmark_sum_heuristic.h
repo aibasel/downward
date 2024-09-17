@@ -17,9 +17,9 @@ class LandmarkSumHeuristic : public LandmarkHeuristic {
     int get_heuristic_value(const State &ancestor_state) override;
 public:
     LandmarkSumHeuristic(
+        tasks::AxiomHandlingType axioms,
         const std::shared_ptr<LandmarkFactory> &lm_factory, bool pref,
         bool prog_goal, bool prog_gn, bool prog_r,
-        tasks::AxiomHandlingType axioms,
         const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates, const std::string &description,
         utils::Verbosity verbosity);
