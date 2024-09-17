@@ -185,15 +185,14 @@ public:
             "conditional_effects",
             "supported if the LandmarkFactory supports them; otherwise "
             "ignored");
-        document_language_support("axioms", "ignored");
+        document_language_support("axioms", "supported");
 
         document_property("admissible", "no");
         document_property("consistent", "no");
         document_property(
             "safe",
-            "yes except on tasks with axioms or on tasks with "
-            "conditional effects when using a LandmarkFactory "
-            "not supporting them");
+            "yes except on tasks with conditional effects when "
+            "using a LandmarkFactory not supporting them");
     }
 
     virtual shared_ptr<LandmarkSumHeuristic> create_component(

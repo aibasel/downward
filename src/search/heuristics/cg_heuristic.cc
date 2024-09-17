@@ -303,11 +303,7 @@ public:
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");
-        document_language_support(
-            "axioms",
-            "supported (in the sense that the planner won't complain -- "
-            "handling of axioms might be very stupid "
-            "and even render the heuristic unsafe)");
+        document_language_support("axioms", "supported");
 
         document_property("admissible", "no");
         document_property("consistent", "no");
