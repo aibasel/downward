@@ -31,8 +31,8 @@ static bool are_dead_ends_reliable(
 }
 
 LandmarkSumHeuristic::LandmarkSumHeuristic(
-    tasks::AxiomHandlingType axioms,
-    const shared_ptr<LandmarkFactory> &lm_factory, bool pref,
+    const shared_ptr<LandmarkFactory> &lm_factory,
+    tasks::AxiomHandlingType axioms, bool pref,
     bool prog_goal, bool prog_gn, bool prog_r,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
@@ -115,6 +115,61 @@ bool LandmarkSumHeuristic::dead_ends_are_reliable() const {
     return dead_ends_reliable;
 }
 
+
+void add_landmark_sum_heuristic_options_to_feature(
+        plugins::Feature &feature, const string &description) {
+    feature.document_synopsis(
+            "Landmark progression is implemented according to the following paper:"
+            + utils::format_conference_reference(
+                    {"Clemens Büchner", "Thomas Keller", "Salomé Eriksson", "Malte Helmert"},
+                    "Landmarks Progression in Heuristic Search",
+                    "https://ai.dmi.unibas.ch/papers/buechner-et-al-icaps2023.pdf",
+                    "Proceedings of the Thirty-Third International Conference on "
+                    "Automated Planning and Scheduling (ICAPS 2023)",
+                    "70-79",
+                    "AAAI Press",
+                    "2023"));
+
+    feature.add_option<shared_ptr<LandmarkFactory>>(
+            "lm_factory",
+            "the set of landmarks to use for this heuristic. "
+            "The set of landmarks can be specified here, "
+            "or predefined (see LandmarkFactory).");
+    tasks::add_axioms_option_to_feature(feature);
+    feature.add_option<bool>(
+            "pref",
+            "enable preferred operators (see note below)",
+            "false");
+    /* TODO: Do we really want these options or should we just always progress
+        everything we can? */
+    feature.add_option<bool>(
+            "prog_goal", "Use goal progression.", "true");
+    feature.add_option<bool>(
+            "prog_gn", "Use greedy-necessary ordering progression.", "true");
+    feature.add_option<bool>(
+            "prog_r", "Use reasonable ordering progression.", "true");
+    add_heuristic_options_to_feature(feature, description);
+
+    feature.document_property("preferred operators",
+                              "yes (if enabled; see ``pref`` option)");
+}
+
+tuple<shared_ptr<LandmarkFactory>, tasks::AxiomHandlingType, bool, bool, bool,
+        bool, shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
+get_landmark_sum_heuristic_arguments_from_options(
+        const plugins::Options &opts) {
+    return tuple_cat(
+            make_tuple(
+                    opts.get<shared_ptr<LandmarkFactory>>("lm_factory")),
+            tasks::get_axioms_arguments_from_options(opts),
+            make_tuple(
+                    opts.get<bool>("pref"),
+                    opts.get<bool>("prog_goal"),
+                    opts.get<bool>("prog_gn"),
+                    opts.get<bool>("prog_r")),
+            get_heuristic_arguments_from_options(opts));
+}
+
 class LandmarkSumHeuristicFeature
     : public plugins::TypedFeature<Evaluator, LandmarkSumHeuristic> {
 public:
@@ -143,8 +198,7 @@ public:
                 "127-177",
                 "2010"));
 
-        tasks::add_axioms_option_to_feature(*this);
-        add_landmark_heuristic_options_to_feature(
+        add_landmark_sum_heuristic_options_to_feature(
             *this, "landmark_sum_heuristic");
 
         document_note(
@@ -201,8 +255,7 @@ public:
         const plugins::Options &opts,
         const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkSumHeuristic>(
-            tasks::get_axioms_arguments_from_options(opts),
-            get_landmark_heuristic_arguments_from_options(opts));
+            get_landmark_sum_heuristic_arguments_from_options(opts));
     }
 };
 
