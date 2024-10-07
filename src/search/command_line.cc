@@ -104,6 +104,8 @@ static shared_ptr<SearchAlgorithm> parse_cmd_line_aux(const vector<string> &args
                 parser::DecoratedASTNodePtr decorated = parsed->decorate();
                 plugins::Any constructed = decorated->construct();
                 search_algorithm = plugins::any_cast<SearchPtr>(constructed);
+            } catch (const plugins::BadAnyCast &) {
+                input_error("Could not interpret the argument of --search as a search algorithm.");
             } catch (const utils::ContextError &e) {
                 input_error(e.get_message());
             }
