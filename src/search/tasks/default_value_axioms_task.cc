@@ -421,9 +421,9 @@ static plugins::TypedEnumPlugin<AxiomHandlingType> _enum_plugin({
         {"approximate_negative_cycles",
          "Overapproximate negated axioms for all derived variables which "
          "have cyclic dependencies by setting an empty condition, "
-         "indicating the default value can always be achieved for free."
+         "indicating the default value can always be achieved for free. "
          "For all other derived variables, the negated axioms are computed"
          "exactly. Note that this can potentially lead to a combinatorial "
-         "explosion"}
+         "explosion."}
     });
 }
