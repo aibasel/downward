@@ -2,7 +2,7 @@
 
 Fast Downward is a domain-independent classical planning system.
 
-Copyright 2003-2023 Fast Downward contributors (see below).
+Copyright 2003-2024 Fast Downward contributors (see below).
 
 For further information:
 - Fast Downward website: <https://www.fast-downward.org>
