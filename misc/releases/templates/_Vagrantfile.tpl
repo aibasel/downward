@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
     v.memory = 2048
   end
 
-  config.vm.box = "ubuntu/noble64"
+  config.vm.box = "ubuntu/jammy64"
 
   # To compile the planner with support for CPLEX, download the 64-bit Linux
   # installer of CPLEX 22.1.1 and set the environment variable
