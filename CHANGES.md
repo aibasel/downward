@@ -16,23 +16,42 @@ Released on October 10, 2024.
 Highlights:
 
 - We have improved the translator in several dimensions. Key
-  improvements include a revised and faster version of the invariant
-  algorithm, full support for negated predicates in the goal, and
-  improved error reporting for invalid PDDL. In addition, we have
-  moved the generation of negated axioms to the search component,
-  which can significantly improve the performance of configurations
-  that do not rely on negated axioms.
+  improvements include better error reporting for invalid PDDL,
+  revised and faster version of the invariant algorithm and full
+  support for negated predicates in the goal.
 
-- We have implemented a new theory of landmark progression that, among
-  other things, closes a completeness gap for search configurations
-  like LAMA. Furthermore, this change makes it possible to use
-  reasonable orders for admissible landmark heuristics.
+- Negated axioms are now computed in the search component, and only in
+  configurations that actually use them. This eliminates a worst-case
+  exponential performance bottleneck in cases where negated axioms are
+  not used. Heuristics that use negated axioms have a new option
+  (`axioms=approximate_negative`) to avoid this computation at the
+  cost of some heuristic accuracy.
 
-- We added the delete-relaxation operator-counting constraints
-  described by Masood Feyzbakhsh Rankooh and Jussi Rintanen.
+- There are many improvements to the `landmark_sum` and
+  `landmark_cost_partitioning` heuristics. This includes a new theory
+  of landmark progression that fixes a gap in the completeness in
+  search configurations like LAMA and can deal directly with cyclic
+  landmark orders, support for reasonable orders in admissible
+  landmark heuristics, a cleaner definition of preferred operators,
+  deterministic synthesis of reasonable orders, and performance
+  improvements. Please note that the command-line options for landmark
+  heuristics have changed.
 
-- We have modernized the CMake build system, which now requires a
-  minimal version of CMake 3.16.
+- We added a new set of operator-counting constraints
+  (`delete_relaxation_rr_constraints`), which implements the
+  delete-relaxation operator-counting constraints by Rankooh and
+  Rintanen. The old `delete_relaxation_constraints` plugin using the
+  constraints by Imai and Fukunaga has been renamed to
+  `delete_relaxation_if_constraints`.
+
+- We added the alias `seq-sat-fdss-2023` for the satisficing Fast
+  Downward Stone Soup 2023 portfolio from IPC 2023.
+
+- For developers: planner component objects (such as heuristics or
+  search algorithms) are now constructed with individual parameters
+  rather than having all parameters encapsulated in an `Options`
+  object. (We mention this primarily for developers maintaining their
+  own forks, as this change affects more than 200 source files.)
 
 Details:
 
@@ -55,7 +74,7 @@ Details:
   requirement to CMake 3.16. New files must now be listed in
   src/search/CMakeLists.txt for compilation. For Soplex support, users
   need to set the soplex_DIR environment variable instead of
-  DOWNWARD_SOPLEX_ROOT. Futhermore, we renamed CMake options from
+  DOWNWARD_SOPLEX_ROOT. Furthermore, we renamed CMake options from
   PLUGIN_FF_HEURISTIC_ENABLED to LIBRARY_FF_HEURISTIC_ENABLED.
   <https://issues.fast-downward.org/issue1097>
 
@@ -100,6 +119,10 @@ Details:
 - infrastructure: We have updated the operating system versions and
   software versions used for our GitHub actions test suite.
   <https://issues.fast-downward.org/issue1142>
+
+- infrastructure: Windows builds using CPLEX in GitHub actions now
+  work with arbitrary repository names.
+  <https://issues.fast-downward.org/issue1121>
 
 - landmarks, for users: We no longer break cycles in
   landmark graphs because landmark progression can now deal
@@ -157,18 +180,17 @@ Details:
   <https://issues.fast-downward.org/issue1119>
   <https://issues.fast-downward.org/issue1118>
 
-- LP/MIP solvers, bug fix: CPLEX now compiles correctly on Windows for
-  arbitrary repository names.
-  <https://issues.fast-downward.org/issue1121>
-
 - merge-and-shrink, for developers: We refactored and simplified the code
   of the `merge_sccs` merge strategy.
   <https://issues.fast-downward.org/issue1105>
 
-- operator counting, for users: We implemented the delete-relaxation
-  operator-counting constraints described in "Efficient Computation and
-  Informative Estimation of h<sup>+</sup> by Integer and Linear
-  Programming" (Rankooh and Rintanen, ICAPS 2022).
+- operator counting, for users: We added
+  `delete_relaxation_rr_constraints`, which implements the
+  delete-relaxation operator-counting constraints described in
+  "Efficient Computation and Informative Estimation of h<sup>+</sup>
+  by Integer and Linear Programming" (Rankooh and Rintanen, ICAPS
+  2022). The old `delete_relaxation_constraints` plugin is now called
+  `delete_relaxation_if_constraints`.
   For details, see
   <https://www.fast-downward.org/Doc/ConstraintGenerator#Delete_relaxation_constraints_from_Rankooh_and_Rintanen>
   <https://issues.fast-downward.org/issue1134>
