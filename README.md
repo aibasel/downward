@@ -63,9 +63,9 @@ contributing, and finally by last name.
 - 2022-2024 Remo Christen
 - 2023-2024 Simon Dold
 - 2023-2024 Claudia S. Grundke
+- 2024 Martín Pozo
 - 2024 Tanja Schindler
 - 2024 David Speck
-- 2024 Martín Pozo
 - 2015, 2021-2023 Thomas Keller
 - 2018-2020, 2023 Augusto B. Corrêa
 - 2023 Victor Paléologue
