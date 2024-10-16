@@ -1,3 +1,4 @@
+import errno
 import logging
 import os
 from pathlib import Path
@@ -20,16 +21,30 @@ else:
     returncodes.exit_with_driver_unsupported_error("Unsupported OS: " + os.name)
 
 # TODO: We might want to turn translate into a module and call it with "python3 -m translate".
-REL_TRANSLATE_PATH = Path("translate") / "translate.py"
-REL_SEARCH_PATH = Path(f"downward{BINARY_EXT}")
+_REL_TRANSLATE_PATH = Path("translate") / "translate.py"
+_REL_SEARCH_PATH = Path(f"downward{BINARY_EXT}")
 # Older versions of VAL use lower case, newer versions upper case. We prefer the
 # older version because this is what our build instructions recommend.
 _VALIDATE_NAME = (shutil.which(f"validate{BINARY_EXT}") or
                   shutil.which(f"Validate{BINARY_EXT}"))
-VALIDATE = Path(_VALIDATE_NAME) if _VALIDATE_NAME else None
+_VALIDATE_PATH = Path(_VALIDATE_NAME) if _VALIDATE_NAME else None
 
 
-def get_executable(build: str, rel_path: Path):
+class MissingBuildError(Exception):
+    pass
+
+
+def get_search_command(build: str):
+    return [_get_executable(build, _REL_SEARCH_PATH)]
+
+
+def get_translate_command(build: str):
+    assert sys.executable, "Path to interpreter could not be found"
+    abs_path = _get_executable(build, _REL_TRANSLATE_PATH)
+    return [sys.executable, abs_path]
+
+
+def _get_executable(build: str, rel_path: Path):
     # First, consider 'build' to be a path directly to the binaries.
     # The path can be absolute or relative to the current working
     # directory.
@@ -41,13 +56,13 @@ def get_executable(build: str, rel_path: Path):
         #   '<repo-root>/builds/<buildname>/bin'.
         build_dir = util.BUILDS_DIR / build / "bin"
         if not build_dir.exists():
-            returncodes.exit_with_driver_input_error(
+            raise MissingBuildError(
                 f"Could not find build '{build}' at {build_dir}. "
                 f"Please run './build.py {build}'.")
 
     abs_path = build_dir / rel_path
     if not abs_path.exists():
-        returncodes.exit_with_driver_input_error(
+        raise MissingBuildError(
             f"Could not find '{rel_path}' in build '{build}'. "
             f"Please run './build.py {build}'.")
 
@@ -60,13 +75,14 @@ def run_translate(args):
         args.translate_time_limit, args.overall_time_limit)
     memory_limit = limits.get_memory_limit(
         args.translate_memory_limit, args.overall_memory_limit)
-    translate = get_executable(args.build, REL_TRANSLATE_PATH)
-    assert sys.executable, "Path to interpreter could not be found"
-    cmd = [sys.executable] + [translate] + args.translate_inputs + args.translate_options
+    try:
+        translate_command = get_translate_command(args.build)
+    except MissingBuildError as e:
+        returncodes.exit_with_driver_input_error(e)
 
     stderr, returncode = call.get_error_output_and_returncode(
         "translator",
-        cmd,
+        translate_command + args.translate_inputs + args.translate_options,
         time_limit=time_limit,
         memory_limit=memory_limit)
 
@@ -106,7 +122,10 @@ def run_search(args):
         args.search_time_limit, args.overall_time_limit)
     memory_limit = limits.get_memory_limit(
         args.search_memory_limit, args.overall_memory_limit)
-    executable = get_executable(args.build, REL_SEARCH_PATH)
+    try:
+        search_command = get_search_command(args.build)
+    except MissingBuildError as e:
+        returncodes.exit_with_driver_input_error(e)
 
     plan_manager = PlanManager(
         args.plan_file,
@@ -118,7 +137,7 @@ def run_search(args):
         assert not args.search_options
         logging.info(f"search portfolio: {args.portfolio}")
         return portfolio_runner.run(
-            args.portfolio, executable, args.search_input, plan_manager,
+            args.portfolio, search_command, args.search_input, plan_manager,
             time_limit, memory_limit)
     else:
         if not args.search_options:
@@ -129,7 +148,7 @@ def run_search(args):
         try:
             call.check_call(
                 "search",
-                [executable] + args.search_options,
+                search_command + args.search_options,
                 stdin=args.search_input,
                 time_limit=time_limit,
                 memory_limit=memory_limit)
@@ -146,7 +165,7 @@ def run_search(args):
 
 
 def run_validate(args):
-    if not VALIDATE:
+    if not _VALIDATE_PATH:
         returncodes.exit_with_driver_input_error(
             "Error: Trying to run validate but it was not found on the PATH.")
 
@@ -159,7 +178,7 @@ def run_validate(args):
     try:
         call.check_call(
             "validate",
-            [VALIDATE] + args.validate_inputs + plan_files,
+            [_VALIDATE_PATH] + args.validate_inputs + plan_files,
             time_limit=args.validate_time_limit,
             memory_limit=args.validate_memory_limit)
     except OSError as err:

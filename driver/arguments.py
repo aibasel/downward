@@ -5,6 +5,7 @@ import sys
 
 from . import aliases
 from . import returncodes
+from . import tab_completion
 from . import util
 
 
@@ -125,64 +126,6 @@ class RawHelpFormatter(argparse.HelpFormatter):
             return "INPUT_FILE1 [INPUT_FILE2] [COMPONENT_OPTION ...]"
         else:
             return argparse.HelpFormatter._format_args(self, action, default_metavar)
-
-
-def _rindex(seq, element):
-    """Like list.index, but gives the index of the *last* occurrence."""
-    seq = list(reversed(seq))
-    reversed_index = seq.index(element)
-    return len(seq) - 1 - reversed_index
-
-
-def _split_off_filenames(planner_args):
-    """Given the list of arguments to be passed on to the planner
-    components, split it into a prefix of filenames and a suffix of
-    options. Returns a pair (filenames, options).
-
-    If a "--" separator is present, the last such separator serves as
-    the border between filenames and options. The separator itself is
-    not returned. (This implies that "--" can be a filename, but never
-    an option to a planner component.)
-
-    If no such separator is present, the first argument that begins
-    with "-" and consists of at least two characters starts the list
-    of options, and all previous arguments are filenames."""
-
-    if "--" in planner_args:
-        separator_pos = _rindex(planner_args, "--")
-        num_filenames = separator_pos
-        del planner_args[separator_pos]
-    else:
-        num_filenames = 0
-        for arg in planner_args:
-            # We treat "-" by itself as a filename because by common
-            # convention it denotes stdin or stdout, and we might want
-            # to support this later.
-            if arg.startswith("-") and arg != "-":
-                break
-            num_filenames += 1
-    return planner_args[:num_filenames], planner_args[num_filenames:]
-
-
-def _split_planner_args(parser, args):
-    """Partition args.planner_args, the list of arguments for the
-    planner components, into args.filenames, args.translate_options
-    and args.search_options. Modifies args directly and removes the original
-    args.planner_args list."""
-
-    args.filenames, options = _split_off_filenames(args.planner_args)
-
-    args.translate_options = []
-    args.search_options = []
-
-    curr_options = args.search_options
-    for option in options:
-        if option == "--translate-options":
-            curr_options = args.translate_options
-        elif option == "--search-options":
-            curr_options = args.search_options
-        else:
-            curr_options.append(option)
 
 
 def _check_mutex_args(parser, args, required=False):
@@ -392,9 +335,9 @@ def parse_args():
     driver_other = parser.add_argument_group(
         title="other driver options")
     driver_other.add_argument(
-        "--alias",
+        "--alias", choices=aliases.ALIASES,
         help="run a config with an alias (e.g. seq-sat-lama-2011)")
-    driver_other.add_argument(
+    build_arg = driver_other.add_argument(
         "--build",
         help="BUILD can be a predefined build name like release "
             "(default) and debug, a custom build name, or the path to "
@@ -403,6 +346,7 @@ def parse_args():
             "this path does not exist, it tries the directory "
             "'<repo>/builds/BUILD/bin', where the build script creates "
             "them by default.")
+    build_arg.completer = tab_completion.complete_build_arg
     driver_other.add_argument(
         "--debug", action="store_true",
         help="alias for --build=debug --validate")
@@ -441,9 +385,10 @@ def parse_args():
         "--cleanup", action="store_true",
         help="clean up temporary files (translator output and plan files) and exit")
 
-    parser.add_argument(
+    planner_args = parser.add_argument(
         "planner_args", nargs=argparse.REMAINDER,
         help="file names and options passed on to planner components")
+    planner_args.completer = tab_completion.complete_planner_args
 
     # Using argparse.REMAINDER relies on the fact that the first
     # argument that doesn't belong to the driver doesn't look like an
@@ -452,6 +397,7 @@ def parse_args():
     # can be used as an explicit separator. For example, "./fast-downward.py --
     # --help" passes "--help" to the search code.
 
+    tab_completion.enable(parser)
     args = parser.parse_args()
 
     if args.sas_file:
@@ -463,13 +409,9 @@ def parse_args():
         print_usage_and_exit_with_driver_input_error(
             parser, "The option --debug is an alias for --build=debug "
                      "--validate. Do no specify both --debug and --build.")
-    if not args.build:
-        if args.debug:
-            args.build = "debug"
-        else:
-            args.build = "release"
 
-    _split_planner_args(parser, args)
+    util.set_default_build(args)
+    util.split_planner_args(args)
 
     _check_mutex_args(parser, [
             ("--alias", args.alias is not None),
