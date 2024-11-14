@@ -1,4 +1,5 @@
 #include "input_file_parser.h"
+
 #include "system.h"
 
 #include <cassert>
@@ -16,10 +17,8 @@ InputFileParser::InputFileParser(istream &stream)
 : stream(stream), context(""), only_whitespaces("\\s*")  {
 }
 
-InputFileParser::~InputFileParser() {
-}
-
 string InputFileParser::find_next_line(bool throw_error_on_failure) {
+    assert(may_start_line); // We probably forgot a confirm_end_of_line.
     string next_line;
     while (!stream.eof()) {
         getline(stream, next_line);
@@ -35,9 +34,8 @@ string InputFileParser::find_next_line(bool throw_error_on_failure) {
 }
 
 void InputFileParser::initialize_tokens() {
-    assert(may_start_line);
+    assert(may_start_line());
     assert(token_number == 0);
-    assert(tokens.empty());
     assert(line != "");
     istringstream stream(line);
     string word;
@@ -46,6 +44,10 @@ void InputFileParser::initialize_tokens() {
         tokens.push_back(word);
     }
     assert(tokens.size() > 0);
+}
+
+bool InputFileParser::may_start_line() {
+    return tokens.empty();
 }
 
 int InputFileParser::parse_int(const string &str, const string &cause) {
@@ -65,10 +67,9 @@ void InputFileParser::set_context(const string &context) {
 }
 
 string InputFileParser::read(const string &message) {
-    if (may_start_line) {
+    if (may_start_line()) {
         line = find_next_line(true);
         initialize_tokens();
-        may_start_line = false;
     }
     if (token_number >= tokens.size()) {
         error("Unexpected end of line. Message: " + message);
@@ -84,7 +85,6 @@ int InputFileParser::read_int(const string &message) {
 }
 
 string InputFileParser::read_line(const string &message) {
-    assert(may_start_line); // We probably forgot a confirm_end_of_line.
     line = find_next_line(true);
     return line;
 }
@@ -102,11 +102,10 @@ void InputFileParser::read_magic_line(const string &magic) {
 }
 
 void InputFileParser::confirm_end_of_line() {
-    if (may_start_line) {
+    if (may_start_line()) {
         return;
     }
     if (token_number == tokens.size()) {
-        may_start_line = true;
         token_number = 0;
         tokens.clear();
     } else {
@@ -116,7 +115,6 @@ void InputFileParser::confirm_end_of_line() {
 }
 
 void InputFileParser::confirm_end_of_file() {
-    assert(may_start_line);
     string next_line = find_next_line(false);
     if(next_line != "") {
         error("Expected end of file, found non-empty line " + next_line);
@@ -132,8 +130,7 @@ void InputFileParser::error(const string &message) const {
     if (context != "") {
         cerr << "Context: " << context << endl;
     }
-    cerr << message << endl
-         << "Exiting." << endl;
+    cerr << message << endl << "Exiting." << endl;
     utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
 }
 }
