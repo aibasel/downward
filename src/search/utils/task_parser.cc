@@ -1,4 +1,4 @@
-#include "input_file_parser.h"
+#include "task_parser.h"
 
 #include "system.h"
 
@@ -13,11 +13,11 @@ using utils::ExitCode;
 namespace utils {
 
 
-InputFileParser::InputFileParser(istream &stream)
+TaskParser::TaskParser(istream &stream)
 : stream(stream), context(""), only_whitespaces("\\s*")  {
 }
 
-string InputFileParser::find_next_line(bool throw_error_on_failure) {
+string TaskParser::find_next_line(bool throw_error_on_failure) {
     assert(may_start_line); // We probably forgot a confirm_end_of_line.
     string next_line;
     while (!stream.eof()) {
@@ -28,12 +28,12 @@ string InputFileParser::find_next_line(bool throw_error_on_failure) {
         }
     }
     if (throw_error_on_failure) {
-        error("Unexpected end of file.");
+        error("Unexpected end of task.");
     }
     return "";
 }
 
-void InputFileParser::initialize_tokens() {
+void TaskParser::initialize_tokens() {
     assert(may_start_line());
     assert(token_number == 0);
     assert(line != "");
@@ -46,11 +46,11 @@ void InputFileParser::initialize_tokens() {
     assert(tokens.size() > 0);
 }
 
-bool InputFileParser::may_start_line() {
+bool TaskParser::may_start_line() {
     return tokens.empty();
 }
 
-int InputFileParser::parse_int(const string &str, const string &cause) {
+int TaskParser::parse_int(const string &str, const string &cause) {
     try {
         string::size_type parsed_length;
         int number = stoi(str, &parsed_length);
@@ -62,11 +62,11 @@ int InputFileParser::parse_int(const string &str, const string &cause) {
     error("expected number; cause: " + cause);
 }
 
-void InputFileParser::set_context(const string &context) {
+void TaskParser::set_context(const string &context) {
     this->context = context;
 }
 
-string InputFileParser::read(const string &message) {
+string TaskParser::read(const string &message) {
     if (may_start_line()) {
         line = find_next_line(true);
         initialize_tokens();
@@ -79,29 +79,29 @@ string InputFileParser::read(const string &message) {
     return token;
 }
 
-int InputFileParser::read_int(const string &message) {
+int TaskParser::read_int(const string &message) {
     string token = read(message);
     return parse_int(token, message);
 }
 
-string InputFileParser::read_line(const string &message) {
+string TaskParser::read_line(const string &message) {
     line = find_next_line(true);
     return line;
 }
 
-int InputFileParser::read_line_int(const string &message) {
+int TaskParser::read_line_int(const string &message) {
     string line = read_line(message);
     return parse_int(line, message);
 }
 
-void InputFileParser::read_magic_line(const string &magic) {
+void TaskParser::read_magic_line(const string &magic) {
     string line = read_line("read magic line");
     if (line != magic) {
         error("Expected magic line " + magic + ", got " + line + ".");
     }
 }
 
-void InputFileParser::confirm_end_of_line() {
+void TaskParser::confirm_end_of_line() {
     if (may_start_line()) {
         return;
     }
@@ -114,15 +114,15 @@ void InputFileParser::confirm_end_of_line() {
     }
 }
 
-void InputFileParser::confirm_end_of_file() {
+void TaskParser::confirm_end_of_input() {
     string next_line = find_next_line(false);
     if(next_line != "") {
-        error("Expected end of file, found non-empty line " + next_line);
+        error("Expected end of task, found non-empty line " + next_line);
     }
 }
 
-void InputFileParser::error(const string &message) const {
-    cerr << "Error reading input file ";
+void TaskParser::error(const string &message) const {
+    cerr << "Error reading task ";
     if (line_number > 0) {
         cerr <<  "line " << line_number;
     }

@@ -1,15 +1,12 @@
-#ifndef UTILS_INPUT_FILE_PARSER_H
-#define UTILS_INPUT_FILE_PARSER_H
+#ifndef UTILS_TASK_PARSER_H
+#define UTILS_TASK_PARSER_H
 
 #include <memory>
 #include <regex>
 
 namespace utils {
-class InputFileLine;
-class InputFileLineParser;
-class InputFileToken;
 
-class InputFileParser {
+class TaskParser {
     std::istream &stream;
     std::string context;
     int line_number = 0;
@@ -22,7 +19,7 @@ class InputFileParser {
     bool may_start_line();
     int parse_int(const std::string &str, const std::string &cause);
 public:
-    explicit InputFileParser(std::istream &stream);
+    explicit TaskParser(std::istream &stream);
 
     /*
       Set context for error reporting.
@@ -68,7 +65,7 @@ public:
     /*
       Check that the end of the file has been reached. Report error otherwise.
     */
-    void confirm_end_of_file();
+    void confirm_end_of_input();
     // TODO: Should this be public at all? Or should we add a get_line method?
     void error(const std::string &message) const;
 };

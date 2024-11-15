@@ -4,7 +4,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/collections.h"
-#include "../utils/input_file_parser.h"
+#include "../utils/task_parser.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
@@ -29,7 +29,7 @@ struct ExplicitVariable {
     int axiom_layer;
     int axiom_default_value;
 
-    explicit ExplicitVariable(utils::InputFileParser &file_parser);
+    explicit ExplicitVariable(utils::TaskParser &task_parser);
 };
 
 
@@ -48,9 +48,9 @@ struct ExplicitOperator {
     string name;
     bool is_an_axiom;
 
-    void read_pre_post(utils::InputFileParser &in);
-    void read_axiom(utils::InputFileParser &in);
-    ExplicitOperator(utils::InputFileParser &in, bool is_an_axiom, bool use_metric);
+    void read_pre_post(utils::TaskParser &task_parser);
+    void read_axiom(utils::TaskParser &task_parser);
+    ExplicitOperator(utils::TaskParser &task_parser, bool is_an_axiom, bool use_metric);
 };
 
 
@@ -141,35 +141,35 @@ static void check_facts(const ExplicitOperator &action, const vector<ExplicitVar
     }
 }
 
-static vector<FactPair> read_facts(utils::InputFileParser &in, bool read_from_single_line) {
-    int count = read_from_single_line ? in.read_int("number of conditions")
-                            : in.read_line_int("number of conditions");
+static vector<FactPair> read_facts(utils::TaskParser &task_parser, bool read_from_single_line) {
+    int count = read_from_single_line ? task_parser.read_int("number of conditions")
+                            : task_parser.read_line_int("number of conditions");
     vector<FactPair> conditions;
     conditions.reserve(count);
     for (int i = 0; i < count; ++i) {
         FactPair condition = FactPair::no_fact;
-        condition.var = in.read_int("condition variable");
-        condition.value = in.read_int("condition value");
+        condition.var = task_parser.read_int("condition variable");
+        condition.value = task_parser.read_int("condition value");
         if (!read_from_single_line) {
-            in.confirm_end_of_line();
+            task_parser.confirm_end_of_line();
         }
         conditions.push_back(condition);
     }
     return conditions;
 }
 
-ExplicitVariable::ExplicitVariable(utils::InputFileParser &file_parser) {
-    file_parser.read_magic_line("begin_variable");
-    name = file_parser.read_line("variable name");
-    axiom_layer = file_parser.read_line_int("variable axiom layer");
-    domain_size = file_parser.read_line_int("variable domain size");
+ExplicitVariable::ExplicitVariable(utils::TaskParser &task_parser) {
+    task_parser.read_magic_line("begin_variable");
+    name = task_parser.read_line("variable name");
+    axiom_layer = task_parser.read_line_int("variable axiom layer");
+    domain_size = task_parser.read_line_int("variable domain size");
     if (domain_size < 1) {
-        file_parser.error("Domain size is less than 1, should be at least 1.");
+        task_parser.error("Domain size is less than 1, should be at least 1.");
     }
     fact_names.resize(domain_size);
     for (int i = 0; i < domain_size; ++i)
-        fact_names[i] = file_parser.read_line("fact name");
-    file_parser.read_magic_line("end_variable");
+        fact_names[i] = task_parser.read_line("fact name");
+    task_parser.read_magic_line("end_variable");
 }
 
 
@@ -178,104 +178,104 @@ ExplicitEffect::ExplicitEffect(
     : fact(var, value), conditions(move(conditions)) {
 }
 
-void ExplicitOperator::read_pre_post(utils::InputFileParser &in) {
-    vector<FactPair> conditions = read_facts(in, true);
-    int var = in.read_int("variable affected by effect");
-    int value_pre = in.read_int("variable value precondition");
-    int value_post = in.read_int("variable value postcondition");
+void ExplicitOperator::read_pre_post(utils::TaskParser &task_parser) {
+    vector<FactPair> conditions = read_facts(task_parser, true);
+    int var = task_parser.read_int("variable affected by effect");
+    int value_pre = task_parser.read_int("variable value precondition");
+    int value_post = task_parser.read_int("variable value postcondition");
     if (value_pre != -1) {
         preconditions.emplace_back(var, value_pre);
     }
-    in.confirm_end_of_line();
+    task_parser.confirm_end_of_line();
     effects.emplace_back(var, value_post, move(conditions));
 }
 
-void ExplicitOperator::read_axiom(utils::InputFileParser &in) {
-    vector<FactPair> conditions = read_facts(in, false);
-    int var = in.read_int("variable affected by axiom");
-    int value_pre = in.read_int("variable value precondition");
-    int value_post = in.read_int("variable value postcondition");
-    in.confirm_end_of_line();
+void ExplicitOperator::read_axiom(utils::TaskParser &task_parser) {
+    vector<FactPair> conditions = read_facts(task_parser, false);
+    int var = task_parser.read_int("variable affected by axiom");
+    int value_pre = task_parser.read_int("variable value precondition");
+    int value_post = task_parser.read_int("variable value postcondition");
+    task_parser.confirm_end_of_line();
     if (value_pre != -1) {
         preconditions.emplace_back(var, value_pre);
     }
     effects.emplace_back(var, value_post, move(conditions));
 }
 
-ExplicitOperator::ExplicitOperator(utils::InputFileParser &in, bool is_an_axiom, bool use_metric)
+ExplicitOperator::ExplicitOperator(utils::TaskParser &task_parser, bool is_an_axiom, bool use_metric)
     : is_an_axiom(is_an_axiom) {
     if (!is_an_axiom) {
-        in.read_magic_line("begin_operator");
-        name = in.read_line("operator name");
-        preconditions = read_facts(in, false);
-        int count = in.read_line_int("number of operator effects");
+        task_parser.read_magic_line("begin_operator");
+        name = task_parser.read_line("operator name");
+        preconditions = read_facts(task_parser, false);
+        int count = task_parser.read_line_int("number of operator effects");
         effects.reserve(count);
         for (int i = 0; i < count; ++i) {
-            read_pre_post(in);
+            read_pre_post(task_parser);
         }
-        int op_cost = in.read_line_int("operator cost");
+        int op_cost = task_parser.read_line_int("operator cost");
         cost = use_metric ? op_cost : 1;
-        in.read_magic_line("end_operator");
+        task_parser.read_magic_line("end_operator");
     } else {
         name = "<axiom>";
         cost = 0;
-        in.read_magic_line("begin_rule");
-        read_axiom(in);
-        in.read_magic_line("end_rule");
+        task_parser.read_magic_line("begin_rule");
+        read_axiom(task_parser);
+        task_parser.read_magic_line("end_rule");
     }
     assert(cost >= 0);
 }
 
-static void read_and_verify_version(utils::InputFileParser &in) {
-    in.set_context("version section");
-    in.read_magic_line("begin_version");
-    int version = in.read_line_int("version number");
+static void read_and_verify_version(utils::TaskParser &task_parser) {
+    task_parser.set_context("version section");
+    task_parser.read_magic_line("begin_version");
+    int version = task_parser.read_line_int("version number");
     if (version != PRE_FILE_VERSION) {
         cerr << "Expected translator output file version " << PRE_FILE_VERSION
              << ", got " << version << "." << endl
              << "Exiting." << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
-    in.read_magic_line("end_version");
+    task_parser.read_magic_line("end_version");
 }
 
-static bool read_metric(utils::InputFileParser &in) {
-    in.set_context("metric_section");
-    in.read_magic_line("begin_metric");
-    string use_metric_string = in.read_line("use metric");
+static bool read_metric(utils::TaskParser &task_parser) {
+    task_parser.set_context("metric_section");
+    task_parser.read_magic_line("begin_metric");
+    string use_metric_string = task_parser.read_line("use metric");
     bool use_metric = false;
     if (use_metric_string == "1") {
         use_metric = true;
     } else if (use_metric_string == "0") {
         use_metric = false;
     } else {
-        in.error("expected boolean");
+        task_parser.error("expected boolean");
     }
-    in.read_magic_line("end_metric");
+    task_parser.read_magic_line("end_metric");
     return use_metric;
 }
 
-static vector<ExplicitVariable> read_variables(utils::InputFileParser &file_parser) {
-    file_parser.set_context("variable_section");
-    int count = file_parser.read_line_int("variable count");
+static vector<ExplicitVariable> read_variables(utils::TaskParser &task_parser) {
+    task_parser.set_context("variable_section");
+    int count = task_parser.read_line_int("variable count");
     if (count < 1) {
-        file_parser.error("Number of variables is less than 1, should be at least 1.");
+        task_parser.error("Number of variables is less than 1, should be at least 1.");
     }
     vector<ExplicitVariable> variables;
     variables.reserve(count);
     for (int i = 0; i < count; ++i) {
-        variables.emplace_back(file_parser);
+        variables.emplace_back(task_parser);
     }
     return variables;
 }
 
-static vector<vector<set<FactPair>>> read_mutexes(utils::InputFileParser &file_parser, const vector<ExplicitVariable> &variables) {
-    file_parser.set_context("mutex section");
+static vector<vector<set<FactPair>>> read_mutexes(utils::TaskParser &task_parser, const vector<ExplicitVariable> &variables) {
+    task_parser.set_context("mutex section");
     vector<vector<set<FactPair>>> inconsistent_facts(variables.size());
     for (size_t i = 0; i < variables.size(); ++i)
         inconsistent_facts[i].resize(variables[i].domain_size);
 
-    int num_mutex_groups = file_parser.read_line_int("number of mutex groups");
+    int num_mutex_groups = task_parser.read_line_int("number of mutex groups");
 
     /*
       NOTE: Mutex groups can overlap, in which case the same mutex
@@ -285,23 +285,23 @@ static vector<vector<set<FactPair>>> read_mutexes(utils::InputFileParser &file_p
       aware of.
     */
     for (int i = 0; i < num_mutex_groups; ++i) {
-        file_parser.read_magic_line("begin_mutex_group");
-        int num_facts = file_parser.read_line_int("number of facts in mutex group");
+        task_parser.read_magic_line("begin_mutex_group");
+        int num_facts = task_parser.read_line_int("number of facts in mutex group");
         if (num_facts < 1) {
-            file_parser.error("Number of facts in mutex group is less than 1, should be at least 1.");
+            task_parser.error("Number of facts in mutex group is less than 1, should be at least 1.");
         }
         vector<FactPair> invariant_group;
         invariant_group.reserve(num_facts);
         for (int j = 0; j < num_facts; ++j) {
-            int var = file_parser.read_int("variable number of mutex atom");
-            int value = file_parser.read_int("value of mutex atom");
-            file_parser.confirm_end_of_line();
+            int var = task_parser.read_int("variable number of mutex atom");
+            int value = task_parser.read_int("value of mutex atom");
+            task_parser.confirm_end_of_line();
             invariant_group.emplace_back(var, value);
         }
-        file_parser.read_magic_line("end_mutex_group");
+        task_parser.read_magic_line("end_mutex_group");
         set<FactPair> invariant_group_set(invariant_group.begin(), invariant_group.end());
         if (invariant_group_set.size() != invariant_group.size()) {
-            file_parser.error("Mutex group may not contain the same fact more than once.");
+            task_parser.error("Mutex group may not contain the same fact more than once.");
         }
         for (const FactPair &fact1 : invariant_group) {
             for (const FactPair &fact2 : invariant_group) {
@@ -324,11 +324,11 @@ static vector<vector<set<FactPair>>> read_mutexes(utils::InputFileParser &file_p
     return inconsistent_facts;
 }
 
-static vector<FactPair> read_goal(utils::InputFileParser &in) {
-    in.set_context("goal section");
-    in.read_magic_line("begin_goal");
-    vector<FactPair> goals = read_facts(in, false);
-    in.read_magic_line("end_goal");
+static vector<FactPair> read_goal(utils::TaskParser &task_parser) {
+    task_parser.set_context("goal section");
+    task_parser.read_magic_line("begin_goal");
+    vector<FactPair> goals = read_facts(task_parser, false);
+    task_parser.read_magic_line("end_goal");
     if (goals.empty()) {
         cerr << "Task has no goal condition!" << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
@@ -337,27 +337,27 @@ static vector<FactPair> read_goal(utils::InputFileParser &in) {
 }
 
 static vector<ExplicitOperator> read_actions(
-    utils::InputFileParser &in, bool is_axiom, bool use_metric,
+    utils::TaskParser &task_parser, bool is_axiom, bool use_metric,
     const vector<ExplicitVariable> &variables) {
-    in.set_context(is_axiom ? "axiom section" : "operator section");
-    int count = in.read_line_int(is_axiom ? "number of axioms" : "number of operators");
+    task_parser.set_context(is_axiom ? "axiom section" : "operator section");
+    int count = task_parser.read_line_int(is_axiom ? "number of axioms" : "number of operators");
     vector<ExplicitOperator> actions;
     actions.reserve(count);
     for (int i = 0; i < count; ++i) {
-        actions.emplace_back(in, is_axiom, use_metric);
+        actions.emplace_back(task_parser, is_axiom, use_metric);
         check_facts(actions.back(), variables);
     }
     return actions;
 }
 
 RootTask::RootTask(istream &in) {
-    utils::InputFileParser file(in);
-    read_and_verify_version(file);
-    bool use_metric = read_metric(file);
-    variables = read_variables(file);
+    utils::TaskParser task_parser(in);
+    read_and_verify_version(task_parser);
+    bool use_metric = read_metric(task_parser);
+    variables = read_variables(task_parser);
     int num_variables = variables.size();
 
-    mutexes = read_mutexes(file, variables);
+    mutexes = read_mutexes(task_parser, variables);
     for (size_t i = 0; i < mutexes.size(); ++i) {
         for (size_t j = 0; j < mutexes[i].size(); ++j) {
             check_facts(mutexes[i][j], variables);
@@ -365,24 +365,24 @@ RootTask::RootTask(istream &in) {
     }
 
     // TODO: Maybe we could move this into a separate function as well
-    file.set_context("initial state section");
+    task_parser.set_context("initial state section");
     initial_state_values.resize(num_variables);
-    file.read_magic_line("begin_state");
+    task_parser.read_magic_line("begin_state");
     for (int i = 0; i < num_variables; ++i) {
-        initial_state_values[i] = file.read_line_int("initial state variable value");
+        initial_state_values[i] = task_parser.read_line_int("initial state variable value");
     }
-    file.read_magic_line("end_state");
+    task_parser.read_magic_line("end_state");
 
     for (int i = 0; i < num_variables; ++i) {
         check_fact(FactPair(i, initial_state_values[i]), variables);
         variables[i].axiom_default_value = initial_state_values[i];
     }
 
-    goals = read_goal(file);
+    goals = read_goal(task_parser);
     check_facts(goals, variables);
-    operators = read_actions(file, false, use_metric, variables);
-    axioms = read_actions(file, true, use_metric, variables);
-    file.confirm_end_of_file();
+    operators = read_actions(task_parser, false, use_metric, variables);
+    axioms = read_actions(task_parser, true, use_metric, variables);
+    task_parser.confirm_end_of_input();
     /* TODO: We should be stricter here and verify that we
        have reached the end of "in". */
 
