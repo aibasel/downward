@@ -6,6 +6,14 @@
 
 namespace utils {
 
+/*
+  Parse a task file.
+  Read a complete line as a single token *or* split a line into
+  whitespace-separated tokens and read them one by one. The latter
+  requires to confirm the end of the line manually. A line or a token
+  can be parsed as an integer if it is a string of digits. A line can
+  also be read and immediately compared to a given *magic* string.
+*/
 class TaskParser {
     std::istream &stream;
     std::string context;
