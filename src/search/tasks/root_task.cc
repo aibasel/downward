@@ -142,8 +142,9 @@ static void check_facts(const ExplicitOperator &action, const vector<ExplicitVar
 }
 
 static vector<FactPair> read_facts(utils::TaskParser &task_parser, bool read_from_single_line) {
-    int count = read_from_single_line ? task_parser.read_int("number of conditions")
-                            : task_parser.read_line_int("number of conditions");
+    const string counter_name = "number of conditions";
+    int count = read_from_single_line ? task_parser.read_int(counter_name)
+                            : task_parser.read_line_int(counter_name);
     vector<FactPair> conditions;
     conditions.reserve(count);
     for (int i = 0; i < count; ++i) {
@@ -164,7 +165,9 @@ ExplicitVariable::ExplicitVariable(utils::TaskParser &task_parser) {
     axiom_layer = task_parser.read_line_int("variable axiom layer");
     domain_size = task_parser.read_line_int("variable domain size");
     if (domain_size < 1) {
-        task_parser.error("Domain size is less than 1, should be at least 1.");
+        task_parser.error(
+            "Domain size should be at least 1, but is "
+            + std::to_string(domain_size) + ".");
     }
     fact_names.resize(domain_size);
     for (int i = 0; i < domain_size; ++i)
@@ -240,7 +243,7 @@ static void read_and_verify_version(utils::TaskParser &task_parser) {
 }
 
 static bool read_metric(utils::TaskParser &task_parser) {
-    task_parser.set_context("metric_section");
+    task_parser.set_context("metric section");
     task_parser.read_magic_line("begin_metric");
     string use_metric_string = task_parser.read_line("use metric");
     bool use_metric = false;
@@ -249,17 +252,19 @@ static bool read_metric(utils::TaskParser &task_parser) {
     } else if (use_metric_string == "0") {
         use_metric = false;
     } else {
-        task_parser.error("expected boolean");
+        task_parser.error("expected 0 or 1");
     }
     task_parser.read_magic_line("end_metric");
     return use_metric;
 }
 
 static vector<ExplicitVariable> read_variables(utils::TaskParser &task_parser) {
-    task_parser.set_context("variable_section");
+    task_parser.set_context("variable section");
     int count = task_parser.read_line_int("variable count");
     if (count < 1) {
-        task_parser.error("Number of variables is less than 1, should be at least 1.");
+        task_parser.error(
+            "Number of variables should be at least 1, but is "
+            + std::to_string(count) + ".");
     }
     vector<ExplicitVariable> variables;
     variables.reserve(count);
@@ -288,7 +293,9 @@ static vector<vector<set<FactPair>>> read_mutexes(utils::TaskParser &task_parser
         task_parser.read_magic_line("begin_mutex_group");
         int num_facts = task_parser.read_line_int("number of facts in mutex group");
         if (num_facts < 1) {
-            task_parser.error("Number of facts in mutex group is less than 1, should be at least 1.");
+            task_parser.error(
+                "Number of facts in mutex group should be at least 1, but is "
+                + std::to_string(num_facts) + ".");
         }
         vector<FactPair> invariant_group;
         invariant_group.reserve(num_facts);
@@ -383,8 +390,6 @@ RootTask::RootTask(istream &in) {
     operators = read_actions(task_parser, false, use_metric, variables);
     axioms = read_actions(task_parser, true, use_metric, variables);
     task_parser.confirm_end_of_input();
-    /* TODO: We should be stricter here and verify that we
-       have reached the end of "in". */
 
     /*
       HACK: We use a TaskProxy to access g_axiom_evaluators here which assumes
