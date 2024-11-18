@@ -17,20 +17,21 @@ TaskParser::TaskParser(istream &stream)
 : stream(stream), context(""), only_whitespaces("\\s*")  {
 }
 
-string TaskParser::find_next_line(bool throw_error_on_failure) {
+void TaskParser::find_next_line(bool throw_error_on_failure) {
     assert(may_start_line); // We probably forgot a confirm_end_of_line.
     string next_line;
     while (!stream.eof()) {
         getline(stream, next_line);
         ++line_number;
         if (!regex_match(next_line, only_whitespaces)) {
-            return next_line;
+            line = next_line;
+            return;
         }
     }
     if (throw_error_on_failure) {
         error("Unexpected end of task.");
     }
-    return "";
+    line = "";
 }
 
 void TaskParser::initialize_tokens() {
@@ -68,7 +69,7 @@ void TaskParser::set_context(const string &context) {
 
 string TaskParser::read(const string &message) {
     if (may_start_line()) {
-        line = find_next_line(true);
+        find_next_line(true);
         initialize_tokens();
     }
     if (token_number >= tokens.size()) {
@@ -85,7 +86,7 @@ int TaskParser::read_int(const string &message) {
 }
 
 string TaskParser::read_line(const string &message) {
-    line = find_next_line(true);
+    find_next_line(true);
     return line;
 }
 
@@ -115,9 +116,9 @@ void TaskParser::confirm_end_of_line() {
 }
 
 void TaskParser::confirm_end_of_input() {
-    string next_line = find_next_line(false);
-    if(next_line != "") {
-        error("Expected end of task, found non-empty line " + next_line);
+    find_next_line(false);
+    if(line != "") {
+        error("Expected end of task, found non-empty line " + line);
     }
 }
 

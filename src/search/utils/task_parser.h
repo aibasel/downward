@@ -14,7 +14,7 @@ class TaskParser {
     std::string line;
     std::vector<std::string> tokens;
     const std::regex only_whitespaces;
-    std::string find_next_line(bool throw_error_on_failure=true);
+    void find_next_line(bool throw_error_on_failure=true);
     void initialize_tokens();
     bool may_start_line();
     int parse_int(const std::string &str, const std::string &cause);
