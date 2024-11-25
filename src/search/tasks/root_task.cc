@@ -48,8 +48,7 @@ struct ExplicitOperator {
     string name;
     bool is_an_axiom;
 
-    void read_pre_post(utils::TaskParser &task_parser);
-    void read_axiom(utils::TaskParser &task_parser);
+    void read_pre_post(utils::TaskParser &task_parser, bool is_axiom);
     ExplicitOperator(utils::TaskParser &task_parser, bool is_an_axiom, bool use_metric);
 };
 
@@ -181,21 +180,11 @@ ExplicitEffect::ExplicitEffect(
     : fact(var, value), conditions(move(conditions)) {
 }
 
-void ExplicitOperator::read_pre_post(utils::TaskParser &task_parser) {
-    vector<FactPair> conditions = read_facts(task_parser, true);
-    int var = task_parser.read_int("variable affected by effect");
-    int value_pre = task_parser.read_int("variable value precondition");
-    int value_post = task_parser.read_int("variable value postcondition");
-    if (value_pre != -1) {
-        preconditions.emplace_back(var, value_pre);
-    }
-    task_parser.confirm_end_of_line();
-    effects.emplace_back(var, value_post, move(conditions));
-}
-
-void ExplicitOperator::read_axiom(utils::TaskParser &task_parser) {
-    vector<FactPair> conditions = read_facts(task_parser, false);
-    int var = task_parser.read_int("variable affected by axiom");
+void ExplicitOperator::read_pre_post(
+        utils::TaskParser &task_parser, bool is_axiom) {
+    bool read_from_single_line = !is_axiom;
+    vector<FactPair> conditions = read_facts(task_parser, read_from_single_line);
+    int var = task_parser.read_int("variable affected by " + is_axiom ? "axiom" : "effect");
     int value_pre = task_parser.read_int("variable value precondition");
     int value_post = task_parser.read_int("variable value postcondition");
     task_parser.confirm_end_of_line();
@@ -214,7 +203,7 @@ ExplicitOperator::ExplicitOperator(utils::TaskParser &task_parser, bool is_an_ax
         int count = task_parser.read_line_int("number of operator effects");
         effects.reserve(count);
         for (int i = 0; i < count; ++i) {
-            read_pre_post(task_parser);
+            read_pre_post(task_parser, false);
         }
         int op_cost = task_parser.read_line_int("operator cost");
         cost = use_metric ? op_cost : 1;
@@ -223,7 +212,7 @@ ExplicitOperator::ExplicitOperator(utils::TaskParser &task_parser, bool is_an_ax
         name = "<axiom>";
         cost = 0;
         task_parser.read_magic_line("begin_rule");
-        read_axiom(task_parser);
+        read_pre_post(task_parser, true);
         task_parser.read_magic_line("end_rule");
     }
     assert(cost >= 0);
