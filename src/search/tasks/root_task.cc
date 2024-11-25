@@ -120,13 +120,8 @@ static void check_fact(const FactPair &fact, const vector<ExplicitVariable> &var
     }
 }
 
-static void check_facts(const vector<FactPair> &facts, const vector<ExplicitVariable> &variables) {
-    for (FactPair fact : facts) {
-        check_fact(fact, variables);
-    }
-}
-
-static void check_facts(const set<FactPair> &facts, const vector<ExplicitVariable> &variables) {
+template<typename T>
+static void check_facts(const T &facts, const vector<ExplicitVariable> &variables) {
     for (FactPair fact : facts) {
         check_fact(fact, variables);
     }
