@@ -15,7 +15,7 @@ static shared_ptr<PatternDatabase> get_pdb_from_generator(
     const shared_ptr<AbstractTask> &task,
     const shared_ptr<PatternGenerator> &pattern_generator) {
     PatternInformation pattern_info = pattern_generator->generate(task);
-    return pattern_info.get_pdb();
+    return pattern_info.get_pdb(TaskProxy(*task));
 }
 
 PDBHeuristic::PDBHeuristic(
