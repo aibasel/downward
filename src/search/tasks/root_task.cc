@@ -4,7 +4,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/collections.h"
-#include "../utils/task_parser.h"
+#include "../utils/task_lexer.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
@@ -29,7 +29,7 @@ struct ExplicitVariable {
     int axiom_layer;
     int axiom_default_value;
 
-    explicit ExplicitVariable(utils::TaskParser &task_parser);
+    explicit ExplicitVariable(utils::TaskLexer &task_lexer);
 };
 
 
@@ -48,8 +48,8 @@ struct ExplicitOperator {
     string name;
     bool is_an_axiom;
 
-    void read_pre_post(utils::TaskParser &task_parser, bool is_axiom);
-    ExplicitOperator(utils::TaskParser &task_parser, bool is_an_axiom, bool use_metric);
+    void read_pre_post(utils::TaskLexer &task_lexer, bool is_axiom);
+    ExplicitOperator(utils::TaskLexer &task_lexer, bool is_an_axiom, bool use_metric);
 };
 
 
@@ -135,39 +135,39 @@ static void check_facts(const ExplicitOperator &action, const vector<ExplicitVar
     }
 }
 
-static vector<FactPair> read_facts(utils::TaskParser &task_parser, bool read_from_single_line) {
+static vector<FactPair> read_facts(utils::TaskLexer &task_lexer, bool read_from_single_line) {
     const string counter_name = "number of conditions";
-    int count = read_from_single_line ? task_parser.read_int(counter_name)
-                            : task_parser.read_line_int(counter_name);
+    int count = read_from_single_line ? task_lexer.read_int(counter_name)
+                            : task_lexer.read_line_int(counter_name);
     vector<FactPair> conditions;
     conditions.reserve(count);
     for (int i = 0; i < count; ++i) {
         FactPair condition = FactPair::no_fact;
-        condition.var = task_parser.read_int("condition variable");
-        condition.value = task_parser.read_int("condition value");
+        condition.var = task_lexer.read_int("condition variable");
+        condition.value = task_lexer.read_int("condition value");
         if (!read_from_single_line) {
-            task_parser.confirm_end_of_line();
+            task_lexer.confirm_end_of_line();
         }
         conditions.push_back(condition);
     }
     return conditions;
 }
 
-ExplicitVariable::ExplicitVariable(utils::TaskParser &task_parser) {
-    task_parser.read_magic_line("begin_variable");
-    name = task_parser.read_line("variable name");
-    utils::TraceBlock block = task_parser.trace_block("parsing variable " + name);
-    axiom_layer = task_parser.read_line_int("variable axiom layer");
-    domain_size = task_parser.read_line_int("variable domain size");
+ExplicitVariable::ExplicitVariable(utils::TaskLexer &task_lexer) {
+    task_lexer.read_magic_line("begin_variable");
+    name = task_lexer.read_line("variable name");
+    utils::TraceBlock block = task_lexer.trace_block("parsing variable " + name);
+    axiom_layer = task_lexer.read_line_int("variable axiom layer");
+    domain_size = task_lexer.read_line_int("variable domain size");
     if (domain_size < 1) {
-        task_parser.error(
+        task_lexer.error(
             "Domain size should be at least 1, but is "
             + std::to_string(domain_size) + ".");
     }
     fact_names.resize(domain_size);
     for (int i = 0; i < domain_size; ++i)
-        fact_names[i] = task_parser.read_line("fact name");
-    task_parser.read_magic_line("end_variable");
+        fact_names[i] = task_lexer.read_line("fact name");
+    task_lexer.read_magic_line("end_variable");
 }
 
 
@@ -177,96 +177,96 @@ ExplicitEffect::ExplicitEffect(
 }
 
 void ExplicitOperator::read_pre_post(
-        utils::TaskParser &task_parser, bool is_axiom) {
+        utils::TaskLexer &task_lexer, bool is_axiom) {
     bool read_from_single_line = !is_axiom;
-    vector<FactPair> conditions = read_facts(task_parser, read_from_single_line);
+    vector<FactPair> conditions = read_facts(task_lexer, read_from_single_line);
     string source = is_axiom ? "axiom" : "effect";
-    int var = task_parser.read_int("variable affected by " + source);
-    int value_pre = task_parser.read_int("variable value precondition");
-    int value_post = task_parser.read_int("variable value postcondition");
-    task_parser.confirm_end_of_line();
+    int var = task_lexer.read_int("variable affected by " + source);
+    int value_pre = task_lexer.read_int("variable value precondition");
+    int value_post = task_lexer.read_int("variable value postcondition");
+    task_lexer.confirm_end_of_line();
     if (value_pre != -1) {
         preconditions.emplace_back(var, value_pre);
     }
     effects.emplace_back(var, value_post, move(conditions));
 }
 
-ExplicitOperator::ExplicitOperator(utils::TaskParser &task_parser, bool is_an_axiom, bool use_metric)
+ExplicitOperator::ExplicitOperator(utils::TaskLexer &task_lexer, bool is_an_axiom, bool use_metric)
     : is_an_axiom(is_an_axiom) {
     if (!is_an_axiom) {
-        task_parser.read_magic_line("begin_operator");
-        name = task_parser.read_line("operator name");
-        preconditions = read_facts(task_parser, false);
-        int count = task_parser.read_line_int("number of operator effects");
+        task_lexer.read_magic_line("begin_operator");
+        name = task_lexer.read_line("operator name");
+        preconditions = read_facts(task_lexer, false);
+        int count = task_lexer.read_line_int("number of operator effects");
         effects.reserve(count);
         for (int i = 0; i < count; ++i) {
-            read_pre_post(task_parser, false);
+            read_pre_post(task_lexer, false);
         }
-        int op_cost = task_parser.read_line_int("operator cost");
+        int op_cost = task_lexer.read_line_int("operator cost");
         cost = use_metric ? op_cost : 1;
-        task_parser.read_magic_line("end_operator");
+        task_lexer.read_magic_line("end_operator");
     } else {
         name = "<axiom>";
         cost = 0;
-        task_parser.read_magic_line("begin_rule");
-        read_pre_post(task_parser, true);
-        task_parser.read_magic_line("end_rule");
+        task_lexer.read_magic_line("begin_rule");
+        read_pre_post(task_lexer, true);
+        task_lexer.read_magic_line("end_rule");
     }
     assert(cost >= 0);
 }
 
-static void read_and_verify_version(utils::TaskParser &task_parser) {
-    utils::TraceBlock block = task_parser.trace_block("version section");
-    task_parser.read_magic_line("begin_version");
-    int version = task_parser.read_line_int("version number");
+static void read_and_verify_version(utils::TaskLexer &task_lexer) {
+    utils::TraceBlock block = task_lexer.trace_block("version section");
+    task_lexer.read_magic_line("begin_version");
+    int version = task_lexer.read_line_int("version number");
     if (version != PRE_FILE_VERSION) {
         cerr << "Expected translator output file version " << PRE_FILE_VERSION
              << ", got " << version << "." << endl
              << "Exiting." << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
-    task_parser.read_magic_line("end_version");
+    task_lexer.read_magic_line("end_version");
 }
 
-static bool read_metric(utils::TaskParser &task_parser) {
-    utils::TraceBlock block = task_parser.trace_block("metric section");
-    task_parser.read_magic_line("begin_metric");
-    string use_metric_string = task_parser.read_line("use metric");
+static bool read_metric(utils::TaskLexer &task_lexer) {
+    utils::TraceBlock block = task_lexer.trace_block("metric section");
+    task_lexer.read_magic_line("begin_metric");
+    string use_metric_string = task_lexer.read_line("use metric");
     bool use_metric = false;
     if (use_metric_string == "1") {
         use_metric = true;
     } else if (use_metric_string == "0") {
         use_metric = false;
     } else {
-        task_parser.error("expected 0 or 1");
+        task_lexer.error("expected 0 or 1");
     }
-    task_parser.read_magic_line("end_metric");
+    task_lexer.read_magic_line("end_metric");
     return use_metric;
 }
 
-static vector<ExplicitVariable> read_variables(utils::TaskParser &task_parser) {
-    utils::TraceBlock block = task_parser.trace_block("variable section");
-    int count = task_parser.read_line_int("variable count");
+static vector<ExplicitVariable> read_variables(utils::TaskLexer &task_lexer) {
+    utils::TraceBlock block = task_lexer.trace_block("variable section");
+    int count = task_lexer.read_line_int("variable count");
     if (count < 1) {
-        task_parser.error(
+        task_lexer.error(
             "Number of variables should be at least 1, but is "
             + std::to_string(count) + ".");
     }
     vector<ExplicitVariable> variables;
     variables.reserve(count);
     for (int i = 0; i < count; ++i) {
-        variables.emplace_back(task_parser);
+        variables.emplace_back(task_lexer);
     }
     return variables;
 }
 
-static vector<vector<set<FactPair>>> read_mutexes(utils::TaskParser &task_parser, const vector<ExplicitVariable> &variables) {
-    utils::TraceBlock block = task_parser.trace_block("mutex section");
+static vector<vector<set<FactPair>>> read_mutexes(utils::TaskLexer &task_lexer, const vector<ExplicitVariable> &variables) {
+    utils::TraceBlock block = task_lexer.trace_block("mutex section");
     vector<vector<set<FactPair>>> inconsistent_facts(variables.size());
     for (size_t i = 0; i < variables.size(); ++i)
         inconsistent_facts[i].resize(variables[i].domain_size);
 
-    int num_mutex_groups = task_parser.read_line_int("number of mutex groups");
+    int num_mutex_groups = task_lexer.read_line_int("number of mutex groups");
 
     /*
       NOTE: Mutex groups can overlap, in which case the same mutex
@@ -276,25 +276,25 @@ static vector<vector<set<FactPair>>> read_mutexes(utils::TaskParser &task_parser
       aware of.
     */
     for (int i = 0; i < num_mutex_groups; ++i) {
-        task_parser.read_magic_line("begin_mutex_group");
-        int num_facts = task_parser.read_line_int("number of facts in mutex group");
+        task_lexer.read_magic_line("begin_mutex_group");
+        int num_facts = task_lexer.read_line_int("number of facts in mutex group");
         if (num_facts < 1) {
-            task_parser.error(
+            task_lexer.error(
                 "Number of facts in mutex group should be at least 1, but is "
                 + std::to_string(num_facts) + ".");
         }
         vector<FactPair> invariant_group;
         invariant_group.reserve(num_facts);
         for (int j = 0; j < num_facts; ++j) {
-            int var = task_parser.read_int("variable number of mutex atom");
-            int value = task_parser.read_int("value of mutex atom");
-            task_parser.confirm_end_of_line();
+            int var = task_lexer.read_int("variable number of mutex atom");
+            int value = task_lexer.read_int("value of mutex atom");
+            task_lexer.confirm_end_of_line();
             invariant_group.emplace_back(var, value);
         }
-        task_parser.read_magic_line("end_mutex_group");
+        task_lexer.read_magic_line("end_mutex_group");
         set<FactPair> invariant_group_set(invariant_group.begin(), invariant_group.end());
         if (invariant_group_set.size() != invariant_group.size()) {
-            task_parser.error("Mutex group may not contain the same fact more than once.");
+            task_lexer.error("Mutex group may not contain the same fact more than once.");
         }
         for (const FactPair &fact1 : invariant_group) {
             for (const FactPair &fact2 : invariant_group) {
@@ -317,11 +317,11 @@ static vector<vector<set<FactPair>>> read_mutexes(utils::TaskParser &task_parser
     return inconsistent_facts;
 }
 
-static vector<FactPair> read_goal(utils::TaskParser &task_parser) {
-    utils::TraceBlock block = task_parser.trace_block("goal section");
-    task_parser.read_magic_line("begin_goal");
-    vector<FactPair> goals = read_facts(task_parser, false);
-    task_parser.read_magic_line("end_goal");
+static vector<FactPair> read_goal(utils::TaskLexer &task_lexer) {
+    utils::TraceBlock block = task_lexer.trace_block("goal section");
+    task_lexer.read_magic_line("begin_goal");
+    vector<FactPair> goals = read_facts(task_lexer, false);
+    task_lexer.read_magic_line("end_goal");
     if (goals.empty()) {
         cerr << "Task has no goal condition!" << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
@@ -330,27 +330,27 @@ static vector<FactPair> read_goal(utils::TaskParser &task_parser) {
 }
 
 static vector<ExplicitOperator> read_actions(
-    utils::TaskParser &task_parser, bool is_axiom, bool use_metric,
+    utils::TaskLexer &task_lexer, bool is_axiom, bool use_metric,
     const vector<ExplicitVariable> &variables) {
-    utils::TraceBlock block = task_parser.trace_block(is_axiom ? "axiom section" : "operator section");
-    int count = task_parser.read_line_int(is_axiom ? "number of axioms" : "number of operators");
+    utils::TraceBlock block = task_lexer.trace_block(is_axiom ? "axiom section" : "operator section");
+    int count = task_lexer.read_line_int(is_axiom ? "number of axioms" : "number of operators");
     vector<ExplicitOperator> actions;
     actions.reserve(count);
     for (int i = 0; i < count; ++i) {
-        actions.emplace_back(task_parser, is_axiom, use_metric);
+        actions.emplace_back(task_lexer, is_axiom, use_metric);
         check_facts(actions.back(), variables);
     }
     return actions;
 }
 
 RootTask::RootTask(istream &in) {
-    utils::TaskParser task_parser(in);
-    read_and_verify_version(task_parser);
-    bool use_metric = read_metric(task_parser);
-    variables = read_variables(task_parser);
+    utils::TaskLexer task_lexer(in);
+    read_and_verify_version(task_lexer);
+    bool use_metric = read_metric(task_lexer);
+    variables = read_variables(task_lexer);
     int num_variables = variables.size();
 
-    mutexes = read_mutexes(task_parser, variables);
+    mutexes = read_mutexes(task_lexer, variables);
     for (size_t i = 0; i < mutexes.size(); ++i) {
         for (size_t j = 0; j < mutexes[i].size(); ++j) {
             check_facts(mutexes[i][j], variables);
@@ -358,24 +358,24 @@ RootTask::RootTask(istream &in) {
     }
 
     // TODO: Maybe we could move this into a separate function as well
-    utils::TraceBlock block = task_parser.trace_block("initial state section");
+    utils::TraceBlock block = task_lexer.trace_block("initial state section");
     initial_state_values.resize(num_variables);
-    task_parser.read_magic_line("begin_state");
+    task_lexer.read_magic_line("begin_state");
     for (int i = 0; i < num_variables; ++i) {
-        initial_state_values[i] = task_parser.read_line_int("initial state variable value");
+        initial_state_values[i] = task_lexer.read_line_int("initial state variable value");
     }
-    task_parser.read_magic_line("end_state");
+    task_lexer.read_magic_line("end_state");
 
     for (int i = 0; i < num_variables; ++i) {
         check_fact(FactPair(i, initial_state_values[i]), variables);
         variables[i].axiom_default_value = initial_state_values[i];
     }
 
-    goals = read_goal(task_parser);
+    goals = read_goal(task_lexer);
     check_facts(goals, variables);
-    operators = read_actions(task_parser, false, use_metric, variables);
-    axioms = read_actions(task_parser, true, use_metric, variables);
-    task_parser.confirm_end_of_input();
+    operators = read_actions(task_lexer, false, use_metric, variables);
+    axioms = read_actions(task_lexer, true, use_metric, variables);
+    task_lexer.confirm_end_of_input();
 
     /*
       HACK: We use a TaskProxy to access g_axiom_evaluators here which assumes

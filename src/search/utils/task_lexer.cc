@@ -1,4 +1,4 @@
-#include "task_parser.h"
+#include "task_lexer.h"
 
 #include "system.h"
 
@@ -11,11 +11,11 @@ using utils::ExitCode;
 namespace utils {
 
 
-TaskParser::TaskParser(istream &stream)
+TaskLexer::TaskLexer(istream &stream)
     : stream(stream), only_whitespaces("\\s*")  {
 }
 
-void TaskParser::find_next_line(bool throw_error_on_failure) {
+void TaskLexer::find_next_line(bool throw_error_on_failure) {
     assert(may_start_line()); // We probably forgot a confirm_end_of_line.
     string next_line;
     while (!stream.eof()) {
@@ -32,7 +32,7 @@ void TaskParser::find_next_line(bool throw_error_on_failure) {
     line = "";
 }
 
-void TaskParser::initialize_tokens() {
+void TaskLexer::initialize_tokens() {
     assert(may_start_line());
     assert(token_number == 0);
     assert(line != "");
@@ -45,11 +45,11 @@ void TaskParser::initialize_tokens() {
     assert(tokens.size() > 0);
 }
 
-bool TaskParser::may_start_line() {
+bool TaskLexer::may_start_line() {
     return tokens.empty();
 }
 
-int TaskParser::parse_int(const string &str, const string &cause) {
+int TaskLexer::parse_int(const string &str, const string &cause) {
     try {
         string::size_type parsed_length;
         int number = stoi(str, &parsed_length);
@@ -61,11 +61,11 @@ int TaskParser::parse_int(const string &str, const string &cause) {
     error("expected number; cause: " + cause);
 }
 
-TraceBlock TaskParser::trace_block(const string &block_name) {
+TraceBlock TaskLexer::trace_block(const string &block_name) {
     return TraceBlock(context, block_name);
 }
 
-string TaskParser::read(const string &message) {
+string TaskLexer::read(const string &message) {
     if (may_start_line()) {
         find_next_line(true);
         initialize_tokens();
@@ -78,29 +78,29 @@ string TaskParser::read(const string &message) {
     return token;
 }
 
-int TaskParser::read_int(const string &message) {
+int TaskLexer::read_int(const string &message) {
     string token = read(message);
     return parse_int(token, message);
 }
 
-string TaskParser::read_line(const string &/*message*/) {
+string TaskLexer::read_line(const string &/*message*/) {
     find_next_line(true);
     return line;
 }
 
-int TaskParser::read_line_int(const string &message) {
+int TaskLexer::read_line_int(const string &message) {
     string line = read_line(message);
     return parse_int(line, message);
 }
 
-void TaskParser::read_magic_line(const string &magic) {
+void TaskLexer::read_magic_line(const string &magic) {
     string line = read_line("read magic line");
     if (line != magic) {
         error("Expected magic line " + magic + ", got " + line + ".");
     }
 }
 
-void TaskParser::confirm_end_of_line() {
+void TaskLexer::confirm_end_of_line() {
     if (may_start_line()) {
         return;
     }
@@ -113,14 +113,14 @@ void TaskParser::confirm_end_of_line() {
     }
 }
 
-void TaskParser::confirm_end_of_input() {
+void TaskLexer::confirm_end_of_input() {
     find_next_line(false);
     if(line != "") {
         error("Expected end of task, found non-empty line " + line);
     }
 }
 
-void TaskParser::error(const string &message) const {
+void TaskLexer::error(const string &message) const {
     cerr << "Error reading task ";
     if (line_number > 0) {
         cerr <<  "line " << line_number;

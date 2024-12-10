@@ -134,7 +134,6 @@ create_fast_downward_library(
         utils/countdown_timer
         utils/exceptions
         utils/hash
-        utils/task_parser
         utils/language
         utils/logging
         utils/markup
@@ -146,6 +145,7 @@ create_fast_downward_library(
         utils/system
         utils/system_unix
         utils/system_windows
+        utils/task_lexer
         utils/timer
         utils/tuples
     CORE_LIBRARY

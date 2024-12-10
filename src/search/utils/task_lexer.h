@@ -1,5 +1,5 @@
-#ifndef UTILS_TASK_PARSER_H
-#define UTILS_TASK_PARSER_H
+#ifndef UTILS_TASK_LEXER_H
+#define UTILS_TASK_LEXER_H
 
 #include "language.h"
 #include "logging.h"
@@ -12,14 +12,14 @@
 namespace utils {
 
 /*
-  Parse a task file.
+  Split a task encoding in the translator output format into tokens.
   Read a complete line as a single token *or* split a line into
   whitespace-separated tokens and read them one by one. The latter
   requires to confirm the end of the line manually. A line or a token
   can be parsed as an integer if it is a string of digits. A line can
   also be read and immediately compared to a given *magic* string.
 */
-class TaskParser {
+class TaskLexer {
     std::istream &stream;
     int line_number = 0;
     size_t token_number;
@@ -32,7 +32,7 @@ class TaskParser {
     int parse_int(const std::string &str, const std::string &cause);
     Context context;
 public:
-    explicit TaskParser(std::istream &stream);
+    explicit TaskLexer(std::istream &stream);
 
     /*
       Set context for error reporting.
