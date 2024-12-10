@@ -179,7 +179,8 @@ void ExplicitOperator::read_pre_post(
         utils::TaskParser &task_parser, bool is_axiom) {
     bool read_from_single_line = !is_axiom;
     vector<FactPair> conditions = read_facts(task_parser, read_from_single_line);
-    int var = task_parser.read_int("variable affected by " + is_axiom ? "axiom" : "effect");
+    string source = is_axiom ? "axiom" : "effect";
+    int var = task_parser.read_int("variable affected by " + source);
     int value_pre = task_parser.read_int("variable value precondition");
     int value_post = task_parser.read_int("variable value postcondition");
     task_parser.confirm_end_of_line();

@@ -75,7 +75,7 @@ public:
     */
     void confirm_end_of_input();
     // TODO: Should this be public at all? Or should we add a get_line method?
-    void error(const std::string &message) const;
+    NO_RETURN void error(const std::string &message) const;
 };
 }
 #endif

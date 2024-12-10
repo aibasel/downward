@@ -18,7 +18,7 @@ TaskParser::TaskParser(istream &stream)
 }
 
 void TaskParser::find_next_line(bool throw_error_on_failure) {
-    assert(may_start_line); // We probably forgot a confirm_end_of_line.
+    assert(may_start_line()); // We probably forgot a confirm_end_of_line.
     string next_line;
     while (!stream.eof()) {
         getline(stream, next_line);
@@ -85,7 +85,7 @@ int TaskParser::read_int(const string &message) {
     return parse_int(token, message);
 }
 
-string TaskParser::read_line(const string &message) {
+string TaskParser::read_line(const string &/*message*/) {
     find_next_line(true);
     return line;
 }
