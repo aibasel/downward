@@ -21,7 +21,6 @@ namespace utils {
 */
 class TaskParser {
     std::istream &stream;
-    std::string context;
     int line_number = 0;
     size_t token_number;
     std::string line;
@@ -31,13 +30,14 @@ class TaskParser {
     void initialize_tokens();
     bool may_start_line();
     int parse_int(const std::string &str, const std::string &cause);
+    Context context;
 public:
     explicit TaskParser(std::istream &stream);
 
     /*
       Set context for error reporting.
     */
-    void set_context(const std::string &context);
+    TraceBlock trace_block(const std::string &block_name);
     /*
       Read a single token within a line. Tokens within a line are
       separated by arbitrary whitespaces. Report error if the current

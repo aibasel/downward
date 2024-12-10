@@ -12,7 +12,7 @@ namespace utils {
 
 
 TaskParser::TaskParser(istream &stream)
-: stream(stream), context(""), only_whitespaces("\\s*")  {
+    : stream(stream), only_whitespaces("\\s*")  {
 }
 
 void TaskParser::find_next_line(bool throw_error_on_failure) {
@@ -61,8 +61,8 @@ int TaskParser::parse_int(const string &str, const string &cause) {
     error("expected number; cause: " + cause);
 }
 
-void TaskParser::set_context(const string &context) {
-    this->context = context;
+TraceBlock TaskParser::trace_block(const string &block_name) {
+    return TraceBlock(context, block_name);
 }
 
 string TaskParser::read(const string &message) {
@@ -125,11 +125,9 @@ void TaskParser::error(const string &message) const {
     if (line_number > 0) {
         cerr <<  "line " << line_number;
     }
-    cerr << "." << endl; 
-    if (context != "") {
-        cerr << "Context: " << context << endl;
-    }
-    cerr << message << endl << "Exiting." << endl;
+    cerr << "." << endl;
+    cerr << context.str() << endl << endl
+         << message << endl << "Exiting." << endl;
     utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
 }
 }

@@ -156,6 +156,7 @@ static vector<FactPair> read_facts(utils::TaskParser &task_parser, bool read_fro
 ExplicitVariable::ExplicitVariable(utils::TaskParser &task_parser) {
     task_parser.read_magic_line("begin_variable");
     name = task_parser.read_line("variable name");
+    utils::TraceBlock block = task_parser.trace_block("parsing variable " + name);
     axiom_layer = task_parser.read_line_int("variable axiom layer");
     domain_size = task_parser.read_line_int("variable domain size");
     if (domain_size < 1) {
@@ -215,7 +216,7 @@ ExplicitOperator::ExplicitOperator(utils::TaskParser &task_parser, bool is_an_ax
 }
 
 static void read_and_verify_version(utils::TaskParser &task_parser) {
-    task_parser.set_context("version section");
+    utils::TraceBlock block = task_parser.trace_block("version section");
     task_parser.read_magic_line("begin_version");
     int version = task_parser.read_line_int("version number");
     if (version != PRE_FILE_VERSION) {
@@ -228,7 +229,7 @@ static void read_and_verify_version(utils::TaskParser &task_parser) {
 }
 
 static bool read_metric(utils::TaskParser &task_parser) {
-    task_parser.set_context("metric section");
+    utils::TraceBlock block = task_parser.trace_block("metric section");
     task_parser.read_magic_line("begin_metric");
     string use_metric_string = task_parser.read_line("use metric");
     bool use_metric = false;
@@ -244,7 +245,7 @@ static bool read_metric(utils::TaskParser &task_parser) {
 }
 
 static vector<ExplicitVariable> read_variables(utils::TaskParser &task_parser) {
-    task_parser.set_context("variable section");
+    utils::TraceBlock block = task_parser.trace_block("variable section");
     int count = task_parser.read_line_int("variable count");
     if (count < 1) {
         task_parser.error(
@@ -260,7 +261,7 @@ static vector<ExplicitVariable> read_variables(utils::TaskParser &task_parser) {
 }
 
 static vector<vector<set<FactPair>>> read_mutexes(utils::TaskParser &task_parser, const vector<ExplicitVariable> &variables) {
-    task_parser.set_context("mutex section");
+    utils::TraceBlock block = task_parser.trace_block("mutex section");
     vector<vector<set<FactPair>>> inconsistent_facts(variables.size());
     for (size_t i = 0; i < variables.size(); ++i)
         inconsistent_facts[i].resize(variables[i].domain_size);
@@ -317,7 +318,7 @@ static vector<vector<set<FactPair>>> read_mutexes(utils::TaskParser &task_parser
 }
 
 static vector<FactPair> read_goal(utils::TaskParser &task_parser) {
-    task_parser.set_context("goal section");
+    utils::TraceBlock block = task_parser.trace_block("goal section");
     task_parser.read_magic_line("begin_goal");
     vector<FactPair> goals = read_facts(task_parser, false);
     task_parser.read_magic_line("end_goal");
@@ -331,7 +332,7 @@ static vector<FactPair> read_goal(utils::TaskParser &task_parser) {
 static vector<ExplicitOperator> read_actions(
     utils::TaskParser &task_parser, bool is_axiom, bool use_metric,
     const vector<ExplicitVariable> &variables) {
-    task_parser.set_context(is_axiom ? "axiom section" : "operator section");
+    utils::TraceBlock block = task_parser.trace_block(is_axiom ? "axiom section" : "operator section");
     int count = task_parser.read_line_int(is_axiom ? "number of axioms" : "number of operators");
     vector<ExplicitOperator> actions;
     actions.reserve(count);
@@ -357,7 +358,7 @@ RootTask::RootTask(istream &in) {
     }
 
     // TODO: Maybe we could move this into a separate function as well
-    task_parser.set_context("initial state section");
+    utils::TraceBlock block = task_parser.trace_block("initial state section");
     initial_state_values.resize(num_variables);
     task_parser.read_magic_line("begin_state");
     for (int i = 0; i < num_variables; ++i) {
