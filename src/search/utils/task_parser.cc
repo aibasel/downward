@@ -3,9 +3,7 @@
 #include "system.h"
 
 #include <cassert>
-#include <istream>
 #include <sstream>
-#include <vector>
 
 using namespace std;
 using utils::ExitCode;

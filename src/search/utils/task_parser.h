@@ -1,8 +1,13 @@
 #ifndef UTILS_TASK_PARSER_H
 #define UTILS_TASK_PARSER_H
 
-#include <memory>
+#include "language.h"
+#include "logging.h"
+
+#include <istream>
 #include <regex>
+#include <string>
+#include <vector>
 
 namespace utils {
 
