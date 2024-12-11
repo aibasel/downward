@@ -1,10 +1,8 @@
 #ifndef AXIOMS_H
 #define AXIOMS_H
 
-#include "per_task_information.h"
 #include "task_proxy.h"
 
-#include <memory>
 #include <vector>
 
 class AxiomEvaluator {
@@ -61,7 +59,4 @@ public:
 
     void evaluate(std::vector<int> &state);
 };
-
-extern PerTaskInformation<AxiomEvaluator> g_axiom_evaluators;
-
 #endif

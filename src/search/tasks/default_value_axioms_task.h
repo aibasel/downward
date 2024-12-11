@@ -3,6 +3,7 @@
 
 #include "delegating_task.h"
 
+#include "../axioms.h"
 #include "../plugins/plugin.h"
 
 #include <set>
@@ -49,6 +50,7 @@ class DefaultValueAxiomsTask : public DelegatingTask {
     AxiomHandlingType axioms;
     std::vector<DefaultValueAxiom> default_value_axioms;
     int default_value_axioms_start_index;
+    std::unique_ptr<AxiomEvaluator> axiom_evaluator;
 
     std::unordered_set<int> get_vars_with_relevant_default_value(
         const std::vector<std::vector<int>> &nondefault_dependencies,
@@ -81,6 +83,7 @@ public:
         int op_index, int eff_index, bool is_axiom) const override;
 
     virtual int get_num_axioms() const override;
+    virtual AxiomEvaluator &get_axiom_evaluator() const override;
 };
 
 extern std::shared_ptr<AbstractTask> get_default_value_axioms_task_if_needed(

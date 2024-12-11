@@ -61,6 +61,8 @@ public:
         const AbstractTask *ancestor_task) const final override;
     virtual void convert_state_values_from_parent(std::vector<int> &) const {
     }
+
+    virtual AxiomEvaluator &get_axiom_evaluator() const override;
 };
 }
 
