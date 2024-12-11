@@ -49,7 +49,7 @@ State State::get_unregistered_successor(const OperatorProxy &op) const {
     }
 
     if (task->get_num_axioms() > 0) {
-        AxiomEvaluator &axiom_evaluator = g_axiom_evaluators[TaskProxy(*task)];
+        AxiomEvaluator &axiom_evaluator = TaskProxy(*task).get_axiom_evaluator();
         axiom_evaluator.evaluate(new_values);
     }
     return State(*task, move(new_values));

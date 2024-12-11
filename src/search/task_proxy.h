@@ -18,6 +18,7 @@
 #include <vector>
 
 
+class AxiomEvaluator;
 class AxiomsProxy;
 class ConditionsProxy;
 class EffectProxy;
@@ -725,6 +726,9 @@ public:
     }
 
     const causal_graph::CausalGraph &get_causal_graph() const;
+    AxiomEvaluator &get_axiom_evaluator() const {
+        return task->get_axiom_evaluator();
+    }
 };
 
 
