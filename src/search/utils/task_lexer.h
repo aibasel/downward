@@ -22,7 +22,7 @@ namespace utils {
 class TaskLexer {
     std::istream &stream;
     int line_number = 0;
-    size_t token_number;
+    size_t token_number = 0;
     std::string line;
     std::vector<std::string> tokens;
     const std::regex only_whitespaces;
