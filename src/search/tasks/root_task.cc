@@ -67,7 +67,16 @@ class RootTask : public AbstractTask {
     const ExplicitOperator &get_operator_or_axiom(int index, bool is_axiom) const;
 
 public:
-    explicit RootTask(istream &in);
+    RootTask(vector<ExplicitVariable> &&variables,
+             vector<vector<set<FactPair>>> &&mutexes,
+             vector<ExplicitOperator> &&operators,
+             vector<ExplicitOperator> &&axioms,
+             vector<int> &&initial_state_values,
+             vector<FactPair> &&goals);
+
+    vector<int> &get_initial_state_values() {
+        return initial_state_values;
+    }
 
     virtual int get_num_variables() const override;
     virtual string get_variable_name(int var) const override;
@@ -108,6 +117,13 @@ public:
         const AbstractTask *ancestor_task) const override;
 };
 
+
+class TaskParser {
+    utils::TaskLexer lexer;
+public:
+    TaskParser(utils::TaskLexer &&lexer);
+    shared_ptr<AbstractTask> parse();
+};
 
 static void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables) {
     if (!utils::in_bounds(fact.var, variables)) {
@@ -343,14 +359,17 @@ static vector<ExplicitOperator> read_actions(
     return actions;
 }
 
-RootTask::RootTask(istream &in) {
-    utils::TaskLexer task_lexer(in);
-    read_and_verify_version(task_lexer);
-    bool use_metric = read_metric(task_lexer);
-    variables = read_variables(task_lexer);
+TaskParser::TaskParser(utils::TaskLexer &&lexer)
+    : lexer(move(lexer)) {
+}
+
+shared_ptr<AbstractTask> TaskParser::parse() {
+    read_and_verify_version(lexer);
+    bool use_metric = read_metric(lexer);
+    vector<ExplicitVariable> variables = read_variables(lexer);
     int num_variables = variables.size();
 
-    mutexes = read_mutexes(task_lexer, variables);
+    vector<vector<set<FactPair>>> mutexes = read_mutexes(lexer, variables);
     for (size_t i = 0; i < mutexes.size(); ++i) {
         for (size_t j = 0; j < mutexes[i].size(); ++j) {
             check_facts(mutexes[i][j], variables);
@@ -358,31 +377,54 @@ RootTask::RootTask(istream &in) {
     }
 
     // TODO: Maybe we could move this into a separate function as well
-    utils::TraceBlock block = task_lexer.trace_block("initial state section");
-    initial_state_values.resize(num_variables);
-    task_lexer.read_magic_line("begin_state");
+    utils::TraceBlock block = lexer.trace_block("initial state section");
+    vector<int> initial_state_values(num_variables);
+    lexer.read_magic_line("begin_state");
     for (int i = 0; i < num_variables; ++i) {
-        initial_state_values[i] = task_lexer.read_line_int("initial state variable value");
+        initial_state_values[i] = lexer.read_line_int("initial state variable value");
     }
-    task_lexer.read_magic_line("end_state");
+    lexer.read_magic_line("end_state");
 
     for (int i = 0; i < num_variables; ++i) {
         check_fact(FactPair(i, initial_state_values[i]), variables);
         variables[i].axiom_default_value = initial_state_values[i];
     }
 
-    goals = read_goal(task_lexer);
+    vector<FactPair> goals = read_goal(lexer);
     check_facts(goals, variables);
-    operators = read_actions(task_lexer, false, use_metric, variables);
-    axioms = read_actions(task_lexer, true, use_metric, variables);
-    task_lexer.confirm_end_of_input();
+    vector<ExplicitOperator> operators = read_actions(lexer, false, use_metric, variables);
+    vector<ExplicitOperator> axioms = read_actions(lexer, true, use_metric, variables);
+    lexer.confirm_end_of_input();
 
     /*
-      HACK: We use a TaskProxy to access g_axiom_evaluators here which assumes
-      that this task is completely constructed.
+      "Neat Trick" and certainly no HACK:
+      We currently require initial_state_values to contain values for derived
+      variables. To evaluate the axioms, we require a task. But since evaluating
+      axioms does not depend on the initial state, we can construct the task
+      with a non-extended initial state (i.e. one without axioms evaluated) and
+      then evaluate the axioms on that state after construction. This requires
+      mutable access to the values, though.
     */
-    AxiomEvaluator &axiom_evaluator = g_axiom_evaluators[TaskProxy(*this)];
-    axiom_evaluator.evaluate(initial_state_values);
+    shared_ptr<RootTask> task = make_shared<RootTask>(
+        move(variables), move(mutexes), move(operators), move(axioms),
+        move(initial_state_values), move(goals));
+    AxiomEvaluator &axiom_evaluator = g_axiom_evaluators[TaskProxy(*task)];
+    axiom_evaluator.evaluate(task->get_initial_state_values());
+    return task;
+}
+
+RootTask::RootTask(vector<ExplicitVariable> &&variables,
+                   vector<vector<set<FactPair>>> &&mutexes,
+                   vector<ExplicitOperator> &&operators,
+                   vector<ExplicitOperator> &&axioms,
+                   vector<int> &&initial_state_values,
+                   vector<FactPair> &&goals)
+    : variables(move(variables)),
+      mutexes(move(mutexes)),
+      operators(move(operators)),
+      axioms(move(axioms)),
+      initial_state_values(move(initial_state_values)),
+      goals(move(goals)) {
 }
 
 const ExplicitVariable &RootTask::get_variable(int var) const {
@@ -521,7 +563,9 @@ void RootTask::convert_ancestor_state_values(
 
 void read_root_task(istream &in) {
     assert(!g_root_task);
-    g_root_task = make_shared<RootTask>(in);
+    utils::TaskLexer lexer(in);
+    TaskParser parser(move(lexer));
+    g_root_task = parser.parse();
 }
 
 class RootTaskFeature
