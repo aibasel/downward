@@ -129,8 +129,9 @@ class TaskParser {
     vector<FactPair> read_goal();
     vector<ExplicitOperator> read_actions(bool is_axiom, bool use_metric,
         const vector<ExplicitVariable> &variables);
-    ExplicitOperator read_operator(bool is_an_axiom, bool use_metric);
-    void read_pre_post(ExplicitOperator &op);
+    ExplicitOperator read_operator(bool use_metric);
+    ExplicitOperator read_axiom();
+    void read_pre_post(ExplicitOperator &op, bool read_from_single_line);
 
 public:
     TaskParser(utils::TaskLexer &&lexer);
@@ -200,11 +201,9 @@ ExplicitVariable TaskParser::read_variable() {
     return var;
 }
 
-void TaskParser::read_pre_post(ExplicitOperator &op) {
-    bool read_from_single_line = !op.is_an_axiom;
+void TaskParser::read_pre_post(ExplicitOperator &op, bool read_from_single_line) {
     vector<FactPair> conditions = read_facts(read_from_single_line);
-    string source = op.is_an_axiom ? "axiom" : "effect";
-    int var = lexer.read_int("variable affected by " + source);
+    int var = lexer.read_int("affected variable");
     int value_pre = lexer.read_int("variable value precondition");
     int value_post = lexer.read_int("variable value postcondition");
     lexer.confirm_end_of_line();
@@ -214,29 +213,34 @@ void TaskParser::read_pre_post(ExplicitOperator &op) {
     op.effects.emplace_back(FactPair(var, value_post), move(conditions));
 }
 
-ExplicitOperator TaskParser::read_operator(bool is_an_axiom, bool use_metric) {
+ExplicitOperator TaskParser::read_operator(bool use_metric) {
     ExplicitOperator op;
-    op.is_an_axiom = is_an_axiom;
-    if (!is_an_axiom) {
-        lexer.read_magic_line("begin_operator");
-        op.name = lexer.read_line("operator name");
-        op.preconditions = read_facts(false);
-        int count = lexer.read_line_int("number of operator effects");
-        op.effects.reserve(count);
-        for (int i = 0; i < count; ++i) {
-            read_pre_post(op);
-        }
-        int specified_cost = lexer.read_line_int("operator cost");
-        op.cost = use_metric ? specified_cost : 1;
-        lexer.read_magic_line("end_operator");
-    } else {
-        op.name = "<axiom>";
-        op.cost = 0;
-        lexer.read_magic_line("begin_rule");
-        read_pre_post(op);
-        lexer.read_magic_line("end_rule");
+    op.is_an_axiom = false;
+
+    lexer.read_magic_line("begin_operator");
+    op.name = lexer.read_line("operator name");
+    op.preconditions = read_facts(false);
+    int count = lexer.read_line_int("number of operator effects");
+    op.effects.reserve(count);
+    for (int i = 0; i < count; ++i) {
+        read_pre_post(op, true);
     }
+    int specified_cost = lexer.read_line_int("operator cost");
+    op.cost = use_metric ? specified_cost : 1;
     assert(op.cost >= 0);
+    lexer.read_magic_line("end_operator");
+    return op;
+}
+
+ExplicitOperator TaskParser::read_axiom() {
+    ExplicitOperator op;
+    op.is_an_axiom = true;
+    op.name = "<axiom>";
+    op.cost = 0;
+
+    lexer.read_magic_line("begin_rule");
+    read_pre_post(op, false);
+    lexer.read_magic_line("end_rule");
     return op;
 }
 
@@ -361,7 +365,9 @@ vector<ExplicitOperator> TaskParser::read_actions(bool is_axiom,
     vector<ExplicitOperator> actions;
     actions.reserve(count);
     for (int i = 0; i < count; ++i) {
-        actions.emplace_back(read_operator(is_axiom, use_metric));
+        ExplicitOperator action = is_axiom ? read_axiom() : read_operator(use_metric);
+        actions.push_back(action);
+
         check_facts(actions.back(), variables);
     }
     return actions;
