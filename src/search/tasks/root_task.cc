@@ -1,17 +1,14 @@
 #include "root_task.h"
 
-#include "../state_registry.h"
+#include "../axioms.h"
 
 #include "../plugins/plugin.h"
 #include "../utils/collections.h"
 #include "../utils/task_lexer.h"
-#include "../utils/timer.h"
 
-#include <algorithm>
 #include <cassert>
 #include <memory>
 #include <set>
-#include <unordered_set>
 #include <vector>
 
 
