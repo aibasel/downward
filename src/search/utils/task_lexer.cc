@@ -49,18 +49,6 @@ bool TaskLexer::may_start_line() {
     return tokens.empty();
 }
 
-int TaskLexer::parse_int(const string &str, const string &cause) {
-    try {
-        string::size_type parsed_length;
-        int number = stoi(str, &parsed_length);
-        if (parsed_length == str.size()) {
-            return number;
-        }
-    } catch (exception &e) {
-    }
-    error("expected number; cause: " + cause);
-}
-
 TraceBlock TaskLexer::trace_block(const string &block_name) {
     return TraceBlock(context, block_name);
 }
@@ -78,19 +66,9 @@ string TaskLexer::read(const string &message) {
     return token;
 }
 
-int TaskLexer::read_int(const string &message) {
-    string token = read(message);
-    return parse_int(token, message);
-}
-
 string TaskLexer::read_line(const string &/*message*/) {
     find_next_line(true);
     return line;
-}
-
-int TaskLexer::read_line_int(const string &message) {
-    string line = read_line(message);
-    return parse_int(line, message);
 }
 
 void TaskLexer::read_magic_line(const string &magic) {

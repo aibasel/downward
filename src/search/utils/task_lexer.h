@@ -46,23 +46,11 @@ public:
     */
     std::string read(const std::string &message);
     /*
-      Read a single token in a line as integer, analoguously to
-      read(...). Report an error if the token is not a string of digits
-      representing an int.
-    */
-    int read_int(const std::string &message);
-    /*
       Read a complete line as a single string token. Report an error if
       the cursor is not at the beginning of a line before reading. Set
       cursor to the beginning of the next line.
     */
     std::string read_line(const std::string &message);
-    /*
-      Read a complete line as a single integer token, analogously to
-      read_line(...). Report an error if the line is not a string of
-      digits representing an int.
-    */
-    int read_line_int(const std::string &message);
     /*
       Read a complete line and compare it to a *magic* string. Report an
       error if the cursor is not at the beginning of a line before

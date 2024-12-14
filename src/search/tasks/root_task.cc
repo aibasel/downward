@@ -117,6 +117,10 @@ class TaskParser {
     void check_facts(const T &facts, const vector<ExplicitVariable> &variables);
     void check_facts(const ExplicitOperator &action, const vector<ExplicitVariable> &variables);
 
+    int parse_int(const string &token);
+    int read_int(const string &value_name);
+    int read_int_line(const string &value_name);
+
     void read_and_verify_version();
     bool read_metric();
     vector<ExplicitVariable> read_variables();
@@ -161,16 +165,46 @@ void TaskParser::check_facts(const ExplicitOperator &action, const vector<Explic
     }
 }
 
+int TaskParser::parse_int(const string &token) {
+    string failure_reason;
+    try {
+        string::size_type parsed_length;
+        int number = stoi(token, &parsed_length);
+        if (parsed_length == token.size()) {
+            return number;
+        } else {
+            failure_reason = "invalid character '"
+                             + to_string(token[parsed_length]) + "'";
+        }
+    } catch (invalid_argument &e) {
+        failure_reason = e.what();
+    } catch (out_of_range &e) {
+        failure_reason = "out of range";
+    }
+    context.error("Could not parse '" + token + "' as integer ("
+                  + failure_reason + ").");
+}
+
+int TaskParser::read_int(const string &value_name) {
+    utils::TraceBlock block = lexer.trace_block(value_name);
+    return parse_int(lexer.read(""));
+}
+
+int TaskParser::read_int_line(const string &value_name) {
+    utils::TraceBlock block = lexer.trace_block(value_name);
+    return parse_int(lexer.read_line(""));
+}
+
 vector<FactPair> TaskParser::read_facts(bool read_from_single_line) {
-    const string counter_name = "number of conditions";
-    int count = read_from_single_line ? lexer.read_int(counter_name)
-                            : lexer.read_line_int(counter_name);
+    string value_name = "number of conditions";
+    int count = read_from_single_line ? read_int(value_name)
+                                      : read_int_line(value_name);
     vector<FactPair> conditions;
     conditions.reserve(count);
     for (int i = 0; i < count; ++i) {
         FactPair condition = FactPair::no_fact;
-        condition.var = lexer.read_int("condition variable");
-        condition.value = lexer.read_int("condition value");
+        condition.var = read_int("condition variable");
+        condition.value = read_int("condition value");
         if (!read_from_single_line) {
             lexer.confirm_end_of_line();
         }
@@ -184,8 +218,8 @@ ExplicitVariable TaskParser::read_variable() {
     lexer.read_magic_line("begin_variable");
     var.name = lexer.read_line("variable name");
     utils::TraceBlock block = lexer.trace_block("parsing variable " + var.name);
-    var.axiom_layer = lexer.read_line_int("variable axiom layer");
-    var.domain_size = lexer.read_line_int("variable domain size");
+    var.axiom_layer = read_int_line("variable axiom layer");
+    var.domain_size = read_int_line("variable domain size");
     if (var.domain_size < 1) {
         lexer.error(
             "Domain size should be at least 1, but is "
@@ -200,9 +234,9 @@ ExplicitVariable TaskParser::read_variable() {
 
 void TaskParser::read_pre_post(ExplicitOperator &op, bool read_from_single_line) {
     vector<FactPair> conditions = read_facts(read_from_single_line);
-    int var = lexer.read_int("affected variable");
-    int value_pre = lexer.read_int("variable value precondition");
-    int value_post = lexer.read_int("variable value postcondition");
+    int var = read_int("affected variable");
+    int value_pre = read_int("variable value precondition");
+    int value_post = read_int("variable value postcondition");
     lexer.confirm_end_of_line();
     if (value_pre != -1) {
         op.preconditions.emplace_back(var, value_pre);
@@ -217,12 +251,12 @@ ExplicitOperator TaskParser::read_operator(bool use_metric) {
     lexer.read_magic_line("begin_operator");
     op.name = lexer.read_line("operator name");
     op.preconditions = read_facts(false);
-    int count = lexer.read_line_int("number of operator effects");
+    int count = read_int_line("number of operator effects");
     op.effects.reserve(count);
     for (int i = 0; i < count; ++i) {
         read_pre_post(op, true);
     }
-    int specified_cost = lexer.read_line_int("operator cost");
+    int specified_cost = read_int_line("operator cost");
     op.cost = use_metric ? specified_cost : 1;
     assert(op.cost >= 0);
     lexer.read_magic_line("end_operator");
@@ -244,7 +278,7 @@ ExplicitOperator TaskParser::read_axiom() {
 void TaskParser::read_and_verify_version() {
     utils::TraceBlock block = lexer.trace_block("version section");
     lexer.read_magic_line("begin_version");
-    int version = lexer.read_line_int("version number");
+    int version = read_int_line("version number");
     if (version != PRE_FILE_VERSION) {
         cerr << "Expected translator output file version " << PRE_FILE_VERSION
              << ", got " << version << "." << endl
@@ -272,7 +306,7 @@ bool TaskParser::read_metric() {
 
 vector<ExplicitVariable> TaskParser::read_variables() {
     utils::TraceBlock block = lexer.trace_block("variable section");
-    int count = lexer.read_line_int("variable count");
+    int count = read_int_line("variable count");
     if (count < 1) {
         lexer.error(
             "Number of variables should be at least 1, but is "
@@ -292,7 +326,7 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(const vector<ExplicitVari
     for (size_t i = 0; i < variables.size(); ++i)
         inconsistent_facts[i].resize(variables[i].domain_size);
 
-    int num_mutex_groups = lexer.read_line_int("number of mutex groups");
+    int num_mutex_groups = read_int_line("number of mutex groups");
 
     /*
       NOTE: Mutex groups can overlap, in which case the same mutex
@@ -303,7 +337,7 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(const vector<ExplicitVari
     */
     for (int i = 0; i < num_mutex_groups; ++i) {
         lexer.read_magic_line("begin_mutex_group");
-        int num_facts = lexer.read_line_int("number of facts in mutex group");
+        int num_facts = read_int_line("number of facts in mutex group");
         if (num_facts < 1) {
             lexer.error(
                 "Number of facts in mutex group should be at least 1, but is "
@@ -312,8 +346,8 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(const vector<ExplicitVari
         vector<FactPair> invariant_group;
         invariant_group.reserve(num_facts);
         for (int j = 0; j < num_facts; ++j) {
-            int var = lexer.read_int("variable number of mutex atom");
-            int value = lexer.read_int("value of mutex atom");
+            int var = read_int("variable number of mutex atom");
+            int value = read_int("value of mutex atom");
             lexer.confirm_end_of_line();
             invariant_group.emplace_back(var, value);
         }
@@ -358,7 +392,7 @@ vector<FactPair> TaskParser::read_goal() {
 vector<ExplicitOperator> TaskParser::read_actions(bool is_axiom,
     bool use_metric, const vector<ExplicitVariable> &variables) {
     utils::TraceBlock block = lexer.trace_block(is_axiom ? "axiom section" : "operator section");
-    int count = lexer.read_line_int(is_axiom ? "number of axioms" : "number of operators");
+    int count = read_int_line(is_axiom ? "number of axioms" : "number of operators");
     vector<ExplicitOperator> actions;
     actions.reserve(count);
     for (int i = 0; i < count; ++i) {
@@ -392,7 +426,7 @@ shared_ptr<AbstractTask> TaskParser::parse() {
     vector<int> initial_state_values(num_variables);
     lexer.read_magic_line("begin_state");
     for (int i = 0; i < num_variables; ++i) {
-        initial_state_values[i] = lexer.read_line_int("initial state variable value");
+        initial_state_values[i] = read_int_line("initial state variable value");
     }
     lexer.read_magic_line("end_state");
 
