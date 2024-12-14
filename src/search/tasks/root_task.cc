@@ -129,6 +129,7 @@ class TaskParser {
     ExplicitVariable read_variable();
     vector<FactPair> read_facts(bool read_from_single_line);
     vector<vector<set<FactPair>>> read_mutexes(const vector<ExplicitVariable> &variables);
+    vector<int> read_initial_state(const vector<ExplicitVariable> &variables);
     vector<FactPair> read_goal();
     vector<ExplicitOperator> read_actions(bool is_axiom, bool use_metric,
         const vector<ExplicitVariable> &variables);
@@ -144,12 +145,11 @@ public:
 
 void TaskParser::check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables) {
     if (!utils::in_bounds(fact.var, variables)) {
-        cerr << "Invalid variable id: " << fact.var << endl;
-        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    }
-    if (fact.value < 0 || fact.value >= variables[fact.var].domain_size) {
-        cerr << "Invalid value for variable " << fact.var << ": " << fact.value << endl;
-        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+        context.error("Invalid variable id: " + to_string(fact.var));
+    } else if (fact.value < 0 || fact.value >= variables[fact.var].domain_size) {
+        context.error("Invalid value for variable '" + variables[fact.var].name
+            + "' (index: " + to_string(fact.var) + "): "
+            + to_string(fact.value));
     }
 }
 
@@ -177,11 +177,11 @@ int TaskParser::parse_int(const string &token) {
             return number;
         } else {
             failure_reason = "invalid character '"
-                             + to_string(token[parsed_length]) + "'";
+                + string(1, token[parsed_length]) + "'";
         }
-    } catch (invalid_argument &e) {
-        failure_reason = e.what();
-    } catch (out_of_range &e) {
+    } catch (invalid_argument &) {
+        failure_reason = "invalid argument";
+    } catch (out_of_range &) {
         failure_reason = "out of range";
     }
     context.error("Could not parse '" + token + "' as integer ("
@@ -232,7 +232,7 @@ ExplicitVariable TaskParser::read_variable() {
     ExplicitVariable var;
     read_magic_line("begin_variable");
     var.name = read_string_line("variable name");
-    utils::TraceBlock block(context, "parsing variable " + var.name);
+    utils::TraceBlock block(context, "parsing variable '" + var.name + "'");
     var.axiom_layer = read_int_line("variable axiom layer");
     var.domain_size = read_int_line("variable domain size");
     if (var.domain_size < 1) {
@@ -392,6 +392,23 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(const vector<ExplicitVari
     return inconsistent_facts;
 }
 
+vector<int> TaskParser::read_initial_state(const vector<ExplicitVariable> &variables) {
+    utils::TraceBlock block(context, "initial state section");
+    read_magic_line("begin_state");
+    int num_variables = variables.size();
+    vector<int> initial_state_values(num_variables);
+    for (int i = 0; i < num_variables; ++i) {
+        string block_name = "initial state value of variable '"
+            + variables[i].name + "' (index: " + to_string(i) + ")";
+        initial_state_values[i] = read_int_line(block_name);
+
+        utils::TraceBlock block(context, "validating " + block_name);
+        check_fact(FactPair(i, initial_state_values[i]), variables);
+    }
+    read_magic_line("end_state");
+    return initial_state_values;
+}
+
 vector<FactPair> TaskParser::read_goal() {
     utils::TraceBlock block(context, "goal section");
     read_magic_line("begin_goal");
@@ -427,8 +444,6 @@ shared_ptr<AbstractTask> TaskParser::read_task() {
     read_and_verify_version();
     bool use_metric = read_metric();
     vector<ExplicitVariable> variables = read_variables();
-    int num_variables = variables.size();
-
     vector<vector<set<FactPair>>> mutexes = read_mutexes(variables);
     for (size_t i = 0; i < mutexes.size(); ++i) {
         for (size_t j = 0; j < mutexes[i].size(); ++j) {
@@ -436,20 +451,7 @@ shared_ptr<AbstractTask> TaskParser::read_task() {
         }
     }
 
-    // TODO: Maybe we could move this into a separate function as well
-    utils::TraceBlock block(context, "initial state section");
-    vector<int> initial_state_values(num_variables);
-    read_magic_line("begin_state");
-    for (int i = 0; i < num_variables; ++i) {
-        initial_state_values[i] = read_int_line("initial state variable value");
-    }
-    read_magic_line("end_state");
-
-    for (int i = 0; i < num_variables; ++i) {
-        check_fact(FactPair(i, initial_state_values[i]), variables);
-        variables[i].axiom_default_value = initial_state_values[i];
-    }
-
+    vector<int> initial_state_values = read_initial_state(variables);
     vector<FactPair> goals = read_goal();
     check_facts(goals, variables);
     vector<ExplicitOperator> operators = read_actions(false, use_metric, variables);
@@ -465,6 +467,10 @@ shared_ptr<AbstractTask> TaskParser::read_task() {
       then evaluate the axioms on that state after construction. This requires
       mutable access to the values, though.
     */
+    int num_variables = variables.size();
+    for (int i = 0; i < num_variables; ++i) {
+        variables[i].axiom_default_value = initial_state_values[i];
+    }
     shared_ptr<RootTask> task = make_shared<RootTask>(
         move(variables), move(mutexes), move(operators), move(axioms),
         move(initial_state_values), move(goals));
