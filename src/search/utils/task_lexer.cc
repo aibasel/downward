@@ -71,13 +71,6 @@ string TaskLexer::read_line(const string &/*message*/) {
     return line;
 }
 
-void TaskLexer::read_magic_line(const string &magic) {
-    string line = read_line("read magic line");
-    if (line != magic) {
-        error("Expected magic line " + magic + ", got " + line + ".");
-    }
-}
-
 void TaskLexer::confirm_end_of_line() {
     if (may_start_line()) {
         return;

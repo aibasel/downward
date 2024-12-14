@@ -52,13 +52,6 @@ public:
     */
     std::string read_line(const std::string &message);
     /*
-      Read a complete line and compare it to a *magic* string. Report an
-      error if the cursor is not at the beginning of a line before
-      reading. Report an error if the content of the line is not equal
-      to the *magic* string.
-    */
-    void read_magic_line(const std::string &magic);
-    /*
       Check that the end of the line has been reached and set cursor to
       the beginning of the next line. Report error otherwise.
     */
