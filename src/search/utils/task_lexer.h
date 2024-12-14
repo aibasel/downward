@@ -26,42 +26,34 @@ class TaskLexer {
     std::string line;
     std::vector<std::string> tokens;
     const std::regex only_whitespaces;
-    void find_next_line(bool throw_error_on_failure=true);
+    void find_next_line(const Context &context, bool throw_error_on_failure=true);
     void initialize_tokens();
     bool may_start_line();
-    int parse_int(const std::string &str, const std::string &cause);
-    Context context;
 public:
     explicit TaskLexer(std::istream &stream);
 
-    /*
-      Set context for error reporting.
-    */
-    TraceBlock trace_block(const std::string &block_name);
     /*
       Read a single token within a line. Tokens within a line are
       separated by arbitrary whitespaces. Report error if the current
       line does not contain a token after the cursor position. Set
       cursor to the end of the read token.
     */
-    std::string read(const std::string &message);
+    std::string read(const Context &context);
     /*
       Read a complete line as a single string token. Report an error if
       the cursor is not at the beginning of a line before reading. Set
       cursor to the beginning of the next line.
     */
-    std::string read_line(const std::string &message);
+    std::string read_line(const Context &context);
     /*
       Check that the end of the line has been reached and set cursor to
       the beginning of the next line. Report error otherwise.
     */
-    void confirm_end_of_line();
+    void confirm_end_of_line(const Context &context);
     /*
       Check that the end of the file has been reached. Report error otherwise.
     */
-    void confirm_end_of_input();
-    // TODO: Should this be public at all? Or should we add a get_line method?
-    NO_RETURN void error(const std::string &message) const;
+    void confirm_end_of_input(const Context &context);
 };
 }
 #endif
