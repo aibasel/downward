@@ -21,7 +21,8 @@ namespace utils {
 */
 class TaskLexer {
     std::istream &stream;
-    int line_number = 0;
+    // Note that line numbers start at 1 not 0 as we do not use them as indices.
+    int line_number = 1;
     size_t token_number = 0;
     std::string line;
     std::vector<std::string> tokens;
@@ -54,6 +55,11 @@ public:
       Check that the end of the file has been reached. Report error otherwise.
     */
     void confirm_end_of_input(const Context &context);
+
+    /*
+      Return the current line number.
+    */
+    int get_line_number() const;
 };
 }
 #endif

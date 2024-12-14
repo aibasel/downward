@@ -19,6 +19,20 @@ namespace tasks {
 static const int PRE_FILE_VERSION = 3;
 shared_ptr<AbstractTask> g_root_task = nullptr;
 
+class TaskParserContext : public utils::Context {
+    const utils::TaskLexer &lexer;
+public:
+    TaskParserContext(utils::TaskLexer &lexer)
+        : lexer(lexer) {
+    }
+
+    virtual string decorate_block_name(const string &block_name) const override {
+        int line = lexer.get_line_number();
+        return "[line " + to_string(line) + "] " + block_name;
+    }
+
+};
+
 struct ExplicitVariable {
     int domain_size;
     string name;
@@ -110,7 +124,7 @@ public:
 
 class TaskParser {
     utils::TaskLexer lexer;
-    utils::Context context;
+    TaskParserContext context;
 
     void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables);
     template<typename T>
@@ -290,7 +304,7 @@ ExplicitOperator TaskParser::read_operator(int index, bool use_metric) {
     int count = read_int_line("number of operator effects");
     op.effects.reserve(count);
     for (int i = 0; i < count; ++i) {
-        utils::TraceBlock block(context, "parsing pre-post entry "
+        utils::TraceBlock block(context, "parsing effect "
                                          + to_string(i));
         read_pre_post(op, true);
     }
@@ -461,7 +475,7 @@ vector<ExplicitOperator> TaskParser::read_actions(bool is_axiom,
 }
 
 TaskParser::TaskParser(utils::TaskLexer &&lexer)
-    : lexer(move(lexer)) {
+    : lexer(move(lexer)), context(this->lexer) {
 }
 
 shared_ptr<AbstractTask> TaskParser::read_task() {

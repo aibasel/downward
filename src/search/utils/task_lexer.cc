@@ -85,4 +85,8 @@ void TaskLexer::confirm_end_of_input(const Context &context) {
         context.error("Expected end of task, found non-empty line " + line);
     }
 }
+
+int TaskLexer::get_line_number() const {
+    return line_number;
+}
 }
