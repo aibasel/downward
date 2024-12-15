@@ -1,75 +1,96 @@
 #include "task_lexer.h"
 
+#include "collections.h"
 #include "system.h"
 
 #include <cassert>
+#include <regex>
 #include <sstream>
 
 using namespace std;
 using utils::ExitCode;
 
 namespace utils {
+static const string end_of_line_sentinel("\n");
+static const std::regex only_whitespaces("\\s*");
+
 TaskLexer::TaskLexer(istream &stream)
-    : stream(stream), only_whitespaces("\\s*")  {
+    : stream(stream)  {
 }
 
-void TaskLexer::find_next_line(const Context &context, bool throw_error_on_failure) {
-    assert(may_start_line()); // We probably forgot a confirm_end_of_line.
+std::optional<std::string> TaskLexer::get_next_nonempty_line() {
     string next_line;
     while (!stream.eof()) {
         getline(stream, next_line);
-        ++line_number;
+        ++stream_line_number;
         if (!regex_match(next_line, only_whitespaces)) {
-            line = next_line;
-            return;
+            return next_line;
         }
     }
-    if (throw_error_on_failure) {
+    return nullopt;
+}
+
+void TaskLexer::initialize_tokens(const Context &context) {
+    assert(tokens.empty());
+    assert(token_number == 0);
+    optional<string> line = get_next_nonempty_line();
+    if (line.has_value()) {
+        istringstream stream(line.value());
+        string word;
+        while (!stream.eof()) {
+            stream >> word;
+            tokens.push_back(word);
+        }
+        assert(tokens.size() > 0);
+        tokens.push_back(end_of_line_sentinel);
+    } else {
         context.error("Unexpected end of task.");
     }
-    line = "";
 }
 
-void TaskLexer::initialize_tokens() {
-    assert(may_start_line());
-    assert(token_number == 0);
-    assert(line != "");
-    istringstream stream(line);
-    string word;
-    while (!stream.eof()) {
-        stream >> word;
-        tokens.push_back(word);
-    }
-    assert(tokens.size() > 0);
-}
-
-bool TaskLexer::may_start_line() {
-    return tokens.empty();
-}
-
-string TaskLexer::read(const Context &context) {
-    if (may_start_line()) {
-        find_next_line(context, true);
-        initialize_tokens();
-    }
-    if (token_number >= tokens.size()) {
-        context.error("Unexpected end of line.");
-    }
-    string token = tokens[token_number];
+const string &TaskLexer::pop_token(){
+    assert(is_in_line_reading_mode());
+    assert(in_bounds(token_number, tokens));
+    const string &token = tokens[token_number];
     ++token_number;
     return token;
 }
 
+bool TaskLexer::is_in_line_reading_mode() const {
+    return !tokens.empty();
+}
+
+string TaskLexer::read(const Context &context) {
+    if (tokens.empty()) {
+        initialize_tokens(context);
+    }
+    const string &token = pop_token();
+    if (token == end_of_line_sentinel) {
+        context.error("Unexpected end of line.");
+    }
+    return token;
+}
+
 string TaskLexer::read_line(const Context &context) {
-    find_next_line(context, true);
-    return line;
+    if (is_in_line_reading_mode()) {
+        ABORT("Tried to read a line before confirming the end of "
+              "the previous line.");
+    }
+    optional<string> line = get_next_nonempty_line();
+    if (line.has_value()) {
+        return line.value();
+    } else {
+        context.error("Unexpected end of task.");
+    }
 }
 
 void TaskLexer::confirm_end_of_line(const Context &context) {
-    if (may_start_line()) {
-        return;
+    if (!is_in_line_reading_mode()) {
+        ABORT("Tried to confirm end of line while not reading a line "
+              "as tokens.");
     }
-    if (token_number == tokens.size()) {
+    const string &token = pop_token();
+    if (token == end_of_line_sentinel) {
         token_number = 0;
         tokens.clear();
     } else {
@@ -80,13 +101,24 @@ void TaskLexer::confirm_end_of_line(const Context &context) {
 }
 
 void TaskLexer::confirm_end_of_input(const Context &context) {
-    find_next_line(context, false);
-    if(line != "") {
-        context.error("Expected end of task, found non-empty line " + line);
+    if (is_in_line_reading_mode()) {
+        ABORT("Tried to confirm end of input while reading a line as tokens.");
+    }
+    optional<string> line = get_next_nonempty_line();
+    if (line.has_value()) {
+        context.error("Expected end of task, found non-empty line " + line.value());
     }
 }
 
 int TaskLexer::get_line_number() const {
-    return line_number;
+    if (is_in_line_reading_mode()) {
+        /*
+          When we read a line token by token, the input stream is
+          already in the next line.
+        */
+        return stream_line_number - 1;
+    } else {
+        return stream_line_number;
+    }
 }
 }
