@@ -455,6 +455,13 @@ vector<FactPair> TaskParser::read_goal(const vector<ExplicitVariable> &variables
         cerr << "Task has no goal condition!" << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
+    set<int> goal_vars;
+    for (FactPair goal : goals) {
+        int var = goal.var;
+        if (!goal_vars.insert(var).second) {
+            context.error("Goal variables must be unique, but variable " + to_string(var) + " occurs several times.");
+        }
+    }
     return goals;
 }
 
