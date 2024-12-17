@@ -127,6 +127,7 @@ class TaskParser {
     TaskParserContext context;
 
     void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables);
+    void check_layering_condition(int head_var_layer, const vector<FactPair> &conditions, const vector<ExplicitVariable> &variables, bool use_nondefault_values);
 
     int parse_int(const string &token);
     int read_int(const string &value_name);
@@ -161,6 +162,44 @@ void TaskParser::check_fact(const FactPair &fact, const vector<ExplicitVariable>
         context.error("Invalid value for variable '" + variables[fact.var].name
             + "' (index: " + to_string(fact.var) + "): "
             + to_string(fact.value));
+    }
+}
+
+void TaskParser::check_layering_condition(
+    int head_var_layer, const vector<FactPair> &conditions,
+    const vector<ExplicitVariable> &variables,
+    bool use_nondefault_values) {
+    for (FactPair fact : conditions) {
+        int var = fact.var;
+        int var_layer = variables[var].axiom_layer;
+        if (var_layer > head_var_layer) {
+            context.error(
+                "Variables must be at head variable layer or below, but variable "
+                + to_string(var) + " is at layer " + to_string(var_layer) + ".");
+        }
+        if (var_layer == head_var_layer) {
+            int default_value = variables[var].axiom_default_value;
+            /* TODO: In the following, the if-branch handles the case described
+               in the TODO/bug in sas_tasks.py when the axiom sets the default
+               value of the derived variable, and can be removed once this issue
+               is resolved.*/
+            if (!use_nondefault_values) {
+                if (fact.value != default_value) {
+                    context.error(
+                        "Conditions using variables at head variable layer "
+                        "must use default value as the axiom sets head variable to "
+                        "default value, but variable " + to_string(var)
+                        + " uses non-default value " + to_string(fact.value) + ".");
+                }
+            } else {
+                if (fact.value == default_value) {
+                    context.error(
+                        "Conditions using variables at head variable layer must "
+                        "use non-default value, but variable " + to_string(var) +
+                        " uses default value " + to_string(fact.value) + ".");
+                }
+            }
+        }
     }
 }
 
@@ -242,6 +281,9 @@ ExplicitVariable TaskParser::read_variable(int index) {
     utils::TraceBlock block(context, "parsing definition of variable '"
                                      + var.name + "'");
     var.axiom_layer = read_int_line("variable axiom layer");
+    if (var.axiom_layer < -1) {
+        context.error("Variable axiom layer must be -1 or non-negative, but is " + to_string(var.axiom_layer) + ".");
+    }
     var.domain_size = read_int_line("variable domain size");
     if (var.domain_size < 1) {
         context.error(
@@ -257,13 +299,13 @@ ExplicitVariable TaskParser::read_variable(int index) {
     return var;
 }
 
-void TaskParser::read_pre_post(ExplicitOperator &op, bool read_from_single_line,const vector<ExplicitVariable> &variables) {
+void TaskParser::read_pre_post(ExplicitOperator &op, bool read_from_single_line, const vector<ExplicitVariable> &variables) {
     vector<FactPair> conditions = read_facts(read_from_single_line, variables);
     utils::TraceBlock block(context, "parsing pre-post of affected variable");
     int var = read_int("affected variable");
     int axiom_layer = variables[var].axiom_layer;
     if (op.is_an_axiom && (axiom_layer == -1)) {
-        context.error("Variable affected by axiom must be derived, but variable " + to_string(var) + " is not derived.");
+            context.error("Variable affected by axiom must be derived, but variable " + to_string(var) + " is not derived.");
     } else if (!op.is_an_axiom && (axiom_layer != -1)) {
         context.error("Variable affected by operator must not be derived, but variable " + to_string(var) + "  is derived.");
     }
@@ -276,6 +318,44 @@ void TaskParser::read_pre_post(ExplicitOperator &op, bool read_from_single_line,
     int value_post = read_int("variable value postcondition");
     FactPair postcondition = FactPair(var, value_post);
     check_fact(postcondition, variables);
+    if (op.is_an_axiom) {
+        int default_value = variables[var].axiom_default_value;
+        assert(default_value != -1);
+        /* TODO: In the following, the if-branch handles the case described in the
+           TODO/bug in sas_tasks.py when the axiom sets the default value of the
+           derived variable, and can be removed once this issue is resolved.*/
+        bool use_nondefault_values = true;
+        if (value_pre != default_value) {
+            use_nondefault_values = false;
+            if (value_post != default_value) {
+            context.error(
+                "Value of variable affected by axiom must be default value "
+                + to_string(default_value) + " in postcondition, as "
+                "precondition uses non-default value " + to_string(value_pre)
+                + ", but is " + to_string(value_post));
+            }
+        } else {
+            /* TODO: This if-statement will not trigger until the issue
+               mentioned above is resolved and the outer if-statement is
+               removed. */
+            if (value_pre != default_value) {
+                context.error(
+                    "Value of variable affected by axiom must be default value "
+                    + to_string(default_value) + " in precondition, but is "
+                    + to_string(value_pre) + ".");
+            }
+            if (value_post == default_value) {
+                context.error(
+                    "Value of variable affected by axiom must be non-default "
+                    "value in postcondition, but is default value "
+                    + to_string(value_post) + ".");
+            }
+        }
+        utils::TraceBlock block(
+            context, "checking layering condition, head variable "
+            + to_string(var) + " with layer " + to_string(axiom_layer));
+        check_layering_condition(axiom_layer, conditions, variables, use_nondefault_values);
+    }
     op.effects.emplace_back(postcondition, move(conditions));
     lexer.confirm_end_of_line(context);
 }
@@ -497,6 +577,10 @@ shared_ptr<AbstractTask> TaskParser::read_task() {
     vector<ExplicitVariable> variables = read_variables();
     vector<vector<set<FactPair>>> mutexes = read_mutexes(variables);
     vector<int> initial_state_values = read_initial_state(variables);
+    int num_variables = variables.size();
+    for (int i = 0; i < num_variables; ++i) {
+        variables[i].axiom_default_value = initial_state_values[i];
+    }
     vector<FactPair> goals = read_goal(variables);
     vector<ExplicitOperator> operators = read_actions(false, use_metric, variables);
     vector<ExplicitOperator> axioms = read_actions(true, use_metric, variables);
@@ -511,10 +595,6 @@ shared_ptr<AbstractTask> TaskParser::read_task() {
       then evaluate the axioms on that state after construction. This requires
       mutable access to the values, though.
     */
-    int num_variables = variables.size();
-    for (int i = 0; i < num_variables; ++i) {
-        variables[i].axiom_default_value = initial_state_values[i];
-    }
     shared_ptr<RootTask> task = make_shared<RootTask>(
         move(variables), move(mutexes), move(operators), move(axioms),
         move(initial_state_values), move(goals));
