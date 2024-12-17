@@ -298,9 +298,14 @@ ExplicitOperator TaskParser::read_operator(int index, bool use_metric, const vec
                                          + to_string(i));
         read_pre_post(op, true, variables);
     }
-    int specified_cost = read_int_line("operator cost");
-    op.cost = use_metric ? specified_cost : 1;
-    assert(op.cost >= 0);
+    {
+        utils::TraceBlock block(context, "parsing operator cost");
+        int specified_cost = read_int_line("cost");
+        op.cost = use_metric ? specified_cost : 1;
+        if (op.cost < 0) {
+            context.error("Operator cost must be non-negative, but is " + to_string(op.cost) + ".");
+        }
+    }
     read_magic_line("end_operator");
     return op;
 }
