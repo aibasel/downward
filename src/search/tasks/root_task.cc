@@ -207,6 +207,7 @@ void TaskParser::read_magic_line(const string &magic) {
 }
 
 vector<FactPair> TaskParser::read_facts(bool read_from_single_line, const vector<ExplicitVariable> &variables) {
+    utils::TraceBlock block(context, "parsing conditions");
     string value_name = "number of conditions";
     int count = read_from_single_line ? read_int(value_name)
                                       : read_int_line(value_name);
@@ -258,7 +259,14 @@ ExplicitVariable TaskParser::read_variable(int index) {
 
 void TaskParser::read_pre_post(ExplicitOperator &op, bool read_from_single_line,const vector<ExplicitVariable> &variables) {
     vector<FactPair> conditions = read_facts(read_from_single_line, variables);
+    utils::TraceBlock block(context, "parsing pre-post of affected variable");
     int var = read_int("affected variable");
+    int axiom_layer = variables[var].axiom_layer;
+    if (op.is_an_axiom && (axiom_layer == -1)) {
+        context.error("Variable affected by axiom must be derived, but variable " + to_string(var) + " is not derived.");
+    } else if (!op.is_an_axiom && (axiom_layer != -1)) {
+        context.error("Variable affected by operator must not be derived, but variable " + to_string(var) + "  is derived.");
+    }
     int value_pre = read_int("variable value precondition");
     if (value_pre != -1) {
         FactPair precondition = FactPair(var, value_pre);
