@@ -127,9 +127,6 @@ class TaskParser {
     TaskParserContext context;
 
     void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables);
-    template<typename T>
-    void check_facts(const T &facts, const vector<ExplicitVariable> &variables);
-    void check_facts(const ExplicitOperator &action, const vector<ExplicitVariable> &variables);
 
     int parse_int(const string &token);
     int read_int(const string &value_name);
@@ -141,15 +138,15 @@ class TaskParser {
     bool read_metric();
     vector<ExplicitVariable> read_variables();
     ExplicitVariable read_variable(int index);
-    vector<FactPair> read_facts(bool read_from_single_line);
+    vector<FactPair> read_facts(bool read_from_single_line, const vector<ExplicitVariable> &variables);
     vector<vector<set<FactPair>>> read_mutexes(const vector<ExplicitVariable> &variables);
     vector<int> read_initial_state(const vector<ExplicitVariable> &variables);
-    vector<FactPair> read_goal();
+    vector<FactPair> read_goal(const vector<ExplicitVariable> &variables);
     vector<ExplicitOperator> read_actions(bool is_axiom, bool use_metric,
         const vector<ExplicitVariable> &variables);
-    ExplicitOperator read_operator(int index, bool use_metric);
-    ExplicitOperator read_axiom(int index);
-    void read_pre_post(ExplicitOperator &op, bool read_from_single_line);
+    ExplicitOperator read_operator(int index, bool use_metric, const vector<ExplicitVariable> &variables);
+    ExplicitOperator read_axiom(int index, const vector<ExplicitVariable> &variables);
+    void read_pre_post(ExplicitOperator &op, bool read_from_single_line, const vector<ExplicitVariable> &variables);
     shared_ptr<AbstractTask> read_task();
 
 public:
@@ -164,21 +161,6 @@ void TaskParser::check_fact(const FactPair &fact, const vector<ExplicitVariable>
         context.error("Invalid value for variable '" + variables[fact.var].name
             + "' (index: " + to_string(fact.var) + "): "
             + to_string(fact.value));
-    }
-}
-
-template<typename T>
-void TaskParser::check_facts(const T &facts, const vector<ExplicitVariable> &variables) {
-    for (FactPair fact : facts) {
-        check_fact(fact, variables);
-    }
-}
-
-void TaskParser::check_facts(const ExplicitOperator &action, const vector<ExplicitVariable> &variables) {
-    check_facts(action.preconditions, variables);
-    for (const ExplicitEffect &eff : action.effects) {
-        check_fact(eff.fact, variables);
-        check_facts(eff.conditions, variables);
     }
 }
 
@@ -224,21 +206,22 @@ void TaskParser::read_magic_line(const string &magic) {
     }
 }
 
-vector<FactPair> TaskParser::read_facts(bool read_from_single_line) {
+vector<FactPair> TaskParser::read_facts(bool read_from_single_line, const vector<ExplicitVariable> &variables) {
     string value_name = "number of conditions";
     int count = read_from_single_line ? read_int(value_name)
                                       : read_int_line(value_name);
     vector<FactPair> conditions;
     conditions.reserve(count);
     for (int i = 0; i < count; ++i) {
-        utils::TraceBlock block(context, "goal fact " + to_string(i));
+        utils::TraceBlock block(context, "fact " + to_string(i));
         FactPair condition = FactPair::no_fact;
         condition.var = read_int("variable");
         condition.value = read_int("value");
+        check_fact(condition, variables);
+        conditions.push_back(condition);
         if (!read_from_single_line) {
             lexer.confirm_end_of_line(context);
         }
-        conditions.push_back(condition);
     }
     return conditions;
 }
@@ -273,19 +256,23 @@ ExplicitVariable TaskParser::read_variable(int index) {
     return var;
 }
 
-void TaskParser::read_pre_post(ExplicitOperator &op, bool read_from_single_line) {
-    vector<FactPair> conditions = read_facts(read_from_single_line);
+void TaskParser::read_pre_post(ExplicitOperator &op, bool read_from_single_line,const vector<ExplicitVariable> &variables) {
+    vector<FactPair> conditions = read_facts(read_from_single_line, variables);
     int var = read_int("affected variable");
     int value_pre = read_int("variable value precondition");
-    int value_post = read_int("variable value postcondition");
-    lexer.confirm_end_of_line(context);
     if (value_pre != -1) {
-        op.preconditions.emplace_back(var, value_pre);
+        FactPair precondition = FactPair(var, value_pre);
+        check_fact(precondition, variables);
+        op.preconditions.emplace_back(precondition);
     }
-    op.effects.emplace_back(FactPair(var, value_post), move(conditions));
+    int value_post = read_int("variable value postcondition");
+    FactPair postcondition = FactPair(var, value_post);
+    check_fact(postcondition, variables);
+    op.effects.emplace_back(postcondition, move(conditions));
+    lexer.confirm_end_of_line(context);
 }
 
-ExplicitOperator TaskParser::read_operator(int index, bool use_metric) {
+ExplicitOperator TaskParser::read_operator(int index, bool use_metric, const vector<ExplicitVariable> &variables) {
     ExplicitOperator op;
     op.is_an_axiom = false;
     {
@@ -300,13 +287,16 @@ ExplicitOperator TaskParser::read_operator(int index, bool use_metric) {
     */
     utils::TraceBlock block(context, "parsing definition of operator '"
                                      + op.name + "'");
-    op.preconditions = read_facts(false);
+    {
+        utils::TraceBlock block(context, "parsing prevail conditions");
+        op.preconditions = read_facts(false, variables);
+    }
     int count = read_int_line("number of operator effects");
     op.effects.reserve(count);
     for (int i = 0; i < count; ++i) {
         utils::TraceBlock block(context, "parsing effect "
                                          + to_string(i));
-        read_pre_post(op, true);
+        read_pre_post(op, true, variables);
     }
     int specified_cost = read_int_line("operator cost");
     op.cost = use_metric ? specified_cost : 1;
@@ -315,7 +305,7 @@ ExplicitOperator TaskParser::read_operator(int index, bool use_metric) {
     return op;
 }
 
-ExplicitOperator TaskParser::read_axiom(int index) {
+ExplicitOperator TaskParser::read_axiom(int index, const vector<ExplicitVariable> &variables) {
     utils::TraceBlock block(context, "axiom " + to_string(index));
     ExplicitOperator op;
     op.is_an_axiom = true;
@@ -323,7 +313,7 @@ ExplicitOperator TaskParser::read_axiom(int index) {
     op.cost = 0;
 
     read_magic_line("begin_rule");
-    read_pre_post(op, false);
+    read_pre_post(op, false, variables);
     read_magic_line("end_rule");
     return op;
 }
@@ -388,6 +378,7 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(const vector<ExplicitVari
       aware of.
     */
     for (int i = 0; i < num_mutex_groups; ++i) {
+        utils::TraceBlock block(context, "mutex group " + to_string(i));
         read_magic_line("begin_mutex_group");
         int num_facts = read_int_line("number of facts in mutex group");
         if (num_facts < 1) {
@@ -398,12 +389,16 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(const vector<ExplicitVari
         vector<FactPair> invariant_group;
         invariant_group.reserve(num_facts);
         for (int j = 0; j < num_facts; ++j) {
+            utils::TraceBlock block(context, "mutex atom " + to_string(j));
             int var = read_int("variable number of mutex atom");
             int value = read_int("value of mutex atom");
+            FactPair fact = FactPair(var, value);
+            check_fact(fact, variables);
+            invariant_group.emplace_back(fact);
             lexer.confirm_end_of_line(context);
-            invariant_group.emplace_back(var, value);
         }
         read_magic_line("end_mutex_group");
+
         set<FactPair> invariant_group_set(invariant_group.begin(), invariant_group.end());
         if (invariant_group_set.size() != invariant_group.size()) {
             context.error("Mutex group may not contain the same fact more than once.");
@@ -437,19 +432,19 @@ vector<int> TaskParser::read_initial_state(const vector<ExplicitVariable> &varia
     for (int i = 0; i < num_variables; ++i) {
         string block_name = "initial state value of variable '"
             + variables[i].name + "' (index: " + to_string(i) + ")";
+        utils::TraceBlock block(context, "validating " + block_name);
         initial_state_values[i] = read_int_line(block_name);
 
-        utils::TraceBlock block(context, "validating " + block_name);
         check_fact(FactPair(i, initial_state_values[i]), variables);
     }
     read_magic_line("end_state");
     return initial_state_values;
 }
 
-vector<FactPair> TaskParser::read_goal() {
+vector<FactPair> TaskParser::read_goal(const vector<ExplicitVariable> &variables) {
     utils::TraceBlock block(context, "goal section");
     read_magic_line("begin_goal");
-    vector<FactPair> goals = read_facts(false);
+    vector<FactPair> goals = read_facts(false, variables);
     read_magic_line("end_goal");
     if (goals.empty()) {
         cerr << "Task has no goal condition!" << endl;
@@ -465,11 +460,9 @@ vector<ExplicitOperator> TaskParser::read_actions(bool is_axiom,
     vector<ExplicitOperator> actions;
     actions.reserve(count);
     for (int i = 0; i < count; ++i) {
-        ExplicitOperator action = is_axiom ? read_axiom(i)
-                                           : read_operator(i, use_metric);
+        ExplicitOperator action = is_axiom ? read_axiom(i, variables)
+                                           : read_operator(i, use_metric, variables);
         actions.push_back(action);
-
-        check_facts(actions.back(), variables);
     }
     return actions;
 }
@@ -483,15 +476,8 @@ shared_ptr<AbstractTask> TaskParser::read_task() {
     bool use_metric = read_metric();
     vector<ExplicitVariable> variables = read_variables();
     vector<vector<set<FactPair>>> mutexes = read_mutexes(variables);
-    for (size_t i = 0; i < mutexes.size(); ++i) {
-        for (size_t j = 0; j < mutexes[i].size(); ++j) {
-            check_facts(mutexes[i][j], variables);
-        }
-    }
-
     vector<int> initial_state_values = read_initial_state(variables);
-    vector<FactPair> goals = read_goal();
-    check_facts(goals, variables);
+    vector<FactPair> goals = read_goal(variables);
     vector<ExplicitOperator> operators = read_actions(false, use_metric, variables);
     vector<ExplicitOperator> axioms = read_actions(true, use_metric, variables);
     lexer.confirm_end_of_input(context);
