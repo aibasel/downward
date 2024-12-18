@@ -290,6 +290,11 @@ ExplicitVariable TaskParser::read_variable(int index) {
             "Domain size should be at least 1, but is "
             + std::to_string(var.domain_size) + ".");
     }
+    if ((var.axiom_layer >= 0) && var.domain_size != 2) {
+        context.error(
+            "Derived variables must be binary, but domain size is "
+            + to_string(var.domain_size) + ".");
+    }
     var.fact_names.resize(var.domain_size);
     for (int i = 0; i < var.domain_size; ++i) {
         utils::TraceBlock block(context, "fact " + to_string(i));
