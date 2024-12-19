@@ -77,11 +77,10 @@ string TaskLexer::read_line(const Context &context) {
               "the previous line.");
     }
     optional<string> line = get_next_nonempty_line();
-    if (line.has_value()) {
-        return line.value();
-    } else {
+    if (!line.has_value()) {
         context.error("Unexpected end of task.");
     }
+    return line.value();
 }
 
 void TaskLexer::confirm_end_of_line(const Context &context) {
