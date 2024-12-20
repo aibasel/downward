@@ -1,16 +1,14 @@
 #include "root_task.h"
 
-#include "../state_registry.h"
+#include "../axioms.h"
 
 #include "../plugins/plugin.h"
 #include "../utils/collections.h"
-#include "../utils/timer.h"
+#include "../utils/task_lexer.h"
 
-#include <algorithm>
 #include <cassert>
 #include <memory>
 #include <set>
-#include <unordered_set>
 #include <vector>
 
 
@@ -21,22 +19,32 @@ namespace tasks {
 static const int PRE_FILE_VERSION = 3;
 shared_ptr<AbstractTask> g_root_task = nullptr;
 
+class TaskParserContext : public utils::Context {
+    const utils::TaskLexer &lexer;
+public:
+    TaskParserContext(utils::TaskLexer &lexer)
+        : lexer(lexer) {
+    }
+
+    virtual string decorate_block_name(const string &block_name) const override {
+        int line = lexer.get_line_number();
+        return "[line " + to_string(line) + "] " + block_name;
+    }
+
+};
+
 struct ExplicitVariable {
     int domain_size;
     string name;
     vector<string> fact_names;
     int axiom_layer;
     int axiom_default_value;
-
-    explicit ExplicitVariable(istream &in);
 };
 
 
 struct ExplicitEffect {
     FactPair fact;
     vector<FactPair> conditions;
-
-    ExplicitEffect(int var, int value, vector<FactPair> &&conditions);
 };
 
 
@@ -46,9 +54,6 @@ struct ExplicitOperator {
     int cost;
     string name;
     bool is_an_axiom;
-
-    void read_pre_post(istream &in);
-    ExplicitOperator(istream &in, bool is_an_axiom, bool use_metric);
 };
 
 
@@ -66,7 +71,16 @@ class RootTask : public AbstractTask {
     const ExplicitOperator &get_operator_or_axiom(int index, bool is_axiom) const;
 
 public:
-    explicit RootTask(istream &in);
+    RootTask(vector<ExplicitVariable> &&variables,
+             vector<vector<set<FactPair>>> &&mutexes,
+             vector<ExplicitOperator> &&operators,
+             vector<ExplicitOperator> &&axioms,
+             vector<int> &&initial_state_values,
+             vector<FactPair> &&goals);
+
+    vector<int> &get_initial_state_values() {
+        return initial_state_values;
+    }
 
     virtual int get_num_variables() const override;
     virtual string get_variable_name(int var) const override;
@@ -108,155 +122,374 @@ public:
 };
 
 
-static void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables) {
+class TaskParser {
+    utils::TaskLexer lexer;
+    TaskParserContext context;
+
+    void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables);
+    void check_layering_condition(int head_var_layer, const vector<FactPair> &conditions, const vector<ExplicitVariable> &variables, bool use_nondefault_values);
+
+    int parse_int(const string &token);
+    int read_int(const string &value_name);
+    int read_int_line(const string &value_name);
+    string read_string_line(const string &value_name);
+    void read_magic_line(const string &magic);
+
+    void read_and_verify_version();
+    bool read_metric();
+    vector<ExplicitVariable> read_variables();
+    ExplicitVariable read_variable(int index);
+    vector<FactPair> read_facts(bool read_from_single_line, const vector<ExplicitVariable> &variables);
+    vector<vector<set<FactPair>>> read_mutexes(const vector<ExplicitVariable> &variables);
+    vector<int> read_initial_state(const vector<ExplicitVariable> &variables);
+    vector<FactPair> read_goal(const vector<ExplicitVariable> &variables);
+    vector<ExplicitOperator> read_actions(bool is_axiom, bool use_metric,
+        const vector<ExplicitVariable> &variables);
+    ExplicitOperator read_operator(int index, bool use_metric, const vector<ExplicitVariable> &variables);
+    ExplicitOperator read_axiom(int index, const vector<ExplicitVariable> &variables);
+    void read_conditional_effect(ExplicitOperator &op, const vector<ExplicitVariable> &variables);
+    void read_pre_post_axiom(ExplicitOperator &op, const vector<ExplicitVariable> &variables);
+    shared_ptr<AbstractTask> read_task();
+
+public:
+    TaskParser(utils::TaskLexer &&lexer);
+    shared_ptr<AbstractTask> parse();
+};
+
+void TaskParser::check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables) {
     if (!utils::in_bounds(fact.var, variables)) {
-        cerr << "Invalid variable id: " << fact.var << endl;
-        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    }
-    if (fact.value < 0 || fact.value >= variables[fact.var].domain_size) {
-        cerr << "Invalid value for variable " << fact.var << ": " << fact.value << endl;
-        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    }
-}
-
-static void check_facts(const vector<FactPair> &facts, const vector<ExplicitVariable> &variables) {
-    for (FactPair fact : facts) {
-        check_fact(fact, variables);
+        context.error("Invalid variable id: " + to_string(fact.var));
+    } else if (fact.value < 0 || fact.value >= variables[fact.var].domain_size) {
+        context.error("Invalid value for variable '" + variables[fact.var].name
+            + "' (index: " + to_string(fact.var) + "): "
+            + to_string(fact.value));
     }
 }
 
-static void check_facts(const ExplicitOperator &action, const vector<ExplicitVariable> &variables) {
-    check_facts(action.preconditions, variables);
-    for (const ExplicitEffect &eff : action.effects) {
-        check_fact(eff.fact, variables);
-        check_facts(eff.conditions, variables);
-    }
-}
-
-static void check_magic(istream &in, const string &magic) {
-    string word;
-    in >> word;
-    if (word != magic) {
-        cerr << "Failed to match magic word '" << magic << "'." << endl
-             << "Got '" << word << "'." << endl;
-        if (magic == "begin_version") {
-            cerr << "Possible cause: you are running the planner "
-                 << "on a translator output file from " << endl
-                 << "an older version." << endl;
+void TaskParser::check_layering_condition(
+    int head_var_layer, const vector<FactPair> &conditions,
+    const vector<ExplicitVariable> &variables,
+    bool use_nondefault_values) {
+    for (FactPair fact : conditions) {
+        int var = fact.var;
+        int var_layer = variables[var].axiom_layer;
+        if (var_layer > head_var_layer) {
+            context.error(
+                "Variables must be at head variable layer or below, but variable "
+                + to_string(var) + " is at layer " + to_string(var_layer) + ".");
         }
-        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+        if (var_layer == head_var_layer) {
+            int default_value = variables[var].axiom_default_value;
+            /* TODO: In the following, the if-branch handles the case described
+               in the TODO/bug in sas_tasks.py when the axiom sets the default
+               value of the derived variable, and can be removed once this issue
+               is resolved.*/
+            if (!use_nondefault_values) {
+                if (fact.value != default_value) {
+                    context.error(
+                        "Conditions using variables at head variable layer "
+                        "must use default value as the axiom sets head variable to "
+                        "default value, but variable " + to_string(var)
+                        + " uses non-default value " + to_string(fact.value) + ".");
+                }
+            } else {
+                if (fact.value == default_value) {
+                    context.error(
+                        "Conditions using variables at head variable layer must "
+                        "use non-default value, but variable " + to_string(var) +
+                        " uses default value " + to_string(fact.value) + ".");
+                }
+            }
+        }
     }
 }
 
-static vector<FactPair> read_facts(istream &in) {
-    int count;
-    in >> count;
+int TaskParser::parse_int(const string &token) {
+    string failure_reason;
+    try {
+        string::size_type parsed_length;
+        int number = stoi(token, &parsed_length);
+        if (parsed_length == token.size()) {
+            return number;
+        } else {
+            failure_reason = "invalid character '"
+                + string(1, token[parsed_length]) + "'";
+        }
+    } catch (invalid_argument &) {
+        failure_reason = "invalid argument";
+    } catch (out_of_range &) {
+        failure_reason = "out of range";
+    }
+    context.error("Could not parse '" + token + "' as integer ("
+                  + failure_reason + ").");
+}
+
+int TaskParser::read_int(const string &value_name) {
+    utils::TraceBlock block(context, value_name);
+    return parse_int(lexer.read(context));
+}
+
+int TaskParser::read_int_line(const string &value_name) {
+    utils::TraceBlock block(context, value_name);
+    return parse_int(lexer.read_line(context));
+}
+
+string TaskParser::read_string_line(const string &value_name) {
+    utils::TraceBlock block(context, value_name);
+    return lexer.read_line(context);
+}
+
+void TaskParser::read_magic_line(const string &magic) {
+    string line = read_string_line("magic value");
+    if (line != magic) {
+        context.error("Expected magic line '" + magic + "', got '" + line + "'.");
+    }
+}
+
+vector<FactPair> TaskParser::read_facts(bool read_from_single_line, const vector<ExplicitVariable> &variables) {
+    utils::TraceBlock block(context, "parsing conditions");
+    string value_name = "number of conditions";
+    int count = read_from_single_line ? read_int(value_name)
+                                      : read_int_line(value_name);
     vector<FactPair> conditions;
     conditions.reserve(count);
     for (int i = 0; i < count; ++i) {
+        utils::TraceBlock block(context, "fact " + to_string(i));
         FactPair condition = FactPair::no_fact;
-        in >> condition.var >> condition.value;
+        condition.var = read_int("variable");
+        condition.value = read_int("value");
+        check_fact(condition, variables);
         conditions.push_back(condition);
+        if (!read_from_single_line) {
+            lexer.confirm_end_of_line(context);
+        }
     }
     return conditions;
 }
 
-ExplicitVariable::ExplicitVariable(istream &in) {
-    check_magic(in, "begin_variable");
-    in >> name;
-    in >> axiom_layer;
-    in >> domain_size;
-    in >> ws;
-    fact_names.resize(domain_size);
-    for (int i = 0; i < domain_size; ++i)
-        getline(in, fact_names[i]);
-    check_magic(in, "end_variable");
-}
-
-
-ExplicitEffect::ExplicitEffect(
-    int var, int value, vector<FactPair> &&conditions)
-    : fact(var, value), conditions(move(conditions)) {
-}
-
-
-void ExplicitOperator::read_pre_post(istream &in) {
-    vector<FactPair> conditions = read_facts(in);
-    int var, value_pre, value_post;
-    in >> var >> value_pre >> value_post;
-    if (value_pre != -1) {
-        preconditions.emplace_back(var, value_pre);
+ExplicitVariable TaskParser::read_variable(int index) {
+    ExplicitVariable var;
+    {
+        utils::TraceBlock block(context, "parsing variable " + to_string(index));
+        read_magic_line("begin_variable");
+        var.name = read_string_line("variable name");
     }
-    effects.emplace_back(var, value_post, move(conditions));
+    /*
+      We close the previous block and open a new one, now that we have the
+      name of the variable. This produces better error messages but the line
+      number for the second block will be the one after the name.
+    */
+    utils::TraceBlock block(context, "parsing definition of variable '"
+                                     + var.name + "'");
+    var.axiom_layer = read_int_line("variable axiom layer");
+    if (var.axiom_layer < -1) {
+        context.error("Variable axiom layer must be -1 or non-negative, but is " + to_string(var.axiom_layer) + ".");
+    }
+    var.domain_size = read_int_line("variable domain size");
+    if (var.domain_size < 1) {
+        context.error(
+            "Domain size should be at least 1, but is "
+            + std::to_string(var.domain_size) + ".");
+    }
+    if ((var.axiom_layer >= 0) && var.domain_size != 2) {
+        context.error(
+            "Derived variables must be binary, but domain size is "
+            + to_string(var.domain_size) + ".");
+    }
+    var.fact_names.resize(var.domain_size);
+    for (int i = 0; i < var.domain_size; ++i) {
+        utils::TraceBlock block(context, "fact " + to_string(i));
+        var.fact_names[i] = read_string_line("name");
+    }
+    read_magic_line("end_variable");
+    return var;
 }
 
-ExplicitOperator::ExplicitOperator(istream &in, bool is_an_axiom, bool use_metric)
-    : is_an_axiom(is_an_axiom) {
-    if (!is_an_axiom) {
-        check_magic(in, "begin_operator");
-        in >> ws;
-        getline(in, name);
-        preconditions = read_facts(in);
-        int count;
-        in >> count;
-        effects.reserve(count);
-        for (int i = 0; i < count; ++i) {
-            read_pre_post(in);
+void TaskParser::read_pre_post_axiom(ExplicitOperator &op, const vector<ExplicitVariable> &variables) {
+    vector<FactPair> conditions = read_facts(false, variables);
+    utils::TraceBlock block(context, "parsing pre-post of affected variable");
+    int var = read_int("affected variable");
+    int axiom_layer = variables[var].axiom_layer;
+    if (axiom_layer == -1) {
+            context.error("Variable affected by axiom must be derived, but variable " + to_string(var) + " is not derived.");
+    }
+    int value_pre = read_int("variable value precondition");
+    if (value_pre == -1) {
+        context.error("Variable affected by axiom must have precondition, but value is -1.");
+    }
+    FactPair precondition = FactPair(var, value_pre);
+    check_fact(precondition, variables);
+    int value_post = read_int("variable value postcondition");
+    FactPair postcondition = FactPair(var, value_post);
+    check_fact(postcondition, variables);
+    int default_value = variables[var].axiom_default_value;
+    assert(default_value != -1);
+    /* TODO: In the following, the if-branch handles the case described in the
+        TODO/bug in sas_tasks.py when the axiom sets the default value of the
+        derived variable, and can be removed once this issue is resolved.*/
+    bool use_nondefault_values = true;
+    if (value_pre != default_value) {
+        use_nondefault_values = false;
+        if (value_post != default_value) {
+            context.error(
+                "Value of variable affected by axiom must be default value "
+                + to_string(default_value) + " in postcondition, as "
+                "precondition uses non-default value " + to_string(value_pre)
+                + ", but is " + to_string(value_post));
         }
-
-        int op_cost;
-        in >> op_cost;
-        cost = use_metric ? op_cost : 1;
-        check_magic(in, "end_operator");
     } else {
-        name = "<axiom>";
-        cost = 0;
-        check_magic(in, "begin_rule");
-        read_pre_post(in);
-        check_magic(in, "end_rule");
+        /* TODO: This if-statement will not trigger until the issue
+            mentioned above is resolved and the outer if-statement is
+            removed. */
+        if (value_pre != default_value) {
+            context.error(
+                "Value of variable affected by axiom must be default value "
+                + to_string(default_value) + " in precondition, but is "
+                + to_string(value_pre) + ".");
+        }
+        if (value_post == default_value) {
+            context.error(
+                "Value of variable affected by axiom must be non-default "
+                "value in postcondition, but is default value "
+                + to_string(value_post) + ".");
+        }
     }
-    assert(cost >= 0);
+    {
+        utils::TraceBlock block(
+            context, "checking layering condition, head variable "
+            + to_string(var) + " with layer " + to_string(axiom_layer));
+        check_layering_condition(axiom_layer, conditions, variables, use_nondefault_values);
+    }
+    op.preconditions.emplace_back(precondition);
+    ExplicitEffect eff = {postcondition, move(conditions)};
+    op.effects.emplace_back(eff);
+    lexer.confirm_end_of_line(context);
 }
 
-static void read_and_verify_version(istream &in) {
-    int version;
-    check_magic(in, "begin_version");
-    in >> version;
-    check_magic(in, "end_version");
+void TaskParser::read_conditional_effect(ExplicitOperator &op, const vector<ExplicitVariable> &variables) {
+    vector<FactPair> conditions = read_facts(true, variables);
+    utils::TraceBlock block(context, "parsing pre-post of affected variable");
+    int var = read_int("affected variable");
+    int axiom_layer = variables[var].axiom_layer;
+    if (axiom_layer != -1) {
+        context.error("Variable affected by operator must not be derived, but variable " + to_string(var) + "  is derived.");
+    }
+    int value_pre = read_int("variable value precondition");
+    if (value_pre != -1) {
+        FactPair precondition = FactPair(var, value_pre);
+        check_fact(precondition, variables);
+        op.preconditions.emplace_back(precondition);
+    }
+    int value_post = read_int("variable value postcondition");
+    FactPair postcondition = FactPair(var, value_post);
+    check_fact(postcondition, variables);
+    ExplicitEffect eff = {postcondition, move(conditions)};
+    op.effects.emplace_back(eff);
+    lexer.confirm_end_of_line(context);
+}
+
+ExplicitOperator TaskParser::read_operator(int index, bool use_metric, const vector<ExplicitVariable> &variables) {
+    ExplicitOperator op;
+    op.is_an_axiom = false;
+    {
+        utils::TraceBlock block(context, "operator " + to_string(index));
+        read_magic_line("begin_operator");
+        op.name = read_string_line("operator name");
+    }
+    /*
+      We close the previous block and open a new one, now that we have the
+      name of the operator. This produces better error messages but the line
+      number for the second block will be the one after the name.
+    */
+    utils::TraceBlock block(context, "parsing definition of operator '"
+                                     + op.name + "'");
+    {
+        utils::TraceBlock block(context, "parsing prevail conditions");
+        op.preconditions = read_facts(false, variables);
+    }
+    int count = read_int_line("number of operator effects");
+    op.effects.reserve(count);
+    for (int i = 0; i < count; ++i) {
+        utils::TraceBlock block(context, "parsing effect "
+                                         + to_string(i));
+        read_conditional_effect(op, variables);
+    }
+    {
+        utils::TraceBlock block(context, "parsing operator cost");
+        int specified_cost = read_int_line("cost");
+        op.cost = use_metric ? specified_cost : 1;
+        if (op.cost < 0) {
+            context.error("Operator cost must be non-negative, but is " + to_string(op.cost) + ".");
+        }
+    }
+    read_magic_line("end_operator");
+    return op;
+}
+
+ExplicitOperator TaskParser::read_axiom(int index, const vector<ExplicitVariable> &variables) {
+    utils::TraceBlock block(context, "axiom " + to_string(index));
+    ExplicitOperator op;
+    op.is_an_axiom = true;
+    op.name = "<axiom>";
+    op.cost = 0;
+
+    read_magic_line("begin_rule");
+    read_pre_post_axiom(op, variables);
+    read_magic_line("end_rule");
+    return op;
+}
+
+void TaskParser::read_and_verify_version() {
+    utils::TraceBlock block(context, "version section");
+    read_magic_line("begin_version");
+    int version = read_int_line("version number");
     if (version != PRE_FILE_VERSION) {
-        cerr << "Expected translator output file version " << PRE_FILE_VERSION
-             << ", got " << version << "." << endl
-             << "Exiting." << endl;
-        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+        context.error("Expected translator output file version "
+            + to_string(PRE_FILE_VERSION) + ", got "
+            + to_string(version) + ".");
     }
+    read_magic_line("end_version");
 }
 
-static bool read_metric(istream &in) {
-    bool use_metric;
-    check_magic(in, "begin_metric");
-    in >> use_metric;
-    check_magic(in, "end_metric");
+bool TaskParser::read_metric() {
+    utils::TraceBlock block(context, "metric section");
+    read_magic_line("begin_metric");
+    string use_metric_string = read_string_line("metric value");
+    bool use_metric = false;
+    if (use_metric_string == "1") {
+        use_metric = true;
+    } else if (use_metric_string == "0") {
+        use_metric = false;
+    } else {
+        context.error("expected 0 or 1, got '" + use_metric_string + "'.");
+    }
+    read_magic_line("end_metric");
     return use_metric;
 }
 
-static vector<ExplicitVariable> read_variables(istream &in) {
-    int count;
-    in >> count;
+vector<ExplicitVariable> TaskParser::read_variables() {
+    utils::TraceBlock block(context, "variable section");
+    int count = read_int_line("variable count");
+    if (count < 1) {
+        context.error(
+            "Number of variables should be at least 1, but is "
+            + std::to_string(count) + ".");
+    }
     vector<ExplicitVariable> variables;
     variables.reserve(count);
     for (int i = 0; i < count; ++i) {
-        variables.emplace_back(in);
+        variables.push_back(read_variable(i));
     }
     return variables;
 }
 
-static vector<vector<set<FactPair>>> read_mutexes(istream &in, const vector<ExplicitVariable> &variables) {
+vector<vector<set<FactPair>>> TaskParser::read_mutexes(const vector<ExplicitVariable> &variables) {
+    utils::TraceBlock block(context, "mutex section");
     vector<vector<set<FactPair>>> inconsistent_facts(variables.size());
     for (size_t i = 0; i < variables.size(); ++i)
         inconsistent_facts[i].resize(variables[i].domain_size);
 
-    int num_mutex_groups;
-    in >> num_mutex_groups;
+    int num_mutex_groups = read_int_line("number of mutex groups");
 
     /*
       NOTE: Mutex groups can overlap, in which case the same mutex
@@ -266,18 +499,31 @@ static vector<vector<set<FactPair>>> read_mutexes(istream &in, const vector<Expl
       aware of.
     */
     for (int i = 0; i < num_mutex_groups; ++i) {
-        check_magic(in, "begin_mutex_group");
-        int num_facts;
-        in >> num_facts;
+        utils::TraceBlock block(context, "mutex group " + to_string(i));
+        read_magic_line("begin_mutex_group");
+        int num_facts = read_int_line("number of facts in mutex group");
+        if (num_facts < 1) {
+            context.error(
+                "Number of facts in mutex group should be at least 1, but is "
+                + std::to_string(num_facts) + ".");
+        }
         vector<FactPair> invariant_group;
         invariant_group.reserve(num_facts);
         for (int j = 0; j < num_facts; ++j) {
-            int var;
-            int value;
-            in >> var >> value;
-            invariant_group.emplace_back(var, value);
+            utils::TraceBlock block(context, "mutex atom " + to_string(j));
+            int var = read_int("variable number of mutex atom");
+            int value = read_int("value of mutex atom");
+            FactPair fact = FactPair(var, value);
+            check_fact(fact, variables);
+            invariant_group.emplace_back(fact);
+            lexer.confirm_end_of_line(context);
         }
-        check_magic(in, "end_mutex_group");
+        read_magic_line("end_mutex_group");
+
+        set<FactPair> invariant_group_set(invariant_group.begin(), invariant_group.end());
+        if (invariant_group_set.size() != invariant_group.size()) {
+            context.error("Mutex group may not contain the same fact more than once.");
+        }
         for (const FactPair &fact1 : invariant_group) {
             for (const FactPair &fact2 : invariant_group) {
                 if (fact1.var != fact2.var) {
@@ -299,63 +545,115 @@ static vector<vector<set<FactPair>>> read_mutexes(istream &in, const vector<Expl
     return inconsistent_facts;
 }
 
-static vector<FactPair> read_goal(istream &in) {
-    check_magic(in, "begin_goal");
-    vector<FactPair> goals = read_facts(in);
-    check_magic(in, "end_goal");
+vector<int> TaskParser::read_initial_state(const vector<ExplicitVariable> &variables) {
+    utils::TraceBlock block(context, "initial state section");
+    read_magic_line("begin_state");
+    int num_variables = variables.size();
+    vector<int> initial_state_values(num_variables);
+    for (int i = 0; i < num_variables; ++i) {
+        string block_name = "initial state value of variable '"
+            + variables[i].name + "' (index: " + to_string(i) + ")";
+        utils::TraceBlock block(context, "validating " + block_name);
+        initial_state_values[i] = read_int_line(block_name);
+
+        check_fact(FactPair(i, initial_state_values[i]), variables);
+    }
+    read_magic_line("end_state");
+    return initial_state_values;
+}
+
+vector<FactPair> TaskParser::read_goal(const vector<ExplicitVariable> &variables) {
+    utils::TraceBlock block(context, "goal section");
+    read_magic_line("begin_goal");
+    vector<FactPair> goals = read_facts(false, variables);
+    read_magic_line("end_goal");
     if (goals.empty()) {
         cerr << "Task has no goal condition!" << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
+    set<int> goal_vars;
+    for (FactPair goal : goals) {
+        int var = goal.var;
+        if (!goal_vars.insert(var).second) {
+            context.error("Goal variables must be unique, but variable " + to_string(var) + " occurs several times.");
+        }
+    }
     return goals;
 }
 
-static vector<ExplicitOperator> read_actions(
-    istream &in, bool is_axiom, bool use_metric,
-    const vector<ExplicitVariable> &variables) {
-    int count;
-    in >> count;
+vector<ExplicitOperator> TaskParser::read_actions(bool is_axiom,
+    bool use_metric, const vector<ExplicitVariable> &variables) {
+    utils::TraceBlock block(context, is_axiom ? "axiom section" : "operator section");
+    int count = read_int_line("number of entries");
     vector<ExplicitOperator> actions;
     actions.reserve(count);
     for (int i = 0; i < count; ++i) {
-        actions.emplace_back(in, is_axiom, use_metric);
-        check_facts(actions.back(), variables);
+        ExplicitOperator action = is_axiom ? read_axiom(i, variables)
+                                           : read_operator(i, use_metric, variables);
+        actions.push_back(action);
     }
     return actions;
 }
 
-RootTask::RootTask(istream &in) {
-    read_and_verify_version(in);
-    bool use_metric = read_metric(in);
-    variables = read_variables(in);
+TaskParser::TaskParser(utils::TaskLexer &&lexer)
+    : lexer(move(lexer)), context(this->lexer) {
+}
+
+shared_ptr<AbstractTask> TaskParser::read_task() {
+    read_and_verify_version();
+    bool use_metric = read_metric();
+    vector<ExplicitVariable> variables = read_variables();
+    vector<vector<set<FactPair>>> mutexes = read_mutexes(variables);
+    vector<int> initial_state_values = read_initial_state(variables);
     int num_variables = variables.size();
-
-    mutexes = read_mutexes(in, variables);
-
-    initial_state_values.resize(num_variables);
-    check_magic(in, "begin_state");
-    for (int i = 0; i < num_variables; ++i) {
-        in >> initial_state_values[i];
-    }
-    check_magic(in, "end_state");
-
     for (int i = 0; i < num_variables; ++i) {
         variables[i].axiom_default_value = initial_state_values[i];
     }
-
-    goals = read_goal(in);
-    check_facts(goals, variables);
-    operators = read_actions(in, false, use_metric, variables);
-    axioms = read_actions(in, true, use_metric, variables);
-    /* TODO: We should be stricter here and verify that we
-       have reached the end of "in". */
+    vector<FactPair> goals = read_goal(variables);
+    vector<ExplicitOperator> operators = read_actions(false, use_metric, variables);
+    vector<ExplicitOperator> axioms = read_actions(true, use_metric, variables);
+    lexer.confirm_end_of_input(context);
 
     /*
-      HACK: We use a TaskProxy to access g_axiom_evaluators here which assumes
-      that this task is completely constructed.
+      "Neat Trick" and certainly no HACK:
+      We currently require initial_state_values to contain values for derived
+      variables. To evaluate the axioms, we require a task. But since evaluating
+      axioms does not depend on the initial state, we can construct the task
+      with a non-extended initial state (i.e. one without axioms evaluated) and
+      then evaluate the axioms on that state after construction. This requires
+      mutable access to the values, though.
     */
-    AxiomEvaluator &axiom_evaluator = g_axiom_evaluators[TaskProxy(*this)];
-    axiom_evaluator.evaluate(initial_state_values);
+    shared_ptr<RootTask> task = make_shared<RootTask>(
+        move(variables), move(mutexes), move(operators), move(axioms),
+        move(initial_state_values), move(goals));
+    AxiomEvaluator &axiom_evaluator = g_axiom_evaluators[TaskProxy(*task)];
+    axiom_evaluator.evaluate(task->get_initial_state_values());
+    return task;
+}
+
+shared_ptr<AbstractTask> TaskParser::parse() {
+    try {
+        return read_task();
+    } catch (const utils::ContextError &e) {
+        cerr << "Error reading task" << endl
+             << e.get_message() << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+    }
+}
+
+
+RootTask::RootTask(vector<ExplicitVariable> &&variables,
+                   vector<vector<set<FactPair>>> &&mutexes,
+                   vector<ExplicitOperator> &&operators,
+                   vector<ExplicitOperator> &&axioms,
+                   vector<int> &&initial_state_values,
+                   vector<FactPair> &&goals)
+    : variables(move(variables)),
+      mutexes(move(mutexes)),
+      operators(move(operators)),
+      axioms(move(axioms)),
+      initial_state_values(move(initial_state_values)),
+      goals(move(goals)) {
 }
 
 const ExplicitVariable &RootTask::get_variable(int var) const {
@@ -494,7 +792,9 @@ void RootTask::convert_ancestor_state_values(
 
 void read_root_task(istream &in) {
     assert(!g_root_task);
-    g_root_task = make_shared<RootTask>(in);
+    utils::TaskLexer lexer(in);
+    TaskParser parser(move(lexer));
+    g_root_task = parser.parse();
 }
 
 class RootTaskFeature
