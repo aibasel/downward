@@ -361,7 +361,8 @@ void TaskParser::read_pre_post_axiom(ExplicitOperator &op, const vector<Explicit
         check_layering_condition(axiom_layer, conditions, variables, use_nondefault_values);
     }
     op.preconditions.emplace_back(precondition);
-    op.effects.emplace_back(postcondition, move(conditions));
+    ExplicitEffect eff = {postcondition, move(conditions)};
+    op.effects.emplace_back(eff);
     lexer.confirm_end_of_line(context);
 }
 
@@ -382,7 +383,8 @@ void TaskParser::read_conditional_effect(ExplicitOperator &op, const vector<Expl
     int value_post = read_int("variable value postcondition");
     FactPair postcondition = FactPair(var, value_post);
     check_fact(postcondition, variables);
-    op.effects.emplace_back(postcondition, move(conditions));
+    ExplicitEffect eff = {postcondition, move(conditions)};
+    op.effects.emplace_back(eff);
     lexer.confirm_end_of_line(context);
 }
 
