@@ -108,6 +108,14 @@ public:
 	}
         return result;
     }
+    bool any() const{
+	for (Block blk : blocks){
+	    if (blk != 0){
+		return true;
+	    }
+	}
+	return false;
+    }
 
     void set() {
         std::fill(blocks.begin(), blocks.end(), ones);
