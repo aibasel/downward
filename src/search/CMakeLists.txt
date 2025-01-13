@@ -50,8 +50,22 @@ add_executable(downward planner.cc)
 execute_process(
   COMMAND git log -1 "--format=format:\"%H\"%n" HEAD
   OUTPUT_VARIABLE GIT_REVISION
+  RESULT_VARIABLE GIT_REVISION_CODE
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+if(NOT GIT_REVISION_CODE EQUAL 0)
+    message(WARNING "Building from tarball. Using the release version as the build version string.")
+    execute_process(
+      COMMAND PYTHONPATH=../../ python -c "import driver ; print(driver.__version__)"
+      OUTPUT_VARIABLE GIT_REVISION
+      RESULT_VARIABLE GIT_REVISION_CODE
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+endif()
+if(NOT GIT_REVISION_CODE EQUAL 0)
+    message(FATAL_ERROR "Unexpected error reading the version string from the driver.")
+endif()
+
 configure_file(git_revision.h.in git_revision.h)
 target_include_directories(downward PUBLIC "${PROJECT_BINARY_DIR}")
 
