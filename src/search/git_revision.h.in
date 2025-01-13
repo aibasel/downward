@@ -1,1 +1,2 @@
+#pragma once
 #define GIT_REVISION "@GIT_REVISION@"
