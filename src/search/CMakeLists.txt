@@ -48,12 +48,22 @@ add_executable(downward planner.cc)
 
 # write git SHA1 hash into a header file
 execute_process(
-  COMMAND git log -1 "--format=format:\"%H\"%n" HEAD
+  COMMAND git log -1 "--format=format:%H%n" HEAD
   OUTPUT_VARIABLE GIT_REVISION
   RESULT_VARIABLE GIT_REVISION_CODE
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
-if(NOT GIT_REVISION_CODE EQUAL 0)
+if(GIT_REVISION_CODE EQUAL 0)
+  execute_process(
+    COMMAND git diff-index --quiet HEAD
+    RESULT_VARIABLE GIT_DIFF_CODE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  if(NOT GIT_DIFF_CODE EQUAL 0)
+    message(WARNING "Building from a repository with uncommited changes.")
+    set(GIT_REVISION "${GIT_REVISION}-dirty")
+  endif()
+else()
     message(WARNING "Building from tarball. Using the release version as the build version string.")
     execute_process(
       COMMAND PYTHONPATH=../../ python -c "import driver ; print(driver.__version__)"
