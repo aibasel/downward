@@ -46,7 +46,7 @@ set_up_options()
 project(downward LANGUAGES CXX)
 add_executable(downward planner.cc)
 
-# write git SHA1 hash into a header file
+# obtain git SHA1 hash
 execute_process(
   COMMAND git log -1 "--format=format:%h%n" HEAD
   OUTPUT_VARIABLE GIT_REVISION
@@ -54,15 +54,47 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 if(GIT_REVISION_CODE EQUAL 0)
+
+  # obtain the nearest release tag in the commit log
+  execute_process(
+    COMMAND git describe --tags --abbrev=0 HEAD
+    OUTPUT_VARIABLE GIT_RELEASE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  # detect if the current commit is the release commit
+  execute_process(
+    COMMAND git tag --points-at HEAD
+    OUTPUT_VARIABLE GIT_HEAD_TAG         # empty if the HEAD does not have any tag
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  # detect uncommitted changes
   execute_process(
     COMMAND git diff-index --quiet HEAD
     RESULT_VARIABLE GIT_DIFF_CODE
     OUTPUT_STRIP_TRAILING_WHITESPACE
   )
-  if(NOT GIT_DIFF_CODE EQUAL 0)
-    message(WARNING "Building from a repository with uncommited changes.")
-    set(GIT_REVISION "${GIT_REVISION}-dirty")
+
+  if ("${GIT_HEAD_TAG}" STREQUAL "${GIT_RELEASE}")
+    message(NOTICE "Building from a release commit.")
+    if(NOT GIT_DIFF_CODE EQUAL 0)
+      message(WARNING "Building from a repository with uncommited changes.")
+      set(GIT_REVISION "${GIT_RELEASE}-dirty")
+   else()
+      set(GIT_REVISION "${GIT_RELEASE}")
+    endif()
+  else()
+    message(NOTICE "Building from a non-release commit.")
+    if(NOT GIT_DIFF_CODE EQUAL 0)
+      message(WARNING "Building from a repository with uncommited changes.")
+      set(GIT_REVISION "${GIT_REVISION}-dirty (based on ${GIT_RELEASE})")
+    else()
+      set(GIT_REVISION "${GIT_REVISION} (based on ${GIT_RELEASE})")
+    endif()
   endif()
+  message(NOTICE "revision string: \"${GIT_REVISION}\"")
+
 else()
     message(WARNING "Building from tarball. Using the release version as the build version string.")
     execute_process(
