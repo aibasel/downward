@@ -48,7 +48,7 @@ add_executable(downward planner.cc)
 
 # write git SHA1 hash into a header file
 execute_process(
-  COMMAND git log -1 "--format=format:%H%n" HEAD
+  COMMAND git log -1 "--format=format:%h%n" HEAD
   OUTPUT_VARIABLE GIT_REVISION
   RESULT_VARIABLE GIT_REVISION_CODE
   OUTPUT_STRIP_TRAILING_WHITESPACE
