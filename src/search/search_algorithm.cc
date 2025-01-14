@@ -77,6 +77,10 @@ SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts) // TODO options o
       statistics(log),
       cost_type(opts.get<OperatorCost>("cost_type")),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
+      min_gen(opts.get<double>("min_gen")),
+      min_eval(opts.get<double>("min_eval")),
+      min_exp(opts.get<double>("min_exp")),
+      min_time(opts.get<double>("min_time")),
       max_gen(opts.get<double>("max_gen")),
       max_eval(opts.get<double>("max_eval")),
       max_exp(opts.get<double>("max_exp")),
@@ -117,7 +121,29 @@ void SearchAlgorithm::search() {
     utils::g_log << "Max evaluations: " << max_eval << " states" << endl;
     utils::g_log << "Max expansions: " << max_exp << " states" << endl;
     utils::g_log << "Max generations: " << max_gen << " states" << endl;
+
+    // Implementing the default values for soft limits is a bit complicated because
+    // the default "unspecified" value requires a special treatment.
+    //
+    // Setting the default value to a small (e.g. negative) value which is always reached is wrong because
+    // the search stops immediately when no soft limits are given for exp/gen/eval/elapsed.
+    //
+    // Setting the default value to a large (e.g. infinity) value is also wrong,
+    // because such a limit is never reached even if all other *specified* soft limits are reached,
+    // making the search continue although it is supposed to stop.
+
+    bool use_soft_limit = (min_time > 0) || (min_gen > 0) || (min_eval > 0) || (min_exp > 0);
+    if (use_soft_limit){
+	utils::g_log << "Soft limits:" << endl;
+	utils::g_log << "Min runtime: " << min_time << " sec" << endl;
+	utils::g_log << "Min evaluations: " << min_eval << " states" << endl;
+	utils::g_log << "Min expansions: " << min_exp << " states" << endl;
+	utils::g_log << "Min generations: " << min_gen << " states" << endl;
+    }
+
     utils::CountdownTimer timer_max(max_time);
+    utils::CountdownTimer timer_min(min_time);
+
     while (status == IN_PROGRESS) {
         status = step();
         auto ex = statistics.get_expanded();
@@ -128,6 +154,16 @@ void SearchAlgorithm::search() {
             status = TIMEOUT;
             break;
         }
+	if (use_soft_limit) {	// note: without this, it stops immediately when all soft limits are 0
+	    if (   (min_time > 0 && timer_min.is_expired())
+		&& (min_gen  > 0 && gen >= min_gen )
+		&& (min_eval > 0 && ev  >= min_eval)
+		&& (min_exp  > 0 && ex  >= min_exp )) {
+		utils::g_log << "Soft limit: Spent all minimum required amount of computation. Aborting search." << endl;
+		status = TIMEOUT;
+		break;
+	    }
+	}
     }
     // TODO: Revise when and which search times are logged.
     log << "Actual search time: " << timer_max.get_elapsed_time() << endl;
@@ -215,6 +251,43 @@ void add_search_algorithm_options_to_feature(
         "max_exp",
         "maximum number of expanded states (measured by statistics.get_expanded()).",
         "infinity");
+    feature.add_option<double>(
+        "min_time",
+        "specifies a soft limit i.e. minimum time in seconds the search must run for. "
+	"The same accuracy statement as the one for max_time applies to this option. "
+	"\n"
+	"0 and negative values indicate that the soft limit is disabled. "
+	"\n"
+	"Soft limit addresses the limitation of hard limits (e.g. max_time) that one limit interferes another. "
+	"For example, when max_eval = 100k and max_time = 5 sec, "
+	"majority of runs are cut off before reaching 100k evaluations, "
+	"and the result is not an appropriate representation of running 100k evaluations. "
+	"To measure the evaluations and time separately, therefore one would run two separate experiments, "
+	"which is a waste of compute for instances solved by both. "
+	"Instead of running them separately, this option allows one to run the union of the two configurations "
+	"which can be later filtered to produce distinct tables/figures. "
+	"\n"
+	"Soft limit works as follows: "
+	"It continues the search until the solution is found, or if all soft limits are met. ",
+        "0");
+    feature.add_option<double>(
+        "min_eval",
+        "specifies a soft limit i.e. the minimum number of evaluated states (measured by statistics.get_evaluated_states())."
+	"\n"
+	"0 and negative values indicate that the soft limit is disabled. ",
+        "0");
+    feature.add_option<double>(
+        "min_gen",
+        "specifies a soft limit i.e. minimum number of generated states (measured by statistics.get_generated())."
+	"\n"
+	"0 and negative values indicate that the soft limit is disabled. ",
+        "0");
+    feature.add_option<double>(
+        "min_exp",
+        "specifies a soft limit i.e. minimum number of expanded states (measured by statistics.get_expanded())."
+	"\n"
+	"0 and negative values indicate that the soft limit is disabled. ",
+        "0");
     feature.add_option<string>(
         "description",
         "description used to identify search algorithm in logs",

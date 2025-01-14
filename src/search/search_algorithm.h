@@ -51,6 +51,10 @@ protected:
     int bound;
     OperatorCost cost_type;
     bool is_unit_cost;
+    double min_gen;
+    double min_eval;
+    double min_exp;
+    double min_time;
     double max_gen;
     double max_eval;
     double max_exp;
