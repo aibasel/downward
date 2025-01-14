@@ -40,7 +40,15 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
 }
 
 SearchAlgorithm::SearchAlgorithm(
-    OperatorCost cost_type, int bound, double max_time,
+    OperatorCost cost_type, int bound,
+    double min_gen,
+    double min_eval,
+    double min_exp,
+    double min_time,
+    double max_gen,
+    double max_eval,
+    double max_exp,
+    double max_time,
     const string &description, utils::Verbosity verbosity)
     : description(description),
       status(IN_PROGRESS),
@@ -55,6 +63,13 @@ SearchAlgorithm::SearchAlgorithm(
       bound(bound),
       cost_type(cost_type),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
+      min_gen(min_gen),
+      min_eval(min_eval),
+      min_exp(min_exp),
+      min_time(min_time),
+      max_gen(max_gen),
+      max_eval(max_eval),
+      max_exp(max_exp),
       max_time(max_time) {
     if (bound < 0) {
         cerr << "error: negative cost bound " << bound << endl;
@@ -295,13 +310,20 @@ void add_search_algorithm_options_to_feature(
     utils::add_log_options_to_feature(feature);
 }
 
-tuple<OperatorCost, int, double, string, utils::Verbosity>
+tuple<OperatorCost, int, double, double, double, double, double, double, double, double, string, utils::Verbosity>
 get_search_algorithm_arguments_from_options(
     const plugins::Options &opts) {
     return tuple_cat(
         ::get_cost_type_arguments_from_options(opts),
         make_tuple(
             opts.get<int>("bound"),
+            opts.get<double>("min_gen"),
+            opts.get<double>("min_eval"),
+            opts.get<double>("min_exp"),
+            opts.get<double>("min_time"),
+            opts.get<double>("max_gen"),
+            opts.get<double>("max_eval"),
+            opts.get<double>("max_exp"),
             opts.get<double>("max_time"),
             opts.get<string>("description")
             ),

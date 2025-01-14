@@ -25,10 +25,28 @@ EagerSearch::EagerSearch(
     const vector<shared_ptr<Evaluator>> &preferred,
     const shared_ptr<PruningMethod> &pruning,
     const shared_ptr<Evaluator> &lazy_evaluator, OperatorCost cost_type,
-    int bound, double max_time, const string &description,
+    int bound,
+    double min_gen,
+    double min_eval,
+    double min_exp,
+    double min_time,
+    double max_gen,
+    double max_eval,
+    double max_exp,
+    double max_time,
+    const string &description,
     utils::Verbosity verbosity)
     : SearchAlgorithm(
-          cost_type, bound, max_time, description, verbosity),
+          cost_type, bound,
+	  min_gen,
+	  min_eval,
+	  min_exp,
+	  min_time,
+	  max_gen,
+	  max_eval,
+	  max_exp,
+	  max_time,
+	  description, verbosity),
       reopen_closed_nodes(reopen_closed),
       open_list(open->create_state_open_list()),
       f_evaluator(f_eval),     // default nullptr
@@ -319,7 +337,9 @@ void add_eager_search_options_to_feature(
 }
 
 tuple<shared_ptr<PruningMethod>, shared_ptr<Evaluator>, OperatorCost,
-      int, double, string, utils::Verbosity>
+      int,
+      double, double, double, double, double, double, double, double,
+      string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         get_search_pruning_arguments_from_options(opts),
