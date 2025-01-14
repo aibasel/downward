@@ -77,6 +77,9 @@ SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts) // TODO options o
       statistics(log),
       cost_type(opts.get<OperatorCost>("cost_type")),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
+      max_gen(opts.get<double>("max_gen")),
+      max_eval(opts.get<double>("max_eval")),
+      max_exp(opts.get<double>("max_exp")),
       max_time(opts.get<double>("max_time")) {
     if (opts.get<int>("bound") < 0) {
         cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
@@ -109,17 +112,25 @@ void SearchAlgorithm::set_plan(const Plan &p) {
 
 void SearchAlgorithm::search() {
     initialize();
-    utils::CountdownTimer timer(max_time);
+    utils::g_log << "Hard limits:" << endl;
+    utils::g_log << "Max runtime: " << max_time << " sec" << endl;
+    utils::g_log << "Max evaluations: " << max_eval << " states" << endl;
+    utils::g_log << "Max expansions: " << max_exp << " states" << endl;
+    utils::g_log << "Max generations: " << max_gen << " states" << endl;
+    utils::CountdownTimer timer_max(max_time);
     while (status == IN_PROGRESS) {
         status = step();
-        if (timer.is_expired()) {
-            log << "Time limit reached. Abort search." << endl;
+        auto ex = statistics.get_expanded();
+        auto ev = statistics.get_evaluated_states();
+        auto gen = statistics.get_generated();
+        if (timer_max.is_expired() || (gen >= max_gen) || (ev >= max_eval) || (ex >= max_exp)) {
+            utils::g_log << "One of the hard limits is reached. Aborting search." << endl;
             status = TIMEOUT;
             break;
         }
     }
     // TODO: Revise when and which search times are logged.
-    log << "Actual search time: " << timer.get_elapsed_time() << endl;
+    log << "Actual search time: " << timer_max.get_elapsed_time() << endl;
 }
 
 bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {
@@ -191,6 +202,18 @@ void add_search_algorithm_options_to_feature(
         "longer. Therefore, this parameter should not be used for time-limiting "
         "experiments. Timed-out searches are treated as failed searches, "
         "just like incomplete search algorithms that exhaust their search space.",
+        "infinity");
+    feature.add_option<double>(
+        "max_eval",
+        "maximum number of evaluated states (measured by statistics.get_evaluated_states()).",
+        "infinity");
+    feature.add_option<double>(
+        "max_gen",
+        "maximum number of generated states (measured by statistics.get_generated()).",
+        "infinity");
+    feature.add_option<double>(
+        "max_exp",
+        "maximum number of expanded states (measured by statistics.get_expanded()).",
         "infinity");
     feature.add_option<string>(
         "description",

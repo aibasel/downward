@@ -51,6 +51,9 @@ protected:
     int bound;
     OperatorCost cost_type;
     bool is_unit_cost;
+    double max_gen;
+    double max_eval;
+    double max_exp;
     double max_time;
 
     virtual void initialize() {}
