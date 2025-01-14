@@ -15,15 +15,23 @@ GoalCountHeuristic::GoalCountHeuristic(
     if (log.is_at_least_normal()) {
         log << "Initializing goal count heuristic..." << endl;
     }
+    goals.reserve(task_proxy.get_goals().size());
+    for (FactProxy goal : task_proxy.get_goals()) {
+	int var = goal.get_variable().get_id();
+	int val = goal.get_value();
+	goals.push_back({var,val});
+    }
 }
 
 int GoalCountHeuristic::compute_heuristic(const State &ancestor_state) {
     State state = convert_ancestor_state(ancestor_state);
     int unsatisfied_goal_count = 0;
-
-    for (FactProxy goal : task_proxy.get_goals()) {
-        const VariableProxy var = goal.get_variable();
-        if (state[var] != goal) {
+    state.unpack();
+    const vector<int> &unpacked_state = state.get_unpacked_values();
+    for (const auto& it : goals) {
+	const int& var = it.first;
+	const int& val = it.second;
+        if (unpacked_state[var] != val) {
             ++unsatisfied_goal_count;
         }
     }
