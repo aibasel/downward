@@ -212,6 +212,15 @@ create_fast_downward_library(
 )
 
 create_fast_downward_library(
+    NAME LINEAR_WEIGHTED_OPEN_LIST
+    HELP "Open list that randomly selects h with a probability that is linearly interpolated between max/min h. (Kuroiwa and Beck, ICAPS2022)"
+    SOURCES
+        open_lists/linear_weighted_open_list
+        open_lists/linear_weighted_heap_open_list
+        open_lists/linear_weighted_type_based_open_list
+)
+
+create_fast_downward_library(
     NAME dynamic_bitset
     HELP "Poor man's version of boost::dynamic_bitset"
     SOURCES
