@@ -3,6 +3,7 @@
 #include "landmark.h"
 #include "landmark_factory.h"
 #include "landmark_status_manager.h"
+#include "util.h"
 
 #include "../plugins/plugin.h"
 #include "../task_utils/successor_generator.h"
@@ -117,6 +118,9 @@ void LandmarkHeuristic::compute_landmark_graph(
             << " are conjunctive." << endl;
         log << "Landmark graph contains " << lm_graph->get_num_edges()
             << " orderings." << endl;
+    }
+    if (log.is_at_least_debug()) {
+        dump_landmark_graph(task_proxy, *lm_graph, log);
     }
 }
 

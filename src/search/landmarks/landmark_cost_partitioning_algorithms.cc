@@ -7,6 +7,7 @@
 
 #include "../utils/collections.h"
 #include "../utils/language.h"
+#include "../utils/logging.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -62,6 +63,9 @@ double UniformCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
         if (future.test(id)) {
             const unordered_set<int> &achievers =
                 get_achievers(node->get_landmark(), past.test(id));
+            vector achiever_vector(achievers.begin(), achievers.end());
+            sort(achiever_vector.begin(), achiever_vector.end());
+            cout << "lm" << id << " achievers: " << achiever_vector << endl;
             if (achievers.empty())
                 return numeric_limits<double>::max();
             if (use_action_landmarks && achievers.size() == 1) {
@@ -218,6 +222,9 @@ double OptimalCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
         if (future.test(lm_id)) {
             const unordered_set<int> &achievers =
                 get_achievers(landmark, past.test(lm_id));
+            vector achiever_vector(achievers.begin(), achievers.end());
+            sort(achiever_vector.begin(), achiever_vector.end());
+            cout << "lm" << lm_id << " achievers: " << achiever_vector << endl;
             if (achievers.empty())
                 return numeric_limits<double>::max();
             for (int op_id : achievers) {
