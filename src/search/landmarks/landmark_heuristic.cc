@@ -145,8 +145,9 @@ void LandmarkHeuristic::precompute_for_preferred_operators() {
 bool LandmarkHeuristic::operator_is_preferred(
     const OperatorProxy &op, const State &state, ConstBitsetView &future) {
     for (EffectProxy effect : op.get_effects()) {
-        if (!does_fire(effect, state))
+        if (!does_fire(effect, state)) {
             continue;
+        }
         const FactPair fact_pair = effect.get_fact().get_pair();
         if (landmarks_achieved_by_fact.contains(fact_pair)) {
             for (const int id : landmarks_achieved_by_fact[fact_pair]) {
@@ -166,7 +167,7 @@ void LandmarkHeuristic::generate_preferred_operators(
     vector<OperatorID> applicable_operators;
     successor_generator->generate_applicable_ops(state, applicable_operators);
 
-    for (OperatorID op_id : applicable_operators) {
+    for (const OperatorID op_id : applicable_operators) {
         const OperatorProxy &op = task_proxy.get_operators()[op_id];
         if (operator_is_preferred(op, state, future)) {
             set_preferred(op);
