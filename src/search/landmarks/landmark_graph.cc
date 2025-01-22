@@ -28,21 +28,6 @@ LandmarkNode *LandmarkGraph::get_node(int i) const {
     return nodes[i].get();
 }
 
-LandmarkNode *LandmarkGraph::get_node(const FactPair &fact) const {
-    /* Return pointer to landmark node that corresponds to the given fact,
-       or nullptr if no such landmark exists. */
-    LandmarkNode *node_p = nullptr;
-    auto it = simple_landmarks_to_nodes.find(fact);
-    if (it != simple_landmarks_to_nodes.end())
-        node_p = it->second;
-    else {
-        auto it2 = disjunctive_landmarks_to_nodes.find(fact);
-        if (it2 != disjunctive_landmarks_to_nodes.end())
-            node_p = it2->second;
-    }
-    return node_p;
-}
-
 LandmarkNode &LandmarkGraph::get_simple_landmark(const FactPair &fact) const {
     assert(contains_simple_landmark(fact));
     return *(simple_landmarks_to_nodes.find(fact)->second);

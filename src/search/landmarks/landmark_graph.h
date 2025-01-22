@@ -110,8 +110,6 @@ public:
 
     // only needed by non-landmarkgraph-factories
     LandmarkNode *get_node(int index) const;
-    // only needed by non-landmarkgraph-factories
-    LandmarkNode *get_node(const FactPair &fact) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     LandmarkNode &get_simple_landmark(const FactPair &fact) const;
