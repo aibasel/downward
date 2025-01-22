@@ -38,10 +38,23 @@ vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
     return facts;
 }
 
-VarToValues get_prev_landmarks(const LandmarkGraph &graph, const FactPair &fact) {
+utils::HashMap<FactPair, LandmarkNode *> get_facts_to_landmarks_map(
+    const shared_ptr<LandmarkGraph> &graph) {
+    const LandmarkGraph::Nodes &nodes = graph->get_nodes();
+    // All landmarks are simple, i.e., each has exactly one fact.
+    assert(all_of(nodes.begin(), nodes.end(), [](auto &node) {
+            return node->get_landmark().facts.size() == 1;
+        }));
+    utils::HashMap<FactPair, landmarks::LandmarkNode *> fact_to_landmark_map;
+    for (auto &node : nodes) {
+        const FactPair &fact = node->get_landmark().facts[0];
+        fact_to_landmark_map[fact] = node.get();
+    }
+    return fact_to_landmark_map;
+}
+
+VarToValues get_prev_landmarks(const LandmarkNode *node) {
     VarToValues groups;
-    LandmarkNode *node = graph.get_node(fact);
-    assert(node);
     vector<const LandmarkNode *> open;
     unordered_set<const LandmarkNode *> closed;
     for (const auto &parent_and_edge : node->parents) {
