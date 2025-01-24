@@ -43,8 +43,8 @@ utils::HashMap<FactPair, LandmarkNode *> get_facts_to_landmarks_map(
     const LandmarkGraph::Nodes &nodes = graph->get_nodes();
     // All landmarks are simple, i.e., each has exactly one fact.
     assert(all_of(nodes.begin(), nodes.end(), [](auto &node) {
-            return node->get_landmark().facts.size() == 1;
-        }));
+                      return node->get_landmark().facts.size() == 1;
+                  }));
     utils::HashMap<FactPair, landmarks::LandmarkNode *> fact_to_landmark_map;
     for (auto &node : nodes) {
         const FactPair &fact = node->get_landmark().facts[0];
