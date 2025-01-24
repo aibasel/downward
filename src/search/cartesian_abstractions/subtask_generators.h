@@ -1,8 +1,6 @@
 #ifndef CARTESIAN_ABSTRACTIONS_SUBTASK_GENERATORS_H
 #define CARTESIAN_ABSTRACTIONS_SUBTASK_GENERATORS_H
 
-#include "../utils/hash.h"
-
 #include <memory>
 #include <vector>
 
@@ -10,7 +8,6 @@ class AbstractTask;
 struct FactPair;
 
 namespace landmarks {
-class LandmarkGraph;
 class LandmarkNode;
 }
 
