@@ -38,7 +38,7 @@ vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
     return facts;
 }
 
-utils::HashMap<FactPair, LandmarkNode *> get_facts_to_landmarks_map(
+utils::HashMap<FactPair, LandmarkNode *> get_fact_to_landmark_map(
     const shared_ptr<LandmarkGraph> &graph) {
     const LandmarkGraph::Nodes &nodes = graph->get_nodes();
     // All landmarks are simple, i.e., each has exactly one fact.

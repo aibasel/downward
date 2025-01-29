@@ -53,7 +53,7 @@ void LandmarkHeuristic::initialize(
     }
 
     if (use_preferred_operators) {
-        precompute_for_preferred_operators();
+        compute_landmarks_achieved_by_fact();
         /* Ideally, we should reuse the successor generator of the main
            task in cases where it's compatible. See issue564. */
         successor_generator =
@@ -120,7 +120,7 @@ void LandmarkHeuristic::compute_landmark_graph(
     }
 }
 
-void LandmarkHeuristic::precompute_for_preferred_operators() {
+void LandmarkHeuristic::compute_landmarks_achieved_by_fact() {
     for (const auto &node : lm_graph->get_nodes()) {
         const int id = node->get_id();
         const Landmark &lm = node->get_landmark();

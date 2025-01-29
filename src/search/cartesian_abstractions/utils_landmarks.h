@@ -1,7 +1,7 @@
 #ifndef CARTESIAN_ABSTRACTIONS_UTILS_LANDMARKS_H
 #define CARTESIAN_ABSTRACTIONS_UTILS_LANDMARKS_H
 
-#include "utils.h"
+#include "../utils/hash.h"
 
 #include <memory>
 #include <unordered_map>
@@ -23,13 +23,13 @@ extern std::shared_ptr<landmarks::LandmarkGraph> get_landmark_graph(
 extern std::vector<FactPair> get_fact_landmarks(
     const landmarks::LandmarkGraph &graph);
 
-extern utils::HashMap<FactPair, landmarks::LandmarkNode *> get_facts_to_landmarks_map(
+extern utils::HashMap<FactPair, landmarks::LandmarkNode *> get_fact_to_landmark_map(
     const std::shared_ptr<landmarks::LandmarkGraph> &graph);
 
 /*
   Do a breadth-first search through the landmark graph ignoring
   duplicates. Start at the given node and collect for each variable the
-  facts that have to be made true before the given fact can be true for
+  facts that have to be made true before the given node can be true for
   the first time.
 */
 extern VarToValues get_prev_landmarks(
