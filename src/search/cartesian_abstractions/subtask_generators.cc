@@ -9,6 +9,7 @@
 #include "../task_utils/task_properties.h"
 #include "../tasks/domain_abstracted_task_factory.h"
 #include "../tasks/modified_goals_task.h"
+#include "../utils/hash.h"
 #include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
