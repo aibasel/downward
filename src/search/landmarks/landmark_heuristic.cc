@@ -53,6 +53,7 @@ void LandmarkHeuristic::initialize(
     }
 
     if (use_preferred_operators) {
+        compute_landmarks_achieved_by_fact();
         /* Ideally, we should reuse the successor generator of the main
            task in cases where it's compatible. See issue564. */
         successor_generator =
@@ -119,29 +120,57 @@ void LandmarkHeuristic::compute_landmark_graph(
     }
 }
 
+void LandmarkHeuristic::compute_landmarks_achieved_by_fact() {
+    for (const auto &node : lm_graph->get_nodes()) {
+        const int id = node->get_id();
+        const Landmark &lm = node->get_landmark();
+        if (lm.conjunctive) {
+            /*
+              TODO: We currently have no way to declare operators preferred
+               based on conjunctive landmarks. We consider this a bug and want
+               to fix it in issue1072.
+            */
+            continue;
+        }
+        for (const auto &fact_pair : lm.facts) {
+            if (landmarks_achieved_by_fact.contains(fact_pair)) {
+                landmarks_achieved_by_fact[fact_pair].insert(id);
+            } else {
+                landmarks_achieved_by_fact[fact_pair] = {id};
+            }
+        }
+    }
+}
+
+bool LandmarkHeuristic::operator_is_preferred(
+    const OperatorProxy &op, const State &state, ConstBitsetView &future) {
+    for (EffectProxy effect : op.get_effects()) {
+        if (!does_fire(effect, state)) {
+            continue;
+        }
+        const FactPair fact_pair = effect.get_fact().get_pair();
+        if (landmarks_achieved_by_fact.contains(fact_pair)) {
+            for (const int id : landmarks_achieved_by_fact[fact_pair]) {
+                if (future.test(id)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 void LandmarkHeuristic::generate_preferred_operators(
     const State &state, ConstBitsetView &future) {
-    /*
-      Find operators that achieve future landmarks.
-      TODO: Conjunctive landmarks are ignored in *lm_graph->get_node(...)*, so
-       they are ignored when computing preferred operators. We consider this
-       a bug and want to fix it in issue1072.
-    */
+    // Find operators that achieve future landmarks.
     assert(successor_generator);
     vector<OperatorID> applicable_operators;
     successor_generator->generate_applicable_ops(state, applicable_operators);
 
-    for (OperatorID op_id : applicable_operators) {
-        OperatorProxy op = task_proxy.get_operators()[op_id];
-        EffectsProxy effects = op.get_effects();
-        for (EffectProxy effect : effects) {
-            if (!does_fire(effect, state))
-                continue;
-            FactProxy fact_proxy = effect.get_fact();
-            LandmarkNode *lm_node = lm_graph->get_node(fact_proxy.get_pair());
-            if (lm_node && future.test(lm_node->get_id())) {
-                set_preferred(op);
-            }
+    for (const OperatorID op_id : applicable_operators) {
+        const OperatorProxy &op = task_proxy.get_operators()[op_id];
+        if (operator_is_preferred(op, state, future)) {
+            set_preferred(op);
         }
     }
 }
