@@ -2,8 +2,6 @@
 
 #include "factored_transition_system.h"
 #include "merge_selector.h"
-#include "merge_tree.h"
-#include "merge_tree_factory.h"
 #include "transition_system.h"
 
 #include <algorithm>
@@ -16,71 +14,84 @@ namespace merge_and_shrink {
 MergeStrategySCCs::MergeStrategySCCs(
     const FactoredTransitionSystem &fts,
     const shared_ptr<MergeSelector> &merge_selector,
-    vector<vector<int>> &&non_singleton_cg_sccs)
+    vector<vector<int>> &&unfinished_clusters,
+    bool allow_working_on_all_clusters)
     : MergeStrategy(fts),
       merge_selector(merge_selector),
-      non_singleton_cg_sccs(move(non_singleton_cg_sccs)) {
+      unfinished_clusters(move(unfinished_clusters)),
+      allow_working_on_all_clusters(allow_working_on_all_clusters) {
 }
 
 MergeStrategySCCs::~MergeStrategySCCs() {
 }
 
-pair<int, int> MergeStrategySCCs::get_next() {
-    if (current_ts_indices.empty()) {
-        /*
-          We are currently not dealing with merging all factors of an SCC, so
-          we need to either get the next one or allow merging any existing
-          factors of the FTS if there is no SCC left.
-        */
-        if (non_singleton_cg_sccs.empty()) {
-            // We are done dealing with all SCCs, allow merging any factors.
-            current_ts_indices.reserve(fts.get_num_active_entries());
-            for (int ts_index : fts) {
-                current_ts_indices.push_back(ts_index);
-            }
-        } else {
-            /*
-              There is another SCC we have to deal with. Store its factors so
-              that we merge them over the next iterations.
-            */
-            vector<int> &current_scc = non_singleton_cg_sccs.front();
-            assert(current_scc.size() > 1);
-            current_ts_indices = move(current_scc);
-            non_singleton_cg_sccs.erase(non_singleton_cg_sccs.begin());
-        }
-    } else {
-        // Add the most recent product to the current index set.
-        current_ts_indices.push_back(fts.get_size() - 1);
-    }
-
-    // Compute all merge candidates for the current set of indices.
-    vector<pair<int, int>> merge_candidates;
-    merge_candidates.reserve(
-        (current_ts_indices.size() * (current_ts_indices.size() - 1)) / 2);
-    assert(current_ts_indices.size() > 1);
-    for (size_t i = 0; i < current_ts_indices.size(); ++i) {
-        int ts_index1 = current_ts_indices[i];
-        assert(fts.is_active(ts_index1));
-        for (size_t j = i + 1; j < current_ts_indices.size(); ++j) {
-            int ts_index2 = current_ts_indices[j];
-            assert(fts.is_active(ts_index2));
+static void compute_merge_candidates(
+    const vector<int> &indices,
+    vector<pair<int, int>> &merge_candidates) {
+    for (size_t i = 0; i < indices.size(); ++i) {
+        int ts_index1 = indices[i];
+        for (size_t j = i + 1; j < indices.size(); ++j) {
+            int ts_index2 = indices[j];
             merge_candidates.emplace_back(ts_index1, ts_index2);
         }
     }
+}
 
-    // Select the next merge for the current set of indices.
-    pair<int, int> next_pair = merge_selector->select_merge_from_candidates(
-        fts, move(merge_candidates));
-
-    // Remove the two merged indices from the current index set.
-    for (vector<int>::iterator it = current_ts_indices.begin();
-         it != current_ts_indices.end();) {
-        if (*it == next_pair.first || *it == next_pair.second) {
-            it = current_ts_indices.erase(it);
+pair<int, int> MergeStrategySCCs::get_next() {
+    if (unfinished_clusters.empty()) {
+        // We merged all clusters.
+        return merge_selector->select_merge(fts);
+    } else {
+        // There are clusters we still have to deal with.
+        vector<pair<int, int>> merge_candidates;
+        vector<int> factor_to_cluster;
+        if (allow_working_on_all_clusters) {
+            // Compute merge candidate pairs for each cluster.
+            factor_to_cluster.resize(fts.get_size(), -1);
+            for (size_t cluster_index = 0; cluster_index < unfinished_clusters.size(); ++cluster_index) {
+                const vector<int> &cluster = unfinished_clusters[cluster_index];
+                for (int factor : cluster) {
+                    factor_to_cluster[factor] = cluster_index;
+                }
+                compute_merge_candidates(cluster, merge_candidates);
+            }
         } else {
-            ++it;
+            // Deal with first cluster.
+            vector<int> &cluster = unfinished_clusters.front();
+            compute_merge_candidates(cluster, merge_candidates);
         }
+        // Select the next merge from the allowed merge candidates.
+        pair<int, int > next_pair = merge_selector->select_merge_from_candidates(
+            fts, move(merge_candidates));
+
+        // Get the cluster from which we selected the next merge.
+        int affected_cluster_index;
+        if (allow_working_on_all_clusters) {
+            affected_cluster_index = factor_to_cluster[next_pair.first];
+            assert(affected_cluster_index == factor_to_cluster[next_pair.second]);
+        } else {
+            affected_cluster_index = 0;
+        }
+
+        // Remove the two merged indices from that cluster.
+        vector<int> &affected_cluster = unfinished_clusters[affected_cluster_index];
+        for (vector<int>::iterator it = affected_cluster.begin();
+             it != affected_cluster.end();) {
+            if (*it == next_pair.first || *it == next_pair.second) {
+                it = affected_cluster.erase(it);
+                } else {
+                ++it;
+            }
+        }
+
+        if (affected_cluster.empty()) {
+            // If the cluster got empty, remove it.
+            unfinished_clusters.erase(unfinished_clusters.begin() + affected_cluster_index);
+        } else {
+            // Otherwise, add the index of the to-be-created product factor.
+            affected_cluster.push_back(fts.get_size());
+        }
+        return next_pair;
     }
-    return next_pair;
 }
 }
