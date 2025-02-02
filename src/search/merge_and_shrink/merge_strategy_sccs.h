@@ -6,12 +6,9 @@
 #include <memory>
 #include <vector>
 
-class TaskProxy;
-
 namespace merge_and_shrink {
 class MergeSelector;
 class MergeStrategySCCs : public MergeStrategy {
-    const TaskProxy &task_proxy;
     std::shared_ptr<MergeSelector> merge_selector;
     std::vector<std::vector<int>> non_singleton_cg_sccs;
 

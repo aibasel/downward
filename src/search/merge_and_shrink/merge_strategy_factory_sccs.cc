@@ -175,13 +175,6 @@ public:
     virtual shared_ptr<MergeStrategyFactorySCCs> create_component(
         const plugins::Options &opts,
         const utils::Context &context) const override {
-        bool merge_tree = opts.contains("merge_tree");
-        bool merge_selector = opts.contains("merge_selector");
-        if ((merge_tree && merge_selector) || (!merge_tree && !merge_selector)) {
-            context.error(
-                "You have to specify exactly one of the options merge_tree "
-                "and merge_selector!");
-        }
         return plugins::make_shared_from_arg_tuples<MergeStrategyFactorySCCs>(
             opts.get<OrderOfSCCs>("order_of_sccs"),
             opts.get<shared_ptr<MergeSelector>> (
