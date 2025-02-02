@@ -15,11 +15,9 @@ using namespace std;
 namespace merge_and_shrink {
 MergeStrategySCCs::MergeStrategySCCs(
     const FactoredTransitionSystem &fts,
-    const TaskProxy &task_proxy,
     const shared_ptr<MergeSelector> &merge_selector,
     vector<vector<int>> &&non_singleton_cg_sccs)
     : MergeStrategy(fts),
-      task_proxy(task_proxy),
       merge_selector(merge_selector),
       non_singleton_cg_sccs(move(non_singleton_cg_sccs)) {
 }

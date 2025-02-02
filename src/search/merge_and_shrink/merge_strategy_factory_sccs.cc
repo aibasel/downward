@@ -97,7 +97,6 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
 
     return utils::make_unique_ptr<MergeStrategySCCs>(
         fts,
-        task_proxy,
         merge_selector,
         move(non_singleton_cg_sccs));
 }
@@ -174,11 +173,10 @@ public:
 
     virtual shared_ptr<MergeStrategyFactorySCCs> create_component(
         const plugins::Options &opts,
-        const utils::Context &context) const override {
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<MergeStrategyFactorySCCs>(
             opts.get<OrderOfSCCs>("order_of_sccs"),
-            opts.get<shared_ptr<MergeSelector>> (
-                "merge_selector", nullptr),
+            opts.get<shared_ptr<MergeSelector>> ("merge_selector"),
             get_merge_strategy_arguments_from_options(opts)
             );
     }

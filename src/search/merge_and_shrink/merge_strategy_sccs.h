@@ -16,7 +16,6 @@ class MergeStrategySCCs : public MergeStrategy {
 public:
     MergeStrategySCCs(
         const FactoredTransitionSystem &fts,
-        const TaskProxy &task_proxy,
         const std::shared_ptr<MergeSelector> &merge_selector,
         std::vector<std::vector<int>> &&non_singleton_cg_sccs);
     virtual ~MergeStrategySCCs() override;
