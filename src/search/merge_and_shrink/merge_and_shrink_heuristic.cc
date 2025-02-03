@@ -241,7 +241,6 @@ public:
         const plugins::Options &opts,
         const utils::Context &) const override {
         plugins::Options options_copy(opts);
-
         return plugins::make_shared_from_arg_tuples<MergeAndShrinkHeuristic>(
             get_merge_and_shrink_algorithm_arguments_from_options(options_copy),
             get_heuristic_arguments_from_options(options_copy)
