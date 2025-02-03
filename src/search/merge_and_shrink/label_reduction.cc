@@ -345,7 +345,7 @@ public:
         bool lr_before_shrinking = opts.get<bool>("before_shrinking");
         bool lr_before_merging = opts.get<bool>("before_merging");
         if (!lr_before_shrinking && !lr_before_merging) {
-            context.error(
+            context.error( // TODO316
                 "Please turn on at least one of the options "
                 "before_shrinking or before_merging!");
         }

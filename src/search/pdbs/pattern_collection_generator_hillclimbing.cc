@@ -617,7 +617,7 @@ public:
     virtual shared_ptr<PatternCollectionGeneratorHillclimbing>
     create_component(const plugins::Options &opts,
                      const utils::Context &context) const override {
-        check_hillclimbing_options(opts, context);
+        check_hillclimbing_options(opts, context); // TODO316
         return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorHillclimbing>(
             get_hillclimbing_arguments_from_options(opts),
             get_generator_arguments_from_options(opts)

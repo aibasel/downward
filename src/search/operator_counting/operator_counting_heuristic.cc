@@ -119,7 +119,7 @@ public:
     virtual shared_ptr<OperatorCountingHeuristic> create_component(
         const plugins::Options &opts,
         const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<ConstraintGenerator>>(
+        plugins::verify_list_non_empty<shared_ptr<ConstraintGenerator>>( // TODO316
             context, opts, "constraint_generators");
         return plugins::make_shared_from_arg_tuples<OperatorCountingHeuristic>(
             opts.get_list<shared_ptr<ConstraintGenerator>>(

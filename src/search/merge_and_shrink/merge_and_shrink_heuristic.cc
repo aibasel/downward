@@ -241,7 +241,7 @@ public:
         const plugins::Options &opts,
         const utils::Context &context) const override {
         plugins::Options options_copy(opts);
-        handle_shrink_limit_options_defaults(options_copy, context);
+        handle_shrink_limit_options_defaults(options_copy, context); // TODO316
 
         return plugins::make_shared_from_arg_tuples<MergeAndShrinkHeuristic>(
             get_merge_and_shrink_algorithm_arguments_from_options(options_copy),

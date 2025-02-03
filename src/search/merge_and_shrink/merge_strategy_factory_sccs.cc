@@ -201,7 +201,7 @@ public:
         bool merge_tree = opts.contains("merge_tree");
         bool merge_selector = opts.contains("merge_selector");
         if ((merge_tree && merge_selector) || (!merge_tree && !merge_selector)) {
-            context.error(
+            context.error( // TODO316
                 "You have to specify exactly one of the options merge_tree "
                 "and merge_selector!");
         }

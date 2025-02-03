@@ -171,7 +171,7 @@ public:
     virtual shared_ptr<LandmarkFactoryMerged> create_component(
         const plugins::Options &opts,
         const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<LandmarkFactory>>(
+        plugins::verify_list_non_empty<shared_ptr<LandmarkFactory>>( // TODO316
             context, opts, "lm_factories");
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryMerged>(
             opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories"),

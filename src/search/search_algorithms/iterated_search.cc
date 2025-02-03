@@ -198,7 +198,7 @@ public:
         vector<parser::LazyValue> algorithm_configs =
             options.get<parser::LazyValue>("algorithm_configs").construct_lazy_list();
         options_copy.set("algorithm_configs", algorithm_configs);
-        plugins::verify_list_non_empty<parser::LazyValue>(context, options_copy, "algorithm_configs");
+        plugins::verify_list_non_empty<parser::LazyValue>(context, options_copy, "algorithm_configs"); // TODO316
         return make_shared<IteratedSearch>(options_copy);
     }
 };
