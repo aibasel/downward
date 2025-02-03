@@ -668,7 +668,7 @@ public:
     virtual shared_ptr<CanonicalPDBsHeuristic> create_component(
         const plugins::Options &opts,
         const utils::Context &context) const override {
-        check_hillclimbing_options(opts, context);
+        check_hillclimbing_options(opts, context); // TODO316
 
         shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =
             plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorHillclimbing>(

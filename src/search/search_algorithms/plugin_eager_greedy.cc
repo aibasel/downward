@@ -65,7 +65,7 @@ public:
     virtual shared_ptr<eager_search::EagerSearch> create_component(
         const plugins::Options &opts,
         const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(
+        plugins::verify_list_non_empty<shared_ptr<Evaluator>>( // TODO316
             context, opts, "evals");
 
         return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
