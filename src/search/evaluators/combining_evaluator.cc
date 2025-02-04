@@ -15,7 +15,6 @@ CombiningEvaluator::CombiningEvaluator(
     : Evaluator(false, false, false, description, verbosity),
       subevaluators(evals) {
     utils::verify_list_not_empty(evals, "evals");
-
     all_dead_ends_are_reliable = true;
     for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
         if (!subevaluator->dead_ends_are_reliable())
