@@ -6,6 +6,7 @@
 #include "plugin_info.h"
 #include "raw_registry.h"
 
+#include "../utils/component_errors.h"
 #include "../utils/strings.h"
 #include "../utils/system.h"
 #include "../utils/tuples.h"
@@ -111,8 +112,12 @@ public:
     }
 
     Any construct(const Options &options, const utils::Context &context) const override {
-        std::shared_ptr<Base> ptr = this->create_component(options, context);
-        return Any(ptr);
+        try {
+            std::shared_ptr<Base> ptr = this->create_component(options, context);
+            return Any(ptr);
+        } catch (const utils::ComponentArgumentError &e) {
+            context.error(e.get_message());
+        }
     }
 };
 

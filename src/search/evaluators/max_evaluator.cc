@@ -36,16 +36,10 @@ public:
 
     virtual shared_ptr<MaxEvaluator> create_component(
         const plugins::Options &opts,
-        const utils::Context &context) const override {
-        shared_ptr<MaxEvaluator> result;
-        try {
-            result = plugins::make_shared_from_arg_tuples<MaxEvaluator>(
+        const utils::Context &) const override {
+        return plugins::make_shared_from_arg_tuples<MaxEvaluator>(
                 combining_evaluator::get_combining_evaluator_arguments_from_options(
                     opts));
-        } catch (const utils::Exception &error) {
-            context.error(error.get_message());
-        }
-        return result;
     }
 };
 
