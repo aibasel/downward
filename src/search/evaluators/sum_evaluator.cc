@@ -38,11 +38,15 @@ public:
     virtual shared_ptr<SumEvaluator> create_component(
         const plugins::Options &opts,
         const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<Evaluator>>( // TODO316
-            context, opts, "evals");
-        return plugins::make_shared_from_arg_tuples<SumEvaluator>(
-            combining_evaluator::get_combining_evaluator_arguments_from_options(
-                opts));
+        shared_ptr<SumEvaluator> result;
+        try {
+            result = plugins::make_shared_from_arg_tuples<SumEvaluator>(
+                combining_evaluator::get_combining_evaluator_arguments_from_options(
+                    opts));
+        } catch (const utils::Exception &error) {
+            context.error(error.get_message());
+        }
+        return result;
     }
 };
 
