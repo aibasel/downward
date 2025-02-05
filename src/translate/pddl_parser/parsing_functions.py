@@ -380,9 +380,7 @@ def parse_effect(context, alist, type_dict, predicate_dict):
     if tag == "and":
         effects = []
         for eff in alist[1:]:
-            if not isinstance(eff, list):
-                context.error("All sub-effects of a conjunction have to be blocks.",
-                              eff)
+            check_list(context, eff, "Each sub-effect of a conjunction")
             effects.append(parse_effect(context, eff, type_dict, predicate_dict))
         return pddl.ConjunctiveEffect(effects)
     elif tag == "forall":
@@ -398,10 +396,7 @@ def parse_effect(context, alist, type_dict, predicate_dict):
         if len(alist) != 3:
             context.error("'when' effect expects exactly two arguments.",
                           syntax=SYNTAX_EFFECT_WHEN)
-        if not isinstance(alist[1], list):
-            context.error(
-                "First argument (CONDITION) of 'when' is expected to be a block",
-                alist[1], syntax=SYNTAX_EFFECT_WHEN)
+        check_list(context, alist[1], "First argument (CONDITION) of 'when'", syntax=SYNTAX_EFFECT_WHEN)
         condition = parse_condition(context, alist[1], type_dict, predicate_dict)
         check_list(context, alist[2], "Second argument (EFFECT) of 'when'", syntax=SYNTAX_EFFECT_WHEN)
         effect = parse_effect(context, alist[2], type_dict, predicate_dict)
