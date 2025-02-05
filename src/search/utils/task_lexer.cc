@@ -38,8 +38,9 @@ void TaskLexer::initialize_tokens(const Context &context) {
         istringstream stream(line.value());
         string word;
         while (!stream.eof()) {
-            stream >> word;
-            tokens.push_back(word);
+            if (stream >> word) { // ignore additional whitespace
+                tokens.push_back(word);
+            }
         }
         assert(tokens.size() > 0);
         tokens.push_back(end_of_line_sentinel);
@@ -94,8 +95,8 @@ void TaskLexer::confirm_end_of_line(const Context &context) {
         tokens.clear();
     } else {
         context.error("Expected end of line after token "
-                      + to_string(token_number) + " but line contains "
-                      + to_string(tokens.size()) + " tokens.");
+                      + to_string(token_number - 1) + " but line contains "
+                      + to_string(tokens.size() - 1) + " tokens.");
     }
 }
 
