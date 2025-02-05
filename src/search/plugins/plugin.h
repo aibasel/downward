@@ -112,12 +112,13 @@ public:
     }
 
     Any construct(const Options &options, const utils::Context &context) const override {
+        std::shared_ptr<Base> ptr;
         try {
-            std::shared_ptr<Base> ptr = this->create_component(options, context);
-            return Any(ptr);
+            ptr = this->create_component(options, context);
         } catch (const utils::ComponentArgumentError &e) {
             context.error(e.get_message());
         }
+        return Any(ptr);
     }
 };
 
