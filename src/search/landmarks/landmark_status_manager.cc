@@ -6,9 +6,9 @@
 using namespace std;
 
 namespace landmarks {
-static vector<LandmarkNode *> get_goal_landmarks(const LandmarkGraph &graph) {
-    vector<LandmarkNode *> goals;
-    for (auto &node : graph.get_nodes()) {
+static vector<const LandmarkNode *> get_goal_landmarks(const LandmarkGraph &graph) {
+    vector<const LandmarkNode *> goals;
+    for (const auto &node : graph) {
         if (node->get_landmark().is_true_in_goal) {
             goals.push_back(node.get());
         }
@@ -16,12 +16,12 @@ static vector<LandmarkNode *> get_goal_landmarks(const LandmarkGraph &graph) {
     return goals;
 }
 
-static vector<pair<LandmarkNode *, vector<LandmarkNode *>>> get_greedy_necessary_children(
+static vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> get_greedy_necessary_children(
     const LandmarkGraph &graph) {
-    vector<pair<LandmarkNode *, vector<LandmarkNode *>>> orderings;
-    for (auto &node : graph.get_nodes()) {
-        vector<LandmarkNode *> greedy_necessary_children;
-        for (auto &child : node->children) {
+    vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> orderings;
+    for (const auto &node : graph) {
+        vector<const LandmarkNode *> greedy_necessary_children;
+        for (const auto &child : node->children) {
             if (child.second == EdgeType::GREEDY_NECESSARY) {
                 greedy_necessary_children.push_back(child.first);
             }
@@ -33,12 +33,12 @@ static vector<pair<LandmarkNode *, vector<LandmarkNode *>>> get_greedy_necessary
     return orderings;
 }
 
-static vector<pair<LandmarkNode *, vector<LandmarkNode *>>> get_reasonable_parents(
+static vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> get_reasonable_parents(
     const LandmarkGraph &graph) {
-    vector<pair<LandmarkNode *, vector<LandmarkNode *>>> orderings;
-    for (auto &node : graph.get_nodes()) {
-        vector<LandmarkNode *> reasonable_parents;
-        for (auto &parent : node->parents) {
+    vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> orderings;
+    for (const auto &node : graph) {
+        vector<const LandmarkNode *> reasonable_parents;
+        for (const auto &parent : node->parents) {
             if (parent.second == EdgeType::REASONABLE) {
                 reasonable_parents.push_back(parent.first);
             }
@@ -57,15 +57,15 @@ LandmarkStatusManager::LandmarkStatusManager(
     bool progress_reasonable_orderings)
     : lm_graph(graph),
       goal_landmarks(progress_goals ? get_goal_landmarks(graph)
-                     : vector<LandmarkNode *>{}),
+                     : vector<const LandmarkNode *>{}),
       greedy_necessary_children(
           progress_greedy_necessary_orderings
           ? get_greedy_necessary_children(graph)
-          : vector<pair<LandmarkNode *, vector<LandmarkNode *>>>{}),
+          : vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>>{}),
       reasonable_parents(
           progress_reasonable_orderings
           ? get_reasonable_parents(graph)
-          : vector<pair<LandmarkNode *, vector<LandmarkNode *>>>{}),
+          : vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>>{}),
       /* We initialize to true in *past_landmarks* because true is the
          neutral element of conjunction/set intersection. */
       past_landmarks(vector<bool>(graph.get_num_landmarks(), true)),
@@ -94,7 +94,7 @@ void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
     BitsetView past = get_past_landmarks(initial_state);
     BitsetView future = get_future_landmarks(initial_state);
 
-    for (auto &node : lm_graph.get_nodes()) {
+    for (const auto &node : lm_graph) {
         int id = node->get_id();
         const Landmark &lm = node->get_landmark();
         if (lm.is_true_in_state(initial_state)) {
@@ -156,7 +156,7 @@ void LandmarkStatusManager::progress_landmarks(
     ConstBitsetView &parent_past, ConstBitsetView &parent_future,
     const State &parent_ancestor_state, BitsetView &past,
     BitsetView &future, const State &ancestor_state) {
-    for (auto &node : lm_graph.get_nodes()) {
+    for (const auto &node : lm_graph) {
         int id = node->get_id();
         const Landmark &lm = node->get_landmark();
         if (parent_future.test(id)) {

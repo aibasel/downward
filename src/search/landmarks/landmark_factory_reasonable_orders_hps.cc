@@ -47,15 +47,15 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
     */
     State initial_state = task_proxy.get_initial_state();
     int variables_size = task_proxy.get_variables().size();
-    for (auto &node_p : lm_graph->get_nodes()) {
+    for (const auto &node_p : *lm_graph) {
         const Landmark &landmark = node_p->get_landmark();
-        if (landmark.disjunctive)
+        if (landmark.is_disjunctive)
             continue;
 
         if (landmark.is_true_in_goal) {
-            for (auto &node2_p : lm_graph->get_nodes()) {
+            for (const auto &node2_p : *lm_graph) {
                 const Landmark &landmark2 = node2_p->get_landmark();
-                if (landmark == landmark2 || landmark2.disjunctive)
+                if (landmark == landmark2 || landmark2.is_disjunctive)
                     continue;
                 if (interferes(task_proxy, landmark2, landmark)) {
                     edge_add(*node2_p, *node_p, EdgeType::REASONABLE);
@@ -72,7 +72,7 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
                     for (const auto &p : node2_p.parents) {   // find parent
                         LandmarkNode &parent_node = *(p.first);
                         const EdgeType &edge = p.second;
-                        if (parent_node.get_landmark().disjunctive)
+                        if (parent_node.get_landmark().is_disjunctive)
                             continue;
                         if (edge >= EdgeType::NATURAL && &parent_node != node_p.get()) {
                             // find predecessors or parent and collect in "interesting nodes"
@@ -86,7 +86,7 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
             // with node_p.
             for (LandmarkNode *node2_p : interesting_nodes) {
                 const Landmark &landmark2 = node2_p->get_landmark();
-                if (landmark == landmark2 || landmark2.disjunctive)
+                if (landmark == landmark2 || landmark2.is_disjunctive)
                     continue;
                 if (interferes(task_proxy, landmark2, landmark)) {
                     edge_add(*node2_p, *node_p, EdgeType::REASONABLE);
@@ -109,7 +109,7 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
      is the same as 2.
      */
     assert(landmark_a != landmark_b);
-    assert(!landmark_a.disjunctive && !landmark_b.disjunctive);
+    assert(!landmark_a.is_disjunctive && !landmark_b.is_disjunctive);
 
     VariablesProxy variables = task_proxy.get_variables();
     for (const FactPair &lm_fact_b : landmark_b.facts) {
@@ -117,7 +117,7 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
         for (const FactPair &lm_fact_a : landmark_a.facts) {
             FactProxy fact_a = variables[lm_fact_a.var].get_fact(lm_fact_a.value);
             if (lm_fact_a == lm_fact_b) {
-                if (!landmark_a.conjunctive || !landmark_b.conjunctive)
+                if (!landmark_a.is_conjunctive || !landmark_b.is_conjunctive)
                     return false;
                 else
                     continue;
@@ -130,7 +130,7 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
             // 2. Shared effect e in all operators reaching a, and e, b are mutex
             // Skip this for conjunctive nodes a, as they are typically achieved through a
             // sequence of operators successively adding the parts of a
-            if (landmark_a.conjunctive)
+            if (landmark_a.is_conjunctive)
                 continue;
 
             unordered_map<int, int> shared_eff;

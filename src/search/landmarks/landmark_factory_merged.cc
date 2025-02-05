@@ -21,19 +21,19 @@ LandmarkFactoryMerged::LandmarkFactoryMerged(
 }
 
 LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const Landmark &landmark) const {
-    if (!landmark.disjunctive && !landmark.conjunctive) {
+    if (!landmark.is_disjunctive && !landmark.is_conjunctive) {
         const FactPair &lm_fact = landmark.facts[0];
         if (lm_graph->contains_simple_landmark(lm_fact))
             return &lm_graph->get_simple_landmark(lm_fact);
         else
             return nullptr;
-    } else if (landmark.disjunctive) {
+    } else if (landmark.is_disjunctive) {
         set<FactPair> lm_facts(landmark.facts.begin(), landmark.facts.end());
         if (lm_graph->contains_identical_disjunctive_landmark(lm_facts))
             return &lm_graph->get_disjunctive_landmark(landmark.facts[0]);
         else
             return nullptr;
-    } else if (landmark.conjunctive) {
+    } else if (landmark.is_conjunctive) {
         cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
         utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
@@ -58,14 +58,13 @@ void LandmarkFactoryMerged::generate_landmarks(
         log << "Adding simple landmarks" << endl;
     }
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
-        const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
         // TODO: loop over landmarks instead
-        for (auto &lm_node : nodes) {
+        for (const auto &lm_node : *lm_graphs[i]) {
             const Landmark &landmark = lm_node->get_landmark();
-            if (landmark.conjunctive) {
+            if (landmark.is_conjunctive) {
                 cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
                 utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
-            } else if (landmark.disjunctive) {
+            } else if (landmark.is_disjunctive) {
                 continue;
             } else if (!lm_graph->contains_landmark(landmark.facts[0])) {
                 Landmark copy(landmark);
@@ -78,10 +77,9 @@ void LandmarkFactoryMerged::generate_landmarks(
         log << "Adding disjunctive landmarks" << endl;
     }
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
-        const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
-        for (auto &lm_node : nodes) {
+        for (const auto &lm_node : *lm_graphs[i]) {
             const Landmark &landmark = lm_node->get_landmark();
-            if (landmark.disjunctive) {
+            if (landmark.is_disjunctive) {
 /*
   TODO: It seems that disjunctive landmarks are only added if none of the
    facts it is made of is also there as a simple landmark. This should
@@ -104,8 +102,7 @@ void LandmarkFactoryMerged::generate_landmarks(
         log << "Adding orderings" << endl;
     }
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
-        const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
-        for (auto &from_orig : nodes) {
+        for (const auto &from_orig : *lm_graphs[i]) {
             LandmarkNode *from = get_matching_landmark(from_orig->get_landmark());
             if (from) {
                 for (const auto &to : from_orig->children) {

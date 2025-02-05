@@ -66,7 +66,7 @@ bool LandmarkHeuristic::landmark_graph_has_cycle_of_natural_orderings() {
     int num_landmarks = lm_graph->get_num_landmarks();
     vector<bool> closed(num_landmarks, false);
     vector<bool> visited(num_landmarks, false);
-    for (auto &node : lm_graph->get_nodes()) {
+    for (const auto &node : *lm_graph) {
         if (depth_first_search_for_cycle_of_natural_orderings(
                 *node, closed, visited)) {
             return true;
@@ -121,10 +121,10 @@ void LandmarkHeuristic::compute_landmark_graph(
 }
 
 void LandmarkHeuristic::compute_landmarks_achieved_by_fact() {
-    for (const auto &node : lm_graph->get_nodes()) {
+    for (const auto &node : *lm_graph) {
         const int id = node->get_id();
         const Landmark &lm = node->get_landmark();
-        if (lm.conjunctive) {
+        if (lm.is_conjunctive) {
             /*
               TODO: We currently have no way to declare operators preferred
                based on conjunctive landmarks. We consider this a bug and want

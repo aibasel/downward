@@ -93,9 +93,9 @@ static void dump_node(
         const Landmark &landmark = node.get_landmark();
         for (FactPair fact : landmark.facts) {
             if (!first) {
-                if (landmark.disjunctive) {
+                if (landmark.is_disjunctive) {
                     cout << " | ";
-                } else if (landmark.conjunctive) {
+                } else if (landmark.is_conjunctive) {
                     cout << " & ";
                 }
             }
@@ -143,7 +143,7 @@ void dump_landmark_graph(
         log << "Dumping landmark graph: " << endl;
 
         cout << "digraph G {\n";
-        for (const unique_ptr<LandmarkNode> &node : graph.get_nodes()) {
+        for (const auto &node : graph) {
             dump_node(task_proxy, *node, log);
             for (const auto &child : node->children) {
                 const LandmarkNode *child_node = child.first;

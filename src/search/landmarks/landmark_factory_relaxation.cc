@@ -45,7 +45,7 @@ void LandmarkFactoryRelaxation::discard_noncausal_landmarks(
 bool LandmarkFactoryRelaxation::is_causal_landmark(
     const TaskProxy &task_proxy, Exploration &exploration,
     const Landmark &landmark) const {
-    assert(!landmark.conjunctive);
+    assert(!landmark.is_conjunctive);
 
     if (landmark.is_true_in_goal)
         return true;
@@ -74,7 +74,7 @@ void LandmarkFactoryRelaxation::calc_achievers(
     const TaskProxy &task_proxy, Exploration &exploration) {
     assert(!achievers_calculated);
     VariablesProxy variables = task_proxy.get_variables();
-    for (auto &lm_node : lm_graph->get_nodes()) {
+    for (const auto &lm_node : *lm_graph) {
         Landmark &landmark = lm_node->get_landmark();
         for (const FactPair &lm_fact : landmark.facts) {
             const vector<int> &ops = get_operators_including_eff(lm_fact);

@@ -620,7 +620,7 @@ void LandmarkFactoryHM::discard_conjunctive_landmarks() {
                 << " conjunctive landmarks" << endl;
         }
         lm_graph->remove_node_if(
-            [](const LandmarkNode &node) {return node.get_landmark().conjunctive;});
+            [](const LandmarkNode &node) {return node.get_landmark().is_conjunctive;});
     }
 }
 
@@ -634,7 +634,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
     VariablesProxy variables = task_proxy.get_variables();
     // first_achievers are already filled in by compute_h_m_landmarks
     // here only have to do possible_achievers
-    for (auto &lm_node : lm_graph->get_nodes()) {
+    for (const auto &lm_node : *lm_graph) {
         Landmark &landmark = lm_node->get_landmark();
         set<int> candidates;
         // put all possible adders in candidates set
@@ -998,10 +998,8 @@ void LandmarkFactoryHM::generate_landmarks(
 
                 edge_add(*lm_node_table_[lm], *lm_node_table_[set_index], EdgeType::NATURAL);
             }
-            if (use_orders) {
-                for (int gn : h_m_table_[set_index].necessary) {
-                    edge_add(*lm_node_table_[gn], *lm_node_table_[set_index], EdgeType::GREEDY_NECESSARY);
-                }
+            for (int gn : h_m_table_[set_index].necessary) {
+                edge_add(*lm_node_table_[gn], *lm_node_table_[set_index], EdgeType::GREEDY_NECESSARY);
             }
         }
     }

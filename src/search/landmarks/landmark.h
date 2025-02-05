@@ -8,26 +8,28 @@
 namespace landmarks {
 class Landmark {
 public:
-    Landmark(std::vector<FactPair> _facts, bool disjunctive, bool conjunctive,
-             bool is_true_in_goal = false, bool is_derived = false)
-        : facts(move(_facts)), disjunctive(disjunctive), conjunctive(conjunctive),
-          is_true_in_goal(is_true_in_goal), is_derived(is_derived) {
-        assert(!(conjunctive && disjunctive));
-        assert((conjunctive && facts.size() > 1)
-               || (disjunctive && facts.size() > 1) || facts.size() == 1);
+    Landmark(std::vector<FactPair> _facts, bool is_disjunctive,
+             bool is_conjunctive, bool is_true_in_goal = false,
+             bool is_derived = false)
+        : facts(move(_facts)), is_disjunctive(is_disjunctive),
+          is_conjunctive(is_conjunctive), is_true_in_goal(is_true_in_goal),
+          is_derived(is_derived) {
+        assert(!(is_conjunctive && is_disjunctive));
+        assert((is_conjunctive && facts.size() > 1) ||
+               (is_disjunctive && facts.size() > 1) || facts.size() == 1);
     }
 
-    bool operator ==(const Landmark &other) const {
+    bool operator==(const Landmark &other) const {
         return this == &other;
     }
 
-    bool operator !=(const Landmark &other) const {
+    bool operator!=(const Landmark &other) const {
         return !(*this == other);
     }
 
     std::vector<FactPair> facts;
-    bool disjunctive;
-    bool conjunctive;
+    const bool is_disjunctive;
+    const bool is_conjunctive;
     bool is_true_in_goal;
     bool is_derived;
 

@@ -29,9 +29,8 @@ shared_ptr<LandmarkGraph> get_landmark_graph(
 
 vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
     vector<FactPair> facts;
-    const LandmarkGraph::Nodes &nodes = graph.get_nodes();
-    facts.reserve(nodes.size());
-    for (auto &node : nodes) {
+    facts.reserve(graph.get_num_landmarks());
+    for (const auto &node : graph) {
         facts.push_back(get_fact(node->get_landmark()));
     }
     sort(facts.begin(), facts.end());
@@ -40,13 +39,12 @@ vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
 
 utils::HashMap<FactPair, LandmarkNode *> get_fact_to_landmark_map(
     const shared_ptr<LandmarkGraph> &graph) {
-    const LandmarkGraph::Nodes &nodes = graph->get_nodes();
     // All landmarks are simple, i.e., each has exactly one fact.
-    assert(all_of(nodes.begin(), nodes.end(), [](auto &node) {
+    assert(all_of(graph->begin(), graph->end(), [](auto &node) {
                       return node->get_landmark().facts.size() == 1;
                   }));
     utils::HashMap<FactPair, landmarks::LandmarkNode *> fact_to_landmark_map;
-    for (auto &node : nodes) {
+    for (const auto &node : *graph) {
         const FactPair &fact = node->get_landmark().facts[0];
         fact_to_landmark_map[fact] = node.get();
     }

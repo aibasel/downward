@@ -489,7 +489,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
       if lmp is a simple landmark.
     */
     const Landmark &landmark = lmp->get_landmark();
-    if (landmark.disjunctive)
+    if (landmark.is_disjunctive)
         return;
     const FactPair &lm_fact = landmark.facts[0];
 
@@ -603,7 +603,7 @@ void LandmarkFactoryRpgSasp::find_forward_orders(const VariablesProxy &variables
 }
 
 void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
-    for (auto &node : lm_graph->get_nodes()) {
+    for (const auto &node : *lm_graph) {
         for (const auto &node2_pair : forward_orders[node.get()]) {
             if (lm_graph->contains_simple_landmark(node2_pair)) {
                 LandmarkNode &node2 = lm_graph->get_simple_landmark(node2_pair);
@@ -626,7 +626,7 @@ void LandmarkFactoryRpgSasp::discard_disjunctive_landmarks() {
                 << " disjunctive landmarks" << endl;
         }
         lm_graph->remove_node_if(
-            [](const LandmarkNode &node) {return node.get_landmark().disjunctive;});
+            [](const LandmarkNode &node) {return node.get_landmark().is_disjunctive;});
     }
 }
 

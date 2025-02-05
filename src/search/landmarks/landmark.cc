@@ -4,21 +4,14 @@ using namespace std;
 
 namespace landmarks {
 bool Landmark::is_true_in_state(const State &state) const {
-    if (disjunctive) {
-        for (const FactPair &fact : facts) {
-            if (state[fact.var].get_value() == fact.value) {
-                return true;
-            }
-        }
-        return false;
+    auto is_fact_true_in_state = [&](const FactPair &fact) {
+        return state[fact.var].get_value() == fact.value;
+    };
+    if (is_disjunctive) {
+        return any_of(facts.cbegin(), facts.cend(), is_fact_true_in_state);
     } else {
-        // conjunctive or simple
-        for (const FactPair &fact : facts) {
-            if (state[fact.var].get_value() != fact.value) {
-                return false;
-            }
-        }
-        return true;
+        // Is conjunctive or simple.
+        return all_of(facts.cbegin(), facts.cend(), is_fact_true_in_state);
     }
 }
 }

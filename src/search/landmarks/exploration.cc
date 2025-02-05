@@ -83,6 +83,7 @@ vector<Proposition *> Exploration::get_sorted_precondition_propositions(
     sort(extended_preconditions.begin(), extended_preconditions.end());
 
     vector<Proposition *> precondition_propositions;
+    precondition_propositions.reserve(extended_preconditions.size());
     for (const FactPair &precondition_fact : extended_preconditions) {
         precondition_propositions.push_back(
             &propositions[precondition_fact.var][precondition_fact.value]);

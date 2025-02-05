@@ -129,7 +129,7 @@ void LandmarkFactory::discard_all_orderings() {
     if (log.is_at_least_normal()) {
         log << "Removing all orderings." << endl;
     }
-    for (auto &node : lm_graph->get_nodes()) {
+    for (const auto &node : *lm_graph) {
         node->children.clear();
         node->parents.clear();
     }
