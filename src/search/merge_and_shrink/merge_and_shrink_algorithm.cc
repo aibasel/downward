@@ -15,6 +15,7 @@
 
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
+#include "../utils/component_errors.h"
 #include "../utils/countdown_timer.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"
@@ -526,30 +527,31 @@ void handle_shrink_limit_options_defaults(plugins::Options &opts, const utils::C
             max_states = INF;
         }
     }
-
+    
+    //utils::verify_comparison(max_states_before_merge, max_states, less_equal<>{},
+    //        "warning: max_states_before_merge exceeds max_states, correcting XXX.");
     if (max_states_before_merge > max_states) {
         context.warn(
             "warning: max_states_before_merge exceeds max_states, correcting.");
         max_states_before_merge = max_states;
     }
 
-    if (max_states < 1) {
-        context.error("Transition system size must be at least 1");
-    }
+    utils::verify_comparison(max_states, 1, greater_equal<>(), 
+            "Transition system size must be at least 1.");
 
-    if (max_states_before_merge < 1) {
-        context.error("Transition system size before merge must be at least 1");
-    }
+    utils::verify_comparison(max_states_before_merge, 1, greater_equal<>(), 
+            "Transition system size before merge must be at least 1.");
 
     if (threshold == -1) {
         threshold = max_states;
     }
-    if (threshold < 1) {
-        context.error("Threshold must be at least 1");
-    }
+
+    utils::verify_comparison(threshold, 1, greater_equal<>(), 
+            "Threshold must be at least 1.");
+  
     if (threshold > max_states) {
         context.warn(
-            "warning: threshold exceeds max_states, correcting");
+            "warning: threshold exceeds max_states, correcting.");
         threshold = max_states;
     }
 
