@@ -17,8 +17,9 @@ namespace landmarks {
    method with others, don't use it by itself. */
 
 LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(
-    bool only_causal_landmarks, utils::Verbosity verbosity)
-    : LandmarkFactoryRelaxation(verbosity),
+    bool only_causal_landmarks, bool unary_first_achievers,
+    utils::Verbosity verbosity)
+    : LandmarkFactoryRelaxation(verbosity, unary_first_achievers),
       only_causal_landmarks(only_causal_landmarks) {
 }
 
@@ -68,6 +69,7 @@ public:
             "This check is done using relaxed planning.");
 
         add_only_causal_landmarks_option_to_feature(*this);
+        add_unary_first_achievers_option_to_feature(*this);
         add_landmark_factory_options_to_feature(*this);
 
         document_language_support(
@@ -79,6 +81,7 @@ public:
     create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgExhaust>(
             get_only_causal_landmarks_arguments_from_options(opts),
+            get_unary_first_achievers_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));
     }
 };

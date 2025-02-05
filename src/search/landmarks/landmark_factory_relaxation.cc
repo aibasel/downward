@@ -3,14 +3,16 @@
 #include "exploration.h"
 #include "landmark.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 
 using namespace std;
 
 namespace landmarks {
 LandmarkFactoryRelaxation::LandmarkFactoryRelaxation(
-    utils::Verbosity verbosity)
-    : LandmarkFactory(verbosity) {
+    utils::Verbosity verbosity, bool unary_first_achievers)
+    : LandmarkFactory(verbosity),
+      unary_first_achievers(unary_first_achievers) {
 }
 
 void LandmarkFactoryRelaxation::generate_landmarks(const shared_ptr<AbstractTask> &task) {
@@ -118,7 +120,19 @@ vector<vector<bool>> LandmarkFactoryRelaxation::compute_relaxed_reachability(
     vector<int> excluded_op_ids;
     vector<FactPair> excluded_props(exclude.facts.begin(), exclude.facts.end());
 
-    return exploration.compute_relaxed_reachability(excluded_props,
-                                                    excluded_op_ids);
+    return exploration.compute_relaxed_reachability(
+        excluded_props, excluded_op_ids, unary_first_achievers);
+}
+
+void add_unary_first_achievers_option_to_feature(plugins::Feature &feature) {
+    feature.add_option<bool>(
+        "unary_first_achievers",
+        "compute first achievers with unary operator relaxation",
+        "false");
+}
+
+bool get_unary_first_achievers_arguments_from_options(
+    const plugins::Options &opts) {
+    return opts.get<bool>("unary_first_achievers");
 }
 }

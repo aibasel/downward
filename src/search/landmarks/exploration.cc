@@ -106,7 +106,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
 */
 void Exploration::setup_exploration_queue(
     const State &state, const vector<FactPair> &excluded_props,
-    const vector<int> &excluded_op_ids) {
+    const vector<int> &excluded_op_ids, bool use_unary_relaxation) {
     prop_queue.clear();
 
     // Reset reachability information.
@@ -142,13 +142,15 @@ void Exploration::setup_exploration_queue(
     */
     unordered_set<int> op_ids_to_mark(excluded_op_ids.begin(),
                                       excluded_op_ids.end());
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        for (EffectProxy effect : op.get_effects()) {
-            if (effect.get_conditions().empty()
-                && propositions[effect.get_fact().get_variable().get_id()]
-                [effect.get_fact().get_value()].excluded) {
-                op_ids_to_mark.insert(op.get_id());
-                break;
+    if (!use_unary_relaxation) {
+        for (OperatorProxy op : task_proxy.get_operators()) {
+            for (EffectProxy effect : op.get_effects()) {
+                if (effect.get_conditions().empty()
+                    && propositions[effect.get_fact().get_variable().get_id()]
+                    [effect.get_fact().get_value()].excluded) {
+                    op_ids_to_mark.insert(op.get_id());
+                    break;
+                }
             }
         }
     }
@@ -208,9 +210,10 @@ void Exploration::enqueue_if_necessary(Proposition *prop) {
 
 vector<vector<bool>> Exploration::compute_relaxed_reachability(
     const vector<FactPair> &excluded_props,
-    const vector<int> &excluded_op_ids) {
-    setup_exploration_queue(task_proxy.get_initial_state(),
-                            excluded_props, excluded_op_ids);
+    const vector<int> &excluded_op_ids, bool use_unary_relaxation) {
+    setup_exploration_queue(
+        task_proxy.get_initial_state(), excluded_props, excluded_op_ids,
+        use_unary_relaxation);
     relaxed_exploration();
 
     // Bundle reachability information into the return data structure.

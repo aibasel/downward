@@ -75,8 +75,8 @@ public:
         Exploration &exploration) override;
 
 public:
-    LandmarkFactoryZhuGivan(
-        bool use_orders, utils::Verbosity verbosity);
+    LandmarkFactoryZhuGivan(bool use_orders, bool unary_first_achievers,
+                            utils::Verbosity verbosity);
 
     virtual bool supports_conditional_effects() const override;
 };
