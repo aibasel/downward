@@ -58,7 +58,7 @@ class Context:
         error_msg = f"{self}\n{message}"
         if syntax:
             error_msg += f"\nSyntax: {syntax}"
-        if item:
+        if item is not None:
             error_msg += f"\nGot: {item}"
         raise ParseError(error_msg)
 
@@ -125,14 +125,14 @@ def parse_typed_list(context, alist, only_variables=False,
                     items = alist[:separator_position]
                     _type = alist[separator_position + 1]
                     alist = alist[separator_position + 2:]
-                    if not (isinstance(_type, str) or
-                           (_type and _type[0] == "either" and
-                            all(isinstance(_sub_type, str) for _sub_type in _type[1:]))):
-                        context.error("Type value is expected to be a single word "
-                                      "or '(either WORD*)")
+                    if not isinstance(_type, str): #TODO should we allow lists of length 1 as well?
+                        if _type and _type[0] == "either":
+                            context.error("Keyword 'either' is not supported, type value is expected to be a single word.", _type)
+                        else:
+                            context.error("Type value is expected to be a single word.", _type)
                 for item in items:
                     if only_variables and not item.startswith("?"):
-                        context.error("Expected item to be a variable", item)
+                        context.error("Expected a variable but the given string does not start with '?'.", item)
                     entry = constructor(context, item, _type)
                     result.append(entry)
             group_number += 1
@@ -180,7 +180,7 @@ def parse_predicate(context, alist):
 def parse_predicates(context, alist):
     with context.layer("Parsing predicates"):
         the_predicates = []
-        for no, entry in enumerate(alist):
+        for no, entry in enumerate(alist, start=1):
             with context.layer(f"Parsing {no}. predicate"):
                 if not isinstance(entry, list):
                     context.error("Invalid predicate definition.",
@@ -442,11 +442,13 @@ def parse_expression(context, exp):
                               syntax=SYNTAX_EXPRESSION)
             functionsymbol = exp[0]
             return pddl.PrimitiveNumericExpression(functionsymbol, exp[1:])
-        elif exp.replace(".", "").isdigit() and exp.count(".") <= 1:
-            return pddl.NumericConstant(float(exp))
         elif exp[0] == "-":
-            context.error("Expression cannot be a negative number",
+            context.error("Negative numbers are not supported.", exp,
                           syntax=SYNTAX_EXPRESSION)
+        elif exp.isdigit():
+            return pddl.NumericConstant(int(exp))
+        elif exp.replace(".", "").isdigit():
+            context.error("Fractional numbers are not supported.", exp,syntax=SYNTAX_EXPRESSION)
         else:
             return pddl.PrimitiveNumericExpression(exp, [])
 
