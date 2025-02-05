@@ -767,7 +767,6 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
 
     // while we have actions to apply
     while (!current_trigger.empty()) {
-        cout << "+++ NEW TRIGGER +++" << endl;
         for (op_it = current_trigger.begin(); op_it != current_trigger.end(); ++op_it) {
             local_landmarks.clear();
             local_necessary.clear();
@@ -797,7 +796,6 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
                     // no need to intersect for gn orderings
                     // or add op to first achievers
                     if (!contains(local_landmarks, *it)) {
-                        cout << "(if) inserting " << op_index << endl;
                         insert_into(h_m_table_[*it].first_achievers, op_index);
                         if (use_orders) {
                             intersect_with(h_m_table_[*it].necessary, local_necessary);
@@ -812,7 +810,6 @@ void LandmarkFactoryHM::compute_h_m_landmarks(const TaskProxy &task_proxy) {
                     if (use_orders) {
                         h_m_table_[*it].necessary = local_necessary;
                     }
-                    cout << "(else) inserting " << op_index << endl;
                     insert_into(h_m_table_[*it].first_achievers, op_index);
                     propagate_pm_fact(*it, true, next_trigger);
                 }
