@@ -91,6 +91,7 @@ def check_named_block(context, alist, names, syntax=None):
 def construct_typed_object(context, name, _type):
     with context.layer("Parsing typed object"):
         check_word(context, name, "Name of typed object")
+        check_word(context, _type, "The type of an object")
         return pddl.TypedObject(name, _type)
 
 
