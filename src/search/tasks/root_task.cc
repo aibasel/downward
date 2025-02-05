@@ -128,10 +128,14 @@ class TaskParser {
 
     void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables);
     void check_layering_condition(int head_var_layer, const vector<FactPair> &conditions, const vector<ExplicitVariable> &variables, bool use_nondefault_values);
+    
 
     int parse_int(const string &token);
+    void check_nat(const string &value_name, int value);
     int read_int(const string &value_name);
     int read_int_line(const string &value_name);
+    int read_nat(const string &value_name);
+    int read_nat_line(const string &value_name);
     string read_string_line(const string &value_name);
     void read_magic_line(const string &magic);
 
@@ -169,7 +173,7 @@ void TaskParser::check_fact(const FactPair &fact, const vector<ExplicitVariable>
 void TaskParser::check_layering_condition(
     int head_var_layer, const vector<FactPair> &conditions,
     const vector<ExplicitVariable> &variables,
-    bool use_nondefault_values) {
+    bool is_negated_axiom) {
     for (FactPair fact : conditions) {
         int var = fact.var;
         int var_layer = variables[var].axiom_layer;
@@ -184,19 +188,19 @@ void TaskParser::check_layering_condition(
                in the TODO/bug in sas_tasks.py when the axiom sets the default
                value of the derived variable, and can be removed once this issue
                is resolved.*/
-            if (!use_nondefault_values) {
+            if (is_negated_axiom) {
                 if (fact.value != default_value) {
                     context.error(
-                        "Conditions using variables at head variable layer "
-                        "must use default value as the axiom sets head variable to "
+                        "Body variables at head variable layer "
+                        "must have default value as the axiom sets head variable to "
                         "default value, but variable " + to_string(var)
                         + " uses non-default value " + to_string(fact.value) + ".");
                 }
             } else {
                 if (fact.value == default_value) {
                     context.error(
-                        "Conditions using variables at head variable layer must "
-                        "use non-default value, but variable " + to_string(var) +
+                        "Body variables at head variable layer must "
+                        "have non-default value, but variable " + to_string(var) +
                         " uses default value " + to_string(fact.value) + ".");
                 }
             }
@@ -224,6 +228,14 @@ int TaskParser::parse_int(const string &token) {
                   + failure_reason + ").");
 }
 
+void TaskParser::check_nat(const string &value_name, int value) {
+    if (value < 0) {
+        context.error(
+            "Expected non-negative number for " + value_name
+            + ", but got " + to_string(value) + ".");
+    }
+}
+
 int TaskParser::read_int(const string &value_name) {
     utils::TraceBlock block(context, value_name);
     return parse_int(lexer.read(context));
@@ -234,12 +246,27 @@ int TaskParser::read_int_line(const string &value_name) {
     return parse_int(lexer.read_line(context));
 }
 
+int TaskParser::read_nat(const string &value_name) {
+    utils::TraceBlock block(context, value_name);
+    int value = parse_int(lexer.read(context));
+    check_nat(value_name, value);
+    return value;
+}
+
+int TaskParser::read_nat_line(const string &value_name) {
+    utils::TraceBlock block(context, value_name);
+    int value = parse_int(lexer.read_line(context));
+    check_nat(value_name, value);
+    return value;
+}
+
 string TaskParser::read_string_line(const string &value_name) {
     utils::TraceBlock block(context, value_name);
     return lexer.read_line(context);
 }
 
 void TaskParser::read_magic_line(const string &magic) {
+    utils::TraceBlock block(context, "magic line");
     string line = read_string_line("magic value");
     if (line != magic) {
         context.error("Expected magic line '" + magic + "', got '" + line + "'.");
@@ -249,15 +276,15 @@ void TaskParser::read_magic_line(const string &magic) {
 vector<FactPair> TaskParser::read_facts(bool read_from_single_line, const vector<ExplicitVariable> &variables) {
     utils::TraceBlock block(context, "parsing conditions");
     string value_name = "number of conditions";
-    int count = read_from_single_line ? read_int(value_name)
-                                      : read_int_line(value_name);
+    int count = read_from_single_line ? read_nat(value_name)
+                                      : read_nat_line(value_name);
     vector<FactPair> conditions;
     conditions.reserve(count);
     for (int i = 0; i < count; ++i) {
         utils::TraceBlock block(context, "fact " + to_string(i));
         FactPair condition = FactPair::no_fact;
-        condition.var = read_int("variable");
-        condition.value = read_int("value");
+        condition.var = read_nat("variable");
+        condition.value = read_nat("value");
         check_fact(condition, variables);
         conditions.push_back(condition);
         if (!read_from_single_line) {
@@ -285,7 +312,7 @@ ExplicitVariable TaskParser::read_variable(int index) {
     if (var.axiom_layer < -1) {
         context.error("Variable axiom layer must be -1 or non-negative, but is " + to_string(var.axiom_layer) + ".");
     }
-    var.domain_size = read_int_line("variable domain size");
+    var.domain_size = read_nat_line("variable domain size");
     if (var.domain_size < 1) {
         context.error(
             "Domain size should be at least 1, but is "
@@ -308,7 +335,7 @@ ExplicitVariable TaskParser::read_variable(int index) {
 void TaskParser::read_pre_post_axiom(ExplicitOperator &op, const vector<ExplicitVariable> &variables) {
     vector<FactPair> conditions = read_facts(false, variables);
     utils::TraceBlock block(context, "parsing pre-post of affected variable");
-    int var = read_int("affected variable");
+    int var = read_nat("affected variable");
     int axiom_layer = variables[var].axiom_layer;
     if (axiom_layer == -1) {
             context.error("Variable affected by axiom must be derived, but variable " + to_string(var) + " is not derived.");
@@ -319,7 +346,7 @@ void TaskParser::read_pre_post_axiom(ExplicitOperator &op, const vector<Explicit
     }
     FactPair precondition = FactPair(var, value_pre);
     check_fact(precondition, variables);
-    int value_post = read_int("variable value postcondition");
+    int value_post = read_nat("variable value postcondition");
     FactPair postcondition = FactPair(var, value_post);
     check_fact(postcondition, variables);
     int default_value = variables[var].axiom_default_value;
@@ -327,9 +354,9 @@ void TaskParser::read_pre_post_axiom(ExplicitOperator &op, const vector<Explicit
     /* TODO: In the following, the if-branch handles the case described in the
         TODO/bug in sas_tasks.py when the axiom sets the default value of the
         derived variable, and can be removed once this issue is resolved.*/
-    bool use_nondefault_values = true;
+    bool is_negated_axiom = false;
     if (value_pre != default_value) {
-        use_nondefault_values = false;
+        is_negated_axiom = true;
         if (value_post != default_value) {
             context.error(
                 "Value of variable affected by axiom must be default value "
@@ -358,7 +385,7 @@ void TaskParser::read_pre_post_axiom(ExplicitOperator &op, const vector<Explicit
         utils::TraceBlock block(
             context, "checking layering condition, head variable "
             + to_string(var) + " with layer " + to_string(axiom_layer));
-        check_layering_condition(axiom_layer, conditions, variables, use_nondefault_values);
+        check_layering_condition(axiom_layer, conditions, variables, is_negated_axiom);
     }
     op.preconditions.emplace_back(precondition);
     ExplicitEffect eff = {postcondition, move(conditions)};
@@ -369,18 +396,23 @@ void TaskParser::read_pre_post_axiom(ExplicitOperator &op, const vector<Explicit
 void TaskParser::read_conditional_effect(ExplicitOperator &op, const vector<ExplicitVariable> &variables) {
     vector<FactPair> conditions = read_facts(true, variables);
     utils::TraceBlock block(context, "parsing pre-post of affected variable");
-    int var = read_int("affected variable");
+    int var = read_nat("affected variable");
     int axiom_layer = variables[var].axiom_layer;
     if (axiom_layer != -1) {
-        context.error("Variable affected by operator must not be derived, but variable " + to_string(var) + "  is derived.");
+        context.error("Variable affected by operator must not be derived, but variable " + to_string(var) + " is derived.");
     }
     int value_pre = read_int("variable value precondition");
+    if (value_pre < -1) {
+        context.error(
+            "Variable value precondition must be -1 or non-negative, but is "
+            + to_string(value_pre) + ".");
+    }
     if (value_pre != -1) {
         FactPair precondition = FactPair(var, value_pre);
         check_fact(precondition, variables);
         op.preconditions.emplace_back(precondition);
     }
-    int value_post = read_int("variable value postcondition");
+    int value_post = read_nat("variable value postcondition");
     FactPair postcondition = FactPair(var, value_post);
     check_fact(postcondition, variables);
     ExplicitEffect eff = {postcondition, move(conditions)};
@@ -407,7 +439,12 @@ ExplicitOperator TaskParser::read_operator(int index, bool use_metric, const vec
         utils::TraceBlock block(context, "parsing prevail conditions");
         op.preconditions = read_facts(false, variables);
     }
-    int count = read_int_line("number of operator effects");
+    int count = read_nat_line("number of operator effects");
+    if (count < 1) {
+        context.error(
+            "Number of operator effects should be at least 1, but is "
+            + std::to_string(count) + ".");
+    }
     op.effects.reserve(count);
     for (int i = 0; i < count; ++i) {
         utils::TraceBlock block(context, "parsing effect "
@@ -442,7 +479,7 @@ ExplicitOperator TaskParser::read_axiom(int index, const vector<ExplicitVariable
 void TaskParser::read_and_verify_version() {
     utils::TraceBlock block(context, "version section");
     read_magic_line("begin_version");
-    int version = read_int_line("version number");
+    int version = read_nat_line("version number");
     if (version != PRE_FILE_VERSION) {
         context.error("Expected translator output file version "
             + to_string(PRE_FILE_VERSION) + ", got "
@@ -469,7 +506,7 @@ bool TaskParser::read_metric() {
 
 vector<ExplicitVariable> TaskParser::read_variables() {
     utils::TraceBlock block(context, "variable section");
-    int count = read_int_line("variable count");
+    int count = read_nat_line("variable count");
     if (count < 1) {
         context.error(
             "Number of variables should be at least 1, but is "
@@ -489,7 +526,7 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(const vector<ExplicitVari
     for (size_t i = 0; i < variables.size(); ++i)
         inconsistent_facts[i].resize(variables[i].domain_size);
 
-    int num_mutex_groups = read_int_line("number of mutex groups");
+    int num_mutex_groups = read_nat_line("number of mutex groups");
 
     /*
       NOTE: Mutex groups can overlap, in which case the same mutex
@@ -501,18 +538,13 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(const vector<ExplicitVari
     for (int i = 0; i < num_mutex_groups; ++i) {
         utils::TraceBlock block(context, "mutex group " + to_string(i));
         read_magic_line("begin_mutex_group");
-        int num_facts = read_int_line("number of facts in mutex group");
-        if (num_facts < 1) {
-            context.error(
-                "Number of facts in mutex group should be at least 1, but is "
-                + std::to_string(num_facts) + ".");
-        }
+        int num_facts = read_nat_line("number of facts in mutex group");
         vector<FactPair> invariant_group;
         invariant_group.reserve(num_facts);
         for (int j = 0; j < num_facts; ++j) {
             utils::TraceBlock block(context, "mutex atom " + to_string(j));
-            int var = read_int("variable number of mutex atom");
-            int value = read_int("value of mutex atom");
+            int var = read_nat("variable number of mutex atom");
+            int value = read_nat("value of mutex atom");
             FactPair fact = FactPair(var, value);
             check_fact(fact, variables);
             invariant_group.emplace_back(fact);
@@ -521,9 +553,6 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(const vector<ExplicitVari
         read_magic_line("end_mutex_group");
 
         set<FactPair> invariant_group_set(invariant_group.begin(), invariant_group.end());
-        if (invariant_group_set.size() != invariant_group.size()) {
-            context.error("Mutex group may not contain the same fact more than once.");
-        }
         for (const FactPair &fact1 : invariant_group) {
             for (const FactPair &fact2 : invariant_group) {
                 if (fact1.var != fact2.var) {
@@ -554,7 +583,7 @@ vector<int> TaskParser::read_initial_state(const vector<ExplicitVariable> &varia
         string block_name = "initial state value of variable '"
             + variables[i].name + "' (index: " + to_string(i) + ")";
         utils::TraceBlock block(context, "validating " + block_name);
-        initial_state_values[i] = read_int_line(block_name);
+        initial_state_values[i] = read_nat_line(block_name);
 
         check_fact(FactPair(i, initial_state_values[i]), variables);
     }
@@ -567,10 +596,12 @@ vector<FactPair> TaskParser::read_goal(const vector<ExplicitVariable> &variables
     read_magic_line("begin_goal");
     vector<FactPair> goals = read_facts(false, variables);
     read_magic_line("end_goal");
+    // TODO: in the future, we would like to allow empty goals (issue 1160)
     if (goals.empty()) {
         cerr << "Task has no goal condition!" << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
+    // TODO: in the future, we would like to allow trivially unsolvable tasks (issue 1160)
     set<int> goal_vars;
     for (FactPair goal : goals) {
         int var = goal.var;
@@ -584,7 +615,7 @@ vector<FactPair> TaskParser::read_goal(const vector<ExplicitVariable> &variables
 vector<ExplicitOperator> TaskParser::read_actions(bool is_axiom,
     bool use_metric, const vector<ExplicitVariable> &variables) {
     utils::TraceBlock block(context, is_axiom ? "axiom section" : "operator section");
-    int count = read_int_line("number of entries");
+    int count = read_nat_line("number of entries");
     vector<ExplicitOperator> actions;
     actions.reserve(count);
     for (int i = 0; i < count; ++i) {
@@ -612,6 +643,7 @@ shared_ptr<AbstractTask> TaskParser::read_task() {
     vector<FactPair> goals = read_goal(variables);
     vector<ExplicitOperator> operators = read_actions(false, use_metric, variables);
     vector<ExplicitOperator> axioms = read_actions(true, use_metric, variables);
+    utils::TraceBlock block(context, "confirm end of input");
     lexer.confirm_end_of_input(context);
 
     /*
