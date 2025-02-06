@@ -1,11 +1,12 @@
 import os
+from pathlib import Path
 
 from . import returncodes
 
 
-DRIVER_DIR = os.path.abspath(os.path.dirname(__file__))
-REPO_ROOT_DIR = os.path.dirname(DRIVER_DIR)
-BUILDS_DIR = os.path.join(REPO_ROOT_DIR, "builds")
+DRIVER_DIR = Path(__file__).parent.resolve()
+REPO_ROOT_DIR = DRIVER_DIR.parent
+BUILDS_DIR = REPO_ROOT_DIR / "builds"
 
 
 def get_elapsed_time():
@@ -19,25 +20,22 @@ def get_elapsed_time():
     return sum(os.times()[:4])
 
 
-def find_domain_filename(task_filename):
+def find_domain_path(task_path: Path):
     """
-    Find domain filename for the given task using automatic naming rules.
+    Find domain path for the given task using automatic naming rules.
     """
-    dirname, basename = os.path.split(task_filename)
-    basename_root, ext = os.path.splitext(basename)
-
     domain_basenames = [
         "domain.pddl",
-        basename_root + "-domain" + ext,
-        basename[:3] + "-domain.pddl", # for airport
-        "domain_" + basename,
-        "domain-" + basename,
+        task_path.stem + "-domain" + task_path.suffix,
+        task_path.name[:3] + "-domain.pddl", # for airport
+        "domain_" + task_path.name,
+        "domain-" + task_path.name,
     ]
 
     for domain_basename in domain_basenames:
-        domain_filename = os.path.join(dirname, domain_basename)
-        if os.path.exists(domain_filename):
-            return domain_filename
+        domain_path = task_path.parent / domain_basename
+        if domain_path.exists():
+            return domain_path
 
     returncodes.exit_with_driver_input_error(
         "Error: Could not find domain file using automatic naming rules.")

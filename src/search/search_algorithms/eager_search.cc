@@ -139,15 +139,16 @@ SearchStatus EagerSearch::step() {
               With lazy evaluators (and only with these) we can have dead nodes
               in the open list.
 
-              For example, consider a state s that is reached twice before it is expanded.
-              The first time we insert it into the open list, we compute a finite
-              heuristic value. The second time we insert it, the cached value is reused.
+              For example, consider a state s that is reached twice before it is
+              expanded. The first time we insert it into the open list, we
+              compute a finite heuristic value. The second time we insert it,
+              the cached value is reused.
 
-              During first expansion, the heuristic value is recomputed and might become
-              infinite, for example because the reevaluation uses a stronger heuristic or
-              because the heuristic is path-dependent and we have accumulated more
-              information in the meantime. Then upon second expansion we have a dead-end
-              node which we must ignore.
+              During first expansion, the heuristic value is recomputed and
+              might become infinite, for example because the reevaluation uses a
+              stronger heuristic or because the heuristic is path-dependent and
+              we have accumulated more information in the meantime. Then upon
+              second expansion we have a dead-end node which we must ignore.
             */
             if (node->is_dead_end())
                 continue;
@@ -216,12 +217,14 @@ SearchStatus EagerSearch::step() {
             continue;
 
         if (succ_node.is_new()) {
-            // We have not seen this state before.
-            // Evaluate and create a new node.
+            /*
+              We have not seen this state before.
+              Evaluate and create a new node.
 
-            // Careful: succ_node.get_g() is not available here yet,
-            // hence the stupid computation of succ_g.
-            // TODO: Make this less fragile.
+              Careful: succ_node.get_g() is not available here yet,
+              hence the stupid computation of succ_g.
+              TODO: Make this less fragile.
+            */
             int succ_g = node->get_g() + get_adjusted_cost(op);
 
             EvaluationContext succ_eval_context(
@@ -233,7 +236,7 @@ SearchStatus EagerSearch::step() {
                 statistics.inc_dead_ends();
                 continue;
             }
-            succ_node.open(*node, op, get_adjusted_cost(op));
+            succ_node.open_new_node(*node, op, get_adjusted_cost(op));
 
             open_list->insert(succ_eval_context, succ_state.get_id());
             if (search_progress.check_progress(succ_eval_context)) {
@@ -242,49 +245,42 @@ SearchStatus EagerSearch::step() {
             }
         } else if (succ_node.get_g() > node->get_g() + get_adjusted_cost(op)) {
             // We found a new cheapest path to an open or closed state.
-            if (reopen_closed_nodes) {
-                if (succ_node.is_closed()) {
-                    /*
-                      TODO: It would be nice if we had a way to test
-                      that reopening is expected behaviour, i.e., exit
-                      with an error when this is something where
-                      reopening should not occur (e.g. A* with a
-                      consistent heuristic).
-                    */
-                    statistics.inc_reopened();
-                }
-                succ_node.reopen(*node, op, get_adjusted_cost(op));
-
+            if (succ_node.is_open()) {
+                succ_node.update_open_node_parent(
+                    *node, op, get_adjusted_cost(op));
                 EvaluationContext succ_eval_context(
                     succ_state, succ_node.get_g(), is_preferred, &statistics);
-
+                open_list->insert(succ_eval_context, succ_state.get_id());
+            } else if (succ_node.is_closed() && reopen_closed_nodes) {
                 /*
-                  Note: our old code used to retrieve the h value from
-                  the search node here. Our new code recomputes it as
-                  necessary, thus avoiding the incredible ugliness of
-                  the old "set_evaluator_value" approach, which also
-                  did not generalize properly to settings with more
-                  than one evaluator.
-
-                  Reopening should not happen all that frequently, so
-                  the performance impact of this is hopefully not that
-                  large. In the medium term, we want the evaluators to
-                  remember evaluator values for states themselves if
-                  desired by the user, so that such recomputations
-                  will just involve a look-up by the Evaluator object
-                  rather than a recomputation of the evaluator value
-                  from scratch.
+                  TODO: It would be nice if we had a way to test
+                  that reopening is expected behaviour, i.e., exit
+                  with an error when this is something where
+                  reopening should not occur (e.g. A* with a
+                  consistent heuristic).
                 */
+                statistics.inc_reopened();
+                succ_node.reopen_closed_node(*node, op, get_adjusted_cost(op));
+                EvaluationContext succ_eval_context(
+                    succ_state, succ_node.get_g(), is_preferred, &statistics);
                 open_list->insert(succ_eval_context, succ_state.get_id());
             } else {
-                // If we do not reopen closed nodes, we just update the parent pointers.
-                // Note that this could cause an incompatibility between
-                // the g-value and the actual path that is traced back.
-                succ_node.update_parent(*node, op, get_adjusted_cost(op));
+                /*
+                  If we do not reopen closed nodes, we just update the parent
+                  pointers. Note that this could cause an incompatibility
+                  between the g-value and the actual path that is traced back.
+                */
+                assert(succ_node.is_closed() && !reopen_closed_nodes);
+                succ_node.update_closed_node_parent(
+                    *node, op, get_adjusted_cost(op));
             }
+        } else {
+            /*
+              We found an equally or more expensive path to an open or closed
+              state.
+            */
         }
     }
-
     return IN_PROGRESS;
 }
 

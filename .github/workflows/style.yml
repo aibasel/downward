@@ -10,7 +10,7 @@ on:
 jobs:
   style:
     name: Test code style
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -23,14 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip3 install tox
-          sudo apt-get -y install clang-tidy-12
-
-      # TODO: Remove once issue with Ubuntu 22.04 and clang++-14 is resolved.
-      - name: Work around https://github.com/actions/runner-images/issues/8659
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-jammy.list
-          sudo apt-get update
-          sudo apt-get install -y --allow-downgrades libc6=2.35-* libc6-dev=2.35-* libstdc++6=12.3.0-* libgcc-s1=12.3.0-*
+          sudo apt-get -y install clang-tidy-16
 
       - name: Install uncrustify
         run: |

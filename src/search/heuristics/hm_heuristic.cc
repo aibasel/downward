@@ -64,9 +64,7 @@ void HMHeuristic::init_hm_table(const Tuple &t) {
 
 
 void HMHeuristic::update_hm_table() {
-    int round = 0;
     do {
-        ++round;
         was_updated = false;
 
         for (OperatorProxy op : task_proxy.get_operators()) {

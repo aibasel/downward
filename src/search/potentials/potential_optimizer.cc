@@ -136,9 +136,16 @@ void PotentialOptimizer::construct_lp() {
             int post = effect.get_fact().get_value();
             int pre_lp = lp_var_ids[var_id][pre];
             int post_lp = lp_var_ids[var_id][post];
-            assert(pre_lp != post_lp);
-            coefficients.emplace_back(pre_lp, 1);
-            coefficients.emplace_back(post_lp, -1);
+            if (pre_lp != post_lp) {
+                /*
+                  Prevail conditions with pre = post can occur in transformed
+                  tasks, see issue1150. We ignore them since they cancel out and
+                  LPConstraints may not have two coefficients for the same
+                  variable.
+                */
+                coefficients.emplace_back(pre_lp, 1);
+                coefficients.emplace_back(post_lp, -1);
+            }
         }
         sort(coefficients.begin(), coefficients.end());
         for (const auto &coeff : coefficients)

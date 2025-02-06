@@ -38,21 +38,18 @@ Note that on Windows, setting up the environment variable might require using `/
 **Important:**  The GNU Multiple Precision library (GMP) is critical for the performance of SoPlex but the build does not complain if it is not present.
 Make sure that the build uses the library (check the output of CMake for `Found GMP`).
 
-As of SoPlex 6.0.4, the release does not support C++-20, so we build  from the tip of the [GitHub main branch](https://github.com/scipopt/soplex) (adapt the path if you install a different version or want to use a different location):
+We require at least SoPlex 7.1.0, which can be built from source as follows (adapt the paths if you install a different version or want to use a different location):
 ```bash
 sudo apt install libgmp3-dev
-git clone https://github.com/scipopt/soplex.git
-export soplex_DIR=/opt/soplex-6.0.4x
-export CXXFLAGS="$CXXFLAGS -Wno-use-after-free" # Ignore compiler warnings about use-after-free
-cmake -S soplex -B build
+wget https://github.com/scipopt/soplex/archive/refs/tags/release-710.tar.gz -O - | tar -xz
+cmake -S soplex-release-710 -B build
 cmake --build build
+export soplex_DIR=/opt/soplex-7.1.0
 cmake --install build --prefix $soplex_DIR
-rm -rf soplex build
+rm -rf soplex-release-710 build
 ```
 
 After installation, permanently set the environment variable `soplex_DIR` to the value you used during the installation.
-
-**Note:** Once [support for C++-20](https://github.com/scipopt/soplex/pull/15) has been included in a SoPlex release, we can update this and can recommend the [SoPlex homepage](https://soplex.zib.de/index.php#download) for downloads instead.
 
 
 ### Optional: Plan Validator

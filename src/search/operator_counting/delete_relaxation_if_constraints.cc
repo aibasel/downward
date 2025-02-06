@@ -241,7 +241,7 @@ class DeleteRelaxationIFConstraintsFeature
     : public plugins::TypedFeature<ConstraintGenerator, DeleteRelaxationIFConstraints> {
 public:
     DeleteRelaxationIFConstraintsFeature() : TypedFeature("delete_relaxation_if_constraints") {
-        document_title("Delete relaxation constraints");
+        document_title("Delete relaxation constraints from Imai and Fukunaga");
         document_synopsis(
             "Operator-counting constraints based on the delete relaxation. By "
             "default the constraints encode an easy-to-compute relaxation of h^+^. "

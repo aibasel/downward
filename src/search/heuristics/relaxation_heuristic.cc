@@ -1,5 +1,6 @@
 #include "relaxation_heuristic.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
@@ -33,12 +34,29 @@ UnaryOperator::UnaryOperator(
       operator_no(operator_no) {
 }
 
+void add_relaxation_heuristic_options_to_feature(
+    plugins::Feature &feature, const string &description) {
+    tasks::add_axioms_option_to_feature(feature);
+    add_heuristic_options_to_feature(feature, description);
+}
+
+tuple<tasks::AxiomHandlingType, shared_ptr<AbstractTask>, bool, string,
+      utils::Verbosity>
+get_relaxation_heuristic_arguments_from_options(const plugins::Options &opts) {
+    return tuple_cat(
+        tasks::get_axioms_arguments_from_options(opts),
+        get_heuristic_arguments_from_options(opts));
+}
+
 
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(
+    tasks::AxiomHandlingType axioms,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, description, verbosity) {
+    : Heuristic(tasks::get_default_value_axioms_task_if_needed(
+                    transform, axioms),
+                cache_estimates, description, verbosity) {
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));
 

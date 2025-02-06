@@ -14,11 +14,11 @@ import pytest
 
 from .aliases import ALIASES, PORTFOLIOS
 from .arguments import EXAMPLES
-from .call import check_call
+from .call import check_call, _replace_paths_with_strings
 from . import limits
 from . import returncodes
 from .run_components import get_executable, REL_SEARCH_PATH
-from .util import REPO_ROOT_DIR, find_domain_filename
+from .util import REPO_ROOT_DIR, find_domain_path
 
 
 def cleanup():
@@ -32,6 +32,7 @@ def teardown_module(module):
 
 def run_driver(parameters):
     cmd = [sys.executable, "fast-downward.py", "--keep"] + parameters
+    cmd = _replace_paths_with_strings(cmd)
     return subprocess.check_call(cmd, cwd=REPO_ROOT_DIR)
 
 
@@ -59,7 +60,7 @@ def test_portfolios():
 
 
 def _get_portfolio_configs(portfolio: Path):
-    content = portfolio.read_text()
+    content = portfolio.read_bytes()
     attributes = {}
     try:
         exec(content, attributes)
@@ -95,7 +96,7 @@ def _run_search(config):
 def _get_all_portfolio_configs():
     all_configs = set()
     for portfolio in PORTFOLIOS.values():
-        configs = _get_portfolio_configs(Path(portfolio))
+        configs = _get_portfolio_configs(portfolio)
         all_configs |= set(tuple(_convert_to_standalone_config(config)) for config in configs)
     return all_configs
 
@@ -125,8 +126,8 @@ def test_hard_time_limit():
 
 
 def test_automatic_domain_file_name_computation():
-    benchmarks_dir = os.path.join(REPO_ROOT_DIR, "benchmarks")
+    benchmarks_dir = REPO_ROOT_DIR / "benchmarks"
     for dirpath, dirnames, filenames in os.walk(benchmarks_dir):
         for filename in filenames:
             if "domain" not in filename:
-                assert find_domain_filename(os.path.join(dirpath, filename))
+                assert find_domain_path(dirpath / filename)
