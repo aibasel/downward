@@ -32,7 +32,7 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
     : Heuristic(transform, cache_estimates, description, verbosity) {
     log << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(
-        merge_strategy, shrink_strategy, label_reduction, 
+        merge_strategy, shrink_strategy, label_reduction,
         prune_unreachable_states, prune_irrelevant_states,
         max_states, max_states_before_merge, threshold_before_merge,
         main_loop_max_time, verbosity);
