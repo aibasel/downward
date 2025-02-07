@@ -1,7 +1,8 @@
 site_name: Fast Downward Documentation
 nav:
   - Getting started: documentation/quick-start.md
-  - PDDL Support: documentation/PddlSupport.md
+  - Planner usage: documentation/planner-usage.md
+  - PDDL Support: documentation/pddl-support.md
   - Option Syntax: documentation/option-syntax.md
   - Search Component: documentation/search/
   - Exit Codes: documentation/exit-codes.md
@@ -22,6 +23,16 @@ plugins:
       nav_file: SUMMARY.md
       implicit_index: true
 markdown_extensions:
+  - tables
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
 #  - toc:
 #      permalink: true
 

@@ -4,26 +4,22 @@ On this page, we collect information regarding the subset of PDDL that
 is supported by Fast Downward. So far, this is not an exhaustive list,
 but we hope that it will become more comprehensive over time. If you
 want to contribute information or have a question, please get in touch!
-(See the contact information on the [HomePage](HomePage "wikilink").)
+(See the contact information on the [home page](../..).)
 
 ## General information
 
-Fast Downward aims to support PDDL 2.2 level 1 plus the
-
-    :action-costs
-
-requirement from PDDL 3.1. For a definition of the various \"levels\" of
-PDDL, see p. 63 the paper \"PDDL2.1: An Extension to PDDL for Expressing
-Temporal Planning Domains\" by Maria Fox and Derek Long (JAIR 20:61-124,
+Fast Downward aims to support PDDL 2.2 level 1 plus the `:action-costs`
+requirement from PDDL 3.1. For a definition of the various "levels" of
+PDDL, see p. 63 the paper "PDDL2.1: An Extension to PDDL for Expressing
+Temporal Planning Domains" by Maria Fox and Derek Long (JAIR 20:61-124,
 2003).
 
 This means that the following major parts of PDDL are unsupported:
 
 -   All aspects of numerical planning. These are introduced at level 2
     of PDDL. Exception: some numerical features are part of the
-        :action-costs
-
-    requirement of PDDL 3.1, and these are supported by the planner.
+    `:action-costs` requirement of PDDL 3.1, and these are supported by the
+    planner.
 -   All aspects of temporal planning. These are introduced at level 3 of
     PDDL and above.
 -   Soft goals and preferences. These are introduced in PDDL 3.0.
@@ -39,12 +35,9 @@ supported beyond basic STRIPS, with some limitations mentioned below:
 
 ## Limitations
 
--   **PDDL types:**
-        (either ...)
-
-    types are not supported
+-   **PDDL types:** `(either ...)` types are not supported
 -   **conditional effects:** Not all heuristics support conditional
-    effects. See [Doc/Evaluator](Doc/Evaluator "wikilink") for details.
+    effects. See [Evaluator](../search/Evaluator) for details.
     Also, as of this writing, support for conditional effects is still
     somewhat buggy/incomplete. Some constructs lead to translator
     crashes. This is especially true for operators that have multiple
@@ -52,21 +45,18 @@ supported beyond basic STRIPS, with some limitations mentioned below:
     variables that the translator groups into a single finite-domain
     variable.
 -   **axioms:** Not all heuristics support axioms. See
-    [Doc/Evaluator](Doc/Evaluator "wikilink") for details.
+    [Evaluator](../search/Evaluator) for details.
 -   **universal conditions:** Universal conditions in preconditions,
     effect conditions and the goal are internally compiled into axioms
     by the planner. Therefore, heuristics that do not support axioms
     (see previous point) do not support universal conditions either.
 -   **action costs:** Action costs must be non-negative integers (i.e.,
     not fractional), and each action may contain at most one effect
-    affecting
-        (total-cost)
+    affecting `(total-cost)`, which may not be part of conditional effects.
+    These are the same restrictions that were in use for IPC 2008 and IPC 2011.
 
-    , which may not be part of conditional effects. These are the same
-    restrictions that were in use for IPC 2008 and IPC 2011.
-
-These limitations are somewhat likely to be lifted in the future, but
-progress is slow.
+These limitations are somewhat likely to be lifted in the future, but progress
+is slow.
 
 ## Bugs
 
@@ -83,5 +73,4 @@ aware of the following bugs:
 The above list might be outdated by the time you are reading this.
 Follow the links to the issue tracker to be sure. If the list is not up
 to date, it would be great if you could send us a note so that we can
-remedy this. (See contact information on
-[HomePage](HomePage "wikilink").)
+remedy this. (See contact information on the [home page](../..).)
