@@ -31,14 +31,15 @@ jobs:
         with:
           python-version: '3.10'
 
-#      - name: Run autodoc
-#        run: |
-#          # generate documentation for search component
-#          cd downward
-#          python3 build.py
-#          cd misc/autodoc
-#          python3 -m pip install -r requirements.txt
-#          python3 generate-docs.py
+      - name: Run autodoc
+        run: |
+          # generate documentation for search component
+          cd downward
+          python3 build.py
+          cd misc/autodoc
+          python3 -m pip install -r requirements.txt
+          python3 generate-docs.py
+          cd ../../..
 
       - name: Move website material to website repo
         run: |
@@ -48,7 +49,12 @@ jobs:
           cp ../downward/misc/autodoc/mkdocs.yml .
           mkdir -p docs/documentation
           cp ../downward/docs/*.md docs/documentation/
-          git status
+          mkdir docs/documentation/search
+          cp ../downward/misc/autodoc/docs/* docs/documentation/search
+          git add docs
+          git add mkdocs.yml
+          git commit -m "update documentation"
+          git push
 
           
 
