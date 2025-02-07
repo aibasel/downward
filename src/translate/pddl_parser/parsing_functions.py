@@ -767,17 +767,26 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
                 # TODO user output is not very nice
             yield parse_condition(context, goal[1], type_dict, predicate_dict)
 
+
         use_metric = False
-        for entry in iterator:
-            if isinstance(entry, list) and entry[0] == ":metric":
-                with context.layer("Parsing metric"):
-                    if len(entry) != 3 or not isinstance(entry[2], list) or len(entry[2]) != 1 or entry[1] != "minimize" or entry[2][0] != "total-cost":
-                        context.error("Invalid metric definition.", entry, syntax=SYNTAX_METRIC)
-                    use_metric = True
+        try:
+            metric = next(iterator)
+        except StopIteration:
+            # nothing more to parse
+            yield use_metric
+            return
+        if not isinstance(metric, list) or not metric or metric[0] != ":metric":
+            context.error("After the goal nothing is allowed except the definition of the total-cost metric.", metric, syntax=SYNTAX_METRIC)
+        with context.layer("Parsing metric"):
+            if len(metric) != 3 or not isinstance(metric[2], list) or len(metric[2]) != 1 or metric[1] != "minimize" or metric[2][0] != "total-cost":
+                context.error("Invalid metric definition.", metric, syntax=SYNTAX_METRIC)
+            use_metric = True
         yield use_metric
 
-        for _ in iterator:
-            assert False, "This line should be unreachable"
+        for entry in iterator:
+            previous_entry = "metric" if use_metric else "goal"
+            context.error(f"After the {previous_entry} nothing is allowed.", entry)
+            # TODO user output could be nicer
 
 
 def check_atom_consistency(context, atom, initial_proposition_values,
