@@ -53,6 +53,8 @@ jobs:
           cp ../downward/misc/autodoc/docs/* docs/documentation/search
           git add docs
           git add mkdocs.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "update documentation"
           git push
 
