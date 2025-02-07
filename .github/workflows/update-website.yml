@@ -15,7 +15,8 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
-        path: downward
+        with:
+          path: downward
 
       - name: Checkout website repository
         uses: actions/checkout@v4
