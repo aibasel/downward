@@ -9,6 +9,21 @@ For more details, check the repository history
 (<https://issues.fast-downward.org>). Repository branches are named
 after the corresponding tracker issues.
 
+## Fast Downward 24.06.1
+
+Released on February 7, 2025.
+
+This is a bugfix release fixing a serious bug in Fast Downward 24.06:
+
+- The options for the `merge_and_shrink` evaluator were considered in the
+  wrong order. For example, the boolean option `prune_unreachable_states`
+  was interpreted as `max_states`, so that `max_states` was set to 0
+  or 1 based on the boolean flag. This is now fixed.
+
+  If you ran any experiments with merge-and-shrink heuristics with Fast
+  Downward 24.06, please re-run them. Earlier releases are not affected.
+  <https://issues.fast-downward.org/issue1173>
+
 ## Fast Downward 24.06
 
 Released on October 10, 2024.
