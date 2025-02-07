@@ -45,7 +45,7 @@ jobs:
         run: |
           cd downward-website
           ls *
-          git rm * # wipe content and fill it from scratch
+          git rm -r * # wipe content and fill it from scratch
           cp ../downward/misc/autodoc/mkdocs.yml .
           mkdir -p docs/documentation
           cp ../downward/docs/*.md docs/documentation/
