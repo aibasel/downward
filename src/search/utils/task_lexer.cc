@@ -37,10 +37,10 @@ void TaskLexer::initialize_tokens(const Context &context) {
     if (line.has_value()) {
         istringstream stream(line.value());
         string word;
-        while (!stream.eof()) {
-            if (stream >> word) { // ignore additional whitespace
-                tokens.push_back(word);
-            }
+        /* NOTE: The following ignores whitespace within and in
+           particular at the end of the line. */
+        while (stream >> word) {
+            tokens.push_back(word);
         }
         assert(tokens.size() > 0);
         tokens.push_back(end_of_line_sentinel);
