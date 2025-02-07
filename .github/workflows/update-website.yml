@@ -9,7 +9,7 @@ on:
 jobs:
   generate-documentation:
     name: Generate documentation
-    if: github.repository == 'aibasel/downward'
+    if: github.repository == 'roeger/downward'
     timeout-minutes: 60
     runs-on: ubuntu-24.04
     env:
