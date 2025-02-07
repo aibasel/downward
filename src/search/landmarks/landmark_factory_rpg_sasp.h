@@ -45,12 +45,12 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     virtual void generate_relaxed_landmarks(
         const std::shared_ptr<AbstractTask> &task,
         Exploration &exploration) override;
-    void found_simple_lm_and_order(const FactPair &a, LandmarkNode &b,
-                                   EdgeType t);
+    void found_simple_lm_and_order(const FactPair &atom, LandmarkNode &node,
+                                   OrderingType type);
     void found_disj_lm_and_order(const TaskProxy &task_proxy,
-                                 const std::set<FactPair> &a,
-                                 LandmarkNode &b,
-                                 EdgeType t);
+                                 const std::set<FactPair> &atoms,
+                                 LandmarkNode &node,
+                                 OrderingType type);
     void approximate_lookahead_orders(const TaskProxy &task_proxy,
                                       const std::vector<std::vector<bool>> &reached,
                                       LandmarkNode *lmp);

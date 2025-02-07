@@ -86,7 +86,7 @@ bool LandmarkHeuristic::depth_first_search_for_cycle_of_natural_orderings(
 
     visited[id] = true;
     for (auto &child : node.children) {
-        if (child.second >= EdgeType::NATURAL) {
+        if (child.second >= OrderingType::NATURAL) {
             if (depth_first_search_for_cycle_of_natural_orderings(
                     *child.first, closed, visited)) {
                 return true;
@@ -115,7 +115,7 @@ void LandmarkHeuristic::compute_landmark_graph(
             << " are disjunctive and "
             << lm_graph->get_num_conjunctive_landmarks()
             << " are conjunctive." << endl;
-        log << "Landmark graph contains " << lm_graph->get_num_edges()
+        log << "Landmark graph contains " << lm_graph->get_num_orderings()
             << " orderings." << endl;
     }
 }

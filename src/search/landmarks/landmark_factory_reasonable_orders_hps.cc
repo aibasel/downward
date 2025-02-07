@@ -58,38 +58,44 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
                 if (landmark == landmark2 || landmark2.is_disjunctive)
                     continue;
                 if (interferes(task_proxy, landmark2, landmark)) {
-                    edge_add(*node2_p, *node_p, EdgeType::REASONABLE);
+                    add_ordering(*node2_p, *node_p, OrderingType::REASONABLE);
                 }
             }
         } else {
-            // Collect candidates for reasonable orders in "interesting nodes".
-            // Use hash set to filter duplicates.
+            /*
+              Collect candidates for reasonable orders in "interesting nodes".
+              Use hash set to filter duplicates.Use hash set to filter
+              duplicates.
+            */
             unordered_set<LandmarkNode *> interesting_nodes(variables_size);
             for (const auto &child : node_p->children) {
                 const LandmarkNode &node2_p = *child.first;
-                const EdgeType &edge2 = child.second;
-                if (edge2 >= EdgeType::GREEDY_NECESSARY) { // found node2_p: node_p ->_gn node2_p
-                    for (const auto &p : node2_p.parents) {   // find parent
+                const OrderingType &type2 = child.second;
+                if (type2 >= OrderingType::GREEDY_NECESSARY) {
+                    // Found node2_p: node_p ->_gn node2_p.
+                    for (const auto &p : node2_p.parents) {
                         LandmarkNode &parent_node = *(p.first);
-                        const EdgeType &edge = p.second;
+                        const OrderingType &type = p.second;
                         if (parent_node.get_landmark().is_disjunctive)
                             continue;
-                        if (edge >= EdgeType::NATURAL && &parent_node != node_p.get()) {
-                            // find predecessors or parent and collect in "interesting nodes"
+                        if (type >= OrderingType::NATURAL &&
+                            &parent_node != node_p.get()) {
+                            /* Find predecessors or parent and collect in
+                               "interesting nodes". */
                             interesting_nodes.insert(&parent_node);
                             collect_ancestors(interesting_nodes, parent_node);
                         }
                     }
                 }
             }
-            // Insert reasonable orders between those members of "interesting nodes" that interfere
-            // with node_p.
+            /* Insert reasonable orders between those members of
+               "interesting nodes" that interfere with node_p. */
             for (LandmarkNode *node2_p : interesting_nodes) {
                 const Landmark &landmark2 = node2_p->get_landmark();
                 if (landmark == landmark2 || landmark2.is_disjunctive)
                     continue;
                 if (interferes(task_proxy, landmark2, landmark)) {
-                    edge_add(*node2_p, *node_p, EdgeType::REASONABLE);
+                    add_ordering(*node2_p, *node_p, OrderingType::REASONABLE);
                 }
             }
         }
@@ -215,8 +221,8 @@ void LandmarkFactoryReasonableOrdersHPS::collect_ancestors(
     unordered_set<LandmarkNode *> closed_nodes;
     for (const auto &p : node.parents) {
         LandmarkNode &parent = *(p.first);
-        const EdgeType &edge = p.second;
-        if (edge >= EdgeType::NATURAL && closed_nodes.count(&parent) == 0) {
+        const OrderingType &type = p.second;
+        if (type >= OrderingType::NATURAL && closed_nodes.count(&parent) == 0) {
             open_nodes.push_back(&parent);
             closed_nodes.insert(&parent);
             result.insert(&parent);
@@ -226,8 +232,8 @@ void LandmarkFactoryReasonableOrdersHPS::collect_ancestors(
         LandmarkNode &node2 = *(open_nodes.front());
         for (const auto &p : node2.parents) {
             LandmarkNode &parent = *(p.first);
-            const EdgeType &edge = p.second;
-            if (edge >= EdgeType::NATURAL && closed_nodes.count(&parent) == 0) {
+            const OrderingType &type = p.second;
+            if (type >= OrderingType::NATURAL && closed_nodes.count(&parent) == 0) {
                 open_nodes.push_back(&parent);
                 closed_nodes.insert(&parent);
                 result.insert(&parent);

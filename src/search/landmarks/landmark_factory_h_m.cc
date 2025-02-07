@@ -989,17 +989,19 @@ void LandmarkFactoryHM::generate_landmarks(
                 set_minus(h_m_table_[f1].landmarks, h_m_table_[f1].necessary);
         }
 
-        // and add the edges
+        // and add the orderings.
 
         for (int set_index : all_lms) {
             for (int lm : h_m_table_[set_index].landmarks) {
                 assert(lm_node_table_.find(lm) != lm_node_table_.end());
                 assert(lm_node_table_.find(set_index) != lm_node_table_.end());
 
-                edge_add(*lm_node_table_[lm], *lm_node_table_[set_index], EdgeType::NATURAL);
+                add_ordering(*lm_node_table_[lm], *lm_node_table_[set_index],
+                             OrderingType::NATURAL);
             }
             for (int gn : h_m_table_[set_index].necessary) {
-                edge_add(*lm_node_table_[gn], *lm_node_table_[set_index], EdgeType::GREEDY_NECESSARY);
+                add_ordering(*lm_node_table_[gn], *lm_node_table_[set_index],
+                             OrderingType::GREEDY_NECESSARY);
             }
         }
     }

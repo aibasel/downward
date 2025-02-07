@@ -114,20 +114,21 @@ static void dump_node(
     }
 }
 
-static void dump_edge(int from, int to, EdgeType edge, utils::LogProxy &log) {
+static void dump_ordering(int from, int to, OrderingType type,
+                          const utils::LogProxy &log) {
     if (log.is_at_least_debug()) {
         cout << "      lm" << from << " -> lm" << to << " [label=";
-        switch (edge) {
-        case EdgeType::NECESSARY:
+        switch (type) {
+        case OrderingType::NECESSARY:
             cout << "\"nec\"";
             break;
-        case EdgeType::GREEDY_NECESSARY:
+        case OrderingType::GREEDY_NECESSARY:
             cout << "\"gn\"";
             break;
-        case EdgeType::NATURAL:
+        case OrderingType::NATURAL:
             cout << "\"n\"";
             break;
-        case EdgeType::REASONABLE:
+        case OrderingType::REASONABLE:
             cout << "\"r\", style=dashed";
             break;
         }
@@ -147,8 +148,8 @@ void dump_landmark_graph(
             dump_node(task_proxy, *node, log);
             for (const auto &child : node->children) {
                 const LandmarkNode *child_node = child.first;
-                const EdgeType &edge = child.second;
-                dump_edge(node->get_id(), child_node->get_id(), edge, log);
+                const OrderingType &type = child.second;
+                dump_ordering(node->get_id(), child_node->get_id(), type, log);
             }
         }
         cout << "}" << endl;

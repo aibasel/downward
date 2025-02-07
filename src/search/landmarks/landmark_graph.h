@@ -17,7 +17,7 @@
 #include <vector>
 
 namespace landmarks {
-enum class EdgeType {
+enum class OrderingType {
     /*
       NOTE: The code relies on the fact that larger numbers are stronger in the
       sense that, e.g., every greedy-necessary ordering is also natural and
@@ -43,8 +43,8 @@ public:
         return this == &other;
     }
 
-    std::unordered_map<LandmarkNode *, EdgeType> parents;
-    std::unordered_map<LandmarkNode *, EdgeType> children;
+    std::unordered_map<LandmarkNode *, OrderingType> parents;
+    std::unordered_map<LandmarkNode *, OrderingType> children;
 
     int get_id() const {
         return id;
@@ -119,7 +119,7 @@ public:
     }
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
-    int get_num_edges() const;
+    int get_num_orderings() const;
 
     // Only needed by non-landmarkgraph-factories.
     const LandmarkNode *get_node(int index) const;

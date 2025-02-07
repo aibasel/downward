@@ -145,15 +145,15 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
 }
 
 void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
-    const FactPair &a, LandmarkNode &b, EdgeType t) {
-    if (lm_graph->contains_simple_landmark(a)) {
-        LandmarkNode &simple_lm = lm_graph->get_simple_landmark(a);
-        edge_add(simple_lm, b, t);
+    const FactPair &atom, LandmarkNode &node, OrderingType type) {
+    if (lm_graph->contains_simple_landmark(atom)) {
+        LandmarkNode &simple_landmark = lm_graph->get_simple_landmark(atom);
+        add_ordering(simple_landmark, node, type);
         return;
     }
 
-    Landmark landmark({a}, false, false);
-    if (lm_graph->contains_disjunctive_landmark(a)) {
+    Landmark landmark({atom}, false, false);
+    if (lm_graph->contains_disjunctive_landmark(atom)) {
         // In issue1004, we fixed a bug in this part of the code. It now removes
         // the disjunctive landmark along with all its orderings from the
         // landmark graph and adds a new simple landmark node. Before this
@@ -163,7 +163,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
 
         // Simple landmarks are more informative than disjunctive ones,
         // remove disj. landmark and add simple one
-        LandmarkNode *disj_lm = &lm_graph->get_disjunctive_landmark(a);
+        LandmarkNode *disj_lm = &lm_graph->get_disjunctive_landmark(atom);
 
         // Remove all pointers to disj_lm from internal data structures (i.e.,
         // the list of open landmarks and forward orders)
@@ -173,7 +173,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
         }
         forward_orders.erase(disj_lm);
 
-        // Retrieve incoming edges from disj_lm
+        // Retrieve incoming orderings from disj_lm.
         vector<LandmarkNode *> predecessors;
         predecessors.reserve(disj_lm->parents.size());
         for (auto &pred : disj_lm->parents) {
@@ -186,28 +186,28 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
         // Add simple landmark node
         LandmarkNode &simple_lm = lm_graph->add_landmark(move(landmark));
         open_landmarks.push_back(&simple_lm);
-        edge_add(simple_lm, b, t);
+        add_ordering(simple_lm, node, type);
 
         // Add incoming orderings of replaced disj_lm as natural orderings to
         // simple_lm
         for (LandmarkNode *pred : predecessors) {
-            edge_add(*pred, simple_lm, EdgeType::NATURAL);
+            add_ordering(*pred, simple_lm, OrderingType::NATURAL);
         }
     } else {
         LandmarkNode &simple_lm = lm_graph->add_landmark(move(landmark));
         open_landmarks.push_back(&simple_lm);
-        edge_add(simple_lm, b, t);
+        add_ordering(simple_lm, node, type);
     }
 }
 
 void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
-    const TaskProxy &task_proxy, const set<FactPair> &a,
-    LandmarkNode &b, EdgeType t) {
+    const TaskProxy &task_proxy, const set<FactPair> &atoms,
+    LandmarkNode &node, OrderingType type) {
     bool simple_lm_exists = false;
     // TODO: assign with FactPair::no_fact
     FactPair lm_prop = FactPair::no_fact;
     State initial_state = task_proxy.get_initial_state();
-    for (const FactPair &lm : a) {
+    for (const FactPair &lm : atoms) {
         if (initial_state[lm.var].get_value() == lm.value) {
             return;
         }
@@ -222,21 +222,22 @@ void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
     if (simple_lm_exists) {
         // Note: don't add orders as we can't be sure that they're correct
         return;
-    } else if (lm_graph->contains_overlapping_disjunctive_landmark(a)) {
-        if (lm_graph->contains_identical_disjunctive_landmark(a)) {
+    } else if (lm_graph->contains_overlapping_disjunctive_landmark(atoms)) {
+        if (lm_graph->contains_identical_disjunctive_landmark(atoms)) {
             // LM already exists, just add order.
-            new_lm_node = &lm_graph->get_disjunctive_landmark(*a.begin());
-            edge_add(*new_lm_node, b, t);
+            new_lm_node = &lm_graph->get_disjunctive_landmark(*atoms.begin());
+            add_ordering(*new_lm_node, node, type);
             return;
         }
         // LM overlaps with existing disj. LM, do not add.
         return;
     }
     // This LM and no part of it exist, add the LM to the landmarks graph.
-    Landmark landmark(vector<FactPair>(a.begin(), a.end()), true, false);
+    Landmark landmark(vector<FactPair>(atoms.begin(),
+                      atoms.end()), true, false);
     new_lm_node = &lm_graph->add_landmark(move(landmark));
     open_landmarks.push_back(new_lm_node);
-    edge_add(*new_lm_node, b, t);
+    add_ordering(*new_lm_node, node, type);
 }
 
 void LandmarkFactoryRpgSasp::compute_shared_preconditions(
@@ -439,7 +440,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
             for (const auto &pre : shared_pre) {
                 found_simple_lm_and_order(
                     FactPair(pre.first, pre.second), *lm_node,
-                    EdgeType::GREEDY_NECESSARY);
+                    OrderingType::GREEDY_NECESSARY);
             }
             // Extract additional orders from the relaxed planning graph and DTG.
             approximate_lookahead_orders(task_proxy, reached, lm_node);
@@ -453,7 +454,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
                 if (preconditions.size() < 5) {
                     found_disj_lm_and_order(
                         task_proxy, preconditions, *lm_node,
-                        EdgeType::GREEDY_NECESSARY);
+                        OrderingType::GREEDY_NECESSARY);
                 }
         }
     }
@@ -518,7 +519,8 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
               initial state, we have found a new landmark.
             */
             if (!domain_connectivity(initial_state, lm_fact, exclude))
-                found_simple_lm_and_order(FactPair(lm_fact.var, value), *lmp, EdgeType::NATURAL);
+                found_simple_lm_and_order(FactPair(lm_fact.var, value), *lmp,
+                                          OrderingType::NATURAL);
         }
 }
 
@@ -607,7 +609,7 @@ void LandmarkFactoryRpgSasp::add_lm_forward_orders() {
         for (const auto &node2_pair : forward_orders[node.get()]) {
             if (lm_graph->contains_simple_landmark(node2_pair)) {
                 LandmarkNode &node2 = lm_graph->get_simple_landmark(node2_pair);
-                edge_add(*node, node2, EdgeType::NATURAL);
+                add_ordering(*node, node2, OrderingType::NATURAL);
             }
         }
         forward_orders[node.get()].clear();

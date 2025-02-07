@@ -17,7 +17,7 @@ LandmarkGraph::LandmarkGraph()
     : num_conjunctive_landmarks(0), num_disjunctive_landmarks(0) {
 }
 
-int LandmarkGraph::get_num_edges() const {
+int LandmarkGraph::get_num_orderings() const {
     int total = 0;
     for (const auto &node : nodes)
         total += node->children.size();

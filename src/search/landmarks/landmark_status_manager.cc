@@ -22,7 +22,7 @@ static vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> get_gree
     for (const auto &node : graph) {
         vector<const LandmarkNode *> greedy_necessary_children;
         for (const auto &child : node->children) {
-            if (child.second == EdgeType::GREEDY_NECESSARY) {
+            if (child.second == OrderingType::GREEDY_NECESSARY) {
                 greedy_necessary_children.push_back(child.first);
             }
         }
@@ -39,7 +39,7 @@ static vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> get_reas
     for (const auto &node : graph) {
         vector<const LandmarkNode *> reasonable_parents;
         for (const auto &parent : node->parents) {
-            if (parent.second == EdgeType::REASONABLE) {
+            if (parent.second == OrderingType::REASONABLE) {
                 reasonable_parents.push_back(parent.first);
             }
         }

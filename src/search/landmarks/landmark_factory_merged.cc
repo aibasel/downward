@@ -107,10 +107,10 @@ void LandmarkFactoryMerged::generate_landmarks(
             if (from) {
                 for (const auto &to : from_orig->children) {
                     const LandmarkNode *to_orig = to.first;
-                    EdgeType e_type = to.second;
+                    OrderingType type = to.second;
                     LandmarkNode *to_node = get_matching_landmark(to_orig->get_landmark());
                     if (to_node) {
-                        edge_add(*from, *to_node, e_type);
+                        add_ordering(*from, *to_node, type);
                     } else {
                         if (log.is_at_least_normal()) {
                             log << "Discarded to ordering" << endl;

@@ -73,7 +73,7 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
                 << " landmarks, of which " << lm_graph->get_num_disjunctive_landmarks()
                 << " are disjunctive and "
                 << lm_graph->get_num_conjunctive_landmarks() << " are conjunctive." << endl;
-            log << lm_graph->get_num_edges() << " edges" << endl;
+            log << lm_graph->get_num_orderings() << " orderings" << endl;
         }
     }
 
@@ -96,13 +96,13 @@ bool LandmarkFactory::is_landmark_precondition(
     return false;
 }
 
-void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
-                               EdgeType type) {
-    /* Adds an edge in the landmarks graph. If an edge between the same
-       landmarks is already present, the stronger edge type wins. */
+void LandmarkFactory::add_ordering(LandmarkNode &from, LandmarkNode &to,
+                                   OrderingType type) {
+    /* Adds an ordering in the landmarks graph. If an ordering between the same
+       landmarks is already present, the stronger ordering type wins. */
     assert(&from != &to);
 
-    // If edge already exists, remove if weaker
+    // If ordering already exists, remove if weaker.
     if (from.children.find(&to) != from.children.end() && from.children.find(
             &to)->second < type) {
         from.children.erase(&to);
@@ -112,7 +112,7 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
         assert(to.parents.find(&from) == to.parents.end());
         assert(from.children.find(&to) == from.children.end());
     }
-    // If edge does not exist (or has just been removed), insert
+    // If ordering does not exist (or has just been removed), insert.
     if (from.children.find(&to) == from.children.end()) {
         assert(to.parents.find(&from) == to.parents.end());
         from.children.emplace(&to, type);
