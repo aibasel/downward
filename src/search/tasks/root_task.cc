@@ -547,7 +547,6 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(const vector<ExplicitVari
         }
         read_magic_line("end_mutex_group");
 
-        set<FactPair> invariant_group_set(invariant_group.begin(), invariant_group.end());
         for (const FactPair &fact1 : invariant_group) {
             for (const FactPair &fact2 : invariant_group) {
                 if (fact1.var != fact2.var) {
