@@ -40,11 +40,6 @@ jobs:
 #          python3 -m pip install -r requirements.txt
 #          python3 generate-docs.py
 
-      - name: Add non-generated documentation
-        run: |
-          cp ../../docs/*.md docs/documentation/
-          zip docs docs
-
       - name: Move website material to website repo
         run: |
           cd /downward-website
