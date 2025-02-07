@@ -76,11 +76,11 @@ void LandmarkFactoryRelaxation::calc_achievers(
     VariablesProxy variables = task_proxy.get_variables();
     for (const auto &lm_node : *lm_graph) {
         Landmark &landmark = lm_node->get_landmark();
-        for (const FactPair &lm_fact : landmark.facts) {
-            const vector<int> &ops = get_operators_including_eff(lm_fact);
+        for (const FactPair &atom : landmark.atoms) {
+            const vector<int> &ops = get_operators_including_eff(atom);
             landmark.possible_achievers.insert(ops.begin(), ops.end());
 
-            if (variables[lm_fact.var].is_derived())
+            if (variables[atom.var].is_derived())
                 landmark.is_derived = true;
         }
 
@@ -100,9 +100,9 @@ void LandmarkFactoryRelaxation::calc_achievers(
 
 bool LandmarkFactoryRelaxation::relaxed_task_solvable(
     const TaskProxy &task_proxy, Exploration &exploration,
-    const Landmark &exclude) const {
-    vector<vector<bool>> reached = compute_relaxed_reachability(exploration,
-                                                                exclude);
+    const Landmark &landmark) const {
+    vector<vector<bool>> reached =
+        compute_relaxed_reachability(exploration, landmark);
 
     for (FactProxy goal : task_proxy.get_goals()) {
         if (!reached[goal.get_variable().get_id()][goal.get_value()]) {
@@ -113,12 +113,12 @@ bool LandmarkFactoryRelaxation::relaxed_task_solvable(
 }
 
 vector<vector<bool>> LandmarkFactoryRelaxation::compute_relaxed_reachability(
-    Exploration &exploration, const Landmark &exclude) const {
-    // Extract propositions from "exclude"
+    Exploration &exploration, const Landmark &landmark) const {
+    // Extract propositions from `landmark`.
     vector<int> excluded_op_ids;
-    vector<FactPair> excluded_props(exclude.facts.begin(), exclude.facts.end());
-
-    return exploration.compute_relaxed_reachability(excluded_props,
-                                                    excluded_op_ids);
+    vector<FactPair> excluded_props(
+        landmark.atoms.begin(), landmark.atoms.end());
+    return exploration.compute_relaxed_reachability(
+        excluded_props, excluded_op_ids);
 }
 }

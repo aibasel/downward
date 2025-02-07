@@ -28,62 +28,63 @@ const LandmarkNode *LandmarkGraph::get_node(int i) const {
     return nodes[i].get();
 }
 
-LandmarkNode &LandmarkGraph::get_simple_landmark(const FactPair &fact) const {
-    assert(contains_simple_landmark(fact));
-    return *(simple_landmarks_to_nodes.find(fact)->second);
+LandmarkNode &LandmarkGraph::get_simple_landmark_node(
+    const FactPair &atom) const {
+    assert(contains_simple_landmark(atom));
+    return *(simple_landmarks_to_nodes.find(atom)->second);
 }
 
 // needed only by landmarkgraph-factories.
-LandmarkNode &LandmarkGraph::get_disjunctive_landmark(const FactPair &fact) const {
+LandmarkNode &LandmarkGraph::get_disjunctive_landmark_node(
+    const FactPair &atom) const {
     /* Note: this only works because every proposition appears in only one
        disjunctive landmark. */
-    assert(!contains_simple_landmark(fact));
-    assert(contains_disjunctive_landmark(fact));
-    return *(disjunctive_landmarks_to_nodes.find(fact)->second);
+    assert(!contains_simple_landmark(atom));
+    assert(contains_disjunctive_landmark(atom));
+    return *(disjunctive_landmarks_to_nodes.find(atom)->second);
 }
 
 
-bool LandmarkGraph::contains_simple_landmark(const FactPair &lm) const {
-    return simple_landmarks_to_nodes.count(lm) != 0;
+bool LandmarkGraph::contains_simple_landmark(const FactPair &atom) const {
+    return simple_landmarks_to_nodes.count(atom) != 0;
 }
 
-bool LandmarkGraph::contains_disjunctive_landmark(const FactPair &lm) const {
-    return disjunctive_landmarks_to_nodes.count(lm) != 0;
+bool LandmarkGraph::contains_disjunctive_landmark(const FactPair &atom) const {
+    return disjunctive_landmarks_to_nodes.count(atom) != 0;
 }
 
 bool LandmarkGraph::contains_overlapping_disjunctive_landmark(
-    const set<FactPair> &lm) const {
-    // Test whether ONE of the facts is present in some disjunctive landmark.
-    for (const FactPair &lm_fact : lm) {
-        if (contains_disjunctive_landmark(lm_fact))
+    const set<FactPair> &atoms) const {
+    // Test whether ONE of the atoms is present in some disjunctive landmark.
+    for (const FactPair &atom : atoms) {
+        if (contains_disjunctive_landmark(atom))
             return true;
     }
     return false;
 }
 
 bool LandmarkGraph::contains_identical_disjunctive_landmark(
-    const set<FactPair> &lm) const {
-    /* Test whether a disjunctive landmark exists which consists EXACTLY of
-       the facts in lm. */
-    LandmarkNode *lmn = nullptr;
-    for (const FactPair &lm_fact : lm) {
-        auto it2 = disjunctive_landmarks_to_nodes.find(lm_fact);
-        if (it2 == disjunctive_landmarks_to_nodes.end())
+    const set<FactPair> &atoms) const {
+    LandmarkNode *node = nullptr;
+    for (const FactPair &atom : atoms) {
+        auto it = disjunctive_landmarks_to_nodes.find(atom);
+        if (it == disjunctive_landmarks_to_nodes.end())
             return false;
         else {
-            if (lmn && lmn != it2->second) {
+            if (node && node != it->second) {
                 return false;
-            } else if (!lmn)
-                lmn = it2->second;
+            } else if (!node)
+                node = it->second;
         }
     }
     return true;
 }
 
-bool LandmarkGraph::contains_landmark(const FactPair &lm) const {
-    /* Note: this only checks for one fact whether it's part of a landmark,
+bool LandmarkGraph::contains_landmark(const FactPair &atom) const {
+    /* Note: this only checks for one atom whether it's part of a landmark,
        hence only simple and disjunctive landmarks are checked. */
-    return contains_simple_landmark(lm) || contains_disjunctive_landmark(lm);
+    return contains_simple_landmark(atom) ||
+           contains_disjunctive_landmark(atom);
 }
 
 LandmarkNode *LandmarkGraph::add_node(Landmark &&landmark) {
@@ -93,11 +94,11 @@ LandmarkNode *LandmarkGraph::add_node(Landmark &&landmark) {
     return nodes.back().get();
 }
 
-LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark) {
-    assert(landmark.is_conjunctive
-           || all_of(landmark.facts.begin(), landmark.facts.end(),
-                     [&](const FactPair &lm_fact) {
-                         return !contains_landmark(lm_fact);
+LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark_to_add) {
+    assert(landmark_to_add.is_conjunctive
+           || all_of(landmark_to_add.atoms.begin(), landmark_to_add.atoms.end(),
+                     [&](const FactPair &atom) {
+                         return !contains_landmark(atom);
                      }));
     /*
       TODO: Avoid having to fetch landmark after moving it. This will only be
@@ -105,51 +106,49 @@ LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark) {
       because we wont need `disjunctive_landmarks_to_nodes` and
       `simple_landmarks_to_nodes` anymore.
     */
-    LandmarkNode *new_node = add_node(move(landmark));
-    const Landmark &lm = new_node->get_landmark();
+    LandmarkNode *new_node = add_node(move(landmark_to_add));
+    const Landmark &landmark = new_node->get_landmark();
 
-    if (lm.is_disjunctive) {
-        for (const FactPair &lm_fact : lm.facts) {
-            disjunctive_landmarks_to_nodes.emplace(lm_fact, new_node);
+    if (landmark.is_disjunctive) {
+        for (const FactPair &atom : landmark.atoms) {
+            disjunctive_landmarks_to_nodes.emplace(atom, new_node);
         }
         ++num_disjunctive_landmarks;
-    } else if (lm.is_conjunctive) {
+    } else if (landmark.is_conjunctive) {
         ++num_conjunctive_landmarks;
     } else {
-        simple_landmarks_to_nodes.emplace(lm.facts.front(), new_node);
+        simple_landmarks_to_nodes.emplace(landmark.atoms.front(), new_node);
     }
     return *new_node;
 }
 
 void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
-    for (const auto &parent : node->parents) {
-        LandmarkNode &parent_node = *(parent.first);
-        parent_node.children.erase(node);
-        assert(parent_node.children.find(node) == parent_node.children.end());
+    for (const auto &[parent, type] : node->parents) {
+        parent->children.erase(node);
+        assert(parent->children.find(node) == parent->children.end());
     }
-    for (const auto &child : node->children) {
-        LandmarkNode &child_node = *(child.first);
-        child_node.parents.erase(node);
-        assert(child_node.parents.find(node) == child_node.parents.end());
+    for (const auto &[child, type] : node->children) {
+        child->parents.erase(node);
+        assert(child->parents.find(node) == child->parents.end());
     }
     const Landmark &landmark = node->get_landmark();
     if (landmark.is_disjunctive) {
         --num_disjunctive_landmarks;
-        for (const FactPair &lm_fact : landmark.facts) {
-            disjunctive_landmarks_to_nodes.erase(lm_fact);
+        for (const FactPair &atom : landmark.atoms) {
+            disjunctive_landmarks_to_nodes.erase(atom);
         }
     } else if (landmark.is_conjunctive) {
         --num_conjunctive_landmarks;
     } else {
-        simple_landmarks_to_nodes.erase(landmark.facts[0]);
+        simple_landmarks_to_nodes.erase(landmark.atoms[0]);
     }
 }
 
 void LandmarkGraph::remove_node(LandmarkNode *node) {
     remove_node_occurrences(node);
     auto it = find_if(nodes.begin(), nodes.end(),
-                      [&node](const auto &n) {
-                          return n.get() == node;
+                      [&node](const auto &other) {
+                          return other.get() == node;
                       });
     assert(it != nodes.end());
     nodes.erase(it);
@@ -171,8 +170,8 @@ void LandmarkGraph::remove_node_if(
 
 void LandmarkGraph::set_landmark_ids() {
     int id = 0;
-    for (const auto &lmn : nodes) {
-        lmn->set_id(id);
+    for (const auto &node : nodes) {
+        node->set_id(id);
         ++id;
     }
 }

@@ -50,8 +50,8 @@ bool possibly_reaches_lm(const OperatorProxy &op,
     for (EffectProxy effect: op.get_effects()) {
         FactProxy effect_fact = effect.get_fact();
         assert(!reached[effect_fact.get_variable().get_id()].empty());
-        for (const FactPair &fact : landmark.facts) {
-            if (effect_fact.get_pair() == fact) {
+        for (const FactPair &atom : landmark.atoms) {
+            if (effect_fact.get_pair() == atom) {
                 if (_possibly_fires(effect.get_conditions(), reached))
                     return true;
                 break;
@@ -91,7 +91,7 @@ static void dump_node(
         cout << "  lm" << node.get_id() << " [label=\"";
         bool first = true;
         const Landmark &landmark = node.get_landmark();
-        for (FactPair fact : landmark.facts) {
+        for (FactPair atom : landmark.atoms) {
             if (!first) {
                 if (landmark.is_disjunctive) {
                     cout << " | ";
@@ -100,8 +100,8 @@ static void dump_node(
                 }
             }
             first = false;
-            VariableProxy var = task_proxy.get_variables()[fact.var];
-            cout << var.get_fact(fact.value).get_name();
+            VariableProxy var = task_proxy.get_variables()[atom.var];
+            cout << var.get_fact(atom.value).get_name();
         }
         cout << "\"";
         if (landmark.is_true_in_state(task_proxy.get_initial_state())) {

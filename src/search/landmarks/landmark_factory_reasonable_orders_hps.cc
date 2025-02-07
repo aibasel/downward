@@ -118,11 +118,11 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
     assert(!landmark_a.is_disjunctive && !landmark_b.is_disjunctive);
 
     VariablesProxy variables = task_proxy.get_variables();
-    for (const FactPair &lm_fact_b : landmark_b.facts) {
-        FactProxy fact_b = variables[lm_fact_b.var].get_fact(lm_fact_b.value);
-        for (const FactPair &lm_fact_a : landmark_a.facts) {
-            FactProxy fact_a = variables[lm_fact_a.var].get_fact(lm_fact_a.value);
-            if (lm_fact_a == lm_fact_b) {
+    for (const FactPair &atom_b : landmark_b.atoms) {
+        FactProxy fact_b = variables[atom_b.var].get_fact(atom_b.value);
+        for (const FactPair &atom_a : landmark_a.atoms) {
+            FactProxy fact_a = variables[atom_a.var].get_fact(atom_a.value);
+            if (atom_a == atom_b) {
                 if (!landmark_a.is_conjunctive || !landmark_b.is_conjunctive)
                     return false;
                 else
@@ -141,7 +141,8 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
 
             unordered_map<int, int> shared_eff;
             bool init = true;
-            const vector<int> &op_or_axiom_ids = get_operators_including_eff(lm_fact_a);
+            const vector<int> &op_or_axiom_ids =
+                get_operators_including_eff(atom_a);
             // Intersect operators that achieve a one by one
             for (int op_or_axiom_id : op_or_axiom_ids) {
                 // If no shared effect among previous operators, break
@@ -153,15 +154,17 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
                 // e.g. in Schedule. There, the same effect is conditioned on a disjunction
                 // of conditions of which one will always be true. We test for a simple kind
                 // of these trivial conditions here.)
-                EffectsProxy effects = get_operator_or_axiom(task_proxy, op_or_axiom_id).get_effects();
+                EffectsProxy effects =
+                    get_operator_or_axiom(task_proxy, op_or_axiom_id).get_effects();
                 set<FactPair> trivially_conditioned_effects;
-                bool trivial_conditioned_effects_found = effect_always_happens(variables, effects,
-                                                                               trivially_conditioned_effects);
+                bool trivial_conditioned_effects_found =
+                    effect_always_happens(variables, effects,
+                                          trivially_conditioned_effects);
                 unordered_map<int, int> next_eff;
                 for (EffectProxy effect : effects) {
                     FactPair effect_fact = effect.get_fact().get_pair();
                     if (effect.get_conditions().empty() &&
-                        effect_fact.var != lm_fact_a.var) {
+                        effect_fact.var != atom_a.var) {
                         next_eff.emplace(effect_fact.var, effect_fact.value);
                     } else if (trivial_conditioned_effects_found &&
                                trivially_conditioned_effects.find(effect_fact)
@@ -184,7 +187,8 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
             }
             // Test whether one of the shared effects is inconsistent with b
             for (const pair<const int, int> &eff : shared_eff) {
-                const FactProxy &effect_fact = variables[eff.first].get_fact(eff.second);
+                const FactProxy &effect_fact =
+                    variables[eff.first].get_fact(eff.second);
                 if (effect_fact != fact_a &&
                     effect_fact != fact_b &&
                     effect_fact.is_mutex(fact_b))
@@ -214,7 +218,7 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
 
 void LandmarkFactoryReasonableOrdersHPS::collect_ancestors(
     unordered_set<LandmarkNode *> &result, LandmarkNode &node) {
-    /* Returns all ancestors in the landmark graph of landmark node "start" */
+    // Returns all ancestors in the landmark graph of landmark node "start".
 
     // There could be cycles if use_reasonable == true
     list<LandmarkNode *> open_nodes;

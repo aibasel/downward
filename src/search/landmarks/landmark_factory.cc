@@ -88,8 +88,8 @@ bool LandmarkFactory::is_landmark_precondition(
     /* Test whether the landmark is used by the operator as a precondition.
     A disjunctive landmarks is used if one of its disjuncts is used. */
     for (FactProxy pre : op.get_preconditions()) {
-        for (const FactPair &lm_fact : landmark.facts) {
-            if (pre.get_pair() == lm_fact)
+        for (const FactPair &atom : landmark.atoms) {
+            if (pre.get_pair() == atom)
                 return true;
         }
     }

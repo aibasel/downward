@@ -53,7 +53,7 @@ void LandmarkHeuristic::initialize(
     }
 
     if (use_preferred_operators) {
-        compute_landmarks_achieved_by_fact();
+        compute_landmarks_achieved_by_atom();
         /* Ideally, we should reuse the successor generator of the main
            task in cases where it's compatible. See issue564. */
         successor_generator =
@@ -120,11 +120,11 @@ void LandmarkHeuristic::compute_landmark_graph(
     }
 }
 
-void LandmarkHeuristic::compute_landmarks_achieved_by_fact() {
+void LandmarkHeuristic::compute_landmarks_achieved_by_atom() {
     for (const auto &node : *lm_graph) {
         const int id = node->get_id();
-        const Landmark &lm = node->get_landmark();
-        if (lm.is_conjunctive) {
+        const Landmark &landmark = node->get_landmark();
+        if (landmark.is_conjunctive) {
             /*
               TODO: We currently have no way to declare operators preferred
                based on conjunctive landmarks. We consider this a bug and want
@@ -132,11 +132,11 @@ void LandmarkHeuristic::compute_landmarks_achieved_by_fact() {
             */
             continue;
         }
-        for (const auto &fact_pair : lm.facts) {
-            if (landmarks_achieved_by_fact.contains(fact_pair)) {
-                landmarks_achieved_by_fact[fact_pair].insert(id);
+        for (const auto &atom : landmark.atoms) {
+            if (landmarks_achieved_by_atom.contains(atom)) {
+                landmarks_achieved_by_atom[atom].insert(id);
             } else {
-                landmarks_achieved_by_fact[fact_pair] = {id};
+                landmarks_achieved_by_atom[atom] = {id};
             }
         }
     }
@@ -148,9 +148,9 @@ bool LandmarkHeuristic::operator_is_preferred(
         if (!does_fire(effect, state)) {
             continue;
         }
-        const FactPair fact_pair = effect.get_fact().get_pair();
-        if (landmarks_achieved_by_fact.contains(fact_pair)) {
-            for (const int id : landmarks_achieved_by_fact[fact_pair]) {
+        const FactPair atom = effect.get_fact().get_pair();
+        if (landmarks_achieved_by_atom.contains(atom)) {
+            for (const int id : landmarks_achieved_by_atom[atom]) {
                 if (future.test(id)) {
                     return true;
                 }

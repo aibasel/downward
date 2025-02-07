@@ -638,8 +638,8 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
         Landmark &landmark = lm_node->get_landmark();
         set<int> candidates;
         // put all possible adders in candidates set
-        for (const FactPair &lm_fact : landmark.facts) {
-            const vector<int> &ops = get_operators_including_eff(lm_fact);
+        for (const FactPair &atom : landmark.atoms) {
+            const vector<int> &ops = get_operators_including_eff(atom);
             candidates.insert(ops.begin(), ops.end());
         }
 
@@ -647,8 +647,8 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
             FluentSet post = get_operator_postcondition(variables.size(), operators[op_id]);
             FluentSet pre = get_operator_precondition(operators[op_id]);
             size_t j;
-            for (j = 0; j < landmark.facts.size(); ++j) {
-                const FactPair &lm_fact = landmark.facts[j];
+            for (j = 0; j < landmark.atoms.size(); ++j) {
+                const FactPair &lm_fact = landmark.atoms[j];
                 // action adds this element of lm as well
                 if (find(post.begin(), post.end(), lm_fact) != post.end())
                     continue;
@@ -676,7 +676,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
                     break;
                 }
             }
-            if (j == landmark.facts.size()) {
+            if (j == landmark.atoms.size()) {
                 // not inconsistent with any of the other landmark fluents
                 landmark.possible_achievers.insert(op_id);
             }

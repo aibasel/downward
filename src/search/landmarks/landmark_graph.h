@@ -125,30 +125,30 @@ public:
     const LandmarkNode *get_node(int index) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
-    LandmarkNode &get_simple_landmark(const FactPair &fact) const;
+    LandmarkNode &get_simple_landmark_node(const FactPair &atom) const;
     /* This is needed only by landmark graph factories and will disappear
-       when moving landmark graph creation there. */
-    LandmarkNode &get_disjunctive_landmark(const FactPair &fact) const;
+     get_num_landmarks  when moving landmark graph creation there. */
+    LandmarkNode &get_disjunctive_landmark_node(const FactPair &atom) const;
 
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. It is not needed by
        HMLandmarkFactory. */
-    bool contains_simple_landmark(const FactPair &lm) const;
+    bool contains_simple_landmark(const FactPair &atom) const;
     // Only used internally.
-    bool contains_disjunctive_landmark(const FactPair &lm) const;
+    bool contains_disjunctive_landmark(const FactPair &atom) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. It is not needed by
        HMLandmarkFactory. */
     bool contains_overlapping_disjunctive_landmark(
-        const std::set<FactPair> &lm) const;
+        const std::set<FactPair> &atoms) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     bool contains_identical_disjunctive_landmark(
-        const std::set<FactPair> &lm) const;
+        const std::set<FactPair> &atoms) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. It is not needed by
        HMLandmarkFactory. */
-    bool contains_landmark(const FactPair &fact) const;
+    bool contains_landmark(const FactPair &atom) const;
 
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
