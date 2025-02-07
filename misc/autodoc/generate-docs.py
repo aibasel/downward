@@ -83,7 +83,7 @@ if __name__ == '__main__':
     logging.info("building documentation...")
     outdir = SCRIPT_DIR / args.outdir
     try:
-        outdir.mkdir()
+        outdir.mkdir(parents=True)
     except FileExistsError as e:
         sys.exit(e)
     html = build_docs(args.build, outdir)
