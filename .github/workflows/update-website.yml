@@ -51,10 +51,16 @@ jobs:
           cp ../downward/docs/*.md docs/documentation/
           mkdir docs/documentation/search
           cp ../downward/misc/autodoc/docs/* docs/documentation/search
+          mkdir -p docs/img
+          cd docs/img
+          wget https://raw.githubusercontent.com/roeger/downward-website/refs/heads/main/docs/img/driller.svg
+          wget https://github.com/roeger/downward-website/blob/main/docs/img/favicon.ico
+          cd ../..
           git add docs
           git add mkdocs.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git status
           git commit -m "update documentation"
           git push
 
