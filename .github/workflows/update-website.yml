@@ -12,11 +12,18 @@ jobs:
     if: github.repository == 'roeger/downward'
     timeout-minutes: 60
     runs-on: ubuntu-24.04
-    env:
-      DOWNWARD_AUTODOC_PASSWORD: ${{ secrets.DOWNWARD_AUTODOC_PASSWORD }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
+        path: downward
+
+      - name: Checkout website repository
+        uses: actions/checkout@v4
+        with:
+          repository: roeger/downward-website
+          token: ${{ secrets.DOWNWARD_WEBSITE_PAT }}
+          path: downward-website
+          ref: tip
 
       - name: Install Python
         uses: actions/setup-python@v4
@@ -26,6 +33,7 @@ jobs:
       - name: Run autodoc
         run: |
           # generate documentation for search component
+          cd downward
           python3 build.py
           cd misc/autodoc
           python3 -m pip install -r requirements.txt
@@ -36,14 +44,8 @@ jobs:
           cp ../../docs/*.md docs/documentation/
           zip docs docs
 
-      - name: Upload docs
-        uses: actions/upload-artifact@v4
-        with:
-          name: docs
-          path: docs.zip
-      
-      - name: Upload mkdocs
-        uses: actions/upload-artifact@v4
-        with:
-          name: mkdocs
-          path: mkdocs.yml
+      - name: Move website material to website repo
+        run: |
+          cd /downward-website
+          ls *
+
