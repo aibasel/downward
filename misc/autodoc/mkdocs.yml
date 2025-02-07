@@ -2,7 +2,7 @@ site_name: Fast Downward Documentation
 nav:
   - Getting started: documentation/quick-start.md
   - PDDL Support: documentation/PddlSupport.md
-  - Option Syntax: documentation/OptionSyntax.md
+  - Option Syntax: documentation/option-syntax.md
   - Search Component: documentation/search/
   - Exit Codes: documentation/exit-codes.md
 repo_url: https://github.com/aibasel/downward/
@@ -12,12 +12,12 @@ theme:
   name: material
   palette:
     primary: deep-orange
-#extra:
-#  version:
-#    provider: mike
+extra:
+  version:
+    provider: mike
 plugins:
-#  - mike:
-#      version_selector: true
+  - mike:
+      version_selector: true
   - literate-nav:
       nav_file: SUMMARY.md
       implicit_index: true
