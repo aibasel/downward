@@ -47,7 +47,7 @@ jobs:
           git rm * # wipe content and fill it from scratch
           cp ../downward/misc/autodoc/mkdocs.yml .
           mkdir -p docs/documentation
-          cp ../downward/docs/*.md docs/documenation/
+          cp ../downward/docs/*.md docs/documentation/
           git status
 
           
