@@ -42,7 +42,6 @@ jobs:
 
       - name: Move website material to website repo
         run: |
-          cd
           cd downward-website
           ls *
           git rm * # wipe content and fill it from scratch
