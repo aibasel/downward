@@ -8,9 +8,10 @@ nav:
   - Exit Codes: documentation/exit-codes.md
 repo_url: https://github.com/aibasel/downward/
 edit_uri: edit/main/docs/ # TODO update to correct directory
-site_url: https://ai.dmi.unibas.ch/_downward-test # TODO update
+site_url: https://ai.dmi.unibas.ch/_downward-test/documentation # TODO update
 theme:
   name: material
+  logo: img/driller.svg
   palette:
     primary: deep-orange
 extra:
