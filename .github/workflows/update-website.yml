@@ -1,0 +1,49 @@
+---
+name: Update website
+
+on:
+  push:
+    branches:
+      - issue1174
+
+jobs:
+  generate-documentation:
+    name: Generate documentation
+    if: github.repository == 'aibasel/downward'
+    timeout-minutes: 60
+    runs-on: ubuntu-24.04
+    env:
+      DOWNWARD_AUTODOC_PASSWORD: ${{ secrets.DOWNWARD_AUTODOC_PASSWORD }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Run autodoc
+        run: |
+          # generate documentation for search component
+          python3 build.py
+          cd misc/autodoc
+          python3 -m pip install -r requirements.txt
+          python3 generate-website.py
+
+      - name: Add non-generated documentation
+        run: |
+          cp ../../docs/*.md docs/documentation/
+          zip docs docs
+
+      - name: Upload docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs
+          path: docs.zip
+      
+      - name: Upload mkdocs
+        uses: actions/upload-artifact@v4
+        with:
+          name: mkdocs
+          path: mkdocs.yml
