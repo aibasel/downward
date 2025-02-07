@@ -31,14 +31,14 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Run autodoc
-        run: |
-          # generate documentation for search component
-          cd downward
-          python3 build.py
-          cd misc/autodoc
-          python3 -m pip install -r requirements.txt
-          python3 generate-docs.py
+#      - name: Run autodoc
+#        run: |
+#          # generate documentation for search component
+#          cd downward
+#          python3 build.py
+#          cd misc/autodoc
+#          python3 -m pip install -r requirements.txt
+#          python3 generate-docs.py
 
       - name: Add non-generated documentation
         run: |
@@ -49,4 +49,11 @@ jobs:
         run: |
           cd /downward-website
           ls *
+          git rm * # wipe content and fill it from scratch
+          cp /downward/misc/autodoc/mkdocs.yml .
+          mkdir -p docs/documentation
+          cp /downward/docs/*.md docs/documenation/
+          git status
+
+          
 
