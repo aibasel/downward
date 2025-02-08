@@ -11,7 +11,7 @@ edit_uri: edit/main/docs/ # TODO update to correct directory
 site_url: https://ai.dmi.unibas.ch/_downward-test/documentation # TODO update
 theme:
   name: material
-  logo: https://ai.dmi.unibas.ch/_downward-test/img/favicon.ico # TODO update
+  logo: https://ai.dmi.unibas.ch/_downward-test/img/driller.ico # TODO update
   favicon: https://ai.dmi.unibas.ch/_downward-test/img/favicon.ico # TODO update
   language: en
   palette:

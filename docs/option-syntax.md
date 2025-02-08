@@ -83,11 +83,11 @@ To get enumeration names (and more), run
 ## Variables
 
 Often an object should be used for several purposes, e.g. a
-[Heuristic](../search/Evaluator) or a [LandmarkFactory](../search/LandmarkFactory).
+[Heuristic](search/Evaluator.md) or a [LandmarkFactory](search/LandmarkFactory.md).
 The most prevalent use case is a heuristic that is used for both the heuristic
 estimates and for its preferred operators. In this case, one should define
 a variable for the object. We currently only support variables for
-[Heuristics](../search/Evaluator) and [LandmarkFactories](../search/LandmarkFactory)
+[Heuristics](search/Evaluator.md) and [LandmarkFactories](search/LandmarkFactory.md)
 but will extend the support for other feature types in the future.
 
 Variables can be defined with

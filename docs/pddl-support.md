@@ -4,7 +4,7 @@ On this page, we collect information regarding the subset of PDDL that
 is supported by Fast Downward. So far, this is not an exhaustive list,
 but we hope that it will become more comprehensive over time. If you
 want to contribute information or have a question, please get in touch!
-(See the contact information on the [home page](../..).)
+(See the contact information on the [home page](https://www.fast-downward.org).)
 
 ## General information
 
@@ -37,7 +37,7 @@ supported beyond basic STRIPS, with some limitations mentioned below:
 
 -   **PDDL types:** `(either ...)` types are not supported
 -   **conditional effects:** Not all heuristics support conditional
-    effects. See [Evaluator](../search/Evaluator) for details.
+    effects. See [Evaluator](search/Evaluator.md) for details.
     Also, as of this writing, support for conditional effects is still
     somewhat buggy/incomplete. Some constructs lead to translator
     crashes. This is especially true for operators that have multiple
@@ -45,7 +45,7 @@ supported beyond basic STRIPS, with some limitations mentioned below:
     variables that the translator groups into a single finite-domain
     variable.
 -   **axioms:** Not all heuristics support axioms. See
-    [Evaluator](../search/Evaluator) for details.
+    [Evaluator](search/Evaluator.md) for details.
 -   **universal conditions:** Universal conditions in preconditions,
     effect conditions and the goal are internally compiled into axioms
     by the planner. Therefore, heuristics that do not support axioms
@@ -73,4 +73,4 @@ aware of the following bugs:
 The above list might be outdated by the time you are reading this.
 Follow the links to the issue tracker to be sure. If the list is not up
 to date, it would be great if you could send us a note so that we can
-remedy this. (See contact information on the [home page](../..).)
+remedy this. (See contact information on the [home page](https://www.fast-downward.org).)

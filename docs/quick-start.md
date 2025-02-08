@@ -3,7 +3,7 @@
 Fast Downward is released in four flavours: tarball, Apptainer (formerly
 known as Singularity), Docker and Vagrant. Here we provide instructions
 to get you started as quickly as possible. You can find more usage
-information at [planner usage](../planner-usage).
+information at [planner usage](planner-usage.md).
 
 ## What flavour is for me?
 
@@ -14,7 +14,7 @@ information at [planner usage](../planner-usage).
 -   **development:** We recommend working on a clone of the master
     repository.
 
-See [what-flavour-is-for-me](../what-flavour-is-for-me) for a more
+See [what-flavour-is-for-me](what-flavour-is-for-me.md) for a more
 detailed discussion.
 
 ## Running the Apptainer image
@@ -42,7 +42,7 @@ Apptainer's predecessor, Singularity, used to be shipped with Ubuntu
 Linux for some time, making its installation very convenient. As of this
 writing, this is no longer the case, but Ubuntu (deb) packages are
 available from the Apptainer developers. For a typical Ubuntu system,
-download the [AMD64](AMD64 "wikilink") deb package from
+download the AMD64 deb package from
 <https://github.com/apptainer/apptainer/releases> and install it like so
 (example for Apptainer 1.2.2):
 
@@ -50,7 +50,7 @@ download the [AMD64](AMD64 "wikilink") deb package from
 
 ## Running the Docker image
 
-We assume that [Docker](https://docs.docker.com/get-docker/ "wikilink")
+We assume that [Docker](https://docs.docker.com/get-docker/)
 is installed on your machine. You want to solve a planning problem
 located on the `$BENCHMARKS` directory. You can run the same
 LAMA-first configuration as before:
@@ -71,10 +71,10 @@ side-effect of the command.
 
 We assume that
 
--   [Vagrant](https://www.vagrantup.com/ "wikilink") is installed on
+-   [Vagrant](https://www.vagrantup.com/) is installed on
     your machine
 -   The current directory contains the Fast Downward `Vagrantfile` for
-    the desired [release](Releases "wikilink"), the PDDL files
+    the desired [release](https://www.fast-downward.org/releases), the PDDL files
     `domain.pddl` and `problem.pddl` for the planning task you want
     to solve.
 -   The !SoPlex LP solver is included automatically. If you want to also
@@ -111,15 +111,15 @@ exit
 ## Source code
 
 See the [build
-instructions](https://github.com/aibasel/downward/blob/main/BUILD.md "wikilink")
+instructions](https://github.com/aibasel/downward/blob/main/BUILD.md)
 for a complete description on how to build the planner from source. We
-recommend using the [latest release](../../releases), especially
+recommend using the [latest release](https://www.fast-downward.org/releases), especially
 for scientific experiments. If you are using the main branch instead, be
 aware that things can break or degrade with every commit.
 
 # Next steps
 
 -   See other ways of invoking the planner on
-    [planner usage](../planner-usage).
+    [planner usage](planner-usage.md).
 -   Read about recommended [experiment
     setups](https://github.com/aibasel/downward#scientific-experiments).

@@ -2,9 +2,9 @@
 
 Fast Downward returns the following positive exit codes, listing the
 names as used in
-[src/search/utils/system.h](https://github.com/aibasel/downward/blob/main/src/search/utils/system.h "wikilink")
+[src/search/utils/system.h](https://github.com/aibasel/downward/blob/main/src/search/utils/system.h)
 and
-[driver/returncodes.py](https://github.com/aibasel/downward/blob/main/driver/returncodes.py "wikilink").
+[driver/returncodes.py](https://github.com/aibasel/downward/blob/main/driver/returncodes.py).
 If it gets killed by a specific signal, it returns the signal as exit
 code, except for SIGXCPU which we intercept. The exit codes we defined
 are grouped in four blocks.

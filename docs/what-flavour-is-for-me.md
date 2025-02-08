@@ -1,4 +1,4 @@
-Back to [quick start](../quick-start).
+Back to [quick start](quick-start.md).
 
 ## Run-time comparison
 

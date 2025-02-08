@@ -2,8 +2,8 @@
 
 To run Fast Downward, use the `fast-downward.py` driver script. At minimum, you
 need to specify the PDDL input files and search options consisting of a [search
-algorithm](search/SearchAlgorithm) with one or more [evaluator
-specifications](search/Evaluator). The driver script has many options to do
+algorithm](search/SearchAlgorithm.md) with one or more [evaluator
+specifications](search/Evaluator.md). The driver script has many options to do
 things like running portfolios, running only the translation component of the
 planner, using a non-standard build, running a plan validator and various other
 things. To see the complete list of options, run
@@ -12,7 +12,7 @@ things. To see the complete list of options, run
 
 If you want to run any of the planners based on Fast Downward that
 participated in IPC 2011, please also check
-[IpcPlanners](IpcPlanners "wikilink").
+[IpcPlanners](IpcPlanners).
 
 ## Caveats
 
