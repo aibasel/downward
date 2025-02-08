@@ -6,14 +6,21 @@ nav:
   - Option Syntax: option-syntax.md
   - Search Component: search/
   - Exit Codes: exit-codes.md
-repo_url: https://github.com/aibasel/downward/
+repo_url: https://github.com/roeger/downward/ # TODO update
 edit_uri: edit/main/docs/ # TODO update to correct directory
 site_url: https://ai.dmi.unibas.ch/_downward-test/documentation # TODO update
 theme:
   name: material
-  logo: img/driller.svg
+  logo: https://ai.dmi.unibas.ch/_downward-test/img/favicon.ico # TODO update
+  favicon: https://ai.dmi.unibas.ch/_downward-test/img/favicon.ico # TODO update
+  language: en
   palette:
     primary: deep-orange
+  features:
+    - navigation.footer # prev, next buttons
+    - navigation.path # breadcrumbs
+      #    - toc.integrate # TOC part of navigation
+
 extra:
   version:
     provider: mike
@@ -24,6 +31,8 @@ plugins:
   - literate-nav:
       nav_file: SUMMARY.md
       implicit_index: true
+  - search:
+      enabled: true
 markdown_extensions:
   - tables
   - pymdownx.highlight:
