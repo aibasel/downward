@@ -45,6 +45,6 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
-#  - toc:
-#      permalink: true
-
+  - toc:
+      permalink: "#"
+      separator: "_"
