@@ -24,6 +24,7 @@ theme:
 extra:
   version:
     provider: mike
+  homepage: https://ai.dmi.unibas.ch/_downward-test/
 plugins:
   - mike:
       version_selector: true
