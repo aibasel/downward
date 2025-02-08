@@ -1,11 +1,11 @@
 site_name: Fast Downward Documentation
 nav:
-  - Getting started: documentation/quick-start.md
-  - Planner usage: documentation/planner-usage.md
-  - PDDL Support: documentation/pddl-support.md
-  - Option Syntax: documentation/option-syntax.md
-  - Search Component: documentation/search/
-  - Exit Codes: documentation/exit-codes.md
+  - Getting started: quick-start.md
+  - Planner usage: planner-usage.md
+  - PDDL Support: pddl-support.md
+  - Option Syntax: option-syntax.md
+  - Search Component: search/
+  - Exit Codes: exit-codes.md
 repo_url: https://github.com/aibasel/downward/
 edit_uri: edit/main/docs/ # TODO update to correct directory
 site_url: https://ai.dmi.unibas.ch/_downward-test/documentation # TODO update
