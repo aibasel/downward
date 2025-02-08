@@ -20,6 +20,7 @@ extra:
 plugins:
   - mike:
       version_selector: true
+      deploy_prefix: 'documentation'
   - literate-nav:
       nav_file: SUMMARY.md
       implicit_index: true

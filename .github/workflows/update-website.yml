@@ -47,10 +47,10 @@ jobs:
           ls *
           git rm -r * # wipe content and fill it from scratch
           cp ../downward/misc/autodoc/mkdocs.yml .
-          mkdir -p docs/documentation
-          cp ../downward/docs/*.md docs/documentation/
-          mkdir docs/documentation/search
-          cp ../downward/misc/autodoc/docs/* docs/documentation/search
+          mkdir -p docs/
+          cp ../downward/docs/*.md docs/
+          mkdir docs/search
+          cp ../downward/misc/autodoc/docs/* docs/search
           mkdir -p docs/img
           cd docs/img
           wget https://raw.githubusercontent.com/roeger/downward-website/refs/heads/main/docs/img/driller.svg
