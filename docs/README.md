@@ -8,7 +8,7 @@
      supported by Fast Downward.
   -  [Option syntax](option-syntax.md) defines the syntax for the search
      configuration.
-  -  [Search component](search/) documents the different ingreedients for the
+  -  [Search component](search/index.md) documents the different ingreedients for the
      search configuration, such as [search algorithms](search/SearchAlgorithm.md) and [heuristics](search/Evaluator.md).
   -  [Exit Codes](exit-codes.md) describes the exit codes as returned by the
      planner.
