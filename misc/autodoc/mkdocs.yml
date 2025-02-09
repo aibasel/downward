@@ -6,7 +6,7 @@ nav:
   - Option Syntax: option-syntax.md
   - Search Component: search/
   - Exit Codes: exit-codes.md
-repo_url: https://github.com/roeger/downward/ # TODO update
+repo_url: https://github.com/aibasel/downward/
 edit_uri: edit/main/docs/ # TODO update to correct directory
 site_url: https://ai.dmi.unibas.ch/_downward-test/documentation # TODO update
 theme:
@@ -18,9 +18,8 @@ theme:
     primary: deep-orange
   features:
     - navigation.footer # prev, next buttons
-    - navigation.path # breadcrumbs
       #    - toc.integrate # TOC part of navigation
-
+    - navigation.indexes
 extra:
   version:
     provider: mike
