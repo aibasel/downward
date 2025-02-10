@@ -10,6 +10,7 @@
 #include "../algorithms/equivalence_relation.h"
 #include "../plugins/plugin.h"
 #include "../utils/collections.h"
+#include "../utils/component_errors.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/rng.h"
@@ -34,6 +35,10 @@ LabelReduction::LabelReduction(
       lr_method(method),
       lr_system_order(system_order),
       rng(utils::get_rng(random_seed)) {
+    utils::verify_comparison(
+        lr_before_shrinking, lr_before_merging, logical_or<>(),
+        "Please turn on at least one of the \"options before_shrinking\" or \"before_merging\"!"
+        );
 }
 
 bool LabelReduction::initialized() const {
@@ -341,14 +346,7 @@ public:
 
     virtual shared_ptr<LabelReduction> create_component(
         const plugins::Options &opts,
-        const utils::Context &context) const override {
-        bool lr_before_shrinking = opts.get<bool>("before_shrinking");
-        bool lr_before_merging = opts.get<bool>("before_merging");
-        if (!lr_before_shrinking && !lr_before_merging) {
-            context.error( // TODO316
-                "Please turn on at least one of the options "
-                "before_shrinking or before_merging!");
-        }
+        const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<LabelReduction>(
             opts.get<bool>("before_shrinking"),
             opts.get<bool>("before_merging"),
