@@ -82,8 +82,8 @@ void FactoredTransitionSystem::assert_index_valid(int index) const {
     assert(utils::in_bounds(index, transition_systems));
     assert(utils::in_bounds(index, mas_representations));
     assert(utils::in_bounds(index, distances));
-    if (!(transition_systems[index] && mas_representations[index] && distances[index]) &&
-        !(!transition_systems[index] && !mas_representations[index] && !distances[index])) {
+    if ((!transition_systems[index] || !mas_representations[index] || !distances[index]) &&
+        (transition_systems[index] || mas_representations[index] || distances[index])) {
         cerr << "Factor at index is in an inconsistent state!" << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }

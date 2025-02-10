@@ -32,7 +32,7 @@ RUN git clone --depth 1 --branch $SOPLEX_REVISION https://github.com/scipopt/sop
 
 # Install Fast Downward.
 WORKDIR /workspace/downward/
-RUN git clone --depth 1 --branch TAG https://github.com/aibasel/downward.git . && \
+RUN git clone --depth 1 --branch release-24.06.0 https://github.com/aibasel/downward.git . && \
     ./build.py release debug && \
     strip --strip-all builds/release/bin/downward
 

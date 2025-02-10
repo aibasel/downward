@@ -53,44 +53,43 @@ void SearchNode::open_initial() {
     info.creating_operator = OperatorID::no_operator;
 }
 
-void SearchNode::open(const SearchNode &parent_node,
-                      const OperatorProxy &parent_op,
-                      int adjusted_cost) {
-    assert(info.status == SearchNodeInfo::NEW);
-    info.status = SearchNodeInfo::OPEN;
-    info.g = parent_node.info.g + adjusted_cost;
-    info.real_g = parent_node.info.real_g + parent_op.get_cost();
-    info.parent_state_id = parent_node.get_state().get_id();
-    info.creating_operator = OperatorID(parent_op.get_id());
-}
-
-void SearchNode::reopen(const SearchNode &parent_node,
-                        const OperatorProxy &parent_op,
-                        int adjusted_cost) {
-    assert(info.status == SearchNodeInfo::OPEN ||
-           info.status == SearchNodeInfo::CLOSED);
-
-    // The latter possibility is for inconsistent heuristics, which
-    // may require reopening closed nodes.
-    info.status = SearchNodeInfo::OPEN;
-    info.g = parent_node.info.g + adjusted_cost;
-    info.real_g = parent_node.info.real_g + parent_op.get_cost();
-    info.parent_state_id = parent_node.get_state().get_id();
-    info.creating_operator = OperatorID(parent_op.get_id());
-}
-
-// like reopen, except doesn't change status
 void SearchNode::update_parent(const SearchNode &parent_node,
                                const OperatorProxy &parent_op,
                                int adjusted_cost) {
-    assert(info.status == SearchNodeInfo::OPEN ||
-           info.status == SearchNodeInfo::CLOSED);
-    // The latter possibility is for inconsistent heuristics, which
-    // may require reopening closed nodes.
     info.g = parent_node.info.g + adjusted_cost;
     info.real_g = parent_node.info.real_g + parent_op.get_cost();
     info.parent_state_id = parent_node.get_state().get_id();
     info.creating_operator = OperatorID(parent_op.get_id());
+}
+
+void SearchNode::open_new_node(const SearchNode &parent_node,
+                               const OperatorProxy &parent_op,
+                               int adjusted_cost) {
+    assert(info.status == SearchNodeInfo::NEW);
+    info.status = SearchNodeInfo::OPEN;
+    update_parent(parent_node, parent_op, adjusted_cost);
+}
+
+void SearchNode::reopen_closed_node(const SearchNode &parent_node,
+                                    const OperatorProxy &parent_op,
+                                    int adjusted_cost) {
+    assert(info.status == SearchNodeInfo::CLOSED);
+    info.status = SearchNodeInfo::OPEN;
+    update_parent(parent_node, parent_op, adjusted_cost);
+}
+
+void SearchNode::update_open_node_parent(const SearchNode &parent_node,
+                                         const OperatorProxy &parent_op,
+                                         int adjusted_cost) {
+    assert(info.status == SearchNodeInfo::OPEN);
+    update_parent(parent_node, parent_op, adjusted_cost);
+}
+
+void SearchNode::update_closed_node_parent(const SearchNode &parent_node,
+                                           const OperatorProxy &parent_op,
+                                           int adjusted_cost) {
+    assert(info.status == SearchNodeInfo::CLOSED);
+    update_parent(parent_node, parent_op, adjusted_cost);
 }
 
 void SearchNode::close() {

@@ -562,8 +562,7 @@ if(USE_LP)
         target_sources(lp_solver INTERFACE lp/cplex_solver_interface.h lp/cplex_solver_interface.cc)
     endif()
 
-    # TODO: we actually require a version greater than 6.0.3 but it is not released yet.
-    find_package(soplex 6.0.3 QUIET)
+    find_package(soplex 7.1.0 QUIET)
     if (SOPLEX_FOUND)
         message(STATUS "Found SoPlex: ${SOPLEX_INCLUDE_DIRS}")
         target_link_libraries(lp_solver INTERFACE libsoplex)
@@ -578,6 +577,8 @@ create_fast_downward_library(
     SOURCES
         heuristics/array_pool
         heuristics/relaxation_heuristic
+    DEPENDS
+        default_value_axioms_task
     DEPENDENCY_ONLY
 )
 
@@ -607,6 +608,7 @@ create_fast_downward_library(
     SOURCES
         heuristics/cea_heuristic
     DEPENDS
+        default_value_axioms_task
         domain_transition_graph
         priority_queues
         task_properties
@@ -618,6 +620,7 @@ create_fast_downward_library(
     SOURCES heuristics/cg_heuristic
             heuristics/cg_cache
     DEPENDS
+        default_value_axioms_task
         domain_transition_graph
         priority_queues
         task_properties
@@ -697,6 +700,18 @@ create_fast_downward_library(
         tasks/modified_goals_task
         tasks/modified_operator_costs_task
     DEPENDS
+        task_properties
+    DEPENDENCY_ONLY
+)
+
+create_fast_downward_library(
+    NAME default_value_axioms_task
+    HELP "Task transformation adding axioms describing under which circumstances a derived variable is set to its default value."
+    SOURCES
+        tasks/default_value_axioms_task
+    DEPENDS
+        core_tasks
+        sccs
         task_properties
     DEPENDENCY_ONLY
 )
@@ -847,6 +862,7 @@ create_fast_downward_library(
         landmarks/landmark_sum_heuristic
         landmarks/util
     DEPENDS
+        default_value_axioms_task
         lp_solver
         priority_queues
         successor_generator
@@ -938,8 +954,7 @@ create_fast_downward_library(
 
 create_fast_downward_library(
     NAME sccs
-    HELP "Algorithm to compute the strongly connected components (SCCs) of a "
-         "directed graph."
+    HELP "Algorithm to compute the strongly connected components (SCCs) of a directed graph."
     SOURCES
         algorithms/sccs
     DEPENDENCY_ONLY

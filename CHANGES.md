@@ -9,6 +9,260 @@ For more details, check the repository history
 (<https://issues.fast-downward.org>). Repository branches are named
 after the corresponding tracker issues.
 
+## Fast Downward 24.06
+
+Released on October 10, 2024.
+
+Highlights:
+
+- We have improved the translator in several dimensions. Key
+  improvements include better error reporting for invalid PDDL,
+  revised and faster version of the invariant algorithm and full
+  support for negated predicates in the goal.
+
+- Negated axioms are now computed in the search component, and only in
+  configurations that actually use them. This eliminates a worst-case
+  exponential performance bottleneck in cases where negated axioms are
+  not used. Heuristics that use negated axioms have a new option
+  (`axioms=approximate_negative`) to avoid this computation at the
+  cost of some heuristic accuracy.
+
+- There are many improvements to the `landmark_sum` and
+  `landmark_cost_partitioning` heuristics. This includes a new theory
+  of landmark progression that fixes a gap in the completeness in
+  search configurations like LAMA and can deal directly with cyclic
+  landmark orders, support for reasonable orders in admissible
+  landmark heuristics, a cleaner definition of preferred operators,
+  deterministic synthesis of reasonable orders, and performance
+  improvements. Please note that the command-line options for landmark
+  heuristics have changed.
+
+- We added a new set of operator-counting constraints
+  (`delete_relaxation_rr_constraints`), which implements the
+  delete-relaxation operator-counting constraints by Rankooh and
+  Rintanen. The old `delete_relaxation_constraints` plugin using the
+  constraints by Imai and Fukunaga has been renamed to
+  `delete_relaxation_if_constraints`.
+
+- We added the alias `seq-sat-fdss-2023` for the satisficing Fast
+  Downward Stone Soup 2023 portfolio from IPC 2023.
+
+- For developers: planner component objects (such as heuristics or
+  search algorithms) are now constructed with individual parameters
+  rather than having all parameters encapsulated in an `Options`
+  object. (We mention this primarily for developers maintaining their
+  own forks, as this change affects more than 200 source files.)
+
+Details:
+
+- bug fix: The planner now invokes destructors when terminating
+  (except for emergency situations where this is not possible) and
+  exits gracefully when running out of memory.
+  <https://issues.fast-downward.org/issue1138>
+  <https://issues.fast-downward.org/issue984>
+
+- bug fix: Removed a dangling pointer in the state registry caused by
+  state copying.
+  <https://issues.fast-downward.org/issue1115>
+
+- build: On M2 Macs it is now easier to build Fast Downward with CPLEX.
+
+- build: We now support static linking of CPLEX.
+  <https://issues.fast-downward.org/issue1122>
+
+- build: We modernized the CMake build system by updating the
+  requirement to CMake 3.16. New files must now be listed in
+  src/search/CMakeLists.txt for compilation. For Soplex support, users
+  need to set the soplex_DIR environment variable instead of
+  DOWNWARD_SOPLEX_ROOT. Furthermore, we renamed CMake options from
+  PLUGIN_FF_HEURISTIC_ENABLED to LIBRARY_FF_HEURISTIC_ENABLED.
+  <https://issues.fast-downward.org/issue1097>
+
+- build: We added support for the `Validate` binary from newer VAL
+  versions, defaulting to `Validate` if `validate` is not found on the
+  PATH.
+  <https://issues.fast-downward.org/issue1123>
+
+- build, for developers: We introduced the
+  `-Wzero-as-null-pointer-constant` flag to warn when 0 is used
+  instead of `nullptr` and the `-Wmissing-declarations` flag to detect
+  global functions not declared in header files, promoting static
+  declarations for visibility control.
+  <https://issues.fast-downward.org/issue1112>
+  <https://issues.fast-downward.org/issue1107>
+
+- command line, for users: usage errors are now printed to stderr.
+  <https://issues.fast-downward.org/issue1084>
+
+- command line, bug fix: Line breaks in command lines are now
+  correctly handled on Windows.
+  <https://issues.fast-downward.org/issue1120>
+
+- driver: When running a portfolio, its component now prints the
+  absolute runtime as well as the relative runtime.
+  <https://issues.fast-downward.org/issue1131>
+
+- driver: We have added the alias `seq-sat-fdss-2023` for the
+  satisficing Fast Downward Stone Soup 2023 portfolio.
+  <https://issues.fast-downward.org/issue1110>
+
+- infrastructure: We have restructured the documentation for building
+  and running experiments. The build instructions are in the
+  [BUILD.md](BUILD.md) file. Developer-specific build information
+  has been moved to the "for developers" wiki section.
+  <https://issues.fast-downward.org/issue961>.
+
+- infrastructure: We have removed the experiments directory from the
+  repository.
+  <https://issues.fast-downward.org/issue1116>
+
+- infrastructure: We have updated the operating system versions and
+  software versions used for our GitHub actions test suite.
+  <https://issues.fast-downward.org/issue1142>
+
+- infrastructure: Windows builds using CPLEX in GitHub actions now
+  work with arbitrary repository names.
+  <https://issues.fast-downward.org/issue1121>
+
+- landmarks, for users: We no longer break cycles in
+  landmark graphs because landmark progression can now deal
+  with cycles. Obedient-reasonable orderings are no longer used
+  because they had little impact on performance in our experiments
+  and they are not well-supported by theory.
+  <https://issues.fast-downward.org/issue996>
+  <https://issues.fast-downward.org/issue1089>
+
+- landmarks, for users: Configurations with landmark heuristics are up
+  to 30% faster due to data structure optimizations.
+  <https://issues.fast-downward.org/issue1126>
+
+- landmarks, for users: The landmark cost partitioning heuristic now
+  uses an enumeration to define the type of cost partitioning instead
+  of a Boolean. This affects the command line: `optimal={true,false}`
+  is now `cost_partitioning={optimal,uniform}`.
+  <https://issues.fast-downward.org/issue1091>
+
+- landmarks, for developers: We updated variable, function, class and
+  file names within the landmark cost partitioning code.
+  <https://issues.fast-downward.org/issue1108>
+
+- landmarks, for users: The algorithm for generating reasonable
+  landmark orderings is now deterministic and finds more orderings.
+  This has a positive impact on performance (number of
+  expansions, plan quality for satisficing configurations).
+  <https://issues.fast-downward.org/issue383>
+
+- landmarks, for users: the landmark heuristics now consider an
+  operator preferred iff it achieves a landmark that is needed in the
+  future according to the heuristic. This replaces the previous, much
+  more convoluted definition.
+  <https://issues.fast-downward.org/issue1075>
+
+- landmarks, bug fix: Landmark progression is now sound. The new
+  progression stores more information per state, leading to higher
+  memory requirements, but overall performance is only minimally
+  affected. With this change, it is now safe to use reasonable
+  orderings in the `landmark_cost_partitioning` heuristic. Since this
+  is in general beneficial, The `seq-opt-bjolp` alias now uses
+  reasonable orderings.
+  <https://issues.fast-downward.org/issue1036>
+
+- landmarks, bug fix: We no longer wrongly assert that conjunctive
+  landmarks do not overlap with simple or disjunctive landmarks.
+  <https://issues.fast-downward.org/issue1087>
+
+- LP/MIP solvers, bug fix: Empty constraint systems no longer lead to
+  crashes when using CPLEX.
+  <https://issues.fast-downward.org/issue1111>
+
+- LP/MIP solvers, bug fix: We now call the correct methods of the LP
+  solvers for setting variable bounds.
+  <https://issues.fast-downward.org/issue1119>
+  <https://issues.fast-downward.org/issue1118>
+
+- merge-and-shrink, for developers: We refactored and simplified the code
+  of the `merge_sccs` merge strategy.
+  <https://issues.fast-downward.org/issue1105>
+
+- operator counting, for users: We added
+  `delete_relaxation_rr_constraints`, which implements the
+  delete-relaxation operator-counting constraints described in
+  "Efficient Computation and Informative Estimation of h<sup>+</sup>
+  by Integer and Linear Programming" (Rankooh and Rintanen, ICAPS
+  2022). The old `delete_relaxation_constraints` plugin is now called
+  `delete_relaxation_if_constraints`.
+  For details, see
+  <https://www.fast-downward.org/Doc/ConstraintGenerator#Delete_relaxation_constraints_from_Rankooh_and_Rintanen>
+  <https://issues.fast-downward.org/issue1134>
+
+- option parser, for users and developers: constructors no longer use
+  an encapsulated `Options` object, but take their parameters
+  directly. As a side effect, some command-line options now take their
+  parameters in a different order.
+  <https://issues.fast-downward.org/issue1082>
+
+- option parser, for developers: We now support string arguments in
+  double quotes. Strings may use escape symbols `\"`, `\\`, and `\n`
+  for double quotes, backslashes and newlines.
+  <https://issues.fast-downward.org/issue1106>
+
+- potential heuristics, bug fix: The potential optimizer now supports
+  effects that set a variable to a value that is already required by a
+  precondition. (The code will never generate such effects, but this
+  makes it possible to use task transformations that do generate such
+  effects.)
+  <https://issues.fast-downward.org/issue1150>
+
+- search algorithms, bug fix: in the `eager` search algorithm, the
+  setting `reopen_closed=false` also affected open nodes, not just
+  closed nodes. This has now been fixed. Note that the previous
+  behavior did not affect the optimality of A* because it does not use
+  this setting.
+  <https://issues.fast-downward.org/issue1140>
+
+- search algorithms, bug fix: Correctly propagate plan cost bounds to
+  components in iterated search in cases where manual cost bounds are
+  combined with bounds derived from incumbent solutions.
+  <https://issues.fast-downward.org/issue1130>
+
+- translator and heuristics, for users: Negated axioms are now
+  computed in the search component and only for heuristics that need
+  them (relaxation heuristics, landmark heuristics, `cea` and `cg`).
+  This can lead to a large performance improvement for configurations
+  that do not use the aforementioned heuristics. We added a new option
+  for heuristics using negated axioms:
+
+  `axioms={approximate_negative,approximate_negative_cycles}`
+
+  `approximate_negative_cycles` is the old behavior and the new
+  default, while `approximate_negative` may result in less informative
+  heuristics, but avoids a potentially exponential number of negated
+  axioms.
+  <https://issues.fast-downward.org/issue454>
+
+- translator, for users: We added full support for negative literals
+  in goals.
+  <https://issues.fast-downward.org/issue1127>
+
+- translator: We removed a source of nondeterminism in the translator.
+  The translator should now be deterministic except for the effect of
+  the invariant synthesis timeout (option
+  `--invariant-generation-max-time`).
+  <https://issues.fast-downward.org/issue879>
+
+- translator, for users: We improved error reporting for invalid PDDL
+  input.
+  <https://issues.fast-downward.org/issue1030>
+
+- translator, bug fix: Uninitialized numeric expressions are now
+  handled correctly by the translator.
+  <https://issues.fast-downward.org/issue913>
+
+- translator, bug fix: There was a conceptual gap in the invariant
+  synthesis algorithm. This has been fixed by a revised algorithm,
+  which is also faster.
+  <https://issues.fast-downward.org/issue1133>
+
 ## Fast Downward 23.06
 
 Released on July 31, 2023.

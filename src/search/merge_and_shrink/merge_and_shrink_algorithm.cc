@@ -200,7 +200,6 @@ void MergeAndShrinkAlgorithm::main_loop(
                 << timer.get_elapsed_time()
                 << " (" << msg << ")" << endl;
         };
-    int iteration_counter = 0;
     while (fts.get_num_active_entries() > 1) {
         // Choose next transition systems to merge
         pair<int, int> merge_indices = merge_strategy->get_next();
@@ -321,8 +320,6 @@ void MergeAndShrinkAlgorithm::main_loop(
         if (log.is_at_least_normal()) {
             log << endl;
         }
-
-        ++iteration_counter;
     }
 
     log << "End of merge-and-shrink algorithm, statistics:" << endl;

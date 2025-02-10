@@ -82,7 +82,7 @@ target_link_libraries(cplex::cplex INTERFACE Threads::Threads)
 if(${CMAKE_SIZEOF_VOID_P} EQUAL 4)
     set(BITWIDTH_HINTS "x86")
 elseif(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-    set(BITWIDTH_HINTS "x86-64" "x64")
+    set(BITWIDTH_HINTS "x86-64" "x64" "arm64")
 endif()
 
 if(APPLE)

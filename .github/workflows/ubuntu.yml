@@ -20,20 +20,19 @@ jobs:
     strategy:
       matrix:
         version:
-          - {ubuntu: 'ubuntu-20.04', python: '3.8', cc: gcc-10, cxx: g++-10, run_tox_tests: true}
-          - {ubuntu: 'ubuntu-20.04', python: '3.8', cc: clang-12, cxx: clang++-12, run_tox_tests: false}
-          - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: gcc-11, cxx: g++-11, run_tox_tests: false}
           - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: gcc-12, cxx: g++-12, run_tox_tests: true}
-          - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: clang-14, cxx: clang++-14, run_tox_tests: false}
+          - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: clang-15, cxx: clang++-15, run_tox_tests: false}
+          - {ubuntu: 'ubuntu-24.04', python: '3.10', cc: gcc-14, cxx: g++-14, run_tox_tests: true}
+          - {ubuntu: 'ubuntu-24.04', python: '3.10', cc: clang-18, cxx: clang++-18, run_tox_tests: false}
     env:
       CC: ${{ matrix.version.cc }}
       CXX: ${{ matrix.version.cxx }}
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
       cplex_DIR: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex
       CPLEX_LIB: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/libcplex2211.so
-      soplex_DIR: /home/runner/lib/soplex-6.0.3x
-      SOPLEX_LIB: /home/runner/lib/soplex-6.0.3x/lib/
-      SOPLEX_INCLUDE: /home/runner/lib/soplex-6.0.3x/include/
+      soplex_DIR: /home/runner/lib/soplex-7.1.0
+      SOPLEX_LIB: /home/runner/lib/soplex-7.1.0/lib/
+      SOPLEX_INCLUDE: /home/runner/lib/soplex-7.1.0/include/
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -57,14 +56,6 @@ jobs:
         run: |
           sudo apt-get -y install ${{ matrix.version.cxx }}
 
-      # TODO: Remove once issue with Ubuntu 22.04 and clang++-14 is resolved.
-      - name: Work around https://github.com/actions/runner-images/issues/8659
-        if: matrix.version.cxx == 'clang++-14'
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-jammy.list
-          sudo apt-get update
-          sudo apt-get install -y --allow-downgrades libc6=2.35-* libc6-dev=2.35-* libstdc++6=12.3.0-* libgcc-s1=12.3.0-*
-
       # Only install CPLEX if its URL/secret is set.
       - name: Install CPLEX
         if: ${{ env.CPLEX_URL != 0 }}
@@ -80,7 +71,7 @@ jobs:
         run: |
           git clone https://github.com/scipopt/soplex.git
           cd soplex
-          git checkout a5df0814d67812c13a00f06eec507b4d071fb862
+          git checkout release-710
           cd ..
           cmake -S soplex -B build
           cmake --build build
@@ -107,7 +98,7 @@ jobs:
 
       - name: Upload archive
         if: ${{ matrix.version.run_tox_tests }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.4.0
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
           path: archive.tar.gz
@@ -121,13 +112,13 @@ jobs:
     strategy:
       matrix:
         version:
-          - {ubuntu: ubuntu-20.04, python: '3.8'}
           - {ubuntu: ubuntu-22.04, python: '3.10'}
+          - {ubuntu: ubuntu-24.04, python: '3.10'}
     env:
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
     steps:
       - name: Download archive
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4.1.8
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
 

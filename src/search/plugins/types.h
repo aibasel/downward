@@ -162,7 +162,7 @@ class TypeRegistry {
     std::unordered_map<const Type *, std::unique_ptr<ListType>,
                        SemanticHash, SemanticEqual> registered_list_types;
     template<typename T>
-    void insert_basic_type();
+    void insert_basic_type(const std::string &name);
     const Type &get_nonlist_type(std::type_index type) const;
 public:
     static BasicType NO_TYPE;

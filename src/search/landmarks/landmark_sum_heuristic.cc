@@ -31,12 +31,15 @@ static bool are_dead_ends_reliable(
 }
 
 LandmarkSumHeuristic::LandmarkSumHeuristic(
-    const shared_ptr<LandmarkFactory> &lm_factory, bool pref,
-    bool prog_goal, bool prog_gn, bool prog_r,
+    const shared_ptr<LandmarkFactory> &lm_factory,
+    bool pref, bool prog_goal, bool prog_gn, bool prog_r,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
+    const string &description, utils::Verbosity verbosity,
+    tasks::AxiomHandlingType axioms)
     : LandmarkHeuristic(
-          pref, transform, cache_estimates, description, verbosity),
+          pref,
+          tasks::get_default_value_axioms_task_if_needed(transform, axioms),
+          cache_estimates, description, verbosity),
       dead_ends_reliable(
           are_dead_ends_reliable(lm_factory, task_proxy)) {
     if (log.is_at_least_normal()) {
@@ -139,9 +142,17 @@ public:
                 "39",
                 "127-177",
                 "2010"));
-
+        /*
+          We usually have the options of base classes behind the options
+          of specific implementations. In the case of landmark
+          heuristics, we decided to have the common options at the front
+          because it feels more natural to specify the landmark factory
+          before the more specific arguments like the used LP solver in
+          the case of an optimal cost partitioning heuristic.
+        */
         add_landmark_heuristic_options_to_feature(
             *this, "landmark_sum_heuristic");
+        tasks::add_axioms_option_to_feature(*this);
 
         document_note(
             "Note on performance for satisficing planning",
@@ -183,22 +194,22 @@ public:
             "conditional_effects",
             "supported if the LandmarkFactory supports them; otherwise "
             "ignored");
-        document_language_support("axioms", "ignored");
+        document_language_support("axioms", "supported");
 
         document_property("admissible", "no");
         document_property("consistent", "no");
         document_property(
             "safe",
-            "yes except on tasks with axioms or on tasks with "
-            "conditional effects when using a LandmarkFactory "
-            "not supporting them");
+            "yes except on tasks with conditional effects when "
+            "using a LandmarkFactory not supporting them");
     }
 
     virtual shared_ptr<LandmarkSumHeuristic> create_component(
         const plugins::Options &opts,
         const utils::Context &) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkSumHeuristic>(
-            get_landmark_heuristic_arguments_from_options(opts));
+            get_landmark_heuristic_arguments_from_options(opts),
+            tasks::get_axioms_arguments_from_options(opts));
     }
 };
 

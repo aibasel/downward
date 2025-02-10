@@ -9,6 +9,7 @@
 #include "../task_utils/task_properties.h"
 #include "../tasks/domain_abstracted_task_factory.h"
 #include "../tasks/modified_goals_task.h"
+#include "../utils/hash.h"
 #include "../utils/logging.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
@@ -35,7 +36,8 @@ public:
     explicit SortFactsByIncreasingHaddValues(
         const shared_ptr<AbstractTask> &task)
         : hadd(utils::make_unique_ptr<additive_heuristic::AdditiveHeuristic>(
-                   task, false, "h^add within CEGAR abstractions",
+                   tasks::AxiomHandlingType::APPROXIMATE_NEGATIVE, task,
+                   false, "h^add within CEGAR abstractions",
                    utils::Verbosity::SILENT)) {
         TaskProxy task_proxy(*task);
         hadd->compute_heuristic_for_cegar(task_proxy.get_initial_state());
@@ -139,11 +141,10 @@ LandmarkDecomposition::LandmarkDecomposition(
 
 shared_ptr<AbstractTask> LandmarkDecomposition::build_domain_abstracted_task(
     const shared_ptr<AbstractTask> &parent,
-    const landmarks::LandmarkGraph &landmark_graph,
-    const FactPair &fact) const {
+    const landmarks::LandmarkNode *node) const {
     assert(combine_facts);
     extra_tasks::VarToGroups value_groups;
-    for (auto &pair : get_prev_landmarks(landmark_graph, fact)) {
+    for (auto &pair : get_prev_landmarks(node)) {
         int var = pair.first;
         vector<int> &group = pair.second;
         if (group.size() >= 2)
@@ -155,8 +156,10 @@ shared_ptr<AbstractTask> LandmarkDecomposition::build_domain_abstracted_task(
 SharedTasks LandmarkDecomposition::get_subtasks(
     const shared_ptr<AbstractTask> &task, utils::LogProxy &log) const {
     SharedTasks subtasks;
-    shared_ptr<landmarks::LandmarkGraph> landmark_graph =
+    const shared_ptr<landmarks::LandmarkGraph> landmark_graph =
         get_landmark_graph(task);
+    utils::HashMap<FactPair, landmarks::LandmarkNode *> fact_to_landmark_map =
+        get_fact_to_landmark_map(landmark_graph);
     Facts landmark_facts = get_fact_landmarks(*landmark_graph);
     filter_and_order_facts(task, fact_order, landmark_facts, *rng, log);
     for (const FactPair &landmark : landmark_facts) {
@@ -164,7 +167,7 @@ SharedTasks LandmarkDecomposition::get_subtasks(
             make_shared<extra_tasks::ModifiedGoalsTask>(task, Facts {landmark});
         if (combine_facts) {
             subtask = build_domain_abstracted_task(
-                subtask, *landmark_graph, landmark);
+                subtask, fact_to_landmark_map[landmark]);
         }
         subtasks.push_back(subtask);
     }

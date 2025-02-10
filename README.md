@@ -2,7 +2,7 @@
 
 Fast Downward is a domain-independent classical planning system.
 
-Copyright 2003-2023 Fast Downward contributors (see below).
+Copyright 2003-2024 Fast Downward contributors (see below).
 
 For further information:
 - Fast Downward website: <https://www.fast-downward.org>
@@ -27,13 +27,13 @@ This version of Fast Downward has been tested with the following software versio
 
 | OS           | Python | C++ compiler                                                     | CMake |
 | ------------ | ------ | ---------------------------------------------------------------- | ----- |
-| Ubuntu 22.04 | 3.10   | GCC 11, GCC 12, Clang 14                                         | 3.22  |
-| Ubuntu 20.04 | 3.8    | GCC 10, Clang 12                                                 | 3.16  |
-| macOS 12     | 3.10   | AppleClang 14                                                    | 3.24  |
-| macOS 11     | 3.8    | AppleClang 13                                                    | 3.24  |
-| Windows 10   | 3.8    | Visual Studio Enterprise 2019 (MSVC 19.29) and 2022 (MSVC 19.31) | 3.22  |
+| Ubuntu 24.04 | 3.10   | GCC 14, Clang 18                                                 | 3.30  |
+| Ubuntu 22.04 | 3.10   | GCC 12, Clang 15                                                 | 3.30  |
+| macOS 14     | 3.10   | AppleClang 15                                                    | 3.30  |
+| macOS 13     | 3.10   | AppleClang 15                                                    | 3.30  |
+| Windows 10   | 3.8    | Visual Studio Enterprise 2019 (MSVC 19.29) and 2022 (MSVC 19.41) | 3.30  |
 
-We test LP support with CPLEX 22.1.1 and SoPlex 6.0.3+. On Ubuntu we
+We test LP support with CPLEX 22.1.1 and SoPlex 7.1.1. On Ubuntu we
 test both CPLEX and SoPlex. On Windows we currently only test CPLEX,
 and on macOS we do not test LP solvers (yet).
 
@@ -52,19 +52,22 @@ Currently, this list is sorted by the last year the person has been
 active, and in case of ties, by the earliest year the person started
 contributing, and finally by last name.
 
-- 2003-2023 Malte Helmert
-- 2008-2016, 2018-2023 Gabriele Roeger
-- 2010-2023 Jendrik Seipp
-- 2010-2011, 2013-2023 Silvan Sievers
-- 2012-2023 Florian Pommerening
-- 2013, 2015-2023 Salomé Eriksson
+- 2003-2024 Malte Helmert
+- 2008-2016, 2018-2024 Gabriele Roeger
+- 2010-2024 Jendrik Seipp
+- 2010-2011, 2013-2024 Silvan Sievers
+- 2012-2024 Florian Pommerening
+- 2013, 2015-2024 Salomé Eriksson
+- 2018-2024 Patrick Ferber
+- 2021-2024 Clemens Büchner
+- 2022-2024 Remo Christen
+- 2023-2024 Simon Dold
+- 2023-2024 Claudia S. Grundke
+- 2024 Martín Pozo
+- 2024 Tanja Schindler
+- 2024 David Speck
 - 2015, 2021-2023 Thomas Keller
-- 2018-2023 Patrick Ferber
 - 2018-2020, 2023 Augusto B. Corrêa
-- 2021-2023 Clemens Büchner
-- 2022-2023 Remo Christen
-- 2023 Simon Dold
-- 2023 Claudia S. Grundke
 - 2023 Victor Paléologue
 - 2023 Emanuele Tirendi
 - 2021-2022 Dominik Drexler

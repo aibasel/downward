@@ -18,6 +18,10 @@ class LogProxy;
 class SearchNode {
     State state;
     SearchNodeInfo &info;
+
+    void update_parent(const SearchNode &parent_node,
+                       const OperatorProxy &parent_op,
+                       int adjusted_cost);
 public:
     SearchNode(const State &state, SearchNodeInfo &info);
 
@@ -32,15 +36,18 @@ public:
     int get_real_g() const;
 
     void open_initial();
-    void open(const SearchNode &parent_node,
-              const OperatorProxy &parent_op,
-              int adjusted_cost);
-    void reopen(const SearchNode &parent_node,
-                const OperatorProxy &parent_op,
-                int adjusted_cost);
-    void update_parent(const SearchNode &parent_node,
+    void open_new_node(const SearchNode &parent_node,
                        const OperatorProxy &parent_op,
                        int adjusted_cost);
+    void reopen_closed_node(const SearchNode &parent_node,
+                            const OperatorProxy &parent_op,
+                            int adjusted_cost);
+    void update_open_node_parent(const SearchNode &parent_node,
+                                 const OperatorProxy &parent_op,
+                                 int adjusted_cost);
+    void update_closed_node_parent(const SearchNode &parent_node,
+                                   const OperatorProxy &parent_op,
+                                   int adjusted_cost);
     void close();
     void mark_as_dead_end();
 
