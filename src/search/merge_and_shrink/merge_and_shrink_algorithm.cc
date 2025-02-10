@@ -87,18 +87,18 @@ void MergeAndShrinkAlgorithm::handle_shrink_limit_defaults() {
         }
     }
 
-    utils::verify_comparison(max_states, 1, greater_equal<>(), 
-            "Transition system size must be at least 1.");
+    utils::verify_comparison(max_states, 1, greater_equal<>(),
+                             "Transition system size must be at least 1.");
 
-    utils::verify_comparison(max_states_before_merge, 1, greater_equal<>(), 
-            "Transition system size before merge must be at least 1.");
+    utils::verify_comparison(max_states_before_merge, 1, greater_equal<>(),
+                             "Transition system size before merge must be at least 1.");
 
     if (shrink_threshold_before_merge == -1) {
         shrink_threshold_before_merge = max_states;
     }
 
-    utils::verify_comparison(shrink_threshold_before_merge, 1, greater_equal<>(), 
-            "Threshold must be at least 1.");
+    utils::verify_comparison(shrink_threshold_before_merge, 1, greater_equal<>(),
+                             "Threshold must be at least 1.");
 
 
     if (shrink_threshold_before_merge > max_states) {

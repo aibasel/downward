@@ -126,7 +126,7 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(
       num_rejected(0),
       hill_climbing_timer(nullptr) {
     utils::verify_comparison(min_improvement, num_samples, less_equal<>(),
-        "Minimum improvement must not be higher than number of samples.");
+                             "Minimum improvement must not be higher than number of samples.");
 }
 
 int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
