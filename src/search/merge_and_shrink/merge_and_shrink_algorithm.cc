@@ -43,21 +43,23 @@ MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(
     const shared_ptr<LabelReduction> &label_reduction,
     bool prune_unreachable_states, bool prune_irrelevant_states,
     int max_states, int max_states_before_merge,
-    int _threshold_before_merge, double main_loop_max_time,
+    int threshold_before_merge, double main_loop_max_time,
     utils::Verbosity verbosity)
     : merge_strategy_factory(merge_strategy),
       shrink_strategy(shrink_strategy),
       label_reduction(label_reduction),
       max_states(max_states),
       max_states_before_merge(max_states_before_merge),
-      shrink_threshold_before_merge(_threshold_before_merge),
+      shrink_threshold_before_merge(threshold_before_merge),
       prune_unreachable_states(prune_unreachable_states),
       prune_irrelevant_states(prune_irrelevant_states),
       log(utils::get_log_for_verbosity(verbosity)),
       main_loop_max_time(main_loop_max_time),
       starting_peak_memory(0) {
-    // handle shrink limit defaults
-    
+    handle_shrink_limit_defaults();
+}
+
+void MergeAndShrinkAlgorithm::handle_shrink_limit_defaults(){
     // If none of the two state limits has been set: set default limit.
     if (max_states == -1 && max_states_before_merge == -1) {
         max_states = 50000;
@@ -79,7 +81,7 @@ MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(
     if (max_states_before_merge > max_states) {
         max_states_before_merge = max_states;
         if (log.is_warning()) {
-            log << "warning: "
+            log << "WARNING: "
                 << "max_states_before_merge exceeds max_states, "
                 << "correcting max_states_before_merge." << endl;
         }
@@ -102,7 +104,7 @@ MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(
     if (shrink_threshold_before_merge > max_states) {
         shrink_threshold_before_merge = max_states;
         if (log.is_warning()) {
-            log << "warning: "
+            log << "WARNING: "
                 << "threshold exceeds max_states, "
                 << "correcting threshold." << endl;
         }
@@ -558,60 +560,5 @@ get_transition_system_size_limit_arguments_from_options(
         opts.get<int>("max_states_before_merge"),
         opts.get<int>("threshold_before_merge")
         );
-}
-
-void handle_shrink_limit_options_defaults(plugins::Options &opts, const utils::Context &context) {
-    int max_states = opts.get<int>("max_states");
-    int max_states_before_merge = opts.get<int>("max_states_before_merge");
-    int threshold = opts.get<int>("threshold_before_merge");
-
-    // If none of the two state limits has been set: set default limit.
-    if (max_states == -1 && max_states_before_merge == -1) {
-        max_states = 50000;
-    }
-
-    // If exactly one of the max_states options has been set, set the other
-    // so that it imposes no further limits.
-    if (max_states_before_merge == -1) {
-        max_states_before_merge = max_states;
-    } else if (max_states == -1) {
-        int n = max_states_before_merge;
-        if (utils::is_product_within_limit(n, n, INF)) {
-            max_states = n * n;
-        } else {
-            max_states = INF;
-        }
-    }
-    
-    //utils::verify_comparison(max_states_before_merge, max_states, less_equal<>{},
-    //        "warning: max_states_before_merge exceeds max_states, correcting XXX.");
-    if (max_states_before_merge > max_states) {
-        context.warn(
-            "warning: max_states_before_merge exceeds max_states, correcting.");
-        max_states_before_merge = max_states;
-    }
-
-    utils::verify_comparison(max_states, 1, greater_equal<>(), 
-            "Transition system size must be at least 1.");
-
-    utils::verify_comparison(max_states_before_merge, 1, greater_equal<>(), 
-            "Transition system size before merge must be at least 1.");
-
-    if (threshold == -1) {
-        threshold = max_states;
-    }
-
-    utils::verify_comparison(threshold, 1, greater_equal<>(), 
-            "Threshold must be at least 1.");
-  
-    if (threshold > max_states) {
-        context.warn(
-            "warning: threshold exceeds max_states, correcting.");
-        threshold = max_states;
-    }
-
-    opts.set<int>("max_states", max_states);
-    opts.set<int>("max_states_before_merge", max_states_before_merge);
-    opts.set<int>("threshold_before_merge", threshold);
 }
 }
