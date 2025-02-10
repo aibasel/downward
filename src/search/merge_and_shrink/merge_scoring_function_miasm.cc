@@ -171,9 +171,8 @@ public:
 
     virtual shared_ptr<MergeScoringFunctionMIASM> create_component(
         const plugins::Options &opts,
-        const utils::Context &context) const override {
+        const utils::Context &) const override {
         plugins::Options options_copy(opts);
-        handle_shrink_limit_options_defaults(options_copy, context); // TODO316
         return plugins::make_shared_from_arg_tuples<MergeScoringFunctionMIASM>(
             options_copy.get<shared_ptr<ShrinkStrategy>>("shrink_strategy"),
             get_transition_system_size_limit_arguments_from_options(

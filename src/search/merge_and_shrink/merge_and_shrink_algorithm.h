@@ -37,7 +37,7 @@ class MergeAndShrinkAlgorithm {
     const int max_states_before_merge;
     /* A soft limit for triggering shrinking even if the hard limits
        max_states and max_states_before_merge are not violated. */
-    const int shrink_threshold_before_merge;
+    int shrink_threshold_before_merge;
 
     // Options for pruning
     const bool prune_unreachable_states;
