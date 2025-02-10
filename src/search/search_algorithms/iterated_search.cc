@@ -20,7 +20,7 @@ IteratedSearch::IteratedSearch(const plugins::Options &opts)
       last_phase_found_solution(false),
       best_bound(bound),
       iterated_found_solution(false) {
-        utils::verify_list_not_empty(algorithm_configs, "algorithm_configs");
+    utils::verify_list_not_empty(algorithm_configs, "algorithm_configs");
 }
 
 shared_ptr<SearchAlgorithm> IteratedSearch::get_search_algorithm(

@@ -20,7 +20,7 @@ OperatorCountingHeuristic::OperatorCountingHeuristic(
     : Heuristic(transform, cache_estimates, description, verbosity),
       constraint_generators(constraint_generators),
       lp_solver(lpsolver) {
-        utils::verify_list_not_empty(constraint_generators, "constraint_generators");
+    utils::verify_list_not_empty(constraint_generators, "constraint_generators");
     lp_solver.set_mip_gap(0);
     named_vector::NamedVector<lp::LPVariable> variables;
     double infinity = lp_solver.get_infinity();

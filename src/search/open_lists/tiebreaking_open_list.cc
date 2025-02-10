@@ -146,7 +146,7 @@ TieBreakingOpenListFactory::TieBreakingOpenListFactory(
     : evals(evals),
       unsafe_pruning(unsafe_pruning),
       pref_only(pref_only) {
-        utils::verify_list_not_empty(evals, "evals");
+    utils::verify_list_not_empty(evals, "evals");
 }
 
 unique_ptr<StateOpenList>

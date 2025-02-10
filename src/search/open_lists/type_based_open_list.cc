@@ -140,7 +140,7 @@ TypeBasedOpenListFactory::TypeBasedOpenListFactory(
     const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
     : evaluators(evaluators),
       random_seed(random_seed) {
-        utils::verify_list_not_empty(evaluators, "evaluators");
+    utils::verify_list_not_empty(evaluators, "evaluators");
 }
 
 unique_ptr<StateOpenList>

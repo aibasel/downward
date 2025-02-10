@@ -132,7 +132,7 @@ AlternationOpenListFactory::AlternationOpenListFactory(
     const vector<shared_ptr<OpenListFactory>> &sublists, int boost)
     : sublists(sublists),
       boost(boost) {
-        utils::verify_list_not_empty(sublists, "sublists");
+    utils::verify_list_not_empty(sublists, "sublists");
 }
 
 unique_ptr<StateOpenList>

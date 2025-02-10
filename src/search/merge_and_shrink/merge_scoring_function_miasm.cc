@@ -172,12 +172,11 @@ public:
     virtual shared_ptr<MergeScoringFunctionMIASM> create_component(
         const plugins::Options &opts,
         const utils::Context &) const override {
-        plugins::Options options_copy(opts);
         return plugins::make_shared_from_arg_tuples<MergeScoringFunctionMIASM>(
-            options_copy.get<shared_ptr<ShrinkStrategy>>("shrink_strategy"),
+            opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy"),
             get_transition_system_size_limit_arguments_from_options(
-                options_copy),
-            options_copy.get<bool>("use_caching")
+                opts),
+            opts.get<bool>("use_caching")
             );
     }
 };
