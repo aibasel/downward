@@ -423,7 +423,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
               achieving the landmark.
             */
             vector<vector<bool>> reached =
-                compute_relaxed_reachability(exploration, landmark);
+                compute_relaxed_reachability(exploration, landmark, false);
             /*
               Use this information to determine all operators that can
               possibly achieve *landmark* for the first time, and collect

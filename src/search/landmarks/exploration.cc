@@ -44,7 +44,7 @@ Exploration::Exploration(const TaskProxy &task_proxy, utils::LogProxy &log)
       cross-reference to the memory address of elements of the vector while
       building it; meaning a resize would invalidate all references.
     */
-    int num_unary_ops = 0;
+    int num_unary_ops = task_proxy.get_variables().size();
     OperatorsProxy operators = task_proxy.get_operators();
     AxiomsProxy axioms = task_proxy.get_axioms();
     for (OperatorProxy op : operators) {
@@ -55,6 +55,13 @@ Exploration::Exploration(const TaskProxy &task_proxy, utils::LogProxy &log)
     }
     unary_operators.reserve(num_unary_ops);
 
+    // Build unary operators to achieve the initial facts.
+    for (const FactProxy &fact : task_proxy.get_initial_state()) {
+        const auto &[var, value] = fact.get_pair();
+        unary_operators.emplace_back(
+            vector<Proposition *>{}, &propositions[var][value],
+            numeric_limits<int>::max ());
+    }
     // Build unary operators for operators and axioms.
     for (OperatorProxy op : operators)
         build_unary_operators(op);
@@ -83,8 +90,8 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
             precondition.push_back(&propositions[precondition_fact.var]
                                    [precondition_fact.value]);
 
-        FactProxy effect_fact = effect.get_fact();
-        Proposition *effect_proposition = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
+        const auto &[var, value] = effect.get_fact().get_pair();
+        Proposition *effect_proposition = &propositions[var][value];
         int op_or_axiom_id = get_operator_or_axiom_id(op);
         unary_operators.emplace_back(precondition, effect_proposition, op_or_axiom_id);
 
@@ -120,11 +127,10 @@ void Exploration::setup_exploration_queue(
         propositions[fact.var][fact.value].excluded = true;
     }
 
-    // Set facts that are true in the current state as reached.
-    for (FactProxy fact : state) {
-        Proposition *init_prop =
-            &propositions[fact.get_variable().get_id()][fact.get_value()];
-        enqueue_if_necessary(init_prop);
+    // Change unary operators to achieve facts true in initial state.
+    for (const FactProxy fact : state) {
+        const auto &[var, value] = fact.get_pair();
+        unary_operators[var].effect = &propositions[var][value];
     }
 
     /*

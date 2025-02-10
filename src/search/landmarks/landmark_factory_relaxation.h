@@ -20,15 +20,16 @@ protected:
       Test whether the relaxed planning task is solvable without
       achieving the excluded landmark.
     */
-    bool relaxed_task_solvable(const TaskProxy &task_proxy,
-                               Exploration &exploration,
-                               const Landmark &exclude) const;
+    bool relaxed_task_solvable(
+        const TaskProxy &task_proxy, Exploration &exploration,
+        const Landmark &exclude, bool use_unary_relaxation) const;
     /*
       Compute for each fact whether it is relaxed reachable without
       achieving the excluded landmark.
     */
     std::vector<std::vector<bool>> compute_relaxed_reachability(
-        Exploration &exploration, const Landmark &exclude) const;
+        Exploration &exploration, const Landmark &exclude,
+        bool use_unary_relaxation) const;
 
 private:
     const bool unary_first_achievers;

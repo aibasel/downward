@@ -55,6 +55,13 @@ struct UnaryOperator {
 class Exploration {
     TaskProxy task_proxy;
 
+    /*
+      Note, for a task with n variables, the first n entries of
+      `unary_operators` are reserved to represent achievers of the n
+      propositions corresponding to the atoms of the initial state. This
+      is to correctly compute landmarks of the unary relaxation which
+      requires to compile the initial (or rather current) state away.
+    */
     std::vector<UnaryOperator> unary_operators;
     std::vector<std::vector<Proposition>> propositions;
     std::deque<Proposition *> prop_queue;

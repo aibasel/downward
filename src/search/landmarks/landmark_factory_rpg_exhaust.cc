@@ -36,23 +36,23 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
         lm_graph->add_landmark(move(landmark));
     }
     // test all other possible facts
-    State initial_state = task_proxy.get_initial_state();
+    const State initial_state = task_proxy.get_initial_state();
     for (VariableProxy var : task_proxy.get_variables()) {
         for (int value = 0; value < var.get_domain_size(); ++value) {
             const FactPair lm(var.get_id(), value);
             if (!lm_graph->contains_simple_landmark(lm)) {
                 Landmark landmark({lm}, false, false);
-                if (initial_state[lm.var].get_value() == lm.value ||
-                    !relaxed_task_solvable(task_proxy, exploration, landmark)) {
+                if (!relaxed_task_solvable(task_proxy, exploration, landmark,
+                                           only_causal_landmarks)) {
                     lm_graph->add_landmark(move(landmark));
                 }
             }
         }
     }
-
-    if (only_causal_landmarks) {
-        discard_noncausal_landmarks(task_proxy, exploration);
-    }
+    //
+    // if (only_causal_landmarks) {
+    //     discard_noncausal_landmarks(task_proxy, exploration);
+    // }
 }
 
 bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
