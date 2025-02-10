@@ -630,6 +630,12 @@ def parse_task(domain_pddl, task_pddl):
         finalmsg="please check :constants and :objects definitions")
     init += [pddl.Atom("=", (obj.name, obj.name)) for obj in objects]
 
+    check_for_spurious_objects(
+        context,
+        predicates,
+        init,
+        errmsg = "error: %r is initialized but never defined",
+        finalmsg = "please check :init and :predicates definitions")
     return pddl.Task(
         domain_name, task_name, requirements, types, objects,
         predicates, functions, init, goal, actions, axioms, use_metric)
@@ -822,5 +828,16 @@ def check_for_duplicates(context, elements, errmsg, finalmsg):
             errors.append(errmsg % element)
         else:
             seen.add(element)
+    if errors:
+        context.error("\n".join(errors) + "\n" + finalmsg)
+
+
+def check_for_spurious_objects(context, predicates, init, errmsg, finalmsg):
+    """Look for objects that appear in the task file but not in the domain file"""
+    domain_predicates = {p.name for p in predicates}
+    errors = []
+    for i in init:
+        if i.predicate not in domain_predicates:
+            errors.append(errmsg % i.predicate)
     if errors:
         context.error("\n".join(errors) + "\n" + finalmsg)
