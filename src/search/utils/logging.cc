@@ -53,7 +53,7 @@ const string Context::INDENT = "  ";
 
 Context::Context()
     : initial_stack_size(0) {
-    }
+}
 
 Context::Context(const Context &context)
     : initial_stack_size(context.block_stack.size()),

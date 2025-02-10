@@ -19,7 +19,7 @@ LandmarkFactoryMerged::LandmarkFactoryMerged(
     utils::Verbosity verbosity)
     : LandmarkFactory(verbosity),
       lm_factories(lm_factories) {
-        utils::verify_list_not_empty(lm_factories, "lm_factories");
+    utils::verify_list_not_empty(lm_factories, "lm_factories");
 }
 
 LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const Landmark &landmark) const {

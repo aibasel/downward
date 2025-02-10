@@ -119,7 +119,6 @@ public:
     const std::string &get_unparsed_config() const;
     void set_unparsed_config(const std::string &config);
 };
-
 }
 
 #endif

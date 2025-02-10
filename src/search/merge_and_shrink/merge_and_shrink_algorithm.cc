@@ -59,7 +59,7 @@ MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(
     handle_shrink_limit_defaults();
 }
 
-void MergeAndShrinkAlgorithm::handle_shrink_limit_defaults(){
+void MergeAndShrinkAlgorithm::handle_shrink_limit_defaults() {
     // If none of the two state limits has been set: set default limit.
     if (max_states == -1 && max_states_before_merge == -1) {
         max_states = 50000;
@@ -71,13 +71,13 @@ void MergeAndShrinkAlgorithm::handle_shrink_limit_defaults(){
         max_states_before_merge = max_states;
     } else if (max_states == -1) {
         if (utils::is_product_within_limit(
-                    max_states_before_merge, max_states_before_merge, INF)) {
+                max_states_before_merge, max_states_before_merge, INF)) {
             max_states = max_states_before_merge * max_states_before_merge;
         } else {
             max_states = INF;
         }
     }
-    
+
     if (max_states_before_merge > max_states) {
         max_states_before_merge = max_states;
         if (log.is_warning()) {
@@ -86,7 +86,7 @@ void MergeAndShrinkAlgorithm::handle_shrink_limit_defaults(){
                 << "correcting max_states_before_merge." << endl;
         }
     }
-    
+
     utils::verify_comparison(max_states, 1, greater_equal<>(), 
             "Transition system size must be at least 1.");
 
