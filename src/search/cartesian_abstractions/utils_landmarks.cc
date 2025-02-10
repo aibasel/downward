@@ -55,6 +55,7 @@ VarToValues get_prev_landmarks(const LandmarkNode *node) {
     VarToValues groups;
     vector<const LandmarkNode *> open;
     unordered_set<const LandmarkNode *> closed;
+    open.reserve(node->parents.size());
     for (const auto &[parent, type] : node->parents) {
         open.push_back(parent);
     }

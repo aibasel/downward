@@ -108,7 +108,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
     }
 
     // Check for lmp in conditional effects
-    set<int> lm_props_achievable;
+    unordered_set<int> lm_props_achievable;
     for (EffectProxy effect : effects) {
         FactProxy effect_fact = effect.get_fact();
         for (size_t j = 0; j < landmark.atoms.size(); ++j)
@@ -203,7 +203,7 @@ void LandmarkFactoryRpgSasp::found_simple_lm_and_order(
 }
 
 void LandmarkFactoryRpgSasp::found_disj_lm_and_order(
-    const TaskProxy &task_proxy, const set<FactPair> &atoms,
+    const TaskProxy &task_proxy, const utils::HashSet<FactPair> &atoms,
     LandmarkNode &node, OrderingType type) {
     bool simple_lm_exists = false;
     // TODO: assign with FactPair::no_fact
@@ -342,7 +342,8 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes(
 }
 
 void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
-    const TaskProxy &task_proxy, vector<set<FactPair>> &disjunctive_pre,
+    const TaskProxy &task_proxy,
+    vector<utils::HashSet<FactPair>> &disjunctive_pre,
     vector<vector<bool>> &reached, const Landmark &landmark) {
     /*
       Compute disjunctive preconditions from all operators than can potentially
@@ -362,7 +363,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     int num_ops = 0;
     unordered_map<int, vector<FactPair>> preconditions;   // maps from
     // pddl_proposition_indeces to props
-    unordered_map<int, set<int>> used_operators;  // tells for each
+    unordered_map<int, unordered_set<int>> used_operators;  // tells for each
     // proposition which operators use it
     for (size_t i = 0; i < op_or_axiom_ids.size(); ++i) {
         OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_ids[i]);
@@ -390,7 +391,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     }
     for (const auto &pre : preconditions) {
         if (static_cast<int>(used_operators[pre.first].size()) == num_ops) {
-            set<FactPair> pre_set;  // the set gets rid of duplicate predicates
+            utils::HashSet<FactPair> pre_set;
             pre_set.insert(pre.second.begin(), pre.second.end());
             if (pre_set.size() > 1) { // otherwise this LM is not actually a disjunctive LM
                 disjunctive_pre.push_back(pre_set);
@@ -452,7 +453,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
             approximate_lookahead_orders(task_proxy, reached, lm_node);
 
             // Process achieving operators again to find disjunctive LMs
-            vector<set<FactPair>> disjunctive_pre;
+            vector<utils::HashSet<FactPair>> disjunctive_pre;
             compute_disjunctive_preconditions(
                 task_proxy, disjunctive_pre, reached, landmark);
             for (const auto &preconditions : disjunctive_pre)

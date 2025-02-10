@@ -9,11 +9,7 @@
 #include "../utils/memory.h"
 
 #include <cassert>
-#include <list>
-#include <map>
-#include <set>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 namespace landmarks {
@@ -105,7 +101,7 @@ public:
 
     // Needed by both landmark graph factories and non-landmark-graph factories.
     int get_num_landmarks() const {
-        return nodes.size();
+        return static_cast<int>(nodes.size());
     }
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
@@ -140,11 +136,11 @@ public:
        when moving landmark graph creation there. It is not needed by
        HMLandmarkFactory. */
     bool contains_overlapping_disjunctive_landmark(
-        const std::set<FactPair> &atoms) const;
+        const utils::HashSet<FactPair> &atoms) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     bool contains_identical_disjunctive_landmark(
-        const std::set<FactPair> &atoms) const;
+        const utils::HashSet<FactPair> &atoms) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. It is not needed by
        HMLandmarkFactory. */
@@ -152,7 +148,7 @@ public:
 
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
-    LandmarkNode &add_landmark(Landmark &&landmark);
+    LandmarkNode &add_landmark(Landmark &&landmark_to_add);
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     void remove_node(LandmarkNode *node);
