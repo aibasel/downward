@@ -873,4 +873,5 @@ def check_for_ghost_variables(context, actions, errmsg):
         for v in parameter_variable_names - precondition_variable_names:
             errors.append(errmsg % (a.name, v))
         final_err = "\n".join(errors)
-        context.error(final_err)
+        if errors:
+            context.error(final_err)
