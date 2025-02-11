@@ -33,22 +33,6 @@ private:
     void postprocess(const TaskProxy &task_proxy, Exploration &exploration);
 
     void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration);
-
-protected:
-    /*
-      The method discard_noncausal_landmarks assumes the graph has no
-      conjunctive landmarks, and will not process conjunctive landmarks
-      correctly.
-    */
-    void discard_noncausal_landmarks(const TaskProxy &task_proxy,
-                                     Exploration &exploration);
-    /*
-      A landmark is causal if it is a goal or it is a precondition of an
-      action that must be applied in order to reach the goal.
-    */
-    bool is_causal_landmark(const TaskProxy &task_proxy,
-                            Exploration &exploration,
-                            const Landmark &landmark) const;
 };
 }
 

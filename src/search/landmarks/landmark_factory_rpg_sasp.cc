@@ -18,12 +18,10 @@ using utils::ExitCode;
 
 namespace landmarks {
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(
-    bool disjunctive_landmarks, bool use_orders,
-    bool only_causal_landmarks, utils::Verbosity verbosity)
+    bool disjunctive_landmarks, bool use_orders, utils::Verbosity verbosity)
     : LandmarkFactoryRelaxation(verbosity),
       disjunctive_landmarks(disjunctive_landmarks),
-      use_orders(use_orders),
-      only_causal_landmarks(only_causal_landmarks) {
+      use_orders(use_orders) {
 }
 
 void LandmarkFactoryRpgSasp::build_dtg_successors(const TaskProxy &task_proxy) {
@@ -466,10 +464,6 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
     if (!use_orders) {
         discard_all_orderings();
     }
-
-    if (only_causal_landmarks) {
-        discard_noncausal_landmarks(task_proxy, exploration);
-    }
 }
 
 void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
@@ -648,7 +642,6 @@ public:
             "keep disjunctive landmarks",
             "true");
         add_use_orders_option_to_feature(*this);
-        add_only_causal_landmarks_option_to_feature(*this);
         add_landmark_factory_options_to_feature(*this);
 
         document_language_support(
@@ -661,7 +654,6 @@ public:
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgSasp>(
             opts.get<bool>("disjunctive_landmarks"),
             get_use_orders_arguments_from_options(opts),
-            get_only_causal_landmarks_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));
     }
 };
