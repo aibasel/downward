@@ -668,6 +668,10 @@ def parse_task(domain_pddl, task_pddl):
                               actions,
                               "error: the precondition of %r mentions the variable %r which is not listed in the parameters")
 
+    check_arities_in_init(context,
+                          predicates,
+                          init)
+
     return pddl.Task(
         domain_name, task_name, requirements, types, objects,
         predicates, functions, init, goal, actions, axioms, use_metric)
@@ -883,13 +887,34 @@ def check_for_ghost_variables(context, actions, errmsg):
 def check_for_duplicate_actions(context, actions, errmsg):
     name_list = [a.name for a in actions]
     name_set = set(name_list)
-    name_counts = {name:name_list.count(name) for name in name_set}
+    name_counts = {name: name_list.count(name) for name in name_set}
     errors = []
     for name, count in name_counts.items():
-       if count > 1:
-           errors.append(errmsg % name)
+        if count > 1:
+            errors.append(errmsg % name)
 
     final_err = "\n".join(errors)
 
+    if errors:
+        context.error(final_err)
+
+
+def check_arities_in_init(context, predicates, init):
+    true_arg_length = {p.name: len(p.arguments) for p in predicates}
+    name_to_predicate = {p.name: str(p) for p in predicates}
+
+    def pretty_print(atom):
+        return "(" + atom.predicate + " " + " ".join(atom.args) + ")"
+
+    errors = []
+    few = "error in :init -> not enough arguments\n --> Got: %r\n --> Usage: %r"
+    many = "error in :init -> too many arguments\n --> Got: %r\n --> Usage: %r"
+    for i in init:
+        if true_arg_length[i.predicate] < len(i.args):
+            errors.append(many % (pretty_print(i), name_to_predicate[i.predicate]))
+        if true_arg_length[i.predicate] > len(i.args):
+            errors.append(few % (pretty_print(i), name_to_predicate[i.predicate]))
+
+    final_err = "\n".join(errors)
     if errors:
         context.error(final_err)
