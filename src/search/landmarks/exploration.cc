@@ -106,7 +106,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
 */
 void Exploration::setup_exploration_queue(
     const State &state, const vector<FactPair> &excluded_props,
-    const vector<int> &excluded_op_ids, bool use_unary_relaxation) {
+    bool use_unary_relaxation) {
     prop_queue.clear();
 
     // Reset reachability information.
@@ -148,8 +148,7 @@ void Exploration::setup_exploration_queue(
       looping over all unary operators). Note however that this can lead to
       an overapproximation, e.g. if the effect e1 also has condition c.
     */
-    unordered_set<int> op_ids_to_mark(excluded_op_ids.begin(),
-                                      excluded_op_ids.end());
+    unordered_set<int> op_ids_to_mark;
     if (!use_unary_relaxation && !excluded_props.empty()) {
         for (OperatorProxy op : task_proxy.get_operators()) {
             for (EffectProxy effect : op.get_effects()) {
@@ -217,10 +216,9 @@ void Exploration::enqueue_if_necessary(Proposition *prop) {
 }
 
 vector<vector<bool>> Exploration::compute_relaxed_reachability(
-    const vector<FactPair> &excluded_props,
-    const vector<int> &excluded_op_ids, bool use_unary_relaxation) {
+    const vector<FactPair> &excluded_props, bool use_unary_relaxation) {
     setup_exploration_queue(task_proxy.get_initial_state(), excluded_props,
-                            excluded_op_ids, use_unary_relaxation);
+                            use_unary_relaxation);
     relaxed_exploration();
 
     // Bundle reachability information into the return data structure.

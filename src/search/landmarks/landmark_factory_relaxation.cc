@@ -41,7 +41,7 @@ void LandmarkFactoryRelaxation::calc_achievers(
         }
 
         vector<vector<bool>> reached =
-            compute_relaxed_reachability(exploration, landmark);
+            exploration.compute_relaxed_reachability(landmark.facts, false);
 
         for (int op_or_axom_id : landmark.possible_achievers) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);
@@ -57,8 +57,8 @@ void LandmarkFactoryRelaxation::calc_achievers(
 bool LandmarkFactoryRelaxation::relaxed_task_solvable(
     const TaskProxy &task_proxy, Exploration &exploration,
     const Landmark &exclude, const bool use_unary_relaxation) const {
-    vector<vector<bool>> reached = compute_relaxed_reachability(
-        exploration, exclude, use_unary_relaxation);
+    vector<vector<bool>> reached = exploration.compute_relaxed_reachability(
+        exclude.facts, use_unary_relaxation);
 
     for (FactProxy goal : task_proxy.get_goals()) {
         if (!reached[goal.get_variable().get_id()][goal.get_value()]) {
@@ -66,16 +66,5 @@ bool LandmarkFactoryRelaxation::relaxed_task_solvable(
         }
     }
     return true;
-}
-
-vector<vector<bool>> LandmarkFactoryRelaxation::compute_relaxed_reachability(
-    Exploration &exploration, const Landmark &exclude,
-    const bool use_unary_relaxation) const {
-    // Extract propositions from "exclude"
-    vector<int> excluded_op_ids;
-    vector<FactPair> excluded_props(exclude.facts.begin(), exclude.facts.end());
-
-    return exploration.compute_relaxed_reachability(
-        excluded_props, excluded_op_ids, use_unary_relaxation);
 }
 }
