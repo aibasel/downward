@@ -122,6 +122,8 @@ def parse_typed_list(context, alist, only_variables=False,
                             f"Type missing after '{TYPED_LIST_SEPARATOR}'.",
                             alist)
                     items = alist[:separator_position]
+                    if not items:
+                        context.error(f"Expected something before the separator '{TYPED_LIST_SEPARATOR}'.", alist)
                     _type = alist[separator_position + 1]
                     alist = alist[separator_position + 2:]
                     if not isinstance(_type, str): #TODO should we allow lists of length 1 as well?
@@ -629,6 +631,8 @@ def parse_task(domain_pddl, task_pddl):
 
 
 def parse_domain_pddl(context, domain_pddl):
+    if len(domain_pddl) < 2:
+        context.error("The domain file must start with the define keyword and the domain name.")
     iterator = iter(domain_pddl)
     with context.layer("Parsing domain"):
         define_tag = next(iterator)
@@ -714,58 +718,61 @@ def parse_domain_pddl(context, domain_pddl):
 def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
     iterator = iter(task_pddl)
     with context.layer("Parsing task"):
-        define_tag = next(iterator)
-        if define_tag != "define":
-            context.error("Task definition expected to start with '(define ")
+        try:
+            define_tag = next(iterator)
+            if define_tag != "define":
+                context.error("Task definition expected to start with '(define ")
 
-        with context.layer("Parsing problem name"):
-            problem_line = next(iterator)
-            check_named_block(context, problem_line, ["problem"], syntax=SYNTAX_TASK_PROBLEM_NAME)
-            if len(problem_line) != 2 or not isinstance(problem_line[1], str):
-                context.error("The definition of the problem name expects exactly one word after 'problem'.",
-                            problem_line[1:], syntax=SYNTAX_TASK_PROBLEM_NAME)
-                            # TODO user output is not very nice
-            yield problem_line[1]
+            with context.layer("Parsing problem name"):
+                problem_line = next(iterator)
+                check_named_block(context, problem_line, ["problem"], syntax=SYNTAX_TASK_PROBLEM_NAME)
+                if len(problem_line) != 2 or not isinstance(problem_line[1], str):
+                    context.error("The definition of the problem name expects exactly one word after 'problem'.",
+                                problem_line[1:], syntax=SYNTAX_TASK_PROBLEM_NAME)
+                                # TODO user output is not very nice
+                yield problem_line[1]
 
-        with context.layer("Parsing domain name"):
-            domain_line = next(iterator)
-            check_named_block(context, domain_line, [":domain"], syntax=SYNTAX_TASK_DOMAIN_NAME)
-            if len(domain_line) != 2 or not isinstance(domain_line[1], str):
-                context.error("The definition of the domain name expects exactly one word after ':domain'.",
-                            domain_line[1:], syntax=SYNTAX_TASK_DOMAIN_NAME)
-                            # TODO user output is not very nice
-            yield domain_line[1]
+            with context.layer("Parsing domain name"):
+                domain_line = next(iterator)
+                check_named_block(context, domain_line, [":domain"], syntax=SYNTAX_TASK_DOMAIN_NAME)
+                if len(domain_line) != 2 or not isinstance(domain_line[1], str):
+                    context.error("The definition of the domain name expects exactly one word after ':domain'.",
+                                domain_line[1:], syntax=SYNTAX_TASK_DOMAIN_NAME)
+                                # TODO user output is not very nice
+                yield domain_line[1]
 
-        requirements_opt = next(iterator)
-        check_named_block(context, requirements_opt, [":requirements", ":objects", ":init"])
-        if requirements_opt[0] == ":requirements":
-            requirements = requirements_opt[1:]
-            objects_opt = next(iterator)
-        else:
-            requirements = []
-            objects_opt = requirements_opt
-        yield parse_requirements(context, requirements)
+            requirements_opt = next(iterator)
+            check_named_block(context, requirements_opt, [":requirements", ":objects", ":init"])
+            if requirements_opt[0] == ":requirements":
+                requirements = requirements_opt[1:]
+                objects_opt = next(iterator)
+            else:
+                requirements = []
+                objects_opt = requirements_opt
+            yield parse_requirements(context, requirements)
 
-        check_named_block(context, objects_opt, [":objects", ":init"])
-        if objects_opt[0] == ":objects":
-            with context.layer("Parsing objects"):
-                yield parse_typed_list(context, objects_opt[1:])
-            init = next(iterator)
-        else:
-            yield []
-            init = objects_opt
+            check_named_block(context, objects_opt, [":objects", ":init"])
+            if objects_opt[0] == ":objects":
+                with context.layer("Parsing objects"):
+                    yield parse_typed_list(context, objects_opt[1:])
+                init = next(iterator)
+            else:
+                yield []
+                init = objects_opt
 
-        check_named_block(context, init, [":init"])
-        yield parse_init(context, init)
+            check_named_block(context, init, [":init"])
+            yield parse_init(context, init)
 
-        goal = next(iterator)
-        with context.layer("Parsing goal"):
-            check_named_block(context, goal, [":goal"], syntax=SYNTAX_GOAL)
-            if len(goal) != 2 or not isinstance(goal[1], list) or not goal[1]:
-                context.error("The definition of the goal expects a non-empty list after ':goal'.",
-                              goal[1:], syntax=SYNTAX_GOAL)
-                # TODO user output is not very nice
-            yield parse_condition(context, goal[1], type_dict, predicate_dict)
+            goal = next(iterator)
+            with context.layer("Parsing goal"):
+                check_named_block(context, goal, [":goal"], syntax=SYNTAX_GOAL)
+                if len(goal) != 2 or not isinstance(goal[1], list) or not goal[1]:
+                    context.error("The definition of the goal expects a non-empty list after ':goal'.",
+                                  goal[1:], syntax=SYNTAX_GOAL)
+                    # TODO user output is not very nice
+                yield parse_condition(context, goal[1], type_dict, predicate_dict)
+        except StopIteration:
+            context.error("The problem file must contain at least the following five fields: define-keyword, problem name, domain name, initial state, and goal.")
 
 
         use_metric = False
