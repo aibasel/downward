@@ -15,6 +15,10 @@ public:
 
     virtual bool supports_conditional_effects() const override;
 };
+
+extern void add_only_causal_landmarks_option_to_feature(plugins::Feature &feature);
+extern bool get_only_causal_landmarks_arguments_from_options(
+    const plugins::Options &opts);
 }
 
 #endif

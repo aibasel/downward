@@ -53,6 +53,19 @@ bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
     return false;
 }
 
+void add_only_causal_landmarks_option_to_feature(
+    plugins::Feature &feature) {
+    feature.add_option<bool>(
+        "only_causal_landmarks",
+        "keep only causal landmarks",
+        "false");
+}
+
+bool get_only_causal_landmarks_arguments_from_options(
+    const plugins::Options &opts) {
+    return opts.get<bool>("only_causal_landmarks");
+}
+
 class LandmarkFactoryRpgExhaustFeature
     : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgExhaust> {
 public:
