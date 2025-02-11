@@ -55,11 +55,16 @@ class Context:
         return "\n\t->".join(self._traceback)
 
     def error(self, message, item=None, syntax=None):
+        def lispify(item):
+            if isinstance(item, list):
+                return "(" + " ".join([lispify(i) for i in item]) + ")"
+            else:
+                return item
         error_msg = f"{self}\n{message}"
         if syntax:
             error_msg += f"\nSyntax: {syntax}"
         if item is not None:
-            error_msg += f"\nGot: {item}"
+            error_msg += f"\nGot: {lispify(item)}"
         raise ParseError(error_msg)
 
 
