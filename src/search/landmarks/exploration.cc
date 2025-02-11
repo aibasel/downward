@@ -60,7 +60,7 @@ Exploration::Exploration(const TaskProxy &task_proxy, utils::LogProxy &log)
         const auto &[var, value] = fact.get_pair();
         unary_operators.emplace_back(
             vector<Proposition *>{}, &propositions[var][value],
-            numeric_limits<int>::max ());
+            numeric_limits<int>::max());
     }
     // Build unary operators for operators and axioms.
     for (OperatorProxy op : operators)

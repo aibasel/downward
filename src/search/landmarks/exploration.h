@@ -84,8 +84,7 @@ public:
     */
     std::vector<std::vector<bool>> compute_relaxed_reachability(
         const std::vector<FactPair> &excluded_props,
-        const std::vector<int> &excluded_op_ids,
-        bool use_unary_relaxation=false);
+        const std::vector<int> &excluded_op_ids, bool use_unary_relaxation);
 };
 }
 

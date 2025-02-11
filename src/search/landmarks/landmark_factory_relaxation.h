@@ -16,14 +16,14 @@ protected:
     */
     bool relaxed_task_solvable(
         const TaskProxy &task_proxy, Exploration &exploration,
-        const Landmark &exclude, bool use_unary_relaxation=false) const;
+        const Landmark &exclude, bool use_unary_relaxation = false) const;
     /*
       Compute for each fact whether it is relaxed reachable without
       achieving the excluded landmark.
     */
     std::vector<std::vector<bool>> compute_relaxed_reachability(
         Exploration &exploration, const Landmark &exclude,
-        bool use_unary_relaxation=false) const;
+        bool use_unary_relaxation = false) const;
 
 private:
     void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
