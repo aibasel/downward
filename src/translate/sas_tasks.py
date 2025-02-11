@@ -12,7 +12,12 @@ class SASTask:
     The user is responsible for making sure that the data fits a
     number of structural restrictions. For example, conditions should
     generally be sorted and mention each variable at most once. See
-    the validate methods for details."""
+    the validate methods for details.
+    
+    TODO/bug: The translator output might actually not be sorted,
+    see issue1158.
+    TODO: We plan to be less restrictive in the future,
+    see issue1176."""
 
     def __init__(self,
                  variables: "SASTask",
@@ -130,6 +135,9 @@ class SASVariables:
         All variables must have range at least 2, and derived
         variables must have range exactly 2. See comment on derived
         variables in the docstring of SASTask.validate.
+
+        Note that for non-derived variables the search component only
+        checks that they have range at least 1.
         """
         assert len(self.ranges) == len(self.axiom_layers) == len(
             self.value_names)
@@ -149,7 +157,10 @@ class SASVariables:
 
     def validate_condition(self, condition):
         """Assert that the condition (list of facts) is sorted, mentions each
-        variable at most once, and only consists of valid facts."""
+        variable at most once, and only consists of valid facts.
+        
+        Note that the search component does not check sortedness and uniqueness.
+        """
         last_var = -1
         for (var, value) in condition:
             self.validate_fact((var, value))
@@ -190,7 +201,13 @@ class SASMutexGroup:
 
     def validate(self, variables):
         """Assert that the facts in the mutex group are sorted and unique
-        and that they are all valid."""
+        and that they are all valid.
+
+        We do not check that the group is actually a mutex group, as this
+        would be too expensive.
+        
+        Note that the search component does not check that the facts are
+        sorted and unique."""
         for fact in self.facts:
             variables.validate_fact(fact)
         assert self.facts == sorted(set(self.facts))
@@ -306,6 +323,9 @@ class SASOperator:
         Odd things that are *not* illegal:
         - The effect in a pre_post rule may be identical to the
           precondition or to an effect condition of that effect.
+
+        Note that the search component does not check 1 - 4 and 8
+        (validity of facts is always checked).
 
         TODO/open question:
         - It is currently not very clear what the semantics of operators
@@ -431,17 +451,13 @@ class SASAxiom:
 
         1. Axioms always set the "non-init" value of the derived
            variable.
-        2. Derived variables in the condition must have a lower of
+        2. Derived variables in the condition must have a lower or
            equal layer to derived variables appearing in the effect.
         3. Conditions with equal layer are only allowed when the
            condition uses the "non-init" value of that variable.
 
-        TODO/bug: rule #1 is currently disabled because we currently
-        have axioms that violate it. This is likely due to the
-        "extended domain transition graphs" described in the Fast
-        Downward paper, Section 5.1. However, we want to eventually
-        changes this. See issue454. For cases where rule #1 is violated,
-        "non-init" should be "init" in rule #3.
+        Note that the search component does not check that the facts in
+        the axiom condition are sorted and unique.
         """
 
         variables.validate_condition(self.condition)
@@ -450,22 +466,14 @@ class SASAxiom:
         eff_layer = variables.axiom_layers[eff_var]
         assert eff_layer >= 0
         eff_init_value = init.values[eff_var]
-        ## The following rule is currently commented out because of
-        ## the TODO/bug mentioned in the docstring.
-        # assert eff_value != eff_init_value
+        assert eff_value != eff_init_value
         for cond_var, cond_value in self.condition:
             cond_layer = variables.axiom_layers[cond_var]
             if cond_layer != -1:
                 assert cond_layer <= eff_layer
                 if cond_layer == eff_layer:
                     cond_init_value = init.values[cond_var]
-                    ## Once the TODO/bug above is addressed, the
-                    ## following four lines can be simplified because
-                    ## we are guaranteed to land in the "if" branch.
-                    if eff_value != eff_init_value:
-                        assert cond_value != cond_init_value
-                    else:
-                        assert cond_value == cond_init_value
+                    assert cond_value != cond_init_value
 
     def dump(self):
         print("Condition:")

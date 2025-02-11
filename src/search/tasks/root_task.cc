@@ -127,7 +127,7 @@ class TaskParser {
     TaskParserContext context;
 
     void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables);
-    void check_layering_condition(int head_var_layer, const vector<FactPair> &conditions, const vector<ExplicitVariable> &variables, bool use_nondefault_values);
+    void check_layering_condition(int head_var_layer, const vector<FactPair> &conditions, const vector<ExplicitVariable> &variables);
     
 
     int parse_int(const string &token);
@@ -170,8 +170,7 @@ void TaskParser::check_fact(const FactPair &fact, const vector<ExplicitVariable>
 
 void TaskParser::check_layering_condition(
     int head_var_layer, const vector<FactPair> &conditions,
-    const vector<ExplicitVariable> &variables,
-    bool is_negated_axiom) {
+    const vector<ExplicitVariable> &variables) {
     for (FactPair fact : conditions) {
         int var = fact.var;
         int var_layer = variables[var].axiom_layer;
@@ -182,26 +181,12 @@ void TaskParser::check_layering_condition(
         }
         if (var_layer == head_var_layer) {
             int default_value = variables[var].axiom_default_value;
-            /* TODO: In the following, the if-branch handles the case described
-               in the TODO/bug in sas_tasks.py when the axiom sets the default
-               value of the derived variable, and can be removed once this issue
-               is resolved.*/
-            if (is_negated_axiom) {
-                if (fact.value != default_value) {
-                    context.error(
-                        "Body variables at head variable layer "
-                        "must have default value as the axiom sets head variable to "
-                        "default value, but variable " + to_string(var)
-                        + " uses non-default value " + to_string(fact.value) + ".");
-                }
-            } else {
-                if (fact.value == default_value) {
-                    context.error(
-                        "Body variables at head variable layer must "
-                        "have non-default value, but variable " + to_string(var) +
-                        " uses default value " + to_string(fact.value) + ".");
-                }
-            }
+            if (fact.value == default_value) {
+                context.error(
+                    "Body variables at head variable layer must "
+                    "have non-default value, but variable " + to_string(var) +
+                    " uses default value " + to_string(fact.value) + ".");
+             }
         }
     }
 }
@@ -341,41 +326,23 @@ void TaskParser::read_pre_post_axiom(ExplicitOperator &op, const vector<Explicit
     check_fact(postcondition, variables);
     int default_value = variables[var].axiom_default_value;
     assert(default_value != -1);
-    /* TODO: In the following, the if-branch handles the case described in the
-        TODO/bug in sas_tasks.py when the axiom sets the default value of the
-        derived variable, and can be removed once this issue is resolved.*/
-    bool is_negated_axiom = false;
     if (value_pre != default_value) {
-        is_negated_axiom = true;
-        if (value_post != default_value) {
-            context.error(
-                "Value of variable affected by axiom must be default value "
-                + to_string(default_value) + " in postcondition, as "
-                "precondition uses non-default value " + to_string(value_pre)
-                + ", but is " + to_string(value_post));
-        }
-    } else {
-        /* TODO: This if-statement will not trigger until the issue
-            mentioned above is resolved and the outer if-statement is
-            removed. */
-        if (value_pre != default_value) {
-            context.error(
-                "Value of variable affected by axiom must be default value "
-                + to_string(default_value) + " in precondition, but is "
-                + to_string(value_pre) + ".");
-        }
-        if (value_post == default_value) {
-            context.error(
-                "Value of variable affected by axiom must be non-default "
-                "value in postcondition, but is default value "
-                + to_string(value_post) + ".");
-        }
+        context.error(
+            "Value of variable affected by axiom must be default value "
+            + to_string(default_value) + " in precondition, but is "
+            + to_string(value_pre) + ".");
+    }
+    if (value_post == default_value) {
+        context.error(
+            "Value of variable affected by axiom must be non-default "
+            "value in postcondition, but is default value "
+            + to_string(value_post) + ".");
     }
     {
         utils::TraceBlock block(
             context, "checking layering condition, head variable "
             + to_string(var) + " with layer " + to_string(axiom_layer));
-        check_layering_condition(axiom_layer, conditions, variables, is_negated_axiom);
+        check_layering_condition(axiom_layer, conditions, variables);
     }
     op.preconditions.emplace_back(precondition);
     ExplicitEffect eff = {postcondition, move(conditions)};
