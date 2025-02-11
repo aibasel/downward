@@ -85,7 +85,7 @@ class LandmarkFactoryHM : public LandmarkFactory {
 
     void calc_achievers(const TaskProxy &task_proxy);
 
-    void add_lm_node(int set_index, bool goal = false);
+    void add_landmark_node(int set_index, bool goal = false);
 
     void initialize(const TaskProxy &task_proxy);
     void free_unneeded_memory();
@@ -97,7 +97,7 @@ class LandmarkFactoryHM : public LandmarkFactory {
     const bool conjunctive_landmarks;
     const bool use_orders;
 
-    std::map<int, LandmarkNode *> lm_node_table_;
+    std::map<int, LandmarkNode *> landmark_node_table;
 
     std::vector<HMEntry> h_m_table_;
     std::vector<PMOp> pm_ops_;

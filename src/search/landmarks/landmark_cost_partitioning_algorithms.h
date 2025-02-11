@@ -18,7 +18,7 @@ class LandmarkStatusManager;
 
 class CostPartitioningAlgorithm {
 protected:
-    const LandmarkGraph &lm_graph;
+    const LandmarkGraph &landmark_graph;
     const std::vector<int> operator_costs;
 
     const std::unordered_set<int> &get_achievers(
@@ -41,7 +41,7 @@ public:
                                      bool use_action_landmarks);
 
     virtual double get_cost_partitioned_heuristic_value(
-        const LandmarkStatusManager &lm_status_manager,
+        const LandmarkStatusManager &landmark_status_manager,
         const State &ancestor_state) override;
 };
 
@@ -65,7 +65,7 @@ public:
                                      lp::LPSolverType solver_type);
 
     virtual double get_cost_partitioned_heuristic_value(
-        const LandmarkStatusManager &lm_status_manager,
+        const LandmarkStatusManager &landmark_status_manager,
         const State &ancestor_state) override;
 };
 }

@@ -15,16 +15,17 @@ LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(
     const shared_ptr<LandmarkFactory> &lm_factory,
     utils::Verbosity verbosity)
     : LandmarkFactory(verbosity),
-      lm_factory(lm_factory) {
+      landmark_factory(lm_factory) {
 }
 
-void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<AbstractTask> &task) {
+void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(
+    const shared_ptr<AbstractTask> &task) {
     if (log.is_at_least_normal()) {
         log << "Building a landmark graph with reasonable orders." << endl;
     }
 
-    lm_graph = lm_factory->compute_lm_graph(task);
-    achievers_calculated = lm_factory->achievers_are_calculated();
+    landmark_graph = landmark_factory->compute_landmark_graph(task);
+    achievers_calculated = landmark_factory->achievers_are_calculated();
 
     TaskProxy task_proxy(*task);
     if (log.is_at_least_normal()) {
@@ -47,13 +48,13 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
     */
     State initial_state = task_proxy.get_initial_state();
     int variables_size = task_proxy.get_variables().size();
-    for (const auto &node_p : *lm_graph) {
+    for (const auto &node_p : *landmark_graph) {
         const Landmark &landmark = node_p->get_landmark();
         if (landmark.is_disjunctive)
             continue;
 
         if (landmark.is_true_in_goal) {
-            for (const auto &node2_p : *lm_graph) {
+            for (const auto &node2_p : *landmark_graph) {
                 const Landmark &landmark2 = node2_p->get_landmark();
                 if (landmark == landmark2 || landmark2.is_disjunctive)
                     continue;
@@ -359,7 +360,7 @@ bool LandmarkFactoryReasonableOrdersHPS::effect_always_happens(
 }
 
 bool LandmarkFactoryReasonableOrdersHPS::supports_conditional_effects() const {
-    return lm_factory->supports_conditional_effects();
+    return landmark_factory->supports_conditional_effects();
 }
 
 class LandmarkFactoryReasonableOrdersHPSFeature

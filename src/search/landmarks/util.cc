@@ -30,10 +30,10 @@ unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unord
     return result;
 }
 
-bool possibly_reaches_lm(const OperatorProxy &op,
-                         const vector<vector<bool>> &reached,
-                         const Landmark &landmark) {
-    /* Check whether operator o can possibly make landmark lmp true in a
+bool possibly_reaches_landmark(const OperatorProxy &op,
+                               const vector<vector<bool>> &reached,
+                               const Landmark &landmark) {
+    /* Check whether operator o can possibly make `landmark` true in a
        relaxed task (as given by the reachability information in reached) */
 
     assert(!reached.empty());
@@ -46,7 +46,7 @@ bool possibly_reaches_lm(const OperatorProxy &op,
             return false;
 
     // Go through all effects of o and check whether one can reach a
-    // proposition in lmp
+    // proposition in `landmark`.
     for (EffectProxy effect: op.get_effects()) {
         FactProxy effect_fact = effect.get_fact();
         assert(!reached[effect_fact.get_variable().get_id()].empty());

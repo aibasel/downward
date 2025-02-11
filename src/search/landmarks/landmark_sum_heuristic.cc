@@ -31,7 +31,7 @@ static bool are_dead_ends_reliable(
 }
 
 LandmarkSumHeuristic::LandmarkSumHeuristic(
-    const shared_ptr<LandmarkFactory> &lm_factory,
+    const shared_ptr<LandmarkFactory> &landmark_factory,
     bool pref, bool prog_goal, bool prog_gn, bool prog_r,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity,
@@ -41,11 +41,11 @@ LandmarkSumHeuristic::LandmarkSumHeuristic(
           tasks::get_default_value_axioms_task_if_needed(transform, axioms),
           cache_estimates, description, verbosity),
       dead_ends_reliable(
-          are_dead_ends_reliable(lm_factory, task_proxy)) {
+          are_dead_ends_reliable(landmark_factory, task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark sum heuristic..." << endl;
     }
-    initialize(lm_factory, prog_goal, prog_gn, prog_r);
+    initialize(landmark_factory, prog_goal, prog_gn, prog_r);
     compute_landmark_costs();
 }
 
@@ -74,9 +74,9 @@ void LandmarkSumHeuristic::compute_landmark_costs() {
       over all operators and use this cost for all derived landmarks.
     */
     int min_operator_cost = task_properties::get_min_operator_cost(task_proxy);
-    min_first_achiever_costs.reserve(lm_graph->get_num_landmarks());
-    min_possible_achiever_costs.reserve(lm_graph->get_num_landmarks());
-    for (const auto &node : *lm_graph) {
+    min_first_achiever_costs.reserve(landmark_graph->get_num_landmarks());
+    min_possible_achiever_costs.reserve(landmark_graph->get_num_landmarks());
+    for (const auto &node : *landmark_graph) {
         if (node->get_landmark().is_derived) {
             min_first_achiever_costs.push_back(min_operator_cost);
             min_possible_achiever_costs.push_back(min_operator_cost);
@@ -94,10 +94,10 @@ void LandmarkSumHeuristic::compute_landmark_costs() {
 int LandmarkSumHeuristic::get_heuristic_value(const State &ancestor_state) {
     int h = 0;
     ConstBitsetView past =
-        lm_status_manager->get_past_landmarks(ancestor_state);
+        landmark_status_manager->get_past_landmarks(ancestor_state);
     ConstBitsetView future =
-        lm_status_manager->get_future_landmarks(ancestor_state);
-    for (int id = 0; id < lm_graph->get_num_landmarks(); ++id) {
+        landmark_status_manager->get_future_landmarks(ancestor_state);
+    for (int id = 0; id < landmark_graph->get_num_landmarks(); ++id) {
         if (future.test(id)) {
             int min_achiever_cost = past.test(id) ? min_possible_achiever_costs[id]
                 : min_first_achiever_costs[id];

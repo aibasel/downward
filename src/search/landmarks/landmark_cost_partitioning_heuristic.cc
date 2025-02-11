@@ -33,13 +33,13 @@ LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
 }
 
 void LandmarkCostPartitioningHeuristic::check_unsupported_features(
-    const shared_ptr<LandmarkFactory> &lm_factory) {
+    const shared_ptr<LandmarkFactory> &landmark_factory) {
     if (task_properties::has_axioms(task_proxy)) {
         cerr << "Cost partitioning does not support axioms." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
-    if (!lm_factory->supports_conditional_effects()
+    if (!landmark_factory->supports_conditional_effects()
         && task_properties::has_conditional_effects(task_proxy)) {
         cerr << "Conditional effects not supported by the landmark "
              << "generation method." << endl;
@@ -49,17 +49,17 @@ void LandmarkCostPartitioningHeuristic::check_unsupported_features(
 
 void LandmarkCostPartitioningHeuristic::set_cost_partitioning_algorithm(
     CostPartitioningMethod cost_partitioning, lp::LPSolverType lpsolver,
-    bool alm) {
+    bool use_action_landmarks) {
     if (cost_partitioning == CostPartitioningMethod::OPTIMAL) {
         cost_partitioning_algorithm =
             utils::make_unique_ptr<OptimalCostPartitioningAlgorithm>(
                 task_properties::get_operator_costs(task_proxy),
-                *lm_graph, lpsolver);
+                *landmark_graph, lpsolver);
     } else if (cost_partitioning == CostPartitioningMethod::UNIFORM) {
         cost_partitioning_algorithm =
             utils::make_unique_ptr<UniformCostPartitioningAlgorithm>(
                 task_properties::get_operator_costs(task_proxy),
-                *lm_graph, alm);
+                *landmark_graph, use_action_landmarks);
     } else {
         ABORT("Unknown cost partitioning method");
     }
@@ -71,7 +71,7 @@ int LandmarkCostPartitioningHeuristic::get_heuristic_value(
 
     double h_val =
         cost_partitioning_algorithm->get_cost_partitioned_heuristic_value(
-            *lm_status_manager, ancestor_state);
+            *landmark_status_manager, ancestor_state);
     if (h_val == numeric_limits<double>::max()) {
         return DEAD_END;
     } else {

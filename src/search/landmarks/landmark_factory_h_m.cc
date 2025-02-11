@@ -605,7 +605,7 @@ void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
 void LandmarkFactoryHM::postprocess(const TaskProxy &task_proxy) {
     if (!conjunctive_landmarks)
         discard_conjunctive_landmarks();
-    lm_graph->set_landmark_ids();
+    landmark_graph->set_landmark_ids();
 
     if (!use_orders)
         discard_all_orderings();
@@ -614,12 +614,12 @@ void LandmarkFactoryHM::postprocess(const TaskProxy &task_proxy) {
 }
 
 void LandmarkFactoryHM::discard_conjunctive_landmarks() {
-    if (lm_graph->get_num_conjunctive_landmarks() > 0) {
+    if (landmark_graph->get_num_conjunctive_landmarks() > 0) {
         if (log.is_at_least_normal()) {
-            log << "Discarding " << lm_graph->get_num_conjunctive_landmarks()
+            log << "Discarding " << landmark_graph->get_num_conjunctive_landmarks()
                 << " conjunctive landmarks" << endl;
         }
-        lm_graph->remove_node_if(
+        landmark_graph->remove_node_if(
             [](const LandmarkNode &node) {return node.get_landmark().is_conjunctive;});
     }
 }
@@ -634,8 +634,8 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
     VariablesProxy variables = task_proxy.get_variables();
     // first_achievers are already filled in by compute_h_m_landmarks
     // here only have to do possible_achievers
-    for (const auto &lm_node : *lm_graph) {
-        Landmark &landmark = lm_node->get_landmark();
+    for (const auto &node : *landmark_graph) {
+        Landmark &landmark = node->get_landmark();
         set<int> candidates;
         // put all possible adders in candidates set
         for (const FactPair &atom : landmark.atoms) {
@@ -648,14 +648,14 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
             FluentSet pre = get_operator_precondition(operators[op_id]);
             size_t j;
             for (j = 0; j < landmark.atoms.size(); ++j) {
-                const FactPair &lm_fact = landmark.atoms[j];
-                // action adds this element of lm as well
-                if (find(post.begin(), post.end(), lm_fact) != post.end())
+                const FactPair &atom = landmark.atoms[j];
+                // action adds this element of landmark as well
+                if (find(post.begin(), post.end(), atom) != post.end())
                     continue;
                 bool is_mutex = false;
                 for (const FactPair &fluent : post) {
                     if (variables[fluent.var].get_fact(fluent.value).is_mutex(
-                            variables[lm_fact.var].get_fact(lm_fact.value))) {
+                            variables[atom.var].get_fact(atom.value))) {
                         is_mutex = true;
                         break;
                     }
@@ -667,7 +667,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
                     // we know that lm_val is not added by the operator
                     // so if it incompatible with the pc, this can't be an achiever
                     if (variables[fluent.var].get_fact(fluent.value).is_mutex(
-                            variables[lm_fact.var].get_fact(lm_fact.value))) {
+                            variables[atom.var].get_fact(atom.value))) {
                         is_mutex = true;
                         break;
                     }
@@ -691,7 +691,7 @@ void LandmarkFactoryHM::free_unneeded_memory() {
     utils::release_vector_memory(unsat_pc_count_);
 
     set_indices_.clear();
-    lm_node_table_.clear();
+    landmark_node_table.clear();
 }
 
 // called when a fact is discovered or its landmarks change
@@ -922,8 +922,8 @@ void LandmarkFactoryHM::compute_noop_landmarks(
     }
 }
 
-void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
-    if (lm_node_table_.find(set_index) == lm_node_table_.end()) {
+void LandmarkFactoryHM::add_landmark_node(int set_index, bool goal) {
+    if (landmark_node_table.find(set_index) == landmark_node_table.end()) {
         const HMEntry &hm_entry = h_m_table_[set_index];
         vector<FactPair> facts(hm_entry.fluents);
         utils::sort_unique(facts);
@@ -932,7 +932,7 @@ void LandmarkFactoryHM::add_lm_node(int set_index, bool goal) {
         landmark.first_achievers.insert(
             hm_entry.first_achievers.begin(),
             hm_entry.first_achievers.end());
-        lm_node_table_[set_index] = &lm_graph->add_landmark(move(landmark));
+        landmark_node_table[set_index] = &landmark_graph->add_landmark(move(landmark));
     }
 }
 
@@ -946,7 +946,7 @@ void LandmarkFactoryHM::generate_landmarks(
     FluentSet goals = task_properties::get_fact_pairs(task_proxy.get_goals());
     VariablesProxy variables = task_proxy.get_variables();
     get_m_sets(variables, m_, goal_subsets, goals);
-    list<int> all_lms;
+    list<int> all_landmarks;
     for (const FluentSet &goal_subset : goal_subsets) {
         assert(set_indices_.find(goal_subset) != set_indices_.end());
 
@@ -962,22 +962,22 @@ void LandmarkFactoryHM::generate_landmarks(
         }
 
         // set up goals landmarks for processing
-        union_with(all_lms, h_m_table_[set_index].landmarks);
+        union_with(all_landmarks, h_m_table_[set_index].landmarks);
 
-        // the goal itself is also a lm
-        insert_into(all_lms, set_index);
+        // the goal itself is also a landmark
+        insert_into(all_landmarks, set_index);
 
         // make a node for the goal, with in_goal = true;
-        add_lm_node(set_index, true);
+        add_landmark_node(set_index, true);
     }
-    // now make remaining lm nodes
-    for (int lm : all_lms) {
-        add_lm_node(lm, false);
+    // now make remaining landmark nodes
+    for (int landmark : all_landmarks) {
+        add_landmark_node(landmark, false);
     }
     if (use_orders) {
         // do reduction of graph
         // if f2 is landmark for f1, subtract landmark set of f2 from that of f1
-        for (int f1 : all_lms) {
+        for (int f1 : all_landmarks) {
             list<int> everything_to_remove;
             for (int f2 : h_m_table_[f1].landmarks) {
                 union_with(everything_to_remove, h_m_table_[f2].landmarks);
@@ -991,16 +991,16 @@ void LandmarkFactoryHM::generate_landmarks(
 
         // and add the orderings.
 
-        for (int set_index : all_lms) {
-            for (int lm : h_m_table_[set_index].landmarks) {
-                assert(lm_node_table_.find(lm) != lm_node_table_.end());
-                assert(lm_node_table_.find(set_index) != lm_node_table_.end());
+        for (int set_index : all_landmarks) {
+            for (int landmark : h_m_table_[set_index].landmarks) {
+                assert(landmark_node_table.find(landmark) != landmark_node_table.end());
+                assert(landmark_node_table.find(set_index) != landmark_node_table.end());
 
-                add_ordering(*lm_node_table_[lm], *lm_node_table_[set_index],
+                add_ordering(*landmark_node_table[landmark], *landmark_node_table[set_index],
                              OrderingType::NATURAL);
             }
             for (int gn : h_m_table_[set_index].necessary) {
-                add_ordering(*lm_node_table_[gn], *lm_node_table_[set_index],
+                add_ordering(*landmark_node_table[gn], *landmark_node_table[set_index],
                              OrderingType::GREEDY_NECESSARY);
             }
         }
