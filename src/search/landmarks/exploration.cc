@@ -44,7 +44,7 @@ Exploration::Exploration(const TaskProxy &task_proxy, utils::LogProxy &log)
       cross-reference to the memory address of elements of the vector while
       building it; meaning a resize would invalidate all references.
     */
-    int num_unary_ops = task_proxy.get_variables().size();
+    int num_unary_ops = 0;
     OperatorsProxy operators = task_proxy.get_operators();
     AxiomsProxy axioms = task_proxy.get_axioms();
     for (OperatorProxy op : operators) {
@@ -55,13 +55,6 @@ Exploration::Exploration(const TaskProxy &task_proxy, utils::LogProxy &log)
     }
     unary_operators.reserve(num_unary_ops);
 
-    // Build unary operators to achieve the initial facts.
-    for (const FactProxy &fact : task_proxy.get_initial_state()) {
-        const auto &[var, value] = fact.get_pair();
-        unary_operators.emplace_back(
-            vector<Proposition *>{}, &propositions[var][value],
-            numeric_limits<int>::max());
-    }
     // Build unary operators for operators and axioms.
     for (OperatorProxy op : operators)
         build_unary_operators(op);
@@ -127,10 +120,19 @@ void Exploration::setup_exploration_queue(
         propositions[fact.var][fact.value].excluded = true;
     }
 
-    // Change unary operators to achieve facts true in the current state.
-    for (const FactProxy fact : state) {
-        const auto &[var, value] = fact.get_pair();
-        unary_operators[var].effect = &propositions[var][value];
+    // Set facts that are true in the current state and not excluded as reached.
+    for (FactProxy fact : state) {
+        Proposition *init_prop =
+            &propositions[fact.get_variable().get_id()][fact.get_value()];
+        /*
+          The following condition is a workaround to avoid compiling the
+          initial state away in a task transformation in case of unary
+          relaxation. Otherwise, every initial proposition is a landmark
+          and should be enqueued.
+        */
+        if (!(use_unary_relaxation && init_prop->excluded)) {
+            enqueue_if_necessary(init_prop);
+        }
     }
 
     /*

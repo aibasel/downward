@@ -17,9 +17,9 @@ namespace landmarks {
    method with others, don't use it by itself. */
 
 LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(
-    bool only_causal_landmarks, utils::Verbosity verbosity)
+    bool use_unary_relaxation, utils::Verbosity verbosity)
     : LandmarkFactoryRelaxation(verbosity),
-      only_causal_landmarks(only_causal_landmarks) {
+      use_unary_relaxation(use_unary_relaxation) {
 }
 
 void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
@@ -41,7 +41,7 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
             if (!lm_graph->contains_simple_landmark(lm)) {
                 Landmark landmark({lm}, false, false);
                 if (!relaxed_task_solvable(task_proxy, exploration, landmark,
-                                           only_causal_landmarks)) {
+                                           use_unary_relaxation)) {
                     lm_graph->add_landmark(move(landmark));
                 }
             }
@@ -50,6 +50,8 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
 }
 
 bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
+    /* TODO: I would say it does support conditional effects if unary relaxation
+        is used, but not sure. */
     return false;
 }
 
@@ -63,7 +65,7 @@ public:
             "This check is done using relaxed planning.");
 
         add_option<bool>(
-            "unary_relaxation_landmarks",
+            "use_unary_relaxation",
             "compute landmarks of the unary relaxation, i.e., landmarks "
             "for the delete relaxation of a task transformation such that each "
             "operator is split into one operator for each of its effects. This "
@@ -81,7 +83,7 @@ public:
     virtual shared_ptr<LandmarkFactoryRpgExhaust>
     create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgExhaust>(
-            opts.get<bool>("unary_relaxation_landmarks"),
+            opts.get<bool>("use_unary_relaxation"),
             get_landmark_factory_arguments_from_options(opts));
     }
 };
