@@ -9,7 +9,6 @@
 #include <vector>
 
 namespace utils {
-
 /*
   Split a task encoding in the translator output format into tokens.
   Read a complete line as a single token *or* split a line into

@@ -15,7 +15,7 @@ static const string end_of_line_sentinel("\n");
 static const std::regex only_whitespaces("\\s*");
 
 TaskLexer::TaskLexer(istream &stream)
-    : stream(stream)  {
+    : stream(stream) {
 }
 
 std::optional<std::string> TaskLexer::get_next_nonempty_line() {
@@ -49,7 +49,7 @@ void TaskLexer::initialize_tokens(const Context &context) {
     }
 }
 
-const string &TaskLexer::pop_token(){
+const string &TaskLexer::pop_token() {
     assert(is_in_line_reading_mode());
     assert(in_bounds(token_number, tokens));
     const string &token = tokens[token_number];
