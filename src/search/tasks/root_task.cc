@@ -193,12 +193,11 @@ void TaskParser::check_layering_condition(
 
 int TaskParser::parse_int(const string &token) {
     string failure_reason;
+    int number = 0;
     try {
         string::size_type parsed_length;
-        int number = stoi(token, &parsed_length);
-        if (parsed_length == token.size()) {
-            return number;
-        } else {
+        number = stoi(token, &parsed_length);
+        if (parsed_length != token.size()) {
             failure_reason = "invalid character '"
                 + string(1, token[parsed_length]) + "'";
         }
@@ -207,8 +206,12 @@ int TaskParser::parse_int(const string &token) {
     } catch (out_of_range &) {
         failure_reason = "out of range";
     }
-    context.error("Could not parse '" + token + "' as integer ("
-                  + failure_reason + ").");
+    if (!failure_reason.empty()) {
+        context.error(
+            "Could not parse '" + token + "' as integer ("
+            + failure_reason + ").");
+    }
+    return number;
 }
 
 void TaskParser::check_nat(const string &value_name, int value) {
@@ -225,8 +228,7 @@ int TaskParser::read_int(const string &value_name) {
 }
 
 int TaskParser::read_nat(const string &value_name) {
-    utils::TraceBlock block(context, value_name);
-    int value = parse_int(lexer.read(context));
+    int value = read_int(value_name);
     check_nat(value_name, value);
     return value;
 }
