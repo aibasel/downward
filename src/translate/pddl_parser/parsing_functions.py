@@ -37,7 +37,6 @@ SYNTAX_TASK_PROBLEM_NAME = "(problem NAME)"
 SYNTAX_TASK_DOMAIN_NAME = "(:domain NAME)"
 SYNTAX_METRIC = "(:metric minimize (total-cost))"
 
-
 CONDITION_TAG_TO_SYNTAX = {
     "and": SYNTAX_CONDITION_AND,
     "or": SYNTAX_CONDITION_OR,
@@ -55,18 +54,23 @@ class Context:
         return "\n\t->".join(self._traceback)
 
     def error(self, message, item=None, syntax=None):
-        def lispify(item):
-            if isinstance(item, list):
-                return "(" + " ".join([lispify(i) for i in item]) + ")"
-            else:
-                return item
         error_msg = f"{self}\n{message}"
         if syntax:
             error_msg += f"\nSyntax: {syntax}"
-        if item is not None:
-            error_msg += f"\nGot: {lispify(item)}"
+        if item:
+            error_msg += f"\nGot: {item}"
         raise ParseError(error_msg)
 
+    def expected_word_error(self, name, *args, **kwargs):
+        self.error(f"{name} is expected to be a word.", *args, **kwargs)
+
+    def expected_list_error(self, name, *args, **kwargs):
+        self.error(f"{name} is expected to be a block.", *args, **kwargs)
+
+    def expected_named_block_error(self, alist, expected, *args, **kwargs):
+        self.error(f"Expected a non-empty block starting with any of the "
+                   f"following words: {', '.join(expected)}",
+                   item=alist, *args, **kwargs)
 
     @contextlib.contextmanager
     def layer(self, message: str):
@@ -75,35 +79,28 @@ class Context:
         assert self._traceback.pop() == message
 
 
-def check_word(context, word, description, syntax=None):
-    if not isinstance(word, str):
-        context.error(f"{description} is expected to be a word.", item=word, syntax=syntax)
+def check_named_block(alist, names):
+    return isinstance(alist, list) and alist and alist[0] in names
 
 
-def check_list(context, alist, description, syntax=None):
-    if not isinstance(alist, list):
-        context.error(f"{description} is expected to be a block.", item=alist, syntax=syntax)
-
-
-def check_named_block(context, alist, names, syntax=None):
-    if not (isinstance(alist, list) and alist and alist[0] in names):
-        context.error(f"Expected a non-empty block starting with any of the "
-                      f"following words: {', '.join(names)}",
-                      item=alist, syntax=syntax)
-
+def assert_named_block(context, alist, names):
+    if not check_named_block(alist, names):
+        context.expected_named_block_error(alist, names)
 
 
 def construct_typed_object(context, name, _type):
     with context.layer("Parsing typed object"):
-        check_word(context, name, "Name of typed object")
-        check_word(context, _type, "The type of an object")
+        if not isinstance(name, str):
+            context.expected_word_error("Name of typed object", name)
         return pddl.TypedObject(name, _type)
 
 
 def construct_type(context, curr_type, base_type):
     with context.layer("Parsing PDDL type"):
-        check_word(context, curr_type, "PDDL type")
-        check_word(context, base_type, "Base type")
+        if not isinstance(curr_type, str):
+            context.expected_word_error("PDDL type", curr_type)
+        if not isinstance(base_type, str):
+            context.expected_word_error("Base type", base_type)
         return pddl.Type(curr_type, base_type)
 
 
@@ -127,18 +124,16 @@ def parse_typed_list(context, alist, only_variables=False,
                             f"Type missing after '{TYPED_LIST_SEPARATOR}'.",
                             alist)
                     items = alist[:separator_position]
-                    if not items:
-                        context.error(f"Expected something before the separator '{TYPED_LIST_SEPARATOR}'.", alist)
                     _type = alist[separator_position + 1]
                     alist = alist[separator_position + 2:]
-                    if not isinstance(_type, str): #TODO should we allow lists of length 1 as well?
-                        if _type and _type[0] == "either":
-                            context.error("Keyword 'either' is not supported, type value is expected to be a single word.", _type)
-                        else:
-                            context.error("Type value is expected to be a single word.", _type)
+                    if not (isinstance(_type, str) or
+                            (_type and _type[0] == "either" and
+                             all(isinstance(_sub_type, str) for _sub_type in _type[1:]))):
+                        context.error("Type value is expected to be a single word "
+                                      "or '(either WORD*)")
                 for item in items:
                     if only_variables and not item.startswith("?"):
-                        context.error("Expected a variable but the given string does not start with '?'.", item)
+                        context.error("Expected item to be a variable", item)
                     entry = constructor(context, item, _type)
                     result.append(entry)
             group_number += 1
@@ -162,7 +157,8 @@ def set_supertypes(type_list):
 def parse_requirements(context, alist):
     with context.layer("Parsing requirements"):
         for item in alist:
-            check_word(context, item, "Requirement label")
+            if not isinstance(item, str):
+                context.expected_word_error("Requirement label", item)
         try:
             return pddl.Requirements(alist)
         except ValueError as e:
@@ -175,7 +171,8 @@ def parse_predicate(context, alist):
         if not alist:
             context.error("Predicate name missing", syntax=SYNTAX_PREDICATE)
         name = alist[0]
-        check_word(context, name, "Predicate name")
+        if not isinstance(name, str):
+            context.expected_word_error("Predicate name", name)
     with context.layer(f"Parsing arguments of predicate '{name}'"):
         arguments = parse_typed_list(context, alist[1:], only_variables=True)
     return pddl.Predicate(name, arguments)
@@ -184,7 +181,7 @@ def parse_predicate(context, alist):
 def parse_predicates(context, alist):
     with context.layer("Parsing predicates"):
         the_predicates = []
-        for no, entry in enumerate(alist, start=1):
+        for no, entry in enumerate(alist):
             with context.layer(f"Parsing {no}. predicate"):
                 if not isinstance(entry, list):
                     context.error("Invalid predicate definition.",
@@ -199,10 +196,12 @@ def parse_function(context, alist, type_name):
             context.error("Invalid definition of function.",
                           syntax=SYNTAX_FUNCTION)
         name = alist[0]
-        check_word(context, name, "Function name")
+        if not isinstance(name, str):
+            context.expected_word_error("Function name", name)
     with context.layer(f"Parsing function '{name}'"):
         arguments = parse_typed_list(context, alist[1:])
-        check_word(context, type_name, "Function type")
+        if not isinstance(type_name, str):
+            context.expected_word_error("Function type", type_name)
     return pddl.Function(name, arguments, type_name)
 
 
@@ -254,8 +253,8 @@ def parse_condition_aux(context, alist, negated, type_dict, predicate_dict):
 
     if tag == "imply":
         parts = [parse_condition_aux(
-                context, args[0], not negated, type_dict, predicate_dict),
-                 parse_condition_aux(
+            context, args[0], not negated, type_dict, predicate_dict),
+            parse_condition_aux(
                 context, args[1], negated, type_dict, predicate_dict)]
         tag = "or"
     else:
@@ -292,7 +291,8 @@ def parse_literal(context, alist, type_dict, predicate_dict, negated=False):
             negated = not negated
 
         predicate_name = alist[0]
-        check_word(context, predicate_name, "Predicate name")
+        if not isinstance(predicate_name, str):
+            context.expected_word_error("Predicate name", predicate_name)
         pred_id, arity = _get_predicate_id_and_arity(
             context, predicate_name, type_dict, predicate_dict)
 
@@ -307,6 +307,8 @@ def parse_literal(context, alist, type_dict, predicate_dict, negated=False):
 
 
 SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH = False
+
+
 def _get_predicate_id_and_arity(context, text, type_dict, predicate_dict):
     global SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH
 
@@ -388,25 +390,39 @@ def parse_effect(context, alist, type_dict, predicate_dict):
     if tag == "and":
         effects = []
         for eff in alist[1:]:
-            check_list(context, eff, "Each sub-effect of a conjunction")
+            if not isinstance(eff, list):
+                context.error("All sub-effects of a conjunction have to be blocks.",
+                              eff)
             effects.append(parse_effect(context, eff, type_dict, predicate_dict))
         return pddl.ConjunctiveEffect(effects)
     elif tag == "forall":
         if len(alist) != 3:
             context.error("'forall' effect expects exactly two arguments.",
                           syntax=SYNTAX_EFFECT_FORALL)
-        check_list(context, alist[1], "First argument (VARIABLES) of 'forall'", syntax=SYNTAX_EFFECT_FORALL)
+        if not isinstance(alist[1], list):
+            context.expected_list_error(
+                "First argument (VARIABLES) of 'forall'",
+                alist[1], syntax=SYNTAX_EFFECT_FORALL)
         parameters = parse_typed_list(context, alist[1])
-        check_list(context, alist[2], "Second argument (EFFECT) of 'forall'", syntax=SYNTAX_EFFECT_FORALL)
+        if not isinstance(alist[2], list):
+            context.expected_list_error(
+                "Second argument (EFFECT) of 'forall'",
+                alist[2], syntax=SYNTAX_EFFECT_FORALL)
         effect = parse_effect(context, alist[2], type_dict, predicate_dict)
         return pddl.UniversalEffect(parameters, effect)
     elif tag == "when":
         if len(alist) != 3:
             context.error("'when' effect expects exactly two arguments.",
                           syntax=SYNTAX_EFFECT_WHEN)
-        check_list(context, alist[1], "First argument (CONDITION) of 'when'", syntax=SYNTAX_EFFECT_WHEN)
+        if not isinstance(alist[1], list):
+            context.error(
+                "First argument (CONDITION) of 'when' is expected to be a block",
+                alist[1], syntax=SYNTAX_EFFECT_WHEN)
         condition = parse_condition(context, alist[1], type_dict, predicate_dict)
-        check_list(context, alist[2], "Second argument (EFFECT) of 'when'", syntax=SYNTAX_EFFECT_WHEN)
+        if not isinstance(alist[2], list):
+            context.expected_list_error(
+                "Second argument (EFFECT) of 'when'",
+                alist[2], syntax=SYNTAX_EFFECT_WHEN)
         effect = parse_effect(context, alist[2], type_dict, predicate_dict)
         return pddl.ConditionalEffect(condition, effect)
     elif tag == "increase":
@@ -429,13 +445,11 @@ def parse_expression(context, exp):
                               syntax=SYNTAX_EXPRESSION)
             functionsymbol = exp[0]
             return pddl.PrimitiveNumericExpression(functionsymbol, exp[1:])
+        elif exp.replace(".", "").isdigit() and exp.count(".") <= 1:
+            return pddl.NumericConstant(float(exp))
         elif exp[0] == "-":
-            context.error("Negative numbers are not supported.", exp,
+            context.error("Expression cannot be a negative number",
                           syntax=SYNTAX_EXPRESSION)
-        elif exp.isdigit():
-            return pddl.NumericConstant(int(exp))
-        elif exp.replace(".", "").isdigit():
-            context.error("Fractional numbers are not supported.", exp,syntax=SYNTAX_EXPRESSION)
         else:
             return pddl.PrimitiveNumericExpression(exp, [])
 
@@ -466,14 +480,17 @@ def parse_action(context, alist, type_dict, predicate_dict):
         action_tag = next(iterator)
         assert action_tag == ":action"
         name = next(iterator)
-        check_word(context, name, "Action name", syntax=SYNTAX_ACTION)
+        if not isinstance(name, str):
+            context.expected_word_error("Action name", name, syntax=SYNTAX_ACTION)
     with context.layer(f"Parsing action '{name}'"):
         try:
             with context.layer("Parsing parameters"):
                 parameters_tag_opt = next(iterator)
                 if parameters_tag_opt == ":parameters":
                     parameters_list = next(iterator)
-                    check_list(context, parameters_list, "Parameters", syntax=SYNTAX_ACTION)
+                    if not isinstance(parameters_list, list):
+                        context.expected_list_error(
+                            "Parameters", parameters_list, syntax=SYNTAX_ACTION)
                     parameters = parse_typed_list(
                         context, parameters_list, only_variables=True)
                     precondition_tag_opt = next(iterator)
@@ -483,7 +500,9 @@ def parse_action(context, alist, type_dict, predicate_dict):
             with context.layer("Parsing precondition"):
                 if precondition_tag_opt == ":precondition":
                     precondition_list = next(iterator)
-                    check_list(context, precondition_list, "Precondition", syntax=SYNTAX_ACTION)
+                    if not isinstance(precondition_list, list):
+                        context.expected_list_error(
+                            "Precondition", precondition_list, syntax=SYNTAX_ACTION)
                     if not precondition_list:
                         # Note that :precondition () is allowed in PDDL.
                         precondition = pddl.Conjunction([])
@@ -500,7 +519,8 @@ def parse_action(context, alist, type_dict, predicate_dict):
                         "Effect tag is expected to be ':effect'", effect_tag,
                         syntax=SYNTAX_ACTION)
                 effect_list = next(iterator)
-                check_list(context, effect_list, "Effect", syntax=SYNTAX_ACTION)
+                if not isinstance(effect_list, list):
+                    context.expected_list_error("Effect", effect_list, syntax=SYNTAX_ACTION)
                 eff = []
                 if effect_list:
                     cost = parse_effects(
@@ -522,7 +542,9 @@ def parse_axiom(context, alist, type_dict, predicate_dict):
             context.error("Expecting block with exactly three elements",
                           syntax=SYNTAX_AXIOM)
         assert alist[0] == ":derived"
-        check_list(context, alist[1], "The first argument (PREDICATE)", syntax=SYNTAX_AXIOM)
+        if not isinstance(alist[1], list):
+            context.expected_list_error("The first argument (PREDICATE)",
+                                        syntax=SYNTAX_AXIOM)
         predicate = parse_predicate(context, alist[1])
     with context.layer(f"Parsing condition for derived predicate '{predicate}'"):
         if not isinstance(alist[2], list):
@@ -539,7 +561,7 @@ def parse_axioms_and_actions(context, entries, type_dict, predicate_dict):
     the_actions = []
     for no, entry in enumerate(entries, start=1):
         with context.layer(f"Parsing {no}. axiom/action entry"):
-            check_named_block(context, entry, [":derived", ":action"])
+            assert_named_block(context, entry, [":derived", ":action"])
             if entry[0] == ":derived":
                 with context.layer(f"Parsing {len(the_axioms) + 1}. axiom"):
                     the_axioms.append(parse_axiom(
@@ -551,6 +573,7 @@ def parse_axioms_and_actions(context, entries, type_dict, predicate_dict):
                     if action is not None:
                         the_actions.append(action)
     return the_axioms, the_actions
+
 
 def parse_init(context, alist):
     initial = []
@@ -620,8 +643,8 @@ def parse_task(domain_pddl, task_pddl):
                       f"({task_domain_name}) does not match the name specified "
                       f"by the domain file ({domain_name}).")
     requirements = pddl.Requirements(sorted(set(
-                domain_requirements.requirements +
-                task_requirements.requirements)))
+        domain_requirements.requirements +
+        task_requirements.requirements)))
     objects = constants + objects
     check_for_duplicates(
         context,
@@ -634,16 +657,19 @@ def parse_task(domain_pddl, task_pddl):
         context,
         predicates,
         init,
-        errmsg = "error: %r is initialized but never defined",
-        finalmsg = "please check :init and :predicates definitions")
+        errmsg="error: %r is initialized but never defined",
+        finalmsg="please check :init and :predicates definitions")
+
+    check_for_ghost_variables(context,
+                              actions,
+                              "error: the precondition of %r mentions the variable %r which is not listed in the parameters")
+
     return pddl.Task(
         domain_name, task_name, requirements, types, objects,
         predicates, functions, init, goal, actions, axioms, use_metric)
 
 
 def parse_domain_pddl(context, domain_pddl):
-    if len(domain_pddl) < 2:
-        context.error("The domain file must start with the define keyword and the domain name.")
     iterator = iter(domain_pddl)
     with context.layer("Parsing domain"):
         define_tag = next(iterator)
@@ -652,11 +678,10 @@ def parse_domain_pddl(context, domain_pddl):
 
         with context.layer("Parsing domain name"):
             domain_line = next(iterator)
-            check_named_block(context, domain_line, ["domain"], syntax=SYNTAX_DOMAIN_DOMAIN_NAME)
-            if len(domain_line) != 2 or not isinstance(domain_line[1], str):
-                context.error("The definition of the domain name expects exactly one word after 'domain'.",
-                              domain_line[1:], syntax=SYNTAX_DOMAIN_DOMAIN_NAME)
-                                # TODO user output is not very nice
+            if (not check_named_block(domain_line, ["domain"]) or
+                    len(domain_line) != 2 or not isinstance(domain_line[1], str)):
+                context.error("Invalid definition of domain name.",
+                              syntax=SYNTAX_DOMAIN_DOMAIN_NAME)
             yield domain_line[1]
 
         ## We allow an arbitrary order of the requirement, types, constants,
@@ -671,7 +696,7 @@ def parse_domain_pddl(context, domain_pddl):
         seen_fields = []
         first_action = None
         for opt in iterator:
-            check_named_block(context, opt, correct_order + action_or_axiom_block)
+            assert_named_block(context, opt, correct_order + action_or_axiom_block)
             field = opt[0]
             if field not in correct_order:
                 first_action = opt
@@ -680,7 +705,7 @@ def parse_domain_pddl(context, domain_pddl):
                 context.error(f"Error in domain specification\n"
                               f"Reason: two '{field}' specifications.")
             if (seen_fields and
-                correct_order.index(seen_fields[-1]) > correct_order.index(field)):
+                    correct_order.index(seen_fields[-1]) > correct_order.index(field)):
                 msg = f"\nWarning: {field} specification not allowed here (cf. PDDL BNF)"
                 print(msg, file=sys.stderr)
             seen_fields.append(field)
@@ -689,7 +714,7 @@ def parse_domain_pddl(context, domain_pddl):
             elif field == ":types":
                 with context.layer("Parsing types"):
                     the_types.extend(parse_typed_list(
-                            context, opt[1:], constructor=construct_type))
+                        context, opt[1:], constructor=construct_type))
             elif field == ":constants":
                 with context.layer("Parsing constants"):
                     constants = parse_typed_list(context, opt[1:])
@@ -726,85 +751,72 @@ def parse_domain_pddl(context, domain_pddl):
         yield the_actions
         yield the_axioms
 
+
 def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
     iterator = iter(task_pddl)
     with context.layer("Parsing task"):
-        try:
-            define_tag = next(iterator)
-            if define_tag != "define":
-                context.error("Task definition expected to start with '(define ")
+        define_tag = next(iterator)
+        if define_tag != "define":
+            context.error("Task definition expected to start with '(define ")
 
-            with context.layer("Parsing problem name"):
-                problem_line = next(iterator)
-                check_named_block(context, problem_line, ["problem"], syntax=SYNTAX_TASK_PROBLEM_NAME)
-                if len(problem_line) != 2 or not isinstance(problem_line[1], str):
-                    context.error("The definition of the problem name expects exactly one word after 'problem'.",
-                                problem_line[1:], syntax=SYNTAX_TASK_PROBLEM_NAME)
-                                # TODO user output is not very nice
-                yield problem_line[1]
+        with context.layer("Parsing problem name"):
+            problem_line = next(iterator)
+            if (not check_named_block(problem_line, ["problem"]) or
+                    len(problem_line) != 2 or not isinstance(problem_line[1], str)):
+                context.error("Invalid problem name definition", problem_line,
+                              syntax=SYNTAX_TASK_PROBLEM_NAME)
+            yield problem_line[1]
 
-            with context.layer("Parsing domain name"):
-                domain_line = next(iterator)
-                check_named_block(context, domain_line, [":domain"], syntax=SYNTAX_TASK_DOMAIN_NAME)
-                if len(domain_line) != 2 or not isinstance(domain_line[1], str):
-                    context.error("The definition of the domain name expects exactly one word after ':domain'.",
-                                domain_line[1:], syntax=SYNTAX_TASK_DOMAIN_NAME)
-                                # TODO user output is not very nice
-                yield domain_line[1]
+        with context.layer("Parsing domain name"):
+            domain_line = next(iterator)
+            if (not check_named_block(domain_line, [":domain"]) or
+                    len(domain_line) != 2 or not isinstance(domain_line[1], str)):
+                context.error("Invalid domain name definition", domain_line,
+                              syntax=SYNTAX_TASK_DOMAIN_NAME)
+            yield domain_line[1]
 
-            requirements_opt = next(iterator)
-            check_named_block(context, requirements_opt, [":requirements", ":objects", ":init"])
-            if requirements_opt[0] == ":requirements":
-                requirements = requirements_opt[1:]
-                objects_opt = next(iterator)
-            else:
-                requirements = []
-                objects_opt = requirements_opt
-            yield parse_requirements(context, requirements)
+        requirements_opt = next(iterator)
+        assert_named_block(context, requirements_opt, [":requirements", ":objects", ":init"])
+        if requirements_opt[0] == ":requirements":
+            requirements = requirements_opt[1:]
+            objects_opt = next(iterator)
+        else:
+            requirements = []
+            objects_opt = requirements_opt
+        yield parse_requirements(context, requirements)
 
-            check_named_block(context, objects_opt, [":objects", ":init"])
-            if objects_opt[0] == ":objects":
-                with context.layer("Parsing objects"):
-                    yield parse_typed_list(context, objects_opt[1:])
-                init = next(iterator)
-            else:
-                yield []
-                init = objects_opt
+        assert_named_block(context, objects_opt, [":objects", ":init"])
+        if objects_opt[0] == ":objects":
+            with context.layer("Parsing objects"):
+                yield parse_typed_list(context, objects_opt[1:])
+            init = next(iterator)
+        else:
+            yield []
+            init = objects_opt
 
-            check_named_block(context, init, [":init"])
-            yield parse_init(context, init)
+        assert_named_block(context, init, [":init"])
+        yield parse_init(context, init)
 
-            goal = next(iterator)
-            with context.layer("Parsing goal"):
-                check_named_block(context, goal, [":goal"], syntax=SYNTAX_GOAL)
-                if len(goal) != 2 or not isinstance(goal[1], list) or not goal[1]:
-                    context.error("The definition of the goal expects a non-empty list after ':goal'.",
-                                  goal[1:], syntax=SYNTAX_GOAL)
-                    # TODO user output is not very nice
-                yield parse_condition(context, goal[1], type_dict, predicate_dict)
-        except StopIteration:
-            context.error("The problem file must contain at least the following five fields: define-keyword, problem name, domain name, initial state, and goal.")
-
+        goal = next(iterator)
+        with context.layer("Parsing goal"):
+            if (not check_named_block(goal, [":goal"]) or
+                    len(goal) != 2 or not isinstance(goal[1], list) or
+                    not goal[1]):
+                context.error("Expected non-empty goal.", syntax=SYNTAX_GOAL)
+            yield parse_condition(context, goal[1], type_dict, predicate_dict)
 
         use_metric = False
-        try:
-            metric = next(iterator)
-        except StopIteration:
-            # nothing more to parse
-            yield use_metric
-            return
-        if not isinstance(metric, list) or not metric or metric[0] != ":metric":
-            context.error("After the goal nothing is allowed except the definition of the total-cost metric.", metric, syntax=SYNTAX_METRIC)
-        with context.layer("Parsing metric"):
-            if len(metric) != 3 or not isinstance(metric[2], list) or len(metric[2]) != 1 or metric[1] != "minimize" or metric[2][0] != "total-cost":
-                context.error("Invalid metric definition.", metric, syntax=SYNTAX_METRIC)
-            use_metric = True
+        for entry in iterator:
+            if isinstance(entry, list) and entry[0] == ":metric":
+                with context.layer("Parsing metric"):
+                    if len(entry) != 3 or not isinstance(entry[2], list) or len(entry[2]) != 1 or entry[
+                        1] != "minimize" or entry[2][0] != "total-cost":
+                        context.error("Invalid metric definition.", entry, syntax=SYNTAX_METRIC)
+                    use_metric = True
         yield use_metric
 
-        for entry in iterator:
-            previous_entry = "metric" if use_metric else "goal"
-            context.error(f"After the {previous_entry} nothing is allowed.", entry)
-            # TODO user output could be nicer
+        for _ in iterator:
+            assert False, "This line should be unreachable"
 
 
 def check_atom_consistency(context, atom, initial_proposition_values,
@@ -833,7 +845,7 @@ def check_for_duplicates(context, elements, errmsg, finalmsg):
 
 
 def check_for_spurious_objects(context, predicates, init, errmsg, finalmsg):
-    """Look for objects that appear in the task file but not in the domain file"""
+    """Look for objects that appear in the task file but not in the domain file."""
     domain_predicates = {p.name for p in predicates}
     errors = []
     for i in init:
@@ -841,3 +853,24 @@ def check_for_spurious_objects(context, predicates, init, errmsg, finalmsg):
             errors.append(errmsg % i.predicate)
     if errors:
         context.error("\n".join(errors) + "\n" + finalmsg)
+
+
+def check_for_ghost_variables(context, actions, errmsg):
+    """Error on actions like these:
+        (:action foo
+        :parameters ()
+        :precondition(bar ?a)
+        :effect...
+    """
+    errors = []
+    for a in actions:
+        precondition_variable_names = set()
+        parameter_variable_names = set()
+        for args_in_atom in [set(x.args) for x in a.precondition.atoms_in_condition()]:
+            precondition_variable_names |= args_in_atom
+        for p in a.parameters:
+            parameter_variable_names.add(p.name)
+        for v in parameter_variable_names - precondition_variable_names:
+            errors.append(errmsg % (a.name, v))
+        final_err = "\n".join(errors)
+        context.error(final_err)
