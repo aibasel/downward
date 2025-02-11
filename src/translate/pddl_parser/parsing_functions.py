@@ -646,12 +646,16 @@ def parse_task(domain_pddl, task_pddl):
         domain_requirements.requirements +
         task_requirements.requirements)))
     objects = constants + objects
-    check_for_duplicates(
+    check_for_duplicate_objects(
         context,
         [o.name for o in objects],
         errmsg="error: duplicate object %r",
         finalmsg="please check :constants and :objects definitions")
     init += [pddl.Atom("=", (obj.name, obj.name)) for obj in objects]
+
+    check_for_duplicate_actions(context,
+                                actions,
+                                "error: duplicate action %r")
 
     check_for_spurious_objects(
         context,
@@ -832,7 +836,7 @@ def check_atom_consistency(context, atom, initial_proposition_values,
             print(f"Warning: {atom} is specified twice in initial state specification")
 
 
-def check_for_duplicates(context, elements, errmsg, finalmsg):
+def check_for_duplicate_objects(context, elements, errmsg, finalmsg):
     seen = set()
     errors = []
     for element in elements:
@@ -873,5 +877,19 @@ def check_for_ghost_variables(context, actions, errmsg):
         for v in parameter_variable_names - precondition_variable_names:
             errors.append(errmsg % (a.name, v))
     final_err = "\n".join(errors)
+    if errors:
+        context.error(final_err)
+
+def check_for_duplicate_actions(context, actions, errmsg):
+    name_list = [a.name for a in actions]
+    name_set = set(name_list)
+    name_counts = {name:name_list.count(name) for name in name_set}
+    errors = []
+    for name, count in name_counts.items():
+       if count > 1:
+           errors.append(errmsg % name)
+
+    final_err = "\n".join(errors)
+
     if errors:
         context.error(final_err)
