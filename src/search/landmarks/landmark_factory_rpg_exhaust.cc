@@ -53,19 +53,6 @@ bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
     return false;
 }
 
-void add_only_causal_landmarks_option_to_feature(
-    plugins::Feature &feature) {
-    feature.add_option<bool>(
-        "only_causal_landmarks",
-        "keep only causal landmarks",
-        "false");
-}
-
-bool get_only_causal_landmarks_arguments_from_options(
-    const plugins::Options &opts) {
-    return opts.get<bool>("only_causal_landmarks");
-}
-
 class LandmarkFactoryRpgExhaustFeature
     : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgExhaust> {
 public:
@@ -75,7 +62,15 @@ public:
             "Exhaustively checks for each fact if it is a landmark."
             "This check is done using relaxed planning.");
 
-        add_only_causal_landmarks_option_to_feature(*this);
+        add_option<bool>(
+            "unary_relaxation_landmarks",
+            "compute landmarks of the unary relaxation, i.e., landmarks "
+            "for the delete relaxation of a task transformation such that each "
+            "operator is split into one operator for each of its effects. This "
+            "kind of landmark was previously known as \"causal landmarks\". "
+            "Setting the option to true can reduce the overall number of "
+            "landmarks, which can make the search more efficient.",
+            "false");
         add_landmark_factory_options_to_feature(*this);
 
         document_language_support(
@@ -86,7 +81,7 @@ public:
     virtual shared_ptr<LandmarkFactoryRpgExhaust>
     create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgExhaust>(
-            get_only_causal_landmarks_arguments_from_options(opts),
+            opts.get<bool>("unary_relaxation_landmarks"),
             get_landmark_factory_arguments_from_options(opts));
     }
 };
