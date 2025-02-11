@@ -17,8 +17,8 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(
-    bool use_orders, bool unary_first_achievers, utils::Verbosity verbosity)
-    : LandmarkFactoryRelaxation(verbosity, unary_first_achievers),
+    bool use_orders, utils::Verbosity verbosity)
+    : LandmarkFactoryRelaxation(verbosity),
       use_orders(use_orders) {
 }
 
@@ -315,7 +315,6 @@ public:
             "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
 
         add_use_orders_option_to_feature(*this);
-        add_unary_first_achievers_option_to_feature(*this);
         add_landmark_factory_options_to_feature(*this);
 
         // TODO: Make sure that conditional effects are indeed supported.
@@ -328,7 +327,6 @@ public:
     create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryZhuGivan>(
             get_use_orders_arguments_from_options(opts),
-            get_unary_first_achievers_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));
     }
 };

@@ -64,8 +64,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
 public:
     LandmarkFactoryRpgSasp(
         bool disjunctive_landmarks, bool use_orders,
-        bool only_causal_landmarks, bool unary_first_achievers,
-        utils::Verbosity verbosity);
+        bool only_causal_landmarks, utils::Verbosity verbosity);
 
     virtual bool supports_conditional_effects() const override;
 };

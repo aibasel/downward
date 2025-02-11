@@ -19,9 +19,8 @@ using utils::ExitCode;
 namespace landmarks {
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(
     bool disjunctive_landmarks, bool use_orders,
-    bool only_causal_landmarks, bool unary_first_achievers,
-    utils::Verbosity verbosity)
-    : LandmarkFactoryRelaxation(verbosity, unary_first_achievers),
+    bool only_causal_landmarks, utils::Verbosity verbosity)
+    : LandmarkFactoryRelaxation(verbosity),
       disjunctive_landmarks(disjunctive_landmarks),
       use_orders(use_orders),
       only_causal_landmarks(only_causal_landmarks) {
@@ -423,7 +422,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
               achieving the landmark.
             */
             vector<vector<bool>> reached =
-                compute_relaxed_reachability(exploration, landmark, false);
+                compute_relaxed_reachability(exploration, landmark);
             /*
               Use this information to determine all operators that can
               possibly achieve *landmark* for the first time, and collect
@@ -650,7 +649,6 @@ public:
             "true");
         add_use_orders_option_to_feature(*this);
         add_only_causal_landmarks_option_to_feature(*this);
-        add_unary_first_achievers_option_to_feature(*this);
         add_landmark_factory_options_to_feature(*this);
 
         document_language_support(
@@ -664,7 +662,6 @@ public:
             opts.get<bool>("disjunctive_landmarks"),
             get_use_orders_arguments_from_options(opts),
             get_only_causal_landmarks_arguments_from_options(opts),
-            get_unary_first_achievers_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));
     }
 };

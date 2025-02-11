@@ -10,9 +10,8 @@ class LandmarkFactoryRpgExhaust : public LandmarkFactoryRelaxation {
                                             Exploration &exploration) override;
 
 public:
-    explicit LandmarkFactoryRpgExhaust(
-        bool only_causal_landmarks, bool unary_first_achievers,
-        utils::Verbosity verbosity);
+    explicit LandmarkFactoryRpgExhaust(bool only_causal_landmarks,
+                                       utils::Verbosity verbosity);
 
     virtual bool supports_conditional_effects() const override;
 };

@@ -3,18 +3,12 @@
 
 #include "landmark_factory.h"
 
-namespace plugins {
-class Feature;
-class Options;
-}
-
 namespace landmarks {
 class Exploration;
 
 class LandmarkFactoryRelaxation : public LandmarkFactory {
 protected:
-    explicit LandmarkFactoryRelaxation(utils::Verbosity verbosity,
-                                       bool unary_first_achievers);
+    explicit LandmarkFactoryRelaxation(utils::Verbosity verbosity);
 
     /*
       Test whether the relaxed planning task is solvable without
@@ -22,18 +16,16 @@ protected:
     */
     bool relaxed_task_solvable(
         const TaskProxy &task_proxy, Exploration &exploration,
-        const Landmark &exclude, bool use_unary_relaxation) const;
+        const Landmark &exclude, bool use_unary_relaxation=false) const;
     /*
       Compute for each fact whether it is relaxed reachable without
       achieving the excluded landmark.
     */
     std::vector<std::vector<bool>> compute_relaxed_reachability(
         Exploration &exploration, const Landmark &exclude,
-        bool use_unary_relaxation) const;
+        bool use_unary_relaxation=false) const;
 
 private:
-    const bool unary_first_achievers;
-
     void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
 
     virtual void generate_relaxed_landmarks(const std::shared_ptr<AbstractTask> &task,
@@ -58,11 +50,6 @@ protected:
                             Exploration &exploration,
                             const Landmark &landmark) const;
 };
-
-extern void add_unary_first_achievers_option_to_feature(
-    plugins::Feature &feature);
-extern bool get_unary_first_achievers_arguments_from_options(
-    const plugins::Options &opts);
 }
 
 #endif

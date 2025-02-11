@@ -7,8 +7,6 @@
 
 #include "../algorithms/priority_queues.h"
 
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 namespace utils {

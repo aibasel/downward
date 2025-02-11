@@ -3,16 +3,14 @@
 #include "exploration.h"
 #include "landmark.h"
 
-#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 
 using namespace std;
 
 namespace landmarks {
 LandmarkFactoryRelaxation::LandmarkFactoryRelaxation(
-    utils::Verbosity verbosity, bool unary_first_achievers)
-    : LandmarkFactory(verbosity),
-      unary_first_achievers(unary_first_achievers) {
+    utils::Verbosity verbosity)
+    : LandmarkFactory(verbosity) {
 }
 
 void LandmarkFactoryRelaxation::generate_landmarks(const shared_ptr<AbstractTask> &task) {
@@ -86,8 +84,8 @@ void LandmarkFactoryRelaxation::calc_achievers(
                 landmark.is_derived = true;
         }
 
-        vector<vector<bool>> reached = compute_relaxed_reachability(
-            exploration, landmark, unary_first_achievers);
+        vector<vector<bool>> reached =
+            compute_relaxed_reachability(exploration, landmark);
 
         for (int op_or_axom_id : landmark.possible_achievers) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axom_id);
@@ -123,17 +121,5 @@ vector<vector<bool>> LandmarkFactoryRelaxation::compute_relaxed_reachability(
 
     return exploration.compute_relaxed_reachability(
         excluded_props, excluded_op_ids, use_unary_relaxation);
-}
-
-void add_unary_first_achievers_option_to_feature(plugins::Feature &feature) {
-    feature.add_option<bool>(
-        "unary_first_achievers",
-        "compute first achievers with unary operator relaxation",
-        "false");
-}
-
-bool get_unary_first_achievers_arguments_from_options(
-    const plugins::Options &opts) {
-    return opts.get<bool>("unary_first_achievers");
 }
 }
