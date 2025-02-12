@@ -48,9 +48,7 @@ jobs:
           git rm -r * # wipe content and fill it from scratch
           cp ../downward/misc/autodoc/mkdocs.yml .
           mkdir -p docs/
-          cp ../downward/docs/*.md docs/
-          mkdir docs/search
-          cp ../downward/misc/autodoc/docs/* docs/search
+          cp -r ../downward/docs/*.md docs/
           git add docs
           git add mkdocs.yml
           git config user.name "github-actions[bot]"

@@ -27,7 +27,7 @@ TXT2TAGS_OPTIONS = {
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--outdir", default="docs")
+    parser.add_argument("--outdir", default=f"{REPO_ROOT_DIR}/docs/search")
     parser.add_argument("--build", default="release")
     return parser.parse_args()
 
