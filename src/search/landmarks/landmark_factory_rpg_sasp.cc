@@ -12,7 +12,6 @@
 #include "../utils/system.h"
 
 #include <cassert>
-#include <limits>
 
 using namespace std;
 using utils::ExitCode;

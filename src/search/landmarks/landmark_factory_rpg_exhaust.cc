@@ -34,6 +34,13 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
         Landmark landmark({goal.get_pair()}, false, false, true);
         lm_graph->add_landmark(move(landmark));
     }
+    if (!use_unary_relaxation) {
+        // insert initial facts
+        for (const FactProxy &init : task_proxy.get_initial_state()) {
+            Landmark landmark({init.get_pair()}, false, false);
+            lm_graph->add_landmark(move(landmark));
+        }
+    }
     // test all other possible facts
     for (VariableProxy var : task_proxy.get_variables()) {
         for (int value = 0; value < var.get_domain_size(); ++value) {
@@ -50,8 +57,6 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
 }
 
 bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
-    /* TODO: I would say it does support conditional effects if unary relaxation
-        is used, but not sure. */
     return false;
 }
 
@@ -71,7 +76,8 @@ public:
             "operator is split into one operator for each of its effects. This "
             "kind of landmark was previously known as \"causal landmarks\". "
             "Setting the option to true can reduce the overall number of "
-            "landmarks, which can make the search more efficient.",
+            "landmarks, which can make the search more memory-efficient but "
+            "potentially less informative.",
             "false");
         add_landmark_factory_options_to_feature(*this);
 

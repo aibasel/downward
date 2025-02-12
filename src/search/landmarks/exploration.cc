@@ -83,7 +83,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
             precondition.push_back(&propositions[precondition_fact.var]
                                    [precondition_fact.value]);
 
-        const auto &[var, value] = effect.get_fact().get_pair();
+        auto [var, value] = effect.get_fact().get_pair();
         Proposition *effect_proposition = &propositions[var][value];
         int op_or_axiom_id = get_operator_or_axiom_id(op);
         unary_operators.emplace_back(precondition, effect_proposition, op_or_axiom_id);
@@ -124,13 +124,7 @@ void Exploration::setup_exploration_queue(
     for (FactProxy fact : state) {
         Proposition *init_prop =
             &propositions[fact.get_variable().get_id()][fact.get_value()];
-        /*
-          The following condition is a workaround to avoid compiling the
-          initial state away in a task transformation in case of unary
-          relaxation. Otherwise, every initial proposition is a landmark
-          and should be enqueued.
-        */
-        if (!(use_unary_relaxation && init_prop->excluded)) {
+        if (!init_prop->excluded) {
             enqueue_if_necessary(init_prop);
         }
     }
@@ -148,14 +142,14 @@ void Exploration::setup_exploration_queue(
       looping over all unary operators). Note however that this can lead to
       an overapproximation, e.g. if the effect e1 also has condition c.
     */
-    unordered_set<int> op_ids_to_mark;
-    if (!use_unary_relaxation && !excluded_props.empty()) {
+    unordered_set<int> excluded_op_ids;
+    if (!use_unary_relaxation) {
         for (OperatorProxy op : task_proxy.get_operators()) {
             for (EffectProxy effect : op.get_effects()) {
-                const auto &[var, value] = effect.get_fact().get_pair();
+                auto [var, value] = effect.get_fact().get_pair();
                 if (effect.get_conditions().empty()
                     && propositions[var][value].excluded) {
-                    op_ids_to_mark.insert(op.get_id());
+                    excluded_op_ids.insert(op.get_id());
                     break;
                 }
             }
@@ -172,7 +166,7 @@ void Exploration::setup_exploration_queue(
           proposition as effect (see comment when building *op_ids_to_mark*).
         */
         if (op.effect->excluded
-            || op_ids_to_mark.count(op.op_or_axiom_id)) {
+            || excluded_op_ids.contains(op.op_or_axiom_id)) {
             // Operator will not be applied during relaxed exploration.
             op.excluded = true;
             continue;
