@@ -4,6 +4,7 @@
 #include "exceptions.h"
 
 #include <vector>
+#include <string>
 
 namespace utils {
 class ComponentArgumentError : public Exception {
