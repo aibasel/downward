@@ -12,13 +12,13 @@ using utils::ExitCode;
 
 namespace utils {
 static const string end_of_line_sentinel("\n");
-static const std::regex only_whitespaces("\\s*");
+static const regex only_whitespaces("\\s*");
 
 TaskLexer::TaskLexer(istream &stream)
     : stream(stream) {
 }
 
-std::optional<std::string> TaskLexer::get_next_nonempty_line() {
+optional<string> TaskLexer::get_next_nonempty_line() {
     string next_line;
     while (!stream.eof()) {
         getline(stream, next_line);
@@ -42,7 +42,7 @@ void TaskLexer::initialize_tokens(const Context &context) {
         while (stream >> word) {
             tokens.push_back(word);
         }
-        assert(tokens.size() > 0);
+        assert(!tokens.empty());
         tokens.push_back(end_of_line_sentinel);
     } else {
         context.error("Unexpected end of task.");

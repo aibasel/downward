@@ -13,7 +13,7 @@ class SASTask:
     number of structural restrictions. For example, conditions should
     generally be sorted and mention each variable at most once. See
     the validate methods for details.
-    
+
     TODO/bug: The translator output might actually not be sorted,
     see issue1158.
     TODO: We plan to be less restrictive in the future,
@@ -158,7 +158,7 @@ class SASVariables:
     def validate_condition(self, condition):
         """Assert that the condition (list of facts) is sorted, mentions each
         variable at most once, and only consists of valid facts.
-        
+
         Note that the search component does not check sortedness and uniqueness.
         """
         last_var = -1
@@ -205,7 +205,7 @@ class SASMutexGroup:
 
         We do not check that the group is actually a mutex group, as this
         would be too expensive.
-        
+
         Note that the search component does not check that the facts are
         sorted and unique."""
         for fact in self.facts:

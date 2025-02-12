@@ -295,7 +295,7 @@ ExplicitVariable TaskParser::read_variable(int index) {
     if (var.domain_size < 1) {
         context.error(
             "Domain size should be at least 1, but is "
-            + std::to_string(var.domain_size) + ".");
+            + to_string(var.domain_size) + ".");
     }
     if ((var.axiom_layer >= 0) && var.domain_size != 2) {
         context.error(
@@ -413,7 +413,7 @@ ExplicitOperator TaskParser::read_operator(
     if (count < 1) {
         context.error(
             "Number of operator effects should be at least 1, but is "
-            + std::to_string(count) + ".");
+            + to_string(count) + ".");
     }
     lexer.confirm_end_of_line(context);
     op.effects.reserve(count);
@@ -487,7 +487,7 @@ vector<ExplicitVariable> TaskParser::read_variables() {
     if (count < 1) {
         context.error(
             "Number of variables should be at least 1, but is "
-            + std::to_string(count) + ".");
+            + to_string(count) + ".");
     }
     lexer.confirm_end_of_line(context);
     vector<ExplicitVariable> variables;
