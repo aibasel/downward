@@ -57,6 +57,12 @@ MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(
       main_loop_max_time(main_loop_max_time),
       starting_peak_memory(0) {
     handle_shrink_limit_defaults();
+
+    assert(max_states_before_merge > 0);
+    assert(max_states >= max_states_before_merge);
+    // TODO why is this assert comparing threshold to max_states_before_merge
+    // while the default handling checks the comparison of threshold to max_states
+    assert(shrink_threshold_before_merge <= max_states_before_merge);
 }
 
 void MergeAndShrinkAlgorithm::handle_shrink_limit_defaults() {
@@ -87,19 +93,18 @@ void MergeAndShrinkAlgorithm::handle_shrink_limit_defaults() {
         }
     }
 
-    utils::verify_comparison(max_states, 1, greater_equal<>(),
-                             "Transition system size must be at least 1.");
+    utils::verify_argument(max_states >= 1,
+                           "Transition system size must be at least 1.");
 
-    utils::verify_comparison(max_states_before_merge, 1, greater_equal<>(),
-                             "Transition system size before merge must be at least 1.");
+    utils::verify_argument(max_states_before_merge >= 1,
+                           "Transition system size before merge must be at least 1.");
 
     if (shrink_threshold_before_merge == -1) {
         shrink_threshold_before_merge = max_states;
     }
 
-    utils::verify_comparison(shrink_threshold_before_merge, 1, greater_equal<>(),
-                             "Threshold must be at least 1.");
-
+    utils::verify_argument(shrink_threshold_before_merge >= 1,
+                           "Threshold must be at least 1.");
 
     if (shrink_threshold_before_merge > max_states) {
         shrink_threshold_before_merge = max_states;
@@ -109,13 +114,6 @@ void MergeAndShrinkAlgorithm::handle_shrink_limit_defaults() {
                 << "correcting threshold." << endl;
         }
     }
-
-    // TODO are these asserts needed?
-    assert(max_states_before_merge > 0);
-    assert(max_states >= max_states_before_merge);
-    // TODO why is this assert comparing threshold to max_states_before_merge
-    // while the default handling checks the comparison of threshold to max_states
-    assert(shrink_threshold_before_merge <= max_states_before_merge);
 }
 
 void MergeAndShrinkAlgorithm::report_peak_memory_delta(bool final) const {

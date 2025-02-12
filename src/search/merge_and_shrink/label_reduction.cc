@@ -35,8 +35,8 @@ LabelReduction::LabelReduction(
       lr_method(method),
       lr_system_order(system_order),
       rng(utils::get_rng(random_seed)) {
-    utils::verify_comparison(
-        lr_before_shrinking, lr_before_merging, logical_or<>(),
+    utils::verify_argument(
+        lr_before_shrinking || lr_before_merging,
         "Please turn on at least one of the options \"before_shrinking\" or \"before_merging\"!"
         );
 }
