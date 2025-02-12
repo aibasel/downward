@@ -12,7 +12,7 @@ public:
     explicit ComponentArgumentError(const std::string &msg) : Exception(msg) {}
 };
 
-void verify_argument(const bool b, const std::string &message);
+void verify_argument(bool b, const std::string &message);
 
 template<typename T>
 void verify_list_not_empty(const std::vector<T> list, const std::string &name) {
