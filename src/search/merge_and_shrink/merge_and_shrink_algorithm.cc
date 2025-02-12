@@ -60,9 +60,6 @@ MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(
 
     assert(this->max_states_before_merge > 0);
     assert(this->max_states >= this->max_states_before_merge);
-    // TODO why is this assert comparing threshold to max_states_before_merge
-    // while the default handling checks the comparison of threshold to max_states
-    assert(this->shrink_threshold_before_merge <= this->max_states_before_merge);
 }
 
 void MergeAndShrinkAlgorithm::handle_shrink_limit_defaults() {
