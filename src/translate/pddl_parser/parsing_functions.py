@@ -37,7 +37,6 @@ SYNTAX_TASK_PROBLEM_NAME = "(problem NAME)"
 SYNTAX_TASK_DOMAIN_NAME = "(:domain NAME)"
 SYNTAX_METRIC = "(:metric minimize (total-cost))"
 
-
 CONDITION_TAG_TO_SYNTAX = {
     "and": SYNTAX_CONDITION_AND,
     "or": SYNTAX_CONDITION_OR,
@@ -60,13 +59,13 @@ class Context:
                 return "(" + " ".join([lispify(i) for i in item]) + ")"
             else:
                 return item
+
         error_msg = f"{self}\n{message}"
         if syntax:
             error_msg += f"\nSyntax: {syntax}"
         if item is not None:
             error_msg += f"\nGot: {lispify(item)}"
         raise ParseError(error_msg)
-
 
     @contextlib.contextmanager
     def layer(self, message: str):
@@ -90,7 +89,6 @@ def check_named_block(context, alist, names, syntax=None):
         context.error(f"Expected a non-empty block starting with any of the "
                       f"following words: {', '.join(names)}",
                       item=alist, syntax=syntax)
-
 
 
 def construct_typed_object(context, name, _type):
@@ -131,9 +129,10 @@ def parse_typed_list(context, alist, only_variables=False,
                         context.error(f"Expected something before the separator '{TYPED_LIST_SEPARATOR}'.", alist)
                     _type = alist[separator_position + 1]
                     alist = alist[separator_position + 2:]
-                    if not isinstance(_type, str): #TODO should we allow lists of length 1 as well?
+                    if not isinstance(_type, str):  # TODO should we allow lists of length 1 as well?
                         if _type and _type[0] == "either":
-                            context.error("Keyword 'either' is not supported, type value is expected to be a single word.", _type)
+                            context.error(
+                                "Keyword 'either' is not supported, type value is expected to be a single word.", _type)
                         else:
                             context.error("Type value is expected to be a single word.", _type)
                 for item in items:
@@ -254,8 +253,8 @@ def parse_condition_aux(context, alist, negated, type_dict, predicate_dict):
 
     if tag == "imply":
         parts = [parse_condition_aux(
-                context, args[0], not negated, type_dict, predicate_dict),
-                 parse_condition_aux(
+            context, args[0], not negated, type_dict, predicate_dict),
+            parse_condition_aux(
                 context, args[1], negated, type_dict, predicate_dict)]
         tag = "or"
     else:
@@ -307,6 +306,8 @@ def parse_literal(context, alist, type_dict, predicate_dict, negated=False):
 
 
 SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH = False
+
+
 def _get_predicate_id_and_arity(context, text, type_dict, predicate_dict):
     global SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH
 
@@ -435,7 +436,7 @@ def parse_expression(context, exp):
         elif exp.isdigit():
             return pddl.NumericConstant(int(exp))
         elif exp.replace(".", "").isdigit():
-            context.error("Fractional numbers are not supported.", exp,syntax=SYNTAX_EXPRESSION)
+            context.error("Fractional numbers are not supported.", exp, syntax=SYNTAX_EXPRESSION)
         else:
             return pddl.PrimitiveNumericExpression(exp, [])
 
@@ -552,6 +553,7 @@ def parse_axioms_and_actions(context, entries, type_dict, predicate_dict):
                         the_actions.append(action)
     return the_axioms, the_actions
 
+
 def parse_init(context, alist):
     initial = []
     initial_proposition_values = dict()
@@ -620,8 +622,8 @@ def parse_task(domain_pddl, task_pddl):
                       f"({task_domain_name}) does not match the name specified "
                       f"by the domain file ({domain_name}).")
     requirements = pddl.Requirements(sorted(set(
-                domain_requirements.requirements +
-                task_requirements.requirements)))
+        domain_requirements.requirements +
+        task_requirements.requirements)))
     objects = constants + objects
     check_for_duplicate_objects(
         context,
@@ -649,6 +651,11 @@ def parse_task(domain_pddl, task_pddl):
                           predicates,
                           init)
 
+    check_argument_consistency(context,
+                               objects,
+                               init,
+                               goal)
+
     return pddl.Task(
         domain_name, task_name, requirements, types, objects,
         predicates, functions, init, goal, actions, axioms, use_metric)
@@ -669,7 +676,7 @@ def parse_domain_pddl(context, domain_pddl):
             if len(domain_line) != 2 or not isinstance(domain_line[1], str):
                 context.error("The definition of the domain name expects exactly one word after 'domain'.",
                               domain_line[1:], syntax=SYNTAX_DOMAIN_DOMAIN_NAME)
-                                # TODO user output is not very nice
+                # TODO user output is not very nice
             yield domain_line[1]
 
         ## We allow an arbitrary order of the requirement, types, constants,
@@ -693,7 +700,7 @@ def parse_domain_pddl(context, domain_pddl):
                 context.error(f"Error in domain specification\n"
                               f"Reason: two '{field}' specifications.")
             if (seen_fields and
-                correct_order.index(seen_fields[-1]) > correct_order.index(field)):
+                    correct_order.index(seen_fields[-1]) > correct_order.index(field)):
                 msg = f"\nWarning: {field} specification not allowed here (cf. PDDL BNF)"
                 print(msg, file=sys.stderr)
             seen_fields.append(field)
@@ -702,7 +709,7 @@ def parse_domain_pddl(context, domain_pddl):
             elif field == ":types":
                 with context.layer("Parsing types"):
                     the_types.extend(parse_typed_list(
-                            context, opt[1:], constructor=construct_type))
+                        context, opt[1:], constructor=construct_type))
             elif field == ":constants":
                 with context.layer("Parsing constants"):
                     constants = parse_typed_list(context, opt[1:])
@@ -739,6 +746,7 @@ def parse_domain_pddl(context, domain_pddl):
         yield the_actions
         yield the_axioms
 
+
 def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
     iterator = iter(task_pddl)
     with context.layer("Parsing task"):
@@ -752,8 +760,8 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
                 check_named_block(context, problem_line, ["problem"], syntax=SYNTAX_TASK_PROBLEM_NAME)
                 if len(problem_line) != 2 or not isinstance(problem_line[1], str):
                     context.error("The definition of the problem name expects exactly one word after 'problem'.",
-                                problem_line[1:], syntax=SYNTAX_TASK_PROBLEM_NAME)
-                                # TODO user output is not very nice
+                                  problem_line[1:], syntax=SYNTAX_TASK_PROBLEM_NAME)
+                    # TODO user output is not very nice
                 yield problem_line[1]
 
             with context.layer("Parsing domain name"):
@@ -761,8 +769,8 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
                 check_named_block(context, domain_line, [":domain"], syntax=SYNTAX_TASK_DOMAIN_NAME)
                 if len(domain_line) != 2 or not isinstance(domain_line[1], str):
                     context.error("The definition of the domain name expects exactly one word after ':domain'.",
-                                domain_line[1:], syntax=SYNTAX_TASK_DOMAIN_NAME)
-                                # TODO user output is not very nice
+                                  domain_line[1:], syntax=SYNTAX_TASK_DOMAIN_NAME)
+                    # TODO user output is not very nice
                 yield domain_line[1]
 
             requirements_opt = next(iterator)
@@ -796,8 +804,8 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
                     # TODO user output is not very nice
                 yield parse_condition(context, goal[1], type_dict, predicate_dict)
         except StopIteration:
-            context.error("The problem file must contain at least the following five fields: define-keyword, problem name, domain name, initial state, and goal.")
-
+            context.error(
+                "The problem file must contain at least the following five fields: define-keyword, problem name, domain name, initial state, and goal.")
 
         use_metric = False
         try:
@@ -807,9 +815,11 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
             yield use_metric
             return
         if not isinstance(metric, list) or not metric or metric[0] != ":metric":
-            context.error("After the goal nothing is allowed except the definition of the total-cost metric.", metric, syntax=SYNTAX_METRIC)
+            context.error("After the goal nothing is allowed except the definition of the total-cost metric.", metric,
+                          syntax=SYNTAX_METRIC)
         with context.layer("Parsing metric"):
-            if len(metric) != 3 or not isinstance(metric[2], list) or len(metric[2]) != 1 or metric[1] != "minimize" or metric[2][0] != "total-cost":
+            if len(metric) != 3 or not isinstance(metric[2], list) or len(metric[2]) != 1 or metric[1] != "minimize" or \
+                    metric[2][0] != "total-cost":
                 context.error("Invalid metric definition.", metric, syntax=SYNTAX_METRIC)
             use_metric = True
         yield use_metric
@@ -877,6 +887,7 @@ def check_for_ghost_variables(context, actions, errmsg):
     if errors:
         context.error(final_err)
 
+
 def check_for_duplicate_actions(context, actions, errmsg):
     name_list = [a.name for a in actions]
     name_set = set(name_list)
@@ -908,6 +919,24 @@ def check_arities_in_init(context, predicates, init):
         if true_arg_length[i.predicate] > len(i.args):
             errors.append(few % (pretty_print(i), name_to_predicate[i.predicate]))
 
+    final_err = "\n".join(errors)
+    if errors:
+        context.error(final_err)
+
+
+def check_argument_consistency(context, objects, init, goal):
+    errors = []
+    init_err = "error in :init -> the predicate %r in %r is not defined"
+    goal_err = "error in :goal -> the predicate %r in %r is not defined"
+    object_names = {o.name for o in objects}
+    for i in init:
+        for arg in i.args:
+            if arg not in object_names:
+                errors.append(init_err % (arg, str(i)))
+    for g in goal.atoms_in_condition():
+        for arg in g.args:
+            if arg not in object_names:
+                errors.append(goal_err % (arg, str(g)))
     final_err = "\n".join(errors)
     if errors:
         context.error(final_err)
