@@ -3,8 +3,8 @@
 
 #include "exceptions.h"
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace utils {
 class ComponentArgumentError : public Exception {
