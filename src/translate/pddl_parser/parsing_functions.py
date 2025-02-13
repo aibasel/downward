@@ -214,8 +214,11 @@ def parse_condition(context, alist, type_dict, predicate_dict):
 
 def parse_condition_aux(context, alist, negated, type_dict, predicate_dict):
     """Parse a PDDL condition. The condition is translated into NNF on the fly."""
+    # We allow empty conditions according to "PDDL2.1: An Extension to PDDL for
+    # Expressing Temporal Planning Domains" by Maria Fox and Derek Long
+    # (JAIR 20:61-124, 2003)
     if not alist:
-        context.error("Expected a non-empty block as condition.")
+        return pddl.Conjunction([])
     tag = alist[0]
     if tag in ("and", "or", "not", "imply"):
         args = alist[1:]
@@ -485,12 +488,8 @@ def parse_action(context, alist, type_dict, predicate_dict):
                 if precondition_tag_opt == ":precondition":
                     precondition_list = next(iterator)
                     check_list(context, precondition_list, "Precondition", syntax=SYNTAX_ACTION)
-                    if not precondition_list:
-                        # Note that :precondition () is allowed in PDDL.
-                        precondition = pddl.Conjunction([])
-                    else:
-                        precondition = parse_condition(
-                            context, precondition_list, type_dict, predicate_dict)
+                    precondition = parse_condition(
+                        context, precondition_list, type_dict, predicate_dict)
                     effect_tag = next(iterator)
                 else:
                     precondition = pddl.Conjunction([])
