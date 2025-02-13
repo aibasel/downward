@@ -1,5 +1,6 @@
 This file controls the navigation below "documentation" on the website.
 
+  -  [](README.md)
   -  [Getting started](quick-start.md)
   -  [Planner usage](planner-usage.md)
   -  [PDDL support](pddl-support.md)
