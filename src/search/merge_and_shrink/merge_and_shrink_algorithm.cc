@@ -58,7 +58,7 @@ MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(
       starting_peak_memory(0) {
     handle_shrink_limit_defaults();
 
-    assert(this->max_states_before_merge > 0);
+    assert(this->max_states_before_merge >= 1);
     assert(this->max_states >= this->max_states_before_merge);
 }
 
