@@ -132,6 +132,7 @@ create_fast_downward_library(
     SOURCES
         utils/collections
         utils/countdown_timer
+        utils/component_errors
         utils/exceptions
         utils/hash
         utils/language

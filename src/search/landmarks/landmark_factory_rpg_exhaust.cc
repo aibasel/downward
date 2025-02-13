@@ -75,9 +75,8 @@ public:
             "ignored, i.e. not supported");
     }
 
-    virtual shared_ptr<LandmarkFactoryRpgExhaust> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<LandmarkFactoryRpgExhaust>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgExhaust>(
             get_only_causal_landmarks_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));

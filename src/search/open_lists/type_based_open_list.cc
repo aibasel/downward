@@ -140,6 +140,7 @@ TypeBasedOpenListFactory::TypeBasedOpenListFactory(
     const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
     : evaluators(evaluators),
       random_seed(random_seed) {
+    utils::verify_list_not_empty(evaluators, "evaluators");
 }
 
 unique_ptr<StateOpenList>
@@ -182,11 +183,8 @@ public:
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TypeBasedOpenListFactory> create_component(
-        const plugins::Options &opts,
-        const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(
-            context, opts, "evaluators");
+    virtual shared_ptr<TypeBasedOpenListFactory>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<TypeBasedOpenListFactory>(
             opts.get_list<shared_ptr<Evaluator>>("evaluators"),
             utils::get_rng_arguments_from_options(opts)

@@ -32,12 +32,12 @@ class MergeAndShrinkAlgorithm {
 
     // Options for shrinking
     // Hard limit: the maximum size of a transition system at any point.
-    const int max_states;
+    int max_states;
     // Hard limit: the maximum size of a transition system before being merged.
-    const int max_states_before_merge;
+    int max_states_before_merge;
     /* A soft limit for triggering shrinking even if the hard limits
        max_states and max_states_before_merge are not violated. */
-    const int shrink_threshold_before_merge;
+    int shrink_threshold_before_merge;
 
     // Options for pruning
     const bool prune_unreachable_states;
@@ -56,6 +56,7 @@ class MergeAndShrinkAlgorithm {
     void main_loop(
         FactoredTransitionSystem &fts,
         const TaskProxy &task_proxy);
+    void handle_shrink_limit_defaults();
 public:
     MergeAndShrinkAlgorithm(
         const std::shared_ptr<MergeStrategyFactory> &merge_strategy,
@@ -79,7 +80,6 @@ extern void add_transition_system_size_limit_options_to_feature(plugins::Feature
 std::tuple<int, int, int>
 get_transition_system_size_limit_arguments_from_options(
     const plugins::Options &opts);
-extern void handle_shrink_limit_options_defaults(plugins::Options &opts, const utils::Context &context);
 }
 
 #endif

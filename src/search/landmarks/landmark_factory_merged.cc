@@ -3,6 +3,7 @@
 #include "landmark.h"
 #include "landmark_graph.h"
 
+#include "../utils/component_errors.h"
 #include "../plugins/plugin.h"
 
 #include <set>
@@ -18,6 +19,7 @@ LandmarkFactoryMerged::LandmarkFactoryMerged(
     utils::Verbosity verbosity)
     : LandmarkFactory(verbosity),
       lm_factories(lm_factories) {
+    utils::verify_list_not_empty(lm_factories, "lm_factories");
 }
 
 LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const Landmark &landmark) const {
@@ -168,11 +170,8 @@ public:
             "supported if all components support them");
     }
 
-    virtual shared_ptr<LandmarkFactoryMerged> create_component(
-        const plugins::Options &opts,
-        const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<LandmarkFactory>>(
-            context, opts, "lm_factories");
+    virtual shared_ptr<LandmarkFactoryMerged>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryMerged>(
             opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories"),
             get_landmark_factory_arguments_from_options(opts));

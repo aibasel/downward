@@ -118,8 +118,7 @@ public:
     }
 
     virtual shared_ptr<MergeSelectorScoreBasedFiltering>
-    create_component(const plugins::Options &opts,
-                     const utils::Context &) const override {
+    create_component(const plugins::Options &opts) const override {
         return make_shared<MergeSelectorScoreBasedFiltering>(
             opts.get_list<shared_ptr<MergeScoringFunction>>(
                 "scoring_functions")

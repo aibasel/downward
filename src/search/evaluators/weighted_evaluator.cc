@@ -54,9 +54,8 @@ public:
         add_evaluator_options_to_feature(*this, "weight");
     }
 
-    virtual shared_ptr<WeightedEvaluator> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<WeightedEvaluator>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<WeightedEvaluator>(
             opts.get<shared_ptr<Evaluator>>("eval"),
             opts.get<int>("weight"),

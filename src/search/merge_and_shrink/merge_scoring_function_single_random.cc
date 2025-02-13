@@ -59,8 +59,7 @@ public:
     }
 
     virtual shared_ptr<MergeScoringFunctionSingleRandom>
-    create_component(const plugins::Options &opts,
-                     const utils::Context &) const override {
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<MergeScoringFunctionSingleRandom>(
             utils::get_rng_arguments_from_options(opts)
             );

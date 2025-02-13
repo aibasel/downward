@@ -323,9 +323,8 @@ public:
             "We think they are supported, but this is not 100% sure.");
     }
 
-    virtual shared_ptr<LandmarkFactoryZhuGivan> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<LandmarkFactoryZhuGivan>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryZhuGivan>(
             get_use_orders_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));

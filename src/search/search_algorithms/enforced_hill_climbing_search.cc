@@ -278,9 +278,8 @@ public:
         add_search_algorithm_options_to_feature(*this, "ehc");
     }
 
-    virtual shared_ptr<EnforcedHillClimbingSearch> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<EnforcedHillClimbingSearch>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<EnforcedHillClimbingSearch>(
             opts.get<shared_ptr<Evaluator>>("h"),
             opts.get<PreferredUsage>("preferred_usage"),

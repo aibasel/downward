@@ -125,6 +125,8 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(
       rng(utils::get_rng(random_seed)),
       num_rejected(0),
       hill_climbing_timer(nullptr) {
+    utils::verify_argument(min_improvement <= num_samples,
+                           "Minimum improvement must not be higher than number of samples.");
 }
 
 int PatternCollectionGeneratorHillclimbing::generate_candidate_pdbs(
@@ -569,14 +571,6 @@ get_hillclimbing_arguments_from_options(const plugins::Options &opts) {
         utils::get_rng_arguments_from_options(opts));
 }
 
-static void check_hillclimbing_options(
-    const plugins::Options &opts, const utils::Context &context) {
-    if (opts.get<int>("min_improvement") > opts.get<int>("num_samples")) {
-        context.error(
-            "Minimum improvement must not be higher than number of samples");
-    }
-}
-
 static basic_string<char> paper_references() {
     return utils::format_conference_reference(
         {"Patrik Haslum", "Adi Botea", "Malte Helmert", "Blai Bonet",
@@ -615,9 +609,7 @@ public:
     }
 
     virtual shared_ptr<PatternCollectionGeneratorHillclimbing>
-    create_component(const plugins::Options &opts,
-                     const utils::Context &context) const override {
-        check_hillclimbing_options(opts, context);
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorHillclimbing>(
             get_hillclimbing_arguments_from_options(opts),
             get_generator_arguments_from_options(opts)
@@ -665,11 +657,8 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<CanonicalPDBsHeuristic> create_component(
-        const plugins::Options &opts,
-        const utils::Context &context) const override {
-        check_hillclimbing_options(opts, context);
-
+    virtual shared_ptr<CanonicalPDBsHeuristic>
+    create_component(const plugins::Options &opts) const override {
         shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =
             plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorHillclimbing>(
                 get_hillclimbing_arguments_from_options(opts),

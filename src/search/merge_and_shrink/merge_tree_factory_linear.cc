@@ -136,9 +136,8 @@ public:
         MergeTreeFactoryLinear::add_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeTreeFactoryLinear> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<MergeTreeFactoryLinear>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<MergeTreeFactoryLinear>(
             opts.get<variable_order_finder::VariableOrderType>(
                 "variable_order"),
