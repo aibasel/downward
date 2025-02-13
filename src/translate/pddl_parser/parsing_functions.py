@@ -645,16 +645,19 @@ def parse_task(domain_pddl, task_pddl):
         domain_requirements.requirements +
         task_requirements.requirements)))
     objects = constants + objects
-    check_for_duplicate_objects(
+
+    check_for_duplicates(
         context,
         [o.name for o in objects],
         errmsg="error: duplicate object %r",
         finalmsg="please check :constants and :objects definitions")
-    init += [pddl.Atom("=", (obj.name, obj.name)) for obj in objects]
+    check_for_duplicates(
+        context,
+        [a.name for a in actions],
+        errmsg="error: duplicate action %r",
+        finalmsg="please check :action and :derived definitions")
 
-    check_for_duplicate_actions(context,
-                                actions,
-                                "error: duplicate action %r")
+    init += [pddl.Atom("=", (obj.name, obj.name)) for obj in objects]
 
 
     return pddl.Task(
@@ -854,8 +857,7 @@ def check_predicate_and_terms_existence(
             context.error(f"Undefined {item}", term)
 
 
-
-def check_for_duplicate_objects(context, elements, errmsg, finalmsg):
+def check_for_duplicates(context, elements, errmsg, finalmsg):
     seen = set()
     errors = []
     for element in elements:
@@ -865,93 +867,3 @@ def check_for_duplicate_objects(context, elements, errmsg, finalmsg):
             seen.add(element)
     if errors:
         context.error("\n".join(errors) + "\n" + finalmsg)
-
-
-#def check_undefined_arguments(context, action, condition, valid_arguments):
-#    if isinstance(condition, pddl.Literal):
-#        difference = [x for x in condition.args if x not in valid_arguments]
-#        if difference:
-#            context.error(f"error: action {action.name} mentions arguments "
-#                          f"which are neither a parameter nor a constant", item=difference)
-#    elif isinstance(condition, pddl.conditions.JunctorCondition):
-#        for part in condition.parts:
-#            check_undefined_arguments(context, action, part, valid_arguments)
-#    elif isinstance(condition, pddl.conditions.QuantifiedCondition):
-#        for part in condition.parts:
-#            new_valid_arguments = valid_arguments | {p.name for p in condition.parameters}
-#            check_undefined_arguments(context, action, part, new_valid_arguments)
-    # The only type of condition left is ConstantCondition, which does not need to be checked.
-
-#def check_for_ghost_arguments(context, actions, constants):
-#    """Error on actions like these:
-#        (:action foo
-#        :parameters ()
-#        :precondition(bar ?a)
-#        :effect...
-#    """
-#    for a in actions:
-#        valid_arguments = {p.name for p in a.parameters} | {c.name for c in constants}
-#        check_undefined_arguments(context, a, a.precondition, valid_arguments)
-#
-#        for effect in a.effects:
-#            valid_effect_arguments = valid_arguments | {p.name for p in effect.parameters}
-#            check_undefined_arguments(context, a, effect.literal, valid_effect_arguments)
-#            check_undefined_arguments(context, a, effect.condition, valid_effect_arguments)
-
-
-def check_for_duplicate_actions(context, actions, errmsg):
-    name_list = [a.name for a in actions]
-    name_set = set(name_list)
-    name_counts = {name: name_list.count(name) for name in name_set}
-    errors = []
-    for name, count in name_counts.items():
-        if count > 1:
-            errors.append(errmsg % name)
-
-    final_err = "\n".join(errors)
-
-    if errors:
-        context.error(final_err)
-
-
-def check_arities_in_init(context, predicates, init):
-    true_arg_length = {p.name: len(p.arguments) for p in predicates}
-    name_to_predicate = {p.name: str(p) for p in predicates}
-
-    def pretty_print(atom):
-        return "(" + atom.predicate + " " + " ".join(atom.args) + ")"
-
-    errors = []
-    few = "error in :init -> not enough arguments\n --> Got: %r\n --> Usage: %r"
-    many = "error in :init -> too many arguments\n --> Got: %r\n --> Usage: %r"
-    for i in init:
-        if not isinstance(i, pddl.Atom):
-            continue
-        if true_arg_length[i.predicate] < len(i.args):
-            errors.append(many % (pretty_print(i), name_to_predicate[i.predicate]))
-        if true_arg_length[i.predicate] > len(i.args):
-            errors.append(few % (pretty_print(i), name_to_predicate[i.predicate]))
-
-    final_err = "\n".join(errors)
-    if errors:
-        context.error(final_err)
-
-
-#def check_argument_consistency(context, objects, init, goal):
-#    errors = []
-#    init_err = "error in :init -> the predicate %r in %r is not defined"
-#    goal_err = "error in :goal -> the predicate %r in %r is not defined"
-#    object_names = {o.name for o in objects}
-#    for i in init:
-#        if not isinstance(i, pddl.Atom):
-#            continue
-#        for arg in i.args:
-#            if arg not in object_names:
-#                errors.append(init_err % (arg, str(i)))
-#    for g in goal.atoms_in_condition():
-#        for arg in g.args:
-#            if arg not in object_names:
-#                errors.append(goal_err % (arg, str(g)))
-#    final_err = "\n".join(errors)
-#    if errors:
-#        context.error(final_err)
