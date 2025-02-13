@@ -642,10 +642,7 @@ def parse_task(domain_pddl, task_pddl):
         errmsg="error: %r is initialized but never defined",
         finalmsg="please check :init and :predicates definitions")
 
-    check_for_ghost_variables(context,
-                              actions,
-                              constants,
-                              "error: action %r mentions %r which is neither a parameter nor a constant")
+    check_for_ghost_arguments(context, actions, constants)
 
     check_arities_in_init(context,
                           predicates,
@@ -884,14 +881,13 @@ def check_undefined_arguments(context, action, condition, valid_arguments):
             check_undefined_arguments(context, action, part, new_valid_arguments)
     # The only type of condition left is ConstantCondition, which does not need to be checked.
 
-def check_for_ghost_variables(context, actions, constants, errmsg):
+def check_for_ghost_arguments(context, actions, constants):
     """Error on actions like these:
         (:action foo
         :parameters ()
         :precondition(bar ?a)
         :effect...
     """
-    errors = []
     for a in actions:
         valid_arguments = {p.name for p in a.parameters} | {c.name for c in constants}
         check_undefined_arguments(context, a, a.precondition, valid_arguments)
@@ -900,7 +896,6 @@ def check_for_ghost_variables(context, actions, constants, errmsg):
             valid_effect_arguments = valid_arguments | {p.name for p in effect.parameters}
             check_undefined_arguments(context, a, effect.literal, valid_effect_arguments)
             check_undefined_arguments(context, a, effect.condition, valid_effect_arguments)
-            arguments = {arg for arg in effect.literal.args}
 
 
 def check_for_duplicate_actions(context, actions, errmsg):
