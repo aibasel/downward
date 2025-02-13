@@ -24,7 +24,7 @@ jobs:
           repository: roeger/downward-website
           token: ${{ secrets.DOWNWARD_WEBSITE_PAT }}
           path: downward-website
-          ref: tip
+          ref: head-docs
 
       - name: Install Python
         uses: actions/setup-python@v4
