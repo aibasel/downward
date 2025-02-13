@@ -710,6 +710,9 @@ def parse_domain_pddl(context, domain_pddl):
                 with context.layer("Parsing types"):
                     the_types.extend(parse_typed_list(
                         context, opt[1:], constructor=construct_type))
+                    for t in the_types:
+                        if t.name == "number":
+                            context.error('Encountered declaration of type "number", which is a reserved type that cannot be redeclared.')
             elif field == ":constants":
                 with context.layer("Parsing constants"):
                     constants = parse_typed_list(context, opt[1:])
