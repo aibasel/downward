@@ -204,9 +204,8 @@ public:
             "using a LandmarkFactory not supporting them");
     }
 
-    virtual shared_ptr<LandmarkSumHeuristic> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<LandmarkSumHeuristic>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkSumHeuristic>(
             get_landmark_heuristic_arguments_from_options(opts),
             tasks::get_axioms_arguments_from_options(opts));

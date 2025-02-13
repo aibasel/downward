@@ -121,9 +121,8 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<HSPMaxHeuristic> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<HSPMaxHeuristic>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<HSPMaxHeuristic>(
             relaxation_heuristic::get_relaxation_heuristic_arguments_from_options(opts)
             );

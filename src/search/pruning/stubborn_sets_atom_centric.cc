@@ -280,9 +280,8 @@ public:
         add_pruning_options_to_feature(*this);
     }
 
-    virtual shared_ptr<StubbornSetsAtomCentric> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<StubbornSetsAtomCentric>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<StubbornSetsAtomCentric>(
             opts.get<bool>("use_sibling_shortcut"),
             opts.get<AtomSelectionStrategy>("atom_selection_strategy"),

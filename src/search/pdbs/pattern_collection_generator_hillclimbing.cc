@@ -609,8 +609,7 @@ public:
     }
 
     virtual shared_ptr<PatternCollectionGeneratorHillclimbing>
-    create_component(const plugins::Options &opts,
-                     const utils::Context &) const override {
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorHillclimbing>(
             get_hillclimbing_arguments_from_options(opts),
             get_generator_arguments_from_options(opts)
@@ -658,9 +657,8 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<CanonicalPDBsHeuristic> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<CanonicalPDBsHeuristic>
+    create_component(const plugins::Options &opts) const override {
         shared_ptr<PatternCollectionGeneratorHillclimbing> pgh =
             plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorHillclimbing>(
                 get_hillclimbing_arguments_from_options(opts),

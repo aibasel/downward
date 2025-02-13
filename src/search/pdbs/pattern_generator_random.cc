@@ -79,9 +79,8 @@ public:
         add_random_pattern_implementation_notes_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternGeneratorRandom> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<PatternGeneratorRandom>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<PatternGeneratorRandom>(
             opts.get<int>("max_pdb_size"),
             opts.get<double>("max_time"),

@@ -656,9 +656,8 @@ public:
             "supported");
     }
 
-    virtual shared_ptr<LandmarkFactoryRpgSasp> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<LandmarkFactoryRpgSasp>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgSasp>(
             opts.get<bool>("disjunctive_landmarks"),
             get_use_orders_arguments_from_options(opts),

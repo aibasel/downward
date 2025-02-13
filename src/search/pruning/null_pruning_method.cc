@@ -28,9 +28,8 @@ public:
         add_pruning_options_to_feature(*this);
     }
 
-    virtual shared_ptr<NullPruningMethod> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<NullPruningMethod>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<NullPruningMethod>(
             get_pruning_arguments_from_options(opts));
     }

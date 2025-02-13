@@ -165,9 +165,8 @@ public:
             "0");
     }
 
-    virtual shared_ptr<AlternationOpenListFactory> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<AlternationOpenListFactory>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<AlternationOpenListFactory>(
             opts.get_list<shared_ptr<OpenListFactory>>("sublists"),
             opts.get<int>("boost")

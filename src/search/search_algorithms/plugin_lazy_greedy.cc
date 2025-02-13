@@ -71,9 +71,8 @@ public:
             true);
     }
 
-    virtual shared_ptr<lazy_search::LazySearch> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<lazy_search::LazySearch>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<lazy_search::LazySearch>(
             search_common::create_greedy_open_list_factory(
                 opts.get_list<shared_ptr<Evaluator>>("evals"),

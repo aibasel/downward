@@ -84,9 +84,8 @@ public:
         add_cegar_implementation_notes_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorDisjointCegar> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<PatternCollectionGeneratorDisjointCegar>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorDisjointCegar>(
             opts.get<int>("max_pdb_size"),
             opts.get<int>("max_collection_size"),

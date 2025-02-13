@@ -199,9 +199,8 @@ public:
             plugins::Bounds("1", "infinity"));
     }
 
-    virtual shared_ptr<TaskDuplicator> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<TaskDuplicator>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<TaskDuplicator>(
             opts.get<int>("copies"));
     }
@@ -216,9 +215,8 @@ public:
         add_fact_order_option(*this);
     }
 
-    virtual shared_ptr<GoalDecomposition> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<GoalDecomposition>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<GoalDecomposition>(
             get_fact_order_arguments_from_options(opts));
     }
@@ -238,9 +236,8 @@ public:
             "true");
     }
 
-    virtual shared_ptr<LandmarkDecomposition> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<LandmarkDecomposition>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkDecomposition>(
             get_fact_order_arguments_from_options(opts),
             opts.get<bool>("combine_facts"));

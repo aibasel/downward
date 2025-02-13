@@ -184,8 +184,9 @@ public:
             "```");
     }
 
-    virtual shared_ptr<IteratedSearch> create_component(const plugins::Options &options, const utils::Context &) const override {
-        plugins::Options options_copy(options);
+    virtual shared_ptr<IteratedSearch>
+    create_component(const plugins::Options &opts) const override {
+        plugins::Options options_copy(opts);
         /*
           The options entry 'algorithm_configs' is a LazyValue representing a list
           of search algorithms. But iterated search expects a list of LazyValues,
@@ -198,7 +199,7 @@ public:
           the builder is a light-weight operation.
         */
         vector<parser::LazyValue> algorithm_configs =
-            options.get<parser::LazyValue>("algorithm_configs").construct_lazy_list();
+            opts.get<parser::LazyValue>("algorithm_configs").construct_lazy_list();
         options_copy.set("algorithm_configs", algorithm_configs);
         return make_shared<IteratedSearch>(options_copy);
     }

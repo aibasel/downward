@@ -391,9 +391,8 @@ public:
         document_language_support("axioms", "not supported");
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorGenetic> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<PatternCollectionGeneratorGenetic>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorGenetic>(
             opts.get<int>("pdb_max_size"),
             opts.get<int>("num_collections"),

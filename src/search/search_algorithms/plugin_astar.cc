@@ -40,9 +40,8 @@ public:
             "```\n", true);
     }
 
-    virtual shared_ptr<eager_search::EagerSearch> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<eager_search::EagerSearch>
+    create_component(const plugins::Options &opts) const override {
         plugins::Options options_copy(opts);
         auto temp =
             search_common::create_astar_open_list_factory_and_f_eval(

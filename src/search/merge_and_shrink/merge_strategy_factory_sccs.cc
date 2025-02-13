@@ -171,9 +171,8 @@ public:
         add_merge_strategy_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeStrategyFactorySCCs> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<MergeStrategyFactorySCCs>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<MergeStrategyFactorySCCs>(
             opts.get<OrderOfSCCs>("order_of_sccs"),
             opts.get<shared_ptr<MergeSelector>> ("merge_selector"),

@@ -81,8 +81,8 @@ template<typename Constructed>
 class FeatureWithDefault : public Feature {
 protected:
     using Feature::Feature;
-    virtual std::shared_ptr<Constructed> create_component(
-        const Options &options, const utils::Context &) const {
+    virtual std::shared_ptr<Constructed>
+    create_component(const Options &options) const {
         return std::make_shared<Constructed>(options);
     }
 };
@@ -91,8 +91,8 @@ template<typename Constructed>
 class FeatureWithoutDefault : public Feature {
 protected:
     using Feature::Feature;
-    virtual std::shared_ptr<Constructed> create_component(
-        const Options &, const utils::Context &) const = 0;
+    virtual std::shared_ptr<Constructed>
+    create_component(const Options &) const = 0;
 };
 
 template<typename Constructed>
@@ -114,7 +114,7 @@ public:
     Any construct(const Options &options, const utils::Context &context) const override {
         std::shared_ptr<Base> ptr;
         try {
-            ptr = this->create_component(options, context);
+            ptr = this->create_component(options);
         } catch (const utils::ComponentArgumentError &e) {
             context.error(e.get_message());
         }

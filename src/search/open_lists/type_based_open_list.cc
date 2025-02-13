@@ -183,9 +183,8 @@ public:
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TypeBasedOpenListFactory> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<TypeBasedOpenListFactory>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<TypeBasedOpenListFactory>(
             opts.get_list<shared_ptr<Evaluator>>("evaluators"),
             utils::get_rng_arguments_from_options(opts)

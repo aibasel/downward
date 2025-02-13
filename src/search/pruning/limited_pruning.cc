@@ -89,9 +89,8 @@ public:
             "in an eager search such as astar.");
     }
 
-    virtual shared_ptr<LimitedPruning> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<LimitedPruning>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LimitedPruning>(
             opts.get<shared_ptr<PruningMethod>>("pruning"),
             opts.get<double>("min_required_pruning_ratio"),

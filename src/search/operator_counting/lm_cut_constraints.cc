@@ -75,7 +75,8 @@ public:
                 "2013"));
     }
 
-    virtual shared_ptr<LMCutConstraints> create_component(const plugins::Options &, const utils::Context &) const override {
+    virtual shared_ptr<LMCutConstraints>
+    create_component(const plugins::Options &) const override {
         return make_shared<LMCutConstraints>();
     }
 };

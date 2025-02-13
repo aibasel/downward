@@ -170,9 +170,8 @@ public:
             "supported if all components support them");
     }
 
-    virtual shared_ptr<LandmarkFactoryMerged> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<LandmarkFactoryMerged>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryMerged>(
             opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories"),
             get_landmark_factory_arguments_from_options(opts));
