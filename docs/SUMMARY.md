@@ -1,9 +1,9 @@
-This file controls the navigation below "navigation" on the website.
+This file controls the navigation below "documentation" on the website.
 
   -  [Getting started](quick-start.md)
   -  [Planner usage](planner-usage.md)
   -  [PDDL support](pddl-support.md)
-  -  [Search plugins](search/index.md)
+  -  [Search plugins](search/)
   -  [Sytax for search plugins](search-plugin-syntax.md)
   -  [IPC planners](ipc-planner.md)
   -  [Exit Codes](exit-codes.md)
