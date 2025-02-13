@@ -57,6 +57,7 @@ static int compute_number_of_unary_operators(
 void Exploration::build_unary_operators() {
     const OperatorsProxy operators = task_proxy.get_operators();
     const AxiomsProxy axioms = task_proxy.get_axioms();
+
     /*
       We need to reserve memory for this vector because we cross-reference to
       the memory address of its elements while building it, meaning a resize
@@ -77,7 +78,7 @@ static vector<FactPair> get_sorted_effect_conditions(
     const EffectProxy &effect) {
     vector<FactPair> effect_conditions;
     effect_conditions.reserve(effect.get_conditions().size());
-    for (FactProxy effect_condition: effect.get_conditions()) {
+    for (FactProxy effect_condition : effect.get_conditions()) {
         effect_conditions.push_back(effect_condition.get_pair());
     }
     sort(effect_conditions.begin(), effect_conditions.end());

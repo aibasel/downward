@@ -989,7 +989,7 @@ void LandmarkFactoryHM::generate_landmarks(
                 set_minus(h_m_table_[f1].landmarks, h_m_table_[f1].necessary);
         }
 
-        // and add the orderings.
+        // add the orderings.
 
         for (int set_index : all_landmarks) {
             for (int landmark : h_m_table_[set_index].landmarks) {
