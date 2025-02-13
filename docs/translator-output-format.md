@@ -104,7 +104,7 @@ For state variables that do not correspond to axioms, i.e. which are not
 computed from the values of other state variables, the axiom layer is
 always -1. For state variables that do correspond to axioms, the axiom
 layer determines the order of evaluation of axiom rules, described
-further below in the section "Evaluating Axioms".
+further below in the section ["Evaluating Axioms"](#evaluating_axioms).
 
 Sample variables section (Gripper domain, `prob01.pddl` from IPC 1998):
 
@@ -294,8 +294,8 @@ by one line for each SAS state variable. Each of those lines contains a
 single number, denoting the value of the given state variable in the
 initial state (for state variables which do not correspond to derived
 predicates) or the "default value" of the state variable (for state
-variables corresponding to derived predicates; see section "Evaluating
-Axioms" below). The section ends with the line "end_state".
+variables corresponding to derived predicates; see section ["Evaluating
+Axioms"](#evaluating_axioms) below). The section ends with the line "end_state".
 
 Here is the initial state section for the Gripper example:
 
