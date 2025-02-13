@@ -94,7 +94,8 @@ def check_named_block(context, alist, names, syntax=None):
 def construct_typed_object(context, name, _type):
     with context.layer("Parsing typed object"):
         check_word(context, name, "Name of typed object")
-        check_word(context, _type, "The type of an object")
+        # We don't check the type here because in the predicates definition
+        # we allow using "either", making the type a list and not a word.
         return pddl.TypedObject(name, _type)
 
 
@@ -105,7 +106,7 @@ def construct_type(context, curr_type, base_type):
         return pddl.Type(curr_type, base_type)
 
 
-def parse_typed_list(context, alist, only_variables=False,
+def parse_typed_list(context, alist, only_variables=False, either_allowed=False,
                      constructor=construct_typed_object,
                      default_type="object"):
     with context.layer("Parsing typed list"):
@@ -130,11 +131,11 @@ def parse_typed_list(context, alist, only_variables=False,
                     _type = alist[separator_position + 1]
                     alist = alist[separator_position + 2:]
                     if not isinstance(_type, str):
-                        if _type and _type[0] == "either":
-                            context.error(
-                                "Keyword 'either' is not supported, type value is expected to be a single word.", _type)
-                        else:
+                        if not either_allowed:
                             context.error("Type value is expected to be a single word.", _type)
+                        elif not (_type and _type[0] == "either"):
+                            context.error("Type value is expected to be a single word "
+                                          "or '(either WORD*)'", _type)
                 for item in items:
                     if only_variables and not item.startswith("?"):
                         context.error("Expected a variable but the given word does not start with '?'.", item)
@@ -176,7 +177,8 @@ def parse_predicate(context, alist):
         name = alist[0]
         check_word(context, name, "Predicate name")
     with context.layer(f"Parsing arguments of predicate '{name}'"):
-        arguments = parse_typed_list(context, alist[1:], only_variables=True)
+        arguments = parse_typed_list(
+            context, alist[1:], only_variables=True, either_allowed=True)
     return pddl.Predicate(name, arguments)
 
 
@@ -314,8 +316,6 @@ def parse_literal(context, alist, type_dict, predicate_dict, terms, negated=Fals
 
 
 SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH = False
-
-
 def _get_predicate_id_and_arity(context, text, type_dict, predicate_dict):
     global SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH
 
@@ -658,7 +658,6 @@ def parse_task(domain_pddl, task_pddl):
         finalmsg="please check :action and :derived definitions")
 
     init += [pddl.Atom("=", (obj.name, obj.name)) for obj in objects]
-
 
     return pddl.Task(
         domain_name, task_name, requirements, types, objects,

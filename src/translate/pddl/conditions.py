@@ -91,15 +91,6 @@ class Condition:
                 return True
         return False
 
-    def atoms_in_condition(self) -> List["Atom"]:
-        atoms = []
-        if isinstance(self, (Atom, NegatedAtom)):
-            atoms.append(self)
-        for part in self.parts:
-            atoms.extend(part.atoms_in_condition())
-        return atoms
-
-
 class ConstantCondition(Condition):
     # Defining __eq__ blocks inheritance of __hash__, so must set it explicitly.
     __hash__ = Condition.__hash__
