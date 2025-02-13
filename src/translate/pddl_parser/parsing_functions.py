@@ -129,7 +129,7 @@ def parse_typed_list(context, alist, only_variables=False,
                         context.error(f"Expected something before the separator '{TYPED_LIST_SEPARATOR}'.", alist)
                     _type = alist[separator_position + 1]
                     alist = alist[separator_position + 2:]
-                    if not isinstance(_type, str):  # TODO should we allow lists of length 1 as well?
+                    if not isinstance(_type, str):
                         if _type and _type[0] == "either":
                             context.error(
                                 "Keyword 'either' is not supported, type value is expected to be a single word.", _type)
@@ -673,7 +673,6 @@ def parse_domain_pddl(context, domain_pddl):
             if len(domain_line) != 2 or not isinstance(domain_line[1], str):
                 context.error("The definition of the domain name expects exactly one word after 'domain'.",
                               domain_line[1:], syntax=SYNTAX_DOMAIN_DOMAIN_NAME)
-                # TODO user output is not very nice
             yield domain_line[1]
 
         ## We allow an arbitrary order of the requirement, types, constants,
@@ -761,7 +760,6 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
                 if len(problem_line) != 2 or not isinstance(problem_line[1], str):
                     context.error("The definition of the problem name expects exactly one word after 'problem'.",
                                   problem_line[1:], syntax=SYNTAX_TASK_PROBLEM_NAME)
-                    # TODO user output is not very nice
                 yield problem_line[1]
 
             with context.layer("Parsing domain name"):
@@ -770,7 +768,6 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
                 if len(domain_line) != 2 or not isinstance(domain_line[1], str):
                     context.error("The definition of the domain name expects exactly one word after ':domain'.",
                                   domain_line[1:], syntax=SYNTAX_TASK_DOMAIN_NAME)
-                    # TODO user output is not very nice
                 yield domain_line[1]
 
             requirements_opt = next(iterator)
@@ -801,7 +798,6 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
                 if len(goal) != 2 or not isinstance(goal[1], list) or not goal[1]:
                     context.error("The definition of the goal expects a non-empty list after ':goal'.",
                                   goal[1:], syntax=SYNTAX_GOAL)
-                    # TODO user output is not very nice
                 yield parse_condition(context, goal[1], type_dict, predicate_dict)
         except StopIteration:
             context.error(
@@ -827,7 +823,6 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict):
         for entry in iterator:
             previous_entry = "metric" if use_metric else "goal"
             context.error(f"After the {previous_entry} nothing is allowed.", entry)
-            # TODO user output could be nicer
 
 
 def check_atom_consistency(context, atom, initial_proposition_values,
