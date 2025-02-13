@@ -7,4 +7,5 @@ This file controls the navigation below "documentation" on the website.
   -  [Search plugins](search/)
   -  [Sytax for search plugins](search-plugin-syntax.md)
   -  [IPC planners](ipc-planner.md)
-  -  [Exit Codes](exit-codes.md)
+  -  [Exit codes](exit-codes.md)
+  -  [Translator output format](translator-output-format.md)
