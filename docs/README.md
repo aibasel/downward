@@ -10,7 +10,7 @@
      search configuration, such as [search algorithms](search/SearchAlgorithm.md) and [heuristics](search/Evaluator.md).
   -  [Syntax for search plugins](search-plugin-syntax.md) defines the syntax for configuring the search
      plugins.
-  -  [IPC planners](ipc-planner.md) explains how to run some planner
+  -  [IPC planners](ipc-planners.md) explains how to run some planner
      configurations from IPC 2011 and 2018.
   -  [Exit Codes](exit-codes.md) describes the exit codes as returned by the
      planner.
