@@ -55,33 +55,56 @@ static int compute_number_of_unary_operators(
 }
 
 void Exploration::build_unary_operators() {
+    const OperatorsProxy operators = task_proxy.get_operators();
+    const AxiomsProxy axioms = task_proxy.get_axioms();
     /*
-      Reserve vector size unary operators. This is needed because we
-      cross-reference to the memory address of elements of the vector while
-      building it; meaning a resize would invalidate all references.
+      We need to reserve memory for this vector because we cross-reference to
+      the memory address of its elements while building it, meaning a resize
+      would invalidate all references.
     */
-    OperatorsProxy operators = task_proxy.get_operators();
-    AxiomsProxy axioms = task_proxy.get_axioms();
     unary_operators.reserve(
         compute_number_of_unary_operators(operators, axioms));
 
-    // Build unary operators for operators and axioms.
-    for (OperatorProxy op : operators)
+    for (const OperatorProxy &op : operators) {
         build_unary_operators(op);
-    for (OperatorProxy axiom : axioms)
+    }
+    for (const OperatorProxy &axiom : axioms) {
         build_unary_operators(axiom);
+    }
+}
+
+static vector<FactPair> get_sorted_effect_conditions(
+    const EffectProxy &effect) {
+    vector<FactPair> effect_conditions;
+    effect_conditions.reserve(effect.get_conditions().size());
+    for (FactProxy effect_condition: effect.get_conditions()) {
+        effect_conditions.push_back(effect_condition.get_pair());
+    }
+    sort(effect_conditions.begin(), effect_conditions.end());
+    return effect_conditions;
+}
+
+static vector<FactPair> get_sorted_extended_preconditions(
+    const vector<FactPair> &preconditions, const EffectProxy &effect) {
+    /* Since this function is called with the same `preconditions` repeatedly,
+       we expect them to be sorted to avoid sorting them over and over again. */
+    assert(is_sorted(preconditions.begin(), preconditions.end()));
+    vector<FactPair> effect_conditions = get_sorted_effect_conditions(effect);
+
+    vector<FactPair> extended_preconditions;
+    extended_preconditions.reserve(
+        preconditions.size() + effect_conditions.size());
+    merge(preconditions.begin(), preconditions.end(), effect_conditions.begin(),
+          effect_conditions.end(), extended_preconditions.begin());
+    assert(is_sorted(
+               extended_preconditions.begin(), extended_preconditions.end()));
+    return extended_preconditions;
 }
 
 vector<Proposition *> Exploration::get_sorted_precondition_propositions(
     const vector<FactPair> &preconditions, const EffectProxy &effect) {
-    vector<FactPair> extended_preconditions(preconditions);
-    const EffectConditionsProxy &effect_conditions = effect.get_conditions();
-    for (FactProxy effect_condition : effect_conditions) {
-        extended_preconditions.push_back(effect_condition.get_pair());
-    }
-
-    sort(extended_preconditions.begin(), extended_preconditions.end());
-
+    vector<FactPair> extended_preconditions =
+        get_sorted_extended_preconditions(preconditions, effect);
     vector<Proposition *> precondition_propositions;
     precondition_propositions.reserve(extended_preconditions.size());
     for (const FactPair &precondition_fact : extended_preconditions) {
@@ -98,6 +121,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
     for (FactProxy pre : op.get_preconditions()) {
         preconditions.push_back(pre.get_pair());
     }
+    sort(preconditions.begin(), preconditions.end());
     for (EffectProxy effect : op.get_effects()) {
         vector<Proposition *> precondition_propositions =
             get_sorted_precondition_propositions(preconditions, effect);
@@ -122,10 +146,10 @@ void Exploration::reset_reachability_information() {
     }
 }
 
-void Exploration::set_state_facts_reached(const State &state) {
-    for (FactProxy fact : state) {
+void Exploration::set_state_atoms_reached(const State &state) {
+    for (FactProxy atom : state) {
         Proposition *init_prop =
-            &propositions[fact.get_variable().get_id()][fact.get_value()];
+            &propositions[atom.get_variable().get_id()][atom.get_value()];
         enqueue_if_necessary(init_prop);
     }
 }
@@ -166,7 +190,7 @@ void Exploration::initialize_operator_data(
         get_excluded_operators(excluded_op_ids);
 
     for (UnaryOperator &op : unary_operators) {
-        op.unsatisfied_preconditions = op.num_preconditions;
+        op.num_unsatisfied_preconditions = op.num_preconditions;
 
         /*
           Aside from UnaryOperators derived from operators with an id in
@@ -181,7 +205,7 @@ void Exploration::initialize_operator_data(
         op.excluded = false; // Reset from previous exploration.
 
         // Queue effects of precondition-free operators.
-        if (op.unsatisfied_preconditions == 0) {
+        if (op.num_unsatisfied_preconditions == 0) {
             enqueue_if_necessary(op.effect);
         }
     }
@@ -201,16 +225,16 @@ void Exploration::setup_exploration_queue(
     reset_reachability_information();
 
     // Set *excluded* to true for initializing operator data.
-    for (const FactPair &fact : excluded_props) {
-        propositions[fact.var][fact.value].excluded = true;
+    for (const FactPair &atom : excluded_props) {
+        propositions[atom.var][atom.value].excluded = true;
     }
 
-    set_state_facts_reached(state);
+    set_state_atoms_reached(state);
     initialize_operator_data(excluded_op_ids);
 
     // Reset *excluded* to false for the next exploration.
-    for (const FactPair &fact : excluded_props) {
-        propositions[fact.var][fact.value].excluded = false;
+    for (const FactPair &atom : excluded_props) {
+        propositions[atom.var][atom.value].excluded = false;
     }
 }
 
@@ -224,9 +248,9 @@ void Exploration::relaxed_exploration() {
         for (UnaryOperator *unary_op : triggered_operators) {
             if (unary_op->excluded)
                 continue;
-            --unary_op->unsatisfied_preconditions;
-            assert(unary_op->unsatisfied_preconditions >= 0);
-            if (unary_op->unsatisfied_preconditions == 0) {
+            --unary_op->num_unsatisfied_preconditions;
+            assert(unary_op->num_unsatisfied_preconditions >= 0);
+            if (unary_op->num_unsatisfied_preconditions == 0) {
                 enqueue_if_necessary(unary_op->effect);
             }
         }

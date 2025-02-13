@@ -40,14 +40,14 @@ struct UnaryOperator {
     const int num_preconditions;
     Proposition *effect;
 
-    int unsatisfied_preconditions;
+    int num_unsatisfied_preconditions;
     bool excluded;
     UnaryOperator(const std::vector<Proposition *> &preconditions,
                   Proposition *eff, int op_or_axiom_id)
         : op_or_axiom_id(op_or_axiom_id),
           num_preconditions(static_cast<int>(preconditions.size())),
           effect(eff),
-          unsatisfied_preconditions(num_preconditions),
+          num_unsatisfied_preconditions(num_preconditions),
           excluded(false) {}
 };
 
@@ -65,7 +65,7 @@ class Exploration {
     void build_unary_operators(const OperatorProxy &op);
 
     void reset_reachability_information();
-    void set_state_facts_reached(const State &state);
+    void set_state_atoms_reached(const State &state);
     std::unordered_set<int> get_excluded_operators(
         const std::vector<int> &excluded_op_ids) const;
     void initialize_operator_data(const std::vector<int> &excluded_op_ids);

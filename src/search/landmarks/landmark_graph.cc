@@ -141,7 +141,7 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
 void LandmarkGraph::remove_node(LandmarkNode *node) {
     remove_node_occurrences(node);
     const auto it =
-        find_if(nodes.begin(), nodes.end(),
+        find_if(nodes.cbegin(), nodes.cend(),
                 [&node](const auto &other) {return other.get() == node;});
     assert(it != nodes.end());
     nodes.erase(it);

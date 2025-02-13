@@ -286,8 +286,7 @@ static string get_predicate_for_atom(const VariablesProxy &variables,
     }
     size_t paren_pos = atom_name.find('(', predicate_pos);
     if (predicate_pos == 0 || paren_pos == string::npos) {
-        cerr << "error: cannot extract predicate from atom: "
-             << atom_name << endl;
+        cerr << "Cannot extract predicate from atom: " << atom_name << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     return string(atom_name.begin() +
@@ -381,9 +380,9 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
 
                 // Only deal with propositions that are not shared preconditions
                 // (those have been found already and are simple landmarks).
-                const FactPair atom(pre.first, pre.second);
-                if (!lm_graph->contains_simple_landmark(atom)) {
-                    preconditions[disj_class].push_back(atom);
+                const FactPair precondition(pre.first, pre.second);
+                if (!lm_graph->contains_simple_landmark(precondition)) {
+                    preconditions[disj_class].push_back(precondition);
                     used_operators[disj_class].insert(i);
                 }
             }

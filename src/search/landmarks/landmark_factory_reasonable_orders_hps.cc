@@ -36,7 +36,7 @@ void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<Abs
 void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
     const TaskProxy &task_proxy) {
     /*
-      Approximate reasonable orders according to Hoffmann et al.
+      Approximate reasonable orders according to Hoffmann et al. (JAIR 2004).
 
       If node_p is in goal, then any node2_p which interferes with
       node_p can be reasonably ordered before node_p. Otherwise, if
@@ -62,11 +62,8 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
                 }
             }
         } else {
-            /*
-              Collect candidates for reasonable orders in "interesting nodes".
-              Use hash set to filter duplicates.Use hash set to filter
-              duplicates.
-            */
+            /* Collect candidates for reasonable orders in "interesting nodes".
+               Use hash set to filter duplicates. */
             unordered_set<LandmarkNode *> interesting_nodes(variables_size);
             for (const auto &child : node_p->children) {
                 const LandmarkNode &node2_p = *child.first;
