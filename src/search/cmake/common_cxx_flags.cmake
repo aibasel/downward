@@ -53,3 +53,7 @@ set(using_clang_like "$<OR:${using_clang},${using_apple_clang}>")
 set(should_ignore_std_warning "$<AND:${using_clang_like},${v15_or_later}>")
 target_compile_options(common_cxx_warnings INTERFACE
     "$<${should_ignore_std_warning}:-Wno-unqualified-std-cast-call>")
+set(v15 "$<VERSION_EQUAL:$<CXX_COMPILER_VERSION>,15>")
+set(should_use_experimental_library "$<AND:${using_clang_like},${v15}>")
+target_compile_options(common_cxx_warnings INTERFACE
+    "$<${should_use_experimental_library}:-fexperimental-library>")
