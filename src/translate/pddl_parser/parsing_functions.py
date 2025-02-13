@@ -869,6 +869,21 @@ def check_for_spurious_objects(context, predicates, init, errmsg, finalmsg):
         context.error("\n".join(errors) + "\n" + finalmsg)
 
 
+def check_undefined_arguments(context, action, condition, valid_arguments):
+    if isinstance(condition, pddl.Literal):
+        difference = [x for x in condition.args if x not in valid_arguments]
+        if difference:
+            context.error(f"error: action {action.name} mentions arguments "
+                          f"which are neither a parameter nor a constant", item=difference)
+    elif isinstance(condition, pddl.conditions.JunctorCondition):
+        for part in condition.parts:
+            check_undefined_arguments(context, action, part, valid_arguments)
+    elif isinstance(condition, pddl.conditions.QuantifiedCondition):
+        for part in condition.parts:
+            new_valid_arguments = valid_arguments | {p.name for p in condition.parameters}
+            check_undefined_arguments(context, action, part, new_valid_arguments)
+    # The only type of condition left is ConstantCondition, which does not need to be checked.
+
 def check_for_ghost_variables(context, actions, constants, errmsg):
     """Error on actions like these:
         (:action foo
@@ -879,22 +894,13 @@ def check_for_ghost_variables(context, actions, constants, errmsg):
     errors = []
     for a in actions:
         valid_arguments = {p.name for p in a.parameters} | {c.name for c in constants}
-        precondition_arguments = set()
-        for args_in_atom in [set(x.args) for x in a.precondition.atoms_in_condition()]:
-            precondition_arguments |= args_in_atom
-        for v in precondition_arguments - valid_arguments:
-            errors.append(errmsg % (a.name, v))
+        check_undefined_arguments(context, a, a.precondition, valid_arguments)
 
         for effect in a.effects:
             valid_effect_arguments = valid_arguments | {p.name for p in effect.parameters}
+            check_undefined_arguments(context, a, effect.literal, valid_effect_arguments)
+            check_undefined_arguments(context, a, effect.condition, valid_effect_arguments)
             arguments = {arg for arg in effect.literal.args}
-            for args_in_atom in [set(x.args) for x in effect.condition.atoms_in_condition()]:
-                arguments |= args_in_atom
-            for v in arguments - valid_effect_arguments:
-                errors.append(errmsg % (a.name, v))
-    final_err = "\n".join(errors)
-    if errors:
-        context.error(final_err)
 
 
 def check_for_duplicate_actions(context, actions, errmsg):
