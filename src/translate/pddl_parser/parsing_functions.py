@@ -137,7 +137,7 @@ def parse_typed_list(context, alist, only_variables=False,
                             context.error("Type value is expected to be a single word.", _type)
                 for item in items:
                     if only_variables and not item.startswith("?"):
-                        context.error("Expected a variable but the given string does not start with '?'.", item)
+                        context.error("Expected a variable but the given word does not start with '?'.", item)
                     entry = constructor(context, item, _type)
                     result.append(entry)
             group_number += 1
