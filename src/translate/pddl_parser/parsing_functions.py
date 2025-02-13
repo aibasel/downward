@@ -560,7 +560,7 @@ def parse_axioms_and_actions(context, entries, type_dict, predicate_dict, consta
     return the_axioms, the_actions
 
 
-def parse_init(context, alist, predicate_dict, objects):
+def parse_init(context, alist, predicate_dict, terms):
     initial = []
     initial_proposition_values = dict()
     initial_assignments = dict()
@@ -599,7 +599,7 @@ def parse_init(context, alist, predicate_dict, objects):
                 if not isinstance(fact, list) or not fact:
                     context.error("Invalid negated fact.", syntax=SYNTAX_LITERAL_NEGATED)
                 check_predicate_and_terms_existence(
-                    context, fact[0], fact[1:], predicate_dict.keys(), objects)
+                    context, fact[0], fact[1:], predicate_dict.keys(), terms)
                 expected_predicate_arity = len(predicate_dict[fact[0]].arguments)
                 predicate_arity = len(fact[1:])
                 if len(predicate_dict[fact[0]].arguments) != len(fact[1:]):
@@ -611,7 +611,7 @@ def parse_init(context, alist, predicate_dict, objects):
                 initial_proposition_values[atom] = False
             else:
                 check_predicate_and_terms_existence(
-                    context, fact[0], fact[1:], predicate_dict.keys(), objects)
+                    context, fact[0], fact[1:], predicate_dict.keys(), terms)
                 expected_predicate_arity = len(predicate_dict[fact[0]].arguments)
                 predicate_arity = len(fact[1:])
                 if len(predicate_dict[fact[0]].arguments) != len(fact[1:]):
@@ -635,7 +635,7 @@ def parse_task(domain_pddl, task_pddl):
     if not isinstance(task_pddl, list):
         context.error("Invalid definition of a PDDL task.")
     task_name, task_domain_name, task_requirements, objects, init, goal, \
-        use_metric = parse_task_pddl(context, task_pddl, type_dict, predicate_dict, [c.name for c in constants])
+        use_metric = parse_task_pddl(context, task_pddl, type_dict, predicate_dict, constants)
 
     if domain_name != task_domain_name:
         context.error(f"The domain name specified by the task "
@@ -799,7 +799,8 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict, constants):
                 init = objects_opt
 
             check_named_block(context, init, [":init"])
-            yield parse_init(context, init, predicate_dict, objects + constants)
+            terms = [o.name for o in objects] + [c.name for c in constants]
+            yield parse_init(context, init, predicate_dict, terms)
 
             goal = next(iterator)
             with context.layer("Parsing goal"):
@@ -807,7 +808,7 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict, constants):
                 if len(goal) != 2 or not isinstance(goal[1], list) or not goal[1]:
                     context.error("The definition of the goal expects a non-empty list after ':goal'.",
                                   goal[1:], syntax=SYNTAX_GOAL)
-                yield parse_condition(context, goal[1], type_dict, predicate_dict, objects + constants)
+                yield parse_condition(context, goal[1], type_dict, predicate_dict, terms)
         except StopIteration:
             context.error(
                 "The problem file must contain at least the following five fields: define-keyword, problem name, domain name, initial state, and goal.")
