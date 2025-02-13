@@ -1,6 +1,9 @@
-# Option Syntax
+# Syntax for Search Plugins
 
-## Meaning of the call syntax documentation
+This page explains the syntax for configuring the plugins for the search
+component of the planner. 
+
+## Meaning of the syntax documentation
 
 All parameters can be specified by keyword or by position. Once a parameter is
 specified by keyword, the rest of the parameters must be specified by keyword
