@@ -628,7 +628,7 @@ public:
         document_synopsis(
             "This approach is a combination of using the Evaluator#Canonical_PDB "
             "heuristic over patterns computed with the "
-            "PatternCollectionGenerator#hillclimbing algorithm for pattern "
+            "PatternCollectionGenerator#Hill_Climbing algorithm for pattern "
             "generation. It is a short-hand for the command-line option "
             "{{{cpdbs(hillclimbing())}}}. "
             "Both the heuristic and the pattern generation algorithm are described "
