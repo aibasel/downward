@@ -57,7 +57,7 @@ MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(
       main_loop_max_time(main_loop_max_time),
       starting_peak_memory(0) {
     handle_shrink_limit_defaults();
-
+    // Asserting fields (not parameters).
     assert(this->max_states_before_merge >= 1);
     assert(this->max_states >= this->max_states_before_merge);
 }
