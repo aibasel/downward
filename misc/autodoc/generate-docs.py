@@ -25,6 +25,21 @@ TXT2TAGS_OPTIONS = {
 }
 
 
+INDEX_TEXT = """
+# Search Plugins
+
+Fast Downward's search component consist of many different plugins of different
+plugin types such as [search algorithms](SearchAlgorithm.md) or [evaluators](Evaluator.md).
+
+The following pages document the plugins of each type:
+
+{plugin_list}
+
+The [syntax documentation](../search-plugin-syntax.md) contains more
+information on how to read their documentation.
+
+"""
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--outdir", default=f"{REPO_ROOT_DIR}/docs/search")
@@ -65,13 +80,16 @@ def build_docs(build, outdir):
     pagesplitter = re.compile(r">>>>CATEGORY: ([\w\s]+?)<<<<(.+?)>>>>CATEGORYEND<<<<", re.DOTALL)
     pages = pagesplitter.findall(out)
     titles = [title for title, _ in pages]
-    pages.extend([
-        ("index", "Choose a plugin type on the left to see its documentation.")])
+    title_list = "\n".join(f"-  [{title}]({title}.md)" for title in titles)
+    pages.extend([("index", INDEX_TEXT.format(plugin_list=title_list))])
     for title, text in pages:
-        text = insert_wiki_links(text, titles)
-        document = markup.Document(title="", date="")
-        document.add_text(text)
-        output = document.render("md", options=TXT2TAGS_OPTIONS)
+        if title == "index":
+            output = text
+        else:
+            text = insert_wiki_links(text, titles)
+            document = markup.Document(title="", date="")
+            document.add_text(text)
+            output = document.render("md", options=TXT2TAGS_OPTIONS)
         with open(f"{outdir}/{title}.md", "w") as f:
             f.write(output)
 
