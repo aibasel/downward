@@ -645,7 +645,8 @@ def parse_task(domain_pddl, task_pddl):
 
     check_for_ghost_variables(context,
                               actions,
-                              "error: the precondition of %r mentions the variable %r which is not listed in the parameters")
+                              constants,
+                              "error: action %r mentions %r which is neither a parameter nor a constant")
 
     check_arities_in_init(context,
                           predicates,
@@ -860,13 +861,13 @@ def check_for_spurious_objects(context, predicates, init, errmsg, finalmsg):
     domain_predicates = {p.name for p in predicates}
     errors = []
     for i in init:
-        if i.predicate not in domain_predicates:
+        if isinstance(i, pddl.Atom) and i.predicate not in domain_predicates:
             errors.append(errmsg % i.predicate)
     if errors:
         context.error("\n".join(errors) + "\n" + finalmsg)
 
 
-def check_for_ghost_variables(context, actions, errmsg):
+def check_for_ghost_variables(context, actions, constants, errmsg):
     """Error on actions like these:
         (:action foo
         :parameters ()
@@ -875,14 +876,20 @@ def check_for_ghost_variables(context, actions, errmsg):
     """
     errors = []
     for a in actions:
-        precondition_variable_names = set()
-        parameter_variable_names = set()
+        valid_arguments = {p.name for p in a.parameters} | {c.name for c in constants}
+        precondition_arguments = set()
         for args_in_atom in [set(x.args) for x in a.precondition.atoms_in_condition()]:
-            precondition_variable_names |= args_in_atom
-        for p in a.parameters:
-            parameter_variable_names.add(p.name)
-        for v in parameter_variable_names - precondition_variable_names:
+            precondition_arguments |= args_in_atom
+        for v in precondition_arguments - valid_arguments:
             errors.append(errmsg % (a.name, v))
+
+        for effect in a.effects:
+            valid_effect_arguments = valid_arguments | {p.name for p in effect.parameters}
+            arguments = {arg for arg in effect.literal.args}
+            for args_in_atom in [set(x.args) for x in effect.condition.atoms_in_condition()]:
+                arguments |= args_in_atom
+            for v in arguments - valid_effect_arguments:
+                errors.append(errmsg % (a.name, v))
     final_err = "\n".join(errors)
     if errors:
         context.error(final_err)
@@ -914,6 +921,8 @@ def check_arities_in_init(context, predicates, init):
     few = "error in :init -> not enough arguments\n --> Got: %r\n --> Usage: %r"
     many = "error in :init -> too many arguments\n --> Got: %r\n --> Usage: %r"
     for i in init:
+        if not isinstance(i, pddl.Atom):
+            continue
         if true_arg_length[i.predicate] < len(i.args):
             errors.append(many % (pretty_print(i), name_to_predicate[i.predicate]))
         if true_arg_length[i.predicate] > len(i.args):
@@ -930,6 +939,8 @@ def check_argument_consistency(context, objects, init, goal):
     goal_err = "error in :goal -> the predicate %r in %r is not defined"
     object_names = {o.name for o in objects}
     for i in init:
+        if not isinstance(i, pddl.Atom):
+            continue
         for arg in i.args:
             if arg not in object_names:
                 errors.append(init_err % (arg, str(i)))
