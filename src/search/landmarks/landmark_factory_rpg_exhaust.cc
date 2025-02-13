@@ -34,13 +34,6 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
         Landmark landmark({goal.get_pair()}, false, false, true);
         lm_graph->add_landmark(move(landmark));
     }
-    if (!use_unary_relaxation) {
-        // insert initial facts
-        for (const FactProxy &init : task_proxy.get_initial_state()) {
-            Landmark landmark({init.get_pair()}, false, false);
-            lm_graph->add_landmark(move(landmark));
-        }
-    }
     // test all other possible facts
     for (VariableProxy var : task_proxy.get_variables()) {
         for (int value = 0; value < var.get_domain_size(); ++value) {
