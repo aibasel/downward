@@ -266,7 +266,7 @@ def parse_condition_aux(context, alist, negated, type_dict, predicate_dict, term
         new_terms = terms
         if tag == "forall" or tag == "exists":
             new_terms.extend([p.name for p in parameters])
-        parts = [parse_condition_aux(context, part, negated, type_dict, predicate_dict, terms)
+        parts = [parse_condition_aux(context, part, negated, type_dict, predicate_dict, new_terms)
                  for part in args]
 
     if tag == "and" and not negated or tag == "or" and negated:
