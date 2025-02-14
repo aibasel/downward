@@ -17,9 +17,9 @@ namespace landmarks {
    method with others, don't use it by itself. */
 
 LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(
-    bool only_causal_landmarks, utils::Verbosity verbosity)
+    bool use_unary_relaxation, utils::Verbosity verbosity)
     : LandmarkFactoryRelaxation(verbosity),
-      only_causal_landmarks(only_causal_landmarks) {
+      use_unary_relaxation(use_unary_relaxation) {
 }
 
 void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
@@ -35,22 +35,17 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
         lm_graph->add_landmark(move(landmark));
     }
     // test all other possible facts
-    State initial_state = task_proxy.get_initial_state();
     for (VariableProxy var : task_proxy.get_variables()) {
         for (int value = 0; value < var.get_domain_size(); ++value) {
             const FactPair lm(var.get_id(), value);
             if (!lm_graph->contains_simple_landmark(lm)) {
                 Landmark landmark({lm}, false, false);
-                if (initial_state[lm.var].get_value() == lm.value ||
-                    !relaxed_task_solvable(task_proxy, exploration, landmark)) {
+                if (!relaxed_task_solvable(task_proxy, exploration, landmark,
+                                           use_unary_relaxation)) {
                     lm_graph->add_landmark(move(landmark));
                 }
             }
         }
-    }
-
-    if (only_causal_landmarks) {
-        discard_noncausal_landmarks(task_proxy, exploration);
     }
 }
 
@@ -67,7 +62,16 @@ public:
             "Exhaustively checks for each fact if it is a landmark."
             "This check is done using relaxed planning.");
 
-        add_only_causal_landmarks_option_to_feature(*this);
+        add_option<bool>(
+            "use_unary_relaxation",
+            "compute landmarks of the unary relaxation, i.e., landmarks "
+            "for the delete relaxation of a task transformation such that each "
+            "operator is split into one operator for each of its effects. This "
+            "kind of landmark was previously known as \"causal landmarks\". "
+            "Setting the option to true can reduce the overall number of "
+            "landmarks, which can make the search more memory-efficient but "
+            "potentially less informative.",
+            "false");
         add_landmark_factory_options_to_feature(*this);
 
         document_language_support(
@@ -78,7 +82,7 @@ public:
     virtual shared_ptr<LandmarkFactoryRpgExhaust>
     create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgExhaust>(
-            get_only_causal_landmarks_arguments_from_options(opts),
+            opts.get<bool>("use_unary_relaxation"),
             get_landmark_factory_arguments_from_options(opts));
     }
 };

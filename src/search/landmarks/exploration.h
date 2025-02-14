@@ -7,8 +7,6 @@
 
 #include "../algorithms/priority_queues.h"
 
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 namespace utils {
@@ -62,7 +60,7 @@ class Exploration {
     void build_unary_operators(const OperatorProxy &op);
     void setup_exploration_queue(
         const State &state, const std::vector<FactPair> &excluded_props,
-        const std::vector<int> &excluded_op_ids);
+        bool use_unary_relaxation);
     void relaxed_exploration();
     void enqueue_if_necessary(Proposition *prop);
 public:
@@ -78,8 +76,7 @@ public:
       they are an admissible approximation (see implementation for details).
     */
     std::vector<std::vector<bool>> compute_relaxed_reachability(
-        const std::vector<FactPair> &excluded_props,
-        const std::vector<int> &excluded_op_ids);
+        const std::vector<FactPair> &excluded_props, bool use_unary_relaxation);
 };
 }
 

@@ -83,8 +83,8 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
             precondition.push_back(&propositions[precondition_fact.var]
                                    [precondition_fact.value]);
 
-        FactProxy effect_fact = effect.get_fact();
-        Proposition *effect_proposition = &propositions[effect_fact.get_variable().get_id()][effect_fact.get_value()];
+        auto [var, value] = effect.get_fact().get_pair();
+        Proposition *effect_proposition = &propositions[var][value];
         int op_or_axiom_id = get_operator_or_axiom_id(op);
         unary_operators.emplace_back(precondition, effect_proposition, op_or_axiom_id);
 
@@ -106,7 +106,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
 */
 void Exploration::setup_exploration_queue(
     const State &state, const vector<FactPair> &excluded_props,
-    const vector<int> &excluded_op_ids) {
+    bool use_unary_relaxation) {
     prop_queue.clear();
 
     // Reset reachability information.
@@ -120,11 +120,13 @@ void Exploration::setup_exploration_queue(
         propositions[fact.var][fact.value].excluded = true;
     }
 
-    // Set facts that are true in the current state as reached.
+    // Set facts that are true in the current state and not excluded as reached.
     for (FactProxy fact : state) {
         Proposition *init_prop =
             &propositions[fact.get_variable().get_id()][fact.get_value()];
-        enqueue_if_necessary(init_prop);
+        if (!init_prop->excluded) {
+            enqueue_if_necessary(init_prop);
+        }
     }
 
     /*
@@ -140,15 +142,16 @@ void Exploration::setup_exploration_queue(
       looping over all unary operators). Note however that this can lead to
       an overapproximation, e.g. if the effect e1 also has condition c.
     */
-    unordered_set<int> op_ids_to_mark(excluded_op_ids.begin(),
-                                      excluded_op_ids.end());
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        for (EffectProxy effect : op.get_effects()) {
-            if (effect.get_conditions().empty()
-                && propositions[effect.get_fact().get_variable().get_id()]
-                [effect.get_fact().get_value()].excluded) {
-                op_ids_to_mark.insert(op.get_id());
-                break;
+    unordered_set<int> excluded_op_ids;
+    if (!use_unary_relaxation) {
+        for (OperatorProxy op : task_proxy.get_operators()) {
+            for (EffectProxy effect : op.get_effects()) {
+                auto [var, value] = effect.get_fact().get_pair();
+                if (effect.get_conditions().empty()
+                    && propositions[var][value].excluded) {
+                    excluded_op_ids.insert(op.get_id());
+                    break;
+                }
             }
         }
     }
@@ -163,7 +166,7 @@ void Exploration::setup_exploration_queue(
           proposition as effect (see comment when building *op_ids_to_mark*).
         */
         if (op.effect->excluded
-            || op_ids_to_mark.count(op.op_or_axiom_id)) {
+            || excluded_op_ids.contains(op.op_or_axiom_id)) {
             // Operator will not be applied during relaxed exploration.
             op.excluded = true;
             continue;
@@ -207,10 +210,9 @@ void Exploration::enqueue_if_necessary(Proposition *prop) {
 }
 
 vector<vector<bool>> Exploration::compute_relaxed_reachability(
-    const vector<FactPair> &excluded_props,
-    const vector<int> &excluded_op_ids) {
-    setup_exploration_queue(task_proxy.get_initial_state(),
-                            excluded_props, excluded_op_ids);
+    const vector<FactPair> &excluded_props, bool use_unary_relaxation) {
+    setup_exploration_queue(task_proxy.get_initial_state(), excluded_props,
+                            use_unary_relaxation);
     relaxed_exploration();
 
     // Bundle reachability information into the return data structure.

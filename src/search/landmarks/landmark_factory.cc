@@ -185,19 +185,6 @@ bool get_use_orders_arguments_from_options(
     return opts.get<bool>("use_orders");
 }
 
-void add_only_causal_landmarks_option_to_feature(
-    plugins::Feature &feature) {
-    feature.add_option<bool>(
-        "only_causal_landmarks",
-        "keep only causal landmarks",
-        "false");
-}
-
-bool get_only_causal_landmarks_arguments_from_options(
-    const plugins::Options &opts) {
-    return opts.get<bool>("only_causal_landmarks");
-}
-
 static class LandmarkFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<LandmarkFactory> {
 public:
     LandmarkFactoryCategoryPlugin() : TypedCategoryPlugin("LandmarkFactory") {
