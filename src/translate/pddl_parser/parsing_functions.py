@@ -596,25 +596,14 @@ def parse_init(context, alist, predicate_dict, term_names):
                 else:
                     initial_assignments[assignment.fluent] = assignment
                     initial.append(assignment)
-            elif fact[0] == "not":
-                if len(fact) != 2:
-                    context.error(f"Expecting {SYNTAX_LITERAL_NEGATED} for negated atoms.")
-                fact = fact[1]
-                if not isinstance(fact, list) or not fact:
-                    context.error("Invalid negated fact.", syntax=SYNTAX_LITERAL_NEGATED)
-                check_predicate_and_terms_existence(
-                    context, fact[0], fact[1:],
-                    set(predicate_dict.keys()), term_names)
-                expected_predicate_arity = len(predicate_dict[fact[0]].arguments)
-                predicate_arity = len(fact[1:])
-                if expected_predicate_arity != predicate_arity:
-                    context.error(f"Predicate '{fact[0]}' of arity {expected_predicate_arity} used"
-                          f" with {predicate_arity} arguments.", fact)
-                atom = pddl.Atom(fact[0], fact[1:])
-                check_atom_consistency(context, atom,
-                                       initial_proposition_values, False)
-                initial_proposition_values[atom] = False
             else:
+                atom_value = False if fact[0] == "not" else True
+                if atom_value == False:
+                    if len(fact) != 2:
+                        context.error(f"Expecting {SYNTAX_LITERAL_NEGATED} for negated atoms.")
+                    fact = fact[1]
+                    if not isinstance(fact, list) or not fact:
+                        context.error("Invalid negated fact.", syntax=SYNTAX_LITERAL_NEGATED)
                 check_predicate_and_terms_existence(
                     context, fact[0], fact[1:],
                     set(predicate_dict.keys()), term_names)
@@ -625,8 +614,8 @@ def parse_init(context, alist, predicate_dict, term_names):
                               f" with {predicate_arity} arguments.", fact)
                 atom = pddl.Atom(fact[0], fact[1:])
                 check_atom_consistency(context, atom,
-                                       initial_proposition_values, True)
-                initial_proposition_values[atom] = True
+                                       initial_proposition_values, atom_value)
+                initial_proposition_values[atom] = atom_value
     initial.extend(atom for atom, val in initial_proposition_values.items()
                    if val is True)
     return initial
