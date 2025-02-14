@@ -4,12 +4,12 @@ name: Update website
 on:
   push:
     branches:
-      - issue1174
+      - main
 
 jobs:
   generate-documentation:
     name: Generate documentation
-    if: github.repository == 'roeger/downward'
+    if: github.repository == 'aibasel/downward'
     timeout-minutes: 60
     runs-on: ubuntu-24.04
     steps:
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout website repository
         uses: actions/checkout@v4
         with:
-          repository: roeger/downward-website
+          repository: aibasel/downward-markdown
           token: ${{ secrets.DOWNWARD_WEBSITE_PAT }}
           path: downward-website
           ref: head-docs
@@ -44,14 +44,12 @@ jobs:
       - name: Move website material to website repo
         run: |
           cd downward-website
-          ls *
-          git rm -r * # wipe content and fill it from scratch
+          git rm --ignore-unmatch  docs/* # wipe content and fill it from scratch
           mkdir -p docs/
           cp -r ../downward/docs/* docs/
           git add docs
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git status
           if ! git diff-index --quiet HEAD; then
             git commit -m "update documentation"
             git push
