@@ -54,12 +54,6 @@ class Context:
         return "\n\t->".join(self._traceback)
 
     def error(self, message, item=None, syntax=None):
-        def lispify(item):
-            if isinstance(item, list):
-                return "(" + " ".join([lispify(i) for i in item]) + ")"
-            else:
-                return item
-
         error_msg = f"{self}\n{message}"
         if syntax:
             error_msg += f"\nSyntax: {syntax}"
@@ -73,6 +67,11 @@ class Context:
         yield
         assert self._traceback.pop() == message
 
+def lispify(item):
+    if isinstance(item, list):
+        return "(" + " ".join([lispify(i) for i in item]) + ")"
+    else:
+        return item
 
 def check_word(context, word, description, syntax=None):
     if not isinstance(word, str):
@@ -127,7 +126,8 @@ def parse_typed_list(context, alist, only_variables=False, either_allowed=False,
                             alist)
                     items = alist[:separator_position]
                     if not items:
-                        context.error(f"Expected something before the separator '{TYPED_LIST_SEPARATOR}'.", alist)
+                        print(f"Warning: Expected something before the separator '{TYPED_LIST_SEPARATOR}'."
+                              f" Got: {lispify(alist)}", file=sys.stderr)
                     _type = alist[separator_position + 1]
                     alist = alist[separator_position + 2:]
                     if not isinstance(_type, str):
