@@ -207,14 +207,14 @@ def parse_function(context, alist, type_name):
     return pddl.Function(name, arguments, type_name)
 
 
-def parse_condition(context, alist, type_dict, predicate_dict, terms):
+def parse_condition(context, alist, type_dict, predicate_dict, term_names):
     with context.layer("Parsing condition"):
         condition = parse_condition_aux(
-            context, alist, False, type_dict, predicate_dict, terms)
+            context, alist, False, type_dict, predicate_dict, term_names)
         return condition.uniquify_variables({}).simplified()
 
 
-def parse_condition_aux(context, alist, negated, type_dict, predicate_dict, terms):
+def parse_condition_aux(context, alist, negated, type_dict, predicate_dict, term_names):
     """Parse a PDDL condition. The condition is translated into NNF on the fly."""
     # We allow empty conditions according to "PDDL2.1: An Extension to PDDL for
     # Expressing Temporal Planning Domains" by Maria Fox and Derek Long
@@ -246,7 +246,7 @@ def parse_condition_aux(context, alist, negated, type_dict, predicate_dict, term
         parameters = parse_typed_list(context, alist[1])
         args = [alist[2]]
     elif tag in predicate_dict:
-        return parse_literal(context, alist, type_dict, predicate_dict, terms, negated=negated)
+        return parse_literal(context, alist, type_dict, predicate_dict, term_names, negated=negated)
     else:
         context.error("Expected logical operator or predicate name", tag)
 
@@ -258,16 +258,17 @@ def parse_condition_aux(context, alist, negated, type_dict, predicate_dict, term
 
     if tag == "imply":
         parts = [parse_condition_aux(
-            context, args[0], not negated, type_dict, predicate_dict, terms),
+            context, args[0], not negated, type_dict, predicate_dict, term_names),
             parse_condition_aux(
-                context, args[1], negated, type_dict, predicate_dict, terms)]
+                context, args[1], negated, type_dict, predicate_dict, term_names)]
         tag = "or"
     else:
-        new_terms = terms
-        if tag == "forall" or tag == "exists":
-            new_terms.extend([p.name for p in parameters])
-        parts = [parse_condition_aux(context, part, negated, type_dict, predicate_dict, new_terms)
-                 for part in args]
+        new_term_names = term_names
+        if tag in ("forall", "exists"):
+            new_term_names = new_term_names | {p.name for p in parameters}
+        parts = [parse_condition_aux(
+            context, part, negated, type_dict, predicate_dict, new_term_names)
+            for part in args]
 
     if tag == "and" and not negated or tag == "or" and negated:
         return pddl.Conjunction(parts)
@@ -281,7 +282,7 @@ def parse_condition_aux(context, alist, negated, type_dict, predicate_dict, term
         return parts[0]
 
 
-def parse_literal(context, alist, type_dict, predicate_dict, terms, negated=False):
+def parse_literal(context, alist, type_dict, predicate_dict, term_names, negated=False):
     with context.layer("Parsing literal"):
         if not alist:
             context.error("Literal definition has to be a non-empty block.",
@@ -301,7 +302,8 @@ def parse_literal(context, alist, type_dict, predicate_dict, terms, negated=Fals
         predicate_name = alist[0]
         check_word(context, predicate_name, "Predicate name")
         check_predicate_and_terms_existence(
-            context, predicate_name, alist[1:], predicate_dict.keys(), terms)
+            context, predicate_name, alist[1:],
+            set(predicate_dict.keys()), term_names)
         pred_id, arity = _get_predicate_id_and_arity(
             context, predicate_name, type_dict, predicate_dict)
 
@@ -336,10 +338,10 @@ def _get_predicate_id_and_arity(context, text, type_dict, predicate_dict):
         return the_type.get_predicate_name(), 1
 
 
-def parse_effects(context, alist, result, type_dict, predicate_dict, terms):
+def parse_effects(context, alist, result, type_dict, predicate_dict, term_names):
     """Parse a PDDL effect (any combination of simple, conjunctive, conditional, and universal)."""
     with context.layer("Parsing effect"):
-        tmp_effect = parse_effect(context, alist, type_dict, predicate_dict, terms)
+        tmp_effect = parse_effect(context, alist, type_dict, predicate_dict, term_names)
         normalized = tmp_effect.normalize()
         cost_eff, rest_effect = normalized.extract_cost()
         add_effect(rest_effect, result)
@@ -390,7 +392,7 @@ def add_effect(tmp_effect, result):
                 result.append(new_effect)
 
 
-def parse_effect(context, alist, type_dict, predicate_dict, terms):
+def parse_effect(context, alist, type_dict, predicate_dict, term_names):
     if not alist:
         context.error("All (sub-)effects have to be a non-empty blocks.", alist)
     tag = alist[0]
@@ -398,7 +400,7 @@ def parse_effect(context, alist, type_dict, predicate_dict, terms):
         effects = []
         for eff in alist[1:]:
             check_list(context, eff, "Each sub-effect of a conjunction")
-            effects.append(parse_effect(context, eff, type_dict, predicate_dict, terms))
+            effects.append(parse_effect(context, eff, type_dict, predicate_dict, term_names))
         return pddl.ConjunctiveEffect(effects)
     elif tag == "forall":
         if len(alist) != 3:
@@ -407,16 +409,17 @@ def parse_effect(context, alist, type_dict, predicate_dict, terms):
         check_list(context, alist[1], "First argument (VARIABLES) of 'forall'", syntax=SYNTAX_EFFECT_FORALL)
         parameters = parse_typed_list(context, alist[1])
         check_list(context, alist[2], "Second argument (EFFECT) of 'forall'", syntax=SYNTAX_EFFECT_FORALL)
-        effect = parse_effect(context, alist[2], type_dict, predicate_dict, terms + [p.name for p in parameters])
+        effect = parse_effect(context, alist[2], type_dict, predicate_dict,
+                              term_names | {p.name for p in parameters})
         return pddl.UniversalEffect(parameters, effect)
     elif tag == "when":
         if len(alist) != 3:
             context.error("'when' effect expects exactly two arguments.",
                           syntax=SYNTAX_EFFECT_WHEN)
         check_list(context, alist[1], "First argument (CONDITION) of 'when'", syntax=SYNTAX_EFFECT_WHEN)
-        condition = parse_condition(context, alist[1], type_dict, predicate_dict, terms)
+        condition = parse_condition(context, alist[1], type_dict, predicate_dict, term_names)
         check_list(context, alist[2], "Second argument (EFFECT) of 'when'", syntax=SYNTAX_EFFECT_WHEN)
-        effect = parse_effect(context, alist[2], type_dict, predicate_dict, terms)
+        effect = parse_effect(context, alist[2], type_dict, predicate_dict, term_names)
         return pddl.ConditionalEffect(condition, effect)
     elif tag == "increase":
         if len(alist) != 3 or alist[1] != ["total-cost"]:
@@ -427,7 +430,7 @@ def parse_effect(context, alist, type_dict, predicate_dict, terms):
     else:
         # We pass in {} instead of type_dict here because types must
         # be static predicates, so cannot be the target of an effect.
-        return pddl.SimpleEffect(parse_literal(context, alist, {}, predicate_dict, terms))
+        return pddl.SimpleEffect(parse_literal(context, alist, {}, predicate_dict, term_names))
 
 
 def parse_expression(context, exp):
@@ -466,7 +469,7 @@ def parse_assignment(context, alist):
                           f" Use '=' or 'increase'.")
 
 
-def parse_action(context, alist, type_dict, predicate_dict, constants):
+def parse_action(context, alist, type_dict, predicate_dict, constant_names):
     with context.layer("Parsing action name"):
         if len(alist) < 4:
             context.error("Expecting block with at least 3 arguments for an action.",
@@ -489,13 +492,13 @@ def parse_action(context, alist, type_dict, predicate_dict, constants):
                 else:
                     parameters = []
                     precondition_tag_opt = parameters_tag_opt
-            terms = constants + [p.name for p in parameters]
+            term_names = constant_names | {p.name for p in parameters}
             with context.layer("Parsing precondition"):
                 if precondition_tag_opt == ":precondition":
                     precondition_list = next(iterator)
                     check_list(context, precondition_list, "Precondition", syntax=SYNTAX_ACTION)
                     precondition = parse_condition(
-                        context, precondition_list, type_dict, predicate_dict, terms)
+                        context, precondition_list, type_dict, predicate_dict, term_names)
                     effect_tag = next(iterator)
                 else:
                     precondition = pddl.Conjunction([])
@@ -510,7 +513,7 @@ def parse_action(context, alist, type_dict, predicate_dict, constants):
                 eff = []
                 if effect_list:
                     cost = parse_effects(
-                        context, effect_list, eff, type_dict, predicate_dict, terms)
+                        context, effect_list, eff, type_dict, predicate_dict, term_names)
         except StopIteration:
             context.error(f"Missing fields. Expecting {SYNTAX_ACTION}.")
         for _ in iterator:
@@ -522,7 +525,7 @@ def parse_action(context, alist, type_dict, predicate_dict, constants):
         return None
 
 
-def parse_axiom(context, alist, type_dict, predicate_dict, constants):
+def parse_axiom(context, alist, type_dict, predicate_dict, constant_names):
     with context.layer("Parsing derived predicate"):
         if len(alist) != 3:
             context.error("Expecting block with exactly three elements",
@@ -534,14 +537,14 @@ def parse_axiom(context, alist, type_dict, predicate_dict, constants):
         if not isinstance(alist[2], list):
             context.error("The second argument (CONDITION) is expected to be a block.",
                           syntax=SYNTAX_AXIOM)
-        terms = constants + [a.name for a in predicate.arguments]
+        term_names = constant_names | {a.name for a in predicate.arguments}
         condition = parse_condition(
-            context, alist[2], type_dict, predicate_dict, terms)
+            context, alist[2], type_dict, predicate_dict, term_names)
         return pddl.Axiom(predicate.name, predicate.arguments,
                           len(predicate.arguments), condition)
 
 
-def parse_axioms_and_actions(context, entries, type_dict, predicate_dict, constants):
+def parse_axioms_and_actions(context, entries, type_dict, predicate_dict, constant_names):
     the_axioms = []
     the_actions = []
     for no, entry in enumerate(entries, start=1):
@@ -550,17 +553,18 @@ def parse_axioms_and_actions(context, entries, type_dict, predicate_dict, consta
             if entry[0] == ":derived":
                 with context.layer(f"Parsing {len(the_axioms) + 1}. axiom"):
                     the_axioms.append(parse_axiom(
-                        context, entry, type_dict, predicate_dict, constants))
+                        context, entry, type_dict, predicate_dict, constant_names))
             else:
                 assert entry[0] == ":action"
                 with context.layer(f"Parsing action #{len(the_actions) + 1}"):
-                    action = parse_action(context, entry, type_dict, predicate_dict, constants)
+                    action = parse_action(
+                        context, entry, type_dict, predicate_dict, constant_names)
                     if action is not None:
                         the_actions.append(action)
     return the_axioms, the_actions
 
 
-def parse_init(context, alist, predicate_dict, terms):
+def parse_init(context, alist, predicate_dict, term_names):
     initial = []
     initial_proposition_values = dict()
     initial_assignments = dict()
@@ -599,7 +603,8 @@ def parse_init(context, alist, predicate_dict, terms):
                 if not isinstance(fact, list) or not fact:
                     context.error("Invalid negated fact.", syntax=SYNTAX_LITERAL_NEGATED)
                 check_predicate_and_terms_existence(
-                    context, fact[0], fact[1:], predicate_dict.keys(), terms)
+                    context, fact[0], fact[1:],
+                    set(predicate_dict.keys()), term_names)
                 expected_predicate_arity = len(predicate_dict[fact[0]].arguments)
                 predicate_arity = len(fact[1:])
                 if expected_predicate_arity != predicate_arity:
@@ -611,7 +616,8 @@ def parse_init(context, alist, predicate_dict, terms):
                 initial_proposition_values[atom] = False
             else:
                 check_predicate_and_terms_existence(
-                    context, fact[0], fact[1:], predicate_dict.keys(), terms)
+                    context, fact[0], fact[1:],
+                    set(predicate_dict.keys()), term_names)
                 expected_predicate_arity = len(predicate_dict[fact[0]].arguments)
                 predicate_arity = len(fact[1:])
                 if expected_predicate_arity != predicate_arity:
@@ -635,7 +641,8 @@ def parse_task(domain_pddl, task_pddl):
     if not isinstance(task_pddl, list):
         context.error("Invalid definition of a PDDL task.")
     task_name, task_domain_name, task_requirements, objects, init, goal, \
-        use_metric = parse_task_pddl(context, task_pddl, type_dict, predicate_dict, constants)
+        use_metric = parse_task_pddl(context, task_pddl, type_dict,
+                                     predicate_dict, {c.name for c in constants})
 
     if domain_name != task_domain_name:
         context.error(f"The domain name specified by the task "
@@ -746,13 +753,13 @@ def parse_domain_pddl(context, domain_pddl):
         entries.extend(iterator)
 
         the_axioms, the_actions = parse_axioms_and_actions(
-            context, entries, type_dict, predicate_dict, [c.name for c in constants])
+            context, entries, type_dict, predicate_dict, {c.name for c in constants})
 
         yield the_actions
         yield the_axioms
 
 
-def parse_task_pddl(context, task_pddl, type_dict, predicate_dict, constants):
+def parse_task_pddl(context, task_pddl, type_dict, predicate_dict, constant_names):
     iterator = iter(task_pddl)
     with context.layer("Parsing task"):
         try:
@@ -798,8 +805,8 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict, constants):
                 init = objects_opt
 
             check_named_block(context, init, [":init"])
-            terms = [o.name for o in objects] + [c.name for c in constants]
-            yield parse_init(context, init, predicate_dict, terms)
+            term_names = constant_names | {o.name for o in objects}
+            yield parse_init(context, init, predicate_dict, term_names)
 
             goal = next(iterator)
             with context.layer("Parsing goal"):
@@ -807,7 +814,7 @@ def parse_task_pddl(context, task_pddl, type_dict, predicate_dict, constants):
                 if len(goal) != 2 or not isinstance(goal[1], list) or not goal[1]:
                     context.error("The definition of the goal expects a non-empty list after ':goal'.",
                                   goal[1:], syntax=SYNTAX_GOAL)
-                yield parse_condition(context, goal[1], type_dict, predicate_dict, terms)
+                yield parse_condition(context, goal[1], type_dict, predicate_dict, term_names)
         except StopIteration:
             context.error(
                 "The problem file must contain at least the following five fields: define-keyword, problem name, domain name, initial state, and goal.")
@@ -848,11 +855,13 @@ def check_atom_consistency(context, atom, initial_proposition_values,
 
 
 def check_predicate_and_terms_existence(
-        context, predicate_name, terms, valid_predicate_names, valid_terms):
+        context, predicate_name, terms, valid_predicate_names, valid_term_names):
+    assert(isinstance(valid_predicate_names, set))
+    assert(isinstance(valid_term_names, set))
     if predicate_name not in valid_predicate_names:
         context.error("Undefined predicate", predicate_name)
     for term in terms:
-        if term not in valid_terms:
+        if term not in valid_term_names:
             item = "variable" if term.startswith("?") else "object"
             context.error(f"Undefined {item}", term)
 
