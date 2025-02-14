@@ -44,13 +44,13 @@ jobs:
       - name: Move website material to website repo
         run: |
           cd downward-website
-          git rm --ignore-unmatch  docs/* # wipe content and fill it from scratch
+          git rm --ignore-unmatch -r docs/* # wipe content and fill it from scratch
           mkdir -p docs/
           cp -r ../downward/docs/* docs/
           git add docs
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if ! git diff-index --quiet HEAD; then
+          if ! git diff-index --quiet HEAD --; then
             git commit -m "update documentation"
             git push
           fi
