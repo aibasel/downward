@@ -602,7 +602,7 @@ def parse_init(context, alist, predicate_dict, terms):
                     context, fact[0], fact[1:], predicate_dict.keys(), terms)
                 expected_predicate_arity = len(predicate_dict[fact[0]].arguments)
                 predicate_arity = len(fact[1:])
-                if len(predicate_dict[fact[0]].arguments) != len(fact[1:]):
+                if expected_predicate_arity != predicate_arity:
                     context.error(f"Predicate '{fact[0]}' of arity {expected_predicate_arity} used"
                           f" with {predicate_arity} arguments.", fact)
                 atom = pddl.Atom(fact[0], fact[1:])
@@ -614,7 +614,7 @@ def parse_init(context, alist, predicate_dict, terms):
                     context, fact[0], fact[1:], predicate_dict.keys(), terms)
                 expected_predicate_arity = len(predicate_dict[fact[0]].arguments)
                 predicate_arity = len(fact[1:])
-                if len(predicate_dict[fact[0]].arguments) != len(fact[1:]):
+                if expected_predicate_arity != predicate_arity:
                     context.error(f"Predicate '{fact[0]}' of arity {expected_predicate_arity} used"
                               f" with {predicate_arity} arguments.", fact)
                 atom = pddl.Atom(fact[0], fact[1:])
