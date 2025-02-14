@@ -22,20 +22,15 @@ CostPartitioningAlgorithm::CostPartitioningAlgorithm(
     : landmark_graph(graph), operator_costs(operator_costs) {
 }
 
-const unordered_set<int> &CostPartitioningAlgorithm::get_achievers(
-    const Landmark &landmark, bool past) const {
+static const unordered_set<int> &get_achievers(
+    const Landmark &landmark, const bool past) {
     // Return relevant achievers of the landmark according to its status.
-    if (past) {
-        return landmark.possible_achievers;
-    } else {
-        return landmark.first_achievers;
-    }
+    return past ? landmark.possible_achievers : landmark.first_achievers;
 }
-
 
 UniformCostPartitioningAlgorithm::UniformCostPartitioningAlgorithm(
     const vector<int> &operator_costs, const LandmarkGraph &graph,
-    bool use_action_landmarks)
+    const bool use_action_landmarks)
     : CostPartitioningAlgorithm(operator_costs, graph),
       use_action_landmarks(use_action_landmarks) {
 }

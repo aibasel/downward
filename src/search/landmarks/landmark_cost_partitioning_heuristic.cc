@@ -48,7 +48,7 @@ void LandmarkCostPartitioningHeuristic::check_unsupported_features(
 }
 
 void LandmarkCostPartitioningHeuristic::set_cost_partitioning_algorithm(
-    CostPartitioningMethod cost_partitioning, lp::LPSolverType lpsolver,
+    const CostPartitioningMethod cost_partitioning, lp::LPSolverType lpsolver,
     bool use_action_landmarks) {
     if (cost_partitioning == CostPartitioningMethod::OPTIMAL) {
         cost_partitioning_algorithm =
@@ -67,7 +67,7 @@ void LandmarkCostPartitioningHeuristic::set_cost_partitioning_algorithm(
 
 int LandmarkCostPartitioningHeuristic::get_heuristic_value(
     const State &ancestor_state) {
-    double epsilon = 0.01;
+    constexpr double epsilon = 0.01;
 
     double h_val =
         cost_partitioning_algorithm->get_cost_partitioned_heuristic_value(
@@ -144,14 +144,15 @@ public:
             "which point the above inequality might not hold anymore.");
         document_note(
             "Optimal Cost Partitioning",
-            "To use ``cost_partitioning=optimal``, you must build the planner with LP "
-            "support. See [build instructions https://github.com/aibasel/downward/blob/main/BUILD.md].");
+            "To use `cost_partitioning=optimal`, you must build the "
+            "planner with LP support. See "
+            "[build instructions https://github.com/aibasel/downward/blob/main/BUILD.md].");
         document_note(
             "Preferred operators",
-            "Preferred operators should not be used for optimal planning. "
-            "See Evaluator#Landmark_sum_heuristic for more information "
-            "on using preferred operators; the comments there also apply "
-            "to this heuristic.");
+            "Preferred operators should not be used for optimal planning. See "
+            "Evaluator#Landmark_sum_heuristic for more information on using "
+            "preferred operators; the comments there also apply to this "
+            "heuristic.");
 
         document_language_support("action costs", "supported");
         document_language_support(

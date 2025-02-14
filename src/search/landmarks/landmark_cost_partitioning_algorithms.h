@@ -20,9 +20,6 @@ class CostPartitioningAlgorithm {
 protected:
     const LandmarkGraph &landmark_graph;
     const std::vector<int> operator_costs;
-
-    const std::unordered_set<int> &get_achievers(
-        const Landmark &landmark, bool past) const;
 public:
     CostPartitioningAlgorithm(const std::vector<int> &operator_costs,
                               const LandmarkGraph &graph);
@@ -35,6 +32,8 @@ public:
 
 class UniformCostPartitioningAlgorithm : public CostPartitioningAlgorithm {
     bool use_action_landmarks;
+
+
 public:
     UniformCostPartitioningAlgorithm(const std::vector<int> &operator_costs,
                                      const LandmarkGraph &graph,
