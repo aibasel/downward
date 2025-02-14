@@ -54,6 +54,7 @@ void LandmarkFactoryRelaxation::calc_achievers(
     achievers_calculated = true;
 }
 
+// TODO: Move this to lm_exhaust and make it a static function.
 bool LandmarkFactoryRelaxation::relaxed_task_solvable(
     const TaskProxy &task_proxy, Exploration &exploration,
     const Landmark &landmark, const bool use_unary_relaxation) {

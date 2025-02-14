@@ -21,16 +21,10 @@ class LandmarkStatusManager;
 class LandmarkHeuristic : public Heuristic {
     bool initial_landmark_graph_has_cycle_of_natural_orderings;
 
-    /* TODO: We would prefer the following two functions to be implemented
-        somewhere else as more generic graph algorithms. */
-    bool landmark_graph_has_cycle_of_natural_orderings();
-    bool depth_first_search_for_cycle_of_natural_orderings(
-        const LandmarkNode &node, std::vector<bool> &closed,
-        std::vector<bool> &visited);
 protected:
     std::shared_ptr<LandmarkGraph> landmark_graph;
     const bool use_preferred_operators;
-    // This map remains empty unless *use_preferred_operators* is true.
+    // This map remains empty unless `use_preferred_operators` is true.
     utils::HashMap<FactPair, std::unordered_set<int>> landmarks_achieved_by_atom;
 
     std::unique_ptr<LandmarkStatusManager> landmark_status_manager;
@@ -73,8 +67,7 @@ extern void add_landmark_heuristic_options_to_feature(
 extern std::tuple<std::shared_ptr<LandmarkFactory>, bool, bool, bool,
                   bool, std::shared_ptr<AbstractTask>, bool, std::string,
                   utils::Verbosity>
-get_landmark_heuristic_arguments_from_options(
-    const plugins::Options &opts);
+get_landmark_heuristic_arguments_from_options(const plugins::Options &opts);
 }
 
 #endif

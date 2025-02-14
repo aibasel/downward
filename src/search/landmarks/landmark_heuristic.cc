@@ -18,65 +18,16 @@ LandmarkHeuristic::LandmarkHeuristic(
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
+      initial_landmark_graph_has_cycle_of_natural_orderings(false),
       use_preferred_operators(use_preferred_operators),
       successor_generator(nullptr) {
 }
 
-void LandmarkHeuristic::initialize(
-    const shared_ptr<LandmarkFactory> &landmark_factory, bool prog_goal,
-    bool prog_gn, bool prog_r) {
-    /*
-      Actually, we should test if this is the root task or a
-      task that *only* transforms costs and/or adds negated axioms.
-      However, there is currently no good way to do this, so we use
-      this incomplete, slightly less safe test.
-    */
-    if (task != tasks::g_root_task
-        && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr
-        && dynamic_cast<tasks::DefaultValueAxiomsTask *>(task.get()) == nullptr) {
-        cerr << "The landmark heuristics currently only support "
-             << "task transformations that modify the operator costs "
-             << "or add negated axioms. See issues 845, 686 and 454 "
-             << "for details." << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
-    }
-
-    compute_landmark_graph(landmark_factory);
-    landmark_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(
-        *landmark_graph, prog_goal, prog_gn, prog_r);
-
-    initial_landmark_graph_has_cycle_of_natural_orderings =
-        landmark_graph_has_cycle_of_natural_orderings();
-    if (initial_landmark_graph_has_cycle_of_natural_orderings
-        && log.is_at_least_normal()) {
-        log << "Landmark graph contains a cycle of natural orderings." << endl;
-    }
-
-    if (use_preferred_operators) {
-        compute_landmarks_achieved_by_atom();
-        /* Ideally, we should reuse the successor generator of the main
-           task in cases where it's compatible. See issue564. */
-        successor_generator =
-            utils::make_unique_ptr<successor_generator::SuccessorGenerator>(
-                task_proxy);
-    }
-}
-
-bool LandmarkHeuristic::landmark_graph_has_cycle_of_natural_orderings() {
-    int num_landmarks = landmark_graph->get_num_landmarks();
-    vector<bool> closed(num_landmarks, false);
-    vector<bool> visited(num_landmarks, false);
-    for (const auto &node : *landmark_graph) {
-        if (depth_first_search_for_cycle_of_natural_orderings(
-                *node, closed, visited)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool LandmarkHeuristic::depth_first_search_for_cycle_of_natural_orderings(
-    const LandmarkNode &node, vector<bool> &closed, vector<bool> &visited) {
+/* TODO: We would prefer the following two functions to be implemented
+    somewhere else as more generic graph algorithms. */
+static bool depth_first_search_for_cycle_of_natural_orderings(
+    const LandmarkNode &node, std::vector<bool> &closed,
+    std::vector<bool> &visited) {
     int id = node.get_id();
     if (closed[id]) {
         return false;
@@ -95,6 +46,60 @@ bool LandmarkHeuristic::depth_first_search_for_cycle_of_natural_orderings(
     }
     closed[id] = true;
     return false;
+}
+
+static bool landmark_graph_has_cycle_of_natural_orderings(
+    const LandmarkGraph &landmark_graph) {
+    const int num_landmarks = landmark_graph.get_num_landmarks();
+    vector<bool> closed(num_landmarks, false);
+    vector<bool> visited(num_landmarks, false);
+    for (const auto &node : landmark_graph) {
+        if (depth_first_search_for_cycle_of_natural_orderings(
+                *node, closed, visited)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void LandmarkHeuristic::initialize(
+    const shared_ptr<LandmarkFactory> &landmark_factory, bool prog_goal,
+    bool prog_gn, bool prog_r) {
+    /*
+      Actually, we should test if this is the root task or a task that *only*
+      transforms costs and/or adds negated axioms. However, there is currently
+      no good way to do this, so we use this incomplete, slightly less safe
+      test.
+    */
+    if (task != tasks::g_root_task
+        && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr
+        && dynamic_cast<tasks::DefaultValueAxiomsTask *>(task.get()) == nullptr) {
+        cerr << "The landmark heuristics currently only support "
+             << "task transformations that modify the operator costs "
+             << "or add negated axioms. See issues 845, 686 and 454 "
+             << "for details." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+    }
+
+    compute_landmark_graph(landmark_factory);
+    landmark_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(
+        *landmark_graph, prog_goal, prog_gn, prog_r);
+
+    initial_landmark_graph_has_cycle_of_natural_orderings =
+        landmark_graph_has_cycle_of_natural_orderings(*landmark_graph);
+    if (initial_landmark_graph_has_cycle_of_natural_orderings
+        && log.is_at_least_normal()) {
+        log << "Landmark graph contains a cycle of natural orderings." << endl;
+    }
+
+    if (use_preferred_operators) {
+        compute_landmarks_achieved_by_atom();
+        /* Ideally, we should reuse the successor generator of the main
+           task in cases where it's compatible. See issue564. */
+        successor_generator =
+            utils::make_unique_ptr<successor_generator::SuccessorGenerator>(
+                task_proxy);
+    }
 }
 
 void LandmarkHeuristic::compute_landmark_graph(
