@@ -69,9 +69,6 @@ extern std::tuple<utils::Verbosity> get_landmark_factory_arguments_from_options(
 extern void add_use_orders_option_to_feature(plugins::Feature &feature);
 extern bool get_use_orders_arguments_from_options(
     const plugins::Options &opts);
-extern void add_only_causal_landmarks_option_to_feature(plugins::Feature &feature);
-extern bool get_only_causal_landmarks_arguments_from_options(
-    const plugins::Options &opts);
 }
 
 #endif

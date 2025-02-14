@@ -20,7 +20,7 @@ Vagrant.configure("2") do |config|
   provision_env = {}
   if !ENV["DOWNWARD_LP_INSTALLERS"].nil?
       cplex_installer = ENV["DOWNWARD_LP_INSTALLERS"] + "/cplex_studio2211.linux_x86_64.bin"
-      if File.exists?(cplex_installer)
+      if File.file?(cplex_installer)
           config.vm.synced_folder ENV["DOWNWARD_LP_INSTALLERS"], "/lp", :mount_options => ["ro"]
           provision_env["CPLEX_INSTALLER"] = "/lp/" + File.basename(cplex_installer)
       end

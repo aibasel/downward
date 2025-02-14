@@ -92,9 +92,8 @@ public:
         document_property("preferred operators", "yes");
     }
 
-    virtual shared_ptr<FFHeuristic> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<FFHeuristic>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<FFHeuristic>(
             relaxation_heuristic::get_relaxation_heuristic_arguments_from_options(opts)
             );

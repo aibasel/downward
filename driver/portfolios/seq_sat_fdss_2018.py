@@ -15,7 +15,7 @@ CONFIGS = [
         "let(hff, ff(transform=adapt_costs(one)),"
         "lazy(alt([single(hff),single(hff,pref_only=true),single(hlm),single(hlm,pref_only=true),type_based([hff,g()])],boost=1000),preferred=[hff,hlm],cost_type=one,reopen_closed=false,randomize_successors=true,preferred_successors_first=false,bound=BOUND)))"]),
     (25, ["--search",
-        "let(lmg, lm_rhw(only_causal_landmarks=false,disjunctive_landmarks=true,use_orders=false),"
+        "let(lmg, lm_rhw(disjunctive_landmarks=true,use_orders=false),"
         "let(hlm, landmark_cost_partitioning(lmg,transform=adapt_costs(one)),"
         "let(hff, ff(transform=adapt_costs(one)),"
         "lazy(alt([type_based([g()]),single(hlm),single(hlm,pref_only=true),single(hff),single(hff,pref_only=true)],boost=0),preferred=[hlm],reopen_closed=false,cost_type=plusone,bound=BOUND))))"]),
@@ -32,7 +32,7 @@ CONFIGS = [
         "let(hff, ff(transform=adapt_costs(one)),"
         "lazy(alt([single(hff),single(hff,pref_only=true),single(hlm),single(hlm,pref_only=true)],boost=1000),preferred=[hff,hlm],cost_type=one,reopen_closed=false,randomize_successors=true,preferred_successors_first=true,bound=BOUND)))"]),
     (57, ["--search",
-        "let(lmg, lm_rhw(only_causal_landmarks=false,disjunctive_landmarks=true,use_orders=false),"
+        "let(lmg, lm_rhw(disjunctive_landmarks=true,use_orders=false),"
         "let(hcg, cg(transform=adapt_costs(plusone)),"
         "let(hlm, landmark_cost_partitioning(lmg,transform=adapt_costs(plusone)),"
         "let(hff, ff(transform=adapt_costs(plusone)),"
@@ -53,7 +53,7 @@ CONFIGS = [
         "let(hlm, landmark_sum(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one)),"
         "eager(alt([type_based([g()]),single(hcg),single(hcg,pref_only=true),single(hlm),single(hlm,pref_only=true)]),preferred=[hcg,hlm],cost_type=one,bound=BOUND)))"]),
     (29, ["--search",
-        "let(lmg, lm_rhw(only_causal_landmarks=false,disjunctive_landmarks=true,use_orders=true),"
+        "let(lmg, lm_rhw(disjunctive_landmarks=true,use_orders=true),"
         "let(hcea, cea(transform=adapt_costs(plusone)),"
         "let(hlm, landmark_cost_partitioning(lmg,transform=adapt_costs(plusone)),"
         "let(hff, ff(transform=adapt_costs(plusone)),"
@@ -75,7 +75,7 @@ CONFIGS = [
         "let(hlm, landmark_sum(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one)),"
         "eager(alt([type_based([g()]),single(sum([g(),weight(hff,3)])),single(sum([g(),weight(hff,3)]),pref_only=true),single(sum([g(),weight(hlm,3)])),single(sum([g(),weight(hlm,3)]),pref_only=true)]),preferred=[hff,hlm],cost_type=one,bound=BOUND)))"]),
     (29, ["--search",
-        "let(lmg, lm_rhw(only_causal_landmarks=false,disjunctive_landmarks=false,use_orders=true),"
+        "let(lmg, lm_rhw(disjunctive_landmarks=false,use_orders=true),"
         "let(hlm, landmark_sum(lmg,transform=adapt_costs(one)),"
         "let(hff, ff(transform=adapt_costs(one)),"
         "let(hblind, blind(),"
@@ -120,7 +120,7 @@ CONFIGS = [
         "let(hcg, cg(transform=adapt_costs(one)),"
         "eager(alt([single(sum([g(),weight(hcg,3)])),single(sum([g(),weight(hcg,3)]),pref_only=true)]),preferred=[hcg],cost_type=one,bound=BOUND))"]),
     (24, ["--search",
-        "let(lmg, lm_reasonable_orders_hps(lm_rhw(only_causal_landmarks=true,disjunctive_landmarks=true,use_orders=true)),"
+        "let(lmg, lm_reasonable_orders_hps(lm_rhw(disjunctive_landmarks=true,use_orders=true)),"
         "let(hblind, blind(),"
         "let(hadd, add(),"
         "let(hlm, landmark_sum(lmg,pref=true,transform=adapt_costs(plusone)),"
@@ -164,7 +164,7 @@ CONFIGS = [
         "let(hlm, landmark_cost_partitioning(lmg),"
         "lazy(alt([single(hlm),single(hlm,pref_only=true),single(hcg),single(hcg,pref_only=true)],boost=0),preferred=[hcg],reopen_closed=false,cost_type=one,bound=BOUND))))"]),
     (30, ["--search",
-        "let(lmg, lm_exhaust(only_causal_landmarks=false),"
+        "let(lmg, lm_exhaust(),"
         "let(hff, ff(transform=adapt_costs(plusone)),"
         "let(hhmax, hmax(),"
         "let(hblind, blind(),"
@@ -174,12 +174,12 @@ CONFIGS = [
         "let(hff, ff(transform=adapt_costs(plusone)),"
         "lazy(alt([tiebreaking([sum([g(),hff]),hff]),tiebreaking([sum([g(),hff]),hff],pref_only=true)],boost=432),preferred=[hff],reopen_closed=true,cost_type=one,bound=BOUND))"]),
     (19, ["--search",
-        "let(lmg, lm_merged([lm_rhw(only_causal_landmarks=false,disjunctive_landmarks=false,use_orders=true),lm_hm(m=1,conjunctive_landmarks=true,use_orders=true)]),"
+        "let(lmg, lm_merged([lm_rhw(disjunctive_landmarks=false,use_orders=true),lm_hm(m=1,conjunctive_landmarks=true,use_orders=true)]),"
         "let(hff, ff(),"
         "let(hlm, landmark_cost_partitioning(lmg),"
         "lazy(alt([single(sum([g(),weight(hff,10)])),single(sum([g(),weight(hff,10)]),pref_only=true),single(sum([g(),weight(hlm,10)])),single(sum([g(),weight(hlm,10)]),pref_only=true)],boost=500),preferred=[hff],reopen_closed=false,cost_type=plusone,bound=BOUND))))"]),
     (56, ["--search",
-        "let(lmg, lm_exhaust(only_causal_landmarks=false),"
+        "let(lmg, lm_exhaust(),"
         "let(hgoalcount, goalcount(transform=adapt_costs(plusone)),"
         "let(hlm, landmark_sum(lmg),"
         "let(hff, ff(),"

@@ -46,9 +46,8 @@ public:
             *this, "initial_state_potential");
     }
 
-    virtual shared_ptr<PotentialHeuristic> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<PotentialHeuristic>
+    create_component(const plugins::Options &opts) const override {
         return make_shared<PotentialHeuristic>(
             create_potential_function(
                 opts.get<shared_ptr<AbstractTask>>("transform"),
@@ -77,9 +76,8 @@ public:
             *this, "all_states_potential");
     }
 
-    virtual shared_ptr<PotentialHeuristic> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<PotentialHeuristic>
+    create_component(const plugins::Options &opts) const override {
         return make_shared<PotentialHeuristic>(
             create_potential_function(
                 opts.get<shared_ptr<AbstractTask>>("transform"),

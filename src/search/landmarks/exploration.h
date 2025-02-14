@@ -67,11 +67,11 @@ class Exploration {
     void reset_reachability_information();
     void set_state_atoms_reached(const State &state);
     std::unordered_set<int> get_excluded_operators(
-        const std::vector<int> &excluded_op_ids) const;
-    void initialize_operator_data(const std::vector<int> &excluded_op_ids);
+        bool use_unary_relaxation) const;
+    void initialize_operator_data(bool use_unary_relaxation);
     void setup_exploration_queue(
         const State &state, const std::vector<FactPair> &excluded_props,
-        const std::vector<int> &excluded_op_ids);
+        bool use_unary_relaxation);
     void relaxed_exploration();
     void enqueue_if_necessary(Proposition *prop);
 
@@ -89,8 +89,7 @@ public:
       they are an admissible approximation (see implementation for details).
     */
     std::vector<std::vector<bool>> compute_relaxed_reachability(
-        const std::vector<FactPair> &excluded_props,
-        const std::vector<int> &excluded_op_ids);
+        const std::vector<FactPair> &excluded_props, bool use_unary_relaxation);
 };
 }
 

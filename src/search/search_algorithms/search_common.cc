@@ -8,6 +8,7 @@
 #include "../open_lists/alternation_open_list.h"
 #include "../open_lists/best_first_open_list.h"
 #include "../open_lists/tiebreaking_open_list.h"
+#include "../utils/component_errors.h"
 
 #include <memory>
 
@@ -50,6 +51,7 @@ shared_ptr<OpenListFactory> create_greedy_open_list_factory(
     const vector<shared_ptr<Evaluator>> &evals,
     const vector<shared_ptr<Evaluator>> &preferred_evaluators,
     int boost) {
+    utils::verify_list_not_empty(evals, "evals");
     return create_alternation_open_list_factory_aux(
         evals, preferred_evaluators, boost);
 }
@@ -83,14 +85,15 @@ static shared_ptr<Evaluator> create_wastar_eval(
 }
 
 shared_ptr<OpenListFactory> create_wastar_open_list_factory(
-    const vector<shared_ptr<Evaluator>> &base_evals,
+    const vector<shared_ptr<Evaluator>> &evals,
     const vector<shared_ptr<Evaluator>> &preferred, int boost,
     int weight, utils::Verbosity verbosity) {
+    utils::verify_list_not_empty(evals, "evals");
     shared_ptr<GEval> g_eval = make_shared<GEval>(
         "wastar.g_eval", verbosity);
     vector<shared_ptr<Evaluator>> f_evals;
-    f_evals.reserve(base_evals.size());
-    for (const shared_ptr<Evaluator> &eval : base_evals)
+    f_evals.reserve(evals.size());
+    for (const shared_ptr<Evaluator> &eval : evals)
         f_evals.push_back(create_wastar_eval(
                               verbosity, g_eval, weight, eval));
 

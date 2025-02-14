@@ -30,7 +30,6 @@ public:
         return decorated_block_name.str();
     }
 
-    NO_RETURN
     virtual void error(const string &message) const override {
         ostringstream message_with_tokens;
         string all_tokens = tokens.str(0, tokens.size());

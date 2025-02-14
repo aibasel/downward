@@ -4,6 +4,7 @@
 #include "../evaluation_result.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/component_errors.h"
 
 using namespace std;
 
@@ -13,6 +14,7 @@ CombiningEvaluator::CombiningEvaluator(
     const string &description, utils::Verbosity verbosity)
     : Evaluator(false, false, false, description, verbosity),
       subevaluators(evals) {
+    utils::verify_list_not_empty(evals, "evals");
     all_dead_ends_are_reliable = true;
     for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
         if (!subevaluator->dead_ends_are_reliable())

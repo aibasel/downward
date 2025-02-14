@@ -1039,8 +1039,7 @@ public:
     }
 
     virtual shared_ptr<LandmarkFactoryHM> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryHM>(
             opts.get<int>("m"),
             opts.get<bool>("conjunctive_landmarks"),

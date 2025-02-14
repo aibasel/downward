@@ -161,9 +161,8 @@ public:
         utils::add_log_options_to_feature(*this);
     }
 
-    virtual shared_ptr<StateEquationConstraints> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<StateEquationConstraints>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<StateEquationConstraints>(
             utils::get_log_arguments_from_options(opts));
     }

@@ -6,6 +6,7 @@
 #include "plugin_info.h"
 #include "raw_registry.h"
 
+#include "../utils/component_errors.h"
 #include "../utils/strings.h"
 #include "../utils/system.h"
 #include "../utils/tuples.h"
@@ -80,8 +81,8 @@ template<typename Constructed>
 class FeatureWithDefault : public Feature {
 protected:
     using Feature::Feature;
-    virtual std::shared_ptr<Constructed> create_component(
-        const Options &options, const utils::Context &) const {
+    virtual std::shared_ptr<Constructed>
+    create_component(const Options &options) const {
         return std::make_shared<Constructed>(options);
     }
 };
@@ -90,8 +91,8 @@ template<typename Constructed>
 class FeatureWithoutDefault : public Feature {
 protected:
     using Feature::Feature;
-    virtual std::shared_ptr<Constructed> create_component(
-        const Options &, const utils::Context &) const = 0;
+    virtual std::shared_ptr<Constructed>
+    create_component(const Options &) const = 0;
 };
 
 template<typename Constructed>
@@ -111,7 +112,12 @@ public:
     }
 
     Any construct(const Options &options, const utils::Context &context) const override {
-        std::shared_ptr<Base> ptr = this->create_component(options, context);
+        std::shared_ptr<Base> ptr;
+        try {
+            ptr = this->create_component(options);
+        } catch (const utils::ComponentArgumentError &e) {
+            context.error(e.get_message());
+        }
         return Any(ptr);
     }
 };
