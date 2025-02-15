@@ -98,9 +98,9 @@ int CGHeuristic::get_transition_cost(const State &state,
         if (cached_val != CGCache::NOT_COMPUTED) {
             ++cache_hits;
             return cached_val;
+        } else {
+            ++cache_misses;
         }
-    } else {
-        ++cache_misses;
     }
 
     ValueNode *start = &dtg->nodes[start_val];
