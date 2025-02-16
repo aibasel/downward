@@ -15,6 +15,7 @@ REPO_ROOT_DIR = SCRIPT_DIR.parents[1]
 TXT2TAGS_OPTIONS = {
     "preproc": [
         [r"<<BR>>", "ESCAPED_LINEBREAK"],
+        [r"``` (.+?)$", r"```\n\1\n```"],
     ],
     "postproc": [
         [r"ESCAPED_LINEBREAK", "<br />"],
