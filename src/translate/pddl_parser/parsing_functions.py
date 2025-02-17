@@ -598,7 +598,7 @@ def parse_init(context, alist, predicate_dict, term_names):
                     initial.append(assignment)
             else:
                 atom_value = False if fact[0] == "not" else True
-                if atom_value == False:
+                if atom_value is False:
                     if len(fact) != 2:
                         context.error(f"Expecting {SYNTAX_LITERAL_NEGATED} for negated atoms.")
                     fact = fact[1]
@@ -845,8 +845,8 @@ def check_atom_consistency(context, atom, initial_proposition_values,
 
 def check_predicate_and_terms_existence(
         context, predicate_name, terms, valid_predicate_names, valid_term_names):
-    assert(isinstance(valid_predicate_names, type({}.keys())))
-    assert(isinstance(valid_term_names, set))
+    assert isinstance(valid_predicate_names, type({}.keys()))
+    assert isinstance(valid_term_names, set)
     if predicate_name not in valid_predicate_names:
         context.error("Undefined predicate", predicate_name)
     for term in terms:
