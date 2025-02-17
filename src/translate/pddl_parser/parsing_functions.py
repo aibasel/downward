@@ -303,7 +303,7 @@ def parse_literal(context, alist, type_dict, predicate_dict, term_names, negated
         check_word(context, predicate_name, "Predicate name")
         check_predicate_and_terms_existence(
             context, predicate_name, alist[1:],
-            set(predicate_dict.keys()), term_names)
+            predicate_dict.keys(), term_names)
         pred_id, arity = _get_predicate_id_and_arity(
             context, predicate_name, type_dict, predicate_dict)
 
@@ -606,7 +606,7 @@ def parse_init(context, alist, predicate_dict, term_names):
                         context.error("Invalid negated fact.", syntax=SYNTAX_LITERAL_NEGATED)
                 check_predicate_and_terms_existence(
                     context, fact[0], fact[1:],
-                    set(predicate_dict.keys()), term_names)
+                    predicate_dict.keys(), term_names)
                 expected_predicate_arity = len(predicate_dict[fact[0]].arguments)
                 predicate_arity = len(fact[1:])
                 if expected_predicate_arity != predicate_arity:
@@ -845,7 +845,7 @@ def check_atom_consistency(context, atom, initial_proposition_values,
 
 def check_predicate_and_terms_existence(
         context, predicate_name, terms, valid_predicate_names, valid_term_names):
-    assert(isinstance(valid_predicate_names, set))
+    assert(isinstance(valid_predicate_names, type({}.keys())))
     assert(isinstance(valid_term_names, set))
     if predicate_name not in valid_predicate_names:
         context.error("Undefined predicate", predicate_name)
