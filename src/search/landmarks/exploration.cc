@@ -91,9 +91,8 @@ static vector<FactPair> get_sorted_extended_preconditions(
     assert(is_sorted(preconditions.begin(), preconditions.end()));
     vector<FactPair> effect_conditions = get_sorted_effect_conditions(effect);
 
-    vector<FactPair> extended_preconditions;
-    extended_preconditions.reserve(
-        preconditions.size() + effect_conditions.size());
+    vector<FactPair> extended_preconditions(
+        preconditions.size() + effect_conditions.size(), FactPair::no_fact);
     merge(preconditions.begin(), preconditions.end(), effect_conditions.begin(),
           effect_conditions.end(), extended_preconditions.begin());
     assert(is_sorted(
