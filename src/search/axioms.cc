@@ -151,5 +151,3 @@ void AxiomEvaluator::evaluate(vector<int> &state) {
         }
     }
 }
-
-PerTaskInformation<AxiomEvaluator> g_axiom_evaluators;
