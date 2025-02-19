@@ -44,7 +44,7 @@ protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
     bool achievers_calculated = false;
 
-    void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
+    void add_ordering(LandmarkNode &from, LandmarkNode &to, OrderingType type);
 
     void discard_all_orderings();
 

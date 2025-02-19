@@ -79,8 +79,8 @@ public:
             "ignored, i.e. not supported");
     }
 
-    virtual shared_ptr<LandmarkFactoryRpgExhaust>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<LandmarkFactoryRpgExhaust> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgExhaust>(
             opts.get<bool>("use_unary_relaxation"),
             get_landmark_factory_arguments_from_options(opts));

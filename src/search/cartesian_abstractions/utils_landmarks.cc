@@ -13,10 +13,10 @@ using namespace std;
 using namespace landmarks;
 
 namespace cartesian_abstractions {
-static FactPair get_fact(const Landmark &landmark) {
+static FactPair get_atom(const Landmark &landmark) {
     // We assume that the given Landmarks are from an h^m landmark graph with m=1.
-    assert(landmark.facts.size() == 1);
-    return landmark.facts[0];
+    assert(landmark.atoms.size() == 1);
+    return landmark.atoms[0];
 }
 
 shared_ptr<LandmarkGraph> get_landmark_graph(
@@ -27,38 +27,36 @@ shared_ptr<LandmarkGraph> get_landmark_graph(
     return lm_graph_factory.compute_lm_graph(task);
 }
 
-vector<FactPair> get_fact_landmarks(const LandmarkGraph &graph) {
-    vector<FactPair> facts;
-    const LandmarkGraph::Nodes &nodes = graph.get_nodes();
-    facts.reserve(nodes.size());
-    for (auto &node : nodes) {
-        facts.push_back(get_fact(node->get_landmark()));
+vector<FactPair> get_atom_landmarks(const LandmarkGraph &graph) {
+    vector<FactPair> atoms;
+    atoms.reserve(graph.get_num_landmarks());
+    for (const auto &node : graph) {
+        atoms.push_back(get_atom(node->get_landmark()));
     }
-    sort(facts.begin(), facts.end());
-    return facts;
+    sort(atoms.begin(), atoms.end());
+    return atoms;
 }
 
-utils::HashMap<FactPair, LandmarkNode *> get_fact_to_landmark_map(
+utils::HashMap<FactPair, LandmarkNode *> get_atom_to_landmark_map(
     const shared_ptr<LandmarkGraph> &graph) {
-    const LandmarkGraph::Nodes &nodes = graph->get_nodes();
-    // All landmarks are simple, i.e., each has exactly one fact.
-    assert(all_of(nodes.begin(), nodes.end(), [](auto &node) {
-                      return node->get_landmark().facts.size() == 1;
+    // All landmarks are simple, i.e., each has exactly one atom.
+    assert(all_of(graph->begin(), graph->end(), [](auto &node) {
+                      return node->get_landmark().atoms.size() == 1;
                   }));
-    utils::HashMap<FactPair, landmarks::LandmarkNode *> fact_to_landmark_map;
-    for (auto &node : nodes) {
-        const FactPair &fact = node->get_landmark().facts[0];
-        fact_to_landmark_map[fact] = node.get();
+    utils::HashMap<FactPair, landmarks::LandmarkNode *> atom_to_landmark_map;
+    for (const auto &node : *graph) {
+        const FactPair &atom = node->get_landmark().atoms[0];
+        atom_to_landmark_map[atom] = node.get();
     }
-    return fact_to_landmark_map;
+    return atom_to_landmark_map;
 }
 
 VarToValues get_prev_landmarks(const LandmarkNode *node) {
     VarToValues groups;
     vector<const LandmarkNode *> open;
     unordered_set<const LandmarkNode *> closed;
-    for (const auto &parent_and_edge : node->parents) {
-        const LandmarkNode *parent = parent_and_edge.first;
+    open.reserve(node->parents.size());
+    for (const auto &[parent, type] : node->parents) {
         open.push_back(parent);
     }
     while (!open.empty()) {
@@ -67,10 +65,9 @@ VarToValues get_prev_landmarks(const LandmarkNode *node) {
         if (closed.find(ancestor) != closed.end())
             continue;
         closed.insert(ancestor);
-        FactPair ancestor_fact = get_fact(ancestor->get_landmark());
-        groups[ancestor_fact.var].push_back(ancestor_fact.value);
-        for (const auto &parent_and_edge : ancestor->parents) {
-            const LandmarkNode *parent = parent_and_edge.first;
+        FactPair ancestor_atom = get_atom(ancestor->get_landmark());
+        groups[ancestor_atom.var].push_back(ancestor_atom.value);
+        for (const auto &[parent, type] : ancestor->parents) {
             open.push_back(parent);
         }
     }

@@ -620,7 +620,7 @@ void LandmarkFactoryHM::discard_conjunctive_landmarks() {
                 << " conjunctive landmarks" << endl;
         }
         lm_graph->remove_node_if(
-            [](const LandmarkNode &node) {return node.get_landmark().conjunctive;});
+            [](const LandmarkNode &node) {return node.get_landmark().is_conjunctive;});
     }
 }
 
@@ -634,12 +634,12 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
     VariablesProxy variables = task_proxy.get_variables();
     // first_achievers are already filled in by compute_h_m_landmarks
     // here only have to do possible_achievers
-    for (auto &lm_node : lm_graph->get_nodes()) {
+    for (const auto &lm_node : *lm_graph) {
         Landmark &landmark = lm_node->get_landmark();
         set<int> candidates;
         // put all possible adders in candidates set
-        for (const FactPair &lm_fact : landmark.facts) {
-            const vector<int> &ops = get_operators_including_eff(lm_fact);
+        for (const FactPair &atom : landmark.atoms) {
+            const vector<int> &ops = get_operators_including_eff(atom);
             candidates.insert(ops.begin(), ops.end());
         }
 
@@ -647,8 +647,8 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
             FluentSet post = get_operator_postcondition(variables.size(), operators[op_id]);
             FluentSet pre = get_operator_precondition(operators[op_id]);
             size_t j;
-            for (j = 0; j < landmark.facts.size(); ++j) {
-                const FactPair &lm_fact = landmark.facts[j];
+            for (j = 0; j < landmark.atoms.size(); ++j) {
+                const FactPair &lm_fact = landmark.atoms[j];
                 // action adds this element of lm as well
                 if (find(post.begin(), post.end(), lm_fact) != post.end())
                     continue;
@@ -676,7 +676,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
                     break;
                 }
             }
-            if (j == landmark.facts.size()) {
+            if (j == landmark.atoms.size()) {
                 // not inconsistent with any of the other landmark fluents
                 landmark.possible_achievers.insert(op_id);
             }
@@ -989,19 +989,19 @@ void LandmarkFactoryHM::generate_landmarks(
                 set_minus(h_m_table_[f1].landmarks, h_m_table_[f1].necessary);
         }
 
-        // and add the edges
+        // and add the orderings.
 
         for (int set_index : all_lms) {
             for (int lm : h_m_table_[set_index].landmarks) {
                 assert(lm_node_table_.find(lm) != lm_node_table_.end());
                 assert(lm_node_table_.find(set_index) != lm_node_table_.end());
 
-                edge_add(*lm_node_table_[lm], *lm_node_table_[set_index], EdgeType::NATURAL);
+                add_ordering(*lm_node_table_[lm], *lm_node_table_[set_index],
+                             OrderingType::NATURAL);
             }
-            if (use_orders) {
-                for (int gn : h_m_table_[set_index].necessary) {
-                    edge_add(*lm_node_table_[gn], *lm_node_table_[set_index], EdgeType::GREEDY_NECESSARY);
-                }
+            for (int gn : h_m_table_[set_index].necessary) {
+                add_ordering(*lm_node_table_[gn], *lm_node_table_[set_index],
+                             OrderingType::GREEDY_NECESSARY);
             }
         }
     }
@@ -1038,8 +1038,8 @@ public:
             "ignored, i.e. not supported");
     }
 
-    virtual shared_ptr<LandmarkFactoryHM>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<LandmarkFactoryHM> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryHM>(
             opts.get<int>("m"),
             opts.get<bool>("conjunctive_landmarks"),

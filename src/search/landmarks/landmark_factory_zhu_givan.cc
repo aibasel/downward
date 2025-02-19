@@ -65,7 +65,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
         FactPair goal_lm = goal.get_pair();
         LandmarkNode *lm_node;
         if (lm_graph->contains_simple_landmark(goal_lm)) {
-            lm_node = &lm_graph->get_simple_landmark(goal_lm);
+            lm_node = &lm_graph->get_simple_landmark_node(goal_lm);
             lm_node->get_landmark().is_true_in_goal = true;
         } else {
             Landmark landmark({goal_lm}, false, false, true);
@@ -86,12 +86,12 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
                 Landmark landmark({lm}, false, false);
                 node = &lm_graph->add_landmark(move(landmark));
             } else {
-                node = &lm_graph->get_simple_landmark(lm);
+                node = &lm_graph->get_simple_landmark_node(lm);
             }
             // Add order: lm ->_{nat} lm
             assert(node->parents.find(lm_node) == node->parents.end());
             assert(lm_node->children.find(node) == lm_node->children.end());
-            edge_add(*node, *lm_node, EdgeType::NATURAL);
+            add_ordering(*node, *lm_node, OrderingType::NATURAL);
         }
     }
 }
@@ -323,8 +323,8 @@ public:
             "We think they are supported, but this is not 100% sure.");
     }
 
-    virtual shared_ptr<LandmarkFactoryZhuGivan>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<LandmarkFactoryZhuGivan> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryZhuGivan>(
             get_use_orders_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));

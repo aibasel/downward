@@ -76,7 +76,7 @@ void LandmarkSumHeuristic::compute_landmark_costs() {
     int min_operator_cost = task_properties::get_min_operator_cost(task_proxy);
     min_first_achiever_costs.reserve(lm_graph->get_num_landmarks());
     min_possible_achiever_costs.reserve(lm_graph->get_num_landmarks());
-    for (auto &node : lm_graph->get_nodes()) {
+    for (const auto &node : *lm_graph) {
         if (node->get_landmark().is_derived) {
             min_first_achiever_costs.push_back(min_operator_cost);
             min_possible_achiever_costs.push_back(min_operator_cost);
@@ -204,8 +204,8 @@ public:
             "using a LandmarkFactory not supporting them");
     }
 
-    virtual shared_ptr<LandmarkSumHeuristic>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<LandmarkSumHeuristic> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkSumHeuristic>(
             get_landmark_heuristic_arguments_from_options(opts),
             tasks::get_axioms_arguments_from_options(opts));

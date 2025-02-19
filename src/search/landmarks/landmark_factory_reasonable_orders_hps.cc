@@ -36,7 +36,7 @@ void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(const shared_ptr<Abs
 void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
     const TaskProxy &task_proxy) {
     /*
-      Approximate reasonable orders according to Hoffmann et al.
+      Approximate reasonable orders according to Hoffmann et al. (JAIR 2004).
 
       If node_p is in goal, then any node2_p which interferes with
       node_p can be reasonably ordered before node_p. Otherwise, if
@@ -47,49 +47,52 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
     */
     State initial_state = task_proxy.get_initial_state();
     int variables_size = task_proxy.get_variables().size();
-    for (auto &node_p : lm_graph->get_nodes()) {
+    for (const auto &node_p : *lm_graph) {
         const Landmark &landmark = node_p->get_landmark();
-        if (landmark.disjunctive)
+        if (landmark.is_disjunctive)
             continue;
 
         if (landmark.is_true_in_goal) {
-            for (auto &node2_p : lm_graph->get_nodes()) {
+            for (const auto &node2_p : *lm_graph) {
                 const Landmark &landmark2 = node2_p->get_landmark();
-                if (landmark == landmark2 || landmark2.disjunctive)
+                if (landmark == landmark2 || landmark2.is_disjunctive)
                     continue;
                 if (interferes(task_proxy, landmark2, landmark)) {
-                    edge_add(*node2_p, *node_p, EdgeType::REASONABLE);
+                    add_ordering(*node2_p, *node_p, OrderingType::REASONABLE);
                 }
             }
         } else {
-            // Collect candidates for reasonable orders in "interesting nodes".
-            // Use hash set to filter duplicates.
+            /* Collect candidates for reasonable orders in "interesting nodes".
+               Use hash set to filter duplicates. */
             unordered_set<LandmarkNode *> interesting_nodes(variables_size);
             for (const auto &child : node_p->children) {
                 const LandmarkNode &node2_p = *child.first;
-                const EdgeType &edge2 = child.second;
-                if (edge2 >= EdgeType::GREEDY_NECESSARY) { // found node2_p: node_p ->_gn node2_p
-                    for (const auto &p : node2_p.parents) {   // find parent
+                const OrderingType &type2 = child.second;
+                if (type2 >= OrderingType::GREEDY_NECESSARY) {
+                    // Found node2_p: node_p ->_gn node2_p.
+                    for (const auto &p : node2_p.parents) {
                         LandmarkNode &parent_node = *(p.first);
-                        const EdgeType &edge = p.second;
-                        if (parent_node.get_landmark().disjunctive)
+                        const OrderingType &type = p.second;
+                        if (parent_node.get_landmark().is_disjunctive)
                             continue;
-                        if (edge >= EdgeType::NATURAL && &parent_node != node_p.get()) {
-                            // find predecessors or parent and collect in "interesting nodes"
+                        if (type >= OrderingType::NATURAL &&
+                            &parent_node != node_p.get()) {
+                            /* Find predecessors or parent and collect in
+                               "interesting nodes". */
                             interesting_nodes.insert(&parent_node);
                             collect_ancestors(interesting_nodes, parent_node);
                         }
                     }
                 }
             }
-            // Insert reasonable orders between those members of "interesting nodes" that interfere
-            // with node_p.
+            /* Insert reasonable orders between those members of
+               "interesting nodes" that interfere with node_p. */
             for (LandmarkNode *node2_p : interesting_nodes) {
                 const Landmark &landmark2 = node2_p->get_landmark();
-                if (landmark == landmark2 || landmark2.disjunctive)
+                if (landmark == landmark2 || landmark2.is_disjunctive)
                     continue;
                 if (interferes(task_proxy, landmark2, landmark)) {
-                    edge_add(*node2_p, *node_p, EdgeType::REASONABLE);
+                    add_ordering(*node2_p, *node_p, OrderingType::REASONABLE);
                 }
             }
         }
@@ -109,15 +112,15 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
      is the same as 2.
      */
     assert(landmark_a != landmark_b);
-    assert(!landmark_a.disjunctive && !landmark_b.disjunctive);
+    assert(!landmark_a.is_disjunctive && !landmark_b.is_disjunctive);
 
     VariablesProxy variables = task_proxy.get_variables();
-    for (const FactPair &lm_fact_b : landmark_b.facts) {
-        FactProxy fact_b = variables[lm_fact_b.var].get_fact(lm_fact_b.value);
-        for (const FactPair &lm_fact_a : landmark_a.facts) {
-            FactProxy fact_a = variables[lm_fact_a.var].get_fact(lm_fact_a.value);
-            if (lm_fact_a == lm_fact_b) {
-                if (!landmark_a.conjunctive || !landmark_b.conjunctive)
+    for (const FactPair &atom_b : landmark_b.atoms) {
+        FactProxy fact_b = variables[atom_b.var].get_fact(atom_b.value);
+        for (const FactPair &atom_a : landmark_a.atoms) {
+            FactProxy fact_a = variables[atom_a.var].get_fact(atom_a.value);
+            if (atom_a == atom_b) {
+                if (!landmark_a.is_conjunctive || !landmark_b.is_conjunctive)
                     return false;
                 else
                     continue;
@@ -130,12 +133,13 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
             // 2. Shared effect e in all operators reaching a, and e, b are mutex
             // Skip this for conjunctive nodes a, as they are typically achieved through a
             // sequence of operators successively adding the parts of a
-            if (landmark_a.conjunctive)
+            if (landmark_a.is_conjunctive)
                 continue;
 
             unordered_map<int, int> shared_eff;
             bool init = true;
-            const vector<int> &op_or_axiom_ids = get_operators_including_eff(lm_fact_a);
+            const vector<int> &op_or_axiom_ids =
+                get_operators_including_eff(atom_a);
             // Intersect operators that achieve a one by one
             for (int op_or_axiom_id : op_or_axiom_ids) {
                 // If no shared effect among previous operators, break
@@ -147,15 +151,17 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
                 // e.g. in Schedule. There, the same effect is conditioned on a disjunction
                 // of conditions of which one will always be true. We test for a simple kind
                 // of these trivial conditions here.)
-                EffectsProxy effects = get_operator_or_axiom(task_proxy, op_or_axiom_id).get_effects();
+                EffectsProxy effects =
+                    get_operator_or_axiom(task_proxy, op_or_axiom_id).get_effects();
                 set<FactPair> trivially_conditioned_effects;
-                bool trivial_conditioned_effects_found = effect_always_happens(variables, effects,
-                                                                               trivially_conditioned_effects);
+                bool trivial_conditioned_effects_found =
+                    effect_always_happens(variables, effects,
+                                          trivially_conditioned_effects);
                 unordered_map<int, int> next_eff;
                 for (EffectProxy effect : effects) {
                     FactPair effect_fact = effect.get_fact().get_pair();
                     if (effect.get_conditions().empty() &&
-                        effect_fact.var != lm_fact_a.var) {
+                        effect_fact.var != atom_a.var) {
                         next_eff.emplace(effect_fact.var, effect_fact.value);
                     } else if (trivial_conditioned_effects_found &&
                                trivially_conditioned_effects.find(effect_fact)
@@ -178,7 +184,8 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
             }
             // Test whether one of the shared effects is inconsistent with b
             for (const pair<const int, int> &eff : shared_eff) {
-                const FactProxy &effect_fact = variables[eff.first].get_fact(eff.second);
+                const FactProxy &effect_fact =
+                    variables[eff.first].get_fact(eff.second);
                 if (effect_fact != fact_a &&
                     effect_fact != fact_b &&
                     effect_fact.is_mutex(fact_b))
@@ -208,15 +215,15 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
 
 void LandmarkFactoryReasonableOrdersHPS::collect_ancestors(
     unordered_set<LandmarkNode *> &result, LandmarkNode &node) {
-    /* Returns all ancestors in the landmark graph of landmark node "start" */
+    // Returns all ancestors in the landmark graph of landmark node "start".
 
     // There could be cycles if use_reasonable == true
     list<LandmarkNode *> open_nodes;
     unordered_set<LandmarkNode *> closed_nodes;
     for (const auto &p : node.parents) {
         LandmarkNode &parent = *(p.first);
-        const EdgeType &edge = p.second;
-        if (edge >= EdgeType::NATURAL && closed_nodes.count(&parent) == 0) {
+        const OrderingType &type = p.second;
+        if (type >= OrderingType::NATURAL && closed_nodes.count(&parent) == 0) {
             open_nodes.push_back(&parent);
             closed_nodes.insert(&parent);
             result.insert(&parent);
@@ -226,8 +233,8 @@ void LandmarkFactoryReasonableOrdersHPS::collect_ancestors(
         LandmarkNode &node2 = *(open_nodes.front());
         for (const auto &p : node2.parents) {
             LandmarkNode &parent = *(p.first);
-            const EdgeType &edge = p.second;
-            if (edge >= EdgeType::NATURAL && closed_nodes.count(&parent) == 0) {
+            const OrderingType &type = p.second;
+            if (type >= OrderingType::NATURAL && closed_nodes.count(&parent) == 0) {
                 open_nodes.push_back(&parent);
                 closed_nodes.insert(&parent);
                 result.insert(&parent);
@@ -392,8 +399,8 @@ public:
             "supported if subcomponent supports them");
     }
 
-    virtual shared_ptr<LandmarkFactoryReasonableOrdersHPS>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<LandmarkFactoryReasonableOrdersHPS> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryReasonableOrdersHPS>(
             opts.get<shared_ptr<LandmarkFactory>>("lm_factory"),
             get_landmark_factory_arguments_from_options(opts));
