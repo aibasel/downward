@@ -63,8 +63,8 @@ def adapt_args(args, search_cost_type, heuristic_cost_type, plan_manager):
             break
 
 
-def run_search(executable, args, sas_file, plan_manager, time, memory):
-    complete_args = [executable] + args + [
+def run_search(command, args, sas_file, plan_manager, time, memory):
+    complete_args = command + args + [
         "--internal-plan-file", plan_manager.get_plan_prefix()]
     print("args: %s" % complete_args)
 
@@ -91,7 +91,7 @@ def compute_run_time(timeout, configs, pos):
 
 
 def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
-                   executable, sas_file, plan_manager, timeout, memory):
+                   command, sas_file, plan_manager, timeout, memory):
     run_time = compute_run_time(timeout, configs, pos)
     if run_time <= 0:
         return None
@@ -102,12 +102,12 @@ def run_sat_config(configs, pos, search_cost_type, heuristic_cost_type,
         args.extend([
             "--internal-previous-portfolio-plans",
             str(plan_manager.get_plan_counter())])
-    result = run_search(executable, args, sas_file, plan_manager, run_time, memory)
+    result = run_search(command, args, sas_file, plan_manager, run_time, memory)
     plan_manager.process_new_plans()
     return result
 
 
-def run_sat(configs, executable, sas_file, plan_manager, final_config,
+def run_sat(configs, command, sas_file, plan_manager, final_config,
             final_config_builder, timeout, memory):
     # If the configuration contains S_COST_TYPE or H_COST_TRANSFORM and the task
     # has non-unit costs, we start by treating all costs as one. When we find
@@ -120,7 +120,7 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
         for pos, (relative_time, args) in enumerate(configs):
             exitcode = run_sat_config(
                 configs, pos, search_cost_type, heuristic_cost_type,
-                executable, sas_file, plan_manager, timeout, memory)
+                command, sas_file, plan_manager, timeout, memory)
             if exitcode is None:
                 continue
 
@@ -140,7 +140,7 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                     heuristic_cost_type = "plusone"
                     exitcode = run_sat_config(
                         configs, pos, search_cost_type, heuristic_cost_type,
-                        executable, sas_file, plan_manager, timeout, memory)
+                        command, sas_file, plan_manager, timeout, memory)
                     if exitcode is None:
                         return
 
@@ -162,18 +162,18 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
         print("Abort portfolio and run final config.")
         exitcode = run_sat_config(
             [(1, final_config)], 0, search_cost_type,
-            heuristic_cost_type, executable, sas_file, plan_manager,
+            heuristic_cost_type, command, sas_file, plan_manager,
             timeout, memory)
         if exitcode is not None:
             yield exitcode
 
 
-def run_opt(configs, executable, sas_file, plan_manager, timeout, memory):
+def run_opt(configs, command, sas_file, plan_manager, timeout, memory):
     for pos, (relative_time, args) in enumerate(configs):
         run_time = compute_run_time(timeout, configs, pos)
         if run_time <= 0:
             return
-        exitcode = run_search(executable, args, sas_file, plan_manager,
+        exitcode = run_search(command, args, sas_file, plan_manager,
                               run_time, memory)
         yield exitcode
 
@@ -202,7 +202,7 @@ def get_portfolio_attributes(portfolio: Path):
     return attributes
 
 
-def run(portfolio: Path, executable, sas_file, plan_manager, time, memory):
+def run(portfolio: Path, command, sas_file, plan_manager, time, memory):
     """
     Run the configs in the given portfolio file.
 
@@ -231,9 +231,9 @@ def run(portfolio: Path, executable, sas_file, plan_manager, time, memory):
 
     if optimal:
         exitcodes = run_opt(
-            configs, executable, sas_file, plan_manager, timeout, memory)
+            configs, command, sas_file, plan_manager, timeout, memory)
     else:
         exitcodes = run_sat(
-            configs, executable, sas_file, plan_manager, final_config,
+            configs, command, sas_file, plan_manager, final_config,
             final_config_builder, timeout, memory)
     return returncodes.generate_portfolio_exitcode(list(exitcodes))
