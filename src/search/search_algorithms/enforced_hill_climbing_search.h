@@ -64,7 +64,15 @@ public:
         const std::shared_ptr<Evaluator> &h,
         PreferredUsage preferred_usage,
         const std::vector<std::shared_ptr<Evaluator>> &preferred,
-        OperatorCost cost_type, int bound, double max_time,
+        OperatorCost cost_type, int bound,
+	double min_gen,
+	double min_eval,
+	double min_exp,
+	double min_time,
+	double max_gen,
+	double max_eval,
+	double max_exp,
+	double max_time,
         const std::string &description, utils::Verbosity verbosity);
 
     virtual void print_statistics() const override;
