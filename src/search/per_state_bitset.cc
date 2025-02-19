@@ -55,6 +55,140 @@ int BitsetView::size() const {
     return num_bits;
 }
 
+int BitsetView::count() const {
+    int result = 0;
+    for (int i = 0; i < data.size(); i++){
+	result += std::popcount(data[i]);
+    }
+    return result;
+}
+
+bool BitsetView::any() const {
+    for (int i = 0; i < data.size(); i++){
+	if (data[i] != 0){
+	    return true;
+	}
+    }
+    return false;
+}
+
+void BitsetView::copy_from(const BitsetView& other) {
+    assert(num_bits == other.num_bits);
+    // for (int i = 0; i < data.size(); i++){
+    // 	data[i] = other.data[i];
+    // }
+    data.copy_from(other.data);
+}
+
+
+void BitsetView::update_not() {
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] = ~data[i];
+    }
+}
+void BitsetView::update_and(const BitsetView &other) {
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] &= other.data[i];
+    }
+}
+void BitsetView::update_or(const BitsetView &other) {
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] |= other.data[i];
+    }
+}
+void BitsetView::update_andc(const BitsetView &other) { // and complement
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] &= ~(other.data[i]);
+    }
+}
+void BitsetView::update_orc(const BitsetView &other) { // or complement
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] |= ~(other.data[i]);
+    }
+}
+void BitsetView::update_xor(const BitsetView &other) {
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] ^= other.data[i];
+    }
+}
+
+void BitsetView::copy_from(const dynamic_bitset::DynamicBitset<BitsetMath::Block>& other) {
+    assert(num_bits == other.num_bits);
+    for (int i = 0; i < data.size(); i++){
+	data[i] = other.blocks[i];
+    }
+}
+void BitsetView::update_and(const dynamic_bitset::DynamicBitset<BitsetMath::Block> &other) {
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] &= other.blocks[i];
+    }
+}
+void BitsetView::update_or(const dynamic_bitset::DynamicBitset<BitsetMath::Block> &other) {
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] |= other.blocks[i];
+    }
+}
+void BitsetView::update_andc(const dynamic_bitset::DynamicBitset<BitsetMath::Block> &other) { // and complement
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] &= ~(other.blocks[i]);
+    }
+}
+void BitsetView::update_orc(const dynamic_bitset::DynamicBitset<BitsetMath::Block> &other) { // or complement
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] |= ~(other.blocks[i]);
+    }
+}
+void BitsetView::update_xor(const dynamic_bitset::DynamicBitset<BitsetMath::Block> &other) {
+    assert(size() == other.size());
+    for (int i = 0; i < data.size(); ++i) {
+	data[i] ^= other.blocks[i];
+    }
+}
+
+template<class T>
+BitsetView& BitsetView::operator&=(const T &other){
+    update_and(other);
+    return *this;
+}
+template<class T>
+BitsetView& BitsetView::operator|=(const T &other){
+    update_or(other);
+    return *this;
+}
+template<class T>
+BitsetView& BitsetView::operator^=(const T &other){
+    update_xor(other);
+    return *this;
+}
+
+BitsetView operator~(BitsetView copy){
+    copy.update_not();
+    return copy;
+}
+template<class T>
+BitsetView operator&&(BitsetView copy, const T &other){
+    copy &= other;
+    return copy;
+}
+template<class T>
+BitsetView operator||(BitsetView copy, const T &other){
+    copy |= other;
+    return copy;
+}
+template<class T>
+BitsetView operator^(BitsetView copy, const T &other){
+    copy ^= other;
+    return copy;
+}
 
 static vector<BitsetMath::Block> pack_bit_vector(const vector<bool> &bits) {
     int num_bits = bits.size();
