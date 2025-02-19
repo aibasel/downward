@@ -1,3 +1,4 @@
+#include "git_revision.h"
 #include "command_line.h"
 #include "search_algorithm.h"
 
@@ -17,12 +18,18 @@ int main(int argc, const char **argv) {
         utils::register_event_handlers();
 
         if (argc < 2) {
+	    utils::g_log << "Fast Downward build " << GIT_REVISION << endl;
             utils::g_log << usage(argv[0]) << endl;
             utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
         }
 
+        if (static_cast<string>(argv[1]) != "--version") {
+	    // if otherwise (argv[1] is --version), print only the version string. This is done in parse_cmd_line
+	    utils::g_log << "Fast Downward build " << GIT_REVISION << endl;
+	}
+
         bool unit_cost = false;
-        if (static_cast<string>(argv[1]) != "--help") {
+        if (static_cast<string>(argv[1]) != "--help" && static_cast<string>(argv[1]) != "--version") {
             utils::g_log << "reading input..." << endl;
             tasks::read_root_task(cin);
             utils::g_log << "done reading input!" << endl;
