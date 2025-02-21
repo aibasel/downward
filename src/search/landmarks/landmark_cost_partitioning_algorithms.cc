@@ -41,7 +41,7 @@ double UniformCostPartitioningAlgorithm::first_pass(
     vector<int> &landmarks_achieved_by_operator,
     vector<bool> &action_landmarks,
     ConstBitsetView &past, ConstBitsetView &future) {
-    double cost_action_landmarks = 0;
+    double action_landmarks_cost = 0;
     for (const auto &node : landmark_graph) {
         int id = node->get_id();
         if (future.test(id)) {
@@ -56,7 +56,7 @@ double UniformCostPartitioningAlgorithm::first_pass(
                 if (!action_landmarks[op_id]) {
                     action_landmarks[op_id] = true;
                     assert(utils::in_bounds(op_id, operator_costs));
-                    cost_action_landmarks += operator_costs[op_id];
+                    action_landmarks_cost += operator_costs[op_id];
                 }
             } else {
                 for (int op_id : achievers) {
@@ -66,7 +66,7 @@ double UniformCostPartitioningAlgorithm::first_pass(
             }
         }
     }
-    return cost_action_landmarks;
+    return action_landmarks_cost;
 }
 
 /*

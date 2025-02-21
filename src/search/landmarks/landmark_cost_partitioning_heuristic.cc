@@ -144,7 +144,7 @@ public:
             "which point the above inequality might not hold anymore.");
         document_note(
             "Optimal Cost Partitioning",
-            "To use `cost_partitioning=optimal`, you must build the "
+            "To use ``cost_partitioning=optimal``, you must build the "
             "planner with LP support. See "
             "[build instructions https://github.com/aibasel/downward/blob/main/BUILD.md].");
         document_note(

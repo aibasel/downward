@@ -192,8 +192,8 @@ static LandmarkSet _intersection(const LandmarkSet &a, const LandmarkSet &b) {
     return result;
 }
 
-LandmarkSet LandmarkFactoryZhuGivan::union_of_precondition_labels(const OperatorProxy &op,
-                                                                  const PropositionLayer &current) const {
+LandmarkSet LandmarkFactoryZhuGivan::union_of_precondition_labels(
+    const OperatorProxy &op, const PropositionLayer &current) const {
     LandmarkSet result;
 
     // TODO This looks like an O(n^2) algorithm where O(n log n) would do, a

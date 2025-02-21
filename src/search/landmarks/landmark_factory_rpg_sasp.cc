@@ -71,13 +71,15 @@ void LandmarkFactoryRpgSasp::add_dtg_successor(int var_id, int pre, int post) {
         dtg_successors[var_id][pre].insert(post);
 }
 
+/*
+  Compute a subset of the actual preconditions of `op` for achieving `landmark`.
+  It takes into account operator preconditions, but only reports those effect
+  conditions that are true for ALL effects achieving the landmark.
+  TODO: Make this comment clearer.
+*/
 void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_landmark(
     const TaskProxy &task_proxy, const Landmark &landmark,
     const OperatorProxy &op, unordered_map<int, int> &result) const {
-    // Computes a subset of the actual preconditions of o for achieving lmp - takes into account
-    // operator preconditions, but only reports those effect conditions that are true for ALL
-    // effects achieving the LM.
-
     vector<bool> has_precondition_on_var(task_proxy.get_variables().size(), false);
     for (FactProxy precondition : op.get_preconditions()) {
         result.emplace(precondition.get_variable().get_id(), precondition.get_value());
@@ -105,7 +107,7 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_landmark(
         }
     }
 
-    // Check for lmp in conditional effects
+    // Check if `landmark` could be achieved by conditional effects.
     unordered_set<int> achievable_atom_indices;
     for (EffectProxy effect : effects) {
         FactProxy effect_fact = effect.get_fact();
@@ -207,14 +209,12 @@ void LandmarkFactoryRpgSasp::found_disjunctive_landmark_and_ordering(
     const TaskProxy &task_proxy, const utils::HashSet<FactPair> &atoms,
     LandmarkNode &node, OrderingType type) {
     bool simple_landmark_exists = false;
-    // TODO: assign with FactPair::no_fact
     State initial_state = task_proxy.get_initial_state();
     for (const FactPair &atom : atoms) {
         if (initial_state[atom.var].get_value() == atom.value) {
             return;
         }
         if (landmark_graph->contains_simple_landmark(atom)) {
-            // Propositions in this disj. LM exist already as simple LMs.
             simple_landmark_exists = true;
             break;
         }
@@ -225,16 +225,16 @@ void LandmarkFactoryRpgSasp::found_disjunctive_landmark_and_ordering(
         return;
     } else if (landmark_graph->contains_overlapping_disjunctive_landmark(atoms)) {
         if (landmark_graph->contains_identical_disjunctive_landmark(atoms)) {
-            // LM already exists, just add order.
             new_landmark_node =
                 &landmark_graph->get_disjunctive_landmark_node(*atoms.begin());
             add_ordering(*new_landmark_node, node, type);
             return;
         }
-        // LM overlaps with existing disj. LM, do not add.
+        // Landmark overlaps with existing disjunctive landmark, do not add.
         return;
     }
-    // This LM and no part of it exist, add the LM to the landmarks graph.
+    /* None of the atoms in this landmark occur in an existing landmark, so
+       we add the landmark to the landmark graph. */
     Landmark landmark(vector<FactPair>(atoms.begin(),
                                        atoms.end()), true, false);
     new_landmark_node = &landmark_graph->add_landmark(move(landmark));
@@ -487,10 +487,8 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
     VariablesProxy variables = task_proxy.get_variables();
     find_forward_orders(variables, reached, node);
 
-    /*
-      Use domain transition graphs to find further orders. Only possible
-      if landmark is a simple.
-    */
+    /* Use domain transition graphs to find further orders. Only possible
+       if landmark is simple. */
     const Landmark &landmark = node->get_landmark();
     if (landmark.is_disjunctive)
         return;
@@ -567,30 +565,31 @@ void LandmarkFactoryRpgSasp::find_forward_orders(
     const VariablesProxy &variables, const vector<vector<bool>> &reached,
     LandmarkNode *node) {
     /*
-      `node` is ordered before any var-val pair that cannot be reached before
-      `node` according to relaxed planning graph (as captured in reached).
-      These orders are saved in the node member variable `forward_orders`.
+      The landmark of `node` is ordered before any atom that cannot be reached
+      before the landmark of `node` according to relaxed planning graph (as
+      captured in `reached`). These orderings are saved in the `forward_orders`
+      and added to the landmark graph in `add_landmark_forward_orderings`.
     */
-    for (VariableProxy var : variables)
+    for (VariableProxy var : variables) {
         for (int value = 0; value < var.get_domain_size(); ++value) {
             if (reached[var.get_id()][value])
                 continue;
-            const FactPair fact(var.get_id(), value);
+            const FactPair atom(var.get_id(), value);
 
             bool insert = true;
-            for (const FactPair &atom : node->get_landmark().atoms) {
-                if (fact != atom) {
+            for (const FactPair &landmark_atom : node->get_landmark().atoms) {
+                if (atom != landmark_atom) {
                     /* Make sure there is no operator that reaches both `atom`
                        and (var, value) at the same time. */
                     bool intersection_empty = true;
-                    const vector<int> &reach_fact =
-                        get_operators_including_eff(fact);
-                    const vector<int> &achievers =
+                    const vector<int> &atom_achievers =
                         get_operators_including_eff(atom);
-                    for (size_t j = 0; j < reach_fact.size() && intersection_empty; ++j)
-                        for (size_t k = 0; k < achievers.size()
+                    const vector<int> &landmark_achievers =
+                        get_operators_including_eff(landmark_atom);
+                    for (size_t j = 0; j < atom_achievers.size() && intersection_empty; ++j)
+                        for (size_t k = 0; k < landmark_achievers.size()
                              && intersection_empty; ++k)
-                            if (reach_fact[j] == achievers[k])
+                            if (atom_achievers[j] == landmark_achievers[k])
                                 intersection_empty = false;
 
                     if (!intersection_empty) {
@@ -603,8 +602,9 @@ void LandmarkFactoryRpgSasp::find_forward_orders(
                 }
             }
             if (insert)
-                forward_orders[node].insert(fact);
+                forward_orders[node].insert(atom);
         }
+    }
 }
 
 void LandmarkFactoryRpgSasp::add_landmark_forward_orderings() {
