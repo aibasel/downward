@@ -145,7 +145,7 @@ void Exploration::reset_reachability_information() {
 }
 
 void Exploration::set_state_atoms_reached(const State &state) {
-    for (FactProxy atom : state) {
+    for (const FactProxy &atom : state) {
         Proposition *init_prop =
             &propositions[atom.get_variable().get_id()][atom.get_value()];
         if (!init_prop->excluded) {
@@ -178,9 +178,9 @@ unordered_set<int> Exploration::get_excluded_operators(
     unordered_set<int> excluded_op_ids;
     for (OperatorProxy op : task_proxy.get_operators()) {
         for (EffectProxy effect : op.get_effects()) {
+            auto [var, value] = effect.get_fact().get_pair();
             if (effect.get_conditions().empty()
-                && propositions[effect.get_fact().get_variable().get_id()]
-                [effect.get_fact().get_value()].excluded) {
+                && propositions[var][value].excluded) {
                 excluded_op_ids.insert(op.get_id());
                 break;
             }
