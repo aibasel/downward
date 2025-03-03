@@ -91,15 +91,12 @@ using PackedStateBin = int_packer::IntPacker::Bin;
   task_properties.h module.
 */
 
-template<typename T>
-concept has_item_type = requires {
-    typename T::ItemType;
-};
 
 /*
   Basic iterator support for proxy collections.
 */
-template<has_item_type ProxyCollection>
+template<typename ProxyCollection,
+         typename std::enable_if<!std::is_same<ProxyCollection,State>::value>::type* = nullptr>
 class ProxyIterator {
     /* We store a pointer to collection instead of a reference
        because iterators have to be copy assignable. */
@@ -586,8 +583,6 @@ class State {
     const int_packer::IntPacker *state_packer;
     int num_variables;
 public:
-    using ItemType = FactProxy;
-
     // Construct a registered state with only packed data.
     State(const AbstractTask &task, const StateRegistry &registry, StateID id,
           const PackedStateBin *buffer);
@@ -605,7 +600,7 @@ public:
     void unpack() const;
 
     std::size_t size() const;
-    FactProxy operator[](std::size_t var_id) const;
+    int operator[](std::size_t var_id) const;
     FactProxy operator[](VariableProxy var) const;
 
     TaskProxy get_task() const;
@@ -805,19 +800,19 @@ inline std::size_t State::size() const {
     return num_variables;
 }
 
-inline FactProxy State::operator[](std::size_t var_id) const {
+inline int State::operator[](std::size_t var_id) const {
     assert(var_id < size());
     if (values) {
-        return FactProxy(*task, var_id, (*values)[var_id]);
+        return (*values)[var_id];
     } else {
         assert(buffer);
         assert(state_packer);
-        return FactProxy(*task, var_id, state_packer->get(buffer, var_id));
+        return state_packer->get(buffer, var_id);
     }
 }
 
 inline FactProxy State::operator[](VariableProxy var) const {
-    return (*this)[var.get_id()];
+    return FactProxy(*task, var.get_id(), (*this)[var.get_id()]);
 }
 
 inline TaskProxy State::get_task() const {
@@ -856,5 +851,51 @@ inline const std::vector<int> &State::get_unpacked_values() const {
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     return *values;
+}
+
+class StateIterator {
+    ProxyIterator<VariablesProxy> variables_iterator;
+    const State *state;
+public:
+    using iterator_category = std::input_iterator_tag;
+    using value_type = FactProxy;
+    using difference_type = int;
+    using pointer = const value_type *;
+    using reference = value_type;
+
+    StateIterator(const State &state, std::size_t pos)
+        : variables_iterator(state.get_task().get_variables(), pos), state(&state) {
+    }
+
+    reference operator*() const {
+        return (*state)[*variables_iterator];
+    }
+
+    value_type operator++(int) {
+        value_type value(**this);
+        ++(*this);
+        return value;
+    }
+
+    StateIterator &operator++() {
+        ++variables_iterator;
+        return *this;
+    }
+
+    bool operator==(const StateIterator &other) const {
+        return variables_iterator == other.variables_iterator;
+    }
+
+    bool operator!=(const StateIterator &other) const {
+        return !(*this == other);
+    }
+};
+
+inline StateIterator begin(const State &state) {
+    return StateIterator(state, 0);
+}
+
+inline StateIterator end(const State &state) {
+    return StateIterator(state, state.size());
 }
 #endif

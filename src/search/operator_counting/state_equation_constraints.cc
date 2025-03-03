@@ -103,7 +103,7 @@ bool StateEquationConstraints::update_constraints(const State &state,
                 double lower_bound = 0;
                 /* If we consider the current value of var, there must be an
                    additional consumer. */
-                if (state[var].get_value() == value) {
+                if (state[var] == value) {
                     --lower_bound;
                 }
                 /* If we consider the goal value of var, there must be an
