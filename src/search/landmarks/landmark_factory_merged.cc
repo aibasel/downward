@@ -31,7 +31,7 @@ LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(
         else
             return nullptr;
     } else if (landmark.is_disjunctive) {
-        const utils::HashSet<FactPair> atoms(
+        set<FactPair> atoms(
             landmark.atoms.begin(), landmark.atoms.end());
         if (lm_graph->contains_identical_disjunctive_landmark(atoms))
             return &lm_graph->get_disjunctive_landmark_node(landmark.atoms[0]);

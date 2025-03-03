@@ -1,12 +1,12 @@
 #include "util.h"
 
+#include <ranges>
+
 #include "landmark.h"
 #include "landmark_graph.h"
 
 #include "../task_proxy.h"
 #include "../utils/logging.h"
-
-#include <limits>
 
 using namespace std;
 
@@ -91,7 +91,7 @@ static void dump_node(
         cout << "  lm" << node.get_id() << " [label=\"";
         bool first = true;
         const Landmark &landmark = node.get_landmark();
-        for (FactPair atom : landmark.atoms) {
+        for (const FactPair &atom : landmark.atoms) {
             if (!first) {
                 if (landmark.is_disjunctive) {
                     cout << " | ";
@@ -146,10 +146,8 @@ void dump_landmark_graph(
         cout << "digraph G {\n";
         for (const auto &node : graph) {
             dump_node(task_proxy, *node, log);
-            for (const auto &child : node->children) {
-                const LandmarkNode *child_node = child.first;
-                const OrderingType &type = child.second;
-                dump_ordering(node->get_id(), child_node->get_id(), type, log);
+            for (const auto &[child, type] : node->children) {
+                dump_ordering(node->get_id(), child->get_id(), type, log);
             }
         }
         cout << "}" << endl;

@@ -5,6 +5,7 @@
 
 #include "../utils/hash.h"
 
+#include <list>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -39,7 +40,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
         std::vector<std::vector<bool>> &reached, const Landmark &landmark);
     void compute_disjunctive_preconditions(
         const TaskProxy &task_proxy,
-        std::vector<utils::HashSet<FactPair>> &disjunctive_pre,
+        std::vector<std::set<FactPair>> &disjunctive_pre,
         std::vector<std::vector<bool>> &reached,
         const Landmark &landmark);
 
@@ -49,7 +50,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     void found_simple_lm_and_order(const FactPair &atom, LandmarkNode &node,
                                    OrderingType type);
     void found_disj_lm_and_order(const TaskProxy &task_proxy,
-                                 const utils::HashSet<FactPair> &atoms,
+                                 const std::set<FactPair> &atoms,
                                  LandmarkNode &node,
                                  OrderingType type);
     void approximate_lookahead_orders(const TaskProxy &task_proxy,
