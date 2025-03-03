@@ -112,7 +112,7 @@ LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::build_relaxed
         current_prop_layer[var_id].resize(var.get_domain_size());
 
         // label nodes from initial state
-        int value = initial_state[var].get_value();
+        int value = initial_state[var.get_id()];
         current_prop_layer[var_id][value].labels.emplace(var_id, value);
 
         triggered.insert(triggers[var_id][value].begin(), triggers[var_id][value].end());
