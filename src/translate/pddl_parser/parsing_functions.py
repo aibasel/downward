@@ -3,6 +3,7 @@ import sys
 
 import graph
 import pddl
+from .warning import print_warning
 from .parse_error import ParseError
 
 TYPED_LIST_SEPARATOR = "-"
@@ -126,8 +127,8 @@ def parse_typed_list(context, alist, only_variables=False, either_allowed=False,
                             alist)
                     items = alist[:separator_position]
                     if not items:
-                        print(f"Warning: Expected something before the separator '{TYPED_LIST_SEPARATOR}'."
-                              f" Got: {lispify(alist)}", file=sys.stderr)
+                        print_warning(f"Expected something before the separator '{TYPED_LIST_SEPARATOR}'."
+                                      f" Got: {lispify(alist)}")
                     _type = alist[separator_position + 1]
                     alist = alist[separator_position + 2:]
                     if not isinstance(_type, str):
@@ -328,9 +329,9 @@ def _get_predicate_id_and_arity(context, text, type_dict, predicate_dict):
         context.error("Undeclared predicate", text)
     elif the_predicate is not None:
         if the_type is not None and not SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH:
-            msg = ("Warning: name clash between type and predicate %r.\n"
+            msg = ("name clash between type and predicate %r.\n"
                    "Interpreting as predicate in conditions.") % text
-            print(msg, file=sys.stderr)
+            print_warning(msg)
             SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH = True
         return the_predicate.name, the_predicate.get_arity()
     else:
@@ -587,8 +588,8 @@ def parse_init(context, alist, predicate_dict, term_names):
                 if assignment.fluent in initial_assignments:
                     prev = initial_assignments[assignment.fluent]
                     if assignment.expression == prev.expression:
-                        print(f"Warning: {assignment} is specified twice "
-                              f"in initial state specification")
+                        print_warning(f"{assignment} is specified twice "
+                                      f"in initial state specification")
                     else:
                         context.error("Error in initial state specification\n"
                                       "Reason: conflicting assignment for "
@@ -642,16 +643,8 @@ def parse_task(domain_pddl, task_pddl):
         task_requirements.requirements)))
     objects = constants + objects
 
-    check_for_duplicates(
-        context,
-        [o.name for o in objects],
-        errmsg="error: duplicate object %r",
-        finalmsg="please check :constants and :objects definitions")
-    check_for_duplicates(
-        context,
-        [a.name for a in actions],
-        errmsg="error: duplicate action %r",
-        finalmsg="please check :action and :derived definitions")
+    check_for_duplicates(context, [o.name for o in objects], "object")
+    check_for_duplicates(context, [a.name for a in actions], "action")
 
     init += [pddl.Atom("=", (obj.name, obj.name)) for obj in objects]
 
@@ -699,8 +692,8 @@ def parse_domain_pddl(context, domain_pddl):
                               f"Reason: two '{field}' specifications.")
             if (seen_fields and
                     correct_order.index(seen_fields[-1]) > correct_order.index(field)):
-                msg = f"\nWarning: {field} specification not allowed here (cf. PDDL BNF)"
-                print(msg, file=sys.stderr)
+                msg = f"{field} specification not allowed here (cf. PDDL BNF)"
+                print_warning(msg)
             seen_fields.append(field)
             if field == ":requirements":
                 requirements = parse_requirements(context, opt[1:])
@@ -840,7 +833,7 @@ def check_atom_consistency(context, atom, initial_proposition_values,
         else:
             if atom_value is False:
                 atom = atom.negate()
-            print(f"Warning: {atom} is specified twice in initial state specification")
+            print_warning(f"{atom} is specified twice in initial state specification")
 
 
 def check_predicate_and_terms_existence(
@@ -855,13 +848,17 @@ def check_predicate_and_terms_existence(
             context.error(f"Undefined {item}", term)
 
 
-def check_for_duplicates(context, elements, errmsg, finalmsg):
+def check_for_duplicates(context, elements, element_type):
     seen = set()
-    errors = []
+    duplicates = set()
     for element in elements:
         if element in seen:
-            errors.append(errmsg % element)
+            duplicates.add(element)
         else:
             seen.add(element)
-    if errors:
-        context.error("\n".join(errors) + "\n" + finalmsg)
+    if duplicates:
+        msg = f"Found the following duplicate {element_type}s: {', '.join(duplicates)}"
+        if element_type == "action":
+            print_warning(msg)
+        else:
+            context.error(msg)
