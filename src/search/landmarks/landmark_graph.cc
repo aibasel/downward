@@ -53,14 +53,15 @@ bool LandmarkGraph::contains_disjunctive_landmark(const FactPair &atom) const {
 }
 
 bool LandmarkGraph::contains_overlapping_disjunctive_landmark(
-    const utils::HashSet<FactPair> &atoms) const {
+    const set<FactPair> &atoms) const {
     return any_of(atoms.begin(), atoms.end(), [&](const FactPair &atom) {
                       return contains_disjunctive_landmark(atom);
                   });
 }
 
 bool LandmarkGraph::contains_identical_disjunctive_landmark(
-    const utils::HashSet<FactPair> &atoms) const {
+    const set<FactPair> &atoms) const {
+    // TODO: What's going on here???
     const LandmarkNode *node = nullptr;
     for (const FactPair &atom : atoms) {
         auto it = disjunctive_landmarks_to_nodes.find(atom);
@@ -117,11 +118,11 @@ LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark_to_add) {
 }
 
 void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
-    for (const auto &[parent, type] : node->parents) {
+    for (LandmarkNode *parent : views::keys(node->parents)) {
         parent->children.erase(node);
         assert(!parent->children.contains(node));
     }
-    for (const auto &[child, type] : node->children) {
+    for (LandmarkNode *child : views::keys(node->children)) {
         child->parents.erase(node);
         assert(!child->parents.contains(node));
     }

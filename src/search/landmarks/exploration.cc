@@ -13,6 +13,8 @@ using namespace std;
 
 namespace landmarks {
 /*
+  TODO: Verify this comment.
+
   Implementation note: Compared to RelaxationHeuristic, we *cannot simplify*
   unary operators, because this may conflict with excluded operators.
   For an example, consider that unary operator o1 is thrown out during
@@ -27,14 +29,13 @@ Exploration::Exploration(const TaskProxy &task_proxy, utils::LogProxy &log)
     if (log.is_at_least_normal()) {
         log << "Initializing Exploration..." << endl;
     }
-
     build_propositions();
     build_unary_operators();
 }
 
 void Exploration::build_propositions() {
     for (VariableProxy var : task_proxy.get_variables()) {
-        const int var_id = var.get_id();
+        int var_id = var.get_id();
         propositions.emplace_back(var.get_domain_size());
         for (int value = 0; value < var.get_domain_size(); ++value) {
             propositions[var_id][value].fact = FactPair(var_id, value);
@@ -55,9 +56,8 @@ static int compute_number_of_unary_operators(
 }
 
 void Exploration::build_unary_operators() {
-    const OperatorsProxy operators = task_proxy.get_operators();
-    const AxiomsProxy axioms = task_proxy.get_axioms();
-
+    const OperatorsProxy &operators = task_proxy.get_operators();
+    const AxiomsProxy &axioms = task_proxy.get_axioms();
     /*
       We need to reserve memory for this vector because we cross-reference to
       the memory address of its elements while building it, meaning a resize
@@ -92,9 +92,8 @@ static vector<FactPair> get_sorted_extended_preconditions(
     assert(is_sorted(preconditions.begin(), preconditions.end()));
     vector<FactPair> effect_conditions = get_sorted_effect_conditions(effect);
 
-    vector<FactPair> extended_preconditions;
-    extended_preconditions.reserve(
-        preconditions.size() + effect_conditions.size());
+    vector<FactPair> extended_preconditions(
+        preconditions.size() + effect_conditions.size(), FactPair::no_fact);
     merge(preconditions.begin(), preconditions.end(), effect_conditions.begin(),
           effect_conditions.end(), extended_preconditions.begin());
     assert(is_sorted(
@@ -119,6 +118,7 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
     vector<FactPair> preconditions;
     int op_or_axiom_id = get_operator_or_axiom_id(op);
 
+    // TODO: Maybe the problem is with the new sorting?
     for (FactProxy pre : op.get_preconditions()) {
         preconditions.push_back(pre.get_pair());
     }
@@ -147,7 +147,7 @@ void Exploration::reset_reachability_information() {
 }
 
 void Exploration::set_state_atoms_reached(const State &state) {
-    for (FactProxy atom : state) {
+    for (const FactProxy &atom : state) {
         Proposition *init_prop =
             &propositions[atom.get_variable().get_id()][atom.get_value()];
         if (!init_prop->excluded) {
@@ -161,8 +161,8 @@ void Exploration::set_state_atoms_reached(const State &state) {
   excluded proposition *unconditionally* must be marked as excluded.
 
   Note that we in general cannot exclude all unary operators derived from
-  operators that achieve an excluded propositon *conditionally*:
-  Given an operator with uncoditional effect e1 and conditional effect e2 with
+  operators that achieve an excluded proposition *conditionally*:
+  Given an operator with unconditional effect e1 and conditional effect e2 with
   condition c yields unary operators uo1: {} -> e1 and uo2: c -> e2. Excluding
   both would not allow us to achieve e1 when excluding proposition e2. We
   instead only mark uo2 as excluded (see in `initialize_operator_data` when
@@ -170,7 +170,7 @@ void Exploration::set_state_atoms_reached(const State &state) {
   overapproximation, e.g. if the effect e1 also has condition c.
 */
 unordered_set<int> Exploration::get_excluded_operators(
-    const bool use_unary_relaxation) const {
+    bool use_unary_relaxation) const {
     /* When using unary relaxation, we only exclude unary operators but none
        of the original operators which have an undesired side effect. */
     if (use_unary_relaxation) {
@@ -180,9 +180,9 @@ unordered_set<int> Exploration::get_excluded_operators(
     unordered_set<int> excluded_op_ids;
     for (OperatorProxy op : task_proxy.get_operators()) {
         for (EffectProxy effect : op.get_effects()) {
+            auto [var, value] = effect.get_fact().get_pair();
             if (effect.get_conditions().empty()
-                && propositions[effect.get_fact().get_variable().get_id()]
-                [effect.get_fact().get_value()].excluded) {
+                && propositions[var][value].excluded) {
                 excluded_op_ids.insert(op.get_id());
                 break;
             }
@@ -191,8 +191,8 @@ unordered_set<int> Exploration::get_excluded_operators(
     return excluded_op_ids;
 }
 
-void Exploration::initialize_operator_data(const bool use_unary_relaxation) {
-    const unordered_set<int> excluded_op_ids =
+void Exploration::initialize_operator_data(bool use_unary_relaxation) {
+    unordered_set<int> excluded_op_ids =
         get_excluded_operators(use_unary_relaxation);
 
     for (UnaryOperator &op : unary_operators) {
@@ -200,7 +200,7 @@ void Exploration::initialize_operator_data(const bool use_unary_relaxation) {
 
         /*
           Aside from UnaryOperators derived from operators with an id in
-          op_ids_to_mark we also exclude UnaryOperators that have an excluded
+          `excluded_op_ids` we also exclude UnaryOperators that have an excluded
           proposition as effect (see comment for `get_excluded_operators`).
         */
         if (op.effect->excluded
@@ -252,8 +252,9 @@ void Exploration::relaxed_exploration() {
         const vector<UnaryOperator *> &triggered_operators =
             prop->precondition_of;
         for (UnaryOperator *unary_op : triggered_operators) {
-            if (unary_op->excluded)
+            if (unary_op->excluded) {
                 continue;
+            }
             --unary_op->num_unsatisfied_preconditions;
             assert(unary_op->num_unsatisfied_preconditions >= 0);
             if (unary_op->num_unsatisfied_preconditions == 0) {
@@ -285,7 +286,7 @@ vector<vector<bool>> Exploration::bundle_reachability_information() const {
 }
 
 vector<vector<bool>> Exploration::compute_relaxed_reachability(
-    const vector<FactPair> &excluded_props, const bool use_unary_relaxation) {
+    const vector<FactPair> &excluded_props, bool use_unary_relaxation) {
     setup_exploration_queue(task_proxy.get_initial_state(), excluded_props,
                             use_unary_relaxation);
     relaxed_exploration();

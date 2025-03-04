@@ -9,6 +9,9 @@
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 
+#include <list>
+#include <set>
+
 using namespace std;
 namespace landmarks {
 LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(

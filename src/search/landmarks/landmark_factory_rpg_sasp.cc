@@ -206,7 +206,7 @@ void LandmarkFactoryRpgSasp::found_simple_landmark_and_ordering(
 }
 
 void LandmarkFactoryRpgSasp::found_disjunctive_landmark_and_ordering(
-    const TaskProxy &task_proxy, const utils::HashSet<FactPair> &atoms,
+    const TaskProxy &task_proxy, const set<FactPair> &atoms,
     LandmarkNode &node, OrderingType type) {
     bool simple_landmark_exists = false;
     State initial_state = task_proxy.get_initial_state();
@@ -341,7 +341,7 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes(
 
 void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     const TaskProxy &task_proxy,
-    vector<utils::HashSet<FactPair>> &disjunctive_pre,
+    vector<set<FactPair>> &disjunctive_pre,
     vector<vector<bool>> &reached, const Landmark &landmark) {
     /*
       Compute disjunctive preconditions from all operators than can potentially
@@ -389,7 +389,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     }
     for (const auto &pre : preconditions) {
         if (static_cast<int>(used_operators[pre.first].size()) == num_ops) {
-            utils::HashSet<FactPair> pre_set;
+            set<FactPair> pre_set;
             pre_set.insert(pre.second.begin(), pre.second.end());
             if (pre_set.size() > 1) { // otherwise this LM is not actually a disjunctive LM
                 disjunctive_pre.push_back(pre_set);
@@ -451,7 +451,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
             approximate_lookahead_orders(task_proxy, reached, node);
 
             // Process achieving operators again to find disjunctive LMs
-            vector<utils::HashSet<FactPair>> disjunctive_pre;
+            vector<set<FactPair>> disjunctive_pre;
             compute_disjunctive_preconditions(
                 task_proxy, disjunctive_pre, reached, landmark);
             for (const auto &preconditions : disjunctive_pre)

@@ -65,7 +65,7 @@ Vagrant.configure("2") do |config|
     cd /home/vagrant
 
     if ! [ -e downward ] ; then
-        git clone --branch TAG https://github.com/aibasel/downward.git downward
+        git clone --branch BRANCH https://github.com/aibasel/downward.git downward
         ./downward/build.py release debug
         chown -R vagrant.vagrant downward
     fi

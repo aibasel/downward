@@ -80,13 +80,12 @@ public:
     Exploration(const TaskProxy &task_proxy, utils::LogProxy &log);
 
     /*
-      Computes the reachability of each proposition when excluding
-      operators in *excluded_op_ids* and ensuring that propositions
-      in *excluded_props* are not achieved.
-      The returned vector of vector denotes for each proposition
-      (grouped by their fact variable) whether it is relaxed reachable.
-      The values are exact in the absence of conditional effects, otherwise
-      they are an admissible approximation (see implementation for details).
+      Computes the reachability of each proposition when ensuring that
+      propositions in `excluded_props` are not achieved. The returned vector of
+      vector denotes for each proposition (grouped by their atom variable)
+      whether it is relaxed reachable. The values are exact in the absence of
+      conditional effects, otherwise they are an admissible approximation (see
+      implementation for details).
     */
     std::vector<std::vector<bool>> compute_relaxed_reachability(
         const std::vector<FactPair> &excluded_props, bool use_unary_relaxation);

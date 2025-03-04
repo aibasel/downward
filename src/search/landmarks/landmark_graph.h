@@ -9,6 +9,7 @@
 #include "../utils/memory.h"
 
 #include <cassert>
+#include <set>
 #include <unordered_map>
 #include <vector>
 
@@ -136,11 +137,11 @@ public:
        when moving landmark graph creation there. It is not needed by
        HMLandmarkFactory. */
     bool contains_overlapping_disjunctive_landmark(
-        const utils::HashSet<FactPair> &atoms) const;
+        const std::set<FactPair> &atoms) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     bool contains_identical_disjunctive_landmark(
-        const utils::HashSet<FactPair> &atoms) const;
+        const std::set<FactPair> &atoms) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. It is not needed by
        HMLandmarkFactory. */

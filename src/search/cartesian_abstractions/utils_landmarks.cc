@@ -8,6 +8,7 @@
 #include "../utils/memory.h"
 
 #include <algorithm>
+#include <ranges>
 
 using namespace std;
 using namespace landmarks;
@@ -56,18 +57,19 @@ VarToValues get_prev_landmarks(const LandmarkNode *node) {
     vector<const LandmarkNode *> open;
     unordered_set<const LandmarkNode *> closed;
     open.reserve(node->parents.size());
-    for (const auto &[parent, type] : node->parents) {
+    for (const LandmarkNode *parent : views::keys(node->parents)) {
         open.push_back(parent);
     }
     while (!open.empty()) {
         const LandmarkNode *ancestor = open.back();
         open.pop_back();
-        if (closed.find(ancestor) != closed.end())
+        if (closed.contains(ancestor)) {
             continue;
+        }
         closed.insert(ancestor);
         FactPair ancestor_atom = get_atom(ancestor->get_landmark());
         groups[ancestor_atom.var].push_back(ancestor_atom.value);
-        for (const auto &[parent, type] : ancestor->parents) {
+        for (const LandmarkNode *parent : views::keys(ancestor->parents)) {
             open.push_back(parent);
         }
     }

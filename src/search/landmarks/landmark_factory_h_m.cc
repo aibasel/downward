@@ -11,6 +11,9 @@
 #include "../utils/logging.h"
 #include "../utils/system.h"
 
+#include <list>
+#include <set>
+
 using namespace std;
 using utils::ExitCode;
 
