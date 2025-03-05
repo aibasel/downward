@@ -318,21 +318,17 @@ def parse_literal(context, alist, type_dict, predicate_dict, term_names, negated
             return pddl.Atom(pred_id, alist[1:])
 
 
-SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH = False
 def _get_predicate_id_and_arity(context, text, type_dict, predicate_dict):
-    global SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH
-
     the_type = type_dict.get(text)
     the_predicate = predicate_dict.get(text)
 
     if the_type is None and the_predicate is None:
         context.error("Undeclared predicate", text)
     elif the_predicate is not None:
-        if the_type is not None and not SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH:
+        if the_type is not None:
             msg = ("name clash between type and predicate %r.\n"
                    "Interpreting as predicate in conditions.") % text
             print_warning(msg)
-            SEEN_WARNING_TYPE_PREDICATE_NAME_CLASH = True
         return the_predicate.name, the_predicate.get_arity()
     else:
         assert the_type is not None
