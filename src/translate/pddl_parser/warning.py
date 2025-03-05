@@ -1,10 +1,9 @@
 import sys
 
 
-PRINTED_WARNINGS = set()
+printed_warnings = set()
 
 def print_warning(msg):
-    global PRINTED_WARNINGS
-    if msg not in PRINTED_WARNINGS:
+    if msg not in printed_warnings:
         print(f"Warning: {msg}", file=sys.stderr)
-        PRINTED_WARNINGS.add(msg)
+        printed_warnings.add(msg)
