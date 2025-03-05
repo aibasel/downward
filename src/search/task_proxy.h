@@ -92,15 +92,14 @@ using PackedStateBin = int_packer::IntPacker::Bin;
 */
 
 template<typename T>
-concept has_item_type = requires {
+concept item_typed = requires {
     typename T::ItemType;
 };
 
 /*
   Basic iterator support for proxy collections.
 */
-template<typename ProxyCollection>
-requires has_item_type<ProxyCollection>
+template<item_typed ProxyCollection>
 class ProxyIterator {
     /* We store a pointer to collection instead of a reference
        because iterators have to be copy assignable. */
