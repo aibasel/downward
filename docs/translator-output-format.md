@@ -508,7 +508,7 @@ Finally, the 7 before the "end_operator" line indicates that this
 operator has a cost of 7.
 
 
-### Translator file format: Axiom section
+### Translator file format: axiom section
 
 The axiom section is similar in structure to the operator section, as
 axiom rules can be considered to be operators that are automatically
@@ -522,19 +522,19 @@ rule is defined in sequence.
 
 An axiom rule is structured as follows:
 
--   -   The first line is "begin_rule"
-    -   The second line contains a single number, denoting the number of
-        conditions in the "body" of the rule.
-    -   The following lines describe these conditions, one line for each
-        condition. A condition is given by two numbers separated by
-        spaces, denoting a variable/value pairing. In other words, the
-        same notation as for operator prevail conditions is used.
-    -   The following line contains three numbers, denoting the variable
-        affected by the axiom rule, the value that this variable must
-        have for this rule to be applicable, and the new value assigned
-        to this variable. The variable and this latter value together
-        form the "head" of the rule.
-    -   The final line is "end_rule".
+-   The first line is "begin_rule"
+-   The second line contains a single number, denoting the number of
+    conditions in the "body" of the rule.
+-   The following lines describe these conditions, one line for each
+    condition. A condition is given by two numbers separated by
+    spaces, denoting a variable/value pairing. In other words, the
+    same notation as for operator prevail conditions is used.
+-   The following line contains three numbers, denoting the variable
+    affected by the axiom rule, the value that this variable must
+    have for this rule to be applicable, and the new value assigned
+    to this variable. The variable and this latter value together
+    form the "head" of the rule.
+-   The final line is "end_rule".
 
 Variables appearing in the head of axiom rules (axiom variables) are
 disjoint from variables affected by operators. In the current version of
