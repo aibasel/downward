@@ -80,20 +80,17 @@ for such cases.
 
     ## using FF heuristic and context-enhanced additive heuristic (previously: "fFyY")
      ./fast-downward.py domain.pddl task.pddl \
-        --evaluator "hff=ff()" --evaluator "hcea=cea()" \
-        --search "lazy_greedy([hff, hcea], preferred=[hff, hcea])" \
+        --search "let(hff, ff(), let(hcea, cea(), lazy_greedy([hff, hcea], preferred=[hff, hcea])))"
                
 
     ## using FF heuristic (previously: "fF")
      ./fast-downward.py domain.pddl task.pddl \
-        --evaluator "hff=ff()" \
-        --search "lazy_greedy([hff], preferred=[hff])" \
+        --search "let(hff, ff(), lazy_greedy([hff], preferred=[hff]))"
                
 
     ## using context-enhanced additive heuristic (previously: "yY")
      ./fast-downward.py domain.pddl task.pddl \
-        --evaluator "hcea=cea()" \
-        --search "lazy_greedy([hcea], preferred=[hcea])" \
+        --search "let(hcea, cea(), lazy_greedy([hcea], preferred=[hcea]))"
                
 
 ### LAMA 2011
