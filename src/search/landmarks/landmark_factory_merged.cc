@@ -22,20 +22,22 @@ LandmarkFactoryMerged::LandmarkFactoryMerged(
     utils::verify_list_not_empty(lm_factories, "lm_factories");
 }
 
-LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(const Landmark &landmark) const {
-    if (!landmark.disjunctive && !landmark.conjunctive) {
-        const FactPair &lm_fact = landmark.facts[0];
-        if (lm_graph->contains_simple_landmark(lm_fact))
-            return &lm_graph->get_simple_landmark(lm_fact);
+LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(
+    const Landmark &landmark) const {
+    if (!landmark.is_disjunctive && !landmark.is_conjunctive) {
+        const FactPair &atom = landmark.atoms[0];
+        if (lm_graph->contains_simple_landmark(atom))
+            return &lm_graph->get_simple_landmark_node(atom);
         else
             return nullptr;
-    } else if (landmark.disjunctive) {
-        set<FactPair> lm_facts(landmark.facts.begin(), landmark.facts.end());
-        if (lm_graph->contains_identical_disjunctive_landmark(lm_facts))
-            return &lm_graph->get_disjunctive_landmark(landmark.facts[0]);
+    } else if (landmark.is_disjunctive) {
+        set<FactPair> atoms(
+            landmark.atoms.begin(), landmark.atoms.end());
+        if (lm_graph->contains_identical_disjunctive_landmark(atoms))
+            return &lm_graph->get_disjunctive_landmark_node(landmark.atoms[0]);
         else
             return nullptr;
-    } else if (landmark.conjunctive) {
+    } else if (landmark.is_conjunctive) {
         cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
         utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
@@ -60,16 +62,15 @@ void LandmarkFactoryMerged::generate_landmarks(
         log << "Adding simple landmarks" << endl;
     }
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
-        const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
         // TODO: loop over landmarks instead
-        for (auto &lm_node : nodes) {
+        for (const auto &lm_node : *lm_graphs[i]) {
             const Landmark &landmark = lm_node->get_landmark();
-            if (landmark.conjunctive) {
+            if (landmark.is_conjunctive) {
                 cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
                 utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
-            } else if (landmark.disjunctive) {
+            } else if (landmark.is_disjunctive) {
                 continue;
-            } else if (!lm_graph->contains_landmark(landmark.facts[0])) {
+            } else if (!lm_graph->contains_landmark(landmark.atoms[0])) {
                 Landmark copy(landmark);
                 lm_graph->add_landmark(move(copy));
             }
@@ -80,20 +81,22 @@ void LandmarkFactoryMerged::generate_landmarks(
         log << "Adding disjunctive landmarks" << endl;
     }
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
-        const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
-        for (auto &lm_node : nodes) {
+        for (const auto &lm_node : *lm_graphs[i]) {
             const Landmark &landmark = lm_node->get_landmark();
-            if (landmark.disjunctive) {
-/*
-  TODO: It seems that disjunctive landmarks are only added if none of the
-   facts it is made of is also there as a simple landmark. This should
-   either be more general (add only if none of its subset is already there)
-   or it should be done only upon request (e.g., heuristics that consider
-   orders might want to keep all landmarks).
-*/
+            if (landmark.is_disjunctive) {
+                /*
+                  TODO: It seems that disjunctive landmarks are only added if
+                  none of the atoms it is made of is also there as a simple
+                  landmark. This should either be more general (add only if none
+                  of its subset is already there) or it should be done only upon
+                  request (e.g., heuristics that consider orders might want to
+                  keep all landmarks).
+                */
                 bool exists =
-                    any_of(landmark.facts.begin(), landmark.facts.end(),
-                           [&](const FactPair &lm_fact) {return lm_graph->contains_landmark(lm_fact);});
+                    any_of(landmark.atoms.begin(), landmark.atoms.end(),
+                           [&](const FactPair &lm_fact) {
+                               return lm_graph->contains_landmark(lm_fact);
+                           });
                 if (!exists) {
                     Landmark copy(landmark);
                     lm_graph->add_landmark(move(copy));
@@ -106,16 +109,15 @@ void LandmarkFactoryMerged::generate_landmarks(
         log << "Adding orderings" << endl;
     }
     for (size_t i = 0; i < lm_graphs.size(); ++i) {
-        const LandmarkGraph::Nodes &nodes = lm_graphs[i]->get_nodes();
-        for (auto &from_orig : nodes) {
+        for (const auto &from_orig : *lm_graphs[i]) {
             LandmarkNode *from = get_matching_landmark(from_orig->get_landmark());
             if (from) {
                 for (const auto &to : from_orig->children) {
                     const LandmarkNode *to_orig = to.first;
-                    EdgeType e_type = to.second;
+                    OrderingType type = to.second;
                     LandmarkNode *to_node = get_matching_landmark(to_orig->get_landmark());
                     if (to_node) {
-                        edge_add(*from, *to_node, e_type);
+                        add_ordering(*from, *to_node, type);
                     } else {
                         if (log.is_at_least_normal()) {
                             log << "Discarded to ordering" << endl;
@@ -170,8 +172,8 @@ public:
             "supported if all components support them");
     }
 
-    virtual shared_ptr<LandmarkFactoryMerged>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<LandmarkFactoryMerged> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryMerged>(
             opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories"),
             get_landmark_factory_arguments_from_options(opts));

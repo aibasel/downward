@@ -5,12 +5,8 @@
 
 #include "../utils/logging.h"
 
-#include <list>
 #include <map>
 #include <memory>
-#include <set>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 class TaskProxy;
@@ -44,7 +40,7 @@ protected:
     std::shared_ptr<LandmarkGraph> lm_graph;
     bool achievers_calculated = false;
 
-    void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
+    void add_ordering(LandmarkNode &from, LandmarkNode &to, OrderingType type);
 
     void discard_all_orderings();
 

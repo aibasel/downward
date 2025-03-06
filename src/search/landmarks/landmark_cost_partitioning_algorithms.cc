@@ -46,7 +46,6 @@ double UniformCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
     vector<int> achieved_lms_by_op(operator_costs.size(), 0);
     vector<bool> action_landmarks(operator_costs.size(), false);
 
-    const LandmarkGraph::Nodes &nodes = lm_graph.get_nodes();
     ConstBitsetView past =
         lm_status_manager.get_past_landmarks(ancestor_state);
     ConstBitsetView future =
@@ -57,7 +56,7 @@ double UniformCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
     /* First pass:
        compute which op achieves how many landmarks. Along the way,
        mark action landmarks and add their cost to h. */
-    for (auto &node : nodes) {
+    for (const auto &node : lm_graph) {
         int id = node->get_id();
         if (future.test(id)) {
             const unordered_set<int> &achievers =
@@ -84,13 +83,13 @@ double UniformCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
     /* TODO: Replace with Landmarks (to do so, we need some way to access the
         status of a Landmark without access to the ID, which is part of
         LandmarkNode). */
-    vector<LandmarkNode *> relevant_lms;
+    vector<const LandmarkNode *> relevant_lms;
 
     /* Second pass:
        remove landmarks from consideration that are covered by
        an action landmark; decrease the counters accordingly
        so that no unnecessary cost is assigned to these landmarks. */
-    for (auto &node : nodes) {
+    for (const auto &node : lm_graph) {
         int id = node->get_id();
         if (future.test(id)) {
             const unordered_set<int> &achievers =

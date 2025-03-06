@@ -53,7 +53,7 @@ void LandmarkHeuristic::initialize(
     }
 
     if (use_preferred_operators) {
-        compute_landmarks_achieved_by_fact();
+        compute_landmarks_achieved_by_atom();
         /* Ideally, we should reuse the successor generator of the main
            task in cases where it's compatible. See issue564. */
         successor_generator =
@@ -66,7 +66,7 @@ bool LandmarkHeuristic::landmark_graph_has_cycle_of_natural_orderings() {
     int num_landmarks = lm_graph->get_num_landmarks();
     vector<bool> closed(num_landmarks, false);
     vector<bool> visited(num_landmarks, false);
-    for (auto &node : lm_graph->get_nodes()) {
+    for (const auto &node : *lm_graph) {
         if (depth_first_search_for_cycle_of_natural_orderings(
                 *node, closed, visited)) {
             return true;
@@ -86,7 +86,7 @@ bool LandmarkHeuristic::depth_first_search_for_cycle_of_natural_orderings(
 
     visited[id] = true;
     for (auto &child : node.children) {
-        if (child.second >= EdgeType::NATURAL) {
+        if (child.second >= OrderingType::NATURAL) {
             if (depth_first_search_for_cycle_of_natural_orderings(
                     *child.first, closed, visited)) {
                 return true;
@@ -115,16 +115,16 @@ void LandmarkHeuristic::compute_landmark_graph(
             << " are disjunctive and "
             << lm_graph->get_num_conjunctive_landmarks()
             << " are conjunctive." << endl;
-        log << "Landmark graph contains " << lm_graph->get_num_edges()
+        log << "Landmark graph contains " << lm_graph->get_num_orderings()
             << " orderings." << endl;
     }
 }
 
-void LandmarkHeuristic::compute_landmarks_achieved_by_fact() {
-    for (const auto &node : lm_graph->get_nodes()) {
+void LandmarkHeuristic::compute_landmarks_achieved_by_atom() {
+    for (const auto &node : *lm_graph) {
         const int id = node->get_id();
-        const Landmark &lm = node->get_landmark();
-        if (lm.conjunctive) {
+        const Landmark &landmark = node->get_landmark();
+        if (landmark.is_conjunctive) {
             /*
               TODO: We currently have no way to declare operators preferred
                based on conjunctive landmarks. We consider this a bug and want
@@ -132,11 +132,11 @@ void LandmarkHeuristic::compute_landmarks_achieved_by_fact() {
             */
             continue;
         }
-        for (const auto &fact_pair : lm.facts) {
-            if (landmarks_achieved_by_fact.contains(fact_pair)) {
-                landmarks_achieved_by_fact[fact_pair].insert(id);
+        for (const auto &atom : landmark.atoms) {
+            if (landmarks_achieved_by_atom.contains(atom)) {
+                landmarks_achieved_by_atom[atom].insert(id);
             } else {
-                landmarks_achieved_by_fact[fact_pair] = {id};
+                landmarks_achieved_by_atom[atom] = {id};
             }
         }
     }
@@ -148,9 +148,9 @@ bool LandmarkHeuristic::operator_is_preferred(
         if (!does_fire(effect, state)) {
             continue;
         }
-        const FactPair fact_pair = effect.get_fact().get_pair();
-        if (landmarks_achieved_by_fact.contains(fact_pair)) {
-            for (const int id : landmarks_achieved_by_fact[fact_pair]) {
+        const FactPair atom = effect.get_fact().get_pair();
+        if (landmarks_achieved_by_atom.contains(atom)) {
+            for (const int id : landmarks_achieved_by_atom[atom]) {
                 if (future.test(id)) {
                     return true;
                 }
