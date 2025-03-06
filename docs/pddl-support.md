@@ -38,12 +38,6 @@ supported beyond basic STRIPS, with some limitations mentioned below:
 -   **PDDL types:** `(either ...)` types are not supported
 -   **conditional effects:** Not all heuristics support conditional
     effects. See [Evaluator](search/Evaluator.md) for details.
-    Also, as of this writing, support for conditional effects is still
-    somewhat buggy/incomplete. Some constructs lead to translator
-    crashes. This is especially true for operators that have multiple
-    conditional effects affecting the same variable, or several
-    variables that the translator groups into a single finite-domain
-    variable.
 -   **axioms:** Not all heuristics support axioms. See
     [Evaluator](search/Evaluator.md) for details.
 -   **universal conditions:** Universal conditions in preconditions,
