@@ -95,7 +95,9 @@ for such cases.
 
 ### LAMA 2011
 
-     ./fast-downward.py --alias seq-sat-lama-2011 domain.pddl task.pddl
+```
+./fast-downward.py --alias seq-sat-lama-2011 domain.pddl task.pddl
+```
 
 runs the "LAMA 2011 configuration" of the planner. (Note that this is
 not really the same as "LAMA 2011" as it participated at IPC 2011
