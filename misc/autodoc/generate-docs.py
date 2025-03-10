@@ -29,7 +29,7 @@ TXT2TAGS_OPTIONS = {
 INDEX_TEXT = """
 # Search Plugins
 
-Fast Downward's search component consist of many different plugins of different
+Fast Downward's search component consists of many different plugins of different
 plugin types such as [search algorithms](SearchAlgorithm.md) or [evaluators](Evaluator.md).
 
 The following pages document the plugins of each type:
