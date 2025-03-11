@@ -16,7 +16,6 @@
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"
-#include "../utils/memory.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 #include "../utils/timer.h"
@@ -450,7 +449,7 @@ PatternCollectionInformation PatternCollectionGeneratorHillclimbing::compute_pat
         int goal_var_id = goal.get_variable().get_id();
         initial_pattern_collection.emplace_back(1, goal_var_id);
     }
-    current_pdbs = utils::make_unique_ptr<IncrementalCanonicalPDBs>(
+    current_pdbs = make_unique<IncrementalCanonicalPDBs>(
         task_proxy, initial_pattern_collection);
     if (log.is_at_least_normal()) {
         log << "Done calculating initial pattern collection: " << timer << endl;

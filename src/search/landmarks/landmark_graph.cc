@@ -2,8 +2,6 @@
 
 #include "landmark.h"
 
-#include "../utils/memory.h"
-
 #include <cassert>
 #include <list>
 #include <set>
@@ -93,7 +91,7 @@ LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark) {
                          return !contains_landmark(lm_fact);
                      }));
     unique_ptr<LandmarkNode> new_node =
-        utils::make_unique_ptr<LandmarkNode>(move(landmark));
+        make_unique<LandmarkNode>(move(landmark));
     LandmarkNode *new_node_p = new_node.get();
     const Landmark &lm = new_node->get_landmark();
     nodes.push_back(move(new_node));

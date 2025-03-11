@@ -8,7 +8,6 @@
 
 #include "../utils/collections.h"
 #include "../utils/logging.h"
-#include "../utils/memory.h"
 #include "../utils/system.h"
 
 #include <cassert>
@@ -175,13 +174,13 @@ int FactoredTransitionSystem::merge(
     transition_systems[index1] = nullptr;
     transition_systems[index2] = nullptr;
     mas_representations.push_back(
-        utils::make_unique_ptr<MergeAndShrinkRepresentationMerge>(
+        make_unique<MergeAndShrinkRepresentationMerge>(
             move(mas_representations[index1]),
             move(mas_representations[index2])));
     mas_representations[index1] = nullptr;
     mas_representations[index2] = nullptr;
     const TransitionSystem &new_ts = *transition_systems.back();
-    distances.push_back(utils::make_unique_ptr<Distances>(new_ts));
+    distances.push_back(make_unique<Distances>(new_ts));
     int new_index = transition_systems.size() - 1;
     // Restore the invariant that distances are computed.
     if (compute_init_distances || compute_goal_distances) {

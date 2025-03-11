@@ -4,7 +4,6 @@
 #include "merge_strategy_stateless.h"
 
 #include "../plugins/plugin.h"
-#include "../utils/memory.h"
 
 using namespace std;
 
@@ -20,7 +19,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(
     const TaskProxy &task_proxy,
     const FactoredTransitionSystem &fts) {
     merge_selector->initialize(task_proxy);
-    return utils::make_unique_ptr<MergeStrategyStateless>(fts, merge_selector);
+    return make_unique<MergeStrategyStateless>(fts, merge_selector);
 }
 
 string MergeStrategyFactoryStateless::name() const {

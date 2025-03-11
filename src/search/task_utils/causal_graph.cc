@@ -3,7 +3,6 @@
 #include "../task_proxy.h"
 
 #include "../utils/logging.h"
-#include "../utils/memory.h"
 #include "../utils/timer.h"
 
 #include <algorithm>
@@ -207,7 +206,7 @@ const CausalGraph &get_causal_graph(const AbstractTask *task) {
     if (causal_graph_cache.count(task) == 0) {
         TaskProxy task_proxy(*task);
         causal_graph_cache.insert(
-            make_pair(task, utils::make_unique_ptr<CausalGraph>(task_proxy)));
+            make_pair(task, make_unique<CausalGraph>(task_proxy)));
     }
     return *causal_graph_cache[task];
 }

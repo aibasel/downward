@@ -7,7 +7,6 @@
 #include "../utils/collections.h"
 #include "../utils/hash.h"
 #include "../utils/markup.h"
-#include "../utils/memory.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -145,13 +144,13 @@ TypeBasedOpenListFactory::TypeBasedOpenListFactory(
 
 unique_ptr<StateOpenList>
 TypeBasedOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<TypeBasedOpenList<StateOpenListEntry>>(
+    return make_unique<TypeBasedOpenList<StateOpenListEntry>>(
         evaluators, random_seed);
 }
 
 unique_ptr<EdgeOpenList>
 TypeBasedOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<TypeBasedOpenList<EdgeOpenListEntry>>(
+    return make_unique<TypeBasedOpenList<EdgeOpenListEntry>>(
         evaluators, random_seed);
 }
 
