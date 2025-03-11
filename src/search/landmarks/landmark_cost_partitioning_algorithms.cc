@@ -95,7 +95,7 @@ vector<const LandmarkNode *> UniformCostPartitioningAlgorithm::second_pass(
             if (covered_by_action_landmark) {
                 for (int op_id : achievers) {
                     assert(utils::in_bounds(
-                        op_id, landmarks_achieved_by_operator));
+                               op_id, landmarks_achieved_by_operator));
                     --landmarks_achieved_by_operator[op_id];
                 }
             } else {

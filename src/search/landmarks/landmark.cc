@@ -16,4 +16,8 @@ bool Landmark::is_true_in_state(const State &state) const {
             atoms.cbegin(), atoms.cend(), is_atom_true_in_state);
     }
 }
+
+bool Landmark::contains(const FactPair &atom) const {
+    return find(atoms.begin(), atoms.end(), atom) != atoms.end();
+}
 }
