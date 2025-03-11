@@ -124,12 +124,12 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
     }
     sort(preconditions.begin(), preconditions.end());
     for (EffectProxy effect : op.get_effects()) {
-         vector<Proposition *> precondition_propositions =
-             get_sorted_precondition_propositions(preconditions, effect);
+        vector<Proposition *> precondition_propositions =
+            get_sorted_precondition_propositions(preconditions, effect);
         auto [var, value] = effect.get_fact().get_pair();
-         Proposition *effect_proposition = &propositions[var][value];
-         unary_operators.emplace_back(
-             precondition_propositions, effect_proposition, op_or_axiom_id);
+        Proposition *effect_proposition = &propositions[var][value];
+        unary_operators.emplace_back(
+            precondition_propositions, effect_proposition, op_or_axiom_id);
 
         // Cross-reference unary operators.
         for (Proposition *pre : precondition_propositions) {

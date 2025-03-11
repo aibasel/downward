@@ -28,7 +28,7 @@ This version of Fast Downward has been tested with the following software versio
 | OS           | Python | C++ compiler                                                     | CMake |
 | ------------ | ------ | ---------------------------------------------------------------- | ----- |
 | Ubuntu 24.04 | 3.10   | GCC 14, Clang 18                                                 | 3.30  |
-| Ubuntu 22.04 | 3.10   | GCC 12, Clang 15                                                 | 3.30  |
+| Ubuntu 22.04 | 3.10   | GCC 12                                                           | 3.30  |
 | macOS 14     | 3.10   | AppleClang 15                                                    | 3.30  |
 | macOS 13     | 3.10   | AppleClang 15                                                    | 3.30  |
 | Windows 10   | 3.8    | Visual Studio Enterprise 2019 (MSVC 19.29) and 2022 (MSVC 19.41) | 3.30  |
