@@ -8,7 +8,6 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
-#include "../utils/memory.h"
 #include "../utils/timer.h"
 
 #include <fstream>

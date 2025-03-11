@@ -4,8 +4,6 @@
 #include "transition_system.h"
 #include "utils.h"
 
-#include "../utils/memory.h"
-
 #include <cassert>
 
 using namespace std;
@@ -26,7 +24,7 @@ void AbstractSearch::reset(int num_states) {
 }
 
 unique_ptr<Solution> AbstractSearch::extract_solution(int init_id, int goal_id) const {
-    unique_ptr<Solution> solution = utils::make_unique_ptr<Solution>();
+    unique_ptr<Solution> solution = make_unique<Solution>();
     int current_id = goal_id;
     while (current_id != init_id) {
         const Transition &prev = search_info[current_id].get_incoming_transition();

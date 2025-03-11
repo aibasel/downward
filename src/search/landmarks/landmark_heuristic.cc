@@ -42,7 +42,7 @@ void LandmarkHeuristic::initialize(
     }
 
     compute_landmark_graph(lm_factory);
-    lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(
+    lm_status_manager = make_unique<LandmarkStatusManager>(
         *lm_graph, prog_goal, prog_gn, prog_r);
 
     initial_landmark_graph_has_cycle_of_natural_orderings =
@@ -57,8 +57,7 @@ void LandmarkHeuristic::initialize(
         /* Ideally, we should reuse the successor generator of the main
            task in cases where it's compatible. See issue564. */
         successor_generator =
-            utils::make_unique_ptr<successor_generator::SuccessorGenerator>(
-                task_proxy);
+            make_unique<successor_generator::SuccessorGenerator>(task_proxy);
     }
 }
 

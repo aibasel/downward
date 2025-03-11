@@ -95,7 +95,7 @@ DecoratedASTNodePtr LetNode::decorate(DecorateContext &context) const {
         decorated_nested_value = nested_value->decorate(context);
         context.remove_variable(variable_name);
     }
-    return utils::make_unique_ptr<DecoratedLetNode>(
+    return make_unique<DecoratedLetNode>(
         variable_name, move(decorated_definition), move(decorated_nested_value));
 }
 
@@ -131,7 +131,7 @@ static DecoratedASTNodePtr decorate_and_convert(
     if (node_type != target_type) {
         utils::TraceBlock block(context, "Adding casting node");
         if (node_type.can_convert_into(target_type)) {
-            return utils::make_unique_ptr<ConvertNode>(
+            return make_unique<ConvertNode>(
                 move(decorated_node), node_type, target_type);
         } else {
             ostringstream message;
@@ -170,7 +170,7 @@ bool FunctionCallNode::collect_argument(
             decorated_max_node = decorate_and_convert(
                 *max_node, arg_info.type, context);
         }
-        decorated_arg = utils::make_unique_ptr<CheckBoundsNode>(
+        decorated_arg = make_unique<CheckBoundsNode>(
             move(decorated_arg), move(decorated_min_node), move(decorated_max_node));
     }
     FunctionArgument function_arg(key, move(decorated_arg), arg_info.lazy_construction);
@@ -307,8 +307,8 @@ DecoratedASTNodePtr FunctionCallNode::decorate(DecorateContext &context) const {
     for (auto &key_and_arg : arguments_by_key) {
         arguments.push_back(move(key_and_arg.second));
     }
-    return utils::make_unique_ptr<DecoratedFunctionCallNode>(feature, move(arguments),
-                                                             unparsed_config);
+    return make_unique<DecoratedFunctionCallNode>(feature, move(arguments),
+                                                  unparsed_config);
 }
 
 void FunctionCallNode::dump(string indent) const {
@@ -359,13 +359,13 @@ DecoratedASTNodePtr ListNode::decorate(DecorateContext &context) const {
             DecoratedASTNodePtr decorated_element_node = elements[i]->decorate(context);
             if (element_type != *common_element_type) {
                 assert(element_type.can_convert_into(*common_element_type));
-                decorated_element_node = utils::make_unique_ptr<ConvertNode>(
+                decorated_element_node = make_unique<ConvertNode>(
                     move(decorated_element_node), element_type, *common_element_type);
             }
             decorated_elements.push_back(move(decorated_element_node));
         }
     }
-    return utils::make_unique_ptr<DecoratedListNode>(move(decorated_elements));
+    return make_unique<DecoratedListNode>(move(decorated_elements));
 }
 
 void ListNode::dump(string indent) const {
@@ -414,20 +414,20 @@ DecoratedASTNodePtr LiteralNode::decorate(DecorateContext &context) const {
             ABORT("A non-identifier token was defined as variable.");
         }
         string variable_name = value.content;
-        return utils::make_unique_ptr<VariableNode>(variable_name);
+        return make_unique<VariableNode>(variable_name);
     }
 
     switch (value.type) {
     case TokenType::BOOLEAN:
-        return utils::make_unique_ptr<BoolLiteralNode>(value.content);
+        return make_unique<BoolLiteralNode>(value.content);
     case TokenType::STRING:
-        return utils::make_unique_ptr<StringLiteralNode>(value.content);
+        return make_unique<StringLiteralNode>(value.content);
     case TokenType::INTEGER:
-        return utils::make_unique_ptr<IntLiteralNode>(value.content);
+        return make_unique<IntLiteralNode>(value.content);
     case TokenType::FLOAT:
-        return utils::make_unique_ptr<FloatLiteralNode>(value.content);
+        return make_unique<FloatLiteralNode>(value.content);
     case TokenType::IDENTIFIER:
-        return utils::make_unique_ptr<SymbolNode>(value.content);
+        return make_unique<SymbolNode>(value.content);
     default:
         ABORT("LiteralNode has unexpected token type '" +
               token_type_name(value.type) + "'.");

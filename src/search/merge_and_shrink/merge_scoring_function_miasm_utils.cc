@@ -7,7 +7,6 @@
 #include "utils.h"
 
 #include "../utils/logging.h"
-#include "../utils/memory.h"
 
 #include <algorithm>
 
@@ -45,7 +44,7 @@ static unique_ptr<TransitionSystem> copy_and_shrink_ts(
         vector<int> abstraction_mapping = compute_abstraction_mapping(
             ts.get_size(), equivalence_relation);
         unique_ptr<TransitionSystem> ts_copy =
-            utils::make_unique_ptr<TransitionSystem>(ts);
+            make_unique<TransitionSystem>(ts);
         ts_copy->apply_abstraction(
             equivalence_relation, abstraction_mapping, log);
         return ts_copy;

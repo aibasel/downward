@@ -4,7 +4,6 @@
 #include "../open_list.h"
 
 #include "../plugins/plugin.h"
-#include "../utils/memory.h"
 
 #include <cassert>
 #include <deque>
@@ -151,13 +150,13 @@ TieBreakingOpenListFactory::TieBreakingOpenListFactory(
 
 unique_ptr<StateOpenList>
 TieBreakingOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<TieBreakingOpenList<StateOpenListEntry>>(
+    return make_unique<TieBreakingOpenList<StateOpenListEntry>>(
         evals, unsafe_pruning, pref_only);
 }
 
 unique_ptr<EdgeOpenList>
 TieBreakingOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<TieBreakingOpenList<EdgeOpenListEntry>>(
+    return make_unique<TieBreakingOpenList<EdgeOpenListEntry>>(
         evals, unsafe_pruning, pref_only);
 }
 

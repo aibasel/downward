@@ -11,7 +11,6 @@
 
 #include "../utils/collections.h"
 #include "../utils/logging.h"
-#include "../utils/memory.h"
 
 #include <algorithm>
 #include <cassert>
@@ -113,7 +112,7 @@ unique_ptr<Labels> FTSFactory::create_labels() {
             label_costs.push_back(op.get_cost());
         }
     }
-    return utils::make_unique_ptr<Labels>(move(label_costs), max_num_labels);
+    return make_unique<Labels>(move(label_costs), max_num_labels);
 }
 
 void FTSFactory::build_state_data(VariableProxy var) {
@@ -388,7 +387,7 @@ vector<unique_ptr<TransitionSystem>> FTSFactory::create_transition_systems(const
 
     for (int var_id = 0; var_id < num_variables; ++var_id) {
         TransitionSystemData &ts_data = transition_system_data_by_var[var_id];
-        result.push_back(utils::make_unique_ptr<TransitionSystem>(
+        result.push_back(make_unique<TransitionSystem>(
                              ts_data.num_variables,
                              move(ts_data.incorporated_variables),
                              labels,
@@ -414,7 +413,7 @@ vector<unique_ptr<MergeAndShrinkRepresentation>> FTSFactory::create_mas_represen
     for (int var_id = 0; var_id < num_variables; ++var_id) {
         int range = task_proxy.get_variables()[var_id].get_domain_size();
         result.push_back(
-            utils::make_unique_ptr<MergeAndShrinkRepresentationLeaf>(var_id, range));
+            make_unique<MergeAndShrinkRepresentationLeaf>(var_id, range));
     }
     return result;
 }
@@ -431,7 +430,7 @@ vector<unique_ptr<Distances>> FTSFactory::create_distances(
 
     for (int var_id = 0; var_id < num_variables; ++var_id) {
         result.push_back(
-            utils::make_unique_ptr<Distances>(*transition_systems[var_id]));
+            make_unique<Distances>(*transition_systems[var_id]));
     }
     return result;
 }
