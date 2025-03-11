@@ -96,7 +96,8 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
             // Add order: lm ->_{nat} lm
             assert(node->parents.find(lm_node) == node->parents.end());
             assert(lm_node->children.find(node) == lm_node->children.end());
-            add_ordering(*node, *lm_node, OrderingType::NATURAL);
+            add_ordering_or_replace_if_stronger(
+                *node, *lm_node, OrderingType::NATURAL);
         }
     }
 }

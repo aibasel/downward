@@ -63,7 +63,8 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
                 if (landmark == landmark2 || landmark2.is_disjunctive)
                     continue;
                 if (interferes(task_proxy, landmark2, landmark)) {
-                    add_ordering(*node2_p, *node_p, OrderingType::REASONABLE);
+                    add_ordering_or_replace_if_stronger(
+                        *node2_p, *node_p, OrderingType::REASONABLE);
                 }
             }
         } else {
@@ -97,7 +98,8 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
                 if (landmark == landmark2 || landmark2.is_disjunctive)
                     continue;
                 if (interferes(task_proxy, landmark2, landmark)) {
-                    add_ordering(*node2_p, *node_p, OrderingType::REASONABLE);
+                    add_ordering_or_replace_if_stronger(
+                        *node2_p, *node_p, OrderingType::REASONABLE);
                 }
             }
         }

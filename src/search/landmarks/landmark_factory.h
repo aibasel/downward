@@ -21,7 +21,17 @@ class LandmarkFactory {
 
     virtual void generate_landmarks(
         const std::shared_ptr<AbstractTask> &task) = 0;
+    void log_landmark_graph_info(
+        const TaskProxy &task_proxy,
+        const utils::Timer &landmark_generation_timer) const;
+
+    void resize_operators_providing_effect(const TaskProxy &task_proxy);
+    void add_operator_or_axiom_providing_effects(
+        const OperatorProxy &op_or_axiom);
     void compute_operators_providing_effect(const TaskProxy &task_proxy);
+
+    void add_ordering(
+        LandmarkNode &from, LandmarkNode &to, OrderingType type) const;
 
 protected:
     mutable utils::LogProxy log;
@@ -30,9 +40,10 @@ protected:
 
     explicit LandmarkFactory(utils::Verbosity verbosity);
 
-    void add_ordering(LandmarkNode &from, LandmarkNode &to, OrderingType type);
+    void add_ordering_or_replace_if_stronger(
+        LandmarkNode &from, LandmarkNode &to, OrderingType type) const;
 
-    void discard_all_orderings();
+    void discard_all_orderings() const;
 
     const std::vector<int> &get_operators_including_effect(
         const FactPair &eff) const {

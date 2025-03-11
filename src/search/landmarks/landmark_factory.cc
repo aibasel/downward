@@ -21,66 +21,87 @@ LandmarkFactory::LandmarkFactory(utils::Verbosity verbosity)
     : log(get_log_for_verbosity(verbosity)), landmark_graph(nullptr) {
 }
 
-void LandmarkFactory::compute_operators_providing_effect(
+void LandmarkFactory::resize_operators_providing_effect(
     const TaskProxy &task_proxy) {
-    // TODO: Update comment.
-    /* Build datastructures for efficient landmark computation. Map propositions
-    to the operators that achieve them or have them as preconditions */
-
     VariablesProxy variables = task_proxy.get_variables();
     operators_providing_effect.resize(variables.size());
-    for (VariableProxy var : variables) {
+    for (const VariableProxy &var : variables) {
         operators_providing_effect[var.get_id()].resize(var.get_domain_size());
-    }
-    OperatorsProxy operators = task_proxy.get_operators();
-    for (OperatorProxy op : operators) {
-        const EffectsProxy effects = op.get_effects();
-        for (EffectProxy effect : effects) {
-            const FactProxy effect_fact = effect.get_fact();
-            operators_providing_effect[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
-                get_operator_or_axiom_id(op));
-        }
-    }
-    for (OperatorProxy axiom : task_proxy.get_axioms()) {
-        const EffectsProxy effects = axiom.get_effects();
-        for (EffectProxy effect : effects) {
-            const FactProxy effect_fact = effect.get_fact();
-            operators_providing_effect[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
-                get_operator_or_axiom_id(axiom));
-        }
     }
 }
 
-void LandmarkFactory::add_ordering(LandmarkNode &from, LandmarkNode &to,
-                                   OrderingType type) {
-    /* Adds an ordering in the landmarks graph. If an ordering between the same
-       landmarks is already present, the stronger ordering type wins. */
-    assert(&from != &to);
-
-    // If ordering already exists, remove if weaker.
-    if (from.children.find(&to) != from.children.end() && from.children.find(
-            &to)->second < type) {
-        from.children.erase(&to);
-        assert(to.parents.find(&from) != to.parents.end());
-        to.parents.erase(&from);
-
-        assert(to.parents.find(&from) == to.parents.end());
-        assert(from.children.find(&to) == from.children.end());
+void LandmarkFactory::add_operator_or_axiom_providing_effects(
+    const OperatorProxy &op_or_axiom) {
+    EffectsProxy effects = op_or_axiom.get_effects();
+    for (EffectProxy effect : effects) {
+        auto [var, value] = effect.get_fact().get_pair();
+        operators_providing_effect[var][value].push_back(
+            get_operator_or_axiom_id(op_or_axiom));
     }
-    // If ordering does not exist (or has just been removed), insert.
-    if (from.children.find(&to) == from.children.end()) {
-        assert(to.parents.find(&from) == to.parents.end());
+}
+
+/* Build datastructures for efficient landmark computation: Map propositions to
+   the operators and axioms that achieve them. */
+void LandmarkFactory::compute_operators_providing_effect(
+    const TaskProxy &task_proxy) {
+    resize_operators_providing_effect(task_proxy);
+    for (const OperatorProxy &op : task_proxy.get_operators()) {
+        add_operator_or_axiom_providing_effects(op);
+    }
+    for (const OperatorProxy &axiom : task_proxy.get_axioms()) {
+        add_operator_or_axiom_providing_effects(axiom);
+    }
+}
+
+static bool weaker_ordering_exists(
+    LandmarkNode &from, LandmarkNode &to, OrderingType type) {
+    auto it = from.children.find(&to);
+    if (it == from.children.end()) {
+        return false;
+    } else {
+        return it->second < type;
+    }
+}
+
+static void remove_weaker_ordering(LandmarkNode &from, LandmarkNode &to) {
+    from.children.erase(&to);
+    assert(to.parents.find(&from) != to.parents.end());
+    to.parents.erase(&from);
+
+    assert(to.parents.find(&from) == to.parents.end());
+    assert(from.children.find(&to) == from.children.end());
+}
+
+void LandmarkFactory::add_ordering(
+    LandmarkNode &from, LandmarkNode &to, OrderingType type) const {
+    if (from.children.contains(&to)) {
+        assert(to.parents.contains(&from));
         from.children.emplace(&to, type);
         to.parents.emplace(&from, type);
         if (log.is_at_least_debug()) {
             log << "added parent with address " << &from << endl;
         }
     }
-    assert(from.children.find(&to) != from.children.end());
-    assert(to.parents.find(&from) != to.parents.end());
 }
 
-void LandmarkFactory::discard_all_orderings() {
+/* Adds an ordering in the landmark graph. If an ordering between the same
+   landmarks is already present, the stronger ordering type wins. */
+void LandmarkFactory::add_ordering_or_replace_if_stronger(
+    LandmarkNode &from, LandmarkNode &to, OrderingType type) const {
+    // TODO: Understand why self-loops are not allowed.
+    assert(&from != &to);
+
+    if (weaker_ordering_exists(from, to, type)) {
+        remove_weaker_ordering(from, to);
+    }
+    if (!from.children.contains(&to)) {
+        add_ordering(from, to, type);
+    }
+    assert(from.children.contains(&to));
+    assert(to.parents.contains(&from));
+}
+
+void LandmarkFactory::discard_all_orderings() const {
     if (log.is_at_least_normal()) {
         log << "Removing all orderings." << endl;
     }
@@ -90,26 +111,51 @@ void LandmarkFactory::discard_all_orderings() {
     }
 }
 
-/*
-  TODO: Update this comment
+void LandmarkFactory::log_landmark_graph_info(
+    const TaskProxy &task_proxy,
+    const utils::Timer &landmark_generation_timer) const {
+    if (log.is_at_least_normal()) {
+        log << "Landmarks generation time: "
+            << landmark_generation_timer << endl;
+        if (landmark_graph->get_num_landmarks() == 0) {
+            if (log.is_warning()) {
+                log << "Warning! No landmarks found. Task unsolvable?" << endl;
+            }
+        } else {
+            log << "Discovered " << landmark_graph->get_num_landmarks()
+                << " landmarks, of which "
+                << landmark_graph->get_num_disjunctive_landmarks()
+                << " are disjunctive and "
+                << landmark_graph->get_num_conjunctive_landmarks()
+                << " are conjunctive.\nThere are "
+                << landmark_graph->get_num_orderings()
+                << " landmark orderings." << endl;
+        }
+    }
 
+    if (log.is_at_least_debug()) {
+        dump_landmark_graph(task_proxy, *landmark_graph, log);
+    }
+}
+
+/*
   Note: To allow reusing landmark graphs, we use the following temporary
   solution.
 
-  Landmark factories cache the first landmark graph they compute, so
-  each call to this function returns the same graph. Asking for landmark graphs
-  of different tasks is an error and will exit with SEARCH_UNSUPPORTED.
+  Landmark factories cache the first landmark graph they compute, so each call
+  to this function returns the same graph. Asking for landmark graphs of
+  different tasks is an error and will exit with SEARCH_UNSUPPORTED.
 
-  If you want to compute different landmark graphs for different
-  Exploration objects, you have to use separate landmark factories.
+  If you want to compute different landmark graphs for different Exploration
+  objects, you have to use separate landmark factories.
 
-  This solution remains temporary as long as the question of when and
-  how to reuse landmark graphs is open.
+  This solution remains temporary as long as the question of when and how to
+  reuse landmark graphs is open.
 
-  As all heuristics will work on task transformations in the future,
-  this function will also get access to a TaskProxy. Then we need to
-  ensure that the TaskProxy used by the Exploration object is the same
-  as the TaskProxy object passed to this function.
+  As all heuristics will work on task transformations in the future, this
+  function will also get access to a TaskProxy. Then we need to ensure that the
+  TaskProxy used by the Exploration object is the same as the TaskProxy object
+  passed to this function.
 */
 shared_ptr<LandmarkGraph> LandmarkFactory::compute_landmark_graph(
     const shared_ptr<AbstractTask> &task) {
@@ -131,24 +177,7 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_landmark_graph(
     compute_operators_providing_effect(task_proxy);
     generate_landmarks(task);
 
-    if (log.is_at_least_normal()) {
-        log << "Landmarks generation time: " << landmark_generation_timer << endl;
-        if (landmark_graph->get_num_landmarks() == 0) {
-            if (log.is_warning()) {
-                log << "Warning! No landmarks found. Task unsolvable?" << endl;
-            }
-        } else {
-            log << "Discovered " << landmark_graph->get_num_landmarks()
-                << " landmarks, of which " << landmark_graph->get_num_disjunctive_landmarks()
-                << " are disjunctive and "
-                << landmark_graph->get_num_conjunctive_landmarks() << " are conjunctive." << endl;
-            log << landmark_graph->get_num_orderings() << " orderings" << endl;
-        }
-    }
-
-    if (log.is_at_least_debug()) {
-        dump_landmark_graph(task_proxy, *landmark_graph, log);
-    }
+    log_landmark_graph_info(task_proxy, landmark_generation_timer);
     return landmark_graph;
 }
 

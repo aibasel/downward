@@ -119,7 +119,8 @@ void LandmarkFactoryMerged::generate_landmarks(
                     OrderingType type = to.second;
                     LandmarkNode *to_node = get_matching_landmark(to_orig->get_landmark());
                     if (to_node) {
-                        add_ordering(*from, *to_node, type);
+                        add_ordering_or_replace_if_stronger(
+                            *from, *to_node, type);
                     } else {
                         if (log.is_at_least_normal()) {
                             log << "Discarded to ordering" << endl;

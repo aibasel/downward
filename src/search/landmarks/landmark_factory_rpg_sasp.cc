@@ -164,7 +164,7 @@ void LandmarkFactoryRpgSasp::found_simple_landmark_and_ordering(
     if (landmark_graph->contains_simple_landmark(atom)) {
         LandmarkNode &simple_landmark =
             landmark_graph->get_simple_landmark_node(atom);
-        add_ordering(simple_landmark, node, type);
+        add_ordering_or_replace_if_stronger(simple_landmark, node, type);
         return;
     }
 
@@ -204,18 +204,19 @@ void LandmarkFactoryRpgSasp::found_simple_landmark_and_ordering(
         LandmarkNode &simple_landmark =
             landmark_graph->add_landmark(move(landmark));
         open_landmarks.push_back(&simple_landmark);
-        add_ordering(simple_landmark, node, type);
+        add_ordering_or_replace_if_stronger(simple_landmark, node, type);
 
         /* Add incoming orderings of replaced `disjunctive_landmark_node` as
            natural orderings to `simple_landmark`. */
         for (LandmarkNode *pred : predecessors) {
-            add_ordering(*pred, simple_landmark, OrderingType::NATURAL);
+            add_ordering_or_replace_if_stronger(
+                *pred, simple_landmark, OrderingType::NATURAL);
         }
     } else {
         LandmarkNode &simple_landmark =
             landmark_graph->add_landmark(move(landmark));
         open_landmarks.push_back(&simple_landmark);
-        add_ordering(simple_landmark, node, type);
+        add_ordering_or_replace_if_stronger(simple_landmark, node, type);
     }
 }
 
@@ -241,7 +242,7 @@ void LandmarkFactoryRpgSasp::found_disjunctive_landmark_and_ordering(
         if (landmark_graph->contains_identical_disjunctive_landmark(atoms)) {
             new_landmark_node =
                 &landmark_graph->get_disjunctive_landmark_node(*atoms.begin());
-            add_ordering(*new_landmark_node, node, type);
+            add_ordering_or_replace_if_stronger(*new_landmark_node, node, type);
             return;
         }
         // Landmark overlaps with existing disjunctive landmark, do not add.
@@ -253,7 +254,7 @@ void LandmarkFactoryRpgSasp::found_disjunctive_landmark_and_ordering(
                                        atoms.end()), true, false);
     new_landmark_node = &landmark_graph->add_landmark(move(landmark));
     open_landmarks.push_back(new_landmark_node);
-    add_ordering(*new_landmark_node, node, type);
+    add_ordering_or_replace_if_stronger(*new_landmark_node, node, type);
 }
 
 void LandmarkFactoryRpgSasp::compute_shared_preconditions(
@@ -629,7 +630,8 @@ void LandmarkFactoryRpgSasp::add_landmark_forward_orderings() {
             if (landmark_graph->contains_simple_landmark(node2_pair)) {
                 LandmarkNode &node2 =
                     landmark_graph->get_simple_landmark_node(node2_pair);
-                add_ordering(*node, node2, OrderingType::NATURAL);
+                add_ordering_or_replace_if_stronger(
+                    *node, node2, OrderingType::NATURAL);
             }
         }
         forward_orders[node.get()].clear();

@@ -995,12 +995,14 @@ void LandmarkFactoryHM::generate_landmarks(
                 assert(landmark_node_table.find(landmark) != landmark_node_table.end());
                 assert(landmark_node_table.find(set_index) != landmark_node_table.end());
 
-                add_ordering(*landmark_node_table[landmark], *landmark_node_table[set_index],
-                             OrderingType::NATURAL);
+                add_ordering_or_replace_if_stronger(
+                    *landmark_node_table[landmark],
+                    *landmark_node_table[set_index], OrderingType::NATURAL);
             }
             for (int gn : h_m_table_[set_index].necessary) {
-                add_ordering(*landmark_node_table[gn], *landmark_node_table[set_index],
-                             OrderingType::GREEDY_NECESSARY);
+                add_ordering_or_replace_if_stronger(
+                    *landmark_node_table[gn], *landmark_node_table[set_index],
+                    OrderingType::GREEDY_NECESSARY);
             }
         }
     }
