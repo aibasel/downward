@@ -126,10 +126,17 @@ class LandmarkFactoryHM : public LandmarkFactory {
      */
     std::vector<std::pair<int, std::vector<int>>> unsatisfied_precondition_count;
 
+    void get_m_sets_including_current_var(
+        const VariablesProxy &variables, int num_included, int current_var,
+        Propositions &current, std::vector<Propositions> &subsets);
     void get_m_sets(
         const VariablesProxy &variables, int num_included, int current_var,
         Propositions &current, std::vector<Propositions> &subsets);
 
+    void get_m_sets_of_set_including_current_proposition(
+        const VariablesProxy &variables, int num_included,
+        int current_index, Propositions &current,
+        std::vector<Propositions> &subsets, const Propositions &superset);
     void get_m_sets_of_set(
         const VariablesProxy &variables, int num_included,
         int current_index, Propositions &current,
