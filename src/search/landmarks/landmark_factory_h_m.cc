@@ -11,20 +11,20 @@
 #include "../utils/logging.h"
 #include "../utils/system.h"
 
-#include <list>
 #include <set>
 
 using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
+// TODO: Can we turn these set operations into static functions?
 // alist = alist \cup other
 template<typename T>
 void union_with(list<T> &alist, const list<T> &other) {
-    typename list<T>::iterator it1 = alist.begin();
-    typename list<T>::const_iterator it2 = other.begin();
+    auto it1 = alist.begin();
+    auto it2 = other.begin();
 
-    while ((it1 != alist.end()) && (it2 != other.end())) {
+    while (it1 != alist.end() && it2 != other.end()) {
         if (*it1 < *it2) {
             ++it1;
         } else if (*it1 > *it2) {
@@ -41,12 +41,12 @@ void union_with(list<T> &alist, const list<T> &other) {
 // alist = alist \cap other
 template<typename T>
 void intersect_with(list<T> &alist, const list<T> &other) {
-    typename list<T>::iterator it1 = alist.begin(), tmp;
-    typename list<T>::const_iterator it2 = other.begin();
+    auto it1 = alist.begin();
+    auto it2 = other.begin();
 
-    while ((it1 != alist.end()) && (it2 != other.end())) {
+    while (it1 != alist.end() && it2 != other.end()) {
         if (*it1 < *it2) {
-            tmp = it1;
+            auto tmp = it1;
             ++tmp;
             alist.erase(it1);
             it1 = tmp;
@@ -63,16 +63,16 @@ void intersect_with(list<T> &alist, const list<T> &other) {
 // alist = alist \setminus other
 template<typename T>
 void set_minus(list<T> &alist, const list<T> &other) {
-    typename list<T>::iterator it1 = alist.begin(), tmp;
-    typename list<T>::const_iterator it2 = other.begin();
+    auto it1 = alist.begin();
+    auto it2 = other.begin();
 
-    while ((it1 != alist.end()) && (it2 != other.end())) {
+    while (it1 != alist.end() && it2 != other.end()) {
         if (*it1 < *it2) {
             ++it1;
         } else if (*it1 > *it2) {
             ++it2;
         } else {
-            tmp = it1;
+            auto tmp = it1;
             ++tmp;
             alist.erase(it1);
             it1 = tmp;
@@ -84,7 +84,7 @@ void set_minus(list<T> &alist, const list<T> &other) {
 // alist = alist \cup {val}
 template<typename T>
 void insert_into(list<T> &alist, const T &val) {
-    typename list<T>::iterator it1 = alist.begin();
+    auto it1 = alist.begin();
 
     while (it1 != alist.end()) {
         if (*it1 > val) {
