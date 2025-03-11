@@ -17,28 +17,19 @@ class Feature;
 }
 
 namespace landmarks {
-/*
-  TODO: Change order to private -> protected -> public
-   (omitted so far to minimize diff)
-*/
 class LandmarkFactory {
-public:
-    virtual ~LandmarkFactory() = default;
-    LandmarkFactory(const LandmarkFactory &) = delete;
+    AbstractTask *landmark_graph_task;
+    std::vector<std::vector<std::vector<int>>> operators_eff_lookup;
 
-    std::shared_ptr<LandmarkGraph> compute_landmark_graph(const std::shared_ptr<AbstractTask> &task);
-
-    virtual bool supports_conditional_effects() const = 0;
-
-    bool achievers_are_calculated() const {
-        return achievers_calculated;
-    }
+    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) = 0;
+    void generate_operators_lookups(const TaskProxy &task_proxy);
 
 protected:
-    explicit LandmarkFactory(utils::Verbosity verbosity);
     mutable utils::LogProxy log;
     std::shared_ptr<LandmarkGraph> landmark_graph;
     bool achievers_calculated = false;
+
+    explicit LandmarkFactory(utils::Verbosity verbosity);
 
     void add_ordering(LandmarkNode &from, LandmarkNode &to, OrderingType type);
 
@@ -51,12 +42,17 @@ protected:
         return operators_eff_lookup[eff.var][eff.value];
     }
 
-private:
-    AbstractTask *landmark_graph_task;
-    std::vector<std::vector<std::vector<int>>> operators_eff_lookup;
+public:
+    virtual ~LandmarkFactory() = default;
+    LandmarkFactory(const LandmarkFactory &) = delete;
 
-    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) = 0;
-    void generate_operators_lookups(const TaskProxy &task_proxy);
+    std::shared_ptr<LandmarkGraph> compute_landmark_graph(const std::shared_ptr<AbstractTask> &task);
+
+    virtual bool supports_conditional_effects() const = 0;
+
+    bool achievers_are_calculated() const {
+        return achievers_calculated;
+    }
 };
 
 extern void add_landmark_factory_options_to_feature(plugins::Feature &feature);
