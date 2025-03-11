@@ -91,6 +91,8 @@ using PackedStateBin = int_packer::IntPacker::Bin;
   task_properties.h module.
 */
 
+/* TODO: Implement this in a separate issue and merge into this before
+    merging issue992 into main. */
 template<typename T>
 concept item_typed = requires {
     typename T::ItemType;
