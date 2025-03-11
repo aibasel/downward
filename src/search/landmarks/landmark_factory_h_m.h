@@ -153,18 +153,16 @@ class LandmarkFactoryHM : public LandmarkFactory {
         Propositions &current, std::vector<Propositions> &subsets,
         const Propositions &superset1, const Propositions &superset2);
 
-    void get_m_sets(const VariablesProxy &variables,
-                    std::vector<Propositions> &subsets);
+    std::vector<Propositions> get_m_sets(const VariablesProxy &variables);
 
-    void get_m_sets(
-        const VariablesProxy &variables, std::vector<Propositions> &subsets,
-        const Propositions &superset);
+    std::vector<Propositions> get_m_sets(
+        const VariablesProxy &variables, const Propositions &superset);
 
-    void get_m_sets(const VariablesProxy &variables,
-                    std::vector<Propositions> &subsets, const State &state);
+    std::vector<Propositions> get_m_sets(
+        const VariablesProxy &variables, const State &state);
 
-    void get_split_m_sets(
-        const VariablesProxy &variables, std::vector<Propositions> &subsets,
+    std::vector<Propositions> get_split_m_sets(
+        const VariablesProxy &variables,
         const Propositions &superset1, const Propositions &superset2);
 
     void print_proposition(

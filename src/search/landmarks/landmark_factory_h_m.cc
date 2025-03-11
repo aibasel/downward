@@ -204,8 +204,8 @@ void LandmarkFactoryHM::get_split_m_sets_including_current_proposition_from_firs
     }
 }
 
-/* Get subsets of `superset1` \cup `superset2` with size m or less, such that
-   all subsets have >= 1 elements from each superset. */
+/* Get subsets of `superset1` \cup `superset2` with size m or less, such
+   that all subsets have >= 1 elements from each superset. */
 void LandmarkFactoryHM::get_split_m_sets(
     const VariablesProxy &variables, int num_included1, int num_included2,
     int current_index1, int current_index2,
@@ -239,7 +239,7 @@ void LandmarkFactoryHM::get_split_m_sets(
         /*
           Switching order of 1 and 2 here to avoid code duplication in the form
           of a function `get_split_m_sets_including_current_proposition_from_second`
-          analogus to `get_split_m_sets_including_current_proposition_from_first`.
+          analogous to `get_split_m_sets_including_current_proposition_from_first`.
         */
         get_split_m_sets_including_current_proposition_from_first(
             variables, num_included2, num_included1, current_index2,
@@ -252,28 +252,35 @@ void LandmarkFactoryHM::get_split_m_sets(
 }
 
 // Get partial assignments of size <= m in the problem.
-void LandmarkFactoryHM::get_m_sets(
-    const VariablesProxy &variables, vector<Propositions> &subsets) {
+vector<Propositions> LandmarkFactoryHM::get_m_sets(
+    const VariablesProxy &variables) {
     Propositions c;
+    vector<Propositions> subsets;
     get_m_sets(variables, 0, 0, c, subsets);
+    return subsets;
 }
 
 // Get subsets of `superset` with size <= m.
-void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables,
-                                   vector<Propositions> &subsets,
-                                   const Propositions &superset) {
+vector<Propositions> LandmarkFactoryHM::get_m_sets(
+    const VariablesProxy &variables, const Propositions &superset) {
     Propositions c;
+    vector<Propositions> subsets;
     get_m_sets_of_set(variables, 0, 0, c, subsets, superset);
+    return subsets;
 }
 
-// second function to get subsets of size at most m that
-// have at least one element in ss1 and same in ss2
-// assume disjoint
-void LandmarkFactoryHM::get_split_m_sets(
+/*
+  Get subsets of size <= m such that at least one element from `superset1` and
+  at least one element from `superset2` are included, except if a sets is empty.
+  We assume `superset1` and `superset2` are disjoint.
+  TODO: Assert that supersets are disjoint. Should the variables occurring in
+    the sets be disjoint, rather than their propositions?
+*/
+vector<Propositions> LandmarkFactoryHM::get_split_m_sets(
     const VariablesProxy &variables,
-    vector<Propositions> &subsets,
     const Propositions &superset1, const Propositions &superset2) {
     Propositions c;
+    vector<Propositions> subsets;
     // If a set is empty, we do not have to include from it. TODO: Why not?
     if (superset1.empty()) {
         get_m_sets_of_set(variables, 0, 0, c, subsets, superset2);
@@ -282,17 +289,18 @@ void LandmarkFactoryHM::get_split_m_sets(
     } else {
         get_split_m_sets(variables, 0, 0, 0, 0, c, subsets, superset1, superset2);
     }
+    return subsets;
 }
 
-// get subsets of state with size <= m
-void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables,
-                                   vector<Propositions> &subsets,
-                                   const State &state) {
-    Propositions state_proposition;
+// Get subsets of the propositions true in `state` with size <= m.
+vector<Propositions> LandmarkFactoryHM::get_m_sets(
+    const VariablesProxy &variables, const State &state) {
+    Propositions state_propositions;
+    state_propositions.reserve(state.size());
     for (FactProxy fact : state) {
-        state_proposition.push_back(fact.get_pair());
+        state_propositions.push_back(fact.get_pair());
     }
-    get_m_sets(variables, subsets, state_proposition);
+    return get_m_sets(variables, state_propositions);
 }
 
 void LandmarkFactoryHM::print_proposition(const VariablesProxy &variables, const FactPair &proposition) const {
@@ -456,8 +464,6 @@ bool LandmarkFactoryHM::possible_noop_set(const VariablesProxy &variables,
 // make the operators of the P_m problem
 void LandmarkFactoryHM::build_pm_operators(const TaskProxy &task_proxy) {
     Propositions pc, eff;
-    vector<Propositions> pc_subsets, eff_subsets, noop_pc_subsets, noop_eff_subsets;
-
     static int op_count = 0;
     int set_index, noop_index;
 
@@ -475,12 +481,9 @@ void LandmarkFactoryHM::build_pm_operators(const TaskProxy &task_proxy) {
         PiMOperator &pm_op = pm_operators[op.get_id()];
         pm_op.index = op_count++;
 
-        pc_subsets.clear();
-        eff_subsets.clear();
-
         // preconditions of P_m op are all subsets of original pc
         pc = get_operator_precondition(op);
-        get_m_sets(variables, pc_subsets, pc);
+        vector<Propositions> pc_subsets = get_m_sets(variables, pc);
         pm_op.precondition.reserve(pc_subsets.size());
 
         // set unsatisfied pc count for op
@@ -495,7 +498,7 @@ void LandmarkFactoryHM::build_pm_operators(const TaskProxy &task_proxy) {
 
         // same for effects
         eff = get_operator_postcondition(variables.size(), op);
-        get_m_sets(variables, eff_subsets, eff);
+        vector<Propositions> eff_subsets = get_m_sets(variables, eff);
         pm_op.effect.reserve(eff_subsets.size());
 
         for (const Propositions &eff_subset : eff_subsets) {
@@ -519,14 +522,13 @@ void LandmarkFactoryHM::build_pm_operators(const TaskProxy &task_proxy) {
 
                 vector<int> &this_cond_noop = pm_op.conditional_noops.back();
 
-                noop_pc_subsets.clear();
-                noop_eff_subsets.clear();
-
                 // get the subsets that have >= 1 element in the pc (unless pc is empty)
                 // and >= 1 element in the other set
 
-                get_split_m_sets(variables, noop_pc_subsets, pc, it->first);
-                get_split_m_sets(variables, noop_eff_subsets, eff, it->first);
+                vector<Propositions> noop_pc_subsets =
+                    get_split_m_sets(variables, pc, it->first);
+                vector<Propositions> noop_eff_subsets =
+                    get_split_m_sets(variables, eff, it->first);
 
                 this_cond_noop.reserve(noop_pc_subsets.size() + noop_eff_subsets.size() + 1);
 
@@ -589,8 +591,8 @@ void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
         utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
     // Get all the m or less size subsets in the domain.
-    vector<vector<FactPair>> msets;
-    get_m_sets(task_proxy.get_variables(), msets);
+    vector<vector<FactPair>> msets =
+        get_m_sets(task_proxy.get_variables());
 
     // map each set to an integer
     for (size_t i = 0; i < msets.size(); ++i) {
@@ -732,8 +734,8 @@ void LandmarkFactoryHM::propagate_pm_atoms(int atom_index, bool newly_discovered
 
 void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
     // get subsets of initial state
-    vector<Propositions> init_subsets;
-    get_m_sets(task_proxy.get_variables(), init_subsets, task_proxy.get_initial_state());
+    vector<Propositions> init_subsets =
+        get_m_sets(task_proxy.get_variables(), task_proxy.get_initial_state());
 
     TriggerSet current_trigger, next_trigger;
 
@@ -941,10 +943,9 @@ void LandmarkFactoryHM::generate_landmarks(
     initialize(task_proxy);
     compute_hm_landmarks(task_proxy);
     // now construct landmarks graph
-    vector<Propositions> goal_subsets;
     Propositions goals = task_properties::get_fact_pairs(task_proxy.get_goals());
     VariablesProxy variables = task_proxy.get_variables();
-    get_m_sets(variables, goal_subsets, goals);
+    vector<Propositions> goal_subsets = get_m_sets(variables, goals);
     list<int> all_landmarks;
     for (const Propositions &goal_subset : goal_subsets) {
         assert(set_indices.find(goal_subset) != set_indices.end());
