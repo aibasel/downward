@@ -109,7 +109,7 @@ static bool contains(list<T> &alist, const T &val) {
 // (look at all the variables in the problem)
 void LandmarkFactoryHM::get_m_sets(
     const VariablesProxy &variables, int num_included, int current_var,
-    FluentSet &current, vector<FluentSet> &subsets) {
+    Propositions &current, vector<Propositions> &subsets) {
     int num_variables = variables.size();
     if (num_included == m) {
         subsets.push_back(current);
@@ -143,18 +143,14 @@ void LandmarkFactoryHM::get_m_sets(
 }
 
 // find all size m or less subsets of superset
-void LandmarkFactoryHM::get_m_sets_of_set(const VariablesProxy &variables,
-                                          int num_included,
-                                          int current_var_index,
-                                          FluentSet &current,
-                                          vector<FluentSet> &subsets,
-                                          const FluentSet &superset) {
+void LandmarkFactoryHM::get_m_sets_of_set(
+    const VariablesProxy &variables, int num_included, int current_index,
+    Propositions &current, vector<Propositions> &subsets, const Propositions &superset) {
     if (num_included == m) {
         subsets.push_back(current);
         return;
     }
-
-    if (current_var_index == static_cast<int>(superset.size())) {
+    if (current_index == static_cast<int>(superset.size())) {
         if (num_included != 0) {
             subsets.push_back(current);
         }
@@ -162,32 +158,32 @@ void LandmarkFactoryHM::get_m_sets_of_set(const VariablesProxy &variables,
     }
 
     bool use_var = true;
-    for (const FactPair &fluent : current) {
-        if (!interesting(variables, superset[current_var_index], fluent)) {
+    for (const FactPair &proposition : current) {
+        if (!interesting(variables, superset[current_index], proposition)) {
             use_var = false;
             break;
         }
     }
 
     if (use_var) {
-        // include current fluent in the set
-        current.push_back(superset[current_var_index]);
-        get_m_sets_of_set(variables, num_included + 1, current_var_index + 1, current, subsets, superset);
+        // include current proposition in the set
+        current.push_back(superset[current_index]);
+        get_m_sets_of_set(variables, num_included + 1, current_index + 1, current, subsets, superset);
         current.pop_back();
     }
 
-    // don't include current fluent in set
-    get_m_sets_of_set(variables, num_included, current_var_index + 1, current, subsets, superset);
+    // don't include current proposition in set
+    get_m_sets_of_set(variables, num_included, current_index + 1, current, subsets, superset);
 }
 
 // get subsets of superset1 \cup superset2 with size m or less,
 // such that they have >= 1 elements from each set.
 void LandmarkFactoryHM::get_split_m_sets(
     const VariablesProxy &variables,
-    int ss1_num_included, int ss2_num_included,
-    int ss1_var_index, int ss2_var_index,
-    FluentSet &current, vector<FluentSet> &subsets,
-    const FluentSet &superset1, const FluentSet &superset2) {
+    int num_included1, int num_included2,
+    int current_index1, int current_index2,
+    Propositions &current, vector<Propositions> &subsets,
+    const Propositions &superset1, const Propositions &superset2) {
     /*
        if( ((ss1_var_index == superset1.size()) && (ss1_num_included == 0)) ||
         ((ss2_var_index == superset2.size()) && (ss2_num_included == 0)) ) {
@@ -195,14 +191,14 @@ void LandmarkFactoryHM::get_split_m_sets(
        }
      */
 
-    int sup1_size = superset1.size();
-    int sup2_size = superset2.size();
+    int superset1_size = static_cast<int>(superset1.size());
+    int superset2_size = static_cast<int>(superset2.size());
 
-    if (ss1_num_included + ss2_num_included == m ||
-        (ss1_var_index == sup1_size && ss2_var_index == sup2_size)) {
+    if (num_included1 + num_included2 == m ||
+        (current_index1 == superset1_size && current_index2 == superset2_size)) {
         // if set is empty, don't have to include from it
-        if ((ss1_num_included > 0 || sup1_size == 0) &&
-            (ss2_num_included > 0 || sup2_size == 0)) {
+        if ((num_included1 > 0 || superset1_size == 0) &&
+            (num_included2 > 0 || superset2_size == 0)) {
             subsets.push_back(current);
         }
         return;
@@ -210,11 +206,11 @@ void LandmarkFactoryHM::get_split_m_sets(
 
     bool use_var = true;
 
-    if (ss1_var_index != sup1_size &&
-        (ss2_var_index == sup2_size ||
-         superset1[ss1_var_index] < superset2[ss2_var_index])) {
-        for (const FactPair &fluent : current) {
-            if (!interesting(variables, superset1[ss1_var_index], fluent)) {
+    if (current_index1 != superset1_size &&
+        (current_index2 == superset2_size ||
+         superset1[current_index1] < superset2[current_index2])) {
+        for (const FactPair &proposition : current) {
+            if (!interesting(variables, superset1[current_index1], proposition)) {
                 use_var = false;
                 break;
             }
@@ -222,20 +218,20 @@ void LandmarkFactoryHM::get_split_m_sets(
 
         if (use_var) {
             // include
-            current.push_back(superset1[ss1_var_index]);
-            get_split_m_sets(variables, ss1_num_included + 1, ss2_num_included,
-                             ss1_var_index + 1, ss2_var_index,
+            current.push_back(superset1[current_index1]);
+            get_split_m_sets(variables, num_included1 + 1, num_included2,
+                             current_index1 + 1, current_index2,
                              current, subsets, superset1, superset2);
             current.pop_back();
         }
 
         // don't include
-        get_split_m_sets(variables, ss1_num_included, ss2_num_included,
-                         ss1_var_index + 1, ss2_var_index,
+        get_split_m_sets(variables, num_included1, num_included2,
+                         current_index1 + 1, current_index2,
                          current, subsets, superset1, superset2);
     } else {
-        for (const FactPair &fluent : current) {
-            if (!interesting(variables, superset2[ss2_var_index], fluent)) {
+        for (const FactPair &proposition : current) {
+            if (!interesting(variables, superset2[current_index2], proposition)) {
                 use_var = false;
                 break;
             }
@@ -243,16 +239,16 @@ void LandmarkFactoryHM::get_split_m_sets(
 
         if (use_var) {
             // include
-            current.push_back(superset2[ss2_var_index]);
-            get_split_m_sets(variables, ss1_num_included, ss2_num_included + 1,
-                             ss1_var_index, ss2_var_index + 1,
+            current.push_back(superset2[current_index2]);
+            get_split_m_sets(variables, num_included1, num_included2 + 1,
+                             current_index1, current_index2 + 1,
                              current, subsets, superset1, superset2);
             current.pop_back();
         }
 
         // don't include
-        get_split_m_sets(variables, ss1_num_included, ss2_num_included,
-                         ss1_var_index, ss2_var_index + 1,
+        get_split_m_sets(variables, num_included1, num_included2,
+                         current_index1, current_index2 + 1,
                          current, subsets, superset1, superset2);
     }
 }
@@ -261,16 +257,16 @@ void LandmarkFactoryHM::get_split_m_sets(
 // e.g. we don't want to represent (truck1-loc x, truck2-loc y) type stuff
 
 // get partial assignments of size <= m in the problem
-void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables, vector<FluentSet> &subsets) {
-    FluentSet c;
+void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables, vector<Propositions> &subsets) {
+    Propositions c;
     get_m_sets(variables, 0, 0, c, subsets);
 }
 
 // get subsets of superset with size <= m
 void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables,
-                                   vector<FluentSet> &subsets,
-                                   const FluentSet &superset) {
-    FluentSet c;
+                                   vector<Propositions> &subsets,
+                                   const Propositions &superset) {
+    Propositions c;
     get_m_sets_of_set(variables, 0, 0, c, subsets, superset);
 }
 
@@ -279,43 +275,43 @@ void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables,
 // assume disjoint
 void LandmarkFactoryHM::get_split_m_sets(
     const VariablesProxy &variables,
-    vector<FluentSet> &subsets,
-    const FluentSet &superset1, const FluentSet &superset2) {
-    FluentSet c;
+    vector<Propositions> &subsets,
+    const Propositions &superset1, const Propositions &superset2) {
+    Propositions c;
     get_split_m_sets(variables, 0, 0, 0, 0, c, subsets, superset1, superset2);
 }
 
 // get subsets of state with size <= m
 void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables,
-                                   vector<FluentSet> &subsets,
+                                   vector<Propositions> &subsets,
                                    const State &state) {
-    FluentSet state_fluents;
+    Propositions state_proposition;
     for (FactProxy fact : state) {
-        state_fluents.push_back(fact.get_pair());
+        state_proposition.push_back(fact.get_pair());
     }
-    get_m_sets(variables, subsets, state_fluents);
+    get_m_sets(variables, subsets, state_proposition);
 }
 
-void LandmarkFactoryHM::print_proposition(const VariablesProxy &variables, const FactPair &fluent) const {
+void LandmarkFactoryHM::print_proposition(const VariablesProxy &variables, const FactPair &proposition) const {
     if (log.is_at_least_verbose()) {
-        VariableProxy var = variables[fluent.var];
-        FactProxy fact = var.get_fact(fluent.value);
+        VariableProxy var = variables[proposition.var];
+        FactProxy fact = var.get_fact(proposition.value);
         log << fact.get_name()
             << " (" << var.get_name() << "(" << fact.get_variable().get_id() << ")"
             << "->" << fact.get_value() << ")";
     }
 }
 
-static FluentSet get_operator_precondition(const OperatorProxy &op) {
-    FluentSet preconditions = task_properties::get_fact_pairs(op.get_preconditions());
+static Propositions get_operator_precondition(const OperatorProxy &op) {
+    Propositions preconditions = task_properties::get_fact_pairs(op.get_preconditions());
     sort(preconditions.begin(), preconditions.end());
     return preconditions;
 }
 
 // get facts that are always true after the operator application
 // (effects plus prevail conditions)
-static FluentSet get_operator_postcondition(int num_vars, const OperatorProxy &op) {
-    FluentSet postconditions;
+static Propositions get_operator_postcondition(int num_vars, const OperatorProxy &op) {
+    Propositions postconditions;
     EffectsProxy effects = op.get_effects();
     vector<bool> has_effect_on_var(num_vars, false);
 
@@ -341,27 +337,27 @@ void LandmarkFactoryHM::print_pm_operator(const VariablesProxy &variables, const
         vector<pair<set<FactPair>, set<FactPair>>> conds;
 
         for (int pc : op.precondition) {
-            for (const FactPair &fluent : hm_table[pc].fluents) {
-                pcs.insert(fluent);
+            for (const FactPair &proposition : hm_table[pc].propositions) {
+                pcs.insert(proposition);
             }
         }
         for (int eff : op.effect) {
-            for (const FactPair &fluent : hm_table[eff].fluents) {
-                effs.insert(fluent);
+            for (const FactPair &proposition : hm_table[eff].propositions) {
+                effs.insert(proposition);
             }
         }
         for (size_t i = 0; i < op.conditional_noops.size(); ++i) {
             cond_pc.clear();
             cond_eff.clear();
-            int pm_fluent;
+            int pm_proposition;
             size_t j;
             log << "PC:" << endl;
-            for (j = 0; (pm_fluent = op.conditional_noops[i][j]) != -1; ++j) {
-                print_fluent_set(variables, hm_table[pm_fluent].fluents);
+            for (j = 0; (pm_proposition = op.conditional_noops[i][j]) != -1; ++j) {
+                print_proposition_set(variables, hm_table[pm_proposition].propositions);
                 log << endl;
 
-                for (size_t k = 0; k < hm_table[pm_fluent].fluents.size(); ++k) {
-                    cond_pc.insert(hm_table[pm_fluent].fluents[k]);
+                for (size_t k = 0; k < hm_table[pm_proposition].propositions.size(); ++k) {
+                    cond_pc.insert(hm_table[pm_proposition].propositions[k]);
                 }
             }
             // advance to effects section
@@ -370,13 +366,13 @@ void LandmarkFactoryHM::print_pm_operator(const VariablesProxy &variables, const
 
             log << "EFF:" << endl;
             for (; j < op.conditional_noops[i].size(); ++j) {
-                int pm_fluent = op.conditional_noops[i][j];
+                int pm_proposition = op.conditional_noops[i][j];
 
-                print_fluent_set(variables, hm_table[pm_fluent].fluents);
+                print_proposition_set(variables, hm_table[pm_proposition].propositions);
                 log << endl;
 
-                for (size_t k = 0; k < hm_table[pm_fluent].fluents.size(); ++k) {
-                    cond_eff.insert(hm_table[pm_fluent].fluents[k]);
+                for (size_t k = 0; k < hm_table[pm_proposition].propositions.size(); ++k) {
+                    cond_eff.insert(hm_table[pm_proposition].propositions[k]);
                 }
             }
             conds.emplace_back(cond_pc, cond_eff);
@@ -413,7 +409,7 @@ void LandmarkFactoryHM::print_pm_operator(const VariablesProxy &variables, const
     }
 }
 
-void LandmarkFactoryHM::print_fluent_set(const VariablesProxy &variables, const FluentSet &fs) const {
+void LandmarkFactoryHM::print_proposition_set(const VariablesProxy &variables, const Propositions &fs) const {
     if (log.is_at_least_verbose()) {
         log << "( ";
         for (const FactPair &fact : fs) {
@@ -427,11 +423,11 @@ void LandmarkFactoryHM::print_fluent_set(const VariablesProxy &variables, const 
 // check whether fs2 is a possible noop set for action with fs1 as effect
 // sets cannot be 1) defined on same variable, 2) otherwise mutex
 bool LandmarkFactoryHM::possible_noop_set(const VariablesProxy &variables,
-                                          const FluentSet &fs1,
-                                          const FluentSet &fs2) {
-    FluentSet::const_iterator fs1it = fs1.begin(), fs2it = fs2.begin();
+                                          const Propositions &propositions1,
+                                          const Propositions &propositions2) {
+    Propositions::const_iterator fs1it = propositions1.begin(), fs2it = propositions2.begin();
 
-    while (fs1it != fs1.end() && fs2it != fs2.end()) {
+    while (fs1it != propositions1.end() && fs2it != propositions2.end()) {
         if (fs1it->var == fs2it->var) {
             return false;
         } else if (fs1it->var < fs2it->var) {
@@ -441,11 +437,11 @@ bool LandmarkFactoryHM::possible_noop_set(const VariablesProxy &variables,
         }
     }
 
-    for (const FactPair &fluent1 : fs1) {
-        FactProxy fact1 = variables[fluent1.var].get_fact(fluent1.value);
-        for (const FactPair &fluent2 : fs2) {
+    for (const FactPair &proposition1 : propositions1) {
+        FactProxy fact1 = variables[proposition1.var].get_fact(proposition1.value);
+        for (const FactPair &proposition2 : propositions2) {
             if (fact1.is_mutex(
-                    variables[fluent2.var].get_fact(fluent2.value)))
+                    variables[proposition2.var].get_fact(proposition2.value)))
                 return false;
         }
     }
@@ -456,8 +452,8 @@ bool LandmarkFactoryHM::possible_noop_set(const VariablesProxy &variables,
 
 // make the operators of the P_m problem
 void LandmarkFactoryHM::build_pm_operators(const TaskProxy &task_proxy) {
-    FluentSet pc, eff;
-    vector<FluentSet> pc_subsets, eff_subsets, noop_pc_subsets, noop_eff_subsets;
+    Propositions pc, eff;
+    vector<Propositions> pc_subsets, eff_subsets, noop_pc_subsets, noop_eff_subsets;
 
     static int op_count = 0;
     int set_index, noop_index;
@@ -487,7 +483,7 @@ void LandmarkFactoryHM::build_pm_operators(const TaskProxy &task_proxy) {
         // set unsatisfied pc count for op
         unsatisfied_precondition_count[op.get_id()].first = pc_subsets.size();
 
-        for (const FluentSet &pc_subset : pc_subsets) {
+        for (const Propositions &pc_subset : pc_subsets) {
             assert(set_indices.find(pc_subset) != set_indices.end());
             set_index = set_indices[pc_subset];
             pm_op.precondition.push_back(set_index);
@@ -499,7 +495,7 @@ void LandmarkFactoryHM::build_pm_operators(const TaskProxy &task_proxy) {
         get_m_sets(variables, eff_subsets, eff);
         pm_op.effect.reserve(eff_subsets.size());
 
-        for (const FluentSet &eff_subset : eff_subsets) {
+        for (const Propositions &eff_subset : eff_subsets) {
             assert(set_indices.find(eff_subset) != set_indices.end());
             set_index = set_indices[eff_subset];
             pm_op.effect.push_back(set_index);
@@ -511,7 +507,7 @@ void LandmarkFactoryHM::build_pm_operators(const TaskProxy &task_proxy) {
         // they conflict with the effect of the operator (no need to check pc
         // because mvvs appearing in pc also appear in effect
 
-        FluentSetToIntMap::const_iterator it = set_indices.begin();
+        PropositionSetToIntMap::const_iterator it = set_indices.begin();
         while (static_cast<int>(it->first.size()) < m
                && it != set_indices.end()) {
             if (possible_noop_set(variables, eff, it->first)) {
@@ -596,10 +592,10 @@ void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
     for (size_t i = 0; i < msets.size(); ++i) {
         hm_table.emplace_back();
         set_indices[msets[i]] = i;
-        hm_table[i].fluents = msets[i];
+        hm_table[i].propositions = msets[i];
     }
     if (log.is_at_least_normal()) {
-        log << "Using " << hm_table.size() << " P^m fluents." << endl;
+        log << "Using " << hm_table.size() << " P^m propositions." << endl;
     }
 
     build_pm_operators(task_proxy);
@@ -643,8 +639,8 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
         }
 
         for (int op_id : candidates) {
-            FluentSet post = get_operator_postcondition(variables.size(), operators[op_id]);
-            FluentSet pre = get_operator_precondition(operators[op_id]);
+            Propositions post = get_operator_postcondition(variables.size(), operators[op_id]);
+            Propositions pre = get_operator_precondition(operators[op_id]);
             size_t j;
             for (j = 0; j < landmark.atoms.size(); ++j) {
                 const FactPair &atom = landmark.atoms[j];
@@ -652,8 +648,8 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
                 if (find(post.begin(), post.end(), atom) != post.end())
                     continue;
                 bool is_mutex = false;
-                for (const FactPair &fluent : post) {
-                    if (variables[fluent.var].get_fact(fluent.value).is_mutex(
+                for (const FactPair &proposition : post) {
+                    if (variables[proposition.var].get_fact(proposition.value).is_mutex(
                             variables[atom.var].get_fact(atom.value))) {
                         is_mutex = true;
                         break;
@@ -662,10 +658,10 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
                 if (is_mutex) {
                     break;
                 }
-                for (const FactPair &fluent : pre) {
+                for (const FactPair &proposition : pre) {
                     // we know that lm_val is not added by the operator
                     // so if it incompatible with the pc, this can't be an achiever
-                    if (variables[fluent.var].get_fact(fluent.value).is_mutex(
+                    if (variables[proposition.var].get_fact(proposition.value).is_mutex(
                             variables[atom.var].get_fact(atom.value))) {
                         is_mutex = true;
                         break;
@@ -676,7 +672,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
                 }
             }
             if (j == landmark.atoms.size()) {
-                // not inconsistent with any of the other landmark fluents
+                // not inconsistent with any of the other landmark propositions
                 landmark.possible_achievers.insert(op_id);
             }
         }
@@ -732,7 +728,7 @@ void LandmarkFactoryHM::propagate_pm_atoms(int atom_index, bool newly_discovered
 
 void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
     // get subsets of initial state
-    vector<FluentSet> init_subsets;
+    vector<Propositions> init_subsets;
     get_m_sets(task_proxy.get_variables(), init_subsets, task_proxy.get_initial_state());
 
     TriggerSet current_trigger, next_trigger;
@@ -863,7 +859,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
     TriggerSet &next_trigger) {
     list<int> cn_necessary, cn_landmarks;
     size_t prev_size;
-    int pm_fluent;
+    int pm_proposition;
 
     PiMOperator &action = pm_operators[op_index];
     vector<int> &pc_eff_pair = action.conditional_noops[noop_index];
@@ -878,12 +874,12 @@ void LandmarkFactoryHM::compute_noop_landmarks(
     }
 
     size_t i;
-    for (i = 0; (pm_fluent = pc_eff_pair[i]) != -1; ++i) {
-        union_with(cn_landmarks, hm_table[pm_fluent].landmarks);
-        insert_into(cn_landmarks, pm_fluent);
+    for (i = 0; (pm_proposition = pc_eff_pair[i]) != -1; ++i) {
+        union_with(cn_landmarks, hm_table[pm_proposition].landmarks);
+        insert_into(cn_landmarks, pm_proposition);
 
         if (use_orders) {
-            insert_into(cn_necessary, pm_fluent);
+            insert_into(cn_necessary, pm_proposition);
         }
     }
 
@@ -891,32 +887,32 @@ void LandmarkFactoryHM::compute_noop_landmarks(
     ++i;
 
     for (; i < pc_eff_pair.size(); ++i) {
-        pm_fluent = pc_eff_pair[i];
-        if (hm_table[pm_fluent].level != -1) {
-            prev_size = hm_table[pm_fluent].landmarks.size();
-            intersect_with(hm_table[pm_fluent].landmarks, cn_landmarks);
+        pm_proposition = pc_eff_pair[i];
+        if (hm_table[pm_proposition].level != -1) {
+            prev_size = hm_table[pm_proposition].landmarks.size();
+            intersect_with(hm_table[pm_proposition].landmarks, cn_landmarks);
 
             // if the add effect appears in cn_landmarks,
             // fact is being achieved for >1st time
             // no need to intersect for gn orderings
             // or add op to first achievers
-            if (!contains(cn_landmarks, pm_fluent)) {
-                insert_into(hm_table[pm_fluent].first_achievers, op_index);
+            if (!contains(cn_landmarks, pm_proposition)) {
+                insert_into(hm_table[pm_proposition].first_achievers, op_index);
                 if (use_orders) {
-                    intersect_with(hm_table[pm_fluent].necessary, cn_necessary);
+                    intersect_with(hm_table[pm_proposition].necessary, cn_necessary);
                 }
             }
 
-            if (hm_table[pm_fluent].landmarks.size() != prev_size)
-                propagate_pm_atoms(pm_fluent, false, next_trigger);
+            if (hm_table[pm_proposition].landmarks.size() != prev_size)
+                propagate_pm_atoms(pm_proposition, false, next_trigger);
         } else {
-            hm_table[pm_fluent].level = level;
-            hm_table[pm_fluent].landmarks = cn_landmarks;
+            hm_table[pm_proposition].level = level;
+            hm_table[pm_proposition].landmarks = cn_landmarks;
             if (use_orders) {
-                hm_table[pm_fluent].necessary = cn_necessary;
+                hm_table[pm_proposition].necessary = cn_necessary;
             }
-            insert_into(hm_table[pm_fluent].first_achievers, op_index);
-            propagate_pm_atoms(pm_fluent, true, next_trigger);
+            insert_into(hm_table[pm_proposition].first_achievers, op_index);
+            propagate_pm_atoms(pm_proposition, true, next_trigger);
         }
     }
 }
@@ -924,7 +920,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
 void LandmarkFactoryHM::add_landmark_node(int set_index, bool goal) {
     if (landmark_node_table.find(set_index) == landmark_node_table.end()) {
         const HMEntry &hm_entry = hm_table[set_index];
-        vector<FactPair> facts(hm_entry.fluents);
+        vector<FactPair> facts(hm_entry.propositions);
         utils::sort_unique(facts);
         assert(!facts.empty());
         Landmark landmark(facts, false, (facts.size() > 1), goal);
@@ -941,12 +937,12 @@ void LandmarkFactoryHM::generate_landmarks(
     initialize(task_proxy);
     compute_hm_landmarks(task_proxy);
     // now construct landmarks graph
-    vector<FluentSet> goal_subsets;
-    FluentSet goals = task_properties::get_fact_pairs(task_proxy.get_goals());
+    vector<Propositions> goal_subsets;
+    Propositions goals = task_properties::get_fact_pairs(task_proxy.get_goals());
     VariablesProxy variables = task_proxy.get_variables();
     get_m_sets(variables, goal_subsets, goals);
     list<int> all_landmarks;
-    for (const FluentSet &goal_subset : goal_subsets) {
+    for (const Propositions &goal_subset : goal_subsets) {
         assert(set_indices.find(goal_subset) != set_indices.end());
 
         int set_index = set_indices[goal_subset];
@@ -955,7 +951,7 @@ void LandmarkFactoryHM::generate_landmarks(
             if (log.is_at_least_verbose()) {
                 log << endl << endl << "Subset of goal not reachable !!." << endl << endl << endl;
                 log << "Subset is: ";
-                print_fluent_set(variables, hm_table[set_index].fluents);
+                print_proposition_set(variables, hm_table[set_index].propositions);
                 log << endl;
             }
         }

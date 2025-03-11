@@ -7,12 +7,12 @@
 #include <map>
 
 namespace landmarks {
-using FluentSet = std::vector<FactPair>;
+using Propositions = std::vector<FactPair>;
 
-std::ostream &operator<<(std::ostream &os, const FluentSet &fs);
+std::ostream &operator<<(std::ostream &os, const Propositions &fs);
 
-struct FluentSetComparer {
-    bool operator()(const FluentSet &fs1, const FluentSet &fs2) const {
+struct PropositionSetComparer {
+    bool operator()(const Propositions &fs1, const Propositions &fs2) const {
         if (fs1.size() != fs2.size()) {
             return fs1.size() < fs2.size();
         }
@@ -36,10 +36,10 @@ struct PiMOperator {
     int index;
 };
 
-// represents a fluent in the P^m problem
+// represents a proposition in the P^m problem
 struct HMEntry {
     // Propositions that belong to this set.
-    FluentSet fluents;
+    Propositions propositions;
     // -1 -> current cost infinite
     // 0 -> present in initial state
     int level;
@@ -58,13 +58,14 @@ struct HMEntry {
        -1 for op itself */
     std::vector<FactPair> pc_for;
 
-    // TODO: Maybe set the fluents in the constructor as well?
+    // TODO: Maybe set the propositions in the constructor as well?
     HMEntry()
         : level(-1) {
     }
 };
 
-using FluentSetToIntMap = std::map<FluentSet, int, FluentSetComparer>;
+using PropositionSetToIntMap =
+    std::map<Propositions, int, PropositionSetComparer>;
 
 class LandmarkFactoryHM : public LandmarkFactory {
     using TriggerSet = std::unordered_map<int, std::set<int>>;
@@ -83,8 +84,8 @@ class LandmarkFactoryHM : public LandmarkFactory {
                             TriggerSet &trigger);
 
     bool possible_noop_set(const VariablesProxy &variables,
-                           const FluentSet &fs1,
-                           const FluentSet &fs2);
+                           const Propositions &propositions1,
+                           const Propositions &propositions2);
     void build_pm_operators(const TaskProxy &task_proxy);
     // TODO: What is interesting?
     bool interesting(const VariablesProxy &variables,
@@ -102,8 +103,8 @@ class LandmarkFactoryHM : public LandmarkFactory {
     void initialize(const TaskProxy &task_proxy);
     void free_unneeded_memory();
 
-    void print_fluent_set(
-        const VariablesProxy &variables, const FluentSet &fs) const;
+    void print_proposition_set(
+        const VariablesProxy &variables, const Propositions &fs) const;
     void print_pm_operator(
         const VariablesProxy &variables, const PiMOperator &op) const;
 
@@ -115,8 +116,8 @@ class LandmarkFactoryHM : public LandmarkFactory {
 
     std::vector<HMEntry> hm_table;
     std::vector<PiMOperator> pm_operators;
-    // Maps each set of <m fluents to an int. TODO: What does this int indicate?
-    FluentSetToIntMap set_indices;
+    // Maps each set of <m propositions to an int. TODO: What does this int indicate?
+    PropositionSetToIntMap set_indices;
     /*
       The number in the first position represents the amount of unsatisfied
       preconditions of the operator. The vector of numbers in the second
@@ -127,34 +128,35 @@ class LandmarkFactoryHM : public LandmarkFactory {
 
     void get_m_sets(
         const VariablesProxy &variables, int num_included, int current_var,
-        FluentSet &current, std::vector<FluentSet> &subsets);
+        Propositions &current, std::vector<Propositions> &subsets);
 
     void get_m_sets_of_set(
         const VariablesProxy &variables, int num_included,
-        int current_var_index, FluentSet &current,
-        std::vector<FluentSet> &subsets, const FluentSet &superset);
+        int current_index, Propositions &current,
+        std::vector<Propositions> &subsets, const Propositions &superset);
 
     void get_split_m_sets(
-        const VariablesProxy &variables, int ss1_num_included,
-        int ss2_num_included, int ss1_var_index, int ss2_var_index,
-        FluentSet &current, std::vector<FluentSet> &subsets,
-        const FluentSet &superset1, const FluentSet &superset2);
+        const VariablesProxy &variables, int num_included1,
+        int num_included2, int current_index1, int current_index2,
+        Propositions &current, std::vector<Propositions> &subsets,
+        const Propositions &superset1, const Propositions &superset2);
 
     void get_m_sets(const VariablesProxy &variables,
-                    std::vector<FluentSet> &subsets);
+                    std::vector<Propositions> &subsets);
+
+    void get_m_sets(
+        const VariablesProxy &variables, std::vector<Propositions> &subsets,
+        const Propositions &superset);
 
     void get_m_sets(const VariablesProxy &variables,
-                    std::vector<FluentSet> &subsets, const FluentSet &superset);
-
-    void get_m_sets(const VariablesProxy &variables,
-                    std::vector<FluentSet> &subsets, const State &state);
+                    std::vector<Propositions> &subsets, const State &state);
 
     void get_split_m_sets(
-        const VariablesProxy &variables, std::vector<FluentSet> &subsets,
-        const FluentSet &superset1, const FluentSet &superset2);
+        const VariablesProxy &variables, std::vector<Propositions> &subsets,
+        const Propositions &superset1, const Propositions &superset2);
 
     void print_proposition(
-        const VariablesProxy &variables, const FactPair &fluent) const;
+        const VariablesProxy &variables, const FactPair &proposition) const;
 
 public:
     LandmarkFactoryHM(int m, bool conjunctive_landmarks,
