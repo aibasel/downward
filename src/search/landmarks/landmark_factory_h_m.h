@@ -4,6 +4,7 @@
 #include "landmark_factory.h"
 
 #include <list>
+#include <map>
 
 namespace landmarks {
 using FluentSet = std::vector<FactPair>;

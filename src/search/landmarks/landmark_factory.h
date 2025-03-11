@@ -5,8 +5,6 @@
 
 #include "../utils/logging.h"
 
-#include <map>
-#include <memory>
 #include <vector>
 
 class TaskProxy;
@@ -19,10 +17,11 @@ class Feature;
 namespace landmarks {
 class LandmarkFactory {
     AbstractTask *landmark_graph_task;
-    std::vector<std::vector<std::vector<int>>> operators_eff_lookup;
+    std::vector<std::vector<std::vector<int>>> operators_providing_effect;
 
-    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) = 0;
-    void generate_operators_lookups(const TaskProxy &task_proxy);
+    virtual void generate_landmarks(
+        const std::shared_ptr<AbstractTask> &task) = 0;
+    void compute_operators_providing_effect(const TaskProxy &task_proxy);
 
 protected:
     mutable utils::LogProxy log;
@@ -35,18 +34,17 @@ protected:
 
     void discard_all_orderings();
 
-    bool is_landmark_precondition(const OperatorProxy &op,
-                                  const Landmark &landmark) const;
-
-    const std::vector<int> &get_operators_including_eff(const FactPair &eff) const {
-        return operators_eff_lookup[eff.var][eff.value];
+    const std::vector<int> &get_operators_including_effect(
+        const FactPair &eff) const {
+        return operators_providing_effect[eff.var][eff.value];
     }
 
 public:
     virtual ~LandmarkFactory() = default;
     LandmarkFactory(const LandmarkFactory &) = delete;
 
-    std::shared_ptr<LandmarkGraph> compute_landmark_graph(const std::shared_ptr<AbstractTask> &task);
+    std::shared_ptr<LandmarkGraph> compute_landmark_graph(
+        const std::shared_ptr<AbstractTask> &task);
 
     virtual bool supports_conditional_effects() const = 0;
 

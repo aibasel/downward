@@ -10,6 +10,7 @@
 #include "../utils/markup.h"
 
 #include <list>
+#include <map>
 #include <set>
 
 using namespace std;
@@ -143,7 +144,7 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
             unordered_map<int, int> shared_eff;
             bool init = true;
             const vector<int> &op_or_axiom_ids =
-                get_operators_including_eff(atom_a);
+                get_operators_including_effect(atom_a);
             // Intersect operators that achieve a one by one
             for (int op_or_axiom_id : op_or_axiom_ids) {
                 // If no shared effect among previous operators, break

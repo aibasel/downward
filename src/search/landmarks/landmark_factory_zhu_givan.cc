@@ -35,6 +35,8 @@ void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
 
     extract_landmarks(task_proxy, last_prop_layer);
 
+    /* TODO: Ensure that landmark orderings are not even added if
+        `use_orders` is false. */
     if (!use_orders) {
         discard_all_orderings();
     }

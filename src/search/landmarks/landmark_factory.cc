@@ -8,34 +8,36 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
-#include "../utils/memory.h"
 #include "../utils/timer.h"
 
 #include <fstream>
-#include <limits>
+#include <memory>
+
 
 using namespace std;
 
 namespace landmarks {
 LandmarkFactory::LandmarkFactory(utils::Verbosity verbosity)
-    : log(utils::get_log_for_verbosity(verbosity)), landmark_graph(nullptr) {
+    : log(get_log_for_verbosity(verbosity)), landmark_graph(nullptr) {
 }
 
-void LandmarkFactory::generate_operators_lookups(const TaskProxy &task_proxy) {
+void LandmarkFactory::compute_operators_providing_effect(
+    const TaskProxy &task_proxy) {
+    // TODO: Update comment.
     /* Build datastructures for efficient landmark computation. Map propositions
     to the operators that achieve them or have them as preconditions */
 
     VariablesProxy variables = task_proxy.get_variables();
-    operators_eff_lookup.resize(variables.size());
+    operators_providing_effect.resize(variables.size());
     for (VariableProxy var : variables) {
-        operators_eff_lookup[var.get_id()].resize(var.get_domain_size());
+        operators_providing_effect[var.get_id()].resize(var.get_domain_size());
     }
     OperatorsProxy operators = task_proxy.get_operators();
     for (OperatorProxy op : operators) {
         const EffectsProxy effects = op.get_effects();
         for (EffectProxy effect : effects) {
             const FactProxy effect_fact = effect.get_fact();
-            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
+            operators_providing_effect[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
                 get_operator_or_axiom_id(op));
         }
     }
@@ -43,7 +45,7 @@ void LandmarkFactory::generate_operators_lookups(const TaskProxy &task_proxy) {
         const EffectsProxy effects = axiom.get_effects();
         for (EffectProxy effect : effects) {
             const FactProxy effect_fact = effect.get_fact();
-            operators_eff_lookup[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
+            operators_providing_effect[effect_fact.get_variable().get_id()][effect_fact.get_value()].push_back(
                 get_operator_or_axiom_id(axiom));
         }
     }
@@ -88,19 +90,6 @@ void LandmarkFactory::discard_all_orderings() {
     }
 }
 
-bool LandmarkFactory::is_landmark_precondition(
-    const OperatorProxy &op, const Landmark &landmark) const {
-    /* Test whether the landmark is used by the operator as a precondition.
-    A disjunctive landmarks is used if one of its disjuncts is used. */
-    for (FactProxy pre : op.get_preconditions()) {
-        for (const FactPair &atom : landmark.atoms) {
-            if (pre.get_pair() == atom)
-                return true;
-        }
-    }
-    return false;
-}
-
 /*
   TODO: Update this comment
 
@@ -139,7 +128,7 @@ shared_ptr<LandmarkGraph> LandmarkFactory::compute_landmark_graph(
     landmark_graph = make_shared<LandmarkGraph>();
 
     TaskProxy task_proxy(*task);
-    generate_operators_lookups(task_proxy);
+    compute_operators_providing_effect(task_proxy);
     generate_landmarks(task);
 
     if (log.is_at_least_normal()) {

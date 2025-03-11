@@ -609,10 +609,6 @@ void LandmarkFactoryHM::postprocess(const TaskProxy &task_proxy) {
     if (!conjunctive_landmarks)
         discard_conjunctive_landmarks();
     landmark_graph->set_landmark_ids();
-
-    if (!use_orders)
-        discard_all_orderings();
-
     calc_achievers(task_proxy);
 }
 
@@ -642,7 +638,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
         set<int> candidates;
         // put all possible adders in candidates set
         for (const FactPair &atom : landmark.atoms) {
-            const vector<int> &ops = get_operators_including_eff(atom);
+            const vector<int> &ops = get_operators_including_effect(atom);
             candidates.insert(ops.begin(), ops.end());
         }
 

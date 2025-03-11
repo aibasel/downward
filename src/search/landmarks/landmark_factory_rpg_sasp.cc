@@ -12,6 +12,7 @@
 #include "../utils/system.h"
 
 #include <cassert>
+#include <map>
 
 using namespace std;
 using utils::ExitCode;
@@ -264,7 +265,7 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
     */
     bool init = true;
     for (const FactPair &atom : landmark.atoms) {
-        const vector<int> &op_ids = get_operators_including_eff(atom);
+        const vector<int> &op_ids = get_operators_including_effect(atom);
 
         for (int op_or_axiom_id : op_ids) {
             OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);
@@ -367,7 +368,7 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     vector<int> op_or_axiom_ids;
     for (const FactPair &atom : landmark.atoms) {
         const vector<int> &tmp_op_or_axiom_ids =
-            get_operators_including_eff(atom);
+            get_operators_including_effect(atom);
         for (int op_or_axiom_id : tmp_op_or_axiom_ids)
             op_or_axiom_ids.push_back(op_or_axiom_id);
     }
@@ -482,6 +483,8 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
         discard_disjunctive_landmarks();
     }
 
+    /* TODO: Ensure that landmark orderings are not even added if
+        `use_orders` is false. */
     if (!use_orders) {
         discard_all_orderings();
     }
@@ -596,9 +599,9 @@ void LandmarkFactoryRpgSasp::find_forward_orders(
                        and (var, value) at the same time. */
                     bool intersection_empty = true;
                     const vector<int> &atom_achievers =
-                        get_operators_including_eff(atom);
+                        get_operators_including_effect(atom);
                     const vector<int> &landmark_achievers =
-                        get_operators_including_eff(landmark_atom);
+                        get_operators_including_effect(landmark_atom);
                     for (size_t j = 0; j < atom_achievers.size() && intersection_empty; ++j)
                         for (size_t k = 0; k < landmark_achievers.size()
                              && intersection_empty; ++k)

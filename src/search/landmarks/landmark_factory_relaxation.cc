@@ -33,7 +33,7 @@ void LandmarkFactoryRelaxation::calc_achievers(
     for (const auto &node : *landmark_graph) {
         Landmark &landmark = node->get_landmark();
         for (const FactPair &atom : landmark.atoms) {
-            const vector<int> &ops = get_operators_including_eff(atom);
+            const vector<int> &ops = get_operators_including_effect(atom);
             landmark.possible_achievers.insert(ops.begin(), ops.end());
 
             if (variables[atom.var].is_derived())
