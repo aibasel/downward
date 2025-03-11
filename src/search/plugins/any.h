@@ -42,7 +42,7 @@ public:
         }
 
         virtual std::unique_ptr<Placeholder> clone() const override {
-            return make_unique<Holder<ValueType>>(held);
+            return std::make_unique<Holder<ValueType>>(held);
         }
 
         virtual const std::type_info &type() const override {
@@ -69,7 +69,7 @@ public:
 
     template<typename ValueType>
     Any(const ValueType &value)
-        : content(make_unique<Holder<ValueType>>(value)) {
+        : content(std::make_unique<Holder<ValueType>>(value)) {
     }
 
     ~Any() = default;

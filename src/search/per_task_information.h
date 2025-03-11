@@ -40,7 +40,7 @@ public:
     PerTaskInformation()
         : entry_constructor(
               [](const TaskProxy &task_proxy) {
-                  return make_unique<Entry>(task_proxy);
+                  return std::make_unique<Entry>(task_proxy);
               }) {
     }
 
