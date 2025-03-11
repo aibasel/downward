@@ -142,6 +142,11 @@ class LandmarkFactoryHM : public LandmarkFactory {
         int current_index, Propositions &current,
         std::vector<Propositions> &subsets, const Propositions &superset);
 
+    void get_split_m_sets_including_current_proposition_from_first(
+        const VariablesProxy &variables, int num_included1,
+        int num_included2, int current_index1, int current_index2,
+        Propositions &current, std::vector<Propositions> &subsets,
+        const Propositions &superset1, const Propositions &superset2);
     void get_split_m_sets(
         const VariablesProxy &variables, int num_included1,
         int num_included2, int current_index1, int current_index2,

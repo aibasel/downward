@@ -150,16 +150,16 @@ void LandmarkFactoryHM::get_m_sets(
 
 void LandmarkFactoryHM::get_m_sets_of_set_including_current_proposition(
     const VariablesProxy &variables, int num_included,
-    int current_var_index, Propositions &current,
+    int current_index, Propositions &current,
     std::vector<Propositions> &subsets, const Propositions &superset) {
-    const FactPair &atom = superset[current_var_index];
-    bool use_fluent = ranges::none_of(
+    const FactPair &atom = superset[current_index];
+    bool use_proposition = ranges::none_of(
         current.begin(), current.end(), [&](const FactPair &other) {
             return are_mutex(variables, atom, other);
         });
-    if (use_fluent) {
+    if (use_proposition) {
         current.push_back(atom);
-        get_m_sets_of_set(variables, num_included + 1, current_var_index + 1,
+        get_m_sets_of_set(variables, num_included + 1, current_index + 1,
                           current, subsets, superset);
         current.pop_back();
     }
@@ -181,8 +181,27 @@ void LandmarkFactoryHM::get_m_sets_of_set(
     }
     get_m_sets_of_set_including_current_proposition(
         variables, num_included, current_index, current, subsets, superset);
-    // Do not include `current` fluent in set.
+    // Do not include proposition at `current_index` in set.
     get_m_sets_of_set(variables, num_included, current_index + 1, current, subsets, superset);
+}
+
+void LandmarkFactoryHM::get_split_m_sets_including_current_proposition_from_first(
+    const VariablesProxy &variables, int num_included1, int num_included2,
+    int current_index1, int current_index2,
+    Propositions &current, std::vector<Propositions> &subsets,
+    const Propositions &superset1, const Propositions &superset2) {
+    const FactPair &atom = superset1[current_index1];
+    bool use_proposition = ranges::none_of(
+        current.begin(), current.end(), [&](const FactPair &other) {
+            return are_mutex(variables, atom, other);
+        });
+    if (use_proposition) {
+        current.push_back(atom);
+        get_split_m_sets(variables, num_included1 + 1, num_included2,
+                         current_index1 + 1, current_index2,
+                         current, subsets, superset1, superset2);
+        current.pop_back();
+    }
 }
 
 /* Get subsets of `superset1` \cup `superset2` with size m or less, such that
@@ -198,72 +217,48 @@ void LandmarkFactoryHM::get_split_m_sets(
     assert(superset2_size > 0);
 
     if (num_included1 + num_included2 == m ||
-        (current_index1 == superset1_size && current_index2 == superset2_size)) {
+        (current_index1 == superset1_size &&
+            current_index2 == superset2_size)) {
         if (num_included1 > 0 && num_included2 > 0) {
             subsets.push_back(current);
         }
         return;
     }
 
-    bool use_var = true;
-
     if (current_index1 != superset1_size &&
         (current_index2 == superset2_size ||
          superset1[current_index1] < superset2[current_index2])) {
-        for (const FactPair &proposition : current) {
-            if (!interesting(variables, superset1[current_index1], proposition)) {
-                use_var = false;
-                break;
-            }
-        }
-
-        if (use_var) {
-            // include
-            current.push_back(superset1[current_index1]);
-            get_split_m_sets(variables, num_included1 + 1, num_included2,
-                             current_index1 + 1, current_index2,
-                             current, subsets, superset1, superset2);
-            current.pop_back();
-        }
-
-        // don't include
-        get_split_m_sets(variables, num_included1, num_included2,
-                         current_index1 + 1, current_index2,
-                         current, subsets, superset1, superset2);
+        get_split_m_sets_including_current_proposition_from_first(
+            variables, num_included1, num_included2, current_index1,
+            current_index2, current, subsets, superset1, superset2);
+        // Do not include proposition at `current_index1` in set.
+        get_split_m_sets(
+            variables, num_included1, num_included2, current_index1 + 1,
+            current_index2, current, subsets, superset1, superset2);
     } else {
-        for (const FactPair &proposition : current) {
-            if (!interesting(variables, superset2[current_index2], proposition)) {
-                use_var = false;
-                break;
-            }
-        }
-
-        if (use_var) {
-            // include
-            current.push_back(superset2[current_index2]);
-            get_split_m_sets(variables, num_included1, num_included2 + 1,
-                             current_index1, current_index2 + 1,
-                             current, subsets, superset1, superset2);
-            current.pop_back();
-        }
-
-        // don't include
-        get_split_m_sets(variables, num_included1, num_included2,
-                         current_index1, current_index2 + 1,
-                         current, subsets, superset1, superset2);
+        /*
+          Switching order of 1 and 2 here to avoid code duplication in the form
+          of a function `get_split_m_sets_including_current_proposition_from_second`
+          analogus to `get_split_m_sets_including_current_proposition_from_first`.
+        */
+        get_split_m_sets_including_current_proposition_from_first(
+            variables, num_included2, num_included1, current_index2,
+            current_index1, current, subsets, superset2, superset1);
+        // Do not include proposition at `current_index2` in set.
+        get_split_m_sets(
+            variables, num_included1, num_included2, current_index1,
+            current_index2 + 1, current, subsets, superset1, superset2);
     }
 }
 
-// use together is method that determines whether the two variables are interesting together,
-// e.g. we don't want to represent (truck1-loc x, truck2-loc y) type stuff
-
-// get partial assignments of size <= m in the problem
-void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables, vector<Propositions> &subsets) {
+// Get partial assignments of size <= m in the problem.
+void LandmarkFactoryHM::get_m_sets(
+    const VariablesProxy &variables, vector<Propositions> &subsets) {
     Propositions c;
     get_m_sets(variables, 0, 0, c, subsets);
 }
 
-// get subsets of superset with size <= m
+// Get subsets of `superset` with size <= m.
 void LandmarkFactoryHM::get_m_sets(const VariablesProxy &variables,
                                    vector<Propositions> &subsets,
                                    const Propositions &superset) {
