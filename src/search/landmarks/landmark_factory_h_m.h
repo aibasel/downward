@@ -102,9 +102,6 @@ class LandmarkFactoryHM : public LandmarkFactory {
     void propagate_pm_atoms(int atom_index, bool newly_discovered,
                             TriggerSet &trigger);
 
-    bool possible_noop_set(const VariablesProxy &variables,
-                           const Propositions &propositions1,
-                           const Propositions &propositions2);
     void build_pm_operators(const TaskProxy &task_proxy);
     // TODO: What is interesting?
     bool interesting(const VariablesProxy &variables,

@@ -472,39 +472,35 @@ void LandmarkFactoryHM::print_action(
     }
 }
 
-// TODO: Continue from here.
-
-// check whether fs2 is a possible noop set for action with fs1 as effect
-// sets cannot be 1) defined on same variable, 2) otherwise mutex
-bool LandmarkFactoryHM::possible_noop_set(const VariablesProxy &variables,
-                                          const Propositions &propositions1,
-                                          const Propositions &propositions2) {
-    Propositions::const_iterator fs1it = propositions1.begin(), fs2it = propositions2.begin();
-
-    while (fs1it != propositions1.end() && fs2it != propositions2.end()) {
-        if (fs1it->var == fs2it->var) {
+static bool proposition_set_variables_disjoint(
+    const Propositions &propositions1, const Propositions &propositions2) {
+    auto it1 = propositions1.begin();
+    auto it2 = propositions2.begin();
+    while (it1 != propositions1.end() && it2 != propositions2.end()) {
+        if (it1->var == it2->var) {
             return false;
-        } else if (fs1it->var < fs2it->var) {
-            ++fs1it;
+        } else if (it1->var < it2->var) {
+            ++it1;
         } else {
-            ++fs2it;
+            ++it2;
         }
     }
-
-    for (const FactPair &proposition1 : propositions1) {
-        FactProxy fact1 = variables[proposition1.var].get_fact(proposition1.value);
-        for (const FactPair &proposition2 : propositions2) {
-            if (fact1.is_mutex(
-                    variables[proposition2.var].get_fact(proposition2.value)))
-                return false;
-        }
-    }
-
     return true;
 }
 
+static bool proposition_sets_are_mutex(
+    const VariablesProxy &variables, const Propositions &propositions1,
+    const Propositions &propositions2) {
+    for (const FactPair &atom1 : propositions1) {
+        for (const FactPair &atom2 : propositions2) {
+            if (are_mutex(variables, atom1, atom2)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
 
-// make the operators of the P_m problem
 void LandmarkFactoryHM::build_pm_operators(const TaskProxy &task_proxy) {
     Propositions pc, eff;
     static int op_count = 0;
@@ -559,7 +555,8 @@ void LandmarkFactoryHM::build_pm_operators(const TaskProxy &task_proxy) {
         PropositionSetToIntMap::const_iterator it = set_indices.begin();
         while (static_cast<int>(it->first.size()) < m
                && it != set_indices.end()) {
-            if (possible_noop_set(variables, eff, it->first)) {
+            if (proposition_set_variables_disjoint(eff, it->first) &&
+                proposition_sets_are_mutex(variables, eff, it->first)) {
                 // for each such set, add a "conditional effect" to the operator
                 pm_op.conditional_noops.resize(pm_op.conditional_noops.size() + 1);
 
