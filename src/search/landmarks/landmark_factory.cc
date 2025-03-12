@@ -63,24 +63,23 @@ static bool weaker_ordering_exists(
     }
 }
 
-static void remove_weaker_ordering(LandmarkNode &from, LandmarkNode &to) {
+static void remove_ordering(LandmarkNode &from, LandmarkNode &to) {
+    assert(from.children.contains(&to));
+    assert(to.parents.contains(&from));
     from.children.erase(&to);
-    assert(to.parents.find(&from) != to.parents.end());
     to.parents.erase(&from);
-
-    assert(to.parents.find(&from) == to.parents.end());
-    assert(from.children.find(&to) == from.children.end());
+    assert(!to.parents.contains(&from));
+    assert(!from.children.contains(&to));
 }
 
 void LandmarkFactory::add_ordering(
     LandmarkNode &from, LandmarkNode &to, OrderingType type) const {
-    if (from.children.contains(&to)) {
-        assert(to.parents.contains(&from));
-        from.children.emplace(&to, type);
-        to.parents.emplace(&from, type);
-        if (log.is_at_least_debug()) {
-            log << "added parent with address " << &from << endl;
-        }
+    assert(!from.children.contains(&to));
+    assert(!to.parents.contains(&from));
+    from.children.emplace(&to, type);
+    to.parents.emplace(&from, type);
+    if (log.is_at_least_debug()) {
+        log << "added parent with address " << &from << endl;
     }
 }
 
@@ -92,7 +91,7 @@ void LandmarkFactory::add_ordering_or_replace_if_stronger(
     assert(&from != &to);
 
     if (weaker_ordering_exists(from, to, type)) {
-        remove_weaker_ordering(from, to);
+        remove_ordering(from, to);
     }
     if (!from.children.contains(&to)) {
         add_ordering(from, to, type);
