@@ -635,14 +635,6 @@ void LandmarkFactoryHM::build_pm_operators(const TaskProxy &task_proxy) {
     }
 }
 
-// TODO: Replace usages of `interesting` with `are_mutex` above.
-bool LandmarkFactoryHM::interesting(const VariablesProxy &variables,
-                                    const FactPair &fact1, const FactPair &fact2) const {
-    // mutexes can always be safely pruned
-    return !variables[fact1.var].get_fact(fact1.value).is_mutex(
-        variables[fact2.var].get_fact(fact2.value));
-}
-
 LandmarkFactoryHM::LandmarkFactoryHM(
     int m, bool conjunctive_landmarks, bool use_orders,
     utils::Verbosity verbosity)
@@ -650,6 +642,17 @@ LandmarkFactoryHM::LandmarkFactoryHM(
       m(m),
       conjunctive_landmarks(conjunctive_landmarks),
       use_orders(use_orders) {
+}
+
+void LandmarkFactoryHM::initialize_hm_table(const VariablesProxy &variables) {
+    // Get all sets of size m or less in the problem.
+    vector<vector<FactPair>> msets = get_m_sets(variables);
+
+    // Map each set to an integer.
+    for (int i = 0; i < static_cast<int>(msets.size()); ++i) {
+        set_indices[msets[i]] = i;
+        hm_table.emplace_back(move(msets[i]));
+    }
 }
 
 void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
@@ -660,20 +663,10 @@ void LandmarkFactoryHM::initialize(const TaskProxy &task_proxy) {
         cerr << "h^m landmarks don't support axioms" << endl;
         utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
-    // Get all the m or less size subsets in the domain.
-    vector<vector<FactPair>> msets =
-        get_m_sets(task_proxy.get_variables());
-
-    // map each set to an integer
-    for (size_t i = 0; i < msets.size(); ++i) {
-        hm_table.emplace_back();
-        set_indices[msets[i]] = i;
-        hm_table[i].propositions = msets[i];
-    }
+    initialize_hm_table(task_proxy.get_variables());
     if (log.is_at_least_normal()) {
         log << "Using " << hm_table.size() << " P^m propositions." << endl;
     }
-
     build_pm_operators(task_proxy);
 }
 

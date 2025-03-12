@@ -39,9 +39,9 @@ struct PiMOperator {
 // represents a proposition in the P^m problem
 struct HMEntry {
     // Propositions that belong to this set.
-    Propositions propositions;
-    // -1 -> current cost infinite
-    // 0 -> present in initial state
+    const Propositions propositions;
+    // Level -1: current cost infinite
+    // Level 0:  present in initial state
     int level;
 
     // TODO: Can we replace the `list` data type?
@@ -58,9 +58,8 @@ struct HMEntry {
        -1 for op itself */
     std::vector<FactPair> pc_for;
 
-    // TODO: Maybe set the propositions in the constructor as well?
-    HMEntry()
-        : level(-1) {
+    explicit HMEntry(Propositions &&propositions)
+        : propositions(move(propositions)), level(-1) {
     }
 };
 
@@ -115,10 +114,6 @@ class LandmarkFactoryHM : public LandmarkFactory {
         const VariablesProxy &variables, PiMOperator &pm_op, int op_id,
         const Propositions &preconditions, const Propositions &postconditions);
     void build_pm_operators(const TaskProxy &task_proxy);
-    // TODO: What is interesting?
-    bool interesting(const VariablesProxy &variables,
-                     const FactPair &fact1,
-                     const FactPair &fact2) const;
 
     void postprocess(const TaskProxy &task_proxy);
 
@@ -128,6 +123,7 @@ class LandmarkFactoryHM : public LandmarkFactory {
 
     void add_landmark_node(int set_index, bool goal = false);
 
+    void initialize_hm_table(const VariablesProxy &variables);
     void initialize(const TaskProxy &task_proxy);
     void free_unneeded_memory();
 
