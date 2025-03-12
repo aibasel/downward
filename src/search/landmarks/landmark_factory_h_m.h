@@ -30,8 +30,9 @@ struct PropositionSetComparer {
 struct PiMOperator {
     std::vector<int> precondition;
     std::vector<int> effect;
-    // TODO: Is this still the case?
-    // pc separated from effect by a value of -1
+    /* In each of the inner vectors, the effect conditions are separated from
+       the effect values by an entry of the value -1. */
+    // TODO: Should it stay this way?
     std::vector<std::vector<int>> conditional_noops;
     int index;
 };
@@ -70,6 +71,24 @@ using PropositionSetToIntMap =
 class LandmarkFactoryHM : public LandmarkFactory {
     using TriggerSet = std::unordered_map<int, std::set<int>>;
 
+    const int m;
+    const bool conjunctive_landmarks;
+    const bool use_orders;
+
+    std::unordered_map<int, LandmarkNode *> landmark_node_table;
+
+    std::vector<HMEntry> hm_table;
+    std::vector<PiMOperator> pm_operators;
+    // Maps each set of <= m propositions to an int. TODO: What does this int indicate?
+    PropositionSetToIntMap set_indices;
+    /*
+      The number in the first position represents the amount of unsatisfied
+      preconditions of the operator. The vector of numbers in the second
+      position represents the amount of unsatisfied preconditions for each
+      conditional noop operator.
+     */
+    std::vector<std::pair<int, std::vector<int>>> unsatisfied_precondition_count;
+
     virtual void generate_landmarks(
         const std::shared_ptr<AbstractTask> &task) override;
 
@@ -104,27 +123,21 @@ class LandmarkFactoryHM : public LandmarkFactory {
     void free_unneeded_memory();
 
     void print_proposition_set(
-        const VariablesProxy &variables, const Propositions &fs) const;
+        const VariablesProxy &variables, const Propositions &propositions) const;
     void print_pm_operator(
         const VariablesProxy &variables, const PiMOperator &op) const;
-
-    const int m;
-    const bool conjunctive_landmarks;
-    const bool use_orders;
-
-    std::unordered_map<int, LandmarkNode *> landmark_node_table;
-
-    std::vector<HMEntry> hm_table;
-    std::vector<PiMOperator> pm_operators;
-    // Maps each set of <m propositions to an int. TODO: What does this int indicate?
-    PropositionSetToIntMap set_indices;
-    /*
-      The number in the first position represents the amount of unsatisfied
-      preconditions of the operator. The vector of numbers in the second
-      position represents the amount of unsatisfied preconditions for each
-      conditional noop operator.
-     */
-    std::vector<std::pair<int, std::vector<int>>> unsatisfied_precondition_count;
+    void print_conditional_noop(
+        const VariablesProxy &variables,
+        const std::vector<int> &conditional_noop,
+        std::vector<std::pair<std::set<FactPair>, std::set<FactPair>>> &conditions) const;
+    std::set<FactPair> print_effect_condition(
+        const VariablesProxy &variables,
+        const std::vector<int> &effect_condition) const;
+    std::set<FactPair> print_conditional_effect(
+        const VariablesProxy &variables, const std::vector<int> &effect) const;
+    void print_action(
+        const VariablesProxy &variables, const PiMOperator &op,
+        const std::vector<std::pair<std::set<FactPair>, std::set<FactPair>>> &conditions) const;
 
     void get_m_sets_including_current_var(
         const VariablesProxy &variables, int num_included, int current_var,

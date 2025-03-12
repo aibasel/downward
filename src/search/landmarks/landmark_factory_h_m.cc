@@ -303,133 +303,176 @@ vector<Propositions> LandmarkFactoryHM::get_m_sets(
     return get_m_sets(variables, state_propositions);
 }
 
-void LandmarkFactoryHM::print_proposition(const VariablesProxy &variables, const FactPair &proposition) const {
+void LandmarkFactoryHM::print_proposition(
+    const VariablesProxy &variables, const FactPair &proposition) const {
     if (log.is_at_least_verbose()) {
         VariableProxy var = variables[proposition.var];
-        FactProxy fact = var.get_fact(proposition.value);
-        log << fact.get_name()
-            << " (" << var.get_name() << "(" << fact.get_variable().get_id() << ")"
-            << "->" << fact.get_value() << ")";
+        FactProxy atom = var.get_fact(proposition.value);
+        log << atom.get_name() << " ("
+            << var.get_name() << "(" << atom.get_variable().get_id() << ")"
+            << "->" << atom.get_value() << ")";
     }
 }
 
 static Propositions get_operator_precondition(const OperatorProxy &op) {
-    Propositions preconditions = task_properties::get_fact_pairs(op.get_preconditions());
+    Propositions preconditions =
+        task_properties::get_fact_pairs(op.get_preconditions());
     sort(preconditions.begin(), preconditions.end());
     return preconditions;
 }
 
-// get facts that are always true after the operator application
-// (effects plus prevail conditions)
-static Propositions get_operator_postcondition(int num_vars, const OperatorProxy &op) {
+/* Get atoms that are always true after the application of `op`
+   (effects plus prevail conditions). */
+static Propositions get_operator_postcondition(
+    int num_vars, const OperatorProxy &op) {
     Propositions postconditions;
     EffectsProxy effects = op.get_effects();
     vector<bool> has_effect_on_var(num_vars, false);
 
     for (EffectProxy effect : effects) {
-        FactProxy effect_fact = effect.get_fact();
-        postconditions.push_back(effect_fact.get_pair());
-        has_effect_on_var[effect_fact.get_variable().get_id()] = true;
+        FactPair atom = effect.get_fact().get_pair();
+        postconditions.push_back(atom);
+        has_effect_on_var[atom.var] = true;
     }
 
     for (FactProxy precondition : op.get_preconditions()) {
-        if (!has_effect_on_var[precondition.get_variable().get_id()])
+        if (!has_effect_on_var[precondition.get_variable().get_id()]) {
             postconditions.push_back(precondition.get_pair());
+        }
     }
 
     sort(postconditions.begin(), postconditions.end());
     return postconditions;
 }
 
+static set<FactPair> get_as_set(
+    const vector<int> &collection, const vector<HMEntry> &hm_table) {
+    set<FactPair> preconditions;
+    for (int element : collection) {
+        for (const FactPair &proposition : hm_table[element].propositions) {
+            preconditions.insert(proposition);
+        }
+    }
+    return preconditions;
+}
 
-void LandmarkFactoryHM::print_pm_operator(const VariablesProxy &variables, const PiMOperator &op) const {
+void LandmarkFactoryHM::print_pm_operator(
+    const VariablesProxy &variables, const PiMOperator &op) const {
     if (log.is_at_least_verbose()) {
-        set<FactPair> pcs, effs, cond_pc, cond_eff;
-        vector<pair<set<FactPair>, set<FactPair>>> conds;
-
-        for (int pc : op.precondition) {
-            for (const FactPair &proposition : hm_table[pc].propositions) {
-                pcs.insert(proposition);
-            }
+        vector<pair<set<FactPair>, set<FactPair>>> conditions;
+        for (const auto &conditional_noop : op.conditional_noops) {
+            print_conditional_noop(variables, conditional_noop, conditions);
         }
-        for (int eff : op.effect) {
-            for (const FactPair &proposition : hm_table[eff].propositions) {
-                effs.insert(proposition);
-            }
-        }
-        for (size_t i = 0; i < op.conditional_noops.size(); ++i) {
-            cond_pc.clear();
-            cond_eff.clear();
-            int pm_proposition;
-            size_t j;
-            log << "PC:" << endl;
-            for (j = 0; (pm_proposition = op.conditional_noops[i][j]) != -1; ++j) {
-                print_proposition_set(variables, hm_table[pm_proposition].propositions);
-                log << endl;
-
-                for (size_t k = 0; k < hm_table[pm_proposition].propositions.size(); ++k) {
-                    cond_pc.insert(hm_table[pm_proposition].propositions[k]);
-                }
-            }
-            // advance to effects section
-            log << endl;
-            ++j;
-
-            log << "EFF:" << endl;
-            for (; j < op.conditional_noops[i].size(); ++j) {
-                int pm_proposition = op.conditional_noops[i][j];
-
-                print_proposition_set(variables, hm_table[pm_proposition].propositions);
-                log << endl;
-
-                for (size_t k = 0; k < hm_table[pm_proposition].propositions.size(); ++k) {
-                    cond_eff.insert(hm_table[pm_proposition].propositions[k]);
-                }
-            }
-            conds.emplace_back(cond_pc, cond_eff);
-            log << endl << endl << endl;
-        }
-
-        log << "Action " << op.index << endl;
-        log << "Precondition: ";
-        for (const FactPair &pc : pcs) {
-            print_proposition(variables, pc);
-            log << " ";
-        }
-
-        log << endl << "Effect: ";
-        for (const FactPair &eff : effs) {
-            print_proposition(variables, eff);
-            log << " ";
-        }
-        log << endl << "Conditionals: " << endl;
-        int i = 0;
-        for (const auto &cond : conds) {
-            log << "Cond PC #" << i++ << ":" << endl << "\t";
-            for (const FactPair &pc : cond.first) {
-                print_proposition(variables, pc);
-                log << " ";
-            }
-            log << endl << "Cond Effect #" << i << ":" << endl << "\t";
-            for (const FactPair &eff : cond.second) {
-                print_proposition(variables, eff);
-                log << " ";
-            }
-            log << endl << endl;
-        }
+        print_action(variables, op, conditions);
     }
 }
 
-void LandmarkFactoryHM::print_proposition_set(const VariablesProxy &variables, const Propositions &fs) const {
+static pair<vector<int>, vector<int>> split_conditional_noop(
+    const vector<int> &conditional_noop) {
+    vector<int> effect_condition;
+    effect_condition.reserve(conditional_noop.size());
+    size_t i;
+    for (i = 0; conditional_noop[i] != -1; ++i) {
+        effect_condition.push_back(conditional_noop[i]);
+    }
+
+    ++i; // Skip delimiter -1.
+
+    vector<int> effect;
+    effect.reserve(conditional_noop.size());
+    for (; i < conditional_noop.size(); ++i) {
+        effect.push_back(conditional_noop[i]);
+    }
+    return {effect_condition, effect};
+}
+
+void LandmarkFactoryHM::print_conditional_noop(
+    const VariablesProxy &variables, const vector<int> &conditional_noop,
+    vector<pair<set<FactPair>, set<FactPair>>> &conditions) const {
+    auto [effect_condition, effect] = split_conditional_noop(conditional_noop);
+    set<FactPair> effect_condition_set =
+        print_effect_condition(variables, effect_condition);
+    set<FactPair> effect_set = print_conditional_effect(variables, effect);
+    conditions.emplace_back(effect_condition_set, effect_set);
+    log << endl << endl << endl;
+}
+
+void LandmarkFactoryHM::print_proposition_set(
+    const VariablesProxy &variables, const Propositions &propositions) const {
     if (log.is_at_least_verbose()) {
         log << "( ";
-        for (const FactPair &fact : fs) {
+        for (const FactPair &fact : propositions) {
             print_proposition(variables, fact);
             log << " ";
         }
         log << ")";
     }
 }
+
+set<FactPair> LandmarkFactoryHM::print_effect_condition(
+    const VariablesProxy &variables, const vector<int> &effect_conditions) const {
+    set<FactPair> effect_condition_set;
+    log << "effect conditions:\n";
+    for (int effect_condition : effect_conditions) {
+        print_proposition_set(
+            variables, hm_table[effect_condition].propositions);
+        log << endl;
+        for (auto proposition : hm_table[effect_condition].propositions) {
+            effect_condition_set.insert(proposition);
+        }
+    }
+    return effect_condition_set;
+}
+
+set<FactPair> LandmarkFactoryHM::print_conditional_effect(
+    const VariablesProxy &variables, const vector<int> &effect) const {
+    set<FactPair> effect_set;
+    log << "effect:\n";
+    for (int eff : effect) {
+        print_proposition_set(variables, hm_table[eff].propositions);
+        log << endl;
+        for (auto proposition : hm_table[eff].propositions) {
+            effect_set.insert(proposition);
+        }
+    }
+    return effect_set;
+}
+
+void LandmarkFactoryHM::print_action(
+    const VariablesProxy &variables, const PiMOperator &op,
+    const std::vector<std::pair<std::set<FactPair>, std::set<FactPair>>> &conditions) const {
+    log << "Action " << op.index << endl;
+    log << "Precondition: ";
+    set<FactPair> preconditions = get_as_set(op.precondition, hm_table);
+    for (const FactPair &pc : preconditions) {
+        print_proposition(variables, pc);
+        log << " ";
+    }
+
+    log << endl << "Effect: ";
+    set<FactPair> effects = get_as_set(op.effect, hm_table);
+    for (const FactPair &eff : effects) {
+        print_proposition(variables, eff);
+        log << " ";
+    }
+    log << endl << "Conditionals: " << endl;
+    int i = 0;
+    for (const auto &condition : conditions) {
+        log << "Effect Condition #" << i++ << ":\n\t";
+        for (const FactPair &cond : condition.first) {
+            print_proposition(variables, cond);
+            log << " ";
+        }
+        log << endl << "Conditional Effect #" << i << ":\n\t";
+        for (const FactPair &eff : condition.second) {
+            print_proposition(variables, eff);
+            log << " ";
+        }
+        log << endl << endl;
+    }
+}
+
+// TODO: Continue from here.
 
 // check whether fs2 is a possible noop set for action with fs1 as effect
 // sets cannot be 1) defined on same variable, 2) otherwise mutex
