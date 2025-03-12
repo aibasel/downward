@@ -11,6 +11,7 @@
 #include "../utils/logging.h"
 #include "../utils/system.h"
 
+#include <ranges>
 #include <set>
 
 using namespace std;
@@ -501,106 +502,135 @@ static bool proposition_sets_are_mutex(
     return true;
 }
 
+Propositions LandmarkFactoryHM::initialize_preconditions(
+    const VariablesProxy &variables, const OperatorProxy &op,
+    PiMOperator &pm_op) {
+    /* All subsets of the original precondition are preconditions of the
+       P_m operator. */
+    Propositions precondition = get_operator_precondition(op);
+    vector<Propositions> subsets = get_m_sets(variables, precondition);
+    pm_op.precondition.reserve(subsets.size());
+
+    num_unsatisfied_preconditions[op.get_id()].first =
+        static_cast<int>(subsets.size());
+
+    for (const Propositions &subset : subsets) {
+        assert(set_indices.contains(subset));
+        int set_index = set_indices[subset];
+        pm_op.precondition.push_back(set_index);
+        // TODO: Do not abuse FactPair here!!!
+        hm_table[set_index].pc_for.emplace_back(op.get_id(), -1);
+    }
+    return precondition;
+}
+
+Propositions LandmarkFactoryHM::initialize_postconditions(
+    const VariablesProxy &variables, const OperatorProxy &op,
+    PiMOperator &pm_op) {
+    Propositions postcondition = get_operator_postcondition(
+        static_cast<int>(variables.size()), op);
+    vector<Propositions> subsets = get_m_sets(variables, postcondition);
+    pm_op.effect.reserve(subsets.size());
+
+    for (const Propositions &subset : subsets) {
+        assert(set_indices.contains(subset));
+        int set_index = set_indices[subset];
+        pm_op.effect.push_back(set_index);
+    }
+    return postcondition;
+}
+
+void LandmarkFactoryHM::add_conditional_noop(
+        PiMOperator &pm_op, int op_id,
+        const VariablesProxy &variables, const Propositions &propositions,
+        const Propositions &preconditions, const Propositions &postconditions) {
+    int noop_index = static_cast<int>(pm_op.conditional_noops.size());
+
+    /*
+      Get the subsets that have >= 1 element in the precondition (unless
+      the precondition is empty) or the postcondition and >= 1 element
+      in the `propositions` set.
+    */
+    vector<Propositions> noop_precondition_subsets =
+        get_split_m_sets(variables, preconditions, propositions);
+    vector<Propositions> noop_postconditions_subsets =
+        get_split_m_sets(variables, postconditions, propositions);
+
+    vector<int> conditional_noop;
+    conditional_noop.reserve(noop_precondition_subsets.size() +
+                             noop_postconditions_subsets.size() + 1);
+    num_unsatisfied_preconditions[op_id].second.push_back(
+        static_cast<int>(noop_precondition_subsets.size()));
+
+    // Add the conditional noop preconditions.
+    for (const auto & subset : noop_precondition_subsets) {
+        assert(static_cast<int>(subset.size()) <= m);
+        assert(set_indices.contains(subset));
+        int set_index = set_indices[subset];
+        conditional_noop.push_back(set_index);
+        // These propositions are "conditional preconditions" for this operator.
+        hm_table[set_index].pc_for.emplace_back(op_id, noop_index);
+    }
+
+    // Separate conditional preconditions from conditional effects by number -1.
+    conditional_noop.push_back(-1);
+
+    // Add the conditional noop effects.
+    for (const auto & subset : noop_postconditions_subsets) {
+        assert(static_cast<int>(subset.size()) <= m);
+        assert(set_indices.contains(subset));
+        int set_index = set_indices[subset];
+        conditional_noop.push_back(set_index);
+    }
+
+    pm_op.conditional_noops.push_back(move(conditional_noop));
+}
+
+void LandmarkFactoryHM::initialize_noops(
+    const VariablesProxy &variables, PiMOperator &pm_op, int op_id,
+    const Propositions &preconditions, const Propositions &postconditions) {
+    pm_op.conditional_noops.reserve(set_indices.size());
+    /*
+      For all subsets used in the problem with size *<* m, check whether
+      they conflict with the postcondition of the operator. (No need to
+      check the precondition because variables appearing in the precondition
+      also appear in the postcondition.)
+    */
+    for (const Propositions &propositions : views::keys(set_indices)) {
+        if (static_cast<int>(propositions.size()) >= m) {
+            break;
+        }
+        if (proposition_set_variables_disjoint(postconditions, propositions)
+            && proposition_sets_are_mutex(variables, postconditions,
+                                          propositions)) {
+            // For each such set, add a "conditional effect" to the operator.
+            add_conditional_noop(pm_op, op_id, variables,
+                                  propositions, preconditions, postconditions);
+        }
+    }
+}
+
 void LandmarkFactoryHM::build_pm_operators(const TaskProxy &task_proxy) {
-    Propositions pc, eff;
-    static int op_count = 0;
-    int set_index, noop_index;
-
     OperatorsProxy operators = task_proxy.get_operators();
-    pm_operators.resize(operators.size());
-
-    // set unsatisfied precondition counts, used in fixpoint calculation
-    unsatisfied_precondition_count.resize(operators.size());
+    int num_operators = static_cast<int>(operators.size());
+    pm_operators.resize(num_operators);
+    num_unsatisfied_preconditions.resize(num_operators);
 
     VariablesProxy variables = task_proxy.get_variables();
 
-    // transfer ops from original problem
-    // represent noops as "conditional" effects
-    for (OperatorProxy op : operators) {
+    /* Transfer operators from original problem.
+       Represent noops as conditional effects. */
+    for (int i = 0; i < num_operators; ++i) {
+        const OperatorProxy &op = operators[i];
         PiMOperator &pm_op = pm_operators[op.get_id()];
-        pm_op.index = op_count++;
+        pm_op.index = i;
 
-        // preconditions of P_m op are all subsets of original pc
-        pc = get_operator_precondition(op);
-        vector<Propositions> pc_subsets = get_m_sets(variables, pc);
-        pm_op.precondition.reserve(pc_subsets.size());
-
-        // set unsatisfied pc count for op
-        unsatisfied_precondition_count[op.get_id()].first = pc_subsets.size();
-
-        for (const Propositions &pc_subset : pc_subsets) {
-            assert(set_indices.find(pc_subset) != set_indices.end());
-            set_index = set_indices[pc_subset];
-            pm_op.precondition.push_back(set_index);
-            hm_table[set_index].pc_for.emplace_back(op.get_id(), -1);
-        }
-
-        // same for effects
-        eff = get_operator_postcondition(variables.size(), op);
-        vector<Propositions> eff_subsets = get_m_sets(variables, eff);
-        pm_op.effect.reserve(eff_subsets.size());
-
-        for (const Propositions &eff_subset : eff_subsets) {
-            assert(set_indices.find(eff_subset) != set_indices.end());
-            set_index = set_indices[eff_subset];
-            pm_op.effect.push_back(set_index);
-        }
-
-        noop_index = 0;
-
-        // For all subsets used in the problem with size *<* m, check whether
-        // they conflict with the effect of the operator (no need to check pc
-        // because mvvs appearing in pc also appear in effect
-
-        PropositionSetToIntMap::const_iterator it = set_indices.begin();
-        while (static_cast<int>(it->first.size()) < m
-               && it != set_indices.end()) {
-            if (proposition_set_variables_disjoint(eff, it->first) &&
-                proposition_sets_are_mutex(variables, eff, it->first)) {
-                // for each such set, add a "conditional effect" to the operator
-                pm_op.conditional_noops.resize(pm_op.conditional_noops.size() + 1);
-
-                vector<int> &this_cond_noop = pm_op.conditional_noops.back();
-
-                // get the subsets that have >= 1 element in the pc (unless pc is empty)
-                // and >= 1 element in the other set
-
-                vector<Propositions> noop_pc_subsets =
-                    get_split_m_sets(variables, pc, it->first);
-                vector<Propositions> noop_eff_subsets =
-                    get_split_m_sets(variables, eff, it->first);
-
-                this_cond_noop.reserve(noop_pc_subsets.size() + noop_eff_subsets.size() + 1);
-
-                unsatisfied_precondition_count[op.get_id()].second.push_back(noop_pc_subsets.size());
-
-                // push back all noop preconditions
-                for (size_t j = 0; j < noop_pc_subsets.size(); ++j) {
-                    assert(static_cast<int>(noop_pc_subsets[j].size()) <= m);
-                    assert(set_indices.find(noop_pc_subsets[j]) != set_indices.end());
-
-                    set_index = set_indices[noop_pc_subsets[j]];
-                    this_cond_noop.push_back(set_index);
-                    // these facts are "conditional pcs" for this action
-                    hm_table[set_index].pc_for.emplace_back(op.get_id(), noop_index);
-                }
-
-                // separator
-                this_cond_noop.push_back(-1);
-
-                // and the noop effects
-                for (size_t j = 0; j < noop_eff_subsets.size(); ++j) {
-                    assert(static_cast<int>(noop_eff_subsets[j].size()) <= m);
-                    assert(set_indices.find(noop_eff_subsets[j]) != set_indices.end());
-
-                    set_index = set_indices[noop_eff_subsets[j]];
-                    this_cond_noop.push_back(set_index);
-                }
-
-                ++noop_index;
-            }
-            ++it;
-        }
+        Propositions preconditions =
+            initialize_preconditions(variables, op, pm_op);
+        Propositions postconditions =
+            initialize_postconditions(variables, op, pm_op);
+        initialize_noops(
+            variables, pm_op, op.get_id(), preconditions, postconditions);
         print_pm_operator(variables, pm_op);
     }
 }
@@ -729,7 +759,7 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
 void LandmarkFactoryHM::free_unneeded_memory() {
     utils::release_vector_memory(hm_table);
     utils::release_vector_memory(pm_operators);
-    utils::release_vector_memory(unsatisfied_precondition_count);
+    utils::release_vector_memory(num_unsatisfied_preconditions);
 
     set_indices.clear();
     landmark_node_table.clear();
@@ -745,10 +775,10 @@ void LandmarkFactoryHM::propagate_pm_atoms(int atom_index, bool newly_discovered
         // a pc for the action itself
         if (info.value == -1) {
             if (newly_discovered) {
-                --unsatisfied_precondition_count[info.var].first;
+                --num_unsatisfied_preconditions[info.var].first;
             }
             // add to queue if unsatcount at 0
-            if (unsatisfied_precondition_count[info.var].first == 0) {
+            if (num_unsatisfied_preconditions[info.var].first == 0) {
                 // create empty set or clear prev entries -- signals do all possible noop effects
                 trigger[info.var].clear();
             }
@@ -756,12 +786,12 @@ void LandmarkFactoryHM::propagate_pm_atoms(int atom_index, bool newly_discovered
         // a pc for a conditional noop
         else {
             if (newly_discovered) {
-                --unsatisfied_precondition_count[info.var].second[info.value];
+                --num_unsatisfied_preconditions[info.var].second[info.value];
             }
             // if associated action is applicable, and effect has become applicable
             // (if associated action is not applicable, all noops will be used when it first does)
-            if ((unsatisfied_precondition_count[info.var].first == 0) &&
-                (unsatisfied_precondition_count[info.var].second[info.value] == 0)) {
+            if ((num_unsatisfied_preconditions[info.var].first == 0) &&
+                (num_unsatisfied_preconditions[info.var].second[info.value] == 0)) {
                 // if not already triggering all noops, add this one
                 if ((trigger.find(info.var) == trigger.end()) ||
                     (!trigger[info.var].empty())) {
@@ -790,7 +820,7 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
 
     // mark actions with no precondition to be applied
     for (size_t i = 0; i < pm_operators.size(); ++i) {
-        if (unsatisfied_precondition_count[i].first == 0) {
+        if (num_unsatisfied_preconditions[i].first == 0) {
             // create empty set or clear prev entries
             current_trigger[i].clear();
         }
@@ -862,7 +892,7 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
                 for (size_t i = 0; i < action.conditional_noops.size(); ++i) {
                     // actions pcs are satisfied, but cond. effects may still have
                     // unsatisfied pcs
-                    if (unsatisfied_precondition_count[op_index].second[i] == 0) {
+                    if (num_unsatisfied_preconditions[op_index].second[i] == 0) {
                         compute_noop_landmarks(op_index, i,
                                                local_landmarks,
                                                local_necessary,
@@ -875,7 +905,7 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
             else {
                 for (set<int>::iterator noop_it = op_it->second.begin();
                      noop_it != op_it->second.end(); ++noop_it) {
-                    assert(unsatisfied_precondition_count[op_index].second[*noop_it] == 0);
+                    assert(num_unsatisfied_preconditions[op_index].second[*noop_it] == 0);
 
                     compute_noop_landmarks(op_index, *noop_it,
                                            local_landmarks,

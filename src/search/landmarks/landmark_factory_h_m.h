@@ -32,7 +32,6 @@ struct PiMOperator {
     std::vector<int> effect;
     /* In each of the inner vectors, the effect conditions are separated from
        the effect values by an entry of the value -1. */
-    // TODO: Should it stay this way?
     std::vector<std::vector<int>> conditional_noops;
     int index;
 };
@@ -79,15 +78,15 @@ class LandmarkFactoryHM : public LandmarkFactory {
 
     std::vector<HMEntry> hm_table;
     std::vector<PiMOperator> pm_operators;
-    // Maps each set of <= m propositions to an int. TODO: What does this int indicate?
+    // Maps each set of < m propositions to an int. TODO: What does this int indicate?
     PropositionSetToIntMap set_indices;
     /*
       The number in the first position represents the amount of unsatisfied
       preconditions of the operator. The vector of numbers in the second
       position represents the amount of unsatisfied preconditions for each
       conditional noop operator.
-     */
-    std::vector<std::pair<int, std::vector<int>>> unsatisfied_precondition_count;
+    */
+    std::vector<std::pair<int, std::vector<int>>> num_unsatisfied_preconditions;
 
     virtual void generate_landmarks(
         const std::shared_ptr<AbstractTask> &task) override;
@@ -102,6 +101,19 @@ class LandmarkFactoryHM : public LandmarkFactory {
     void propagate_pm_atoms(int atom_index, bool newly_discovered,
                             TriggerSet &trigger);
 
+    Propositions initialize_preconditions(
+        const VariablesProxy &variables, const OperatorProxy &op,
+        PiMOperator &pm_op);
+    Propositions initialize_postconditions(
+        const VariablesProxy &variables, const OperatorProxy &op,
+        PiMOperator &pm_op);
+    void add_conditional_noop(
+        PiMOperator &pm_op, int op_id,
+        const VariablesProxy &variables, const Propositions &propositions,
+        const Propositions &preconditions, const Propositions &postconditions);
+    void initialize_noops(
+        const VariablesProxy &variables, PiMOperator &pm_op, int op_id,
+        const Propositions &preconditions, const Propositions &postconditions);
     void build_pm_operators(const TaskProxy &task_proxy);
     // TODO: What is interesting?
     bool interesting(const VariablesProxy &variables,
