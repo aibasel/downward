@@ -33,7 +33,7 @@ struct PiMOperator {
     /* In each of the inner vectors, the effect conditions are separated from
        the effect values by an entry of the value -1. */
     std::vector<std::vector<int>> conditional_noops;
-    int index;
+    int id;
 };
 
 // represents a proposition in the P^m problem
@@ -69,7 +69,7 @@ using PropositionSetToIntMap =
     std::map<Propositions, int, PropositionSetComparer>;
 
 class LandmarkFactoryHM : public LandmarkFactory {
-    using TriggerSet = std::unordered_map<int, std::set<int>>;
+    using TriggerSet = std::unordered_map<int, std::unordered_set<int>>;
 
     const int m;
     const bool conjunctive_landmarks;
@@ -93,12 +93,22 @@ class LandmarkFactoryHM : public LandmarkFactory {
     virtual void generate_landmarks(
         const std::shared_ptr<AbstractTask> &task) override;
 
+    TriggerSet mark_state_propositions_reached(
+        const State &state, const VariablesProxy &variables);
+    std::pair<std::list<int>, std::list<int>> collect_precondition_landmarks(
+        const PiMOperator &op) const;
+    void update_effect_landmarks(
+        const PiMOperator &op, int level, const std::list<int> &landmarks,
+        const std::list<int> &necessary, TriggerSet &triggers);
+    void update_noop_landmarks(
+        const std::unordered_set<int> &current_triggers, const PiMOperator &op,
+        int level, const std::list<int> &landmarks,
+        const std::list<int> &necessary, TriggerSet &next_triggers);
     void compute_hm_landmarks(const TaskProxy &task_proxy);
-    void compute_noop_landmarks(int op_index, int noop_index,
-                                std::list<int> const &local_landmarks,
-                                std::list<int> const &local_necessary,
-                                int level,
-                                TriggerSet &next_trigger);
+    void compute_noop_landmarks(
+        int op_id, int noop_index, const std::list<int> &local_landmarks,
+        const std::list<int> &local_necessary, int level,
+        TriggerSet &next_trigger);
 
     void trigger_operator(
         int op_id, bool newly_discovered, TriggerSet &trigger);
