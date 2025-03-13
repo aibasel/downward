@@ -51,27 +51,27 @@ static vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> get_reas
 }
 
 LandmarkStatusManager::LandmarkStatusManager(
-    LandmarkGraph &graph,
-    bool progress_goals,
-    bool progress_greedy_necessary_orderings,
-    bool progress_reasonable_orderings)
-    : lm_graph(graph),
-      goal_landmarks(progress_goals ? get_goal_landmarks(graph)
+    LandmarkGraph &landmark_graph,
+    const bool progress_goals,
+    const bool progress_greedy_necessary_orderings,
+    const bool progress_reasonable_orderings)
+    : landmark_graph(landmark_graph),
+      goal_landmarks(progress_goals ? get_goal_landmarks(landmark_graph)
                      : vector<const LandmarkNode *>{}),
       greedy_necessary_children(
           progress_greedy_necessary_orderings
-          ? get_greedy_necessary_children(graph)
+          ? get_greedy_necessary_children(landmark_graph)
           : vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>>{}),
       reasonable_parents(
           progress_reasonable_orderings
-          ? get_reasonable_parents(graph)
+          ? get_reasonable_parents(landmark_graph)
           : vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>>{}),
-      /* We initialize to true in *past_landmarks* because true is the
+      /* We initialize to true in `past_landmarks` because true is the
          neutral element of conjunction/set intersection. */
-      past_landmarks(vector<bool>(graph.get_num_landmarks(), true)),
-      /* We initialize to false in *future_landmarks* because false is
+      past_landmarks(vector<bool>(landmark_graph.get_num_landmarks(), true)),
+      /* We initialize to false in `future_landmarks` because false is
          the neutral element for disjunction/set union. */
-      future_landmarks(vector<bool>(graph.get_num_landmarks(), false)) {
+      future_landmarks(vector<bool>(landmark_graph.get_num_landmarks(), false)) {
 }
 
 BitsetView LandmarkStatusManager::get_past_landmarks(const State &state) {
@@ -94,10 +94,10 @@ void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
     BitsetView past = get_past_landmarks(initial_state);
     BitsetView future = get_future_landmarks(initial_state);
 
-    for (const auto &node : lm_graph) {
-        int id = node->get_id();
-        const Landmark &lm = node->get_landmark();
-        if (lm.is_true_in_state(initial_state)) {
+    for (const auto &node : landmark_graph) {
+        const int id = node->get_id();
+        const Landmark &landmark = node->get_landmark();
+        if (landmark.is_true_in_state(initial_state)) {
             assert(past.test(id));
             /*
               A landmark B that holds initially is always past. If there is a
@@ -113,7 +113,8 @@ void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
             */
             if (any_of(node->parents.begin(), node->parents.end(),
                        [initial_state](auto &parent) {
-                           Landmark &landmark = parent.first->get_landmark();
+                           const Landmark &landmark =
+                               parent.first->get_landmark();
                            return !landmark.is_true_in_state(initial_state);
                        })) {
                 future.set(id);
@@ -139,10 +140,10 @@ void LandmarkStatusManager::progress(
     ConstBitsetView parent_future = get_future_landmarks(parent_ancestor_state);
     BitsetView future = get_future_landmarks(ancestor_state);
 
-    assert(past.size() == lm_graph.get_num_landmarks());
-    assert(parent_past.size() == lm_graph.get_num_landmarks());
-    assert(future.size() == lm_graph.get_num_landmarks());
-    assert(parent_future.size() == lm_graph.get_num_landmarks());
+    assert(past.size() == landmark_graph.get_num_landmarks());
+    assert(parent_past.size() == landmark_graph.get_num_landmarks());
+    assert(future.size() == landmark_graph.get_num_landmarks());
+    assert(parent_future.size() == landmark_graph.get_num_landmarks());
 
     progress_landmarks(
         parent_past, parent_future, parent_ancestor_state,
@@ -156,11 +157,11 @@ void LandmarkStatusManager::progress_landmarks(
     ConstBitsetView &parent_past, ConstBitsetView &parent_future,
     const State &parent_ancestor_state, BitsetView &past,
     BitsetView &future, const State &ancestor_state) {
-    for (const auto &node : lm_graph) {
+    for (const auto &node : landmark_graph) {
         int id = node->get_id();
-        const Landmark &lm = node->get_landmark();
+        const Landmark &landmark = node->get_landmark();
         if (parent_future.test(id)) {
-            if (!lm.is_true_in_state(ancestor_state)) {
+            if (!landmark.is_true_in_state(ancestor_state)) {
                 /*
                   A landmark that is future in the parent remains future
                   if it does not hold in the current state. If it also
@@ -170,7 +171,7 @@ void LandmarkStatusManager::progress_landmarks(
                 if (!parent_past.test(id)) {
                     past.reset(id);
                 }
-            } else if (lm.is_true_in_state(parent_ancestor_state)) {
+            } else if (landmark.is_true_in_state(parent_ancestor_state)) {
                 /*
                   If the landmark held in the parent already, then it
                   was not added by this transition and should remain
@@ -195,11 +196,11 @@ void LandmarkStatusManager::progress_goals(const State &ancestor_state,
 void LandmarkStatusManager::progress_greedy_necessary_orderings(
     const State &ancestor_state, const BitsetView &past, BitsetView &future) {
     for (auto &[tail, children] : greedy_necessary_children) {
-        const Landmark &lm = tail->get_landmark();
+        const Landmark &landmark = tail->get_landmark();
         assert(!children.empty());
         for (auto &child : children) {
             if (!past.test(child->get_id())
-                && !lm.is_true_in_state(ancestor_state)) {
+                && !landmark.is_true_in_state(ancestor_state)) {
                 future.set(tail->get_id());
                 break;
             }

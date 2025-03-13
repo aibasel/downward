@@ -78,7 +78,7 @@ static vector<FactPair> get_sorted_effect_conditions(
     const EffectProxy &effect) {
     vector<FactPair> effect_conditions;
     effect_conditions.reserve(effect.get_conditions().size());
-    for (FactProxy effect_condition: effect.get_conditions()) {
+    for (FactProxy effect_condition : effect.get_conditions()) {
         effect_conditions.push_back(effect_condition.get_pair());
     }
     sort(effect_conditions.begin(), effect_conditions.end());

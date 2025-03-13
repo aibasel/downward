@@ -27,10 +27,10 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     void add_dtg_successor(int var_id, int pre, int post);
     void find_forward_orders(const VariablesProxy &variables,
                              const std::vector<std::vector<bool>> &reached,
-                             LandmarkNode *lm_node);
-    void add_lm_forward_orders();
+                             LandmarkNode *node);
+    void add_landmark_forward_orderings();
 
-    void get_greedy_preconditions_for_lm(
+    void get_greedy_preconditions_for_landmark(
         const TaskProxy &task_proxy, const Landmark &landmark,
         const OperatorProxy &op,
         std::unordered_map<int, int> &result) const;
@@ -47,15 +47,14 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     virtual void generate_relaxed_landmarks(
         const std::shared_ptr<AbstractTask> &task,
         Exploration &exploration) override;
-    void found_simple_lm_and_order(const FactPair &atom, LandmarkNode &node,
-                                   OrderingType type);
-    void found_disj_lm_and_order(const TaskProxy &task_proxy,
-                                 const std::set<FactPair> &atoms,
-                                 LandmarkNode &node,
-                                 OrderingType type);
-    void approximate_lookahead_orders(const TaskProxy &task_proxy,
-                                      const std::vector<std::vector<bool>> &reached,
-                                      LandmarkNode *lmp);
+    void found_simple_landmark_and_ordering(
+        const FactPair &atom, LandmarkNode &node, OrderingType type);
+    void found_disjunctive_landmark_and_ordering(
+        const TaskProxy &task_proxy, const std::set<FactPair> &atoms,
+        LandmarkNode &node, OrderingType type);
+    void approximate_lookahead_orders(
+        const TaskProxy &task_proxy,
+        const std::vector<std::vector<bool>> &reached, LandmarkNode *node);
     bool domain_connectivity(const State &initial_state,
                              const FactPair &landmark,
                              const std::unordered_set<int> &exclude);

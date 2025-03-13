@@ -18,65 +18,16 @@ LandmarkHeuristic::LandmarkHeuristic(
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
+      initial_landmark_graph_has_cycle_of_natural_orderings(false),
       use_preferred_operators(use_preferred_operators),
       successor_generator(nullptr) {
 }
 
-void LandmarkHeuristic::initialize(
-    const shared_ptr<LandmarkFactory> &lm_factory, bool prog_goal,
-    bool prog_gn, bool prog_r) {
-    /*
-      Actually, we should test if this is the root task or a
-      task that *only* transforms costs and/or adds negated axioms.
-      However, there is currently no good way to do this, so we use
-      this incomplete, slightly less safe test.
-    */
-    if (task != tasks::g_root_task
-        && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr
-        && dynamic_cast<tasks::DefaultValueAxiomsTask *>(task.get()) == nullptr) {
-        cerr << "The landmark heuristics currently only support "
-             << "task transformations that modify the operator costs "
-             << "or add negated axioms. See issues 845, 686 and 454 "
-             << "for details." << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
-    }
-
-    compute_landmark_graph(lm_factory);
-    lm_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(
-        *lm_graph, prog_goal, prog_gn, prog_r);
-
-    initial_landmark_graph_has_cycle_of_natural_orderings =
-        landmark_graph_has_cycle_of_natural_orderings();
-    if (initial_landmark_graph_has_cycle_of_natural_orderings
-        && log.is_at_least_normal()) {
-        log << "Landmark graph contains a cycle of natural orderings." << endl;
-    }
-
-    if (use_preferred_operators) {
-        compute_landmarks_achieved_by_atom();
-        /* Ideally, we should reuse the successor generator of the main
-           task in cases where it's compatible. See issue564. */
-        successor_generator =
-            utils::make_unique_ptr<successor_generator::SuccessorGenerator>(
-                task_proxy);
-    }
-}
-
-bool LandmarkHeuristic::landmark_graph_has_cycle_of_natural_orderings() {
-    int num_landmarks = lm_graph->get_num_landmarks();
-    vector<bool> closed(num_landmarks, false);
-    vector<bool> visited(num_landmarks, false);
-    for (const auto &node : *lm_graph) {
-        if (depth_first_search_for_cycle_of_natural_orderings(
-                *node, closed, visited)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool LandmarkHeuristic::depth_first_search_for_cycle_of_natural_orderings(
-    const LandmarkNode &node, vector<bool> &closed, vector<bool> &visited) {
+/* TODO: We would prefer the following two functions to be implemented
+    somewhere else as more generic graph algorithms. */
+static bool depth_first_search_for_cycle_of_natural_orderings(
+    const LandmarkNode &node, std::vector<bool> &closed,
+    std::vector<bool> &visited) {
     int id = node.get_id();
     if (closed[id]) {
         return false;
@@ -97,31 +48,85 @@ bool LandmarkHeuristic::depth_first_search_for_cycle_of_natural_orderings(
     return false;
 }
 
+static bool landmark_graph_has_cycle_of_natural_orderings(
+    const LandmarkGraph &landmark_graph) {
+    const int num_landmarks = landmark_graph.get_num_landmarks();
+    vector<bool> closed(num_landmarks, false);
+    vector<bool> visited(num_landmarks, false);
+    for (const auto &node : landmark_graph) {
+        if (depth_first_search_for_cycle_of_natural_orderings(
+                *node, closed, visited)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void LandmarkHeuristic::initialize(
+    const shared_ptr<LandmarkFactory> &landmark_factory, bool prog_goal,
+    bool prog_gn, bool prog_r) {
+    /*
+      Actually, we should test if this is the root task or a task that *only*
+      transforms costs and/or adds negated axioms. However, there is currently
+      no good way to do this, so we use this incomplete, slightly less safe
+      test.
+    */
+    if (task != tasks::g_root_task
+        && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr
+        && dynamic_cast<tasks::DefaultValueAxiomsTask *>(task.get()) == nullptr) {
+        cerr << "The landmark heuristics currently only support "
+             << "task transformations that modify the operator costs "
+             << "or add negated axioms. See issues 845, 686 and 454 "
+             << "for details." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+    }
+
+    compute_landmark_graph(landmark_factory);
+    landmark_status_manager = utils::make_unique_ptr<LandmarkStatusManager>(
+        *landmark_graph, prog_goal, prog_gn, prog_r);
+
+    initial_landmark_graph_has_cycle_of_natural_orderings =
+        landmark_graph_has_cycle_of_natural_orderings(*landmark_graph);
+    if (initial_landmark_graph_has_cycle_of_natural_orderings
+        && log.is_at_least_normal()) {
+        log << "Landmark graph contains a cycle of natural orderings." << endl;
+    }
+
+    if (use_preferred_operators) {
+        compute_landmarks_achieved_by_atom();
+        /* Ideally, we should reuse the successor generator of the main
+           task in cases where it's compatible. See issue564. */
+        successor_generator =
+            utils::make_unique_ptr<successor_generator::SuccessorGenerator>(
+                task_proxy);
+    }
+}
+
 void LandmarkHeuristic::compute_landmark_graph(
-    const shared_ptr<LandmarkFactory> &lm_factory) {
-    utils::Timer lm_graph_timer;
+    const shared_ptr<LandmarkFactory> &landmark_factory) {
+    utils::Timer landmark_graph_timer;
     if (log.is_at_least_normal()) {
         log << "Generating landmark graph..." << endl;
     }
 
-    lm_graph = lm_factory->compute_lm_graph(task);
-    assert(lm_factory->achievers_are_calculated());
+    landmark_graph = landmark_factory->compute_landmark_graph(task);
+    assert(landmark_factory->achievers_are_calculated());
 
     if (log.is_at_least_normal()) {
-        log << "Landmark graph generation time: " << lm_graph_timer << endl;
-        log << "Landmark graph contains " << lm_graph->get_num_landmarks()
+        log << "Landmark graph generation time: " << landmark_graph_timer << endl;
+        log << "Landmark graph contains " << landmark_graph->get_num_landmarks()
             << " landmarks, of which "
-            << lm_graph->get_num_disjunctive_landmarks()
+            << landmark_graph->get_num_disjunctive_landmarks()
             << " are disjunctive and "
-            << lm_graph->get_num_conjunctive_landmarks()
+            << landmark_graph->get_num_conjunctive_landmarks()
             << " are conjunctive." << endl;
-        log << "Landmark graph contains " << lm_graph->get_num_orderings()
+        log << "Landmark graph contains " << landmark_graph->get_num_orderings()
             << " orderings." << endl;
     }
 }
 
 void LandmarkHeuristic::compute_landmarks_achieved_by_atom() {
-    for (const auto &node : *lm_graph) {
+    for (const auto &node : *landmark_graph) {
         const int id = node->get_id();
         const Landmark &landmark = node->get_landmark();
         if (landmark.is_conjunctive) {
@@ -203,7 +208,7 @@ int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
     int h = get_heuristic_value(ancestor_state);
     if (use_preferred_operators) {
         ConstBitsetView future =
-            lm_status_manager->get_future_landmarks(ancestor_state);
+            landmark_status_manager->get_future_landmarks(ancestor_state);
         State state = convert_ancestor_state(ancestor_state);
         generate_preferred_operators(state, future);
     }
@@ -211,12 +216,12 @@ int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 void LandmarkHeuristic::notify_initial_state(const State &initial_state) {
-    lm_status_manager->progress_initial_state(initial_state);
+    landmark_status_manager->progress_initial_state(initial_state);
 }
 
 void LandmarkHeuristic::notify_state_transition(
     const State &parent_state, OperatorID op_id, const State &state) {
-    lm_status_manager->progress(parent_state, op_id, state);
+    landmark_status_manager->progress(parent_state, op_id, state);
     if (cache_evaluator_values) {
         /* TODO:  It may be more efficient to check that the past landmark
             set has actually changed and only then mark the h value as dirty. */
