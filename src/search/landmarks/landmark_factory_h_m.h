@@ -52,11 +52,13 @@ struct HMEntry {
 
     std::list<int> first_achievers;
 
-    /* TODO: What's the meaning of this? Is it actually using a FactPair to
-        represent something completely unrelated?!? */
-    /* First int = op index, second int conditional noop effect
-       -1 for op itself */
-    std::vector<FactPair> pc_for;
+    /*
+      The first int represents an operator ID. If the second int is -1 it means
+      the `propositions` are a precondition of the corresponding operator. If
+      the second int is >= 0 it points to the respective conditional noop for
+      which `propositions` occur in the effect condition.
+    */
+    std::vector<std::pair<int, int>> triggered_operators;
 
     explicit HMEntry(Propositions &&propositions)
         : propositions(move(propositions)), level(-1) {
@@ -85,6 +87,7 @@ class LandmarkFactoryHM : public LandmarkFactory {
       position represents the amount of unsatisfied preconditions for each
       conditional noop operator.
     */
+    // TODO: Instead reserve the first entry of the vector for the operator itself.
     std::vector<std::pair<int, std::vector<int>>> num_unsatisfied_preconditions;
 
     virtual void generate_landmarks(
@@ -97,8 +100,12 @@ class LandmarkFactoryHM : public LandmarkFactory {
                                 int level,
                                 TriggerSet &next_trigger);
 
-    void propagate_pm_atoms(int atom_index, bool newly_discovered,
-                            TriggerSet &trigger);
+    void trigger_operator(
+        int op_id, bool newly_discovered, TriggerSet &trigger);
+    void trigger_conditional_noop(
+        int op_id, int noop_id, bool newly_discovered, TriggerSet &trigger);
+    void propagate_pm_propositions(
+        int proposition_id, bool newly_discovered, TriggerSet &trigger);
 
     Propositions initialize_preconditions(
         const VariablesProxy &variables, const OperatorProxy &op,

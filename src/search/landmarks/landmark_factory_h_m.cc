@@ -518,8 +518,7 @@ Propositions LandmarkFactoryHM::initialize_preconditions(
         assert(set_indices.contains(subset));
         int set_index = set_indices[subset];
         pm_op.precondition.push_back(set_index);
-        // TODO: Do not abuse FactPair here!!!
-        hm_table[set_index].pc_for.emplace_back(op.get_id(), -1);
+        hm_table[set_index].triggered_operators.emplace_back(op.get_id(), -1);
     }
     return precondition;
 }
@@ -569,7 +568,7 @@ void LandmarkFactoryHM::add_conditional_noop(
         int set_index = set_indices[subset];
         conditional_noop.push_back(set_index);
         // These propositions are "conditional preconditions" for this operator.
-        hm_table[set_index].pc_for.emplace_back(op_id, noop_index);
+        hm_table[set_index].triggered_operators.emplace_back(op_id, noop_index);
     }
 
     // Separate conditional preconditions from conditional effects by number -1.
@@ -701,16 +700,16 @@ static bool operator_can_achieve_landmark(
     for (const FactPair &atom : landmark.atoms) {
         if (find(postcondition.begin(), postcondition.end(), atom) !=
             postcondition.end()) {
-            // `atom` is a postcondition of `op`.
+            // This `atom` is a postcondition of `op`, move on to the next one.
             continue;
         }
-        auto is_mutex = [&](const FactPair &other) {
+        auto mutex = [&](const FactPair &other) {
             return are_mutex(variables, atom, other);
         };
-        if (any_of(postcondition.begin(), postcondition.end(), is_mutex) ||
+        if (any_of(postcondition.begin(), postcondition.end(), mutex) ||
             /* TODO: Since the precondition is factored into the postcondition,
                 I don't think we actually need this second `any_of` case. */
-            any_of(precondition.begin(), precondition.end(), is_mutex)) {
+            any_of(precondition.begin(), precondition.end(), mutex)) {
             return false;
         }
     }
@@ -760,39 +759,51 @@ void LandmarkFactoryHM::free_unneeded_memory() {
     landmark_node_table.clear();
 }
 
-// called when a fact is discovered or its landmarks change
-// to trigger required actions at next level
-// newly_discovered = first time fact becomes reachable
-void LandmarkFactoryHM::propagate_pm_atoms(int atom_index, bool newly_discovered,
-                                          TriggerSet &trigger) {
-    // for each action/noop for which fact is a pc
-    for (const FactPair &info : hm_table[atom_index].pc_for) {
-        // a pc for the action itself
-        if (info.value == -1) {
-            if (newly_discovered) {
-                --num_unsatisfied_preconditions[info.var].first;
-            }
-            // add to queue if unsatcount at 0
-            if (num_unsatisfied_preconditions[info.var].first == 0) {
-                // create empty set or clear prev entries -- signals do all possible noop effects
-                trigger[info.var].clear();
-            }
+void LandmarkFactoryHM::trigger_operator(
+    int op_id, bool newly_discovered, TriggerSet &trigger) {
+    if (newly_discovered) {
+        --num_unsatisfied_preconditions[op_id].first;
+    }
+    if (num_unsatisfied_preconditions[op_id].first == 0) {
+        /*
+          Clear trigger for `op_id` (or create entry if it does not yet
+          exist) to indicate that the precondition of the corresponding
+          operator is satisfied and all conditional noops are triggered.
+        */
+        trigger[op_id].clear();
+    }
+}
+
+void LandmarkFactoryHM::trigger_conditional_noop(
+    int op_id, int noop_id, bool newly_discovered, TriggerSet &trigger) {
+    if (newly_discovered) {
+        --num_unsatisfied_preconditions[op_id].second[noop_id];
+    }
+    /* If the operator is applicable and the effect condition is
+       satisfied, then the effect is triggered. */
+    if (num_unsatisfied_preconditions[op_id].first == 0 &&
+        num_unsatisfied_preconditions[op_id].second[noop_id] == 0) {
+        /*
+          The trigger for `op_id` being empty indicates that all noops are
+          triggered anyway. Testing `contains` first is necessary to not
+          generate the (empty) entry for `op_id` when using the [] operator.
+        */
+        if (!trigger.contains(op_id) || !trigger[op_id].empty()) {
+            trigger[op_id].insert(noop_id);
         }
-        // a pc for a conditional noop
-        else {
-            if (newly_discovered) {
-                --num_unsatisfied_preconditions[info.var].second[info.value];
-            }
-            // if associated action is applicable, and effect has become applicable
-            // (if associated action is not applicable, all noops will be used when it first does)
-            if ((num_unsatisfied_preconditions[info.var].first == 0) &&
-                (num_unsatisfied_preconditions[info.var].second[info.value] == 0)) {
-                // if not already triggering all noops, add this one
-                if ((trigger.find(info.var) == trigger.end()) ||
-                    (!trigger[info.var].empty())) {
-                    trigger[info.var].insert(info.value);
-                }
-            }
+    }
+}
+
+// Triggers which operators are reevaluated at the next level.
+void LandmarkFactoryHM::propagate_pm_propositions(
+    int proposition_id, bool newly_discovered, TriggerSet &trigger) {
+    // For each operator/noop for which the proposition is a precondition.
+    for (auto [op_id, noop_id] : hm_table[proposition_id].triggered_operators) {
+        if (noop_id == -1) {
+            // The proposition is a precondition for the operator itself.
+            trigger_operator(op_id, newly_discovered, trigger);
+        } else {
+            trigger_conditional_noop(op_id, noop_id, newly_discovered, trigger);
         }
     }
 }
@@ -810,7 +821,7 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
         hm_table[index].level = 0;
 
         // set actions to be applied
-        propagate_pm_atoms(index, true, current_trigger);
+        propagate_pm_propositions(index, true, current_trigger);
     }
 
     // mark actions with no precondition to be applied
@@ -869,7 +880,7 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
                     }
 
                     if (hm_table[*it].landmarks.size() != prev_size)
-                        propagate_pm_atoms(*it, false, next_trigger);
+                        propagate_pm_propositions(*it, false, next_trigger);
                 } else {
                     hm_table[*it].level = level;
                     hm_table[*it].landmarks = local_landmarks;
@@ -877,7 +888,7 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
                         hm_table[*it].necessary = local_necessary;
                     }
                     insert_into(hm_table[*it].first_achievers, op_index);
-                    propagate_pm_atoms(*it, true, next_trigger);
+                    propagate_pm_propositions(*it, true, next_trigger);
                 }
             }
 
@@ -975,7 +986,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
             }
 
             if (hm_table[pm_proposition].landmarks.size() != prev_size)
-                propagate_pm_atoms(pm_proposition, false, next_trigger);
+                propagate_pm_propositions(pm_proposition, false, next_trigger);
         } else {
             hm_table[pm_proposition].level = level;
             hm_table[pm_proposition].landmarks = cn_landmarks;
@@ -983,7 +994,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
                 hm_table[pm_proposition].necessary = cn_necessary;
             }
             insert_into(hm_table[pm_proposition].first_achievers, op_index);
-            propagate_pm_atoms(pm_proposition, true, next_trigger);
+            propagate_pm_propositions(pm_proposition, true, next_trigger);
         }
     }
 }
