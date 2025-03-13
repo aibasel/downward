@@ -346,15 +346,15 @@ static Propositions get_operator_postcondition(
     return postconditions;
 }
 
-static set<FactPair> get_as_set(
+static set<FactPair> get_propositions(
     const vector<int> &collection, const vector<HMEntry> &hm_table) {
-    set<FactPair> preconditions;
+    set<FactPair> propositions;
     for (int element : collection) {
         for (const FactPair &proposition : hm_table[element].propositions) {
-            preconditions.insert(proposition);
+            propositions.insert(proposition);
         }
     }
-    return preconditions;
+    return propositions;
 }
 
 void LandmarkFactoryHM::print_pm_operator(
@@ -444,29 +444,29 @@ void LandmarkFactoryHM::print_action(
     const std::vector<std::pair<std::set<FactPair>, std::set<FactPair>>> &conditions) const {
     log << "Action " << op.index << endl;
     log << "Precondition: ";
-    set<FactPair> preconditions = get_as_set(op.precondition, hm_table);
-    for (const FactPair &pc : preconditions) {
-        print_proposition(variables, pc);
+    set<FactPair> preconditions = get_propositions(op.precondition, hm_table);
+    for (const FactPair &precondition : preconditions) {
+        print_proposition(variables, precondition);
         log << " ";
     }
 
     log << endl << "Effect: ";
-    set<FactPair> effects = get_as_set(op.effect, hm_table);
-    for (const FactPair &eff : effects) {
-        print_proposition(variables, eff);
+    set<FactPair> effects = get_propositions(op.effect, hm_table);
+    for (const FactPair &effect : effects) {
+        print_proposition(variables, effect);
         log << " ";
     }
     log << endl << "Conditionals: " << endl;
     int i = 0;
-    for (const auto &condition : conditions) {
+    for (const auto &[effect_conditions, effects] : conditions) {
         log << "Effect Condition #" << i++ << ":\n\t";
-        for (const FactPair &cond : condition.first) {
-            print_proposition(variables, cond);
+        for (const FactPair &condition : effect_conditions) {
+            print_proposition(variables, condition);
             log << " ";
         }
         log << endl << "Conditional Effect #" << i << ":\n\t";
-        for (const FactPair &eff : condition.second) {
-            print_proposition(variables, eff);
+        for (const FactPair &effect : effects) {
+            print_proposition(variables, effect);
             log << " ";
         }
         log << endl << endl;
@@ -678,13 +678,59 @@ void LandmarkFactoryHM::postprocess(const TaskProxy &task_proxy) {
 }
 
 void LandmarkFactoryHM::discard_conjunctive_landmarks() {
-    if (landmark_graph->get_num_conjunctive_landmarks() > 0) {
-        if (log.is_at_least_normal()) {
-            log << "Discarding " << landmark_graph->get_num_conjunctive_landmarks()
-                << " conjunctive landmarks" << endl;
+    if (landmark_graph->get_num_conjunctive_landmarks() == 0) {
+        return;
+    }
+    if (log.is_at_least_normal()) {
+        log << "Discarding " << landmark_graph->get_num_conjunctive_landmarks()
+            << " conjunctive landmarks" << endl;
+    }
+    landmark_graph->remove_node_if(
+        [](const LandmarkNode &node) {
+            return node.get_landmark().is_conjunctive;
+        });
+}
+
+static bool operator_can_achieve_landmark(
+    const OperatorProxy &op, const Landmark &landmark,
+    const VariablesProxy &variables) {
+    Propositions precondition = get_operator_precondition(op);
+    Propositions postcondition =
+        get_operator_postcondition(static_cast<int>(variables.size()), op);
+
+    for (const FactPair &atom : landmark.atoms) {
+        if (find(postcondition.begin(), postcondition.end(), atom) !=
+            postcondition.end()) {
+            // `atom` is a postcondition of `op`.
+            continue;
         }
-        landmark_graph->remove_node_if(
-            [](const LandmarkNode &node) {return node.get_landmark().is_conjunctive;});
+        auto is_mutex = [&](const FactPair &other) {
+            return are_mutex(variables, atom, other);
+        };
+        if (any_of(postcondition.begin(), postcondition.end(), is_mutex) ||
+            /* TODO: Since the precondition is factored into the postcondition,
+                I don't think we actually need this second `any_of` case. */
+            any_of(precondition.begin(), precondition.end(), is_mutex)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void LandmarkFactoryHM::approximate_possible_achievers(
+    Landmark &landmark, const OperatorsProxy &operators,
+    const VariablesProxy &variables) const {
+    unordered_set<int> candidates;
+    for (const FactPair &atom : landmark.atoms) {
+        const vector<int> &ops = get_operators_including_effect(atom);
+        candidates.insert(ops.begin(), ops.end());
+    }
+
+    for (int op_id : candidates) {
+        if (operator_can_achieve_landmark(
+            operators[op_id], landmark, variables)) {
+            landmark.possible_achievers.insert(op_id);
+        }
     }
 }
 
@@ -696,55 +742,11 @@ void LandmarkFactoryHM::calc_achievers(const TaskProxy &task_proxy) {
 
     OperatorsProxy operators = task_proxy.get_operators();
     VariablesProxy variables = task_proxy.get_variables();
-    // first_achievers are already filled in by compute_h_m_landmarks
-    // here only have to do possible_achievers
+    /* The `first_achievers` are already filled in by `compute_h_m_landmarks`,
+       so here we only have to do `possible_achievers` */
     for (const auto &node : *landmark_graph) {
         Landmark &landmark = node->get_landmark();
-        set<int> candidates;
-        // put all possible adders in candidates set
-        for (const FactPair &atom : landmark.atoms) {
-            const vector<int> &ops = get_operators_including_effect(atom);
-            candidates.insert(ops.begin(), ops.end());
-        }
-
-        for (int op_id : candidates) {
-            Propositions post = get_operator_postcondition(variables.size(), operators[op_id]);
-            Propositions pre = get_operator_precondition(operators[op_id]);
-            size_t j;
-            for (j = 0; j < landmark.atoms.size(); ++j) {
-                const FactPair &atom = landmark.atoms[j];
-                // action adds this element of landmark as well
-                if (find(post.begin(), post.end(), atom) != post.end())
-                    continue;
-                bool is_mutex = false;
-                for (const FactPair &proposition : post) {
-                    if (variables[proposition.var].get_fact(proposition.value).is_mutex(
-                            variables[atom.var].get_fact(atom.value))) {
-                        is_mutex = true;
-                        break;
-                    }
-                }
-                if (is_mutex) {
-                    break;
-                }
-                for (const FactPair &proposition : pre) {
-                    // we know that lm_val is not added by the operator
-                    // so if it incompatible with the pc, this can't be an achiever
-                    if (variables[proposition.var].get_fact(proposition.value).is_mutex(
-                            variables[atom.var].get_fact(atom.value))) {
-                        is_mutex = true;
-                        break;
-                    }
-                }
-                if (is_mutex) {
-                    break;
-                }
-            }
-            if (j == landmark.atoms.size()) {
-                // not inconsistent with any of the other landmark propositions
-                landmark.possible_achievers.insert(op_id);
-            }
-        }
+        approximate_possible_achievers(landmark, operators, variables);
     }
     achievers_calculated = true;
 }

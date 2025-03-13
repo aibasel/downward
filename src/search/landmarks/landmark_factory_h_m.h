@@ -119,6 +119,9 @@ class LandmarkFactoryHM : public LandmarkFactory {
 
     void discard_conjunctive_landmarks();
 
+    void approximate_possible_achievers(
+        Landmark &landmark, const OperatorsProxy &operators,
+        const VariablesProxy &variables) const;
     void calc_achievers(const TaskProxy &task_proxy);
 
     void add_landmark_node(int set_index, bool goal = false);
