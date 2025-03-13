@@ -95,11 +95,14 @@ class LandmarkFactoryHM : public LandmarkFactory {
 
     TriggerSet mark_state_propositions_reached(
         const State &state, const VariablesProxy &variables);
-    std::pair<std::list<int>, std::list<int>> collect_precondition_landmarks(
-        const PiMOperator &op) const;
+    void collect_condition_landmarks(
+        const std::vector<int> &condition, std::list<int> &landmarks,
+        std::list<int> &necessary)
+    const;
     void update_effect_landmarks(
-        const PiMOperator &op, int level, const std::list<int> &landmarks,
-        const std::list<int> &necessary, TriggerSet &triggers);
+        int op_id, const std::vector<int> &effect, int level,
+        const std::list<int> &landmarks, const std::list<int> &necessary,
+        TriggerSet &triggers);
     void update_noop_landmarks(
         const std::unordered_set<int> &current_triggers, const PiMOperator &op,
         int level, const std::list<int> &landmarks,
