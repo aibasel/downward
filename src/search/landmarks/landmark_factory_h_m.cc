@@ -1,5 +1,7 @@
 #include "landmark_factory_h_m.h"
 
+#include <numeric>
+
 #include "exploration.h"
 #include "landmark.h"
 
@@ -9,6 +11,7 @@
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/system.h"
 
 #include <ranges>
@@ -756,7 +759,7 @@ void LandmarkFactoryHM::free_unneeded_memory() {
     utils::release_vector_memory(num_unsatisfied_preconditions);
 
     set_indices.clear();
-    landmark_node_table.clear();
+    landmark_nodes.clear();
 }
 
 void LandmarkFactoryHM::trigger_operator(
@@ -865,7 +868,7 @@ void LandmarkFactoryHM::update_effect_landmarks(
             if (!contains(landmarks, proposition)) {
                 insert_into(hm_table[proposition].first_achievers, op_id);
                 if (use_orders) {
-                    intersect_with(hm_table[proposition].necessary, necessary);
+                    intersect_with(hm_table[proposition].prerequisite_landmark, necessary);
                 }
             }
 
@@ -876,7 +879,7 @@ void LandmarkFactoryHM::update_effect_landmarks(
             hm_table[proposition].level = level;
             hm_table[proposition].landmarks = landmarks;
             if (use_orders) {
-                hm_table[proposition].necessary = necessary;
+                hm_table[proposition].prerequisite_landmark = necessary;
             }
             insert_into(hm_table[proposition].first_achievers, op_id);
             propagate_pm_propositions(proposition, true, triggers);
@@ -958,16 +961,88 @@ void LandmarkFactoryHM::compute_noop_landmarks(
 }
 
 void LandmarkFactoryHM::add_landmark_node(int set_index, bool goal) {
-    if (landmark_node_table.find(set_index) == landmark_node_table.end()) {
+    if (!landmark_nodes.contains(set_index)) {
         const HMEntry &hm_entry = hm_table[set_index];
         vector<FactPair> facts(hm_entry.propositions);
         utils::sort_unique(facts);
         assert(!facts.empty());
-        Landmark landmark(facts, false, (facts.size() > 1), goal);
-        landmark.first_achievers.insert(
-            hm_entry.first_achievers.begin(),
-            hm_entry.first_achievers.end());
-        landmark_node_table[set_index] = &landmark_graph->add_landmark(move(landmark));
+        bool conjunctive = facts.size() > 1;
+        Landmark landmark(move(facts), false, conjunctive, goal);
+        landmark.first_achievers.insert(hm_entry.first_achievers.begin(),
+                                        hm_entry.first_achievers.end());
+        landmark_nodes[set_index] =
+            &landmark_graph->add_landmark(move(landmark));
+    }
+}
+
+list<int> LandmarkFactoryHM::collect_and_add_landmarks_to_landmark_graph(
+    const VariablesProxy &variables, const Propositions &goals) {
+    list<int> landmarks;
+    for (const Propositions &goal_subset : get_m_sets(variables, goals)) {
+        assert(set_indices.contains(goal_subset));
+        int set_index = set_indices[goal_subset];
+
+        if (hm_table[set_index].level == -1) {
+            if (log.is_at_least_verbose()) {
+                log << "\n\nSubset of goal not reachable !!.\n\n\n";
+                log << "Subset is: ";
+                print_proposition_set(
+                    variables, hm_table[set_index].propositions);
+                log << endl;
+            }
+        }
+
+        union_with(landmarks, hm_table[set_index].landmarks);
+        // The goal itself is also a landmark.
+        insert_into(landmarks, set_index);
+        add_landmark_node(set_index, true);
+    }
+    for (int landmark : landmarks) {
+        add_landmark_node(landmark, false);
+    }
+    return landmarks;
+}
+
+void LandmarkFactoryHM::reduce_landmarks(const list<int> &landmarks) {
+    assert(use_orders);
+    for (int landmark1 : landmarks) {
+        list<int> extended_prerequisites =
+            hm_table[landmark1].prerequisite_landmark;
+        for (int landmark2 : hm_table[landmark1].landmarks) {
+            union_with(extended_prerequisites, hm_table[landmark2].landmarks);
+        }
+        set_minus(hm_table[landmark1].landmarks, extended_prerequisites);
+    }
+}
+
+void LandmarkFactoryHM::add_landmark_orderings(const list<int> &landmarks) {
+    for (int to : landmarks) {
+        assert(landmark_nodes.contains(to));
+        for (int from : hm_table[to].prerequisite_landmark) {
+            assert(landmark_nodes.contains(from));
+            add_ordering_or_replace_if_stronger(
+                *landmark_nodes[from], *landmark_nodes[to],
+                OrderingType::GREEDY_NECESSARY);
+        }
+        for (int from : hm_table[to].landmarks) {
+            assert(landmark_nodes.contains(from));
+            add_ordering_or_replace_if_stronger(
+                *landmark_nodes[from], *landmark_nodes[to],
+                OrderingType::NATURAL);
+        }
+    }
+}
+
+void LandmarkFactoryHM::construct_landmark_graph(
+    const TaskProxy &task_proxy) {
+    Propositions goals =
+        task_properties::get_fact_pairs(task_proxy.get_goals());
+    VariablesProxy variables = task_proxy.get_variables();
+    list<int> landmarks =
+        collect_and_add_landmarks_to_landmark_graph(variables, goals);
+    if (use_orders) {
+        reduce_landmarks(landmarks);
+        add_landmark_orderings(landmarks);
     }
 }
 
@@ -976,73 +1051,8 @@ void LandmarkFactoryHM::generate_landmarks(
     TaskProxy task_proxy(*task);
     initialize(task_proxy);
     compute_hm_landmarks(task_proxy);
-    // now construct landmarks graph
-    Propositions goals = task_properties::get_fact_pairs(task_proxy.get_goals());
-    VariablesProxy variables = task_proxy.get_variables();
-    vector<Propositions> goal_subsets = get_m_sets(variables, goals);
-    list<int> all_landmarks;
-    for (const Propositions &goal_subset : goal_subsets) {
-        assert(set_indices.find(goal_subset) != set_indices.end());
-
-        int set_index = set_indices[goal_subset];
-
-        if (hm_table[set_index].level == -1) {
-            if (log.is_at_least_verbose()) {
-                log << endl << endl << "Subset of goal not reachable !!." << endl << endl << endl;
-                log << "Subset is: ";
-                print_proposition_set(variables, hm_table[set_index].propositions);
-                log << endl;
-            }
-        }
-
-        // set up goals landmarks for processing
-        union_with(all_landmarks, hm_table[set_index].landmarks);
-
-        // the goal itself is also a landmark
-        insert_into(all_landmarks, set_index);
-
-        // make a node for the goal, with in_goal = true;
-        add_landmark_node(set_index, true);
-    }
-    // now make remaining landmark nodes
-    for (int landmark : all_landmarks) {
-        add_landmark_node(landmark, false);
-    }
-    if (use_orders) {
-        // do reduction of graph
-        // if f2 is landmark for f1, subtract landmark set of f2 from that of f1
-        for (int f1 : all_landmarks) {
-            list<int> everything_to_remove;
-            for (int f2 : hm_table[f1].landmarks) {
-                union_with(everything_to_remove, hm_table[f2].landmarks);
-            }
-            set_minus(hm_table[f1].landmarks, everything_to_remove);
-            // remove necessaries here, otherwise they will be overwritten
-            // since we are writing them as greedy nec. orderings.
-            if (use_orders)
-                set_minus(hm_table[f1].landmarks, hm_table[f1].necessary);
-        }
-
-        // add the orderings.
-
-        for (int set_index : all_landmarks) {
-            for (int landmark : hm_table[set_index].landmarks) {
-                assert(landmark_node_table.find(landmark) != landmark_node_table.end());
-                assert(landmark_node_table.find(set_index) != landmark_node_table.end());
-
-                add_ordering_or_replace_if_stronger(
-                    *landmark_node_table[landmark],
-                    *landmark_node_table[set_index], OrderingType::NATURAL);
-            }
-            for (int gn : hm_table[set_index].necessary) {
-                add_ordering_or_replace_if_stronger(
-                    *landmark_node_table[gn], *landmark_node_table[set_index],
-                    OrderingType::GREEDY_NECESSARY);
-            }
-        }
-    }
+    construct_landmark_graph(task_proxy);
     free_unneeded_memory();
-
     postprocess(task_proxy);
 }
 
@@ -1057,8 +1067,17 @@ public:
         // document_group("");
         document_title("h^m Landmarks");
         document_synopsis(
-            "The landmark generation method introduced by "
-            "Keyder, Richter & Helmert (ECAI 2010).");
+            "The landmark generation method introduced in the "
+            "following paper" +
+            utils::format_conference_reference(
+                {"Emil Keyder", "Silvia Richter", "Malte Helmert"},
+                "Sound and Complete Landmarks for And/Or Graphs",
+                "https://ai.dmi.unibas.ch/papers/keyder-et-al-ecai2010.pdf",
+                "Proceedings of the 19th European Conference on Artificial "
+                "Intelligence (ECAI 2010)",
+                "335-340",
+                "IOS Press",
+                "2010"));
 
         add_option<int>(
             "m", "subset size (if unsure, use the default of 2)", "2");

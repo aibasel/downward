@@ -46,9 +46,12 @@ struct HMEntry {
 
     // TODO: Can we replace the `list` data type?
     std::list<int> landmarks;
-    // TODO: What does the following comment mean? What is a "greedy necessary landmark"?
-    // Greedy necessary landmarks, disjoint from landmarks
-    std::list<int> necessary;
+    /*
+      Landmarks that are "preconditions" to achieve this `HMEntry`. This
+      set is disjoint from `landmarks` above and used to derive
+      greedy-necessary orderings.
+    */
+    std::list<int> prerequisite_landmark;
 
     std::list<int> first_achievers;
 
@@ -75,7 +78,7 @@ class LandmarkFactoryHM : public LandmarkFactory {
     const bool conjunctive_landmarks;
     const bool use_orders;
 
-    std::unordered_map<int, LandmarkNode *> landmark_node_table;
+    std::unordered_map<int, LandmarkNode *> landmark_nodes;
 
     std::vector<HMEntry> hm_table;
     std::vector<PiMOperator> pm_operators;
@@ -90,6 +93,11 @@ class LandmarkFactoryHM : public LandmarkFactory {
     // TODO: Instead reserve the first entry of the vector for the operator itself.
     std::vector<std::pair<int, std::vector<int>>> num_unsatisfied_preconditions;
 
+    std::list<int> collect_and_add_landmarks_to_landmark_graph(
+        const VariablesProxy &variables, const Propositions &propositions);
+    void reduce_landmarks(const std::list<int> &landmarks);
+    void add_landmark_orderings(const std::list<int> &landmarks);
+    void construct_landmark_graph(const TaskProxy &task_proxy);
     virtual void generate_landmarks(
         const std::shared_ptr<AbstractTask> &task) override;
 
@@ -107,11 +115,11 @@ class LandmarkFactoryHM : public LandmarkFactory {
         const std::unordered_set<int> &current_triggers, const PiMOperator &op,
         int level, const std::list<int> &landmarks,
         const std::list<int> &necessary, TriggerSet &next_triggers);
-    void compute_hm_landmarks(const TaskProxy &task_proxy);
     void compute_noop_landmarks(
         int op_id, int noop_index, const std::list<int> &local_landmarks,
         const std::list<int> &local_necessary, int level,
         TriggerSet &next_trigger);
+    void compute_hm_landmarks(const TaskProxy &task_proxy);
 
     void trigger_operator(
         int op_id, bool newly_discovered, TriggerSet &trigger);
