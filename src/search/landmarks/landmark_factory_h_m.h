@@ -44,7 +44,7 @@ struct HMEntry {
     // Level 0:  present in initial state
     int level;
 
-    // TODO: Can we replace the `list` data type?
+    // TODO: Can we replace the `list` data type with `set` or even `vector`?
     std::list<int> landmarks;
     /*
       Landmarks that are "preconditions" to achieve this `HMEntry`. This
@@ -82,7 +82,7 @@ class LandmarkFactoryHM : public LandmarkFactory {
 
     std::vector<HMEntry> hm_table;
     std::vector<PiMOperator> pm_operators;
-    // Maps each set of < m propositions to an int. TODO: What does this int indicate?
+    // Maps each set of < m propositions to an int.
     PropositionSetToIntMap set_indices;
     /*
       The number in the first position represents the amount of unsatisfied
@@ -90,7 +90,6 @@ class LandmarkFactoryHM : public LandmarkFactory {
       position represents the amount of unsatisfied preconditions for each
       conditional noop operator.
     */
-    // TODO: Instead reserve the first entry of the vector for the operator itself.
     std::vector<std::pair<int, std::vector<int>>> num_unsatisfied_preconditions;
 
     std::list<int> collect_and_add_landmarks_to_landmark_graph(

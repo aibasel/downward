@@ -21,10 +21,9 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-// TODO: Can we turn these set operations into static functions?
 // alist = alist \cup other
 template<typename T>
-void union_with(list<T> &alist, const list<T> &other) {
+static void union_with(list<T> &alist, const list<T> &other) {
     auto it1 = alist.begin();
     auto it2 = other.begin();
 
@@ -44,7 +43,7 @@ void union_with(list<T> &alist, const list<T> &other) {
 
 // alist = alist \cap other
 template<typename T>
-void intersect_with(list<T> &alist, const list<T> &other) {
+static void intersect_with(list<T> &alist, const list<T> &other) {
     auto it1 = alist.begin();
     auto it2 = other.begin();
 
@@ -66,7 +65,7 @@ void intersect_with(list<T> &alist, const list<T> &other) {
 
 // alist = alist \setminus other
 template<typename T>
-void set_minus(list<T> &alist, const list<T> &other) {
+static void set_minus(list<T> &alist, const list<T> &other) {
     auto it1 = alist.begin();
     auto it2 = other.begin();
 
@@ -87,7 +86,7 @@ void set_minus(list<T> &alist, const list<T> &other) {
 
 // alist = alist \cup {val}
 template<typename T>
-void insert_into(list<T> &alist, const T &val) {
+static void insert_into(list<T> &alist, const T &val) {
     auto it1 = alist.begin();
 
     while (it1 != alist.end()) {
@@ -273,16 +272,29 @@ vector<Propositions> LandmarkFactoryHM::get_m_sets(
     return subsets;
 }
 
+#ifndef NDEBUG
+static bool proposition_variables_disjoint(const Propositions &set1,
+                                           const Propositions &set2) {
+    for (auto [var1, val1] : set1) {
+        for (auto [var2, val2] : set2) {
+            if (var1 == var2) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+#endif
+
 /*
   Get subsets of size <= m such that at least one element from `superset1` and
   at least one element from `superset2` are included, except if a sets is empty.
-  We assume `superset1` and `superset2` are disjoint.
-  TODO: Assert that supersets are disjoint. Should the variables occurring in
-    the sets be disjoint, rather than their propositions?
+  We assume the variables in `superset1` and `superset2` are disjoint.
 */
 vector<Propositions> LandmarkFactoryHM::get_split_m_sets(
     const VariablesProxy &variables,
     const Propositions &superset1, const Propositions &superset2) {
+    assert(proposition_variables_disjoint(superset1, superset2));
     Propositions c;
     vector<Propositions> subsets;
     // If a set is empty, we do not have to include from it. TODO: Why not?
@@ -709,10 +721,7 @@ static bool operator_can_achieve_landmark(
         auto mutex = [&](const FactPair &other) {
             return are_mutex(variables, atom, other);
         };
-        if (any_of(postcondition.begin(), postcondition.end(), mutex) ||
-            /* TODO: Since the precondition is factored into the postcondition,
-                I don't think we actually need this second `any_of` case. */
-            any_of(precondition.begin(), precondition.end(), mutex)) {
+        if (any_of(postcondition.begin(), postcondition.end(), mutex)) {
             return false;
         }
     }
@@ -822,8 +831,8 @@ LandmarkFactoryHM::TriggerSet LandmarkFactoryHM::mark_state_propositions_reached
         propagate_pm_propositions(index, true, triggers);
     }
 
-    /* TODO: This should be dealt with already due to the
-        `propagate_pm_propositions` above, isn't it? */
+    /* This is necessary to trigger operators without preconditions which are
+       not dealt with in the `propagate_pm_propositions` above. */
     for (int i = 0; i < static_cast<int>(pm_operators.size()); ++i) {
         if (num_unsatisfied_preconditions[i].first == 0) {
             /*
