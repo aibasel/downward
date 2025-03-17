@@ -35,73 +35,99 @@ void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(
     if (log.is_at_least_normal()) {
         log << "approx. reasonable orders" << endl;
     }
-    approximate_reasonable_orders(task_proxy);
+    approximate_reasonable_orderings(task_proxy);
 }
 
-void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orders(
-    const TaskProxy &task_proxy) {
-    /*
-      Approximate reasonable orderings according to Hoffmann et al. (JAIR 2004).
-
-      If node_p is in goal, then any node2_p which interferes with
-      node_p can be reasonably ordered before node_p. Otherwise, if
-      node_p is greedy necessary predecessor of node2, and there is
-      another predecessor "parent" of node2, then parent and all
-      predecessors of parent can be ordered reasonably before node_p if
-      they interfere with node_p.
-    */
-    State initial_state = task_proxy.get_initial_state();
-    int variables_size = task_proxy.get_variables().size();
-    for (const auto &node_p : *landmark_graph) {
-        const Landmark &landmark = node_p->get_landmark();
-        if (landmark.is_disjunctive)
+void LandmarkFactoryReasonableOrdersHPS::approximate_goal_orderings(
+    const TaskProxy &task_proxy, LandmarkNode &node) const {
+    const Landmark &landmark = node.get_landmark();
+    assert(landmark.is_true_in_goal);
+    for (const auto &other : *landmark_graph) {
+        const Landmark &other_landmark = other->get_landmark();
+        if (landmark == other_landmark || other_landmark.is_disjunctive) {
             continue;
+        }
+        if (interferes(task_proxy, other_landmark, landmark)) {
+            add_ordering_or_replace_if_stronger(
+                *other, node, OrderingType::REASONABLE);
+        }
+    }
+}
+
+unordered_set<LandmarkNode *> LandmarkFactoryReasonableOrdersHPS::collect_reasonable_ordering_candidates(
+    const LandmarkNode &node) {
+    unordered_set<LandmarkNode *> interesting_nodes;
+    for (const auto &[child, type] : node.children) {
+        if (type >= OrderingType::GREEDY_NECESSARY) {
+            // Found a landmark such that `node` ->_gn `child`.
+            for (const auto &[parent, parent_type]: child->parents) {
+                if (parent->get_landmark().is_disjunctive) {
+                    continue;
+                }
+                if (parent_type >= OrderingType::NATURAL && *parent != node) {
+                    /* Find predecessors or parent and collect in
+                       `interesting nodes`. */
+                    interesting_nodes.insert(parent);
+                    collect_ancestors(interesting_nodes, *parent);
+                }
+            }
+        }
+    }
+    return interesting_nodes;
+}
+
+/* Insert reasonable orderings between the `candidates` that interfere
+   with `landmark`. */
+void LandmarkFactoryReasonableOrdersHPS::insert_reasonable_orderings(
+    const TaskProxy &task_proxy,
+    const unordered_set<LandmarkNode *> &candidates,
+    LandmarkNode &node, const Landmark &landmark) const {
+    for (LandmarkNode *other : candidates) {
+        const Landmark &other_landmark = other->get_landmark();
+        if (landmark == other_landmark || other_landmark.is_disjunctive) {
+            continue;
+        }
+        if (interferes(task_proxy, other_landmark, landmark)) {
+            /*
+              TODO: If `other_landmark` interferes with `landmark`, then by
+               transitivity we know all natural predecessors of `other_landmark`
+               are also reasonably ordered before `landmark`, but here we only
+               add the one reasonable ordering. Maybe it's not worth adding the
+               others as well (transitivity), but it could be interesting to
+               test the effect of doing so, for example for the cycle heuristic.
+             */
+            add_ordering_or_replace_if_stronger(
+                *other, node, OrderingType::REASONABLE);
+        }
+    }
+}
+
+/*
+  Approximate reasonable orderings according to Hoffmann et al. (JAIR 2004):
+
+  If `landmark` holds in the goal, any other landmark which interferes
+  with it is reasonably ordered before it. Otherwise, if `landmark` is a
+  greedy-necessary predecessor of another landmark, and there is
+  another predecessor `parent` of that other landmark (`candidates`),
+  then `parent` and all predecessors of `parent` are ordered reasonably
+  before `landmark` if they interfere with it.
+*/
+void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orderings(
+    const TaskProxy &task_proxy) {
+    State initial_state = task_proxy.get_initial_state();
+    for (const auto &node : *landmark_graph) {
+        const Landmark &landmark = node->get_landmark();
+        if (landmark.is_disjunctive) {
+            continue;
+        }
 
         if (landmark.is_true_in_goal) {
-            for (const auto &node2_p : *landmark_graph) {
-                const Landmark &landmark2 = node2_p->get_landmark();
-                if (landmark == landmark2 || landmark2.is_disjunctive)
-                    continue;
-                if (interferes(task_proxy, landmark2, landmark)) {
-                    add_ordering_or_replace_if_stronger(
-                        *node2_p, *node_p, OrderingType::REASONABLE);
-                }
-            }
+            approximate_goal_orderings(task_proxy, *node);
         } else {
-            /* Collect candidates for reasonable orders in "interesting nodes".
-               Use hash set to filter duplicates. */
-            unordered_set<LandmarkNode *> interesting_nodes(variables_size);
-            for (const auto &child : node_p->children) {
-                const LandmarkNode &node2_p = *child.first;
-                const OrderingType &type2 = child.second;
-                if (type2 >= OrderingType::GREEDY_NECESSARY) {
-                    // Found node2_p: node_p ->_gn node2_p.
-                    for (const auto &p : node2_p.parents) {
-                        LandmarkNode &parent_node = *(p.first);
-                        const OrderingType &type = p.second;
-                        if (parent_node.get_landmark().is_disjunctive)
-                            continue;
-                        if (type >= OrderingType::NATURAL &&
-                            &parent_node != node_p.get()) {
-                            /* Find predecessors or parent and collect in
-                               "interesting nodes". */
-                            interesting_nodes.insert(&parent_node);
-                            collect_ancestors(interesting_nodes, parent_node);
-                        }
-                    }
-                }
-            }
-            /* Insert reasonable orders between those members of
-               "interesting nodes" that interfere with node_p. */
-            for (LandmarkNode *node2_p : interesting_nodes) {
-                const Landmark &landmark2 = node2_p->get_landmark();
-                if (landmark == landmark2 || landmark2.is_disjunctive)
-                    continue;
-                if (interferes(task_proxy, landmark2, landmark)) {
-                    add_ordering_or_replace_if_stronger(
-                        *node2_p, *node_p, OrderingType::REASONABLE);
-                }
-            }
+            unordered_set<LandmarkNode *> candidates =
+                collect_reasonable_ordering_candidates(*node);
+            insert_reasonable_orderings(
+                task_proxy, candidates, *node, landmark);
         }
     }
 }

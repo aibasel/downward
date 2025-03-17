@@ -7,9 +7,18 @@ namespace landmarks {
 class LandmarkFactoryReasonableOrdersHPS : public LandmarkFactory {
     std::shared_ptr<LandmarkFactory> landmark_factory;
 
-    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
+    virtual void generate_landmarks(
+        const std::shared_ptr<AbstractTask> &task) override;
 
-    void approximate_reasonable_orders(const TaskProxy &task_proxy);
+    void approximate_goal_orderings(
+        const TaskProxy &task_proxy, LandmarkNode &node) const;
+    std::unordered_set<LandmarkNode *> collect_reasonable_ordering_candidates(
+        const LandmarkNode &node);
+    void insert_reasonable_orderings(
+        const TaskProxy &task_proxy,
+        const std::unordered_set<LandmarkNode *> &candidates,
+        LandmarkNode &node, const Landmark &landmark) const;
+    void approximate_reasonable_orderings(const TaskProxy &task_proxy);
     bool interferes(
         const TaskProxy &task_proxy, const Landmark &landmark_a,
         const Landmark &landmark_b) const;
