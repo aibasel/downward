@@ -132,154 +132,10 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orderings(
     }
 }
 
-bool LandmarkFactoryReasonableOrdersHPS::interferes(
-    const TaskProxy &task_proxy, const Landmark &landmark_a,
-    const Landmark &landmark_b) const {
-    /* Facts a and b interfere (i.e., achieving b before a would mean having to delete b
-     and re-achieve it in order to achieve a) if one of the following condition holds:
-     1. a and b are mutex
-     2. All actions that add a also add e, and e and b are mutex
-     3. There is a greedy necessary predecessor x of a, and x and b are mutex
-     This is the definition of Hoffmann et al. except that they have one more condition:
-     "all actions that add a delete b". However, in our case (SAS+ formalism), this condition
-     is the same as 2.
-     */
-    assert(landmark_a != landmark_b);
-    assert(!landmark_a.is_disjunctive && !landmark_b.is_disjunctive);
-
-    VariablesProxy variables = task_proxy.get_variables();
-    for (const FactPair &atom_b : landmark_b.atoms) {
-        FactProxy fact_b = variables[atom_b.var].get_fact(atom_b.value);
-        for (const FactPair &atom_a : landmark_a.atoms) {
-            FactProxy fact_a = variables[atom_a.var].get_fact(atom_a.value);
-            if (atom_a == atom_b) {
-                if (!landmark_a.is_conjunctive || !landmark_b.is_conjunctive)
-                    return false;
-                else
-                    continue;
-            }
-
-            // 1. a, b mutex
-            if (fact_a.is_mutex(fact_b))
-                return true;
-
-            // 2. Shared effect e in all operators reaching a, and e, b are mutex
-            // Skip this for conjunctive nodes a, as they are typically achieved through a
-            // sequence of operators successively adding the parts of a
-            if (landmark_a.is_conjunctive)
-                continue;
-
-            unordered_map<int, int> shared_eff;
-            bool init = true;
-            const vector<int> &op_or_axiom_ids =
-                get_operators_including_effect(atom_a);
-            // Intersect operators that achieve a one by one
-            for (int op_or_axiom_id : op_or_axiom_ids) {
-                // If no shared effect among previous operators, break
-                if (!init && shared_eff.empty())
-                    break;
-                // Else, insert effects of this operator into set "next_eff" if
-                // it is an unconditional effect or a conditional effect that is sure to
-                // happen. (Such "trivial" conditions can arise due to our translator,
-                // e.g. in Schedule. There, the same effect is conditioned on a disjunction
-                // of conditions of which one will always be true. We test for a simple kind
-                // of these trivial conditions here.)
-                EffectsProxy effects =
-                    get_operator_or_axiom(task_proxy, op_or_axiom_id).get_effects();
-                set<FactPair> trivially_conditioned_effects;
-                bool trivial_conditioned_effects_found =
-                    effect_always_happens(variables, effects,
-                                          trivially_conditioned_effects);
-                unordered_map<int, int> next_eff;
-                for (EffectProxy effect : effects) {
-                    FactPair effect_fact = effect.get_fact().get_pair();
-                    if (effect.get_conditions().empty() &&
-                        effect_fact.var != atom_a.var) {
-                        next_eff.emplace(effect_fact.var, effect_fact.value);
-                    } else if (trivial_conditioned_effects_found &&
-                               trivially_conditioned_effects.find(effect_fact)
-                               != trivially_conditioned_effects.end())
-                        next_eff.emplace(effect_fact.var, effect_fact.value);
-                }
-                // Intersect effects of this operator with those of previous operators
-                if (init)
-                    swap(shared_eff, next_eff);
-                else {
-                    unordered_map<int, int> result;
-                    for (const auto &eff1 : shared_eff) {
-                        auto it2 = next_eff.find(eff1.first);
-                        if (it2 != next_eff.end() && it2->second == eff1.second)
-                            result.insert(eff1);
-                    }
-                    swap(shared_eff, result);
-                }
-                init = false;
-            }
-            // Test whether one of the shared effects is inconsistent with b
-            for (const pair<const int, int> &eff : shared_eff) {
-                const FactProxy &effect_fact =
-                    variables[eff.first].get_fact(eff.second);
-                if (effect_fact != fact_a &&
-                    effect_fact != fact_b &&
-                    effect_fact.is_mutex(fact_b))
-                    return true;
-            }
-        }
-
-        /* // Experimentally commenting this out -- see issue202.
-        // 3. Exists LM x, inconsistent x, b and x->_gn a
-        for (const auto &parent : node_a->parents) {
-            const LandmarkNode &node = *parent.first;
-            edge_type edge = parent.second;
-            for (const FactPair &parent_prop : node.facts) {
-                const FactProxy &parent_prop_fact =
-                    variables[parent_prop.var].get_fact(parent_prop.value);
-                if (edge >= greedy_necessary &&
-                    parent_prop_fact != fact_b &&
-                    parent_prop_fact.is_mutex(fact_b))
-                    return true;
-            }
-        }
-        */
-    }
-    // No inconsistency found
-    return false;
-}
-
-void LandmarkFactoryReasonableOrdersHPS::collect_ancestors(
-    unordered_set<LandmarkNode *> &result, LandmarkNode &node) {
-    // Returns all ancestors in the landmark graph of landmark node "start".
-
-    // There could be cycles if use_reasonable == true
-    list<LandmarkNode *> open_nodes;
-    unordered_set<LandmarkNode *> closed_nodes;
-    for (const auto &p : node.parents) {
-        LandmarkNode &parent = *(p.first);
-        const OrderingType &type = p.second;
-        if (type >= OrderingType::NATURAL && closed_nodes.count(&parent) == 0) {
-            open_nodes.push_back(&parent);
-            closed_nodes.insert(&parent);
-            result.insert(&parent);
-        }
-    }
-    while (!open_nodes.empty()) {
-        LandmarkNode &node2 = *(open_nodes.front());
-        for (const auto &p : node2.parents) {
-            LandmarkNode &parent = *(p.first);
-            const OrderingType &type = p.second;
-            if (type >= OrderingType::NATURAL && closed_nodes.count(&parent) == 0) {
-                open_nodes.push_back(&parent);
-                closed_nodes.insert(&parent);
-                result.insert(&parent);
-            }
-        }
-        open_nodes.pop_front();
-    }
-}
-
-bool LandmarkFactoryReasonableOrdersHPS::effect_always_happens(
+// TODO: Refactor this monster.
+static bool effect_always_happens(
     const VariablesProxy &variables, const EffectsProxy &effects,
-    set<FactPair> &eff) const {
+    set<FactPair> &eff) {
     /* Test whether the condition of a conditional effect is trivial, i.e. always true.
      We test for the simple case that the same effect proposition is triggered by
      a set of conditions of which one will always be true. This is e.g. the case in
@@ -389,6 +245,183 @@ bool LandmarkFactoryReasonableOrdersHPS::effect_always_happens(
                            effect_conditions.first, effect_conditions.second.first));
     }
     return eff.empty();
+}
+
+/*
+  Insert effects of this operator into `effect` if it is an
+  unconditional effect or a conditional effect that is sure to happen.
+  (Such "trivial" conditions can arise due to our translator, e.g. in
+  Schedule. There, the same effect is conditioned on a disjunction of
+  conditions of which one will always be true. We test for a simple kind
+  of these trivial conditions here.)
+*/
+static utils::HashSet<FactPair> get_effects_on_other_variables(
+    const TaskProxy &task_proxy, int op_or_axiom_id, int var_id) {
+    EffectsProxy effects =
+        get_operator_or_axiom(task_proxy, op_or_axiom_id).get_effects();
+    set<FactPair> trivially_conditioned_effects;
+    bool trivial_conditioned_effects_found =
+        effect_always_happens(task_proxy.get_variables(), effects,
+                              trivially_conditioned_effects);
+    utils::HashSet<FactPair> next_effect;
+    for (const EffectProxy &effect : effects) {
+        FactPair atom = effect.get_fact().get_pair();
+        // TODO: Why only on other variables?
+        if (effect.get_conditions().empty() && atom.var != var_id) {
+            next_effect.insert(atom);
+        } else if (trivial_conditioned_effects_found &&
+                   trivially_conditioned_effects.contains(atom)) {
+            next_effect.insert(atom);
+        }
+    }
+    return next_effect;
+}
+
+utils::HashSet<FactPair> LandmarkFactoryReasonableOrdersHPS::get_shared_effects_of_achievers(
+    const FactPair &atom, const TaskProxy &task_proxy) const {
+    utils::HashSet<FactPair> shared_effects;
+
+    // Intersect effects of operators that achieve `atom` one by one.
+    bool init = true;
+    for (int op_or_axiom_id : get_operators_including_effect(atom)) {
+        utils::HashSet<FactPair> effect = get_effects_on_other_variables(
+            task_proxy, op_or_axiom_id, atom.var);
+
+        if (init) {
+            swap(shared_effects, effect);
+            init = false;
+        } else {
+            for (const FactPair &eff : shared_effects) {
+                if (!effect.contains(eff)) {
+                    shared_effects.erase(eff);
+                }
+            }
+        }
+
+        // Abort if previous operators have no shared effects.
+        if (shared_effects.empty()) {
+            assert(!init);
+            break;
+        }
+    }
+    return shared_effects;
+}
+
+/*
+  An atom B interferes with another atom A if achieving A is impossible while B
+  holds. This can be either because B may not be true when applying any operator
+  that achieves A (because it cannot hold at the same time as these
+  preconditions) or because the effects of operators that achieve A delete B.
+  Specifically, B interferes with A if one of the following conditions holds:
+   1. A and B are mutex.
+   2. All operators that add A also add E, and E and B are mutex.
+   3. There is a greedy-necessary predecessor X of A, and X and B are mutex.
+  This is the definition of Hoffmann et al. except that they have one more
+  condition: "All actions that add A delete B." However, in our case (SAS+
+  formulation), this condition is the same as 2.
+*/
+bool LandmarkFactoryReasonableOrdersHPS::interferes(
+    const VariablesProxy &variables, const Landmark &landmark_a,
+    const FactPair &atom_a, const FactProxy &a, const FactProxy &b) const {
+    // Case 1: A and B are mutex.
+    if (a.is_mutex(b)) {
+        return true;
+    }
+
+    /*
+      Case 2: All operators reaching A have a shared effect E, and E and B are
+      mutex.
+      Skip this case for conjunctive landmarks A, as they are typically achieved
+      through a sequence of operators successively adding the parts of A.
+    */
+    if (landmark_a.is_conjunctive) {
+        return false;
+    }
+
+    unordered_map<int, int> shared_eff = get_shared_effects_of_achievers(atom_a);
+    // Test whether one of the shared effects is inconsistent with b
+    for (const pair<const int, int> &eff : shared_eff) {
+        const FactProxy &effect_fact =
+            variables[eff.first].get_fact(eff.second);
+        if (effect_fact != a &&
+            effect_fact != b &&
+            effect_fact.is_mutex(b))
+            return true;
+    }
+}
+
+bool LandmarkFactoryReasonableOrdersHPS::interferes(
+    const TaskProxy &task_proxy, const Landmark &landmark_a,
+    const Landmark &landmark_b) const {
+    assert(landmark_a != landmark_b);
+    assert(!landmark_a.is_disjunctive)
+    assert(!landmark_b.is_disjunctive);
+
+    VariablesProxy variables = task_proxy.get_variables();
+    for (const FactPair &atom_b : landmark_b.atoms) {
+        FactProxy b = variables[atom_b.var].get_fact(atom_b.value);
+        for (const FactPair &atom_a : landmark_a.atoms) {
+            FactProxy a = variables[atom_a.var].get_fact(atom_a.value);
+            if (atom_a == atom_b) {
+                if (landmark_a.is_conjunctive && landmark_b.is_conjunctive) {
+                    continue;
+                }
+                return false;
+            }
+            if (interferes(atom_a, atom_b, a, b)) {
+                return false;
+            }
+        }
+
+        /* // Experimentally commenting this out -- see issue202.
+        // 3. Exists LM x, inconsistent x, b and x->_gn a
+        for (const auto &parent : node_a->parents) {
+            const LandmarkNode &node = *parent.first;
+            edge_type edge = parent.second;
+            for (const FactPair &parent_prop : node.facts) {
+                const FactProxy &parent_prop_fact =
+                    variables[parent_prop.var].get_fact(parent_prop.value);
+                if (edge >= greedy_necessary &&
+                    parent_prop_fact != fact_b &&
+                    parent_prop_fact.is_mutex(fact_b))
+                    return true;
+            }
+        }
+        */
+    }
+    // No inconsistency found
+    return false;
+}
+
+void LandmarkFactoryReasonableOrdersHPS::collect_ancestors(
+    unordered_set<LandmarkNode *> &result, LandmarkNode &node) {
+    // Returns all ancestors in the landmark graph of landmark node "start".
+
+    // There could be cycles if use_reasonable == true
+    list<LandmarkNode *> open_nodes;
+    unordered_set<LandmarkNode *> closed_nodes;
+    for (const auto &p : node.parents) {
+        LandmarkNode &parent = *(p.first);
+        const OrderingType &type = p.second;
+        if (type >= OrderingType::NATURAL && closed_nodes.count(&parent) == 0) {
+            open_nodes.push_back(&parent);
+            closed_nodes.insert(&parent);
+            result.insert(&parent);
+        }
+    }
+    while (!open_nodes.empty()) {
+        LandmarkNode &node2 = *(open_nodes.front());
+        for (const auto &p : node2.parents) {
+            LandmarkNode &parent = *(p.first);
+            const OrderingType &type = p.second;
+            if (type >= OrderingType::NATURAL && closed_nodes.count(&parent) == 0) {
+                open_nodes.push_back(&parent);
+                closed_nodes.insert(&parent);
+                result.insert(&parent);
+            }
+        }
+        open_nodes.pop_front();
+    }
 }
 
 bool LandmarkFactoryReasonableOrdersHPS::supports_conditional_effects() const {
