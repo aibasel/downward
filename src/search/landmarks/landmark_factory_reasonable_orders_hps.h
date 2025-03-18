@@ -14,8 +14,6 @@ class LandmarkFactoryReasonableOrdersHPS : public LandmarkFactory {
 
     void approximate_goal_orderings(
         const TaskProxy &task_proxy, LandmarkNode &node) const;
-    std::unordered_set<LandmarkNode *> collect_reasonable_ordering_candidates(
-        const LandmarkNode &node);
     void insert_reasonable_orderings(
         const TaskProxy &task_proxy,
         const std::unordered_set<LandmarkNode *> &candidates,

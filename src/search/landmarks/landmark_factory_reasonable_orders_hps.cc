@@ -65,7 +65,7 @@ static void collect_ancestors(unordered_set<LandmarkNode *> &result,
     }
 }
 
-unordered_set<LandmarkNode *> LandmarkFactoryReasonableOrdersHPS::collect_reasonable_ordering_candidates(
+static unordered_set<LandmarkNode *> collect_reasonable_ordering_candidates(
     const LandmarkNode &node) {
     unordered_set<LandmarkNode *> interesting_nodes;
     for (const auto &[child, type] : node.children) {
