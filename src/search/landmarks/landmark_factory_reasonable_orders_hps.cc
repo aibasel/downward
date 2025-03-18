@@ -417,7 +417,7 @@ public:
 
         document_note(
             "Obedient-reasonable orders",
-            "Hoffmann et al. (2004) suggest obedient-reasonable orders in "
+            "Hoffmann et al. (2004) suggest obedient-reasonable orderings in "
             "addition to reasonable orders. Obedient-reasonable orders were "
             "later also used by the LAMA planner (Richter and Westphal, 2010). "
             "They are \"reasonable orders\" under the assumption that all "
