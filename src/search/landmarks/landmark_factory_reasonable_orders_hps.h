@@ -30,8 +30,6 @@ class LandmarkFactoryReasonableOrdersHPS : public LandmarkFactory {
     bool interferes(
         const TaskProxy &task_proxy, const Landmark &landmark_a,
         const Landmark &landmark_b) const;
-    void collect_ancestors(
-        std::unordered_set<LandmarkNode *> &result, LandmarkNode &node);
 public:
     LandmarkFactoryReasonableOrdersHPS(
         const std::shared_ptr<LandmarkFactory> &lm_factory,

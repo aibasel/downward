@@ -9,6 +9,7 @@
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 
+#include <deque>
 #include <list>
 #include <map>
 #include <set>
@@ -50,6 +51,16 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_goal_orderings(
         if (interferes(task_proxy, other_landmark, landmark)) {
             add_ordering_or_replace_if_stronger(
                 *other, node, OrderingType::REASONABLE);
+        }
+    }
+}
+
+static void collect_ancestors(unordered_set<LandmarkNode *> &result,
+                              const LandmarkNode &node) {
+    for (const auto &[parent, type] : node.parents) {
+        if (type >= OrderingType::NATURAL && !result.contains(parent)) {
+            result.insert(parent);
+            collect_ancestors(result, *parent);
         }
     }
 }
@@ -382,37 +393,6 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
         }
     }
     return false;
-}
-
-void LandmarkFactoryReasonableOrdersHPS::collect_ancestors(
-    unordered_set<LandmarkNode *> &result, LandmarkNode &node) {
-    // Returns all ancestors in the landmark graph of landmark node "start".
-
-    // There could be cycles if use_reasonable == true
-    list<LandmarkNode *> open_nodes;
-    unordered_set<LandmarkNode *> closed_nodes;
-    for (const auto &p : node.parents) {
-        LandmarkNode &parent = *(p.first);
-        const OrderingType &type = p.second;
-        if (type >= OrderingType::NATURAL && closed_nodes.count(&parent) == 0) {
-            open_nodes.push_back(&parent);
-            closed_nodes.insert(&parent);
-            result.insert(&parent);
-        }
-    }
-    while (!open_nodes.empty()) {
-        LandmarkNode &node2 = *(open_nodes.front());
-        for (const auto &p : node2.parents) {
-            LandmarkNode &parent = *(p.first);
-            const OrderingType &type = p.second;
-            if (type >= OrderingType::NATURAL && closed_nodes.count(&parent) == 0) {
-                open_nodes.push_back(&parent);
-                closed_nodes.insert(&parent);
-                result.insert(&parent);
-            }
-        }
-        open_nodes.pop_front();
-    }
 }
 
 bool LandmarkFactoryReasonableOrdersHPS::supports_conditional_effects() const {
