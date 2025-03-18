@@ -24,8 +24,9 @@ class LandmarkFactoryReasonableOrdersHPS : public LandmarkFactory {
     utils::HashSet<FactPair> get_shared_effects_of_achievers(
         const FactPair &atom, const TaskProxy &task_proxy) const;
     bool interferes(
-        const VariablesProxy &variables, const Landmark &landmark_a,
-        const FactPair &atom_a, const FactProxy &a, const FactProxy &b) const;
+        const VariablesProxy &variables, const TaskProxy &task_proxy,
+        const Landmark &landmark_a, const FactPair &atom_a, const FactProxy &a,
+        const FactProxy &b) const;
     bool interferes(
         const TaskProxy &task_proxy, const Landmark &landmark_a,
         const Landmark &landmark_b) const;

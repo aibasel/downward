@@ -260,21 +260,29 @@ static utils::HashSet<FactPair> get_effects_on_other_variables(
     EffectsProxy effects =
         get_operator_or_axiom(task_proxy, op_or_axiom_id).get_effects();
     set<FactPair> trivially_conditioned_effects;
+    // TODO: Strange return value.
     bool trivial_conditioned_effects_found =
         effect_always_happens(task_proxy.get_variables(), effects,
                               trivially_conditioned_effects);
     utils::HashSet<FactPair> next_effect;
     for (const EffectProxy &effect : effects) {
         FactPair atom = effect.get_fact().get_pair();
-        // TODO: Why only on other variables?
-        if (effect.get_conditions().empty() && atom.var != var_id) {
-            next_effect.insert(atom);
-        } else if (trivial_conditioned_effects_found &&
-                   trivially_conditioned_effects.contains(atom)) {
+        if ((effect.get_conditions().empty() && atom.var != var_id) ||
+            (trivial_conditioned_effects_found &&
+                trivially_conditioned_effects.contains(atom))) {
             next_effect.insert(atom);
         }
     }
     return next_effect;
+}
+
+static void intersect_inplace(utils::HashSet<FactPair> &set,
+                              const utils::HashSet<FactPair> &other) {
+    for (const FactPair &atom : other) {
+        if (!set.contains(atom)) {
+            set.erase(atom);
+        }
+    }
 }
 
 utils::HashSet<FactPair> LandmarkFactoryReasonableOrdersHPS::get_shared_effects_of_achievers(
@@ -291,14 +299,9 @@ utils::HashSet<FactPair> LandmarkFactoryReasonableOrdersHPS::get_shared_effects_
             swap(shared_effects, effect);
             init = false;
         } else {
-            for (const FactPair &eff : shared_effects) {
-                if (!effect.contains(eff)) {
-                    shared_effects.erase(eff);
-                }
-            }
+            intersect_inplace(shared_effects, effect);
         }
 
-        // Abort if previous operators have no shared effects.
         if (shared_effects.empty()) {
             assert(!init);
             break;
@@ -321,40 +324,56 @@ utils::HashSet<FactPair> LandmarkFactoryReasonableOrdersHPS::get_shared_effects_
   formulation), this condition is the same as 2.
 */
 bool LandmarkFactoryReasonableOrdersHPS::interferes(
-    const VariablesProxy &variables, const Landmark &landmark_a,
-    const FactPair &atom_a, const FactProxy &a, const FactProxy &b) const {
-    // Case 1: A and B are mutex.
+    const VariablesProxy &variables, const TaskProxy &task_proxy,
+    const Landmark &landmark_a, const FactPair &atom_a, const FactProxy &a,
+    const FactProxy &b) const {
+    // 1. A and B are mutex.
     if (a.is_mutex(b)) {
         return true;
     }
 
     /*
-      Case 2: All operators reaching A have a shared effect E, and E and B are
-      mutex.
+      2. All operators reaching A have a shared effect E, and E and B are mutex.
       Skip this case for conjunctive landmarks A, as they are typically achieved
       through a sequence of operators successively adding the parts of A.
     */
     if (landmark_a.is_conjunctive) {
         return false;
     }
+    utils::HashSet<FactPair> shared_effect =
+        get_shared_effects_of_achievers(atom_a, task_proxy);
+    return ranges::any_of(
+        shared_effect.begin(), shared_effect.end(), [&](const FactPair &atom) {
+            const FactProxy &e = variables[atom.var].get_fact(atom.value);
+            return e != a && e != b && e.is_mutex(b);
+        });
 
-    unordered_map<int, int> shared_eff = get_shared_effects_of_achievers(atom_a);
-    // Test whether one of the shared effects is inconsistent with b
-    for (const pair<const int, int> &eff : shared_eff) {
-        const FactProxy &effect_fact =
-            variables[eff.first].get_fact(eff.second);
-        if (effect_fact != a &&
-            effect_fact != b &&
-            effect_fact.is_mutex(b))
-            return true;
+    /*
+      Experimentally commenting this out -- see issue202.
+      TODO: This code became unreachable and no longer works after
+       all the refactorings we did recently.
+    // Case 3: There exists an atom X inconsistent with B such that X->_gn A.
+    for (const auto &parent : node_a->parents) {
+        const LandmarkNode &node = *parent.first;
+        edge_type edge = parent.second;
+        for (const FactPair &parent_prop : node.facts) {
+            const FactProxy &parent_prop_fact =
+                variables[parent_prop.var].get_fact(parent_prop.value);
+            if (edge >= greedy_necessary &&
+                parent_prop_fact != fact_b &&
+                parent_prop_fact.is_mutex(fact_b)) {
+                return true;
+            }
+        }
     }
+    */
 }
 
 bool LandmarkFactoryReasonableOrdersHPS::interferes(
     const TaskProxy &task_proxy, const Landmark &landmark_a,
     const Landmark &landmark_b) const {
     assert(landmark_a != landmark_b);
-    assert(!landmark_a.is_disjunctive)
+    assert(!landmark_a.is_disjunctive);
     assert(!landmark_b.is_disjunctive);
 
     VariablesProxy variables = task_proxy.get_variables();
@@ -368,28 +387,11 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
                 }
                 return false;
             }
-            if (interferes(atom_a, atom_b, a, b)) {
-                return false;
+            if (interferes(variables, task_proxy, landmark_a, atom_a, a, b)) {
+                return true;
             }
         }
-
-        /* // Experimentally commenting this out -- see issue202.
-        // 3. Exists LM x, inconsistent x, b and x->_gn a
-        for (const auto &parent : node_a->parents) {
-            const LandmarkNode &node = *parent.first;
-            edge_type edge = parent.second;
-            for (const FactPair &parent_prop : node.facts) {
-                const FactProxy &parent_prop_fact =
-                    variables[parent_prop.var].get_fact(parent_prop.value);
-                if (edge >= greedy_necessary &&
-                    parent_prop_fact != fact_b &&
-                    parent_prop_fact.is_mutex(fact_b))
-                    return true;
-            }
-        }
-        */
     }
-    // No inconsistency found
     return false;
 }
 
