@@ -132,119 +132,112 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orderings(
     }
 }
 
-// TODO: Refactor this monster.
-static bool effect_always_happens(
-    const VariablesProxy &variables, const EffectsProxy &effects,
-    set<FactPair> &eff) {
-    /* Test whether the condition of a conditional effect is trivial, i.e. always true.
-     We test for the simple case that the same effect proposition is triggered by
-     a set of conditions of which one will always be true. This is e.g. the case in
-     Schedule, where the effect
-     (forall (?oldpaint - colour)
-     (when (painted ?x ?oldpaint)
-     (not (painted ?x ?oldpaint))))
-     is translated by the translator to: if oldpaint == blue, then not painted ?x, and if
-     oldpaint == red, then not painted ?x etc.
-     If conditional effects are found that are always true, they are returned in "eff".
-     */
-    // Go through all effects of operator and collect:
-    // - all variables that are set to some value in a conditional effect (effect_vars)
-    // - variables that can be set to more than one value in a cond. effect (nogood_effect_vars)
-    // - a mapping from cond. effect propositions to all the conditions that they appear with
-    set<int> effect_vars;
-    set<int> nogood_effect_vars;
-    map<int, pair<int, vector<FactPair>>> effect_conditions_by_variable;
+struct EffectConditionSet {
+    int value;
+    utils::HashSet<FactPair> conditions;
+};
+
+static unordered_map<int, EffectConditionSet> compute_effect_conditions_by_variable(
+    const EffectsProxy &effects) {
+    // Variables that occur in multiple effects with different values.
+    unordered_set<int> nogood_effect_vars;
+    unordered_map<int, EffectConditionSet> effect_conditions_by_variable;
     for (EffectProxy effect : effects) {
         EffectConditionsProxy effect_conditions = effect.get_conditions();
-        FactProxy effect_fact = effect.get_fact();
-        int var_id = effect_fact.get_variable().get_id();
-        int value = effect_fact.get_value();
-        if (effect_conditions.empty() ||
-            nogood_effect_vars.find(var_id) != nogood_effect_vars.end()) {
-            // Var has no condition or can take on different values, skipping
+        auto [var, value] = effect.get_fact().get_pair();
+        if (effect_conditions.empty() || nogood_effect_vars.contains(var)) {
             continue;
         }
-        if (effect_vars.find(var_id) != effect_vars.end()) {
-            // We have seen this effect var before
-            assert(effect_conditions_by_variable.find(var_id) != effect_conditions_by_variable.end());
-            int old_eff = effect_conditions_by_variable.find(var_id)->second.first;
-            if (old_eff != value) {
-                // Was different effect
-                nogood_effect_vars.insert(var_id);
+        if (effect_conditions_by_variable.contains(var)) {
+            // We have seen `var` in an effect before.
+            int old_effect_value = effect_conditions_by_variable[var].value;
+            if (old_effect_value != value) {
+                nogood_effect_vars.insert(var);
                 continue;
             }
-        } else {
-            // We have not seen this effect var before
-            effect_vars.insert(var_id);
-        }
-        if (effect_conditions_by_variable.find(var_id) != effect_conditions_by_variable.end()
-            && effect_conditions_by_variable.find(var_id)->second.first == value) {
-            // We have seen this effect before, adding conditions
-            for (FactProxy effect_condition : effect_conditions) {
-                vector<FactPair> &vec = effect_conditions_by_variable.find(var_id)->second.second;
-                vec.push_back(effect_condition.get_pair());
-            }
-        } else {
-            // We have not seen this effect before, making new effect entry
-            vector<FactPair> &vec = effect_conditions_by_variable.emplace(
-                var_id, make_pair(
-                    value, vector<FactPair> ())).first->second.second;
-            for (FactProxy effect_condition : effect_conditions) {
-                vec.push_back(effect_condition.get_pair());
-            }
-        }
-    }
 
-    // For all those effect propositions whose variables do not take on different values...
-    for (const auto &effect_conditions : effect_conditions_by_variable) {
-        if (nogood_effect_vars.find(effect_conditions.first) != nogood_effect_vars.end()) {
-            continue;
-        }
-        // ...go through all the conditions that the effect has, and map condition
-        // variables to the set of values they take on (in unique_conds)
-        map<int, set<int>> unique_conds;
-        for (const FactPair &cond : effect_conditions.second.second) {
-            if (unique_conds.find(cond.var) != unique_conds.end()) {
-                unique_conds.find(cond.var)->second.insert(
-                    cond.value);
-            } else {
-                set<int> &the_set = unique_conds.emplace(cond.var, set<int>()).first->second;
-                the_set.insert(cond.value);
+            // Add more conditions to this previously seen effect.
+            for (FactProxy effect_condition : effect_conditions) {
+                effect_conditions_by_variable[var].conditions.insert(
+                    effect_condition.get_pair());
             }
-        }
-        // Check for each condition variable whether the number of values it takes on is
-        // equal to the domain of that variable...
-        bool is_always_reached = true;
-        for (auto &unique_cond : unique_conds) {
-            bool is_surely_reached_by_var = false;
-            int num_values_for_cond = unique_cond.second.size();
-            int num_values_of_variable = variables[unique_cond.first].get_domain_size();
-            if (num_values_for_cond == num_values_of_variable) {
-                is_surely_reached_by_var = true;
+        } else {
+            // We have not seen this effect `var` before, so we add a new entry.
+            utils::HashSet<FactPair> conditions;
+            conditions.reserve(effect_conditions.size());
+            for (FactProxy effect_condition : effect_conditions) {
+                conditions.insert(effect_condition.get_pair());
             }
-            // ...or else if the condition variable is the same as the effect variable,
-            // check whether the condition variable takes on all other values except the
-            // effect value
-            else if (unique_cond.first == effect_conditions.first &&
-                     num_values_for_cond == num_values_of_variable - 1) {
-                // Number of different values is correct, now ensure that the effect value
-                // was the one missing
-                unique_cond.second.insert(effect_conditions.second.first);
-                num_values_for_cond = unique_cond.second.size();
-                if (num_values_for_cond == num_values_of_variable) {
-                    is_surely_reached_by_var = true;
-                }
-            }
-            // If one of the condition variables does not fulfill the criteria, the effect
-            // is not certain to happen
-            if (!is_surely_reached_by_var)
-                is_always_reached = false;
+            effect_conditions_by_variable[var] = {value, move(conditions)};
         }
-        if (is_always_reached)
-            eff.insert(FactPair(
-                           effect_conditions.first, effect_conditions.second.first));
     }
-    return eff.empty();
+    for (int var : nogood_effect_vars) {
+        effect_conditions_by_variable.erase(var);
+    }
+    return effect_conditions_by_variable;
+}
+
+static unordered_map<int, unordered_set<int>> get_conditions_by_variable(
+    const EffectConditionSet &effect_conditions) {
+    unordered_map<int, unordered_set<int>> conditions_by_var;
+    for (auto [var, value] : effect_conditions.conditions) {
+        conditions_by_var[var].insert(value);
+    }
+    return conditions_by_var;
+}
+
+static bool effect_always_happens(
+    int effect_var, const EffectConditionSet &effect_conditions,
+    const VariablesProxy &variables) {
+    unordered_map<int, unordered_set<int>> conditions_by_var =
+        get_conditions_by_variable(effect_conditions);
+
+    /*
+      The effect always happens if for all variables with effect conditions it
+      holds that (1) the effect triggers for all possible values in their domain
+      or (2) the variable of the condition is the variable of the effect and the
+      effect triggers for all other non-effect values in their domain.
+    */
+    for (auto &[conditions_var, values] : conditions_by_var) {
+        size_t domain_size = variables[effect_var].get_domain_size();
+        assert(values.size() <= domain_size);
+        if (effect_var == conditions_var) {
+            /* Extending the `values` with the `effect_conditions.value`
+               completes the domain if the effect always happens. */
+            values.insert(effect_conditions.value);
+        }
+        if (values.size() < domain_size) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/*
+  Test whether the condition of a conditional effect is trivial, i.e. always
+  true. We test for the simple case that the same effect proposition is
+  triggered by a set of conditions of which one will always be true. This is for
+  example the case in Schedule, where the effect
+      (forall (?oldpaint - colour)
+          (when (painted ?x ?oldpaint)
+              (not (painted ?x ?oldpaint))))
+  is translated by the translator to:
+      if oldpaint == blue, then not painted ?x, and
+      if oldpaint == red, then not painted ?x, etc.
+  Conditional effects that always happen are returned in `always_effects`.
+*/
+static utils::HashSet<FactPair> get_effects_that_always_happen(
+    const VariablesProxy &variables, const EffectsProxy &effects) {
+    unordered_map<int, EffectConditionSet> effect_conditions_by_variable =
+        compute_effect_conditions_by_variable(effects);
+
+    utils::HashSet<FactPair> always_effects;
+    for (const auto &[var, effect_conditions] : effect_conditions_by_variable) {
+        if (effect_always_happens(var, effect_conditions, variables)) {
+            always_effects.insert(FactPair(var, effect_conditions.value));
+        }
+    }
+    return always_effects;
 }
 
 /*
@@ -259,17 +252,13 @@ static utils::HashSet<FactPair> get_effects_on_other_variables(
     const TaskProxy &task_proxy, int op_or_axiom_id, int var_id) {
     EffectsProxy effects =
         get_operator_or_axiom(task_proxy, op_or_axiom_id).get_effects();
-    set<FactPair> trivially_conditioned_effects;
-    // TODO: Strange return value.
-    bool trivial_conditioned_effects_found =
-        effect_always_happens(task_proxy.get_variables(), effects,
-                              trivially_conditioned_effects);
+    utils::HashSet<FactPair> trivially_conditioned_effects =
+        get_effects_that_always_happen(task_proxy.get_variables(), effects);
     utils::HashSet<FactPair> next_effect;
     for (const EffectProxy &effect : effects) {
         FactPair atom = effect.get_fact().get_pair();
         if ((effect.get_conditions().empty() && atom.var != var_id) ||
-            (trivial_conditioned_effects_found &&
-                trivially_conditioned_effects.contains(atom))) {
+            trivially_conditioned_effects.contains(atom)) {
             next_effect.insert(atom);
         }
     }
