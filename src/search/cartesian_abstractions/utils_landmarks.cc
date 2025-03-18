@@ -5,10 +5,10 @@
 #include "../landmarks/landmark_factory_h_m.h"
 #include "../landmarks/landmark_graph.h"
 #include "../utils/logging.h"
-#include "../utils/memory.h"
 
 #include <algorithm>
 #include <ranges>
+#include <unordered_set>
 
 using namespace std;
 using namespace landmarks;

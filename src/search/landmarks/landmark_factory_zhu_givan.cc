@@ -9,7 +9,6 @@
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
-#include <iostream>
 #include <unordered_map>
 #include <utility>
 

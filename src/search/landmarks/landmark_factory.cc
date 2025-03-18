@@ -68,8 +68,6 @@ static void remove_ordering(LandmarkNode &from, LandmarkNode &to) {
     assert(to.parents.contains(&from));
     from.children.erase(&to);
     to.parents.erase(&from);
-    assert(!to.parents.contains(&from));
-    assert(!from.children.contains(&to));
 }
 
 void LandmarkFactory::add_ordering(

@@ -60,7 +60,7 @@ bool LandmarkGraph::contains_overlapping_disjunctive_landmark(
 }
 
 bool LandmarkGraph::contains_identical_disjunctive_landmark(
-    const vector<FactPair> &atoms) const {
+    const set<FactPair> &atoms) const {
     assert(!atoms.empty());
     const LandmarkNode *node = nullptr;
     for (const FactPair &atom : atoms) {

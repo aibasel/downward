@@ -6,8 +6,8 @@
 #include "../utils/hash.h"
 
 #include <list>
+#include <set>
 #include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 namespace landmarks {

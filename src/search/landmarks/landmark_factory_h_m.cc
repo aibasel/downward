@@ -13,6 +13,7 @@
 
 #include <list>
 #include <set>
+#include <unordered_set>
 
 using namespace std;
 using utils::ExitCode;

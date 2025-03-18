@@ -5,6 +5,7 @@
 
 #include <list>
 #include <map>
+#include <set>
 
 namespace landmarks {
 using FluentSet = std::vector<FactPair>;

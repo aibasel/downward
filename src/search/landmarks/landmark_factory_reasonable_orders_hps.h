@@ -3,6 +3,8 @@
 
 #include "landmark_factory.h"
 
+#include <set>
+
 namespace landmarks {
 class LandmarkFactoryReasonableOrdersHPS : public LandmarkFactory {
     std::shared_ptr<LandmarkFactory> landmark_factory;
