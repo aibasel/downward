@@ -11,11 +11,12 @@ using namespace std;
 namespace landmarks {
 static bool condition_is_reachable(
     const ConditionsProxy &conditions, const vector<vector<bool>> &reached) {
-    return all_of(begin(conditions), end(conditions),
-                  [reached](const FactProxy &condition) {
-                      auto [var, value] = condition.get_pair();
-                      return reached[var][value];
-                  });
+    for (FactProxy condition : conditions) {
+        if (!reached[condition.get_variable().get_id()][condition.get_value()]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 /* Check whether operator `op` can possibly make `landmark` true in a
