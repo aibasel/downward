@@ -24,33 +24,30 @@ LandmarkFactoryMerged::LandmarkFactoryMerged(
 
 LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(
     const Landmark &landmark) const {
-    if (!landmark.is_disjunctive && !landmark.is_conjunctive) {
-        const FactPair &atom = landmark.atoms[0];
-        if (landmark_graph->contains_simple_landmark(atom))
-            return &landmark_graph->get_simple_landmark_node(atom);
-        else
-            return nullptr;
-    } else if (landmark.is_disjunctive) {
-        set<FactPair> atoms(
-            landmark.atoms.begin(), landmark.atoms.end());
-        if (landmark_graph->contains_identical_disjunctive_landmark(atoms))
-            return &landmark_graph->get_disjunctive_landmark_node(landmark.atoms[0]);
-        else
-            return nullptr;
-    } else if (landmark.is_conjunctive) {
-        cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
+    if (landmark.is_disjunctive) {
+        if (landmark_graph->contains_identical_disjunctive_landmark(
+            landmark.atoms)) {
+            return &landmark_graph->get_disjunctive_landmark_node(
+                landmark.atoms[0]);
+        }
+        return nullptr;
+    }
+
+    if (landmark.is_conjunctive) {
+        cerr << "Don't know how to handle conjunctive landmarks yet..." << endl;
         utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
+    }
+
+    assert(landmark.atoms.size() == 1);
+    const FactPair &atom = landmark.atoms[0];
+    if (landmark_graph->contains_simple_landmark(atom)) {
+        return &landmark_graph->get_simple_landmark_node(atom);
     }
     return nullptr;
 }
 
-void LandmarkFactoryMerged::generate_landmarks(
+vector<shared_ptr<LandmarkGraph>> LandmarkFactoryMerged::generate_landmark_graphs_of_subfactories(
     const shared_ptr<AbstractTask> &task) {
-    if (log.is_at_least_normal()) {
-        log << "Merging " << landmark_factories.size()
-            << " landmark graphs" << endl;
-    }
-
     vector<shared_ptr<LandmarkGraph>> landmark_graphs;
     landmark_graphs.reserve(landmark_factories.size());
     achievers_calculated = true;
@@ -59,26 +56,36 @@ void LandmarkFactoryMerged::generate_landmarks(
             landmark_factory->compute_landmark_graph(task));
         achievers_calculated &= landmark_factory->achievers_are_calculated();
     }
+    return landmark_graphs;
+}
 
+void LandmarkFactoryMerged::add_simple_landmarks(
+    const vector<shared_ptr<LandmarkGraph>> &landmark_graphs) const {
     if (log.is_at_least_normal()) {
         log << "Adding simple landmarks" << endl;
     }
-    for (size_t i = 0; i < landmark_graphs.size(); ++i) {
+    for (auto &landmark_graph : landmark_graphs) {
         // TODO: loop over landmarks instead
-        for (const auto &node : *landmark_graphs[i]) {
+        for (const auto &node : *landmark_graph) {
             const Landmark &landmark = node->get_landmark();
             if (landmark.is_conjunctive) {
-                cerr << "Don't know how to handle conjunctive landmarks yet" << endl;
+                cerr << "Don't know how to handle conjunctive landmarks yet"
+                     << endl;
                 utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
-            } else if (landmark.is_disjunctive) {
+            }
+            if (landmark.is_disjunctive) {
                 continue;
-            } else if (!landmark_graph->contains_landmark(landmark.atoms[0])) {
+            }
+            if (!landmark_graph->contains_landmark(landmark.atoms[0])) {
                 Landmark copy(landmark);
                 landmark_graph->add_landmark(move(copy));
             }
         }
     }
+}
 
+void LandmarkFactoryMerged::add_disjunctive_landmarks(
+    const vector<shared_ptr<LandmarkGraph>> &landmark_graphs) const {
     if (log.is_at_least_normal()) {
         log << "Adding disjunctive landmarks" << endl;
     }
@@ -106,34 +113,46 @@ void LandmarkFactoryMerged::generate_landmarks(
             }
         }
     }
+}
 
+void LandmarkFactoryMerged::add_landmark_orderings(
+    const vector<shared_ptr<LandmarkGraph>> &landmark_graphs) const {
     if (log.is_at_least_normal()) {
         log << "Adding orderings" << endl;
     }
-    for (size_t i = 0; i < landmark_graphs.size(); ++i) {
-        for (const auto &from_orig : *landmark_graphs[i]) {
-            LandmarkNode *from = get_matching_landmark(from_orig->get_landmark());
-            if (from) {
-                for (const auto &to : from_orig->children) {
-                    const LandmarkNode *to_orig = to.first;
-                    OrderingType type = to.second;
-                    LandmarkNode *to_node = get_matching_landmark(to_orig->get_landmark());
-                    if (to_node) {
+    for (const auto &landmark_graph : landmark_graphs) {
+        for (const auto &from_old : *landmark_graph) {
+            LandmarkNode *from_new =
+                get_matching_landmark(from_old->get_landmark());
+            if (from_new) {
+                for (const auto &[to_old, type] : from_old->children) {
+                    LandmarkNode *to_new =
+                        get_matching_landmark(to_old->get_landmark());
+                    if (to_new) {
                         add_ordering_or_replace_if_stronger(
-                            *from, *to_node, type);
-                    } else {
-                        if (log.is_at_least_normal()) {
-                            log << "Discarded to ordering" << endl;
-                        }
+                            *from_new, *to_new, type);
+                    } else if (log.is_at_least_normal()) {
+                        log << "Discarded to ordering" << endl;
                     }
                 }
-            } else {
-                if (log.is_at_least_normal()) {
-                    log << "Discarded from ordering" << endl;
-                }
+            } else if (log.is_at_least_normal()) {
+                log << "Discarded from ordering" << endl;
             }
         }
     }
+}
+
+void LandmarkFactoryMerged::generate_landmarks(
+    const shared_ptr<AbstractTask> &task) {
+    if (log.is_at_least_normal()) {
+        log << "Merging " << landmark_factories.size()
+            << " landmark graphs" << endl;
+    }
+    vector<shared_ptr<LandmarkGraph>> landmark_graphs =
+        generate_landmark_graphs_of_subfactories(task);
+    add_simple_landmarks(landmark_graphs);
+    add_disjunctive_landmarks(landmark_graphs);
+    add_landmark_orderings(landmark_graphs);
     postprocess();
 }
 

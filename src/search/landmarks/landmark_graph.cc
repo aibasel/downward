@@ -60,21 +60,22 @@ bool LandmarkGraph::contains_overlapping_disjunctive_landmark(
 }
 
 bool LandmarkGraph::contains_identical_disjunctive_landmark(
-    const set<FactPair> &atoms) const {
-    // TODO: What's going on here???
+    const vector<FactPair> &atoms) const {
+    assert(!atoms.empty());
     const LandmarkNode *node = nullptr;
     for (const FactPair &atom : atoms) {
         auto it = disjunctive_landmarks_to_nodes.find(atom);
-        if (it == disjunctive_landmarks_to_nodes.end())
+        if (it == disjunctive_landmarks_to_nodes.end()) {
             return false;
-        else {
-            if (node && node != it->second) {
-                return false;
-            } else if (!node)
-                node = it->second;
+        }
+        if (!node) {
+            node = it->second;
+        } else if (node != it->second) {
+            return false;
         }
     }
-    return true;
+    assert(node);
+    return atoms.size() == node->get_landmark().atoms.size();
 }
 
 bool LandmarkGraph::contains_landmark(const FactPair &atom) const {

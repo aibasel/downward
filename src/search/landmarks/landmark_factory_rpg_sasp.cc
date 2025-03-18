@@ -239,7 +239,9 @@ void LandmarkFactoryRpgSasp::found_disjunctive_landmark_and_ordering(
         // Note: don't add orders as we can't be sure that they're correct
         return;
     } else if (landmark_graph->contains_overlapping_disjunctive_landmark(atoms)) {
-        if (landmark_graph->contains_identical_disjunctive_landmark(atoms)) {
+        vector<FactPair> atoms_vector(atoms.begin(), atoms.end());
+        if (landmark_graph->contains_identical_disjunctive_landmark(
+            atoms_vector)) {
             new_landmark_node =
                 &landmark_graph->get_disjunctive_landmark_node(*atoms.begin());
             add_ordering_or_replace_if_stronger(*new_landmark_node, node, type);
