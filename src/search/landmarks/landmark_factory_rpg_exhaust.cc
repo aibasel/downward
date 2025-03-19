@@ -1,5 +1,6 @@
 #include "landmark_factory_rpg_exhaust.h"
 
+#include "exploration.h"
 #include "landmark.h"
 #include "landmark_graph.h"
 
@@ -20,6 +21,21 @@ LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(
     bool use_unary_relaxation, utils::Verbosity verbosity)
     : LandmarkFactoryRelaxation(verbosity),
       use_unary_relaxation(use_unary_relaxation) {
+}
+
+// Test whether the goal is reachable without achieving `landmark`.
+static bool relaxed_task_solvable(
+    const TaskProxy &task_proxy, Exploration &exploration,
+    const Landmark &landmark, const bool use_unary_relaxation) {
+    vector<vector<bool>> reached = exploration.compute_relaxed_reachability(
+        landmark.atoms, use_unary_relaxation);
+
+    for (FactProxy goal : task_proxy.get_goals()) {
+        if (!reached[goal.get_variable().get_id()][goal.get_value()]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
