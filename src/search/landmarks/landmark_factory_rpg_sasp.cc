@@ -313,34 +313,36 @@ void LandmarkFactoryRpgSasp::add_disjunctive_landmark_and_ordering(
     }
 }
 
-void LandmarkFactoryRpgSasp::compute_shared_preconditions(
-    const TaskProxy &task_proxy, unordered_map<int, int> &shared_pre,
-    vector<vector<bool>> &reached, const Landmark &landmark) {
-    /*
-      Compute the shared preconditions of all operators that can potentially
-      achieve landmark bp, given the reachability in the relaxed planning graph.
-    */
+/* Compute the shared preconditions of all operators that can potentially
+   achieve `landmark`, given the reachability in the relaxed planning graph. */
+unordered_map<int, int> LandmarkFactoryRpgSasp::compute_shared_preconditions(
+    const TaskProxy &task_proxy, const Landmark &landmark,
+    const vector<vector<bool>> &reached) const {
+    unordered_map<int, int> shared_preconditions;
     bool init = true;
     for (const FactPair &atom : landmark.atoms) {
         const vector<int> &op_ids = get_operators_including_effect(atom);
-
         for (int op_or_axiom_id : op_ids) {
-            OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);
-            if (!init && shared_pre.empty())
-                break;
-
+            OperatorProxy op =
+                get_operator_or_axiom(task_proxy, op_or_axiom_id);
             if (possibly_reaches_landmark(op, reached, landmark)) {
-                unordered_map<int, int> next_pre =
+                unordered_map<int, int> preconditions =
                     approximate_preconditions_to_achieve_landmark(
                         task_proxy, landmark, op);
                 if (init) {
+                    swap(shared_preconditions, preconditions);
                     init = false;
-                    shared_pre = next_pre;
-                } else
-                    shared_pre = get_intersection(shared_pre, next_pre);
+                } else {
+                    shared_preconditions =
+                        get_intersection(shared_preconditions, preconditions);
+                }
+                if (shared_preconditions.empty()) {
+                    return shared_preconditions;
+                }
             }
         }
     }
+    return shared_preconditions;
 }
 
 static string get_predicate_for_atom(const VariablesProxy &variables,
@@ -507,14 +509,13 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
               any precondition propositions that all such operators share
               (if there are any).
             */
-            unordered_map<int, int> shared_pre;
-            compute_shared_preconditions(task_proxy, shared_pre,
-                                         reached, landmark);
+            unordered_map<int, int> shared_preconditions =
+                compute_shared_preconditions(task_proxy, landmark, reached);
             /*
               All such shared preconditions are landmarks, and greedy
               necessary predecessors of *landmark*.
             */
-            for (auto [var, value] : shared_pre) {
+            for (auto [var, value] : shared_preconditions) {
                 add_simple_landmark_and_ordering(FactPair(var, value), *node,
                                                 OrderingType::GREEDY_NECESSARY);
             }
