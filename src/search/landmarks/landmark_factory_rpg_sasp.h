@@ -36,10 +36,6 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
                              LandmarkNode *node);
     void add_landmark_forward_orderings();
 
-    void get_greedy_preconditions_for_landmark(
-        const TaskProxy &task_proxy, const Landmark &landmark,
-        const OperatorProxy &op,
-        std::unordered_map<int, int> &result) const;
     void compute_shared_preconditions(
         const TaskProxy &task_proxy,
         std::unordered_map<int, int> &shared_pre,

@@ -103,79 +103,100 @@ void LandmarkFactoryRpgSasp::add_dtg_successor(int var_id, int pre, int post) {
     }
 }
 
-/*
-  Compute a subset of the actual preconditions of `op` for achieving `landmark`.
-  It takes into account operator preconditions, but only reports those effect
-  conditions that are true for ALL effects achieving the landmark.
-  TODO: Make this comment clearer.
-*/
-void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_landmark(
-    const TaskProxy &task_proxy, const Landmark &landmark,
-    const OperatorProxy &op, unordered_map<int, int> &result) const {
-    vector<bool> has_precondition_on_var(task_proxy.get_variables().size(), false);
+// Returns the set of variables occurring in the precondition.
+static unordered_set<int> add_preconditions(
+    const OperatorProxy &op, unordered_map<int, int> &result) {
+    unordered_set<int> precondition_variables;
     for (FactProxy precondition : op.get_preconditions()) {
-        result.emplace(precondition.get_variable().get_id(), precondition.get_value());
-        has_precondition_on_var[precondition.get_variable().get_id()] = true;
+        result[precondition.get_variable().get_id()] = precondition.get_value();
+        precondition_variables.insert(precondition.get_variable().get_id());
     }
+    return precondition_variables;
+}
 
-    // If there is an effect but no precondition on a variable v with domain
-    // size 2 and initially the variable has the other value than required by
-    // the landmark then at the first time the landmark is reached the
-    // variable must still have the initial value.
+/*
+  For all binary variables, if there is an effect but no precondition on
+  that variable and if the initial value differs from the value in the
+  landmark, then the variable still has its initial value right before
+  it is reached for the first time.
+*/
+static void add_binary_variable_conditions(
+    const TaskProxy &task_proxy, const Landmark &landmark,
+    const EffectsProxy &effects,
+    const unordered_set<int> &precondition_variables,
+    unordered_map<int, int> &result) {
     State initial_state = task_proxy.get_initial_state();
-    EffectsProxy effects = op.get_effects();
     for (EffectProxy effect : effects) {
-        FactProxy effect_fact = effect.get_fact();
-        int var_id = effect_fact.get_variable().get_id();
-        if (!has_precondition_on_var[var_id] &&
-            effect_fact.get_variable().get_domain_size() == 2) {
+        FactProxy effect_atom = effect.get_fact();
+        int var_id = effect_atom.get_variable().get_id();
+        if (!precondition_variables.contains(var_id) &&
+            effect_atom.get_variable().get_domain_size() == 2) {
             for (const FactPair &atom : landmark.atoms) {
                 if (atom.var == var_id &&
                     initial_state[var_id].get_value() != atom.value) {
-                    result.emplace(var_id, initial_state[var_id].get_value());
+                    result[var_id] = initial_state[var_id].get_value();
                     break;
                 }
             }
         }
     }
+}
 
-    // Check if `landmark` could be achieved by conditional effects.
-    unordered_set<int> achievable_atom_indices;
-    for (EffectProxy effect : effects) {
-        FactProxy effect_fact = effect.get_fact();
-        for (size_t j = 0; j < landmark.atoms.size(); ++j)
-            if (landmark.atoms[j] == effect_fact.get_pair())
-                achievable_atom_indices.insert(j);
-    }
-    // Intersect effect conditions of all effects that can achieve lmp
+static void add_effect_conditions(
+    const Landmark &landmark, const EffectsProxy &effects,
+    unordered_map<int, int> &result) {
+    // Intersect effect conditions of all effects that can achieve `landmark`.
     unordered_map<int, int> intersection;
     bool init = true;
-    for (int index : achievable_atom_indices) {
-        for (EffectProxy effect : effects) {
-            FactProxy effect_fact = effect.get_fact();
-            if (!init && intersection.empty())
-                break;
-            unordered_map<int, int> current_cond;
-            if (landmark.atoms[index] == effect_fact.get_pair()) {
-                EffectConditionsProxy effect_conditions = effect.get_conditions();
-                if (effect_conditions.empty()) {
-                    intersection.clear();
-                    break;
-                } else {
-                    for (FactProxy effect_condition : effect_conditions)
-                        current_cond.emplace(effect_condition.get_variable().get_id(),
-                                             effect_condition.get_value());
-                }
-            }
-            if (init) {
-                init = false;
-                intersection = current_cond;
-            } else {
-                intersection = get_intersection(intersection, current_cond);
-            }
+    for (const EffectProxy &effect : effects) {
+        const FactPair &effect_atom = effect.get_fact().get_pair();
+        if (!landmark.contains(effect_atom)) {
+            continue;
+        }
+        if (effect.get_conditions().empty()) {
+            /* Landmark is reached unconditionally, no effect conditions
+               need to be added. */
+            return;
+        }
+
+        unordered_map<int, int> effect_condition;
+        for (FactProxy atom : effect.get_conditions()) {
+            effect_condition[atom.get_variable().get_id()] = atom.get_value();
+        }
+        if (init) {
+            swap(intersection, effect_condition);
+            init = false;
+        } else {
+            intersection = get_intersection(intersection, effect_condition);
+        }
+
+        if (intersection.empty()) {
+            assert(!init);
+            break;
         }
     }
     result.insert(intersection.begin(), intersection.end());
+}
+
+/*
+  Collects conditions that must hold in all states in which `op` is
+  applicable and potentially reaches `landmark` when applied. These are
+  (1) preconditions of `op`,
+  (2) inverse values of binary variables if the landmark does not hold
+      initially, and
+  (3) shared effect conditions of all conditional effects that achieve
+      the landmark.
+*/
+static unordered_map<int, int> approximate_preconditions_to_achieve_landmark(
+    const TaskProxy &task_proxy, const Landmark &landmark,
+    const OperatorProxy &op) {
+    unordered_map<int, int> result;
+    unordered_set<int> precondition_variables = add_preconditions(op, result);
+    EffectsProxy effects = op.get_effects();
+    add_binary_variable_conditions(
+        task_proxy, landmark, effects, precondition_variables, result);
+    add_effect_conditions(landmark, effects, result);
+    return result;
 }
 
 void LandmarkFactoryRpgSasp::found_simple_landmark_and_ordering(
@@ -293,9 +314,9 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
                 break;
 
             if (possibly_reaches_landmark(op, reached, landmark)) {
-                unordered_map<int, int> next_pre;
-                get_greedy_preconditions_for_landmark(task_proxy, landmark,
-                                                      op, next_pre);
+                unordered_map<int, int> next_pre =
+                    approximate_preconditions_to_achieve_landmark(
+                        task_proxy, landmark, op);
                 if (init) {
                     init = false;
                     shared_pre = next_pre;
@@ -401,8 +422,9 @@ void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
         OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_ids[i]);
         if (possibly_reaches_landmark(op, reached, landmark)) {
             ++num_ops;
-            unordered_map<int, int> next_pre;
-            get_greedy_preconditions_for_landmark(task_proxy, landmark, op, next_pre);
+            unordered_map<int, int> next_pre =
+                approximate_preconditions_to_achieve_landmark(
+                    task_proxy, landmark, op);
             for (const auto &pre : next_pre) {
                 int disj_class = disjunction_classes[pre.first][pre.second];
                 if (disj_class == -1) {
