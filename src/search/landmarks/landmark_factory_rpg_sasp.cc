@@ -346,10 +346,11 @@ unordered_map<int, int> LandmarkFactoryRpgSasp::compute_shared_preconditions(
 }
 
 static string get_predicate_for_atom(const VariablesProxy &variables,
-                                     int var_no, int value) {
-    const string atom_name = variables[var_no].get_fact(value).get_name();
-    if (atom_name == "<none of those>")
+                                     int var_id, int value) {
+    const string atom_name = variables[var_id].get_fact(value).get_name();
+    if (atom_name == "<none of those>") {
         return "";
+    }
     int predicate_pos = 0;
     if (atom_name.substr(0, 5) == "Atom ") {
         predicate_pos = 5;
@@ -361,34 +362,33 @@ static string get_predicate_for_atom(const VariablesProxy &variables,
         cerr << "Cannot extract predicate from atom: " << atom_name << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
-    return string(atom_name.begin() +
-                  predicate_pos, atom_name.begin() + paren_pos);
+    return {
+        atom_name.begin() + predicate_pos,
+        atom_name.begin() + static_cast<int>(paren_pos)
+    };
 }
 
+/*
+  The RHW landmark generation method only allows disjunctive landmarks where all
+  atoms stem from the same PDDL predicate. This functionality is implemented in
+  this method.
+
+  The approach we use is to map each atom (var/value pair) to an equivalence
+  class (representing all atoms with the same predicate). The special class "-1"
+  means "cannot be part of any disjunctive landmark". This is used for atoms
+  that do not belong to any predicate.
+
+  Similar methods for restricting disjunctive landmarks could be implemented by
+  just changing this function, as long as the restriction could also be
+  implemented as an equivalence class. For example, issue384 suggests to simply
+  use the finite-domain variable ID as the equivalence class, which would be a
+  cleaner method than what we currently use since it doesn't care about where
+  the finite-domain representation comes from. (But of course making such a
+  change would require a performance evaluation.)
+*/
 void LandmarkFactoryRpgSasp::build_disjunction_classes(
     const TaskProxy &task_proxy) {
-    /* The RHW landmark generation method only allows disjunctive
-       landmarks where all atoms stem from the same PDDL predicate.
-       This functionality is implemented via this method.
-
-       The approach we use is to map each atom (var/value pair) to an
-       equivalence class (representing all atoms with the same
-       predicate). The special class "-1" means "cannot be part of any
-       disjunctive landmark". This is used for atoms that do not
-       belong to any predicate.
-
-       Similar methods for restricting disjunctive landmarks could be
-       implemented by just changing this function, as long as the
-       restriction could also be implemented as an equivalence class.
-       For example, we might simply use the finite-domain variable
-       number as the equivalence class, which would be a cleaner
-       method than what we currently use since it doesn't care about
-       where the finite-domain representation comes from. (But of
-       course making such a change would require a performance
-       evaluation.)
-    */
-
-    typedef map<string, int> PredicateIndex;
+    typedef unordered_map<string, int> PredicateIndex;
     PredicateIndex predicate_to_index;
 
     VariablesProxy variables = task_proxy.get_variables();
@@ -397,17 +397,18 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes(
         int num_values = var.get_domain_size();
         disjunction_classes[var.get_id()].reserve(num_values);
         for (int value = 0; value < num_values; ++value) {
-            string predicate = get_predicate_for_atom(variables, var.get_id(), value);
-            int disj_class;
+            string predicate =
+                get_predicate_for_atom(variables, var.get_id(), value);
+            int disjunction_class;
             if (predicate.empty()) {
-                disj_class = -1;
+                disjunction_class = -1;
             } else {
-                // Insert predicate into unordered_map or extract value that
-                // is already there.
+                /* Insert predicate into unordered_map or extract value
+                   that is already there. */
                 pair<string, int> entry(predicate, predicate_to_index.size());
-                disj_class = predicate_to_index.insert(entry).first->second;
+                disjunction_class = predicate_to_index.insert(entry).first->second;
             }
-            disjunction_classes[var.get_id()].push_back(disj_class);
+            disjunction_classes[var.get_id()].push_back(disjunction_class);
         }
     }
 }
@@ -415,7 +416,7 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes(
 void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     const TaskProxy &task_proxy,
     vector<set<FactPair>> &disjunctive_pre,
-    vector<vector<bool>> &reached, const Landmark &landmark) {
+    vector<vector<bool>> &reached, const Landmark &landmark) const {
     /*
       Compute disjunctive preconditions from all operators than can potentially
       achieve landmark bp, given the reachability in the relaxed planning graph.

@@ -47,7 +47,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
         const TaskProxy &task_proxy,
         std::vector<std::set<FactPair>> &disjunctive_pre,
         std::vector<std::vector<bool>> &reached,
-        const Landmark &landmark);
+        const Landmark &landmark) const;
 
     virtual void generate_relaxed_landmarks(
         const std::shared_ptr<AbstractTask> &task,
