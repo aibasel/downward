@@ -276,13 +276,16 @@ static utils::HashSet<FactPair> get_effects_on_other_variables(
     return next_effect;
 }
 
-static void intersect_inplace(utils::HashSet<FactPair> &set,
-                              const utils::HashSet<FactPair> &other) {
-    for (const FactPair &atom : other) {
-        if (!set.contains(atom)) {
-            set.erase(atom);
+static utils::HashSet<FactPair> get_intersection(
+    const utils::HashSet<FactPair> &set1,
+    const utils::HashSet<FactPair> &set2) {
+    utils::HashSet<FactPair> intersection;
+    for (const FactPair &atom : set1) {
+        if (set2.contains(atom)) {
+            intersection.insert(atom);
         }
     }
+    return intersection;
 }
 
 utils::HashSet<FactPair> LandmarkFactoryReasonableOrdersHPS::get_shared_effects_of_achievers(
@@ -299,7 +302,7 @@ utils::HashSet<FactPair> LandmarkFactoryReasonableOrdersHPS::get_shared_effects_
             swap(shared_effects, effect);
             init = false;
         } else {
-            intersect_inplace(shared_effects, effect);
+            shared_effects = get_intersection(shared_effects, effect);
         }
 
         if (shared_effects.empty()) {
@@ -340,10 +343,11 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
     if (landmark_a.is_conjunctive) {
         return false;
     }
-    utils::HashSet<FactPair> shared_effect =
+    utils::HashSet<FactPair> shared_effects =
         get_shared_effects_of_achievers(atom_a, task_proxy);
     return ranges::any_of(
-        shared_effect.begin(), shared_effect.end(), [&](const FactPair &atom) {
+        shared_effects.begin(), shared_effects.end(),
+        [&](const FactPair &atom) {
             const FactProxy &e = variables[atom.var].get_fact(atom.value);
             return e != a && e != b && e.is_mutex(b);
         });

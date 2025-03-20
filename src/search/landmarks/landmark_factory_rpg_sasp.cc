@@ -19,17 +19,17 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-static unordered_map<int, int> _intersect(
-    const unordered_map<int, int> &a, const unordered_map<int, int> &b) {
-    if (a.size() > b.size())
-        return _intersect(b, a);
-    unordered_map<int, int> result;
-    for (const auto &pair_a : a) {
-        const auto it_b = b.find(pair_a.first);
-        if (it_b != b.end() && it_b->second == pair_a.second)
-            result.insert(pair_a);
+/* TODO: Can we combine this with the intersection defined in reasonable
+    order factory? */
+static unordered_map<int, int> get_intersection(
+    const unordered_map<int, int> &map1, const unordered_map<int, int> &map2) {
+    unordered_map<int, int> intersection;
+    for (auto [key, value] : map1) {
+        if (map2.contains(key) && map2.at(key) == value) {
+            intersection[key] = value;
+        }
     }
-    return result;
+    return intersection;
 }
 
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(
@@ -39,51 +39,68 @@ LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(
       use_orders(use_orders) {
 }
 
-void LandmarkFactoryRpgSasp::build_dtg_successors(const TaskProxy &task_proxy) {
-    // resize data structure
+void LandmarkFactoryRpgSasp::resize_dtg_data_structures(
+    const TaskProxy &task_proxy) {
     VariablesProxy variables = task_proxy.get_variables();
     dtg_successors.resize(variables.size());
-    for (VariableProxy var : variables)
+    for (VariableProxy var : variables) {
         dtg_successors[var.get_id()].resize(var.get_domain_size());
+    }
+}
 
+void LandmarkFactoryRpgSasp::compute_dtg_successors(
+    const EffectProxy &effect,
+    const std::unordered_map<int, int> &preconditions,
+    const std::unordered_map<int, int> &effect_conditions) {
+    /* If the operator can change the value of `var` from `pre` to
+       `post`, we insert `post` into `dtg_successors[var][pre]`. */
+    auto [var, post] = effect.get_fact().get_pair();
+    if (preconditions.contains(var)) {
+        int pre = preconditions.at(var);
+        if (effect_conditions.contains(var) &&
+            effect_conditions.at(var) != pre) {
+            // The precondition conflicts with the effect condition.
+            return;
+        }
+        add_dtg_successor(var, pre, post);
+    } else if (effect_conditions.contains(var)) {
+        add_dtg_successor(var, effect_conditions.at(var), post);
+    } else {
+        int domain_size =
+            effect.get_fact().get_variable().get_domain_size();
+        for (int pre = 0; pre < domain_size; ++pre) {
+            add_dtg_successor(var, pre, post);
+        }
+    }
+}
+
+static unordered_map<int, int> build_conditions_map(
+    const ConditionsProxy &conditions) {
+    unordered_map<int, int> condition_map;
+    for (FactProxy condition : conditions) {
+        condition_map[condition.get_variable().get_id()] =
+            condition.get_value();
+    }
+    return condition_map;
+}
+
+void LandmarkFactoryRpgSasp::build_dtg_successors(const TaskProxy &task_proxy) {
+    resize_dtg_data_structures(task_proxy);
     for (OperatorProxy op : task_proxy.get_operators()) {
-        // build map for precondition
-        unordered_map<int, int> precondition_map;
-        for (FactProxy precondition : op.get_preconditions())
-            precondition_map[precondition.get_variable().get_id()] = precondition.get_value();
-
+        unordered_map<int, int> preconditions =
+            build_conditions_map(op.get_preconditions());
         for (EffectProxy effect : op.get_effects()) {
-            // build map for effect condition
-            unordered_map<int, int> eff_condition;
-            for (FactProxy effect_condition : effect.get_conditions())
-                eff_condition[effect_condition.get_variable().get_id()] = effect_condition.get_value();
-
-            // whenever the operator can change the value of a variable from pre to
-            // post, we insert post into dtg_successors[var_id][pre]
-            FactProxy effect_fact = effect.get_fact();
-            int var_id = effect_fact.get_variable().get_id();
-            int post = effect_fact.get_value();
-            if (precondition_map.count(var_id)) {
-                int pre = precondition_map[var_id];
-                if (eff_condition.count(var_id) && eff_condition[var_id] != pre)
-                    continue; // confliction pre- and effect condition
-                add_dtg_successor(var_id, pre, post);
-            } else {
-                if (eff_condition.count(var_id)) {
-                    add_dtg_successor(var_id, eff_condition[var_id], post);
-                } else {
-                    int dom_size = effect_fact.get_variable().get_domain_size();
-                    for (int pre = 0; pre < dom_size; ++pre)
-                        add_dtg_successor(var_id, pre, post);
-                }
-            }
+            unordered_map<int, int> effect_conditions =
+                build_conditions_map(effect.get_conditions());
+            compute_dtg_successors(effect, preconditions, effect_conditions);
         }
     }
 }
 
 void LandmarkFactoryRpgSasp::add_dtg_successor(int var_id, int pre, int post) {
-    if (pre != post)
+    if (pre != post) {
         dtg_successors[var_id][pre].insert(post);
+    }
 }
 
 /*
@@ -153,8 +170,9 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_landmark(
             if (init) {
                 init = false;
                 intersection = current_cond;
-            } else
-                intersection = _intersect(intersection, current_cond);
+            } else {
+                intersection = get_intersection(intersection, current_cond);
+            }
         }
     }
     result.insert(intersection.begin(), intersection.end());
@@ -282,7 +300,7 @@ void LandmarkFactoryRpgSasp::compute_shared_preconditions(
                     init = false;
                     shared_pre = next_pre;
                 } else
-                    shared_pre = _intersect(shared_pre, next_pre);
+                    shared_pre = get_intersection(shared_pre, next_pre);
             }
         }
     }

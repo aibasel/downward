@@ -14,15 +14,21 @@ namespace landmarks {
 class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     const bool disjunctive_landmarks;
     const bool use_orders;
+    // TODO: Use std::deque instead?
     std::list<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
 
     std::unordered_map<const LandmarkNode *, utils::HashSet<FactPair>> forward_orders;
 
-    // dtg_successors[var_id][val] contains all successor values of val in the
-    // domain transition graph for the variable
+    /* The entry `dtg_successors[var][val]` contains all successor values of the
+       atom var->val in the domain transition graph (aka atomic projection). */
     std::vector<std::vector<std::unordered_set<int>>> dtg_successors;
 
+    void resize_dtg_data_structures(const TaskProxy &task_proxy);
+    void compute_dtg_successors(
+        const EffectProxy &effect,
+        const std::unordered_map<int, int> &preconditions,
+        const std::unordered_map<int, int> &effect_conditions);
     void build_dtg_successors(const TaskProxy &task_proxy);
     void add_dtg_successor(int var_id, int pre, int post);
     void find_forward_orders(const VariablesProxy &variables,
@@ -55,6 +61,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     void approximate_lookahead_orders(
         const TaskProxy &task_proxy,
         const std::vector<std::vector<bool>> &reached, LandmarkNode *node);
+    // TODO: Rename this function.
     bool domain_connectivity(const State &initial_state,
                              const FactPair &landmark,
                              const std::unordered_set<int> &exclude);
