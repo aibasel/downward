@@ -5,7 +5,7 @@
 
 #include "../utils/hash.h"
 
-#include <list>
+#include <deque>
 #include <set>
 #include <unordered_map>
 #include <vector>
@@ -15,7 +15,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     const bool disjunctive_landmarks;
     const bool use_orders;
     // TODO: Use std::deque instead?
-    std::list<LandmarkNode *> open_landmarks;
+    std::deque<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
 
     std::unordered_map<const LandmarkNode *, utils::HashSet<FactPair>> forward_orders;
@@ -49,11 +49,17 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     virtual void generate_relaxed_landmarks(
         const std::shared_ptr<AbstractTask> &task,
         Exploration &exploration) override;
-    void found_simple_landmark_and_ordering(
+    void remove_occurrences_of_landmark_node(const LandmarkNode *node);
+    void remove_disjunctive_landmark_and_rewire_orderings(
+        LandmarkNode &simple_landmark_node);
+    void add_simple_landmark_and_ordering(
         const FactPair &atom, LandmarkNode &node, OrderingType type);
-    void found_disjunctive_landmark_and_ordering(
-        const TaskProxy &task_proxy, const std::set<FactPair> &atoms,
-        LandmarkNode &node, OrderingType type);
+    // TODO: Can we use something different than set in the next two?
+    bool deal_with_overlapping_landmarks(
+        const std::set<FactPair> &atoms, LandmarkNode &node,
+        OrderingType type) const;
+    void add_disjunctive_landmark_and_ordering(
+        const std::set<FactPair> &atoms, LandmarkNode &node, OrderingType type);
     void approximate_lookahead_orders(
         const TaskProxy &task_proxy,
         const std::vector<std::vector<bool>> &reached, LandmarkNode *node);

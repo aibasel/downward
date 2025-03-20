@@ -55,12 +55,19 @@ void LandmarkFactory::compute_operators_providing_effect(
 
 static bool weaker_ordering_exists(
     LandmarkNode &from, LandmarkNode &to, OrderingType type) {
-    auto it = from.children.find(&to);
-    if (it == from.children.end()) {
-        return false;
+    unordered_map<LandmarkNode *, OrderingType>::iterator it;
+    if (from.children.size() < to.parents.size()) {
+        it = from.children.find(&to);
+        if (it == from.children.end()) {
+            return false;
+        }
     } else {
-        return it->second < type;
+        it = to.parents.find(&from);
+        if (it == to.parents.end()) {
+            return false;
+        }
     }
+    return it->second < type;
 }
 
 static void remove_ordering(LandmarkNode &from, LandmarkNode &to) {
@@ -83,7 +90,7 @@ void LandmarkFactory::add_ordering(
 
 /* Adds an ordering in the landmark graph. If an ordering between the same
    landmarks is already present, the stronger ordering type wins. */
-void LandmarkFactory::add_ordering_or_replace_if_stronger(
+void LandmarkFactory::add_or_replace_ordering_if_stronger(
     LandmarkNode &from, LandmarkNode &to, OrderingType type) const {
     // TODO: Understand why self-loops are not allowed.
     assert(&from != &to);

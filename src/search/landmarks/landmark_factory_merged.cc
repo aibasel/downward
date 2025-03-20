@@ -129,7 +129,7 @@ void LandmarkFactoryMerged::add_landmark_orderings(
                     LandmarkNode *to_new =
                         get_matching_landmark(to_old->get_landmark());
                     if (to_new) {
-                        add_ordering_or_replace_if_stronger(
+                        add_or_replace_ordering_if_stronger(
                             *from_new, *to_new, type);
                     } else if (log.is_at_least_normal()) {
                         log << "Discarded to ordering" << endl;

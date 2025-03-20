@@ -40,7 +40,7 @@ protected:
 
     explicit LandmarkFactory(utils::Verbosity verbosity);
 
-    void add_ordering_or_replace_if_stronger(
+    void add_or_replace_ordering_if_stronger(
         LandmarkNode &from, LandmarkNode &to, OrderingType type) const;
 
     void discard_all_orderings() const;

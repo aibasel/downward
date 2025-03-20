@@ -49,7 +49,7 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_goal_orderings(
             continue;
         }
         if (interferes(task_proxy, other_landmark, landmark)) {
-            add_ordering_or_replace_if_stronger(
+            add_or_replace_ordering_if_stronger(
                 *other, node, OrderingType::REASONABLE);
         }
     }
@@ -107,7 +107,7 @@ void LandmarkFactoryReasonableOrdersHPS::insert_reasonable_orderings(
                others as well (transitivity), but it could be interesting to
                test the effect of doing so, for example for the cycle heuristic.
              */
-            add_ordering_or_replace_if_stronger(
+            add_or_replace_ordering_if_stronger(
                 *other, node, OrderingType::REASONABLE);
         }
     }
