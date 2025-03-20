@@ -36,18 +36,18 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
                              LandmarkNode *node);
     void add_landmark_forward_orderings();
 
-    void update_shared_preconditions(
-        const TaskProxy &task_proxy, const Landmark &landmark,
-        const OperatorProxy &op,
-        std::unordered_map<int, int> &shared_preconditions) const;
     std::unordered_map<int, int> compute_shared_preconditions(
         const TaskProxy &task_proxy, const Landmark &landmark,
         const std::vector<std::vector<bool>> &reached) const;
-    void compute_disjunctive_preconditions(
-        const TaskProxy &task_proxy,
-        std::vector<std::set<FactPair>> &disjunctive_pre,
-        std::vector<std::vector<bool>> &reached,
+    std::vector<int> get_operators_achieving_landmark(
         const Landmark &landmark) const;
+    void extend_disjunction_class_lookups(
+        const std::unordered_map<int, int> &landmark_preconditions, int op_id,
+        std::unordered_map<int, std::vector<FactPair>> &preconditions_by_disjunction_class,
+        std::unordered_map<int, std::unordered_set<int>> &used_operators_by_disjunction_class) const;
+    std::vector<std::set<FactPair>> compute_disjunctive_preconditions(
+        const TaskProxy &task_proxy, const Landmark &landmark,
+        const std::vector<std::vector<bool>> &reached) const;
 
     virtual void generate_relaxed_landmarks(
         const std::shared_ptr<AbstractTask> &task,

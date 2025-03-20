@@ -2,6 +2,7 @@
 
 #include "exploration.h"
 #include "landmark.h"
+#include "landmark_factory.h"
 #include "landmark_graph.h"
 #include "util.h"
 
@@ -413,64 +414,89 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes(
     }
 }
 
-void LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
-    const TaskProxy &task_proxy,
-    vector<set<FactPair>> &disjunctive_pre,
-    vector<vector<bool>> &reached, const Landmark &landmark) const {
-    /*
-      Compute disjunctive preconditions from all operators than can potentially
-      achieve landmark bp, given the reachability in the relaxed planning graph.
-      A disj. precondition is a set of atoms which contains one precondition
-      atom from each of the operators, which we additionally restrict so that
-      each atom in the set stems from the same PDDL predicate.
-    */
-
-    vector<int> op_or_axiom_ids;
+vector<int> LandmarkFactoryRpgSasp::get_operators_achieving_landmark(
+    const Landmark &landmark) const {
+    unordered_set<int> op_ids;
     for (const FactPair &atom : landmark.atoms) {
-        const vector<int> &tmp_op_or_axiom_ids =
-            get_operators_including_effect(atom);
-        for (int op_or_axiom_id : tmp_op_or_axiom_ids)
-            op_or_axiom_ids.push_back(op_or_axiom_id);
+        const vector<int> &tmp_op_ids = get_operators_including_effect(atom);
+        op_ids.insert(tmp_op_ids.begin(), tmp_op_ids.end());
     }
+    return {op_ids.begin(), op_ids.end()};
+}
+
+void LandmarkFactoryRpgSasp::extend_disjunction_class_lookups(
+    const unordered_map<int, int> &landmark_preconditions, int op_id,
+        unordered_map<int, vector<FactPair>> &preconditions_by_disjunction_class,
+        unordered_map<int, unordered_set<int>> &used_operators_by_disjunction_class) const {
+    for (const auto &[var, value] : landmark_preconditions) {
+        int disjunction_class = disjunction_classes[var][value];
+        if (disjunction_class == -1) {
+            /* This atom may not participate in any disjunctive
+               landmarks since it has no associated predicate. */
+            continue;
+        }
+
+        /* Only deal with propositions that are not shared preconditions
+           (which have been found already and are simple landmarks). */
+        FactPair precondition(var, value);
+        if (!landmark_graph->contains_simple_landmark(precondition)) {
+            preconditions_by_disjunction_class[disjunction_class].push_back(precondition);
+            used_operators_by_disjunction_class[disjunction_class].insert(op_id);
+        }
+    }
+}
+
+static vector<set<FactPair>> get_disjunctive_preconditions(
+    const unordered_map<int, vector<FactPair>> &preconditions_by_disjunction_class,
+    const unordered_map<int, unordered_set<int>> &used_operators_by_disjunction_class,
+    int num_ops) {
+    vector<set<FactPair>> disjunctive_preconditions;
+    for (const auto &[disjunction_class, atoms] : preconditions_by_disjunction_class) {
+        int used_operators = static_cast<int>(
+            used_operators_by_disjunction_class.at(disjunction_class).size());
+        if (used_operators == num_ops) {
+            set<FactPair> preconditions;
+            preconditions.insert(atoms.begin(), atoms.end());
+            if (preconditions.size() > 1) {
+                disjunctive_preconditions.push_back(preconditions);
+            } // Otherwise this landmark is not actually a disjunctive landmark.
+        }
+    }
+    return disjunctive_preconditions;
+}
+
+/*
+  Compute disjunctive preconditions from all operators than can potentially
+  achieve `landmark`, given the reachability in the relaxed planning graph.
+  A disjunctive precondition is a set of atoms which contains one precondition
+  atom from each of the operators, which we additionally restrict so that
+  each atom in the set stems from the same disjunction class.
+*/
+vector<set<FactPair>> LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
+    const TaskProxy &task_proxy, const Landmark &landmark,
+    const vector<vector<bool>> &reached) const {
+    vector<int> op_or_axiom_ids =
+        get_operators_achieving_landmark(landmark);
     int num_ops = 0;
-    unordered_map<int, vector<FactPair>> preconditions;   // maps from
-    // pddl_proposition_indeces to props
-    unordered_map<int, unordered_set<int>> used_operators;  // tells for each
-    // proposition which operators use it
-    for (size_t i = 0; i < op_or_axiom_ids.size(); ++i) {
-        OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_ids[i]);
+    unordered_map<int, vector<FactPair>> preconditions_by_disjunction_class;
+    unordered_map<int, unordered_set<int>> used_operators_by_disjunction_class;
+    for (int op_id : op_or_axiom_ids) {
+        const OperatorProxy &op =
+            get_operator_or_axiom(task_proxy, op_id);
         if (possibly_reaches_landmark(op, reached, landmark)) {
             ++num_ops;
-            unordered_map<int, int> next_pre =
+            unordered_map<int, int> landmark_preconditions =
                 approximate_preconditions_to_achieve_landmark(
                     task_proxy, landmark, op);
-            for (const auto &pre : next_pre) {
-                int disj_class = disjunction_classes[pre.first][pre.second];
-                if (disj_class == -1) {
-                    /* This atom may not participate in any disjunctive
-                       landmarks since it has no associated predicate. */
-                    continue;
-                }
-
-                // Only deal with propositions that are not shared preconditions
-                // (those have been found already and are simple landmarks).
-                const FactPair precondition(pre.first, pre.second);
-                if (!landmark_graph->contains_simple_landmark(precondition)) {
-                    preconditions[disj_class].push_back(precondition);
-                    used_operators[disj_class].insert(i);
-                }
-            }
+            extend_disjunction_class_lookups(
+                landmark_preconditions, op_id,
+                preconditions_by_disjunction_class,
+                used_operators_by_disjunction_class);
         }
     }
-    for (const auto &pre : preconditions) {
-        if (static_cast<int>(used_operators[pre.first].size()) == num_ops) {
-            set<FactPair> pre_set;
-            pre_set.insert(pre.second.begin(), pre.second.end());
-            if (pre_set.size() > 1) { // otherwise this LM is not actually a disjunctive LM
-                disjunctive_pre.push_back(pre_set);
-            }
-        }
-    }
+    return get_disjunctive_preconditions(
+        preconditions_by_disjunction_class, used_operators_by_disjunction_class,
+        num_ops);
 }
 
 void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
@@ -524,16 +550,18 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
             approximate_lookahead_orders(task_proxy, reached, node);
 
             // Process achieving operators again to find disjunctive LMs
-            vector<set<FactPair>> disjunctive_pre;
-            compute_disjunctive_preconditions(
-                task_proxy, disjunctive_pre, reached, landmark);
-            for (const auto &preconditions : disjunctive_pre)
+            vector<set<FactPair>> disjunctive_preconditions =
+                compute_disjunctive_preconditions(
+                    task_proxy, landmark, reached);
+            for (const auto &preconditions : disjunctive_preconditions)
                 // We don't want disjunctive LMs to get too big.
-                if (preconditions.size() < 5 && none_of(preconditions.begin()
-                , preconditions.end(), [&](const FactPair &atom) {
-                    // TODO: Why not?
-                    return initial_state[atom.var].get_value() == atom.value;
-                })) {
+                if (preconditions.size() < 5 && ranges::none_of(
+                        preconditions.begin(), preconditions.end(),
+                        [&](const FactPair &atom) {
+                            // TODO: Why not?
+                            return initial_state[atom.var].get_value() ==
+                                   atom.value;
+                        })) {
                     add_disjunctive_landmark_and_ordering(
                         preconditions, *node, OrderingType::GREEDY_NECESSARY);
                 }
