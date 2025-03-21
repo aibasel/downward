@@ -245,6 +245,7 @@ void LandmarkFactoryRpgSasp::remove_disjunctive_landmark_and_rewire_orderings(
     remove_occurrences_of_landmark_node(disjunctive_landmark_node);
     vector<LandmarkNode *> parents =
         get_natural_parents(disjunctive_landmark_node);
+    assert(use_orders || parents.empty());
     landmark_graph->remove_node(disjunctive_landmark_node);
     /* Add incoming orderings of replaced `disjunctive_landmark_node` as
        natural orderings to `simple_node`. */
@@ -257,9 +258,11 @@ void LandmarkFactoryRpgSasp::remove_disjunctive_landmark_and_rewire_orderings(
 void LandmarkFactoryRpgSasp::add_simple_landmark_and_ordering(
     const FactPair &atom, LandmarkNode &node, OrderingType type) {
     if (landmark_graph->contains_simple_landmark(atom)) {
-        LandmarkNode &simple_landmark =
-            landmark_graph->get_simple_landmark_node(atom);
-        add_or_replace_ordering_if_stronger(simple_landmark, node, type);
+        if (use_orders) {
+            LandmarkNode &simple_landmark =
+                landmark_graph->get_simple_landmark_node(atom);
+            add_or_replace_ordering_if_stronger(simple_landmark, node, type);
+        }
         return;
     }
 
@@ -267,7 +270,9 @@ void LandmarkFactoryRpgSasp::add_simple_landmark_and_ordering(
     LandmarkNode &simple_landmark_node =
         landmark_graph->add_landmark(move (landmark));
     open_landmarks.push_back(&simple_landmark_node);
-    add_or_replace_ordering_if_stronger(simple_landmark_node, node, type);
+    if (use_orders) {
+        add_or_replace_ordering_if_stronger(simple_landmark_node, node, type);
+    }
     if (landmark_graph->contains_disjunctive_landmark(atom)) {
         // Simple landmarks are more informative than disjunctive ones.
         remove_disjunctive_landmark_and_rewire_orderings(simple_landmark_node);
@@ -290,7 +295,10 @@ bool LandmarkFactoryRpgSasp::deal_with_overlapping_landmarks(
         if (landmark_graph->contains_identical_disjunctive_landmark(atoms)) {
             LandmarkNode &new_landmark_node =
                 landmark_graph->get_disjunctive_landmark_node(*atoms.begin());
-            add_or_replace_ordering_if_stronger(new_landmark_node, node, type);
+            if (use_orders) {
+                add_or_replace_ordering_if_stronger(
+                    new_landmark_node, node, type);
+            }
         }
         return true;
     }
@@ -310,7 +318,9 @@ void LandmarkFactoryRpgSasp::add_disjunctive_landmark_and_ordering(
         LandmarkNode *new_landmark_node =
             &landmark_graph->add_landmark(move(landmark));
         open_landmarks.push_back(new_landmark_node);
-        add_or_replace_ordering_if_stronger(*new_landmark_node, node, type);
+        if (use_orders) {
+            add_or_replace_ordering_if_stronger(*new_landmark_node, node, type);
+        }
     }
 }
 
@@ -319,6 +329,7 @@ void LandmarkFactoryRpgSasp::add_disjunctive_landmark_and_ordering(
 unordered_map<int, int> LandmarkFactoryRpgSasp::compute_shared_preconditions(
     const TaskProxy &task_proxy, const Landmark &landmark,
     const vector<vector<bool>> &reached) const {
+    // TODO: Could this be a set of FactPair instead?
     unordered_map<int, int> shared_preconditions;
     bool init = true;
     for (const FactPair &atom : landmark.atoms) {
@@ -426,8 +437,8 @@ vector<int> LandmarkFactoryRpgSasp::get_operators_achieving_landmark(
 
 void LandmarkFactoryRpgSasp::extend_disjunction_class_lookups(
     const unordered_map<int, int> &landmark_preconditions, int op_id,
-        unordered_map<int, vector<FactPair>> &preconditions_by_disjunction_class,
-        unordered_map<int, unordered_set<int>> &used_operators_by_disjunction_class) const {
+        unordered_map<int, vector<FactPair>> &preconditions,
+        unordered_map<int, unordered_set<int>> &used_operators) const {
     for (const auto &[var, value] : landmark_preconditions) {
         int disjunction_class = disjunction_classes[var][value];
         if (disjunction_class == -1) {
@@ -440,8 +451,8 @@ void LandmarkFactoryRpgSasp::extend_disjunction_class_lookups(
            (which have been found already and are simple landmarks). */
         FactPair precondition(var, value);
         if (!landmark_graph->contains_simple_landmark(precondition)) {
-            preconditions_by_disjunction_class[disjunction_class].push_back(precondition);
-            used_operators_by_disjunction_class[disjunction_class].insert(op_id);
+            preconditions[disjunction_class].push_back(precondition);
+            used_operators[disjunction_class].insert(op_id);
         }
     }
 }
@@ -495,8 +506,75 @@ vector<set<FactPair>> LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
         }
     }
     return get_disjunctive_preconditions(
-        preconditions_by_disjunction_class, used_operators_by_disjunction_class,
-        num_ops);
+        preconditions_by_disjunction_class,
+        used_operators_by_disjunction_class, num_ops);
+}
+
+void LandmarkFactoryRpgSasp::generate_goal_landmarks(
+    const TaskProxy &task_proxy) {
+    for (FactProxy goal : task_proxy.get_goals()) {
+        Landmark landmark({goal.get_pair()}, false, false, true);
+        LandmarkNode &node = landmark_graph->add_landmark(move(landmark));
+        open_landmarks.push_back(&node);
+    }
+}
+
+void LandmarkFactoryRpgSasp::generate_shared_precondition_landmarks(
+    const TaskProxy &task_proxy, const Landmark &landmark,
+    LandmarkNode *node, const vector<vector<bool>> &reached) {
+    unordered_map<int, int> shared_preconditions =
+        compute_shared_preconditions(task_proxy, landmark, reached);
+    /* All shared preconditions are landmarks, and greedy-necessary
+       predecessors of `landmark`. */
+    for (auto [var, value] : shared_preconditions) {
+        add_simple_landmark_and_ordering(
+            FactPair(var, value), *node, OrderingType::GREEDY_NECESSARY);
+    }
+}
+
+void LandmarkFactoryRpgSasp::generate_disjunctive_precondition_landmarks(
+    const TaskProxy &task_proxy, const State &initial_state,
+    const Landmark &landmark, LandmarkNode *node,
+    const vector<vector<bool>> &reached) {
+    vector<set<FactPair>> disjunctive_preconditions =
+        compute_disjunctive_preconditions(task_proxy, landmark, reached);
+    for (const auto &preconditions : disjunctive_preconditions) {
+        /* We don't want disjunctive landmarks to get too big. Also,
+           they should not hold in the initial state. */
+        if (preconditions.size() < 5 && ranges::none_of(
+                preconditions.begin(), preconditions.end(),
+                [&](const FactPair &atom) {
+                    /* TODO: Is there a good reason why not? We allow
+                        simple landmarks to hold in the initial state. */
+                    return initial_state[atom.var].get_value() ==
+                           atom.value;
+                })) {
+            add_disjunctive_landmark_and_ordering(
+                preconditions, *node, OrderingType::GREEDY_NECESSARY);
+        }
+    }
+}
+
+void LandmarkFactoryRpgSasp::generate_backchaining_landmarks(
+    const TaskProxy &task_proxy, Exploration &exploration) {
+    State initial_state = task_proxy.get_initial_state();
+    while (!open_landmarks.empty()) {
+        LandmarkNode *node = open_landmarks.front();
+        Landmark &landmark = node->get_landmark();
+        open_landmarks.pop_front();
+        assert(forward_orders[node].empty());
+
+        if (landmark.is_true_in_state(initial_state)) {
+            continue;
+        }
+        vector<vector<bool>> reached =
+            exploration.compute_relaxed_reachability(landmark.atoms, false);
+        generate_shared_precondition_landmarks(
+            task_proxy, landmark, node, reached);
+        approximate_lookahead_orders(task_proxy, reached, node);
+        generate_disjunctive_precondition_landmarks(
+            task_proxy, initial_state, landmark, node, reached);
+    }
 }
 
 void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
@@ -507,79 +585,17 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
     }
     build_dtg_successors(task_proxy);
     build_disjunction_classes(task_proxy);
-
-    for (FactProxy goal : task_proxy.get_goals()) {
-        Landmark landmark({goal.get_pair()}, false, false, true);
-        LandmarkNode &node = landmark_graph->add_landmark(move(landmark));
-        open_landmarks.push_back(&node);
+    generate_goal_landmarks(task_proxy);
+    generate_backchaining_landmarks(task_proxy, exploration);
+    if (use_orders) {
+        add_landmark_forward_orderings();
     }
-
-    State initial_state = task_proxy.get_initial_state();
-    while (!open_landmarks.empty()) {
-        LandmarkNode *node = open_landmarks.front();
-        Landmark &landmark = node->get_landmark();
-        open_landmarks.pop_front();
-        assert(forward_orders[node].empty());
-
-        if (!landmark.is_true_in_state(initial_state)) {
-            /*
-              Backchain from *landmark* and compute greedy necessary
-              predecessors.
-              Firstly, collect which propositions can be reached without
-              achieving the landmark.
-            */
-            vector<vector<bool>> reached =
-                exploration.compute_relaxed_reachability(landmark.atoms, false);
-            /*
-              Use this information to determine all operators that can
-              possibly achieve *landmark* for the first time, and collect
-              any precondition propositions that all such operators share
-              (if there are any).
-            */
-            unordered_map<int, int> shared_preconditions =
-                compute_shared_preconditions(task_proxy, landmark, reached);
-            /*
-              All such shared preconditions are landmarks, and greedy
-              necessary predecessors of *landmark*.
-            */
-            for (auto [var, value] : shared_preconditions) {
-                add_simple_landmark_and_ordering(FactPair(var, value), *node,
-                                                OrderingType::GREEDY_NECESSARY);
-            }
-            // Extract additional orders from the relaxed planning graph and DTG.
-            approximate_lookahead_orders(task_proxy, reached, node);
-
-            // Process achieving operators again to find disjunctive LMs
-            vector<set<FactPair>> disjunctive_preconditions =
-                compute_disjunctive_preconditions(
-                    task_proxy, landmark, reached);
-            for (const auto &preconditions : disjunctive_preconditions)
-                // We don't want disjunctive LMs to get too big.
-                if (preconditions.size() < 5 && ranges::none_of(
-                        preconditions.begin(), preconditions.end(),
-                        [&](const FactPair &atom) {
-                            // TODO: Why not?
-                            return initial_state[atom.var].get_value() ==
-                                   atom.value;
-                        })) {
-                    add_disjunctive_landmark_and_ordering(
-                        preconditions, *node, OrderingType::GREEDY_NECESSARY);
-                }
-        }
-    }
-    add_landmark_forward_orderings();
-
     if (!disjunctive_landmarks) {
         discard_disjunctive_landmarks();
     }
-
-    /* TODO: Ensure that landmark orderings are not even added if
-        `use_orders` is false. */
-    if (!use_orders) {
-        discard_all_orderings();
-    }
 }
 
+// Extract orderings from the relaxed planning and domain transition graph.
 void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
     const TaskProxy &task_proxy, const vector<vector<bool>> &reached,
     LandmarkNode *node) {
@@ -624,9 +640,10 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
               If that value is crucial for achieving the LM from the
               initial state, we have found a new landmark.
             */
-            if (!domain_connectivity(initial_state, atom, exclude))
+            if (!domain_connectivity(initial_state, atom, exclude)) {
                 add_simple_landmark_and_ordering(
                     FactPair(atom.var, value), *node, OrderingType::NATURAL);
+            }
         }
 }
 

@@ -14,7 +14,6 @@ namespace landmarks {
 class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     const bool disjunctive_landmarks;
     const bool use_orders;
-    // TODO: Use std::deque instead?
     std::deque<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
 
@@ -43,12 +42,22 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
         const Landmark &landmark) const;
     void extend_disjunction_class_lookups(
         const std::unordered_map<int, int> &landmark_preconditions, int op_id,
-        std::unordered_map<int, std::vector<FactPair>> &preconditions_by_disjunction_class,
-        std::unordered_map<int, std::unordered_set<int>> &used_operators_by_disjunction_class) const;
+        std::unordered_map<int, std::vector<FactPair>> &preconditions,
+        std::unordered_map<int, std::unordered_set<int>> &used_operators) const;
     std::vector<std::set<FactPair>> compute_disjunctive_preconditions(
         const TaskProxy &task_proxy, const Landmark &landmark,
         const std::vector<std::vector<bool>> &reached) const;
 
+    void generate_goal_landmarks(const TaskProxy &task_proxy);
+    void generate_shared_precondition_landmarks(
+        const TaskProxy &task_proxy, const Landmark &landmark,
+        LandmarkNode *node, const std::vector<std::vector<bool>> &reached);
+    void generate_disjunctive_precondition_landmarks(
+        const TaskProxy &task_proxy, const State &initial_state,
+        const Landmark &landmark, LandmarkNode *node,
+        const std::vector<std::vector<bool>> &reached);
+    void generate_backchaining_landmarks(
+        const TaskProxy &task_proxy, Exploration &exploration);
     virtual void generate_relaxed_landmarks(
         const std::shared_ptr<AbstractTask> &task,
         Exploration &exploration) override;
