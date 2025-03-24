@@ -17,8 +17,9 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     std::deque<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
 
-    std::unordered_map<const LandmarkNode *, utils::HashSet<FactPair>> forward_orders;
+    std::unordered_map<const LandmarkNode *, utils::HashSet<FactPair>> forward_orderings;
 
+    // TODO: Maybe introduce a class or struct to represent domain transition graph(s).
     /* The entry `dtg_successors[var][val]` contains all successor values of the
        atom var->val in the domain transition graph (aka atomic projection). */
     std::vector<std::vector<std::unordered_set<int>>> dtg_successors;
@@ -30,9 +31,12 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
         const std::unordered_map<int, int> &effect_conditions);
     void build_dtg_successors(const TaskProxy &task_proxy);
     void add_dtg_successor(int var_id, int pre, int post);
-    void find_forward_orders(const VariablesProxy &variables,
-                             const std::vector<std::vector<bool>> &reached,
-                             LandmarkNode *node);
+    bool atom_and_landmark_achievable_together(
+        const FactPair &atom, const Landmark &landmark) const;
+    utils::HashSet<FactPair> compute_atoms_unreachable_without_landmark(
+        const VariablesProxy &variables, const Landmark &landmark,
+        const std::vector<std::vector<bool>> &reached) const;
+
     void add_landmark_forward_orderings();
 
     std::unordered_map<int, int> compute_shared_preconditions(
@@ -72,17 +76,13 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
         OrderingType type) const;
     void add_disjunctive_landmark_and_ordering(
         const std::set<FactPair> &atoms, LandmarkNode &node, OrderingType type);
-    void approximate_lookahead_orders(
+    void approximate_lookahead_orderings(
         const TaskProxy &task_proxy,
         const std::vector<std::vector<bool>> &reached, LandmarkNode *node);
-    // TODO: Rename this function.
-    bool domain_connectivity(const State &initial_state,
-                             const FactPair &landmark,
-                             const std::unordered_set<int> &exclude);
 
     void build_disjunction_classes(const TaskProxy &task_proxy);
 
-    void discard_disjunctive_landmarks();
+    void discard_disjunctive_landmarks() const;
 public:
     LandmarkFactoryRpgSasp(bool disjunctive_landmarks, bool use_orders,
                            utils::Verbosity verbosity);

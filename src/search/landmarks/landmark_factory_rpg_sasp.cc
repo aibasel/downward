@@ -209,7 +209,7 @@ void LandmarkFactoryRpgSasp::remove_occurrences_of_landmark_node(
     if (it != open_landmarks.end()) {
         open_landmarks.erase(it);
     }
-    forward_orders.erase(node);
+    forward_orderings.erase(node);
 }
 
 static vector<LandmarkNode *> get_natural_parents(const LandmarkNode *node) {
@@ -562,7 +562,7 @@ void LandmarkFactoryRpgSasp::generate_backchaining_landmarks(
         LandmarkNode *node = open_landmarks.front();
         Landmark &landmark = node->get_landmark();
         open_landmarks.pop_front();
-        assert(forward_orders[node].empty());
+        assert(forward_orderings[node].empty());
 
         if (landmark.is_true_in_state(initial_state)) {
             continue;
@@ -571,7 +571,7 @@ void LandmarkFactoryRpgSasp::generate_backchaining_landmarks(
             exploration.compute_relaxed_reachability(landmark.atoms, false);
         generate_shared_precondition_landmarks(
             task_proxy, landmark, node, reached);
-        approximate_lookahead_orders(task_proxy, reached, node);
+        approximate_lookahead_orderings(task_proxy, reached, node);
         generate_disjunctive_precondition_landmarks(
             task_proxy, initial_state, landmark, node, reached);
     }
@@ -595,144 +595,137 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
     }
 }
 
-// Extract orderings from the relaxed planning and domain transition graph.
-void LandmarkFactoryRpgSasp::approximate_lookahead_orders(
-    const TaskProxy &task_proxy, const vector<vector<bool>> &reached,
-    LandmarkNode *node) {
-    /*
-      Find all var-val pairs that can only be reached after the landmark
-      (according to relaxed plan graph as captured in reached).
-      The result is saved in the node member variable forward_orders, and
-      will be used later, when the phase of finding LMs has ended (because
-      at the moment we don't know which of these var-val pairs will be LMs).
-    */
-    VariablesProxy variables = task_proxy.get_variables();
-    find_forward_orders(variables, reached, node);
-
-    /* Use domain transition graphs to find further orders. Only possible
-       if landmark is simple. */
-    const Landmark &landmark = node->get_landmark();
-    if (landmark.is_disjunctive)
-        return;
-    const FactPair &atom = landmark.atoms[0];
-
-    /*
-      Collect in *unreached* all values of the LM variable that cannot be
-      reached before the LM value (in the relaxed plan graph).
-    */
-    int domain_size = variables[atom.var].get_domain_size();
-    unordered_set<int> unreached(domain_size);
-    for (int value = 0; value < domain_size; ++value)
-        if (!reached[atom.var][value] && atom.value != value)
-            unreached.insert(value);
-    /*
-      The set *exclude* will contain all those values of the LM variable that
-      cannot be reached before the LM value (as in *unreached*) PLUS
-      one value that CAN be reached.
-    */
-    State initial_state = task_proxy.get_initial_state();
-    for (int value = 0; value < domain_size; ++value)
-        if (unreached.find(value) == unreached.end() && atom.value != value) {
-            unordered_set<int> exclude(domain_size);
-            exclude = unreached;
-            exclude.insert(value);
-            /*
-              If that value is crucial for achieving the LM from the
-              initial state, we have found a new landmark.
-            */
-            if (!domain_connectivity(initial_state, atom, exclude)) {
-                add_simple_landmark_and_ordering(
-                    FactPair(atom.var, value), *node, OrderingType::NATURAL);
-            }
-        }
-}
-
-bool LandmarkFactoryRpgSasp::domain_connectivity(
-    const State &initial_state, const FactPair &landmark,
-    const unordered_set<int> &exclude) {
-    /*
-      Tests whether in the domain transition graph of the LM variable, there is
-      a path from the initial state value to the LM value, without passing through
-      any value in "exclude". If not, that means that one of the values in "exclude"
-      is crucial for achieving the landmark (i.e. is on every path to the LM).
-    */
-    int var = landmark.var;
-    assert(landmark.value != initial_state[var].get_value()); // no initial state landmarks
-    // The value that we want to achieve must not be excluded:
-    assert(exclude.find(landmark.value) == exclude.end());
-    // If the value in the initial state is excluded, we won't achieve our goal value:
-    if (exclude.find(initial_state[var].get_value()) != exclude.end())
-        return false;
+/*
+  Tests whether in the domain transition graph represented by `successors`,
+  there is a path from `init_value` to `goal_value`, without passing through
+  `excluded_value` or any unreachable value according to the relaxed planning
+  graph. If this is not possible, that means `excluded_value` is crucial to
+  achieve `goal_value`.
+*/
+static bool value_critical_to_reach_landmark(
+    int init_value, int landmark_value, int excluded_value,
+    const vector<bool> &reached, const vector<unordered_set<int>> &successors) {
+    assert(landmark_value != init_value);
+    assert(reached[landmark_value]);
+    if (excluded_value == init_value) {
+        return true;
+    }
     deque<int> open;
-    unordered_set<int> closed(initial_state[var].get_variable().get_domain_size());
-    closed = exclude;
-    open.push_back(initial_state[var].get_value());
-    closed.insert(initial_state[var].get_value());
-    const vector<unordered_set<int>> &successors = dtg_successors[var];
-    while (closed.find(landmark.value) == closed.end()) {
-        if (open.empty()) // landmark not in closed and nothing more to insert
-            return false;
-        const int c = open.front();
+    unordered_set<int> closed(reached.size());
+    open.push_back(init_value);
+    closed.insert(init_value);
+    while (!open.empty()) {
+        int value = open.front();
         open.pop_front();
-        for (int val : successors[c]) {
-            if (closed.find(val) == closed.end()) {
-                open.push_back(val);
-                closed.insert(val);
+        for (int succ : successors[value]) {
+            if (!reached[succ]) {
+                /* Values unreached in the delete relaxation cannot be landmarks
+                   for `landmark_value` even if they are reachable in the DTG. */
+                continue;
+            }
+            if (succ == landmark_value) {
+                return false;
+            }
+            if (!closed.contains(succ)) {
+                open.push_back(succ);
+                closed.insert(succ);
             }
         }
     }
     return true;
 }
 
-void LandmarkFactoryRpgSasp::find_forward_orders(
-    const VariablesProxy &variables, const vector<vector<bool>> &reached,
+static vector<int> get_critical_dtg_predecessors(
+    int init_value, int landmark_value, const vector<bool> &reached,
+    const vector<unordered_set<int>> &successors) {
+    assert(reached[landmark_value]);
+    int domain_size = static_cast<int>(reached.size());
+    vector<int> critical;
+    critical.reserve(domain_size);
+    for (int value = 0; value < domain_size; ++value) {
+        if (value != landmark_value && reached[value] &&
+            value_critical_to_reach_landmark(init_value, landmark_value,
+                                             value, reached, successors)) {
+            critical.push_back(value);
+        }
+    }
+    return critical;
+}
+
+// Extract orderings from the relaxed planning and domain transition graph.
+void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
+    const TaskProxy &task_proxy, const vector<vector<bool>> &reached,
     LandmarkNode *node) {
-    /*
-      The landmark of `node` is ordered before any atom that cannot be reached
-      before the landmark of `node` according to relaxed planning graph (as
-      captured in `reached`). These orderings are saved in the `forward_orders`
-      and added to the landmark graph in `add_landmark_forward_orderings`.
-    */
-    for (VariableProxy var : variables) {
-        for (int value = 0; value < var.get_domain_size(); ++value) {
-            if (reached[var.get_id()][value])
-                continue;
-            const FactPair atom(var.get_id(), value);
-
-            bool insert = true;
-            for (const FactPair &landmark_atom : node->get_landmark().atoms) {
-                if (atom != landmark_atom) {
-                    /* Make sure there is no operator that reaches both `atom`
-                       and (var, value) at the same time. */
-                    bool intersection_empty = true;
-                    const vector<int> &atom_achievers =
-                        get_operators_including_effect(atom);
-                    const vector<int> &landmark_achievers =
-                        get_operators_including_effect(landmark_atom);
-                    for (size_t j = 0; j < atom_achievers.size() && intersection_empty; ++j)
-                        for (size_t k = 0; k < landmark_achievers.size()
-                             && intersection_empty; ++k)
-                            if (atom_achievers[j] == landmark_achievers[k])
-                                intersection_empty = false;
-
-                    if (!intersection_empty) {
-                        insert = false;
-                        break;
-                    }
-                } else {
-                    insert = false;
-                    break;
-                }
-            }
-            if (insert)
-                forward_orders[node].insert(atom);
+    const VariablesProxy &variables = task_proxy.get_variables();
+    const Landmark &landmark = node->get_landmark();
+    forward_orderings[node] = compute_atoms_unreachable_without_landmark(
+        variables, landmark, reached);
+    if (!landmark.is_disjunctive && !landmark.is_conjunctive) {
+        assert(landmark.atoms.size() == 1);
+        const FactPair landmark_atom = landmark.atoms[0];
+        const FactPair init_atom =
+            task_proxy.get_initial_state()[landmark_atom.var].get_pair();
+        vector<int> critical_predecessors = get_critical_dtg_predecessors(
+                landmark_atom.value, init_atom.value,
+                reached[landmark_atom.var], dtg_successors[landmark_atom.var]);
+        for (int value : critical_predecessors) {
+            add_simple_landmark_and_ordering(FactPair(landmark_atom.var, value),
+                                             *node, OrderingType::NATURAL);
         }
     }
 }
 
+bool LandmarkFactoryRpgSasp::atom_and_landmark_achievable_together(
+    const FactPair &atom, const Landmark &landmark) const {
+    assert(!landmark.is_conjunctive);
+    for (const FactPair &landmark_atom : landmark.atoms) {
+        if (atom == landmark_atom) {
+            return true;
+        }
+
+        /* Make sure there is no operator that reaches both `atom` and
+           `landmark_atom` at the same time. */
+        const vector<int> &atom_achievers =
+            get_operators_including_effect(atom);
+        const vector<int> &landmark_achievers =
+            get_operators_including_effect(landmark_atom);
+        for (int atom_achiever_id : atom_achievers) {
+            for (int landmark_achiever_id : landmark_achievers) {
+                if (atom_achiever_id == landmark_achiever_id) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+/*
+  The landmark of `node` is ordered before any atom that cannot be reached
+  before the landmark of `node` according to relaxed planning graph (as captured
+  in `reached`). These orderings are saved in `forward_orderings` and added to
+  the landmark graph in `add_landmark_forward_orderings` when it is known which
+  atoms are actually landmarks.
+*/
+utils::HashSet<FactPair> LandmarkFactoryRpgSasp::compute_atoms_unreachable_without_landmark(
+    const VariablesProxy &variables, const Landmark &landmark,
+    const vector<vector<bool>> &reached) const {
+    utils::HashSet<FactPair> unreachable_atoms;
+    for (VariableProxy var : variables) {
+        for (int value = 0; value < var.get_domain_size(); ++value) {
+            FactPair atom(var.get_id(), value);
+            if (!reached[atom.var][atom.value] &&
+                !atom_and_landmark_achievable_together(atom, landmark)) {
+                unreachable_atoms.insert(atom);
+            }
+        }
+    }
+    return unreachable_atoms;
+}
+
 void LandmarkFactoryRpgSasp::add_landmark_forward_orderings() {
     for (const auto &node : *landmark_graph) {
-        for (const auto &node2_pair : forward_orders[node.get()]) {
+        for (const auto &node2_pair : forward_orderings[node.get()]) {
             if (landmark_graph->contains_simple_landmark(node2_pair)) {
                 LandmarkNode &node2 =
                     landmark_graph->get_simple_landmark_node(node2_pair);
@@ -740,11 +733,11 @@ void LandmarkFactoryRpgSasp::add_landmark_forward_orderings() {
                     *node, node2, OrderingType::NATURAL);
             }
         }
-        forward_orders[node.get()].clear();
+        forward_orderings[node.get()].clear();
     }
 }
 
-void LandmarkFactoryRpgSasp::discard_disjunctive_landmarks() {
+void LandmarkFactoryRpgSasp::discard_disjunctive_landmarks() const {
     /*
       Using disjunctive landmarks during landmark generation can be beneficial
       even if we don't want to use disjunctive landmarks during search. So we
