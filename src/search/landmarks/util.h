@@ -1,8 +1,11 @@
 #ifndef LANDMARKS_UTIL_H
 #define LANDMARKS_UTIL_H
 
+#include "../utils/hash.h"
+
 #include <vector>
 
+struct FactPair;
 class OperatorProxy;
 class TaskProxy;
 
@@ -18,6 +21,9 @@ class LandmarkGraph;
 extern bool possibly_reaches_landmark(
     const OperatorProxy &op, const std::vector<std::vector<bool>> &reached,
     const Landmark &landmark);
+
+extern utils::HashSet<FactPair> get_intersection(
+    const utils::HashSet<FactPair> &set1, const utils::HashSet<FactPair> &set2);
 
 extern OperatorProxy get_operator_or_axiom(
     const TaskProxy &task_proxy, int op_or_axiom_id);

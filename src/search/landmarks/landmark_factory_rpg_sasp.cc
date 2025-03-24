@@ -21,19 +21,6 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-/* TODO: Can we combine this with the intersection defined in reasonable
-    order factory? */
-static unordered_map<int, int> get_intersection(
-    const unordered_map<int, int> &map1, const unordered_map<int, int> &map2) {
-    unordered_map<int, int> intersection;
-    for (auto [key, value] : map1) {
-        if (map2.contains(key) && map2.at(key) == value) {
-            intersection[key] = value;
-        }
-    }
-    return intersection;
-}
-
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(
     bool disjunctive_landmarks, bool use_orders, utils::Verbosity verbosity)
     : LandmarkFactoryRelaxation(verbosity),
@@ -107,10 +94,10 @@ void LandmarkFactoryRpgSasp::add_dtg_successor(int var_id, int pre, int post) {
 
 // Returns the set of variables occurring in the precondition.
 static unordered_set<int> add_preconditions(
-    const OperatorProxy &op, unordered_map<int, int> &result) {
+    const OperatorProxy &op, utils::HashSet<FactPair> &result) {
     unordered_set<int> precondition_variables;
     for (FactProxy precondition : op.get_preconditions()) {
-        result[precondition.get_variable().get_id()] = precondition.get_value();
+        result.insert(precondition.get_pair());
         precondition_variables.insert(precondition.get_variable().get_id());
     }
     return precondition_variables;
@@ -126,7 +113,7 @@ static void add_binary_variable_conditions(
     const TaskProxy &task_proxy, const Landmark &landmark,
     const EffectsProxy &effects,
     const unordered_set<int> &precondition_variables,
-    unordered_map<int, int> &result) {
+    utils::HashSet<FactPair> &result) {
     State initial_state = task_proxy.get_initial_state();
     for (EffectProxy effect : effects) {
         FactProxy effect_atom = effect.get_fact();
@@ -136,7 +123,11 @@ static void add_binary_variable_conditions(
             for (const FactPair &atom : landmark.atoms) {
                 if (atom.var == var_id &&
                     initial_state[var_id].get_value() != atom.value) {
-                    result[var_id] = initial_state[var_id].get_value();
+                    assert(ranges::none_of(result.begin(), result.end(),
+                        [&](const FactPair &result_atom) {
+                        return result_atom.var == var_id;
+                        }));
+                    result.insert(initial_state[var_id].get_pair());
                     break;
                 }
             }
@@ -146,9 +137,9 @@ static void add_binary_variable_conditions(
 
 static void add_effect_conditions(
     const Landmark &landmark, const EffectsProxy &effects,
-    unordered_map<int, int> &result) {
+    utils::HashSet<FactPair> &result) {
     // Intersect effect conditions of all effects that can achieve `landmark`.
-    unordered_map<int, int> intersection;
+    utils::HashSet<FactPair> intersection;
     bool init = true;
     for (const EffectProxy &effect : effects) {
         const FactPair &effect_atom = effect.get_fact().get_pair();
@@ -161,9 +152,9 @@ static void add_effect_conditions(
             return;
         }
 
-        unordered_map<int, int> effect_condition;
+        utils::HashSet<FactPair> effect_condition;
         for (FactProxy atom : effect.get_conditions()) {
-            effect_condition[atom.get_variable().get_id()] = atom.get_value();
+            effect_condition.insert(atom.get_pair());
         }
         if (init) {
             swap(intersection, effect_condition);
@@ -189,10 +180,10 @@ static void add_effect_conditions(
   (3) shared effect conditions of all conditional effects that achieve
       the landmark.
 */
-static unordered_map<int, int> approximate_preconditions_to_achieve_landmark(
+static utils::HashSet<FactPair> approximate_preconditions_to_achieve_landmark(
     const TaskProxy &task_proxy, const Landmark &landmark,
     const OperatorProxy &op) {
-    unordered_map<int, int> result;
+    utils::HashSet<FactPair> result;
     unordered_set<int> precondition_variables = add_preconditions(op, result);
     EffectsProxy effects = op.get_effects();
     add_binary_variable_conditions(
@@ -326,11 +317,11 @@ void LandmarkFactoryRpgSasp::add_disjunctive_landmark_and_ordering(
 
 /* Compute the shared preconditions of all operators that can potentially
    achieve `landmark`, given the reachability in the relaxed planning graph. */
-unordered_map<int, int> LandmarkFactoryRpgSasp::compute_shared_preconditions(
+utils::HashSet<FactPair> LandmarkFactoryRpgSasp::compute_shared_preconditions(
     const TaskProxy &task_proxy, const Landmark &landmark,
     const vector<vector<bool>> &reached) const {
     // TODO: Could this be a set of FactPair instead?
-    unordered_map<int, int> shared_preconditions;
+    utils::HashSet<FactPair> shared_preconditions;
     bool init = true;
     for (const FactPair &atom : landmark.atoms) {
         const vector<int> &op_ids = get_operators_including_effect(atom);
@@ -338,7 +329,7 @@ unordered_map<int, int> LandmarkFactoryRpgSasp::compute_shared_preconditions(
             OperatorProxy op =
                 get_operator_or_axiom(task_proxy, op_or_axiom_id);
             if (possibly_reaches_landmark(op, reached, landmark)) {
-                unordered_map<int, int> preconditions =
+                utils::HashSet<FactPair> preconditions =
                     approximate_preconditions_to_achieve_landmark(
                         task_proxy, landmark, op);
                 if (init) {
@@ -418,7 +409,8 @@ void LandmarkFactoryRpgSasp::build_disjunction_classes(
                 /* Insert predicate into unordered_map or extract value
                    that is already there. */
                 pair<string, int> entry(predicate, predicate_to_index.size());
-                disjunction_class = predicate_to_index.insert(entry).first->second;
+                disjunction_class =
+                    predicate_to_index.insert(entry).first->second;
             }
             disjunction_classes[var.get_id()].push_back(disjunction_class);
         }
@@ -436,10 +428,10 @@ vector<int> LandmarkFactoryRpgSasp::get_operators_achieving_landmark(
 }
 
 void LandmarkFactoryRpgSasp::extend_disjunction_class_lookups(
-    const unordered_map<int, int> &landmark_preconditions, int op_id,
-        unordered_map<int, vector<FactPair>> &preconditions,
-        unordered_map<int, unordered_set<int>> &used_operators) const {
-    for (const auto &[var, value] : landmark_preconditions) {
+    const utils::HashSet<FactPair> &landmark_preconditions, int op_id,
+    unordered_map<int, vector<FactPair>> &preconditions,
+    unordered_map<int, unordered_set<int>> &used_operators) const {
+    for (auto [var, value] : landmark_preconditions) {
         int disjunction_class = disjunction_classes[var][value];
         if (disjunction_class == -1) {
             /* This atom may not participate in any disjunctive
@@ -496,7 +488,7 @@ vector<set<FactPair>> LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
             get_operator_or_axiom(task_proxy, op_id);
         if (possibly_reaches_landmark(op, reached, landmark)) {
             ++num_ops;
-            unordered_map<int, int> landmark_preconditions =
+            utils::HashSet<FactPair> landmark_preconditions =
                 approximate_preconditions_to_achieve_landmark(
                     task_proxy, landmark, op);
             extend_disjunction_class_lookups(
@@ -522,13 +514,13 @@ void LandmarkFactoryRpgSasp::generate_goal_landmarks(
 void LandmarkFactoryRpgSasp::generate_shared_precondition_landmarks(
     const TaskProxy &task_proxy, const Landmark &landmark,
     LandmarkNode *node, const vector<vector<bool>> &reached) {
-    unordered_map<int, int> shared_preconditions =
+    utils::HashSet<FactPair> shared_preconditions =
         compute_shared_preconditions(task_proxy, landmark, reached);
     /* All shared preconditions are landmarks, and greedy-necessary
        predecessors of `landmark`. */
-    for (auto [var, value] : shared_preconditions) {
+    for (const FactPair &atom : shared_preconditions) {
         add_simple_landmark_and_ordering(
-            FactPair(var, value), *node, OrderingType::GREEDY_NECESSARY);
+            atom, *node, OrderingType::GREEDY_NECESSARY);
     }
 }
 

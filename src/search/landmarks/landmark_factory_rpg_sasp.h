@@ -39,13 +39,13 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
 
     void add_landmark_forward_orderings();
 
-    std::unordered_map<int, int> compute_shared_preconditions(
+    utils::HashSet<FactPair> compute_shared_preconditions(
         const TaskProxy &task_proxy, const Landmark &landmark,
         const std::vector<std::vector<bool>> &reached) const;
     std::vector<int> get_operators_achieving_landmark(
         const Landmark &landmark) const;
     void extend_disjunction_class_lookups(
-        const std::unordered_map<int, int> &landmark_preconditions, int op_id,
+        const utils::HashSet<FactPair> &landmark_preconditions, int op_id,
         std::unordered_map<int, std::vector<FactPair>> &preconditions,
         std::unordered_map<int, std::unordered_set<int>> &used_operators) const;
     std::vector<std::set<FactPair>> compute_disjunctive_preconditions(

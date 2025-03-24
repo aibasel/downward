@@ -276,18 +276,6 @@ static utils::HashSet<FactPair> get_effects_on_other_variables(
     return next_effect;
 }
 
-static utils::HashSet<FactPair> get_intersection(
-    const utils::HashSet<FactPair> &set1,
-    const utils::HashSet<FactPair> &set2) {
-    utils::HashSet<FactPair> intersection;
-    for (const FactPair &atom : set1) {
-        if (set2.contains(atom)) {
-            intersection.insert(atom);
-        }
-    }
-    return intersection;
-}
-
 utils::HashSet<FactPair> LandmarkFactoryReasonableOrdersHPS::get_shared_effects_of_achievers(
     const FactPair &atom, const TaskProxy &task_proxy) const {
     utils::HashSet<FactPair> shared_effects;
