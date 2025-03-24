@@ -8,138 +8,214 @@
 #include <set>
 
 namespace landmarks {
-using FluentSet = std::vector<FactPair>;
+using Propositions = std::vector<FactPair>;
 
-std::ostream &
-operator<<(std::ostream &os, const FluentSet &fs);
+std::ostream &operator<<(std::ostream &os, const Propositions &fs);
 
-struct FluentSetComparer {
-    bool operator()(const FluentSet &fs1, const FluentSet &fs2) const {
+struct PropositionSetComparer {
+    bool operator()(const Propositions &fs1, const Propositions &fs2) const {
         if (fs1.size() != fs2.size()) {
             return fs1.size() < fs2.size();
         }
         for (size_t i = 0; i < fs1.size(); ++i) {
-            if (fs1[i] != fs2[i])
+            if (fs1[i] != fs2[i]) {
                 return fs1[i] < fs2[i];
+            }
         }
         return false;
     }
 };
 
-// an operator in P_m. Corresponds to an operator from the original problem,
-// as well as a set of conditional effects that correspond to noops
-struct PMOp {
-    std::vector<int> pc;
-    std::vector<int> eff;
-    // pc separated from effect by a value of -1
-    std::vector<std::vector<int>> cond_noops;
-    int index;
+/* Corresponds to an operator from the original problem, as well as a
+   set of conditional effects that correspond to noops. */
+struct PiMOperator {
+    std::vector<int> precondition;
+    std::vector<int> effect;
+    /* In each of the inner vectors, the effect conditions are separated from
+       the effect values by an entry of the value -1. */
+    std::vector<std::vector<int>> conditional_noops;
+    int id;
 };
 
-// represents a fluent in the P_m problem
+// represents a proposition in the P^m problem
 struct HMEntry {
-    // propositions that belong to this set
-    FluentSet fluents;
-    // -1 -> current cost infinite
-    // 0 -> present in initial state
+    // Propositions that belong to this set.
+    const Propositions propositions;
+    // Level -1: current cost infinite
+    // Level 0:  present in initial state
     int level;
 
+    // TODO: Can we replace the `list` data type with `set` or even `vector`?
     std::list<int> landmarks;
-    std::list<int> necessary; // greedy necessary landmarks, disjoint from landmarks
+    /*
+      Landmarks that are "preconditions" to achieve this `HMEntry`. This
+      set is disjoint from `landmarks` above and used to derive
+      greedy-necessary orderings.
+    */
+    std::list<int> prerequisite_landmark;
 
     std::list<int> first_achievers;
 
-    // first int = op index, second int conditional noop effect
-    // -1 for op itself
-    std::vector<FactPair> pc_for;
+    /*
+      The first int represents an operator ID. If the second int is -1 it means
+      the `propositions` are a precondition of the corresponding operator. If
+      the second int is >= 0 it points to the respective conditional noop for
+      which `propositions` occur in the effect condition.
+    */
+    std::vector<std::pair<int, int>> triggered_operators;
 
-    HMEntry()
-        : level(-1) {
+    explicit HMEntry(Propositions &&propositions)
+        : propositions(move(propositions)), level(-1) {
     }
 };
 
-using FluentSetToIntMap = std::map<FluentSet, int, FluentSetComparer>;
+using PropositionSetToIntMap =
+    std::map<Propositions, int, PropositionSetComparer>;
 
 class LandmarkFactoryHM : public LandmarkFactory {
-    using TriggerSet = std::unordered_map<int, std::set<int>>;
+    using TriggerSet = std::unordered_map<int, std::unordered_set<int>>;
 
-    virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
+    const int m;
+    const bool conjunctive_landmarks;
+    const bool use_orders;
 
-    void compute_h_m_landmarks(const TaskProxy &task_proxy);
-    void compute_noop_landmarks(int op_index, int noop_index,
-                                std::list<int> const &local_landmarks,
-                                std::list<int> const &local_necessary,
-                                int level,
-                                TriggerSet &next_trigger);
+    std::unordered_map<int, LandmarkNode *> landmark_nodes;
 
-    void propagate_pm_fact(int factindex, bool newly_discovered,
-                           TriggerSet &trigger);
+    std::vector<HMEntry> hm_table;
+    std::vector<PiMOperator> pm_operators;
+    // Maps each set of < m propositions to an int.
+    PropositionSetToIntMap set_indices;
+    /*
+      The number in the first position represents the amount of unsatisfied
+      preconditions of the operator. The vector of numbers in the second
+      position represents the amount of unsatisfied preconditions for each
+      conditional noop operator.
+    */
+    std::vector<std::pair<int, std::vector<int>>> num_unsatisfied_preconditions;
 
-    bool possible_noop_set(const VariablesProxy &variables,
-                           const FluentSet &fs1,
-                           const FluentSet &fs2);
-    void build_pm_ops(const TaskProxy &task_proxy);
-    bool interesting(const VariablesProxy &variables,
-                     const FactPair &fact1,
-                     const FactPair &fact2) const;
+    std::list<int> collect_and_add_landmarks_to_landmark_graph(
+        const VariablesProxy &variables, const Propositions &propositions);
+    void reduce_landmarks(const std::list<int> &landmarks);
+    void add_landmark_orderings(const std::list<int> &landmarks);
+    void construct_landmark_graph(const TaskProxy &task_proxy);
+    virtual void generate_landmarks(
+        const std::shared_ptr<AbstractTask> &task) override;
+
+    TriggerSet mark_state_propositions_reached(
+        const State &state, const VariablesProxy &variables);
+    void collect_condition_landmarks(
+        const std::vector<int> &condition, std::list<int> &landmarks,
+        std::list<int> &necessary)
+    const;
+    void update_effect_landmarks(
+        int op_id, const std::vector<int> &effect, int level,
+        const std::list<int> &landmarks, const std::list<int> &necessary,
+        TriggerSet &triggers);
+    void update_noop_landmarks(
+        const std::unordered_set<int> &current_triggers, const PiMOperator &op,
+        int level, const std::list<int> &landmarks,
+        const std::list<int> &necessary, TriggerSet &next_triggers);
+    void compute_noop_landmarks(
+        int op_id, int noop_index, const std::list<int> &local_landmarks,
+        const std::list<int> &local_necessary, int level,
+        TriggerSet &next_trigger);
+    void compute_hm_landmarks(const TaskProxy &task_proxy);
+
+    void trigger_operator(
+        int op_id, bool newly_discovered, TriggerSet &trigger);
+    void trigger_conditional_noop(
+        int op_id, int noop_id, bool newly_discovered, TriggerSet &trigger);
+    void propagate_pm_propositions(
+        int proposition_id, bool newly_discovered, TriggerSet &trigger);
+
+    Propositions initialize_preconditions(
+        const VariablesProxy &variables, const OperatorProxy &op,
+        PiMOperator &pm_op);
+    Propositions initialize_postconditions(
+        const VariablesProxy &variables, const OperatorProxy &op,
+        PiMOperator &pm_op);
+    void add_conditional_noop(
+        PiMOperator &pm_op, int op_id,
+        const VariablesProxy &variables, const Propositions &propositions,
+        const Propositions &preconditions, const Propositions &postconditions);
+    void initialize_noops(
+        const VariablesProxy &variables, PiMOperator &pm_op, int op_id,
+        const Propositions &preconditions, const Propositions &postconditions);
+    void build_pm_operators(const TaskProxy &task_proxy);
 
     void postprocess(const TaskProxy &task_proxy);
 
     void discard_conjunctive_landmarks();
 
+    void approximate_possible_achievers(
+        Landmark &landmark, const OperatorsProxy &operators,
+        const VariablesProxy &variables) const;
     void calc_achievers(const TaskProxy &task_proxy);
 
     void add_landmark_node(int set_index, bool goal = false);
 
+    void initialize_hm_table(const VariablesProxy &variables);
     void initialize(const TaskProxy &task_proxy);
     void free_unneeded_memory();
 
-    void print_fluentset(const VariablesProxy &variables, const FluentSet &fs) const;
-    void print_pm_op(const VariablesProxy &variables, const PMOp &op) const;
+    void print_proposition_set(
+        const VariablesProxy &variables, const Propositions &propositions) const;
+    void print_pm_operator(
+        const VariablesProxy &variables, const PiMOperator &op) const;
+    void print_conditional_noop(
+        const VariablesProxy &variables,
+        const std::vector<int> &conditional_noop,
+        std::vector<std::pair<std::set<FactPair>, std::set<FactPair>>> &conditions) const;
+    std::set<FactPair> print_effect_condition(
+        const VariablesProxy &variables,
+        const std::vector<int> &effect_condition) const;
+    std::set<FactPair> print_conditional_effect(
+        const VariablesProxy &variables, const std::vector<int> &effect) const;
+    void print_action(
+        const VariablesProxy &variables, const PiMOperator &op,
+        const std::vector<std::pair<std::set<FactPair>, std::set<FactPair>>> &conditions) const;
 
-    const int m_;
-    const bool conjunctive_landmarks;
-    const bool use_orders;
+    void get_m_sets_including_current_var(
+        const VariablesProxy &variables, int num_included, int current_var,
+        Propositions &current, std::vector<Propositions> &subsets);
+    void get_m_sets(
+        const VariablesProxy &variables, int num_included, int current_var,
+        Propositions &current, std::vector<Propositions> &subsets);
 
-    std::map<int, LandmarkNode *> landmark_node_table;
+    void get_m_sets_of_set_including_current_proposition(
+        const VariablesProxy &variables, int num_included,
+        int current_index, Propositions &current,
+        std::vector<Propositions> &subsets, const Propositions &superset);
+    void get_m_sets_of_set(
+        const VariablesProxy &variables, int num_included,
+        int current_index, Propositions &current,
+        std::vector<Propositions> &subsets, const Propositions &superset);
 
-    std::vector<HMEntry> h_m_table_;
-    std::vector<PMOp> pm_ops_;
-    // maps each <m set to an int
-    FluentSetToIntMap set_indices_;
-    // first is unsat pcs for operator
-    // second is unsat pcs for conditional noops
-    std::vector<std::pair<int, std::vector<int>>> unsat_pc_count_;
+    void get_split_m_sets_including_current_proposition_from_first(
+        const VariablesProxy &variables, int num_included1,
+        int num_included2, int current_index1, int current_index2,
+        Propositions &current, std::vector<Propositions> &subsets,
+        const Propositions &superset1, const Propositions &superset2);
+    void get_split_m_sets(
+        const VariablesProxy &variables, int num_included1,
+        int num_included2, int current_index1, int current_index2,
+        Propositions &current, std::vector<Propositions> &subsets,
+        const Propositions &superset1, const Propositions &superset2);
 
-    void get_m_sets_(const VariablesProxy &variables, int m, int num_included, int current_var,
-                     FluentSet &current,
-                     std::vector<FluentSet> &subsets);
+    std::vector<Propositions> get_m_sets(const VariablesProxy &variables);
 
-    void get_m_sets_of_set(const VariablesProxy &variables,
-                           int m, int num_included,
-                           int current_var_index,
-                           FluentSet &current,
-                           std::vector<FluentSet> &subsets,
-                           const FluentSet &superset);
+    std::vector<Propositions> get_m_sets(
+        const VariablesProxy &variables, const Propositions &superset);
 
-    void get_split_m_sets(const VariablesProxy &variables, int m,
-                          int ss1_num_included, int ss2_num_included,
-                          int ss1_var_index, int ss2_var_index,
-                          FluentSet &current,
-                          std::vector<FluentSet> &subsets,
-                          const FluentSet &superset1, const FluentSet &superset2);
+    std::vector<Propositions> get_m_sets(
+        const VariablesProxy &variables, const State &state);
 
-    void get_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets);
+    std::vector<Propositions> get_split_m_sets(
+        const VariablesProxy &variables,
+        const Propositions &superset1, const Propositions &superset2);
 
-    void get_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
-                    const FluentSet &superset);
-
-    void get_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
-                    const State &state);
-
-    void get_split_m_sets(const VariablesProxy &variables, int m, std::vector<FluentSet> &subsets,
-                          const FluentSet &superset1, const FluentSet &superset2);
-    void print_proposition(const VariablesProxy &variables, const FactPair &fluent) const;
+    void print_proposition(
+        const VariablesProxy &variables, const FactPair &proposition) const;
 
 public:
     LandmarkFactoryHM(int m, bool conjunctive_landmarks,
