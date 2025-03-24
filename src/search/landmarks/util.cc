@@ -38,6 +38,18 @@ bool possibly_reaches_landmark(const OperatorProxy &op,
                   });
 }
 
+utils::HashSet<FactPair> get_intersection(
+    const utils::HashSet<FactPair> &set1,
+    const utils::HashSet<FactPair> &set2) {
+    utils::HashSet<FactPair> intersection;
+    for (const FactPair &atom : set1) {
+        if (set2.contains(atom)) {
+            intersection.insert(atom);
+        }
+    }
+    return intersection;
+}
+
 OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy,
                                     int op_or_axiom_id) {
     if (op_or_axiom_id < 0) {

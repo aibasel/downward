@@ -49,7 +49,7 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_goal_orderings(
             continue;
         }
         if (interferes(task_proxy, other_landmark, landmark)) {
-            add_ordering_or_replace_if_stronger(
+            add_or_replace_ordering_if_stronger(
                 *other, node, OrderingType::REASONABLE);
         }
     }
@@ -107,7 +107,7 @@ void LandmarkFactoryReasonableOrdersHPS::insert_reasonable_orderings(
                others as well (transitivity), but it could be interesting to
                test the effect of doing so, for example for the cycle heuristic.
              */
-            add_ordering_or_replace_if_stronger(
+            add_or_replace_ordering_if_stronger(
                 *other, node, OrderingType::REASONABLE);
         }
     }
@@ -276,15 +276,6 @@ static utils::HashSet<FactPair> get_effects_on_other_variables(
     return next_effect;
 }
 
-static void intersect_inplace(utils::HashSet<FactPair> &set,
-                              const utils::HashSet<FactPair> &other) {
-    for (const FactPair &atom : other) {
-        if (!set.contains(atom)) {
-            set.erase(atom);
-        }
-    }
-}
-
 utils::HashSet<FactPair> LandmarkFactoryReasonableOrdersHPS::get_shared_effects_of_achievers(
     const FactPair &atom, const TaskProxy &task_proxy) const {
     utils::HashSet<FactPair> shared_effects;
@@ -299,7 +290,7 @@ utils::HashSet<FactPair> LandmarkFactoryReasonableOrdersHPS::get_shared_effects_
             swap(shared_effects, effect);
             init = false;
         } else {
-            intersect_inplace(shared_effects, effect);
+            shared_effects = get_intersection(shared_effects, effect);
         }
 
         if (shared_effects.empty()) {
@@ -340,10 +331,11 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
     if (landmark_a.is_conjunctive) {
         return false;
     }
-    utils::HashSet<FactPair> shared_effect =
+    utils::HashSet<FactPair> shared_effects =
         get_shared_effects_of_achievers(atom_a, task_proxy);
     return ranges::any_of(
-        shared_effect.begin(), shared_effect.end(), [&](const FactPair &atom) {
+        shared_effects.begin(), shared_effects.end(),
+        [&](const FactPair &atom) {
             const FactProxy &e = variables[atom.var].get_fact(atom.value);
             return e != a && e != b && e.is_mutex(b);
         });

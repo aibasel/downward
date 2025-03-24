@@ -42,7 +42,7 @@ static bool relaxed_task_solvable(
 }
 
 void LandmarkFactoryRpgExhaust::generate_goal_landmarks(
-    const TaskProxy &task_proxy) {
+    const TaskProxy &task_proxy) const {
     for (FactProxy goal : task_proxy.get_goals()) {
         Landmark landmark({goal.get_pair()}, false, false, true);
         landmark_graph->add_landmark(move(landmark));

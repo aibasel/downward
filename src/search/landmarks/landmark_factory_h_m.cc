@@ -1030,13 +1030,13 @@ void LandmarkFactoryHM::add_landmark_orderings(const list<int> &landmarks) {
         assert(landmark_nodes.contains(to));
         for (int from : hm_table[to].prerequisite_landmark) {
             assert(landmark_nodes.contains(from));
-            add_ordering_or_replace_if_stronger(
+            add_or_replace_ordering_if_stronger(
                 *landmark_nodes[from], *landmark_nodes[to],
                 OrderingType::GREEDY_NECESSARY);
         }
         for (int from : hm_table[to].landmarks) {
             assert(landmark_nodes.contains(from));
-            add_ordering_or_replace_if_stronger(
+            add_or_replace_ordering_if_stronger(
                 *landmark_nodes[from], *landmark_nodes[to],
                 OrderingType::NATURAL);
         }
