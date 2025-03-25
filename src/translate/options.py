@@ -2,6 +2,13 @@ import argparse
 import sys
 
 
+try:
+    import argcomplete
+    HAS_ARGCOMPLETE = True
+except ImportError:
+    HAS_ARGCOMPLETE = False
+
+
 def parse_args():
     argparser = argparse.ArgumentParser()
     argparser.add_argument(
@@ -57,6 +64,9 @@ def parse_args():
         help="How to assign layers to derived variables. 'min' attempts to put as "
         "many variables into the same layer as possible, while 'max' puts each variable "
         "into its own layer unless it is part of a cycle.")
+
+    if HAS_ARGCOMPLETE:
+        argcomplete.autocomplete(argparser)
     return argparser.parse_args()
 
 

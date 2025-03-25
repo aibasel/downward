@@ -17,7 +17,7 @@ from .arguments import EXAMPLES
 from .call import check_call, _replace_paths_with_strings
 from . import limits
 from . import returncodes
-from .run_components import get_executable, REL_SEARCH_PATH
+from .run_components import get_search_command
 from .util import REPO_ROOT_DIR, find_domain_path
 
 
@@ -89,7 +89,7 @@ def _convert_to_standalone_config(config):
 def _run_search(config):
     check_call(
         "search",
-        [get_executable("release", REL_SEARCH_PATH)] + list(config),
+        get_search_command("release") + list(config),
         stdin="output.sas")
 
 
