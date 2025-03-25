@@ -29,9 +29,8 @@ void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
     }
 
     compute_triggers(task_proxy);
-
-    PropositionLayer last_prop_layer = build_relaxed_plan_graph_with_labels(task_proxy);
-
+    PropositionLayer last_prop_layer =
+        build_relaxed_plan_graph_with_labels(task_proxy);
     extract_landmarks(task_proxy, last_prop_layer);
 
     /* TODO: Ensure that landmark orderings are not even added if
@@ -41,63 +40,78 @@ void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
     }
 }
 
-void LandmarkFactoryZhuGivan::extract_landmarks(
-    const TaskProxy &task_proxy, const PropositionLayer &last_prop_layer) {
-    /*
-      We first check if at least one of the goal facts is relaxed unreachable.
-      In this case we create a graph with just this fact as landmark. Since
-      the landmark will have no achievers, the heuristic can detect the
-      initial state as a dead-end.
-     */
+/*
+  Check if any goal atom is unreachable in the delete relaxation. If so, we
+  create a graph with just this atom as landmark and empty achievers to signal
+  to the heuristic that the initial state as a dead-end.
+*/
+bool LandmarkFactoryZhuGivan::goal_is_reachable(
+    const TaskProxy &task_proxy, const PropositionLayer &prop_layer) const {
     for (FactProxy goal : task_proxy.get_goals()) {
-        if (!last_prop_layer[goal.get_variable().get_id()][goal.get_value()].reached()) {
+        if (!prop_layer[goal.get_variable().get_id()][goal.get_value()].reached()) {
             if (log.is_at_least_normal()) {
                 log << "Problem not solvable, even if relaxed." << endl;
             }
             Landmark landmark({goal.get_pair()}, false, false, true);
             landmark_graph->add_landmark(move(landmark));
-            return;
+            return false;
         }
     }
+    return true;
+}
 
-    State initial_state = task_proxy.get_initial_state();
-    // insert goal landmarks and mark them as goals
-    for (FactProxy goal : task_proxy.get_goals()) {
-        FactPair goal_landmark = goal.get_pair();
-        // TODO: rename `lm_node` (avoid lm).
-        LandmarkNode *lm_node;
-        if (landmark_graph->contains_simple_landmark(goal_landmark)) {
-            lm_node = &landmark_graph->get_simple_landmark_node(goal_landmark);
-            lm_node->get_landmark().is_true_in_goal = true;
+LandmarkNode *LandmarkFactoryZhuGivan::create_goal_landmark(
+    const FactPair &goal) const {
+    LandmarkNode *node;
+    if (landmark_graph->contains_simple_landmark(goal)) {
+        node = &landmark_graph->get_simple_landmark_node(goal);
+        node->get_landmark().is_true_in_goal = true;
+    } else {
+        Landmark landmark({goal}, false, false, true);
+        node = &landmark_graph->add_landmark(move(landmark));
+    }
+    return node;
+}
+
+void LandmarkFactoryZhuGivan::extract_landmarks_and_orderings_from_goal_labels(
+    const FactPair &goal, const PropositionLayer &prop_layer,
+    LandmarkNode *goal_landmark_node) const {
+    const PlanGraphNode &goal_node = prop_layer[goal.var][goal.value];
+    assert(goal_node.reached());
+
+    for (const FactPair &atom : goal_node.labels) {
+        if (atom == goal) {
+            // Ignore label on itself.
+            continue;
+        }
+
+        LandmarkNode *node;
+        if (landmark_graph->contains_simple_landmark(atom)) {
+            node = &landmark_graph->get_simple_landmark_node(atom);
         } else {
-            Landmark landmark({goal_landmark}, false, false, true);
-            lm_node = &landmark_graph->add_landmark(move(landmark));
+            Landmark landmark({atom}, false, false);
+            node = &landmark_graph->add_landmark(move(landmark));
         }
-        // extract landmarks from goal labels
-        const plan_graph_node &goal_node =
-            last_prop_layer[goal_landmark.var][goal_landmark.value];
-
-        assert(goal_node.reached());
-
-        // TODO: get rid of `lm` (avoid lm).
-        for (const FactPair &lm : goal_node.labels) {
-            if (lm == goal_landmark) // ignore label on itself
-                continue;
-            LandmarkNode *node;
-            // Add new landmarks
-            if (!landmark_graph->contains_simple_landmark(lm)) {
-                Landmark landmark({lm}, false, false);
-                node = &landmark_graph->add_landmark(move(landmark));
-            } else {
-                node = &landmark_graph->get_simple_landmark_node(lm);
-            }
-            // TODO: Update comment below after renaming.
-            // Add order: lm ->_{nat} lm
-            assert(node->parents.find(lm_node) == node->parents.end());
-            assert(lm_node->children.find(node) == lm_node->children.end());
+        if (use_orders) {
+            assert(!node->parents.contains(goal_landmark_node));
+            assert(!goal_landmark_node->children.contains(node));
             add_or_replace_ordering_if_stronger(
-                *node, *lm_node, OrderingType::NATURAL);
+                *node, *goal_landmark_node, OrderingType::NATURAL);
         }
+    }
+}
+
+void LandmarkFactoryZhuGivan::extract_landmarks(
+    const TaskProxy &task_proxy,
+    const PropositionLayer &last_prop_layer) const {
+    if (!goal_is_reachable(task_proxy, last_prop_layer)) {
+        return;
+    }
+    for (FactProxy goal : task_proxy.get_goals()) {
+        FactPair goal_atom = goal.get_pair();
+        LandmarkNode *node = create_goal_landmark(goal_atom);
+        extract_landmarks_and_orderings_from_goal_labels(
+            goal_atom, last_prop_layer, node);
     }
 }
 
