@@ -258,6 +258,7 @@ void LandmarkFactoryRpgSasp::add_simple_landmark_and_ordering(
     }
 
     Landmark landmark({atom}, false, false);
+    cout << "adding lm" <<  landmark_graph->get_num_landmarks() << endl;
     LandmarkNode &simple_landmark_node =
         landmark_graph->add_landmark(move (landmark));
     open_landmarks.push_back(&simple_landmark_node);
@@ -320,7 +321,6 @@ void LandmarkFactoryRpgSasp::add_disjunctive_landmark_and_ordering(
 utils::HashSet<FactPair> LandmarkFactoryRpgSasp::compute_shared_preconditions(
     const TaskProxy &task_proxy, const Landmark &landmark,
     const vector<vector<bool>> &reached) const {
-    // TODO: Could this be a set of FactPair instead?
     utils::HashSet<FactPair> shared_preconditions;
     bool init = true;
     for (const FactPair &atom : landmark.atoms) {
@@ -519,6 +519,7 @@ void LandmarkFactoryRpgSasp::generate_shared_precondition_landmarks(
     /* All shared preconditions are landmarks, and greedy-necessary
        predecessors of `landmark`. */
     for (const FactPair &atom : shared_preconditions) {
+        cout << "try to add shared predecessor landmark" << endl;
         add_simple_landmark_and_ordering(
             atom, *node, OrderingType::GREEDY_NECESSARY);
     }
@@ -598,7 +599,8 @@ static bool value_critical_to_reach_landmark(
     int init_value, int landmark_value, int excluded_value,
     const vector<bool> &reached, const vector<unordered_set<int>> &successors) {
     assert(landmark_value != init_value);
-    assert(reached[landmark_value]);
+    assert(landmark_value != excluded_value);
+    assert(!reached[landmark_value]);
     if (excluded_value == init_value) {
         return true;
     }
@@ -610,13 +612,13 @@ static bool value_critical_to_reach_landmark(
         int value = open.front();
         open.pop_front();
         for (int succ : successors[value]) {
+            if (succ == landmark_value) {
+                return false;
+            }
             if (!reached[succ]) {
                 /* Values unreached in the delete relaxation cannot be landmarks
                    for `landmark_value` even if they are reachable in the DTG. */
                 continue;
-            }
-            if (succ == landmark_value) {
-                return false;
             }
             if (!closed.contains(succ)) {
                 open.push_back(succ);
@@ -630,14 +632,13 @@ static bool value_critical_to_reach_landmark(
 static vector<int> get_critical_dtg_predecessors(
     int init_value, int landmark_value, const vector<bool> &reached,
     const vector<unordered_set<int>> &successors) {
-    assert(reached[landmark_value]);
+    assert(!reached[landmark_value]);
     int domain_size = static_cast<int>(reached.size());
     vector<int> critical;
     critical.reserve(domain_size);
     for (int value = 0; value < domain_size; ++value) {
-        if (value != landmark_value && reached[value] &&
-            value_critical_to_reach_landmark(init_value, landmark_value,
-                                             value, reached, successors)) {
+        if (reached[value] && value_critical_to_reach_landmark(
+                init_value, landmark_value, value, reached, successors)) {
             critical.push_back(value);
         }
     }
@@ -652,18 +653,20 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
     const Landmark &landmark = node->get_landmark();
     forward_orderings[node] = compute_atoms_unreachable_without_landmark(
         variables, landmark, reached);
-    if (!landmark.is_disjunctive && !landmark.is_conjunctive) {
-        assert(landmark.atoms.size() == 1);
-        const FactPair landmark_atom = landmark.atoms[0];
-        const FactPair init_atom =
-            task_proxy.get_initial_state()[landmark_atom.var].get_pair();
-        vector<int> critical_predecessors = get_critical_dtg_predecessors(
-                landmark_atom.value, init_atom.value,
-                reached[landmark_atom.var], dtg_successors[landmark_atom.var]);
-        for (int value : critical_predecessors) {
-            add_simple_landmark_and_ordering(FactPair(landmark_atom.var, value),
-                                             *node, OrderingType::NATURAL);
-        }
+    if (landmark.is_disjunctive || landmark.is_conjunctive) {
+        return;
+    }
+    assert(landmark.atoms.size() == 1);
+
+    const FactPair landmark_atom = landmark.atoms[0];
+    const FactPair init_atom =
+        task_proxy.get_initial_state()[landmark_atom.var].get_pair();
+    vector<int> critical_predecessors = get_critical_dtg_predecessors(
+            init_atom.value, landmark_atom.value,
+            reached[landmark_atom.var], dtg_successors[landmark_atom.var]);
+    for (int value : critical_predecessors) {
+        add_simple_landmark_and_ordering(FactPair(landmark_atom.var, value),
+                                         *node, OrderingType::NATURAL);
     }
 }
 
