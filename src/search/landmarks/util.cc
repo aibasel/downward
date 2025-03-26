@@ -50,6 +50,11 @@ utils::HashSet<FactPair> get_intersection(
     return intersection;
 }
 
+void union_inplace(utils::HashSet<FactPair> &set1,
+           const utils::HashSet<FactPair> &set2) {
+    set1.insert(set2.begin(), set2.end());
+}
+
 OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy,
                                     int op_or_axiom_id) {
     if (op_or_axiom_id < 0) {

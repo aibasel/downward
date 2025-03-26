@@ -33,12 +33,12 @@ class LandmarkFactoryZhuGivan : public LandmarkFactoryRelaxation {
     // Note: must include operators that only have conditional effects.
     std::vector<int> operators_without_preconditions;
 
-    bool operator_applicable(
-        const OperatorProxy &op, const PropositionLayer &state) const;
+    static bool operator_is_applicable(
+        const OperatorProxy &op, const PropositionLayer &state);
 
-    bool operator_cond_effect_fires(
+    static bool conditional_effect_fires(
         const EffectConditionsProxy &effect_conditions,
-        const PropositionLayer &layer) const;
+        const PropositionLayer &layer);
 
     /* Returns a set of propositions that: (a) have just been reached or (b) had
        their labels changed in next proposition layer. */
@@ -46,17 +46,16 @@ class LandmarkFactoryZhuGivan : public LandmarkFactoryRelaxation {
         const OperatorProxy &op, const PropositionLayer &current,
         PropositionLayer &next) const;
 
-    /* Calculate the union of precondition labels of `op`, using the
-       labels from the current layer. */
-    LandmarkSet union_of_precondition_labels(
-        const OperatorProxy &op, const PropositionLayer &current) const;
+    // Calculate the union of condition labels from the current layer.
+    static LandmarkSet union_of_condition_labels(
+        const ConditionsProxy &conditions, const PropositionLayer &current);
 
-    /* Calculate the union of precondition labels of a conditional effect
-       using the labels from the current layer. */
-    LandmarkSet union_of_condition_labels(
-        const EffectConditionsProxy &effect_conditions,
-        const PropositionLayer &current) const;
-
+    PropositionLayer initialize_relaxed_plan_graph(
+        const TaskProxy &task_proxy,
+        std::unordered_set<int> &triggered_ops) const;
+    void propagate_labels_until_fixed_point_reached(
+        const TaskProxy &task_proxy, std::unordered_set<int> &&triggered_ops,
+        PropositionLayer &current_layer) const;
     /* Relaxed exploration, returns the last proposition layer
        (the fixpoint) with labels. */
     PropositionLayer build_relaxed_plan_graph_with_labels(
