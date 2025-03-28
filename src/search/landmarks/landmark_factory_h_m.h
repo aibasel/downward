@@ -29,6 +29,7 @@ struct PropositionSetComparer {
 /* Corresponds to an operator from the original problem, as well as a
    set of conditional effects that correspond to noops. */
 struct PiMOperator {
+    // Preconditions and effects reference the proposition IDs.
     std::vector<int> precondition;
     std::vector<int> effect;
     /* In each of the inner vectors, the effect conditions are separated from
@@ -37,7 +38,7 @@ struct PiMOperator {
     int id;
 };
 
-// represents a proposition in the P^m problem
+// Represents a proposition in the P^m problem.
 struct HMEntry {
     // Propositions that belong to this set.
     const Propositions propositions;
@@ -69,9 +70,6 @@ struct HMEntry {
     }
 };
 
-using PropositionSetToIntMap =
-    std::map<Propositions, int, PropositionSetComparer>;
-
 class LandmarkFactoryHM : public LandmarkFactory {
     using TriggerSet = std::unordered_map<int, std::unordered_set<int>>;
 
@@ -83,8 +81,8 @@ class LandmarkFactoryHM : public LandmarkFactory {
 
     std::vector<HMEntry> hm_table;
     std::vector<PiMOperator> pm_operators;
-    // Maps each set of < m propositions to an int.
-    PropositionSetToIntMap set_indices;
+    // Maps each set of < m propositions to an int representing its ID.
+    std::map<Propositions, int, PropositionSetComparer> set_indices;
     /*
       The number in the first position represents the amount of unsatisfied
       preconditions of the operator. The vector of numbers in the second
