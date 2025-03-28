@@ -63,7 +63,8 @@ void LandmarkFactoryHM::get_m_sets_including_current_var(
             });
         if (use_var) {
             current.push_back(atom);
-            get_m_sets(variables, num_included + 1, current_var + 1, current, subsets);
+            get_m_sets(variables, num_included + 1, current_var + 1,
+                       current, subsets);
             current.pop_back();
         }
     }
@@ -109,7 +110,8 @@ void LandmarkFactoryHM::get_m_sets_of_set_including_current_proposition(
 // Find all subsets of `superset` with size m or less.
 void LandmarkFactoryHM::get_m_sets_of_set(
     const VariablesProxy &variables, int num_included, int current_index,
-    Propositions &current, vector<Propositions> &subsets, const Propositions &superset) {
+    Propositions &current, vector<Propositions> &subsets,
+    const Propositions &superset) {
     if (num_included == m) {
         subsets.push_back(current);
         return;
@@ -123,7 +125,8 @@ void LandmarkFactoryHM::get_m_sets_of_set(
     get_m_sets_of_set_including_current_proposition(
         variables, num_included, current_index, current, subsets, superset);
     // Do not include proposition at `current_index` in set.
-    get_m_sets_of_set(variables, num_included, current_index + 1, current, subsets, superset);
+    get_m_sets_of_set(variables, num_included, current_index + 1,
+                      current, subsets, superset);
 }
 
 void LandmarkFactoryHM::get_split_m_sets_including_current_proposition_from_first(
@@ -211,8 +214,8 @@ vector<Propositions> LandmarkFactoryHM::get_m_sets(
 }
 
 #ifndef NDEBUG
-static bool proposition_variables_disjoint(const Propositions &set1,
-                                           const Propositions &set2) {
+static bool proposition_variables_disjoint(
+    const Propositions &set1, const Propositions &set2) {
     for (auto [var1, val1] : set1) {
         for (auto [var2, val2] : set2) {
             if (var1 == var2) {
@@ -241,7 +244,8 @@ vector<Propositions> LandmarkFactoryHM::get_split_m_sets(
     } else if (superset2.empty()) {
         get_m_sets_of_set(variables, 0, 0, c, subsets, superset1);
     } else {
-        get_split_m_sets(variables, 0, 0, 0, 0, c, subsets, superset1, superset2);
+        get_split_m_sets(
+            variables, 0, 0, 0, 0, c, subsets, superset1, superset2);
     }
     return subsets;
 }
@@ -960,7 +964,8 @@ void LandmarkFactoryHM::reduce_landmarks(const unordered_set<int> &landmarks) {
         unordered_set<int> extended_prerequisites =
             hm_table[landmark1].prerequisite_landmark;
         for (int landmark2 : hm_table[landmark1].landmarks) {
-            union_inplace(extended_prerequisites, hm_table[landmark2].landmarks);
+            union_inplace(extended_prerequisites,
+                          hm_table[landmark2].landmarks);
         }
         set_minus(hm_table[landmark1].landmarks, extended_prerequisites);
     }
