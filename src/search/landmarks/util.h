@@ -25,7 +25,7 @@ extern bool possibly_reaches_landmark(
 extern utils::HashSet<FactPair> get_intersection(
     const utils::HashSet<FactPair> &set1, const utils::HashSet<FactPair> &set2);
 extern void union_inplace(utils::HashSet<FactPair> &set1,
-                  const utils::HashSet<FactPair> &set2);
+                          const utils::HashSet<FactPair> &set2);
 
 extern OperatorProxy get_operator_or_axiom(
     const TaskProxy &task_proxy, int op_or_axiom_id);

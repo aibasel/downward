@@ -51,7 +51,7 @@ utils::HashSet<FactPair> get_intersection(
 }
 
 void union_inplace(utils::HashSet<FactPair> &set1,
-           const utils::HashSet<FactPair> &set2) {
+                   const utils::HashSet<FactPair> &set2) {
     set1.insert(set2.begin(), set2.end());
 }
 

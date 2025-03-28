@@ -219,7 +219,7 @@ static bool propagate_labels(
     LandmarkSet &labels, const LandmarkSet &new_labels, const FactPair &atom) {
     int old_labels_size = static_cast<int>(labels.size());
 
-   // If this is the first time `atom` is reached, it has an empty label set.
+    // If this is the first time `atom` is reached, it has an empty label set.
     if (labels.empty()) {
         labels = new_labels;
     } else {

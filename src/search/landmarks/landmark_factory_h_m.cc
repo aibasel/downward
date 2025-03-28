@@ -162,7 +162,7 @@ void LandmarkFactoryHM::get_split_m_sets(
 
     if (num_included1 + num_included2 == m ||
         (current_index1 == superset1_size &&
-            current_index2 == superset2_size)) {
+         current_index2 == superset2_size)) {
         if (num_included1 > 0 && num_included2 > 0) {
             subsets.push_back(current);
         }
@@ -497,9 +497,9 @@ Propositions LandmarkFactoryHM::initialize_postconditions(
 }
 
 void LandmarkFactoryHM::add_conditional_noop(
-        PiMOperator &pm_op, int op_id,
-        const VariablesProxy &variables, const Propositions &propositions,
-        const Propositions &preconditions, const Propositions &postconditions) {
+    PiMOperator &pm_op, int op_id,
+    const VariablesProxy &variables, const Propositions &propositions,
+    const Propositions &preconditions, const Propositions &postconditions) {
     int noop_index = static_cast<int>(pm_op.conditional_noops.size());
 
     /*
@@ -519,7 +519,7 @@ void LandmarkFactoryHM::add_conditional_noop(
         static_cast<int>(noop_precondition_subsets.size()));
 
     // Add the conditional noop preconditions.
-    for (const auto & subset : noop_precondition_subsets) {
+    for (const auto &subset : noop_precondition_subsets) {
         assert(static_cast<int>(subset.size()) <= m);
         assert(set_indices.contains(subset));
         int set_index = set_indices[subset];
@@ -532,7 +532,7 @@ void LandmarkFactoryHM::add_conditional_noop(
     conditional_noop.push_back(-1);
 
     // Add the conditional noop effects.
-    for (const auto & subset : noop_postconditions_subsets) {
+    for (const auto &subset : noop_postconditions_subsets) {
         assert(static_cast<int>(subset.size()) <= m);
         assert(set_indices.contains(subset));
         int set_index = set_indices[subset];
@@ -561,7 +561,7 @@ void LandmarkFactoryHM::initialize_noops(
                                           propositions)) {
             // For each such set, add a "conditional effect" to the operator.
             add_conditional_noop(pm_op, op_id, variables,
-                                  propositions, preconditions, postconditions);
+                                 propositions, preconditions, postconditions);
         }
     }
 }
@@ -661,8 +661,8 @@ static bool operator_can_achieve_landmark(
             continue;
         }
         auto mutex = [&](const FactPair &other) {
-            return are_mutex(variables, atom, other);
-        };
+                return are_mutex(variables, atom, other);
+            };
         if (any_of(postcondition.begin(), postcondition.end(), mutex)) {
             return false;
         }
@@ -681,7 +681,7 @@ void LandmarkFactoryHM::approximate_possible_achievers(
 
     for (int op_id : candidates) {
         if (operator_can_achieve_landmark(
-            operators[op_id], landmark, variables)) {
+                operators[op_id], landmark, variables)) {
             landmark.possible_achievers.insert(op_id);
         }
     }
@@ -901,7 +901,7 @@ void LandmarkFactoryHM::compute_noop_landmarks(
     const vector<int> &conditional_noop =
         pm_operators[op_id].conditional_noops[noop_index];
     const auto &[effect_condition, effect] =
-        split_conditional_noop (conditional_noop);
+        split_conditional_noop(conditional_noop);
 
     unordered_set<int> conditional_noop_landmarks = landmarks;
     unordered_set<int> conditional_noop_necessary;
