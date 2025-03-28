@@ -135,6 +135,11 @@ static void add_binary_variable_conditions(
     }
 }
 
+/*
+  TODO: This (accidentally) differs from the previous implementation which
+   imposed a stricter condition. Specifically, it also intersected over the
+   conditions of effects that have nothing to do with achieving the landmark.
+*/
 static void add_effect_conditions(
     const Landmark &landmark, const EffectsProxy &effects,
     utils::HashSet<FactPair> &result) {
@@ -258,7 +263,6 @@ void LandmarkFactoryRpgSasp::add_simple_landmark_and_ordering(
     }
 
     Landmark landmark({atom}, false, false);
-    cout << "adding lm" <<  landmark_graph->get_num_landmarks() << endl;
     LandmarkNode &simple_landmark_node =
         landmark_graph->add_landmark(move (landmark));
     open_landmarks.push_back(&simple_landmark_node);
@@ -278,8 +282,9 @@ bool LandmarkFactoryRpgSasp::deal_with_overlapping_landmarks(
         return landmark_graph->contains_simple_landmark(atom);
     })) {
         /*
-          Do not add landmark because the simple one is stronger. Do not add the
-          ordering to the simple landmark(s) as they are not guaranteed to hold.
+          Do not add the landmark because the simple one is stronger. Do not add
+          the ordering(s) to the corresponding simple landmark(s) as they are
+          not guaranteed to hold.
         */
         return true;
     }
@@ -519,7 +524,6 @@ void LandmarkFactoryRpgSasp::generate_shared_precondition_landmarks(
     /* All shared preconditions are landmarks, and greedy-necessary
        predecessors of `landmark`. */
     for (const FactPair &atom : shared_preconditions) {
-        cout << "try to add shared predecessor landmark" << endl;
         add_simple_landmark_and_ordering(
             atom, *node, OrderingType::GREEDY_NECESSARY);
     }
@@ -615,9 +619,13 @@ static bool value_critical_to_reach_landmark(
             if (succ == landmark_value) {
                 return false;
             }
-            if (!reached[succ]) {
-                /* Values unreached in the delete relaxation cannot be landmarks
-                   for `landmark_value` even if they are reachable in the DTG. */
+            if (!reached[succ] || succ == excluded_value) {
+                /*
+                  Values unreached in the delete relaxation cannot be landmarks
+                  for `landmark_value` even if they are reachable in the DTG.
+                  Also, we want to check whether it is possible to reach
+                  `landmark_value` without going through `excluded_value`.
+                */
                 continue;
             }
             if (!closed.contains(succ)) {
