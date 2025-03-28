@@ -3,7 +3,6 @@
 
 #include "landmark_factory.h"
 
-#include <list>
 #include <map>
 #include <set>
 
@@ -46,16 +45,15 @@ struct HMEntry {
     // Level 0:  present in initial state
     int level;
 
-    // TODO: Can we replace the `list` data type with `set` or even `vector`?
-    std::list<int> landmarks;
+    std::unordered_set<int> landmarks;
     /*
       Landmarks that are "preconditions" to achieve this `HMEntry`. This
       set is disjoint from `landmarks` above and used to derive
       greedy-necessary orderings.
     */
-    std::list<int> prerequisite_landmark;
+    std::unordered_set<int> prerequisite_landmark;
 
-    std::list<int> first_achievers;
+    std::unordered_set<int> first_achievers;
 
     /*
       The first int represents an operator ID. If the second int is -1 it means
@@ -91,10 +89,10 @@ class LandmarkFactoryHM : public LandmarkFactory {
     */
     std::vector<std::pair<int, std::vector<int>>> num_unsatisfied_preconditions;
 
-    std::list<int> collect_and_add_landmarks_to_landmark_graph(
+    std::unordered_set<int> collect_and_add_landmarks_to_landmark_graph(
         const VariablesProxy &variables, const Propositions &propositions);
-    void reduce_landmarks(const std::list<int> &landmarks);
-    void add_landmark_orderings(const std::list<int> &landmarks);
+    void reduce_landmarks(const std::unordered_set<int> &landmarks);
+    void add_landmark_orderings(const std::unordered_set<int> &landmarks);
     void construct_landmark_graph(const TaskProxy &task_proxy);
     virtual void generate_landmarks(
         const std::shared_ptr<AbstractTask> &task) override;
@@ -102,20 +100,21 @@ class LandmarkFactoryHM : public LandmarkFactory {
     TriggerSet mark_state_propositions_reached(
         const State &state, const VariablesProxy &variables);
     void collect_condition_landmarks(
-        const std::vector<int> &condition, std::list<int> &landmarks,
-        std::list<int> &necessary)
+        const std::vector<int> &condition, std::unordered_set<int> &landmarks,
+        std::unordered_set<int> &necessary)
     const;
     void update_effect_landmarks(
         int op_id, const std::vector<int> &effect, int level,
-        const std::list<int> &landmarks, const std::list<int> &necessary,
-        TriggerSet &triggers);
+        const std::unordered_set<int> &landmarks,
+        const std::unordered_set<int> &necessary, TriggerSet &triggers);
     void update_noop_landmarks(
         const std::unordered_set<int> &current_triggers, const PiMOperator &op,
-        int level, const std::list<int> &landmarks,
-        const std::list<int> &necessary, TriggerSet &next_triggers);
+        int level, const std::unordered_set<int> &landmarks,
+        const std::unordered_set<int> &necessary, TriggerSet &next_triggers);
     void compute_noop_landmarks(
-        int op_id, int noop_index, const std::list<int> &local_landmarks,
-        const std::list<int> &local_necessary, int level,
+        int op_id, int noop_index,
+        const std::unordered_set<int> &local_landmarks,
+        const std::unordered_set<int> &local_necessary, int level,
         TriggerSet &next_trigger);
     void compute_hm_landmarks(const TaskProxy &task_proxy);
 
