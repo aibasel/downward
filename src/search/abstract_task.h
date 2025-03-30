@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+class AxiomEvaluator;
+
 struct FactPair {
     int var;
     int value;
@@ -101,6 +103,8 @@ public:
     virtual void convert_ancestor_state_values(
         std::vector<int> &values,
         const AbstractTask *ancestor_task) const = 0;
+
+    virtual AxiomEvaluator &get_axiom_evaluator() const = 0;
 };
 
 #endif

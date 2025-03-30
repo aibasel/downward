@@ -11,7 +11,7 @@ using namespace std;
 StateRegistry::StateRegistry(const TaskProxy &task_proxy)
     : task_proxy(task_proxy),
       state_packer(task_properties::g_state_packers[task_proxy]),
-      axiom_evaluator(g_axiom_evaluators[task_proxy]),
+      axiom_evaluator(task_proxy.get_axiom_evaluator()),
       num_variables(task_proxy.get_variables().size()),
       state_data_pool(get_bins_per_state()),
       registered_states(
