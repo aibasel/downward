@@ -131,12 +131,12 @@ void LandmarkFactoryRpgSasp::get_greedy_preconditions_for_lm(
                         current_cond.emplace(effect_condition.get_variable().get_id(),
                                              effect_condition.get_value());
                 }
+                if (init) {
+                    init = false;
+                    intersection = current_cond;
+                } else
+                    intersection = _intersect(intersection, current_cond);
             }
-            if (init) {
-                init = false;
-                intersection = current_cond;
-            } else
-                intersection = _intersect(intersection, current_cond);
         }
     }
     result.insert(intersection.begin(), intersection.end());
