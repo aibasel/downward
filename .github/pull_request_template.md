@@ -2,7 +2,7 @@ In the `Add a title` field, write a meaningful short commit message in imperativ
 
 ---
 
-In this field (titeled `Add a description`), write a more extensive summary of the changes made in this pull request. This description will be suggested as the commit message when squashing and merging the pull request, so it should be refined along the development process. The final commit message should describe how the changes affect planner behavior:
+In this field (titled `Add a description`), write a more extensive summary of the changes made in this pull request. This description will be suggested as the commit message when squashing and merging the pull request, so it should be refined along the development process. The final commit message should describe how the changes affect planner behavior:
  - Do they add functionality?
  - Does the command line syntax change?
  - Is planner performance affected according to the experiment?
