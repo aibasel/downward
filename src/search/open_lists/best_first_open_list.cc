@@ -4,7 +4,6 @@
 #include "../open_list.h"
 
 #include "../plugins/plugin.h"
-#include "../utils/memory.h"
 
 #include <cassert>
 #include <deque>
@@ -107,13 +106,13 @@ BestFirstOpenListFactory::BestFirstOpenListFactory(
 
 unique_ptr<StateOpenList>
 BestFirstOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<BestFirstOpenList<StateOpenListEntry>>(
+    return make_unique<BestFirstOpenList<StateOpenListEntry>>(
         eval, pref_only);
 }
 
 unique_ptr<EdgeOpenList>
 BestFirstOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<BestFirstOpenList<EdgeOpenListEntry>>(
+    return make_unique<BestFirstOpenList<EdgeOpenListEntry>>(
         eval, pref_only);
 }
 

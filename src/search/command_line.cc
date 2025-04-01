@@ -124,11 +124,9 @@ static shared_ptr<SearchAlgorithm> parse_cmd_line_aux(const vector<string> &args
             plugins::Registry registry = plugins::RawRegistry::instance()->construct_registry();
             unique_ptr<plugins::DocPrinter> doc_printer;
             if (txt2tags)
-                doc_printer = utils::make_unique_ptr<plugins::Txt2TagsPrinter>(
-                    cout, registry);
+                doc_printer = make_unique<plugins::Txt2TagsPrinter>(cout, registry);
             else
-                doc_printer = utils::make_unique_ptr<plugins::PlainPrinter>(
-                    cout, registry);
+                doc_printer = make_unique<plugins::PlainPrinter>(cout, registry);
             if (plugin_names.empty()) {
                 doc_printer->print_all();
             } else {

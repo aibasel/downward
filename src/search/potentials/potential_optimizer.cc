@@ -5,7 +5,6 @@
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/collections.h"
-#include "../utils/memory.h"
 #include "../utils/system.h"
 
 #include <limits>
@@ -214,6 +213,6 @@ void PotentialOptimizer::extract_lp_solution() {
 
 unique_ptr<PotentialFunction> PotentialOptimizer::get_potential_function() const {
     assert(has_optimal_solution());
-    return utils::make_unique_ptr<PotentialFunction>(fact_potentials);
+    return make_unique<PotentialFunction>(fact_potentials);
 }
 }

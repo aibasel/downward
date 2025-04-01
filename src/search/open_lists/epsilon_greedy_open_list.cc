@@ -6,7 +6,6 @@
 #include "../plugins/plugin.h"
 #include "../utils/collections.h"
 #include "../utils/markup.h"
-#include "../utils/memory.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -149,13 +148,13 @@ EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
 
 unique_ptr<StateOpenList>
 EpsilonGreedyOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<EpsilonGreedyOpenList<StateOpenListEntry>>(
+    return make_unique<EpsilonGreedyOpenList<StateOpenListEntry>>(
         eval, epsilon, random_seed, pref_only);
 }
 
 unique_ptr<EdgeOpenList>
 EpsilonGreedyOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<EpsilonGreedyOpenList<EdgeOpenListEntry>>(
+    return make_unique<EpsilonGreedyOpenList<EdgeOpenListEntry>>(
         eval, epsilon, random_seed, pref_only);
 }
 

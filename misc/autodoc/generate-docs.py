@@ -29,7 +29,7 @@ TXT2TAGS_OPTIONS = {
 INDEX_TEXT = """
 # Search Plugins
 
-Fast Downward's search component consist of many different plugins of different
+Fast Downward's search component consists of many different plugins of different
 plugin types such as [search algorithms](SearchAlgorithm.md) or [evaluators](Evaluator.md).
 
 The following pages document the plugins of each type:
@@ -45,6 +45,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--outdir", default=f"{REPO_ROOT_DIR}/docs/search")
     parser.add_argument("--build", default="release")
+    parser.add_argument('--skipbuild', action='store_true')
     return parser.parse_args()
 
 
@@ -97,8 +98,9 @@ def build_docs(build, outdir):
 
 if __name__ == '__main__':
     args = parse_args()
-    logging.info("building planner...")
-    build_planner(args.build)
+    if not args.skipbuild:
+        logging.info("building planner...")
+        build_planner(args.build)
     logging.info("building documentation...")
     outdir = SCRIPT_DIR / args.outdir
     try:

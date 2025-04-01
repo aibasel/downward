@@ -5,7 +5,6 @@
 #include "../landmarks/landmark_factory_h_m.h"
 #include "../landmarks/landmark_graph.h"
 #include "../utils/logging.h"
-#include "../utils/memory.h"
 
 #include <algorithm>
 #include <ranges>

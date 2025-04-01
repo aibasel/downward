@@ -5,7 +5,6 @@
 #include "solver_interface.h"
 
 #include "../algorithms/named_vector.h"
-#include "../utils/memory.h"
 
 #include <cstring>
 #include <cplex.h>

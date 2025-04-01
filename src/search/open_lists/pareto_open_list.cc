@@ -5,7 +5,6 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/hash.h"
-#include "../utils/memory.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -232,13 +231,13 @@ ParetoOpenListFactory::ParetoOpenListFactory(
 
 unique_ptr<StateOpenList>
 ParetoOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<ParetoOpenList<StateOpenListEntry>>(
+    return make_unique<ParetoOpenList<StateOpenListEntry>>(
         evals, state_uniform_selection, random_seed, pref_only);
 }
 
 unique_ptr<EdgeOpenList>
 ParetoOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<ParetoOpenList<EdgeOpenListEntry>>(
+    return make_unique<ParetoOpenList<EdgeOpenListEntry>>(
         evals, state_uniform_selection, random_seed, pref_only);
 }
 
