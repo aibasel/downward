@@ -43,7 +43,7 @@ class UniformCostPartitioningAlgorithm : public CostPartitioningAlgorithm {
        breaking apart long functions) without changing its behavior. Since we
        would like to implement computing the cost partitioning differently, and
        because these functions do not have just one simple purpose, we did not
-       bother trying to find descriptive function names.
+       bother trying to find descriptive function names at this time.
     */
     double first_pass(
         std::vector<int> &landmarks_achieved_by_operator,

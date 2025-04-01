@@ -66,7 +66,7 @@ void LandmarkFactoryMerged::add_simple_landmarks(
         log << "Adding simple landmarks" << endl;
     }
     for (auto &landmark_graph : landmark_graphs) {
-        // TODO: loop over landmarks instead
+        // TODO: Loop over landmarks instead.
         for (const auto &node : *landmark_graph) {
             const Landmark &landmark = node->get_landmark();
             if (landmark.is_conjunctive) {

@@ -118,7 +118,6 @@ void Exploration::build_unary_operators(const OperatorProxy &op) {
     vector<FactPair> preconditions;
     int op_or_axiom_id = get_operator_or_axiom_id(op);
 
-    // TODO: Maybe the problem is with the new sorting?
     for (FactProxy pre : op.get_preconditions()) {
         preconditions.push_back(pre.get_pair());
     }

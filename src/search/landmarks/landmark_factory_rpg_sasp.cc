@@ -135,11 +135,6 @@ static void add_binary_variable_conditions(
     }
 }
 
-/*
-  TODO: This (accidentally) differs from the previous implementation which
-   imposed a stricter condition. Specifically, it also intersected over the
-   conditions of effects that have nothing to do with achieving the landmark.
-*/
 static void add_effect_conditions(
     const Landmark &landmark, const EffectsProxy &effects,
     utils::HashSet<FactPair> &result) {

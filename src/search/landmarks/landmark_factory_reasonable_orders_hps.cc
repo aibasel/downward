@@ -343,7 +343,7 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
     /*
       Experimentally commenting this out -- see issue202.
       TODO: This code became unreachable and no longer works after
-       all the refactorings we did recently.
+       all the refactorings we did recently. Maybe we should just remove it?
     // Case 3: There exists an atom X inconsistent with B such that X->_gn A.
     for (const auto &parent : node_a->parents) {
         const LandmarkNode &node = *parent.first;

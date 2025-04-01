@@ -204,7 +204,7 @@ bool LandmarkFactoryZhuGivan::conditional_effect_fires(
 
 LandmarkSet LandmarkFactoryZhuGivan::union_of_condition_labels(
     const ConditionsProxy &conditions, const PropositionLayer &current) {
-    /* TODO This looks like an O(n^2) algorithm where O(n log n) would
+    /* TODO: This looks like an O(n^2) algorithm where O(n log n) would
         do, a bit like the Python string concatenation anti-pattern. */
     LandmarkSet result;
     for (FactProxy precondition : conditions) {
