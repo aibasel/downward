@@ -3,6 +3,9 @@
 
 #include "landmark_factory_relaxation.h"
 
+#include "../utils/hash.h"
+
+#include <list>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -14,7 +17,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     std::list<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
 
-    std::unordered_map<LandmarkNode *, utils::HashSet<FactPair>> forward_orders;
+    std::unordered_map<const LandmarkNode *, utils::HashSet<FactPair>> forward_orders;
 
     // dtg_successors[var_id][val] contains all successor values of val in the
     // domain transition graph for the variable
@@ -24,10 +27,10 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     void add_dtg_successor(int var_id, int pre, int post);
     void find_forward_orders(const VariablesProxy &variables,
                              const std::vector<std::vector<bool>> &reached,
-                             LandmarkNode *lm_node);
-    void add_lm_forward_orders();
+                             LandmarkNode *node);
+    void add_landmark_forward_orderings();
 
-    void get_greedy_preconditions_for_lm(
+    void get_greedy_preconditions_for_landmark(
         const TaskProxy &task_proxy, const Landmark &landmark,
         const OperatorProxy &op,
         std::unordered_map<int, int> &result) const;
@@ -44,15 +47,14 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     virtual void generate_relaxed_landmarks(
         const std::shared_ptr<AbstractTask> &task,
         Exploration &exploration) override;
-    void found_simple_lm_and_order(const FactPair &a, LandmarkNode &b,
-                                   EdgeType t);
-    void found_disj_lm_and_order(const TaskProxy &task_proxy,
-                                 const std::set<FactPair> &a,
-                                 LandmarkNode &b,
-                                 EdgeType t);
-    void approximate_lookahead_orders(const TaskProxy &task_proxy,
-                                      const std::vector<std::vector<bool>> &reached,
-                                      LandmarkNode *lmp);
+    void found_simple_landmark_and_ordering(
+        const FactPair &atom, LandmarkNode &node, OrderingType type);
+    void found_disjunctive_landmark_and_ordering(
+        const TaskProxy &task_proxy, const std::set<FactPair> &atoms,
+        LandmarkNode &node, OrderingType type);
+    void approximate_lookahead_orders(
+        const TaskProxy &task_proxy,
+        const std::vector<std::vector<bool>> &reached, LandmarkNode *node);
     bool domain_connectivity(const State &initial_state,
                              const FactPair &landmark,
                              const std::unordered_set<int> &exclude);

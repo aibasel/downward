@@ -17,7 +17,7 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactory::LandmarkFactory(utils::Verbosity verbosity)
-    : log(utils::get_log_for_verbosity(verbosity)), lm_graph(nullptr) {
+    : log(utils::get_log_for_verbosity(verbosity)), landmark_graph(nullptr) {
 }
 
 /*
@@ -41,45 +41,45 @@ LandmarkFactory::LandmarkFactory(utils::Verbosity verbosity)
   ensure that the TaskProxy used by the Exploration object is the same
   as the TaskProxy object passed to this function.
 */
-shared_ptr<LandmarkGraph> LandmarkFactory::compute_lm_graph(
+shared_ptr<LandmarkGraph> LandmarkFactory::compute_landmark_graph(
     const shared_ptr<AbstractTask> &task) {
-    if (lm_graph) {
-        if (lm_graph_task != task.get()) {
+    if (landmark_graph) {
+        if (landmark_graph_task != task.get()) {
             cerr << "LandmarkFactory was asked to compute landmark graphs for "
                  << "two different tasks. This is currently not supported."
                  << endl;
             utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
         }
-        return lm_graph;
+        return landmark_graph;
     }
-    lm_graph_task = task.get();
-    utils::Timer lm_generation_timer;
+    landmark_graph_task = task.get();
+    utils::Timer landmark_generation_timer;
 
-    lm_graph = make_shared<LandmarkGraph>();
+    landmark_graph = make_shared<LandmarkGraph>();
 
     TaskProxy task_proxy(*task);
     generate_operators_lookups(task_proxy);
     generate_landmarks(task);
 
     if (log.is_at_least_normal()) {
-        log << "Landmarks generation time: " << lm_generation_timer << endl;
-        if (lm_graph->get_num_landmarks() == 0) {
+        log << "Landmarks generation time: " << landmark_generation_timer << endl;
+        if (landmark_graph->get_num_landmarks() == 0) {
             if (log.is_warning()) {
                 log << "Warning! No landmarks found. Task unsolvable?" << endl;
             }
         } else {
-            log << "Discovered " << lm_graph->get_num_landmarks()
-                << " landmarks, of which " << lm_graph->get_num_disjunctive_landmarks()
+            log << "Discovered " << landmark_graph->get_num_landmarks()
+                << " landmarks, of which " << landmark_graph->get_num_disjunctive_landmarks()
                 << " are disjunctive and "
-                << lm_graph->get_num_conjunctive_landmarks() << " are conjunctive." << endl;
-            log << lm_graph->get_num_edges() << " edges" << endl;
+                << landmark_graph->get_num_conjunctive_landmarks() << " are conjunctive." << endl;
+            log << landmark_graph->get_num_orderings() << " orderings" << endl;
         }
     }
 
     if (log.is_at_least_debug()) {
-        dump_landmark_graph(task_proxy, *lm_graph, log);
+        dump_landmark_graph(task_proxy, *landmark_graph, log);
     }
-    return lm_graph;
+    return landmark_graph;
 }
 
 bool LandmarkFactory::is_landmark_precondition(
@@ -87,21 +87,21 @@ bool LandmarkFactory::is_landmark_precondition(
     /* Test whether the landmark is used by the operator as a precondition.
     A disjunctive landmarks is used if one of its disjuncts is used. */
     for (FactProxy pre : op.get_preconditions()) {
-        for (const FactPair &lm_fact : landmark.facts) {
-            if (pre.get_pair() == lm_fact)
+        for (const FactPair &atom : landmark.atoms) {
+            if (pre.get_pair() == atom)
                 return true;
         }
     }
     return false;
 }
 
-void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
-                               EdgeType type) {
-    /* Adds an edge in the landmarks graph. If an edge between the same
-       landmarks is already present, the stronger edge type wins. */
+void LandmarkFactory::add_ordering(LandmarkNode &from, LandmarkNode &to,
+                                   OrderingType type) {
+    /* Adds an ordering in the landmarks graph. If an ordering between the same
+       landmarks is already present, the stronger ordering type wins. */
     assert(&from != &to);
 
-    // If edge already exists, remove if weaker
+    // If ordering already exists, remove if weaker.
     if (from.children.find(&to) != from.children.end() && from.children.find(
             &to)->second < type) {
         from.children.erase(&to);
@@ -111,7 +111,7 @@ void LandmarkFactory::edge_add(LandmarkNode &from, LandmarkNode &to,
         assert(to.parents.find(&from) == to.parents.end());
         assert(from.children.find(&to) == from.children.end());
     }
-    // If edge does not exist (or has just been removed), insert
+    // If ordering does not exist (or has just been removed), insert.
     if (from.children.find(&to) == from.children.end()) {
         assert(to.parents.find(&from) == to.parents.end());
         from.children.emplace(&to, type);
@@ -128,7 +128,7 @@ void LandmarkFactory::discard_all_orderings() {
     if (log.is_at_least_normal()) {
         log << "Removing all orderings." << endl;
     }
-    for (auto &node : lm_graph->get_nodes()) {
+    for (const auto &node : *landmark_graph) {
         node->children.clear();
         node->parents.clear();
     }

@@ -5,12 +5,8 @@
 
 #include "../utils/logging.h"
 
-#include <list>
 #include <map>
 #include <memory>
-#include <set>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 class TaskProxy;
@@ -30,7 +26,7 @@ public:
     virtual ~LandmarkFactory() = default;
     LandmarkFactory(const LandmarkFactory &) = delete;
 
-    std::shared_ptr<LandmarkGraph> compute_lm_graph(const std::shared_ptr<AbstractTask> &task);
+    std::shared_ptr<LandmarkGraph> compute_landmark_graph(const std::shared_ptr<AbstractTask> &task);
 
     virtual bool supports_conditional_effects() const = 0;
 
@@ -41,10 +37,10 @@ public:
 protected:
     explicit LandmarkFactory(utils::Verbosity verbosity);
     mutable utils::LogProxy log;
-    std::shared_ptr<LandmarkGraph> lm_graph;
+    std::shared_ptr<LandmarkGraph> landmark_graph;
     bool achievers_calculated = false;
 
-    void edge_add(LandmarkNode &from, LandmarkNode &to, EdgeType type);
+    void add_ordering(LandmarkNode &from, LandmarkNode &to, OrderingType type);
 
     void discard_all_orderings();
 
@@ -56,7 +52,7 @@ protected:
     }
 
 private:
-    AbstractTask *lm_graph_task;
+    AbstractTask *landmark_graph_task;
     std::vector<std::vector<std::vector<int>>> operators_eff_lookup;
 
     virtual void generate_landmarks(const std::shared_ptr<AbstractTask> &task) = 0;

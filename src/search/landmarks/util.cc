@@ -1,12 +1,12 @@
 #include "util.h"
 
+#include <ranges>
+
 #include "landmark.h"
 #include "landmark_graph.h"
 
 #include "../task_proxy.h"
 #include "../utils/logging.h"
-
-#include <limits>
 
 using namespace std;
 
@@ -30,10 +30,10 @@ unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unord
     return result;
 }
 
-bool possibly_reaches_lm(const OperatorProxy &op,
-                         const vector<vector<bool>> &reached,
-                         const Landmark &landmark) {
-    /* Check whether operator o can possibly make landmark lmp true in a
+bool possibly_reaches_landmark(const OperatorProxy &op,
+                               const vector<vector<bool>> &reached,
+                               const Landmark &landmark) {
+    /* Check whether operator o can possibly make `landmark` true in a
        relaxed task (as given by the reachability information in reached) */
 
     assert(!reached.empty());
@@ -46,12 +46,12 @@ bool possibly_reaches_lm(const OperatorProxy &op,
             return false;
 
     // Go through all effects of o and check whether one can reach a
-    // proposition in lmp
+    // proposition in `landmark`.
     for (EffectProxy effect: op.get_effects()) {
         FactProxy effect_fact = effect.get_fact();
         assert(!reached[effect_fact.get_variable().get_id()].empty());
-        for (const FactPair &fact : landmark.facts) {
-            if (effect_fact.get_pair() == fact) {
+        for (const FactPair &atom : landmark.atoms) {
+            if (effect_fact.get_pair() == atom) {
                 if (_possibly_fires(effect.get_conditions(), reached))
                     return true;
                 break;
@@ -91,17 +91,17 @@ static void dump_node(
         cout << "  lm" << node.get_id() << " [label=\"";
         bool first = true;
         const Landmark &landmark = node.get_landmark();
-        for (FactPair fact : landmark.facts) {
+        for (const FactPair &atom : landmark.atoms) {
             if (!first) {
-                if (landmark.disjunctive) {
+                if (landmark.is_disjunctive) {
                     cout << " | ";
-                } else if (landmark.conjunctive) {
+                } else if (landmark.is_conjunctive) {
                     cout << " & ";
                 }
             }
             first = false;
-            VariableProxy var = task_proxy.get_variables()[fact.var];
-            cout << var.get_fact(fact.value).get_name();
+            VariableProxy var = task_proxy.get_variables()[atom.var];
+            cout << var.get_fact(atom.value).get_name();
         }
         cout << "\"";
         if (landmark.is_true_in_state(task_proxy.get_initial_state())) {
@@ -114,20 +114,21 @@ static void dump_node(
     }
 }
 
-static void dump_edge(int from, int to, EdgeType edge, utils::LogProxy &log) {
+static void dump_ordering(int from, int to, OrderingType type,
+                          const utils::LogProxy &log) {
     if (log.is_at_least_debug()) {
         cout << "      lm" << from << " -> lm" << to << " [label=";
-        switch (edge) {
-        case EdgeType::NECESSARY:
+        switch (type) {
+        case OrderingType::NECESSARY:
             cout << "\"nec\"";
             break;
-        case EdgeType::GREEDY_NECESSARY:
+        case OrderingType::GREEDY_NECESSARY:
             cout << "\"gn\"";
             break;
-        case EdgeType::NATURAL:
+        case OrderingType::NATURAL:
             cout << "\"n\"";
             break;
-        case EdgeType::REASONABLE:
+        case OrderingType::REASONABLE:
             cout << "\"r\", style=dashed";
             break;
         }
@@ -143,12 +144,10 @@ void dump_landmark_graph(
         log << "Dumping landmark graph: " << endl;
 
         cout << "digraph G {\n";
-        for (const unique_ptr<LandmarkNode> &node : graph.get_nodes()) {
+        for (const auto &node : graph) {
             dump_node(task_proxy, *node, log);
-            for (const auto &child : node->children) {
-                const LandmarkNode *child_node = child.first;
-                const EdgeType &edge = child.second;
-                dump_edge(node->get_id(), child_node->get_id(), edge, log);
+            for (const auto &[child, type] : node->children) {
+                dump_ordering(node->get_id(), child->get_id(), type, log);
             }
         }
         cout << "}" << endl;

@@ -10,12 +10,12 @@
 #include <vector>
 
 namespace landmarks {
-using lm_set = utils::HashSet<FactPair>;
+using LandmarkSet = utils::HashSet<FactPair>;
 
 class LandmarkFactoryZhuGivan : public LandmarkFactoryRelaxation {
     class plan_graph_node {
 public:
-        lm_set labels;
+        LandmarkSet labels;
         inline bool reached() const {
             // NOTE: nodes are always labeled with itself,
             // if they have been reached
@@ -45,18 +45,18 @@ public:
     // propositions that:
     // (a) have just been reached OR (b) had their labels changed in next
     // proposition layer
-    lm_set apply_operator_and_propagate_labels(const OperatorProxy &op,
-                                               const PropositionLayer &current, PropositionLayer &next) const;
+    LandmarkSet apply_operator_and_propagate_labels(const OperatorProxy &op,
+                                                    const PropositionLayer &current, PropositionLayer &next) const;
 
     // Calculate the union of precondition labels of op, using the
     // labels from current
-    lm_set union_of_precondition_labels(const OperatorProxy &op,
-                                        const PropositionLayer &current) const;
+    LandmarkSet union_of_precondition_labels(const OperatorProxy &op,
+                                             const PropositionLayer &current) const;
 
     // Calculate the union of precondition labels of a conditional effect,
     // using the labels from current
-    lm_set union_of_condition_labels(const EffectConditionsProxy &effect_conditions,
-                                     const PropositionLayer &current) const;
+    LandmarkSet union_of_condition_labels(const EffectConditionsProxy &effect_conditions,
+                                          const PropositionLayer &current) const;
 
     // Relaxed exploration, returns the last proposition layer
     // (the fixpoint) with labels

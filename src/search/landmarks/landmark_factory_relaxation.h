@@ -14,7 +14,7 @@ protected:
        achieving the excluded landmark. */
     bool relaxed_task_solvable(
         const TaskProxy &task_proxy, Exploration &exploration,
-        const Landmark &exclude, bool use_unary_relaxation) const;
+        const Landmark &landmark, bool use_unary_relaxation);
 
 private:
     void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;

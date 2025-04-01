@@ -32,17 +32,17 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
     // insert goal landmarks and mark them as goals
     for (FactProxy goal : task_proxy.get_goals()) {
         Landmark landmark({goal.get_pair()}, false, false, true);
-        lm_graph->add_landmark(move(landmark));
+        landmark_graph->add_landmark(move(landmark));
     }
     // test all other possible facts
     for (VariableProxy var : task_proxy.get_variables()) {
         for (int value = 0; value < var.get_domain_size(); ++value) {
-            const FactPair lm(var.get_id(), value);
-            if (!lm_graph->contains_simple_landmark(lm)) {
-                Landmark landmark({lm}, false, false);
+            const FactPair atom(var.get_id(), value);
+            if (!landmark_graph->contains_simple_landmark(atom)) {
+                Landmark landmark({atom}, false, false);
                 if (!relaxed_task_solvable(task_proxy, exploration, landmark,
                                            use_unary_relaxation)) {
-                    lm_graph->add_landmark(move(landmark));
+                    landmark_graph->add_landmark(move(landmark));
                 }
             }
         }
@@ -79,8 +79,8 @@ public:
             "ignored, i.e. not supported");
     }
 
-    virtual shared_ptr<LandmarkFactoryRpgExhaust>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<LandmarkFactoryRpgExhaust> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgExhaust>(
             opts.get<bool>("use_unary_relaxation"),
             get_landmark_factory_arguments_from_options(opts));
