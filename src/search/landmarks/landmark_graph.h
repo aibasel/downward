@@ -137,11 +137,11 @@ public:
        when moving landmark graph creation there. It is not needed by
        HMLandmarkFactory. */
     bool contains_overlapping_disjunctive_landmark(
-        const std::set<FactPair> &atoms) const;
+        const utils::HashSet<FactPair> &atoms) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     bool contains_superset_disjunctive_landmark(
-        const std::set<FactPair> &atoms) const;
+        const utils::HashSet<FactPair> &atoms) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. It is not needed by
        HMLandmarkFactory. */

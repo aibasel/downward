@@ -277,7 +277,8 @@ void LandmarkFactoryRpgSasp::add_simple_landmark_and_ordering(
 
 // Returns true if an overlapping landmark exists already.
 bool LandmarkFactoryRpgSasp::deal_with_overlapping_landmarks(
-    const set<FactPair> &atoms, LandmarkNode &node, OrderingType type) const {
+    const utils::HashSet<FactPair> &atoms, LandmarkNode &node,
+    OrderingType type) const {
     if (ranges::any_of(
             atoms.begin(), atoms.end(), [&](const FactPair &atom) {
                 return landmark_graph->contains_simple_landmark(atom);
@@ -302,7 +303,8 @@ bool LandmarkFactoryRpgSasp::deal_with_overlapping_landmarks(
 }
 
 void LandmarkFactoryRpgSasp::add_disjunctive_landmark_and_ordering(
-    const set<FactPair> &atoms, LandmarkNode &node, OrderingType type) {
+    const utils::HashSet<FactPair> &atoms, LandmarkNode &node,
+    OrderingType type) {
     assert(atoms.size() > 1);
     bool overlaps = deal_with_overlapping_landmarks(atoms, node, type);
 
@@ -453,17 +455,16 @@ void LandmarkFactoryRpgSasp::extend_disjunction_class_lookups(
     }
 }
 
-static vector<set<FactPair>> get_disjunctive_preconditions(
+static vector<utils::HashSet<FactPair>> get_disjunctive_preconditions(
     const unordered_map<int, vector<FactPair>> &preconditions_by_disjunction_class,
     const unordered_map<int, unordered_set<int>> &used_operators_by_disjunction_class,
     int num_ops) {
-    vector<set<FactPair>> disjunctive_preconditions;
+    vector<utils::HashSet<FactPair>> disjunctive_preconditions;
     for (const auto &[disjunction_class, atoms] : preconditions_by_disjunction_class) {
         int used_operators = static_cast<int>(
             used_operators_by_disjunction_class.at(disjunction_class).size());
         if (used_operators == num_ops) {
-            set<FactPair> preconditions;
-            preconditions.insert(atoms.begin(), atoms.end());
+            utils::HashSet<FactPair> preconditions(atoms.begin(), atoms.end());
             if (preconditions.size() > 1) {
                 disjunctive_preconditions.push_back(preconditions);
             } // Otherwise this landmark is not actually a disjunctive landmark.
@@ -479,7 +480,7 @@ static vector<set<FactPair>> get_disjunctive_preconditions(
   atom from each of the operators, which we additionally restrict so that
   each atom in the set stems from the same disjunction class.
 */
-vector<set<FactPair>> LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
+vector<utils::HashSet<FactPair>> LandmarkFactoryRpgSasp::compute_disjunctive_preconditions(
     const TaskProxy &task_proxy, const Landmark &landmark,
     const vector<vector<bool>> &reached) const {
     vector<int> op_or_axiom_ids =
@@ -532,7 +533,7 @@ void LandmarkFactoryRpgSasp::generate_disjunctive_precondition_landmarks(
     const TaskProxy &task_proxy, const State &initial_state,
     const Landmark &landmark, LandmarkNode *node,
     const vector<vector<bool>> &reached) {
-    vector<set<FactPair>> disjunctive_preconditions =
+    vector<utils::HashSet<FactPair>> disjunctive_preconditions =
         compute_disjunctive_preconditions(task_proxy, landmark, reached);
     for (const auto &preconditions : disjunctive_preconditions) {
         /* We don't want disjunctive landmarks to get too big. Also,

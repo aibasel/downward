@@ -53,14 +53,14 @@ bool LandmarkGraph::contains_disjunctive_landmark(const FactPair &atom) const {
 }
 
 bool LandmarkGraph::contains_overlapping_disjunctive_landmark(
-    const set<FactPair> &atoms) const {
+    const utils::HashSet<FactPair> &atoms) const {
     return any_of(atoms.begin(), atoms.end(), [&](const FactPair &atom) {
                       return contains_disjunctive_landmark(atom);
                   });
 }
 
 bool LandmarkGraph::contains_superset_disjunctive_landmark(
-    const set<FactPair> &atoms) const {
+    const utils::HashSet<FactPair> &atoms) const {
     assert(!atoms.empty());
     const LandmarkNode *node = nullptr;
     for (const FactPair &atom : atoms) {

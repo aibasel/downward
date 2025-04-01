@@ -48,7 +48,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
         const utils::HashSet<FactPair> &landmark_preconditions, int op_id,
         std::unordered_map<int, std::vector<FactPair>> &preconditions,
         std::unordered_map<int, std::unordered_set<int>> &used_operators) const;
-    std::vector<std::set<FactPair>> compute_disjunctive_preconditions(
+    std::vector<utils::HashSet<FactPair>> compute_disjunctive_preconditions(
         const TaskProxy &task_proxy, const Landmark &landmark,
         const std::vector<std::vector<bool>> &reached) const;
 
@@ -70,12 +70,12 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
         LandmarkNode &simple_landmark_node);
     void add_simple_landmark_and_ordering(
         const FactPair &atom, LandmarkNode &node, OrderingType type);
-    // TODO: Can we use something different than set in the next two?
     bool deal_with_overlapping_landmarks(
-        const std::set<FactPair> &atoms, LandmarkNode &node,
+        const utils::HashSet<FactPair> &atoms, LandmarkNode &node,
         OrderingType type) const;
     void add_disjunctive_landmark_and_ordering(
-        const std::set<FactPair> &atoms, LandmarkNode &node, OrderingType type);
+        const utils::HashSet<FactPair> &atoms, LandmarkNode &node,
+        OrderingType type);
     void approximate_lookahead_orderings(
         const TaskProxy &task_proxy,
         const std::vector<std::vector<bool>> &reached, LandmarkNode *node);
