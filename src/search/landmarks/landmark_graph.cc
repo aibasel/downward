@@ -59,7 +59,7 @@ bool LandmarkGraph::contains_overlapping_disjunctive_landmark(
                   });
 }
 
-bool LandmarkGraph::contains_identical_disjunctive_landmark(
+bool LandmarkGraph::contains_superset_disjunctive_landmark(
     const set<FactPair> &atoms) const {
     assert(!atoms.empty());
     const LandmarkNode *node = nullptr;
@@ -75,7 +75,7 @@ bool LandmarkGraph::contains_identical_disjunctive_landmark(
         }
     }
     assert(node);
-    return atoms.size() == node->get_landmark().atoms.size();
+    return true;
 }
 
 bool LandmarkGraph::contains_landmark(const FactPair &atom) const {

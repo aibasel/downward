@@ -26,7 +26,7 @@ LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(
     const Landmark &landmark) const {
     if (landmark.is_disjunctive) {
         set<FactPair> atoms(landmark.atoms.begin(), landmark.atoms.end());
-        if (landmark_graph->contains_identical_disjunctive_landmark(atoms)) {
+        if (landmark_graph->contains_superset_disjunctive_landmark(atoms)) {
             return &landmark_graph->get_disjunctive_landmark_node(
                 landmark.atoms[0]);
         }

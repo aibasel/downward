@@ -140,7 +140,7 @@ public:
         const std::set<FactPair> &atoms) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
-    bool contains_identical_disjunctive_landmark(
+    bool contains_superset_disjunctive_landmark(
         const std::set<FactPair> &atoms) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. It is not needed by

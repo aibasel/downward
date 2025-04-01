@@ -290,13 +290,11 @@ bool LandmarkFactoryRpgSasp::deal_with_overlapping_landmarks(
         return true;
     }
     if (landmark_graph->contains_overlapping_disjunctive_landmark(atoms)) {
-        if (landmark_graph->contains_identical_disjunctive_landmark(atoms)) {
-            LandmarkNode &new_landmark_node =
+        if (use_orders &&
+            landmark_graph->contains_superset_disjunctive_landmark(atoms)) {
+            LandmarkNode &other =
                 landmark_graph->get_disjunctive_landmark_node(*atoms.begin());
-            if (use_orders) {
-                add_or_replace_ordering_if_stronger(
-                    new_landmark_node, node, type);
-            }
+            add_or_replace_ordering_if_stronger(other, node, type);
         }
         return true;
     }
