@@ -6,17 +6,20 @@
 #include <unordered_set>
 
 namespace landmarks {
+enum LandmarkType {
+    DISJUNCTIVE,
+    SIMPLE,
+    CONJUNCTIVE,
+};
 class Landmark {
 public:
-    Landmark(std::vector<FactPair> _atoms, bool is_disjunctive,
-             bool is_conjunctive, bool is_true_in_goal = false,
-             bool is_derived = false)
-        : atoms(move(_atoms)), is_disjunctive(is_disjunctive),
-          is_conjunctive(is_conjunctive), is_true_in_goal(is_true_in_goal),
-          is_derived(is_derived) {
-        assert(!(is_conjunctive && is_disjunctive));
-        assert((is_conjunctive && atoms.size() > 1) ||
-               (is_disjunctive && atoms.size() > 1) || atoms.size() == 1);
+    Landmark(std::vector<FactPair> _atoms, LandmarkType type,
+             bool is_true_in_goal = false, bool is_derived = false)
+        : atoms(move(_atoms)), type(type),
+          is_true_in_goal(is_true_in_goal), is_derived(is_derived) {
+        assert((type == DISJUNCTIVE && atoms.size() > 1) ||
+               (type == CONJUNCTIVE && atoms.size() > 1) ||
+               (type == SIMPLE && atoms.size() == 1));
     }
 
     bool operator==(const Landmark &other) const {
@@ -27,9 +30,9 @@ public:
         return !(*this == other);
     }
 
-    std::vector<FactPair> atoms;
-    const bool is_disjunctive;
-    const bool is_conjunctive;
+    const std::vector<FactPair> atoms;
+    const LandmarkType type;
+    bool is_conjunctive;
     bool is_true_in_goal;
     bool is_derived;
 

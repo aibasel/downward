@@ -46,7 +46,7 @@ bool LandmarkFactoryZhuGivan::goal_is_reachable(
             if (log.is_at_least_normal()) {
                 log << "Problem not solvable, even if relaxed." << endl;
             }
-            Landmark landmark({goal.get_pair()}, false, false, true);
+            Landmark landmark({goal.get_pair()}, SIMPLE, true);
             landmark_graph->add_landmark(move(landmark));
             return false;
         }
@@ -61,7 +61,7 @@ LandmarkNode *LandmarkFactoryZhuGivan::create_goal_landmark(
         node = &landmark_graph->get_simple_landmark_node(goal);
         node->get_landmark().is_true_in_goal = true;
     } else {
-        Landmark landmark({goal}, false, false, true);
+        Landmark landmark({goal}, SIMPLE, true);
         node = &landmark_graph->add_landmark(move(landmark));
     }
     return node;
@@ -83,7 +83,7 @@ void LandmarkFactoryZhuGivan::extract_landmarks_and_orderings_from_goal_labels(
         if (landmark_graph->contains_simple_landmark(atom)) {
             node = &landmark_graph->get_simple_landmark_node(atom);
         } else {
-            Landmark landmark({atom}, false, false);
+            Landmark landmark({atom}, SIMPLE);
             node = &landmark_graph->add_landmark(move(landmark));
         }
         if (use_orders) {

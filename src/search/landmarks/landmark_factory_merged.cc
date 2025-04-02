@@ -26,7 +26,7 @@ LandmarkFactoryMerged::LandmarkFactoryMerged(
 
 LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(
     const Landmark &landmark) const {
-    if (landmark.is_disjunctive) {
+    if (landmark.type == DISJUNCTIVE) {
         utils::HashSet<FactPair> atoms(
             landmark.atoms.begin(), landmark.atoms.end());
         if (landmark_graph->contains_superset_disjunctive_landmark(atoms)) {
@@ -36,7 +36,7 @@ LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(
         return nullptr;
     }
 
-    if (landmark.is_conjunctive) {
+    if (landmark.type == CONJUNCTIVE) {
         cerr << "Don't know how to handle conjunctive landmarks yet..." << endl;
         utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
     }
@@ -71,12 +71,12 @@ void LandmarkFactoryMerged::add_simple_landmarks(
         // TODO: Loop over landmarks instead.
         for (const auto &node : *graph_to_merge) {
             const Landmark &landmark = node->get_landmark();
-            if (landmark.is_conjunctive) {
+            if (landmark.type == CONJUNCTIVE) {
                 cerr << "Don't know how to handle conjunctive landmarks yet"
                      << endl;
                 utils::exit_with(ExitCode::SEARCH_UNSUPPORTED);
             }
-            if (landmark.is_disjunctive) {
+            if (landmark.type == DISJUNCTIVE) {
                 continue;
             }
             assert(landmark.atoms.size() == 1);
@@ -96,7 +96,7 @@ void LandmarkFactoryMerged::add_disjunctive_landmarks(
     for (const shared_ptr<LandmarkGraph> &graph_to_merge : landmark_graphs) {
         for (const auto &node : *graph_to_merge) {
             const Landmark &landmark = node->get_landmark();
-            if (landmark.is_disjunctive) {
+            if (landmark.type == DISJUNCTIVE) {
                 /*
                   TODO: It seems that disjunctive landmarks are only added if
                   none of the atoms it is made of is also there as a simple

@@ -91,7 +91,7 @@ LandmarkNode *LandmarkGraph::add_node(Landmark &&landmark) {
 }
 
 LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark_to_add) {
-    assert(landmark_to_add.is_conjunctive || all_of(
+    assert(landmark_to_add.type == CONJUNCTIVE || all_of(
                landmark_to_add.atoms.begin(), landmark_to_add.atoms.end(),
                [&](const FactPair &atom) {return !contains_landmark(atom);}));
     /*
@@ -103,15 +103,19 @@ LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark_to_add) {
     LandmarkNode *new_node = add_node(move(landmark_to_add));
     const Landmark &landmark = new_node->get_landmark();
 
-    if (landmark.is_disjunctive) {
+    switch (landmark.type) {
+    case DISJUNCTIVE:
         for (const FactPair &atom : landmark.atoms) {
             disjunctive_landmarks_to_nodes.emplace(atom, new_node);
         }
         ++num_disjunctive_landmarks;
-    } else if (landmark.is_conjunctive) {
-        ++num_conjunctive_landmarks;
-    } else {
+        break;
+    case SIMPLE:
         simple_landmarks_to_nodes.emplace(landmark.atoms.front(), new_node);
+        break;
+    case CONJUNCTIVE:
+        ++num_conjunctive_landmarks;
+        break;
     }
     return *new_node;
 }
@@ -126,15 +130,19 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
         assert(!child->parents.contains(node));
     }
     const Landmark &landmark = node->get_landmark();
-    if (landmark.is_disjunctive) {
+    switch (landmark.type) {
+    case DISJUNCTIVE:
         --num_disjunctive_landmarks;
         for (const FactPair &atom : landmark.atoms) {
             disjunctive_landmarks_to_nodes.erase(atom);
         }
-    } else if (landmark.is_conjunctive) {
-        --num_conjunctive_landmarks;
-    } else {
+        break;
+    case SIMPLE:
         simple_landmarks_to_nodes.erase(landmark.atoms[0]);
+        break;
+    case CONJUNCTIVE:
+        --num_conjunctive_landmarks;
+        break;
     }
 }
 

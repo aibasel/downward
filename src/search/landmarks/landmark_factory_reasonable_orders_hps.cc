@@ -45,7 +45,7 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_goal_orderings(
     assert(landmark.is_true_in_goal);
     for (const auto &other : *landmark_graph) {
         const Landmark &other_landmark = other->get_landmark();
-        if (landmark == other_landmark || other_landmark.is_disjunctive) {
+        if (landmark == other_landmark || other_landmark.type == DISJUNCTIVE) {
             continue;
         }
         if (interferes(task_proxy, other_landmark, landmark)) {
@@ -72,7 +72,7 @@ static unordered_set<LandmarkNode *> collect_reasonable_ordering_candidates(
         if (type >= OrderingType::GREEDY_NECESSARY) {
             // Found a landmark such that `node` ->_gn `child`.
             for (const auto &[parent, parent_type]: child->parents) {
-                if (parent->get_landmark().is_disjunctive) {
+                if (parent->get_landmark().type == DISJUNCTIVE) {
                     continue;
                 }
                 if (parent_type >= OrderingType::NATURAL && *parent != node) {
@@ -95,7 +95,7 @@ void LandmarkFactoryReasonableOrdersHPS::insert_reasonable_orderings(
     LandmarkNode &node, const Landmark &landmark) const {
     for (LandmarkNode *other : candidates) {
         const Landmark &other_landmark = other->get_landmark();
-        if (landmark == other_landmark || other_landmark.is_disjunctive) {
+        if (landmark == other_landmark || other_landmark.type == DISJUNCTIVE) {
             continue;
         }
         if (interferes(task_proxy, other_landmark, landmark)) {
@@ -128,7 +128,7 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orderings(
     State initial_state = task_proxy.get_initial_state();
     for (const auto &node : *landmark_graph) {
         const Landmark &landmark = node->get_landmark();
-        if (landmark.is_disjunctive) {
+        if (landmark.type == DISJUNCTIVE) {
             continue;
         }
 
@@ -328,7 +328,7 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
       Skip this case for conjunctive landmarks A, as they are typically achieved
       through a sequence of operators successively adding the parts of A.
     */
-    if (landmark_a.is_conjunctive) {
+    if (landmark_a.type == CONJUNCTIVE) {
         return false;
     }
     utils::HashSet<FactPair> shared_effects =
@@ -365,8 +365,8 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
     const TaskProxy &task_proxy, const Landmark &landmark_a,
     const Landmark &landmark_b) const {
     assert(landmark_a != landmark_b);
-    assert(!landmark_a.is_disjunctive);
-    assert(!landmark_b.is_disjunctive);
+    assert(!landmark_a.type == DISJUNCTIVE);
+    assert(!landmark_b.type == DISJUNCTIVE);
 
     VariablesProxy variables = task_proxy.get_variables();
     for (const FactPair &atom_b : landmark_b.atoms) {
@@ -374,7 +374,8 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
         for (const FactPair &atom_a : landmark_a.atoms) {
             FactProxy a = variables[atom_a.var].get_fact(atom_a.value);
             if (atom_a == atom_b) {
-                if (landmark_a.is_conjunctive && landmark_b.is_conjunctive) {
+                if (landmark_a.type == CONJUNCTIVE &&
+                    landmark_b.type == CONJUNCTIVE) {
                     continue;
                 }
                 return false;

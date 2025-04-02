@@ -44,7 +44,7 @@ static bool relaxed_task_solvable(
 void LandmarkFactoryRpgExhaust::generate_goal_landmarks(
     const TaskProxy &task_proxy) const {
     for (FactProxy goal : task_proxy.get_goals()) {
-        Landmark landmark({goal.get_pair()}, false, false, true);
+        Landmark landmark({goal.get_pair()}, SIMPLE, true);
         landmark_graph->add_landmark(move(landmark));
     }
 }
@@ -55,7 +55,7 @@ void LandmarkFactoryRpgExhaust::generate_all_simple_landmarks(
         for (int value = 0; value < var.get_domain_size(); ++value) {
             const FactPair atom(var.get_id(), value);
             if (!landmark_graph->contains_simple_landmark(atom)) {
-                Landmark landmark({atom}, false, false);
+                Landmark landmark({atom}, SIMPLE);
                 if (!relaxed_task_solvable(task_proxy, exploration, landmark,
                                            use_unary_relaxation)) {
                     landmark_graph->add_landmark(move(landmark));

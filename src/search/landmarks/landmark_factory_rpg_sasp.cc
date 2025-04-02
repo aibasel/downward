@@ -228,9 +228,7 @@ void LandmarkFactoryRpgSasp::remove_disjunctive_landmark_and_rewire_orderings(
       those incoming orderings with natural orderings.
     */
     const Landmark &landmark = simple_landmark_node.get_landmark();
-    assert(!landmark.is_conjunctive);
-    assert(!landmark.is_disjunctive);
-    assert(landmark.atoms.size() == 1);
+    assert(landmark.type == SIMPLE);
     LandmarkNode *disjunctive_landmark_node =
         &landmark_graph->get_disjunctive_landmark_node(landmark.atoms[0]);
     remove_occurrences_of_landmark_node(disjunctive_landmark_node);
@@ -257,7 +255,7 @@ void LandmarkFactoryRpgSasp::add_simple_landmark_and_ordering(
         return;
     }
 
-    Landmark landmark({atom}, false, false);
+    Landmark landmark({atom}, SIMPLE);
     LandmarkNode &simple_landmark_node =
         landmark_graph->add_landmark(move(landmark));
     open_landmarks.push_back(&simple_landmark_node);
@@ -306,8 +304,8 @@ void LandmarkFactoryRpgSasp::add_disjunctive_landmark_and_ordering(
     /* Only add the landmark to the landmark graph if it does not
        overlap with an existing landmark. */
     if (!overlaps) {
-        Landmark landmark(vector<FactPair>(atoms.begin(), atoms.end()),
-                          true, false);
+        Landmark landmark(
+            vector<FactPair>(atoms.begin(), atoms.end()), DISJUNCTIVE);
         LandmarkNode *new_landmark_node =
             &landmark_graph->add_landmark(move(landmark));
         open_landmarks.push_back(new_landmark_node);
@@ -505,7 +503,7 @@ vector<utils::HashSet<FactPair>> LandmarkFactoryRpgSasp::compute_disjunctive_pre
 void LandmarkFactoryRpgSasp::generate_goal_landmarks(
     const TaskProxy &task_proxy) {
     for (FactProxy goal : task_proxy.get_goals()) {
-        Landmark landmark({goal.get_pair()}, false, false, true);
+        Landmark landmark({goal.get_pair()}, SIMPLE, true);
         LandmarkNode &node = landmark_graph->add_landmark(move(landmark));
         open_landmarks.push_back(&node);
     }
@@ -655,7 +653,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
     const Landmark &landmark = node->get_landmark();
     forward_orderings[node] = compute_atoms_unreachable_without_landmark(
         variables, landmark, reached);
-    if (landmark.is_disjunctive || landmark.is_conjunctive) {
+    if (landmark.type != SIMPLE) {
         return;
     }
     assert(landmark.atoms.size() == 1);
@@ -674,7 +672,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
 
 bool LandmarkFactoryRpgSasp::atom_and_landmark_achievable_together(
     const FactPair &atom, const Landmark &landmark) const {
-    assert(!landmark.is_conjunctive);
+    assert(landmark.type != CONJUNCTIVE);
     for (const FactPair &landmark_atom : landmark.atoms) {
         if (atom == landmark_atom) {
             return true;
@@ -747,7 +745,7 @@ void LandmarkFactoryRpgSasp::discard_disjunctive_landmarks() const {
         }
         landmark_graph->remove_node_if(
             [](const LandmarkNode &node) {
-                return node.get_landmark().is_disjunctive;
+                return node.get_landmark().type == DISJUNCTIVE;
             });
     }
 }

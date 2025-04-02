@@ -626,7 +626,7 @@ void LandmarkFactoryHM::discard_conjunctive_landmarks() {
     }
     landmark_graph->remove_node_if(
         [](const LandmarkNode &node) {
-            return node.get_landmark().is_conjunctive;
+            return node.get_landmark().type == CONJUNCTIVE;
         });
 }
 
@@ -926,8 +926,8 @@ void LandmarkFactoryHM::add_landmark_node(int set_index, bool goal) {
         vector<FactPair> facts(hm_entry.propositions);
         utils::sort_unique(facts);
         assert(!facts.empty());
-        bool conjunctive = facts.size() > 1;
-        Landmark landmark(move(facts), false, conjunctive, goal);
+        LandmarkType type = facts.size() == 1 ? SIMPLE : CONJUNCTIVE;
+        Landmark landmark(move(facts), type, goal);
         landmark.first_achievers.insert(hm_entry.first_achievers.begin(),
                                         hm_entry.first_achievers.end());
         landmark_nodes[set_index] =

@@ -128,8 +128,8 @@ void LandmarkHeuristic::compute_landmarks_achieved_by_atom() {
     for (const auto &node : *landmark_graph) {
         const int id = node->get_id();
         const Landmark &landmark = node->get_landmark();
-        if (landmark.is_conjunctive) {
-            /*
+        if (landmark.type == CONJUNCTIVE) {
+            /*DrDDr
               TODO: We currently have no way to declare operators preferred
                based on conjunctive landmarks. We consider this a bug and want
                to fix it in issue1072.

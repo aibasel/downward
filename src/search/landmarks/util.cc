@@ -83,7 +83,7 @@ static void dump_node(
     utils::LogProxy &log) {
     if (log.is_at_least_debug()) {
         const Landmark &landmark = node.get_landmark();
-        char delimiter = landmark.is_disjunctive ? '|' : '&';
+        char delimiter = landmark.type == DISJUNCTIVE ? '|' : '&';
         cout << "  lm" << node.get_id() << " [label=\"";
         bool first = true;
         for (const FactPair &atom : landmark.atoms) {
