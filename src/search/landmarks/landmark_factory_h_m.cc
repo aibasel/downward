@@ -321,32 +321,13 @@ void LandmarkFactoryHM::print_pm_operator(
     }
 }
 
-static pair<vector<int>, vector<int>> split_conditional_noop(
-    const vector<int> &conditional_noop) {
-    vector<int> effect_condition;
-    effect_condition.reserve(conditional_noop.size());
-    size_t i;
-    for (i = 0; conditional_noop[i] != -1; ++i) {
-        effect_condition.push_back(conditional_noop[i]);
-    }
-
-    ++i; // Skip delimiter -1.
-
-    vector<int> effect;
-    effect.reserve(conditional_noop.size());
-    for (; i < conditional_noop.size(); ++i) {
-        effect.push_back(conditional_noop[i]);
-    }
-    return {effect_condition, effect};
-}
-
 void LandmarkFactoryHM::print_conditional_noop(
-    const VariablesProxy &variables, const vector<int> &conditional_noop,
+    const VariablesProxy &variables, const ConditionalNoop &conditional_noop,
     vector<pair<set<FactPair>, set<FactPair>>> &conditions) const {
-    auto [effect_condition, effect] = split_conditional_noop(conditional_noop);
     set<FactPair> effect_condition_set =
-        print_effect_condition(variables, effect_condition);
-    set<FactPair> effect_set = print_conditional_effect(variables, effect);
+        print_effect_condition(variables, conditional_noop.effect_condition);
+    set<FactPair> effect_set =
+        print_conditional_effect(variables, conditional_noop.effect);
     conditions.emplace_back(effect_condition_set, effect_set);
     log << endl << endl << endl;
 }
@@ -508,34 +489,33 @@ void LandmarkFactoryHM::add_conditional_noop(
     vector<Propositions> noop_postconditions_subsets =
         get_split_m_sets(variables, postconditions, propositions);
 
-    vector<int> conditional_noop;
-    conditional_noop.reserve(noop_precondition_subsets.size() +
-                             noop_postconditions_subsets.size() + 1);
     num_unsatisfied_preconditions[op_id].second.push_back(
         static_cast<int>(noop_precondition_subsets.size()));
 
-    // Add the conditional noop preconditions.
+    // Compute the conditional noop preconditions.
+    vector<int> noop_condition;
+    noop_condition.reserve(noop_precondition_subsets.size());
     for (const auto &subset : noop_precondition_subsets) {
         assert(static_cast<int>(subset.size()) <= m);
         assert(set_indices.contains(subset));
         int set_index = set_indices[subset];
-        conditional_noop.push_back(set_index);
+        noop_condition.push_back(set_index);
         // These propositions are "conditional preconditions" for this operator.
         hm_table[set_index].triggered_operators.emplace_back(op_id, noop_index);
     }
 
-    // Separate conditional preconditions from conditional effects by number -1.
-    conditional_noop.push_back(-1);
-
-    // Add the conditional noop effects.
+    // Compute the conditional noop effects.
+    vector<int> noop_effect;
+    noop_effect.reserve(noop_postconditions_subsets.size());
     for (const auto &subset : noop_postconditions_subsets) {
         assert(static_cast<int>(subset.size()) <= m);
         assert(set_indices.contains(subset));
         int set_index = set_indices[subset];
-        conditional_noop.push_back(set_index);
+        noop_effect.push_back(set_index);
     }
 
-    pm_op.conditional_noops.push_back(move(conditional_noop));
+    pm_op.conditional_noops.emplace_back(
+        move(noop_condition), move(noop_effect));
 }
 
 void LandmarkFactoryHM::initialize_noops(
@@ -869,10 +849,9 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
         task_proxy.get_initial_state(), task_proxy.get_variables());
     TriggerSet next_trigger;
     for (int level = 1; !current_trigger.empty(); ++level) {
-        for (auto &[op_id, triggers] : current_trigger) {
+        for (const auto &[op_id, triggers] : current_trigger) {
             PiMOperator &op = pm_operators[op_id];
-            unordered_set<int> local_landmarks(op.precondition.size()),
-                local_necessary(op.precondition.size());
+            unordered_set<int> local_landmarks, local_necessary;
             collect_condition_landmarks(
                 op.precondition, local_landmarks, local_necessary);
             update_effect_landmarks(op_id, op.effect, level, local_landmarks,
@@ -895,10 +874,8 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
 void LandmarkFactoryHM::compute_noop_landmarks(
     int op_id, int noop_index, const unordered_set<int> &landmarks,
     const unordered_set<int> &necessary, int level, TriggerSet &next_trigger) {
-    const vector<int> &conditional_noop =
-        pm_operators[op_id].conditional_noops[noop_index];
     const auto &[effect_condition, effect] =
-        split_conditional_noop(conditional_noop);
+        pm_operators[op_id].conditional_noops[noop_index];
 
     unordered_set<int> conditional_noop_landmarks = landmarks;
     unordered_set<int> conditional_noop_necessary;

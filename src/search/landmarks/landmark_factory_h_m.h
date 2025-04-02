@@ -25,15 +25,18 @@ struct PropositionSetComparer {
     }
 };
 
+struct ConditionalNoop {
+    std::vector<int> effect_condition;
+    std::vector<int> effect;
+};
+
 /* Corresponds to an operator from the original problem, as well as a
    set of conditional effects that correspond to noops. */
 struct PiMOperator {
     // Preconditions and effects reference the proposition IDs.
     std::vector<int> precondition;
     std::vector<int> effect;
-    /* In each of the inner vectors, the effect conditions are separated from
-       the effect values by an entry of the value -1. */
-    std::vector<std::vector<int>> conditional_noops;
+    std::vector<ConditionalNoop> conditional_noops;
     int id;
 };
 
@@ -161,7 +164,7 @@ class LandmarkFactoryHM : public LandmarkFactory {
         const VariablesProxy &variables, const PiMOperator &op) const;
     void print_conditional_noop(
         const VariablesProxy &variables,
-        const std::vector<int> &conditional_noop,
+        const ConditionalNoop &conditional_noop,
         std::vector<std::pair<std::set<FactPair>, std::set<FactPair>>> &conditions) const;
     std::set<FactPair> print_effect_condition(
         const VariablesProxy &variables,
