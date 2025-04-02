@@ -8,6 +8,8 @@
 
 #include <set>
 
+#include "util.h"
+
 using namespace std;
 using utils::ExitCode;
 
@@ -65,9 +67,9 @@ void LandmarkFactoryMerged::add_simple_landmarks(
     if (log.is_at_least_normal()) {
         log << "Adding simple landmarks" << endl;
     }
-    for (auto &landmark_graph : landmark_graphs) {
+    for (const auto &graph_to_merge : landmark_graphs) {
         // TODO: Loop over landmarks instead.
-        for (const auto &node : *landmark_graph) {
+        for (const auto &node : *graph_to_merge) {
             const Landmark &landmark = node->get_landmark();
             if (landmark.is_conjunctive) {
                 cerr << "Don't know how to handle conjunctive landmarks yet"
@@ -77,6 +79,7 @@ void LandmarkFactoryMerged::add_simple_landmarks(
             if (landmark.is_disjunctive) {
                 continue;
             }
+            assert(landmark.atoms.size() == 1);
             if (!landmark_graph->contains_landmark(landmark.atoms[0])) {
                 Landmark copy(landmark);
                 landmark_graph->add_landmark(move(copy));
