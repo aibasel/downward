@@ -44,9 +44,7 @@ struct PiMOperator {
 struct HMEntry {
     // Propositions that belong to this set.
     const Propositions propositions;
-    // Level -1: current cost infinite
-    // Level 0:  present in initial state
-    int level;
+    bool reached;
 
     std::unordered_set<int> landmarks;
     /*
@@ -54,7 +52,7 @@ struct HMEntry {
       set is disjoint from `landmarks` above and used to derive
       greedy-necessary orderings.
     */
-    std::unordered_set<int> prerequisite_landmark;
+    std::unordered_set<int> precondition_landmarks;
 
     std::unordered_set<int> first_achievers;
 
@@ -67,7 +65,7 @@ struct HMEntry {
     std::vector<std::pair<int, int>> triggered_operators;
 
     explicit HMEntry(Propositions &&propositions)
-        : propositions(move(propositions)), level(-1) {
+        : propositions(move(propositions)), reached(false) {
     }
 };
 
@@ -103,21 +101,29 @@ class LandmarkFactoryHM : public LandmarkFactory {
     TriggerSet mark_state_propositions_reached(
         const State &state, const VariablesProxy &variables);
     void collect_condition_landmarks(
-        const std::vector<int> &condition, std::unordered_set<int> &landmarks,
-        std::unordered_set<int> &necessary)
-    const;
+        const std::vector<int> &condition,
+         std::unordered_set<int> &landmarks) const;
+    void initialize_proposition_landmark(
+        int op_id, HMEntry &hm_entry, const std::unordered_set<int> &landmarks,
+        const std::unordered_set<int> &precondition_landmarks,
+        TriggerSet &triggers);
+    void update_proposition_landmark(
+        int op_id, int proposition, const std::unordered_set<int> &landmarks,
+        const std::unordered_set<int> &precondition_landmarks,
+        TriggerSet &triggers);
     void update_effect_landmarks(
-        int op_id, const std::vector<int> &effect, int level,
+        int op_id, const std::vector<int> &effect,
         const std::unordered_set<int> &landmarks,
-        const std::unordered_set<int> &necessary, TriggerSet &triggers);
+        const std::unordered_set<int> &precondition_landmarks,
+        TriggerSet &triggers);
     void update_noop_landmarks(
         const std::unordered_set<int> &current_triggers, const PiMOperator &op,
-        int level, const std::unordered_set<int> &landmarks,
-        const std::unordered_set<int> &necessary, TriggerSet &next_triggers);
+        const std::unordered_set<int> &landmarks,
+        const std::unordered_set<int> &prerequisites, TriggerSet &next_triggers);
     void compute_noop_landmarks(
         int op_id, int noop_index,
         const std::unordered_set<int> &local_landmarks,
-        const std::unordered_set<int> &local_necessary, int level,
+        const std::unordered_set<int> &local_necessary,
         TriggerSet &next_trigger);
     void compute_hm_landmarks(const TaskProxy &task_proxy);
 
@@ -126,7 +132,7 @@ class LandmarkFactoryHM : public LandmarkFactory {
     void trigger_conditional_noop(
         int op_id, int noop_id, bool newly_discovered, TriggerSet &trigger);
     void propagate_pm_propositions(
-        int proposition_id, bool newly_discovered, TriggerSet &trigger);
+        HMEntry &hm_entry, bool newly_discovered, TriggerSet &trigger);
 
     Propositions initialize_preconditions(
         const VariablesProxy &variables, const OperatorProxy &op,
