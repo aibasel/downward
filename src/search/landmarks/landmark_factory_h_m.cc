@@ -762,13 +762,10 @@ LandmarkFactoryHM::TriggerSet LandmarkFactoryHM::mark_state_propositions_reached
 void LandmarkFactoryHM::collect_condition_landmarks(
     const vector<int> &condition, unordered_set<int> &landmarks) const {
     for (int proposition : condition) {
-        const unordered_set<int> &proposition_landmarks =
-            hm_table[proposition].landmarks;
-        landmarks.insert(
-            proposition_landmarks.begin(), proposition_landmarks.end());
+        const HMEntry &hm_entry = hm_table[proposition];
+        landmarks.insert(hm_entry.landmarks.begin(), hm_entry.landmarks.end());
     }
-    /* For each proposition, the proposition itself is not stored even though
-       it is a landmark for itself. */
+    // Each proposition is a landmark for itself but not stored for itself.
     landmarks.insert(condition.begin(), condition.end());
 }
 
