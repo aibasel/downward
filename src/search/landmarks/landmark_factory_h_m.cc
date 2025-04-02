@@ -27,15 +27,11 @@ static void union_inplace(
     set1.insert(set2.begin(), set2.end());
 }
 
-static void intersect_inplace(
+static void intersection_inplace(
     unordered_set<int> &set1, const unordered_set<int> &set2) {
-    unordered_set<int> result;
-    for (int entry : set1) {
-        if (set2.contains(entry)) {
-            result.insert(entry);
-        }
-    }
-    swap(set1, result);
+    erase_if(set1, [&set2](int element) {
+        return !set2.contains(element);
+    });
 }
 
 static void set_minus(
@@ -809,7 +805,7 @@ void LandmarkFactoryHM::update_effect_landmarks(
     for (int proposition : effect) {
         if (hm_table[proposition].level != -1) {
             size_t prev_size = hm_table[proposition].landmarks.size();
-            intersect_inplace(hm_table[proposition].landmarks, landmarks);
+            intersection_inplace(hm_table[proposition].landmarks, landmarks);
 
             /*
               If the effect appears in `landmarks`, the proposition is not
@@ -819,7 +815,7 @@ void LandmarkFactoryHM::update_effect_landmarks(
             if (!landmarks.contains(proposition)) {
                 hm_table[proposition].first_achievers.insert(op_id);
                 if (use_orders) {
-                    intersect_inplace(
+                    intersection_inplace(
                         hm_table[proposition].prerequisite_landmark,
                         necessary);
                 }
@@ -874,8 +870,9 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
     TriggerSet next_trigger;
     for (int level = 1; !current_trigger.empty(); ++level) {
         for (auto &[op_id, triggers] : current_trigger) {
-            unordered_set<int> local_landmarks, local_necessary;
             PiMOperator &op = pm_operators[op_id];
+            unordered_set<int> local_landmarks(op.precondition.size()),
+                local_necessary(op.precondition.size());
             collect_condition_landmarks(
                 op.precondition, local_landmarks, local_necessary);
             update_effect_landmarks(op_id, op.effect, level, local_landmarks,
