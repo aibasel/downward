@@ -22,7 +22,7 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-static void intersection_inplace(vector<int> &set1, const vector<int> &set2) {
+static void set_intersection(vector<int> &set1, const vector<int> &set2) {
     assert(is_sorted(set1.begin(), set1.end()));
     assert(is_sorted(set2.begin(), set2.end()));
     vector<int> result;
@@ -31,7 +31,7 @@ static void intersection_inplace(vector<int> &set1, const vector<int> &set2) {
     swap(set1, result);
 }
 
-static void set_minus(vector<int> &set1, const vector<int> &set2) {
+static void set_difference(vector<int> &set1, const vector<int> &set2) {
     assert(is_sorted(set1.begin(), set1.end()));
     assert(is_sorted(set2.begin(), set2.end()));
     vector<int> result;
@@ -520,7 +520,6 @@ void LandmarkFactoryHM::add_conditional_noop(
 void LandmarkFactoryHM::initialize_noops(
     const VariablesProxy &variables, PiMOperator &pm_op, int op_id,
     const Propositions &preconditions, const Propositions &postconditions) {
-    pm_op.conditional_noops.reserve(set_indices.size());
     /*
       For all subsets used in the problem with size *<* m, check whether
       they conflict with the postcondition of the operator. (No need to
@@ -539,6 +538,7 @@ void LandmarkFactoryHM::initialize_noops(
                                  propositions, preconditions, postconditions);
         }
     }
+    pm_op.conditional_noops.shrink_to_fit();
 }
 
 void LandmarkFactoryHM::build_pm_operators(const TaskProxy &task_proxy) {
@@ -792,7 +792,7 @@ void LandmarkFactoryHM::update_proposition_landmark(
     const vector<int> &precondition_landmarks, TriggerSet &triggers) {
     HMEntry &hm_entry = hm_table[proposition];
     size_t prev_size = hm_entry.landmarks.size();
-    intersection_inplace(hm_entry.landmarks, landmarks);
+    set_intersection(hm_entry.landmarks, landmarks);
 
     /*
       If the effect appears in `landmarks`, the proposition is not
@@ -802,8 +802,8 @@ void LandmarkFactoryHM::update_proposition_landmark(
     if (find(landmarks.begin(), landmarks.end(), proposition) == landmarks.end()) {
         hm_entry.first_achievers.insert(op_id);
         if (use_orders) {
-            intersection_inplace(
-                hm_entry.precondition_landmarks, precondition_landmarks);
+            set_intersection(hm_entry.precondition_landmarks,
+                             precondition_landmarks);
         }
     }
 
@@ -864,6 +864,7 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
             PiMOperator &op = pm_operators[op_id];
             vector<int> landmarks, precondition_landmarks;
             const vector<int> &precondition = op.precondition;
+            assert(is_sorted(precondition.begin(), precondition.end()));
             collect_condition_landmarks(precondition, landmarks);
             if (use_orders) {
                 precondition_landmarks.insert(
@@ -959,6 +960,8 @@ void LandmarkFactoryHM::reduce_landmarks(const unordered_set<int> &landmarks) {
     assert(use_orders);
     for (int landmark : landmarks) {
         HMEntry &hm_entry = hm_table[landmark];
+        /* We cannot remove directly from `hm_entry.landmarks` because doing
+           so invalidates the loop variable. */
         vector<int> landmarks_to_remove(hm_entry.precondition_landmarks);
         for (int predecessor : hm_entry.landmarks) {
             const vector<int> &predecessor_landmarks =
@@ -968,7 +971,7 @@ void LandmarkFactoryHM::reduce_landmarks(const unordered_set<int> &landmarks) {
                 predecessor_landmarks.end());
         }
         utils::sort_unique(landmarks_to_remove);
-        set_minus(hm_entry.landmarks, landmarks_to_remove);
+        set_difference(hm_entry.landmarks, landmarks_to_remove);
     }
 }
 
