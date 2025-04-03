@@ -3,6 +3,7 @@
 
 #include "landmark_factory.h"
 
+#include <list>
 #include <map>
 #include <set>
 
@@ -46,13 +47,13 @@ struct HMEntry {
     const Propositions propositions;
     bool reached;
 
-    std::unordered_set<int> landmarks;
+    std::list<int> landmarks;
     /*
       Landmarks that are "preconditions" to achieve this `HMEntry`. This
       set is disjoint from `landmarks` above and used to derive
       greedy-necessary orderings.
     */
-    std::unordered_set<int> precondition_landmarks;
+    std::list<int> precondition_landmarks;
 
     std::unordered_set<int> first_achievers;
 
@@ -102,28 +103,28 @@ class LandmarkFactoryHM : public LandmarkFactory {
         const State &state, const VariablesProxy &variables);
     void collect_condition_landmarks(
         const std::vector<int> &condition,
-         std::unordered_set<int> &landmarks) const;
+         std::list<int> &landmarks) const;
     void initialize_proposition_landmark(
-        int op_id, HMEntry &hm_entry, const std::unordered_set<int> &landmarks,
-        const std::unordered_set<int> &precondition_landmarks,
+        int op_id, HMEntry &hm_entry, const std::list<int> &landmarks,
+        const std::list<int> &precondition_landmarks,
         TriggerSet &triggers);
     void update_proposition_landmark(
-        int op_id, int proposition, const std::unordered_set<int> &landmarks,
-        const std::unordered_set<int> &precondition_landmarks,
+        int op_id, int proposition, const std::list<int> &landmarks,
+        const std::list<int> &precondition_landmarks,
         TriggerSet &triggers);
     void update_effect_landmarks(
         int op_id, const std::vector<int> &effect,
-        const std::unordered_set<int> &landmarks,
-        const std::unordered_set<int> &precondition_landmarks,
+        const std::list<int> &landmarks,
+        const std::list<int> &precondition_landmarks,
         TriggerSet &triggers);
     void update_noop_landmarks(
         const std::unordered_set<int> &current_triggers, const PiMOperator &op,
-        const std::unordered_set<int> &landmarks,
-        const std::unordered_set<int> &prerequisites, TriggerSet &next_triggers);
+        const std::list<int> &landmarks,
+        const std::list<int> &prerequisites, TriggerSet &next_triggers);
     void compute_noop_landmarks(
         int op_id, int noop_index,
-        const std::unordered_set<int> &local_landmarks,
-        const std::unordered_set<int> &local_necessary,
+        const std::list<int> &local_landmarks,
+        const std::list<int> &local_necessary,
         TriggerSet &next_trigger);
     void compute_hm_landmarks(const TaskProxy &task_proxy);
 

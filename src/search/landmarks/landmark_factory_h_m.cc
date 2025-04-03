@@ -22,18 +22,64 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
+static void union_inplace(list<int> &set1, const list<int> &set2) {
+    auto it1 = set1.begin();
+    auto it2 = set2.begin();
+
+    while (it1 != set1.end() && it2 != set2.end()) {
+        if (*it1 < *it2) {
+            ++it1;
+        } else if (*it1 > *it2) {
+            set1.insert(it1, *it2);
+            ++it2;
+        } else {
+            ++it1;
+            ++it2;
+        }
+    }
+    set1.insert(it1, it2, set2.end());
+}
+
 static void intersection_inplace(
-    unordered_set<int> &set1, const unordered_set<int> &set2) {
-    erase_if(set1, [&set2](int element) {
-        return !set2.contains(element);
-    });
+    list<int> &set1, const list<int> &set2) {
+    auto it1 = set1.begin();
+    auto tmp = set1.begin();
+    auto it2 = set2.begin();
+
+    while (it1 != set1.end() && it2 != set2.end()) {
+        if (*it1 < *it2) {
+            tmp = it1;
+            ++tmp;
+            set1.erase(it1);
+            it1 = tmp;
+        } else if (*it1 > *it2) {
+            ++it2;
+        } else {
+            ++it1;
+            ++it2;
+        }
+    }
 }
 
 static void set_minus(
-    unordered_set<int> &set1, const unordered_set<int> &set2) {
-    erase_if(set1, [&set2](int element) {
-        return set2.contains(element);
-    });
+    list<int> &set1, const list<int> &set2) {
+    auto it1 = set1.begin();
+    auto tmp = set1.begin();
+    auto it2 = set2.begin();
+
+    while (it1 != set1.end() && it2 != set2.end()) {
+        if (*it1 < *it2) {
+            ++it1;
+        } else if (*it1 > *it2) {
+            ++it2;
+        } else {
+            tmp = it1;
+            ++tmp;
+            set1.erase(it1);
+            it1 = tmp;
+            ++it2;
+        }
+    }
 }
 
 static bool are_mutex(const VariablesProxy &variables,
@@ -760,18 +806,18 @@ LandmarkFactoryHM::TriggerSet LandmarkFactoryHM::mark_state_propositions_reached
 }
 
 void LandmarkFactoryHM::collect_condition_landmarks(
-    const vector<int> &condition, unordered_set<int> &landmarks) const {
+    const vector<int> &condition, list<int> &landmarks) const {
     for (int proposition : condition) {
         const HMEntry &hm_entry = hm_table[proposition];
-        landmarks.insert(hm_entry.landmarks.begin(), hm_entry.landmarks.end());
+        union_inplace(landmarks, hm_entry.landmarks);
     }
     // Each proposition is a landmark for itself but not stored for itself.
-    landmarks.insert(condition.begin(), condition.end());
+    union_inplace(landmarks, list<int>(condition.begin(), condition.end()));;
 }
 
 void LandmarkFactoryHM::initialize_proposition_landmark(
-    int op_id, HMEntry &hm_entry, const unordered_set<int> &landmarks,
-    const unordered_set<int> &precondition_landmarks, TriggerSet &triggers) {
+    int op_id, HMEntry &hm_entry, const list<int> &landmarks,
+    const list<int> &precondition_landmarks, TriggerSet &triggers) {
     hm_entry.reached = true;
     hm_entry.landmarks = landmarks;
     if (use_orders) {
@@ -782,8 +828,8 @@ void LandmarkFactoryHM::initialize_proposition_landmark(
 }
 
 void LandmarkFactoryHM::update_proposition_landmark(
-    int op_id, int proposition, const unordered_set<int> &landmarks,
-    const unordered_set<int> &precondition_landmarks, TriggerSet &triggers) {
+    int op_id, int proposition, const list<int> &landmarks,
+    const list<int> &precondition_landmarks, TriggerSet &triggers) {
     HMEntry &hm_entry = hm_table[proposition];
     size_t prev_size = hm_entry.landmarks.size();
     intersection_inplace(hm_entry.landmarks, landmarks);
@@ -793,7 +839,7 @@ void LandmarkFactoryHM::update_proposition_landmark(
       achieved for the first time. No need to intersect for
       greedy-necessary orderings or add `op` to the first achievers.
     */
-    if (!landmarks.contains(proposition)) {
+    if (find(landmarks.begin(), landmarks.end(), proposition) == landmarks.end()) {
         hm_entry.first_achievers.insert(op_id);
         if (use_orders) {
             intersection_inplace(
@@ -807,8 +853,8 @@ void LandmarkFactoryHM::update_proposition_landmark(
 }
 
 void LandmarkFactoryHM::update_effect_landmarks(
-    int op_id, const vector<int> &effect, const unordered_set<int> &landmarks,
-    const unordered_set<int> &precondition_landmarks, TriggerSet &triggers) {
+    int op_id, const vector<int> &effect, const list<int> &landmarks,
+    const list<int> &precondition_landmarks, TriggerSet &triggers) {
     for (int proposition : effect) {
         HMEntry &hm_entry = hm_table[proposition];
         if (hm_entry.reached) {
@@ -824,8 +870,8 @@ void LandmarkFactoryHM::update_effect_landmarks(
 
 void LandmarkFactoryHM::update_noop_landmarks(
     const unordered_set<int> &current_triggers, const PiMOperator &op,
-    const unordered_set<int> &landmarks,
-    const unordered_set<int> &prerequisites, TriggerSet &next_triggers) {
+    const list<int> &landmarks,
+    const list<int> &prerequisites, TriggerSet &next_triggers) {
     if (current_triggers.empty()) {
         /*
           The landmarks for the operator have changed, so we have to recompute
@@ -856,12 +902,13 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
         TriggerSet next_trigger;
         for (const auto &[op_id, triggers] : current_trigger) {
             PiMOperator &op = pm_operators[op_id];
-            unordered_set<int> landmarks, precondition_landmarks;
+            list<int> landmarks, precondition_landmarks;
             const vector<int> &precondition = op.precondition;
             collect_condition_landmarks(precondition, landmarks);
             if (use_orders) {
-                precondition_landmarks.insert(
-                    precondition.begin(), precondition.end());
+                union_inplace(
+                    precondition_landmarks,
+                    list(precondition.begin(), precondition.end()));
             }
             update_effect_landmarks(op_id, op.effect, landmarks,
                                     precondition_landmarks, next_trigger);
@@ -880,18 +927,18 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
 }
 
 void LandmarkFactoryHM::compute_noop_landmarks(
-    int op_id, int noop_index, const unordered_set<int> &landmarks,
-    const unordered_set<int> &necessary, TriggerSet &next_trigger) {
+    int op_id, int noop_index, const list<int> &landmarks,
+    const list<int> &necessary, TriggerSet &next_trigger) {
     const auto &[effect_condition, effect] =
         pm_operators[op_id].conditional_noops[noop_index];
 
-    unordered_set<int> conditional_noop_landmarks(landmarks);
+    list<int> conditional_noop_landmarks(landmarks);
     collect_condition_landmarks(effect_condition, conditional_noop_landmarks);
-    unordered_set<int> conditional_noop_necessary;
+    list<int> conditional_noop_necessary;
     if (use_orders) {
         conditional_noop_necessary = necessary;
-        conditional_noop_landmarks.insert(
-            effect_condition.begin(), effect_condition.end());
+        union_inplace(conditional_noop_landmarks,
+                      list(effect_condition.begin(), effect_condition.end()));
     }
 
     update_effect_landmarks(
@@ -931,7 +978,7 @@ unordered_set<int> LandmarkFactoryHM::collect_and_add_landmarks_to_landmark_grap
             }
         }
 
-        const unordered_set<int> &proposition_landmarks =
+        const list<int> &proposition_landmarks =
             hm_table[proposition_id].landmarks;
         landmarks.insert(
             proposition_landmarks.begin(), proposition_landmarks.end());
