@@ -629,10 +629,12 @@ static bool operator_can_achieve_landmark(
     Propositions postcondition =
         get_operator_postcondition(static_cast<int>(variables.size()), op);
 
+    int matching_postconditions = 0;
     for (const FactPair &atom : landmark.atoms) {
         if (find(postcondition.begin(), postcondition.end(), atom) !=
             postcondition.end()) {
             // This `atom` is a postcondition of `op`, move on to the next one.
+            ++matching_postconditions;
             continue;
         }
         auto mutex = [&](const FactPair &other) {
@@ -642,7 +644,7 @@ static bool operator_can_achieve_landmark(
             return false;
         }
     }
-    return true;
+    return matching_postconditions == static_cast<int>(landmark.atoms.size());
 }
 
 void LandmarkFactoryHM::approximate_possible_achievers(
@@ -864,7 +866,6 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
             PiMOperator &op = pm_operators[op_id];
             vector<int> landmarks, precondition_landmarks;
             const vector<int> &precondition = op.precondition;
-            assert(is_sorted(precondition.begin(), precondition.end()));
             collect_condition_landmarks(precondition, landmarks);
             if (use_orders) {
                 precondition_landmarks.insert(
@@ -958,7 +959,16 @@ unordered_set<int> LandmarkFactoryHM::collect_and_add_landmarks_to_landmark_grap
 
 void LandmarkFactoryHM::reduce_landmarks(const unordered_set<int> &landmarks) {
     assert(use_orders);
-    for (int landmark : landmarks) {
+    /*
+      TODO: This function depends on the order in which landmarks are processed.
+       I don't think there's a particular reason to sort the landmarks apart
+       from it was like this before the refactoring in issue992 and we wanted
+       the changes to induce no semantic changes. It's probably best to replace
+       this with a deterministic function that does not depend on the order.
+    */
+    vector<int> sorted_landmarks(landmarks.begin(), landmarks.end());
+    sort(sorted_landmarks.begin(), sorted_landmarks.end());
+    for (int landmark : sorted_landmarks) {
         HMEntry &hm_entry = hm_table[landmark];
         /* We cannot remove directly from `hm_entry.landmarks` because doing
            so invalidates the loop variable. */
