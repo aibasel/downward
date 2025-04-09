@@ -629,12 +629,10 @@ static bool operator_can_achieve_landmark(
     Propositions postcondition =
         get_operator_postcondition(static_cast<int>(variables.size()), op);
 
-    int matching_postconditions = 0;
     for (const FactPair &atom : landmark.atoms) {
         if (find(postcondition.begin(), postcondition.end(), atom) !=
             postcondition.end()) {
             // This `atom` is a postcondition of `op`, move on to the next one.
-            ++matching_postconditions;
             continue;
         }
         auto mutex = [&](const FactPair &other) {
@@ -643,8 +641,11 @@ static bool operator_can_achieve_landmark(
         if (any_of(postcondition.begin(), postcondition.end(), mutex)) {
             return false;
         }
+        if (any_of(precondition.begin(), precondition.end(), mutex)) {
+            return false;
+        }
     }
-    return matching_postconditions == static_cast<int>(landmark.atoms.size());
+    return true;
 }
 
 void LandmarkFactoryHM::approximate_possible_achievers(
