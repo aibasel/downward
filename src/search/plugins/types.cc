@@ -300,7 +300,7 @@ TypeRegistry::TypeRegistry() {
 template<typename T>
 void TypeRegistry::insert_basic_type(const string &name) {
     type_index type = typeid(T);
-    registered_types[type] = utils::make_unique_ptr<BasicType>(type, name);
+    registered_types[type] = make_unique<BasicType>(type, name);
 }
 
 const FeatureType &TypeRegistry::create_feature_type(const CategoryPlugin &plugin) {
@@ -310,7 +310,7 @@ const FeatureType &TypeRegistry::create_feature_type(const CategoryPlugin &plugi
               + "' but the type '" + registered_types[type]->name()
               + "' already exists and has the same type_index.");
     }
-    unique_ptr<FeatureType> type_ptr = utils::make_unique_ptr<FeatureType>(
+    unique_ptr<FeatureType> type_ptr = make_unique<FeatureType>(
         plugin.get_pointer_type(), plugin.get_category_name(),
         plugin.get_synopsis(), plugin.supports_variable_binding());
     const FeatureType &type_ref = *type_ptr;
@@ -326,7 +326,7 @@ const EnumType &TypeRegistry::create_enum_type(const EnumPlugin &plugin) {
               + "' but the type '" + registered_types[type]->name()
               + "' already exists and has the same type_index.");
     }
-    unique_ptr<EnumType> type_ptr = utils::make_unique_ptr<EnumType>(type, values);
+    unique_ptr<EnumType> type_ptr = make_unique<EnumType>(type, values);
     const EnumType &type_ref = *type_ptr;
     registered_types[type] = move(type_ptr);
     return type_ref;
@@ -335,7 +335,7 @@ const EnumType &TypeRegistry::create_enum_type(const EnumPlugin &plugin) {
 const ListType &TypeRegistry::create_list_type(const Type &element_type) {
     const Type *key = &element_type;
     if (!registered_list_types.count(key)) {
-        registered_list_types.insert({key, utils::make_unique_ptr<ListType>(element_type)});
+        registered_list_types.insert({key, make_unique<ListType>(element_type)});
     }
     return *registered_list_types[key];
 }

@@ -95,7 +95,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
         merge_selector->initialize(task_proxy);
     }
 
-    return utils::make_unique_ptr<MergeStrategySCCs>(
+    return make_unique<MergeStrategySCCs>(
         fts,
         merge_selector,
         move(non_singleton_cg_sccs));

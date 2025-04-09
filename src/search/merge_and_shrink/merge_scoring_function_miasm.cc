@@ -51,7 +51,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
                 silent_log);
 
             // Compute distances for the product and count the alive states.
-            unique_ptr<Distances> distances = utils::make_unique_ptr<Distances>(*product);
+            unique_ptr<Distances> distances = make_unique<Distances>(*product);
             const bool compute_init_distances = true;
             const bool compute_goal_distances = true;
             distances->compute_distances(compute_init_distances, compute_goal_distances, silent_log);

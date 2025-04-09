@@ -9,7 +9,6 @@
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 #include "../utils/math.h"
-#include "../utils/memory.h"
 
 #include <algorithm>
 #include <cassert>
@@ -20,10 +19,10 @@ using namespace std;
 
 namespace cartesian_abstractions {
 Abstraction::Abstraction(const shared_ptr<AbstractTask> &task, utils::LogProxy &log)
-    : transition_system(utils::make_unique_ptr<TransitionSystem>(TaskProxy(*task).get_operators())),
+    : transition_system(make_unique<TransitionSystem>(TaskProxy(*task).get_operators())),
       concrete_initial_state(TaskProxy(*task).get_initial_state()),
       goal_facts(task_properties::get_fact_pairs(TaskProxy(*task).get_goals())),
-      refinement_hierarchy(utils::make_unique_ptr<RefinementHierarchy>(task)),
+      refinement_hierarchy(make_unique<RefinementHierarchy>(task)),
       log(log) {
     initialize_trivial_abstraction(get_domain_sizes(TaskProxy(*task)));
 }
@@ -88,9 +87,9 @@ pair<int, int> Abstraction::refine(
     pair<CartesianSet, CartesianSet> cartesian_sets =
         state.split_domain(var, wanted);
 
-    unique_ptr<AbstractState> v1 = utils::make_unique_ptr<AbstractState>(
+    unique_ptr<AbstractState> v1 = make_unique<AbstractState>(
         v1_id, node_ids.first, move(cartesian_sets.first));
-    unique_ptr<AbstractState> v2 = utils::make_unique_ptr<AbstractState>(
+    unique_ptr<AbstractState> v2 = make_unique<AbstractState>(
         v2_id, node_ids.second, move(cartesian_sets.second));
     assert(state.includes(*v1));
     assert(state.includes(*v2));

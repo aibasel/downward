@@ -91,7 +91,7 @@ CEGAR::CEGAR(
       max_states(max_states),
       max_non_looping_transitions(max_non_looping_transitions),
       split_selector(task, pick),
-      abstraction(utils::make_unique_ptr<Abstraction>(task, log)),
+      abstraction(make_unique<Abstraction>(task, log)),
       abstract_search(task_properties::get_operator_costs(task_proxy)),
       timer(max_time),
       log(log) {
@@ -256,7 +256,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
             if (!next_abstract_state->includes(next_concrete_state)) {
                 if (log.is_at_least_debug())
                     log << "  Paths deviate." << endl;
-                return utils::make_unique_ptr<Flaw>(
+                return make_unique<Flaw>(
                     move(concrete_state),
                     *abstract_state,
                     next_abstract_state->regress(op));
@@ -266,7 +266,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
         } else {
             if (log.is_at_least_debug())
                 log << "  Operator not applicable: " << op.get_name() << endl;
-            return utils::make_unique_ptr<Flaw>(
+            return make_unique<Flaw>(
                 move(concrete_state),
                 *abstract_state,
                 get_cartesian_set(domain_sizes, op.get_preconditions()));
@@ -279,7 +279,7 @@ unique_ptr<Flaw> CEGAR::find_flaw(const Solution &solution) {
     } else {
         if (log.is_at_least_debug())
             log << "  Goal test failed." << endl;
-        return utils::make_unique_ptr<Flaw>(
+        return make_unique<Flaw>(
             move(concrete_state),
             *abstract_state,
             get_cartesian_set(domain_sizes, task_proxy.get_goals()));

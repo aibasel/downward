@@ -2,8 +2,6 @@
 
 #include "landmark.h"
 
-#include "../utils/memory.h"
-
 #include <cassert>
 #include <ranges>
 #include <set>
@@ -87,7 +85,7 @@ bool LandmarkGraph::contains_landmark(const FactPair &atom) const {
 
 LandmarkNode *LandmarkGraph::add_node(Landmark &&landmark) {
     unique_ptr<LandmarkNode> new_node =
-        utils::make_unique_ptr<LandmarkNode>(move(landmark));
+        make_unique<LandmarkNode>(move(landmark));
     nodes.push_back(move(new_node));
     return nodes.back().get();
 }
