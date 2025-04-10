@@ -92,10 +92,15 @@ using PackedStateBin = int_packer::IntPacker::Bin;
 */
 
 template<typename Container>
-concept indexable = requires (Container container, std::size_t i) {
+concept indexable = requires(Container container, std::size_t i) {
     requires std::same_as<Container, std::remove_const_t<Container>>;
-    { container.size() } -> std::integral;
-    { container[i] };
+    {
+        container.size()
+    }
+    ->std::integral;
+    {
+        container[i]
+    }
 };
 
 /*
@@ -143,12 +148,12 @@ public:
     }
 };
 
-template <indexable ProxyCollection>
+template<indexable ProxyCollection>
 inline ProxyIterator<ProxyCollection> begin(const ProxyCollection &collection) {
     return ProxyIterator<ProxyCollection>(collection, 0);
 }
 
-template <indexable ProxyCollection>
+template<indexable ProxyCollection>
 inline ProxyIterator<ProxyCollection> end(const ProxyCollection &collection) {
     return ProxyIterator<ProxyCollection>(collection, collection.size());
 }
