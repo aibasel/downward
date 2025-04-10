@@ -7,7 +7,6 @@
 #include "task_id.h"
 
 #include "algorithms/int_packer.h"
-#include "utils/collections.h"
 #include "utils/hash.h"
 #include "utils/system.h"
 
@@ -91,30 +90,51 @@ using PackedStateBin = int_packer::IntPacker::Bin;
   task_properties.h module.
 */
 
+template<typename Pos>
+concept can_be_dereferenced = requires (Pos pos) {
+    { *pos };
+};
+
+template<typename Pos>
+constexpr auto dereference_if_necessary(Pos p) {
+    if constexpr (can_be_dereferenced<Pos>) {
+        return *p;
+    } else {
+        return p;
+    }
+}
+
+template<typename Container, typename Pos>
+concept indexable_with = requires (Container container, Pos pos) {
+    requires std::same_as<Container, std::remove_const_t<Container>>;
+    { container.size() } -> std::integral;
+    { container[dereference_if_necessary(pos)] }
+          -> std::same_as<std::remove_reference_t<decltype(container[dereference_if_necessary(pos)])>>;
+};
 
 /*
   Basic iterator support for proxy collections.
 */
-template<typename ProxyCollection,
-         typename std::enable_if<!std::is_same<ProxyCollection,State>::value>::type* = nullptr>
+template<typename ProxyCollection, typename Pos = std::size_t>
+    requires indexable_with<ProxyCollection, Pos>
 class ProxyIterator {
     /* We store a pointer to collection instead of a reference
        because iterators have to be copy assignable. */
     const ProxyCollection *collection;
-    std::size_t pos;
+    Pos pos;
 public:
     using iterator_category = std::input_iterator_tag;
-    using value_type = typename ProxyCollection::ItemType;
+    using value_type = decltype((*collection)[0]);
     using difference_type = int;
     using pointer = const value_type *;
     using reference = value_type;
 
-    ProxyIterator(const ProxyCollection &collection, std::size_t pos)
+    ProxyIterator(const ProxyCollection &collection, Pos pos)
         : collection(&collection), pos(pos) {
     }
 
     reference operator*() const {
-        return (*collection)[pos];
+        return (*collection)[dereference_if_necessary(pos)];
     }
 
     value_type operator++(int) {
@@ -137,17 +157,6 @@ public:
         return !(*this == other);
     }
 };
-
-template<class ProxyCollection>
-inline ProxyIterator<ProxyCollection> begin(ProxyCollection &collection) {
-    return ProxyIterator<ProxyCollection>(collection, 0);
-}
-
-template<class ProxyCollection>
-inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
-    return ProxyIterator<ProxyCollection>(collection, collection.size());
-}
-
 
 class FactProxy {
     const AbstractTask *task;
@@ -853,49 +862,52 @@ inline const std::vector<int> &State::get_unpacked_values() const {
     return *values;
 }
 
-class StateIterator {
-    ProxyIterator<VariablesProxy> variables_iterator;
-    const State *state;
-public:
-    using iterator_category = std::input_iterator_tag;
-    using value_type = FactProxy;
-    using difference_type = int;
-    using pointer = const value_type *;
-    using reference = value_type;
+inline ProxyIterator<State, ProxyIterator<VariablesProxy>> begin(const State &state);
+inline ProxyIterator<State, ProxyIterator<VariablesProxy>> end(const State &state);
 
-    StateIterator(const State &state, std::size_t pos)
-        : variables_iterator(state.get_task().get_variables(), pos), state(&state) {
-    }
-
-    reference operator*() const {
-        return (*state)[*variables_iterator];
-    }
-
-    value_type operator++(int) {
-        value_type value(**this);
-        ++(*this);
-        return value;
-    }
-
-    StateIterator &operator++() {
-        ++variables_iterator;
-        return *this;
-    }
-
-    bool operator==(const StateIterator &other) const {
-        return variables_iterator == other.variables_iterator;
-    }
-
-    bool operator!=(const StateIterator &other) const {
-        return !(*this == other);
-    }
-};
-
-inline StateIterator begin(const State &state) {
-    return StateIterator(state, 0);
+template<typename ProxyCollection>
+    requires (!std::same_as<ProxyCollection, State>)
+inline ProxyIterator<ProxyCollection> begin(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, 0);
 }
 
-inline StateIterator end(const State &state) {
-    return StateIterator(state, state.size());
+template<typename ProxyCollection>
+    requires (!std::same_as<ProxyCollection, State>)
+inline ProxyIterator<ProxyCollection> begin(const ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, 0);
 }
+
+template<typename ProxyCollection>
+inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, collection.size());
+}
+
+template<typename ProxyCollection>
+inline ProxyIterator<ProxyCollection> end(const ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, collection.size());
+}
+
+static_assert(std::input_iterator<ProxyIterator<State, std::size_t>>);
+static_assert(std::input_iterator<ProxyIterator<State, ProxyIterator<VariablesProxy>>>);
+inline ProxyIterator<State, ProxyIterator<VariablesProxy>> begin(const State &state) {
+    ProxyIterator<VariablesProxy> variables_it = begin(state.get_task().get_variables());
+    return ProxyIterator<State, ProxyIterator<VariablesProxy>>(state, variables_it);
+}
+
+inline ProxyIterator<State, ProxyIterator<VariablesProxy>> end(const State &state) {
+    ProxyIterator<VariablesProxy> variables_it = end(state.get_task().get_variables());
+    return ProxyIterator<State, ProxyIterator<VariablesProxy>>(state, variables_it);
+}
+
+inline ProxyIterator<State, ProxyIterator<VariablesProxy>> begin(State &state) {
+    ProxyIterator<VariablesProxy> variables_it = begin(state.get_task().get_variables());
+    return ProxyIterator<State, ProxyIterator<VariablesProxy>>(state, variables_it);
+}
+
+inline ProxyIterator<State, ProxyIterator<VariablesProxy>> end(State &state) {
+    ProxyIterator<VariablesProxy> variables_it = end(state.get_task().get_variables());
+    return ProxyIterator<State, ProxyIterator<VariablesProxy>>(state, variables_it);
+}
+
+
 #endif
