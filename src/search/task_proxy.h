@@ -100,7 +100,7 @@ concept indexable = requires(Container container, std::size_t i) {
     ->std::integral;
     {
         container[i]
-    }
+    };
 };
 
 /*
@@ -263,7 +263,6 @@ class ConditionsProxy {
 protected:
     const AbstractTask *task;
 public:
-    using ItemType = FactProxy;
     explicit ConditionsProxy(const AbstractTask &task)
         : task(&task) {}
     virtual ~ConditionsProxy() = default;
@@ -337,7 +336,6 @@ public:
 class VariablesProxy {
     const AbstractTask *task;
 public:
-    using ItemType = VariableProxy;
     explicit VariablesProxy(const AbstractTask &task)
         : task(&task) {}
     ~VariablesProxy() = default;
@@ -425,7 +423,6 @@ class EffectsProxy {
     int op_index;
     bool is_axiom;
 public:
-    using ItemType = EffectProxy;
     EffectsProxy(const AbstractTask &task, int op_index, bool is_axiom)
         : task(&task), op_index(op_index), is_axiom(is_axiom) {}
     ~EffectsProxy() = default;
@@ -498,7 +495,6 @@ public:
 class OperatorsProxy {
     const AbstractTask *task;
 public:
-    using ItemType = OperatorProxy;
     explicit OperatorsProxy(const AbstractTask &task)
         : task(&task) {}
     ~OperatorsProxy() = default;
@@ -525,7 +521,6 @@ public:
 class AxiomsProxy {
     const AbstractTask *task;
 public:
-    using ItemType = OperatorProxy;
     explicit AxiomsProxy(const AbstractTask &task)
         : task(&task) {}
     ~AxiomsProxy() = default;
