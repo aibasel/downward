@@ -7,6 +7,7 @@
 #include "task_id.h"
 
 #include "algorithms/int_packer.h"
+#include "utils/collections.h"
 #include "utils/hash.h"
 #include "utils/system.h"
 
@@ -90,38 +91,22 @@ using PackedStateBin = int_packer::IntPacker::Bin;
   task_properties.h module.
 */
 
-template<typename Pos>
-concept can_be_dereferenced = requires (Pos pos) {
-    { *pos };
-};
-
-template<typename Pos>
-constexpr auto dereference_if_necessary(Pos p) {
-    if constexpr (can_be_dereferenced<Pos>) {
-        return *p;
-    } else {
-        return p;
-    }
-}
-
-template<typename Container, typename Pos>
-concept indexable_with = requires (Container container, Pos pos) {
+template<typename Container>
+concept indexable = requires (Container container, std::size_t i) {
     requires std::same_as<Container, std::remove_const_t<Container>>;
     { container.size() } -> std::integral;
-    { container[dereference_if_necessary(pos)] }
-          -> std::same_as<std::remove_reference_t<decltype(container[dereference_if_necessary(pos)])>>;
+    { container[i] };
 };
 
 /*
   Basic iterator support for proxy collections.
 */
-template<typename ProxyCollection, typename Pos = std::size_t>
-    requires indexable_with<ProxyCollection, Pos>
+template<indexable ProxyCollection>
 class ProxyIterator {
     /* We store a pointer to collection instead of a reference
        because iterators have to be copy assignable. */
     const ProxyCollection *collection;
-    Pos pos;
+    std::size_t pos;
 public:
     using iterator_category = std::input_iterator_tag;
     using value_type = decltype((*collection)[0]);
@@ -129,12 +114,12 @@ public:
     using pointer = const value_type *;
     using reference = value_type;
 
-    ProxyIterator(const ProxyCollection &collection, Pos pos)
+    ProxyIterator(const ProxyCollection &collection, std::size_t pos)
         : collection(&collection), pos(pos) {
     }
 
     reference operator*() const {
-        return (*collection)[dereference_if_necessary(pos)];
+        return (*collection)[pos];
     }
 
     value_type operator++(int) {
@@ -157,6 +142,18 @@ public:
         return !(*this == other);
     }
 };
+
+template <indexable ProxyCollection>
+inline ProxyIterator<ProxyCollection> begin(const ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, 0);
+}
+
+template <indexable ProxyCollection>
+inline ProxyIterator<ProxyCollection> end(const ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, collection.size());
+}
+
+
 
 class FactProxy {
     const AbstractTask *task;
@@ -862,52 +859,35 @@ inline const std::vector<int> &State::get_unpacked_values() const {
     return *values;
 }
 
-inline ProxyIterator<State, ProxyIterator<VariablesProxy>> begin(const State &state);
-inline ProxyIterator<State, ProxyIterator<VariablesProxy>> end(const State &state);
+template<>
+class ProxyIterator<State> {
+    const State *state;
+    const VariablesProxy variables;
+    int var_id;
+public:
+    ProxyIterator(const State &state, int var_id)
+        : state(&state), variables(state.get_task().get_variables()), var_id(var_id) {
+    }
 
-template<typename ProxyCollection>
-    requires (!std::same_as<ProxyCollection, State>)
-inline ProxyIterator<ProxyCollection> begin(ProxyCollection &collection) {
-    return ProxyIterator<ProxyCollection>(collection, 0);
-}
+    FactProxy operator*() const {
+        return (*state)[variables[var_id]];
+    }
 
-template<typename ProxyCollection>
-    requires (!std::same_as<ProxyCollection, State>)
-inline ProxyIterator<ProxyCollection> begin(const ProxyCollection &collection) {
-    return ProxyIterator<ProxyCollection>(collection, 0);
-}
+    ProxyIterator<State> &operator++() {
+        assert(var_id < variables.size());
+        ++var_id;
+        return *this;
+    }
 
-template<typename ProxyCollection>
-inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
-    return ProxyIterator<ProxyCollection>(collection, collection.size());
-}
+    bool operator==(const ProxyIterator<State> &other) const {
+        assert(state == other.state);
+        return var_id == other.var_id;
+    }
 
-template<typename ProxyCollection>
-inline ProxyIterator<ProxyCollection> end(const ProxyCollection &collection) {
-    return ProxyIterator<ProxyCollection>(collection, collection.size());
-}
-
-static_assert(std::input_iterator<ProxyIterator<State, std::size_t>>);
-static_assert(std::input_iterator<ProxyIterator<State, ProxyIterator<VariablesProxy>>>);
-inline ProxyIterator<State, ProxyIterator<VariablesProxy>> begin(const State &state) {
-    ProxyIterator<VariablesProxy> variables_it = begin(state.get_task().get_variables());
-    return ProxyIterator<State, ProxyIterator<VariablesProxy>>(state, variables_it);
-}
-
-inline ProxyIterator<State, ProxyIterator<VariablesProxy>> end(const State &state) {
-    ProxyIterator<VariablesProxy> variables_it = end(state.get_task().get_variables());
-    return ProxyIterator<State, ProxyIterator<VariablesProxy>>(state, variables_it);
-}
-
-inline ProxyIterator<State, ProxyIterator<VariablesProxy>> begin(State &state) {
-    ProxyIterator<VariablesProxy> variables_it = begin(state.get_task().get_variables());
-    return ProxyIterator<State, ProxyIterator<VariablesProxy>>(state, variables_it);
-}
-
-inline ProxyIterator<State, ProxyIterator<VariablesProxy>> end(State &state) {
-    ProxyIterator<VariablesProxy> variables_it = end(state.get_task().get_variables());
-    return ProxyIterator<State, ProxyIterator<VariablesProxy>>(state, variables_it);
-}
+    bool operator!=(const ProxyIterator<State> &other) const {
+        return !(*this == other);
+    }
+};
 
 
 #endif
