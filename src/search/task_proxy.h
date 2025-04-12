@@ -92,7 +92,7 @@ using PackedStateBin = int_packer::IntPacker::Bin;
 */
 
 template<typename Container>
-concept indexable = requires(Container container, std::size_t i) {
+concept indexable = requires(Container &container, std::size_t i) {
     requires std::same_as<Container, std::remove_const_t<Container>>;
     {
         container.size()
