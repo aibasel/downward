@@ -599,6 +599,7 @@ public:
     std::size_t size() const;
     int operator[](std::size_t var_id) const;
     FactProxy operator[](VariableProxy var) const;
+    FactProxy get_fact(std::size_t var_id) const;
 
     TaskProxy get_task() const;
 
@@ -809,7 +810,11 @@ inline int State::operator[](std::size_t var_id) const {
 }
 
 inline FactProxy State::operator[](VariableProxy var) const {
-    return FactProxy(*task, var.get_id(), (*this)[var.get_id()]);
+    return get_fact(var.get_id());
+}
+
+inline FactProxy State::get_fact(std::size_t var_id) const {
+    return FactProxy(*task, var_id, (*this)[var_id]);
 }
 
 inline TaskProxy State::get_task() const {
@@ -853,21 +858,21 @@ inline const std::vector<int> &State::get_unpacked_values() const {
 template<>
 class ProxyIterator<State> {
     const State *state;
-    ProxyIterator<VariablesProxy> pos;
+    int var_id;
 public:
     using difference_type = int;
     using value_type = FactProxy;
 
     ProxyIterator(const State &state, int var_id)
-        : state(&state), pos(state.get_task().get_variables(), var_id) {
+        : state(&state), var_id(var_id) {
     }
 
     value_type operator*() const {
-        return (*state)[*pos];
+        return state->get_fact(var_id);
     }
 
     ProxyIterator<State> &operator++() {
-        ++pos;
+        ++var_id;
         return *this;
     }
 
