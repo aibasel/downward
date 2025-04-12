@@ -113,17 +113,14 @@ class ProxyIterator {
     const ProxyCollection *collection;
     std::size_t pos;
 public:
-    using iterator_category = std::input_iterator_tag;
     using value_type = decltype((*collection)[0]);
     using difference_type = int;
-    using pointer = const value_type *;
-    using reference = value_type;
 
     ProxyIterator(const ProxyCollection &collection, std::size_t pos)
         : collection(&collection), pos(pos) {
     }
 
-    reference operator*() const {
+    value_type operator*() const {
         return (*collection)[pos];
     }
 
@@ -202,11 +199,13 @@ class FactsProxyIterator {
     int var_id;
     int value;
 public:
+    using value_type = FactProxy;
+    using difference_type = int;
+
     FactsProxyIterator(const AbstractTask &task, int var_id, int value)
         : task(&task), var_id(var_id), value(value) {}
-    ~FactsProxyIterator() = default;
 
-    FactProxy operator*() const {
+    value_type operator*() const {
         return FactProxy(*task, var_id, value);
     }
 
@@ -220,6 +219,12 @@ public:
             value = 0;
         }
         return *this;
+    }
+
+    value_type operator++(int) {
+        value_type fact(**this);
+        ++(*this);
+        return fact;
     }
 
     bool operator==(const FactsProxyIterator &other) const {
@@ -862,14 +867,17 @@ inline const std::vector<int> &State::get_unpacked_values() const {
 template<>
 class ProxyIterator<State> {
     const State *state;
-    const VariablesProxy variables;
+    VariablesProxy variables;
     int var_id;
 public:
+    using difference_type = int;
+    using value_type = FactProxy;
+
     ProxyIterator(const State &state, int var_id)
         : state(&state), variables(state.get_task().get_variables()), var_id(var_id) {
     }
 
-    FactProxy operator*() const {
+    value_type operator*() const {
         return (*state)[variables[var_id]];
     }
 
@@ -877,6 +885,12 @@ public:
         assert(var_id < variables.size());
         ++var_id;
         return *this;
+    }
+
+    value_type operator++(int) {
+        value_type fact(**this);
+        ++(*this);
+        return fact;
     }
 
     bool operator==(const ProxyIterator<State> &other) const {
@@ -888,6 +902,17 @@ public:
         return !(*this == other);
     }
 };
+
+static_assert(std::input_iterator<ProxyIterator<AxiomsProxy>>);
+static_assert(std::input_iterator<ProxyIterator<ConditionsProxy>>);
+static_assert(std::input_iterator<ProxyIterator<EffectConditionsProxy>>);
+static_assert(std::input_iterator<ProxyIterator<EffectsProxy>>);
+static_assert(std::input_iterator<FactsProxyIterator>);
+static_assert(std::input_iterator<ProxyIterator<GoalsProxy>>);
+static_assert(std::input_iterator<ProxyIterator<OperatorsProxy>>);
+static_assert(std::input_iterator<ProxyIterator<PreconditionsProxy>>);
+static_assert(std::input_iterator<ProxyIterator<State>>);
+static_assert(std::input_iterator<ProxyIterator<VariablesProxy>>);
 
 
 #endif
