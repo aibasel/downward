@@ -853,23 +853,21 @@ inline const std::vector<int> &State::get_unpacked_values() const {
 template<>
 class ProxyIterator<State> {
     const State *state;
-    VariablesProxy variables;
-    int var_id;
+    ProxyIterator<VariablesProxy> pos;
 public:
     using difference_type = int;
     using value_type = FactProxy;
 
     ProxyIterator(const State &state, int var_id)
-        : state(&state), variables(state.get_task().get_variables()), var_id(var_id) {
+        : state(&state), pos(state.get_task().get_variables(), var_id) {
     }
 
     value_type operator*() const {
-        return (*state)[variables[var_id]];
+        return (*state)[*pos];
     }
 
     ProxyIterator<State> &operator++() {
-        assert(var_id < variables.size());
-        ++var_id;
+        ++pos;
         return *this;
     }
 
@@ -879,10 +877,7 @@ public:
         return fact;
     }
 
-    bool operator==(const ProxyIterator<State> &other) const {
-        assert(state == other.state);
-        return var_id == other.var_id;
-    }
+    bool operator==(const ProxyIterator<State> &other) const = default;
 };
 
 static_assert(std::input_iterator<ProxyIterator<AxiomsProxy>>);
