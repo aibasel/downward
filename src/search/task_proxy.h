@@ -135,14 +135,7 @@ public:
         return *this;
     }
 
-    bool operator==(const ProxyIterator &other) const {
-        assert(collection == other.collection);
-        return pos == other.pos;
-    }
-
-    bool operator!=(const ProxyIterator &other) const {
-        return !(*this == other);
-    }
+    bool operator==(const ProxyIterator &other) const = default;
 };
 
 template<indexable ProxyCollection>
@@ -227,14 +220,7 @@ public:
         return fact;
     }
 
-    bool operator==(const FactsProxyIterator &other) const {
-        assert(task == other.task);
-        return var_id == other.var_id && value == other.value;
-    }
-
-    bool operator!=(const FactsProxyIterator &other) const {
-        return !(*this == other);
-    }
+    bool operator==(const FactsProxyIterator &other) const = default;
 };
 
 
@@ -896,10 +882,6 @@ public:
     bool operator==(const ProxyIterator<State> &other) const {
         assert(state == other.state);
         return var_id == other.var_id;
-    }
-
-    bool operator!=(const ProxyIterator<State> &other) const {
-        return !(*this == other);
     }
 };
 
