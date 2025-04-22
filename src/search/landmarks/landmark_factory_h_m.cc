@@ -162,7 +162,7 @@ void LandmarkFactoryHM::get_split_m_sets(
             subsets.push_back(current);
         }
         return;
-         }
+    }
 
     if (current_index1 != superset1_size &&
         (current_index2 == superset2_size ||
@@ -174,20 +174,20 @@ void LandmarkFactoryHM::get_split_m_sets(
         get_split_m_sets(
             variables, num_included1, num_included2, current_index1 + 1,
             current_index2, current, subsets, superset1, superset2);
-         } else {
-             /*
-               Switching order of 1 and 2 here to avoid code duplication in the form
-               of a function `get_split_m_sets_including_current_proposition_from_second`
-               analogous to `get_split_m_sets_including_current_proposition_from_first`.
-             */
-             get_split_m_sets_including_current_proposition_from_first(
-                 variables, num_included2, num_included1, current_index2,
-                 current_index1, current, subsets, superset2, superset1);
-             // Do not include proposition at `current_index2` in set.
-             get_split_m_sets(
-                 variables, num_included1, num_included2, current_index1,
-                 current_index2 + 1, current, subsets, superset1, superset2);
-         }
+    } else {
+        /*
+          Switching order of 1 and 2 here to avoid code duplication in the form
+          of a function `get_split_m_sets_including_current_proposition_from_second`
+          analogous to `get_split_m_sets_including_current_proposition_from_first`.
+        */
+        get_split_m_sets_including_current_proposition_from_first(
+            variables, num_included2, num_included1, current_index2,
+            current_index1, current, subsets, superset2, superset1);
+        // Do not include proposition at `current_index2` in set.
+        get_split_m_sets(
+            variables, num_included1, num_included2, current_index1,
+            current_index2 + 1, current, subsets, superset1, superset2);
+    }
 }
 
 // Get partial assignments of size <= m in the problem.

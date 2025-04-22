@@ -103,7 +103,7 @@ class LandmarkFactoryHM : public LandmarkFactory {
         const State &state, const VariablesProxy &variables);
     void collect_condition_landmarks(
         const std::vector<int> &condition,
-         std::vector<int> &landmarks) const;
+        std::vector<int> &landmarks) const;
     void initialize_proposition_landmark(
         int op_id, HMEntry &hm_entry, const std::vector<int> &landmarks,
         const std::vector<int> &precondition_landmarks,
