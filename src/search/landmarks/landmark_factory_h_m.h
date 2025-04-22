@@ -141,6 +141,11 @@ class LandmarkFactoryHM : public LandmarkFactory {
     Propositions initialize_postconditions(
         const VariablesProxy &variables, const OperatorProxy &op,
         PiMOperator &pm_op);
+    std::vector<int> compute_noop_precondition(
+        const std::vector<Propositions> &preconditions, int op_id,
+        int noop_index);
+    std::vector<int> compute_noop_effect(
+        const std::vector<Propositions> &postconditions);
     void add_conditional_noop(
         PiMOperator &pm_op, int op_id,
         const VariablesProxy &variables, const Propositions &propositions,

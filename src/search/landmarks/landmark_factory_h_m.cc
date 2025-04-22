@@ -162,7 +162,7 @@ void LandmarkFactoryHM::get_split_m_sets(
             subsets.push_back(current);
         }
         return;
-    }
+         }
 
     if (current_index1 != superset1_size &&
         (current_index2 == superset2_size ||
@@ -174,20 +174,20 @@ void LandmarkFactoryHM::get_split_m_sets(
         get_split_m_sets(
             variables, num_included1, num_included2, current_index1 + 1,
             current_index2, current, subsets, superset1, superset2);
-    } else {
-        /*
-          Switching order of 1 and 2 here to avoid code duplication in the form
-          of a function `get_split_m_sets_including_current_proposition_from_second`
-          analogous to `get_split_m_sets_including_current_proposition_from_first`.
-        */
-        get_split_m_sets_including_current_proposition_from_first(
-            variables, num_included2, num_included1, current_index2,
-            current_index1, current, subsets, superset2, superset1);
-        // Do not include proposition at `current_index2` in set.
-        get_split_m_sets(
-            variables, num_included1, num_included2, current_index1,
-            current_index2 + 1, current, subsets, superset1, superset2);
-    }
+         } else {
+             /*
+               Switching order of 1 and 2 here to avoid code duplication in the form
+               of a function `get_split_m_sets_including_current_proposition_from_second`
+               analogous to `get_split_m_sets_including_current_proposition_from_first`.
+             */
+             get_split_m_sets_including_current_proposition_from_first(
+                 variables, num_included2, num_included1, current_index2,
+                 current_index1, current, subsets, superset2, superset1);
+             // Do not include proposition at `current_index2` in set.
+             get_split_m_sets(
+                 variables, num_included1, num_included2, current_index1,
+                 current_index2 + 1, current, subsets, superset1, superset2);
+         }
 }
 
 // Get partial assignments of size <= m in the problem.
@@ -472,6 +472,34 @@ Propositions LandmarkFactoryHM::initialize_postconditions(
     return postcondition;
 }
 
+vector<int> LandmarkFactoryHM::compute_noop_precondition(
+    const vector<Propositions> &preconditions, int op_id, int noop_index) {
+    vector<int> noop_condition;
+    noop_condition.reserve(preconditions.size());
+    for (const auto &subset : preconditions) {
+        assert(static_cast<int>(subset.size()) <= m);
+        assert(set_indices.contains(subset));
+        int set_index = set_indices[subset];
+        noop_condition.push_back(set_index);
+        // These propositions are "conditional preconditions" for this operator.
+        hm_table[set_index].triggered_operators.emplace_back(op_id, noop_index);
+    }
+    return noop_condition;
+}
+
+vector<int> LandmarkFactoryHM::compute_noop_effect(
+    const vector<Propositions> &postconditions) {
+    vector<int> noop_effect;
+    noop_effect.reserve(postconditions.size());
+    for (const auto &subset: postconditions) {
+        assert(static_cast<int>(subset.size()) <= m);
+        assert(set_indices.contains(subset));
+        int set_index = set_indices[subset];
+        noop_effect.push_back(set_index);
+    }
+    return noop_effect;
+}
+
 void LandmarkFactoryHM::add_conditional_noop(
     PiMOperator &pm_op, int op_id,
     const VariablesProxy &variables, const Propositions &propositions,
@@ -483,36 +511,16 @@ void LandmarkFactoryHM::add_conditional_noop(
       the precondition is empty) or the postcondition and >= 1 element
       in the `propositions` set.
     */
-    vector<Propositions> noop_precondition_subsets =
+    vector<Propositions> noop_preconditions_subsets =
         get_split_m_sets(variables, preconditions, propositions);
     vector<Propositions> noop_postconditions_subsets =
         get_split_m_sets(variables, postconditions, propositions);
 
     num_unsatisfied_preconditions[op_id].second.push_back(
-        static_cast<int>(noop_precondition_subsets.size()));
-
-    // Compute the conditional noop preconditions.
-    vector<int> noop_condition;
-    noop_condition.reserve(noop_precondition_subsets.size());
-    for (const auto &subset : noop_precondition_subsets) {
-        assert(static_cast<int>(subset.size()) <= m);
-        assert(set_indices.contains(subset));
-        int set_index = set_indices[subset];
-        noop_condition.push_back(set_index);
-        // These propositions are "conditional preconditions" for this operator.
-        hm_table[set_index].triggered_operators.emplace_back(op_id, noop_index);
-    }
-
-    // Compute the conditional noop effects.
-    vector<int> noop_effect;
-    noop_effect.reserve(noop_postconditions_subsets.size());
-    for (const auto &subset : noop_postconditions_subsets) {
-        assert(static_cast<int>(subset.size()) <= m);
-        assert(set_indices.contains(subset));
-        int set_index = set_indices[subset];
-        noop_effect.push_back(set_index);
-    }
-
+        static_cast<int>(noop_preconditions_subsets.size()));
+    vector<int> noop_condition = compute_noop_precondition(
+        noop_preconditions_subsets, op_id, noop_index);
+    vector<int> noop_effect = compute_noop_effect(noop_postconditions_subsets);
     pm_op.conditional_noops.emplace_back(
         move(noop_condition), move(noop_effect));
 }
