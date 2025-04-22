@@ -1,7 +1,5 @@
 #include "util.h"
 
-#include <ranges>
-
 #include "landmark.h"
 #include "landmark_graph.h"
 
@@ -11,58 +9,54 @@
 using namespace std;
 
 namespace landmarks {
-static bool _possibly_fires(const EffectConditionsProxy &conditions, const vector<vector<bool>> &reached) {
-    for (FactProxy cond : conditions)
-        if (!reached[cond.get_variable().get_id()][cond.get_value()])
+static bool condition_is_reachable(
+    const ConditionsProxy &conditions, const vector<vector<bool>> &reached) {
+    for (FactProxy condition : conditions) {
+        if (!reached[condition.get_variable().get_id()][condition.get_value()]) {
             return false;
+        }
+    }
     return true;
 }
 
-unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unordered_map<int, int> &b) {
-    if (a.size() > b.size())
-        return _intersect(b, a);
-    unordered_map<int, int> result;
-    for (const auto &pair_a : a) {
-        const auto it_b = b.find(pair_a.first);
-        if (it_b != b.end() && it_b->second == pair_a.second)
-            result.insert(pair_a);
-    }
-    return result;
-}
-
+/* Check whether operator `op` can possibly make `landmark` true in a
+   relaxed task (as given by the reachability information in reached). */
 bool possibly_reaches_landmark(const OperatorProxy &op,
                                const vector<vector<bool>> &reached,
                                const Landmark &landmark) {
-    /* Check whether operator o can possibly make `landmark` true in a
-       relaxed task (as given by the reachability information in reached) */
-
     assert(!reached.empty());
-
-    // Test whether all preconditions of o can be reached
-    // Otherwise, operator is not applicable
-    PreconditionsProxy preconditions = op.get_preconditions();
-    for (FactProxy pre : preconditions)
-        if (!reached[pre.get_variable().get_id()][pre.get_value()])
-            return false;
-
-    // Go through all effects of o and check whether one can reach a
-    // proposition in `landmark`.
-    for (EffectProxy effect: op.get_effects()) {
-        FactProxy effect_fact = effect.get_fact();
-        assert(!reached[effect_fact.get_variable().get_id()].empty());
-        for (const FactPair &atom : landmark.atoms) {
-            if (effect_fact.get_pair() == atom) {
-                if (_possibly_fires(effect.get_conditions(), reached))
-                    return true;
-                break;
-            }
-        }
+    if (!condition_is_reachable(op.get_preconditions(), reached)) {
+        // Operator `op` is not applicable.
+        return false;
     }
 
-    return false;
+    // Check whether an effect of `op` reaches an atom in `landmark`.
+    EffectsProxy effects = op.get_effects();
+    return any_of(begin(effects), end(effects), [&](const EffectProxy &effect) {
+                      return landmark.contains(effect.get_fact().get_pair()) &&
+                      condition_is_reachable(effect.get_conditions(), reached);
+                  });
 }
 
-OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy, int op_or_axiom_id) {
+utils::HashSet<FactPair> get_intersection(
+    const utils::HashSet<FactPair> &set1,
+    const utils::HashSet<FactPair> &set2) {
+    utils::HashSet<FactPair> intersection;
+    for (const FactPair &atom : set1) {
+        if (set2.contains(atom)) {
+            intersection.insert(atom);
+        }
+    }
+    return intersection;
+}
+
+void union_inplace(utils::HashSet<FactPair> &set1,
+                   const utils::HashSet<FactPair> &set2) {
+    set1.insert(set2.begin(), set2.end());
+}
+
+OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy,
+                                    int op_or_axiom_id) {
     if (op_or_axiom_id < 0) {
         return task_proxy.get_axioms()[-op_or_axiom_id - 1];
     } else {
@@ -79,7 +73,7 @@ int get_operator_or_axiom_id(const OperatorProxy &op) {
 }
 
 /*
-  The below functions use cout on purpose for dumping a landmark graph.
+  The functions below use cout on purpose for dumping a landmark graph.
   TODO: ideally, this should be written to a file or through a logger
   at least, but without the time and memory stamps.
 */
@@ -88,16 +82,13 @@ static void dump_node(
     const LandmarkNode &node,
     utils::LogProxy &log) {
     if (log.is_at_least_debug()) {
+        const Landmark &landmark = node.get_landmark();
+        char delimiter = landmark.is_disjunctive ? '|' : '&';
         cout << "  lm" << node.get_id() << " [label=\"";
         bool first = true;
-        const Landmark &landmark = node.get_landmark();
         for (const FactPair &atom : landmark.atoms) {
             if (!first) {
-                if (landmark.is_disjunctive) {
-                    cout << " | ";
-                } else if (landmark.is_conjunctive) {
-                    cout << " & ";
-                }
+                cout << " " << delimiter << " ";
             }
             first = false;
             VariableProxy var = task_proxy.get_variables()[atom.var];

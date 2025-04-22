@@ -52,9 +52,9 @@ static vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> get_reas
 
 LandmarkStatusManager::LandmarkStatusManager(
     LandmarkGraph &landmark_graph,
-    const bool progress_goals,
-    const bool progress_greedy_necessary_orderings,
-    const bool progress_reasonable_orderings)
+    bool progress_goals,
+    bool progress_greedy_necessary_orderings,
+    bool progress_reasonable_orderings)
     : landmark_graph(landmark_graph),
       goal_landmarks(progress_goals ? get_goal_landmarks(landmark_graph)
                      : vector<const LandmarkNode *>{}),

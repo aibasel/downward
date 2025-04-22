@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <ranges>
+#include <unordered_set>
 
 using namespace std;
 using namespace landmarks;
