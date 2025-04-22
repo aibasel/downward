@@ -115,8 +115,6 @@ class ProxyIterator {
 public:
     using value_type = decltype((*collection)[0]);
     using difference_type = int; // unused but required by the iterator concept
-    using reference = value_type; // unused but required by older MSVC versions
-    using pointer = value_type*; // unused but required by older MSVC versions
 
     ProxyIterator(const ProxyCollection &collection, std::size_t pos)
         : collection(&collection), pos(pos) {
@@ -196,8 +194,6 @@ class FactsProxyIterator {
 public:
     using value_type = FactProxy;
     using difference_type = int; // unused but required by the iterator concept
-    using reference = FactProxy; // unused but required by older MSVC versions
-    using pointer = FactProxy*; // unused but required by older MSVC versions
 
     FactsProxyIterator(const AbstractTask &task, int var_id, int value)
         : task(&task), var_id(var_id), value(value) {}
@@ -866,8 +862,6 @@ class ProxyIterator<State> {
 public:
     using difference_type = int; // unused but required by the iterator concept
     using value_type = FactProxy;
-    using reference = FactProxy; // unused but required by older MSVC versions
-    using pointer = FactProxy*; // unused but required by older MSVC versions
 
     ProxyIterator(const State &state, int var_id)
         : state(&state), var_id(var_id) {
