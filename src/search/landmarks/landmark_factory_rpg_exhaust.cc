@@ -44,18 +44,18 @@ static bool relaxed_task_solvable(
 void LandmarkFactoryRpgExhaust::generate_goal_landmarks(
     const TaskProxy &task_proxy) const {
     for (FactProxy goal : task_proxy.get_goals()) {
-        Landmark landmark({goal.get_pair()}, SIMPLE, true);
+        Landmark landmark({goal.get_pair()}, ATOMIC, true);
         landmark_graph->add_landmark(move(landmark));
     }
 }
 
-void LandmarkFactoryRpgExhaust::generate_all_simple_landmarks(
+void LandmarkFactoryRpgExhaust::generate_all_atomic_landmarks(
     const TaskProxy &task_proxy, Exploration &exploration) const {
     for (VariableProxy var : task_proxy.get_variables()) {
         for (int value = 0; value < var.get_domain_size(); ++value) {
             const FactPair atom(var.get_id(), value);
-            if (!landmark_graph->contains_simple_landmark(atom)) {
-                Landmark landmark({atom}, SIMPLE);
+            if (!landmark_graph->contains_atomic_landmark(atom)) {
+                Landmark landmark({atom}, ATOMIC);
                 if (!relaxed_task_solvable(task_proxy, exploration, landmark,
                                            use_unary_relaxation)) {
                     landmark_graph->add_landmark(move(landmark));
@@ -73,7 +73,7 @@ void LandmarkFactoryRpgExhaust::generate_relaxed_landmarks(
             << endl;
     }
     generate_goal_landmarks(task_proxy);
-    generate_all_simple_landmarks(task_proxy, exploration);
+    generate_all_atomic_landmarks(task_proxy, exploration);
 }
 
 bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {

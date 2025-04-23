@@ -218,17 +218,17 @@ static vector<LandmarkNode *> get_natural_parents(const LandmarkNode *node) {
 }
 
 void LandmarkFactoryRpgSasp::remove_disjunctive_landmark_and_rewire_orderings(
-    LandmarkNode &simple_landmark_node) {
+    LandmarkNode &atomic_landmark_node) {
     /*
       In issue1004, we fixed a bug in this part of the code. It now
       removes the disjunctive landmark along with all its orderings from
-      the landmark graph and adds a new simple landmark node. Before
+      the landmark graph and adds a new atomic landmark node. Before
       this change, incoming orderings were maintained, which is not
       always correct for greedy-necessary orderings. We now replace
       those incoming orderings with natural orderings.
     */
-    const Landmark &landmark = simple_landmark_node.get_landmark();
-    assert(landmark.type == SIMPLE);
+    const Landmark &landmark = atomic_landmark_node.get_landmark();
+    assert(landmark.type == ATOMIC);
     LandmarkNode *disjunctive_landmark_node =
         &landmark_graph->get_disjunctive_landmark_node(landmark.atoms[0]);
     remove_occurrences_of_landmark_node(disjunctive_landmark_node);
@@ -237,34 +237,34 @@ void LandmarkFactoryRpgSasp::remove_disjunctive_landmark_and_rewire_orderings(
     assert(use_orders || parents.empty());
     landmark_graph->remove_node(disjunctive_landmark_node);
     /* Add incoming orderings of replaced `disjunctive_landmark_node` as
-       natural orderings to `simple_node`. */
+       natural orderings to `atomic_landmark_node`. */
     for (LandmarkNode *parent : parents) {
         add_or_replace_ordering_if_stronger(
-            *parent, simple_landmark_node, OrderingType::NATURAL);
+            *parent, atomic_landmark_node, OrderingType::NATURAL);
     }
 }
 
-void LandmarkFactoryRpgSasp::add_simple_landmark_and_ordering(
+void LandmarkFactoryRpgSasp::add_atomic_landmark_and_ordering(
     const FactPair &atom, LandmarkNode &node, OrderingType type) {
-    if (landmark_graph->contains_simple_landmark(atom)) {
+    if (landmark_graph->contains_atomic_landmark(atom)) {
         if (use_orders) {
-            LandmarkNode &simple_landmark =
-                landmark_graph->get_simple_landmark_node(atom);
-            add_or_replace_ordering_if_stronger(simple_landmark, node, type);
+            LandmarkNode &atomic_landmark =
+                landmark_graph->get_atomic_landmark_node(atom);
+            add_or_replace_ordering_if_stronger(atomic_landmark, node, type);
         }
         return;
     }
 
-    Landmark landmark({atom}, SIMPLE);
-    LandmarkNode &simple_landmark_node =
+    Landmark landmark({atom}, ATOMIC);
+    LandmarkNode &atomic_landmark_node =
         landmark_graph->add_landmark(move(landmark));
-    open_landmarks.push_back(&simple_landmark_node);
+    open_landmarks.push_back(&atomic_landmark_node);
     if (use_orders) {
-        add_or_replace_ordering_if_stronger(simple_landmark_node, node, type);
+        add_or_replace_ordering_if_stronger(atomic_landmark_node, node, type);
     }
     if (landmark_graph->contains_disjunctive_landmark(atom)) {
         // Simple landmarks are more informative than disjunctive ones.
-        remove_disjunctive_landmark_and_rewire_orderings(simple_landmark_node);
+        remove_disjunctive_landmark_and_rewire_orderings(atomic_landmark_node);
     }
 }
 
@@ -274,11 +274,11 @@ bool LandmarkFactoryRpgSasp::deal_with_overlapping_landmarks(
     OrderingType type) const {
     if (ranges::any_of(
             atoms.begin(), atoms.end(), [&](const FactPair &atom) {
-                return landmark_graph->contains_simple_landmark(atom);
+                return landmark_graph->contains_atomic_landmark(atom);
             })) {
         /*
-          Do not add the landmark because the simple one is stronger. Do not add
-          the ordering(s) to the corresponding simple landmark(s) as they are
+          Do not add the landmark because the atomic one is stronger. Do not add
+          the ordering(s) to the corresponding atomic landmark(s) as they are
           not guaranteed to hold.
         */
         return true;
@@ -439,9 +439,9 @@ void LandmarkFactoryRpgSasp::extend_disjunction_class_lookups(
         }
 
         /* Only deal with propositions that are not shared preconditions
-           (which have been found already and are simple landmarks). */
+           (which have been found already and are atomic landmarks). */
         FactPair precondition(var, value);
-        if (!landmark_graph->contains_simple_landmark(precondition)) {
+        if (!landmark_graph->contains_atomic_landmark(precondition)) {
             preconditions[disjunction_class].push_back(precondition);
             used_operators[disjunction_class].insert(op_id);
         }
@@ -503,7 +503,7 @@ vector<utils::HashSet<FactPair>> LandmarkFactoryRpgSasp::compute_disjunctive_pre
 void LandmarkFactoryRpgSasp::generate_goal_landmarks(
     const TaskProxy &task_proxy) {
     for (FactProxy goal : task_proxy.get_goals()) {
-        Landmark landmark({goal.get_pair()}, SIMPLE, true);
+        Landmark landmark({goal.get_pair()}, ATOMIC, true);
         LandmarkNode &node = landmark_graph->add_landmark(move(landmark));
         open_landmarks.push_back(&node);
     }
@@ -517,7 +517,7 @@ void LandmarkFactoryRpgSasp::generate_shared_precondition_landmarks(
     /* All shared preconditions are landmarks, and greedy-necessary
        predecessors of `landmark`. */
     for (const FactPair &atom : shared_preconditions) {
-        add_simple_landmark_and_ordering(
+        add_atomic_landmark_and_ordering(
             atom, *node, OrderingType::GREEDY_NECESSARY);
     }
 }
@@ -535,7 +535,7 @@ void LandmarkFactoryRpgSasp::generate_disjunctive_precondition_landmarks(
                 preconditions.begin(), preconditions.end(),
                 [&](const FactPair &atom) {
                     /* TODO: Is there a good reason why not? We allow
-                        simple landmarks to hold in the initial state. */
+                        atomic landmarks to hold in the initial state. */
                     return initial_state[atom.var].get_value() == atom.value;
                 })) {
             add_disjunctive_landmark_and_ordering(
@@ -653,7 +653,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
     const Landmark &landmark = node->get_landmark();
     forward_orderings[node] = compute_atoms_unreachable_without_landmark(
         variables, landmark, reached);
-    if (landmark.type != SIMPLE) {
+    if (landmark.type != ATOMIC) {
         return;
     }
     assert(landmark.atoms.size() == 1);
@@ -665,7 +665,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
         init_atom.value, landmark_atom.value,
         reached[landmark_atom.var], dtg_successors[landmark_atom.var]);
     for (int value : critical_predecessors) {
-        add_simple_landmark_and_ordering(FactPair(landmark_atom.var, value),
+        add_atomic_landmark_and_ordering(FactPair(landmark_atom.var, value),
                                          *node, OrderingType::NATURAL);
     }
 }
@@ -721,9 +721,9 @@ utils::HashSet<FactPair> LandmarkFactoryRpgSasp::compute_atoms_unreachable_witho
 void LandmarkFactoryRpgSasp::add_landmark_forward_orderings() {
     for (const auto &node : *landmark_graph) {
         for (const auto &node2_pair : forward_orderings[node.get()]) {
-            if (landmark_graph->contains_simple_landmark(node2_pair)) {
+            if (landmark_graph->contains_atomic_landmark(node2_pair)) {
                 LandmarkNode &node2 =
-                    landmark_graph->get_simple_landmark_node(node2_pair);
+                    landmark_graph->get_atomic_landmark_node(node2_pair);
                 add_or_replace_ordering_if_stronger(
                     *node, node2, OrderingType::NATURAL);
             }

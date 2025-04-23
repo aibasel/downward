@@ -70,7 +70,7 @@ class LandmarkGraph {
     int num_conjunctive_landmarks;
     int num_disjunctive_landmarks;
 
-    utils::HashMap<FactPair, LandmarkNode *> simple_landmarks_to_nodes;
+    utils::HashMap<FactPair, LandmarkNode *> atomic_landmarks_to_nodes;
     utils::HashMap<FactPair, LandmarkNode *> disjunctive_landmarks_to_nodes;
 
     void remove_node_occurrences(LandmarkNode *node);
@@ -121,7 +121,7 @@ public:
     const LandmarkNode *get_node(int index) const;
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
-    LandmarkNode &get_simple_landmark_node(const FactPair &atom) const;
+    LandmarkNode &get_atomic_landmark_node(const FactPair &atom) const;
     /* This is needed only by landmark graph factories and will disappear
      get_num_landmarks  when moving landmark graph creation there. */
     LandmarkNode &get_disjunctive_landmark_node(const FactPair &atom) const;
@@ -129,7 +129,7 @@ public:
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. It is not needed by
        HMLandmarkFactory. */
-    bool contains_simple_landmark(const FactPair &atom) const;
+    bool contains_atomic_landmark(const FactPair &atom) const;
     // Only used internally.
     bool contains_disjunctive_landmark(const FactPair &atom) const;
     /* This is needed only by landmark graph factories and will disappear

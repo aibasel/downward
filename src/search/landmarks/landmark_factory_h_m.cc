@@ -926,7 +926,7 @@ void LandmarkFactoryHM::add_landmark_node(int set_index, bool goal) {
         vector<FactPair> facts(hm_entry.propositions);
         utils::sort_unique(facts);
         assert(!facts.empty());
-        LandmarkType type = facts.size() == 1 ? SIMPLE : CONJUNCTIVE;
+        LandmarkType type = facts.size() == 1 ? ATOMIC : CONJUNCTIVE;
         Landmark landmark(move(facts), type, goal);
         landmark.first_achievers.insert(hm_entry.first_achievers.begin(),
                                         hm_entry.first_achievers.end());

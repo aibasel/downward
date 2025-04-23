@@ -7,7 +7,7 @@ namespace landmarks {
 class LandmarkFactoryRpgExhaust : public LandmarkFactoryRelaxation {
     const bool use_unary_relaxation;
     void generate_goal_landmarks(const TaskProxy &task_proxy) const;
-    void generate_all_simple_landmarks(
+    void generate_all_atomic_landmarks(
         const TaskProxy &task_proxy, Exploration &exploration) const;
     virtual void generate_relaxed_landmarks(
         const std::shared_ptr<AbstractTask> &task,

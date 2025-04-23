@@ -365,8 +365,8 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
     const TaskProxy &task_proxy, const Landmark &landmark_a,
     const Landmark &landmark_b) const {
     assert(landmark_a != landmark_b);
-    assert(!landmark_a.type == DISJUNCTIVE);
-    assert(!landmark_b.type == DISJUNCTIVE);
+    assert(landmark_a.type != DISJUNCTIVE);
+    assert(landmark_b.type != DISJUNCTIVE);
 
     VariablesProxy variables = task_proxy.get_variables();
     for (const FactPair &atom_b : landmark_b.atoms) {

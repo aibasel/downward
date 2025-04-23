@@ -43,8 +43,8 @@ LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(
 
     assert(landmark.atoms.size() == 1);
     const FactPair &atom = landmark.atoms[0];
-    if (landmark_graph->contains_simple_landmark(atom)) {
-        return &landmark_graph->get_simple_landmark_node(atom);
+    if (landmark_graph->contains_atomic_landmark(atom)) {
+        return &landmark_graph->get_atomic_landmark_node(atom);
     }
     return nullptr;
 }
@@ -62,10 +62,10 @@ vector<shared_ptr<LandmarkGraph>> LandmarkFactoryMerged::generate_landmark_graph
     return landmark_graphs;
 }
 
-void LandmarkFactoryMerged::add_simple_landmarks(
+void LandmarkFactoryMerged::add_atomic_landmarks(
     const vector<shared_ptr<LandmarkGraph>> &landmark_graphs) const {
     if (log.is_at_least_normal()) {
-        log << "Adding simple landmarks" << endl;
+        log << "Adding atomic landmarks" << endl;
     }
     for (const auto &graph_to_merge : landmark_graphs) {
         // TODO: Loop over landmarks instead.
@@ -99,7 +99,7 @@ void LandmarkFactoryMerged::add_disjunctive_landmarks(
             if (landmark.type == DISJUNCTIVE) {
                 /*
                   TODO: It seems that disjunctive landmarks are only added if
-                  none of the atoms it is made of is also there as a simple
+                  none of the atoms it is made of is also there as an atomic
                   landmark. This should either be more general (add only if none
                   of its subset is already there) or it should be done only upon
                   request (e.g., heuristics that consider orders might want to
@@ -154,7 +154,7 @@ void LandmarkFactoryMerged::generate_landmarks(
     }
     vector<shared_ptr<LandmarkGraph>> landmark_graphs =
         generate_landmark_graphs_of_subfactories(task);
-    add_simple_landmarks(landmark_graphs);
+    add_atomic_landmarks(landmark_graphs);
     add_disjunctive_landmarks(landmark_graphs);
     add_landmark_orderings(landmark_graphs);
     postprocess();

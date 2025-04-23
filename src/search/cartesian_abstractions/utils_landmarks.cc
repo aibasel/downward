@@ -40,7 +40,7 @@ vector<FactPair> get_atom_landmarks(const LandmarkGraph &graph) {
 
 utils::HashMap<FactPair, LandmarkNode *> get_atom_to_landmark_map(
     const shared_ptr<LandmarkGraph> &graph) {
-    // All landmarks are simple, i.e., each has exactly one atom.
+    // All landmarks are atomic, i.e., each has exactly one atom.
     assert(all_of(graph->begin(), graph->end(), [](auto &node) {
                       return node->get_landmark().atoms.size() == 1;
                   }));

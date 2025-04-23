@@ -11,7 +11,7 @@ bool Landmark::is_true_in_state(const State &state) const {
         return ranges::any_of(
             atoms.cbegin(), atoms.cend(), is_atom_true_in_state);
     } else {
-        assert(type == CONJUNCTIVE || type == SIMPLE);
+        assert(type == CONJUNCTIVE || type == ATOMIC);
         return ranges::all_of(
             atoms.cbegin(), atoms.cend(), is_atom_true_in_state);
     }

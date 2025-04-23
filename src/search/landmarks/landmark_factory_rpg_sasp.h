@@ -67,8 +67,8 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
         Exploration &exploration) override;
     void remove_occurrences_of_landmark_node(const LandmarkNode *node);
     void remove_disjunctive_landmark_and_rewire_orderings(
-        LandmarkNode &simple_landmark_node);
-    void add_simple_landmark_and_ordering(
+        LandmarkNode &atomic_landmark_node);
+    void add_atomic_landmark_and_ordering(
         const FactPair &atom, LandmarkNode &node, OrderingType type);
     bool deal_with_overlapping_landmarks(
         const utils::HashSet<FactPair> &atoms, LandmarkNode &node,

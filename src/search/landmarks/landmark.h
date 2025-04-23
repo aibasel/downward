@@ -6,20 +6,30 @@
 #include <unordered_set>
 
 namespace landmarks {
+/*
+  Here, landmarks are formulas over the atoms of the planning task. We support
+  exactly three specific kinds of formulas: atomic formulas, disjunctions, and
+  conjunctions. Therefore, we can represent the landmarks as sets of atoms
+  annotated with their type `ATOMIC`, `DISJUNCTIVE`, or `CONJUNCTIVE`. We assert
+  that `ATOMIC` landmarks consist of exactly one atom. Even though atomic
+  formulas can in theory be considered to be disjunctions or conjunctions over
+  a single atom, we require that `DISJUNCTIVE` and `CONJUNCTIVE` landmarks
+  consist of at least two atoms.
+*/
 enum LandmarkType {
     DISJUNCTIVE,
-    SIMPLE,
+    ATOMIC,
     CONJUNCTIVE,
 };
+
 class Landmark {
 public:
     Landmark(std::vector<FactPair> _atoms, LandmarkType type,
              bool is_true_in_goal = false, bool is_derived = false)
         : atoms(move(_atoms)), type(type),
           is_true_in_goal(is_true_in_goal), is_derived(is_derived) {
-        assert((type == DISJUNCTIVE && atoms.size() > 1) ||
-               (type == CONJUNCTIVE && atoms.size() > 1) ||
-               (type == SIMPLE && atoms.size() == 1));
+        assert((type == ATOMIC && atoms.size() == 1) ||
+               (type != ATOMIC && atoms.size() > 1));
     }
 
     bool operator==(const Landmark &other) const {
@@ -32,7 +42,6 @@ public:
 
     const std::vector<FactPair> atoms;
     const LandmarkType type;
-    bool is_conjunctive;
     bool is_true_in_goal;
     bool is_derived;
 
