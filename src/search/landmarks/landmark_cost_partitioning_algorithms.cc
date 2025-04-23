@@ -3,15 +3,12 @@
 #include "landmark.h"
 #include "landmark_graph.h"
 #include "landmark_status_manager.h"
-#include "util.h"
 
 #include "../utils/collections.h"
 #include "../utils/language.h"
 
 #include <algorithm>
 #include <cstdlib>
-#include <functional>
-#include <iostream>
 #include <limits>
 
 using namespace std;
@@ -113,7 +110,7 @@ double UniformCostPartitioningAlgorithm::third_pass(
     ConstBitsetView &past, ConstBitsetView &future) {
     double cost = 0;
     for (const LandmarkNode *node : uncovered_landmarks) {
-        // TODO: Iterate over Landmarks instead of LandmarkNodes
+        // TODO: Iterate over Landmarks instead of LandmarkNodes.
         int id = node->get_id();
         assert(future.test(id));
         utils::unused_variable(future);
@@ -152,9 +149,9 @@ double UniformCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
     }
 
     /*
-      TODO: Replace with Landmarks (to do so, we need some way to access the
-       status of a Landmark without access to the ID, which is part of
-       LandmarkNode).
+      TODO: Use landmarks instead of landmark nodes. To do so, we need
+       some way to access the status of a Landmark without access to the
+       ID which is part of landmark node.
     */
     const vector<const LandmarkNode *> uncovered_landmarks = second_pass(
         landmarks_achieved_by_operator, action_landmarks, past, future);
@@ -244,13 +241,13 @@ bool OptimalCostPartitioningAlgorithm::define_constraint_matrix(
                 get_achievers(landmark, past.test(id));
             /*
               TODO: We could deal with things more uniformly by just adding a
-               constraint with no variables because there are no achievers,
-               which would then be detected as an unsolvable constraint by the
-               LP solver. However, as of now this does not work because
-               `get_cost_partitioned_heuristic_value` only adds non-empty
-               constraints to the LP. We should implement this differently,
-               which requires a solution that does not reuse constraints from
-                the previous iteration as it does now.
+               constraint with no variables because there are no achievers
+               (instead of returning here), which would then be detected as an
+               unsolvable constraint by the LP solver. However, as of now this
+               does not work because `get_cost_partitioned_heuristic_value` only
+               adds non-empty constraints to the LP. We should implement this
+               differently, which requires a solution that does not reuse
+               constraints from the previous iteration as it does now.
             */
             if (achievers.empty()) {
                 return true;
@@ -285,7 +282,7 @@ double OptimalCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
 
     /* Copy non-empty constraints and use those in the LP.
        This significantly speeds up the heuristic calculation. See issue443. */
-    // TODO: do not copy the data here.
+    // TODO: Do not copy the data here.
     lp.get_constraints().clear();
     for (const lp::LPConstraint &constraint : lp_constraints) {
         if (!constraint.empty()) {

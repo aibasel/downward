@@ -92,9 +92,6 @@ void LandmarkFactory::add_ordering(
    landmarks is already present, the stronger ordering type wins. */
 void LandmarkFactory::add_or_replace_ordering_if_stronger(
     LandmarkNode &from, LandmarkNode &to, OrderingType type) const {
-    // TODO: Understand why self-loops are not allowed.
-    assert(&from != &to);
-
     if (weaker_ordering_exists(from, to, type)) {
         remove_ordering(from, to);
     }

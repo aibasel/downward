@@ -119,7 +119,7 @@ LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::initialize_re
         int var_id = var.get_id();
         initial_layer[var_id].resize(var.get_domain_size());
 
-        // label nodes from initial state
+        // Label nodes from initial state.
         int value = initial_state[var].get_value();
         initial_layer[var_id][value].labels.emplace(var_id, value);
 
@@ -204,8 +204,6 @@ bool LandmarkFactoryZhuGivan::conditional_effect_fires(
 
 LandmarkSet LandmarkFactoryZhuGivan::union_of_condition_labels(
     const ConditionsProxy &conditions, const PropositionLayer &current) {
-    /* TODO: This looks like an O(n^2) algorithm where O(n log n) would
-        do, a bit like the Python string concatenation anti-pattern. */
     LandmarkSet result;
     for (FactProxy precondition : conditions) {
         auto [var, value] = precondition.get_pair();
@@ -231,11 +229,12 @@ static bool propagate_labels(
     /*
       Updates should always reduce the label set (intersection), except in the
       special case where `atom` was reached for the first time.
-      TODO: It would be more accurate to actually test the superset
-       relationship instead of just comparing set sizes. However, doing so
-       requires storing a copy of `labels` just to assert this. Also, it's
-       probably reasonable to trust the implementation of `get_intersection`
-       used above enough to not even assert this at all here.
+
+      It would be more accurate to actually test the superset relationship
+      instead of just comparing set sizes. However, doing so requires storing a
+      copy of `labels` just to assert this. Also, it's probably reasonable to
+      trust the implementation of `get_intersection` used above enough to not
+      even assert this at all here.
     */
     int new_labels_size = static_cast<int>(labels.size());
     assert(old_labels_size == 0 || old_labels_size >= new_labels_size);

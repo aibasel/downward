@@ -1,4 +1,4 @@
-#include "landmark_factory_h_m.h"
+#include "landmark_factory_hm.h"
 
 #include <numeric>
 

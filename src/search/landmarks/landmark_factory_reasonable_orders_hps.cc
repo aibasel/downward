@@ -9,11 +9,6 @@
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 
-#include <deque>
-#include <list>
-#include <map>
-#include <set>
-
 using namespace std;
 namespace landmarks {
 LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(
@@ -99,14 +94,6 @@ void LandmarkFactoryReasonableOrdersHPS::insert_reasonable_orderings(
             continue;
         }
         if (interferes(task_proxy, other_landmark, landmark)) {
-            /*
-              TODO: If `other_landmark` interferes with `landmark`, then by
-               transitivity we know all natural predecessors of `other_landmark`
-               are also reasonably ordered before `landmark`, but here we only
-               add the one reasonable ordering. Maybe it's not worth adding the
-               others as well (transitivity), but it could be interesting to
-               test the effect of doing so, for example for the cycle heuristic.
-             */
             add_or_replace_ordering_if_stronger(
                 *other, node, OrderingType::REASONABLE);
         }

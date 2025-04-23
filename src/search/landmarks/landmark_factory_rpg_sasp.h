@@ -6,7 +6,6 @@
 #include "../utils/hash.h"
 
 #include <deque>
-#include <set>
 #include <unordered_map>
 #include <vector>
 
@@ -19,7 +18,6 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
 
     std::unordered_map<const LandmarkNode *, utils::HashSet<FactPair>> forward_orderings;
 
-    // TODO: Maybe introduce a class or struct to represent domain transition graph(s).
     /* The entry `dtg_successors[var][val]` contains all successor values of the
        atom var->val in the domain transition graph (aka atomic projection). */
     std::vector<std::vector<std::unordered_set<int>>> dtg_successors;

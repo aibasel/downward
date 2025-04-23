@@ -6,8 +6,6 @@
 #include "../utils/component_errors.h"
 #include "../plugins/plugin.h"
 
-#include <set>
-
 #include "util.h"
 
 using namespace std;

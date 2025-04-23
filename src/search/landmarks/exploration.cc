@@ -13,8 +13,6 @@ using namespace std;
 
 namespace landmarks {
 /*
-  TODO: Verify this comment.
-
   Implementation note: Compared to RelaxationHeuristic, we *cannot simplify*
   unary operators, because this may conflict with excluded operators.
   For an example, consider that unary operator o1 is thrown out during

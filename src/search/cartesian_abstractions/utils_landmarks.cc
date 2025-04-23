@@ -2,7 +2,7 @@
 
 #include "../plugins/plugin.h"
 #include "../landmarks/landmark.h"
-#include "../landmarks/landmark_factory_h_m.h"
+#include "../landmarks/landmark_factory_hm.h"
 #include "../landmarks/landmark_graph.h"
 #include "../utils/logging.h"
 
@@ -16,6 +16,7 @@ using namespace landmarks;
 namespace cartesian_abstractions {
 static FactPair get_atom(const Landmark &landmark) {
     // We assume that the given Landmarks are from an h^m landmark graph with m=1.
+    assert(landmark.type == ATOMIC);
     assert(landmark.atoms.size() == 1);
     return landmark.atoms[0];
 }

@@ -4,7 +4,6 @@
 
 #include <cassert>
 #include <ranges>
-#include <set>
 #include <vector>
 
 using namespace std;
@@ -97,7 +96,7 @@ LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark_to_add) {
     /*
       TODO: Avoid having to fetch landmark after moving it. This will only be
       possible after removing the assumption that landmarks don't overlap
-      because we wont need `disjunctive_landmarks_to_nodes` and
+      (issue257) because we wont need `disjunctive_landmarks_to_nodes` and
       `atomic_landmarks_to_nodes` anymore.
     */
     LandmarkNode *new_node = add_node(move(landmark_to_add));

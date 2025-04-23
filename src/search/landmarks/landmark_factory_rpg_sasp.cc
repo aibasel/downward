@@ -534,8 +534,6 @@ void LandmarkFactoryRpgSasp::generate_disjunctive_precondition_landmarks(
         if (preconditions.size() < 5 && ranges::none_of(
                 preconditions.begin(), preconditions.end(),
                 [&](const FactPair &atom) {
-                    /* TODO: Is there a good reason why not? We allow
-                        atomic landmarks to hold in the initial state. */
                     return initial_state[atom.var].get_value() == atom.value;
                 })) {
             add_disjunctive_landmark_and_ordering(
