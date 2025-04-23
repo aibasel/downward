@@ -29,6 +29,11 @@ struct PropositionSetComparer {
 struct ConditionalNoop {
     std::vector<int> effect_condition;
     std::vector<int> effect;
+
+    ConditionalNoop(std::vector<int> &&effect_condition,
+                    std::vector<int> &&effect)
+        : effect_condition(move(effect_condition)), effect(move(effect)) {
+    }
 };
 
 /* Corresponds to an operator from the original problem, as well as a
