@@ -117,7 +117,6 @@ public:
     using difference_type = int; // unused but required by the iterator concept
 
     ProxyIterator() = default;
-    ProxyIterator(const ProxyIterator<ProxyCollection> &other) = default;
     ProxyIterator(const ProxyCollection &collection, std::size_t pos)
         : collection(&collection), pos(pos) {
     }
@@ -167,7 +166,6 @@ class FactProxy {
 public:
     FactProxy(const AbstractTask &task, int var_id, int value);
     FactProxy(const AbstractTask &task, const FactPair &fact);
-    ~FactProxy() = default;
 
     VariableProxy get_variable() const;
 
@@ -207,7 +205,6 @@ public:
     using difference_type = int; // unused but required by the iterator concept
 
     FactsProxyIterator() = default;
-    FactsProxyIterator(const FactsProxyIterator &) = default;
     FactsProxyIterator(const AbstractTask &task, int var_id, int value)
         : task(&task), var_id(var_id), value(value) {}
 
@@ -251,7 +248,6 @@ class FactsProxy {
 public:
     explicit FactsProxy(const AbstractTask &task)
         : task(&task) {}
-    ~FactsProxy() = default;
 
     FactsProxyIterator begin() const {
         return FactsProxyIterator(*task, 0, 0);
@@ -286,7 +282,6 @@ class VariableProxy {
 public:
     VariableProxy(const AbstractTask &task, int id)
         : task(&task), id(id) {}
-    ~VariableProxy() = default;
 
     bool operator==(const VariableProxy &other) const {
         assert(task == other.task);
@@ -342,7 +337,6 @@ class VariablesProxy {
 public:
     explicit VariablesProxy(const AbstractTask &task)
         : task(&task) {}
-    ~VariablesProxy() = default;
 
     std::size_t size() const {
         return task->get_num_variables();
@@ -365,7 +359,6 @@ class PreconditionsProxy : public ConditionsProxy {
 public:
     PreconditionsProxy(const AbstractTask &task, int op_index, bool is_axiom)
         : ConditionsProxy(task), op_index(op_index), is_axiom(is_axiom) {}
-    ~PreconditionsProxy() = default;
 
     std::size_t size() const override {
         return task->get_num_operator_preconditions(op_index, is_axiom);
@@ -387,7 +380,6 @@ public:
     EffectConditionsProxy(
         const AbstractTask &task, int op_index, int eff_index, bool is_axiom)
         : ConditionsProxy(task), op_index(op_index), eff_index(eff_index), is_axiom(is_axiom) {}
-    ~EffectConditionsProxy() = default;
 
     std::size_t size() const override {
         return task->get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
@@ -409,7 +401,6 @@ class EffectProxy {
 public:
     EffectProxy(const AbstractTask &task, int op_index, int eff_index, bool is_axiom)
         : task(&task), op_index(op_index), eff_index(eff_index), is_axiom(is_axiom) {}
-    ~EffectProxy() = default;
 
     EffectConditionsProxy get_conditions() const {
         return EffectConditionsProxy(*task, op_index, eff_index, is_axiom);
@@ -429,7 +420,6 @@ class EffectsProxy {
 public:
     EffectsProxy(const AbstractTask &task, int op_index, bool is_axiom)
         : task(&task), op_index(op_index), is_axiom(is_axiom) {}
-    ~EffectsProxy() = default;
 
     std::size_t size() const {
         return task->get_num_operator_effects(op_index, is_axiom);
@@ -449,7 +439,6 @@ class OperatorProxy {
 public:
     OperatorProxy(const AbstractTask &task, int index, bool is_axiom)
         : task(&task), index(index), is_an_axiom(is_axiom) {}
-    ~OperatorProxy() = default;
 
     bool operator==(const OperatorProxy &other) const {
         assert(task == other.task);
@@ -501,7 +490,6 @@ class OperatorsProxy {
 public:
     explicit OperatorsProxy(const AbstractTask &task)
         : task(&task) {}
-    ~OperatorsProxy() = default;
 
     std::size_t size() const {
         return task->get_num_operators();
@@ -527,7 +515,6 @@ class AxiomsProxy {
 public:
     explicit AxiomsProxy(const AbstractTask &task)
         : task(&task) {}
-    ~AxiomsProxy() = default;
 
     std::size_t size() const {
         return task->get_num_axioms();
@@ -548,7 +535,6 @@ class GoalsProxy : public ConditionsProxy {
 public:
     explicit GoalsProxy(const AbstractTask &task)
         : ConditionsProxy(task) {}
-    ~GoalsProxy() = default;
 
     std::size_t size() const override {
         return task->get_num_goals();
@@ -665,7 +651,6 @@ class TaskProxy {
 public:
     explicit TaskProxy(const AbstractTask &task)
         : task(&task) {}
-    ~TaskProxy() = default;
 
     TaskID get_id() const {
         return TaskID(task);
@@ -877,7 +862,6 @@ public:
     using value_type = FactProxy;
 
     ProxyIterator() = default;
-    ProxyIterator(const ProxyIterator<State> &other) = default;
     ProxyIterator(const State &state, int var_id)
         : state(&state), var_id(var_id) {
     }
