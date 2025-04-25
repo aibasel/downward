@@ -116,6 +116,8 @@ public:
     using value_type = decltype((*collection)[0]);
     using difference_type = int; // unused but required by the iterator concept
 
+    ProxyIterator() = default;
+    ProxyIterator(const ProxyIterator<ProxyCollection> &other) = default;
     ProxyIterator(const ProxyCollection &collection, std::size_t pos)
         : collection(&collection), pos(pos) {
     }
@@ -148,6 +150,15 @@ inline ProxyIterator<ProxyCollection> end(const ProxyCollection &collection) {
     return ProxyIterator<ProxyCollection>(collection, collection.size());
 }
 
+template<indexable ProxyCollection>
+inline ProxyIterator<ProxyCollection> begin(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, 0);
+}
+
+template<indexable ProxyCollection>
+inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
+    return ProxyIterator<ProxyCollection>(collection, collection.size());
+}
 
 
 class FactProxy {
@@ -195,6 +206,8 @@ public:
     using value_type = FactProxy;
     using difference_type = int; // unused but required by the iterator concept
 
+    FactsProxyIterator() = default;
+    FactsProxyIterator(const FactsProxyIterator &) = default;
     FactsProxyIterator(const AbstractTask &task, int var_id, int value)
         : task(&task), var_id(var_id), value(value) {}
 
@@ -863,6 +876,8 @@ public:
     using difference_type = int; // unused but required by the iterator concept
     using value_type = FactProxy;
 
+    ProxyIterator() = default;
+    ProxyIterator(const ProxyIterator<State> &other) = default;
     ProxyIterator(const State &state, int var_id)
         : state(&state), var_id(var_id) {
     }
@@ -889,12 +904,24 @@ static_assert(std::input_iterator<ProxyIterator<AxiomsProxy>>);
 static_assert(std::input_iterator<ProxyIterator<ConditionsProxy>>);
 static_assert(std::input_iterator<ProxyIterator<EffectConditionsProxy>>);
 static_assert(std::input_iterator<ProxyIterator<EffectsProxy>>);
-static_assert(std::input_iterator<FactsProxyIterator>);
 static_assert(std::input_iterator<ProxyIterator<GoalsProxy>>);
 static_assert(std::input_iterator<ProxyIterator<OperatorsProxy>>);
 static_assert(std::input_iterator<ProxyIterator<PreconditionsProxy>>);
 static_assert(std::input_iterator<ProxyIterator<State>>);
 static_assert(std::input_iterator<ProxyIterator<VariablesProxy>>);
+
+static_assert(std::ranges::range<AxiomsProxy>);
+static_assert(std::ranges::range<ConditionsProxy>);
+static_assert(std::ranges::range<EffectConditionsProxy>);
+static_assert(std::ranges::range<EffectsProxy>);
+static_assert(std::ranges::range<GoalsProxy>);
+static_assert(std::ranges::range<OperatorsProxy>);
+static_assert(std::ranges::range<PreconditionsProxy>);
+static_assert(std::ranges::range<State>);
+static_assert(std::ranges::range<VariablesProxy>);
+
+static_assert(std::input_iterator<FactsProxyIterator>);
+static_assert(std::ranges::range<FactsProxy>);
 
 
 #endif
