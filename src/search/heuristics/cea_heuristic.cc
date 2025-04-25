@@ -228,7 +228,6 @@ void ContextEnhancedAdditiveHeuristic::set_up_local_problem(
     LocalProblemNode *start = &problem->nodes[start_value];
     start->cost = 0;
     for (size_t i = 0; i < problem->context_variables->size(); ++i)
-        // TODO issue997: is casting from int to a short here fine?
         start->context[i] = static_cast<short>(state[(*problem->context_variables)[i]]);
 
     add_to_heap(start);
