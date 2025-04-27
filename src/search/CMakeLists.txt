@@ -140,6 +140,7 @@ create_fast_downward_library(
         utils/markup
         utils/math
         utils/memory
+        utils/printer
         utils/rng
         utils/rng_options
         utils/strings
