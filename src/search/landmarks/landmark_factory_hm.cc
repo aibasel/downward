@@ -233,7 +233,7 @@ vector<Propositions> LandmarkFactoryHM::get_split_m_sets(
     assert(proposition_variables_disjoint(superset1, superset2));
     Propositions c;
     vector<Propositions> subsets;
-    // If a set is empty, we do not have to include from it. TODO: Why not?
+    // If a set is empty, we do not have to include from it.
     if (superset1.empty()) {
         get_m_sets_of_set(variables, 0, 0, c, subsets, superset2);
     } else if (superset2.empty()) {

@@ -1,5 +1,7 @@
 #include "landmark.h"
 
+#include <ranges>
+
 using namespace std;
 
 namespace landmarks {
