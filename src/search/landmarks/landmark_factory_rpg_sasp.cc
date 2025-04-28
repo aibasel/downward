@@ -121,13 +121,12 @@ static void add_binary_variable_conditions(
         if (!precondition_variables.contains(var_id) &&
             effect_atom.get_variable().get_domain_size() == 2) {
             for (const FactPair &atom : landmark.atoms) {
-                if (atom.var == var_id &&
-                    initial_state[var_id].get_value() != atom.value) {
+                if (atom.var == var_id && initial_state[var_id] != atom.value) {
                     assert(ranges::none_of(result.begin(), result.end(),
                                            [&](const FactPair &result_atom) {
                                                return result_atom.var == var_id;
                                            }));
-                    result.insert(initial_state[var_id].get_pair());
+                    result.insert({var_id, initial_state[var_id]});
                     break;
                 }
             }
@@ -534,7 +533,7 @@ void LandmarkFactoryRpgSasp::generate_disjunctive_precondition_landmarks(
         if (preconditions.size() < 5 && ranges::none_of(
                 preconditions.begin(), preconditions.end(),
                 [&](const FactPair &atom) {
-                    return initial_state[atom.var].get_value() == atom.value;
+                    return initial_state[atom.var] == atom.value;
                 })) {
             add_disjunctive_landmark_and_ordering(
                 preconditions, *node, OrderingType::GREEDY_NECESSARY);
@@ -657,8 +656,8 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
     assert(landmark.atoms.size() == 1);
 
     const FactPair landmark_atom = landmark.atoms[0];
-    const FactPair init_atom =
-        task_proxy.get_initial_state()[landmark_atom.var].get_pair();
+    int init_value = task_proxy.get_initial_state()[landmark_atom.var];
+    const FactPair init_atom = {landmark_atom.var, init_value};
     vector<int> critical_predecessors = get_critical_dtg_predecessors(
         init_atom.value, landmark_atom.value,
         reached[landmark_atom.var], dtg_successors[landmark_atom.var]);

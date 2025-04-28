@@ -32,10 +32,11 @@ bool possibly_reaches_landmark(const OperatorProxy &op,
 
     // Check whether an effect of `op` reaches an atom in `landmark`.
     EffectsProxy effects = op.get_effects();
-    return any_of(begin(effects), end(effects), [&](const EffectProxy &effect) {
-                      return landmark.contains(effect.get_fact().get_pair()) &&
-                      condition_is_reachable(effect.get_conditions(), reached);
-                  });
+    return ranges::any_of(
+        begin(effects), end(effects), [&](const EffectProxy &effect) {
+            return landmark.contains(effect.get_fact().get_pair()) &&
+                   condition_is_reachable(effect.get_conditions(), reached);
+        });
 }
 
 utils::HashSet<FactPair> get_intersection(

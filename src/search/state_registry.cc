@@ -56,7 +56,7 @@ const State &StateRegistry::get_initial_state() {
 
         State initial_state = task_proxy.get_initial_state();
         for (size_t i = 0; i < initial_state.size(); ++i) {
-            state_packer.set(buffer.get(), i, initial_state[i].get_value());
+            state_packer.set(buffer.get(), i, initial_state[i]);
         }
         state_data_pool.push_back(buffer.get());
         StateID id = insert_id_or_pop_state();
