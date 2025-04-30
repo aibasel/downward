@@ -41,6 +41,9 @@ and on macOS we do not test LP solvers (yet).
 
 See [BUILD.md](BUILD.md).
 
+## Tab completion
+
+See [TABCOMPLETION.md](TABCOMPLETION.md).
 
 ## Contributors
 
