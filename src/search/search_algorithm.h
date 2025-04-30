@@ -51,6 +51,13 @@ protected:
     int bound;
     OperatorCost cost_type;
     bool is_unit_cost;
+    double min_gen;
+    double min_eval;
+    double min_exp;
+    double min_time;
+    double max_gen;
+    double max_eval;
+    double max_exp;
     double max_time;
 
     virtual void initialize() {}
@@ -61,7 +68,8 @@ protected:
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
     SearchAlgorithm(
-        OperatorCost cost_type, int bound, double max_time,
+        OperatorCost cost_type, int bound,
+	double, double, double, double, double, double, double, double,
         const std::string &description, utils::Verbosity verbosity);
     explicit SearchAlgorithm(const plugins::Options &opts); // TODO options object is needed for iterated search, the prototype for issue559 resolves this
     virtual ~SearchAlgorithm();
@@ -97,7 +105,7 @@ get_search_pruning_arguments_from_options(const plugins::Options &opts);
 extern void add_search_algorithm_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<
-    OperatorCost, int, double, std::string, utils::Verbosity>
+    OperatorCost, int, double, double, double, double, double, double, double, double, std::string, utils::Verbosity>
 get_search_algorithm_arguments_from_options(
     const plugins::Options &opts);
 extern void add_successors_order_options_to_feature(
