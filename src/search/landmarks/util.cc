@@ -6,63 +6,57 @@
 #include "../task_proxy.h"
 #include "../utils/logging.h"
 
-#include <limits>
-
 using namespace std;
 
 namespace landmarks {
-static bool _possibly_fires(const EffectConditionsProxy &conditions, const vector<vector<bool>> &reached) {
-    for (FactProxy cond : conditions)
-        if (!reached[cond.get_variable().get_id()][cond.get_value()])
+static bool condition_is_reachable(
+    const ConditionsProxy &conditions, const vector<vector<bool>> &reached) {
+    for (FactProxy condition : conditions) {
+        if (!reached[condition.get_variable().get_id()][condition.get_value()]) {
             return false;
+        }
+    }
     return true;
 }
 
-unordered_map<int, int> _intersect(const unordered_map<int, int> &a, const unordered_map<int, int> &b) {
-    if (a.size() > b.size())
-        return _intersect(b, a);
-    unordered_map<int, int> result;
-    for (const auto &pair_a : a) {
-        const auto it_b = b.find(pair_a.first);
-        if (it_b != b.end() && it_b->second == pair_a.second)
-            result.insert(pair_a);
+/* Check whether operator `op` can possibly make `landmark` true in a
+   relaxed task (as given by the reachability information in reached). */
+bool possibly_reaches_landmark(const OperatorProxy &op,
+                               const vector<vector<bool>> &reached,
+                               const Landmark &landmark) {
+    assert(!reached.empty());
+    if (!condition_is_reachable(op.get_preconditions(), reached)) {
+        // Operator `op` is not applicable.
+        return false;
     }
-    return result;
+
+    // Check whether an effect of `op` reaches an atom in `landmark`.
+    EffectsProxy effects = op.get_effects();
+    return any_of(begin(effects), end(effects), [&](const EffectProxy &effect) {
+                      return landmark.contains(effect.get_fact().get_pair()) &&
+                      condition_is_reachable(effect.get_conditions(), reached);
+                  });
 }
 
-bool possibly_reaches_lm(const OperatorProxy &op,
-                         const vector<vector<bool>> &reached,
-                         const Landmark &landmark) {
-    /* Check whether operator o can possibly make landmark lmp true in a
-       relaxed task (as given by the reachability information in reached) */
-
-    assert(!reached.empty());
-
-    // Test whether all preconditions of o can be reached
-    // Otherwise, operator is not applicable
-    PreconditionsProxy preconditions = op.get_preconditions();
-    for (FactProxy pre : preconditions)
-        if (!reached[pre.get_variable().get_id()][pre.get_value()])
-            return false;
-
-    // Go through all effects of o and check whether one can reach a
-    // proposition in lmp
-    for (EffectProxy effect: op.get_effects()) {
-        FactProxy effect_fact = effect.get_fact();
-        assert(!reached[effect_fact.get_variable().get_id()].empty());
-        for (const FactPair &fact : landmark.facts) {
-            if (effect_fact.get_pair() == fact) {
-                if (_possibly_fires(effect.get_conditions(), reached))
-                    return true;
-                break;
-            }
+utils::HashSet<FactPair> get_intersection(
+    const utils::HashSet<FactPair> &set1,
+    const utils::HashSet<FactPair> &set2) {
+    utils::HashSet<FactPair> intersection;
+    for (const FactPair &atom : set1) {
+        if (set2.contains(atom)) {
+            intersection.insert(atom);
         }
     }
-
-    return false;
+    return intersection;
 }
 
-OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy, int op_or_axiom_id) {
+void union_inplace(utils::HashSet<FactPair> &set1,
+                   const utils::HashSet<FactPair> &set2) {
+    set1.insert(set2.begin(), set2.end());
+}
+
+OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy,
+                                    int op_or_axiom_id) {
     if (op_or_axiom_id < 0) {
         return task_proxy.get_axioms()[-op_or_axiom_id - 1];
     } else {
@@ -79,7 +73,7 @@ int get_operator_or_axiom_id(const OperatorProxy &op) {
 }
 
 /*
-  The below functions use cout on purpose for dumping a landmark graph.
+  The functions below use cout on purpose for dumping a landmark graph.
   TODO: ideally, this should be written to a file or through a logger
   at least, but without the time and memory stamps.
 */
@@ -88,20 +82,17 @@ static void dump_node(
     const LandmarkNode &node,
     utils::LogProxy &log) {
     if (log.is_at_least_debug()) {
+        const Landmark &landmark = node.get_landmark();
+        char delimiter = landmark.type == DISJUNCTIVE ? '|' : '&';
         cout << "  lm" << node.get_id() << " [label=\"";
         bool first = true;
-        const Landmark &landmark = node.get_landmark();
-        for (FactPair fact : landmark.facts) {
+        for (const FactPair &atom : landmark.atoms) {
             if (!first) {
-                if (landmark.disjunctive) {
-                    cout << " | ";
-                } else if (landmark.conjunctive) {
-                    cout << " & ";
-                }
+                cout << " " << delimiter << " ";
             }
             first = false;
-            VariableProxy var = task_proxy.get_variables()[fact.var];
-            cout << var.get_fact(fact.value).get_name();
+            VariableProxy var = task_proxy.get_variables()[atom.var];
+            cout << var.get_fact(atom.value).get_name();
         }
         cout << "\"";
         if (landmark.is_true_in_state(task_proxy.get_initial_state())) {
@@ -114,20 +105,21 @@ static void dump_node(
     }
 }
 
-static void dump_edge(int from, int to, EdgeType edge, utils::LogProxy &log) {
+static void dump_ordering(int from, int to, OrderingType type,
+                          const utils::LogProxy &log) {
     if (log.is_at_least_debug()) {
         cout << "      lm" << from << " -> lm" << to << " [label=";
-        switch (edge) {
-        case EdgeType::NECESSARY:
+        switch (type) {
+        case OrderingType::NECESSARY:
             cout << "\"nec\"";
             break;
-        case EdgeType::GREEDY_NECESSARY:
+        case OrderingType::GREEDY_NECESSARY:
             cout << "\"gn\"";
             break;
-        case EdgeType::NATURAL:
+        case OrderingType::NATURAL:
             cout << "\"n\"";
             break;
-        case EdgeType::REASONABLE:
+        case OrderingType::REASONABLE:
             cout << "\"r\", style=dashed";
             break;
         }
@@ -143,12 +135,10 @@ void dump_landmark_graph(
         log << "Dumping landmark graph: " << endl;
 
         cout << "digraph G {\n";
-        for (const unique_ptr<LandmarkNode> &node : graph.get_nodes()) {
+        for (const auto &node : graph) {
             dump_node(task_proxy, *node, log);
-            for (const auto &child : node->children) {
-                const LandmarkNode *child_node = child.first;
-                const EdgeType &edge = child.second;
-                dump_edge(node->get_id(), child_node->get_id(), edge, log);
+            for (const auto &[child, type] : node->children) {
+                dump_ordering(node->get_id(), child->get_id(), type, log);
             }
         }
         cout << "}" << endl;

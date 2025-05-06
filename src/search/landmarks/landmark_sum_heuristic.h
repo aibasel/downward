@@ -7,6 +7,12 @@ namespace landmarks {
 class LandmarkSumHeuristic : public LandmarkHeuristic {
     const bool dead_ends_reliable;
 
+    /*
+      We compute landmark achiever costs under the assumption that landmark
+      node IDs go from 0 to the number of landmarks - 1, therefore the entry at
+      index i in the following vectors corresponds to the entry for the landmark
+      with ID i.
+    */
     std::vector<int> min_first_achiever_costs;
     std::vector<int> min_possible_achiever_costs;
 
