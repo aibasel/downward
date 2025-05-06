@@ -48,7 +48,7 @@ static bool are_mutex(const VariablesProxy &variables,
 
 void LandmarkFactoryHM::get_m_sets_including_current_var(
     const VariablesProxy &variables, int num_included, int current_var,
-    Propositions &current, std::vector<Propositions> &subsets) {
+    Propositions &current, vector<Propositions> &subsets) {
     int domain_size = variables[current_var].get_domain_size();
     for (int value = 0; value < domain_size; ++value) {
         FactPair atom(current_var, value);
@@ -88,7 +88,7 @@ void LandmarkFactoryHM::get_m_sets(
 void LandmarkFactoryHM::get_m_sets_of_set_including_current_proposition(
     const VariablesProxy &variables, int num_included,
     int current_index, Propositions &current,
-    std::vector<Propositions> &subsets, const Propositions &superset) {
+    vector<Propositions> &subsets, const Propositions &superset) {
     const FactPair &atom = superset[current_index];
     bool use_proposition = ranges::none_of(
         current.begin(), current.end(), [&](const FactPair &other) {
@@ -126,9 +126,9 @@ void LandmarkFactoryHM::get_m_sets_of_set(
 
 void LandmarkFactoryHM::get_split_m_sets_including_current_proposition_from_first(
     const VariablesProxy &variables, int num_included1, int num_included2,
-    int current_index1, int current_index2,
-    Propositions &current, std::vector<Propositions> &subsets,
-    const Propositions &superset1, const Propositions &superset2) {
+    int current_index1, int current_index2, Propositions &current,
+    vector<Propositions> &subsets, const Propositions &superset1,
+    const Propositions &superset2) {
     const FactPair &atom = superset1[current_index1];
     bool use_proposition = ranges::none_of(
         current.begin(), current.end(), [&](const FactPair &other) {
@@ -374,7 +374,7 @@ set<FactPair> LandmarkFactoryHM::print_conditional_effect(
 
 void LandmarkFactoryHM::print_action(
     const VariablesProxy &variables, const PiMOperator &op,
-    const std::vector<std::pair<std::set<FactPair>, std::set<FactPair>>> &conditions) const {
+    const vector<pair<set<FactPair>, set<FactPair>>> &conditions) const {
     log << "Action " << op.id << endl;
     log << "Precondition: ";
     set<FactPair> preconditions = get_propositions(op.precondition, hm_table);

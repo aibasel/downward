@@ -26,8 +26,7 @@ LandmarkHeuristic::LandmarkHeuristic(
 /* TODO: We would prefer the following two functions to be implemented
     somewhere else as more generic graph algorithms. */
 static bool depth_first_search_for_cycle_of_natural_orderings(
-    const LandmarkNode &node, std::vector<bool> &closed,
-    std::vector<bool> &visited) {
+    const LandmarkNode &node, vector<bool> &closed, vector<bool> &visited) {
     int id = node.get_id();
     if (closed[id]) {
         return false;

@@ -38,9 +38,8 @@ void LandmarkFactoryRpgSasp::resize_dtg_data_structures(
 }
 
 void LandmarkFactoryRpgSasp::compute_dtg_successors(
-    const EffectProxy &effect,
-    const std::unordered_map<int, int> &preconditions,
-    const std::unordered_map<int, int> &effect_conditions) {
+    const EffectProxy &effect, const unordered_map<int, int> &preconditions,
+    const unordered_map<int, int> &effect_conditions) {
     /* If the operator can change the value of `var` from `pre` to
        `post`, we insert `post` into `dtg_successors[var][pre]`. */
     auto [var, post] = effect.get_fact().get_pair();
