@@ -58,6 +58,7 @@ class RootTask : public AbstractTask {
     vector<vector<set<FactPair>>> mutexes;
     vector<ExplicitOperator> operators;
     vector<ExplicitOperator> axioms;
+    unique_ptr<AxiomEvaluator> axiom_evaluator;
     vector<int> initial_state_values;
     vector<FactPair> goals;
 
@@ -105,6 +106,7 @@ public:
     virtual void convert_ancestor_state_values(
         vector<int> &values,
         const AbstractTask *ancestor_task) const override;
+    virtual AxiomEvaluator &get_axiom_evaluator() const override;
 };
 
 
@@ -351,11 +353,11 @@ RootTask::RootTask(istream &in) {
        have reached the end of "in". */
 
     /*
-      HACK: We use a TaskProxy to access g_axiom_evaluators here which assumes
+      HACK: We use a TaskProxy here which assumes
       that this task is completely constructed.
     */
-    AxiomEvaluator &axiom_evaluator = g_axiom_evaluators[TaskProxy(*this)];
-    axiom_evaluator.evaluate(initial_state_values);
+    axiom_evaluator = make_unique<AxiomEvaluator>(TaskProxy(*this));
+    axiom_evaluator->evaluate(initial_state_values);
 }
 
 const ExplicitVariable &RootTask::get_variable(int var) const {
@@ -490,6 +492,10 @@ void RootTask::convert_ancestor_state_values(
     if (this != ancestor_task) {
         ABORT("Invalid state conversion");
     }
+}
+
+AxiomEvaluator &RootTask::get_axiom_evaluator() const {
+    return *axiom_evaluator;
 }
 
 void read_root_task(istream &in) {

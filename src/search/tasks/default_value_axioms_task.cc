@@ -105,6 +105,7 @@ DefaultValueAxiomsTask::DefaultValueAxiomsTask(
                 FactPair(var, default_value), axiom_ids);
         }
     }
+    axiom_evaluator = make_unique<AxiomEvaluator>(TaskProxy(*this));
 }
 
 /*
@@ -388,13 +389,16 @@ int DefaultValueAxiomsTask::get_num_axioms() const {
     return parent->get_num_axioms() + default_value_axioms.size();
 }
 
+AxiomEvaluator &DefaultValueAxiomsTask::get_axiom_evaluator() const {
+    return *axiom_evaluator;
+}
+
 shared_ptr<AbstractTask> get_default_value_axioms_task_if_needed(
     const shared_ptr<AbstractTask> &task,
     AxiomHandlingType axioms) {
     TaskProxy proxy(*task);
     if (task_properties::has_axioms(proxy)) {
-        return make_shared<tasks::DefaultValueAxiomsTask>(
-            DefaultValueAxiomsTask(task, axioms));
+        return make_shared<tasks::DefaultValueAxiomsTask>(task, axioms);
     }
     return task;
 }
