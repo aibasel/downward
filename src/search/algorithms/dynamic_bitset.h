@@ -4,10 +4,13 @@
 #include <cassert>
 #include <limits>
 #include <vector>
+#include <bit>
 
 /*
   Poor man's version of boost::dynamic_bitset, mostly copied from there.
 */
+
+class BitsetView;
 
 namespace dynamic_bitset {
 template<typename Block = unsigned int>
@@ -16,8 +19,10 @@ class DynamicBitset {
         !std::numeric_limits<Block>::is_signed,
         "Block type must be unsigned");
 
+    friend class ::BitsetView;	// in ../per_state_bitset.h , global namespace
+
     std::vector<Block> blocks;
-    const std::size_t num_bits;
+    std::size_t num_bits;
 
     static const Block zeros;
     static const Block ones;
@@ -55,13 +60,40 @@ class DynamicBitset {
     }
 
 public:
+    explicit DynamicBitset()
+        : blocks(0, zeros),
+          num_bits(0) {
+    }
     explicit DynamicBitset(std::size_t num_bits)
         : blocks(compute_num_blocks(num_bits), zeros),
           num_bits(num_bits) {
     }
+    // copy constructor
+    DynamicBitset(const DynamicBitset &other)
+	: blocks(other.blocks),
+	  num_bits(other.num_bits) {
+    }
+    // copy assignment operator
+    DynamicBitset& operator=(const DynamicBitset& other) {
+        if (this == &other) {
+            return *this;
+        }
+	blocks = other.blocks;
+	num_bits = other.num_bits;
+        return *this;
+    }
+
 
     std::size_t size() const {
         return num_bits;
+    }
+
+    void resize(std::size_t _num_bits){
+	if (num_bits != _num_bits){
+	    num_bits = _num_bits;
+	    std::size_t num_blocks = compute_num_blocks(num_bits);
+	    blocks.resize(num_blocks, zeros);
+	}
     }
 
     /*
@@ -72,10 +104,21 @@ public:
     */
     int count() const {
         int result = 0;
-        for (std::size_t pos = 0; pos < num_bits; ++pos) {
-            result += static_cast<int>(test(pos));
-        }
+        // for (std::size_t pos = 0; pos < num_bits; ++pos) {
+        //     result += static_cast<int>(test(pos));
+        // }
+	for (Block blk : blocks){
+	    result += std::popcount(blk);
+	}
         return result;
+    }
+    bool any() const{
+	for (Block blk : blocks){
+	    if (blk != 0){
+		return true;
+	    }
+	}
+	return false;
     }
 
     void set() {
@@ -123,7 +166,77 @@ public:
         }
         return true;
     }
+
+    void update_not() {
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+	    blocks[i] = ~blocks[i];
+        }
+    }
+    void update_and(const DynamicBitset &other) {
+        assert(size() == other.size());
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+	    blocks[i] &= other.blocks[i];
+        }
+    }
+    void update_or(const DynamicBitset &other) {
+        assert(size() == other.size());
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+	    blocks[i] |= other.blocks[i];
+        }
+    }
+    void update_andc(const DynamicBitset &other) { // and complement
+        assert(size() == other.size());
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+	    blocks[i] &= ~(other.blocks[i]);
+        }
+    }
+    void update_orc(const DynamicBitset &other) { // or complement
+        assert(size() == other.size());
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+	    blocks[i] |= ~(other.blocks[i]);
+        }
+    }
+    void update_xor(const DynamicBitset &other) {
+        assert(size() == other.size());
+        for (std::size_t i = 0; i < blocks.size(); ++i) {
+	    blocks[i] ^= other.blocks[i];
+        }
+    }
+    DynamicBitset& operator&=(const DynamicBitset &other){
+	update_and(other);
+	return *this;
+    }
+    DynamicBitset& operator|=(const DynamicBitset &other){
+	update_or(other);
+	return *this;
+    }
+    DynamicBitset& operator^=(const DynamicBitset &other){
+	update_xor(other);
+	return *this;
+    }
 };
+
+template<typename Block>
+DynamicBitset<Block> operator~(DynamicBitset<Block> copy){
+    copy.update_not();
+    return copy;
+}
+template<typename Block>
+DynamicBitset<Block> operator&&(DynamicBitset<Block> copy, const DynamicBitset<Block> &other){
+    copy &= other;
+    return copy;
+}
+template<typename Block>
+DynamicBitset<Block> operator||(DynamicBitset<Block> copy, const DynamicBitset<Block> &other){
+    copy |= other;
+    return copy;
+}
+template<typename Block>
+DynamicBitset<Block> operator^(DynamicBitset<Block> copy, const DynamicBitset<Block> &other){
+    copy ^= other;
+    return copy;
+}
+
 
 template<typename Block>
 const Block DynamicBitset<Block>::zeros = Block(0);

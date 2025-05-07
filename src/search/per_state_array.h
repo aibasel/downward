@@ -5,7 +5,7 @@
 
 #include <cassert>
 #include <unordered_map>
-
+#include <cstring>
 
 template<class T>
 class ConstArrayView {
@@ -53,6 +53,12 @@ public:
 
     int size() const {
         return size_;
+    }
+    void copy_from(const ArrayView &other) {
+	assert(size_ == other.size_);
+        if (p != other.p){
+	    std::memcpy(p, other.p, sizeof(T) * size_);
+	}
     }
 };
 
