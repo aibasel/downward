@@ -18,7 +18,6 @@
 #include <cassert>
 #include <iostream>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 using namespace std;
@@ -53,7 +52,7 @@ static void remove_initial_state_facts(
     const TaskProxy &task_proxy, Facts &facts) {
     State initial_state = task_proxy.get_initial_state();
     facts.erase(remove_if(facts.begin(), facts.end(), [&](FactPair fact) {
-                              return initial_state[fact.var].get_value() == fact.value;
+                              return initial_state[fact.var] == fact.value;
                           }), facts.end());
 }
 
@@ -158,16 +157,16 @@ SharedTasks LandmarkDecomposition::get_subtasks(
     SharedTasks subtasks;
     const shared_ptr<landmarks::LandmarkGraph> landmark_graph =
         get_landmark_graph(task);
-    utils::HashMap<FactPair, landmarks::LandmarkNode *> fact_to_landmark_map =
-        get_fact_to_landmark_map(landmark_graph);
-    Facts landmark_facts = get_fact_landmarks(*landmark_graph);
+    utils::HashMap<FactPair, landmarks::LandmarkNode *> atom_to_landmark_map =
+        get_atom_to_landmark_map(landmark_graph);
+    Facts landmark_facts = get_atom_landmarks(*landmark_graph);
     filter_and_order_facts(task, fact_order, landmark_facts, *rng, log);
     for (const FactPair &landmark : landmark_facts) {
         shared_ptr<AbstractTask> subtask =
             make_shared<extra_tasks::ModifiedGoalsTask>(task, Facts {landmark});
         if (combine_facts) {
             subtask = build_domain_abstracted_task(
-                subtask, fact_to_landmark_map[landmark]);
+                subtask, atom_to_landmark_map[landmark]);
         }
         subtasks.push_back(subtask);
     }

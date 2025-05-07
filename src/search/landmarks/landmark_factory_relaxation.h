@@ -7,23 +7,19 @@ namespace landmarks {
 class Exploration;
 
 class LandmarkFactoryRelaxation : public LandmarkFactory {
-protected:
-    explicit LandmarkFactoryRelaxation(utils::Verbosity verbosity);
-
-    /* Test whether the relaxed planning task is solvable without
-       achieving the excluded landmark. */
-    bool relaxed_task_solvable(
-        const TaskProxy &task_proxy, Exploration &exploration,
-        const Landmark &exclude, bool use_unary_relaxation) const;
-
-private:
     void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
 
-    virtual void generate_relaxed_landmarks(const std::shared_ptr<AbstractTask> &task,
-                                            Exploration &exploration) = 0;
+    virtual void generate_relaxed_landmarks(
+        const std::shared_ptr<AbstractTask> &task,
+        Exploration &exploration) = 0;
     void postprocess(const TaskProxy &task_proxy, Exploration &exploration);
 
+    void compute_possible_achievers(
+        Landmark &landmark, const VariablesProxy &variables);
     void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration);
+
+protected:
+    explicit LandmarkFactoryRelaxation(utils::Verbosity verbosity);
 };
 }
 
