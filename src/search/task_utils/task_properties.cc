@@ -1,7 +1,6 @@
 #include "task_properties.h"
 
 #include "../utils/logging.h"
-#include "../utils/memory.h"
 #include "../utils/system.h"
 
 #include <algorithm>
@@ -175,7 +174,7 @@ PerTaskInformation<int_packer::IntPacker> g_state_packers(
         for (VariableProxy var : variables) {
             variable_ranges.push_back(var.get_domain_size());
         }
-        return utils::make_unique_ptr<int_packer::IntPacker>(variable_ranges);
+        return make_unique<int_packer::IntPacker>(variable_ranges);
     }
     );
 }

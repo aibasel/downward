@@ -253,7 +253,7 @@ unique_ptr<PatternInfo> CEGAR::compute_pattern_info(Pattern &&pattern) const {
             log << "##### End of plan #####" << endl;
         }
     }
-    return utils::make_unique_ptr<PatternInfo>(move(pdb), move(plan), unsolvable);
+    return make_unique<PatternInfo>(move(pdb), move(plan), unsolvable);
 }
 
 void CEGAR::compute_initial_collection() {

@@ -52,12 +52,12 @@ void LandmarkCostPartitioningHeuristic::set_cost_partitioning_algorithm(
     bool alm) {
     if (cost_partitioning == CostPartitioningMethod::OPTIMAL) {
         cost_partitioning_algorithm =
-            utils::make_unique_ptr<OptimalCostPartitioningAlgorithm>(
+            make_unique<OptimalCostPartitioningAlgorithm>(
                 task_properties::get_operator_costs(task_proxy),
                 *lm_graph, lpsolver);
     } else if (cost_partitioning == CostPartitioningMethod::UNIFORM) {
         cost_partitioning_algorithm =
-            utils::make_unique_ptr<UniformCostPartitioningAlgorithm>(
+            make_unique<UniformCostPartitioningAlgorithm>(
                 task_properties::get_operator_costs(task_proxy),
                 *lm_graph, alm);
     } else {

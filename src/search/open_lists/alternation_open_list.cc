@@ -4,7 +4,6 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/component_errors.h"
-#include "../utils/memory.h"
 #include "../utils/system.h"
 
 #include <cassert>
@@ -137,13 +136,13 @@ AlternationOpenListFactory::AlternationOpenListFactory(
 
 unique_ptr<StateOpenList>
 AlternationOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<AlternationOpenList<StateOpenListEntry>>(
+    return make_unique<AlternationOpenList<StateOpenListEntry>>(
         sublists, boost);
 }
 
 unique_ptr<EdgeOpenList>
 AlternationOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<AlternationOpenList<EdgeOpenListEntry>>(
+    return make_unique<AlternationOpenList<EdgeOpenListEntry>>(
         sublists, boost);
 }
 

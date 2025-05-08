@@ -5,7 +5,6 @@
 
 #include "algorithms/subscriber.h"
 #include "utils/hash.h"
-#include "utils/memory.h"
 
 #include <functional>
 
@@ -41,7 +40,7 @@ public:
     PerTaskInformation()
         : entry_constructor(
               [](const TaskProxy &task_proxy) {
-                  return utils::make_unique_ptr<Entry>(task_proxy);
+                  return std::make_unique<Entry>(task_proxy);
               }) {
     }
 

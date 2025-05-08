@@ -105,14 +105,15 @@ Variables can be defined with
 
 ### Variable Example
 
-Suppose I want to run GBFS with the `lm_count` heuristic (the inadmissible
-version), and then run another GBFS search with an admissible `lm_count`
-heuristic, using the h^m landmarks without discovering the landmarks
-twice.
+Suppose I want to run GBFS with the `landmark_sum` heuristic, and then run
+another GBFS search with the `landmark_cost_partitioning` heuristic, using the
+h^m landmarks without discovering the landmarks twice.
 
-    --search "let(lm, lm_hm(m=2), 
-                  iterated([lazy_greedy(lmcount(lm)),
-                            lazy_greedy(lmcount(lm,admissible=true))]))" 
+```
+--search "let(lm, lm_hm(m=2), 
+              iterated([lazy_greedy([landmark_sum(lm)]),
+                        lazy_greedy([landmark_cost_partitioning(lm))]]))"
+```
 
 ### Old-style Predefinitions
 

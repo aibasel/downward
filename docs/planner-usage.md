@@ -11,8 +11,8 @@ things. To see the complete list of options, run
     ./fast-downward.py --help
 
 If you want to run any of the planners based on Fast Downward that
-participated in IPC 2011, please also check
-[IpcPlanners](IpcPlanners).
+participated in IPC 2011, please also check the page on
+[IPC planners](ipc-planners.md).
 
 ## Caveats
 
@@ -80,30 +80,29 @@ for such cases.
 
     ## using FF heuristic and context-enhanced additive heuristic (previously: "fFyY")
      ./fast-downward.py domain.pddl task.pddl \
-        --evaluator "hff=ff()" --evaluator "hcea=cea()" \
-        --search "lazy_greedy([hff, hcea], preferred=[hff, hcea])" \
+        --search "let(hff, ff(), let(hcea, cea(), lazy_greedy([hff, hcea], preferred=[hff, hcea])))"
                
 
     ## using FF heuristic (previously: "fF")
      ./fast-downward.py domain.pddl task.pddl \
-        --evaluator "hff=ff()" \
-        --search "lazy_greedy([hff], preferred=[hff])" \
+        --search "let(hff, ff(), lazy_greedy([hff], preferred=[hff]))"
                
 
     ## using context-enhanced additive heuristic (previously: "yY")
      ./fast-downward.py domain.pddl task.pddl \
-        --evaluator "hcea=cea()" \
-        --search "lazy_greedy([hcea], preferred=[hcea])" \
+        --search "let(hcea, cea(), lazy_greedy([hcea], preferred=[hcea]))"
                
 
 ### LAMA 2011
 
-     ./fast-downward.py --alias seq-sat-lama-2011 domain.pddl task.pddl
+```
+./fast-downward.py --alias seq-sat-lama-2011 domain.pddl task.pddl
+```
 
 runs the "LAMA 2011 configuration" of the planner. (Note that this is
 not really the same as "LAMA 2011" as it participated at IPC 2011
 because there have been bug fixes and other changes to the planner since
-2011. See [IpcPlanners](IpcPlanners "wikilink") for more information.)
+2011. See ["IPC planners"](ipc-planners.md) for more information.)
 To find out which actual search options the LAMA 2011 configuration
 corresponds to, check the source code of the `src/driver/aliases.py` module.
 

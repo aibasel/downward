@@ -59,7 +59,7 @@ The portfolios are available in several versions:
     and [cost-bounded
     track](https://bitbucket.org/ipc2018-classical/team45/src/ipc-2018-seq-cbo/).
     Both repositories contain Singularity files for easier compilation.
--   Released version from [Releases](Releases)
+-   Released version from the [Fast Downward releases](https://www.fast-downward.org/latest/releases/)
 -   Latest revision from [Git repository](https://github.com/aibasel/downward/).
 
 ## How do I run an IPC configuration?

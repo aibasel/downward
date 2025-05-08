@@ -263,7 +263,7 @@ void PatternDatabaseFactory::compute_abstract_operators(
 }
 
 unique_ptr<MatchTree> PatternDatabaseFactory::compute_match_tree() const {
-    unique_ptr<MatchTree> match_tree = utils::make_unique_ptr<MatchTree>(task_proxy, projection);
+    unique_ptr<MatchTree> match_tree = make_unique<MatchTree>(task_proxy, projection);
     for (size_t op_id = 0; op_id < abstract_ops.size(); ++op_id) {
         const AbstractOperator &op = abstract_ops[op_id];
         match_tree->insert(op_id, op.get_regression_preconditions());

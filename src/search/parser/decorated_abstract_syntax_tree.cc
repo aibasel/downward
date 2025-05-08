@@ -4,7 +4,6 @@
 #include "../plugins/types.h"
 #include "../utils/logging.h"
 #include "../utils/math.h"
-#include "../utils/memory.h"
 
 #include <limits>
 
@@ -457,7 +456,7 @@ shared_ptr<DecoratedASTNode> DecoratedLetNode::clone_shared() const {
 }
 
 unique_ptr<DecoratedASTNode> DecoratedLetNode::clone() const {
-    return utils::make_unique_ptr<DecoratedLetNode>(*this);
+    return make_unique<DecoratedLetNode>(*this);
 }
 
 DecoratedFunctionCallNode::DecoratedFunctionCallNode(
@@ -471,7 +470,7 @@ shared_ptr<DecoratedASTNode> DecoratedFunctionCallNode::clone_shared() const {
 }
 
 unique_ptr<DecoratedASTNode> DecoratedFunctionCallNode::clone() const {
-    return utils::make_unique_ptr<DecoratedFunctionCallNode>(*this);
+    return make_unique<DecoratedFunctionCallNode>(*this);
 }
 
 DecoratedListNode::DecoratedListNode(const DecoratedListNode &other) {
@@ -482,7 +481,7 @@ DecoratedListNode::DecoratedListNode(const DecoratedListNode &other) {
 }
 
 unique_ptr<DecoratedASTNode> DecoratedListNode::clone() const {
-    return utils::make_unique_ptr<DecoratedListNode>(*this);
+    return make_unique<DecoratedListNode>(*this);
 }
 
 shared_ptr<DecoratedASTNode> DecoratedListNode::clone_shared() const {
@@ -494,7 +493,7 @@ VariableNode::VariableNode(const VariableNode &other)
 }
 
 unique_ptr<DecoratedASTNode> VariableNode::clone() const {
-    return utils::make_unique_ptr<VariableNode>(*this);
+    return make_unique<VariableNode>(*this);
 }
 
 shared_ptr<DecoratedASTNode> VariableNode::clone_shared() const {
@@ -506,7 +505,7 @@ BoolLiteralNode::BoolLiteralNode(const BoolLiteralNode &other)
 }
 
 unique_ptr<DecoratedASTNode> BoolLiteralNode::clone() const {
-    return utils::make_unique_ptr<BoolLiteralNode>(*this);
+    return make_unique<BoolLiteralNode>(*this);
 }
 
 shared_ptr<DecoratedASTNode> BoolLiteralNode::clone_shared() const {
@@ -518,7 +517,7 @@ StringLiteralNode::StringLiteralNode(const StringLiteralNode &other)
 }
 
 unique_ptr<DecoratedASTNode> StringLiteralNode::clone() const {
-    return utils::make_unique_ptr<StringLiteralNode>(*this);
+    return make_unique<StringLiteralNode>(*this);
 }
 
 shared_ptr<DecoratedASTNode> StringLiteralNode::clone_shared() const {
@@ -530,7 +529,7 @@ IntLiteralNode::IntLiteralNode(const IntLiteralNode &other)
 }
 
 unique_ptr<DecoratedASTNode> IntLiteralNode::clone() const {
-    return utils::make_unique_ptr<IntLiteralNode>(*this);
+    return make_unique<IntLiteralNode>(*this);
 }
 
 shared_ptr<DecoratedASTNode> IntLiteralNode::clone_shared() const {
@@ -542,7 +541,7 @@ FloatLiteralNode::FloatLiteralNode(const FloatLiteralNode &other)
 }
 
 unique_ptr<DecoratedASTNode> FloatLiteralNode::clone() const {
-    return utils::make_unique_ptr<FloatLiteralNode>(*this);
+    return make_unique<FloatLiteralNode>(*this);
 }
 
 shared_ptr<DecoratedASTNode> FloatLiteralNode::clone_shared() const {
@@ -554,7 +553,7 @@ SymbolNode::SymbolNode(const SymbolNode &other)
 }
 
 unique_ptr<DecoratedASTNode> SymbolNode::clone() const {
-    return utils::make_unique_ptr<SymbolNode>(*this);
+    return make_unique<SymbolNode>(*this);
 }
 
 shared_ptr<DecoratedASTNode> SymbolNode::clone_shared() const {
@@ -567,7 +566,7 @@ ConvertNode::ConvertNode(const ConvertNode &other)
 }
 
 unique_ptr<DecoratedASTNode> ConvertNode::clone() const {
-    return utils::make_unique_ptr<ConvertNode>(*this);
+    return make_unique<ConvertNode>(*this);
 }
 
 shared_ptr<DecoratedASTNode> ConvertNode::clone_shared() const {
@@ -580,7 +579,7 @@ CheckBoundsNode::CheckBoundsNode(const CheckBoundsNode &other)
 }
 
 unique_ptr<DecoratedASTNode> CheckBoundsNode::clone() const {
-    return utils::make_unique_ptr<CheckBoundsNode>(*this);
+    return make_unique<CheckBoundsNode>(*this);
 }
 
 shared_ptr<DecoratedASTNode> CheckBoundsNode::clone_shared() const {

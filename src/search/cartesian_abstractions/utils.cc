@@ -2,7 +2,6 @@
 
 #include "../heuristics/additive_heuristic.h"
 #include "../utils/logging.h"
-#include "../utils/memory.h"
 
 #include <algorithm>
 #include <cassert>

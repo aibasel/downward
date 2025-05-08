@@ -33,12 +33,12 @@ CGHeuristic::CGHeuristic(
     }
 
     if (max_cache_size > 0)
-        cache = utils::make_unique_ptr<CGCache>(task_proxy, max_cache_size, log);
+        cache = make_unique<CGCache>(task_proxy, max_cache_size, log);
 
     unsigned int num_vars = task_proxy.get_variables().size();
     prio_queues.reserve(num_vars);
     for (size_t i = 0; i < num_vars; ++i)
-        prio_queues.push_back(utils::make_unique_ptr<ValueNodeQueue>());
+        prio_queues.push_back(make_unique<ValueNodeQueue>());
 
     function<bool(int, int)> pruning_condition =
         [](int dtg_var, int cond_var) {return dtg_var <= cond_var;};
