@@ -23,20 +23,18 @@ using utils::ExitCode;
 
 namespace landmarks {
 static void set_intersection(vector<int> &set1, const vector<int> &set2) {
-    assert(is_sorted(set1.begin(), set1.end()));
-    assert(is_sorted(set2.begin(), set2.end()));
+    assert(ranges::is_sorted(set1));
+    assert(ranges::is_sorted(set2));
     vector<int> result;
-    ranges::set_intersection(set1.begin(), set1.end(), set2.begin(),
-                             set2.end(), back_inserter(result));
+    ranges::set_intersection(set1, set2, back_inserter(result));
     swap(set1, result);
 }
 
 static void set_difference(vector<int> &set1, const vector<int> &set2) {
-    assert(is_sorted(set1.begin(), set1.end()));
-    assert(is_sorted(set2.begin(), set2.end()));
+    assert(ranges::is_sorted(set1));
+    assert(ranges::is_sorted(set2));
     vector<int> result;
-    ranges::set_difference(set1.begin(), set1.end(), set2.begin(),
-                           set2.end(), inserter(result, result.begin()));
+    ranges::set_difference(set1, set2, inserter(result, result.begin()));
     swap(set1, result);
 }
 
@@ -52,10 +50,9 @@ void LandmarkFactoryHM::get_m_sets_including_current_var(
     int domain_size = variables[current_var].get_domain_size();
     for (int value = 0; value < domain_size; ++value) {
         FactPair atom(current_var, value);
-        bool use_var = ranges::none_of(
-            current.begin(), current.end(), [&](const FactPair &other) {
-                return are_mutex(variables, atom, other);
-            });
+        bool use_var = ranges::none_of(current, [&](const FactPair &other) {
+                                           return are_mutex(variables, atom, other);
+                                       });
         if (use_var) {
             current.push_back(atom);
             get_m_sets(variables, num_included + 1, current_var + 1,
@@ -90,10 +87,9 @@ void LandmarkFactoryHM::get_m_sets_of_set_including_current_proposition(
     int current_index, Propositions &current,
     vector<Propositions> &subsets, const Propositions &superset) {
     const FactPair &atom = superset[current_index];
-    bool use_proposition = ranges::none_of(
-        current.begin(), current.end(), [&](const FactPair &other) {
-            return are_mutex(variables, atom, other);
-        });
+    bool use_proposition = ranges::none_of(current, [&](const FactPair &other) {
+                                               return are_mutex(variables, atom, other);
+                                           });
     if (use_proposition) {
         current.push_back(atom);
         get_m_sets_of_set(variables, num_included + 1, current_index + 1,
@@ -130,10 +126,9 @@ void LandmarkFactoryHM::get_split_m_sets_including_current_proposition_from_firs
     vector<Propositions> &subsets, const Propositions &superset1,
     const Propositions &superset2) {
     const FactPair &atom = superset1[current_index1];
-    bool use_proposition = ranges::none_of(
-        current.begin(), current.end(), [&](const FactPair &other) {
-            return are_mutex(variables, atom, other);
-        });
+    bool use_proposition = ranges::none_of(current, [&](const FactPair &other) {
+                                               return are_mutex(variables, atom, other);
+                                           });
     if (use_proposition) {
         current.push_back(atom);
         get_split_m_sets(variables, num_included1 + 1, num_included2,
@@ -638,18 +633,17 @@ static bool operator_can_achieve_landmark(
         get_operator_postcondition(static_cast<int>(variables.size()), op);
 
     for (const FactPair &atom : landmark.atoms) {
-        if (find(postcondition.begin(), postcondition.end(), atom) !=
-            postcondition.end()) {
+        if (ranges::find(postcondition, atom) != postcondition.end()) {
             // This `atom` is a postcondition of `op`, move on to the next one.
             continue;
         }
         auto mutex = [&](const FactPair &other) {
                 return are_mutex(variables, atom, other);
             };
-        if (any_of(postcondition.begin(), postcondition.end(), mutex)) {
+        if (ranges::any_of(postcondition, mutex)) {
             return false;
         }
-        if (any_of(precondition.begin(), precondition.end(), mutex)) {
+        if (ranges::any_of(precondition, mutex)) {
             return false;
         }
     }
@@ -810,7 +804,7 @@ void LandmarkFactoryHM::update_proposition_landmark(
       achieved for the first time. No need to intersect for
       greedy-necessary orderings or add `op` to the first achievers.
     */
-    if (find(landmarks.begin(), landmarks.end(), proposition) == landmarks.end()) {
+    if (ranges::find(landmarks, proposition) == landmarks.end()) {
         hm_entry.first_achievers.insert(op_id);
         if (use_orders) {
             set_intersection(hm_entry.precondition_landmarks,

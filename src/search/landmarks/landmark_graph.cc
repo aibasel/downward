@@ -51,9 +51,9 @@ bool LandmarkGraph::contains_disjunctive_landmark(const FactPair &atom) const {
 
 bool LandmarkGraph::contains_overlapping_disjunctive_landmark(
     const utils::HashSet<FactPair> &atoms) const {
-    return any_of(atoms.begin(), atoms.end(), [&](const FactPair &atom) {
-                      return contains_disjunctive_landmark(atom);
-                  });
+    return ranges::any_of(atoms, [&](const FactPair &atom) {
+                              return contains_disjunctive_landmark(atom);
+                          });
 }
 
 bool LandmarkGraph::contains_superset_disjunctive_landmark(
@@ -90,9 +90,10 @@ LandmarkNode *LandmarkGraph::add_node(Landmark &&landmark) {
 }
 
 LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark_to_add) {
-    assert(landmark_to_add.type == CONJUNCTIVE || all_of(
-               landmark_to_add.atoms.begin(), landmark_to_add.atoms.end(),
-               [&](const FactPair &atom) {return !contains_landmark(atom);}));
+    assert(landmark_to_add.type == CONJUNCTIVE || ranges::all_of(
+               landmark_to_add.atoms, [&](const FactPair &atom) {
+                   return !contains_landmark(atom);
+               }));
     /*
       TODO: Avoid having to fetch landmark after moving it. This will only be
       possible after removing the assumption that landmarks don't overlap
@@ -148,8 +149,9 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
 void LandmarkGraph::remove_node(LandmarkNode *node) {
     remove_node_occurrences(node);
     const auto it =
-        find_if(nodes.cbegin(), nodes.cend(),
-                [&node](const auto &other) {return other.get() == node;});
+        ranges::find_if(nodes, [&node](const auto &other) {
+                            return other.get() == node;
+                        });
     assert(it != nodes.end());
     nodes.erase(it);
 }

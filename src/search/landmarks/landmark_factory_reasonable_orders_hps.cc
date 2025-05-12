@@ -9,6 +9,8 @@
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 
+#include <ranges>
+
 using namespace std;
 namespace landmarks {
 LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(
@@ -320,12 +322,10 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
     }
     utils::HashSet<FactPair> shared_effects =
         get_shared_effects_of_achievers(atom_a, task_proxy);
-    return ranges::any_of(
-        shared_effects.begin(), shared_effects.end(),
-        [&](const FactPair &atom) {
-            const FactProxy &e = variables[atom.var].get_fact(atom.value);
-            return e != a && e != b && e.is_mutex(b);
-        });
+    return ranges::any_of(shared_effects, [&](const FactPair &atom) {
+                              const FactProxy &e = variables[atom.var].get_fact(atom.value);
+                              return e != a && e != b && e.is_mutex(b);
+                          });
 
     /*
       Experimentally commenting this out -- see issue202.

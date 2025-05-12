@@ -3,6 +3,8 @@
 
 #include "landmark.h"
 
+#include <ranges>
+
 using namespace std;
 
 namespace landmarks {
@@ -111,12 +113,10 @@ void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
               mark B future also in these cases, because for unsolvable
               problems anything is a landmark.
             */
-            if (any_of(node->parents.begin(), node->parents.end(),
-                       [initial_state](auto &parent) {
-                           const Landmark &landmark =
-                               parent.first->get_landmark();
-                           return !landmark.is_true_in_state(initial_state);
-                       })) {
+            if (ranges::any_of(node->parents, [initial_state](auto &parent) {
+                                   const Landmark &landmark = parent.first->get_landmark();
+                                   return !landmark.is_true_in_state(initial_state);
+                               })) {
                 future.set(id);
             }
         } else {

@@ -13,7 +13,6 @@
 #include "../utils/system.h"
 
 #include <cassert>
-#include <map>
 #include <ranges>
 #include <unordered_map>
 
@@ -195,7 +194,7 @@ static utils::HashSet<FactPair> approximate_preconditions_to_achieve_landmark(
    structures (i.e., the list of open landmarks and forward orders). */
 void LandmarkFactoryRpgSasp::remove_occurrences_of_landmark_node(
     const LandmarkNode *node) {
-    auto it = find(open_landmarks.begin(), open_landmarks.end(), node);
+    auto it = ranges::find(open_landmarks, node);
     if (it != open_landmarks.end()) {
         open_landmarks.erase(it);
     }
@@ -206,10 +205,10 @@ static vector<LandmarkNode *> get_natural_parents(const LandmarkNode *node) {
     // Retrieve incoming orderings from `disjunctive_landmark_node`.
     vector<LandmarkNode *> parents;
     parents.reserve(node->parents.size());
-    assert(all_of(node->parents.begin(), node->parents.end(),
-                  [](const pair<LandmarkNode *, OrderingType> &parent) {
-                      return parent.second >= OrderingType::NATURAL;
-                  }));
+    assert(ranges::all_of(
+               node->parents, [](const pair<LandmarkNode *, OrderingType> &parent) {
+                   return parent.second >= OrderingType::NATURAL;
+               }));
     for (auto &parent : views::keys(node->parents)) {
         parents.push_back(parent);
     }
@@ -271,10 +270,9 @@ void LandmarkFactoryRpgSasp::add_atomic_landmark_and_ordering(
 bool LandmarkFactoryRpgSasp::deal_with_overlapping_landmarks(
     const utils::HashSet<FactPair> &atoms, LandmarkNode &node,
     OrderingType type) const {
-    if (ranges::any_of(
-            atoms.begin(), atoms.end(), [&](const FactPair &atom) {
-                return landmark_graph->contains_atomic_landmark(atom);
-            })) {
+    if (ranges::any_of(atoms, [&](const FactPair &atom) {
+                           return landmark_graph->contains_atomic_landmark(atom);
+                       })) {
         /*
           Do not add the landmark because the atomic one is stronger. Do not add
           the ordering(s) to the corresponding atomic landmark(s) as they are
@@ -531,8 +529,7 @@ void LandmarkFactoryRpgSasp::generate_disjunctive_precondition_landmarks(
         /* We don't want disjunctive landmarks to get too big. Also,
            they should not hold in the initial state. */
         if (preconditions.size() < 5 && ranges::none_of(
-                preconditions.begin(), preconditions.end(),
-                [&](const FactPair &atom) {
+                preconditions, [&](const FactPair &atom) {
                     return initial_state[atom.var].get_value() == atom.value;
                 })) {
             add_disjunctive_landmark_and_ordering(

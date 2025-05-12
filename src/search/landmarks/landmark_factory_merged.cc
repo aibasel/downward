@@ -8,6 +8,8 @@
 
 #include "util.h"
 
+#include <ranges>
+
 using namespace std;
 using utils::ExitCode;
 
@@ -103,11 +105,10 @@ void LandmarkFactoryMerged::add_disjunctive_landmarks(
                   request (e.g., heuristics that consider orders might want to
                   keep all landmarks).
                 */
-                bool exists =
-                    any_of(landmark.atoms.begin(), landmark.atoms.end(),
-                           [&](const FactPair &atom) {
-                               return landmark_graph->contains_landmark(atom);
-                           });
+                bool exists = ranges::any_of(
+                    landmark.atoms, [&](const FactPair &atom) {
+                        return landmark_graph->contains_landmark(atom);
+                    });
                 if (!exists) {
                     Landmark copy(landmark);
                     landmark_graph->add_landmark(move(copy));
@@ -163,10 +164,11 @@ void LandmarkFactoryMerged::postprocess() {
 }
 
 bool LandmarkFactoryMerged::supports_conditional_effects() const {
-    return all_of(landmark_factories.begin(), landmark_factories.end(),
-                  [&](const shared_ptr<LandmarkFactory> &landmark_factory) {
-                      return landmark_factory->supports_conditional_effects();
-                  });
+    return ranges::all_of(
+        landmark_factories,
+        [&](const shared_ptr<LandmarkFactory> &landmark_factory) {
+            return landmark_factory->supports_conditional_effects();
+        });
 }
 
 class LandmarkFactoryMergedFeature
