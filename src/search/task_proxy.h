@@ -91,17 +91,11 @@ using PackedStateBin = int_packer::IntPacker::Bin;
   task_properties.h module.
 */
 
-/* TODO: Implement this in a separate issue and merge into this before
-    merging issue992 into main. */
-template<typename T>
-concept item_typed = requires {
-    typename T::ItemType;
-};
 
 /*
   Basic iterator support for proxy collections.
 */
-template<item_typed ProxyCollection>
+template<typename ProxyCollection>
 class ProxyIterator {
     /* We store a pointer to collection instead of a reference
        because iterators have to be copy assignable. */
