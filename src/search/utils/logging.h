@@ -3,7 +3,6 @@
 
 #include "exceptions.h"
 #include "system.h"
-#include "timer.h"
 
 #include <memory>
 #include <ostream>
