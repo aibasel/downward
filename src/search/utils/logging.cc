@@ -1,7 +1,7 @@
 #include "logging.h"
 
 #include "system.h"
-#include "timer.h"
+#include "timer.h" 		// for g_timer
 
 #include "../plugins/plugin.h"
 
