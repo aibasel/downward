@@ -46,6 +46,51 @@ set_up_options()
 project(downward LANGUAGES CXX)
 add_executable(downward planner.cc)
 
+# obtain the release version
+execute_process(
+  COMMAND python -c "import driver ; print(driver.__version__)"
+  OUTPUT_VARIABLE DOWNWARD_DRIVER_RELEASE
+  RESULT_VARIABLE DOWNWARD_DRIVER_RELEASE_CODE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+if(NOT DOWNWARD_DRIVER_RELEASE_CODE EQUAL 0)
+  message(FATAL_ERROR "Unexpected error reading the version string from the driver.")
+endif()
+
+# obtain git SHA1 hash
+execute_process(
+  COMMAND git log -1 "--format=format:%h%n" HEAD
+  OUTPUT_VARIABLE GIT_REVISION
+  RESULT_VARIABLE GIT_REVISION_CODE
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+if(GIT_REVISION_CODE EQUAL 0)
+
+  # detect uncommitted changes
+  execute_process(
+    COMMAND git diff-index --quiet HEAD
+    RESULT_VARIABLE GIT_DIFF_CODE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  if(NOT GIT_DIFF_CODE EQUAL 0) # uncommitted changes
+    message(WARNING "Building from a repository with uncommited changes.")
+    set(GIT_REVISION "${GIT_REVISION}-dirty")
+  endif()
+
+else() # not under the git control; tarball
+  message(WARNING "Not under the git control (possibly a tarball build).")
+  set(GIT_REVISION "unknown")
+endif()
+
+set(VERSION_STRING "${DOWNWARD_DRIVER_RELEASE} (${GIT_REVISION})")
+message(NOTICE "Version string: \"${VERSION_STRING}\"")
+
+configure_file(version_string.h.in version_string.h)
+configure_file(version_string.txt.in version_string.txt)
+# Add the generated version_string.h to the include path
+target_include_directories(downward PUBLIC "${PROJECT_BINARY_DIR}")
+
 # On Windows we have to copy all DLLs next to the generated binary.
 if (WIN32)
     copy_dlls_to_binary_dir_after_build(downward)
