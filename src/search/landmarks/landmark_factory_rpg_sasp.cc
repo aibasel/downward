@@ -121,7 +121,7 @@ static void add_binary_variable_conditions(
             for (const FactPair &atom : landmark.atoms) {
                 if (atom.var == var_id &&
                     initial_state[var_id].get_value() != atom.value) {
-                    assert(ranges::none_of(result.begin(), result.end(),
+                    assert(ranges::none_of(result,
                                            [&](const FactPair &result_atom) {
                                                return result_atom.var == var_id;
                                            }));
