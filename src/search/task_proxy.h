@@ -91,7 +91,7 @@ using PackedStateBin = int_packer::IntPacker::Bin;
   task_properties.h module.
 */
 
-template <typename T>
+template<typename T>
 concept has_item_type = requires {
     typename T::ItemType;
 };
