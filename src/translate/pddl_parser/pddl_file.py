@@ -22,7 +22,7 @@ def parse_pddl_file(type, filename):
                          (type, filename, e))
 
 
-def open(domain_filename=None, task_filename=None):
+def open(domain_filename=None, task_filename=None, filter_noop_operators=True):
     if domain_filename is None or task_filename is None:
         # Importing options triggers parsing the problem and domain file names
         # as arguments from the command line. We don't import unconditionally
@@ -36,4 +36,4 @@ def open(domain_filename=None, task_filename=None):
     domain_pddl = parse_pddl_file("domain", domain_filename)
     task_pddl = parse_pddl_file("task", task_filename)
 
-    return parsing_functions.parse_task(domain_pddl, task_pddl)
+    return parsing_functions.parse_task(domain_pddl, task_pddl, filter_noop_operators)
