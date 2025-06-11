@@ -61,7 +61,7 @@ contributing, and finally by last name.
 - 2018-2024 Patrick Ferber
 - 2021-2024 Clemens Büchner
 - 2022-2024 Remo Christen
-- 2023-2024 Simon Dold
+- 2022-2024 Simon Dold
 - 2023-2024 Claudia S. Grundke
 - 2024 Martín Pozo
 - 2024 Tanja Schindler
