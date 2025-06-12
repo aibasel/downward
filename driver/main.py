@@ -18,7 +18,14 @@ def main():
     logging.debug(f"processed args: {args}")
 
     if args.version:
-        print(__version__)
+        import os.path
+        from pathlib import Path
+        version_string_path = Path("builds") / Path(args.build) / Path("search") / Path("version_string.txt")
+        if version_string_path.exists():
+            with open(version_string_path, 'r') as file:
+                print(file.readline().strip())
+        else:
+            print(__version__)
         sys.exit()
 
     if args.show_aliases:
