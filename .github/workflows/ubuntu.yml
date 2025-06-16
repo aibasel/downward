@@ -126,8 +126,9 @@ jobs:
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
 
-      - name: Delete artifact
+      - name: Delete artifact (ignore if not found)
         uses: geekyeggo/delete-artifact@v2
+        continue-on-error: true  
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
 
