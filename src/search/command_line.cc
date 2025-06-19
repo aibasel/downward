@@ -1,4 +1,4 @@
-#include "version_string.h"
+#include "git_revision.h"
 #include "command_line.h"
 
 #include "plan_manager.h"
@@ -150,9 +150,6 @@ static shared_ptr<SearchAlgorithm> parse_cmd_line_aux(const vector<string> &args
             num_previously_generated_plans = parse_int_arg(arg, args[i]);
             if (num_previously_generated_plans < 0)
                 input_error("argument for --internal-previous-portfolio-plans must be positive");
-        } else if (arg == "--version") {
-	    cout << VERSION_STRING << endl;
-            exit(0);
         } else {
             input_error("unknown option " + arg);
         }
@@ -188,6 +185,9 @@ shared_ptr<SearchAlgorithm> parse_cmd_line(
     return parse_cmd_line_aux(args);
 }
 
+string revision_info() {
+    return string("Search code revision: ") + g_git_revision;
+}
 
 string usage(const string &progname) {
     return "usage: \n" +
@@ -198,8 +198,8 @@ string usage(const string &progname) {
            "--help [NAME]\n"
            "    Prints help for all heuristics, open lists, etc. called NAME.\n"
            "    Without parameter: prints help for everything available\n"
-           "--version \n"
-           "    Prints the current version (combination of the driver version and the Git SHA1 commit revision at the time of compilation).\n"
+           "--internal-git-revision \n"
+           "    Prints the revision of the code used to build this binary.\n"
            "--internal-plan-file FILENAME\n"
            "    Plan will be output to a file called FILENAME\n\n"
            "--internal-previous-portfolio-plans COUNTER\n"
