@@ -1,3 +1,4 @@
+#include "git_revision.h"
 #include "command_line.h"
 
 #include "plan_manager.h"
@@ -184,6 +185,9 @@ shared_ptr<SearchAlgorithm> parse_cmd_line(
     return parse_cmd_line_aux(args);
 }
 
+string revision_info() {
+    return string("Search code revision: ") + g_git_revision;
+}
 
 string usage(const string &progname) {
     return "usage: \n" +
@@ -194,6 +198,8 @@ string usage(const string &progname) {
            "--help [NAME]\n"
            "    Prints help for all heuristics, open lists, etc. called NAME.\n"
            "    Without parameter: prints help for everything available\n"
+           "--internal-git-revision \n"
+           "    Prints the revision of the code used to build this binary.\n"
            "--internal-plan-file FILENAME\n"
            "    Plan will be output to a file called FILENAME\n\n"
            "--internal-previous-portfolio-plans COUNTER\n"
