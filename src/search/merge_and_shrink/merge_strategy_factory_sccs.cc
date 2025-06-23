@@ -141,7 +141,7 @@ class MergeStrategyFactorySCCsFeature
     : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactorySCCs> {
 public:
     MergeStrategyFactorySCCsFeature() : TypedFeature("merge_sccs") {
-        document_title("Merge strategy SSCs");
+        document_title("Merge strategy SCCs");
         document_synopsis(
             "This merge strategy implements the algorithm described in the paper "
             + utils::format_conference_reference(
@@ -153,7 +153,8 @@ public:
                 "2358-2366",
                 "AAAI Press",
                 "2016") +
-            "In a nutshell, it computes the maximal SCCs of the causal graph, "
+            "In a nutshell, it computes the maximal strongly connected "
+            "components (SCCs) of the causal graph, "
             "obtaining a partitioning of the task's variables. Every such "
             "partition is then merged individually, using the specified fallback "
             "merge strategy, considering the SCCs in a configurable order. "
