@@ -2,8 +2,8 @@ import contextlib
 import sys
 
 import graph
+import options
 import pddl
-from . import options
 from .warning import print_warning
 from .parse_error import ParseError
 
