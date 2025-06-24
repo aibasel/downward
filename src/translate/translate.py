@@ -331,9 +331,8 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
             # the condition on var is not a prevail condition but a
             # precondition, so we remove it from the prevail condition
             condition.pop(var, -1)
-    if not pre_post:  # operator is noop
-        if options.filter_noop_operators:
-            return None
+    if not pre_post and not options.keep_no_ops:  # operator is noop
+        return None
     prevail = list(condition.items())
     return sas_tasks.SASOperator(name, prevail, pre_post, cost)
 
@@ -545,7 +544,7 @@ def unsolvable_sas_task(msg):
 def pddl_to_sas(task):
     with timers.timing("Instantiating", block=True):
         (relaxed_reachable, atoms, actions, goal_list, axioms,
-         reachable_action_params) = instantiate.explore(task, options.filter_noop_operators)
+         reachable_action_params) = instantiate.explore(task)
 
     if not relaxed_reachable:
         return unsolvable_sas_task("No relaxed solution")
@@ -605,7 +604,7 @@ def pddl_to_sas(task):
     if options.filter_unreachable_facts:
         with timers.timing("Detecting unreachable propositions", block=True):
             try:
-                simplify.filter_unreachable_propositions(sas_task, options.filter_noop_operators)
+                simplify.filter_unreachable_propositions(sas_task)
             except simplify.Impossible:
                 return unsolvable_sas_task("Simplified to trivially false goal")
             except simplify.TriviallySolvable:
@@ -615,8 +614,7 @@ def pddl_to_sas(task):
         with timers.timing("Reordering and filtering variables", block=True):
             variable_order.find_and_apply_variable_order(
                 sas_task, options.reorder_variables,
-                options.filter_unimportant_vars,
-                options.filter_noop_operators)
+                options.filter_unimportant_vars)
 
     return sas_task
 
@@ -705,8 +703,7 @@ def main():
     timer = timers.Timer()
     with timers.timing("Parsing", True):
         task = pddl_parser.open(
-            domain_filename=options.domain, task_filename=options.task,
-            filter_noop_operators=options.filter_noop_operators)
+            domain_filename=options.domain, task_filename=options.task)
 
     with timers.timing("Normalizing task"):
         normalize.normalize(task)

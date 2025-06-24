@@ -50,9 +50,9 @@ def parse_args():
         dest="filter_unimportant_vars", action="store_false",
         help="keep variables that do not influence the goal in the causal graph")
     argparser.add_argument(
-        "--keep-noop-operators",
-        dest="filter_noop_operators", action="store_false",
-        help="keep noop operators in the output")
+        "--keep-no-ops",
+        dest="keep_no_ops", action="store_true",
+        help="keep operators without effects in the output")
     argparser.add_argument(
         "--dump-task", action="store_true",
         help="dump human-readable SAS+ representation of the task")

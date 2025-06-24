@@ -2,6 +2,7 @@ from collections import defaultdict, deque
 from itertools import chain
 import heapq
 
+import options
 import sccs
 
 DEBUG = False
@@ -190,12 +191,12 @@ class VariableOrder:
         self.ordering = ordering
         self.new_var = {v: i for i, v in enumerate(ordering)}
 
-    def apply_to_task(self, sas_task, filter_noop_operators):
+    def apply_to_task(self, sas_task):
         self._apply_to_variables(sas_task.variables)
         self._apply_to_init(sas_task.init)
         self._apply_to_goal(sas_task.goal)
         self._apply_to_mutexes(sas_task.mutexes)
-        self._apply_to_operators(sas_task.operators, filter_noop_operators)
+        self._apply_to_operators(sas_task.operators)
         self._apply_to_axioms(sas_task.axioms)
         if DEBUG:
             sas_task.validate()
@@ -232,7 +233,7 @@ class VariableOrder:
                                                     len(mutexes)))
         mutexes[:] = new_mutexes
 
-    def _apply_to_operators(self, operators, filter_noop_operators):
+    def _apply_to_operators(self, operators):
         new_ops = []
         for op in operators:
             pre_post = []
@@ -243,7 +244,7 @@ class VariableOrder:
                                     if var in self.new_var)
                     pre_post.append(
                         (self.new_var[eff_var], pre, post, new_cond))
-            if pre_post or not filter_noop_operators:
+            if pre_post or options.keep_no_ops:
                 op.pre_post = pre_post
                 op.prevail = [(self.new_var[var], val)
                               for var, val in op.prevail
@@ -269,8 +270,7 @@ class VariableOrder:
 
 
 def find_and_apply_variable_order(sas_task, reorder_vars=True,
-                                  filter_unimportant_vars=True,
-                                  filter_noop_operators=True):
+                                  filter_unimportant_vars=True):
     if reorder_vars or filter_unimportant_vars:
         cg = CausalGraph(sas_task)
         if reorder_vars:
@@ -282,5 +282,4 @@ def find_and_apply_variable_order(sas_task, reorder_vars=True,
             print("%s of %s variables necessary." % (len(necessary),
                                                      len(order)))
             order = [var for var in order if necessary[var]]
-        VariableOrder(order).apply_to_task(sas_task,
-                                           filter_noop_operators)
+        VariableOrder(order).apply_to_task(sas_task)

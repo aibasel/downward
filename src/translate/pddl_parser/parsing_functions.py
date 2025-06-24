@@ -3,6 +3,7 @@ import sys
 
 import graph
 import pddl
+from . import options
 from .warning import print_warning
 from .parse_error import ParseError
 
@@ -466,7 +467,7 @@ def parse_assignment(context, alist):
                           f" Use '=' or 'increase'.")
 
 
-def parse_action(context, alist, type_dict, predicate_dict, constant_names, filter_noop_operators):
+def parse_action(context, alist, type_dict, predicate_dict, constant_names):
     with context.layer("Parsing action name"):
         if len(alist) < 4:
             context.error("Expecting block with at least 3 arguments for an action.",
@@ -515,7 +516,7 @@ def parse_action(context, alist, type_dict, predicate_dict, constant_names, filt
             context.error(f"Missing fields. Expecting {SYNTAX_ACTION}.")
         for _ in iterator:
             context.error(f"Too many fields. Expecting {SYNTAX_ACTION}")
-    if eff or not filter_noop_operators:
+    if eff or options.keep_no_ops:
         return pddl.Action(name, parameters, len(parameters),
                            precondition, eff, cost)
     else:
@@ -541,7 +542,7 @@ def parse_axiom(context, alist, type_dict, predicate_dict, constant_names):
                           len(predicate.arguments), condition)
 
 
-def parse_axioms_and_actions(context, entries, type_dict, predicate_dict, constant_names, filter_noop_operators):
+def parse_axioms_and_actions(context, entries, type_dict, predicate_dict, constant_names):
     the_axioms = []
     the_actions = []
     for no, entry in enumerate(entries, start=1):
@@ -555,7 +556,7 @@ def parse_axioms_and_actions(context, entries, type_dict, predicate_dict, consta
                 assert entry[0] == ":action"
                 with context.layer(f"Parsing action #{len(the_actions) + 1}"):
                     action = parse_action(
-                        context, entry, type_dict, predicate_dict, constant_names, filter_noop_operators)
+                        context, entry, type_dict, predicate_dict, constant_names)
                     if action is not None:
                         the_actions.append(action)
     return the_axioms, the_actions
@@ -618,12 +619,12 @@ def parse_init(context, alist, predicate_dict, term_names):
     return initial
 
 
-def parse_task(domain_pddl, task_pddl, filter_noop_operators):
+def parse_task(domain_pddl, task_pddl):
     context = Context()
     if not isinstance(domain_pddl, list):
         context.error("Invalid definition of a PDDL domain.")
     domain_name, domain_requirements, types, type_dict, constants, predicates, \
-        predicate_dict, functions, actions, axioms = parse_domain_pddl(context, domain_pddl, filter_noop_operators)
+        predicate_dict, functions, actions, axioms = parse_domain_pddl(context, domain_pddl)
     if not isinstance(task_pddl, list):
         context.error("Invalid definition of a PDDL task.")
     task_name, task_domain_name, task_requirements, objects, init, goal, \
@@ -649,7 +650,7 @@ def parse_task(domain_pddl, task_pddl, filter_noop_operators):
         predicates, functions, init, goal, actions, axioms, use_metric)
 
 
-def parse_domain_pddl(context, domain_pddl, filter_noop_operators):
+def parse_domain_pddl(context, domain_pddl):
     if len(domain_pddl) < 2:
         context.error("The domain file must start with the define keyword and the domain name.")
     iterator = iter(domain_pddl)
@@ -731,7 +732,7 @@ def parse_domain_pddl(context, domain_pddl, filter_noop_operators):
         entries.extend(iterator)
 
         the_axioms, the_actions = parse_axioms_and_actions(
-            context, entries, type_dict, predicate_dict, {c.name for c in constants}, filter_noop_operators)
+            context, entries, type_dict, predicate_dict, {c.name for c in constants})
 
         yield the_actions
         yield the_axioms

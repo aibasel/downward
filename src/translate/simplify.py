@@ -26,6 +26,7 @@ filter_unreachable_propositions.)
 from collections import defaultdict
 from itertools import count
 
+import options
 import sas_tasks
 
 DEBUG = False
@@ -223,14 +224,14 @@ class VarValueRenaming:
             self.new_sizes.append(new_size)
             self.new_var_count += 1
 
-    def apply_to_task(self, task, filter_noop_operators):
+    def apply_to_task(self, task):
         if DEBUG:
             self.dump()
         self.apply_to_variables(task.variables)
         self.apply_to_mutexes(task.mutexes)
         self.apply_to_init(task.init)
         self.apply_to_goals(task.goal.pairs)
-        self.apply_to_operators(task.operators, filter_noop_operators)
+        self.apply_to_operators(task.operators)
         self.apply_to_axioms(task.axioms)
 
     def apply_to_variables(self, variables):
@@ -295,11 +296,11 @@ class VarValueRenaming:
             # trivially solvable task.
             raise TriviallySolvable
 
-    def apply_to_operators(self, operators, filter_noop_operators):
+    def apply_to_operators(self, operators):
         new_operators = []
         num_removed = 0
         for op in operators:
-            new_op = self.translate_operator(op, filter_noop_operators)
+            new_op = self.translate_operator(op)
             if new_op is None:
                 num_removed += 1
                 if DEBUG:
@@ -325,7 +326,7 @@ class VarValueRenaming:
         print("%d axioms removed" % num_removed)
         axioms[:] = new_axioms
 
-    def translate_operator(self, op, filter_noop_operators):
+    def translate_operator(self, op):
         """Compute a new operator from op where the var/value renaming has
         been applied. Return None if op should be pruned (because it
         is always inapplicable or has no effect.)"""
@@ -369,7 +370,7 @@ class VarValueRenaming:
                 new_var = new_entry[0]
                 new_prevail_vars.discard(new_var)
 
-        if not new_pre_post and filter_noop_operators:
+        if not new_pre_post and not options.keep_no_ops:
             # The operator has no effect.
             return None
         new_prevail = sorted(
@@ -483,7 +484,7 @@ def build_renaming(dtgs):
     return renaming
 
 
-def filter_unreachable_propositions(sas_task, filter_noop_operators):
+def filter_unreachable_propositions(sas_task):
     """We remove unreachable propositions and then prune variables
     with only one value.
 
@@ -514,7 +515,7 @@ def filter_unreachable_propositions(sas_task, filter_noop_operators):
     # apply_to_task may raise Impossible if the goal is detected as
     # unreachable or TriviallySolvable if it has no goal. We let the
     # exceptions propagate to the caller.
-    renaming.apply_to_task(sas_task, filter_noop_operators)
+    renaming.apply_to_task(sas_task)
     print("%d propositions removed" % renaming.num_removed_values)
     if DEBUG:
         sas_task.validate()

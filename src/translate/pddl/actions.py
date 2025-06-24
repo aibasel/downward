@@ -1,7 +1,7 @@
 import copy
 from typing import List, Optional, Tuple
 
-from . import conditions
+from . import conditions, options
 from .conditions import Condition, Literal
 from .effects import Effect
 from .f_expression import Increase
@@ -71,7 +71,7 @@ class Action:
         return result
 
     def instantiate(self, var_mapping, init_facts, init_assignments,
-                    fluent_facts, objects_by_type, metric, filter_noop_operators):
+                    fluent_facts, objects_by_type, metric):
         """Return a PropositionalAction which corresponds to the instantiation of
         this action with the arguments in var_mapping. Only fluent parts of the
         conditions (those in fluent_facts) are included. init_facts are evaluated
@@ -93,7 +93,7 @@ class Action:
         for eff in self.effects:
             eff.instantiate(var_mapping, init_facts, fluent_facts,
                             objects_by_type, effects)
-        if effects or not filter_noop_operators:
+        if effects or options.keep_no_ops:
             if metric:
                 if self.cost is None:
                     cost = 0

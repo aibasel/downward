@@ -53,7 +53,7 @@ def instantiate_goal(goal, init_facts, fluent_facts):
 
 # The input task must have been normalized
 # The model has been computed by build_model.compute_model
-def instantiate(task: pddl.Task, model: Any, filter_noop_operators: bool) -> Tuple[
+def instantiate(task: pddl.Task, model: Any) -> Tuple[
              bool, # relaxed_reachable
              Set[pddl.Literal], # fluent_facts (ground)
              List[pddl.PropositionalAction], # instantiated_actions
@@ -92,7 +92,7 @@ def instantiate(task: pddl.Task, model: Any, filter_noop_operators: bool) -> Tup
             inst_action = action.instantiate(
                 variable_mapping, init_facts, init_assignments,
                 fluent_facts, type_to_objects,
-                task.use_min_cost_metric, filter_noop_operators)
+                task.use_min_cost_metric)
             if inst_action:
                 instantiated_actions.append(inst_action)
         elif isinstance(atom.predicate, pddl.Axiom):
@@ -112,11 +112,11 @@ def instantiate(task: pddl.Task, model: Any, filter_noop_operators: bool) -> Tup
             sorted(instantiated_axioms), reachable_action_parameters)
 
 
-def explore(task, filter_noop_operators):
+def explore(task):
     prog = pddl_to_prolog.translate(task)
     model = build_model.compute_model(prog)
     with timers.timing("Completing instantiation"):
-        return instantiate(task, model, filter_noop_operators)
+        return instantiate(task, model)
 
 
 if __name__ == "__main__":
