@@ -14,6 +14,12 @@ using utils::ExitCode;
 
 int main(int argc, const char **argv) {
     try {
+        /*
+          We have to handle tab completion before registering event handlers
+          because event handlers will print to stdout when the program exits
+          and everything on stdout counts as a suggestion for tab completion.
+        */
+        handle_tab_completion(argc, argv);
         utils::register_event_handlers();
 
         if (argc < 2) {
@@ -22,7 +28,7 @@ int main(int argc, const char **argv) {
         }
 
         bool unit_cost = false;
-        if (static_cast<string>(argv[1]) != "--help") {
+        if (string(argv[1]) != "--help") {
             utils::g_log << "reading input..." << endl;
             tasks::read_root_task(cin);
             utils::g_log << "done reading input!" << endl;
