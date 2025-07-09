@@ -26,9 +26,10 @@ class TaskLexer {
       as indices.
     */
     int stream_line_number = 1;
+    std::string current_line;
     size_t token_number = 0;
     std::vector<std::string> tokens;
-    std::optional<std::string> get_next_nonempty_line();
+    void get_next_nonempty_line();
     void initialize_tokens(const Context &context);
     const std::string &pop_token();
     bool is_in_line_reading_mode() const;

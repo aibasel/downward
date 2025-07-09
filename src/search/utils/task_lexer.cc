@@ -12,30 +12,39 @@ using utils::ExitCode;
 
 namespace utils {
 static const string end_of_line_sentinel("\n");
-static const regex only_whitespaces("\\s*");
 
 TaskLexer::TaskLexer(istream &stream)
     : stream(stream) {
 }
 
-optional<string> TaskLexer::get_next_nonempty_line() {
-    string next_line;
-    while (!stream.eof()) {
-        getline(stream, next_line);
+static bool is_whitespace(const string &s) {
+    for (char c : s) {
+        if (!isspace(c))
+            return false;
+    }
+    return true;
+}
+
+void TaskLexer::get_next_nonempty_line() {
+    while (true) {
+        if (stream.eof()) {
+            current_line = "";
+            break;
+        }
+        getline(stream, current_line);
         ++stream_line_number;
-        if (!regex_match(next_line, only_whitespaces)) {
-            return next_line;
+        if (!is_whitespace(current_line)) {
+            break;
         }
     }
-    return nullopt;
 }
 
 void TaskLexer::initialize_tokens(const Context &context) {
     assert(tokens.empty());
     assert(token_number == 0);
-    optional<string> line = get_next_nonempty_line();
-    if (line.has_value()) {
-        istringstream stream(line.value());
+    get_next_nonempty_line();
+    if (current_line != "") {
+        istringstream stream(current_line);
         string word;
         /* NOTE: The following ignores whitespace within and in
            particular at the end of the line. */
@@ -77,11 +86,11 @@ string TaskLexer::read_line(const Context &context) {
         ABORT("Tried to read a line before confirming the end of "
               "the previous line.");
     }
-    optional<string> line = get_next_nonempty_line();
-    if (!line.has_value()) {
+    get_next_nonempty_line();
+    if (current_line == "") {
         context.error("Unexpected end of task.");
     }
-    return line.value();
+    return current_line;
 }
 
 void TaskLexer::confirm_end_of_line(const Context &context) {
@@ -104,9 +113,9 @@ void TaskLexer::confirm_end_of_input(const Context &context) {
     if (is_in_line_reading_mode()) {
         ABORT("Tried to confirm end of input while reading a line as tokens.");
     }
-    optional<string> line = get_next_nonempty_line();
-    if (line.has_value()) {
-        context.error("Expected end of task, found non-empty line " + line.value());
+    get_next_nonempty_line();
+    if (current_line != "") {
+        context.error("Expected end of task, found non-empty line " + current_line);
     }
 }
 
