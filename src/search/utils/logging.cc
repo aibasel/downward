@@ -46,7 +46,26 @@ LogProxy get_silent_log() {
 }
 
 ContextError::ContextError(const string &msg)
-    : Exception(msg) {
+    : Exception("<you should never see this>"), message(msg) {
+}
+
+string ContextError::get_error_message() const {
+    // TODO: DRY: Based on code from Context::str().
+    const string INDENT = "  ";
+    ostringstream out;
+    out << "Traceback:" << endl;
+    bool first_line = true;
+    for (auto iter = context.rbegin(); iter != context.rend(); ++iter) {
+        out << INDENT;
+        if (first_line) {
+            first_line = false;
+        } else {
+            out << "-> ";
+        }
+        out << *iter << '\n';
+    }
+    out << '\n' << message;
+    return out.str();
 }
 
 const string Context::INDENT = "  ";
@@ -95,6 +114,10 @@ string Context::str() const {
 
 void Context::error(const string &message) const {
     throw ContextError(str() + "\n\n" + message);
+}
+
+void Context::error_new(const string &message) const {
+    throw ContextError(message);
 }
 
 void Context::warn(const string &message) const {

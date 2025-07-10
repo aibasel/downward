@@ -54,7 +54,7 @@ void TaskLexer::initialize_tokens(const Context &context) {
         assert(!tokens.empty());
         tokens.push_back(end_of_line_sentinel);
     } else {
-        context.error("Unexpected end of task.");
+        context.error_new("Unexpected end of task.");
     }
 }
 
@@ -76,7 +76,7 @@ string TaskLexer::read(const Context &context) {
     }
     const string &token = pop_token();
     if (token == end_of_line_sentinel) {
-        context.error("Unexpected end of line.");
+        context.error_new("Unexpected end of line.");
     }
     return token;
 }
@@ -88,7 +88,7 @@ string TaskLexer::read_line(const Context &context) {
     }
     get_next_nonempty_line();
     if (current_line == "") {
-        context.error("Unexpected end of task.");
+        context.error_new("Unexpected end of task.");
     }
     return current_line;
 }
@@ -103,7 +103,7 @@ void TaskLexer::confirm_end_of_line(const Context &context) {
         token_number = 0;
         tokens.clear();
     } else {
-        context.error("Expected end of line after token "
+        context.error_new("Expected end of line after token "
                       + to_string(token_number - 1) + " but line contains "
                       + to_string(tokens.size() - 1) + " tokens.");
     }
@@ -115,7 +115,7 @@ void TaskLexer::confirm_end_of_input(const Context &context) {
     }
     get_next_nonempty_line();
     if (current_line != "") {
-        context.error("Expected end of task, found non-empty line " + current_line);
+        context.error_new("Expected end of task, found non-empty line " + current_line);
     }
 }
 
