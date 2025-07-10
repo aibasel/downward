@@ -12,6 +12,17 @@
 #include <vector>
 
 
+#define TRACE_BLOCK(MSG, BLOCK) \
+    { \
+        int line_no = get_line_number(); \
+        try { \
+            BLOCK \
+        } catch(utils::ContextError &error) { \
+            add_error_line(error, line_no, MSG); \
+            throw; \
+        } \
+    }
+
 using namespace std;
 using utils::ExitCode;
 
@@ -167,9 +178,9 @@ public:
 
 void TaskParser::check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables) {
     if (!utils::in_bounds(fact.var, variables)) {
-        context.error("Invalid variable id: " + to_string(fact.var));
+        context.error_new("Invalid variable id: " + to_string(fact.var));
     } else if (fact.value < 0 || fact.value >= variables[fact.var].domain_size) {
-        context.error(
+        context.error_new(
             "Invalid value for variable '" + variables[fact.var].name
             + "' (index: " + to_string(fact.var) + "): "
             + to_string(fact.value));
@@ -183,14 +194,14 @@ void TaskParser::check_layering_condition(
         int var = fact.var;
         int var_layer = variables[var].axiom_layer;
         if (var_layer > head_var_layer) {
-            context.error(
+            context.error_new(
                 "Variables must be at head variable layer or below, but variable "
                 + to_string(var) + " is at layer " + to_string(var_layer) + ".");
         }
         if (var_layer == head_var_layer) {
             int default_value = variables[var].axiom_default_value;
             if (fact.value == default_value) {
-                context.error(
+                context.error_new(
                     "Body variables at head variable layer must "
                     "have non-default value, but variable " + to_string(var) +
                     " uses default value " + to_string(fact.value) + ".");
@@ -215,7 +226,7 @@ int TaskParser::parse_int(const string &token) {
         failure_reason = "out of range";
     }
     if (!failure_reason.empty()) {
-        context.error(
+        context.error_new(
             "Could not parse '" + token + "' as integer ("
             + failure_reason + ").");
     }
@@ -224,21 +235,16 @@ int TaskParser::parse_int(const string &token) {
 
 void TaskParser::check_nat(const string &value_name, int value) {
     if (value < 0) {
-        context.error(
+        context.error_new(
             "Expected non-negative number for " + value_name
             + ", but got " + to_string(value) + ".");
     }
 }
 
 int TaskParser::read_int(const string &value_name) {
-    // utils::TraceBlock block(context, value_name);
-    int line_no = get_line_number();
-    try {
+    TRACE_BLOCK(value_name, {
         return parse_int(lexer.read(context));
-    } catch(utils::ContextError &error) {
-        add_error_line(error, line_no, value_name);
-        throw;
-    }
+        })
 }
 
 int TaskParser::read_nat(const string &value_name) {
@@ -248,15 +254,16 @@ int TaskParser::read_nat(const string &value_name) {
 }
 
 string TaskParser::read_string_line(const string &value_name) {
-    // utils::TraceBlock block(context, value_name);
-    return lexer.read_line(context);
+    TRACE_BLOCK(value_name, {
+            return lexer.read_line(context);
+        })
 }
 
 void TaskParser::read_magic_line(const string &magic) {
     // utils::TraceBlock block(context, "magic line");
     string line = read_string_line("magic value");
     if (line != magic) {
-        context.error("Expected magic line '" + magic + "', got '" + line + "'.");
+        context.error_new("Expected magic line '" + magic + "', got '" + line + "'.");
     }
 }
 
@@ -302,19 +309,19 @@ ExplicitVariable TaskParser::read_variable(int index) {
     */
     var.axiom_layer = read_int("variable axiom layer");
     if (var.axiom_layer < -1) {
-        context.error(
+        context.error_new(
             "Variable axiom layer must be -1 or non-negative, but is "
             + to_string(var.axiom_layer) + ".");
     }
     lexer.confirm_end_of_line(context);
     var.domain_size = read_nat("variable domain size");
     if (var.domain_size < 1) {
-        context.error(
+        context.error_new(
             "Domain size should be at least 1, but is "
             + to_string(var.domain_size) + ".");
     }
     if ((var.axiom_layer >= 0) && var.domain_size != 2) {
-        context.error(
+        context.error_new(
             "Derived variables must be binary, but domain size is "
             + to_string(var.domain_size) + ".");
     }
@@ -335,13 +342,13 @@ void TaskParser::read_pre_post_axiom(
     int var = read_nat("affected variable");
     int axiom_layer = variables[var].axiom_layer;
     if (axiom_layer == -1) {
-        context.error(
+        context.error_new(
             "Variable affected by axiom must be derived, but variable "
             + to_string(var) + " is not derived.");
     }
     int value_pre = read_int("variable value precondition");
     if (value_pre == -1) {
-        context.error(
+        context.error_new(
             "Variable affected by axiom must have precondition, but value is -1.");
     }
     FactPair precondition = FactPair(var, value_pre);
@@ -352,13 +359,13 @@ void TaskParser::read_pre_post_axiom(
     int default_value = variables[var].axiom_default_value;
     assert(default_value != -1);
     if (value_pre != default_value) {
-        context.error(
+        context.error_new(
             "Value of variable affected by axiom must be default value "
             + to_string(default_value) + " in precondition, but is "
             + to_string(value_pre) + ".");
     }
     if (value_post == default_value) {
-        context.error(
+        context.error_new(
             "Value of variable affected by axiom must be non-default "
             "value in postcondition, but is default value "
             + to_string(value_post) + ".");
@@ -386,13 +393,13 @@ void TaskParser::read_conditional_effect(
         int var = read_nat("affected variable");
         int axiom_layer = variables[var].axiom_layer;
         if (axiom_layer != -1) {
-            context.error(
+            context.error_new(
                 "Variable affected by operator must not be derived, but variable "
                 + to_string(var) + " is derived.");
         }
         int value_pre = read_int("variable value precondition");
         if (value_pre < -1) {
-            context.error(
+            context.error_new(
                 "Variable value precondition must be -1 or non-negative, but is "
                 + to_string(value_pre) + ".");
         }
@@ -439,7 +446,7 @@ ExplicitOperator TaskParser::read_operator(
         }
         int count = read_nat("number of operator effects");
         if (count < 1) {
-            context.error(
+            context.error_new(
                 "Number of operator effects should be at least 1, but is "
                 + to_string(count) + ".");
         }
@@ -463,7 +470,7 @@ ExplicitOperator TaskParser::read_operator(
             int specified_cost = read_int("cost");
             op.cost = use_metric ? specified_cost : 1;
             if (op.cost < 0) {
-                context.error(
+                context.error_new(
                     "Operator cost must be non-negative, but is "
                     + to_string(op.cost) + ".");
             }
@@ -496,7 +503,7 @@ void TaskParser::read_and_verify_version() {
     read_magic_line("begin_version");
     int version = read_nat("version number");
     if (version != PRE_FILE_VERSION) {
-        context.error(
+        context.error_new(
             "Expected translator output file version "
             + to_string(PRE_FILE_VERSION) + ", got "
             + to_string(version) + ".");
@@ -513,7 +520,7 @@ bool TaskParser::read_metric() {
     if (use_metric_int == 1) {
         use_metric = true;
     } else if (use_metric_int != 0) {
-        context.error(
+        context.error_new(
             "expected 0 or 1, got '" + to_string(use_metric_int) + "'.");
     }
     lexer.confirm_end_of_line(context);
@@ -525,7 +532,7 @@ vector<ExplicitVariable> TaskParser::read_variables() {
     // utils::TraceBlock block(context, "variable section");
     int count = read_nat("variable count");
     if (count < 1) {
-        context.error(
+        context.error_new(
             "Number of variables should be at least 1, but is "
             + to_string(count) + ".");
     }
@@ -627,7 +634,7 @@ vector<FactPair> TaskParser::read_goal(const vector<ExplicitVariable> &variables
     for (FactPair goal : goals) {
         int var = goal.var;
         if (!goal_vars.insert(var).second) {
-            context.error(
+            context.error_new(
                 "Goal variables must be unique, but variable "
                 + to_string(var) + " occurs several times.");
         }
