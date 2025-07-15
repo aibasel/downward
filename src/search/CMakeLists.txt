@@ -46,6 +46,37 @@ set_up_options()
 project(downward LANGUAGES CXX)
 add_executable(downward planner.cc)
 
+# obtain git SHA1 hash
+execute_process(
+    COMMAND git log -1 "--format=format:%h%n" HEAD
+    OUTPUT_VARIABLE GIT_REVISION
+    RESULT_VARIABLE GIT_REVISION_EXITCODE
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+if(GIT_REVISION_EXITCODE EQUAL 0)
+    # Check if there are uncommitted changes.
+    execute_process(
+        COMMAND git diff-index --quiet HEAD
+        RESULT_VARIABLE GIT_DIFF_EXITCODE
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    if(NOT GIT_DIFF_EXITCODE EQUAL 0)
+        message(WARNING "Building from a repository with uncommited changes.")
+        set(GIT_REVISION "${GIT_REVISION}-dirty")
+    endif()
+else()
+    # The code is not under the git control. This can happen if we build from a tarball.
+    message(NOTICE "Building outside of git version control.")
+    set(GIT_REVISION "unknown")
+endif()
+
+message(NOTICE "Git revision: \"${GIT_REVISION}\"")
+
+configure_file(git_revision.h.in git_revision.h)
+# The header is generated in ${PROJECT_BINARY_DIR}. Add it to the include path.
+target_include_directories(downward PUBLIC "${PROJECT_BINARY_DIR}")
+
 # On Windows we have to copy all DLLs next to the generated binary.
 if (WIN32)
     copy_dlls_to_binary_dir_after_build(downward)
