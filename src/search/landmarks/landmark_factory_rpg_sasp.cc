@@ -653,8 +653,8 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
     assert(landmark.atoms.size() == 1);
 
     const FactPair landmark_atom = landmark.atoms[0];
-    const FactPair init_atom = FactPair(landmark_atom.var,
-        task_proxy.get_initial_state()[landmark_atom.var]);
+    const FactPair init_atom = FactPair(
+        landmark_atom.var, task_proxy.get_initial_state()[landmark_atom.var]);
     vector<int> critical_predecessors = get_critical_dtg_predecessors(
         init_atom.value, landmark_atom.value,
         reached[landmark_atom.var], dtg_successors[landmark_atom.var]);

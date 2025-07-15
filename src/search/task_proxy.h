@@ -92,17 +92,17 @@ using PackedStateBin = int_packer::IntPacker::Bin;
 */
 
 template<typename Container>
-concept proxy_iterator_enabled = requires(Container &container, std::size_t i) {
+concept proxy_iterator_enabled = requires(Container & container, std::size_t i) {
     typename Container::ItemType;
     requires std::same_as<Container, std::remove_const_t<Container>>;
     {
         container.size()
     }
-    -> std::integral;
+    ->std::integral;
     {
         container[i]
     }
-    -> std::same_as<typename Container::ItemType>;
+    ->std::same_as<typename Container::ItemType>;
 };
 
 /*
