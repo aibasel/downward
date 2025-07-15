@@ -59,10 +59,10 @@ def report_version(build: str):
         executable = try_get_executable(build, REL_SEARCH_PATH)
         search_git_revision = subprocess.check_output([executable, "--internal-git-revision"])
         print(f"git revision [{build}]: {search_git_revision.decode().strip()}")
-    except IncompleteBuildError as err:
+    except IncompleteBuildError:
         print(f"git revision [{build}]: Build not found. Please run './build.py {build}'.")
     except subprocess.CalledProcessError as err:
-        print(f"Cannot determine git revision of search binary.")
+        print(f"Cannot determine git revision of search binary. {err}")
 
 
 def run_translate(args):
