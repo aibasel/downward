@@ -120,12 +120,12 @@ static void add_binary_variable_conditions(
             effect_atom.get_variable().get_domain_size() == 2) {
             for (const FactPair &atom : landmark.atoms) {
                 if (atom.var == var_id &&
-                    initial_state[var_id].get_value() != atom.value) {
+                    initial_state[var_id] != atom.value) {
                     assert(ranges::none_of(result,
                                            [&](const FactPair &result_atom) {
                                                return result_atom.var == var_id;
                                            }));
-                    result.insert(initial_state[var_id].get_pair());
+                    result.insert(FactPair(var_id, initial_state[var_id]));
                     break;
                 }
             }
@@ -530,7 +530,7 @@ void LandmarkFactoryRpgSasp::generate_disjunctive_precondition_landmarks(
            they should not hold in the initial state. */
         if (preconditions.size() < 5 && ranges::none_of(
                 preconditions, [&](const FactPair &atom) {
-                    return initial_state[atom.var].get_value() == atom.value;
+                    return initial_state[atom.var] == atom.value;
                 })) {
             add_disjunctive_landmark_and_ordering(
                 preconditions, *node, OrderingType::GREEDY_NECESSARY);
@@ -653,8 +653,8 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
     assert(landmark.atoms.size() == 1);
 
     const FactPair landmark_atom = landmark.atoms[0];
-    const FactPair init_atom =
-        task_proxy.get_initial_state()[landmark_atom.var].get_pair();
+    const FactPair init_atom = FactPair(landmark_atom.var,
+        task_proxy.get_initial_state()[landmark_atom.var]);
     vector<int> critical_predecessors = get_critical_dtg_predecessors(
         init_atom.value, landmark_atom.value,
         reached[landmark_atom.var], dtg_successors[landmark_atom.var]);
