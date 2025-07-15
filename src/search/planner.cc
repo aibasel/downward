@@ -1,4 +1,5 @@
 #include "command_line.h"
+
 #include "git_revision.h"
 #include "search_algorithm.h"
 
@@ -23,14 +24,14 @@ int main(int argc, const char **argv) {
         utils::register_event_handlers();
 
         if (argc < 2) {
-            utils::g_log << revision_info() << endl;
-            utils::g_log << usage(argv[0]) << endl;
+            utils::g_log << get_revision_info() << endl;
+            utils::g_log << get_usage(argv[0]) << endl;
             utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
         }
 
         bool unit_cost = false;
         if (static_cast<string>(argv[1]) != "--help") {
-            utils::g_log << revision_info() << endl;
+            utils::g_log << get_revision_info() << endl;
             utils::g_log << "reading input..." << endl;
             tasks::read_root_task(cin);
             utils::g_log << "done reading input!" << endl;
