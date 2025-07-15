@@ -35,26 +35,17 @@ class IncompleteBuildError(Exception):
 
 
 def try_get_executable(build: str, rel_path: Path):
-    # First, consider 'build' to be a path directly to the binaries.
-    # The path can be absolute or relative to the current working
-    # directory.
-    build_dir = Path(build)
+    build_dir = util.BUILDS_DIR / build / "bin"
     if not build_dir.exists():
-        # If build is not a full path to the binaries, it might be the
-        # name of a build in our standard directory structure.
-        # in this case, the binaries are in
-        #   '<repo-root>/builds/<buildname>/bin'.
-        build_dir = util.BUILDS_DIR / build / "bin"
-        if not build_dir.exists():
-            raise IncompleteBuildError(
-                f"Could not find build '{build}' at {build_dir}.")
+        raise IncompleteBuildError(
+            f"Could not find build '{build}' at {build_dir}.")
 
-    abs_path = build_dir / rel_path
-    if not abs_path.exists():
+    path = build_dir / rel_path
+    if not path.exists():
         raise IncompleteBuildError(
             f"Could not find '{rel_path}' in build '{build}'.")
 
-    return abs_path
+    return path
 
 def get_executable(build: str, rel_path: Path):
     try:
