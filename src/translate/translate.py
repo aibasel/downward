@@ -331,7 +331,7 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
             # the condition on var is not a prevail condition but a
             # precondition, so we remove it from the prevail condition
             condition.pop(var, -1)
-    if not pre_post:  # operator is noop
+    if not pre_post and not options.keep_no_ops:  # operator is noop
         return None
     prevail = list(condition.items())
     return sas_tasks.SASOperator(name, prevail, pre_post, cost)

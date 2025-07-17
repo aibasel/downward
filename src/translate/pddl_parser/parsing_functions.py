@@ -2,6 +2,7 @@ import contextlib
 import sys
 
 import graph
+import options
 import pddl
 from .warning import print_warning
 from .parse_error import ParseError
@@ -515,7 +516,7 @@ def parse_action(context, alist, type_dict, predicate_dict, constant_names):
             context.error(f"Missing fields. Expecting {SYNTAX_ACTION}.")
         for _ in iterator:
             context.error(f"Too many fields. Expecting {SYNTAX_ACTION}")
-    if eff:
+    if eff or options.keep_no_ops:
         return pddl.Action(name, parameters, len(parameters),
                            precondition, eff, cost)
     else:
