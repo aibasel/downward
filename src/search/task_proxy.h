@@ -117,6 +117,9 @@ class ProxyIterator {
 public:
     using value_type = decltype((*collection)[0]);
     using difference_type = int; // unused but required by the iterator concept
+    using iterator_category = std::input_iterator_tag; // required for legacy iterators
+    using pointer = value_type*; // required for legacy iterators
+    using reference = value_type; // required for legacy iterators
 
     ProxyIterator() = default;
     ProxyIterator(const ProxyCollection &collection, std::size_t pos)
