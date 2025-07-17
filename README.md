@@ -52,7 +52,8 @@ Currently, this list is sorted by the last year the person has been
 active, and in case of ties, by the earliest year the person started
 contributing, and finally by last name.
 
-- 2003-2024 Malte Helmert
+- 2003-2025 Malte Helmert
+- 2009, 2025 Christian Muise
 - 2008-2016, 2018-2024 Gabriele Roeger
 - 2010-2024 Jendrik Seipp
 - 2010-2011, 2013-2024 Silvan Sievers
@@ -92,7 +93,6 @@ contributing, and finally by last name.
 - 2011 Raz Nissim
 - 2010 Moritz Goebelbecker
 - 2007-2009 Matthias Westphal
-- 2009 Christian Muise
 
 
 ## History
