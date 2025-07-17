@@ -2,7 +2,7 @@
 
 Fast Downward is a domain-independent classical planning system.
 
-Copyright 2003-2024 Fast Downward contributors (see below).
+Copyright 2003-2025 Fast Downward contributors (see below).
 
 For further information:
 - Fast Downward website: <https://www.fast-downward.org>
@@ -12,16 +12,24 @@ For further information:
 
 ## Scientific experiments
 
-We recommend to use the [latest release](https://github.com/aibasel/downward/releases/latest) instead of the tip of the main branch.
-The [Downward Lab](https://lab.readthedocs.io/en/stable/) Python package helps running Fast Downward experiments.
-Our separate [benchmark repository](https://github.com/aibasel/downward-benchmarks) contains a collection of planning tasks.
+We recommend to use the [latest
+release](https://github.com/aibasel/downward/releases/latest) instead
+of the tip of the main branch. The [Downward
+Lab](https://lab.readthedocs.io/en/stable/) Python package helps
+running Fast Downward experiments. Our separate [benchmark
+repository](https://github.com/aibasel/downward-benchmarks) contains a
+collection of planning tasks.
 
 ## Supported software versions
 
-The planner is mainly developed under Linux; and all of its features should work with no restrictions under this platform.
-The planner should compile and run correctly on macOS, but we cannot guarantee that it works as well as under Linux.
-The same comment applies for Windows, where additionally some diagnostic features (e.g., reporting peak memory usage when the planner is terminated by a signal) are not supported.
-Setting time and memory limits and running portfolios is not supported under Windows either.
+The planner is mainly developed under Linux; and all of its features
+should work with no restrictions under this platform. The planner
+should compile and run correctly on macOS, but we cannot guarantee
+that it works as well as under Linux. The same comment applies for
+Windows, where additionally some diagnostic features (e.g., reporting
+peak memory usage when the planner is terminated by a signal) are not
+supported. Setting time and memory limits and running portfolios is
+not supported under Windows either.
 
 This version of Fast Downward has been tested with the following software versions:
 
