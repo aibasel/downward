@@ -125,7 +125,7 @@ static void add_binary_variable_conditions(
                                            [&](const FactPair &result_atom) {
                                                return result_atom.var == var_id;
                                            }));
-                    result.insert(FactPair(var_id, initial_state[var_id]));
+                    result.insert(initial_state.get_fact(var_id).get_pair());
                     break;
                 }
             }
@@ -653,8 +653,8 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
     assert(landmark.atoms.size() == 1);
 
     const FactPair landmark_atom = landmark.atoms[0];
-    const FactPair init_atom = FactPair(
-        landmark_atom.var, task_proxy.get_initial_state()[landmark_atom.var]);
+    const FactPair init_atom =
+        task_proxy.get_initial_state().get_fact(landmark_atom.var).get_pair();
     vector<int> critical_predecessors = get_critical_dtg_predecessors(
         init_atom.value, landmark_atom.value,
         reached[landmark_atom.var], dtg_successors[landmark_atom.var]);
