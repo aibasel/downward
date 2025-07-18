@@ -62,7 +62,7 @@ public:
 inline FactPair find_unsatisfied_condition(
     const std::vector<FactPair> &conditions, const State &state) {
     for (const FactPair &condition : conditions) {
-        if (state[condition.var].get_value() != condition.value)
+        if (state[condition.var] != condition.value)
             return condition;
     }
     return FactPair::no_fact;
