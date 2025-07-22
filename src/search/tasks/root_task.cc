@@ -12,6 +12,7 @@
 #include <vector>
 
 
+// version of TRACE_BLOCK that uses exceptions in a "traditional" way
 #define TRACE_BLOCK(MSG, ...) \
     { \
         int line_no = get_line_number(); \
@@ -22,6 +23,12 @@
             throw; \
         } \
     }
+
+
+// version of TRACE_BLOCK that doesn't actually trace
+#undef TRACE_BLOCK
+#define TRACE_BLOCK(MSG, ...) { __VA_ARGS__ }
+
 
 using namespace std;
 using utils::ExitCode;
