@@ -5,6 +5,7 @@
 #include "../search_algorithm.h"
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 class Evaluator;
@@ -31,6 +32,14 @@ class EagerSearch : public SearchAlgorithm {
     void start_f_value_statistics(EvaluationContext &eval_context);
     void update_f_value_statistics(EvaluationContext &eval_context);
     void reward_progress();
+
+    std::optional<SearchNode> get_next_node_to_expand();
+    void collect_preferred_operators(
+        const SearchNode &node,
+        ordered_set::OrderedSet<OperatorID> &preferred_operators);
+    void expand(const SearchNode &node,
+                const std::vector<OperatorID> &applicable_ops,
+                const ordered_set::OrderedSet<OperatorID> &preferred_operators);
 
 protected:
     virtual void initialize() override;
