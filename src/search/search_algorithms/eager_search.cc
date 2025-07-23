@@ -298,7 +298,7 @@ void EagerSearch::expand(
         } else {
             /*
               We found an equally or more expensive path to an open or closed
-              state. Nothing to do. There is nothing we need to do.
+              state. There is nothing we need to do.
             */
         }
     }
