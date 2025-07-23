@@ -2,6 +2,7 @@ from collections import defaultdict, deque
 from itertools import chain
 import heapq
 
+import options
 import sccs
 
 DEBUG = False
@@ -243,7 +244,7 @@ class VariableOrder:
                                     if var in self.new_var)
                     pre_post.append(
                         (self.new_var[eff_var], pre, post, new_cond))
-            if pre_post:
+            if pre_post or options.keep_no_ops:
                 op.pre_post = pre_post
                 op.prevail = [(self.new_var[var], val)
                               for var, val in op.prevail
