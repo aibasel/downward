@@ -11,6 +11,15 @@
 #include <set>
 #include <vector>
 
+// v1 -> trace block class, not implemented here
+// v2 -> the way it was just before this commit
+// v3 -> empty trace blocks
+// v4 -> use trace_block with =, &
+// v5 -> use trace_block with &, &
+
+#define TRACE_IMPLEMENTATION 2
+
+#if (TRACE_IMPLEMENTATION == 2)
 
 // version of TRACE_BLOCK that uses exceptions in a "traditional" way
 #define TRACE_BLOCK(MSG, ...) \
@@ -22,12 +31,52 @@
             add_error_line(error, line_no, MSG); \
             throw; \
         } \
-    }
+    };
+#define RETURN
+#endif
 
+#if (TRACE_IMPLEMENTATION == 3)
 
 // version of TRACE_BLOCK that doesn't actually trace
+
 #undef TRACE_BLOCK
 #define TRACE_BLOCK(MSG, ...) { __VA_ARGS__ }
+#define RETURN
+#endif
+
+#if (TRACE_IMPLEMENTATION == 4)
+
+#undef TRACE_BLOCK
+#define TRACE_BLOCK(MSG, ...) \
+trace_block( \
+    [=](){ \
+        return MSG;\
+    },\
+    [&](){ \
+        __VA_ARGS__ \
+    }\
+);
+
+#define RETURN return
+#endif
+
+#if (TRACE_IMPLEMENTATION == 5)
+
+#undef TRACE_BLOCK
+#define TRACE_BLOCK(MSG, ...) \
+    trace_block( \
+    [&](){ \
+        return MSG;\
+    },\
+    [&](){ \
+        __VA_ARGS__ \
+    }\
+);
+
+#define RETURN return
+#endif
+
+
 
 
 using namespace std;
@@ -140,6 +189,32 @@ public:
 
 
 class TaskParser {
+    template<typename Func, typename MsgFn>
+    auto trace_block(MsgFn&& msg_fn, Func&& func) -> std::invoke_result_t<Func> {
+        using R = std::invoke_result_t<Func>;
+        int line = this->get_line_number();
+        try {
+            if constexpr (std::is_void_v<R>) {
+                std::forward<Func>(func)();
+            }
+            else {
+                return std::forward<Func>(func)();
+            }
+        }
+        catch (utils::ContextError &err) {
+            this->add_error_line(err, line, msg_fn());
+            throw;
+        }
+    }
+
+    template<typename Func>
+    auto trace_block_str(const std::string &msg, Func&& func) -> std::invoke_result_t<Func> {
+        return trace_block(
+            std::forward<Func>(func),
+            [&msg](){return msg;}
+        );
+    }
+
     utils::TaskLexer lexer;
     TaskParserContext context;
 
@@ -249,7 +324,7 @@ void TaskParser::check_nat(const string &value_name, int value) {
 }
 
 int TaskParser::read_int(const string &value_name) {
-    TRACE_BLOCK(value_name, {
+    RETURN TRACE_BLOCK(value_name, {
         return parse_int(lexer.read(context));
     })
 }
@@ -261,7 +336,7 @@ int TaskParser::read_nat(const string &value_name) {
 }
 
 string TaskParser::read_string_line(const string &value_name) {
-    TRACE_BLOCK(value_name, {
+    RETURN TRACE_BLOCK(value_name, {
         return lexer.read_line(context);
     })
 }
@@ -277,7 +352,7 @@ void TaskParser::read_magic_line(const string &magic) {
 
 vector<FactPair> TaskParser::read_facts(
     bool read_from_single_line, const vector<ExplicitVariable> &variables) {
-    TRACE_BLOCK("parsing conditions", {
+    RETURN TRACE_BLOCK("parsing conditions", {
         string value_name = "number of conditions";
         int count = read_nat(value_name);
         if (!read_from_single_line) {
@@ -312,7 +387,7 @@ ExplicitVariable TaskParser::read_variable(int index) {
       name of the variable. This produces better error messages but the line
       number for the second block will be the one after the name.
     */
-    TRACE_BLOCK("parsing definition of variable '" + var.name + "'", {
+    RETURN TRACE_BLOCK("parsing definition of variable '" + var.name + "'", {
         var.axiom_layer = read_int("variable axiom layer");
         if (var.axiom_layer < -1) {
             context.error_new(
@@ -433,7 +508,7 @@ ExplicitOperator TaskParser::read_operator(
       name of the operator. This produces better error messages but the line
       number for the second block will be the one after the name.
     */
-    TRACE_BLOCK("parsing definition of operator '" + op.name + "'", {
+    RETURN TRACE_BLOCK("parsing definition of operator '" + op.name + "'", {
         TRACE_BLOCK("parsing prevail conditions", {
             op.preconditions = read_facts(false, variables);
         })
@@ -467,7 +542,7 @@ ExplicitOperator TaskParser::read_operator(
 
 ExplicitOperator TaskParser::read_axiom(
     int index, const vector<ExplicitVariable> &variables) {
-    TRACE_BLOCK("axiom " + to_string(index), {
+    RETURN TRACE_BLOCK("axiom " + to_string(index), {
         ExplicitOperator op;
         op.is_an_axiom = true;
         op.name = "<axiom>";
@@ -496,7 +571,7 @@ void TaskParser::read_and_verify_version() {
 }
 
 bool TaskParser::read_metric() {
-    TRACE_BLOCK("metric section", {
+    RETURN TRACE_BLOCK("metric section", {
         read_magic_line("begin_metric");
         int use_metric_int = read_int("metric value");
         bool use_metric = false;
@@ -513,7 +588,7 @@ bool TaskParser::read_metric() {
 }
 
 vector<ExplicitVariable> TaskParser::read_variables() {
-    TRACE_BLOCK("variable section", {
+    RETURN TRACE_BLOCK("variable section", {
         int count = read_nat("variable count");
         if (count < 1) {
             context.error_new(
@@ -532,7 +607,7 @@ vector<ExplicitVariable> TaskParser::read_variables() {
 
 vector<vector<set<FactPair>>> TaskParser::read_mutexes(
     const vector<ExplicitVariable> &variables) {
-    TRACE_BLOCK("mutex section", {
+    RETURN TRACE_BLOCK("mutex section", {
         vector<vector<set<FactPair>>> inconsistent_facts(variables.size());
         for (size_t i = 0; i < variables.size(); ++i)
             inconsistent_facts[i].resize(variables[i].domain_size);
@@ -591,7 +666,7 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(
 
 vector<int> TaskParser::read_initial_state(
     const vector<ExplicitVariable> &variables) {
-    TRACE_BLOCK("initial state section", {
+    RETURN TRACE_BLOCK("initial state section", {
         read_magic_line("begin_state");
         int num_variables = variables.size();
         vector<int> initial_state_values(num_variables);
@@ -610,7 +685,7 @@ vector<int> TaskParser::read_initial_state(
 }
 
 vector<FactPair> TaskParser::read_goal(const vector<ExplicitVariable> &variables) {
-    TRACE_BLOCK("goal section", {
+    RETURN TRACE_BLOCK("goal section", {
         read_magic_line("begin_goal");
         vector<FactPair> goals = read_facts(false, variables);
         read_magic_line("end_goal");
@@ -635,7 +710,7 @@ vector<FactPair> TaskParser::read_goal(const vector<ExplicitVariable> &variables
 
 vector<ExplicitOperator> TaskParser::read_actions(
     bool is_axiom, bool use_metric, const vector<ExplicitVariable> &variables) {
-    TRACE_BLOCK(is_axiom ? "axiom section" : "operator section", {
+    RETURN TRACE_BLOCK(is_axiom ? "axiom section" : "operator section", {
         int count = read_nat("number of entries");
         lexer.confirm_end_of_line(context);
         vector<ExplicitOperator> actions;
