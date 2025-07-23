@@ -1,6 +1,7 @@
 #ifndef SEARCH_ALGORITHM_H
 #define SEARCH_ALGORITHM_H
 
+#include "component.h"
 #include "operator_cost.h"
 #include "operator_id.h"
 #include "plan_manager.h"
@@ -30,7 +31,7 @@ class SuccessorGenerator;
 
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
-class SearchAlgorithm {
+class SearchAlgorithm : public Component {
     std::string description;
     SearchStatus status;
     bool solution_found;
@@ -62,7 +63,8 @@ protected:
 public:
     SearchAlgorithm(
         OperatorCost cost_type, int bound, double max_time,
-        const std::string &description, utils::Verbosity verbosity);
+        const std::string &description, utils::Verbosity verbosity,
+        const std::shared_ptr<AbstractTask> &_task);
     explicit SearchAlgorithm(const plugins::Options &opts); // TODO options object is needed for iterated search, the prototype for issue559 resolves this
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;
@@ -77,6 +79,32 @@ public:
     PlanManager &get_plan_manager() {return plan_manager;}
     std::string get_description() {return description;}
 };
+
+
+class TaskIndependentSearchAlgorithm : public TaskIndependentComponent<SearchAlgorithm> {
+protected:
+    std::string description;
+    PlanManager plan_manager;
+    int bound;
+    OperatorCost cost_type;
+    double max_time;
+
+public:
+    TaskIndependentSearchAlgorithm(OperatorCost cost_type,
+                                   int bound,
+                                   double max_time,
+                                   const std::string &description,
+                                   utils::Verbosity verbosity);
+    virtual ~TaskIndependentSearchAlgorithm();
+
+    PlanManager &get_plan_manager() {return plan_manager;}
+
+    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_root(
+        const std::shared_ptr<AbstractTask> &task, int depth = -1) const = 0;
+};
+
+
+
 
 /*
   Print evaluator values of all evaluators evaluated in the evaluation context.

@@ -7,7 +7,7 @@ using namespace std;
 
 namespace plugin_astar {
 class AStarSearchFeature
-    : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
+    : public plugins::TypedFeature<TaskIndependentSearchAlgorithm, eager_search::TaskIndependentEagerSearch> {
 public:
     AStarSearchFeature() : TypedFeature("astar") {
         document_title("A* search (eager)");
@@ -40,7 +40,7 @@ public:
             "```\n", true);
     }
 
-    virtual shared_ptr<eager_search::EagerSearch>
+    virtual shared_ptr<eager_search::TaskIndependentEagerSearch>
     create_component(const plugins::Options &opts) const override {
         plugins::Options options_copy(opts);
         auto temp =
@@ -52,7 +52,7 @@ public:
         options_copy.set("reopen_closed", true);
         vector<shared_ptr<Evaluator>> preferred_list;
         options_copy.set("preferred", preferred_list);
-        return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
+        return plugins::make_shared_from_arg_tuples<eager_search::TaskIndependentEagerSearch>(
             options_copy.get<shared_ptr<OpenListFactory>>("open"),
             options_copy.get<bool>("reopen_closed"),
             options_copy.get<shared_ptr<Evaluator>>("f_eval", nullptr),

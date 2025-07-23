@@ -7,7 +7,7 @@ using namespace std;
 
 namespace plugin_eager {
 class EagerSearchFeature
-    : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
+    : public plugins::TypedFeature<TaskIndependentSearchAlgorithm, eager_search::TaskIndependentEagerSearch> {
 public:
     EagerSearchFeature() : TypedFeature("eager") {
         document_title("Eager best-first search");
@@ -31,9 +31,9 @@ public:
             *this, "eager");
     }
 
-    virtual shared_ptr<eager_search::EagerSearch>
+    virtual shared_ptr<eager_search::TaskIndependentEagerSearch>
     create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
+        return plugins::make_shared_from_arg_tuples<eager_search::TaskIndependentEagerSearch>(
             opts.get<shared_ptr<OpenListFactory>>("open"),
             opts.get<bool>("reopen_closed"),
             opts.get<shared_ptr<Evaluator>>("f_eval", nullptr),

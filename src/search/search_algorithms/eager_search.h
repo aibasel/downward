@@ -44,12 +44,54 @@ public:
         const std::shared_ptr<PruningMethod> &pruning,
         const std::shared_ptr<Evaluator> &lazy_evaluator,
         OperatorCost cost_type, int bound, double max_time,
-        const std::string &description, utils::Verbosity verbosity);
+        const std::string &description, utils::Verbosity verbosity,
+	const std::shared_ptr<AbstractTask> &task);
 
     virtual void print_statistics() const override;
 
     void dump_search_space() const;
 };
+
+
+class TaskIndependentEagerSearch : public TaskIndependentSearchAlgorithm {
+private:
+    const bool reopen_closed_nodes;
+
+    std::shared_ptr<OpenListFactory> open_list_factory;
+
+
+    std::shared_ptr<Evaluator> f_evaluator;
+
+    std::vector<Evaluator *> path_dependent_evaluators;
+    std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators;
+    std::shared_ptr<Evaluator> lazy_evaluator;
+
+    std::shared_ptr<PruningMethod> pruning_method;
+public:
+    TaskIndependentEagerSearch(
+        std::shared_ptr<OpenListFactory> open_list_factory,
+        bool reopen_closed_nodes,
+        std::shared_ptr<Evaluator> f_evaluator,
+        std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators,
+        std::shared_ptr<PruningMethod> pruning_method,
+        std::shared_ptr<Evaluator> lazy_evaluator,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const std::string &name,
+        utils::Verbosity verbosity);
+
+    virtual ~TaskIndependentEagerSearch() override = default;
+
+    virtual std::shared_ptr<SearchAlgorithm>
+    create_task_specific_root(const std::shared_ptr<AbstractTask> &task, int depth = -1) const override;
+
+    std::shared_ptr<SearchAlgorithm> create_task_specific(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const override;
+};
+
 
 extern void add_eager_search_options_to_feature(
     plugins::Feature &feature, const std::string &description);

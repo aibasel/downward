@@ -26,9 +26,9 @@ EagerSearch::EagerSearch(
     const shared_ptr<PruningMethod> &pruning,
     const shared_ptr<Evaluator> &lazy_evaluator, OperatorCost cost_type,
     int bound, double max_time, const string &description,
-    utils::Verbosity verbosity)
+    utils::Verbosity verbosity, const shared_ptr<AbstractTask> &task)
     : SearchAlgorithm(
-          cost_type, bound, max_time, description, verbosity),
+          cost_type, bound, max_time, description, verbosity, task),
       reopen_closed_nodes(reopen_closed),
       open_list(open->create_state_open_list()),
       f_evaluator(f_eval),     // default nullptr
@@ -309,6 +309,77 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
         statistics.report_f_value_progress(f_value);
     }
 }
+
+TaskIndependentEagerSearch::TaskIndependentEagerSearch(
+    shared_ptr<OpenListFactory> open_list_factory,
+    bool reopen_closed_nodes,
+    shared_ptr<Evaluator> f_evaluator,
+    vector<shared_ptr<Evaluator>> preferred_operator_evaluators,
+    shared_ptr<PruningMethod> pruning_method,
+    shared_ptr<Evaluator> lazy_evaluator,
+    OperatorCost cost_type,
+    int bound,
+    double max_time,
+    const string &name,
+    utils::Verbosity verbosity
+    )
+    : TaskIndependentSearchAlgorithm(cost_type,
+                                     bound,
+                                     max_time,
+                                     name,
+                                     verbosity
+                                     ),
+      reopen_closed_nodes(reopen_closed_nodes),
+      open_list_factory(move(open_list_factory)),
+      f_evaluator(f_evaluator),
+      preferred_operator_evaluators(preferred_operator_evaluators),
+      lazy_evaluator(lazy_evaluator),
+      pruning_method(pruning_method) {
+}
+
+std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(const shared_ptr <AbstractTask> &task,
+                                                                                  unique_ptr <ComponentMap> &component_map,
+                                                                                  int depth) const {
+       // TODO combine component_map and depth to xyz_context
+    //vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
+    //transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
+    //          [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
+    //              return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+    //          }
+    //          );
+
+    //unique_ptr<StateOpenList> _open_list = unique_ptr<StateOpenList>(
+    //    open_list_factory->get_task_specific(
+    //        task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
+
+	cout << "eager_search.cc 355 " << endl;
+    return make_shared<EagerSearch>(
+        move(open_list_factory),//_open_list),
+        reopen_closed_nodes,
+        f_evaluator ? f_evaluator//->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth) 
+		: nullptr,
+        preferred_operator_evaluators,//td_evaluators,
+        pruning_method,//->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth),
+        lazy_evaluator ? lazy_evaluator//->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth)
+		: nullptr,
+        cost_type,
+        bound,
+        max_time,
+        description,
+        verbosity,
+        task);
+}
+
+shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific_root(const shared_ptr<AbstractTask> &task,
+                                                                                  int depth) const {
+    assert(depth >= 0);
+    utils::g_log << std::string(depth, ' ') << "Creating EagerSearch as root component..." << endl;
+    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
+    return get_task_specific(task, component_map, depth);
+}
+
+
+
 
 void add_eager_search_options_to_feature(
     plugins::Feature &feature, const string &description) {

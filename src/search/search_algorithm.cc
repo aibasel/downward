@@ -41,11 +41,12 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
 
 SearchAlgorithm::SearchAlgorithm(
     OperatorCost cost_type, int bound, double max_time,
-    const string &description, utils::Verbosity verbosity)
+    const string &description, utils::Verbosity verbosity,
+    const shared_ptr<AbstractTask> &_task)
     : description(description),
       status(IN_PROGRESS),
       solution_found(false),
-      task(tasks::g_root_task),
+      task(_task),
       task_proxy(*task),
       log(utils::get_log_for_verbosity(verbosity)),
       state_registry(task_proxy),
@@ -124,7 +125,7 @@ void SearchAlgorithm::search() {
 
 bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
-        log << "Solution found!" << endl;
+        log << "Solution found! (by '" << description << "')" << endl;
         Plan plan;
         search_space.trace_path(state, plan);
         set_plan(plan);
@@ -244,7 +245,7 @@ tuple<bool, bool, int> get_successors_order_arguments_from_options(
         );
 }
 
-static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<SearchAlgorithm> {
+static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentSearchAlgorithm> {
 public:
     SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("SearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.
@@ -252,6 +253,26 @@ public:
     }
 }
 _category_plugin;
+
+
+TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(OperatorCost cost_type,
+                                                               int bound,
+                                                               double max_time,
+                                                               const string &description,
+                                                               utils::Verbosity verbosity)
+    : TaskIndependentComponent(description, verbosity),
+      bound(bound),
+      cost_type(cost_type),
+      max_time(max_time) {
+    if (bound < 0) {
+        cerr << "error: negative cost bound " << bound << endl;
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
+    }
+}
+
+TaskIndependentSearchAlgorithm::~TaskIndependentSearchAlgorithm() {
+}
+
 
 void collect_preferred_operators(
     EvaluationContext &eval_context,

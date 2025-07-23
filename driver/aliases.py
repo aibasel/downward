@@ -141,6 +141,22 @@ ALIASES["seq-opt-lmcut"] = [
 
 # issue559
 
+ALIASES["issue559_testA"] = [
+    "--search",
+    "           eager(open=tiebreaking([blind()]))"
+    "           "] # TODO issue559 remove this
+ALIASES["issue559_test0"] = [
+    "--search",
+    "let(h, lmcut(description=\"AllTimeLMcut\"),"
+    "           eager(tiebreaking([sum([g(\"my_G_Eval\"), "
+    "                                   h]), "
+    "                              h],"
+    "                             unsafe_pruning=false"
+    "                            ),"
+    "                 reopen_closed=true,"
+    "                 f_eval=sum([g(), "
+    "                             h]))"
+    "           )"] # TODO issue559 remove this
 ALIASES["issue559_test1"] = [
     "--search",
     "let(h, lmcut(description=\"AllTimeLMcut\"),"
