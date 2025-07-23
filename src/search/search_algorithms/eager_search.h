@@ -34,7 +34,7 @@ class EagerSearch : public SearchAlgorithm {
     void reward_progress();
 
     std::optional<SearchNode> get_next_node_to_expand();
-    void collect_preferred_operators(
+    void collect_preferred_operators_for_node(
         const SearchNode &node,
         ordered_set::OrderedSet<OperatorID> &preferred_operators);
     void expand(const SearchNode &node,
