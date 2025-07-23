@@ -17,7 +17,7 @@
 // v4 -> use trace_block with =, &
 // v5 -> use trace_block with &, &
 
-#define TRACE_IMPLEMENTATION 4
+#define TRACE_IMPLEMENTATION 5
 
 #if (TRACE_IMPLEMENTATION == 2)
 
