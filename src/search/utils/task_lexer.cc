@@ -13,9 +13,6 @@ using utils::ExitCode;
 namespace utils {
 static const string end_of_line_sentinel("\n");
 
-TaskLexer::TaskLexer(istream &stream)
-    : stream(stream) {
-}
 
 static bool is_whitespace(const string &s) {
     for (char c : s) {
@@ -23,6 +20,40 @@ static bool is_whitespace(const string &s) {
             return false;
     }
     return true;
+}
+
+
+TaskParserError::TaskParserError(const std::string &msg)
+    : Exception(msg) {
+}
+
+
+void TaskParserError::add_context(const std::string &line) {
+    context.push_back(line);
+}
+
+string TaskParserError::get_error_message() const {
+    // TODO: DRY: Based on code from Context::str().
+    const string INDENT = "  ";
+    ostringstream out;
+    out << "Traceback:" << endl;
+    bool first_line = true;
+    for (auto iter = context.rbegin(); iter != context.rend(); ++iter) {
+        out << INDENT;
+        if (first_line) {
+            first_line = false;
+        } else {
+            out << "-> ";
+        }
+        out << *iter << '\n';
+    }
+    out << '\n' << get_message();
+    return out.str();
+}
+
+
+TaskLexer::TaskLexer(istream &stream)
+    : stream(stream) {
 }
 
 void TaskLexer::get_next_nonempty_line() {
@@ -39,7 +70,7 @@ void TaskLexer::get_next_nonempty_line() {
     }
 }
 
-void TaskLexer::initialize_tokens(const Context &context) {
+void TaskLexer::initialize_tokens() {
     assert(tokens.empty());
     assert(token_number == 0);
     get_next_nonempty_line();
@@ -54,7 +85,7 @@ void TaskLexer::initialize_tokens(const Context &context) {
         assert(!tokens.empty());
         tokens.push_back(end_of_line_sentinel);
     } else {
-        context.error_new("Unexpected end of task.");
+        error("Unexpected end of task.");
     }
 }
 
@@ -70,30 +101,34 @@ bool TaskLexer::is_in_line_reading_mode() const {
     return !tokens.empty();
 }
 
-string TaskLexer::read(const Context &context) {
+void TaskLexer::error(const std::string &message) const {
+    throw TaskParserError(message);
+}
+
+string TaskLexer::read() {
     if (tokens.empty()) {
-        initialize_tokens(context);
+        initialize_tokens();
     }
     const string &token = pop_token();
     if (token == end_of_line_sentinel) {
-        context.error_new("Unexpected end of line.");
+        error("Unexpected end of line.");
     }
     return token;
 }
 
-string TaskLexer::read_line(const Context &context) {
+string TaskLexer::read_line() {
     if (is_in_line_reading_mode()) {
         ABORT("Tried to read a line before confirming the end of "
               "the previous line.");
     }
     get_next_nonempty_line();
     if (current_line == "") {
-        context.error_new("Unexpected end of task.");
+        error("Unexpected end of task.");
     }
     return current_line;
 }
 
-void TaskLexer::confirm_end_of_line(const Context &context) {
+void TaskLexer::confirm_end_of_line() {
     if (!is_in_line_reading_mode()) {
         ABORT("Tried to confirm end of line while not reading a line "
               "as tokens.");
@@ -103,19 +138,19 @@ void TaskLexer::confirm_end_of_line(const Context &context) {
         token_number = 0;
         tokens.clear();
     } else {
-        context.error_new("Expected end of line after token "
-                      + to_string(token_number - 1) + " but line contains "
-                      + to_string(tokens.size() - 1) + " tokens.");
+        error("Expected end of line after token "
+              + to_string(token_number - 1) + " but line contains "
+              + to_string(tokens.size() - 1) + " tokens.");
     }
 }
 
-void TaskLexer::confirm_end_of_input(const Context &context) {
+void TaskLexer::confirm_end_of_input() {
     if (is_in_line_reading_mode()) {
         ABORT("Tried to confirm end of input while reading a line as tokens.");
     }
     get_next_nonempty_line();
     if (current_line != "") {
-        context.error_new("Expected end of task, found non-empty line " + current_line);
+        error("Expected end of task, found non-empty line " + current_line);
     }
 }
 

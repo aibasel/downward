@@ -19,45 +19,6 @@ namespace tasks {
 static const int PRE_FILE_VERSION = 3;
 shared_ptr<AbstractTask> g_root_task = nullptr;
 
-class TaskParserContext : public utils::Context {
-    const utils::TaskLexer &lexer;
-public:
-    TaskParserContext(utils::TaskLexer &lexer)
-        : lexer(lexer) {
-    }
-};
-
-class TaskParserError : public utils::Exception {
-    std::string message;
-    std::vector<std::string> context;
-public:
-    explicit TaskParserError(const std::string &msg)
-        : Exception("<you should never see this>"), message(msg) {
-    }
-
-    void add_context(const std::string &line) {
-        context.push_back(line);
-    }
-
-    std::string get_error_message() const {
-        // TODO: DRY: Based on code from Context::str().
-        const string INDENT = "  ";
-        ostringstream out;
-        out << "Traceback:" << endl;
-        bool first_line = true;
-        for (auto iter = context.rbegin(); iter != context.rend(); ++iter) {
-            out << INDENT;
-            if (first_line) {
-                first_line = false;
-            } else {
-                out << "-> ";
-            }
-            out << *iter << '\n';
-        }
-        out << '\n' << message;
-        return out.str();
-    }
-};
 
 struct ExplicitVariable {
     int domain_size;
@@ -159,7 +120,7 @@ class TaskParser {
             } else {
                 return std::forward<Func>(func)();
             }
-        } catch (TaskParserError &error) {
+        } catch (utils::TaskParserError &error) {
             if constexpr (std::is_convertible_v<FuncOrStr, std::string>) {
                 this->add_error_line(error, line, message);
             } else {
@@ -170,13 +131,12 @@ class TaskParser {
     }
 
     utils::TaskLexer lexer;
-    TaskParserContext context;
 
     void error(const std::string &message) {
-        throw TaskParserError(message);
+        throw utils::TaskParserError(message);
     }
 
-    void add_error_line(TaskParserError &error, int line_no, const string &line) const {
+    void add_error_line(utils::TaskParserError &error, int line_no, const string &line) const {
         error.add_context("[line " + to_string(line_no) + "] " + line);
     }
 
@@ -280,7 +240,7 @@ int TaskParser::read_int(const string &value_name) {
     return with_error_context(
         value_name,
         [&]() {
-            return parse_int(lexer.read(context));
+            return parse_int(lexer.read());
         });
 }
 
@@ -294,7 +254,7 @@ string TaskParser::read_string_line(const string &value_name) {
     return with_error_context(
         value_name,
         [&]() {
-            return lexer.read_line(context);
+            return lexer.read_line();
         });
 }
 
@@ -317,7 +277,7 @@ vector<FactPair> TaskParser::read_facts(
             string value_name = "number of conditions";
             int count = read_nat(value_name);
             if (!read_from_single_line) {
-                lexer.confirm_end_of_line(context);
+                lexer.confirm_end_of_line();
             }
             vector<FactPair> conditions;
             conditions.reserve(count);
@@ -331,7 +291,7 @@ vector<FactPair> TaskParser::read_facts(
                         check_fact(condition, variables);
                         conditions.push_back(condition);
                         if (!read_from_single_line) {
-                            lexer.confirm_end_of_line(context);
+                            lexer.confirm_end_of_line();
                         }
                     });
             }
@@ -360,7 +320,7 @@ ExplicitVariable TaskParser::read_variable(int index) {
                 error("Variable axiom layer must be -1 or non-negative, but is "
                       + to_string(var.axiom_layer) + ".");
             }
-            lexer.confirm_end_of_line(context);
+            lexer.confirm_end_of_line();
             var.domain_size = read_nat("variable domain size");
             if (var.domain_size < 1) {
                 error("Domain size should be at least 1, but is "
@@ -370,7 +330,7 @@ ExplicitVariable TaskParser::read_variable(int index) {
                 error("Derived variables must be binary, but domain size is "
                       + to_string(var.domain_size) + ".");
             }
-            lexer.confirm_end_of_line(context);
+            lexer.confirm_end_of_line();
             var.fact_names.resize(var.domain_size);
             for (int i = 0; i < var.domain_size; ++i) {
                 with_error_context(
@@ -427,7 +387,7 @@ void TaskParser::read_pre_post_axiom(
             op.preconditions.emplace_back(precondition);
             ExplicitEffect eff = {postcondition, move(conditions)};
             op.effects.emplace_back(eff);
-            lexer.confirm_end_of_line(context);
+            lexer.confirm_end_of_line();
         });
 }
 
@@ -458,7 +418,7 @@ void TaskParser::read_conditional_effect(
             check_fact(postcondition, variables);
             ExplicitEffect eff = {postcondition, move(conditions)};
             op.effects.emplace_back(eff);
-            lexer.confirm_end_of_line(context);
+            lexer.confirm_end_of_line();
         });
 }
 
@@ -490,7 +450,7 @@ ExplicitOperator TaskParser::read_operator(
                 error("Number of operator effects should be at least 1, but is "
                       + to_string(count) + ".");
             }
-            lexer.confirm_end_of_line(context);
+            lexer.confirm_end_of_line();
             op.effects.reserve(count);
             for (int i = 0; i < count; ++i) {
                 with_error_context(
@@ -508,7 +468,7 @@ ExplicitOperator TaskParser::read_operator(
                         error("Operator cost must be non-negative, but is "
                               + to_string(op.cost) + ".");
                     }
-                    lexer.confirm_end_of_line(context);
+                    lexer.confirm_end_of_line();
                 });
             read_magic_line("end_operator");
             return op;
@@ -543,7 +503,7 @@ void TaskParser::read_and_verify_version() {
                       + to_string(PRE_FILE_VERSION) + ", got "
                       + to_string(version) + ".");
             }
-            lexer.confirm_end_of_line(context);
+            lexer.confirm_end_of_line();
             read_magic_line("end_version");
         });
 }
@@ -560,7 +520,7 @@ bool TaskParser::read_metric() {
             } else if (use_metric_int != 0) {
                 error("expected 0 or 1, got '" + to_string(use_metric_int) + "'.");
             }
-            lexer.confirm_end_of_line(context);
+            lexer.confirm_end_of_line();
             read_magic_line("end_metric");
             return use_metric;
         });
@@ -575,7 +535,7 @@ vector<ExplicitVariable> TaskParser::read_variables() {
                 error("Number of variables should be at least 1, but is "
                       + to_string(count) + ".");
             }
-            lexer.confirm_end_of_line(context);
+            lexer.confirm_end_of_line();
             vector<ExplicitVariable> variables;
             variables.reserve(count);
             for (int i = 0; i < count; ++i) {
@@ -595,7 +555,7 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(
                 inconsistent_facts[i].resize(variables[i].domain_size);
 
             int num_mutex_groups = read_nat("number of mutex groups");
-            lexer.confirm_end_of_line(context);
+            lexer.confirm_end_of_line();
 
             /*
               NOTE: Mutex groups can overlap, in which case the same mutex
@@ -610,7 +570,7 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(
                     [&]() {
                         read_magic_line("begin_mutex_group");
                         int num_facts = read_nat("number of facts in mutex group");
-                        lexer.confirm_end_of_line(context);
+                        lexer.confirm_end_of_line();
                         vector<FactPair> invariant_group;
                         invariant_group.reserve(num_facts);
                         for (int j = 0; j < num_facts; ++j) {
@@ -622,7 +582,7 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(
                                     FactPair fact = FactPair(var, value);
                                     check_fact(fact, variables);
                                     invariant_group.emplace_back(fact);
-                                    lexer.confirm_end_of_line(context);
+                                    lexer.confirm_end_of_line();
                                 });
                         }
                         read_magic_line("end_mutex_group");
@@ -665,7 +625,7 @@ vector<int> TaskParser::read_initial_state(
                     [&]() {return "validating " + block_name;},
                     [&]() {
                         initial_state_values[i] = read_nat(block_name);
-                        lexer.confirm_end_of_line(context);
+                        lexer.confirm_end_of_line();
                         check_fact(FactPair(i, initial_state_values[i]), variables);
                     });
             }
@@ -705,7 +665,7 @@ vector<ExplicitOperator> TaskParser::read_actions(
         [&]() {return is_axiom ? "axiom section" : "operator section";},
         [&]() {
             int count = read_nat("number of entries");
-            lexer.confirm_end_of_line(context);
+            lexer.confirm_end_of_line();
             vector<ExplicitOperator> actions;
             actions.reserve(count);
             for (int i = 0; i < count; ++i) {
@@ -719,7 +679,7 @@ vector<ExplicitOperator> TaskParser::read_actions(
  }
 
 TaskParser::TaskParser(utils::TaskLexer &&lexer)
-    : lexer(move(lexer)), context(this->lexer) {
+    : lexer(move(lexer)) {
 }
 
 shared_ptr<AbstractTask> TaskParser::read_task() {
@@ -738,7 +698,7 @@ shared_ptr<AbstractTask> TaskParser::read_task() {
     with_error_context(
         "confirm end of input",
         [&]() {
-            lexer.confirm_end_of_input(context);
+            lexer.confirm_end_of_input();
         });
 
     /*
@@ -761,7 +721,7 @@ shared_ptr<AbstractTask> TaskParser::read_task() {
 shared_ptr<AbstractTask> TaskParser::parse() {
     try {
         return read_task();
-    } catch (const TaskParserError &error) {
+    } catch (const utils::TaskParserError &error) {
         cerr << "Error reading task" << endl
              << error.get_error_message() << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
