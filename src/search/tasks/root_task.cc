@@ -25,10 +25,37 @@ public:
     TaskParserContext(utils::TaskLexer &lexer)
         : lexer(lexer) {
     }
+};
 
-    virtual string decorate_block_name(const string &block_name) const override {
-        int line = lexer.get_line_number();
-        return "[line " + to_string(line) + "] " + block_name;
+class TaskParserError : public utils::Exception {
+    std::string message;
+    std::vector<std::string> context;
+public:
+    explicit TaskParserError(const std::string &msg)
+        : Exception("<you should never see this>"), message(msg) {
+    }
+
+    void add_context(const std::string &line) {
+        context.push_back(line);
+    }
+
+    std::string get_error_message() const {
+        // TODO: DRY: Based on code from Context::str().
+        const string INDENT = "  ";
+        ostringstream out;
+        out << "Traceback:" << endl;
+        bool first_line = true;
+        for (auto iter = context.rbegin(); iter != context.rend(); ++iter) {
+            out << INDENT;
+            if (first_line) {
+                first_line = false;
+            } else {
+                out << "-> ";
+            }
+            out << *iter << '\n';
+        }
+        out << '\n' << message;
+        return out.str();
     }
 };
 
@@ -132,11 +159,11 @@ class TaskParser {
             } else {
                 return std::forward<Func>(func)();
             }
-        } catch (utils::ContextError &err) {
+        } catch (TaskParserError &error) {
             if constexpr (std::is_convertible_v<FuncOrStr, std::string>) {
-                this->add_error_line(err, line, message);
+                this->add_error_line(error, line, message);
             } else {
-                this->add_error_line(err, line, message());
+                this->add_error_line(error, line, message());
             }
             throw;
         }
@@ -146,10 +173,10 @@ class TaskParser {
     TaskParserContext context;
 
     void error(const std::string &message) {
-        context.error_new(message);
+        throw TaskParserError(message);
     }
 
-    void add_error_line(utils::ContextError &error, int line_no, const string &line) const {
+    void add_error_line(TaskParserError &error, int line_no, const string &line) const {
         error.add_context("[line " + to_string(line_no) + "] " + line);
     }
 
@@ -734,9 +761,9 @@ shared_ptr<AbstractTask> TaskParser::read_task() {
 shared_ptr<AbstractTask> TaskParser::parse() {
     try {
         return read_task();
-    } catch (const utils::ContextError &e) {
+    } catch (const TaskParserError &error) {
         cerr << "Error reading task" << endl
-             << e.get_error_message() << endl;
+             << error.get_error_message() << endl;
         utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
     }
 }
