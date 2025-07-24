@@ -14,7 +14,7 @@ CombiningEvaluator::CombiningEvaluator(
     const string &description, utils::Verbosity verbosity)
     : Evaluator(false, false, false, description, verbosity),
       subevaluators(evals) {
-    utils::verify_list_not_empty(evals, "evals");
+    utils::verify_list_not_empty(evals, "evals"); // TODO issue559 move to TI?
     all_dead_ends_are_reliable = true;
     for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
         if (!subevaluator->dead_ends_are_reliable())
@@ -53,18 +53,33 @@ void CombiningEvaluator::get_path_dependent_evaluators(
     for (auto &subevaluator : subevaluators)
         subevaluator->get_path_dependent_evaluators(evals);
 }
+
+
+
+TaskIndependentCombiningEvaluator::TaskIndependentCombiningEvaluator(
+    vector<shared_ptr<TaskIndependentEvaluator>> subevaluators,
+    const string &description,
+    utils::Verbosity verbosity)
+    : TaskIndependentEvaluator(false, false, false, description, verbosity),
+      subevaluators(subevaluators) {
+}
+
+
+
+
+
 void add_combining_evaluator_options_to_feature(
     plugins::Feature &feature, const string &description) {
-    feature.add_list_option<shared_ptr<Evaluator>>(
+    feature.add_list_option<shared_ptr<TaskIndependentEvaluator>>(
         "evals", "at least one evaluator");
     add_evaluator_options_to_feature(feature, description);
 }
 
-tuple<vector<shared_ptr<Evaluator>>, const string, utils::Verbosity>
+tuple<vector<shared_ptr<TaskIndependentEvaluator>>, const string, utils::Verbosity>
 get_combining_evaluator_arguments_from_options(
     const plugins::Options &opts) {
     return tuple_cat(
-        make_tuple(opts.get_list<shared_ptr<Evaluator>>("evals")),
+        make_tuple(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals")),
         get_evaluator_arguments_from_options(opts)
         );
 }

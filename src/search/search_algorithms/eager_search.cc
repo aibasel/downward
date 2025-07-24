@@ -313,10 +313,10 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
 TaskIndependentEagerSearch::TaskIndependentEagerSearch(
     shared_ptr<TaskIndependentOpenListFactory> open_list_factory,
     bool reopen_closed_nodes,
-    shared_ptr<Evaluator> f_evaluator,
-    vector<shared_ptr<Evaluator>> preferred_operator_evaluators,
+    shared_ptr<TaskIndependentEvaluator> f_evaluator,
+    vector<shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
     shared_ptr<PruningMethod> pruning_method,
-    shared_ptr<Evaluator> lazy_evaluator,
+    shared_ptr<TaskIndependentEvaluator> lazy_evaluator,
     OperatorCost cost_type,
     int bound,
     double max_time,
@@ -341,12 +341,12 @@ std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specifi
                                                                                   unique_ptr <ComponentMap> &component_map,
                                                                                   int depth) const {
        // TODO combine component_map and depth to xyz_context
-    //vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
-    //transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
-    //          [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-    //              return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
-    //          }
-    //          );
+    vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
+    transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
+              [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
+                  return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+              }
+              );
 
     /////unique_ptr<StateOpenList> _open_list = unique_ptr<StateOpenList>(
     /////    open_list_factory->get_task_specific(
@@ -361,11 +361,12 @@ std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specifi
 	     //open_list_factory),
 	     _open_list),
         reopen_closed_nodes,
-        f_evaluator ? f_evaluator//->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth) 
+        f_evaluator ? f_evaluator->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth) 
 		: nullptr,
-        preferred_operator_evaluators,//td_evaluators,
-        pruning_method,//->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth),
-        lazy_evaluator ? lazy_evaluator//->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth)
+        td_evaluators,
+        pruning_method//->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth)
+		,
+        lazy_evaluator ? lazy_evaluator->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth)
 		: nullptr,
         cost_type,
         bound,
@@ -394,12 +395,12 @@ void add_eager_search_options_to_feature(
     add_search_algorithm_options_to_feature(feature, description);
 }
 
-tuple<shared_ptr<PruningMethod>, shared_ptr<Evaluator>, OperatorCost,
+tuple<shared_ptr<PruningMethod>, shared_ptr<TaskIndependentEvaluator>, OperatorCost,
       int, double, string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         get_search_pruning_arguments_from_options(opts),
-        make_tuple(opts.get<shared_ptr<Evaluator>>(
+        make_tuple(opts.get<shared_ptr<TaskIndependentEvaluator>>(
                        "lazy_evaluator", nullptr)),
         get_search_algorithm_arguments_from_options(opts)
         );

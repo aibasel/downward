@@ -3,6 +3,9 @@
 
 #include "../open_list_factory.h"
 
+#include "../evaluator.h"
+//class TaskIndependentEvaluator;
+
 namespace tiebreaking_open_list {
 class TieBreakingOpenListFactory : public OpenListFactory {
     std::vector<std::shared_ptr<Evaluator>> evals;
@@ -22,11 +25,11 @@ public:
 class TaskIndependentTieBreakingOpenListFactory : public TaskIndependentOpenListFactory {
     bool pref_only;
     int size;
-    std::vector<std::shared_ptr<Evaluator>> evals;
+    std::vector<std::shared_ptr<TaskIndependentEvaluator>> evals;
     bool allow_unsafe_pruning;
 public:
     explicit TaskIndependentTieBreakingOpenListFactory(
-        std::vector<std::shared_ptr<Evaluator>> evals,
+        std::vector<std::shared_ptr<TaskIndependentEvaluator>> evals,
         bool pref_only,
         bool allow_unsafe_pruning);
     virtual ~TaskIndependentTieBreakingOpenListFactory() override = default;

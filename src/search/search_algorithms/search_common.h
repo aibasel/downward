@@ -23,6 +23,7 @@
 #include "../utils/logging.h"
 
 class Evaluator;
+class TaskIndependentEvaluator;
 class OpenListFactory;
 class TaskIndependentOpenListFactory;
 
@@ -64,9 +65,9 @@ namespace search_common {
   ordered primarily on g + h and secondarily on h.
 */
 extern std::pair<std::shared_ptr<TaskIndependentOpenListFactory>,
-                 const std::shared_ptr<Evaluator>>
+                 const std::shared_ptr<TaskIndependentEvaluator>>
 create_task_independent_astar_open_list_factory_and_f_eval(
-    const std::shared_ptr<Evaluator> &h_eval,
+    const std::shared_ptr<TaskIndependentEvaluator> &h_eval,
     const std::string &description,
     utils::Verbosity verbosity);
 }

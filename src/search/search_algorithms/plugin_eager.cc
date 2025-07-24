@@ -18,12 +18,12 @@ public:
             "reopen_closed",
             "reopen closed nodes",
             "false");
-        add_option<shared_ptr<Evaluator>>(
+        add_option<shared_ptr<TaskIndependentEvaluator>>(
             "f_eval",
             "set evaluator for jump statistics. "
             "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
             plugins::ArgumentInfo::NO_DEFAULT);
-        add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "preferred",
             "use preferred operators of these evaluators",
             "[]");
@@ -36,8 +36,8 @@ public:
         return plugins::make_shared_from_arg_tuples<eager_search::TaskIndependentEagerSearch>(
             opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
             opts.get<bool>("reopen_closed"),
-            opts.get<shared_ptr<Evaluator>>("f_eval", nullptr),
-            opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
             eager_search::get_eager_search_arguments_from_options(opts)
             );
     }

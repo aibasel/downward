@@ -1,6 +1,8 @@
 #ifndef EVALUATOR_H
 #define EVALUATOR_H
 
+#include "component.h"
+
 #include "evaluation_result.h"
 
 #include "utils/logging.h"
@@ -14,7 +16,7 @@ namespace plugins {
 class Options;
 }
 
-class Evaluator {
+class Evaluator : public Component {
     const std::string description;
     const bool use_for_reporting_minima;
     const bool use_for_boosting;
@@ -98,6 +100,22 @@ public:
     */
     virtual int get_cached_estimate(const State &state) const;
 };
+
+
+class TaskIndependentEvaluator : public TaskIndependentComponent<Evaluator> {
+    const bool use_for_reporting_minima;
+    const bool use_for_boosting;
+    const bool use_for_counting_evaluations;
+public:
+    explicit TaskIndependentEvaluator(
+        bool use_for_reporting_minima, bool use_for_boosting,
+        bool use_for_counting_evaluations,
+        const std::string &description, utils::Verbosity verbosity);
+    virtual ~TaskIndependentEvaluator() = default;
+};
+
+
+
 
 extern void add_evaluator_options_to_feature(
     plugins::Feature &feature, const std::string &description);

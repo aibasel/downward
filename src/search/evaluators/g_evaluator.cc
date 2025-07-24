@@ -19,8 +19,35 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
     return result;
 }
 
+
+
+
+TaskIndependentGEvaluator::TaskIndependentGEvaluator(const string &description,
+                                                     utils::Verbosity verbosity)
+    : TaskIndependentEvaluator(
+          false,
+          false,
+          false,
+          description,
+          verbosity) {
+}
+
+shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific([[maybe_unused]] const shared_ptr <AbstractTask> &task,
+                                                                           [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
+                                                                           [[maybe_unused]] int depth) const {
+    return make_shared<GEvaluator>(description, verbosity);
+}
+
+
+
+
+
+
+
+
+
 class GEvaluatorFeature
-    : public plugins::TypedFeature<Evaluator, GEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentGEvaluator> {
 public:
     GEvaluatorFeature() : TypedFeature("g") {
         document_subcategory("evaluators_basic");
@@ -30,9 +57,9 @@ public:
         add_evaluator_options_to_feature(*this, "g");
     }
 
-    virtual shared_ptr<GEvaluator>
+    virtual shared_ptr<TaskIndependentGEvaluator>
     create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<GEvaluator>(
+        return plugins::make_shared_from_arg_tuples<TaskIndependentGEvaluator>(
             get_evaluator_arguments_from_options(opts)
             );
     }
