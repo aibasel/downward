@@ -137,14 +137,8 @@ extern LogProxy get_log_for_verbosity(const Verbosity &verbosity);
 extern LogProxy get_silent_log();
 
 class ContextError : public utils::Exception {
-    std::string message;
-    std::vector<std::string> context;
 public:
     explicit ContextError(const std::string &msg);
-    void add_context(const std::string &line) {
-        context.push_back(line);
-    }
-    std::string get_error_message() const;
 };
 
 class Context {
@@ -164,7 +158,6 @@ public:
 
     NO_RETURN
     virtual void error(const std::string &message) const;
-    virtual void error_new(const std::string &message) const;
     virtual void warn(const std::string &message) const;
 };
 
