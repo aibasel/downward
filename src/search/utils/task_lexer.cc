@@ -32,11 +32,10 @@ void TaskParserError::add_context(const std::string &line) {
     context.push_back(line);
 }
 
-string TaskParserError::get_error_message() const {
+void TaskParserError::print_with_context(ostream &out) const {
     // TODO: DRY: Based on code from Context::str().
     const string INDENT = "  ";
-    ostringstream out;
-    out << "Traceback:" << endl;
+    out << "Context:" << endl;
     bool first_line = true;
     for (auto iter = context.rbegin(); iter != context.rend(); ++iter) {
         out << INDENT;
@@ -45,10 +44,9 @@ string TaskParserError::get_error_message() const {
         } else {
             out << "-> ";
         }
-        out << *iter << '\n';
+        out << *iter << endl;
     }
-    out << '\n' << get_message();
-    return out.str();
+    out << get_message() << endl;
 }
 
 

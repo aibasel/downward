@@ -3,7 +3,7 @@
 
 #include "logging.h"
 
-#include <istream>
+#include <iostream>
 #include <optional>
 #include <string>
 #include <vector>
@@ -14,19 +14,20 @@ namespace utils {
 /*
   TODO: The following class is used directly by both the task lexer,
   which lives in utils, and the task parser, which lives in tasks.
+  This is probably a sign that they should live together.
 
-  This is probably a sign that they should live together. We could
-  also have two separate error classes, but then the handling code
-  gets awkward unless they have a common base class that implements
-  the functionality we need. And that's probably overkill because we
-  don't really need to distinguish lexer errors from parser errors.
+  We could also have two separate error classes, but then the handling
+  code gets awkward unless they have a common base class that
+  implements the functionality we need. And that's probably overkill
+  because we don't really need to distinguish lexer errors from parser
+  errors.
 */
 class TaskParserError : public utils::Exception {
     std::vector<std::string> context;
 public:
     explicit TaskParserError(const std::string &msg);
     void add_context(const std::string &line);
-    std::string get_error_message() const;
+    void print_with_context(std::ostream &out) const;
 };
 
 

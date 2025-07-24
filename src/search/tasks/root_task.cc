@@ -110,6 +110,8 @@ public:
 
 
 class TaskParser {
+    utils::TaskLexer lexer;
+
     template<typename Func, typename FuncOrStr>
     auto with_error_context(FuncOrStr &&message, Func &&func) -> std::invoke_result_t<Func> {
         int line = this->get_line_number();
@@ -129,8 +131,6 @@ class TaskParser {
             throw;
         }
     }
-
-    utils::TaskLexer lexer;
 
     void error(const std::string &message) {
         throw utils::TaskParserError(message);
@@ -722,9 +722,9 @@ shared_ptr<AbstractTask> TaskParser::parse() {
     try {
         return read_task();
     } catch (const utils::TaskParserError &error) {
-        cerr << "Error reading task" << endl
-             << error.get_error_message() << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+        cerr << "Error reading task" << endl;
+        error.print_with_context(cerr);
+        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
