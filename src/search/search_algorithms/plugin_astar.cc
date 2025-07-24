@@ -44,8 +44,9 @@ public:
     create_component(const plugins::Options &opts) const override {
         plugins::Options options_copy(opts);
         auto temp =
-            search_common::create_astar_open_list_factory_and_f_eval(
+            search_common::create_task_independent_astar_open_list_factory_and_f_eval(
                 opts.get<shared_ptr<Evaluator>>("eval"),
+                opts.get<string>("description"),
                 opts.get<utils::Verbosity>("verbosity"));
         options_copy.set("open", temp.first);
         options_copy.set("f_eval", temp.second);
@@ -53,7 +54,7 @@ public:
         vector<shared_ptr<Evaluator>> preferred_list;
         options_copy.set("preferred", preferred_list);
         return plugins::make_shared_from_arg_tuples<eager_search::TaskIndependentEagerSearch>(
-            options_copy.get<shared_ptr<OpenListFactory>>("open"),
+            options_copy.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
             options_copy.get<bool>("reopen_closed"),
             options_copy.get<shared_ptr<Evaluator>>("f_eval", nullptr),
             options_copy.get_list<shared_ptr<Evaluator>>("preferred"),

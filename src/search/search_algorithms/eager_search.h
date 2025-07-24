@@ -1,7 +1,7 @@
 #ifndef SEARCH_ALGORITHMS_EAGER_SEARCH_H
 #define SEARCH_ALGORITHMS_EAGER_SEARCH_H
 
-#include "../open_list.h"
+#include "../open_list_factory.h"
 #include "../search_algorithm.h"
 
 #include <memory>
@@ -19,7 +19,8 @@ namespace eager_search {
 class EagerSearch : public SearchAlgorithm {
     const bool reopen_closed_nodes;
 
-    std::unique_ptr<StateOpenList> open_list;
+    //std::unique_ptr<StateOpenList> open_list;
+    std::shared_ptr<StateOpenList> open_list;
     std::shared_ptr<Evaluator> f_evaluator;
 
     std::vector<Evaluator *> path_dependent_evaluators;
@@ -57,7 +58,7 @@ class TaskIndependentEagerSearch : public TaskIndependentSearchAlgorithm {
 private:
     const bool reopen_closed_nodes;
 
-    std::shared_ptr<OpenListFactory> open_list_factory;
+    std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory;
 
 
     std::shared_ptr<Evaluator> f_evaluator;
@@ -69,7 +70,7 @@ private:
     std::shared_ptr<PruningMethod> pruning_method;
 public:
     TaskIndependentEagerSearch(
-        std::shared_ptr<OpenListFactory> open_list_factory,
+        std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory,
         bool reopen_closed_nodes,
         std::shared_ptr<Evaluator> f_evaluator,
         std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators,

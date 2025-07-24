@@ -145,7 +145,7 @@ TieBreakingOpenListFactory::TieBreakingOpenListFactory(
     : evals(evals),
       unsafe_pruning(unsafe_pruning),
       pref_only(pref_only) {
-    utils::verify_list_not_empty(evals, "evals");
+    utils::verify_list_not_empty(evals, "evals");// should be in TI
 }
 
 unique_ptr<StateOpenList>
@@ -160,8 +160,42 @@ TieBreakingOpenListFactory::create_edge_open_list() {
         evals, unsafe_pruning, pref_only);
 }
 
+
+
+TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFactory(
+    vector<shared_ptr</*TaskIndependent*/Evaluator>> evals,
+    bool pref_only,
+    bool allow_unsafe_pruning)
+    : TaskIndependentOpenListFactory("TieBreakingOpenListFactory", utils::Verbosity::NORMAL),
+      pref_only(pref_only), size(0), evals(evals), allow_unsafe_pruning(allow_unsafe_pruning) {
+ }
+
+
+std::shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific(const shared_ptr <AbstractTask> &task,
+                                                                                                 unique_ptr <ComponentMap> &component_map, int depth) const {
+    //issue559TODOaddTIEvals//vector<shared_ptr<Evaluator>> ts_evaluators(evals.size());
+
+    //issue559TODOaddTIEvals//transform(evals.begin(), evals.end(), ts_evaluators.begin(),
+    //issue559TODOaddTIEvals//          [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
+    //issue559TODOaddTIEvals//              return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+    //issue559TODOaddTIEvals//          }
+    //issue559TODOaddTIEvals//          );
+    return make_shared<TieBreakingOpenListFactory>(
+        evals,//ts_evaluators,
+        pref_only,
+        allow_unsafe_pruning);
+ }
+
+
+
+
+
+
+
+
+
 class TieBreakingOpenListFeature
-    : public plugins::TypedFeature<OpenListFactory, TieBreakingOpenListFactory> {
+    : public plugins::TypedFeature<TaskIndependentOpenListFactory, TaskIndependentTieBreakingOpenListFactory> {
 public:
     TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
         document_title("Tie-breaking open list");
@@ -175,9 +209,9 @@ public:
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TieBreakingOpenListFactory>
+    virtual shared_ptr<TaskIndependentTieBreakingOpenListFactory>
     create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<TieBreakingOpenListFactory>(
+        return plugins::make_shared_from_arg_tuples<TaskIndependentTieBreakingOpenListFactory>(
             opts.get_list<shared_ptr<Evaluator>>("evals"),
             opts.get<bool>("unsafe_pruning"),
             get_open_list_arguments_from_options(opts)

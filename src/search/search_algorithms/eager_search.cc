@@ -311,7 +311,7 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
 }
 
 TaskIndependentEagerSearch::TaskIndependentEagerSearch(
-    shared_ptr<OpenListFactory> open_list_factory,
+    shared_ptr<TaskIndependentOpenListFactory> open_list_factory,
     bool reopen_closed_nodes,
     shared_ptr<Evaluator> f_evaluator,
     vector<shared_ptr<Evaluator>> preferred_operator_evaluators,
@@ -348,13 +348,18 @@ std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specifi
     //          }
     //          );
 
-    //unique_ptr<StateOpenList> _open_list = unique_ptr<StateOpenList>(
-    //    open_list_factory->get_task_specific(
-    //        task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
+    /////unique_ptr<StateOpenList> _open_list = unique_ptr<StateOpenList>(
+    /////    open_list_factory->get_task_specific(
+    /////        task, component_map, depth >= 0 ? depth + 1 : depth)->create_state_open_list());
 
-	cout << "eager_search.cc 355 " << endl;
+    shared_ptr<OpenListFactory> _open_list = 
+        open_list_factory->get_task_specific(
+            task, component_map, depth >= 0 ? depth + 1 : depth);
+
     return make_shared<EagerSearch>(
-        move(open_list_factory),//_open_list),
+        move(
+	     //open_list_factory),
+	     _open_list),
         reopen_closed_nodes,
         f_evaluator ? f_evaluator//->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth) 
 		: nullptr,
