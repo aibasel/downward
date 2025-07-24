@@ -16,6 +16,7 @@
 #include <cassert>
 #include <iostream>
 #include <limits>
+#include <memory>
 
 using namespace std;
 using utils::ExitCode;
