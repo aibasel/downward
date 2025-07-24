@@ -16,8 +16,9 @@ if __name__ == '__main__':
     try:
         DOWNWARD_MARKDOWN = os.environ['DOWNWARD_MARKDOWN']
     except KeyError as e:
-        sys.exit(f"Did you forget to set environment variable {e} (cf. README)?")
-    
+        msg = f"Did you forget to set environment variable {e} (cf. README)?"
+        sys.exit(msg)
+
     print("Copying content from the downward-markdown repository to",
           BUILD_DIR)
     try:
