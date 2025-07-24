@@ -115,33 +115,14 @@ void EagerSearch::print_statistics() const {
 }
 
 SearchStatus EagerSearch::step() {
-    optional<SearchNode> candidate_node = get_next_node_to_expand();
-    if (!candidate_node.has_value()) {
+    optional<SearchNode> node = get_next_node_to_expand();
+    if (!node.has_value()) {
         assert(open_list->empty());
         log << "Completely explored state space -- no solution!" << endl;
         return FAILED;
     }
 
-    SearchNode node = candidate_node.value();
-    const State &s = node.get_state();
-    if (check_goal_and_set_plan(s))
-        return SOLVED;
-
-    vector<OperatorID> applicable_ops;
-    successor_generator.generate_applicable_ops(s, applicable_ops);
-
-    /*
-      TODO: When preferred operators are in use, a preferred operator will be
-      considered by the preferred operator queues even when it is pruned.
-    */
-    pruning_method->prune_operators(s, applicable_ops);
-
-    // This evaluates the expanded state (again) to get preferred ops
-    ordered_set::OrderedSet<OperatorID> preferred_operators;
-    collect_preferred_operators_for_node(node, preferred_operators);
-
-    expand(node, applicable_ops, preferred_operators);
-    return IN_PROGRESS;
+    return expand(node.value());
 }
 
 optional<SearchNode> EagerSearch::get_next_node_to_expand() {
@@ -196,7 +177,6 @@ optional<SearchNode> EagerSearch::get_next_node_to_expand() {
         node.close();
         assert(!node.is_dead_end());
         update_f_value_statistics(eval_context);
-        statistics.inc_expanded();
         return node;
     }
     return nullopt;
@@ -215,23 +195,47 @@ void EagerSearch::collect_preferred_operators_for_node(
     }
 }
 
-void EagerSearch::expand(
-    const SearchNode &node,
-    const vector<OperatorID> &applicable_ops,
-    const ordered_set::OrderedSet<OperatorID> &preferred_operators) {
-    for (OperatorID op_id : applicable_ops) {
+SearchStatus EagerSearch::expand(const SearchNode &node) {
+    statistics.inc_expanded();
+
+    const State &state = node.get_state();
+    if (check_goal_and_set_plan(state))
+        return SOLVED;
+
+    generate_successors(node);
+    return IN_PROGRESS;
+}
+
+void EagerSearch::generate_successors(
+    const SearchNode &node) {
+    const State &state = node.get_state();
+
+    vector<OperatorID> applicable_operators;
+    successor_generator.generate_applicable_ops(state, applicable_operators);
+
+    /*
+      TODO: When preferred operators are in use, a preferred operator will be
+      considered by the preferred operator queues even when it is pruned.
+    */
+    pruning_method->prune_operators(state, applicable_operators);
+
+    // This evaluates the expanded state (again) to get preferred ops
+    ordered_set::OrderedSet<OperatorID> preferred_operators;
+    collect_preferred_operators_for_node(node, preferred_operators);
+
+    for (OperatorID op_id : applicable_operators) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
         if ((node.get_real_g() + op.get_cost()) >= bound)
             continue;
 
-        State succ_state = state_registry.get_successor_state(node.get_state(), op);
+        State succ_state = state_registry.get_successor_state(state, op);
         statistics.inc_generated();
         bool is_preferred = preferred_operators.contains(op_id);
 
         SearchNode succ_node = search_space.get_node(succ_state);
 
         for (Evaluator *evaluator : path_dependent_evaluators) {
-            evaluator->notify_state_transition(node.get_state(), op_id, succ_state);
+            evaluator->notify_state_transition(state, op_id, succ_state);
         }
 
         // Previously encountered dead end. Don't re-evaluate.

@@ -37,9 +37,8 @@ class EagerSearch : public SearchAlgorithm {
     void collect_preferred_operators_for_node(
         const SearchNode &node,
         ordered_set::OrderedSet<OperatorID> &preferred_operators);
-    void expand(const SearchNode &node,
-                const std::vector<OperatorID> &applicable_ops,
-                const ordered_set::OrderedSet<OperatorID> &preferred_operators);
+    SearchStatus expand(const SearchNode &node);
+    void generate_successors(const SearchNode &node);
 
 protected:
     virtual void initialize() override;
