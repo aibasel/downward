@@ -103,15 +103,18 @@ public:
 
 
 class TaskIndependentEvaluator : public TaskIndependentComponent<Evaluator> {
-    const bool use_for_reporting_minima;
-    const bool use_for_boosting;
-    const bool use_for_counting_evaluations;
+    [[maybe_unused]] const bool use_for_reporting_minima;
+    [[maybe_unused]] const bool use_for_boosting;
+    [[maybe_unused]] const bool use_for_counting_evaluations;
 public:
     explicit TaskIndependentEvaluator(
         bool use_for_reporting_minima, bool use_for_boosting,
         bool use_for_counting_evaluations,
         const std::string &description, utils::Verbosity verbosity);
     virtual ~TaskIndependentEvaluator() = default;
+//    bool is_used_for_reporting_minima() const;
+//    bool is_used_for_boosting() const;
+//    bool is_used_for_counting_evaluations() const;
 };
 
 

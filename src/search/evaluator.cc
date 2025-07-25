@@ -87,6 +87,17 @@ TaskIndependentEvaluator::TaskIndependentEvaluator(
       use_for_counting_evaluations(use_for_counting_evaluations) {
 }
 
+//bool TaskIndependentEvaluator::is_used_for_reporting_minima() const {
+//    return use_for_reporting_minima;
+//}
+//
+//bool TaskIndependentEvaluator::is_used_for_boosting() const {
+//    return use_for_boosting;
+//}
+//
+//bool TaskIndependentEvaluator::is_used_for_counting_evaluations() const {
+//    return use_for_counting_evaluations;
+//}
 
 
 
