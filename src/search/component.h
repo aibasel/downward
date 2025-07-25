@@ -43,7 +43,7 @@ public:
         std::unique_ptr<ComponentMap> &component_map, int depth) const {
         std::shared_ptr<AbstractProduct> component;
         if (component_map->count(this)) {
-            log << std::string(depth >= 0 ? depth + 1 : depth, ' ')
+            log << std::string(depth, ' ')
                 << "Reusing task specific component '" << description
                 << "'..." << std::endl;
             component = dynamic_pointer_cast<AbstractProduct>(

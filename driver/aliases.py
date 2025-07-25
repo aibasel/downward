@@ -147,7 +147,7 @@ ALIASES["issue559_testA"] = [
     "           "] # TODO issue559 remove this
 ALIASES["issue559_testB"] = [
     "--search",
-    "           let(h, blind(description=\"MyBlind\"), eager(open=tiebreaking([sum([h,h,h])])))"
+    "           let(h, blind(description=\"MyBlind\"), eager(open=tiebreaking([sum([h,h,h]),h])))"
     "           "] # TODO issue559 remove this
 ALIASES["issue559_test0"] = [
     "--search",
