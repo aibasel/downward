@@ -1,6 +1,23 @@
 # Tested with clang-format version 18.1.3.
 BasedOnStyle: LLVM
 Standard: c++20
+
+IncludeBlocks: Regroup
+# Regex is not case sensitive by default.
+IncludeCategories:
+  - Regex:           '^"[^/]+"$'
+    Priority:        1
+  - Regex:           '^"\.\./[^/]+"$'
+    Priority:        2
+  - Regex:           '^"\.\./.+"$'
+    Priority:        3
+# The next regex covers cases such as '"tasks/cost_adapted_task.h"' (without the
+# '../' prefix.
+  - Regex:           '^"[^/]+/[^/]+"$'
+    Priority:        3
+  - Regex:           '^<.+>$'
+    Priority:        4
+
 # Always indent by 4.
 IndentWidth: 4
 ContinuationIndentWidth: 4

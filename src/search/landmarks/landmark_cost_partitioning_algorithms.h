@@ -1,14 +1,13 @@
 #ifndef LANDMARKS_LANDMARK_COST_PARTITIONING_ALGORITHMS_H
 #define LANDMARKS_LANDMARK_COST_PARTITIONING_ALGORITHMS_H
 
+#include "../per_state_bitset.h"
 #include "../task_proxy.h"
 
 #include "../lp/lp_solver.h"
 
 #include <unordered_set>
 #include <vector>
-
-#include "../per_state_bitset.h"
 
 class ConstBitsetView;
 class OperatorsProxy;

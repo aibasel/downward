@@ -1,9 +1,8 @@
 #ifndef PDBS_MATCH_TREE_H
 #define PDBS_MATCH_TREE_H
 
-#include "types.h"
-
 #include "pattern_database.h"
+#include "types.h"
 
 #include "../task_proxy.h"
 

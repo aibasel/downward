@@ -1,9 +1,10 @@
 #include "delete_relaxation_rr_constraints.h"
 
+#include "../task_proxy.h"
+
 #include "../algorithms/priority_queues.h"
 #include "../lp/lp_solver.h"
 #include "../plugins/plugin.h"
-#include "../task_proxy.h"
 #include "../utils/markup.h"
 
 #include <cassert>

@@ -4,7 +4,6 @@
 #include "constraint_generator.h"
 
 #include "../algorithms/named_vector.h"
-
 #include "../pdbs/types.h"
 
 #include <memory>

@@ -1,10 +1,10 @@
 #ifndef OPEN_LIST_H
 #define OPEN_LIST_H
 
-#include <set>
-
 #include "evaluation_context.h"
 #include "operator_id.h"
+
+#include <set>
 
 class StateID;
 

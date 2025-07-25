@@ -2,7 +2,6 @@
 
 #include "plugins/plugin.h"
 #include "task_utils/task_properties.h"
-
 #include "utils/logging.h"
 
 #include <cassert>

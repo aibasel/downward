@@ -19,6 +19,7 @@
 */
 
 #include "../utils/logging.h"
+
 #include <memory>
 #include <vector>
 

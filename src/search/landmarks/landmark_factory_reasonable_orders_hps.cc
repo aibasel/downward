@@ -2,7 +2,6 @@
 
 #include "landmark.h"
 #include "landmark_graph.h"
-
 #include "util.h"
 
 #include "../plugins/plugin.h"

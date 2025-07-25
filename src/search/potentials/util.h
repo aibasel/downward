@@ -3,6 +3,7 @@
 
 #include "../lp/lp_solver.h"
 #include "../utils/logging.h"
+
 #include <memory>
 #include <string>
 #include <vector>
