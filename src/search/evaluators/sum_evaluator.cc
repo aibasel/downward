@@ -40,7 +40,7 @@ std::shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(
     vector<shared_ptr<Evaluator>> td_subevaluators(subevaluators.size());
     transform(subevaluators.begin(), subevaluators.end(), td_subevaluators.begin(),
               [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                  return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+                  return eval->get_task_specific(task, component_map, depth);
               }
               );
     return make_shared<SumEvaluator>(td_subevaluators, description, verbosity);
