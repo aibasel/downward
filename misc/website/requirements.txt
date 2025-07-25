@@ -1,0 +1,7 @@
+mike==2.1.3
+mkdocs==1.6.1
+mkdocs-get-deps==0.2.0
+mkdocs-literate-nav==0.6.2
+mkdocs-material==9.6.15
+mkdocs-material-extensions==1.3.1
+txt2tags==3.9
