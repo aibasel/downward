@@ -28,8 +28,11 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
             int num_conditions = cond_effect.get_conditions().size();
 
             // We don't allow axioms that set the variable to its default value.
-            assert(effect.value != variables[effect.var].get_default_axiom_value());
-            AxiomLiteral *eff_literal = &axiom_literals[effect.var][effect.value];
+            assert(
+                effect.value !=
+                variables[effect.var].get_default_axiom_value());
+            AxiomLiteral *eff_literal =
+                &axiom_literals[effect.var][effect.value];
             rules.emplace_back(
                 num_conditions, effect.var, effect.value, eff_literal);
         }
@@ -61,7 +64,8 @@ AxiomEvaluator::AxiomEvaluator(const TaskProxy &task_proxy) {
                 if (layer != last_layer) {
                     int var_id = var.get_id();
                     int nbf_value = var.get_default_axiom_value();
-                    AxiomLiteral *nbf_literal = &axiom_literals[var_id][nbf_value];
+                    AxiomLiteral *nbf_literal =
+                        &axiom_literals[var_id][nbf_value];
                     nbf_info_by_layer[layer].emplace_back(var_id, nbf_literal);
                 }
             }
@@ -139,7 +143,8 @@ void AxiomEvaluator::evaluate(vector<int> &state) {
           to save some time (see issue420, msg3058).
         */
         if (layer_no != nbf_info_by_layer.size() - 1) {
-            const vector<NegationByFailureInfo> &nbf_info = nbf_info_by_layer[layer_no];
+            const vector<NegationByFailureInfo> &nbf_info =
+                nbf_info_by_layer[layer_no];
             for (size_t i = 0; i < nbf_info.size(); ++i) {
                 int var_no = nbf_info[i].var_no;
                 // Verify that variable is derived.

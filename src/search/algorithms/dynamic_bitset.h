@@ -13,8 +13,7 @@ namespace dynamic_bitset {
 template<typename Block = unsigned int>
 class DynamicBitset {
     static_assert(
-        !std::numeric_limits<Block>::is_signed,
-        "Block type must be unsigned");
+        !std::numeric_limits<Block>::is_signed, "Block type must be unsigned");
 
     std::vector<Block> blocks;
     const std::size_t num_bits;

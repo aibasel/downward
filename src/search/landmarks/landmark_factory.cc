@@ -13,12 +13,12 @@
 #include <fstream>
 #include <memory>
 
-
 using namespace std;
 
 namespace landmarks {
 LandmarkFactory::LandmarkFactory(utils::Verbosity verbosity)
-    : log(get_log_for_verbosity(verbosity)), landmark_graph(nullptr) {
+    : log(get_log_for_verbosity(verbosity)),
+      landmark_graph(nullptr) {
 }
 
 void LandmarkFactory::resize_operators_providing_effect(
@@ -116,8 +116,8 @@ void LandmarkFactory::log_landmark_graph_info(
     const TaskProxy &task_proxy,
     const utils::Timer &landmark_generation_timer) const {
     if (log.is_at_least_normal()) {
-        log << "Landmarks generation time: "
-            << landmark_generation_timer << endl;
+        log << "Landmarks generation time: " << landmark_generation_timer
+            << endl;
         if (landmark_graph->get_num_landmarks() == 0) {
             if (log.is_warning()) {
                 log << "Warning! No landmarks found. Task unsolvable?" << endl;
@@ -193,17 +193,15 @@ tuple<utils::Verbosity> get_landmark_factory_arguments_from_options(
 
 void add_use_orders_option_to_feature(plugins::Feature &feature) {
     feature.add_option<bool>(
-        "use_orders",
-        "use orders between landmarks",
-        "true");
+        "use_orders", "use orders between landmarks", "true");
 }
 
-bool get_use_orders_arguments_from_options(
-    const plugins::Options &opts) {
+bool get_use_orders_arguments_from_options(const plugins::Options &opts) {
     return opts.get<bool>("use_orders");
 }
 
-static class LandmarkFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<LandmarkFactory> {
+static class LandmarkFactoryCategoryPlugin
+    : public plugins::TypedCategoryPlugin<LandmarkFactory> {
 public:
     LandmarkFactoryCategoryPlugin() : TypedCategoryPlugin("LandmarkFactory") {
         document_synopsis(
@@ -214,6 +212,5 @@ public:
             "OptionSyntax#Landmark_Predefinitions.");
         allow_variable_binding();
     }
-}
-_category_plugin;
+} _category_plugin;
 }

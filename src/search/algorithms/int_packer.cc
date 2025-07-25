@@ -50,8 +50,7 @@ public:
         clear_mask = ~read_mask;
     }
 
-    VariableInfo()
-        : bin_index(-1), shift(0), read_mask(0), clear_mask(0) {
+    VariableInfo() : bin_index(-1), shift(0), read_mask(0), clear_mask(0) {
         // Default constructor needed for resize() in pack_bins.
     }
 
@@ -69,9 +68,7 @@ public:
     }
 };
 
-
-IntPacker::IntPacker(const vector<int> &ranges)
-    : num_bins(0) {
+IntPacker::IntPacker(const vector<int> &ranges) : num_bins(0) {
     pack_bins(ranges);
 }
 
@@ -109,8 +106,8 @@ void IntPacker::pack_bins(const vector<int> &ranges) {
         packed_vars += pack_one_bin(ranges, bits_to_vars);
 }
 
-int IntPacker::pack_one_bin(const vector<int> &ranges,
-                            vector<vector<int>> &bits_to_vars) {
+int IntPacker::pack_one_bin(
+    const vector<int> &ranges, vector<vector<int>> &bits_to_vars) {
     // Returns the number of variables added to the bin. We pack each
     // bin with a greedy strategy, always adding the largest variable
     // that still fits.

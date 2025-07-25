@@ -25,8 +25,7 @@ class PruningMethod {
     utils::Timer timer;
     friend class limited_pruning::LimitedPruning;
 
-    virtual void prune(
-        const State &state, std::vector<OperatorID> &op_ids) = 0;
+    virtual void prune(const State &state, std::vector<OperatorID> &op_ids) = 0;
 protected:
     mutable utils::LogProxy log;
     std::shared_ptr<AbstractTask> task;

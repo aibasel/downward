@@ -12,21 +12,21 @@ using namespace std;
 
 namespace parser {
 static string case_insensitive_to_lower(const string &content, TokenType type) {
-    if (type == TokenType::BOOLEAN ||
-        type == TokenType::INTEGER ||
-        type == TokenType::FLOAT ||
-        type == TokenType::IDENTIFIER) {
+    if (type == TokenType::BOOLEAN || type == TokenType::INTEGER ||
+        type == TokenType::FLOAT || type == TokenType::IDENTIFIER) {
         return utils::tolower(content);
     } else {
         return content;
     }
 }
 Token::Token(const string &content, TokenType type)
-    : content(case_insensitive_to_lower(content, type)), type(type) {
+    : content(case_insensitive_to_lower(content, type)),
+      type(type) {
 }
 
 TokenStream::TokenStream(vector<Token> &&tokens)
-    : tokens(move(tokens)), pos(0) {
+    : tokens(move(tokens)),
+      pos(0) {
 }
 
 bool TokenStream::has_tokens(int n) const {

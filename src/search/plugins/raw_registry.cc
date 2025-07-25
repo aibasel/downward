@@ -11,11 +11,13 @@
 using namespace std;
 
 namespace plugins {
-void RawRegistry::insert_category_plugin(const CategoryPlugin &category_plugin) {
+void RawRegistry::insert_category_plugin(
+    const CategoryPlugin &category_plugin) {
     category_plugins.push_back(&category_plugin);
 }
 
-void RawRegistry::insert_subcategory_plugin(const SubcategoryPlugin &subcategory_plugin) {
+void RawRegistry::insert_subcategory_plugin(
+    const SubcategoryPlugin &subcategory_plugin) {
     subcategory_plugins.push_back(&subcategory_plugin);
 }
 
@@ -40,17 +42,20 @@ FeatureTypes RawRegistry::collect_types(vector<string> &errors) const {
     }
 
     for (const CategoryPlugin *category_plugin : category_plugins) {
-        vector<string> &names = type_to_names[category_plugin->get_pointer_type()];
+        vector<string> &names =
+            type_to_names[category_plugin->get_pointer_type()];
         if (names.empty()) {
             const FeatureType &type =
                 TypeRegistry::instance()->create_feature_type(*category_plugin);
             feature_types.push_back(&type);
         }
-        names.push_back("CategoryPlugin(" + category_plugin->get_class_name() +
-                        ", " + category_plugin->get_category_name() + ")");
+        names.push_back(
+            "CategoryPlugin(" + category_plugin->get_class_name() + ", " +
+            category_plugin->get_category_name() + ")");
     }
 
-    // Check that each type index is only used once for either an enum or a category.
+    // Check that each type index is only used once for either an enum or a
+    // category.
     for (const auto &pair : type_to_names) {
         const vector<string> &names = pair.second;
         if (names.size() > 1) {
@@ -77,8 +82,8 @@ void RawRegistry::validate_category_names(vector<string> &errors) const {
         const vector<string> &class_names = pair.second;
         if (class_names.size() > 1) {
             errors.push_back(
-                "Multiple CategoryPlugins have the name '" +
-                category_name + "': " + utils::join(class_names, ", ") + ".");
+                "Multiple CategoryPlugins have the name '" + category_name +
+                "': " + utils::join(class_names, ", ") + ".");
         }
     }
     for (const auto &pair : class_name_to_category_names) {
@@ -86,8 +91,8 @@ void RawRegistry::validate_category_names(vector<string> &errors) const {
         const vector<string> &category_names = pair.second;
         if (category_names.size() > 1) {
             errors.push_back(
-                "Multiple CategoryPlugins are defined for the class '" + class_name +
-                "': " + utils::join(category_names, ", ") + ".");
+                "Multiple CategoryPlugins are defined for the class '" +
+                class_name + "': " + utils::join(category_names, ", ") + ".");
         }
     }
 }
@@ -99,8 +104,8 @@ SubcategoryPlugins RawRegistry::collect_subcategory_plugins(
 
     for (const SubcategoryPlugin *subcategory_plugin : subcategory_plugins) {
         ++occurrences[subcategory_plugin->get_subcategory_name()];
-        subcategory_plugin_map.emplace(subcategory_plugin->get_subcategory_name(),
-                                       subcategory_plugin);
+        subcategory_plugin_map.emplace(
+            subcategory_plugin->get_subcategory_name(), subcategory_plugin);
     }
 
     for (auto &item : occurrences) {
@@ -116,7 +121,8 @@ SubcategoryPlugins RawRegistry::collect_subcategory_plugins(
 }
 
 Features RawRegistry::collect_features(
-    const SubcategoryPlugins &subcategory_plugins, vector<string> &errors) const {
+    const SubcategoryPlugins &subcategory_plugins,
+    vector<string> &errors) const {
     Features features;
     unordered_map<string, int> feature_key_occurrences;
     for (const Plugin *plugin : plugins) {
@@ -167,8 +173,8 @@ Features RawRegistry::collect_features(
         for (const ArgumentInfo &arg_info : feature.get_arguments()) {
             if (arg_info.type == TypeRegistry::NO_TYPE) {
                 errors.push_back(
-                    "Missing Plugin for type of parameter '" + arg_info.key
-                    + "' of feature '" + feature_key + "'.");
+                    "Missing Plugin for type of parameter '" + arg_info.key +
+                    "' of feature '" + feature_key + "'.");
             }
             ++parameter_occurrences[arg_info.key];
         }
@@ -178,8 +184,9 @@ Features RawRegistry::collect_features(
             int parameter_occurrence = pair.second;
             if (parameter_occurrence > 1) {
                 errors.push_back(
-                    "The parameter '" + parameter + "' in '" + feature_key + "' is defined " +
-                    to_string(parameter_occurrence) + " times.");
+                    "The parameter '" + parameter + "' in '" + feature_key +
+                    "' is defined " + to_string(parameter_occurrence) +
+                    " times.");
             }
         }
     }
@@ -191,7 +198,8 @@ Registry RawRegistry::construct_registry() const {
     vector<string> errors;
     FeatureTypes feature_types = collect_types(errors);
     validate_category_names(errors);
-    SubcategoryPlugins subcategory_plugins = collect_subcategory_plugins(errors);
+    SubcategoryPlugins subcategory_plugins =
+        collect_subcategory_plugins(errors);
     Features features = collect_features(subcategory_plugins, errors);
 
     if (!errors.empty()) {
@@ -203,8 +211,6 @@ Registry RawRegistry::construct_registry() const {
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     return Registry(
-        move(feature_types),
-        move(subcategory_plugins),
-        move(features));
+        move(feature_types), move(subcategory_plugins), move(features));
 }
 }

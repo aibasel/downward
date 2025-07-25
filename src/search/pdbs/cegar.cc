@@ -35,12 +35,12 @@ class PatternInfo {
 public:
     PatternInfo(
         const shared_ptr<PatternDatabase> &&pdb,
-        const vector<vector<OperatorID>> &&plan,
-        bool unsolvable)
+        const vector<vector<OperatorID>> &&plan, bool unsolvable)
         : pdb(move(pdb)),
           plan(move(plan)),
           unsolvable(unsolvable),
-          solved(false) {}
+          solved(false) {
+    }
 
     const shared_ptr<PatternDatabase> &get_pdb() const {
         return pdb;
@@ -111,8 +111,7 @@ class CEGAR {
       violated preconditions.
     */
     FlawList get_violated_preconditions(
-        int collection_index,
-        const OperatorProxy &op,
+        int collection_index, const OperatorProxy &op,
         const vector<int> &current_state) const;
     /*
       Try to apply the plan of the pattern at the given index in the
@@ -147,27 +146,19 @@ class CEGAR {
     void refine(const FlawList &flaws);
 public:
     CEGAR(
-        int max_pdb_size,
-        int max_collection_size,
-        double max_time,
-        bool use_wildcard_plans,
-        utils::LogProxy &log,
+        int max_pdb_size, int max_collection_size, double max_time,
+        bool use_wildcard_plans, utils::LogProxy &log,
         const shared_ptr<utils::RandomNumberGenerator> &rng,
-        const shared_ptr<AbstractTask> &task,
-        const vector<FactPair> &goals,
+        const shared_ptr<AbstractTask> &task, const vector<FactPair> &goals,
         unordered_set<int> &&blacklisted_variables = unordered_set<int>());
     PatternCollectionInformation compute_pattern_collection();
 };
 
 CEGAR::CEGAR(
-    int max_pdb_size,
-    int max_collection_size,
-    double max_time,
-    bool use_wildcard_plans,
-    utils::LogProxy &log,
+    int max_pdb_size, int max_collection_size, double max_time,
+    bool use_wildcard_plans, utils::LogProxy &log,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
-    const shared_ptr<AbstractTask> &task,
-    const vector<FactPair> &goals,
+    const shared_ptr<AbstractTask> &task, const vector<FactPair> &goals,
     unordered_set<int> &&blacklisted_variables)
     : max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
@@ -213,8 +204,7 @@ void CEGAR::print_collection() const {
     }
 }
 
-bool CEGAR::time_limit_reached(
-    const utils::CountdownTimer &timer) const {
+bool CEGAR::time_limit_reached(const utils::CountdownTimer &timer) const {
     if (timer.is_expired()) {
         if (log.is_at_least_normal()) {
             log << "CEGAR time limit reached" << endl;
@@ -232,7 +222,8 @@ unique_ptr<PatternInfo> CEGAR::compute_pattern_info(Pattern &&pattern) const {
     bool unsolvable = false;
     State initial_state = task_proxy.get_initial_state();
     initial_state.unpack();
-    if (pdb->get_value(initial_state.get_unpacked_values()) == numeric_limits<int>::max()) {
+    if (pdb->get_value(initial_state.get_unpacked_values()) ==
+        numeric_limits<int>::max()) {
         unsolvable = true;
         if (log.is_at_least_verbose()) {
             log << "projection onto pattern " << pdb->get_pattern()
@@ -240,7 +231,8 @@ unique_ptr<PatternInfo> CEGAR::compute_pattern_info(Pattern &&pattern) const {
         }
     } else {
         if (log.is_at_least_verbose()) {
-            log << "##### Plan for pattern " << pdb->get_pattern() << " #####" << endl;
+            log << "##### Plan for pattern " << pdb->get_pattern() << " #####"
+                << endl;
             int step = 1;
             for (const vector<OperatorID> &equivalent_ops : plan) {
                 log << "step #" << step << endl;
@@ -284,8 +276,7 @@ static void apply_op_to_state(vector<int> &state, const OperatorProxy &op) {
 }
 
 FlawList CEGAR::get_violated_preconditions(
-    int collection_index,
-    const OperatorProxy &op,
+    int collection_index, const OperatorProxy &op,
     const vector<int> &current_state) const {
     FlawList flaws;
     for (FactProxy precondition : op.get_preconditions()) {
@@ -303,18 +294,20 @@ FlawList CEGAR::get_violated_preconditions(
     return flaws;
 }
 
-FlawList CEGAR::apply_plan(int collection_index, vector<int> &current_state) const {
+FlawList CEGAR::apply_plan(
+    int collection_index, vector<int> &current_state) const {
     PatternInfo &pattern_info = *pattern_collection[collection_index];
     const vector<vector<OperatorID>> &plan = pattern_info.get_plan();
     if (log.is_at_least_verbose()) {
-        log << "executing plan for pattern "
-            << pattern_info.get_pattern() << ": ";
+        log << "executing plan for pattern " << pattern_info.get_pattern()
+            << ": ";
     }
     for (const vector<OperatorID> &equivalent_ops : plan) {
         FlawList step_flaws;
         for (OperatorID op_id : equivalent_ops) {
             OperatorProxy op = task_proxy.get_operators()[op_id];
-            FlawList operator_flaws = get_violated_preconditions(collection_index, op, current_state);
+            FlawList operator_flaws =
+                get_violated_preconditions(collection_index, op, current_state);
 
             /*
               If the operator is applicable, clear step_flaws, update the state
@@ -327,9 +320,10 @@ FlawList CEGAR::apply_plan(int collection_index, vector<int> &current_state) con
                 apply_op_to_state(current_state, op);
                 break;
             } else {
-                step_flaws.insert(step_flaws.end(),
-                                  make_move_iterator(operator_flaws.begin()),
-                                  make_move_iterator(operator_flaws.end()));
+                step_flaws.insert(
+                    step_flaws.end(),
+                    make_move_iterator(operator_flaws.begin()),
+                    make_move_iterator(operator_flaws.end()));
             }
         }
 
@@ -370,13 +364,15 @@ bool CEGAR::get_flaws_for_pattern(
             if (blacklisted_variables.empty()) {
                 if (log.is_at_least_verbose()) {
                     log << "there are no blacklisted variables, "
-                        "task solved." << endl;
+                           "task solved."
+                        << endl;
                 }
                 return true;
             } else {
                 if (log.is_at_least_verbose()) {
                     log << "there are blacklisted variables, "
-                        "marking pattern as solved." << endl;
+                           "marking pattern as solved."
+                        << endl;
                 }
                 pattern_info.mark_as_solved();
             }
@@ -400,14 +396,16 @@ bool CEGAR::get_flaws_for_pattern(
             } else {
                 if (log.is_at_least_verbose()) {
                     log << "there are no non-blacklisted goal variables "
-                        "left, marking pattern as solved." << endl;
+                           "left, marking pattern as solved."
+                        << endl;
                 }
                 pattern_info.mark_as_solved();
             }
         }
     } else {
-        flaws.insert(flaws.end(), make_move_iterator(new_flaws.begin()),
-                     make_move_iterator(new_flaws.end()));
+        flaws.insert(
+            flaws.end(), make_move_iterator(new_flaws.begin()),
+            make_move_iterator(new_flaws.end()));
     }
     return false;
 }
@@ -464,7 +462,8 @@ void CEGAR::merge_patterns(int index1, int index2) {
     int pdb_size2 = pattern_collection[index2]->get_pdb()->get_size();
 
     // Compute merged_pattern_info pattern.
-    unique_ptr<PatternInfo> merged_pattern_info = compute_pattern_info(move(new_pattern));
+    unique_ptr<PatternInfo> merged_pattern_info =
+        compute_pattern_info(move(new_pattern));
 
     // Update collection size.
     collection_size -= pdb_size1;
@@ -493,7 +492,8 @@ void CEGAR::add_variable_to_pattern(int collection_index, int var) {
     new_pattern.push_back(var);
     sort(new_pattern.begin(), new_pattern.end());
 
-    unique_ptr<PatternInfo> new_pattern_info = compute_pattern_info(move(new_pattern));
+    unique_ptr<PatternInfo> new_pattern_info =
+        compute_pattern_info(move(new_pattern));
 
     collection_size -= pattern_info.get_pdb()->get_size();
     collection_size += new_pattern_info->get_pdb()->get_size();
@@ -535,8 +535,7 @@ void CEGAR::refine(const FlawList &flaws) {
     } else {
         // Variable is not yet in the collection.
         if (log.is_at_least_verbose()) {
-            log << "var" << var
-                << " is not in the collection yet" << endl;
+            log << "var" << var << " is not in the collection yet" << endl;
         }
         if (can_add_variable_to_pattern(collection_index, var)) {
             if (log.is_at_least_verbose()) {
@@ -595,8 +594,7 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
 
         if (concrete_solution_index != -1) {
             if (log.is_at_least_normal()) {
-                log << "task solved during computation of abstraction"
-                    << endl;
+                log << "task solved during computation of abstraction" << endl;
             }
             break;
         }
@@ -633,7 +631,8 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
     } else {
         for (const unique_ptr<PatternInfo> &pattern_info : pattern_collection) {
             if (pattern_info) {
-                const shared_ptr<PatternDatabase> &pdb = pattern_info->get_pdb();
+                const shared_ptr<PatternDatabase> &pdb =
+                    pattern_info->get_pdb();
                 patterns->push_back(pdb->get_pattern());
                 pdbs->push_back(pdb);
             }
@@ -647,9 +646,7 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
     if (log.is_at_least_normal()) {
         log << "CEGAR number of iterations: " << iteration << endl;
         dump_pattern_collection_generation_statistics(
-            "CEGAR",
-            timer.get_elapsed_time(),
-            pattern_collection_information,
+            "CEGAR", timer.get_elapsed_time(), pattern_collection_information,
             log);
     }
 
@@ -657,52 +654,32 @@ PatternCollectionInformation CEGAR::compute_pattern_collection() {
 }
 
 PatternCollectionInformation generate_pattern_collection_with_cegar(
-    int max_pdb_size,
-    int max_collection_size,
-    double max_time,
-    bool use_wildcard_plans,
-    utils::LogProxy &log,
+    int max_pdb_size, int max_collection_size, double max_time,
+    bool use_wildcard_plans, utils::LogProxy &log,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
-    const shared_ptr<AbstractTask> &task,
-    const vector<FactPair> &goals,
+    const shared_ptr<AbstractTask> &task, const vector<FactPair> &goals,
     unordered_set<int> &&blacklisted_variables) {
     CEGAR cegar(
-        max_pdb_size,
-        max_collection_size,
-        max_time,
-        use_wildcard_plans,
-        log,
-        rng,
-        task,
-        goals,
-        move(blacklisted_variables));
+        max_pdb_size, max_collection_size, max_time, use_wildcard_plans, log,
+        rng, task, goals, move(blacklisted_variables));
     return cegar.compute_pattern_collection();
 }
 
 PatternInformation generate_pattern_with_cegar(
-    int max_pdb_size,
-    double max_time,
-    bool use_wildcard_plans,
-    utils::LogProxy &log,
-    const shared_ptr<utils::RandomNumberGenerator> &rng,
-    const shared_ptr<AbstractTask> &task,
-    const FactPair &goal,
+    int max_pdb_size, double max_time, bool use_wildcard_plans,
+    utils::LogProxy &log, const shared_ptr<utils::RandomNumberGenerator> &rng,
+    const shared_ptr<AbstractTask> &task, const FactPair &goal,
     unordered_set<int> &&blacklisted_variables) {
     vector<FactPair> goals = {goal};
     CEGAR cegar(
-        max_pdb_size,
-        max_pdb_size,
-        max_time,
-        use_wildcard_plans,
-        log,
-        rng,
-        task,
-        goals,
-        move(blacklisted_variables));
-    PatternCollectionInformation collection_info = cegar.compute_pattern_collection();
+        max_pdb_size, max_pdb_size, max_time, use_wildcard_plans, log, rng,
+        task, goals, move(blacklisted_variables));
+    PatternCollectionInformation collection_info =
+        cegar.compute_pattern_collection();
     shared_ptr<PatternCollection> new_patterns = collection_info.get_patterns();
     if (new_patterns->size() > 1) {
-        cerr << "CEGAR limited to one goal computed more than one pattern" << endl;
+        cerr << "CEGAR limited to one goal computed more than one pattern"
+             << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 

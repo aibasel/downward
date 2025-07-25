@@ -63,8 +63,7 @@ void release_vector_memory(std::vector<T> &vec) {
 
 template<class KeyType, class ValueType>
 ValueType get_value_or_default(
-    const std::unordered_map<KeyType, ValueType> &dict,
-    const KeyType &key,
+    const std::unordered_map<KeyType, ValueType> &dict, const KeyType &key,
     const ValueType &default_value) {
     auto it = dict.find(key);
     if (it != dict.end()) {
@@ -77,8 +76,9 @@ template<typename ElemTo, typename Collection, typename MapFunc>
 std::vector<ElemTo> map_vector(const Collection &collection, MapFunc map_func) {
     std::vector<ElemTo> transformed;
     transformed.reserve(collection.size());
-    std::transform(begin(collection), end(collection),
-                   std::back_inserter(transformed), map_func);
+    std::transform(
+        begin(collection), end(collection), std::back_inserter(transformed),
+        map_func);
     return transformed;
 }
 
@@ -98,8 +98,8 @@ int estimate_vector_bytes(int num_elements) {
       or compiler versions.
     */
     int size = 0;
-    size += 2 * sizeof(void *);       // overhead for dynamic memory management
-    size += sizeof(std::vector<T>);   // size of empty vector
+    size += 2 * sizeof(void *); // overhead for dynamic memory management
+    size += sizeof(std::vector<T>); // size of empty vector
     size += num_elements * sizeof(T); // size of actual entries
     return size;
 }
@@ -123,10 +123,10 @@ int _estimate_hash_table_bytes(int num_entries) {
     */
     int num_buckets = 0;
     const auto bounds = {
-        2, 5, 11, 23, 47, 97, 199, 409, 823, 1741, 3469, 6949, 14033,
-        28411, 57557, 116731, 236897, 480881, 976369, 1982627, 4026031,
-        8175383, 16601593, 33712729, 68460391, 139022417, 282312799
-    };
+        2,       5,        11,       23,       47,        97,       199,
+        409,     823,      1741,     3469,     6949,      14033,    28411,
+        57557,   116731,   236897,   480881,   976369,    1982627,  4026031,
+        8175383, 16601593, 33712729, 68460391, 139022417, 282312799};
 
     for (int bound : bounds) {
         if (num_entries < bound) {
@@ -136,13 +136,13 @@ int _estimate_hash_table_bytes(int num_entries) {
     }
 
     int size = 0;
-    size += 2 * sizeof(void *);                            // overhead for dynamic memory management
-    size += sizeof(T);                                     // empty container
+    size += 2 * sizeof(void *); // overhead for dynamic memory management
+    size += sizeof(T); // empty container
     using Entry = typename T::value_type;
-    size += num_entries * sizeof(Entry);                   // actual entries
-    size += num_entries * sizeof(Entry *);                 // pointer to values
-    size += num_entries * sizeof(void *);                  // pointer to next node
-    size += num_buckets * sizeof(void *);                  // pointer to next bucket
+    size += num_entries * sizeof(Entry); // actual entries
+    size += num_entries * sizeof(Entry *); // pointer to values
+    size += num_entries * sizeof(void *); // pointer to next node
+    size += num_buckets * sizeof(void *); // pointer to next bucket
     return size;
 }
 
@@ -155,7 +155,8 @@ int estimate_unordered_set_bytes(int num_entries) {
 template<typename Key, typename Value>
 int estimate_unordered_map_bytes(int num_entries) {
     // See comments for _estimate_hash_table_bytes.
-    return _estimate_hash_table_bytes<std::unordered_map<Key, Value>>(num_entries);
+    return _estimate_hash_table_bytes<std::unordered_map<Key, Value>>(
+        num_entries);
 }
 }
 

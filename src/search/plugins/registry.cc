@@ -10,8 +10,7 @@ using namespace std;
 
 namespace plugins {
 Registry::Registry(
-    FeatureTypes &&feature_types,
-    SubcategoryPlugins &&subcategory_plugins,
+    FeatureTypes &&feature_types, SubcategoryPlugins &&subcategory_plugins,
     Features &&features)
     : feature_types(move(feature_types)),
       subcategory_plugins(move(subcategory_plugins)),
@@ -25,10 +24,12 @@ shared_ptr<const Feature> Registry::get_feature(const string &name) const {
     return features.at(name);
 }
 
-const SubcategoryPlugin &Registry::get_subcategory_plugin(const string &subcategory) const {
+const SubcategoryPlugin &Registry::get_subcategory_plugin(
+    const string &subcategory) const {
     if (!subcategory_plugins.count(subcategory)) {
-        ABORT("attempt to retrieve non-existing group info from registry: " +
-              string(subcategory));
+        ABORT(
+            "attempt to retrieve non-existing group info from registry: " +
+            string(subcategory));
     }
     return *subcategory_plugins.at(subcategory);
 }

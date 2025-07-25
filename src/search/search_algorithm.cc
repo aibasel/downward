@@ -20,7 +20,6 @@
 using namespace std;
 using utils::ExitCode;
 
-
 static successor_generator::SuccessorGenerator &get_successor_generator(
     const TaskProxy &task_proxy, utils::LogProxy &log) {
     log << "Building successor generator..." << flush;
@@ -63,14 +62,17 @@ SearchAlgorithm::SearchAlgorithm(
     task_properties::print_variable_statistics(task_proxy);
 }
 
-SearchAlgorithm::SearchAlgorithm(const plugins::Options &opts) // TODO options object is needed for iterated search, the prototype for issue559 resolves this
+SearchAlgorithm::SearchAlgorithm(
+    const plugins::Options
+        &opts) // TODO options object is needed for iterated search, the
+               // prototype for issue559 resolves this
     : description(opts.get_unparsed_config()),
       status(IN_PROGRESS),
       solution_found(false),
       task(tasks::g_root_task),
       task_proxy(*task),
       log(utils::get_log_for_verbosity(
-              opts.get<utils::Verbosity>("verbosity"))),
+          opts.get<utils::Verbosity>("verbosity"))),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
       search_space(state_registry, log),
@@ -143,23 +145,20 @@ int SearchAlgorithm::get_adjusted_cost(const OperatorProxy &op) const {
     return get_adjusted_action_cost(op, cost_type, is_unit_cost);
 }
 
-
-
-void print_initial_evaluator_values(
-    const EvaluationContext &eval_context) {
+void print_initial_evaluator_values(const EvaluationContext &eval_context) {
     eval_context.get_cache().for_each_evaluator_result(
-        [] (const Evaluator *eval, const EvaluationResult &result) {
+        [](const Evaluator *eval, const EvaluationResult &result) {
             if (eval->is_used_for_reporting_minima()) {
                 eval->report_value_for_initial_state(result);
             }
-        }
-        );
+        });
 }
 
 /* TODO: merge this into add_options_to_feature when all search
          algorithms support pruning.
 
-   Method doesn't belong here because it's only useful for certain derived classes.
+   Method doesn't belong here because it's only useful for certain derived
+   classes.
    TODO: Figure out where it belongs and move it there. */
 void add_search_pruning_options_to_feature(plugins::Feature &feature) {
     feature.add_option<shared_ptr<PruningMethod>>(
@@ -170,8 +169,7 @@ void add_search_pruning_options_to_feature(plugins::Feature &feature) {
         "null()");
 }
 
-tuple<shared_ptr<PruningMethod>>
-get_search_pruning_arguments_from_options(
+tuple<shared_ptr<PruningMethod>> get_search_pruning_arguments_from_options(
     const plugins::Options &opts) {
     return make_tuple(opts.get<shared_ptr<PruningMethod>>("pruning"));
 }
@@ -182,7 +180,8 @@ void add_search_algorithm_options_to_feature(
     feature.add_option<int>(
         "bound",
         "exclusive depth bound on g-values. Cutoffs are always performed according to "
-        "the real cost, regardless of the cost_type parameter", "infinity");
+        "the real cost, regardless of the cost_type parameter",
+        "infinity");
     feature.add_option<double>(
         "max_time",
         "maximum time in seconds the search is allowed to run for. The "
@@ -193,37 +192,30 @@ void add_search_algorithm_options_to_feature(
         "just like incomplete search algorithms that exhaust their search space.",
         "infinity");
     feature.add_option<string>(
-        "description",
-        "description used to identify search algorithm in logs",
+        "description", "description used to identify search algorithm in logs",
         "\"" + description + "\"");
     utils::add_log_options_to_feature(feature);
 }
 
 tuple<OperatorCost, int, double, string, utils::Verbosity>
-get_search_algorithm_arguments_from_options(
-    const plugins::Options &opts) {
+get_search_algorithm_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         ::get_cost_type_arguments_from_options(opts),
         make_tuple(
-            opts.get<int>("bound"),
-            opts.get<double>("max_time"),
-            opts.get<string>("description")
-            ),
-        utils::get_log_arguments_from_options(opts)
-        );
+            opts.get<int>("bound"), opts.get<double>("max_time"),
+            opts.get<string>("description")),
+        utils::get_log_arguments_from_options(opts));
 }
 
-/* Method doesn't belong here because it's only useful for certain derived classes.
+/* Method doesn't belong here because it's only useful for certain derived
+   classes.
    TODO: Figure out where it belongs and move it there. */
-void add_successors_order_options_to_feature(
-    plugins::Feature &feature) {
+void add_successors_order_options_to_feature(plugins::Feature &feature) {
     feature.add_option<bool>(
         "randomize_successors",
-        "randomize the order in which successors are generated",
-        "false");
+        "randomize the order in which successors are generated", "false");
     feature.add_option<bool>(
-        "preferred_successors_first",
-        "consider preferred operators first",
+        "preferred_successors_first", "consider preferred operators first",
         "false");
     feature.document_note(
         "Successor ordering",
@@ -238,27 +230,26 @@ tuple<bool, bool, int> get_successors_order_arguments_from_options(
     return tuple_cat(
         make_tuple(
             opts.get<bool>("randomize_successors"),
-            opts.get<bool>("preferred_successors_first")
-            ),
-        utils::get_rng_arguments_from_options(opts)
-        );
+            opts.get<bool>("preferred_successors_first")),
+        utils::get_rng_arguments_from_options(opts));
 }
 
-static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<SearchAlgorithm> {
+static class SearchAlgorithmCategoryPlugin
+    : public plugins::TypedCategoryPlugin<SearchAlgorithm> {
 public:
     SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("SearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.
         // document_synopsis("...");
     }
-}
-_category_plugin;
+} _category_plugin;
 
 void collect_preferred_operators(
-    EvaluationContext &eval_context,
-    Evaluator *preferred_operator_evaluator,
+    EvaluationContext &eval_context, Evaluator *preferred_operator_evaluator,
     ordered_set::OrderedSet<OperatorID> &preferred_operators) {
-    if (!eval_context.is_evaluator_value_infinite(preferred_operator_evaluator)) {
-        for (OperatorID op_id : eval_context.get_preferred_operators(preferred_operator_evaluator)) {
+    if (!eval_context.is_evaluator_value_infinite(
+            preferred_operator_evaluator)) {
+        for (OperatorID op_id : eval_context.get_preferred_operators(
+                 preferred_operator_evaluator)) {
             preferred_operators.insert(op_id);
         }
     }

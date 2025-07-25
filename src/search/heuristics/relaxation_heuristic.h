@@ -39,10 +39,9 @@ struct Proposition {
 static_assert(sizeof(Proposition) == 16, "Proposition has wrong size");
 
 struct UnaryOperator {
-    UnaryOperator(int num_preconditions,
-                  array_pool::ArrayPoolIndex preconditions,
-                  PropID effect,
-                  int operator_no, int base_cost);
+    UnaryOperator(
+        int num_preconditions, array_pool::ArrayPoolIndex preconditions,
+        PropID effect, int operator_no, int base_cost);
     int cost; // Used for h^max cost or h^add cost;
               // includes operator cost (base_cost)
     int unsatisfied_preconditions;
@@ -71,7 +70,8 @@ protected:
 
     array_pool::ArrayPoolSlice get_preconditions(OpID op_id) const {
         const UnaryOperator &op = unary_operators[op_id];
-        return preconditions_pool.get_slice(op.preconditions, op.num_preconditions);
+        return preconditions_pool.get_slice(
+            op.preconditions, op.num_preconditions);
     }
 
     // HACK!
@@ -113,17 +113,17 @@ protected:
 public:
     RelaxationHeuristic(
         tasks::AxiomHandlingType axioms,
-        const std::shared_ptr<AbstractTask> &transform,
-        bool cache_estimates, const std::string &description,
-        utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+        const std::string &description, utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;
 };
 
 extern void add_relaxation_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<tasks::AxiomHandlingType, std::shared_ptr<AbstractTask>,
-                  bool, std::string, utils::Verbosity>
+extern std::tuple<
+    tasks::AxiomHandlingType, std::shared_ptr<AbstractTask>, bool, std::string,
+    utils::Verbosity>
 get_relaxation_heuristic_arguments_from_options(const plugins::Options &opts);
 }
 #endif

@@ -16,7 +16,8 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     std::deque<LandmarkNode *> open_landmarks;
     std::vector<std::vector<int>> disjunction_classes;
 
-    std::unordered_map<const LandmarkNode *, utils::HashSet<FactPair>> forward_orderings;
+    std::unordered_map<const LandmarkNode *, utils::HashSet<FactPair>>
+        forward_orderings;
 
     /* The entry `dtg_successors[var][val]` contains all successor values of the
        atom var->val in the domain transition graph (aka atomic projection). */
@@ -82,8 +83,9 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
 
     void discard_disjunctive_landmarks() const;
 public:
-    LandmarkFactoryRpgSasp(bool disjunctive_landmarks, bool use_orders,
-                           utils::Verbosity verbosity);
+    LandmarkFactoryRpgSasp(
+        bool disjunctive_landmarks, bool use_orders,
+        utils::Verbosity verbosity);
 
     virtual bool supports_conditional_effects() const override;
 };

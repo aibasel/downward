@@ -26,8 +26,8 @@ ZeroOnePDBs::ZeroOnePDBs(
 
     pattern_databases.reserve(patterns.size());
     for (const Pattern &pattern : patterns) {
-        shared_ptr<PatternDatabase> pdb = compute_pdb(
-            task_proxy, pattern, remaining_operator_costs);
+        shared_ptr<PatternDatabase> pdb =
+            compute_pdb(task_proxy, pattern, remaining_operator_costs);
 
         /* Set cost of relevant operators to 0 for further iterations
            (action cost partitioning). */
@@ -39,7 +39,6 @@ ZeroOnePDBs::ZeroOnePDBs(
         pattern_databases.push_back(pdb);
     }
 }
-
 
 int ZeroOnePDBs::get_value(const State &state) const {
     /*

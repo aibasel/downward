@@ -32,7 +32,8 @@ StateID StateRegistry::insert_id_or_pop_state() {
     if (!is_new_entry) {
         state_data_pool.pop_back();
     }
-    assert(registered_states.size() == static_cast<int>(state_data_pool.size()));
+    assert(
+        registered_states.size() == static_cast<int>(state_data_pool.size()));
     return StateID(result.first);
 }
 
@@ -65,10 +66,12 @@ const State &StateRegistry::get_initial_state() {
     return *cached_initial_state;
 }
 
-//TODO it would be nice to move the actual state creation (and operator application)
-//     out of the StateRegistry. This could for example be done by global functions
-//     operating on state buffers (PackedStateBin *).
-State StateRegistry::get_successor_state(const State &predecessor, const OperatorProxy &op) {
+// TODO it would be nice to move the actual state creation (and operator
+// application)
+//      out of the StateRegistry. This could for example be done by global
+//      functions operating on state buffers (PackedStateBin *).
+State StateRegistry::get_successor_state(
+    const State &predecessor, const OperatorProxy &op) {
     assert(!op.is_axiom());
     /*
       TODO: ideally, we would not modify state_data_pool here and in

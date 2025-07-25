@@ -47,7 +47,8 @@ pair<CartesianSet, CartesianSet> AbstractState::split_domain(
         // In v2 var can only have the wanted values.
         v2_cartesian_set.add(var, value);
     }
-    assert(v1_cartesian_set.count(var) == cartesian_set.count(var) - num_wanted);
+    assert(
+        v1_cartesian_set.count(var) == cartesian_set.count(var) - num_wanted);
     assert(v2_cartesian_set.count(var) == num_wanted);
     return make_pair(v1_cartesian_set, v2_cartesian_set);
 }
@@ -65,7 +66,8 @@ CartesianSet AbstractState::regress(const OperatorProxy &op) const {
     return regression;
 }
 
-bool AbstractState::domain_subsets_intersect(const AbstractState &other, int var) const {
+bool AbstractState::domain_subsets_intersect(
+    const AbstractState &other, int var) const {
     return cartesian_set.intersects(other.cartesian_set, var);
 }
 

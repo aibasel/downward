@@ -22,10 +22,11 @@ ostream &operator<<(ostream &os, const Duration &time) {
 
 static double compute_sanitized_duration(double start_clock, double end_clock) {
     /*
-        Sometimes we measure durations that are closer to 0 than should be physically possible
-        with measurements on a single CPU. Note that with a CPU frequency less than 10 GHz,
-        each clock cycle will take more than 1e-10 seconds. Even worse, these close-to-zero durations
-        are sometimes negative. We sanitize them to 0.
+        Sometimes we measure durations that are closer to 0 than should be
+       physically possible with measurements on a single CPU. Note that with a
+       CPU frequency less than 10 GHz, each clock cycle will take more than
+       1e-10 seconds. Even worse, these close-to-zero durations are sometimes
+       negative. We sanitize them to 0.
     */
     double duration = end_clock - start_clock;
     if (duration > -1e-10 && duration < 1e-10)
@@ -40,18 +41,19 @@ static double get_timebase_ratio() {
     return static_cast<double>(info.numer) / static_cast<double>(info.denom);
 }
 
-void mach_absolute_difference(uint64_t end, uint64_t start, struct timespec *tp) {
+void mach_absolute_difference(
+    uint64_t end, uint64_t start, struct timespec *tp) {
     constexpr uint64_t nanoseconds_per_second = 1'000'000'000UL;
     static double timebase_ratio = get_timebase_ratio();
 
     uint64_t difference = end - start;
-    uint64_t elapsed_nanoseconds = static_cast<uint64_t>(difference * timebase_ratio);
+    uint64_t elapsed_nanoseconds =
+        static_cast<uint64_t>(difference * timebase_ratio);
 
     tp->tv_sec = elapsed_nanoseconds / nanoseconds_per_second;
     tp->tv_nsec = elapsed_nanoseconds % nanoseconds_per_second;
 }
 #endif
-
 
 Timer::Timer(bool start) {
 #if OPERATING_SYSTEM == WINDOWS
@@ -67,7 +69,8 @@ double Timer::current_clock() const {
 #if OPERATING_SYSTEM == WINDOWS
     LARGE_INTEGER now_ticks;
     QueryPerformanceCounter(&now_ticks);
-    double ticks = static_cast<double>(now_ticks.QuadPart - start_ticks.QuadPart);
+    double ticks =
+        static_cast<double>(now_ticks.QuadPart - start_ticks.QuadPart);
     return ticks / frequency.QuadPart;
 #else
     timespec tp;
@@ -92,8 +95,9 @@ Duration Timer::operator()() const {
     if (stopped)
         return Duration(collected_time);
     else
-        return Duration(collected_time
-                        + compute_sanitized_duration(last_start_clock, current_clock()));
+        return Duration(
+            collected_time +
+            compute_sanitized_duration(last_start_clock, current_clock()));
 }
 
 void Timer::resume() {

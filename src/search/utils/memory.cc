@@ -15,13 +15,15 @@ static void (*standard_out_of_memory_handler)() = nullptr;
 
 static void continuing_out_of_memory_handler() {
     release_extra_memory_padding();
-    utils::g_log << "Failed to allocate memory. Released extra memory padding." << endl;
+    utils::g_log << "Failed to allocate memory. Released extra memory padding."
+                 << endl;
 }
 
 void reserve_extra_memory_padding(int memory_in_mb) {
     assert(!extra_memory_padding);
     extra_memory_padding = new char[memory_in_mb * 1024 * 1024];
-    standard_out_of_memory_handler = set_new_handler(continuing_out_of_memory_handler);
+    standard_out_of_memory_handler =
+        set_new_handler(continuing_out_of_memory_handler);
 }
 
 void release_extra_memory_padding() {

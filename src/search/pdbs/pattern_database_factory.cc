@@ -37,11 +37,8 @@ class PatternDatabaseFactory {
       progression search.
     */
     AbstractOperator build_abstract_operator(
-        const vector<FactPair> &prev_pairs,
-        const vector<FactPair> &pre_pairs,
-        const vector<FactPair> &eff_pairs,
-        int concrete_op_id,
-        int cost) const;
+        const vector<FactPair> &prev_pairs, const vector<FactPair> &pre_pairs,
+        const vector<FactPair> &eff_pairs, int concrete_op_id, int cost) const;
 
     /*
       Recursive method; called by build_abstract_operators_for_op. In the case
@@ -51,12 +48,8 @@ class PatternDatabaseFactory {
       abstract operator with a concrete value (!= -1) is computed.
     */
     void multiply_out(
-        int concrete_op_id,
-        int pos,
-        int cost,
-        vector<FactPair> &prev_pairs,
-        vector<FactPair> &pre_pairs,
-        vector<FactPair> &eff_pairs,
+        int concrete_op_id, int pos, int cost, vector<FactPair> &prev_pairs,
+        vector<FactPair> &pre_pairs, vector<FactPair> &eff_pairs,
         const vector<FactPair> &effects_without_pre,
         vector<AbstractOperator> &operators) const;
 
@@ -67,8 +60,7 @@ class PatternDatabaseFactory {
       variables in the task to their index in the pattern or -1.
     */
     void build_abstract_operators_for_op(
-        const OperatorProxy &op,
-        int cost,
+        const OperatorProxy &op, int cost,
         vector<AbstractOperator> &operators) const;
 
     void compute_abstract_operators(const vector<int> &operator_costs);
@@ -99,8 +91,7 @@ class PatternDatabaseFactory {
         bool compute_wildcard_plan);
 public:
     PatternDatabaseFactory(
-        const TaskProxy &task_proxy,
-        const Pattern &pattern,
+        const TaskProxy &task_proxy, const Pattern &pattern,
         const vector<int> &operator_costs = vector<int>(),
         bool compute_plan = false,
         const shared_ptr<utils::RandomNumberGenerator> &rng = nullptr,
@@ -108,9 +99,7 @@ public:
     ~PatternDatabaseFactory() = default;
 
     shared_ptr<PatternDatabase> extract_pdb() {
-        return make_shared<PatternDatabase>(
-            move(projection),
-            move(distances));
+        return make_shared<PatternDatabase>(move(projection), move(distances));
     }
 
     vector<vector<OperatorID>> &&extract_wildcard_plan() {
@@ -126,20 +115,17 @@ void PatternDatabaseFactory::compute_variable_to_index(const Pattern &pattern) {
 }
 
 AbstractOperator PatternDatabaseFactory::build_abstract_operator(
-    const vector<FactPair> &prev_pairs,
-    const vector<FactPair> &pre_pairs,
-    const vector<FactPair> &eff_pairs,
-    int concrete_op_id,
-    int cost) const {
+    const vector<FactPair> &prev_pairs, const vector<FactPair> &pre_pairs,
+    const vector<FactPair> &eff_pairs, int concrete_op_id, int cost) const {
     vector<FactPair> regression_preconditions(prev_pairs);
-    regression_preconditions.insert(regression_preconditions.end(),
-                                    eff_pairs.begin(),
-                                    eff_pairs.end());
+    regression_preconditions.insert(
+        regression_preconditions.end(), eff_pairs.begin(), eff_pairs.end());
     // Sort preconditions for MatchTree construction.
     sort(regression_preconditions.begin(), regression_preconditions.end());
     for (size_t i = 1; i < regression_preconditions.size(); ++i) {
-        assert(regression_preconditions[i].var !=
-               regression_preconditions[i - 1].var);
+        assert(
+            regression_preconditions[i].var !=
+            regression_preconditions[i - 1].var);
     }
     int hash_effect = 0;
     assert(pre_pairs.size() == eff_pairs.size());
@@ -152,25 +138,20 @@ AbstractOperator PatternDatabaseFactory::build_abstract_operator(
         int effect = (new_val - old_val) * projection.get_multiplier(var);
         hash_effect += effect;
     }
-    return AbstractOperator(concrete_op_id, cost, move(regression_preconditions), hash_effect);
+    return AbstractOperator(
+        concrete_op_id, cost, move(regression_preconditions), hash_effect);
 }
 
 void PatternDatabaseFactory::multiply_out(
-    int concrete_op_id,
-    int cost,
-    int pos,
-    vector<FactPair> &prev_pairs,
-    vector<FactPair> &pre_pairs,
-    vector<FactPair> &eff_pairs,
+    int concrete_op_id, int cost, int pos, vector<FactPair> &prev_pairs,
+    vector<FactPair> &pre_pairs, vector<FactPair> &eff_pairs,
     const vector<FactPair> &effects_without_pre,
     vector<AbstractOperator> &operators) const {
     if (pos == static_cast<int>(effects_without_pre.size())) {
         // All effects without precondition have been checked: insert op.
         if (!eff_pairs.empty()) {
-            operators.push_back(
-                build_abstract_operator(
-                    prev_pairs, pre_pairs, eff_pairs,
-                    concrete_op_id, cost));
+            operators.push_back(build_abstract_operator(
+                prev_pairs, pre_pairs, eff_pairs, concrete_op_id, cost));
         }
     } else {
         // For each possible value for the current variable, build an
@@ -185,9 +166,9 @@ void PatternDatabaseFactory::multiply_out(
             } else {
                 prev_pairs.emplace_back(var_id, i);
             }
-            multiply_out(concrete_op_id, cost,
-                         pos + 1, prev_pairs, pre_pairs, eff_pairs,
-                         effects_without_pre, operators);
+            multiply_out(
+                concrete_op_id, cost, pos + 1, prev_pairs, pre_pairs, eff_pairs,
+                effects_without_pre, operators);
             if (i != eff) {
                 pre_pairs.pop_back();
                 eff_pairs.pop_back();
@@ -199,8 +180,7 @@ void PatternDatabaseFactory::multiply_out(
 }
 
 void PatternDatabaseFactory::build_abstract_operators_for_op(
-    const OperatorProxy &op,
-    int cost,
+    const OperatorProxy &op, int cost,
     vector<AbstractOperator> &operators) const {
     // All variable value pairs that are a prevail condition
     vector<FactPair> prev_pairs;
@@ -243,9 +223,9 @@ void PatternDatabaseFactory::build_abstract_operators_for_op(
             }
         }
     }
-    multiply_out(op.get_id(), cost, 0,
-                 prev_pairs, pre_pairs, eff_pairs, effects_without_pre,
-                 operators);
+    multiply_out(
+        op.get_id(), cost, 0, prev_pairs, pre_pairs, eff_pairs,
+        effects_without_pre, operators);
 }
 
 void PatternDatabaseFactory::compute_abstract_operators(
@@ -257,13 +237,13 @@ void PatternDatabaseFactory::compute_abstract_operators(
         } else {
             op_cost = operator_costs[op.get_id()];
         }
-        build_abstract_operators_for_op(
-            op, op_cost, abstract_ops);
+        build_abstract_operators_for_op(op, op_cost, abstract_ops);
     }
 }
 
 unique_ptr<MatchTree> PatternDatabaseFactory::compute_match_tree() const {
-    unique_ptr<MatchTree> match_tree = make_unique<MatchTree>(task_proxy, projection);
+    unique_ptr<MatchTree> match_tree =
+        make_unique<MatchTree>(task_proxy, projection);
     for (size_t op_id = 0; op_id < abstract_ops.size(); ++op_id) {
         const AbstractOperator &op = abstract_ops[op_id];
         match_tree->insert(op_id, op.get_regression_preconditions());
@@ -299,7 +279,8 @@ void PatternDatabaseFactory::compute_distances(
     priority_queues::AdaptiveQueue<int> pq;
 
     // initialize queue
-    for (int state_index = 0; state_index < projection.get_num_abstract_states(); ++state_index) {
+    for (int state_index = 0;
+         state_index < projection.get_num_abstract_states(); ++state_index) {
         if (is_goal_state(state_index)) {
             pq.push(0, state_index);
             distances.push_back(0);
@@ -333,7 +314,8 @@ void PatternDatabaseFactory::compute_distances(
 
         // regress abstract_state
         vector<int> applicable_operator_ids;
-        match_tree.get_applicable_operator_ids(state_index, applicable_operator_ids);
+        match_tree.get_applicable_operator_ids(
+            state_index, applicable_operator_ids);
         for (int op_id : applicable_operator_ids) {
             const AbstractOperator &op = abstract_ops[op_id];
             int predecessor = state_index + op.get_hash_effect();
@@ -367,8 +349,7 @@ void PatternDatabaseFactory::compute_plan(
     */
     State initial_state = task_proxy.get_initial_state();
     initial_state.unpack();
-    int current_state =
-        projection.rank(initial_state.get_unpacked_values());
+    int current_state = projection.rank(initial_state.get_unpacked_values());
     if (distances[current_state] != numeric_limits<int>::max()) {
         while (!is_goal_state(current_state)) {
             int op_id = generating_op_ids[current_state];
@@ -379,12 +360,17 @@ void PatternDatabaseFactory::compute_plan(
             // Compute equivalent ops
             vector<OperatorID> cheapest_operators;
             vector<int> applicable_operator_ids;
-            match_tree.get_applicable_operator_ids(successor_state, applicable_operator_ids);
+            match_tree.get_applicable_operator_ids(
+                successor_state, applicable_operator_ids);
             for (int applicable_op_id : applicable_operator_ids) {
-                const AbstractOperator &applicable_op = abstract_ops[applicable_op_id];
-                int predecessor = successor_state + applicable_op.get_hash_effect();
-                if (predecessor == current_state && op.get_cost() == applicable_op.get_cost()) {
-                    cheapest_operators.emplace_back(applicable_op.get_concrete_op_id());
+                const AbstractOperator &applicable_op =
+                    abstract_ops[applicable_op_id];
+                int predecessor =
+                    successor_state + applicable_op.get_hash_effect();
+                if (predecessor == current_state &&
+                    op.get_cost() == applicable_op.get_cost()) {
+                    cheapest_operators.emplace_back(
+                        applicable_op.get_concrete_op_id());
                 }
             }
             if (compute_wildcard_plan) {
@@ -408,17 +394,16 @@ void PatternDatabaseFactory::compute_plan(
   class for pattern databases.
 */
 PatternDatabaseFactory::PatternDatabaseFactory(
-    const TaskProxy &task_proxy,
-    const Pattern &pattern,
-    const vector<int> &operator_costs,
-    bool compute_plan,
+    const TaskProxy &task_proxy, const Pattern &pattern,
+    const vector<int> &operator_costs, bool compute_plan,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan)
     : task_proxy(task_proxy),
       variables(task_proxy.get_variables()),
       projection(task_proxy, pattern) {
-    assert(operator_costs.empty() ||
-           operator_costs.size() == task_proxy.get_operators().size());
+    assert(
+        operator_costs.empty() ||
+        operator_costs.size() == task_proxy.get_operators().size());
     compute_variable_to_index(pattern);
     compute_abstract_operators(operator_costs);
     unique_ptr<MatchTree> match_tree = compute_match_tree();
@@ -431,22 +416,22 @@ PatternDatabaseFactory::PatternDatabaseFactory(
 }
 
 shared_ptr<PatternDatabase> compute_pdb(
-    const TaskProxy &task_proxy,
-    const Pattern &pattern,
+    const TaskProxy &task_proxy, const Pattern &pattern,
     const vector<int> &operator_costs,
     const shared_ptr<utils::RandomNumberGenerator> &rng) {
-    PatternDatabaseFactory pdb_factory(task_proxy, pattern, operator_costs, false, rng);
+    PatternDatabaseFactory pdb_factory(
+        task_proxy, pattern, operator_costs, false, rng);
     return pdb_factory.extract_pdb();
 }
 
 tuple<shared_ptr<PatternDatabase>, vector<vector<OperatorID>>>
 compute_pdb_and_plan(
-    const TaskProxy &task_proxy,
-    const Pattern &pattern,
+    const TaskProxy &task_proxy, const Pattern &pattern,
     const vector<int> &operator_costs,
     const shared_ptr<utils::RandomNumberGenerator> &rng,
     bool compute_wildcard_plan) {
-    PatternDatabaseFactory pdb_factory(task_proxy, pattern, operator_costs, true, rng, compute_wildcard_plan);
+    PatternDatabaseFactory pdb_factory(
+        task_proxy, pattern, operator_costs, true, rng, compute_wildcard_plan);
     return {pdb_factory.extract_pdb(), pdb_factory.extract_wildcard_plan()};
 }
 }

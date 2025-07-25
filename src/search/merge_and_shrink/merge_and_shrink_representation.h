@@ -39,7 +39,6 @@ public:
     virtual void dump(utils::LogProxy &log) const = 0;
 };
 
-
 class MergeAndShrinkRepresentationLeaf : public MergeAndShrinkRepresentation {
     const int var_id;
 
@@ -55,7 +54,6 @@ public:
     virtual bool is_total() const override;
     virtual void dump(utils::LogProxy &log) const override;
 };
-
 
 class MergeAndShrinkRepresentationMerge : public MergeAndShrinkRepresentation {
     std::unique_ptr<MergeAndShrinkRepresentation> left_child;

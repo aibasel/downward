@@ -18,6 +18,7 @@ class SubcategoryPlugin;
 using FeatureTypes = std::vector<const FeatureType *>;
 using EnumInfo = std::vector<std::pair<std::string, std::string>>;
 using Features = std::unordered_map<std::string, std::shared_ptr<Feature>>;
-using SubcategoryPlugins = std::unordered_map<std::string, const SubcategoryPlugin *>;
+using SubcategoryPlugins =
+    std::unordered_map<std::string, const SubcategoryPlugin *>;
 }
 #endif

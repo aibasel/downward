@@ -16,15 +16,14 @@ class StubbornSetsSimple : public stubborn_sets::StubbornSetsActionCentric {
     void add_interfering(int op_no);
 
     inline bool interfere(int op1_no, int op2_no) {
-        return can_disable(op1_no, op2_no) ||
-               can_conflict(op1_no, op2_no) ||
+        return can_disable(op1_no, op2_no) || can_conflict(op1_no, op2_no) ||
                can_disable(op2_no, op1_no);
     }
     const std::vector<int> &get_interfering_operators(int op1_no);
 protected:
     virtual void initialize_stubborn_set(const State &state) override;
-    virtual void handle_stubborn_operator(const State &state,
-                                          int op_no) override;
+    virtual void handle_stubborn_operator(
+        const State &state, int op_no) override;
 public:
     explicit StubbornSetsSimple(utils::Verbosity verbosity);
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;

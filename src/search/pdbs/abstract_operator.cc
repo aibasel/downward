@@ -8,9 +8,7 @@ using namespace std;
 
 namespace pdbs {
 AbstractOperator::AbstractOperator(
-    int concrete_op_id,
-    int cost,
-    vector<FactPair> &&regression_preconditions,
+    int concrete_op_id, int cost, vector<FactPair> &&regression_preconditions,
     int hash_effect)
     : concrete_op_id(concrete_op_id),
       cost(cost),
@@ -18,9 +16,9 @@ AbstractOperator::AbstractOperator(
       hash_effect(hash_effect) {
 }
 
-void AbstractOperator::dump(const Pattern &pattern,
-                            const VariablesProxy &variables,
-                            utils::LogProxy &log) const {
+void AbstractOperator::dump(
+    const Pattern &pattern, const VariablesProxy &variables,
+    utils::LogProxy &log) const {
     if (log.is_at_least_debug()) {
         log << "AbstractOperator:" << endl;
         log << "Preconditions:" << endl;

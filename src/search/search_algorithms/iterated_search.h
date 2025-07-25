@@ -22,14 +22,17 @@ class IteratedSearch : public SearchAlgorithm {
     int best_bound;
     bool iterated_found_solution;
 
-    std::shared_ptr<SearchAlgorithm> get_search_algorithm(int algorithm_configs_index);
+    std::shared_ptr<SearchAlgorithm> get_search_algorithm(
+        int algorithm_configs_index);
     std::shared_ptr<SearchAlgorithm> create_current_phase();
     SearchStatus step_return_value();
 
     virtual SearchStatus step() override;
 
 public:
-    IteratedSearch(const plugins::Options &opts); // TODO this still needs the options objects, the prototype for issue559 resolves this
+    IteratedSearch(const plugins::Options
+                       &opts); // TODO this still needs the options objects, the
+                               // prototype for issue559 resolves this
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;

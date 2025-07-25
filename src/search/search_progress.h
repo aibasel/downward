@@ -18,7 +18,6 @@ class LogProxy;
   values for evaluators that are used for either of these two things.
 */
 
-
 class SearchProgress {
     std::unordered_map<const Evaluator *, int> min_values;
 

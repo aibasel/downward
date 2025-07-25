@@ -9,7 +9,6 @@
 #include <iostream>
 #include <sstream>
 
-
 using namespace std;
 
 int calculate_plan_cost(const Plan &plan, const TaskProxy &task_proxy) {
@@ -31,11 +30,13 @@ void PlanManager::set_plan_filename(const string &plan_filename_) {
     plan_filename = plan_filename_;
 }
 
-void PlanManager::set_num_previously_generated_plans(int num_previously_generated_plans_) {
+void PlanManager::set_num_previously_generated_plans(
+    int num_previously_generated_plans_) {
     num_previously_generated_plans = num_previously_generated_plans_;
 }
 
-void PlanManager::set_is_part_of_anytime_portfolio(bool is_part_of_anytime_portfolio_) {
+void PlanManager::set_is_part_of_anytime_portfolio(
+    bool is_part_of_anytime_portfolio_) {
     is_part_of_anytime_portfolio = is_part_of_anytime_portfolio_;
 }
 
@@ -57,7 +58,8 @@ void PlanManager::save_plan(
     }
     OperatorsProxy operators = task_proxy.get_operators();
     for (OperatorID op_id : plan) {
-        cout << operators[op_id].get_name() << " (" << operators[op_id].get_cost() << ")" << endl;
+        cout << operators[op_id].get_name() << " ("
+             << operators[op_id].get_cost() << ")" << endl;
         outfile << "(" << operators[op_id].get_name() << ")" << endl;
     }
     int plan_cost = calculate_plan_cost(plan, task_proxy);

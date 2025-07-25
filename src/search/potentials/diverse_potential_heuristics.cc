@@ -17,13 +17,9 @@ using namespace std;
 namespace potentials {
 DiversePotentialHeuristics::DiversePotentialHeuristics(
     int num_samples, int max_num_heuristics, double max_potential,
-    lp::LPSolverType lpsolver,
-    const shared_ptr<AbstractTask> &transform, int random_seed,
-    utils::Verbosity verbosity)
-    : optimizer(
-          transform,
-          lpsolver,
-          max_potential),
+    lp::LPSolverType lpsolver, const shared_ptr<AbstractTask> &transform,
+    int random_seed, utils::Verbosity verbosity)
+    : optimizer(transform, lpsolver, max_potential),
       max_num_heuristics(max_num_heuristics),
       num_samples(num_samples),
       rng(utils::get_rng(random_seed)),
@@ -56,9 +52,12 @@ DiversePotentialHeuristics::filter_samples_and_compute_functions(
         log << "Time for filtering dead ends: " << filtering_timer << endl;
         log << "Duplicate samples: " << num_duplicates << endl;
         log << "Dead end samples: " << num_dead_ends << endl;
-        log << "Unique non-dead-end samples: " << samples_to_functions.size() << endl;
+        log << "Unique non-dead-end samples: " << samples_to_functions.size()
+            << endl;
     }
-    assert(num_duplicates + num_dead_ends + samples_to_functions.size() == samples.size());
+    assert(
+        num_duplicates + num_dead_ends + samples_to_functions.size() ==
+        samples.size());
     return samples_to_functions;
 }
 
@@ -133,8 +132,8 @@ DiversePotentialHeuristics::find_functions() {
     utils::Timer init_timer;
 
     // Sample states.
-    vector<State> samples = sample_without_dead_end_detection(
-        optimizer, num_samples, *rng);
+    vector<State> samples =
+        sample_without_dead_end_detection(optimizer, num_samples, *rng);
 
     // Filter dead end samples.
     SamplesToFunctionsMap samples_to_functions =
@@ -157,25 +156,21 @@ public:
     DiversePotentialMaxHeuristicFeature() : TypedFeature("diverse_potentials") {
         document_subcategory("heuristics_potentials");
         document_title("Diverse potential heuristics");
-        document_synopsis(
-            get_admissible_potentials_reference());
+        document_synopsis(get_admissible_potentials_reference());
 
         add_option<int>(
-            "num_samples",
-            "Number of states to sample",
-            "1000",
+            "num_samples", "Number of states to sample", "1000",
             plugins::Bounds("0", "infinity"));
         add_option<int>(
-            "max_num_heuristics",
-            "maximum number of potential heuristics",
-            "infinity",
-            plugins::Bounds("0", "infinity"));
-        add_admissible_potentials_options_to_feature(*this, "diverse_potentials");
+            "max_num_heuristics", "maximum number of potential heuristics",
+            "infinity", plugins::Bounds("0", "infinity"));
+        add_admissible_potentials_options_to_feature(
+            *this, "diverse_potentials");
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PotentialMaxHeuristic>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<PotentialMaxHeuristic> create_component(
+        const plugins::Options &opts) const override {
         return make_shared<PotentialMaxHeuristic>(
             DiversePotentialHeuristics(
                 opts.get<int>("num_samples"),
@@ -184,13 +179,11 @@ public:
                 opts.get<lp::LPSolverType>("lpsolver"),
                 opts.get<shared_ptr<AbstractTask>>("transform"),
                 opts.get<int>("random_seed"),
-                opts.get<utils::Verbosity>("verbosity")
-                ).find_functions(),
+                opts.get<utils::Verbosity>("verbosity"))
+                .find_functions(),
             opts.get<shared_ptr<AbstractTask>>("transform"),
-            opts.get<bool>("cache_estimates"),
-            opts.get<string>("description"),
-            opts.get<utils::Verbosity>("verbosity")
-            );
+            opts.get<bool>("cache_estimates"), opts.get<string>("description"),
+            opts.get<utils::Verbosity>("verbosity"));
     }
 };
 

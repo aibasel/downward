@@ -26,7 +26,8 @@ class IncrementalCanonicalPDBs;
 class PatternDatabase;
 
 // Implementation of the pattern generation algorithm by Haslum et al.
-class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator {
+class PatternCollectionGeneratorHillclimbing
+    : public PatternCollectionGenerator {
     // maximum number of states for each pdb
     const int pdb_max_size;
     // maximum added size of all pdbs
@@ -55,8 +56,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
     int generate_candidate_pdbs(
         const TaskProxy &task_proxy,
         const std::vector<std::vector<int>> &relevant_neighbours,
-        const PatternDatabase &pdb,
-        std::set<Pattern> &generated_patterns,
+        const PatternDatabase &pdb, std::set<Pattern> &generated_patterns,
         PDBCollection &candidate_pdbs);
 
     /*
@@ -70,8 +70,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
       a sample state, thus totalling exactly num_samples of sample states.
     */
     void sample_states(
-        const sampling::RandomWalkSampler &sampler,
-        int init_h,
+        const sampling::RandomWalkSampler &sampler, int init_h,
         std::vector<State> &samples);
 
     /*
@@ -91,9 +90,7 @@ class PatternCollectionGeneratorHillclimbing : public PatternCollectionGenerator
       the h-value of the current pattern collection.
     */
     bool is_heuristic_improved(
-        const PatternDatabase &pdb,
-        const State &sample,
-        int h_collection,
+        const PatternDatabase &pdb, const State &sample, int h_collection,
         const PDBCollection &pdbs,
         const std::vector<PatternClique> &pattern_cliques);
 
@@ -138,11 +135,9 @@ public:
         utils::Verbosity verbosity);
 };
 
-extern void add_hillclimbing_options_to_feature(
-    plugins::Feature &feature);
+extern void add_hillclimbing_options_to_feature(plugins::Feature &feature);
 std::tuple<int, int, int, int, double, int>
-get_hillclimbing_arguments_from_options(
-    const plugins::Options &opts);
+get_hillclimbing_arguments_from_options(const plugins::Options &opts);
 }
 
 #endif

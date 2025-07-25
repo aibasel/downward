@@ -38,7 +38,8 @@ template<typename ValueType>
 struct OptionsAnyCaster<
     ValueType, typename std::enable_if<std::is_enum<ValueType>::value>::type> {
     static ValueType cast(const Any &operand) {
-        // Enums set within the code (options.set()) are already the right ValueType...
+        // Enums set within the code (options.set()) are already the right
+        // ValueType...
         if (operand.type() == typeid(ValueType)) {
             return any_cast<ValueType>(operand);
         }
@@ -54,7 +55,8 @@ struct OptionsAnyCaster<std::vector<T>> {
             return any_cast<std::vector<T>>(operand);
         }
         // any_cast returns a copy here, not a reference.
-        const std::vector<Any> any_elements = any_cast<std::vector<Any>>(operand);
+        const std::vector<Any> any_elements =
+            any_cast<std::vector<Any>>(operand);
         std::vector<T> result;
         result.reserve(any_elements.size());
         for (const Any &element : any_elements) {
@@ -96,8 +98,8 @@ public:
             return result;
         } catch (const BadAnyCast &) {
             ABORT(
-                "Invalid conversion while retrieving config options!\n" +
-                key + " is not of type " + utils::get_type_name<T>() +
+                "Invalid conversion while retrieving config options!\n" + key +
+                " is not of type " + utils::get_type_name<T>() +
                 " but of type " + it->second.type_name());
         }
     }

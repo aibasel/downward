@@ -28,8 +28,9 @@ class IncrementalCanonicalPDBs {
 
     void recompute_pattern_cliques();
 public:
-    IncrementalCanonicalPDBs(const TaskProxy &task_proxy,
-                             const PatternCollection &intitial_patterns);
+    IncrementalCanonicalPDBs(
+        const TaskProxy &task_proxy,
+        const PatternCollection &intitial_patterns);
     virtual ~IncrementalCanonicalPDBs() = default;
 
     // Adds a new PDB to the collection and recomputes pattern_cliques.

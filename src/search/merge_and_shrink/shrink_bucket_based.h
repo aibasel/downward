@@ -42,25 +42,20 @@ protected:
 
 private:
     StateEquivalenceRelation compute_abstraction(
-        const std::vector<Bucket> &buckets,
-        int target_size,
+        const std::vector<Bucket> &buckets, int target_size,
         utils::LogProxy &log) const;
 
 protected:
     virtual std::vector<Bucket> partition_into_buckets(
-        const TransitionSystem &ts,
-        const Distances &Distances) const = 0;
+        const TransitionSystem &ts, const Distances &Distances) const = 0;
 public:
     explicit ShrinkBucketBased(int random_seed);
     virtual StateEquivalenceRelation compute_equivalence_relation(
-        const TransitionSystem &ts,
-        const Distances &distances,
-        int target_size,
+        const TransitionSystem &ts, const Distances &distances, int target_size,
         utils::LogProxy &log) const override;
 };
 
-extern void add_shrink_bucket_options_to_feature(
-    plugins::Feature &feature);
+extern void add_shrink_bucket_options_to_feature(plugins::Feature &feature);
 extern std::tuple<int> get_shrink_bucket_arguments_from_options(
     const plugins::Options &opts);
 }

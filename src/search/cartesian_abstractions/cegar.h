@@ -65,13 +65,9 @@ class CEGAR {
 
 public:
     CEGAR(
-        const std::shared_ptr<AbstractTask> &task,
-        int max_states,
-        int max_non_looping_transitions,
-        double max_time,
-        PickSplit pick,
-        utils::RandomNumberGenerator &rng,
-        utils::LogProxy &log);
+        const std::shared_ptr<AbstractTask> &task, int max_states,
+        int max_non_looping_transitions, double max_time, PickSplit pick,
+        utils::RandomNumberGenerator &rng, utils::LogProxy &log);
     ~CEGAR();
 
     CEGAR(const CEGAR &) = delete;

@@ -2,6 +2,7 @@
 
 #include "../evaluation_context.h"
 #include "../evaluation_result.h"
+
 #include "../plugins/plugin.h"
 
 using namespace std;
@@ -33,11 +34,10 @@ public:
         add_evaluator_options_to_feature(*this, "pref");
     }
 
-    virtual shared_ptr<PrefEvaluator>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<PrefEvaluator> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<PrefEvaluator>(
-            get_evaluator_arguments_from_options(opts)
-            );
+            get_evaluator_arguments_from_options(opts));
     }
 };
 

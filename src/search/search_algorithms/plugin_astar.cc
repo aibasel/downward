@@ -21,8 +21,7 @@ public:
             "lazy_evaluator",
             "An evaluator that re-evaluates a state before it is expanded.",
             plugins::ArgumentInfo::NO_DEFAULT);
-        eager_search::add_eager_search_options_to_feature(
-            *this, "astar");
+        eager_search::add_eager_search_options_to_feature(*this, "astar");
 
         document_note(
             "lazy_evaluator",
@@ -37,16 +36,16 @@ public:
             "```\n--evaluator h=evaluator\n"
             "--search eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
             "               reopen_closed=true, f_eval=sum([g(), h]))\n"
-            "```\n", true);
+            "```\n",
+            true);
     }
 
-    virtual shared_ptr<eager_search::EagerSearch>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<eager_search::EagerSearch> create_component(
+        const plugins::Options &opts) const override {
         plugins::Options options_copy(opts);
-        auto temp =
-            search_common::create_astar_open_list_factory_and_f_eval(
-                opts.get<shared_ptr<Evaluator>>("eval"),
-                opts.get<utils::Verbosity>("verbosity"));
+        auto temp = search_common::create_astar_open_list_factory_and_f_eval(
+            opts.get<shared_ptr<Evaluator>>("eval"),
+            opts.get<utils::Verbosity>("verbosity"));
         options_copy.set("open", temp.first);
         options_copy.set("f_eval", temp.second);
         options_copy.set("reopen_closed", true);
@@ -58,8 +57,7 @@ public:
             options_copy.get<shared_ptr<Evaluator>>("f_eval", nullptr),
             options_copy.get_list<shared_ptr<Evaluator>>("preferred"),
             eager_search::get_eager_search_arguments_from_options(
-                options_copy)
-            );
+                options_copy));
     }
 };
 
