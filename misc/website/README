@@ -18,8 +18,8 @@ $ source .env/bin/activate
 Install the requirements:
 $ python3 -m pip install -r requirements.txt
 
-Set the environment variable DOWNWARD_MARKDOWN to a local copy of the downward-markdown repository (https://github.com/aibasel/downward-markdown):
-
+Set the environment variable DOWNWARD_MARKDOWN to a local copy of the
+downward-markdown repository (https://github.com/aibasel/downward-markdown):
 $ export DOWNWARD_MARKDOWN=<path to local working copy>
 
 
@@ -28,8 +28,8 @@ Usage:
 Build the website with the following command:
 $ ./build_website.py
 
-It creates a directory "build". To see the website, enter this directory and run mkdocs (you can of course use a different port):
-
+It creates a directory "build". To see the website, enter this directory and
+run mkdocs (you can of course use a different port):
 $ cd build
 $ mkdocs serve -a localhost:8001
 
