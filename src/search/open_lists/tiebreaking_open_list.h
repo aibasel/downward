@@ -23,7 +23,6 @@ public:
 
 class TaskIndependentTieBreakingOpenListFactory : public TaskIndependentOpenListFactory {
     bool pref_only;
-    int size;
     std::vector<std::shared_ptr<TaskIndependentEvaluator>> evals;
     bool allow_unsafe_pruning;
 public:

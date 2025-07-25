@@ -167,7 +167,7 @@ TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFac
     bool pref_only,
     bool allow_unsafe_pruning)
     : TaskIndependentOpenListFactory("TieBreakingOpenListFactory", utils::Verbosity::NORMAL),
-      pref_only(pref_only), size(0), evals(evals), allow_unsafe_pruning(allow_unsafe_pruning) {
+      pref_only(pref_only), evals(evals), allow_unsafe_pruning(allow_unsafe_pruning) {
  }
 
 
