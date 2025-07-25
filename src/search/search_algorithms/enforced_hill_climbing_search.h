@@ -16,10 +16,7 @@ class Options;
 }
 
 namespace enforced_hill_climbing_search {
-enum class PreferredUsage {
-    PRUNE_BY_PREFERRED,
-    RANK_PREFERRED_FIRST
-};
+enum class PreferredUsage { PRUNE_BY_PREFERRED, RANK_PREFERRED_FIRST };
 
 /*
   Enforced hill-climbing with deferred evaluation.
@@ -46,13 +43,10 @@ class EnforcedHillClimbingSearch : public SearchAlgorithm {
     int last_num_expanded;
 
     void insert_successor_into_open_list(
-        const EvaluationContext &eval_context,
-        int parent_g,
-        OperatorID op_id,
+        const EvaluationContext &eval_context, int parent_g, OperatorID op_id,
         bool preferred);
     void expand(EvaluationContext &eval_context);
-    void reach_state(
-        const State &parent, OperatorID op_id, const State &state);
+    void reach_state(const State &parent, OperatorID op_id, const State &state);
     SearchStatus ehc();
 
 protected:
@@ -61,8 +55,7 @@ protected:
 
 public:
     EnforcedHillClimbingSearch(
-        const std::shared_ptr<Evaluator> &h,
-        PreferredUsage preferred_usage,
+        const std::shared_ptr<Evaluator> &h, PreferredUsage preferred_usage,
         const std::vector<std::shared_ptr<Evaluator>> &preferred,
         OperatorCost cost_type, int bound, double max_time,
         const std::string &description, utils::Verbosity verbosity);

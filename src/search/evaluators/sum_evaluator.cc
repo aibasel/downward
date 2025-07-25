@@ -8,8 +8,8 @@ using namespace std;
 
 namespace sum_evaluator {
 SumEvaluator::SumEvaluator(
-    const vector<shared_ptr<Evaluator>> &evals,
-    const string &description, utils::Verbosity verbosity)
+    const vector<shared_ptr<Evaluator>> &evals, const string &description,
+    utils::Verbosity verbosity)
     : CombiningEvaluator(evals, description, verbosity) {
 }
 
@@ -26,7 +26,8 @@ int SumEvaluator::combine_values(const vector<int> &values) {
 class SumEvaluatorFeature
     : public plugins::TypedFeature<Evaluator, SumEvaluator> {
 public:
-    SumEvaluatorFeature() : TypedFeature("sum") {
+    SumEvaluatorFeature()
+        : TypedFeature("sum") {
         document_subcategory("evaluators_basic");
         document_title("Sum evaluator");
         document_synopsis("Calculates the sum of the sub-evaluators.");
@@ -35,8 +36,8 @@ public:
             *this, "sum");
     }
 
-    virtual shared_ptr<SumEvaluator>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<SumEvaluator> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<SumEvaluator>(
             combining_evaluator::get_combining_evaluator_arguments_from_options(
                 opts));

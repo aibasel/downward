@@ -100,7 +100,8 @@ static void print_peak_memory_reentrant() {
     utils::unused_variable(read_char_reentrant);
 #else
 
-    int proc_file_descr = TEMP_FAILURE_RETRY(open("/proc/self/status", O_RDONLY));
+    int proc_file_descr =
+        TEMP_FAILURE_RETRY(open("/proc/self/status", O_RDONLY));
     if (proc_file_descr == -1) {
         write_reentrant_str(
             STDERR_FILENO,
@@ -193,9 +194,10 @@ int get_peak_memory_in_kb() {
     task_basic_info t_info;
     mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
 
-    if (task_info(mach_task_self(), TASK_BASIC_INFO,
-                  reinterpret_cast<task_info_t>(&t_info),
-                  &t_info_count) == KERN_SUCCESS) {
+    if (task_info(
+            mach_task_self(), TASK_BASIC_INFO,
+            reinterpret_cast<task_info_t>(&t_info),
+            &t_info_count) == KERN_SUCCESS) {
         memory_in_kb = t_info.virtual_size / 1024;
     }
 #else

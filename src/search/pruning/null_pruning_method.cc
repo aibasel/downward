@@ -18,7 +18,8 @@ void NullPruningMethod::initialize(const shared_ptr<AbstractTask> &task) {
 class NullPruningMethodFeature
     : public plugins::TypedFeature<PruningMethod, NullPruningMethod> {
 public:
-    NullPruningMethodFeature() : TypedFeature("null") {
+    NullPruningMethodFeature()
+        : TypedFeature("null") {
         // document_group("");
         document_title("No pruning");
         document_synopsis(
@@ -28,8 +29,8 @@ public:
         add_pruning_options_to_feature(*this);
     }
 
-    virtual shared_ptr<NullPruningMethod>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<NullPruningMethod> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<NullPruningMethod>(
             get_pruning_arguments_from_options(opts));
     }

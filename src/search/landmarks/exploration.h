@@ -25,9 +25,7 @@ struct Proposition {
     bool excluded;
 
     Proposition()
-        : fact(FactPair::no_fact),
-          reached(false),
-          excluded(false) {
+        : fact(FactPair::no_fact), reached(false), excluded(false) {
     }
 
     bool operator<(const Proposition &other) const {
@@ -42,13 +40,15 @@ struct UnaryOperator {
 
     int num_unsatisfied_preconditions;
     bool excluded;
-    UnaryOperator(const std::vector<Proposition *> &preconditions,
-                  Proposition *eff, int op_or_axiom_id)
+    UnaryOperator(
+        const std::vector<Proposition *> &preconditions, Proposition *eff,
+        int op_or_axiom_id)
         : op_or_axiom_id(op_or_axiom_id),
           num_preconditions(static_cast<int>(preconditions.size())),
           effect(eff),
           num_unsatisfied_preconditions(num_preconditions),
-          excluded(false) {}
+          excluded(false) {
+    }
 };
 
 class Exploration {

@@ -47,19 +47,20 @@ class Heuristic : public Evaluator {
 protected:
     /*
       Cache for saving h values
-      Before accessing this cache always make sure that the cache_evaluator_values
-      flag is set to true - as soon as the cache is accessed it will create
-      entries for all existing states
+      Before accessing this cache always make sure that the
+      cache_evaluator_values flag is set to true - as soon as the cache is
+      accessed it will create entries for all existing states
     */
     PerStateInformation<HEntry> heuristic_cache;
     bool cache_evaluator_values;
 
-    // Hold a reference to the task implementation and pass it to objects that need it.
+    // Hold a reference to the task implementation and pass it to objects that
+    // need it.
     const std::shared_ptr<AbstractTask> task;
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
 
-    enum {DEAD_END = -1, NO_VALUE = -2};
+    enum { DEAD_END = -1, NO_VALUE = -2 };
 
     virtual int compute_heuristic(const State &ancestor_state) = 0;
 
@@ -74,9 +75,8 @@ protected:
 
 public:
     Heuristic(
-        const std::shared_ptr<AbstractTask> &transform,
-        bool cache_estimates, const std::string &description,
-        utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+        const std::string &description, utils::Verbosity verbosity);
     virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(

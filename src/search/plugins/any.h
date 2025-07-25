@@ -24,8 +24,9 @@
 namespace plugins {
 class Any {
     class Placeholder {
-public:
-        virtual ~Placeholder() {}
+    public:
+        virtual ~Placeholder() {
+        }
         virtual std::unique_ptr<Placeholder> clone() const = 0;
         virtual const std::type_info &type() const = 0;
         virtual std::string type_name() const = 0;
@@ -34,7 +35,7 @@ public:
     template<typename ValueType>
     class Holder : public Placeholder {
         Holder &operator=(const Holder &) = delete;
-public:
+    public:
         ValueType held;
 
         Holder(const ValueType &value)
@@ -60,7 +61,8 @@ public:
     std::unique_ptr<Placeholder> content;
 
 public:
-    Any() : content(nullptr) {
+    Any()
+        : content(nullptr) {
     }
 
     Any(const Any &other)
@@ -107,11 +109,11 @@ public:
     }
 };
 
-
 template<typename ValueType>
 ValueType *any_cast(Any *operand) {
     if (operand && operand->type() == typeid(ValueType))
-        return &static_cast<Any::Holder<ValueType> *>(operand->content.get())->held;
+        return &static_cast<Any::Holder<ValueType> *>(operand->content.get())
+                    ->held;
     else
         return nullptr;
 }
@@ -120,7 +122,6 @@ template<typename ValueType>
 inline const ValueType *any_cast(const Any *operand) {
     return any_cast<ValueType>(const_cast<Any *>(operand));
 }
-
 
 template<typename ValueType>
 ValueType any_cast(Any &operand) {

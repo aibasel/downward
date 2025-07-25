@@ -12,9 +12,8 @@ using namespace std;
 using utils::ExitCode;
 
 namespace pdbs {
-void validate_and_normalize_pattern(const TaskProxy &task_proxy,
-                                    Pattern &pattern,
-                                    utils::LogProxy &log) {
+void validate_and_normalize_pattern(
+    const TaskProxy &task_proxy, Pattern &pattern, utils::LogProxy &log) {
     /*
       - Sort by variable number and remove duplicate variables.
       - Warn if duplicate variables exist.
@@ -42,9 +41,9 @@ void validate_and_normalize_pattern(const TaskProxy &task_proxy,
     }
 }
 
-void validate_and_normalize_patterns(const TaskProxy &task_proxy,
-                                     PatternCollection &patterns,
-                                     utils::LogProxy &log) {
+void validate_and_normalize_patterns(
+    const TaskProxy &task_proxy, PatternCollection &patterns,
+    utils::LogProxy &log) {
     /*
       - Validate and normalize each pattern (see there).
       - Warn if duplicate patterns exist.

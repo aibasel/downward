@@ -15,7 +15,6 @@ PotentialHeuristic::PotentialHeuristic(
       function(move(function)) {
 }
 
-
 int PotentialHeuristic::compute_heuristic(const State &ancestor_state) {
     State state = convert_ancestor_state(ancestor_state);
     return max(0, function->get_value(state));

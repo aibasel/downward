@@ -1,7 +1,7 @@
 #include "merge_strategy_factory_sccs.h"
 
-#include "merge_strategy_sccs.h"
 #include "merge_selector.h"
+#include "merge_strategy_sccs.h"
 #include "merge_tree_factory.h"
 #include "transition_system.h"
 
@@ -21,18 +21,19 @@
 using namespace std;
 
 namespace merge_and_shrink {
-static bool compare_sccs_increasing(const vector<int> &lhs, const vector<int> &rhs) {
+static bool compare_sccs_increasing(
+    const vector<int> &lhs, const vector<int> &rhs) {
     return lhs.size() < rhs.size();
 }
 
-static bool compare_sccs_decreasing(const vector<int> &lhs, const vector<int> &rhs) {
+static bool compare_sccs_decreasing(
+    const vector<int> &lhs, const vector<int> &rhs) {
     return lhs.size() > rhs.size();
 }
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(
     const OrderOfSCCs &order_of_sccs,
-    const shared_ptr<MergeSelector> &merge_selector,
-    utils::Verbosity verbosity)
+    const shared_ptr<MergeSelector> &merge_selector, utils::Verbosity verbosity)
     : MergeStrategyFactory(verbosity),
       order_of_sccs(order_of_sccs),
       merge_selector(merge_selector) {
@@ -96,9 +97,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
     }
 
     return make_unique<MergeStrategySCCs>(
-        fts,
-        merge_selector,
-        move(non_singleton_cg_sccs));
+        fts, merge_selector, move(non_singleton_cg_sccs));
 }
 
 bool MergeStrategyFactorySCCs::requires_init_distances() const {
@@ -138,21 +137,21 @@ string MergeStrategyFactorySCCs::name() const {
 }
 
 class MergeStrategyFactorySCCsFeature
-    : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactorySCCs> {
+    : public plugins::TypedFeature<
+          MergeStrategyFactory, MergeStrategyFactorySCCs> {
 public:
-    MergeStrategyFactorySCCsFeature() : TypedFeature("merge_sccs") {
+    MergeStrategyFactorySCCsFeature()
+        : TypedFeature("merge_sccs") {
         document_title("Merge strategy SCCs");
         document_synopsis(
-            "This merge strategy implements the algorithm described in the paper "
-            + utils::format_conference_reference(
+            "This merge strategy implements the algorithm described in the paper " +
+            utils::format_conference_reference(
                 {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
                 "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
                 "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
                 "Proceedings of the 26th International Conference on Planning and "
                 "Scheduling (ICAPS 2016)",
-                "2358-2366",
-                "AAAI Press",
-                "2016") +
+                "2358-2366", "AAAI Press", "2016") +
             "In a nutshell, it computes the maximal strongly connected "
             "components (SCCs) of the causal graph, "
             "obtaining a partitioning of the task's variables. Every such "
@@ -163,37 +162,31 @@ public:
             "strategy and the configurable order of the SCCs.");
 
         add_option<OrderOfSCCs>(
-            "order_of_sccs",
-            "how the SCCs should be ordered",
-            "topological");
+            "order_of_sccs", "how the SCCs should be ordered", "topological");
         add_option<shared_ptr<MergeSelector>>(
-            "merge_selector",
-            "the fallback merge strategy to use");
+            "merge_selector", "the fallback merge strategy to use");
         add_merge_strategy_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeStrategyFactorySCCs>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<MergeStrategyFactorySCCs> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<MergeStrategyFactorySCCs>(
             opts.get<OrderOfSCCs>("order_of_sccs"),
-            opts.get<shared_ptr<MergeSelector>> ("merge_selector"),
-            get_merge_strategy_arguments_from_options(opts)
-            );
+            opts.get<shared_ptr<MergeSelector>>("merge_selector"),
+            get_merge_strategy_arguments_from_options(opts));
     }
 };
 
 static plugins::FeaturePlugin<MergeStrategyFactorySCCsFeature> _plugin;
 
-static plugins::TypedEnumPlugin<OrderOfSCCs> _enum_plugin({
-        {"topological",
-         "according to the topological ordering of the directed graph "
-         "where each obtained SCC is a 'supervertex'"},
-        {"reverse_topological",
-         "according to the reverse topological ordering of the directed "
-         "graph where each obtained SCC is a 'supervertex'"},
-        {"decreasing",
-         "biggest SCCs first, using 'topological' as tie-breaker"},
-        {"increasing",
-         "smallest SCCs first, using 'topological' as tie-breaker"}
-    });
+static plugins::TypedEnumPlugin<OrderOfSCCs> _enum_plugin(
+    {{"topological",
+      "according to the topological ordering of the directed graph "
+      "where each obtained SCC is a 'supervertex'"},
+     {"reverse_topological",
+      "according to the reverse topological ordering of the directed "
+      "graph where each obtained SCC is a 'supervertex'"},
+     {"decreasing", "biggest SCCs first, using 'topological' as tie-breaker"},
+     {"increasing",
+      "smallest SCCs first, using 'topological' as tie-breaker"}});
 }

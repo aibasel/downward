@@ -22,8 +22,8 @@ class BestFirstOpenList : public OpenList<Entry> {
     shared_ptr<Evaluator> evaluator;
 
 protected:
-    virtual void do_insertion(EvaluationContext &eval_context,
-                              const Entry &entry) override;
+    virtual void do_insertion(
+        EvaluationContext &eval_context, const Entry &entry) override;
 
 public:
     BestFirstOpenList(const shared_ptr<Evaluator> &eval, bool preferred_only);
@@ -31,9 +31,9 @@ public:
     virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
-    virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
-    virtual bool is_dead_end(
-        EvaluationContext &eval_context) const override;
+    virtual void get_path_dependent_evaluators(
+        set<Evaluator *> &evals) override;
+    virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
 };
@@ -41,9 +41,7 @@ public:
 template<class Entry>
 BestFirstOpenList<Entry>::BestFirstOpenList(
     const shared_ptr<Evaluator> &evaluator, bool preferred_only)
-    : OpenList<Entry>(preferred_only),
-      size(0),
-      evaluator(evaluator) {
+    : OpenList<Entry>(preferred_only), size(0), evaluator(evaluator) {
 }
 
 template<class Entry>
@@ -100,26 +98,22 @@ bool BestFirstOpenList<Entry>::is_reliable_dead_end(
 
 BestFirstOpenListFactory::BestFirstOpenListFactory(
     const shared_ptr<Evaluator> &eval, bool pref_only)
-    : eval(eval),
-      pref_only(pref_only) {
+    : eval(eval), pref_only(pref_only) {
 }
 
-unique_ptr<StateOpenList>
-BestFirstOpenListFactory::create_state_open_list() {
-    return make_unique<BestFirstOpenList<StateOpenListEntry>>(
-        eval, pref_only);
+unique_ptr<StateOpenList> BestFirstOpenListFactory::create_state_open_list() {
+    return make_unique<BestFirstOpenList<StateOpenListEntry>>(eval, pref_only);
 }
 
-unique_ptr<EdgeOpenList>
-BestFirstOpenListFactory::create_edge_open_list() {
-    return make_unique<BestFirstOpenList<EdgeOpenListEntry>>(
-        eval, pref_only);
+unique_ptr<EdgeOpenList> BestFirstOpenListFactory::create_edge_open_list() {
+    return make_unique<BestFirstOpenList<EdgeOpenListEntry>>(eval, pref_only);
 }
 
 class BestFirstOpenListFeature
     : public plugins::TypedFeature<OpenListFactory, BestFirstOpenListFactory> {
 public:
-    BestFirstOpenListFeature() : TypedFeature("single") {
+    BestFirstOpenListFeature()
+        : TypedFeature("single") {
         document_title("Best-first open list");
         document_synopsis(
             "Open list that uses a single evaluator and FIFO tiebreaking.");
@@ -136,9 +130,8 @@ public:
             "takes time O(log(n)), where n is the number of buckets.");
     }
 
-
-    virtual shared_ptr<BestFirstOpenListFactory>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<BestFirstOpenListFactory> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<BestFirstOpenListFactory>(
             opts.get<shared_ptr<Evaluator>>("eval"),
             get_open_list_arguments_from_options(opts));

@@ -32,31 +32,31 @@ class TieBreakingOpenList : public OpenList<Entry> {
     int dimension() const;
 
 protected:
-    virtual void do_insertion(EvaluationContext &eval_context,
-                              const Entry &entry) override;
+    virtual void do_insertion(
+        EvaluationContext &eval_context, const Entry &entry) override;
 
 public:
     TieBreakingOpenList(
-        const vector<shared_ptr<Evaluator>> &evals,
-        bool unsafe_pruning, bool pref_only);
+        const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
+        bool pref_only);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
-    virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
-    virtual bool is_dead_end(
-        EvaluationContext &eval_context) const override;
+    virtual void get_path_dependent_evaluators(
+        set<Evaluator *> &evals) override;
+    virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
 };
 
-
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(
-    const vector<shared_ptr<Evaluator>> &evals,
-    bool unsafe_pruning, bool pref_only)
+    const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
+    bool pref_only)
     : OpenList<Entry>(pref_only),
-      size(0), evaluators(evals),
+      size(0),
+      evaluators(evals),
       allow_unsafe_pruning(unsafe_pruning) {
 }
 
@@ -66,7 +66,8 @@ void TieBreakingOpenList<Entry>::do_insertion(
     vector<int> key;
     key.reserve(evaluators.size());
     for (const shared_ptr<Evaluator> &evaluator : evaluators)
-        key.push_back(eval_context.get_evaluator_value_or_infinity(evaluator.get()));
+        key.push_back(
+            eval_context.get_evaluator_value_or_infinity(evaluator.get()));
 
     buckets[key].push_back(entry);
     ++size;
@@ -140,30 +141,28 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
 }
 
 TieBreakingOpenListFactory::TieBreakingOpenListFactory(
-    const vector<shared_ptr<Evaluator>> &evals,
-    bool unsafe_pruning, bool pref_only)
-    : evals(evals),
-      unsafe_pruning(unsafe_pruning),
-      pref_only(pref_only) {
+    const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
+    bool pref_only)
+    : evals(evals), unsafe_pruning(unsafe_pruning), pref_only(pref_only) {
     utils::verify_list_not_empty(evals, "evals");
 }
 
-unique_ptr<StateOpenList>
-TieBreakingOpenListFactory::create_state_open_list() {
+unique_ptr<StateOpenList> TieBreakingOpenListFactory::create_state_open_list() {
     return make_unique<TieBreakingOpenList<StateOpenListEntry>>(
         evals, unsafe_pruning, pref_only);
 }
 
-unique_ptr<EdgeOpenList>
-TieBreakingOpenListFactory::create_edge_open_list() {
+unique_ptr<EdgeOpenList> TieBreakingOpenListFactory::create_edge_open_list() {
     return make_unique<TieBreakingOpenList<EdgeOpenListEntry>>(
         evals, unsafe_pruning, pref_only);
 }
 
 class TieBreakingOpenListFeature
-    : public plugins::TypedFeature<OpenListFactory, TieBreakingOpenListFactory> {
+    : public plugins::TypedFeature<
+          OpenListFactory, TieBreakingOpenListFactory> {
 public:
-    TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
+    TieBreakingOpenListFeature()
+        : TypedFeature("tiebreaking") {
         document_title("Tie-breaking open list");
         document_synopsis("");
 
@@ -175,13 +174,12 @@ public:
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TieBreakingOpenListFactory>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<TieBreakingOpenListFactory> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<TieBreakingOpenListFactory>(
             opts.get_list<shared_ptr<Evaluator>>("evals"),
             opts.get<bool>("unsafe_pruning"),
-            get_open_list_arguments_from_options(opts)
-            );
+            get_open_list_arguments_from_options(opts));
     }
 };
 

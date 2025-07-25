@@ -51,12 +51,13 @@
 namespace segmented_vector {
 template<class Entry, class Allocator = std::allocator<Entry>>
 class SegmentedVector {
-    using EntryAllocator = typename std::allocator_traits<Allocator>::template rebind_alloc<Entry>;
+    using EntryAllocator =
+        typename std::allocator_traits<Allocator>::template rebind_alloc<Entry>;
     static const size_t SEGMENT_BYTES = 8192;
 
-    static const size_t SEGMENT_ELEMENTS =
-        (SEGMENT_BYTES / sizeof(Entry)) >= 1 ?
-        (SEGMENT_BYTES / sizeof(Entry)) : 1;
+    static const size_t SEGMENT_ELEMENTS = (SEGMENT_BYTES / sizeof(Entry)) >= 1
+                                               ? (SEGMENT_BYTES / sizeof(Entry))
+                                               : 1;
 
     EntryAllocator entry_allocator;
 
@@ -72,7 +73,8 @@ class SegmentedVector {
     }
 
     void add_segment() {
-        Entry *new_segment = std::allocator_traits<EntryAllocator>::allocate(entry_allocator, SEGMENT_ELEMENTS);
+        Entry *new_segment = std::allocator_traits<EntryAllocator>::allocate(
+            entry_allocator, SEGMENT_ELEMENTS);
         segments.push_back(new_segment);
     }
 
@@ -84,16 +86,17 @@ public:
     }
 
     SegmentedVector(const EntryAllocator &allocator_)
-        : entry_allocator(allocator_),
-          the_size(0) {
+        : entry_allocator(allocator_), the_size(0) {
     }
 
     ~SegmentedVector() {
         for (size_t i = 0; i < the_size; ++i) {
-            std::allocator_traits<EntryAllocator>::destroy(entry_allocator, &operator[](i));
+            std::allocator_traits<EntryAllocator>::destroy(
+                entry_allocator, &operator[](i));
         }
         for (size_t segment = 0; segment < segments.size(); ++segment) {
-            std::allocator_traits<EntryAllocator>::deallocate(entry_allocator, segments[segment], SEGMENT_ELEMENTS);
+            std::allocator_traits<EntryAllocator>::deallocate(
+                entry_allocator, segments[segment], SEGMENT_ELEMENTS);
         }
     }
 
@@ -123,12 +126,14 @@ public:
             // Must add a new segment.
             add_segment();
         }
-        std::allocator_traits<EntryAllocator>::construct(entry_allocator, segments[segment] + offset, entry);
+        std::allocator_traits<EntryAllocator>::construct(
+            entry_allocator, segments[segment] + offset, entry);
         ++the_size;
     }
 
     void pop_back() {
-        std::allocator_traits<EntryAllocator>::destroy(entry_allocator, &operator[](the_size - 1));
+        std::allocator_traits<EntryAllocator>::destroy(
+            entry_allocator, &operator[](the_size - 1));
         --the_size;
         /*
           If the removed element was the last in its segment, the segment
@@ -147,10 +152,10 @@ public:
     }
 };
 
-
 template<class Element, class Allocator = std::allocator<Element>>
 class SegmentedArrayVector {
-    using ElementAllocator = typename std::allocator_traits<Allocator>::template rebind_alloc<Element>;
+    using ElementAllocator = typename std::allocator_traits<
+        Allocator>::template rebind_alloc<Element>;
     static const size_t SEGMENT_BYTES = 8192;
 
     const size_t elements_per_array;
@@ -171,29 +176,34 @@ class SegmentedArrayVector {
     }
 
     void add_segment() {
-        Element *new_segment = std::allocator_traits<ElementAllocator>::allocate(element_allocator, elements_per_segment);
+        Element *new_segment =
+            std::allocator_traits<ElementAllocator>::allocate(
+                element_allocator, elements_per_segment);
         segments.push_back(new_segment);
     }
 
     SegmentedArrayVector(const SegmentedArrayVector<Element> &) = delete;
-    SegmentedArrayVector &operator=(const SegmentedArrayVector<Element> &) = delete;
+    SegmentedArrayVector &operator=(const SegmentedArrayVector<Element> &) =
+        delete;
 public:
     SegmentedArrayVector(size_t elements_per_array_)
-        : elements_per_array((assert(elements_per_array_ > 0),
-                              elements_per_array_)),
-          arrays_per_segment(
-              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), size_t (1))),
+        : elements_per_array(
+              (assert(elements_per_array_ > 0), elements_per_array_)),
+          arrays_per_segment(std::max(
+              SEGMENT_BYTES / (elements_per_array * sizeof(Element)),
+              size_t(1))),
           elements_per_segment(elements_per_array * arrays_per_segment),
           the_size(0) {
     }
 
-
-    SegmentedArrayVector(size_t elements_per_array_, const ElementAllocator &allocator_)
+    SegmentedArrayVector(
+        size_t elements_per_array_, const ElementAllocator &allocator_)
         : element_allocator(allocator_),
-          elements_per_array((assert(elements_per_array_ > 0),
-                              elements_per_array_)),
-          arrays_per_segment(
-              std::max(SEGMENT_BYTES / (elements_per_array * sizeof(Element)), size_t (1))),
+          elements_per_array(
+              (assert(elements_per_array_ > 0), elements_per_array_)),
+          arrays_per_segment(std::max(
+              SEGMENT_BYTES / (elements_per_array * sizeof(Element)),
+              size_t(1))),
           elements_per_segment(elements_per_array * arrays_per_segment),
           the_size(0) {
     }
@@ -201,11 +211,13 @@ public:
     ~SegmentedArrayVector() {
         for (size_t i = 0; i < the_size; ++i) {
             for (size_t offset = 0; offset < elements_per_array; ++offset) {
-                std::allocator_traits<ElementAllocator>::destroy(element_allocator, operator[](i) + offset);
+                std::allocator_traits<ElementAllocator>::destroy(
+                    element_allocator, operator[](i) + offset);
             }
         }
         for (size_t i = 0; i < segments.size(); ++i) {
-            std::allocator_traits<ElementAllocator>::deallocate(element_allocator, segments[i], elements_per_segment);
+            std::allocator_traits<ElementAllocator>::deallocate(
+                element_allocator, segments[i], elements_per_segment);
         }
     }
 
@@ -237,13 +249,15 @@ public:
         }
         Element *dest = segments[segment] + offset;
         for (size_t i = 0; i < elements_per_array; ++i)
-            std::allocator_traits<ElementAllocator>::construct(element_allocator, dest++, *entry++);
+            std::allocator_traits<ElementAllocator>::construct(
+                element_allocator, dest++, *entry++);
         ++the_size;
     }
 
     void pop_back() {
         for (size_t offset = 0; offset < elements_per_array; ++offset) {
-            std::allocator_traits<ElementAllocator>::destroy(element_allocator, operator[](the_size - 1) + offset);
+            std::allocator_traits<ElementAllocator>::destroy(
+                element_allocator, operator[](the_size - 1) + offset);
         }
         --the_size;
         /*

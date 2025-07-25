@@ -3,7 +3,6 @@
 #include "../algorithms/priority_queues.h"
 #include "../lp/lp_solver.h"
 #include "../plugins/plugin.h"
-#include "../algorithms/priority_queues.h"
 #include "../task_proxy.h"
 #include "../utils/markup.h"
 
@@ -91,7 +90,8 @@ class VEGraph {
                     continue;
                 }
                 if (predecessor != successor) {
-                    new_shortcuts.push_back(make_tuple(predecessor, fact, successor));
+                    new_shortcuts.push_back(
+                        make_tuple(predecessor, fact, successor));
                 }
             }
         }
@@ -152,7 +152,8 @@ public:
         }
     }
 
-    const utils::HashSet<tuple<FactPair, FactPair, FactPair>> &get_delta() const {
+    const utils::HashSet<tuple<FactPair, FactPair, FactPair>> &
+    get_delta() const {
         return delta;
     }
 
@@ -210,9 +211,9 @@ DeleteRelaxationRRConstraints::create_auxiliary_variables(
         for (int value = 0; value < num_values; ++value) {
             variables.emplace_back(0, 1, 0, use_integer_vars);
 #ifndef NDEBUG
-            variables.set_name(variables.size() - 1,
-                               "f_" + var.get_name() + "_"
-                               + var.get_fact(value).get_name());
+            variables.set_name(
+                variables.size() - 1,
+                "f_" + var.get_name() + "_" + var.get_fact(value).get_name());
 #endif
         }
     }
@@ -225,9 +226,9 @@ DeleteRelaxationRRConstraints::create_auxiliary_variables(
             lp_var_ids.fpa_ids[op.get_id()][eff] = variables.size();
             variables.emplace_back(0, 1, 0, use_integer_vars);
 #ifndef NDEBUG
-            variables.set_name(variables.size() - 1,
-                               "f_" + eff_proxy.get_fact().get_name()
-                               + "_achieved_by_" + op.get_name());
+            variables.set_name(
+                variables.size() - 1, "f_" + eff_proxy.get_fact().get_name() +
+                                          "_achieved_by_" + op.get_name());
 #endif
         }
     }
@@ -235,7 +236,8 @@ DeleteRelaxationRRConstraints::create_auxiliary_variables(
 }
 
 void DeleteRelaxationRRConstraints::create_auxiliary_variables_ve(
-    const TaskProxy &task_proxy, const VEGraph &ve_graph, LPVariables &variables,
+    const TaskProxy &task_proxy, const VEGraph &ve_graph,
+    LPVariables &variables,
     DeleteRelaxationRRConstraints::LPVariableIDs &lp_var_ids) const {
     utils::unused_variable(task_proxy);
     // Add e_{i,j} variables.
@@ -244,11 +246,13 @@ void DeleteRelaxationRRConstraints::create_auxiliary_variables_ve(
         variables.emplace_back(0, 1, 0, use_integer_vars);
 #ifndef NDEBUG
         auto [f1, f2] = edge;
-        FactProxy f1_proxy = task_proxy.get_variables()[f1.var].get_fact(f1.value);
-        FactProxy f2_proxy = task_proxy.get_variables()[f2.var].get_fact(f2.value);
-        variables.set_name(variables.size() - 1,
-                           "e_" + f1_proxy.get_name()
-                           + "_before_" + f2_proxy.get_name());
+        FactProxy f1_proxy =
+            task_proxy.get_variables()[f1.var].get_fact(f1.value);
+        FactProxy f2_proxy =
+            task_proxy.get_variables()[f2.var].get_fact(f2.value);
+        variables.set_name(
+            variables.size() - 1,
+            "e_" + f1_proxy.get_name() + "_before_" + f2_proxy.get_name());
 #endif
     }
 }
@@ -268,8 +272,8 @@ void DeleteRelaxationRRConstraints::create_auxiliary_variables_tl(
         for (int value = 0; value < num_values; ++value) {
             variables.emplace_back(1, num_facts, 0, use_integer_vars);
 #ifndef NDEBUG
-            variables.set_name(variables.size() - 1,
-                               "t_" + var.get_fact(value).get_name());
+            variables.set_name(
+                variables.size() - 1, "t_" + var.get_fact(value).get_name());
 #endif
         }
     }
@@ -431,7 +435,8 @@ void DeleteRelaxationRRConstraints::create_constraints_ve(
       constraint only makes sense if the reverse edge is in the graph.
     */
     for (const pair<FactPair, FactPair> &edge : ve_graph.get_edges()) {
-        pair<FactPair, FactPair> reverse_edge = make_pair(edge.second, edge.first);
+        pair<FactPair, FactPair> reverse_edge =
+            make_pair(edge.second, edge.first);
         if (lp_var_ids.has_e(reverse_edge)) {
             lp::LPConstraint constraint(-infinity, 1);
             constraint.insert(lp_var_ids.id_of_e(edge), 1);
@@ -503,28 +508,25 @@ void DeleteRelaxationRRConstraints::create_constraints_tl(
 void DeleteRelaxationRRConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) {
     TaskProxy task_proxy(*task);
-    LPVariableIDs lp_var_ids = create_auxiliary_variables(
-        task_proxy, lp.get_variables());
+    LPVariableIDs lp_var_ids =
+        create_auxiliary_variables(task_proxy, lp.get_variables());
     create_constraints(task_proxy, lp_var_ids, lp);
 
     switch (acyclicity_type) {
-    case AcyclicityType::VERTEX_ELIMINATION:
-    {
+    case AcyclicityType::VERTEX_ELIMINATION: {
         VEGraph ve_graph(task_proxy);
         create_auxiliary_variables_ve(
             task_proxy, ve_graph, lp.get_variables(), lp_var_ids);
         create_constraints_ve(task_proxy, ve_graph, lp_var_ids, lp);
         break;
     }
-    case AcyclicityType::TIME_LABELS:
-    {
+    case AcyclicityType::TIME_LABELS: {
         create_auxiliary_variables_tl(
             task_proxy, lp.get_variables(), lp_var_ids);
         create_constraints_tl(task_proxy, lp_var_ids, lp);
         break;
     }
-    case AcyclicityType::NONE:
-    {
+    case AcyclicityType::NONE: {
         break;
     }
     default:
@@ -553,8 +555,8 @@ bool DeleteRelaxationRRConstraints::update_constraints(
 }
 
 class DeleteRelaxationRRConstraintsFeature
-    : public plugins::TypedFeature<ConstraintGenerator,
-                                   DeleteRelaxationRRConstraints> {
+    : public plugins::TypedFeature<
+          ConstraintGenerator, DeleteRelaxationRRConstraints> {
 public:
     DeleteRelaxationRRConstraintsFeature()
         : TypedFeature("delete_relaxation_rr_constraints") {
@@ -618,20 +620,19 @@ public:
 
 static plugins::FeaturePlugin<DeleteRelaxationRRConstraintsFeature> _plugin;
 
-static plugins::TypedEnumPlugin<AcyclicityType> _enum_plugin({
-        {"time_labels",
-         "introduces MIP variables that encode the time at which each fact is "
-         "reached. Acyclicity is enforced with constraints that ensure that "
-         "preconditions of actions are reached before their effects."},
-        {"vertex_elimination",
-         "introduces binary variables based on vertex elimination. These "
-         "variables encode that one fact has to be reached before another "
-         "fact. Instead of adding such variables for every pair of states, "
-         "they are only added for a subset sufficient to ensure acyclicity. "
-         "Constraints enforce that preconditions of actions are reached before "
-         "their effects and that the assignment encodes a valid order."},
-        {"none",
-         "No acyclicity is enforced. The resulting heuristic is a relaxation "
-         "of the delete-relaxation heuristic."}
-    });
+static plugins::TypedEnumPlugin<AcyclicityType> _enum_plugin(
+    {{"time_labels",
+      "introduces MIP variables that encode the time at which each fact is "
+      "reached. Acyclicity is enforced with constraints that ensure that "
+      "preconditions of actions are reached before their effects."},
+     {"vertex_elimination",
+      "introduces binary variables based on vertex elimination. These "
+      "variables encode that one fact has to be reached before another "
+      "fact. Instead of adding such variables for every pair of states, "
+      "they are only added for a subset sufficient to ensure acyclicity. "
+      "Constraints enforce that preconditions of actions are reached before "
+      "their effects and that the assignment encodes a valid order."},
+     {"none",
+      "No acyclicity is enforced. The resulting heuristic is a relaxation "
+      "of the delete-relaxation heuristic."}});
 }

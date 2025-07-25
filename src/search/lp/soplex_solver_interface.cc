@@ -16,7 +16,8 @@ static int get_obj_sense(LPObjectiveSense sense) {
     }
 }
 
-static LPRowSetReal constraints_to_row_set(const named_vector::NamedVector<LPConstraint> &constraints) {
+static LPRowSetReal constraints_to_row_set(
+    const named_vector::NamedVector<LPConstraint> &constraints) {
     int num_rows = constraints.size();
     int num_nonzeros = 0;
     for (const LPConstraint &constraint : constraints) {
@@ -32,22 +33,28 @@ static LPRowSetReal constraints_to_row_set(const named_vector::NamedVector<LPCon
         for (int i = 0; i < num_entries; ++i) {
             entries.add(variables[i], coefficients[i]);
         }
-        rows.add(constraint.get_lower_bound(), entries, constraint.get_upper_bound());
+        rows.add(
+            constraint.get_lower_bound(), entries,
+            constraint.get_upper_bound());
     }
     return rows;
 }
 
-static LPColSetReal variables_to_col_set(const named_vector::NamedVector<LPVariable> &variables) {
+static LPColSetReal variables_to_col_set(
+    const named_vector::NamedVector<LPVariable> &variables) {
     int num_cols = variables.size();
     LPColSetReal cols(num_cols, 0);
     DSVector emptycol(0);
     for (const LPVariable &var : variables) {
-        cols.add(var.objective_coefficient, var.lower_bound, emptycol, var.upper_bound);
+        cols.add(
+            var.objective_coefficient, var.lower_bound, emptycol,
+            var.upper_bound);
     }
     return cols;
 }
 
-SoPlexSolverInterface::SoPlexSolverInterface() : SolverInterface() {
+SoPlexSolverInterface::SoPlexSolverInterface()
+    : SolverInterface() {
     soplex.setIntParam(SoPlex::VERBOSITY, SoPlex::VERBOSITY_ERROR);
     soplex.setIntParam(SoPlex::SIMPLIFIER, SoPlex::SIMPLIFIER_OFF);
 }
@@ -67,7 +74,8 @@ void SoPlexSolverInterface::load_problem(const LinearProgram &lp) {
     num_temporary_constraints = 0;
 }
 
-void SoPlexSolverInterface::add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints) {
+void SoPlexSolverInterface::add_temporary_constraints(
+    const named_vector::NamedVector<LPConstraint> &constraints) {
     soplex.addRowsReal(constraints_to_row_set(constraints));
     num_temporary_constraints = constraints.size();
 }
@@ -85,22 +93,26 @@ double SoPlexSolverInterface::get_infinity() const {
     return infinity;
 }
 
-void SoPlexSolverInterface::set_objective_coefficients(const vector<double> &coefficients) {
+void SoPlexSolverInterface::set_objective_coefficients(
+    const vector<double> &coefficients) {
     int num_cols = coefficients.size();
     for (int i = 0; i < num_cols; ++i) {
         soplex.changeObjReal(i, coefficients[i]);
     }
 }
 
-void SoPlexSolverInterface::set_objective_coefficient(int index, double coefficient) {
+void SoPlexSolverInterface::set_objective_coefficient(
+    int index, double coefficient) {
     soplex.changeObjReal(index, coefficient);
 }
 
-void SoPlexSolverInterface::set_constraint_lower_bound(int index, double bound) {
+void SoPlexSolverInterface::set_constraint_lower_bound(
+    int index, double bound) {
     soplex.changeLhsReal(index, bound);
 }
 
-void SoPlexSolverInterface::set_constraint_upper_bound(int index, double bound) {
+void SoPlexSolverInterface::set_constraint_upper_bound(
+    int index, double bound) {
     soplex.changeRhsReal(index, bound);
 }
 
@@ -181,7 +193,9 @@ void SoPlexSolverInterface::print_failure_analysis() const {
         cout << "LP is primal infeasible or unbounded." << endl;
         break;
     case SPxSolverBase<double>::Status::OPTIMAL_UNSCALED_VIOLATIONS:
-        cout << "LP has beed solved to optimality but unscaled solution contains violations." << endl;
+        cout
+            << "LP has beed solved to optimality but unscaled solution contains violations."
+            << endl;
         break;
     }
 }

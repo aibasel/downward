@@ -11,13 +11,12 @@ using namespace std;
 
 namespace weighted_evaluator {
 WeightedEvaluator::WeightedEvaluator(
-    const shared_ptr<Evaluator> &eval, int weight,
-    const string &description, utils::Verbosity verbosity)
+    const shared_ptr<Evaluator> &eval, int weight, const string &description,
+    utils::Verbosity verbosity)
     : Evaluator(false, false, false, description, verbosity),
       evaluator(eval),
       weight(weight) {
 }
-
 
 bool WeightedEvaluator::dead_ends_are_reliable() const {
     return evaluator->dead_ends_are_reliable();
@@ -43,7 +42,8 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
 class WeightedEvaluatorFeature
     : public plugins::TypedFeature<Evaluator, WeightedEvaluator> {
 public:
-    WeightedEvaluatorFeature() : TypedFeature("weight") {
+    WeightedEvaluatorFeature()
+        : TypedFeature("weight") {
         document_subcategory("evaluators_basic");
         document_title("Weighted evaluator");
         document_synopsis(
@@ -54,13 +54,11 @@ public:
         add_evaluator_options_to_feature(*this, "weight");
     }
 
-    virtual shared_ptr<WeightedEvaluator>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<WeightedEvaluator> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<WeightedEvaluator>(
-            opts.get<shared_ptr<Evaluator>>("eval"),
-            opts.get<int>("weight"),
-            get_evaluator_arguments_from_options(opts)
-            );
+            opts.get<shared_ptr<Evaluator>>("eval"), opts.get<int>("weight"),
+            get_evaluator_arguments_from_options(opts));
     }
 };
 

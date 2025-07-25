@@ -23,7 +23,6 @@ Proposition::Proposition()
       num_precondition_occurences(-1) {
 }
 
-
 UnaryOperator::UnaryOperator(
     int num_preconditions, array_pool::ArrayPoolIndex preconditions,
     PropID effect, int operator_no, int base_cost)
@@ -40,23 +39,22 @@ void add_relaxation_heuristic_options_to_feature(
     add_heuristic_options_to_feature(feature, description);
 }
 
-tuple<tasks::AxiomHandlingType, shared_ptr<AbstractTask>, bool, string,
-      utils::Verbosity>
+tuple<
+    tasks::AxiomHandlingType, shared_ptr<AbstractTask>, bool, string,
+    utils::Verbosity>
 get_relaxation_heuristic_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         tasks::get_axioms_arguments_from_options(opts),
         get_heuristic_arguments_from_options(opts));
 }
 
-
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(
-    tasks::AxiomHandlingType axioms,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
-    : Heuristic(tasks::get_default_value_axioms_task_if_needed(
-                    transform, axioms),
-                cache_estimates, description, verbosity) {
+    tasks::AxiomHandlingType axioms, const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates, const string &description, utils::Verbosity verbosity)
+    : Heuristic(
+          tasks::get_default_value_axioms_task_if_needed(transform, axioms),
+          cache_estimates, description, verbosity) {
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));
 
@@ -80,8 +78,7 @@ RelaxationHeuristic::RelaxationHeuristic(
     }
 
     // Build unary operators for operators and axioms.
-    unary_operators.reserve(
-        task_properties::get_num_total_effects(task_proxy));
+    unary_operators.reserve(task_properties::get_num_total_effects(task_proxy));
     for (OperatorProxy op : task_proxy.get_operators())
         build_unary_operators(op);
     for (OperatorProxy axiom : task_proxy.get_axioms())
@@ -108,7 +105,8 @@ RelaxationHeuristic::RelaxationHeuristic(
         const auto &precondition_of_vec = precondition_of_vectors[prop_id];
         propositions[prop_id].precondition_of =
             precondition_of_pool.append(precondition_of_vec);
-        propositions[prop_id].num_precondition_occurences = precondition_of_vec.size();
+        propositions[prop_id].num_precondition_occurences =
+            precondition_of_vec.size();
     }
 }
 
@@ -160,9 +158,11 @@ void RelaxationHeuristic::build_unary_operators(const OperatorProxy &op) {
         array_pool::ArrayPoolIndex precond_index =
             preconditions_pool.append(preconditions_copy);
         unary_operators.emplace_back(
-            preconditions_copy.size(), precond_index, effect_prop,
-            op_no, base_cost);
-        precondition_props.erase(precondition_props.end() - eff_conds.size(), precondition_props.end());
+            preconditions_copy.size(), precond_index, effect_prop, op_no,
+            base_cost);
+        precondition_props.erase(
+            precondition_props.end() - eff_conds.size(),
+            precondition_props.end());
     }
 }
 
@@ -194,7 +194,8 @@ void RelaxationHeuristic::simplify() {
     const int MAX_PRECONDITIONS_TO_TEST = 5;
 
     if (log.is_at_least_normal()) {
-        log << "Simplifying " << unary_operators.size() << " unary operators..." << flush;
+        log << "Simplifying " << unary_operators.size() << " unary operators..."
+            << flush;
     }
 
     /*
@@ -229,8 +230,8 @@ void RelaxationHeuristic::simplify() {
 
         Key key(get_preconditions_vector(op_no), op.effect);
         Value value(op.base_cost, op_no);
-        auto inserted = unary_operator_index.insert(
-            make_pair(move(key), value));
+        auto inserted =
+            unary_operator_index.insert(make_pair(move(key), value));
         if (!inserted.second) {
             // We already had an element with this key; check its cost.
             Map::iterator iter = inserted.first;
@@ -251,74 +252,73 @@ void RelaxationHeuristic::simplify() {
       operator in the map.
     */
     auto is_dominated = [&](const UnaryOperator &op) {
+        /*
+          Check all possible subsets X of pre(op) to see if there is a
+          dominating operator with preconditions X represented in the
+          map.
+        */
+
+        OpID op_id = get_op_id(op);
+        int cost = op.base_cost;
+
+        const vector<PropID> precondition = get_preconditions_vector(op_id);
+
+        /*
+          We handle the case X = pre(op) specially for efficiency and
+          to ensure that an operator is not considered to be dominated
+          by itself.
+
+          From the discussion above that operators with the same
+          precondition and effect are actually totally ordered, it is
+          enough to test here whether looking up the key of op in the
+          map results in an entry including op itself.
+        */
+        if (unary_operator_index[make_pair(precondition, op.effect)].second !=
+            op_id)
+            return true;
+
+        /*
+          We now handle all cases where X is a strict subset of pre(op).
+          Our map lookup ensures conditions 1. and 2., and because X is
+          a strict subset, we also have 4a (which means we don't need 4b).
+          So it only remains to check 3 for all hits.
+        */
+        if (op.num_preconditions > MAX_PRECONDITIONS_TO_TEST) {
             /*
-              Check all possible subsets X of pre(op) to see if there is a
-              dominating operator with preconditions X represented in the
-              map.
+              The runtime of the following code grows exponentially
+              with the number of preconditions.
             */
-
-            OpID op_id = get_op_id(op);
-            int cost = op.base_cost;
-
-            const vector<PropID> precondition = get_preconditions_vector(op_id);
-
-            /*
-              We handle the case X = pre(op) specially for efficiency and
-              to ensure that an operator is not considered to be dominated
-              by itself.
-
-              From the discussion above that operators with the same
-              precondition and effect are actually totally ordered, it is
-              enough to test here whether looking up the key of op in the
-              map results in an entry including op itself.
-            */
-            if (unary_operator_index[make_pair(precondition, op.effect)].second != op_id)
-                return true;
-
-            /*
-              We now handle all cases where X is a strict subset of pre(op).
-              Our map lookup ensures conditions 1. and 2., and because X is
-              a strict subset, we also have 4a (which means we don't need 4b).
-              So it only remains to check 3 for all hits.
-            */
-            if (op.num_preconditions > MAX_PRECONDITIONS_TO_TEST) {
-                /*
-                  The runtime of the following code grows exponentially
-                  with the number of preconditions.
-                */
-                return false;
-            }
-
-            vector<PropID> &dominating_precondition = dominating_key.first;
-            dominating_key.second = op.effect;
-
-            // We subtract "- 1" to generate all *strict* subsets of precondition.
-            int powerset_size = (1 << precondition.size()) - 1;
-            for (int mask = 0; mask < powerset_size; ++mask) {
-                dominating_precondition.clear();
-                for (size_t i = 0; i < precondition.size(); ++i)
-                    if (mask & (1 << i))
-                        dominating_precondition.push_back(precondition[i]);
-                Map::iterator found = unary_operator_index.find(dominating_key);
-                if (found != unary_operator_index.end()) {
-                    Value dominator_value = found->second;
-                    int dominator_cost = dominator_value.first;
-                    if (dominator_cost <= cost)
-                        return true;
-                }
-            }
             return false;
-        };
+        }
+
+        vector<PropID> &dominating_precondition = dominating_key.first;
+        dominating_key.second = op.effect;
+
+        // We subtract "- 1" to generate all *strict* subsets of precondition.
+        int powerset_size = (1 << precondition.size()) - 1;
+        for (int mask = 0; mask < powerset_size; ++mask) {
+            dominating_precondition.clear();
+            for (size_t i = 0; i < precondition.size(); ++i)
+                if (mask & (1 << i))
+                    dominating_precondition.push_back(precondition[i]);
+            Map::iterator found = unary_operator_index.find(dominating_key);
+            if (found != unary_operator_index.end()) {
+                Value dominator_value = found->second;
+                int dominator_cost = dominator_value.first;
+                if (dominator_cost <= cost)
+                    return true;
+            }
+        }
+        return false;
+    };
 
     unary_operators.erase(
-        remove_if(
-            unary_operators.begin(),
-            unary_operators.end(),
-            is_dominated),
+        remove_if(unary_operators.begin(), unary_operators.end(), is_dominated),
         unary_operators.end());
 
     if (log.is_at_least_normal()) {
-        log << " done! [" << unary_operators.size() << " unary operators]" << endl;
+        log << " done! [" << unary_operators.size() << " unary operators]"
+            << endl;
     }
 }
 }

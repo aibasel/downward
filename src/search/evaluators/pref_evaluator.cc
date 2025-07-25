@@ -25,7 +25,8 @@ EvaluationResult PrefEvaluator::compute_result(
 class PrefEvaluatorFeature
     : public plugins::TypedFeature<Evaluator, PrefEvaluator> {
 public:
-    PrefEvaluatorFeature() : TypedFeature("pref") {
+    PrefEvaluatorFeature()
+        : TypedFeature("pref") {
         document_subcategory("evaluators_basic");
         document_title("Preference evaluator");
         document_synopsis("Returns 0 if preferred is true and 1 otherwise.");
@@ -33,11 +34,10 @@ public:
         add_evaluator_options_to_feature(*this, "pref");
     }
 
-    virtual shared_ptr<PrefEvaluator>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<PrefEvaluator> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<PrefEvaluator>(
-            get_evaluator_arguments_from_options(opts)
-            );
+            get_evaluator_arguments_from_options(opts));
     }
 };
 

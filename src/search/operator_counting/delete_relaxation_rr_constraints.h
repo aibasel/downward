@@ -1,7 +1,7 @@
 #ifndef OPERATOR_COUNTING_DELETE_RELAXATION_RR_CONSTRAINTS_H
 #define OPERATOR_COUNTING_DELETE_RELAXATION_RR_CONSTRAINTS_H
 
-#include  "constraint_generator.h"
+#include "constraint_generator.h"
 
 #include "../task_proxy.h"
 #include "../utils/hash.h"
@@ -23,9 +23,7 @@ class VEGraph;
 using LPConstraints = named_vector::NamedVector<lp::LPConstraint>;
 using LPVariables = named_vector::NamedVector<lp::LPVariable>;
 
-enum class AcyclicityType {
-    TIME_LABELS, VERTEX_ELIMINATION, NONE
-};
+enum class AcyclicityType { TIME_LABELS, VERTEX_ELIMINATION, NONE };
 
 class DeleteRelaxationRRConstraints : public ConstraintGenerator {
     struct LPVariableIDs {
@@ -81,7 +79,6 @@ class DeleteRelaxationRRConstraints : public ConstraintGenerator {
     /* The state that is currently used for setting the bounds. Remembering
        this makes it faster to unset the bounds when the state changes. */
     std::vector<FactPair> last_state;
-
 
     int get_constraint_id(FactPair f) const;
 

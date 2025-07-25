@@ -17,12 +17,7 @@ class Feature;
 
 namespace utils {
 // See add_log_options_to_feature for documentation.
-enum class Verbosity {
-    SILENT,
-    NORMAL,
-    VERBOSE,
-    DEBUG
-};
+enum class Verbosity { SILENT, NORMAL, VERBOSE, DEBUG };
 
 /*
   Simple line-based logger that prepends time and peak memory info to each line
@@ -144,14 +139,16 @@ public:
 class Context {
 protected:
     static const std::string INDENT;
-    size_t initial_stack_size;  // TODO: Can be removed once we got rid of LazyValues
+    size_t initial_stack_size; // TODO: Can be removed once we got rid of
+                               // LazyValues
     std::vector<std::string> block_stack;
 
 public:
     Context();
     Context(const Context &context);
     virtual ~Context();
-    virtual std::string decorate_block_name(const std::string &block_name) const;
+    virtual std::string decorate_block_name(
+        const std::string &block_name) const;
     void enter_block(const std::string &block_name);
     void leave_block(const std::string &block_name);
     std::string str() const;
@@ -165,7 +162,8 @@ class MemoryContext : public Context {
     static const int MEM_FIELD_WIDTH = 7;
     static const int TIME_FIELD_WIDTH = 7;
 public:
-    virtual std::string decorate_block_name(const std::string &block_name) const override;
+    virtual std::string decorate_block_name(
+        const std::string &block_name) const override;
 };
 
 extern MemoryContext _memory_context;

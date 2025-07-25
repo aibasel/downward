@@ -24,8 +24,8 @@ protected:
     const LandmarkGraph &landmark_graph;
     const std::vector<int> operator_costs;
 public:
-    CostPartitioningAlgorithm(const std::vector<int> &operator_costs,
-                              const LandmarkGraph &graph);
+    CostPartitioningAlgorithm(
+        const std::vector<int> &operator_costs, const LandmarkGraph &graph);
     virtual ~CostPartitioningAlgorithm() = default;
 
     virtual double get_cost_partitioned_heuristic_value(
@@ -47,8 +47,8 @@ class UniformCostPartitioningAlgorithm : public CostPartitioningAlgorithm {
     */
     double first_pass(
         std::vector<int> &landmarks_achieved_by_operator,
-        std::vector<bool> &action_landmarks,
-        ConstBitsetView &past, ConstBitsetView &future);
+        std::vector<bool> &action_landmarks, ConstBitsetView &past,
+        ConstBitsetView &future);
     std::vector<const LandmarkNode *> second_pass(
         std::vector<int> &landmarks_achieved_by_operator,
         const std::vector<bool> &action_landmarks, ConstBitsetView &past,
@@ -58,9 +58,9 @@ class UniformCostPartitioningAlgorithm : public CostPartitioningAlgorithm {
         const std::vector<int> &landmarks_achieved_by_operator,
         ConstBitsetView &past, ConstBitsetView &future);
 public:
-    UniformCostPartitioningAlgorithm(const std::vector<int> &operator_costs,
-                                     const LandmarkGraph &graph,
-                                     bool use_action_landmarks);
+    UniformCostPartitioningAlgorithm(
+        const std::vector<int> &operator_costs, const LandmarkGraph &graph,
+        bool use_action_landmarks);
 
     virtual double get_cost_partitioned_heuristic_value(
         const LandmarkStatusManager &landmark_status_manager,
@@ -85,9 +85,9 @@ class OptimalCostPartitioningAlgorithm : public CostPartitioningAlgorithm {
     bool define_constraint_matrix(
         ConstBitsetView &past, ConstBitsetView &future, int num_cols);
 public:
-    OptimalCostPartitioningAlgorithm(const std::vector<int> &operator_costs,
-                                     const LandmarkGraph &graph,
-                                     lp::LPSolverType solver_type);
+    OptimalCostPartitioningAlgorithm(
+        const std::vector<int> &operator_costs, const LandmarkGraph &graph,
+        lp::LPSolverType solver_type);
 
     virtual double get_cost_partitioned_heuristic_value(
         const LandmarkStatusManager &landmark_status_manager,

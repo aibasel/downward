@@ -66,9 +66,7 @@ bool MatchTree::Node::is_leaf_node() const {
 }
 
 MatchTree::MatchTree(const TaskProxy &task_proxy, const Projection &projection)
-    : task_proxy(task_proxy),
-      projection(projection),
-      root(nullptr) {
+    : task_proxy(task_proxy), projection(projection), root(nullptr) {
 }
 
 MatchTree::~MatchTree() {
@@ -76,8 +74,8 @@ MatchTree::~MatchTree() {
 }
 
 void MatchTree::insert_recursive(
-    int op_id, const vector<FactPair> &regression_preconditions,
-    int pre_index, Node **edge_from_parent) {
+    int op_id, const vector<FactPair> &regression_preconditions, int pre_index,
+    Node **edge_from_parent) {
     if (*edge_from_parent == nullptr) {
         // We don't exist yet: create a new node.
         *edge_from_parent = new Node();
@@ -123,11 +121,13 @@ void MatchTree::insert_recursive(
             edge_to_child = &node->star_successor;
         }
 
-        insert_recursive(op_id, regression_preconditions, pre_index, edge_to_child);
+        insert_recursive(
+            op_id, regression_preconditions, pre_index, edge_to_child);
     }
 }
 
-void MatchTree::insert(int op_id, const vector<FactPair> &regression_preconditions) {
+void MatchTree::insert(
+    int op_id, const vector<FactPair> &regression_preconditions) {
     insert_recursive(op_id, regression_preconditions, 0, &root);
 }
 
@@ -140,9 +140,9 @@ void MatchTree::get_applicable_operator_ids_recursive(
       some informal experiments.
      */
 
-    operator_ids.insert(operator_ids.end(),
-                        node->applicable_operator_ids.begin(),
-                        node->applicable_operator_ids.end());
+    operator_ids.insert(
+        operator_ids.end(), node->applicable_operator_ids.begin(),
+        node->applicable_operator_ids.end());
 
     if (node->is_leaf_node())
         return;
@@ -188,11 +188,11 @@ void MatchTree::dump_recursive(Node *node, utils::LogProxy &log) const {
         } else {
             for (int val = 0; val < node->var_domain_size; ++val) {
                 if (node->successors[val]) {
-                    log << "recursive call for child with value " << val << endl;
+                    log << "recursive call for child with value " << val
+                        << endl;
                     dump_recursive(node->successors[val], log);
                     log << "back from recursive call (for successors[" << val
-                        << "]) to node with var_id = " << node->var_id
-                        << endl;
+                        << "]) to node with var_id = " << node->var_id << endl;
                 } else {
                     log << "no child for value " << val << endl;
                 }

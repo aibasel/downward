@@ -12,8 +12,12 @@ class LandmarkNode;
 class LandmarkStatusManager {
     LandmarkGraph &landmark_graph;
     const std::vector<const LandmarkNode *> goal_landmarks;
-    const std::vector<std::pair<const LandmarkNode *, std::vector<const LandmarkNode *>>> greedy_necessary_children;
-    const std::vector<std::pair<const LandmarkNode *, std::vector<const LandmarkNode *>>> reasonable_parents;
+    const std::vector<
+        std::pair<const LandmarkNode *, std::vector<const LandmarkNode *>>>
+        greedy_necessary_children;
+    const std::vector<
+        std::pair<const LandmarkNode *, std::vector<const LandmarkNode *>>>
+        reasonable_parents;
 
     PerStateBitset past_landmarks;
     PerStateBitset future_landmarks;
@@ -30,8 +34,7 @@ class LandmarkStatusManager {
         const BitsetView &past, BitsetView &future);
 public:
     LandmarkStatusManager(
-        LandmarkGraph &landmark_graph,
-        bool progress_goals,
+        LandmarkGraph &landmark_graph, bool progress_goals,
         bool progress_greedy_necessary_orderings,
         bool progress_reasonable_orderings);
 

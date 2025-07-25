@@ -13,9 +13,8 @@ using namespace std;
 
 namespace hm_heuristic {
 HMHeuristic::HMHeuristic(
-    int m, const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates, const string &description,
-    utils::Verbosity verbosity)
+    int m, const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       m(m),
       has_cond_effects(task_properties::has_conditional_effects(task_proxy)),
@@ -29,11 +28,9 @@ HMHeuristic::HMHeuristic(
     generate_all_tuples();
 }
 
-
 bool HMHeuristic::dead_ends_are_reliable() const {
     return !task_properties::has_axioms(task_proxy) && !has_cond_effects;
 }
-
 
 int HMHeuristic::compute_heuristic(const State &ancestor_state) {
     State state = convert_ancestor_state(ancestor_state);
@@ -53,7 +50,6 @@ int HMHeuristic::compute_heuristic(const State &ancestor_state) {
     }
 }
 
-
 void HMHeuristic::init_hm_table(const Tuple &t) {
     for (auto &hm_ent : hm_table) {
         const Tuple &tuple = hm_ent.first;
@@ -61,7 +57,6 @@ void HMHeuristic::init_hm_table(const Tuple &t) {
         hm_table[tuple] = h_val;
     }
 }
-
 
 void HMHeuristic::update_hm_table() {
     do {
@@ -88,7 +83,6 @@ void HMHeuristic::update_hm_table() {
     } while (was_updated);
 }
 
-
 void HMHeuristic::extend_tuple(const Tuple &t, const OperatorProxy &op) {
     for (auto &hm_ent : hm_table) {
         const Tuple &tuple = hm_ent.first;
@@ -99,7 +93,8 @@ void HMHeuristic::extend_tuple(const Tuple &t, const OperatorProxy &op) {
                 break;
             }
         }
-        if (!contradict && (tuple.size() > t.size()) && (check_tuple_in_tuple(t, tuple) == 0)) {
+        if (!contradict && (tuple.size() > t.size()) &&
+            (check_tuple_in_tuple(t, tuple) == 0)) {
             Tuple pre = get_operator_pre(op);
 
             Tuple others;
@@ -134,7 +129,6 @@ void HMHeuristic::extend_tuple(const Tuple &t, const OperatorProxy &op) {
     }
 }
 
-
 int HMHeuristic::eval(const Tuple &t) const {
     vector<Tuple> partial;
     generate_all_partial_tuples(t, partial);
@@ -150,7 +144,6 @@ int HMHeuristic::eval(const Tuple &t) const {
     return max;
 }
 
-
 int HMHeuristic::update_hm_entry(const Tuple &t, int val) {
     assert(hm_table.count(t) == 1);
     if (hm_table[t] > val) {
@@ -159,7 +152,6 @@ int HMHeuristic::update_hm_entry(const Tuple &t, int val) {
     }
     return val;
 }
-
 
 int HMHeuristic::check_tuple_in_tuple(
     const Tuple &tuple, const Tuple &big_tuple) const {
@@ -178,15 +170,16 @@ int HMHeuristic::check_tuple_in_tuple(
     return 0;
 }
 
-
-HMHeuristic::Tuple HMHeuristic::get_operator_pre(const OperatorProxy &op) const {
-    Tuple preconditions = task_properties::get_fact_pairs(op.get_preconditions());
+HMHeuristic::Tuple HMHeuristic::get_operator_pre(
+    const OperatorProxy &op) const {
+    Tuple preconditions =
+        task_properties::get_fact_pairs(op.get_preconditions());
     sort(preconditions.begin(), preconditions.end());
     return preconditions;
 }
 
-
-HMHeuristic::Tuple HMHeuristic::get_operator_eff(const OperatorProxy &op) const {
+HMHeuristic::Tuple HMHeuristic::get_operator_eff(
+    const OperatorProxy &op) const {
     Tuple effects;
     for (EffectProxy eff : op.get_effects()) {
         effects.push_back(eff.get_fact().get_pair());
@@ -194,7 +187,6 @@ HMHeuristic::Tuple HMHeuristic::get_operator_eff(const OperatorProxy &op) const 
     sort(effects.begin(), effects.end());
     return effects;
 }
-
 
 bool HMHeuristic::contradict_effect_of(
     const OperatorProxy &op, int var, int val) const {
@@ -207,12 +199,10 @@ bool HMHeuristic::contradict_effect_of(
     return false;
 }
 
-
 void HMHeuristic::generate_all_tuples() {
     Tuple t;
     generate_all_tuples_aux(0, m, t);
 }
-
 
 void HMHeuristic::generate_all_tuples_aux(int var, int sz, const Tuple &base) {
     int num_variables = task_proxy.get_variables().size();
@@ -229,16 +219,15 @@ void HMHeuristic::generate_all_tuples_aux(int var, int sz, const Tuple &base) {
     }
 }
 
-
 void HMHeuristic::generate_all_partial_tuples(
     const Tuple &base_tuple, vector<Tuple> &res) const {
     Tuple t;
     generate_all_partial_tuples_aux(base_tuple, t, 0, m, res);
 }
 
-
 void HMHeuristic::generate_all_partial_tuples_aux(
-    const Tuple &base_tuple, const Tuple &t, int index, int sz, vector<Tuple> &res) const {
+    const Tuple &base_tuple, const Tuple &t, int index, int sz,
+    vector<Tuple> &res) const {
     if (sz == 1) {
         for (size_t i = index; i < base_tuple.size(); ++i) {
             Tuple tuple(t);
@@ -250,11 +239,11 @@ void HMHeuristic::generate_all_partial_tuples_aux(
             Tuple tuple(t);
             tuple.push_back(base_tuple[i]);
             res.push_back(tuple);
-            generate_all_partial_tuples_aux(base_tuple, tuple, i + 1, sz - 1, res);
+            generate_all_partial_tuples_aux(
+                base_tuple, tuple, i + 1, sz - 1, res);
         }
     }
 }
-
 
 void HMHeuristic::dump_table() const {
     if (log.is_at_least_debug()) {
@@ -267,10 +256,12 @@ void HMHeuristic::dump_table() const {
 class HMHeuristicFeature
     : public plugins::TypedFeature<Evaluator, HMHeuristic> {
 public:
-    HMHeuristicFeature() : TypedFeature("hm") {
+    HMHeuristicFeature()
+        : TypedFeature("hm") {
         document_title("h^m heuristic");
 
-        add_option<int>("m", "subset size", "2", plugins::Bounds("1", "infinity"));
+        add_option<int>(
+            "m", "subset size", "2", plugins::Bounds("1", "infinity"));
         add_heuristic_options_to_feature(*this, "hm");
 
         document_language_support("action costs", "supported");
@@ -284,17 +275,14 @@ public:
             "consistent",
             "yes for tasks without conditional effects or axioms");
         document_property(
-            "safe",
-            "yes for tasks without conditional effects or axioms");
+            "safe", "yes for tasks without conditional effects or axioms");
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<HMHeuristic>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<HMHeuristic> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<HMHeuristic>(
-            opts.get<int>("m"),
-            get_heuristic_arguments_from_options(opts)
-            );
+            opts.get<int>("m"), get_heuristic_arguments_from_options(opts));
     }
 };
 

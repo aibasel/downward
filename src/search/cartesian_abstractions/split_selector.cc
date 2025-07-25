@@ -16,17 +16,12 @@ using namespace std;
 
 namespace cartesian_abstractions {
 SplitSelector::SplitSelector(
-    const shared_ptr<AbstractTask> &task,
-    PickSplit pick)
-    : task(task),
-      task_proxy(*task),
-      pick(pick) {
+    const shared_ptr<AbstractTask> &task, PickSplit pick)
+    : task(task), task_proxy(*task), pick(pick) {
     if (pick == PickSplit::MIN_HADD || pick == PickSplit::MAX_HADD) {
-        additive_heuristic =
-            make_unique<additive_heuristic::AdditiveHeuristic>(
-                tasks::AxiomHandlingType::APPROXIMATE_NEGATIVE, task,
-                false, "h^add within CEGAR abstractions",
-                utils::Verbosity::SILENT);
+        additive_heuristic = make_unique<additive_heuristic::AdditiveHeuristic>(
+            tasks::AxiomHandlingType::APPROXIMATE_NEGATIVE, task, false,
+            "h^add within CEGAR abstractions", utils::Verbosity::SILENT);
         additive_heuristic->compute_heuristic_for_cegar(
             task_proxy.get_initial_state());
     }
@@ -43,7 +38,8 @@ int SplitSelector::get_num_unwanted_values(
     return num_unwanted_values;
 }
 
-double SplitSelector::get_refinedness(const AbstractState &state, int var_id) const {
+double SplitSelector::get_refinedness(
+    const AbstractState &state, int var_id) const {
     double all_values = task_proxy.get_variables()[var_id].get_domain_size();
     assert(all_values >= 2);
     double remaining_values = state.count(var_id);
@@ -60,7 +56,8 @@ int SplitSelector::get_hadd_value(int var_id, int value) const {
     return hadd;
 }
 
-int SplitSelector::get_min_hadd_value(int var_id, const vector<int> &values) const {
+int SplitSelector::get_min_hadd_value(
+    int var_id, const vector<int> &values) const {
     int min_hadd = numeric_limits<int>::max();
     for (int value : values) {
         const int hadd = get_hadd_value(var_id, value);
@@ -71,7 +68,8 @@ int SplitSelector::get_min_hadd_value(int var_id, const vector<int> &values) con
     return min_hadd;
 }
 
-int SplitSelector::get_max_hadd_value(int var_id, const vector<int> &values) const {
+int SplitSelector::get_max_hadd_value(
+    int var_id, const vector<int> &values) const {
     int max_hadd = -1;
     for (int value : values) {
         const int hadd = get_hadd_value(var_id, value);
@@ -82,7 +80,8 @@ int SplitSelector::get_max_hadd_value(int var_id, const vector<int> &values) con
     return max_hadd;
 }
 
-double SplitSelector::rate_split(const AbstractState &state, const Split &split) const {
+double SplitSelector::rate_split(
+    const AbstractState &state, const Split &split) const {
     int var_id = split.var_id;
     const vector<int> &values = split.values;
     double rating;
@@ -112,9 +111,9 @@ double SplitSelector::rate_split(const AbstractState &state, const Split &split)
     return rating;
 }
 
-const Split &SplitSelector::pick_split(const AbstractState &state,
-                                       const vector<Split> &splits,
-                                       utils::RandomNumberGenerator &rng) const {
+const Split &SplitSelector::pick_split(
+    const AbstractState &state, const vector<Split> &splits,
+    utils::RandomNumberGenerator &rng) const {
     assert(!splits.empty());
 
     if (splits.size() == 1) {

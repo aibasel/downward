@@ -18,15 +18,16 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeTreeFactoryLinear::MergeTreeFactoryLinear(
-    variable_order_finder::VariableOrderType variable_order,
-    int random_seed, UpdateOption update_option)
+    variable_order_finder::VariableOrderType variable_order, int random_seed,
+    UpdateOption update_option)
     : MergeTreeFactory(random_seed, update_option),
       variable_order_type(variable_order) {
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     const TaskProxy &task_proxy) {
-    variable_order_finder::VariableOrderFinder vof(task_proxy, variable_order_type, rng);
+    variable_order_finder::VariableOrderFinder vof(
+        task_proxy, variable_order_type, rng);
     MergeTreeNode *root = new MergeTreeNode(vof.next());
     while (!vof.done()) {
         MergeTreeNode *right_child = new MergeTreeNode(vof.next());
@@ -36,8 +37,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
-    const TaskProxy &task_proxy,
-    const FactoredTransitionSystem &fts,
+    const TaskProxy &task_proxy, const FactoredTransitionSystem &fts,
     const vector<int> &indices_subset) {
     /*
       Compute a mapping from state variables to transition system indices
@@ -50,8 +50,8 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
     vector<bool> used_ts_indices(num_ts, true);
     for (int ts_index : fts) {
         bool use_ts_index =
-            find(indices_subset.begin(), indices_subset.end(),
-                 ts_index) != indices_subset.end();
+            find(indices_subset.begin(), indices_subset.end(), ts_index) !=
+            indices_subset.end();
         if (use_ts_index) {
             used_ts_indices[ts_index] = false;
         }
@@ -68,7 +68,8 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
      skipping all indices not in indices_subset, because these have been set
      to "used" above.
     */
-    variable_order_finder::VariableOrderFinder vof(task_proxy, variable_order_type, rng);
+    variable_order_finder::VariableOrderFinder vof(
+        task_proxy, variable_order_type, rng);
 
     int next_var = vof.next();
     int ts_index = var_to_ts_index[next_var];
@@ -100,7 +101,8 @@ string MergeTreeFactoryLinear::name() const {
     return "linear";
 }
 
-void MergeTreeFactoryLinear::dump_tree_specific_options(utils::LogProxy &log) const {
+void MergeTreeFactoryLinear::dump_tree_specific_options(
+    utils::LogProxy &log) const {
     if (log.is_at_least_normal()) {
         dump_variable_order_type(variable_order_type, log);
     }
@@ -117,53 +119,51 @@ void MergeTreeFactoryLinear::add_options_to_feature(plugins::Feature &feature) {
 class MergeTreeFactoryLinearFeature
     : public plugins::TypedFeature<MergeTreeFactory, MergeTreeFactoryLinear> {
 public:
-    MergeTreeFactoryLinearFeature() : TypedFeature("linear") {
+    MergeTreeFactoryLinearFeature()
+        : TypedFeature("linear") {
         document_title("Linear merge trees");
         document_synopsis(
             "These merge trees implement several linear merge orders, which "
-            "are described in the paper:" + utils::format_conference_reference(
+            "are described in the paper:" +
+            utils::format_conference_reference(
                 {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
                 "Flexible Abstraction Heuristics for Optimal Sequential Planning",
                 "https://ai.dmi.unibas.ch/papers/helmert-et-al-icaps2007.pdf",
                 "Proceedings of the Seventeenth International Conference on"
                 " Automated Planning and Scheduling (ICAPS 2007)",
-                "176-183",
-                "AAAI Press",
-                "2007"));
+                "176-183", "AAAI Press", "2007"));
 
         MergeTreeFactoryLinear::add_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeTreeFactoryLinear>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<MergeTreeFactoryLinear> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<MergeTreeFactoryLinear>(
             opts.get<variable_order_finder::VariableOrderType>(
                 "variable_order"),
-            get_merge_tree_arguments_from_options(opts)
-            );
+            get_merge_tree_arguments_from_options(opts));
     }
 };
 
 static plugins::FeaturePlugin<MergeTreeFactoryLinearFeature> _plugin;
 
-static plugins::TypedEnumPlugin<variable_order_finder::VariableOrderType> _enum_plugin({
-        {"cg_goal_level",
-         "variables are prioritized first if they have an arc to a previously "
-         "added variable, second if their goal value is defined "
-         "and third according to their level in the causal graph"},
-        {"cg_goal_random",
-         "variables are prioritized first if they have an arc to a previously "
-         "added variable, second if their goal value is defined "
-         "and third randomly"},
-        {"goal_cg_level",
-         "variables are prioritized first if their goal value is defined, "
-         "second if they have an arc to a previously added variable, "
-         "and third according to their level in the causal graph"},
-        {"random",
-         "variables are ordered randomly"},
-        {"level",
-         "variables are ordered according to their level in the causal graph"},
-        {"reverse_level",
-         "variables are ordered reverse to their level in the causal graph"}
-    });
+static plugins::TypedEnumPlugin<variable_order_finder::VariableOrderType>
+    _enum_plugin(
+        {{"cg_goal_level",
+          "variables are prioritized first if they have an arc to a previously "
+          "added variable, second if their goal value is defined "
+          "and third according to their level in the causal graph"},
+         {"cg_goal_random",
+          "variables are prioritized first if they have an arc to a previously "
+          "added variable, second if their goal value is defined "
+          "and third randomly"},
+         {"goal_cg_level",
+          "variables are prioritized first if their goal value is defined, "
+          "second if they have an arc to a previously added variable, "
+          "and third according to their level in the causal graph"},
+         {"random", "variables are ordered randomly"},
+         {"level",
+          "variables are ordered according to their level in the causal graph"},
+         {"reverse_level",
+          "variables are ordered reverse to their level in the causal graph"}});
 }

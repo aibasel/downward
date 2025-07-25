@@ -13,8 +13,7 @@
 using namespace std;
 
 namespace pdbs {
-Projection::Projection(
-    const TaskProxy &task_proxy, const Pattern &pattern)
+Projection::Projection(const TaskProxy &task_proxy, const Pattern &pattern)
     : pattern(pattern) {
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);
@@ -29,9 +28,7 @@ Projection::Projection(
         int domain_size = var.get_domain_size();
         domain_sizes.push_back(domain_size);
         if (utils::is_product_within_limit(
-                num_abstract_states,
-                domain_size,
-                numeric_limits<int>::max())) {
+                num_abstract_states, domain_size, numeric_limits<int>::max())) {
             num_abstract_states *= domain_size;
         } else {
             cerr << "Given pattern is too large! (Overflow occured): " << endl;
@@ -55,10 +52,8 @@ int Projection::unrank(int index, int var) const {
 }
 
 PatternDatabase::PatternDatabase(
-    Projection &&projection,
-    vector<int> &&distances)
-    : projection(move(projection)),
-      distances(move(distances)) {
+    Projection &&projection, vector<int> &&distances)
+    : projection(move(projection)), distances(move(distances)) {
 }
 
 int PatternDatabase::get_value(const vector<int> &state) const {

@@ -27,8 +27,8 @@ using namespace std;
 */
 
 namespace causal_graph {
-static unordered_map<const AbstractTask *,
-                     unique_ptr<CausalGraph>> causal_graph_cache;
+static unordered_map<const AbstractTask *, unique_ptr<CausalGraph>>
+    causal_graph_cache;
 
 /*
   An IntRelationBuilder constructs an IntRelation by adding one pair
@@ -60,27 +60,22 @@ public:
     void compute_relation(IntRelation &result) const;
 };
 
-
 IntRelationBuilder::IntRelationBuilder(int range)
     : int_sets(range) {
 }
 
-
 IntRelationBuilder::~IntRelationBuilder() {
 }
-
 
 int IntRelationBuilder::get_range() const {
     return int_sets.size();
 }
-
 
 void IntRelationBuilder::add_pair(int u, int v) {
     assert(u >= 0 && u < get_range());
     assert(v >= 0 && v < get_range());
     int_sets[u].insert(v);
 }
-
 
 void IntRelationBuilder::compute_relation(IntRelation &result) const {
     int range = get_range();
@@ -91,7 +86,6 @@ void IntRelationBuilder::compute_relation(IntRelation &result) const {
         sort(result[i].begin(), result[i].end());
     }
 }
-
 
 struct CausalGraphBuilder {
     IntRelationBuilder pre_eff_builder;

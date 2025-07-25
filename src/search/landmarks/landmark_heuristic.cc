@@ -14,9 +14,8 @@ using namespace std;
 
 namespace landmarks {
 LandmarkHeuristic::LandmarkHeuristic(
-    bool use_preferred_operators,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
+    bool use_preferred_operators, const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates, const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       initial_landmark_graph_has_cycle_of_natural_orderings(false),
       use_preferred_operators(use_preferred_operators),
@@ -70,9 +69,9 @@ void LandmarkHeuristic::initialize(
       no good way to do this, so we use this incomplete, slightly less safe
       test.
     */
-    if (task != tasks::g_root_task
-        && dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr
-        && dynamic_cast<tasks::DefaultValueAxiomsTask *>(task.get()) == nullptr) {
+    if (task != tasks::g_root_task &&
+        dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr &&
+        dynamic_cast<tasks::DefaultValueAxiomsTask *>(task.get()) == nullptr) {
         cerr << "The landmark heuristics currently only support "
              << "task transformations that modify the operator costs "
              << "or add negated axioms. See issues 845, 686 and 454 "
@@ -86,8 +85,8 @@ void LandmarkHeuristic::initialize(
 
     initial_landmark_graph_has_cycle_of_natural_orderings =
         landmark_graph_has_cycle_of_natural_orderings(*landmark_graph);
-    if (initial_landmark_graph_has_cycle_of_natural_orderings
-        && log.is_at_least_normal()) {
+    if (initial_landmark_graph_has_cycle_of_natural_orderings &&
+        log.is_at_least_normal()) {
         log << "Landmark graph contains a cycle of natural orderings." << endl;
     }
 
@@ -111,7 +110,8 @@ void LandmarkHeuristic::compute_landmark_graph(
     assert(landmark_factory->achievers_are_calculated());
 
     if (log.is_at_least_normal()) {
-        log << "Landmark graph generation time: " << landmark_graph_timer << endl;
+        log << "Landmark graph generation time: " << landmark_graph_timer
+            << endl;
         log << "Landmark graph contains " << landmark_graph->get_num_landmarks()
             << " landmarks, of which "
             << landmark_graph->get_num_disjunctive_landmarks()
@@ -230,51 +230,44 @@ void LandmarkHeuristic::notify_state_transition(
 void add_landmark_heuristic_options_to_feature(
     plugins::Feature &feature, const string &description) {
     feature.document_synopsis(
-        "Landmark progression is implemented according to the following paper:"
-        + utils::format_conference_reference(
-            {"Clemens Büchner", "Thomas Keller", "Salomé Eriksson", "Malte Helmert"},
+        "Landmark progression is implemented according to the following paper:" +
+        utils::format_conference_reference(
+            {"Clemens Büchner", "Thomas Keller", "Salomé Eriksson",
+             "Malte Helmert"},
             "Landmarks Progression in Heuristic Search",
             "https://ai.dmi.unibas.ch/papers/buechner-et-al-icaps2023.pdf",
             "Proceedings of the Thirty-Third International Conference on "
             "Automated Planning and Scheduling (ICAPS 2023)",
-            "70-79",
-            "AAAI Press",
-            "2023"));
+            "70-79", "AAAI Press", "2023"));
 
     feature.add_option<shared_ptr<LandmarkFactory>>(
-        "lm_factory",
-        "the set of landmarks to use for this heuristic. "
-        "The set of landmarks can be specified here, "
-        "or predefined (see LandmarkFactory).");
+        "lm_factory", "the set of landmarks to use for this heuristic. "
+                      "The set of landmarks can be specified here, "
+                      "or predefined (see LandmarkFactory).");
     feature.add_option<bool>(
-        "pref",
-        "enable preferred operators (see note below)",
-        "false");
+        "pref", "enable preferred operators (see note below)", "false");
     /* TODO: Do we really want these options or should we just always progress
         everything we can? */
-    feature.add_option<bool>(
-        "prog_goal", "Use goal progression.", "true");
+    feature.add_option<bool>("prog_goal", "Use goal progression.", "true");
     feature.add_option<bool>(
         "prog_gn", "Use greedy-necessary ordering progression.", "true");
     feature.add_option<bool>(
         "prog_r", "Use reasonable ordering progression.", "true");
     add_heuristic_options_to_feature(feature, description);
 
-    feature.document_property("preferred operators",
-                              "yes (if enabled; see ``pref`` option)");
+    feature.document_property(
+        "preferred operators", "yes (if enabled; see ``pref`` option)");
 }
 
-tuple<shared_ptr<LandmarkFactory>, bool, bool, bool, bool,
-      shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
-get_landmark_heuristic_arguments_from_options(
-    const plugins::Options &opts) {
+tuple<
+    shared_ptr<LandmarkFactory>, bool, bool, bool, bool,
+    shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
+get_landmark_heuristic_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
             opts.get<shared_ptr<LandmarkFactory>>("lm_factory"),
-            opts.get<bool>("pref"),
-            opts.get<bool>("prog_goal"),
-            opts.get<bool>("prog_gn"),
-            opts.get<bool>("prog_r")),
+            opts.get<bool>("pref"), opts.get<bool>("prog_goal"),
+            opts.get<bool>("prog_gn"), opts.get<bool>("prog_r")),
         get_heuristic_arguments_from_options(opts));
 }
 }

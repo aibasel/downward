@@ -9,17 +9,16 @@ namespace plugin_eager_greedy {
 class EagerGreedySearchFeature
     : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
 public:
-    EagerGreedySearchFeature() : TypedFeature("eager_greedy") {
+    EagerGreedySearchFeature()
+        : TypedFeature("eager_greedy") {
         document_title("Greedy search (eager)");
         document_synopsis("");
 
         add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
         add_list_option<shared_ptr<Evaluator>>(
-            "preferred",
-            "use preferred operators of these evaluators", "[]");
+            "preferred", "use preferred operators of these evaluators", "[]");
         add_option<int>(
-            "boost",
-            "boost value for preferred operator open lists", "0");
+            "boost", "boost value for preferred operator open lists", "0");
         eager_search::add_eager_search_options_to_feature(
             *this, "eager_greedy");
 
@@ -33,9 +32,7 @@ public:
             "If only one evaluator and no preferred operator evaluator is used, "
             "the search does not use an alternation open list but a "
             "standard open list with only one queue.");
-        document_note(
-            "Closed nodes",
-            "Closed node are not re-opened");
+        document_note("Closed nodes", "Closed node are not re-opened");
         document_note(
             "Equivalent statements using general eager search",
             "\n```\n--evaluator h2=eval2\n"
@@ -59,22 +56,19 @@ public:
             "------------------------------------------------------------\n"
             "```\n--search eager_greedy([eval1])\n```\n"
             "is equivalent to\n"
-            "```\n--search eager(single(eval1))\n```\n", true);
+            "```\n--search eager(single(eval1))\n```\n",
+            true);
     }
 
-    virtual shared_ptr<eager_search::EagerSearch>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<eager_search::EagerSearch> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
             search_common::create_greedy_open_list_factory(
                 opts.get_list<shared_ptr<Evaluator>>("evals"),
                 opts.get_list<shared_ptr<Evaluator>>("preferred"),
-                opts.get<int>("boost")
-                ),
-            false,
-            nullptr,
-            opts.get_list<shared_ptr<Evaluator>>("preferred"),
-            eager_search::get_eager_search_arguments_from_options(opts)
-            );
+                opts.get<int>("boost")),
+            false, nullptr, opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            eager_search::get_eager_search_arguments_from_options(opts));
     }
 };
 

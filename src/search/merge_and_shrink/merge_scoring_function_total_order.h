@@ -14,17 +14,9 @@ class RandomNumberGenerator;
 }
 
 namespace merge_and_shrink {
-enum class AtomicTSOrder {
-    REVERSE_LEVEL,
-    LEVEL,
-    RANDOM
-};
+enum class AtomicTSOrder { REVERSE_LEVEL, LEVEL, RANDOM };
 
-enum class ProductTSOrder {
-    OLD_TO_NEW,
-    NEW_TO_OLD,
-    RANDOM
-};
+enum class ProductTSOrder { OLD_TO_NEW, NEW_TO_OLD, RANDOM };
 
 class MergeScoringFunctionTotalOrder : public MergeScoringFunction {
     AtomicTSOrder atomic_ts_order;
@@ -35,7 +27,8 @@ class MergeScoringFunctionTotalOrder : public MergeScoringFunction {
     std::vector<std::pair<int, int>> merge_candidate_order;
 
     virtual std::string name() const override;
-    virtual void dump_function_specific_options(utils::LogProxy &log) const override;
+    virtual void dump_function_specific_options(
+        utils::LogProxy &log) const override;
 public:
     explicit MergeScoringFunctionTotalOrder(
         AtomicTSOrder atomic_ts_order, ProductTSOrder product_ts_order,

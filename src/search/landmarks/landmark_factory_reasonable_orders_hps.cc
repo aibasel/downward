@@ -14,10 +14,8 @@
 using namespace std;
 namespace landmarks {
 LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(
-    const shared_ptr<LandmarkFactory> &lm_factory,
-    utils::Verbosity verbosity)
-    : LandmarkFactory(verbosity),
-      landmark_factory(lm_factory) {
+    const shared_ptr<LandmarkFactory> &lm_factory, utils::Verbosity verbosity)
+    : LandmarkFactory(verbosity), landmark_factory(lm_factory) {
 }
 
 void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(
@@ -52,8 +50,8 @@ void LandmarkFactoryReasonableOrdersHPS::approximate_goal_orderings(
     }
 }
 
-static void collect_ancestors(unordered_set<LandmarkNode *> &result,
-                              const LandmarkNode &node) {
+static void collect_ancestors(
+    unordered_set<LandmarkNode *> &result, const LandmarkNode &node) {
     for (const auto &[parent, type] : node.parents) {
         if (type >= OrderingType::NATURAL && !result.contains(parent)) {
             result.insert(parent);
@@ -68,7 +66,7 @@ static unordered_set<LandmarkNode *> collect_reasonable_ordering_candidates(
     for (const auto &[child, type] : node.children) {
         if (type >= OrderingType::GREEDY_NECESSARY) {
             // Found a landmark such that `node` ->_gn `child`.
-            for (const auto &[parent, parent_type]: child->parents) {
+            for (const auto &[parent, parent_type] : child->parents) {
                 if (parent->get_landmark().type == DISJUNCTIVE) {
                     continue;
                 }
@@ -88,8 +86,8 @@ static unordered_set<LandmarkNode *> collect_reasonable_ordering_candidates(
    with `landmark`. */
 void LandmarkFactoryReasonableOrdersHPS::insert_reasonable_orderings(
     const TaskProxy &task_proxy,
-    const unordered_set<LandmarkNode *> &candidates,
-    LandmarkNode &node, const Landmark &landmark) const {
+    const unordered_set<LandmarkNode *> &candidates, LandmarkNode &node,
+    const Landmark &landmark) const {
     for (LandmarkNode *other : candidates) {
         const Landmark &other_landmark = other->get_landmark();
         if (landmark == other_landmark || other_landmark.type == DISJUNCTIVE) {
@@ -137,8 +135,8 @@ struct EffectConditionSet {
     utils::HashSet<FactPair> conditions;
 };
 
-static unordered_map<int, EffectConditionSet> compute_effect_conditions_by_variable(
-    const EffectsProxy &effects) {
+static unordered_map<int, EffectConditionSet>
+compute_effect_conditions_by_variable(const EffectsProxy &effects) {
     // Variables that occur in multiple effects with different values.
     unordered_set<int> nogood_effect_vars;
     unordered_map<int, EffectConditionSet> effect_conditions_by_variable;
@@ -265,7 +263,8 @@ static utils::HashSet<FactPair> get_effects_on_other_variables(
     return next_effect;
 }
 
-utils::HashSet<FactPair> LandmarkFactoryReasonableOrdersHPS::get_shared_effects_of_achievers(
+utils::HashSet<FactPair>
+LandmarkFactoryReasonableOrdersHPS::get_shared_effects_of_achievers(
     const FactPair &atom, const TaskProxy &task_proxy) const {
     utils::HashSet<FactPair> shared_effects;
 
@@ -323,9 +322,9 @@ bool LandmarkFactoryReasonableOrdersHPS::interferes(
     utils::HashSet<FactPair> shared_effects =
         get_shared_effects_of_achievers(atom_a, task_proxy);
     return ranges::any_of(shared_effects, [&](const FactPair &atom) {
-                              const FactProxy &e = variables[atom.var].get_fact(atom.value);
-                              return e != a && e != b && e.is_mutex(b);
-                          });
+        const FactProxy &e = variables[atom.var].get_fact(atom.value);
+        return e != a && e != b && e.is_mutex(b);
+    });
 
     /*
       Experimentally commenting this out -- see issue202.
@@ -380,9 +379,11 @@ bool LandmarkFactoryReasonableOrdersHPS::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryReasonableOrdersHPSFeature
-    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryReasonableOrdersHPS> {
+    : public plugins::TypedFeature<
+          LandmarkFactory, LandmarkFactoryReasonableOrdersHPS> {
 public:
-    LandmarkFactoryReasonableOrdersHPSFeature() : TypedFeature("lm_reasonable_orders_hps") {
+    LandmarkFactoryReasonableOrdersHPSFeature()
+        : TypedFeature("lm_reasonable_orders_hps") {
         document_title("HPS Orders");
         document_synopsis(
             "Adds reasonable orders described in the following paper" +
@@ -390,9 +391,7 @@ public:
                 {"Jörg Hoffmann", "Julie Porteous", "Laura Sebastia"},
                 "Ordered Landmarks in Planning",
                 "https://jair.org/index.php/jair/article/view/10390/24882",
-                "Journal of Artificial Intelligence Research",
-                "22",
-                "215-278",
+                "Journal of Artificial Intelligence Research", "22", "215-278",
                 "2004"));
 
         document_note(
@@ -412,17 +411,18 @@ public:
 
         // TODO: correct?
         document_language_support(
-            "conditional_effects",
-            "supported if subcomponent supports them");
+            "conditional_effects", "supported if subcomponent supports them");
     }
 
     virtual shared_ptr<LandmarkFactoryReasonableOrdersHPS> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LandmarkFactoryReasonableOrdersHPS>(
+        return plugins::make_shared_from_arg_tuples<
+            LandmarkFactoryReasonableOrdersHPS>(
             opts.get<shared_ptr<LandmarkFactory>>("lm_factory"),
             get_landmark_factory_arguments_from_options(opts));
     }
 };
 
-static plugins::FeaturePlugin<LandmarkFactoryReasonableOrdersHPSFeature> _plugin;
+static plugins::FeaturePlugin<LandmarkFactoryReasonableOrdersHPSFeature>
+    _plugin;
 }

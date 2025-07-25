@@ -31,11 +31,16 @@ struct RelaxedOperator {
     int unsatisfied_preconditions;
     int h_max_supporter_cost; // h_max_cost of h_max_supporter
     RelaxedProposition *h_max_supporter;
-    RelaxedOperator(std::vector<RelaxedProposition *> &&pre,
-                    std::vector<RelaxedProposition *> &&eff,
-                    int op_id, int base)
-        : original_op_id(op_id), preconditions(pre), effects(eff), base_cost(base),
-          cost(-1), unsatisfied_preconditions(-1), h_max_supporter_cost(-1),
+    RelaxedOperator(
+        std::vector<RelaxedProposition *> &&pre,
+        std::vector<RelaxedProposition *> &&eff, int op_id, int base)
+        : original_op_id(op_id),
+          preconditions(pre),
+          effects(eff),
+          base_cost(base),
+          cost(-1),
+          unsatisfied_preconditions(-1),
+          h_max_supporter_cost(-1),
           h_max_supporter(nullptr) {
     }
 
@@ -59,17 +64,18 @@ class LandmarkCutLandmarks {
     priority_queues::AdaptiveQueue<RelaxedProposition *> priority_queue;
 
     void build_relaxed_operator(const OperatorProxy &op);
-    void add_relaxed_operator(std::vector<RelaxedProposition *> &&precondition,
-                              std::vector<RelaxedProposition *> &&effects,
-                              int op_id, int base_cost);
+    void add_relaxed_operator(
+        std::vector<RelaxedProposition *> &&precondition,
+        std::vector<RelaxedProposition *> &&effects, int op_id, int base_cost);
     RelaxedProposition *get_proposition(const FactProxy &fact);
     void setup_exploration_queue();
     void setup_exploration_queue_state(const State &state);
     void first_exploration(const State &state);
     void first_exploration_incremental(std::vector<RelaxedOperator *> &cut);
-    void second_exploration(const State &state,
-                            std::vector<RelaxedProposition *> &second_exploration_queue,
-                            std::vector<RelaxedOperator *> &cut);
+    void second_exploration(
+        const State &state,
+        std::vector<RelaxedProposition *> &second_exploration_queue,
+        std::vector<RelaxedOperator *> &cut);
 
     void enqueue_if_necessary(RelaxedProposition *prop, int cost) {
         assert(cost >= 0);
@@ -84,8 +90,8 @@ class LandmarkCutLandmarks {
     void validate_h_max() const;
 public:
     using Landmark = std::vector<int>;
-    using CostCallback = std::function<void (int)>;
-    using LandmarkCallback = std::function<void (const Landmark &, int)>;
+    using CostCallback = std::function<void(int)>;
+    using LandmarkCallback = std::function<void(const Landmark &, int)>;
 
     LandmarkCutLandmarks(const TaskProxy &task_proxy);
 
@@ -102,8 +108,9 @@ public:
 
       Returns true iff state is detected as a dead end.
     */
-    bool compute_landmarks(const State &state, const CostCallback &cost_callback,
-                           const LandmarkCallback &landmark_callback);
+    bool compute_landmarks(
+        const State &state, const CostCallback &cost_callback,
+        const LandmarkCallback &landmark_callback);
 };
 
 inline void RelaxedOperator::update_h_max_supporter() {

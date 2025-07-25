@@ -48,9 +48,11 @@ void PruningMethod::print_statistics() const {
             << num_successors_before_pruning << endl
             << "total successors after pruning: "
             << num_successors_after_pruning << endl;
-        double pruning_ratio = (num_successors_before_pruning == 0) ? 1. : 1. - (
-            static_cast<double>(num_successors_after_pruning) /
-            static_cast<double>(num_successors_before_pruning));
+        double pruning_ratio =
+            (num_successors_before_pruning == 0)
+                ? 1.
+                : 1. - (static_cast<double>(num_successors_after_pruning) /
+                        static_cast<double>(num_successors_before_pruning));
         log << "Pruning ratio: " << pruning_ratio << endl;
         if (log.is_at_least_verbose()) {
             log << "Time for pruning operators: " << timer << endl;
@@ -74,10 +76,11 @@ tuple<utils::Verbosity> get_pruning_arguments_from_options(
     return utils::get_log_arguments_from_options(opts);
 }
 
-static class PruningMethodCategoryPlugin : public plugins::TypedCategoryPlugin<PruningMethod> {
+static class PruningMethodCategoryPlugin
+    : public plugins::TypedCategoryPlugin<PruningMethod> {
 public:
-    PruningMethodCategoryPlugin() : TypedCategoryPlugin("PruningMethod") {
+    PruningMethodCategoryPlugin()
+        : TypedCategoryPlugin("PruningMethod") {
         document_synopsis("Prune or reorder applicable operators.");
     }
-}
-_category_plugin;
+} _category_plugin;
