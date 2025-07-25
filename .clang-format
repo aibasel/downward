@@ -1,7 +1,34 @@
 # Tested with clang-format version 18.1.3.
 BasedOnStyle: LLVM
-Standard: c++20
 
+# We explicitly list all settings we thought about, whether LLVM sets them the
+# same way or not.
+
+# =========================== Not Part of LLVM Style ===========================
+
+# Dedent 'public', 'private', 'protected' keywords.
+AccessModifierOffset: -4
+# How to align arguments after '(', '<', and '['.
+AlignAfterOpenBracket: AlwaysBreak
+# Never align '\' characters.
+AlignEscapedNewlines: DontAlign
+# Never align inline comments with comments on following/preceeding lines.
+AlignTrailingComments:
+  Kind: Never
+# Put empty functions onto a single line.
+AllowShortFunctionsOnASingleLine: None
+# Force line breaks after template declarations.
+# Less strict alternative for clang-format >= 19:
+#   BreakTemplateDeclarations: Leave
+AlwaysBreakTemplateDeclarations: Yes
+# Leave string literals as they are, this means that, e.g., doc strings may stay
+# over-length, but setting 'true' here makes over-length doc strings ugly.
+BreakStringLiterals: false
+# Do not enforce rules about empty lines before, e.g., the 'public' keyword.
+EmptyLineBeforeAccessModifier: Leave
+# Do not add/fix comments indicating which namespace ends at the closing brace.
+FixNamespaceComments: false
+# Automatically group include blocks according to the categories defined below.
 IncludeBlocks: Regroup
 # Regex is not case sensitive by default.
 IncludeCategories:
@@ -17,65 +44,44 @@ IncludeCategories:
     Priority:        3
   - Regex:           '^<.+>$'
     Priority:        4
-
-# Always indent by 4.
 IndentWidth: 4
-ContinuationIndentWidth: 4
-ConstructorInitializerIndentWidth: 4
-# Dedent 'public', 'private', 'protected' keywords.
-AccessModifierOffset: -4
-# How to align arguments after '(', '<', and '['.
-# TODO: Decide on one of these options.
-AlignAfterOpenBracket: AlwaysBreak # 398 files, 5479 ins, 5686 del
-#AlignAfterOpenBracket: DontAlign  # 418 files, 5639 ins, 6529 del
-#AlignAfterOpenBracket: Align      # 423 files, 6197 ins, 6583 del
-# Never align '\' characters.
-AlignEscapedNewlines: DontAlign
-# Never align inline comments with comments on following/preceeding lines.
-AlignTrailingComments:
-  Kind: Never
-# Never add line break after an opening brace.
-BreakBeforeBraces: Attach
-# Do not enforce rules about empty lines before, e.g., the 'public' keyword.
-EmptyLineBeforeAccessModifier: Leave
-# Do not add/fix comments indicating which namespace ends at the closing brace.
-FixNamespaceComments: false
+# Do not allow empty lines at start of block.
+KeepEmptyLinesAtTheStartOfBlocks: false
 # Put initializer list either on one line or one entry per line.
 PackConstructorInitializers: CurrentLine
 # Avoid line breaks between return type and function name.
 PenaltyReturnTypeOnItsOwnLine: 120
-# Do not allow empty lines at start of block.
-KeepEmptyLinesAtTheStartOfBlocks: false
-# Force line breaks after template declarations.
-# Less strict alternative for clang-format >= 19:
-#   BreakTemplateDeclarations: Leave
-AlwaysBreakTemplateDeclarations: Yes
-# Maximal number of characters in a line.
-ColumnLimit: 80
 # This was not consistent in the code base, now we have to force one choice.
 SpaceAfterTemplateKeyword: false
-# Pointer indicator '*' is next to variable name instead of next to type.
-PointerAlignment: Right
-# Break lines such that operators ('+', '<', ...) are at the end of the line.
-BreakBeforeBinaryOperators: None
-# Put colon of any initializer list on new line, even if not over-length.
-BreakConstructorInitializers: BeforeColon
-# Put colon of over-length inheritance declaration on new line.
-BreakInheritanceList: BeforeColon
-# Put empty functions onto a single line.
-AllowShortFunctionsOnASingleLine: None
+# Set C++ standard.
+Standard: c++20
+
+# ============================= Part of LLVM Style =============================
+
 # If parameters/arguments fit on next line, put them on single line.
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowAllArgumentsOnNextLine: true
 # If parameters/arguments don't fit on the same line or the next, bin pack them.
 BinPackParameters: true
 BinPackArguments: true
-# Force space between class name and inheritance colon.
-SpaceBeforeInheritanceColon: true
-# Leave string literals as they are, this means that, e.g., doc strings may stay
-# over-length, but setting 'true' here makes over-length doc strings ugly.
-BreakStringLiterals: false
+# Break lines such that operators ('+', '<', ...) are at the end of the line.
+BreakBeforeBinaryOperators: None
+# Never add line break after an opening brace.
+BreakBeforeBraces: Attach
 # Put ternary operator symbols after line break.
 BreakBeforeTernaryOperators: true
+# Put colon of any initializer list on new line, even if not over-length.
+BreakConstructorInitializers: BeforeColon
+# Put colon of over-length inheritance declaration on new line.
+BreakInheritanceList: BeforeColon
+# Maximal number of characters in a line.
+ColumnLimit: 80
+# Always indent by 4.
+ContinuationIndentWidth: 4
+ConstructorInitializerIndentWidth: 4
 # Do not indent function names if return type fills line.
 IndentWrappedFunctionNames: false
+# Pointer indicator '*' is next to variable name instead of next to type.
+PointerAlignment: Right
+# Force space between class name and inheritance colon.
+SpaceBeforeInheritanceColon: true
