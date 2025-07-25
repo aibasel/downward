@@ -39,8 +39,8 @@ ColumnLimit: 80
 SpaceAfterTemplateKeyword: false
 # Pointer indicator '*' is next to variable name instead of next to type.
 PointerAlignment: Right
-# Break lines such that operators ('+', '<', ...) are on the next line.
-BreakBeforeBinaryOperators: NonAssignment # Alternative: 'None'
+# Break lines such that operators ('+', '<', ...) are at the end of the line.
+BreakBeforeBinaryOperators: None
 # Put colon of any initializer list on new line, even if not over-length.
 BreakConstructorInitializers: BeforeColon
 # Put colon of over-length inheritance declaration on new line.
