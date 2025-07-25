@@ -1,7 +1,5 @@
 #include "landmark_factory_hm.h"
 
-#include <numeric>
-
 #include "exploration.h"
 #include "landmark.h"
 
@@ -14,6 +12,7 @@
 #include "../utils/markup.h"
 #include "../utils/system.h"
 
+#include <numeric>
 #include <ranges>
 #include <set>
 #include <unordered_set>

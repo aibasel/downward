@@ -4,7 +4,6 @@
 #include "utils.h"
 
 #include "../heuristics/additive_heuristic.h"
-
 #include "../utils/logging.h"
 #include "../utils/rng.h"
 

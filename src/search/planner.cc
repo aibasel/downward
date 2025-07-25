@@ -1,5 +1,4 @@
 #include "command_line.h"
-
 #include "git_revision.h"
 #include "search_algorithm.h"
 

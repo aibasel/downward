@@ -4,7 +4,6 @@
 #include "transition_system.h"
 
 #include "../plugins/plugin.h"
-
 #include "../utils/logging.h"
 
 #include <iostream>

@@ -4,6 +4,7 @@
 #include "landmark_graph.h"
 
 #include "../task_proxy.h"
+
 #include "../utils/logging.h"
 
 using namespace std;

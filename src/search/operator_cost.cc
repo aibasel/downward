@@ -1,8 +1,8 @@
 #include "operator_cost.h"
 
-#include "plugins/plugin.h"
 #include "task_proxy.h"
 
+#include "plugins/plugin.h"
 #include "utils/system.h"
 
 #include <cstdlib>

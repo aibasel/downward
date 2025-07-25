@@ -1,8 +1,9 @@
 #ifndef LANDMARKS_LANDMARK_COST_PARTITIONING_HEURISTIC_H
 #define LANDMARKS_LANDMARK_COST_PARTITIONING_HEURISTIC_H
 
-#include "../lp/lp_solver.h"
 #include "landmark_heuristic.h"
+
+#include "../lp/lp_solver.h"
 
 namespace landmarks {
 class CostPartitioningAlgorithm;

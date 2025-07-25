@@ -8,7 +8,6 @@
 
 #include "../task_utils/causal_graph.h"
 #include "../task_utils/task_properties.h"
-
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"

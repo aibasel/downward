@@ -1,7 +1,7 @@
 #include "landmark_status_manager.h"
-#include "util.h"
 
 #include "landmark.h"
+#include "util.h"
 
 #include <ranges>
 

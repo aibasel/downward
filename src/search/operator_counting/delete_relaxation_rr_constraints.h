@@ -4,6 +4,7 @@
 #include "constraint_generator.h"
 
 #include "../task_proxy.h"
+
 #include "../utils/hash.h"
 
 #include <memory>

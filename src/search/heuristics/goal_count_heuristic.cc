@@ -1,7 +1,6 @@
 #include "goal_count_heuristic.h"
 
 #include "../plugins/plugin.h"
-
 #include "../utils/logging.h"
 
 #include <iostream>

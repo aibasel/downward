@@ -2,6 +2,7 @@
 
 #include "../evaluation_context.h"
 #include "../evaluation_result.h"
+
 #include "../plugins/plugin.h"
 
 using namespace std;

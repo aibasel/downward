@@ -3,7 +3,6 @@
 #include "domain_transition_graph.h"
 
 #include "../plugins/plugin.h"
-
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 
