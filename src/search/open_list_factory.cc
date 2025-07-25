@@ -33,6 +33,7 @@ static class OpenListFactoryCategoryPlugin : public plugins::TypedCategoryPlugin
 public:
     OpenListFactoryCategoryPlugin() : TypedCategoryPlugin("OpenList") {
         // TODO: use document_synopsis() for the wiki page.
+        document_synopsis("This page describes different types of open lists.");
     }
 }
 _category_plugin;

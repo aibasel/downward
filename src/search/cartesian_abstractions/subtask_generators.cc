@@ -191,6 +191,8 @@ class TaskDuplicatorFeature
     : public plugins::TypedFeature<SubtaskGenerator, TaskDuplicator> {
 public:
     TaskDuplicatorFeature() : TypedFeature("original") {
+        document_title("No abstraction");
+        document_synopsis("Copies of the original task are used as subproblems.");
         add_option<int>(
             "copies",
             "number of task copies",
@@ -211,6 +213,8 @@ class GoalDecompositionFeature
     : public plugins::TypedFeature<SubtaskGenerator, GoalDecomposition> {
 public:
     GoalDecompositionFeature() : TypedFeature("goals") {
+        document_title("Abstraction by goals");
+        document_synopsis("For each goal atom of the original task one subproblem is generated having only the atom as goal.");
         add_fact_order_option(*this);
     }
 
@@ -228,6 +232,8 @@ class LandmarkDecompositionFeature
     : public plugins::TypedFeature<SubtaskGenerator, LandmarkDecomposition> {
 public:
     LandmarkDecompositionFeature() : TypedFeature("landmarks") {
+        document_title("Abstraction by landmarks");
+        document_synopsis("For each fact landmark of the delete relaxation of the original task one subproblem is generated having only the landmark as goal. This is a generalization of abstractions by goals.");
         add_fact_order_option(*this);
         add_option<bool>(
             "combine_facts",
@@ -249,7 +255,7 @@ static plugins::FeaturePlugin<LandmarkDecompositionFeature> _plugin_landmarks;
 static class SubtaskGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<SubtaskGenerator> {
 public:
     SubtaskGeneratorCategoryPlugin() : TypedCategoryPlugin("SubtaskGenerator") {
-        document_synopsis("Subtask generator (used by the CEGAR heuristic).");
+        document_synopsis("This page describes different subtask (abstraction) generators. They are used by the Evaluator#additive_cartesian_cegar_heuristic .");
     }
 }
 _category_plugin;

@@ -97,10 +97,8 @@ public:
         document_synopsis(
             "An evaluator specification is either a newly created evaluator "
             "instance or an evaluator that has been defined previously. "
-            "This page describes how one can specify a new evaluator instance. "
-            "For re-using evaluators, see OptionSyntax#Evaluator_Predefinitions.\n\n"
-            "If the evaluator is a heuristic, "
-            "definitions of //properties// in the descriptions below:\n\n"
+            "This page describes how one can specify a new evaluator instance.\n\n"
+            "For evaluators that are heuristic, it is stated which of the following properties hold:\n\n"
             " * **admissible:** h(s) <= h*(s) for all states s\n"
             " * **consistent:** h(s) <= c(s, s') + h(s') for all states s "
             "connected to states s' by an action with cost c(s, s')\n"

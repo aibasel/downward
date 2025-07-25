@@ -152,7 +152,7 @@ public:
     AlternationOpenListFeature() : TypedFeature("alt") {
         document_title("Alternation open list");
         document_synopsis(
-            "alternates between several open lists.");
+            "Alternates between several open lists.");
 
         add_list_option<shared_ptr<OpenListFactory>>(
             "sublists",

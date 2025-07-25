@@ -13,7 +13,7 @@ static class ConstraintGeneratorCategoryPlugin : public plugins::TypedCategoryPl
 public:
     ConstraintGeneratorCategoryPlugin() : TypedCategoryPlugin("ConstraintGenerator") {
         // TODO: Replace empty string by synopsis for the wiki page.
-        //document_synopsis("");
+        document_synopsis("This page describes different types of constraints and their corresponding generator.");
     }
 }
 _category_plugin;

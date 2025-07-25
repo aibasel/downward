@@ -248,7 +248,7 @@ static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin
 public:
     SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("SearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.
-        // document_synopsis("...");
+        document_synopsis("This page describes the supported search algorithms.");
     }
 }
 _category_plugin;
