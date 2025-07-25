@@ -149,6 +149,19 @@ ALIASES["issue559_testB"] = [
     "--search",
     "           let(h, blind(description=\"MyBlind\"), eager(open=tiebreaking([sum([h,h,h]),h])))"
     "           "] # TODO issue559 remove this
+ALIASES["issue559_testC"] = [
+    "--search",
+    "let(h, blind(description=\"AllTimeBlind\"),"
+    " iterated([astar(description=\"ASTAR_1\",eval=h),"
+    "           eager(tiebreaking([sum([g(\"my_G_Eval\"), "
+    "                                   h]), "
+    "                              h],"
+    "                             unsafe_pruning=false"
+    "                            ),"
+    "                 reopen_closed=true,"
+    "                 f_eval=sum([g(), "
+    "                             h]))"
+    "          ]))"] # TODO issue559 remove this
 ALIASES["issue559_test0"] = [
     "--search",
     "let(h, lmcut(description=\"AllTimeLMcut\"),"
