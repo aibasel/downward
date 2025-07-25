@@ -145,6 +145,10 @@ ALIASES["issue559_testA"] = [
     "--search",
     "           eager(open=tiebreaking([blind()]))"
     "           "] # TODO issue559 remove this
+ALIASES["issue559_testB"] = [
+    "--search",
+    "           let(h, blind(description=\"MyBlind\"), eager(open=tiebreaking([sum([h,h,h])])))"
+    "           "] # TODO issue559 remove this
 ALIASES["issue559_test0"] = [
     "--search",
     "let(h, lmcut(description=\"AllTimeLMcut\"),"
