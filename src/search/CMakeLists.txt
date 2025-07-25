@@ -452,9 +452,9 @@ create_fast_downward_library(
     SOURCES
         search_algorithms/search_common
     DEPENDS
-	#alternation_open_list
+	#issue559 #alternation_open_list
         g_evaluator
-	#best_first_open_list
+	#issue559 #best_first_open_list
         sum_evaluator
         tiebreaking_open_list
         weighted_evaluator
