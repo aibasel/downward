@@ -8,7 +8,8 @@
 using namespace std;
 
 namespace landmarks {
-static vector<const LandmarkNode *> get_goal_landmarks(const LandmarkGraph &graph) {
+static vector<const LandmarkNode *> get_goal_landmarks(
+    const LandmarkGraph &graph) {
     vector<const LandmarkNode *> goals;
     for (const auto &node : graph) {
         if (node->get_landmark().is_true_in_goal) {
@@ -18,8 +19,8 @@ static vector<const LandmarkNode *> get_goal_landmarks(const LandmarkGraph &grap
     return goals;
 }
 
-static vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> get_greedy_necessary_children(
-    const LandmarkGraph &graph) {
+static vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>>
+get_greedy_necessary_children(const LandmarkGraph &graph) {
     vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> orderings;
     for (const auto &node : graph) {
         vector<const LandmarkNode *> greedy_necessary_children;
@@ -35,8 +36,8 @@ static vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> get_gree
     return orderings;
 }
 
-static vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> get_reasonable_parents(
-    const LandmarkGraph &graph) {
+static vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>>
+get_reasonable_parents(const LandmarkGraph &graph) {
     vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> orderings;
     for (const auto &node : graph) {
         vector<const LandmarkNode *> reasonable_parents;
@@ -53,27 +54,30 @@ static vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>> get_reas
 }
 
 LandmarkStatusManager::LandmarkStatusManager(
-    LandmarkGraph &landmark_graph,
-    bool progress_goals,
+    LandmarkGraph &landmark_graph, bool progress_goals,
     bool progress_greedy_necessary_orderings,
     bool progress_reasonable_orderings)
     : landmark_graph(landmark_graph),
-      goal_landmarks(progress_goals ? get_goal_landmarks(landmark_graph)
-                     : vector<const LandmarkNode *>{}),
+      goal_landmarks(
+          progress_goals ? get_goal_landmarks(landmark_graph)
+                         : vector<const LandmarkNode *>{}),
       greedy_necessary_children(
           progress_greedy_necessary_orderings
-          ? get_greedy_necessary_children(landmark_graph)
-          : vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>>{}),
+              ? get_greedy_necessary_children(landmark_graph)
+              : vector<pair<
+                    const LandmarkNode *, vector<const LandmarkNode *>>>{}),
       reasonable_parents(
           progress_reasonable_orderings
-          ? get_reasonable_parents(landmark_graph)
-          : vector<pair<const LandmarkNode *, vector<const LandmarkNode *>>>{}),
+              ? get_reasonable_parents(landmark_graph)
+              : vector<pair<
+                    const LandmarkNode *, vector<const LandmarkNode *>>>{}),
       /* We initialize to true in `past_landmarks` because true is the
          neutral element of conjunction/set intersection. */
       past_landmarks(vector<bool>(landmark_graph.get_num_landmarks(), true)),
       /* We initialize to false in `future_landmarks` because false is
          the neutral element for disjunction/set union. */
-      future_landmarks(vector<bool>(landmark_graph.get_num_landmarks(), false)) {
+      future_landmarks(
+          vector<bool>(landmark_graph.get_num_landmarks(), false)) {
 }
 
 BitsetView LandmarkStatusManager::get_past_landmarks(const State &state) {
@@ -84,11 +88,13 @@ BitsetView LandmarkStatusManager::get_future_landmarks(const State &state) {
     return future_landmarks[state];
 }
 
-ConstBitsetView LandmarkStatusManager::get_past_landmarks(const State &state) const {
+ConstBitsetView LandmarkStatusManager::get_past_landmarks(
+    const State &state) const {
     return past_landmarks[state];
 }
 
-ConstBitsetView LandmarkStatusManager::get_future_landmarks(const State &state) const {
+ConstBitsetView LandmarkStatusManager::get_future_landmarks(
+    const State &state) const {
     return future_landmarks[state];
 }
 
@@ -114,9 +120,9 @@ void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
               problems anything is a landmark.
             */
             if (ranges::any_of(node->parents, [initial_state](auto &parent) {
-                                   const Landmark &landmark = parent.first->get_landmark();
-                                   return !landmark.is_true_in_state(initial_state);
-                               })) {
+                    const Landmark &landmark = parent.first->get_landmark();
+                    return !landmark.is_true_in_state(initial_state);
+                })) {
                 future.set(id);
             }
         } else {
@@ -146,8 +152,8 @@ void LandmarkStatusManager::progress(
     assert(parent_future.size() == landmark_graph.get_num_landmarks());
 
     progress_landmarks(
-        parent_past, parent_future, parent_ancestor_state,
-        past, future, ancestor_state);
+        parent_past, parent_future, parent_ancestor_state, past, future,
+        ancestor_state);
     progress_goals(ancestor_state, future);
     progress_greedy_necessary_orderings(ancestor_state, past, future);
     progress_reasonable_orderings(past, future);
@@ -155,8 +161,8 @@ void LandmarkStatusManager::progress(
 
 void LandmarkStatusManager::progress_landmarks(
     ConstBitsetView &parent_past, ConstBitsetView &parent_future,
-    const State &parent_ancestor_state, BitsetView &past,
-    BitsetView &future, const State &ancestor_state) {
+    const State &parent_ancestor_state, BitsetView &past, BitsetView &future,
+    const State &ancestor_state) {
     for (const auto &node : landmark_graph) {
         int id = node->get_id();
         const Landmark &landmark = node->get_landmark();
@@ -184,8 +190,8 @@ void LandmarkStatusManager::progress_landmarks(
     }
 }
 
-void LandmarkStatusManager::progress_goals(const State &ancestor_state,
-                                           BitsetView &future) {
+void LandmarkStatusManager::progress_goals(
+    const State &ancestor_state, BitsetView &future) {
     for (auto &node : goal_landmarks) {
         if (!node->get_landmark().is_true_in_state(ancestor_state)) {
             future.set(node->get_id());
@@ -199,8 +205,8 @@ void LandmarkStatusManager::progress_greedy_necessary_orderings(
         const Landmark &landmark = tail->get_landmark();
         assert(!children.empty());
         for (auto &child : children) {
-            if (!past.test(child->get_id())
-                && !landmark.is_true_in_state(ancestor_state)) {
+            if (!past.test(child->get_id()) &&
+                !landmark.is_true_in_state(ancestor_state)) {
                 future.set(tail->get_id());
                 break;
             }

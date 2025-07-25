@@ -30,10 +30,10 @@ BlockListIter EquivalenceRelation::add_empty_block() {
      Add x to (B \cap X)
 
   The elements remaining in B are (B \setminus X).
-  We associate the new block (B \cap X) with the block B to easily access it once
-  we know block B. Block (B \cap X) is only created on demand, so it is never empty.
-  We remember all blocks where at least one element was removed and remove those
-  that become empty at the end of the loop.
+  We associate the new block (B \cap X) with the block B to easily access it
+  once we know block B. Block (B \cap X) is only created on demand, so it is
+  never empty. We remember all blocks where at least one element was removed and
+  remove those that become empty at the end of the loop.
 */
 void EquivalenceRelation::refine(const vector<int> &block) {
     /*
@@ -44,7 +44,8 @@ void EquivalenceRelation::refine(const vector<int> &block) {
     vector<BlockListIter> modified_blocks;
 
     for (int x : block) {
-        typename ElementPositionMap::iterator it_pos = element_positions.find(x);
+        typename ElementPositionMap::iterator it_pos =
+            element_positions.find(x);
         if (it_pos == element_positions.end()) {
             ABORT("Element from given block not contained in equivalence "
                   "relation.");

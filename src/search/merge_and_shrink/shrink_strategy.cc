@@ -24,14 +24,14 @@ string ShrinkStrategy::get_name() const {
     return name();
 }
 
-static class ShrinkStrategyCategoryPlugin : public plugins::TypedCategoryPlugin<ShrinkStrategy> {
+static class ShrinkStrategyCategoryPlugin
+    : public plugins::TypedCategoryPlugin<ShrinkStrategy> {
 public:
-    ShrinkStrategyCategoryPlugin() : TypedCategoryPlugin("ShrinkStrategy") {
+    ShrinkStrategyCategoryPlugin()
+        : TypedCategoryPlugin("ShrinkStrategy") {
         document_synopsis(
             "This page describes the various shrink strategies supported "
-            "by the planner."
-            );
+            "by the planner.");
     }
-}
-_category_plugin;
+} _category_plugin;
 }

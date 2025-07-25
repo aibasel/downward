@@ -40,20 +40,20 @@ class EpsilonGreedyOpenList : public OpenList<Entry> {
     int next_id;
 
 protected:
-    virtual void do_insertion(EvaluationContext &eval_context,
-                              const Entry &entry) override;
+    virtual void do_insertion(
+        EvaluationContext &eval_context, const Entry &entry) override;
 
 public:
     EpsilonGreedyOpenList(
-        const shared_ptr<Evaluator> &eval, double epsilon,
-        int random_seed, bool pref_only);
+        const shared_ptr<Evaluator> &eval, double epsilon, int random_seed,
+        bool pref_only);
 
     virtual Entry remove_min() override;
-    virtual bool is_dead_end(
-        EvaluationContext &eval_context) const override;
+    virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-    virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
+    virtual void get_path_dependent_evaluators(
+        set<Evaluator *> &evals) override;
     virtual bool empty() const override;
     virtual void clear() override;
 };
@@ -82,8 +82,8 @@ void EpsilonGreedyOpenList<Entry>::do_insertion(
 
 template<class Entry>
 EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(
-    const shared_ptr<Evaluator> &eval, double epsilon,
-    int random_seed, bool pref_only)
+    const shared_ptr<Evaluator> &eval, double epsilon, int random_seed,
+    bool pref_only)
     : OpenList<Entry>(pref_only),
       rng(utils::get_rng(random_seed)),
       evaluator(eval),
@@ -138,8 +138,8 @@ void EpsilonGreedyOpenList<Entry>::clear() {
 }
 
 EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
-    const shared_ptr<Evaluator> &eval, double epsilon,
-    int random_seed, bool pref_only)
+    const shared_ptr<Evaluator> &eval, double epsilon, int random_seed,
+    bool pref_only)
     : eval(eval),
       epsilon(epsilon),
       random_seed(random_seed),
@@ -152,21 +152,23 @@ EpsilonGreedyOpenListFactory::create_state_open_list() {
         eval, epsilon, random_seed, pref_only);
 }
 
-unique_ptr<EdgeOpenList>
-EpsilonGreedyOpenListFactory::create_edge_open_list() {
+unique_ptr<EdgeOpenList> EpsilonGreedyOpenListFactory::create_edge_open_list() {
     return make_unique<EpsilonGreedyOpenList<EdgeOpenListEntry>>(
         eval, epsilon, random_seed, pref_only);
 }
 
 class EpsilonGreedyOpenListFeature
-    : public plugins::TypedFeature<OpenListFactory, EpsilonGreedyOpenListFactory> {
+    : public plugins::TypedFeature<
+          OpenListFactory, EpsilonGreedyOpenListFactory> {
 public:
-    EpsilonGreedyOpenListFeature() : TypedFeature("epsilon_greedy") {
+    EpsilonGreedyOpenListFeature()
+        : TypedFeature("epsilon_greedy") {
         document_title("Epsilon-greedy open list");
         document_synopsis(
             "Chooses an entry uniformly randomly with probability "
             "'epsilon', otherwise it returns the minimum entry. "
-            "The algorithm is based on" + utils::format_conference_reference(
+            "The algorithm is based on" +
+            utils::format_conference_reference(
                 {"Richard Valenzano", "Nathan R. Sturtevant",
                  "Jonathan Schaeffer", "Fan Xie"},
                 "A Comparison of Knowledge-Based GBFS Enhancements and"
@@ -174,28 +176,24 @@ public:
                 "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7943/8066",
                 "Proceedings of the Twenty-Fourth International Conference"
                 " on Automated Planning and Scheduling (ICAPS 2014)",
-                "375-379",
-                "AAAI Press",
-                "2014"));
+                "375-379", "AAAI Press", "2014"));
 
         add_option<shared_ptr<Evaluator>>("eval", "evaluator");
         add_option<double>(
-            "epsilon",
-            "probability for choosing the next entry randomly",
-            "0.2",
-            plugins::Bounds("0.0", "1.0"));
+            "epsilon", "probability for choosing the next entry randomly",
+            "0.2", plugins::Bounds("0.0", "1.0"));
         utils::add_rng_options_to_feature(*this);
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<EpsilonGreedyOpenListFactory>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<EpsilonGreedyOpenListFactory>(
+    virtual shared_ptr<EpsilonGreedyOpenListFactory> create_component(
+        const plugins::Options &opts) const override {
+        return plugins::make_shared_from_arg_tuples<
+            EpsilonGreedyOpenListFactory>(
             opts.get<shared_ptr<Evaluator>>("eval"),
             opts.get<double>("epsilon"),
             utils::get_rng_arguments_from_options(opts),
-            get_open_list_arguments_from_options(opts)
-            );
+            get_open_list_arguments_from_options(opts));
     }
 };
 

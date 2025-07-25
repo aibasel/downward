@@ -13,13 +13,11 @@
 using namespace std;
 using utils::ExitCode;
 
-
 namespace variable_order_finder {
-VariableOrderFinder::VariableOrderFinder(const TaskProxy &task_proxy,
-                                         VariableOrderType variable_order_type,
-                                         const shared_ptr<utils::RandomNumberGenerator> &rng)
-    : task_proxy(task_proxy),
-      variable_order_type(variable_order_type) {
+VariableOrderFinder::VariableOrderFinder(
+    const TaskProxy &task_proxy, VariableOrderType variable_order_type,
+    const shared_ptr<utils::RandomNumberGenerator> &rng)
+    : task_proxy(task_proxy), variable_order_type(variable_order_type) {
     int var_count = task_proxy.get_variables().size();
     if (variable_order_type == REVERSE_LEVEL) {
         for (int i = 0; i < var_count; ++i)
@@ -61,8 +59,8 @@ bool VariableOrderFinder::done() const {
 
 int VariableOrderFinder::next() {
     assert(!done());
-    if (variable_order_type == CG_GOAL_LEVEL || variable_order_type
-        == CG_GOAL_RANDOM) {
+    if (variable_order_type == CG_GOAL_LEVEL ||
+        variable_order_type == CG_GOAL_RANDOM) {
         // First run: Try to find a causally connected variable.
         for (size_t i = 0; i < remaining_vars.size(); ++i) {
             int var_no = remaining_vars[i];
@@ -96,9 +94,9 @@ int VariableOrderFinder::next() {
                 return var_no;
             }
         }
-    } else if (variable_order_type == RANDOM ||
-               variable_order_type == LEVEL ||
-               variable_order_type == REVERSE_LEVEL) {
+    } else if (
+        variable_order_type == RANDOM || variable_order_type == LEVEL ||
+        variable_order_type == REVERSE_LEVEL) {
         int var_no = remaining_vars[0];
         select_next(0, var_no);
         return var_no;

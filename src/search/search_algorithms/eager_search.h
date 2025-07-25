@@ -46,8 +46,8 @@ protected:
 
 public:
     explicit EagerSearch(
-        const std::shared_ptr<OpenListFactory> &open,
-        bool reopen_closed, const std::shared_ptr<Evaluator> &f_eval,
+        const std::shared_ptr<OpenListFactory> &open, bool reopen_closed,
+        const std::shared_ptr<Evaluator> &f_eval,
         const std::vector<std::shared_ptr<Evaluator>> &preferred,
         const std::shared_ptr<PruningMethod> &pruning,
         const std::shared_ptr<Evaluator> &lazy_evaluator,
@@ -61,9 +61,9 @@ public:
 
 extern void add_eager_search_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<std::shared_ptr<PruningMethod>,
-                  std::shared_ptr<Evaluator>, OperatorCost, int, double,
-                  std::string, utils::Verbosity>
+extern std::tuple<
+    std::shared_ptr<PruningMethod>, std::shared_ptr<Evaluator>, OperatorCost,
+    int, double, std::string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts);
 }
 

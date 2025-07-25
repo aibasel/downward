@@ -40,11 +40,10 @@ static void compute_union_pattern(
     const Pattern &pattern1, const Pattern &pattern2, Pattern &result) {
     result.clear();
     result.reserve(pattern1.size() + pattern2.size());
-    set_union(pattern1.begin(), pattern1.end(),
-              pattern2.begin(), pattern2.end(),
-              back_inserter(result));
+    set_union(
+        pattern1.begin(), pattern1.end(), pattern2.begin(), pattern2.end(),
+        back_inserter(result));
 }
-
 
 PatternCollectionGeneratorSystematic::PatternCollectionGeneratorSystematic(
     int pattern_max_size, bool only_interesting_patterns,
@@ -55,7 +54,8 @@ PatternCollectionGeneratorSystematic::PatternCollectionGeneratorSystematic(
 }
 
 void PatternCollectionGeneratorSystematic::compute_eff_pre_neighbors(
-    const causal_graph::CausalGraph &cg, const Pattern &pattern, vector<int> &result) const {
+    const causal_graph::CausalGraph &cg, const Pattern &pattern,
+    vector<int> &result) const {
     /*
       Compute all variables that are reachable from pattern by an
       (eff, pre) arc and are not already contained in the pattern.
@@ -77,7 +77,8 @@ void PatternCollectionGeneratorSystematic::compute_eff_pre_neighbors(
 }
 
 void PatternCollectionGeneratorSystematic::compute_connection_points(
-    const causal_graph::CausalGraph &cg, const Pattern &pattern, vector<int> &result) const {
+    const causal_graph::CausalGraph &cg, const Pattern &pattern,
+    vector<int> &result) const {
     /*
       The "connection points" of a pattern are those variables of which
       one must be contained in an SGA pattern that can be attached to this
@@ -155,7 +156,8 @@ void PatternCollectionGeneratorSystematic::build_sga_patterns(
       the patterns vectors grows during the computation.
     */
     for (size_t pattern_no = 0; pattern_no < patterns->size(); ++pattern_no) {
-        // We must copy the pattern because references to patterns can be invalidated.
+        // We must copy the pattern because references to patterns can be
+        // invalidated.
         Pattern pattern = (*patterns)[pattern_no];
         if (pattern.size() == max_pattern_size)
             break;
@@ -204,7 +206,6 @@ void PatternCollectionGeneratorSystematic::build_patterns(
     for (const Pattern &pattern : sga_patterns)
         enqueue_pattern_if_new(pattern);
 
-
     if (log.is_at_least_normal()) {
         log << "Found " << sga_patterns.size() << " SGA patterns." << endl;
     }
@@ -215,7 +216,8 @@ void PatternCollectionGeneratorSystematic::build_patterns(
       during the computation.
     */
     for (size_t pattern_no = 0; pattern_no < patterns->size(); ++pattern_no) {
-        // We must copy the pattern because references to patterns can be invalidated.
+        // We must copy the pattern because references to patterns can be
+        // invalidated.
         Pattern pattern1 = (*patterns)[pattern_no];
 
         vector<int> neighbors;
@@ -226,7 +228,7 @@ void PatternCollectionGeneratorSystematic::build_patterns(
             for (const Pattern *p_pattern2 : candidates) {
                 const Pattern &pattern2 = *p_pattern2;
                 if (pattern1.size() + pattern2.size() > max_pattern_size)
-                    break;  // All remaining candidates are too large.
+                    break; // All remaining candidates are too large.
                 if (patterns_are_disjoint(pattern1, pattern2)) {
                     Pattern new_pattern;
                     compute_union_pattern(pattern1, pattern2, new_pattern);
@@ -272,7 +274,8 @@ string PatternCollectionGeneratorSystematic::name() const {
     return "systematic pattern collection generator";
 }
 
-PatternCollectionInformation PatternCollectionGeneratorSystematic::compute_patterns(
+PatternCollectionInformation
+PatternCollectionGeneratorSystematic::compute_patterns(
     const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     patterns = make_shared<PatternCollection>();
@@ -286,27 +289,26 @@ PatternCollectionInformation PatternCollectionGeneratorSystematic::compute_patte
 }
 
 class PatternCollectionGeneratorSystematicFeature
-    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorSystematic> {
+    : public plugins::TypedFeature<
+          PatternCollectionGenerator, PatternCollectionGeneratorSystematic> {
 public:
-    PatternCollectionGeneratorSystematicFeature() : TypedFeature("systematic") {
+    PatternCollectionGeneratorSystematicFeature()
+        : TypedFeature("systematic") {
         document_title("Systematically generated patterns");
         document_synopsis(
             "Generates all (interesting) patterns with up to pattern_max_size "
             "variables. "
-            "For details, see" + utils::format_conference_reference(
+            "For details, see" +
+            utils::format_conference_reference(
                 {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
                 "Getting the Most Out of Pattern Databases for Classical Planning",
                 "https://ai.dmi.unibas.ch/papers/pommerening-et-al-ijcai2013.pdf",
                 "Proceedings of the Twenty-Third International Joint"
                 " Conference on Artificial Intelligence (IJCAI 2013)",
-                "2357-2364",
-                "AAAI Press",
-                "2013"));
+                "2357-2364", "AAAI Press", "2013"));
 
         add_option<int>(
-            "pattern_max_size",
-            "max number of variables per pattern",
-            "1",
+            "pattern_max_size", "max number of variables per pattern", "1",
             plugins::Bounds("1", "infinity"));
         add_option<bool>(
             "only_interesting_patterns",
@@ -316,15 +318,16 @@ public:
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorSystematic>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorSystematic>(
+    virtual shared_ptr<PatternCollectionGeneratorSystematic> create_component(
+        const plugins::Options &opts) const override {
+        return plugins::make_shared_from_arg_tuples<
+            PatternCollectionGeneratorSystematic>(
             opts.get<int>("pattern_max_size"),
             opts.get<bool>("only_interesting_patterns"),
-            get_generator_arguments_from_options(opts)
-            );
+            get_generator_arguments_from_options(opts));
     }
 };
 
-static plugins::FeaturePlugin<PatternCollectionGeneratorSystematicFeature> _plugin;
+static plugins::FeaturePlugin<PatternCollectionGeneratorSystematicFeature>
+    _plugin;
 }

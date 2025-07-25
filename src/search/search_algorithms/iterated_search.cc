@@ -25,10 +25,12 @@ IteratedSearch::IteratedSearch(const plugins::Options &opts)
 
 shared_ptr<SearchAlgorithm> IteratedSearch::get_search_algorithm(
     int algorithm_configs_index) {
-    parser::LazyValue &algorithm_config = algorithm_configs[algorithm_configs_index];
+    parser::LazyValue &algorithm_config =
+        algorithm_configs[algorithm_configs_index];
     shared_ptr<SearchAlgorithm> search_algorithm;
-    try{
-        search_algorithm = algorithm_config.construct<shared_ptr<SearchAlgorithm>>();
+    try {
+        search_algorithm =
+            algorithm_config.construct<shared_ptr<SearchAlgorithm>>();
     } catch (const utils::ContextError &e) {
         cerr << "Delayed construction of LazyValue failed" << endl;
         cerr << e.get_message() << endl;
@@ -132,14 +134,13 @@ void IteratedSearch::save_plan_if_necessary() {
 class IteratedSearchFeature
     : public plugins::TypedFeature<SearchAlgorithm, IteratedSearch> {
 public:
-    IteratedSearchFeature() : TypedFeature("iterated") {
+    IteratedSearchFeature()
+        : TypedFeature("iterated") {
         document_title("Iterated search");
         document_synopsis("");
 
         add_list_option<shared_ptr<SearchAlgorithm>>(
-            "algorithm_configs",
-            "list of search algorithms for each phase",
-            "",
+            "algorithm_configs", "list of search algorithms for each phase", "",
             true);
         add_option<bool>(
             "pass_bound",
@@ -148,17 +149,12 @@ public:
             "The iterated search bound is tightened whenever a component finds "
             "a cheaper plan.",
             "true");
+        add_option<bool>("repeat_last", "repeat last phase of search", "false");
         add_option<bool>(
-            "repeat_last",
-            "repeat last phase of search",
+            "continue_on_fail", "continue search after no solution found",
             "false");
         add_option<bool>(
-            "continue_on_fail",
-            "continue search after no solution found",
-            "false");
-        add_option<bool>(
-            "continue_on_solve",
-            "continue search after solution found",
+            "continue_on_solve", "continue search after solution found",
             "true");
         add_search_algorithm_options_to_feature(*this, "iterated");
 
@@ -184,14 +180,15 @@ public:
             "```");
     }
 
-    virtual shared_ptr<IteratedSearch>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<IteratedSearch> create_component(
+        const plugins::Options &opts) const override {
         plugins::Options options_copy(opts);
         /*
-          The options entry 'algorithm_configs' is a LazyValue representing a list
-          of search algorithms. But iterated search expects a list of LazyValues,
-          each representing a search algorithm. We unpack this first layer of
-          laziness here to report potential errors in a more useful context.
+          The options entry 'algorithm_configs' is a LazyValue representing a
+          list of search algorithms. But iterated search expects a list of
+          LazyValues, each representing a search algorithm. We unpack this first
+          layer of laziness here to report potential errors in a more useful
+          context.
 
           TODO: the medium-term plan is to get rid of LazyValue completely
           and let the features create builders that in turn create the actual
@@ -199,7 +196,8 @@ public:
           the builder is a light-weight operation.
         */
         vector<parser::LazyValue> algorithm_configs =
-            opts.get<parser::LazyValue>("algorithm_configs").construct_lazy_list();
+            opts.get<parser::LazyValue>("algorithm_configs")
+                .construct_lazy_list();
         options_copy.set("algorithm_configs", algorithm_configs);
         return make_shared<IteratedSearch>(options_copy);
     }

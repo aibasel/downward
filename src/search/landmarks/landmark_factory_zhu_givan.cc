@@ -17,8 +17,7 @@ using namespace std;
 namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(
     bool use_orders, utils::Verbosity verbosity)
-    : LandmarkFactoryRelaxation(verbosity),
-      use_orders(use_orders) {
+    : LandmarkFactoryRelaxation(verbosity), use_orders(use_orders) {
 }
 
 void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
@@ -42,7 +41,8 @@ void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
 bool LandmarkFactoryZhuGivan::goal_is_reachable(
     const TaskProxy &task_proxy, const PropositionLayer &prop_layer) const {
     for (FactProxy goal : task_proxy.get_goals()) {
-        if (!prop_layer[goal.get_variable().get_id()][goal.get_value()].reached()) {
+        if (!prop_layer[goal.get_variable().get_id()][goal.get_value()]
+                 .reached()) {
             if (log.is_at_least_normal()) {
                 log << "Problem not solvable, even if relaxed." << endl;
             }
@@ -109,7 +109,8 @@ void LandmarkFactoryZhuGivan::extract_landmarks(
     }
 }
 
-LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::initialize_relaxed_plan_graph(
+LandmarkFactoryZhuGivan::PropositionLayer
+LandmarkFactoryZhuGivan::initialize_relaxed_plan_graph(
     const TaskProxy &task_proxy, unordered_set<int> &triggered_ops) const {
     const State &initial_state = task_proxy.get_initial_state();
     const VariablesProxy &variables = task_proxy.get_variables();
@@ -157,8 +158,8 @@ void LandmarkFactoryZhuGivan::propagate_labels_until_fixed_point_reached(
     }
 }
 
-
-LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::build_relaxed_plan_graph_with_labels(
+LandmarkFactoryZhuGivan::PropositionLayer
+LandmarkFactoryZhuGivan::build_relaxed_plan_graph_with_labels(
     const TaskProxy &task_proxy) const {
     assert(!triggers.empty());
 
@@ -172,8 +173,9 @@ LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::build_relaxed
       no conditional effects, it is only necessary to apply them once. If they
       have conditional effects, they will be triggered again at later stages.
     */
-    triggered_ops.insert(operators_without_preconditions.begin(),
-                         operators_without_preconditions.end());
+    triggered_ops.insert(
+        operators_without_preconditions.begin(),
+        operators_without_preconditions.end());
     propagate_labels_until_fixed_point_reached(
         task_proxy, move(triggered_ops), current_layer);
     return current_layer;
@@ -313,11 +315,11 @@ bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
 class LandmarkFactoryZhuGivanFeature
     : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryZhuGivan> {
 public:
-    LandmarkFactoryZhuGivanFeature() : TypedFeature("lm_zg") {
+    LandmarkFactoryZhuGivanFeature()
+        : TypedFeature("lm_zg") {
         document_title("Zhu/Givan Landmarks");
-        document_synopsis(
-            "The landmark generation method introduced by "
-            "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
+        document_synopsis("The landmark generation method introduced by "
+                          "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
 
         add_use_orders_option_to_feature(*this);
         add_landmark_factory_options_to_feature(*this);

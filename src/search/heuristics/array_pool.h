@@ -50,8 +50,7 @@ private:
     Iterator last;
 
     ArrayPoolSlice(Iterator first, Iterator last)
-        : first(first),
-          last(last) {
+        : first(first), last(last) {
     }
 };
 
@@ -65,10 +64,12 @@ public:
     }
 
     ArrayPoolSlice get_slice(ArrayPoolIndex index, int size) const {
-        assert(index.position >= 0 &&
-               size >= 0 &&
-               index.position + size <= static_cast<int>(data.size()));
-        return ArrayPoolSlice(data.begin() + index.position, data.begin() + index.position + size);
+        assert(
+            index.position >= 0 && size >= 0 &&
+            index.position + size <= static_cast<int>(data.size()));
+        return ArrayPoolSlice(
+            data.begin() + index.position,
+            data.begin() + index.position + size);
     }
 };
 }

@@ -9,15 +9,12 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
-    const shared_ptr<MergeSelector> &merge_selector,
-    utils::Verbosity verbosity)
-    : MergeStrategyFactory(verbosity),
-      merge_selector(merge_selector) {
+    const shared_ptr<MergeSelector> &merge_selector, utils::Verbosity verbosity)
+    : MergeStrategyFactory(verbosity), merge_selector(merge_selector) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(
-    const TaskProxy &task_proxy,
-    const FactoredTransitionSystem &fts) {
+    const TaskProxy &task_proxy, const FactoredTransitionSystem &fts) {
     merge_selector->initialize(task_proxy);
     return make_unique<MergeStrategyStateless>(fts, merge_selector);
 }
@@ -41,9 +38,11 @@ bool MergeStrategyFactoryStateless::requires_goal_distances() const {
 }
 
 class MergeStrategyFactoryStatelessFeature
-    : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactoryStateless> {
+    : public plugins::TypedFeature<
+          MergeStrategyFactory, MergeStrategyFactoryStateless> {
 public:
-    MergeStrategyFactoryStatelessFeature() : TypedFeature("merge_stateless") {
+    MergeStrategyFactoryStatelessFeature()
+        : TypedFeature("merge_stateless") {
         document_title("Stateless merge strategy");
         document_synopsis(
             "This merge strategy has a merge selector, which computes the next "
@@ -51,8 +50,7 @@ public:
             "system, not requiring any additional information.");
 
         add_option<shared_ptr<MergeSelector>>(
-            "merge_selector",
-            "The merge selector to be used.");
+            "merge_selector", "The merge selector to be used.");
         add_merge_strategy_options_to_feature(*this);
 
         document_note(
@@ -70,12 +68,12 @@ public:
             "\n}}}");
     }
 
-    virtual shared_ptr<MergeStrategyFactoryStateless>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<MergeStrategyFactoryStateless>(
+    virtual shared_ptr<MergeStrategyFactoryStateless> create_component(
+        const plugins::Options &opts) const override {
+        return plugins::make_shared_from_arg_tuples<
+            MergeStrategyFactoryStateless>(
             opts.get<shared_ptr<MergeSelector>>("merge_selector"),
-            get_merge_strategy_arguments_from_options(opts)
-            );
+            get_merge_strategy_arguments_from_options(opts));
     }
 };
 

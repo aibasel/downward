@@ -58,12 +58,14 @@ public:
     virtual int get_variable_axiom_layer(int var) const = 0;
     virtual int get_variable_default_axiom_value(int var) const = 0;
     virtual std::string get_fact_name(const FactPair &fact) const = 0;
-    virtual bool are_facts_mutex(const FactPair &fact1, const FactPair &fact2) const = 0;
+    virtual bool are_facts_mutex(
+        const FactPair &fact1, const FactPair &fact2) const = 0;
 
     virtual int get_operator_cost(int index, bool is_axiom) const = 0;
     virtual std::string get_operator_name(int index, bool is_axiom) const = 0;
     virtual int get_num_operators() const = 0;
-    virtual int get_num_operator_preconditions(int index, bool is_axiom) const = 0;
+    virtual int get_num_operator_preconditions(
+        int index, bool is_axiom) const = 0;
     virtual FactPair get_operator_precondition(
         int op_index, int fact_index, bool is_axiom) const = 0;
     virtual int get_num_operator_effects(int op_index, bool is_axiom) const = 0;
@@ -75,9 +77,10 @@ public:
         int op_index, int eff_index, bool is_axiom) const = 0;
 
     /*
-      Convert an operator index from this task, C (child), into an operator index
-      from an ancestor task A (ancestor). Task A has to be an ancestor of C in
-      the sense that C is the result of a sequence of task transformations on A.
+      Convert an operator index from this task, C (child), into an operator
+      index from an ancestor task A (ancestor). Task A has to be an ancestor of
+      C in the sense that C is the result of a sequence of task transformations
+      on A.
     */
     virtual int convert_operator_index(
         int index, const AbstractTask *ancestor_task) const = 0;
@@ -99,8 +102,7 @@ public:
       the parameter.
     */
     virtual void convert_ancestor_state_values(
-        std::vector<int> &values,
-        const AbstractTask *ancestor_task) const = 0;
+        std::vector<int> &values, const AbstractTask *ancestor_task) const = 0;
 };
 
 #endif

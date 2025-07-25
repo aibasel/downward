@@ -22,8 +22,8 @@ static bool are_dead_ends_reliable(
         return false;
     }
 
-    if (!lm_factory->supports_conditional_effects()
-        && task_properties::has_conditional_effects(task_proxy)) {
+    if (!lm_factory->supports_conditional_effects() &&
+        task_properties::has_conditional_effects(task_proxy)) {
         return false;
     }
 
@@ -31,10 +31,9 @@ static bool are_dead_ends_reliable(
 }
 
 LandmarkSumHeuristic::LandmarkSumHeuristic(
-    const shared_ptr<LandmarkFactory> &lm_factory,
-    bool pref, bool prog_goal, bool prog_gn, bool prog_r,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity,
+    const shared_ptr<LandmarkFactory> &lm_factory, bool pref, bool prog_goal,
+    bool prog_gn, bool prog_r, const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates, const string &description, utils::Verbosity verbosity,
     tasks::AxiomHandlingType axioms)
     : LandmarkHeuristic(
           pref,
@@ -73,8 +72,8 @@ void LandmarkSumHeuristic::compute_landmark_costs() {
             min_first_achiever_costs.push_back(min_operator_cost);
             min_possible_achiever_costs.push_back(min_operator_cost);
         } else {
-            int min_first_achiever_cost = get_min_cost_of_achievers(
-                node->get_landmark().first_achievers);
+            int min_first_achiever_cost =
+                get_min_cost_of_achievers(node->get_landmark().first_achievers);
             min_first_achiever_costs.push_back(min_first_achiever_cost);
             int min_possible_achiever_cost = get_min_cost_of_achievers(
                 node->get_landmark().possible_achievers);
@@ -91,9 +90,9 @@ int LandmarkSumHeuristic::get_heuristic_value(const State &ancestor_state) {
         landmark_status_manager->get_future_landmarks(ancestor_state);
     for (int id = 0; id < landmark_graph->get_num_landmarks(); ++id) {
         if (future.test(id)) {
-            const int min_achiever_cost =
-                past.test(id) ? min_possible_achiever_costs[id]
-                              : min_first_achiever_costs[id];
+            const int min_achiever_cost = past.test(id)
+                                              ? min_possible_achiever_costs[id]
+                                              : min_first_achiever_costs[id];
             if (min_achiever_cost < numeric_limits<int>::max()) {
                 h += min_achiever_cost;
             } else {
@@ -111,7 +110,8 @@ bool LandmarkSumHeuristic::dead_ends_are_reliable() const {
 class LandmarkSumHeuristicFeature
     : public plugins::TypedFeature<Evaluator, LandmarkSumHeuristic> {
 public:
-    LandmarkSumHeuristicFeature() : TypedFeature("landmark_sum") {
+    LandmarkSumHeuristicFeature()
+        : TypedFeature("landmark_sum") {
         document_title("Landmark sum heuristic");
         document_synopsis(
             "Formerly known as the landmark heuristic or landmark count "
@@ -123,17 +123,13 @@ public:
                 "https://ai.dmi.unibas.ch/papers/richter-et-al-aaai2008.pdf",
                 "Proceedings of the 23rd AAAI Conference on Artificial "
                 "Intelligence (AAAI 2008)",
-                "975-982",
-                "AAAI Press",
-                "2008") +
+                "975-982", "AAAI Press", "2008") +
             "and" +
             utils::format_journal_reference(
                 {"Silvia Richter", "Matthias Westphal"},
                 "The LAMA Planner: Guiding Cost-Based Anytime Planning with Landmarks",
                 "http://www.aaai.org/Papers/JAIR/Vol39/JAIR-3903.pdf",
-                "Journal of Artificial Intelligence Research",
-                "39",
-                "127-177",
+                "Journal of Artificial Intelligence Research", "39", "127-177",
                 "2010"));
         /*
           We usually have the options of base classes behind the options
@@ -192,9 +188,8 @@ public:
         document_property("admissible", "no");
         document_property("consistent", "no");
         document_property(
-            "safe",
-            "yes except on tasks with conditional effects when "
-            "using a LandmarkFactory not supporting them");
+            "safe", "yes except on tasks with conditional effects when "
+                    "using a LandmarkFactory not supporting them");
     }
 
     virtual shared_ptr<LandmarkSumHeuristic> create_component(

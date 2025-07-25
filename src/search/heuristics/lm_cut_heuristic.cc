@@ -27,8 +27,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
     State state = convert_ancestor_state(ancestor_state);
     int total_cost = 0;
     bool dead_end = landmark_generator->compute_landmarks(
-        state,
-        [&total_cost](int cut_cost) {total_cost += cut_cost;},
+        state, [&total_cost](int cut_cost) { total_cost += cut_cost; },
         nullptr);
 
     if (dead_end)
@@ -39,7 +38,8 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 class LandmarkCutHeuristicFeature
     : public plugins::TypedFeature<Evaluator, LandmarkCutHeuristic> {
 public:
-    LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
+    LandmarkCutHeuristicFeature()
+        : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
 
         add_heuristic_options_to_feature(*this, "lmcut");
@@ -54,11 +54,10 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<LandmarkCutHeuristic>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<LandmarkCutHeuristic> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkCutHeuristic>(
-            get_heuristic_arguments_from_options(opts)
-            );
+            get_heuristic_arguments_from_options(opts));
     }
 };
 

@@ -18,11 +18,13 @@ public:
     virtual ~SolverInterface() = default;
 
     virtual void load_problem(const LinearProgram &lp) = 0;
-    virtual void add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints) = 0;
+    virtual void add_temporary_constraints(
+        const named_vector::NamedVector<LPConstraint> &constraints) = 0;
     virtual void clear_temporary_constraints() = 0;
     virtual double get_infinity() const = 0;
 
-    virtual void set_objective_coefficients(const std::vector<double> &coefficients) = 0;
+    virtual void set_objective_coefficients(
+        const std::vector<double> &coefficients) = 0;
     virtual void set_objective_coefficient(int index, double coefficient) = 0;
     virtual void set_constraint_lower_bound(int index, double bound) = 0;
     virtual void set_constraint_upper_bound(int index, double bound) = 0;

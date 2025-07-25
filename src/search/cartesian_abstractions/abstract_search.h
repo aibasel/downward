@@ -21,10 +21,9 @@ class AbstractSearch {
         int g;
         int h;
         Transition incoming_transition;
-public:
+    public:
         AbstractSearchInfo()
-            : h(0),
-              incoming_transition(UNDEFINED, UNDEFINED) {
+            : h(0), incoming_transition(UNDEFINED, UNDEFINED) {
             reset();
         }
 
@@ -56,8 +55,9 @@ public:
         }
 
         const Transition &get_incoming_transition() const {
-            assert(incoming_transition.op_id != UNDEFINED &&
-                   incoming_transition.target_id != UNDEFINED);
+            assert(
+                incoming_transition.op_id != UNDEFINED &&
+                incoming_transition.target_id != UNDEFINED);
             return incoming_transition;
         }
     };
@@ -73,23 +73,20 @@ public:
     std::unique_ptr<Solution> extract_solution(int init_id, int goal_id) const;
     void update_goal_distances(const Solution &solution);
     int astar_search(
-        const std::vector<Transitions> &transitions,
-        const Goals &goals);
+        const std::vector<Transitions> &transitions, const Goals &goals);
 
 public:
     explicit AbstractSearch(const std::vector<int> &operator_costs);
 
     std::unique_ptr<Solution> find_solution(
-        const std::vector<Transitions> &transitions,
-        int init_id,
+        const std::vector<Transitions> &transitions, int init_id,
         const Goals &goal_ids);
     int get_h_value(int state_id) const;
     void copy_h_value_to_children(int v, int v1, int v2);
 };
 
 std::vector<int> compute_distances(
-    const std::vector<Transitions> &transitions,
-    const std::vector<int> &costs,
+    const std::vector<Transitions> &transitions, const std::vector<int> &costs,
     const std::unordered_set<int> &start_ids);
 }
 

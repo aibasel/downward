@@ -59,9 +59,10 @@ void PatternCollectionGeneratorGenetic::select(
             // [0..total_so_far)
             double random = rng->random() * total_so_far;
             // Find first entry which is strictly greater than random.
-            selected = upper_bound(cumulative_fitness.begin(),
-                                   cumulative_fitness.end(), random) -
-                cumulative_fitness.begin();
+            selected = upper_bound(
+                           cumulative_fitness.begin(), cumulative_fitness.end(),
+                           random) -
+                       cumulative_fitness.begin();
         }
         new_pattern_collections.push_back(pattern_collections[selected]);
     }
@@ -161,7 +162,8 @@ bool PatternCollectionGeneratorGenetic::mark_used_variables(
     return false;
 }
 
-void PatternCollectionGeneratorGenetic::evaluate(vector<double> &fitness_values) {
+void PatternCollectionGeneratorGenetic::evaluate(
+    vector<double> &fitness_values) {
     TaskProxy task_proxy(*task);
     for (size_t i = 0; i < pattern_collections.size(); ++i) {
         const auto &collection = pattern_collections[i];
@@ -172,7 +174,8 @@ void PatternCollectionGeneratorGenetic::evaluate(vector<double> &fitness_values)
         double fitness = 0;
         bool pattern_valid = true;
         vector<bool> variables_used(task_proxy.get_variables().size(), false);
-        shared_ptr<PatternCollection> pattern_collection = make_shared<PatternCollection>();
+        shared_ptr<PatternCollection> pattern_collection =
+            make_shared<PatternCollection>();
         pattern_collection->reserve(collection.size());
         for (const vector<bool> &bitvector : collection) {
             Pattern pattern = transform_to_pattern_normal_form(bitvector);
@@ -242,8 +245,8 @@ void PatternCollectionGeneratorGenetic::bin_packing() {
             if (next_var_size > pdb_max_size)
                 // var never fits into a bin.
                 continue;
-            if (!utils::is_product_within_limit(current_size, next_var_size,
-                                                pdb_max_size)) {
+            if (!utils::is_product_within_limit(
+                    current_size, next_var_size, pdb_max_size)) {
                 // Open a new bin for var.
                 pattern_collection.push_back(pattern);
                 pattern.clear();
@@ -289,7 +292,8 @@ string PatternCollectionGeneratorGenetic::name() const {
     return "genetic pattern collection generator";
 }
 
-PatternCollectionInformation PatternCollectionGeneratorGenetic::compute_patterns(
+PatternCollectionInformation
+PatternCollectionGeneratorGenetic::compute_patterns(
     const shared_ptr<AbstractTask> &task_) {
     task = task_;
     genetic_algorithm();
@@ -300,9 +304,11 @@ PatternCollectionInformation PatternCollectionGeneratorGenetic::compute_patterns
 }
 
 class PatternCollectionGeneratorGeneticFeature
-    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorGenetic> {
+    : public plugins::TypedFeature<
+          PatternCollectionGenerator, PatternCollectionGeneratorGenetic> {
 public:
-    PatternCollectionGeneratorGeneticFeature() : TypedFeature("genetic") {
+    PatternCollectionGeneratorGeneticFeature()
+        : TypedFeature("genetic") {
         document_title("Genetic Algorithm Patterns");
         document_synopsis(
             "The following paper describes the automated creation of pattern "
@@ -311,36 +317,29 @@ public:
             "to optimize the pattern collections with an objective function that "
             "estimates the mean heuristic value of the the pattern collections. "
             "Pattern collections with higher mean heuristic estimates are more "
-            "likely selected for the next generation." + utils::format_conference_reference(
+            "likely selected for the next generation." +
+            utils::format_conference_reference(
                 {"Stefan Edelkamp"},
                 "Automated Creation of Pattern Database Search Heuristics",
                 "http://www.springerlink.com/content/20613345434608x1/",
                 "Proceedings of the 4th Workshop on Model Checking and Artificial"
                 " Intelligence (!MoChArt 2006)",
-                "35-50",
-                "AAAI Press",
-                "2007"));
+                "35-50", "AAAI Press", "2007"));
 
         add_option<int>(
-            "pdb_max_size",
-            "maximal number of states per pattern database ",
-            "50000",
-            plugins::Bounds("1", "infinity"));
+            "pdb_max_size", "maximal number of states per pattern database ",
+            "50000", plugins::Bounds("1", "infinity"));
         add_option<int>(
             "num_collections",
             "number of pattern collections to maintain in the genetic "
             "algorithm (population size)",
-            "5",
-            plugins::Bounds("1", "infinity"));
+            "5", plugins::Bounds("1", "infinity"));
         add_option<int>(
-            "num_episodes",
-            "number of episodes for the genetic algorithm",
-            "30",
-            plugins::Bounds("0", "infinity"));
+            "num_episodes", "number of episodes for the genetic algorithm",
+            "30", plugins::Bounds("0", "infinity"));
         add_option<double>(
             "mutation_probability",
-            "probability for flipping a bit in the genetic algorithm",
-            "0.01",
+            "probability for flipping a bit in the genetic algorithm", "0.01",
             plugins::Bounds("0.0", "1.0"));
         add_option<bool>(
             "disjoint",
@@ -351,9 +350,8 @@ public:
         add_generator_options_to_feature(*this);
 
         document_note(
-            "Note",
-            "This pattern generation method uses the "
-            "zero/one pattern database heuristic.");
+            "Note", "This pattern generation method uses the "
+                    "zero/one pattern database heuristic.");
         document_note(
             "Implementation Notes",
             "The standard genetic algorithm procedure as described in the paper is "
@@ -391,17 +389,16 @@ public:
         document_language_support("axioms", "not supported");
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorGenetic>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorGenetic>(
-            opts.get<int>("pdb_max_size"),
-            opts.get<int>("num_collections"),
+    virtual shared_ptr<PatternCollectionGeneratorGenetic> create_component(
+        const plugins::Options &opts) const override {
+        return plugins::make_shared_from_arg_tuples<
+            PatternCollectionGeneratorGenetic>(
+            opts.get<int>("pdb_max_size"), opts.get<int>("num_collections"),
             opts.get<int>("num_episodes"),
             opts.get<double>("mutation_probability"),
             opts.get<bool>("disjoint"),
             utils::get_rng_arguments_from_options(opts),
-            get_generator_arguments_from_options(opts)
-            );
+            get_generator_arguments_from_options(opts));
     }
 };
 

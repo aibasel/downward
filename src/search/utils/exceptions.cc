@@ -5,7 +5,8 @@
 using namespace std;
 
 namespace utils {
-Exception::Exception(const string &msg) : msg(msg) {
+Exception::Exception(const string &msg)
+    : msg(msg) {
 }
 
 string Exception::get_message() const {

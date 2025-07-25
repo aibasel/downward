@@ -16,8 +16,7 @@ ShrinkRandom::ShrinkRandom(int random_seed)
 }
 
 vector<ShrinkBucketBased::Bucket> ShrinkRandom::partition_into_buckets(
-    const TransitionSystem &ts,
-    const Distances &) const {
+    const TransitionSystem &ts, const Distances &) const {
     vector<Bucket> buckets;
     buckets.resize(1);
     Bucket &big_bucket = buckets.back();
@@ -36,18 +35,18 @@ string ShrinkRandom::name() const {
 class ShrinkRandomFeature
     : public plugins::TypedFeature<ShrinkStrategy, ShrinkRandom> {
 public:
-    ShrinkRandomFeature() : TypedFeature("shrink_random") {
+    ShrinkRandomFeature()
+        : TypedFeature("shrink_random") {
         document_title("Random");
         document_synopsis("");
 
         add_shrink_bucket_options_to_feature(*this);
     }
 
-    virtual shared_ptr<ShrinkRandom>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<ShrinkRandom> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<ShrinkRandom>(
-            get_shrink_bucket_arguments_from_options(opts)
-            );
+            get_shrink_bucket_arguments_from_options(opts));
     }
 };
 

@@ -19,8 +19,7 @@ PatternCollectionInformation PatternCollectionGenerator::generate(
     }
     utils::Timer timer;
     PatternCollectionInformation pci = compute_patterns(task);
-    dump_pattern_collection_generation_statistics(
-        name(), timer(), pci, log);
+    dump_pattern_collection_generation_statistics(name(), timer(), pci, log);
     return pci;
 }
 
@@ -35,11 +34,7 @@ PatternInformation PatternGenerator::generate(
     }
     utils::Timer timer;
     PatternInformation pattern_info = compute_pattern(task);
-    dump_pattern_generation_statistics(
-        name(),
-        timer.stop(),
-        pattern_info,
-        log);
+    dump_pattern_generation_statistics(name(), timer.stop(), pattern_info, log);
     return pattern_info;
 }
 
@@ -52,19 +47,21 @@ tuple<utils::Verbosity> get_generator_arguments_from_options(
     return utils::get_log_arguments_from_options(opts);
 }
 
-static class PatternCollectionGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<PatternCollectionGenerator> {
+static class PatternCollectionGeneratorCategoryPlugin
+    : public plugins::TypedCategoryPlugin<PatternCollectionGenerator> {
 public:
-    PatternCollectionGeneratorCategoryPlugin() : TypedCategoryPlugin("PatternCollectionGenerator") {
+    PatternCollectionGeneratorCategoryPlugin()
+        : TypedCategoryPlugin("PatternCollectionGenerator") {
         document_synopsis("Factory for pattern collections");
     }
-}
-_category_plugin_collection;
+} _category_plugin_collection;
 
-static class PatternGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<PatternGenerator> {
+static class PatternGeneratorCategoryPlugin
+    : public plugins::TypedCategoryPlugin<PatternGenerator> {
 public:
-    PatternGeneratorCategoryPlugin() : TypedCategoryPlugin("PatternGenerator") {
+    PatternGeneratorCategoryPlugin()
+        : TypedCategoryPlugin("PatternGenerator") {
         document_synopsis("Factory for single patterns");
     }
-}
-_category_plugin_single;
+} _category_plugin_single;
 }

@@ -62,9 +62,8 @@ public:
       TODO: Can we reuse caches? Can we move them instead of copying them?
     */
     EvaluationContext(
-        const EvaluationContext &other,
-        int g_value, bool is_preferred, SearchStatistics *statistics,
-        bool calculate_preferred = false);
+        const EvaluationContext &other, int g_value, bool is_preferred,
+        SearchStatistics *statistics, bool calculate_preferred = false);
     /*
       Create new heuristic cache for caching heuristic values. Used for example
       by eager search.
@@ -85,8 +84,8 @@ public:
             contexts that don't need this information.
     */
     EvaluationContext(
-        const State &state,
-        SearchStatistics *statistics = nullptr, bool calculate_preferred = false);
+        const State &state, SearchStatistics *statistics = nullptr,
+        bool calculate_preferred = false);
 
     const EvaluationResult &get_result(Evaluator *eval);
     const EvaluatorCache &get_cache() const;

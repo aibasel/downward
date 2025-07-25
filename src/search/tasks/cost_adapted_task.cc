@@ -15,8 +15,7 @@ using utils::ExitCode;
 
 namespace tasks {
 CostAdaptedTask::CostAdaptedTask(
-    const shared_ptr<AbstractTask> &parent,
-    OperatorCost cost_type)
+    const shared_ptr<AbstractTask> &parent, OperatorCost cost_type)
     : DelegatingTask(parent),
       cost_type(cost_type),
       parent_is_unit_cost(task_properties::is_unit_cost(TaskProxy(*parent))) {
@@ -30,19 +29,18 @@ int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
 class CostAdaptedTaskFeature
     : public plugins::TypedFeature<AbstractTask, CostAdaptedTask> {
 public:
-    CostAdaptedTaskFeature() : TypedFeature("adapt_costs") {
+    CostAdaptedTaskFeature()
+        : TypedFeature("adapt_costs") {
         document_title("Cost-adapted task");
-        document_synopsis(
-            "A cost-adapting transformation of the root task.");
+        document_synopsis("A cost-adapting transformation of the root task.");
 
         add_cost_type_options_to_feature(*this);
     }
 
-    virtual shared_ptr<CostAdaptedTask>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<CostAdaptedTask> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<CostAdaptedTask>(
-            g_root_task,
-            get_cost_type_arguments_from_options(opts));
+            g_root_task, get_cost_type_arguments_from_options(opts));
     }
 };
 

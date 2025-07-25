@@ -33,7 +33,8 @@ int GoalCountHeuristic::compute_heuristic(const State &ancestor_state) {
 class GoalCountHeuristicFeature
     : public plugins::TypedFeature<Evaluator, GoalCountHeuristic> {
 public:
-    GoalCountHeuristicFeature() : TypedFeature("goalcount") {
+    GoalCountHeuristicFeature()
+        : TypedFeature("goalcount") {
         document_title("Goal count heuristic");
 
         add_heuristic_options_to_feature(*this, "goalcount");
@@ -48,11 +49,10 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<GoalCountHeuristic>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<GoalCountHeuristic> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<GoalCountHeuristic>(
-            get_heuristic_arguments_from_options(opts)
-            );
+            get_heuristic_arguments_from_options(opts));
     }
 };
 

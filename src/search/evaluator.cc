@@ -8,7 +8,6 @@
 
 using namespace std;
 
-
 Evaluator::Evaluator(
     bool use_for_reporting_minima, bool use_for_boosting,
     bool use_for_counting_evaluations, const string &description,
@@ -37,8 +36,7 @@ void Evaluator::report_value_for_initial_state(
     }
 }
 
-void Evaluator::report_new_minimum_value(
-    const EvaluationResult &result) const {
+void Evaluator::report_new_minimum_value(const EvaluationResult &result) const {
     if (log.is_at_least_normal()) {
         assert(use_for_reporting_minima);
         log << "New best heuristic value for " << description << ": "
@@ -77,8 +75,7 @@ int Evaluator::get_cached_estimate(const State &) const {
 void add_evaluator_options_to_feature(
     plugins::Feature &feature, const string &description) {
     feature.add_option<string>(
-        "description",
-        "description used to identify evaluator in logs",
+        "description", "description used to identify evaluator in logs",
         "\"" + description + "\"");
     utils::add_log_options_to_feature(feature);
 }
@@ -87,13 +84,14 @@ tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
     const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(opts.get<string>("description")),
-        utils::get_log_arguments_from_options(opts)
-        );
+        utils::get_log_arguments_from_options(opts));
 }
 
-static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<Evaluator> {
+static class EvaluatorCategoryPlugin
+    : public plugins::TypedCategoryPlugin<Evaluator> {
 public:
-    EvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {
+    EvaluatorCategoryPlugin()
+        : TypedCategoryPlugin("Evaluator") {
         document_synopsis(
             "An evaluator specification is either a newly created evaluator "
             "instance or an evaluator that has been defined previously. "
@@ -110,5 +108,4 @@ public:
             "preferred operators ");
         allow_variable_binding();
     }
-}
-_category_plugin;
+} _category_plugin;

@@ -60,9 +60,12 @@ struct LocalTransition {
     LocalTransition(
         LocalProblemNode *source_, LocalProblemNode *target_,
         const ValueTransitionLabel *label_, int action_cost_)
-        : source(source_), target(target_),
-          label(label_), action_cost(action_cost_),
-          target_cost(-1), unreached_conditions(-1) {
+        : source(source_),
+          target(target_),
+          label(label_),
+          action_cost(action_cost_),
+          target_cost(-1),
+          unreached_conditions(-1) {
         // target_cost and unreached_cost are initialized by
         // expand_transition.
     }
@@ -70,7 +73,6 @@ struct LocalTransition {
     ~LocalTransition() {
     }
 };
-
 
 struct LocalProblemNode {
     // Attributes fixed during initialization.
@@ -120,7 +122,7 @@ public:
 
 LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(
     int var_no, int value) {
-    LocalProblem * &table_entry = local_problem_index[var_no][value];
+    LocalProblem *&table_entry = local_problem_index[var_no][value];
     if (!table_entry) {
         table_entry = build_problem_for_variable(var_no);
         local_problems.push_back(table_entry);
@@ -151,9 +153,9 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_variable(
             int target_value = dtg_trans.target->value;
             LocalProblemNode &target = problem->nodes[target_value];
             for (const ValueTransitionLabel &label : dtg_trans.labels) {
-                OperatorProxy op = label.is_axiom ?
-                    task_proxy.get_axioms()[label.op_id] :
-                    task_proxy.get_operators()[label.op_id];
+                OperatorProxy op =
+                    label.is_axiom ? task_proxy.get_axioms()[label.op_id]
+                                   : task_proxy.get_operators()[label.op_id];
                 LocalTransition trans(&node, &target, &label, op.get_cost());
                 node.outgoing_transitions.push_back(trans);
             }
@@ -180,7 +182,8 @@ LocalProblem *ContextEnhancedAdditiveHeuristic::build_problem_for_goal() const {
         goals.push_back(LocalAssignment(goal_no, goal_value));
     }
     vector<LocalAssignment> no_effects;
-    ValueTransitionLabel *label = new ValueTransitionLabel(0, true, goals, no_effects);
+    ValueTransitionLabel *label =
+        new ValueTransitionLabel(0, true, goals, no_effects);
     LocalTransition trans(&problem->nodes[0], &problem->nodes[1], label, 0);
     problem->nodes[0].outgoing_transitions.push_back(trans);
     return problem;
@@ -213,8 +216,8 @@ bool ContextEnhancedAdditiveHeuristic::is_local_problem_set_up(
 }
 
 void ContextEnhancedAdditiveHeuristic::set_up_local_problem(
-    LocalProblem *problem, int base_priority,
-    int start_value, const State &state) {
+    LocalProblem *problem, int base_priority, int start_value,
+    const State &state) {
     assert(problem->base_priority == -1);
     problem->base_priority = base_priority;
 
@@ -294,9 +297,8 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
     trans->unreached_conditions = 0;
     const vector<LocalAssignment> &precond = trans->label->precond;
 
-    vector<LocalAssignment>::const_iterator
-        curr_precond = precond.begin(),
-        last_precond = precond.end();
+    vector<LocalAssignment>::const_iterator curr_precond = precond.begin(),
+                                            last_precond = precond.end();
 
     vector<short>::const_iterator context = trans->source->context.begin();
     vector<int>::const_iterator parent_vars =
@@ -311,8 +313,8 @@ void ContextEnhancedAdditiveHeuristic::expand_transition(
         if (current_val == precond_value)
             continue;
 
-        LocalProblem *subproblem = get_local_problem(
-            precond_var_no, current_val);
+        LocalProblem *subproblem =
+            get_local_problem(precond_var_no, current_val);
 
         if (!is_local_problem_set_up(subproblem)) {
             set_up_local_problem(
@@ -359,14 +361,16 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
     assert(node->cost >= 0 && node->cost < numeric_limits<int>::max());
     LocalTransition *first_on_path = node->reached_by;
     if (first_on_path) {
-        node->reached_by = nullptr; // Clear to avoid revisiting this node later.
+        node->reached_by =
+            nullptr; // Clear to avoid revisiting this node later.
         if (first_on_path->target_cost == first_on_path->action_cost) {
             // Transition possibly applicable.
             const ValueTransitionLabel &label = *first_on_path->label;
-            OperatorProxy op = label.is_axiom ?
-                task_proxy.get_axioms()[label.op_id] :
-                task_proxy.get_operators()[label.op_id];
-            if (min_action_cost != 0 || task_properties::is_applicable(op, state)) {
+            OperatorProxy op = label.is_axiom
+                                   ? task_proxy.get_axioms()[label.op_id]
+                                   : task_proxy.get_operators()[label.op_id];
+            if (min_action_cost != 0 ||
+                task_properties::is_applicable(op, state)) {
                 // If there are no zero-cost actions, the target_cost/
                 // action_cost test above already guarantees applicability.
                 assert(!op.is_axiom());
@@ -409,18 +413,17 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(
 }
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
-    tasks::AxiomHandlingType axioms,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
-    : Heuristic(tasks::get_default_value_axioms_task_if_needed(
-                    transform, axioms),
-                cache_estimates, description, verbosity),
+    tasks::AxiomHandlingType axioms, const shared_ptr<AbstractTask> &transform,
+    bool cache_estimates, const string &description, utils::Verbosity verbosity)
+    : Heuristic(
+          tasks::get_default_value_axioms_task_if_needed(transform, axioms),
+          cache_estimates, description, verbosity),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing context-enhanced additive heuristic..." << endl;
     }
 
-    DTGFactory factory(task_proxy, true, [](int, int) {return false;});
+    DTGFactory factory(task_proxy, true, [](int, int) { return false; });
     transition_graphs = factory.build_dtgs();
 
     goal_problem = build_problem_for_goal();
@@ -429,7 +432,8 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     VariablesProxy vars = task_proxy.get_variables();
     local_problem_index.resize(vars.size());
     for (VariableProxy var : vars)
-        local_problem_index[var.get_id()].resize(var.get_domain_size(), nullptr);
+        local_problem_index[var.get_id()].resize(
+            var.get_domain_size(), nullptr);
 }
 
 ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
@@ -448,9 +452,11 @@ bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
 }
 
 class ContextEnhancedAdditiveHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, ContextEnhancedAdditiveHeuristic> {
+    : public plugins::TypedFeature<
+          Evaluator, ContextEnhancedAdditiveHeuristic> {
 public:
-    ContextEnhancedAdditiveHeuristicFeature() : TypedFeature("cea") {
+    ContextEnhancedAdditiveHeuristicFeature()
+        : TypedFeature("cea") {
         document_title("Context-enhanced additive heuristic");
 
         tasks::add_axioms_option_to_feature(*this);
@@ -466,12 +472,12 @@ public:
         document_property("preferred operators", "yes");
     }
 
-    virtual shared_ptr<ContextEnhancedAdditiveHeuristic>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<ContextEnhancedAdditiveHeuristic>(
+    virtual shared_ptr<ContextEnhancedAdditiveHeuristic> create_component(
+        const plugins::Options &opts) const override {
+        return plugins::make_shared_from_arg_tuples<
+            ContextEnhancedAdditiveHeuristic>(
             tasks::get_axioms_arguments_from_options(opts),
-            get_heuristic_arguments_from_options(opts)
-            );
+            get_heuristic_arguments_from_options(opts));
     }
 };
 

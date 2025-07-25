@@ -16,11 +16,11 @@ class SyntaxAnalyzerContext : public utils::Context {
 
 public:
     SyntaxAnalyzerContext(TokenStream &tokens, int lookahead)
-        : tokens(tokens),
-          lookahead(lookahead) {
+        : tokens(tokens), lookahead(lookahead) {
     }
 
-    virtual string decorate_block_name(const string &block_name) const override {
+    virtual string decorate_block_name(
+        const string &block_name) const override {
         ostringstream decorated_block_name;
         int pos = tokens.get_position();
         decorated_block_name << block_name << ": "
@@ -33,29 +33,33 @@ public:
     virtual void error(const string &message) const override {
         ostringstream message_with_tokens;
         string all_tokens = tokens.str(0, tokens.size());
-        string remaining_tokens = tokens.str(tokens.get_position(), tokens.size());
-        message_with_tokens << all_tokens << endl
-                            << string(all_tokens.size() - remaining_tokens.size(), ' ')
-                            << "^" << endl
-                            << message;
+        string remaining_tokens =
+            tokens.str(tokens.get_position(), tokens.size());
+        message_with_tokens
+            << all_tokens << endl
+            << string(all_tokens.size() - remaining_tokens.size(), ' ') << "^"
+            << endl
+            << message;
         throw utils::ContextError(str() + "\n\n" + message_with_tokens.str());
     }
 };
 
 static ASTNodePtr parse_node(TokenStream &tokens, SyntaxAnalyzerContext &);
 
-static void parse_argument(TokenStream &tokens,
-                           vector<ASTNodePtr> &positional_arguments,
-                           unordered_map<string, ASTNodePtr> &keyword_arguments,
-                           SyntaxAnalyzerContext &context) {
-    if (tokens.has_tokens(2)
-        && tokens.peek(context, 0).type == TokenType::IDENTIFIER
-        && tokens.peek(context, 1).type == TokenType::EQUALS) {
+static void parse_argument(
+    TokenStream &tokens, vector<ASTNodePtr> &positional_arguments,
+    unordered_map<string, ASTNodePtr> &keyword_arguments,
+    SyntaxAnalyzerContext &context) {
+    if (tokens.has_tokens(2) &&
+        tokens.peek(context, 0).type == TokenType::IDENTIFIER &&
+        tokens.peek(context, 1).type == TokenType::EQUALS) {
         string argument_name = tokens.pop(context).content;
         tokens.pop(context, TokenType::EQUALS);
         if (keyword_arguments.count(argument_name)) {
-            context.error("Multiple definitions of the same keyword "
-                          "argument '" + argument_name + "'.");
+            context.error(
+                "Multiple definitions of the same keyword "
+                "argument '" +
+                argument_name + "'.");
         }
         keyword_arguments[argument_name] = parse_node(tokens, context);
     } else {
@@ -67,7 +71,8 @@ static void parse_argument(TokenStream &tokens,
     }
 }
 
-static ASTNodePtr parse_let(TokenStream &tokens, SyntaxAnalyzerContext &context) {
+static ASTNodePtr parse_let(
+    TokenStream &tokens, SyntaxAnalyzerContext &context) {
     utils::TraceBlock block(context, "Parsing Let");
     tokens.pop(context, TokenType::LET);
     tokens.pop(context, TokenType::OPENING_PARENTHESIS);
@@ -86,7 +91,8 @@ static ASTNodePtr parse_let(TokenStream &tokens, SyntaxAnalyzerContext &context)
         variable_definition = parse_node(tokens, context);
     }
     {
-        utils::TraceBlock block(context, "Parsing comma after variable definition.");
+        utils::TraceBlock block(
+            context, "Parsing comma after variable definition.");
         tokens.pop(context, TokenType::COMMA);
     }
     ASTNodePtr nested_value;
@@ -106,11 +112,14 @@ static void parse_sequence(
     int num_argument = 1;
     while (tokens.peek(context).type != terminal_token) {
         {
-            utils::TraceBlock block(context, "Parsing " + to_string(num_argument) + ". argument");
+            utils::TraceBlock block(
+                context, "Parsing " + to_string(num_argument) + ". argument");
             func();
         }
         {
-            utils::TraceBlock block(context, "Parsing token after " + to_string(num_argument) + ". argument");
+            utils::TraceBlock block(
+                context, "Parsing token after " + to_string(num_argument) +
+                             ". argument");
             TokenType next_type = tokens.peek(context).type;
             if (next_type == terminal_token) {
                 return;
@@ -131,8 +140,8 @@ static void parse_sequence(
     }
 }
 
-static ASTNodePtr parse_function(TokenStream &tokens,
-                                 SyntaxAnalyzerContext &context) {
+static ASTNodePtr parse_function(
+    TokenStream &tokens, SyntaxAnalyzerContext &context) {
     int initial_token_stream_index = tokens.get_position();
     utils::TraceBlock block(context, "Parsing plugin");
     string plugin_name;
@@ -147,25 +156,26 @@ static ASTNodePtr parse_function(TokenStream &tokens,
     {
         utils::TraceBlock block(context, "Parsing plugin arguments");
         auto callback = [&]() -> void {
-                parse_argument(tokens, positional_arguments, keyword_arguments, context);
-            };
-        parse_sequence(tokens, context, TokenType::CLOSING_PARENTHESIS, callback);
+            parse_argument(
+                tokens, positional_arguments, keyword_arguments, context);
+        };
+        parse_sequence(
+            tokens, context, TokenType::CLOSING_PARENTHESIS, callback);
     }
     tokens.pop(context, TokenType::CLOSING_PARENTHESIS);
-    string unparsed_config = tokens.str(initial_token_stream_index, tokens.get_position());
+    string unparsed_config =
+        tokens.str(initial_token_stream_index, tokens.get_position());
     return make_unique<FunctionCallNode>(
-        plugin_name, move(positional_arguments), move(keyword_arguments), unparsed_config);
+        plugin_name, move(positional_arguments), move(keyword_arguments),
+        unparsed_config);
 }
 
-static unordered_set<TokenType> literal_tokens {
-    TokenType::BOOLEAN,
-    TokenType::STRING,
-    TokenType::INTEGER,
-    TokenType::FLOAT,
-    TokenType::IDENTIFIER
-};
+static unordered_set<TokenType> literal_tokens{
+    TokenType::BOOLEAN, TokenType::STRING, TokenType::INTEGER, TokenType::FLOAT,
+    TokenType::IDENTIFIER};
 
-static ASTNodePtr parse_literal(TokenStream &tokens, SyntaxAnalyzerContext &context) {
+static ASTNodePtr parse_literal(
+    TokenStream &tokens, SyntaxAnalyzerContext &context) {
     utils::TraceBlock block(context, "Parsing Literal");
     Token token = tokens.pop(context);
     if (!literal_tokens.count(token.type)) {
@@ -176,15 +186,16 @@ static ASTNodePtr parse_literal(TokenStream &tokens, SyntaxAnalyzerContext &cont
     return make_unique<LiteralNode>(token);
 }
 
-static ASTNodePtr parse_list(TokenStream &tokens, SyntaxAnalyzerContext &context) {
+static ASTNodePtr parse_list(
+    TokenStream &tokens, SyntaxAnalyzerContext &context) {
     utils::TraceBlock block(context, "Parsing List");
     tokens.pop(context, TokenType::OPENING_BRACKET);
     vector<ASTNodePtr> elements;
     {
         utils::TraceBlock block(context, "Parsing list arguments");
         auto callback = [&]() -> void {
-                elements.push_back(parse_node(tokens, context));
-            };
+            elements.push_back(parse_node(tokens, context));
+        };
         parse_sequence(tokens, context, TokenType::CLOSING_BRACKET, callback);
     }
     tokens.pop(context, TokenType::CLOSING_BRACKET);
@@ -192,17 +203,17 @@ static ASTNodePtr parse_list(TokenStream &tokens, SyntaxAnalyzerContext &context
 }
 
 static vector<TokenType> parse_node_token_types = {
-    TokenType::OPENING_BRACKET, TokenType::LET, TokenType::BOOLEAN,
-    TokenType::STRING, TokenType::INTEGER, TokenType::FLOAT,
+    TokenType::OPENING_BRACKET, TokenType::LET,     TokenType::BOOLEAN,
+    TokenType::STRING,          TokenType::INTEGER, TokenType::FLOAT,
     TokenType::IDENTIFIER};
 
-static ASTNodePtr parse_node(TokenStream &tokens,
-                             SyntaxAnalyzerContext &context) {
+static ASTNodePtr parse_node(
+    TokenStream &tokens, SyntaxAnalyzerContext &context) {
     utils::TraceBlock block(context, "Identify node type");
     Token token = tokens.peek(context);
-    if (find(parse_node_token_types.begin(),
-             parse_node_token_types.end(),
-             token.type) == parse_node_token_types.end()) {
+    if (find(
+            parse_node_token_types.begin(), parse_node_token_types.end(),
+            token.type) == parse_node_token_types.end()) {
         ostringstream message;
         message << "Unexpected token '" << token
                 << "'. Expected any of the following token types: "
@@ -221,8 +232,8 @@ static ASTNodePtr parse_node(TokenStream &tokens,
     case TokenType::FLOAT:
         return parse_literal(tokens, context);
     case TokenType::IDENTIFIER:
-        if (tokens.has_tokens(2)
-            && tokens.peek(context, 1).type == TokenType::OPENING_PARENTHESIS) {
+        if (tokens.has_tokens(2) &&
+            tokens.peek(context, 1).type == TokenType::OPENING_PARENTHESIS) {
             return parse_function(tokens, context);
         } else {
             return parse_literal(tokens, context);

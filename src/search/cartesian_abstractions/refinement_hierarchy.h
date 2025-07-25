@@ -50,7 +50,6 @@ public:
     int get_abstract_state_id(const State &state) const;
 };
 
-
 class Node {
     /*
       While right_child is always the node of a (possibly split)
@@ -66,7 +65,8 @@ class Node {
     int var;
     int value;
 
-    // When splitting the corresponding state, we change this value to UNDEFINED.
+    // When splitting the corresponding state, we change this value to
+    // UNDEFINED.
     int state_id;
 
     bool information_is_valid() const;
