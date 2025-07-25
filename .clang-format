@@ -24,7 +24,7 @@ EmptyLineBeforeAccessModifier: Leave
 # Do not add/fix comments indicating which namespace ends at the closing brace.
 FixNamespaceComments: false
 # Put initializer list either on one line or one entry per line.
-PackConstructorInitializers: NextLineOnly
+PackConstructorInitializers: CurrentLine
 # Avoid line breaks between return type and function name.
 PenaltyReturnTypeOnItsOwnLine: 120
 # Do not allow empty lines at start of block.
