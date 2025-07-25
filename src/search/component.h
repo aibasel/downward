@@ -42,12 +42,8 @@ public:
         [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map, int depth) const {
         std::shared_ptr<AbstractProduct> component;
-        ////const TaskIndependentComponentBase *key = // key = this;
-        ////    static_cast<const TaskIndependentComponentBase *>(this);
-                        
-//        const TaskIndependentComponentBase *key = this;
         if (component_map->count(this)) {
-            log << std::string(depth, ' ')
+            log << std::string(depth >= 0 ? depth + 1 : depth, ' ')
                 << "Reusing task specific component '" << description
                 << "'..." << std::endl;
             component = dynamic_pointer_cast<AbstractProduct>(
@@ -56,7 +52,7 @@ public:
             log << std::string(depth, ' ')
                 << "Creating task specific component '" << description
                 << "'..." << std::endl;
-            component = create_task_specific(task, component_map, depth);
+            component = create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
             component_map->emplace(this, component);
         }
         return component;

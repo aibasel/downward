@@ -177,7 +177,7 @@ std::shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::crea
 
     transform(evals.begin(), evals.end(), ts_evaluators.begin(),
               [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
-                  return eval->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+                  return eval->get_task_specific(task, component_map, depth);
               }
               );
     return make_shared<TieBreakingOpenListFactory>(
