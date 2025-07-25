@@ -91,6 +91,21 @@ public:
     virtual int get_cached_estimate(const State &state) const override;
 };
 
+
+class TaskIndependentHeuristic : public TaskIndependentEvaluator {
+protected:
+    bool cache_evaluator_values;
+    std::shared_ptr</*TaskIndependent*/AbstractTask> task_transformation;
+public:
+    TaskIndependentHeuristic(const std::shared_ptr</*TaskIndependent*/AbstractTask> &task_transformation,
+                             bool cache_evaluator_values,
+                             const std::string &description,
+                             utils::Verbosity verbosity);
+    virtual ~TaskIndependentHeuristic() = default;
+};
+
+
+
 extern void add_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<

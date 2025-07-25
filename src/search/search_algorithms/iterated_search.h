@@ -10,7 +10,7 @@
 
 namespace iterated_search {
 class IteratedSearch : public SearchAlgorithm {
-    std::vector<parser::LazyValue> algorithm_configs;
+    std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms;
 
     bool pass_bound;
     bool repeat_last_phase;
@@ -29,11 +29,57 @@ class IteratedSearch : public SearchAlgorithm {
     virtual SearchStatus step() override;
 
 public:
-    IteratedSearch(const plugins::Options &opts); // TODO this still needs the options objects, the prototype for issue559 resolves this
+    IteratedSearch(
+        std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+        bool pass_bound,
+        bool repeat_last_phase,
+        bool continue_on_fail,
+        bool continue_on_solve,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const std::string &name,
+        utils::Verbosity verbosity,
+        const std::shared_ptr<AbstractTask> &task);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
 };
+
+
+class TaskIndependentIteratedSearch : public TaskIndependentSearchAlgorithm {
+private:
+    std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms;
+
+    bool pass_bound;
+    bool repeat_last_phase;
+    bool continue_on_fail;
+    bool continue_on_solve;
+
+    std::shared_ptr<SearchAlgorithm> create_task_specific(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const override;
+public:
+    explicit TaskIndependentIteratedSearch(
+        std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+        bool pass_bound,
+        bool repeat_last_phase,
+        bool continue_on_fail,
+        bool continue_on_solve,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const std::string &name,
+        utils::Verbosity verbosity);
+
+    virtual ~TaskIndependentIteratedSearch() override = default;
+
+
+};
+
+
+
 }
 
 #endif

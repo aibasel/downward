@@ -1,6 +1,7 @@
 #ifndef OPEN_LIST_FACTORY_H
 #define OPEN_LIST_FACTORY_H
 
+#include "component.h"
 #include "open_list.h"
 
 #include "plugins/plugin.h"
@@ -8,7 +9,7 @@
 #include <memory>
 
 
-class OpenListFactory {
+class OpenListFactory : public Component {
 public:
     OpenListFactory() = default;
     virtual ~OpenListFactory() = default;
@@ -28,6 +29,13 @@ public:
     std::unique_ptr<OpenList<T>> create_open_list();
 };
 
+class TaskIndependentOpenListFactory : public TaskIndependentComponent<OpenListFactory> {
+public:
+    TaskIndependentOpenListFactory(const std::string &description, utils::Verbosity verbosity);
+    virtual ~TaskIndependentOpenListFactory() = default;
+
+    TaskIndependentOpenListFactory(const TaskIndependentOpenListFactory &) = delete;
+};
 
 extern void add_open_list_options_to_feature(
     plugins::Feature &feature);

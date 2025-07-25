@@ -1,13 +1,14 @@
 #ifndef SEARCH_ALGORITHMS_EAGER_SEARCH_H
 #define SEARCH_ALGORITHMS_EAGER_SEARCH_H
 
-#include "../open_list.h"
+#include "../open_list_factory.h"
 #include "../search_algorithm.h"
 
 #include <memory>
 #include <vector>
 
 class Evaluator;
+class TaskIndependentEvaluator;
 class PruningMethod;
 class OpenListFactory;
 
@@ -44,17 +45,56 @@ public:
         const std::shared_ptr<PruningMethod> &pruning,
         const std::shared_ptr<Evaluator> &lazy_evaluator,
         OperatorCost cost_type, int bound, double max_time,
-        const std::string &description, utils::Verbosity verbosity);
+        const std::string &description, utils::Verbosity verbosity,
+	const std::shared_ptr<AbstractTask> &task);
 
     virtual void print_statistics() const override;
 
     void dump_search_space() const;
 };
 
+
+class TaskIndependentEagerSearch : public TaskIndependentSearchAlgorithm {
+private:
+    const bool reopen_closed_nodes;
+
+    std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory;
+
+
+    std::shared_ptr<TaskIndependentEvaluator> f_evaluator;
+
+    std::vector<TaskIndependentEvaluator *> path_dependent_evaluators;
+    std::vector<std::shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators;
+    std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator;
+
+    std::shared_ptr<PruningMethod> pruning_method;
+
+    std::shared_ptr<SearchAlgorithm> create_task_specific(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const override;
+public:
+    TaskIndependentEagerSearch(
+        std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory,
+        bool reopen_closed_nodes,
+        std::shared_ptr<TaskIndependentEvaluator> f_evaluator,
+        std::vector<std::shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
+        std::shared_ptr<PruningMethod> pruning_method,
+        std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator,
+        OperatorCost cost_type,
+        int bound,
+        double max_time,
+        const std::string &name,
+        utils::Verbosity verbosity);
+
+    virtual ~TaskIndependentEagerSearch() override = default;
+};
+
+
 extern void add_eager_search_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<std::shared_ptr<PruningMethod>,
-                  std::shared_ptr<Evaluator>, OperatorCost, int, double,
+                  std::shared_ptr<TaskIndependentEvaluator>, OperatorCost, int, double,
                   std::string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts);
 }
