@@ -15,9 +15,9 @@
 using namespace std;
 
 namespace search_common {
-using GEval = g_evaluator::TaskIndependentGEvaluator;
-using SumEval = sum_evaluator::TaskIndependentSumEvaluator;
-using WeightedEval = weighted_evaluator::TaskIndependentWeightedEvaluator;
+using TIGEval = g_evaluator::TaskIndependentGEvaluator;
+using TISumEval = sum_evaluator::TaskIndependentSumEvaluator;
+using WeightedEval = weighted_evaluator::WeightedEvaluator;
 
 //issue559///*
 //issue559//  Helper function for common code of create_greedy_open_list_factory
@@ -107,9 +107,9 @@ pair<shared_ptr<TaskIndependentOpenListFactory>, const shared_ptr<TaskIndependen
 create_task_independent_astar_open_list_factory_and_f_eval(
     const shared_ptr<TaskIndependentEvaluator> &h_eval, const string &description, utils::Verbosity verbosity
     ) {
-    shared_ptr<GEval> g = make_shared<GEval>(description + ".g_eval", verbosity);
+    shared_ptr<TIGEval> g = make_shared<TIGEval>(description + ".g_eval", verbosity);
     shared_ptr<TaskIndependentEvaluator> f =
-        make_shared<SumEval>(
+        make_shared<TISumEval>(
             vector<shared_ptr<TaskIndependentEvaluator>>({g, h_eval}),
             description + ".f_eval", verbosity);
     vector<shared_ptr<TaskIndependentEvaluator>> evals = {f, h_eval};
