@@ -20,7 +20,9 @@ using namespace std;
 
 namespace merge_and_shrink {
 ShrinkFH::ShrinkFH(HighLow shrink_f, HighLow shrink_h, int random_seed)
-    : ShrinkBucketBased(random_seed), f_start(shrink_f), h_start(shrink_h) {
+    : ShrinkBucketBased(random_seed),
+      f_start(shrink_f),
+      h_start(shrink_h) {
 }
 
 vector<ShrinkBucketBased::Bucket> ShrinkFH::partition_into_buckets(
@@ -185,8 +187,7 @@ void ShrinkFH::dump_strategy_specific_options(utils::LogProxy &log) const {
 
 class ShrinkFHFeature : public plugins::TypedFeature<ShrinkStrategy, ShrinkFH> {
 public:
-    ShrinkFHFeature()
-        : TypedFeature("shrink_fh") {
+    ShrinkFHFeature() : TypedFeature("shrink_fh") {
         document_title("f-preserving shrink strategy");
         document_synopsis(
             "This shrink strategy implements the algorithm described in"

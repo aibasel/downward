@@ -22,8 +22,7 @@ class AbstractSearch {
         int h;
         Transition incoming_transition;
     public:
-        AbstractSearchInfo()
-            : h(0), incoming_transition(UNDEFINED, UNDEFINED) {
+        AbstractSearchInfo() : h(0), incoming_transition(UNDEFINED, UNDEFINED) {
             reset();
         }
 

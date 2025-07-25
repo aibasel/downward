@@ -612,8 +612,7 @@ static plugins::FeaturePlugin<PatternCollectionGeneratorHillclimbingFeature>
 class IPDBFeature
     : public plugins::TypedFeature<Evaluator, CanonicalPDBsHeuristic> {
 public:
-    IPDBFeature()
-        : TypedFeature("ipdb") {
+    IPDBFeature() : TypedFeature("ipdb") {
         document_subcategory("heuristics_pdb");
         document_title("iPDB");
         document_synopsis(

@@ -4,8 +4,7 @@ using namespace std;
 
 const int EvaluationResult::INFTY = numeric_limits<int>::max();
 
-EvaluationResult::EvaluationResult()
-    : evaluator_value(UNINITIALIZED) {
+EvaluationResult::EvaluationResult() : evaluator_value(UNINITIALIZED) {
 }
 
 bool EvaluationResult::is_uninitialized() const {

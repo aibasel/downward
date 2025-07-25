@@ -136,7 +136,9 @@ void MergeTreeNode::inorder(
 MergeTree::MergeTree(
     MergeTreeNode *root, const shared_ptr<utils::RandomNumberGenerator> &rng,
     UpdateOption update_option)
-    : root(root), rng(rng), update_option(update_option) {
+    : root(root),
+      rng(rng),
+      update_option(update_option) {
 }
 
 MergeTree::~MergeTree() {

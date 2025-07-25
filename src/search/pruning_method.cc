@@ -79,8 +79,7 @@ tuple<utils::Verbosity> get_pruning_arguments_from_options(
 static class PruningMethodCategoryPlugin
     : public plugins::TypedCategoryPlugin<PruningMethod> {
 public:
-    PruningMethodCategoryPlugin()
-        : TypedCategoryPlugin("PruningMethod") {
+    PruningMethodCategoryPlugin() : TypedCategoryPlugin("PruningMethod") {
         document_synopsis("Prune or reorder applicable operators.");
     }
 } _category_plugin;

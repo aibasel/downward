@@ -149,8 +149,7 @@ void AdditiveHeuristic::compute_heuristic_for_cegar(const State &state) {
 class AdditiveHeuristicFeature
     : public plugins::TypedFeature<Evaluator, AdditiveHeuristic> {
 public:
-    AdditiveHeuristicFeature()
-        : TypedFeature("add") {
+    AdditiveHeuristicFeature() : TypedFeature("add") {
         document_title("Additive heuristic");
 
         relaxation_heuristic::add_relaxation_heuristic_options_to_feature(

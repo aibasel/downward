@@ -263,8 +263,7 @@ class EnforcedHillClimbingSearchFeature
     : public plugins::TypedFeature<
           SearchAlgorithm, EnforcedHillClimbingSearch> {
 public:
-    EnforcedHillClimbingSearchFeature()
-        : TypedFeature("ehc") {
+    EnforcedHillClimbingSearchFeature() : TypedFeature("ehc") {
         document_title("Lazy enforced hill-climbing");
         document_synopsis("");
 

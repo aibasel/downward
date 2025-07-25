@@ -101,8 +101,7 @@ class MergeScoringFunctionMIASMFeature
     : public plugins::TypedFeature<
           MergeScoringFunction, MergeScoringFunctionMIASM> {
 public:
-    MergeScoringFunctionMIASMFeature()
-        : TypedFeature("sf_miasm") {
+    MergeScoringFunctionMIASMFeature() : TypedFeature("sf_miasm") {
         document_title("MIASM");
         document_synopsis(
             "This scoring function favors merging transition systems such that in "

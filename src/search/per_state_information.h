@@ -96,7 +96,9 @@ class PerStateInformation : public subscriber::Subscriber<StateRegistry> {
 
 public:
     PerStateInformation()
-        : default_value(), cached_registry(nullptr), cached_entries(nullptr) {
+        : default_value(),
+          cached_registry(nullptr),
+          cached_entries(nullptr) {
     }
 
     explicit PerStateInformation(const Entry &default_value_)

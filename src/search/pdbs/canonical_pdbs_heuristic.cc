@@ -94,8 +94,7 @@ tuple<double> get_canonical_pdbs_arguments_from_options(
 class CanonicalPDBsHeuristicFeature
     : public plugins::TypedFeature<Evaluator, CanonicalPDBsHeuristic> {
 public:
-    CanonicalPDBsHeuristicFeature()
-        : TypedFeature("cpdbs") {
+    CanonicalPDBsHeuristicFeature() : TypedFeature("cpdbs") {
         document_subcategory("heuristics_pdb");
         document_title("Canonical PDB");
         document_synopsis(

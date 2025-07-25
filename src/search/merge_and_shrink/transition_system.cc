@@ -89,7 +89,8 @@ bool LocalLabelInfo::is_consistent() const {
 TransitionSystemConstIterator::TransitionSystemConstIterator(
     vector<LocalLabelInfo>::const_iterator it,
     vector<LocalLabelInfo>::const_iterator end_it)
-    : it(it), end_it(end_it) {
+    : it(it),
+      end_it(end_it) {
     advance_to_next_valid_index();
 }
 

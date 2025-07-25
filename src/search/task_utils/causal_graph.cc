@@ -60,8 +60,7 @@ public:
     void compute_relation(IntRelation &result) const;
 };
 
-IntRelationBuilder::IntRelationBuilder(int range)
-    : int_sets(range) {
+IntRelationBuilder::IntRelationBuilder(int range) : int_sets(range) {
 }
 
 IntRelationBuilder::~IntRelationBuilder() {

@@ -59,8 +59,7 @@ public:
 static class PatternGeneratorCategoryPlugin
     : public plugins::TypedCategoryPlugin<PatternGenerator> {
 public:
-    PatternGeneratorCategoryPlugin()
-        : TypedCategoryPlugin("PatternGenerator") {
+    PatternGeneratorCategoryPlugin() : TypedCategoryPlugin("PatternGenerator") {
         document_synopsis("Factory for single patterns");
     }
 } _category_plugin_single;

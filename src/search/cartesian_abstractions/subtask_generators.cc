@@ -93,8 +93,7 @@ static Facts filter_and_order_facts(
     return facts;
 }
 
-TaskDuplicator::TaskDuplicator(int copies)
-    : num_copies(copies) {
+TaskDuplicator::TaskDuplicator(int copies) : num_copies(copies) {
 }
 
 SharedTasks TaskDuplicator::get_subtasks(
@@ -108,7 +107,8 @@ SharedTasks TaskDuplicator::get_subtasks(
 }
 
 GoalDecomposition::GoalDecomposition(FactOrder order, int random_seed)
-    : fact_order(order), rng(utils::get_rng(random_seed)) {
+    : fact_order(order),
+      rng(utils::get_rng(random_seed)) {
 }
 
 SharedTasks GoalDecomposition::get_subtasks(
@@ -183,8 +183,7 @@ static tuple<FactOrder, int> get_fact_order_arguments_from_options(
 class TaskDuplicatorFeature
     : public plugins::TypedFeature<SubtaskGenerator, TaskDuplicator> {
 public:
-    TaskDuplicatorFeature()
-        : TypedFeature("original") {
+    TaskDuplicatorFeature() : TypedFeature("original") {
         add_option<int>(
             "copies", "number of task copies", "1",
             plugins::Bounds("1", "infinity"));
@@ -202,8 +201,7 @@ static plugins::FeaturePlugin<TaskDuplicatorFeature> _plugin_original;
 class GoalDecompositionFeature
     : public plugins::TypedFeature<SubtaskGenerator, GoalDecomposition> {
 public:
-    GoalDecompositionFeature()
-        : TypedFeature("goals") {
+    GoalDecompositionFeature() : TypedFeature("goals") {
         add_fact_order_option(*this);
     }
 
@@ -219,8 +217,7 @@ static plugins::FeaturePlugin<GoalDecompositionFeature> _plugin_goals;
 class LandmarkDecompositionFeature
     : public plugins::TypedFeature<SubtaskGenerator, LandmarkDecomposition> {
 public:
-    LandmarkDecompositionFeature()
-        : TypedFeature("landmarks") {
+    LandmarkDecompositionFeature() : TypedFeature("landmarks") {
         add_fact_order_option(*this);
         add_option<bool>(
             "combine_facts", "combine landmark facts with domain abstraction",
@@ -240,8 +237,7 @@ static plugins::FeaturePlugin<LandmarkDecompositionFeature> _plugin_landmarks;
 static class SubtaskGeneratorCategoryPlugin
     : public plugins::TypedCategoryPlugin<SubtaskGenerator> {
 public:
-    SubtaskGeneratorCategoryPlugin()
-        : TypedCategoryPlugin("SubtaskGenerator") {
+    SubtaskGeneratorCategoryPlugin() : TypedCategoryPlugin("SubtaskGenerator") {
         document_synopsis("Subtask generator (used by the CEGAR heuristic).");
     }
 } _category_plugin;

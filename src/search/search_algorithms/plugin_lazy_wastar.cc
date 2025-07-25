@@ -11,8 +11,7 @@ static const string DEFAULT_LAZY_BOOST = "1000";
 class LazyWAstarSearchFeature
     : public plugins::TypedFeature<SearchAlgorithm, lazy_search::LazySearch> {
 public:
-    LazyWAstarSearchFeature()
-        : TypedFeature("lazy_wastar") {
+    LazyWAstarSearchFeature() : TypedFeature("lazy_wastar") {
         document_title("(Weighted) A* search (lazy)");
         document_synopsis(
             "Weighted A* is a special case of lazy best first search.");

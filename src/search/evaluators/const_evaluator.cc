@@ -7,7 +7,8 @@ using namespace std;
 namespace const_evaluator {
 ConstEvaluator::ConstEvaluator(
     int value, const string &description, utils::Verbosity verbosity)
-    : Evaluator(false, false, false, description, verbosity), value(value) {
+    : Evaluator(false, false, false, description, verbosity),
+      value(value) {
 }
 
 EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
@@ -19,8 +20,7 @@ EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
 class ConstEvaluatorFeature
     : public plugins::TypedFeature<Evaluator, ConstEvaluator> {
 public:
-    ConstEvaluatorFeature()
-        : TypedFeature("const") {
+    ConstEvaluatorFeature() : TypedFeature("const") {
         document_subcategory("evaluators_basic");
         document_title("Constant evaluator");
         document_synopsis("Returns a constant value.");

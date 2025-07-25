@@ -120,7 +120,8 @@ class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
             const segmented_vector::SegmentedArrayVector<PackedStateBin>
                 &state_data_pool,
             int state_size)
-            : state_data_pool(state_data_pool), state_size(state_size) {
+            : state_data_pool(state_data_pool),
+              state_size(state_size) {
         }
 
         int_hash_set::HashType operator()(int id) const {
@@ -141,7 +142,8 @@ class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
             const segmented_vector::SegmentedArrayVector<PackedStateBin>
                 &state_data_pool,
             int state_size)
-            : state_data_pool(state_data_pool), state_size(state_size) {
+            : state_data_pool(state_data_pool),
+              state_size(state_size) {
         }
 
         bool operator()(int lhs, int rhs) const {
@@ -245,7 +247,8 @@ public:
         StateID pos;
 
         const_iterator(const StateRegistry &registry, size_t start)
-            : registry(registry), pos(start) {
+            : registry(registry),
+              pos(start) {
             utils::unused_variable(this->registry);
         }
     public:

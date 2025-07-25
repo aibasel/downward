@@ -134,8 +134,7 @@ void IteratedSearch::save_plan_if_necessary() {
 class IteratedSearchFeature
     : public plugins::TypedFeature<SearchAlgorithm, IteratedSearch> {
 public:
-    IteratedSearchFeature()
-        : TypedFeature("iterated") {
+    IteratedSearchFeature() : TypedFeature("iterated") {
         document_title("Iterated search");
         document_synopsis("");
 

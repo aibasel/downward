@@ -41,7 +41,9 @@ public:
 template<class Entry>
 BestFirstOpenList<Entry>::BestFirstOpenList(
     const shared_ptr<Evaluator> &evaluator, bool preferred_only)
-    : OpenList<Entry>(preferred_only), size(0), evaluator(evaluator) {
+    : OpenList<Entry>(preferred_only),
+      size(0),
+      evaluator(evaluator) {
 }
 
 template<class Entry>
@@ -98,7 +100,8 @@ bool BestFirstOpenList<Entry>::is_reliable_dead_end(
 
 BestFirstOpenListFactory::BestFirstOpenListFactory(
     const shared_ptr<Evaluator> &eval, bool pref_only)
-    : eval(eval), pref_only(pref_only) {
+    : eval(eval),
+      pref_only(pref_only) {
 }
 
 unique_ptr<StateOpenList> BestFirstOpenListFactory::create_state_open_list() {
@@ -112,8 +115,7 @@ unique_ptr<EdgeOpenList> BestFirstOpenListFactory::create_edge_open_list() {
 class BestFirstOpenListFeature
     : public plugins::TypedFeature<OpenListFactory, BestFirstOpenListFactory> {
 public:
-    BestFirstOpenListFeature()
-        : TypedFeature("single") {
+    BestFirstOpenListFeature() : TypedFeature("single") {
         document_title("Best-first open list");
         document_synopsis(
             "Open list that uses a single evaluator and FIFO tiebreaking.");

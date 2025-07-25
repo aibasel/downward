@@ -256,8 +256,7 @@ void HMHeuristic::dump_table() const {
 class HMHeuristicFeature
     : public plugins::TypedFeature<Evaluator, HMHeuristic> {
 public:
-    HMHeuristicFeature()
-        : TypedFeature("hm") {
+    HMHeuristicFeature() : TypedFeature("hm") {
         document_title("h^m heuristic");
 
         add_option<int>(

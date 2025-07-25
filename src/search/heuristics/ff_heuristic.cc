@@ -74,8 +74,7 @@ int FFHeuristic::compute_heuristic(const State &ancestor_state) {
 class FFHeuristicFeature
     : public plugins::TypedFeature<Evaluator, FFHeuristic> {
 public:
-    FFHeuristicFeature()
-        : TypedFeature("ff") {
+    FFHeuristicFeature() : TypedFeature("ff") {
         document_title("FF heuristic");
 
         relaxation_heuristic::add_relaxation_heuristic_options_to_feature(

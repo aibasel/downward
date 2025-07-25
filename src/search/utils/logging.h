@@ -35,7 +35,9 @@ class Log {
 
 public:
     explicit Log(Verbosity verbosity)
-        : stream(std::cout), verbosity(verbosity), line_has_started(false) {
+        : stream(std::cout),
+          verbosity(verbosity),
+          line_has_started(false) {
     }
 
     template<typename T>
@@ -82,8 +84,7 @@ private:
     std::shared_ptr<Log> log;
 
 public:
-    explicit LogProxy(const std::shared_ptr<Log> &log)
-        : log(log) {
+    explicit LogProxy(const std::shared_ptr<Log> &log) : log(log) {
     }
 
     template<typename T>

@@ -30,7 +30,8 @@ tuple<LPSolverType> get_lp_solver_arguments_from_options(
 }
 
 LPConstraint::LPConstraint(double lower_bound, double upper_bound)
-    : lower_bound(lower_bound), upper_bound(upper_bound) {
+    : lower_bound(lower_bound),
+      upper_bound(upper_bound) {
 }
 
 void LPConstraint::clear() {

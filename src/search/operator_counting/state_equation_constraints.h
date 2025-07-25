@@ -26,8 +26,7 @@ struct Proposition {
     std::set<int> sometimes_produced_by;
     std::set<int> always_consumed_by;
 
-    Proposition()
-        : constraint_index(-1) {
+    Proposition() : constraint_index(-1) {
     }
     ~Proposition() = default;
 };

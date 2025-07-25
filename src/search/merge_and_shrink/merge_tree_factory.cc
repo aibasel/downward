@@ -13,7 +13,8 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeTreeFactory::MergeTreeFactory(int random_seed, UpdateOption update_option)
-    : rng(utils::get_rng(random_seed)), update_option(update_option) {
+    : rng(utils::get_rng(random_seed)),
+      update_option(update_option) {
 }
 
 void MergeTreeFactory::dump_options(utils::LogProxy &log) const {
@@ -63,8 +64,7 @@ tuple<int, UpdateOption> get_merge_tree_arguments_from_options(
 static class MergeTreeFactoryCategoryPlugin
     : public plugins::TypedCategoryPlugin<MergeTreeFactory> {
 public:
-    MergeTreeFactoryCategoryPlugin()
-        : TypedCategoryPlugin("MergeTree") {
+    MergeTreeFactoryCategoryPlugin() : TypedCategoryPlugin("MergeTree") {
         document_synopsis(
             "This page describes the available merge trees that can be used to "
             "precompute a merge strategy, either for the entire task or a given "

@@ -175,7 +175,8 @@ ExplicitVariable::ExplicitVariable(istream &in) {
 
 ExplicitEffect::ExplicitEffect(
     int var, int value, vector<FactPair> &&conditions)
-    : fact(var, value), conditions(move(conditions)) {
+    : fact(var, value),
+      conditions(move(conditions)) {
 }
 
 void ExplicitOperator::read_pre_post(istream &in) {
@@ -501,8 +502,7 @@ void read_root_task(istream &in) {
 class RootTaskFeature
     : public plugins::TypedFeature<AbstractTask, AbstractTask> {
 public:
-    RootTaskFeature()
-        : TypedFeature("no_transform") {
+    RootTaskFeature() : TypedFeature("no_transform") {
     }
 
     virtual shared_ptr<AbstractTask> create_component(

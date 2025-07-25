@@ -32,7 +32,8 @@ class LandmarkNode {
     Landmark landmark;
 public:
     explicit LandmarkNode(Landmark &&landmark)
-        : id(-1), landmark(std::move(landmark)) {
+        : id(-1),
+          landmark(std::move(landmark)) {
     }
 
     bool operator==(const LandmarkNode &other) const {

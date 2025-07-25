@@ -32,7 +32,8 @@ struct ConditionalNoop {
 
     ConditionalNoop(
         std::vector<int> &&effect_condition, std::vector<int> &&effect)
-        : effect_condition(move(effect_condition)), effect(move(effect)) {
+        : effect_condition(move(effect_condition)),
+          effect(move(effect)) {
     }
 };
 
@@ -71,7 +72,8 @@ struct HMEntry {
     std::vector<std::pair<int, int>> triggered_operators;
 
     explicit HMEntry(Propositions &&propositions)
-        : propositions(move(propositions)), reached(false) {
+        : propositions(move(propositions)),
+          reached(false) {
     }
 };
 

@@ -25,8 +25,7 @@ class Heuristic : public Evaluator {
         int h : 31;
         unsigned int dirty : 1;
 
-        HEntry(int h, bool dirty)
-            : h(h), dirty(dirty) {
+        HEntry(int h, bool dirty) : h(h), dirty(dirty) {
         }
     };
     static_assert(sizeof(HEntry) == 4, "HEntry has unexpected size.");

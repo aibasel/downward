@@ -77,8 +77,7 @@ void StubbornSetsSimple::handle_stubborn_operator(
 class StubbornSetsSimpleFeature
     : public plugins::TypedFeature<PruningMethod, StubbornSetsSimple> {
 public:
-    StubbornSetsSimpleFeature()
-        : TypedFeature("stubborn_sets_simple") {
+    StubbornSetsSimpleFeature() : TypedFeature("stubborn_sets_simple") {
         document_title("Stubborn sets simple");
         document_synopsis(
             "Stubborn sets represent a state pruning method which computes a subset "

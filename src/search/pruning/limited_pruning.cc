@@ -57,8 +57,7 @@ void LimitedPruning::prune(const State &state, vector<OperatorID> &op_ids) {
 class LimitedPruningFeature
     : public plugins::TypedFeature<PruningMethod, LimitedPruning> {
 public:
-    LimitedPruningFeature()
-        : TypedFeature("limited_pruning") {
+    LimitedPruningFeature() : TypedFeature("limited_pruning") {
         document_title("Limited pruning");
         document_synopsis(
             "Limited pruning applies another pruning method and switches it off "

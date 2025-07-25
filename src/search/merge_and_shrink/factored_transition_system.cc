@@ -17,7 +17,8 @@ using namespace std;
 namespace merge_and_shrink {
 FTSConstIterator::FTSConstIterator(
     const FactoredTransitionSystem &fts, bool end)
-    : fts(fts), current_index((end ? fts.get_size() : 0)) {
+    : fts(fts),
+      current_index((end ? fts.get_size() : 0)) {
     next_valid_index();
 }
 

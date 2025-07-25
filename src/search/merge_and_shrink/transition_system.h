@@ -24,8 +24,7 @@ struct Transition {
     int src;
     int target;
 
-    Transition(int src, int target)
-        : src(src), target(target) {
+    Transition(int src, int target) : src(src), target(target) {
     }
 
     bool operator==(const Transition &other) const {

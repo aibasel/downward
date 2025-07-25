@@ -41,8 +41,7 @@ PatternInformation PatternGeneratorCEGAR::compute_pattern(
 class PatternGeneratorCEGARFeature
     : public plugins::TypedFeature<PatternGenerator, PatternGeneratorCEGAR> {
 public:
-    PatternGeneratorCEGARFeature()
-        : TypedFeature("cegar_pattern") {
+    PatternGeneratorCEGARFeature() : TypedFeature("cegar_pattern") {
         document_title("CEGAR");
         document_synopsis(
             "This pattern generator uses the CEGAR algorithm restricted to a "

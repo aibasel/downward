@@ -53,8 +53,7 @@ static basic_string<char> paper_references() {
 class PDBHeuristicFeature
     : public plugins::TypedFeature<Evaluator, PDBHeuristic> {
 public:
-    PDBHeuristicFeature()
-        : TypedFeature("pdb") {
+    PDBHeuristicFeature() : TypedFeature("pdb") {
         document_subcategory("heuristics_pdb");
         document_title("Pattern database heuristic");
         document_synopsis(

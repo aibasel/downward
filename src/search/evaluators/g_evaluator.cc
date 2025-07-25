@@ -19,8 +19,7 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
 
 class GEvaluatorFeature : public plugins::TypedFeature<Evaluator, GEvaluator> {
 public:
-    GEvaluatorFeature()
-        : TypedFeature("g") {
+    GEvaluatorFeature() : TypedFeature("g") {
         document_subcategory("evaluators_basic");
         document_title("g-value evaluator");
         document_synopsis(
