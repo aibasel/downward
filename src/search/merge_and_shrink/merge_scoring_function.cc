@@ -8,8 +8,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeScoringFunction::MergeScoringFunction()
-    : initialized(false) {
+MergeScoringFunction::MergeScoringFunction() : initialized(false) {
 }
 
 void MergeScoringFunction::dump_options(utils::LogProxy &log) const {

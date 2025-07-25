@@ -352,8 +352,7 @@ const plugins::Type &FunctionCallNode::get_type(
     return feature->get_type();
 }
 
-ListNode::ListNode(vector<ASTNodePtr> &&elements)
-    : elements(move(elements)) {
+ListNode::ListNode(vector<ASTNodePtr> &&elements) : elements(move(elements)) {
 }
 
 DecoratedASTNodePtr ListNode::decorate(DecorateContext &context) const {
@@ -427,8 +426,7 @@ const plugins::Type &ListNode::get_type(DecorateContext &context) const {
     }
 }
 
-LiteralNode::LiteralNode(const Token &value)
-    : value(value) {
+LiteralNode::LiteralNode(const Token &value) : value(value) {
 }
 
 DecoratedASTNodePtr LiteralNode::decorate(DecorateContext &context) const {

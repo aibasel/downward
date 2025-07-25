@@ -11,7 +11,8 @@
 using namespace std;
 
 SearchNode::SearchNode(const State &state, SearchNodeInfo &info)
-    : state(state), info(info) {
+    : state(state),
+      info(info) {
     assert(state.get_id() != StateID::no_state);
 }
 
@@ -117,7 +118,8 @@ void SearchNode::dump(const TaskProxy &task_proxy, utils::LogProxy &log) const {
 }
 
 SearchSpace::SearchSpace(StateRegistry &state_registry, utils::LogProxy &log)
-    : state_registry(state_registry), log(log) {
+    : state_registry(state_registry),
+      log(log) {
 }
 
 SearchNode SearchSpace::get_node(const State &state) {

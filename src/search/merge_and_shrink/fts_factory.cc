@@ -90,7 +90,8 @@ public:
 };
 
 FTSFactory::FTSFactory(const TaskProxy &task_proxy)
-    : task_proxy(task_proxy), task_has_conditional_effects(false) {
+    : task_proxy(task_proxy),
+      task_has_conditional_effects(false) {
 }
 
 FTSFactory::~FTSFactory() {

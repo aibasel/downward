@@ -24,8 +24,7 @@ struct Proposition {
     bool reached;
     bool excluded;
 
-    Proposition()
-        : fact(FactPair::no_fact), reached(false), excluded(false) {
+    Proposition() : fact(FactPair::no_fact), reached(false), excluded(false) {
     }
 
     bool operator<(const Proposition &other) const {

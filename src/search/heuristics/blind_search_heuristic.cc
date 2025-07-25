@@ -33,8 +33,7 @@ int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
 class BlindSearchHeuristicFeature
     : public plugins::TypedFeature<Evaluator, BlindSearchHeuristic> {
 public:
-    BlindSearchHeuristicFeature()
-        : TypedFeature("blind") {
+    BlindSearchHeuristicFeature() : TypedFeature("blind") {
         document_title("Blind heuristic");
         document_synopsis(
             "Returns cost of cheapest action for non-goal states, "

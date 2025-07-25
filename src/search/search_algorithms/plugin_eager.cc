@@ -9,8 +9,7 @@ namespace plugin_eager {
 class EagerSearchFeature
     : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
 public:
-    EagerSearchFeature()
-        : TypedFeature("eager") {
+    EagerSearchFeature() : TypedFeature("eager") {
         document_title("Eager best-first search");
         document_synopsis("");
 

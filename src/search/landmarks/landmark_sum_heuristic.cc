@@ -110,8 +110,7 @@ bool LandmarkSumHeuristic::dead_ends_are_reliable() const {
 class LandmarkSumHeuristicFeature
     : public plugins::TypedFeature<Evaluator, LandmarkSumHeuristic> {
 public:
-    LandmarkSumHeuristicFeature()
-        : TypedFeature("landmark_sum") {
+    LandmarkSumHeuristicFeature() : TypedFeature("landmark_sum") {
         document_title("Landmark sum heuristic");
         document_synopsis(
             "Formerly known as the landmark heuristic or landmark count "

@@ -296,8 +296,7 @@ void LabelReduction::dump_options(utils::LogProxy &log) const {
 class LabelReductionFeature
     : public plugins::TypedFeature<LabelReduction, LabelReduction> {
 public:
-    LabelReductionFeature()
-        : TypedFeature("exact") {
+    LabelReductionFeature() : TypedFeature("exact") {
         document_title("Exact generalized label reduction");
         document_synopsis(
             "This class implements the exact generalized label reduction "
@@ -355,8 +354,7 @@ static plugins::FeaturePlugin<LabelReductionFeature> _plugin;
 static class LabelReductionCategoryPlugin
     : public plugins::TypedCategoryPlugin<LabelReduction> {
 public:
-    LabelReductionCategoryPlugin()
-        : TypedCategoryPlugin("LabelReduction") {
+    LabelReductionCategoryPlugin() : TypedCategoryPlugin("LabelReduction") {
         document_synopsis(
             "This page describes the current single 'option' for label reduction.");
     }

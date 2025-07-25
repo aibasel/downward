@@ -59,8 +59,7 @@ struct OperatorRange {
     int begin;
     int end;
 
-    OperatorRange(int begin, int end)
-        : begin(begin), end(end) {
+    OperatorRange(int begin, int end) : begin(begin), end(end) {
     }
 
     bool empty() const {
@@ -81,7 +80,8 @@ class OperatorInfo {
     vector<FactPair> precondition;
 public:
     OperatorInfo(OperatorID op, vector<FactPair> precondition)
-        : op(op), precondition(move(precondition)) {
+        : op(op),
+          precondition(move(precondition)) {
     }
 
     bool operator<(const OperatorInfo &other) const {

@@ -105,8 +105,7 @@ class MergeScoringFunctionDFPFeature
     : public plugins::TypedFeature<
           MergeScoringFunction, MergeScoringFunctionDFP> {
 public:
-    MergeScoringFunctionDFPFeature()
-        : TypedFeature("dfp") {
+    MergeScoringFunctionDFPFeature() : TypedFeature("dfp") {
         document_title("DFP scoring");
         document_synopsis(
             "This scoring function computes the 'DFP' score as described in the "

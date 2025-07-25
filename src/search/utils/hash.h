@@ -145,8 +145,7 @@ class HashState {
     }
 
 public:
-    HashState()
-        : a(0xdeadbeef), b(a), c(a), pending_values(0) {
+    HashState() : a(0xdeadbeef), b(a), c(a), pending_values(0) {
     }
 
     void feed(std::uint32_t value) {

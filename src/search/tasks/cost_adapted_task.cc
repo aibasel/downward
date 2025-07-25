@@ -29,8 +29,7 @@ int CostAdaptedTask::get_operator_cost(int index, bool is_axiom) const {
 class CostAdaptedTaskFeature
     : public plugins::TypedFeature<AbstractTask, CostAdaptedTask> {
 public:
-    CostAdaptedTaskFeature()
-        : TypedFeature("adapt_costs") {
+    CostAdaptedTaskFeature() : TypedFeature("adapt_costs") {
         document_title("Cost-adapted task");
         document_synopsis("A cost-adapting transformation of the root task.");
 

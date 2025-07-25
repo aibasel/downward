@@ -47,8 +47,7 @@ PatternInformation PatternGeneratorRandom::compute_pattern(
 class PatternGeneratorRandomFeature
     : public plugins::TypedFeature<PatternGenerator, PatternGeneratorRandom> {
 public:
-    PatternGeneratorRandomFeature()
-        : TypedFeature("random_pattern") {
+    PatternGeneratorRandomFeature() : TypedFeature("random_pattern") {
         document_title("Random Pattern");
         document_synopsis(
             "This pattern generator implements the 'single randomized "

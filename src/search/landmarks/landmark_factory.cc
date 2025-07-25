@@ -17,7 +17,8 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactory::LandmarkFactory(utils::Verbosity verbosity)
-    : log(get_log_for_verbosity(verbosity)), landmark_graph(nullptr) {
+    : log(get_log_for_verbosity(verbosity)),
+      landmark_graph(nullptr) {
 }
 
 void LandmarkFactory::resize_operators_providing_effect(
@@ -202,8 +203,7 @@ bool get_use_orders_arguments_from_options(const plugins::Options &opts) {
 static class LandmarkFactoryCategoryPlugin
     : public plugins::TypedCategoryPlugin<LandmarkFactory> {
 public:
-    LandmarkFactoryCategoryPlugin()
-        : TypedCategoryPlugin("LandmarkFactory") {
+    LandmarkFactoryCategoryPlugin() : TypedCategoryPlugin("LandmarkFactory") {
         document_synopsis(
             "A landmark factory specification is either a newly created "
             "instance or a landmark factory that has been defined previously. "

@@ -292,8 +292,7 @@ class PatternCollectionGeneratorSystematicFeature
     : public plugins::TypedFeature<
           PatternCollectionGenerator, PatternCollectionGeneratorSystematic> {
 public:
-    PatternCollectionGeneratorSystematicFeature()
-        : TypedFeature("systematic") {
+    PatternCollectionGeneratorSystematicFeature() : TypedFeature("systematic") {
         document_title("Systematically generated patterns");
         document_synopsis(
             "Generates all (interesting) patterns with up to pattern_max_size "

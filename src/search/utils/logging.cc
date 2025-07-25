@@ -42,14 +42,12 @@ LogProxy get_silent_log() {
     return utils::get_log_for_verbosity(utils::Verbosity::SILENT);
 }
 
-ContextError::ContextError(const string &msg)
-    : Exception(msg) {
+ContextError::ContextError(const string &msg) : Exception(msg) {
 }
 
 const string Context::INDENT = "  ";
 
-Context::Context()
-    : initial_stack_size(0) {
+Context::Context() : initial_stack_size(0) {
 }
 
 Context::Context(const Context &context)
@@ -103,7 +101,8 @@ void Context::warn(const string &message) const {
 }
 
 TraceBlock::TraceBlock(Context &context, const string &block_name)
-    : context(context), block_name(context.decorate_block_name(block_name)) {
+    : context(context),
+      block_name(context.decorate_block_name(block_name)) {
     context.enter_block(this->block_name);
 }
 

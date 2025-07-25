@@ -307,8 +307,7 @@ class PatternCollectionGeneratorGeneticFeature
     : public plugins::TypedFeature<
           PatternCollectionGenerator, PatternCollectionGeneratorGenetic> {
 public:
-    PatternCollectionGeneratorGeneticFeature()
-        : TypedFeature("genetic") {
+    PatternCollectionGeneratorGeneticFeature() : TypedFeature("genetic") {
         document_title("Genetic Algorithm Patterns");
         document_synopsis(
             "The following paper describes the automated creation of pattern "

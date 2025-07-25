@@ -52,8 +52,7 @@ void MergeSelector::dump_options(utils::LogProxy &log) const {
 static class MergeSelectorCategoryPlugin
     : public plugins::TypedCategoryPlugin<MergeSelector> {
 public:
-    MergeSelectorCategoryPlugin()
-        : TypedCategoryPlugin("MergeSelector") {
+    MergeSelectorCategoryPlugin() : TypedCategoryPlugin("MergeSelector") {
         document_synopsis(
             "This page describes the available merge selectors. They are used to "
             "compute the next merge purely based on the state of the given factored "

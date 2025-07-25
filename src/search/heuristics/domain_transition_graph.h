@@ -68,8 +68,7 @@ struct LocalAssignment {
     short local_var;
     short value;
 
-    LocalAssignment(int var, int val)
-        : local_var(var), value(val) {
+    LocalAssignment(int var, int val) : local_var(var), value(val) {
         // Check overflow.
         assert(local_var == var);
         assert(value == val);
@@ -85,7 +84,10 @@ struct ValueTransitionLabel {
     ValueTransitionLabel(
         int op_id, bool axiom, const std::vector<LocalAssignment> &precond,
         const std::vector<LocalAssignment> &effect)
-        : op_id(op_id), is_axiom(axiom), precond(precond), effect(effect) {
+        : op_id(op_id),
+          is_axiom(axiom),
+          precond(precond),
+          effect(effect) {
     }
 };
 
@@ -93,8 +95,7 @@ struct ValueTransition {
     ValueNode *target;
     std::vector<ValueTransitionLabel> labels;
 
-    ValueTransition(ValueNode *targ)
-        : target(targ) {
+    ValueTransition(ValueNode *targ) : target(targ) {
     }
 
     void simplify(const TaskProxy &task_proxy);

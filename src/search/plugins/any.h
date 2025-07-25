@@ -38,8 +38,7 @@ class Any {
     public:
         ValueType held;
 
-        Holder(const ValueType &value)
-            : held(value) {
+        Holder(const ValueType &value) : held(value) {
         }
 
         virtual std::unique_ptr<Placeholder> clone() const override {
@@ -61,8 +60,7 @@ class Any {
     std::unique_ptr<Placeholder> content;
 
 public:
-    Any()
-        : content(nullptr) {
+    Any() : content(nullptr) {
     }
 
     Any(const Any &other)

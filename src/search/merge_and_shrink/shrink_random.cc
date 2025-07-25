@@ -11,8 +11,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-ShrinkRandom::ShrinkRandom(int random_seed)
-    : ShrinkBucketBased(random_seed) {
+ShrinkRandom::ShrinkRandom(int random_seed) : ShrinkBucketBased(random_seed) {
 }
 
 vector<ShrinkBucketBased::Bucket> ShrinkRandom::partition_into_buckets(
@@ -35,8 +34,7 @@ string ShrinkRandom::name() const {
 class ShrinkRandomFeature
     : public plugins::TypedFeature<ShrinkStrategy, ShrinkRandom> {
 public:
-    ShrinkRandomFeature()
-        : TypedFeature("shrink_random") {
+    ShrinkRandomFeature() : TypedFeature("shrink_random") {
         document_title("Random");
         document_synopsis("");
 

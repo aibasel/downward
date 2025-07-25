@@ -81,12 +81,12 @@ class SegmentedVector {
     SegmentedVector(const SegmentedVector<Entry> &) = delete;
     SegmentedVector &operator=(const SegmentedVector<Entry> &) = delete;
 public:
-    SegmentedVector()
-        : the_size(0) {
+    SegmentedVector() : the_size(0) {
     }
 
     SegmentedVector(const EntryAllocator &allocator_)
-        : entry_allocator(allocator_), the_size(0) {
+        : entry_allocator(allocator_),
+          the_size(0) {
     }
 
     ~SegmentedVector() {

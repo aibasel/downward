@@ -44,8 +44,7 @@ bool LMCutConstraints::update_constraints(
 class LMCutConstraintsFeature
     : public plugins::TypedFeature<ConstraintGenerator, LMCutConstraints> {
 public:
-    LMCutConstraintsFeature()
-        : TypedFeature("lmcut_constraints") {
+    LMCutConstraintsFeature() : TypedFeature("lmcut_constraints") {
         document_title("LM-cut landmark constraints");
         document_synopsis(
             "Computes a set of landmarks in each state using the LM-cut method. "

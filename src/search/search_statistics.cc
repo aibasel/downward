@@ -8,8 +8,7 @@
 
 using namespace std;
 
-SearchStatistics::SearchStatistics(utils::LogProxy &log)
-    : log(log) {
+SearchStatistics::SearchStatistics(utils::LogProxy &log) : log(log) {
     expanded_states = 0;
     reopened_states = 0;
     evaluated_states = 0;

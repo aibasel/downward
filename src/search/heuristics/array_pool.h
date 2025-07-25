@@ -24,12 +24,10 @@ using Value = int;
 class ArrayPoolIndex {
     friend class ArrayPool;
     int position;
-    ArrayPoolIndex(int position)
-        : position(position) {
+    ArrayPoolIndex(int position) : position(position) {
     }
 public:
-    ArrayPoolIndex()
-        : position(INVALID_INDEX) {
+    ArrayPoolIndex() : position(INVALID_INDEX) {
     }
 };
 
@@ -49,8 +47,7 @@ private:
     Iterator first;
     Iterator last;
 
-    ArrayPoolSlice(Iterator first, Iterator last)
-        : first(first), last(last) {
+    ArrayPoolSlice(Iterator first, Iterator last) : first(first), last(last) {
     }
 };
 

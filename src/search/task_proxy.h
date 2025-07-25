@@ -110,7 +110,8 @@ public:
     using reference = value_type;
 
     ProxyIterator(const ProxyCollection &collection, std::size_t pos)
-        : collection(&collection), pos(pos) {
+        : collection(&collection),
+          pos(pos) {
     }
 
     reference operator*() const {
@@ -190,7 +191,9 @@ class FactsProxyIterator {
     int value;
 public:
     FactsProxyIterator(const AbstractTask &task, int var_id, int value)
-        : task(&task), var_id(var_id), value(value) {
+        : task(&task),
+          var_id(var_id),
+          value(value) {
     }
     ~FactsProxyIterator() = default;
 
@@ -232,8 +235,7 @@ public:
 class FactsProxy {
     const AbstractTask *task;
 public:
-    explicit FactsProxy(const AbstractTask &task)
-        : task(&task) {
+    explicit FactsProxy(const AbstractTask &task) : task(&task) {
     }
     ~FactsProxy() = default;
 
@@ -251,8 +253,7 @@ protected:
     const AbstractTask *task;
 public:
     using ItemType = FactProxy;
-    explicit ConditionsProxy(const AbstractTask &task)
-        : task(&task) {
+    explicit ConditionsProxy(const AbstractTask &task) : task(&task) {
     }
     virtual ~ConditionsProxy() = default;
 
@@ -268,8 +269,7 @@ class VariableProxy {
     const AbstractTask *task;
     int id;
 public:
-    VariableProxy(const AbstractTask &task, int id)
-        : task(&task), id(id) {
+    VariableProxy(const AbstractTask &task, int id) : task(&task), id(id) {
     }
     ~VariableProxy() = default;
 
@@ -325,8 +325,7 @@ class VariablesProxy {
     const AbstractTask *task;
 public:
     using ItemType = VariableProxy;
-    explicit VariablesProxy(const AbstractTask &task)
-        : task(&task) {
+    explicit VariablesProxy(const AbstractTask &task) : task(&task) {
     }
     ~VariablesProxy() = default;
 
@@ -349,7 +348,9 @@ class PreconditionsProxy : public ConditionsProxy {
     bool is_axiom;
 public:
     PreconditionsProxy(const AbstractTask &task, int op_index, bool is_axiom)
-        : ConditionsProxy(task), op_index(op_index), is_axiom(is_axiom) {
+        : ConditionsProxy(task),
+          op_index(op_index),
+          is_axiom(is_axiom) {
     }
     ~PreconditionsProxy() = default;
 
@@ -424,7 +425,9 @@ class EffectsProxy {
 public:
     using ItemType = EffectProxy;
     EffectsProxy(const AbstractTask &task, int op_index, bool is_axiom)
-        : task(&task), op_index(op_index), is_axiom(is_axiom) {
+        : task(&task),
+          op_index(op_index),
+          is_axiom(is_axiom) {
     }
     ~EffectsProxy() = default;
 
@@ -444,7 +447,9 @@ class OperatorProxy {
     bool is_an_axiom;
 public:
     OperatorProxy(const AbstractTask &task, int index, bool is_axiom)
-        : task(&task), index(index), is_an_axiom(is_axiom) {
+        : task(&task),
+          index(index),
+          is_an_axiom(is_axiom) {
     }
     ~OperatorProxy() = default;
 
@@ -497,8 +502,7 @@ class OperatorsProxy {
     const AbstractTask *task;
 public:
     using ItemType = OperatorProxy;
-    explicit OperatorsProxy(const AbstractTask &task)
-        : task(&task) {
+    explicit OperatorsProxy(const AbstractTask &task) : task(&task) {
     }
     ~OperatorsProxy() = default;
 
@@ -524,8 +528,7 @@ class AxiomsProxy {
     const AbstractTask *task;
 public:
     using ItemType = OperatorProxy;
-    explicit AxiomsProxy(const AbstractTask &task)
-        : task(&task) {
+    explicit AxiomsProxy(const AbstractTask &task) : task(&task) {
     }
     ~AxiomsProxy() = default;
 
@@ -545,8 +548,7 @@ public:
 
 class GoalsProxy : public ConditionsProxy {
 public:
-    explicit GoalsProxy(const AbstractTask &task)
-        : ConditionsProxy(task) {
+    explicit GoalsProxy(const AbstractTask &task) : ConditionsProxy(task) {
     }
     ~GoalsProxy() = default;
 
@@ -662,8 +664,7 @@ inline void feed(HashState &hash_state, const State &state) {
 class TaskProxy {
     const AbstractTask *task;
 public:
-    explicit TaskProxy(const AbstractTask &task)
-        : task(&task) {
+    explicit TaskProxy(const AbstractTask &task) : task(&task) {
     }
     ~TaskProxy() = default;
 
@@ -739,7 +740,8 @@ public:
 };
 
 inline FactProxy::FactProxy(const AbstractTask &task, const FactPair &fact)
-    : task(&task), fact(fact) {
+    : task(&task),
+      fact(fact) {
     assert(fact.var >= 0 && fact.var < task.get_num_variables());
     assert(fact.value >= 0 && fact.value < get_variable().get_domain_size());
 }

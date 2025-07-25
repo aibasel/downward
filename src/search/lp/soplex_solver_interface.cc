@@ -53,8 +53,7 @@ static LPColSetReal variables_to_col_set(
     return cols;
 }
 
-SoPlexSolverInterface::SoPlexSolverInterface()
-    : SolverInterface() {
+SoPlexSolverInterface::SoPlexSolverInterface() : SolverInterface() {
     soplex.setIntParam(SoPlex::VERBOSITY, SoPlex::VERBOSITY_ERROR);
     soplex.setIntParam(SoPlex::SIMPLIFIER, SoPlex::SIMPLIFIER_OFF);
 }

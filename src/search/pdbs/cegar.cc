@@ -72,7 +72,8 @@ struct Flaw {
     int variable;
 
     Flaw(int collection_index, int variable)
-        : collection_index(collection_index), variable(variable) {
+        : collection_index(collection_index),
+          variable(variable) {
     }
 };
 

@@ -24,7 +24,9 @@ class EpsilonGreedyOpenList : public OpenList<Entry> {
         int h;
         Entry entry;
         HeapNode(int id, int h, const Entry &entry)
-            : id(id), h(h), entry(entry) {
+            : id(id),
+              h(h),
+              entry(entry) {
         }
 
         bool operator>(const HeapNode &other) const {
@@ -161,8 +163,7 @@ class EpsilonGreedyOpenListFeature
     : public plugins::TypedFeature<
           OpenListFactory, EpsilonGreedyOpenListFactory> {
 public:
-    EpsilonGreedyOpenListFeature()
-        : TypedFeature("epsilon_greedy") {
+    EpsilonGreedyOpenListFeature() : TypedFeature("epsilon_greedy") {
         document_title("Epsilon-greedy open list");
         document_synopsis(
             "Chooses an entry uniformly randomly with probability "

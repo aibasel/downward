@@ -66,7 +66,9 @@ bool MatchTree::Node::is_leaf_node() const {
 }
 
 MatchTree::MatchTree(const TaskProxy &task_proxy, const Projection &projection)
-    : task_proxy(task_proxy), projection(projection), root(nullptr) {
+    : task_proxy(task_proxy),
+      projection(projection),
+      root(nullptr) {
 }
 
 MatchTree::~MatchTree() {

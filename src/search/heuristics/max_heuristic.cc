@@ -104,8 +104,7 @@ int HSPMaxHeuristic::compute_heuristic(const State &ancestor_state) {
 class HSPMaxHeuristicFeature
     : public plugins::TypedFeature<Evaluator, HSPMaxHeuristic> {
 public:
-    HSPMaxHeuristicFeature()
-        : TypedFeature("hmax") {
+    HSPMaxHeuristicFeature() : TypedFeature("hmax") {
         document_title("Max heuristic");
 
         relaxation_heuristic::add_relaxation_heuristic_options_to_feature(

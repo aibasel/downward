@@ -17,7 +17,8 @@ using namespace std;
 namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(
     bool use_orders, utils::Verbosity verbosity)
-    : LandmarkFactoryRelaxation(verbosity), use_orders(use_orders) {
+    : LandmarkFactoryRelaxation(verbosity),
+      use_orders(use_orders) {
 }
 
 void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
@@ -315,8 +316,7 @@ bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
 class LandmarkFactoryZhuGivanFeature
     : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryZhuGivan> {
 public:
-    LandmarkFactoryZhuGivanFeature()
-        : TypedFeature("lm_zg") {
+    LandmarkFactoryZhuGivanFeature() : TypedFeature("lm_zg") {
         document_title("Zhu/Givan Landmarks");
         document_synopsis("The landmark generation method introduced by "
                           "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");

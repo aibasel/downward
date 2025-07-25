@@ -11,7 +11,8 @@ using namespace std;
 
 namespace plugins {
 DocPrinter::DocPrinter(ostream &out, Registry &registry)
-    : os(out), registry(registry) {
+    : os(out),
+      registry(registry) {
 }
 
 void DocPrinter::print_all() const {
@@ -199,7 +200,8 @@ void Txt2TagsPrinter::print_category_footer() const {
 }
 
 PlainPrinter::PlainPrinter(ostream &out, Registry &registry, bool print_all)
-    : DocPrinter(out, registry), print_all(print_all) {
+    : DocPrinter(out, registry),
+      print_all(print_all) {
 }
 
 void PlainPrinter::print_synopsis(const Feature &feature) const {

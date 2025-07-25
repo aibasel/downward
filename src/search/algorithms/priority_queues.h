@@ -173,8 +173,7 @@ class BucketQueue : public AbstractQueue<Value> {
         current_bucket_no = 0;
     }
 public:
-    BucketQueue()
-        : current_bucket_no(0), num_entries(0), num_pushes(0) {
+    BucketQueue() : current_bucket_no(0), num_entries(0), num_pushes(0) {
     }
 
     virtual ~BucketQueue() {
@@ -250,8 +249,7 @@ class AdaptiveQueue {
 public:
     typedef std::pair<int, Value> Entry;
 
-    AdaptiveQueue()
-        : wrapped_queue(new BucketQueue<Value>) {
+    AdaptiveQueue() : wrapped_queue(new BucketQueue<Value>) {
     }
 
     ~AdaptiveQueue() {

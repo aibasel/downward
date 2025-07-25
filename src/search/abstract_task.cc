@@ -18,8 +18,7 @@ ostream &operator<<(ostream &os, const FactPair &fact_pair) {
 static class AbstractTaskCategoryPlugin
     : public plugins::TypedCategoryPlugin<AbstractTask> {
 public:
-    AbstractTaskCategoryPlugin()
-        : TypedCategoryPlugin("AbstractTask") {
+    AbstractTaskCategoryPlugin() : TypedCategoryPlugin("AbstractTask") {
         // TODO: Replace empty string by synopsis for the wiki page.
         document_synopsis("");
     }

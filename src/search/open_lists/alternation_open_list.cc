@@ -126,7 +126,8 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
 
 AlternationOpenListFactory::AlternationOpenListFactory(
     const vector<shared_ptr<OpenListFactory>> &sublists, int boost)
-    : sublists(sublists), boost(boost) {
+    : sublists(sublists),
+      boost(boost) {
     utils::verify_list_not_empty(sublists, "sublists");
 }
 
@@ -143,8 +144,7 @@ class AlternationOpenListFeature
     : public plugins::TypedFeature<
           OpenListFactory, AlternationOpenListFactory> {
 public:
-    AlternationOpenListFeature()
-        : TypedFeature("alt") {
+    AlternationOpenListFeature() : TypedFeature("alt") {
         document_title("Alternation open list");
         document_synopsis("alternates between several open lists.");
 

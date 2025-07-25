@@ -31,7 +31,8 @@ class AxiomEvaluator {
         int var_no;
         AxiomLiteral *literal;
         NegationByFailureInfo(int var, AxiomLiteral *lit)
-            : var_no(var), literal(lit) {
+            : var_no(var),
+              literal(lit) {
         }
     };
 

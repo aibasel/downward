@@ -88,12 +88,10 @@ class IntHashSet {
 
         static const KeyType empty_bucket_key = -1;
 
-        Bucket()
-            : key(empty_bucket_key), hash(0) {
+        Bucket() : key(empty_bucket_key), hash(0) {
         }
 
-        Bucket(KeyType key, HashType hash)
-            : key(key), hash(hash) {
+        Bucket(KeyType key, HashType hash) : key(key), hash(hash) {
         }
 
         bool full() const {

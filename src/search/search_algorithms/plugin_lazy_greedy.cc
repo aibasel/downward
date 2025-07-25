@@ -11,8 +11,7 @@ static const string DEFAULT_LAZY_BOOST = "1000";
 class LazyGreedySearchFeature
     : public plugins::TypedFeature<SearchAlgorithm, lazy_search::LazySearch> {
 public:
-    LazyGreedySearchFeature()
-        : TypedFeature("lazy_greedy") {
+    LazyGreedySearchFeature() : TypedFeature("lazy_greedy") {
         document_title("Greedy search (lazy)");
         document_synopsis("");
 

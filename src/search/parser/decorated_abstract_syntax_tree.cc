@@ -30,11 +30,13 @@ plugins::Any ConstructContext::get_variable(const string &name) const {
 
 LazyValue::LazyValue(
     const DecoratedASTNode &node, const ConstructContext &context)
-    : context(context), node(node.clone()) {
+    : context(context),
+      node(node.clone()) {
 }
 
 LazyValue::LazyValue(const LazyValue &other)
-    : context(other.context), node(other.node->clone()) {
+    : context(other.context),
+      node(other.node->clone()) {
 }
 
 plugins::Any LazyValue::construct_any() const {
@@ -74,7 +76,9 @@ plugins::Any DecoratedASTNode::construct() const {
 
 FunctionArgument::FunctionArgument(
     const string &key, DecoratedASTNodePtr value, bool lazy_construction)
-    : key(key), value(move(value)), lazy_construction(lazy_construction) {
+    : key(key),
+      value(move(value)),
+      lazy_construction(lazy_construction) {
 }
 
 string FunctionArgument::get_key() const {
@@ -190,8 +194,7 @@ void DecoratedListNode::dump(string indent) const {
     }
 }
 
-VariableNode::VariableNode(const string &name)
-    : name(name) {
+VariableNode::VariableNode(const string &name) : name(name) {
 }
 
 plugins::Any VariableNode::construct(ConstructContext &context) const {
@@ -206,8 +209,7 @@ void VariableNode::dump(string indent) const {
     cout << indent << "VAR: " << name << endl;
 }
 
-BoolLiteralNode::BoolLiteralNode(const string &value)
-    : value(value) {
+BoolLiteralNode::BoolLiteralNode(const string &value) : value(value) {
 }
 
 plugins::Any BoolLiteralNode::construct(ConstructContext &context) const {
@@ -228,8 +230,7 @@ void BoolLiteralNode::dump(string indent) const {
     cout << indent << "BOOL: " << value << endl;
 }
 
-StringLiteralNode::StringLiteralNode(const string &value)
-    : value(value) {
+StringLiteralNode::StringLiteralNode(const string &value) : value(value) {
 }
 
 plugins::Any StringLiteralNode::construct(ConstructContext &context) const {
@@ -269,8 +270,7 @@ void StringLiteralNode::dump(string indent) const {
     cout << indent << "STRING: " << value << endl;
 }
 
-IntLiteralNode::IntLiteralNode(const string &value)
-    : value(value) {
+IntLiteralNode::IntLiteralNode(const string &value) : value(value) {
 }
 
 plugins::Any IntLiteralNode::construct(ConstructContext &context) const {
@@ -329,8 +329,7 @@ void IntLiteralNode::dump(string indent) const {
     cout << indent << "INT: " << value << endl;
 }
 
-FloatLiteralNode::FloatLiteralNode(const string &value)
-    : value(value) {
+FloatLiteralNode::FloatLiteralNode(const string &value) : value(value) {
 }
 
 plugins::Any FloatLiteralNode::construct(ConstructContext &context) const {
@@ -356,8 +355,7 @@ void FloatLiteralNode::dump(string indent) const {
     cout << indent << "FLOAT: " << value << endl;
 }
 
-SymbolNode::SymbolNode(const string &value)
-    : value(value) {
+SymbolNode::SymbolNode(const string &value) : value(value) {
 }
 
 plugins::Any SymbolNode::construct(ConstructContext &) const {
@@ -371,7 +369,9 @@ void SymbolNode::dump(string indent) const {
 ConvertNode::ConvertNode(
     DecoratedASTNodePtr value, const plugins::Type &from_type,
     const plugins::Type &to_type)
-    : value(move(value)), from_type(from_type), to_type(to_type) {
+    : value(move(value)),
+      from_type(from_type),
+      to_type(to_type) {
 }
 
 plugins::Any ConvertNode::construct(ConstructContext &context) const {
@@ -521,8 +521,7 @@ shared_ptr<DecoratedASTNode> DecoratedListNode::clone_shared() const {
     return make_shared<DecoratedListNode>(*this);
 }
 
-VariableNode::VariableNode(const VariableNode &other)
-    : name(other.name) {
+VariableNode::VariableNode(const VariableNode &other) : name(other.name) {
 }
 
 unique_ptr<DecoratedASTNode> VariableNode::clone() const {
@@ -581,8 +580,7 @@ shared_ptr<DecoratedASTNode> FloatLiteralNode::clone_shared() const {
     return make_shared<FloatLiteralNode>(*this);
 }
 
-SymbolNode::SymbolNode(const SymbolNode &other)
-    : value(other.value) {
+SymbolNode::SymbolNode(const SymbolNode &other) : value(other.value) {
 }
 
 unique_ptr<DecoratedASTNode> SymbolNode::clone() const {

@@ -19,7 +19,8 @@ class LandmarkNode;
 LandmarkFactoryMerged::LandmarkFactoryMerged(
     const vector<shared_ptr<LandmarkFactory>> &lm_factories,
     utils::Verbosity verbosity)
-    : LandmarkFactory(verbosity), landmark_factories(lm_factories) {
+    : LandmarkFactory(verbosity),
+      landmark_factories(lm_factories) {
     utils::verify_list_not_empty(lm_factories, "lm_factories");
 }
 
@@ -175,8 +176,7 @@ bool LandmarkFactoryMerged::supports_conditional_effects() const {
 class LandmarkFactoryMergedFeature
     : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryMerged> {
 public:
-    LandmarkFactoryMergedFeature()
-        : TypedFeature("lm_merged") {
+    LandmarkFactoryMergedFeature() : TypedFeature("lm_merged") {
         document_title("Merged Landmarks");
         document_synopsis(
             "Merges the landmarks and orderings from the parameter landmarks");

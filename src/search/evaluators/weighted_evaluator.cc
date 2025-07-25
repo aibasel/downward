@@ -42,8 +42,7 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
 class WeightedEvaluatorFeature
     : public plugins::TypedFeature<Evaluator, WeightedEvaluator> {
 public:
-    WeightedEvaluatorFeature()
-        : TypedFeature("weight") {
+    WeightedEvaluatorFeature() : TypedFeature("weight") {
         document_subcategory("evaluators_basic");
         document_title("Weighted evaluator");
         document_synopsis(

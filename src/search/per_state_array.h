@@ -11,8 +11,7 @@ class ConstArrayView {
     const T *p;
     int size_;
 public:
-    ConstArrayView(const T *p, int size)
-        : p(p), size_(size) {
+    ConstArrayView(const T *p, int size) : p(p), size_(size) {
     }
     ConstArrayView(const ConstArrayView<T> &other) = default;
 
@@ -33,8 +32,7 @@ class ArrayView {
     T *p;
     int size_;
 public:
-    ArrayView(T *p, int size)
-        : p(p), size_(size) {
+    ArrayView(T *p, int size) : p(p), size_(size) {
     }
     ArrayView(const ArrayView<T> &other) = default;
 

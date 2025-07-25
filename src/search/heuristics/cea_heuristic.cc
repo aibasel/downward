@@ -112,8 +112,7 @@ struct LocalProblem {
     vector<LocalProblemNode> nodes;
     vector<int> *context_variables;
 public:
-    LocalProblem()
-        : base_priority(-1) {
+    LocalProblem() : base_priority(-1) {
     }
 
     ~LocalProblem() {
@@ -455,8 +454,7 @@ class ContextEnhancedAdditiveHeuristicFeature
     : public plugins::TypedFeature<
           Evaluator, ContextEnhancedAdditiveHeuristic> {
 public:
-    ContextEnhancedAdditiveHeuristicFeature()
-        : TypedFeature("cea") {
+    ContextEnhancedAdditiveHeuristicFeature() : TypedFeature("cea") {
         document_title("Context-enhanced additive heuristic");
 
         tasks::add_axioms_option_to_feature(*this);

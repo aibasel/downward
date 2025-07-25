@@ -20,11 +20,13 @@ static string case_insensitive_to_lower(const string &content, TokenType type) {
     }
 }
 Token::Token(const string &content, TokenType type)
-    : content(case_insensitive_to_lower(content, type)), type(type) {
+    : content(case_insensitive_to_lower(content, type)),
+      type(type) {
 }
 
 TokenStream::TokenStream(vector<Token> &&tokens)
-    : tokens(move(tokens)), pos(0) {
+    : tokens(move(tokens)),
+      pos(0) {
 }
 
 bool TokenStream::has_tokens(int n) const {

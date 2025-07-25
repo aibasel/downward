@@ -90,8 +90,7 @@ tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
 static class EvaluatorCategoryPlugin
     : public plugins::TypedCategoryPlugin<Evaluator> {
 public:
-    EvaluatorCategoryPlugin()
-        : TypedCategoryPlugin("Evaluator") {
+    EvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {
         document_synopsis(
             "An evaluator specification is either a newly created evaluator "
             "instance or an evaluator that has been defined previously. "

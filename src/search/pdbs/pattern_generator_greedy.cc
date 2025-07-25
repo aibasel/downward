@@ -18,7 +18,8 @@ using namespace std;
 namespace pdbs {
 PatternGeneratorGreedy::PatternGeneratorGreedy(
     int max_states, utils::Verbosity verbosity)
-    : PatternGenerator(verbosity), max_states(max_states) {
+    : PatternGenerator(verbosity),
+      max_states(max_states) {
 }
 
 string PatternGeneratorGreedy::name() const {
@@ -54,8 +55,7 @@ PatternInformation PatternGeneratorGreedy::compute_pattern(
 class PatternGeneratorGreedyFeature
     : public plugins::TypedFeature<PatternGenerator, PatternGeneratorGreedy> {
 public:
-    PatternGeneratorGreedyFeature()
-        : TypedFeature("greedy") {
+    PatternGeneratorGreedyFeature() : TypedFeature("greedy") {
         add_option<int>(
             "max_states",
             "maximal number of abstract states in the pattern database.",

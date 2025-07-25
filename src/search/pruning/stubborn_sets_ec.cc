@@ -332,8 +332,7 @@ void StubbornSetsEC::handle_stubborn_operator(const State &state, int op_no) {
 class StubbornSetsECFeature
     : public plugins::TypedFeature<PruningMethod, StubbornSetsEC> {
 public:
-    StubbornSetsECFeature()
-        : TypedFeature("stubborn_sets_ec") {
+    StubbornSetsECFeature() : TypedFeature("stubborn_sets_ec") {
         document_title("StubbornSetsEC");
         document_synopsis(
             "Stubborn sets represent a state pruning method which computes a subset "

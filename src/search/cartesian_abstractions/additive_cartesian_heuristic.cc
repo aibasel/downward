@@ -60,8 +60,7 @@ int AdditiveCartesianHeuristic::compute_heuristic(const State &ancestor_state) {
 class AdditiveCartesianHeuristicFeature
     : public plugins::TypedFeature<Evaluator, AdditiveCartesianHeuristic> {
 public:
-    AdditiveCartesianHeuristicFeature()
-        : TypedFeature("cegar") {
+    AdditiveCartesianHeuristicFeature() : TypedFeature("cegar") {
         document_title("Additive Cartesian CEGAR heuristic");
         document_synopsis(
             "See the paper introducing counterexample-guided Cartesian "

@@ -10,7 +10,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
     const shared_ptr<MergeSelector> &merge_selector, utils::Verbosity verbosity)
-    : MergeStrategyFactory(verbosity), merge_selector(merge_selector) {
+    : MergeStrategyFactory(verbosity),
+      merge_selector(merge_selector) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(
@@ -41,8 +42,7 @@ class MergeStrategyFactoryStatelessFeature
     : public plugins::TypedFeature<
           MergeStrategyFactory, MergeStrategyFactoryStateless> {
 public:
-    MergeStrategyFactoryStatelessFeature()
-        : TypedFeature("merge_stateless") {
+    MergeStrategyFactoryStatelessFeature() : TypedFeature("merge_stateless") {
         document_title("Stateless merge strategy");
         document_synopsis(
             "This merge strategy has a merge selector, which computes the next "

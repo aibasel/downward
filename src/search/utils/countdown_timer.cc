@@ -5,8 +5,7 @@
 using namespace std;
 
 namespace utils {
-CountdownTimer::CountdownTimer(double max_time)
-    : max_time(max_time) {
+CountdownTimer::CountdownTimer(double max_time) : max_time(max_time) {
 }
 
 CountdownTimer::~CountdownTimer() {

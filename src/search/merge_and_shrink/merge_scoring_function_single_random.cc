@@ -14,7 +14,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionSingleRandom::MergeScoringFunctionSingleRandom(
     int random_seed)
-    : random_seed(random_seed), rng(utils::get_rng(random_seed)) {
+    : random_seed(random_seed),
+      rng(utils::get_rng(random_seed)) {
 }
 
 vector<double> MergeScoringFunctionSingleRandom::compute_scores(
@@ -49,8 +50,7 @@ class MergeScoringFunctionSingleRandomFeature
     : public plugins::TypedFeature<
           MergeScoringFunction, MergeScoringFunctionSingleRandom> {
 public:
-    MergeScoringFunctionSingleRandomFeature()
-        : TypedFeature("single_random") {
+    MergeScoringFunctionSingleRandomFeature() : TypedFeature("single_random") {
         document_title("Single random");
         document_synopsis(
             "This scoring function assigns exactly one merge candidate a score of "

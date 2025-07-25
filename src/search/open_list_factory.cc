@@ -28,8 +28,7 @@ tuple<bool> get_open_list_arguments_from_options(const plugins::Options &opts) {
 static class OpenListFactoryCategoryPlugin
     : public plugins::TypedCategoryPlugin<OpenListFactory> {
 public:
-    OpenListFactoryCategoryPlugin()
-        : TypedCategoryPlugin("OpenList") {
+    OpenListFactoryCategoryPlugin() : TypedCategoryPlugin("OpenList") {
         // TODO: use document_synopsis() for the wiki page.
     }
 } _category_plugin;

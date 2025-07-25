@@ -9,8 +9,7 @@ namespace plugin_astar {
 class AStarSearchFeature
     : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
 public:
-    AStarSearchFeature()
-        : TypedFeature("astar") {
+    AStarSearchFeature() : TypedFeature("astar") {
         document_title("A* search (eager)");
         document_synopsis(
             "A* is a special case of eager best first search that uses g+h "

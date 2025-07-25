@@ -69,7 +69,8 @@ void TypeBasedOpenList<Entry>::do_insertion(
 template<class Entry>
 TypeBasedOpenList<Entry>::TypeBasedOpenList(
     const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
-    : evaluators(evaluators), rng(utils::get_rng(random_seed)) {
+    : evaluators(evaluators),
+      rng(utils::get_rng(random_seed)) {
 }
 
 template<class Entry>
@@ -136,7 +137,8 @@ void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
 
 TypeBasedOpenListFactory::TypeBasedOpenListFactory(
     const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
-    : evaluators(evaluators), random_seed(random_seed) {
+    : evaluators(evaluators),
+      random_seed(random_seed) {
     utils::verify_list_not_empty(evaluators, "evaluators");
 }
 
@@ -153,8 +155,7 @@ unique_ptr<EdgeOpenList> TypeBasedOpenListFactory::create_edge_open_list() {
 class TypeBasedOpenListFeature
     : public plugins::TypedFeature<OpenListFactory, TypeBasedOpenListFactory> {
 public:
-    TypeBasedOpenListFeature()
-        : TypedFeature("type_based") {
+    TypeBasedOpenListFeature() : TypedFeature("type_based") {
         document_title("Type-based open list");
         document_synopsis(
             "Uses multiple evaluators to assign entries to buckets. "

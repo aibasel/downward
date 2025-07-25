@@ -7,7 +7,8 @@ using namespace std;
 
 namespace stubborn_sets {
 StubbornSets::StubbornSets(utils::Verbosity verbosity)
-    : PruningMethod(verbosity), num_operators(-1) {
+    : PruningMethod(verbosity),
+      num_operators(-1) {
 }
 
 void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {

@@ -150,8 +150,7 @@ public:
 template<typename T>
 class FeaturePlugin : public Plugin {
 public:
-    FeaturePlugin()
-        : Plugin() {
+    FeaturePlugin() : Plugin() {
     }
     virtual std::shared_ptr<Feature> create_feature() const override {
         return std::make_shared<T>();
