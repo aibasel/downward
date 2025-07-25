@@ -77,8 +77,7 @@ template<typename ElemTo, typename Collection, typename MapFunc>
 std::vector<ElemTo> map_vector(const Collection &collection, MapFunc map_func) {
     std::vector<ElemTo> transformed;
     transformed.reserve(collection.size());
-    std::transform(begin(collection), end(collection),
-                   std::back_inserter(transformed), map_func);
+    std::ranges::transform(collection, std::back_inserter(transformed), map_func);
     return transformed;
 }
 

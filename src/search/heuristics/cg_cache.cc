@@ -119,7 +119,7 @@ int CGCache::get_index(int var, const State &state,
     int index = from_val;
     int multiplier = task_proxy.get_variables()[var].get_domain_size();
     for (int dep_var : depends_on[var]) {
-        index += state[dep_var].get_value() * multiplier;
+        index += state[dep_var] * multiplier;
         multiplier *= task_proxy.get_variables()[dep_var].get_domain_size();
     }
     if (to_val > from_val)

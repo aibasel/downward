@@ -118,7 +118,7 @@ unique_ptr<Labels> FTSFactory::create_labels() {
 void FTSFactory::build_state_data(VariableProxy var) {
     int var_id = var.get_id();
     TransitionSystemData &ts_data = transition_system_data_by_var[var_id];
-    ts_data.init_state = task_proxy.get_initial_state()[var_id].get_value();
+    ts_data.init_state = task_proxy.get_initial_state()[var_id];
 
     int range = task_proxy.get_variables()[var_id].get_domain_size();
     ts_data.num_states = range;
