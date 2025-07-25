@@ -17,16 +17,16 @@ public:
 
 
 class TaskIndependentGEvaluator : public TaskIndependentEvaluator {
+    std::shared_ptr<Evaluator> create_task_specific(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const override;
 public:
     explicit TaskIndependentGEvaluator(const std::string &description,
                                        utils::Verbosity verbosity);
 
     virtual ~TaskIndependentGEvaluator()  override = default;
 
-    std::shared_ptr<Evaluator> create_task_specific(
-        const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const override;
 
 
 };

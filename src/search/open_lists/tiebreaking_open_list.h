@@ -25,6 +25,10 @@ class TaskIndependentTieBreakingOpenListFactory : public TaskIndependentOpenList
     bool pref_only;
     std::vector<std::shared_ptr<TaskIndependentEvaluator>> evals;
     bool allow_unsafe_pruning;
+    std::shared_ptr<OpenListFactory> create_task_specific(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const override;
 public:
     explicit TaskIndependentTieBreakingOpenListFactory(
         std::vector<std::shared_ptr<TaskIndependentEvaluator>> evals,
@@ -32,10 +36,6 @@ public:
         bool allow_unsafe_pruning);
     virtual ~TaskIndependentTieBreakingOpenListFactory() override = default;
 
-    std::shared_ptr<OpenListFactory> create_task_specific(
-        const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const override;
 };
 
 

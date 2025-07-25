@@ -26,9 +26,12 @@ public:
 };
 
 class TaskIndependentWeightedEvaluator : public TaskIndependentEvaluator {
-private:
     std::shared_ptr<TaskIndependentEvaluator> evaluator;
     int weight;
+    std::shared_ptr<Evaluator> create_task_specific(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const override;
 public:
     explicit TaskIndependentWeightedEvaluator(
         const std::shared_ptr<TaskIndependentEvaluator> &eval,
@@ -38,10 +41,6 @@ public:
 
     virtual ~TaskIndependentWeightedEvaluator() override = default;
 
-    std::shared_ptr<Evaluator> create_task_specific(
-        const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const override;
 };
 
 

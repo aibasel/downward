@@ -99,8 +99,6 @@ public:
 
     PlanManager &get_plan_manager() {return plan_manager;}
 
-    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_root(
-        const std::shared_ptr<AbstractTask> &task, int depth = -1) const = 0;
 };
 
 

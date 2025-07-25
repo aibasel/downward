@@ -28,40 +28,49 @@ public:
     std::string get_description() const {return description;}
 };
 
-using ComponentMap = utils::HashMap<const TaskIndependentComponentBase *,
+using ComponentMap = utils::HashMap<const std::pair<const TaskIndependentComponentBase *, const std::shared_ptr<AbstractTask> *>,
                                     std::shared_ptr<Component>>;
 
 template<typename AbstractProduct>
 class TaskIndependentComponent : public TaskIndependentComponentBase {
+    virtual std::shared_ptr<AbstractProduct> create_task_specific(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const = 0;
 public:
     explicit TaskIndependentComponent(const std::string &description,
                                       utils::Verbosity verbosity)
         : TaskIndependentComponentBase(description, verbosity){}
 
+
     std::shared_ptr<AbstractProduct> get_task_specific(
-        [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map, int depth) const {
+        const std::shared_ptr<AbstractTask> &task, int depth = -1) const {
+    utils::g_log << std::string(depth >=0 ? depth : 0, ' ') << "Creating " << description << " as root component..." << std::endl;
+    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
+    return get_task_specific(task, component_map, depth);
+	}
+
+    std::shared_ptr<AbstractProduct> get_task_specific(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map, int depth = -1) const {
         std::shared_ptr<AbstractProduct> component;
-        if (component_map->count(this)) {
-            log << std::string(depth, ' ')
+        const std::pair<const TaskIndependentComponentBase *, const std::shared_ptr<AbstractTask> *> key = std::make_pair(this,&task);
+        if (component_map->count(key)) {
+            log << std::string(depth, '.')
                 << "Reusing task specific component '" << description
                 << "'..." << std::endl;
             component = dynamic_pointer_cast<AbstractProduct>(
-                component_map->at(this));
+                component_map->at(key));
         } else {
-            log << std::string(depth, ' ')
+            log << std::string(depth, '.')
                 << "Creating task specific component '" << description
                 << "'..." << std::endl;
             component = create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
-            component_map->emplace(this, component);
+            component_map->emplace(key, component);
         }
         return component;
     }
-// method or function? pref function if possible.
-    virtual std::shared_ptr<AbstractProduct> create_task_specific(
-        const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const = 0;
+
 };
 
 #endif

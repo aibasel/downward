@@ -370,13 +370,6 @@ std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specifi
         task);
 }
 
-shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific_root(const shared_ptr<AbstractTask> &task,
-                                                                                  int depth) const {
-    assert(depth >= 0);
-    utils::g_log << std::string(depth, ' ') << "Creating EagerSearch as root component..." << endl;
-    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return get_task_specific(task, component_map, depth);
-}
 
 
 

@@ -18,6 +18,10 @@ public:
 class TaskIndependentBlindSearchHeuristic : public TaskIndependentHeuristic {
 private:
     bool cache_evaluator_values;
+    std::shared_ptr<Evaluator> create_task_specific(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const override;
 public:
     TaskIndependentBlindSearchHeuristic(
         const std::shared_ptr</*TaskIndependent*/AbstractTask> transform,
@@ -27,10 +31,6 @@ public:
 
     virtual ~TaskIndependentBlindSearchHeuristic() override;
 
-    std::shared_ptr<Evaluator> create_task_specific(
-        const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const override;
 };
 
 

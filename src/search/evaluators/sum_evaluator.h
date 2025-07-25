@@ -21,6 +21,10 @@ public:
 };
 
 class TaskIndependentSumEvaluator : public combining_evaluator::TaskIndependentCombiningEvaluator {
+    virtual std::shared_ptr<Evaluator> create_task_specific(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const override;
 public:
     TaskIndependentSumEvaluator(
         const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &subevaluators,
@@ -28,10 +32,6 @@ public:
 
     virtual ~TaskIndependentSumEvaluator() override = default;
 
-    virtual std::shared_ptr<Evaluator> create_task_specific(
-        const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const override;
 };
 }
 
