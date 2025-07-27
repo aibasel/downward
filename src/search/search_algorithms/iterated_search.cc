@@ -9,20 +9,6 @@
 using namespace std;
 
 namespace iterated_search {
-////IteratedSearch::IteratedSearch(const plugins::Options &opts)
-////    : SearchAlgorithm(opts),
-////      algorithm_configs(opts.get_list<parser::LazyValue>("algorithm_configs")),
-////      pass_bound(opts.get<bool>("pass_bound")),
-////      repeat_last_phase(opts.get<bool>("repeat_last")),
-////      continue_on_fail(opts.get<bool>("continue_on_fail")),
-////      continue_on_solve(opts.get<bool>("continue_on_solve")),
-////      phase(0),
-////      last_phase_found_solution(false),
-////      best_bound(bound),
-////      iterated_found_solution(false) {
-////    utils::verify_list_not_empty(algorithm_configs, "algorithm_configs");
-////}
-///
 IteratedSearch::IteratedSearch(
     vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
     bool pass_bound,
@@ -246,19 +232,10 @@ public:
     }
 
 
-    //from Eager//virtual shared_ptr<eager_search::TaskIndependentEagerSearch>
-    //from Eager//create_component(const plugins::Options &opts) const override {
-    //from Eager//    return plugins::make_shared_from_arg_tuples<eager_search::TaskIndependentEagerSearch>(
-    //from Eager//        opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
-    //from Eager//        opts.get<bool>("reopen_closed"),
-    //from Eager//        opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
-    //from Eager//        opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
-    //from Eager//        eager_search::get_eager_search_arguments_from_options(opts)
-    //from Eager//        );
-    //from Eager//}
 
     virtual shared_ptr<TaskIndependentIteratedSearch> create_component(const plugins::Options &opts) const override {
-//        plugins::verify_list_non_empty<shared_ptr<TaskIndependentSearchAlgorithm>>(context, opts, "search_algorithms");
+        utils::verify_list_not_empty(opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
+                "search_algorithms"), "search_algorithms");
         return make_shared<TaskIndependentIteratedSearch>(
             opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
                 "search_algorithms"),
@@ -274,25 +251,6 @@ public:
             );
 	}
 
-/////    virtual shared_ptr<IteratedSearch>
-/////    create_component(const plugins::Options &opts) const override {
-/////        plugins::Options options_copy(opts);
-/////        /*
-/////          The options entry 'algorithm_configs' is a LazyValue representing a list
-/////          of search algorithms. But iterated search expects a list of LazyValues,
-/////          each representing a search algorithm. We unpack this first layer of
-/////          laziness here to report potential errors in a more useful context.
-/////
-/////          TODO: the medium-term plan is to get rid of LazyValue completely
-/////          and let the features create builders that in turn create the actual
-/////          search algorithms. Then we no longer need to be lazy because creating
-/////          the builder is a light-weight operation.
-/////        */
-/////        vector<parser::LazyValue> algorithm_configs =
-/////            opts.get<parser::LazyValue>("algorithm_configs").construct_lazy_list();
-/////        options_copy.set("algorithm_configs", algorithm_configs);
-/////        return make_shared<IteratedSearch>(options_copy);
-/////    }
 };
 
 static plugins::FeaturePlugin<IteratedSearchFeature> _plugin;
