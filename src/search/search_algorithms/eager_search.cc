@@ -340,7 +340,6 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(
 std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(const shared_ptr <AbstractTask> &task,
                                                                                   unique_ptr <ComponentMap> &component_map,
                                                                                   int depth) const {
-       // TODO combine component_map and depth to xyz_context
     vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
     transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
               [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
