@@ -28,8 +28,7 @@ class ConstBitsetView {
 public:
     ConstBitsetView(ConstArrayView<BitsetMath::Block> data, int num_bits)
         : data(data),
-          num_bits(num_bits) {
-    }
+          num_bits(num_bits) {}
 
     ConstBitsetView(const ConstBitsetView &other) = default;
     ConstBitsetView &operator=(const ConstBitsetView &other) = default;
@@ -44,15 +43,12 @@ class BitsetView {
 public:
     BitsetView(ArrayView<BitsetMath::Block> data, int num_bits)
         : data(data),
-          num_bits(num_bits) {
-    }
+          num_bits(num_bits) {}
 
     BitsetView(const BitsetView &other) = default;
     BitsetView &operator=(const BitsetView &other) = default;
 
-    operator ConstBitsetView() const {
-        return ConstBitsetView(data, num_bits);
-    }
+    operator ConstBitsetView() const { return ConstBitsetView(data, num_bits); }
 
     void set(int index);
     void reset(int index);

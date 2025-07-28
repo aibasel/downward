@@ -24,8 +24,7 @@ struct Transition {
     int src;
     int target;
 
-    Transition(int src, int target) : src(src), target(target) {
-    }
+    Transition(int src, int target) : src(src), target(target) {}
 
     bool operator==(const Transition &other) const {
         return src == other.src && target == other.target;
@@ -36,9 +35,7 @@ struct Transition {
     }
 
     // Required for "is_sorted_unique" in utilities
-    bool operator>=(const Transition &other) const {
-        return !(*this < other);
-    }
+    bool operator>=(const Transition &other) const { return !(*this < other); }
 };
 
 std::ostream &operator<<(std::ostream &os, const Transition &trans);
@@ -95,21 +92,15 @@ public:
     void deactivate();
 
     // A local label is active as long as it represents labels (in label_group).
-    bool is_active() const {
-        return !label_group.empty();
-    }
+    bool is_active() const { return !label_group.empty(); }
 
-    const LabelGroup &get_label_group() const {
-        return label_group;
-    }
+    const LabelGroup &get_label_group() const { return label_group; }
 
     const std::vector<Transition> &get_transitions() const {
         return transitions;
     }
 
-    int get_cost() const {
-        return cost;
-    }
+    int get_cost() const { return cost; }
 
     bool is_consistent() const;
 };
@@ -129,9 +120,7 @@ public:
         std::vector<LocalLabelInfo>::const_iterator end_it);
     TransitionSystemConstIterator &operator++();
 
-    const LocalLabelInfo &operator*() const {
-        return *it;
-    }
+    const LocalLabelInfo &operator*() const { return *it; }
 
     bool operator==(const TransitionSystemConstIterator &rhs) const {
         return it == rhs.it;
@@ -255,17 +244,11 @@ public:
     void dump_labels_and_transitions(utils::LogProxy &log) const;
     void statistics(utils::LogProxy &log) const;
 
-    int get_size() const {
-        return num_states;
-    }
+    int get_size() const { return num_states; }
 
-    int get_init_state() const {
-        return init_state;
-    }
+    int get_init_state() const { return init_state; }
 
-    bool is_goal_state(int state) const {
-        return goal_states[state];
-    }
+    bool is_goal_state(int state) const { return goal_states[state]; }
 
     const std::vector<int> &get_incorporated_variables() const {
         return incorporated_variables;

@@ -15,8 +15,7 @@ struct FactPair {
     int var;
     int value;
 
-    FactPair(int var, int value) : var(var), value(value) {
-    }
+    FactPair(int var, int value) : var(var), value(value) {}
 
     bool operator<(const FactPair &other) const {
         return var < other.var || (var == other.var && value < other.value);

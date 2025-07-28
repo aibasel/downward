@@ -103,9 +103,7 @@ protected:
     Proposition *get_proposition(PropID prop_id) {
         return &propositions[prop_id];
     }
-    UnaryOperator *get_operator(OpID op_id) {
-        return &unary_operators[op_id];
-    }
+    UnaryOperator *get_operator(OpID op_id) { return &unary_operators[op_id]; }
 
     const Proposition *get_proposition(int var, int value) const;
     Proposition *get_proposition(int var, int value);

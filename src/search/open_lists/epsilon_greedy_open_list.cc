@@ -26,8 +26,7 @@ class EpsilonGreedyOpenList : public OpenList<Entry> {
         HeapNode(int id, int h, const Entry &entry)
             : id(id),
               h(h),
-              entry(entry) {
-        }
+              entry(entry) {}
 
         bool operator>(const HeapNode &other) const {
             return make_pair(h, id) > make_pair(other.h, other.id);

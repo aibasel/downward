@@ -31,9 +31,7 @@ public:
     CGCache(
         const TaskProxy &task_proxy, int max_cache_size, utils::LogProxy &log);
 
-    bool is_cached(int var) const {
-        return !cache[var].empty();
-    }
+    bool is_cached(int var) const { return !cache[var].empty(); }
 
     int lookup(int var, const State &state, int from_val, int to_val) const {
         return cache[var][get_index(var, state, from_val, to_val)];

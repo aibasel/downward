@@ -22,8 +22,7 @@ class DecorateContext : public utils::Context {
 
 public:
     DecorateContext()
-        : registry(plugins::RawRegistry::instance()->construct_registry()) {
-    }
+        : registry(plugins::RawRegistry::instance()->construct_registry()) {}
 
     void add_variable(const string &name, const plugins::Type &type) {
         if (has_variable(name))
@@ -34,9 +33,7 @@ public:
         variables.insert({name, &type});
     }
 
-    void remove_variable(const string &name) {
-        variables.erase(name);
-    }
+    void remove_variable(const string &name) { variables.erase(name); }
 
     bool has_variable(const string &name) const {
         return variables.count(name);
@@ -47,9 +44,7 @@ public:
         return *variables[name];
     }
 
-    const plugins::Registry &get_registry() const {
-        return registry;
-    }
+    const plugins::Registry &get_registry() const { return registry; }
 };
 
 template<typename T, typename K>

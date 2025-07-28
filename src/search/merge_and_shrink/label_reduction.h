@@ -47,7 +47,11 @@ enum class LabelReductionMethod {
   reversed regular order and random is a random one. All orders are
   precomputed and reused for every call to reduce().
 */
-enum class LabelReductionSystemOrder { REGULAR, REVERSE, RANDOM };
+enum class LabelReductionSystemOrder {
+    REGULAR,
+    REVERSE,
+    RANDOM
+};
 
 class LabelReduction {
     // Options for label reduction
@@ -78,12 +82,8 @@ public:
         const std::pair<int, int> &next_merge, FactoredTransitionSystem &fts,
         utils::LogProxy &log) const;
     void dump_options(utils::LogProxy &log) const;
-    bool reduce_before_shrinking() const {
-        return lr_before_shrinking;
-    }
-    bool reduce_before_merging() const {
-        return lr_before_merging;
-    }
+    bool reduce_before_shrinking() const { return lr_before_shrinking; }
+    bool reduce_before_merging() const { return lr_before_merging; }
 };
 }
 

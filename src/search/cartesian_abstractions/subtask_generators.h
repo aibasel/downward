@@ -24,7 +24,12 @@ namespace cartesian_abstractions {
 using Facts = std::vector<FactPair>;
 using SharedTasks = std::vector<std::shared_ptr<AbstractTask>>;
 
-enum class FactOrder { ORIGINAL, RANDOM, HADD_UP, HADD_DOWN };
+enum class FactOrder {
+    ORIGINAL,
+    RANDOM,
+    HADD_UP,
+    HADD_DOWN
+};
 
 /*
   Create focused subtasks.

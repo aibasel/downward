@@ -98,14 +98,12 @@ public:
     PerStateInformation()
         : default_value(),
           cached_registry(nullptr),
-          cached_entries(nullptr) {
-    }
+          cached_entries(nullptr) {}
 
     explicit PerStateInformation(const Entry &default_value_)
         : default_value(default_value_),
           cached_registry(nullptr),
-          cached_entries(nullptr) {
-    }
+          cached_entries(nullptr) {}
 
     PerStateInformation(const PerStateInformation<Entry> &) = delete;
     PerStateInformation &operator=(const PerStateInformation<Entry> &) = delete;

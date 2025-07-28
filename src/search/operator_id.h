@@ -27,30 +27,23 @@ class OperatorID {
     int index;
 
 public:
-    explicit OperatorID(int index) : index(index) {
-    }
+    explicit OperatorID(int index) : index(index) {}
 
     static const OperatorID no_operator;
 
-    int get_index() const {
-        return index;
-    }
+    int get_index() const { return index; }
 
     bool operator==(const OperatorID &other) const {
         return index == other.index;
     }
 
-    bool operator!=(const OperatorID &other) const {
-        return !(*this == other);
-    }
+    bool operator!=(const OperatorID &other) const { return !(*this == other); }
 
     bool operator<(const OperatorID &other) const {
         return index < other.index;
     }
 
-    int hash() const {
-        return index;
-    }
+    int hash() const { return index; }
 };
 
 std::ostream &operator<<(std::ostream &os, OperatorID id);

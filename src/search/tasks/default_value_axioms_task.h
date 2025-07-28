@@ -44,8 +44,7 @@ struct DefaultValueAxiom {
 
     DefaultValueAxiom(FactPair head, std::vector<FactPair> &&condition)
         : head(head),
-          condition(condition) {
-    }
+          condition(condition) {}
 };
 
 class DefaultValueAxiomsTask : public DelegatingTask {

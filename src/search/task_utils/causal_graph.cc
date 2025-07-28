@@ -99,11 +99,9 @@ struct CausalGraphBuilder {
           eff_pre_builder(var_count),
           eff_eff_builder(var_count),
           succ_builder(var_count),
-          pred_builder(var_count) {
-    }
+          pred_builder(var_count) {}
 
-    ~CausalGraphBuilder() {
-    }
+    ~CausalGraphBuilder() {}
 
     void handle_pre_eff_arc(int u, int v) {
         assert(u != v);

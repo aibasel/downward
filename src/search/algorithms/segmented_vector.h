@@ -64,13 +64,9 @@ class SegmentedVector {
     std::vector<Entry *> segments;
     size_t the_size;
 
-    size_t get_segment(size_t index) const {
-        return index / SEGMENT_ELEMENTS;
-    }
+    size_t get_segment(size_t index) const { return index / SEGMENT_ELEMENTS; }
 
-    size_t get_offset(size_t index) const {
-        return index % SEGMENT_ELEMENTS;
-    }
+    size_t get_offset(size_t index) const { return index % SEGMENT_ELEMENTS; }
 
     void add_segment() {
         Entry *new_segment = std::allocator_traits<EntryAllocator>::allocate(
@@ -81,13 +77,11 @@ class SegmentedVector {
     SegmentedVector(const SegmentedVector<Entry> &) = delete;
     SegmentedVector &operator=(const SegmentedVector<Entry> &) = delete;
 public:
-    SegmentedVector() : the_size(0) {
-    }
+    SegmentedVector() : the_size(0) {}
 
     SegmentedVector(const EntryAllocator &allocator_)
         : entry_allocator(allocator_),
-          the_size(0) {
-    }
+          the_size(0) {}
 
     ~SegmentedVector() {
         for (size_t i = 0; i < the_size; ++i) {
@@ -114,9 +108,7 @@ public:
         return segments[segment][offset];
     }
 
-    size_t size() const {
-        return the_size;
-    }
+    size_t size() const { return the_size; }
 
     void push_back(const Entry &entry) {
         size_t segment = get_segment(the_size);
@@ -193,8 +185,7 @@ public:
               SEGMENT_BYTES / (elements_per_array * sizeof(Element)),
               size_t(1))),
           elements_per_segment(elements_per_array * arrays_per_segment),
-          the_size(0) {
-    }
+          the_size(0) {}
 
     SegmentedArrayVector(
         size_t elements_per_array_, const ElementAllocator &allocator_)
@@ -205,8 +196,7 @@ public:
               SEGMENT_BYTES / (elements_per_array * sizeof(Element)),
               size_t(1))),
           elements_per_segment(elements_per_array * arrays_per_segment),
-          the_size(0) {
-    }
+          the_size(0) {}
 
     ~SegmentedArrayVector() {
         for (size_t i = 0; i < the_size; ++i) {
@@ -235,9 +225,7 @@ public:
         return segments[segment] + offset;
     }
 
-    size_t size() const {
-        return the_size;
-    }
+    size_t size() const { return the_size; }
 
     void push_back(const Element *entry) {
         size_t segment = get_segment(the_size);
