@@ -230,7 +230,6 @@ void EagerSearch::generate_successors(
 
         State succ_state = state_registry.get_successor_state(state, op);
         statistics.inc_generated();
-        bool is_preferred = preferred_operators.contains(op_id);
 
         SearchNode succ_node = search_space.get_node(succ_state);
 
@@ -242,6 +241,7 @@ void EagerSearch::generate_successors(
         if (succ_node.is_dead_end())
             continue;
 
+        bool is_preferred = preferred_operators.contains(op_id);
         if (succ_node.is_new()) {
             /*
               We have not seen this state before.
