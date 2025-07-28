@@ -19,8 +19,7 @@ public:
     ConstEvaluator(
         int value, const std::string &description, utils::Verbosity verbosity);
     virtual void get_path_dependent_evaluators(
-        std::set<Evaluator *> &) override {
-    }
+        std::set<Evaluator *> &) override {}
 };
 }
 

@@ -41,12 +41,10 @@ public:
     PerTaskInformation()
         : entry_constructor([](const TaskProxy &task_proxy) {
               return std::make_unique<Entry>(task_proxy);
-          }) {
-    }
+          }) {}
 
     explicit PerTaskInformation(EntryConstructor entry_constructor)
-        : entry_constructor(entry_constructor) {
-    }
+        : entry_constructor(entry_constructor) {}
 
     Entry &operator[](const TaskProxy &task_proxy) {
         TaskID id = task_proxy.get_id();

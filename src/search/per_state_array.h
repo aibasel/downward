@@ -11,8 +11,7 @@ class ConstArrayView {
     const T *p;
     int size_;
 public:
-    ConstArrayView(const T *p, int size) : p(p), size_(size) {
-    }
+    ConstArrayView(const T *p, int size) : p(p), size_(size) {}
     ConstArrayView(const ConstArrayView<T> &other) = default;
 
     ConstArrayView<T> &operator=(const ConstArrayView<T> &other) = default;
@@ -22,9 +21,7 @@ public:
         return p[index];
     }
 
-    int size() const {
-        return size_;
-    }
+    int size() const { return size_; }
 };
 
 template<class T>
@@ -32,15 +29,12 @@ class ArrayView {
     T *p;
     int size_;
 public:
-    ArrayView(T *p, int size) : p(p), size_(size) {
-    }
+    ArrayView(T *p, int size) : p(p), size_(size) {}
     ArrayView(const ArrayView<T> &other) = default;
 
     ArrayView<T> &operator=(const ArrayView<T> &other) = default;
 
-    operator ConstArrayView<T>() const {
-        return ConstArrayView<T>(p, size_);
-    }
+    operator ConstArrayView<T>() const { return ConstArrayView<T>(p, size_); }
 
     T &operator[](int index) {
         assert(index >= 0 && index < size_);
@@ -52,9 +46,7 @@ public:
         return p[index];
     }
 
-    int size() const {
-        return size_;
-    }
+    int size() const { return size_; }
 };
 
 /*
@@ -121,8 +113,7 @@ public:
     explicit PerStateArray(const std::vector<Element> &default_array)
         : default_array(default_array),
           cached_registry(nullptr),
-          cached_entries(nullptr) {
-    }
+          cached_entries(nullptr) {}
 
     PerStateArray(const PerStateArray<Element> &) = delete;
     PerStateArray &operator=(const PerStateArray<Element> &) = delete;

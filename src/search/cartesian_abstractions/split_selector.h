@@ -37,8 +37,7 @@ struct Split {
 
     Split(int var_id, std::vector<int> &&values)
         : var_id(var_id),
-          values(move(values)) {
-    }
+          values(move(values)) {}
 };
 
 /*

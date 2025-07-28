@@ -16,7 +16,10 @@ class Options;
 }
 
 namespace enforced_hill_climbing_search {
-enum class PreferredUsage { PRUNE_BY_PREFERRED, RANK_PREFERRED_FIRST };
+enum class PreferredUsage {
+    PRUNE_BY_PREFERRED,
+    RANK_PREFERRED_FIRST
+};
 
 /*
   Enforced hill-climbing with deferred evaluation.

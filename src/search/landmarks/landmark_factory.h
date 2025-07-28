@@ -59,9 +59,7 @@ public:
 
     virtual bool supports_conditional_effects() const = 0;
 
-    bool achievers_are_calculated() const {
-        return achievers_calculated;
-    }
+    bool achievers_are_calculated() const { return achievers_calculated; }
 };
 
 extern void add_landmark_factory_options_to_feature(plugins::Feature &feature);

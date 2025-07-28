@@ -33,19 +33,14 @@ class LandmarkNode {
 public:
     explicit LandmarkNode(Landmark &&landmark)
         : id(-1),
-          landmark(std::move(landmark)) {
-    }
+          landmark(std::move(landmark)) {}
 
-    bool operator==(const LandmarkNode &other) const {
-        return this == &other;
-    }
+    bool operator==(const LandmarkNode &other) const { return this == &other; }
 
     std::unordered_map<LandmarkNode *, OrderingType> parents;
     std::unordered_map<LandmarkNode *, OrderingType> children;
 
-    int get_id() const {
-        return id;
-    }
+    int get_id() const { return id; }
 
     // TODO: Should possibly not be changeable.
     void set_id(int new_id) {
@@ -54,13 +49,9 @@ public:
     }
 
     // TODO: Remove this function once the LM-graph is constant after creation.
-    Landmark &get_landmark() {
-        return landmark;
-    }
+    Landmark &get_landmark() { return landmark; }
 
-    const Landmark &get_landmark() const {
-        return landmark;
-    }
+    const Landmark &get_landmark() const { return landmark; }
 };
 
 class LandmarkGraph {
@@ -80,30 +71,20 @@ class LandmarkGraph {
 public:
     // TODO: Remove once landmark graphs remain static. (issue993)
     using iterator = std::vector<std::unique_ptr<LandmarkNode>>::iterator;
-    iterator begin() {
-        return nodes.begin();
-    }
-    iterator end() {
-        return nodes.end();
-    }
+    iterator begin() { return nodes.begin(); }
+    iterator end() { return nodes.end(); }
 
     using const_iterator =
         std::vector<std::unique_ptr<LandmarkNode>>::const_iterator;
-    const const_iterator begin() const {
-        return nodes.cbegin();
-    }
-    const const_iterator end() const {
-        return nodes.cend();
-    }
+    const const_iterator begin() const { return nodes.cbegin(); }
+    const const_iterator end() const { return nodes.cend(); }
 
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     LandmarkGraph();
 
     // Needed by both landmark graph factories and non-landmark-graph factories.
-    int get_num_landmarks() const {
-        return static_cast<int>(nodes.size());
-    }
+    int get_num_landmarks() const { return static_cast<int>(nodes.size()); }
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */
     int get_num_disjunctive_landmarks() const {

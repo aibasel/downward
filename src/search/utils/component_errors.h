@@ -9,8 +9,7 @@
 namespace utils {
 class ComponentArgumentError : public Exception {
 public:
-    explicit ComponentArgumentError(const std::string &msg) : Exception(msg) {
-    }
+    explicit ComponentArgumentError(const std::string &msg) : Exception(msg) {}
 };
 
 void verify_argument(bool b, const std::string &message);

@@ -31,9 +31,7 @@ class VEGraph {
     utils::HashSet<pair<FactPair, FactPair>> edges;
     priority_queues::AdaptiveQueue<FactPair> elimination_queue;
 
-    Node &get_node(FactPair fact) {
-        return nodes[fact.var][fact.value];
-    }
+    Node &get_node(FactPair fact) { return nodes[fact.var][fact.value]; }
 
     const Node &get_node(FactPair fact) const {
         return nodes[fact.var][fact.value];

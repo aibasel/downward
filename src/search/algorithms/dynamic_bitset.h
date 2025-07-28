@@ -40,9 +40,7 @@ class DynamicBitset {
         return Block(1) << bit_index(pos);
     }
 
-    int count_bits_in_last_block() const {
-        return bit_index(num_bits);
-    }
+    int count_bits_in_last_block() const { return bit_index(num_bits); }
 
     void zero_unused_bits() {
         const int bits_in_last_block = count_bits_in_last_block();
@@ -56,12 +54,9 @@ class DynamicBitset {
 public:
     explicit DynamicBitset(std::size_t num_bits)
         : blocks(compute_num_blocks(num_bits), zeros),
-          num_bits(num_bits) {
-    }
+          num_bits(num_bits) {}
 
-    std::size_t size() const {
-        return num_bits;
-    }
+    std::size_t size() const { return num_bits; }
 
     /*
       Count the number of set bits.
@@ -82,9 +77,7 @@ public:
         zero_unused_bits();
     }
 
-    void reset() {
-        std::fill(blocks.begin(), blocks.end(), zeros);
-    }
+    void reset() { std::fill(blocks.begin(), blocks.end(), zeros); }
 
     void set(std::size_t pos) {
         assert(pos < num_bits);
@@ -101,9 +94,7 @@ public:
         return (blocks[block_index(pos)] & bit_mask(pos)) != 0;
     }
 
-    bool operator[](std::size_t pos) const {
-        return test(pos);
-    }
+    bool operator[](std::size_t pos) const { return test(pos); }
 
     bool intersects(const DynamicBitset &other) const {
         assert(size() == other.size());

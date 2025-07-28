@@ -17,8 +17,7 @@ class SyntaxAnalyzerContext : public utils::Context {
 public:
     SyntaxAnalyzerContext(TokenStream &tokens, int lookahead)
         : tokens(tokens),
-          lookahead(lookahead) {
-    }
+          lookahead(lookahead) {}
 
     virtual string decorate_block_name(
         const string &block_name) const override {

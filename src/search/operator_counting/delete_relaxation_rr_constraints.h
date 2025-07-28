@@ -24,7 +24,11 @@ class VEGraph;
 using LPConstraints = named_vector::NamedVector<lp::LPConstraint>;
 using LPVariables = named_vector::NamedVector<lp::LPVariable>;
 
-enum class AcyclicityType { TIME_LABELS, VERTEX_ELIMINATION, NONE };
+enum class AcyclicityType {
+    TIME_LABELS,
+    VERTEX_ELIMINATION,
+    NONE
+};
 
 class DeleteRelaxationRRConstraints : public ConstraintGenerator {
     struct LPVariableIDs {

@@ -14,9 +14,17 @@ class RandomNumberGenerator;
 }
 
 namespace merge_and_shrink {
-enum class AtomicTSOrder { REVERSE_LEVEL, LEVEL, RANDOM };
+enum class AtomicTSOrder {
+    REVERSE_LEVEL,
+    LEVEL,
+    RANDOM
+};
 
-enum class ProductTSOrder { OLD_TO_NEW, NEW_TO_OLD, RANDOM };
+enum class ProductTSOrder {
+    OLD_TO_NEW,
+    NEW_TO_OLD,
+    RANDOM
+};
 
 class MergeScoringFunctionTotalOrder : public MergeScoringFunction {
     AtomicTSOrder atomic_ts_order;
@@ -39,13 +47,9 @@ public:
     virtual void initialize(const TaskProxy &task_proxy) override;
     static void add_options_to_feature(plugins::Feature &feature);
 
-    virtual bool requires_init_distances() const override {
-        return false;
-    }
+    virtual bool requires_init_distances() const override { return false; }
 
-    virtual bool requires_goal_distances() const override {
-        return false;
-    }
+    virtual bool requires_goal_distances() const override { return false; }
 };
 }
 

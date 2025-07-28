@@ -36,18 +36,14 @@ class AbstractSearch {
             g = new_g;
         }
 
-        int get_g_value() const {
-            return g;
-        }
+        int get_g_value() const { return g; }
 
         void increase_h_value_to(int new_h) {
             assert(new_h >= h);
             h = new_h;
         }
 
-        int get_h_value() const {
-            return h;
-        }
+        int get_h_value() const { return h; }
 
         void set_incoming_transition(const Transition &transition) {
             incoming_transition = transition;

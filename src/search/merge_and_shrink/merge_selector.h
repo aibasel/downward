@@ -15,8 +15,7 @@ class FactoredTransitionSystem;
 class MergeSelector {
 protected:
     virtual std::string name() const = 0;
-    virtual void dump_selector_specific_options(utils::LogProxy &) const {
-    }
+    virtual void dump_selector_specific_options(utils::LogProxy &) const {}
     std::vector<std::pair<int, int>> compute_merge_candidates(
         const FactoredTransitionSystem &fts,
         const std::vector<int> &indices_subset) const;

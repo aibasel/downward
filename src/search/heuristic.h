@@ -25,8 +25,7 @@ class Heuristic : public Evaluator {
         int h : 31;
         unsigned int dirty : 1;
 
-        HEntry(int h, bool dirty) : h(h), dirty(dirty) {
-        }
+        HEntry(int h, bool dirty) : h(h), dirty(dirty) {}
     };
     static_assert(sizeof(HEntry) == 4, "HEntry has unexpected size.");
 
@@ -59,7 +58,10 @@ protected:
     // Use task_proxy to access task information.
     TaskProxy task_proxy;
 
-    enum { DEAD_END = -1, NO_VALUE = -2 };
+    enum {
+        DEAD_END = -1,
+        NO_VALUE = -2
+    };
 
     virtual int compute_heuristic(const State &ancestor_state) = 0;
 
@@ -79,8 +81,7 @@ public:
     virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(
-        std::set<Evaluator *> & /*evals*/) override {
-    }
+        std::set<Evaluator *> & /*evals*/) override {}
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;

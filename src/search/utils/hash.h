@@ -145,8 +145,7 @@ class HashState {
     }
 
 public:
-    HashState() : a(0xdeadbeef), b(a), c(a), pending_values(0) {
-    }
+    HashState() : a(0xdeadbeef), b(a), c(a), pending_values(0) {}
 
     void feed(std::uint32_t value) {
         assert(pending_values != -1);
@@ -289,9 +288,7 @@ std::size_t get_hash(const T &value) {
 // This struct should only be used by HashMap and HashSet below.
 template<typename T>
 struct Hash {
-    std::size_t operator()(const T &val) const {
-        return get_hash(val);
-    }
+    std::size_t operator()(const T &val) const { return get_hash(val); }
 };
 
 /*

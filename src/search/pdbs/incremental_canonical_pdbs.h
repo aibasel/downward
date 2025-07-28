@@ -57,9 +57,7 @@ public:
         return pattern_databases;
     }
 
-    int get_size() const {
-        return size;
-    }
+    int get_size() const { return size; }
 };
 }
 
