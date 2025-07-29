@@ -10,7 +10,7 @@
 
 namespace iterated_search {
 class IteratedSearch : public SearchAlgorithm {
-    std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms;
+    std::vector<std::shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms;
 
     bool pass_bound;
     bool repeat_last_phase;
@@ -30,7 +30,7 @@ class IteratedSearch : public SearchAlgorithm {
 
 public:
     IteratedSearch(
-        std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+        std::vector<std::shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms,
         bool pass_bound,
         bool repeat_last_phase,
         bool continue_on_fail,
@@ -47,9 +47,12 @@ public:
 };
 
 
-class TaskIndependentIteratedSearch : public TaskIndependentSearchAlgorithm {
+class TaskIndependentIteratedSearch : public TaskIndependentComponent<SearchAlgorithm> {
 private:
-    std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms;
+    int bound;
+    OperatorCost cost_type;
+    double max_time;
+    std::vector<std::shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms;
 
     bool pass_bound;
     bool repeat_last_phase;
@@ -61,8 +64,8 @@ private:
         std::unique_ptr<ComponentMap> &component_map,
         int depth) const override;
 public:
-    explicit TaskIndependentIteratedSearch(
-        std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+    TaskIndependentIteratedSearch(
+        std::vector<std::shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms,
         bool pass_bound,
         bool repeat_last_phase,
         bool continue_on_fail,

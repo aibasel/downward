@@ -103,7 +103,7 @@ using WeightedEval = weighted_evaluator::WeightedEvaluator;
 //issue559//        boost);
 //issue559//}
 
-pair<shared_ptr<TaskIndependentOpenListFactory>, const shared_ptr<TaskIndependentComponent<Evaluator>>>
+pair<shared_ptr<TaskIndependentComponent<OpenListFactory>>, const shared_ptr<TaskIndependentComponent<Evaluator>>>
 create_task_independent_astar_open_list_factory_and_f_eval(
     const shared_ptr<TaskIndependentComponent<Evaluator>> &h_eval, const string &description, utils::Verbosity verbosity
     ) {
@@ -114,7 +114,7 @@ create_task_independent_astar_open_list_factory_and_f_eval(
             description + ".f_eval", verbosity);
     vector<shared_ptr<TaskIndependentComponent<Evaluator>>> evals = {f, h_eval};
 
-    shared_ptr<TaskIndependentOpenListFactory> open =
+    shared_ptr<TaskIndependentComponent<OpenListFactory>> open =
         make_shared<tiebreaking_open_list::TaskIndependentTieBreakingOpenListFactory>(
             evals, false, false);
     return make_pair(open, f);

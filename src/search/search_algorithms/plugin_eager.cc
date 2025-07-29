@@ -7,13 +7,13 @@ using namespace std;
 
 namespace plugin_eager {
 class EagerSearchFeature
-    : public plugins::TypedFeature<TaskIndependentSearchAlgorithm, eager_search::TaskIndependentEagerSearch> {
+    : public plugins::TypedFeature<TaskIndependentComponent<SearchAlgorithm>, eager_search::TaskIndependentEagerSearch> {
 public:
     EagerSearchFeature() : TypedFeature("eager") {
         document_title("Eager best-first search");
         document_synopsis("");
 
-        add_option<shared_ptr<TaskIndependentOpenListFactory>>("open", "open list");
+        add_option<shared_ptr<TaskIndependentComponent<OpenListFactory>>>("open", "open list");
         add_option<bool>(
             "reopen_closed",
             "reopen closed nodes",
@@ -34,7 +34,7 @@ public:
     virtual shared_ptr<eager_search::TaskIndependentEagerSearch>
     create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<eager_search::TaskIndependentEagerSearch>(
-            opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
+            opts.get<shared_ptr<TaskIndependentComponent<OpenListFactory>>>("open"),
             opts.get<bool>("reopen_closed"),
             opts.get<shared_ptr<TaskIndependentComponent<Evaluator>>>("f_eval", nullptr),
             opts.get_list<shared_ptr<TaskIndependentComponent<Evaluator>>>("preferred"),

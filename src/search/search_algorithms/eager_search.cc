@@ -311,7 +311,7 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
 }
 
 TaskIndependentEagerSearch::TaskIndependentEagerSearch(
-    shared_ptr<TaskIndependentOpenListFactory> open_list_factory,
+    shared_ptr<TaskIndependentComponent<OpenListFactory>> open_list_factory,
     bool reopen_closed_nodes,
     shared_ptr<TaskIndependentComponent<Evaluator>> f_evaluator,
     vector<shared_ptr<TaskIndependentComponent<Evaluator>>> preferred_operator_evaluators,
@@ -323,12 +323,13 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(
     const string &name,
     utils::Verbosity verbosity
     )
-    : TaskIndependentSearchAlgorithm(cost_type,
-                                     bound,
-                                     max_time,
-                                     name,
+    : TaskIndependentComponent<SearchAlgorithm>(                                     name,
                                      verbosity
                                      ),
+                                     bound(bound),
+	cost_type(cost_type),
+                                     max_time(max_time),
+
       reopen_closed_nodes(reopen_closed_nodes),
       open_list_factory(move(open_list_factory)),
       f_evaluator(f_evaluator),
@@ -340,33 +341,20 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(
 std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(const shared_ptr <AbstractTask> &task,
                                                                                   unique_ptr <ComponentMap> &component_map,
                                                                                   int depth) const {
-    vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
-    transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
-              [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentComponent<Evaluator>> &eval) {
-                  return eval->get_task_specific(task, component_map, depth);
-              }
-              );
-
-    shared_ptr<OpenListFactory> _open_list = 
-        open_list_factory->get_task_specific(
-            task, component_map, depth);
-
     return make_shared<EagerSearch>(
-        move(_open_list),
-        reopen_closed_nodes,
-        f_evaluator ? f_evaluator->get_task_specific(task, component_map, depth)
-		: nullptr,
-        td_evaluators,
-        pruning_method//->get_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth)
-		,
-        lazy_evaluator ? lazy_evaluator->get_task_specific(task, component_map, depth)
-		: nullptr,
-        cost_type,
-        bound,
-        max_time,
-        description,
-        verbosity,
-        task);
+construct_task_specific(open_list_factory, task, component_map, depth),
+construct_task_specific(reopen_closed_nodes, task, component_map, depth),
+construct_task_specific(f_evaluator, task, component_map, depth),
+construct_task_specific(preferred_operator_evaluators, task, component_map, depth),
+construct_task_specific(pruning_method, task, component_map, depth),
+construct_task_specific(lazy_evaluator, task, component_map, depth),
+construct_task_specific(cost_type, task, component_map, depth),
+construct_task_specific(bound, task, component_map, depth),
+construct_task_specific(max_time, task, component_map, depth),
+construct_task_specific(description, task, component_map, depth),
+construct_task_specific(verbosity, task, component_map, depth),
+construct_task_specific(task, task, component_map, depth)
+	);
 }
 
 

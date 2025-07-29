@@ -2,6 +2,8 @@
 #ifndef COMPONENT_H
 #define COMPONENT_H
 
+#include "plan_manager.h"
+
 #include "utils/logging.h"
 #include "utils/hash.h"
 
@@ -20,6 +22,7 @@ protected:
     const std::string description;
     const utils::Verbosity verbosity;
     mutable utils::LogProxy log;
+    PlanManager plan_manager;
 public:
     TaskIndependentComponentBase( const std::string &description, utils::Verbosity verbosity)
          : description(description),
@@ -72,6 +75,7 @@ public:
         return component;
     }
 
+    PlanManager &get_plan_manager() {return plan_manager;}
 };
 
 

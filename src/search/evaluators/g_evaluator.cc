@@ -32,7 +32,10 @@ TaskIndependentGEvaluator::TaskIndependentGEvaluator(const string &description,
 shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific([[maybe_unused]] const shared_ptr <AbstractTask> &task,
                                                                            [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
                                                                            [[maybe_unused]] int depth) const {
-    return make_shared<GEvaluator>(description, verbosity);
+    return make_shared<GEvaluator>(
+		construct_task_specific(description, task,component_map,depth),
+		construct_task_specific(verbosity, task,component_map,depth)
+	);
 }
 
 

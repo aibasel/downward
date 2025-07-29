@@ -166,36 +166,24 @@ TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFac
     vector<shared_ptr<TaskIndependentComponent<Evaluator>>> evals,
     bool pref_only,
     bool allow_unsafe_pruning)
-    : TaskIndependentOpenListFactory("TieBreakingOpenListFactory", utils::Verbosity::NORMAL),
+    : TaskIndependentComponent<OpenListFactory>("TieBreakingOpenListFactory", utils::Verbosity::NORMAL),
       pref_only(pref_only), evals(evals), allow_unsafe_pruning(allow_unsafe_pruning) {
  }
 
 
 std::shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific(const shared_ptr <AbstractTask> &task,
                                                                                                  unique_ptr <ComponentMap> &component_map, int depth) const {
-    vector<shared_ptr<Evaluator>> ts_evaluators(evals.size());
-
-    transform(evals.begin(), evals.end(), ts_evaluators.begin(),
-              [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentComponent<Evaluator>> &eval) {
-                  return eval->get_task_specific(task, component_map, depth);
-              }
-              );
     return make_shared<TieBreakingOpenListFactory>(
-        ts_evaluators,
-        pref_only,
-        allow_unsafe_pruning);
+        construct_task_specific(evals, task, component_map, depth),
+        construct_task_specific(pref_only, task, component_map, depth),
+        construct_task_specific(allow_unsafe_pruning, task, component_map, depth));
  }
 
 
 
 
-
-
-
-
-
 class TieBreakingOpenListFeature
-    : public plugins::TypedFeature<TaskIndependentOpenListFactory, TaskIndependentTieBreakingOpenListFactory> {
+    : public plugins::TypedFeature<TaskIndependentComponent<OpenListFactory>, TaskIndependentTieBreakingOpenListFactory> {
 public:
     TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
         document_title("Tie-breaking open list");

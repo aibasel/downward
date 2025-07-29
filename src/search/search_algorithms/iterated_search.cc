@@ -10,7 +10,7 @@ using namespace std;
 
 namespace iterated_search {
 IteratedSearch::IteratedSearch(
-    vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+    vector<shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms,
     bool pass_bound,
     bool repeat_last_phase,
     bool continue_on_fail,
@@ -136,7 +136,7 @@ void IteratedSearch::save_plan_if_necessary() {
 
 
 TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(
-    vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms,
+    vector<shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms,
     bool pass_bound,
     bool repeat_last_phase,
     bool continue_on_fail,
@@ -147,12 +147,13 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(
     const string &name,
     utils::Verbosity verbosity
     )
-    : TaskIndependentSearchAlgorithm(cost_type,
-                                     bound,
-                                     max_time,
+    : TaskIndependentComponent<SearchAlgorithm>(
                                      name,
                                      verbosity
                                      ),
+                                     bound(bound),
+	cost_type(cost_type),
+                                     max_time(max_time),
       search_algorithms(search_algorithms),
       pass_bound(pass_bound),
       repeat_last_phase(repeat_last_phase),
@@ -178,13 +179,13 @@ std::shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_spec
 
 
 class IteratedSearchFeature
-    : public plugins::TypedFeature<TaskIndependentSearchAlgorithm, TaskIndependentIteratedSearch> {
+    : public plugins::TypedFeature<TaskIndependentComponent<SearchAlgorithm>, TaskIndependentIteratedSearch> {
 public:
     IteratedSearchFeature() : TypedFeature("iterated") {
         document_title("Iterated search");
         document_synopsis("");
 
-        add_list_option<shared_ptr<TaskIndependentSearchAlgorithm>>(
+        add_list_option<shared_ptr<TaskIndependentComponent<SearchAlgorithm>>>(
             "search_algorithms",
             "list of search algorithms for each phase",
             "");
@@ -234,10 +235,10 @@ public:
 
 
     virtual shared_ptr<TaskIndependentIteratedSearch> create_component(const plugins::Options &opts) const override {
-        utils::verify_list_not_empty(opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
+        utils::verify_list_not_empty(opts.get_list<shared_ptr<TaskIndependentComponent<SearchAlgorithm>>>(
                 "search_algorithms"), "search_algorithms");
         return make_shared<TaskIndependentIteratedSearch>(
-            opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
+            opts.get_list<shared_ptr<TaskIndependentComponent<SearchAlgorithm>>>(
                 "search_algorithms"),
             opts.get<bool>("pass_bound"),
             opts.get<bool>("repeat_last"),

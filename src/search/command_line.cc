@@ -81,12 +81,12 @@ static vector<string> replace_old_style_predefinitions(const vector<string> &arg
     return new_args;
 }
 
-static shared_ptr<TaskIndependentSearchAlgorithm> parse_cmd_line_aux(const vector<string> &args) {
+static shared_ptr<TaskIndependentComponent<SearchAlgorithm>> parse_cmd_line_aux(const vector<string> &args) {
     string plan_filename = "sas_plan";
     int num_previously_generated_plans = 0;
     bool is_part_of_anytime_portfolio = false;
 
-    using TISearchPtr = shared_ptr<TaskIndependentSearchAlgorithm>;
+    using TISearchPtr = shared_ptr<TaskIndependentComponent<SearchAlgorithm>>;
     TISearchPtr ti_search_algorithm = nullptr;
     // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
@@ -164,7 +164,7 @@ static shared_ptr<TaskIndependentSearchAlgorithm> parse_cmd_line_aux(const vecto
     return ti_search_algorithm;
 }
 
-shared_ptr<TaskIndependentSearchAlgorithm> parse_cmd_line(
+shared_ptr<TaskIndependentComponent<SearchAlgorithm>> parse_cmd_line(
     int argc, const char **argv, bool is_unit_cost) {
     vector<string> args;
     bool active = true;

@@ -21,7 +21,7 @@ public:
 
 
 
-class TaskIndependentTieBreakingOpenListFactory : public TaskIndependentOpenListFactory {
+class TaskIndependentTieBreakingOpenListFactory : public TaskIndependentComponent<OpenListFactory> {
     bool pref_only;
     std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>> evals;
     bool allow_unsafe_pruning;

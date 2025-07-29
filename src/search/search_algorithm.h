@@ -81,25 +81,6 @@ public:
 };
 
 
-class TaskIndependentSearchAlgorithm : public TaskIndependentComponent<SearchAlgorithm> {
-protected:
-    std::string description;
-    PlanManager plan_manager;
-    int bound;
-    OperatorCost cost_type;
-    double max_time;
-
-public:
-    TaskIndependentSearchAlgorithm(OperatorCost cost_type,
-                                   int bound,
-                                   double max_time,
-                                   const std::string &description,
-                                   utils::Verbosity verbosity);
-    virtual ~TaskIndependentSearchAlgorithm();
-
-    PlanManager &get_plan_manager() {return plan_manager;}
-
-};
 
 
 

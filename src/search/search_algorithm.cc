@@ -245,7 +245,7 @@ tuple<bool, bool, int> get_successors_order_arguments_from_options(
         );
 }
 
-static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentSearchAlgorithm> {
+static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentComponent<SearchAlgorithm>> {
 public:
     SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("SearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.
@@ -253,25 +253,6 @@ public:
     }
 }
 _category_plugin;
-
-
-TaskIndependentSearchAlgorithm::TaskIndependentSearchAlgorithm(OperatorCost cost_type,
-                                                               int bound,
-                                                               double max_time,
-                                                               const string &description,
-                                                               utils::Verbosity verbosity)
-    : TaskIndependentComponent(description, verbosity),
-      bound(bound),
-      cost_type(cost_type),
-      max_time(max_time) {
-    if (bound < 0) {
-        cerr << "error: negative cost bound " << bound << endl;
-        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    }
-}
-
-TaskIndependentSearchAlgorithm::~TaskIndependentSearchAlgorithm() {
-}
 
 
 void collect_preferred_operators(

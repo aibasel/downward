@@ -38,7 +38,7 @@ tuple<bool> get_open_list_arguments_from_options(
     return make_tuple(opts.get<bool>("pref_only"));
 }
 
-static class OpenListFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentOpenListFactory> {
+static class OpenListFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentComponent<OpenListFactory>> {
 public:
     OpenListFactoryCategoryPlugin() : TypedCategoryPlugin("OpenList") {
         // TODO: use document_synopsis() for the wiki page.

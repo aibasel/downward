@@ -54,11 +54,14 @@ public:
 };
 
 
-class TaskIndependentEagerSearch : public TaskIndependentSearchAlgorithm {
+class TaskIndependentEagerSearch : public TaskIndependentComponent<SearchAlgorithm> {
 private:
+    int bound;
+    OperatorCost cost_type;
+    double max_time;
     const bool reopen_closed_nodes;
 
-    std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory;
+    std::shared_ptr<TaskIndependentComponent<OpenListFactory>> open_list_factory;
 
 
     std::shared_ptr<TaskIndependentComponent<Evaluator>> f_evaluator;
@@ -75,7 +78,7 @@ private:
         int depth) const override;
 public:
     TaskIndependentEagerSearch(
-        std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory,
+        std::shared_ptr<TaskIndependentComponent<OpenListFactory>> open_list_factory,
         bool reopen_closed_nodes,
         std::shared_ptr<TaskIndependentComponent<Evaluator>> f_evaluator,
         std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>> preferred_operator_evaluators,
