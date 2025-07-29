@@ -8,7 +8,6 @@
 #include <vector>
 
 class Evaluator;
-class TaskIndependentEvaluator;
 class PruningMethod;
 class OpenListFactory;
 
@@ -87,7 +86,7 @@ public:
         OperatorCost cost_type,
         int bound,
         double max_time,
-        const std::string &name,
+        const std::string &description,
         utils::Verbosity verbosity);
 
     virtual ~TaskIndependentEagerSearch() override = default;

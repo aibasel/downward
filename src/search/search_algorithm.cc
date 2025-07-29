@@ -254,7 +254,6 @@ public:
 }
 _category_plugin;
 
-
 void collect_preferred_operators(
     EvaluationContext &eval_context,
     Evaluator *preferred_operator_evaluator,

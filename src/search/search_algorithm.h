@@ -80,11 +80,6 @@ public:
     std::string get_description() {return description;}
 };
 
-
-
-
-
-
 /*
   Print evaluator values of all evaluators evaluated in the evaluation context.
 */

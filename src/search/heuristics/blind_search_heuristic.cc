@@ -47,9 +47,9 @@ TaskIndependentBlindSearchHeuristic::~TaskIndependentBlindSearchHeuristic() {
 }
 
 std::shared_ptr<Evaluator> TaskIndependentBlindSearchHeuristic::create_task_specific(
-    [[maybe_unused]] const shared_ptr<AbstractTask> &task,
-    [[maybe_unused]] std::unique_ptr<ComponentMap> &component_map,
-    [[maybe_unused]] int depth) const {
+    const shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) const {
     return make_shared<BlindSearchHeuristic>(
         construct_task_specific(transform, task, component_map, depth),
         construct_task_specific(cache_evaluator_values, task, component_map, depth),

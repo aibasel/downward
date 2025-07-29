@@ -63,10 +63,6 @@ std::shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specifi
 }
 
 
-
-
-
-
 class WeightedEvaluatorFeature
     : public plugins::TypedFeature<TaskIndependentComponent<Evaluator>, TaskIndependentWeightedEvaluator> {
 public:

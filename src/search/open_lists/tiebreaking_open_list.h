@@ -3,7 +3,6 @@
 
 #include "../open_list_factory.h"
 
-class TaskIndependentEvaluator;
 
 namespace tiebreaking_open_list {
 class TieBreakingOpenListFactory : public OpenListFactory {

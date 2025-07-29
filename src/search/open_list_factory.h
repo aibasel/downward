@@ -29,13 +29,6 @@ public:
     std::unique_ptr<OpenList<T>> create_open_list();
 };
 
-class TaskIndependentOpenListFactory : public TaskIndependentComponent<OpenListFactory> {
-public:
-    TaskIndependentOpenListFactory(const std::string &description, utils::Verbosity verbosity);
-    virtual ~TaskIndependentOpenListFactory() = default;
-
-    TaskIndependentOpenListFactory(const TaskIndependentOpenListFactory &) = delete;
-};
 
 extern void add_open_list_options_to_feature(
     plugins::Feature &feature);

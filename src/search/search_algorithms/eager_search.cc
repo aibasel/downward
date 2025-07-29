@@ -320,10 +320,10 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(
     OperatorCost cost_type,
     int bound,
     double max_time,
-    const string &name,
+    const string &description,
     utils::Verbosity verbosity
     )
-    : TaskIndependentComponent<SearchAlgorithm>(name,
+    : TaskIndependentComponent<SearchAlgorithm>(description,
                                                 verbosity
                                                 ),
       bound(bound),
