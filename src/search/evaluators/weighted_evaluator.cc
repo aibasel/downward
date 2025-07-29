@@ -55,10 +55,11 @@ TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(
 std::shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific(const shared_ptr <AbstractTask> &task,
                                                                                   unique_ptr <ComponentMap> &component_map, int depth) const {
     return make_shared<WeightedEvaluator>(
-        evaluator->get_task_specific(task, component_map, depth),
-        weight,
-        description,
-        verbosity);
+        construct_task_specific(evaluator, task, component_map, depth),
+        construct_task_specific(weight, task, component_map, depth),
+        construct_task_specific(description, task, component_map, depth),
+        construct_task_specific(verbosity, task, component_map, depth)
+	);
 }
 
 
