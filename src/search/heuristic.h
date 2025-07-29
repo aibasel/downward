@@ -95,9 +95,9 @@ public:
 class TaskIndependentHeuristic : public TaskIndependentEvaluator {
 protected:
     bool cache_evaluator_values;
-    std::shared_ptr</*TaskIndependent*/AbstractTask> task_transformation;
+    std::shared_ptr</*TaskIndependent*/ AbstractTask> task_transformation;
 public:
-    TaskIndependentHeuristic(const std::shared_ptr</*TaskIndependent*/AbstractTask> &task_transformation,
+    TaskIndependentHeuristic(const std::shared_ptr</*TaskIndependent*/ AbstractTask> &task_transformation,
                              bool cache_evaluator_values,
                              const std::string &description,
                              utils::Verbosity verbosity);

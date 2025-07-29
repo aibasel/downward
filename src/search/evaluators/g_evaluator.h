@@ -23,12 +23,9 @@ class TaskIndependentGEvaluator : public TaskIndependentComponent<Evaluator> {
         int depth) const override;
 public:
     TaskIndependentGEvaluator(const std::string &description,
-                                       utils::Verbosity verbosity);
+                              utils::Verbosity verbosity);
 
     virtual ~TaskIndependentGEvaluator()  override = default;
-
-
-
 };
 }
 

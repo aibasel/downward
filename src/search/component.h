@@ -1,4 +1,3 @@
-
 #ifndef COMPONENT_H
 #define COMPONENT_H
 
@@ -24,10 +23,10 @@ protected:
     mutable utils::LogProxy log;
     PlanManager plan_manager;
 public:
-    TaskIndependentComponentBase( const std::string &description, utils::Verbosity verbosity)
-         : description(description),
-           verbosity(verbosity),
-           log(utils::get_log_for_verbosity(verbosity)) {}
+    TaskIndependentComponentBase(const std::string &description, utils::Verbosity verbosity)
+        : description(description),
+          verbosity(verbosity),
+          log(utils::get_log_for_verbosity(verbosity)) {}
     virtual ~TaskIndependentComponentBase() = default;
     std::string get_description() const {return description;}
 };
@@ -44,21 +43,21 @@ class TaskIndependentComponent : public TaskIndependentComponentBase {
 public:
     explicit TaskIndependentComponent(const std::string &description,
                                       utils::Verbosity verbosity)
-        : TaskIndependentComponentBase(description, verbosity){}
+        : TaskIndependentComponentBase(description, verbosity) {}
 
 
     std::shared_ptr<TaskSpecificComponent> get_task_specific(
         const std::shared_ptr<AbstractTask> &task, int depth = -1) const {
-    utils::g_log << std::string(depth >=0 ? depth : 0, ' ') << "Creating " << description << " as root component..." << std::endl;
-    std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
-    return get_task_specific(task, component_map, depth);
-	}
+        utils::g_log << std::string(depth >= 0 ? depth : 0, ' ') << "Creating " << description << " as root component..." << std::endl;
+        std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
+        return get_task_specific(task, component_map, depth);
+    }
 
     std::shared_ptr<TaskSpecificComponent> get_task_specific(
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map, int depth = -1) const {
         std::shared_ptr<TaskSpecificComponent> component;
-        const std::pair<const TaskIndependentComponentBase *, const std::shared_ptr<AbstractTask> *> key = std::make_pair(this,&task);
+        const std::pair<const TaskIndependentComponentBase *, const std::shared_ptr<AbstractTask> *> key = std::make_pair(this, &task);
         if (component_map->count(key)) {
             log << std::string(depth, '.')
                 << "Reusing task specific component '" << description
@@ -96,8 +95,8 @@ struct is_task_independent<TaskIndependentComponent<T>> : std::true_type {};
 template<typename T>
 std::shared_ptr<T> construct_task_specific(
     const std::shared_ptr<TaskIndependentComponent<T>> &ptr,
-    const std::shared_ptr<AbstractTask>& task,
-    std::unique_ptr<ComponentMap>& component_map,
+    const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
     int depth) {
     if (ptr == nullptr) {
         return nullptr;
@@ -114,7 +113,7 @@ auto construct_task_specific(
     int depth) {
     std::vector<decltype(construct_task_specific(vec[0], task, component_map, depth))> result;
     result.reserve(vec.size());
-    
+
     for (const auto &elem : vec) {
         result.push_back(construct_task_specific(elem, task, component_map, depth));
     }
@@ -124,11 +123,11 @@ auto construct_task_specific(
 // other leafes
 template<typename T>
 T construct_task_specific(
-	const T &elem,
-	[[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
-	[[maybe_unused]] std::unique_ptr<ComponentMap> &component_map,
-	[[maybe_unused]] int depth) {
-        return elem;
+    const T &elem,
+    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
+    [[maybe_unused]] std::unique_ptr<ComponentMap> &component_map,
+    [[maybe_unused]] int depth) {
+    return elem;
 }
 
 //// raw pointers
@@ -208,7 +207,7 @@ T construct_task_specific(
 //                           int depth) {
 //    std::vector<std::shared_ptr<T>> result;
 //    result.reserve(vec.size());
-//    
+//
 //    for (const std::shared_ptr<TaskIndependentComponent<T>>& elem : vec) {
 //        result.emplace_back(make_shared<T>(std::move(construct_task_specific(*elem, task, component_map, depth))));
 //    }
@@ -223,7 +222,7 @@ T construct_task_specific(
 //                           int depth) {
 //    std::vector<U> result;
 //    result.reserve(vec.size());
-//    
+//
 //    for (const T& elem : vec) {
 //        result.emplace_back(construct_task_specific(elem, task, component_map, depth));
 //    }
@@ -269,7 +268,7 @@ T construct_task_specific(
 ////    int depth) {
 ////    std::vector<decltype(construct_task_specific(vec[0], task, component_map, depth))> result;
 ////    result.reserve(vec.size());
-////    
+////
 ////    for (const auto &elem : vec) {
 ////        result.push_back(construct_task_specific(elem, task, component_map, depth));
 ////    }
@@ -280,7 +279,7 @@ T construct_task_specific(
 template <typename ... Entries>
 class TaskIndependentTuple : public TaskIndependentComponent<std::tuple<Entries ...>> {
     std::tuple<Entries ...> task_independent_entries;
-    
+
     std::shared_ptr<std::tuple<Entries ...>> create_task_specific(        const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
         int depth) const override {
@@ -294,7 +293,7 @@ class TaskIndependentTuple : public TaskIndependentComponent<std::tuple<Entries 
                             return elem.get_task_specific(task,component_map,
 						 depth >= 0 ? depth + 1 : depth
 						 );
-			} else { 
+			} else {
 			    return elem;
 			}
 		    }(task_independent_entry)...
@@ -316,7 +315,7 @@ public:
 template <typename EntryType>
 class TaskIndependentVector : public TaskIndependentComponent<std::vector<EntryType>> {
     std::vector<EntryType> task_independent_entries;
-    
+
     std::shared_ptr<std::vector<EntryType>> create_task_specific(
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
@@ -342,4 +341,3 @@ public:
 
 
 #endif
-

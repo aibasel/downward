@@ -40,10 +40,7 @@ public:
         utils::Verbosity verbosity);
 
     virtual ~TaskIndependentWeightedEvaluator() override = default;
-
 };
-
-
 }
 
 #endif

@@ -168,7 +168,7 @@ TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFac
     bool allow_unsafe_pruning)
     : TaskIndependentComponent<OpenListFactory>("TieBreakingOpenListFactory", utils::Verbosity::NORMAL),
       pref_only(pref_only), evals(evals), allow_unsafe_pruning(allow_unsafe_pruning) {
- }
+}
 
 
 std::shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific(const shared_ptr <AbstractTask> &task,
@@ -177,7 +177,7 @@ std::shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::crea
         construct_task_specific(evals, task, component_map, depth),
         construct_task_specific(pref_only, task, component_map, depth),
         construct_task_specific(allow_unsafe_pruning, task, component_map, depth));
- }
+}
 
 
 

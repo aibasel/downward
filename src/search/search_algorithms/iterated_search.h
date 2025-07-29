@@ -77,12 +77,7 @@ public:
         utils::Verbosity verbosity);
 
     virtual ~TaskIndependentIteratedSearch() override = default;
-
-
 };
-
-
-
 }
 
 #endif

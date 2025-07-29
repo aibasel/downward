@@ -46,7 +46,7 @@ public:
         const std::shared_ptr<Evaluator> &lazy_evaluator,
         OperatorCost cost_type, int bound, double max_time,
         const std::string &description, utils::Verbosity verbosity,
-	const std::shared_ptr<AbstractTask> &task);
+        const std::shared_ptr<AbstractTask> &task);
 
     virtual void print_statistics() const override;
 

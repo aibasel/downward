@@ -35,11 +35,7 @@ public:
         bool pref_only,
         bool allow_unsafe_pruning);
     virtual ~TaskIndependentTieBreakingOpenListFactory() override = default;
-
 };
-
-
-
 }
 
 #endif

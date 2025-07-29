@@ -47,7 +47,7 @@ TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(
     int weight,
     const string &description,
     utils::Verbosity verbosity)
-    : TaskIndependentComponent<Evaluator>( description, verbosity),
+    : TaskIndependentComponent<Evaluator>(description, verbosity),
       evaluator(eval),
       weight(weight) {
 }

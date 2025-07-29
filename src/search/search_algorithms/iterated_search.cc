@@ -37,7 +37,7 @@ IteratedSearch::IteratedSearch(
         last_phase_found_solution(false),
         best_bound(bound),
         iterated_found_solution(false) {
- }
+}
 
 
 
@@ -148,12 +148,12 @@ TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(
     utils::Verbosity verbosity
     )
     : TaskIndependentComponent<SearchAlgorithm>(
-                                     name,
-                                     verbosity
-                                     ),
-                                     bound(bound),
-	cost_type(cost_type),
-                                     max_time(max_time),
+          name,
+          verbosity
+          ),
+      bound(bound),
+      cost_type(cost_type),
+      max_time(max_time),
       search_algorithms(search_algorithms),
       pass_bound(pass_bound),
       repeat_last_phase(repeat_last_phase),
@@ -236,7 +236,7 @@ public:
 
     virtual shared_ptr<TaskIndependentIteratedSearch> create_component(const plugins::Options &opts) const override {
         utils::verify_list_not_empty(opts.get_list<shared_ptr<TaskIndependentComponent<SearchAlgorithm>>>(
-                "search_algorithms"), "search_algorithms");
+                                         "search_algorithms"), "search_algorithms");
         return make_shared<TaskIndependentIteratedSearch>(
             opts.get_list<shared_ptr<TaskIndependentComponent<SearchAlgorithm>>>(
                 "search_algorithms"),
@@ -250,8 +250,7 @@ public:
             opts.get<string>("description"),
             opts.get<utils::Verbosity>("verbosity")
             );
-	}
-
+    }
 };
 
 static plugins::FeaturePlugin<IteratedSearchFeature> _plugin;

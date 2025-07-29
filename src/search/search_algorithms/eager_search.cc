@@ -323,12 +323,12 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(
     const string &name,
     utils::Verbosity verbosity
     )
-    : TaskIndependentComponent<SearchAlgorithm>(                                     name,
-                                     verbosity
-                                     ),
-                                     bound(bound),
-	cost_type(cost_type),
-                                     max_time(max_time),
+    : TaskIndependentComponent<SearchAlgorithm>(name,
+                                                verbosity
+                                                ),
+      bound(bound),
+      cost_type(cost_type),
+      max_time(max_time),
 
       reopen_closed_nodes(reopen_closed_nodes),
       open_list_factory(move(open_list_factory)),
@@ -342,19 +342,19 @@ std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specifi
                                                                                   unique_ptr <ComponentMap> &component_map,
                                                                                   int depth) const {
     return make_shared<EagerSearch>(
-construct_task_specific(open_list_factory, task, component_map, depth),
-construct_task_specific(reopen_closed_nodes, task, component_map, depth),
-construct_task_specific(f_evaluator, task, component_map, depth),
-construct_task_specific(preferred_operator_evaluators, task, component_map, depth),
-construct_task_specific(pruning_method, task, component_map, depth),
-construct_task_specific(lazy_evaluator, task, component_map, depth),
-construct_task_specific(cost_type, task, component_map, depth),
-construct_task_specific(bound, task, component_map, depth),
-construct_task_specific(max_time, task, component_map, depth),
-construct_task_specific(description, task, component_map, depth),
-construct_task_specific(verbosity, task, component_map, depth),
-construct_task_specific(task, task, component_map, depth)
-	);
+        construct_task_specific(open_list_factory, task, component_map, depth),
+        construct_task_specific(reopen_closed_nodes, task, component_map, depth),
+        construct_task_specific(f_evaluator, task, component_map, depth),
+        construct_task_specific(preferred_operator_evaluators, task, component_map, depth),
+        construct_task_specific(pruning_method, task, component_map, depth),
+        construct_task_specific(lazy_evaluator, task, component_map, depth),
+        construct_task_specific(cost_type, task, component_map, depth),
+        construct_task_specific(bound, task, component_map, depth),
+        construct_task_specific(max_time, task, component_map, depth),
+        construct_task_specific(description, task, component_map, depth),
+        construct_task_specific(verbosity, task, component_map, depth),
+        construct_task_specific(task, task, component_map, depth)
+        );
 }
 
 
