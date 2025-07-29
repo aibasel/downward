@@ -21,9 +21,8 @@ detailed discussion.
 ## Apptainer
 
 ### Apptainer Installation
-We have tested Apptainer 1.2.2.
-To install Apptainer 1.2.2 on your machine follow the steps provided [here](https://apptainer.org/docs/user/1.2/quick_start.html#quick-installation).
-If you want to use the newest version of Apptainer follow [these](https://apptainer.org/docs/user/main/quick_start.html#installation) steps instead.
+To run the Apptainer image, first install one of the [releases](https://github.com/apptainer/apptainer/releases) or follow the steps provided [here](https://apptainer.org/docs/user/main/quick_start.html#installation).
+We tested with versions 1.2.2 and 1.4.1.
 
 To download the Fast Downward image, run:
 
@@ -32,13 +31,14 @@ To download the Fast Downward image, run:
 ### Apptainer Usage
 You can run the planner as follows:
 
-    ./fast-downward.sif [your planner options]
+    ./fast-downward.sif <your-planner-options>
 
-Assume you want to solve the gripper planning task `prob01.pddl` using A* search with the blind heuristic. To do so you can run the following:
+Assume you want to solve the gripper planning task `prob01.pddl` from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
 
-    ./fast-downward.sif path-to-benchmarks/gripper/prob01.pddl --search "astar(blind())"
+    ./fast-downward.sif <path-to-benchmarks>/gripper/prob01.pddl --search "astar(lmcut())"
 
-Here `path-to-benchmarks` can be an absolute path, relative path or a predefined path variable, e.g. `$BENCHMARKS`.
+Here `<path-to-benchmarks>` refers to your local benchmarks directory containing the [gripper benchmarks](https://github.com/aibasel/downward-benchmarks/tree/master/gripper).
+It can be specified as an absolute path, relative path or using a predefined path variable, e.g. `$BENCHMARKS`.
 
 See more planner options at [planner usage](planner-usage.md).
 
@@ -50,7 +50,7 @@ To install Docker on your machine follow the steps provided [here](https://docs.
 ### Docker Usage
 You can run the planner as follows:
 
-    sudo docker run aibasel/downward [your planner options]
+    sudo docker run aibasel/downward <your-planner-options>
 
 Note:
 
@@ -58,17 +58,18 @@ Note:
 -   The Docker image for Fast Downward is installed on your machine as a side-effect of the command.
 -   You can use the Docker flag `-rm` for cleaning up the container (recommended)
 
-Assume you want to solve the gripper planning task `prob01.pddl` using A* search with the blind heuristic. To do so you can run the following:
+Assume you want to solve the gripper planning task `prob01.pddl` from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
 
-    sudo docker run --rm -v path-to-benchmarks:/benchmarks aibasel/downward /benchmarks/gripper/prob01.pddl --search "astar(blind())"
+    sudo docker run --rm -v <path-to-benchmarks>:/benchmarks aibasel/downward /benchmarks/gripper/prob01.pddl --search "astar(lmcut())"
 
-Here `path-to-benchmarks` can be an absolute path, relative path (only as of Docker Engine version 23) or a predefined path variable, e.g. `$BENCHMARKS`.
+Here `<path-to-benchmarks>` refers to your local benchmarks directory containing the [gripper benchmarks](https://github.com/aibasel/downward-benchmarks/tree/master/gripper).
+It can be specified as an absolute path, relative path (only as of Docker Engine version 23) or using a predefined path variable, e.g. `$BENCHMARKS`.
 
 Note:
 
--   The Docker flag `-v` mounts the local directory `path-to-benchmarks` of your host 
+-   The Docker flag `-v` mounts the local directory `<path-to-benchmarks>` of your host 
     machine under the container directory `/benchmarks`, which is the
-    place where the containerized planner looks for the problem.
+    place where the containerised planner looks for the problem.
 
 See more planner options at [planner usage](planner-usage.md).
 
@@ -76,70 +77,68 @@ See more planner options at [planner usage](planner-usage.md).
 
 ### Vagrant Installation
 To install Vagrant on your machine follow the steps provided [here](https://developer.hashicorp.com/vagrant/install).
-
-You want to create your Vagrant VM as subdirectory `my-fast-downward-vm` of the current directory. 
-The subdirectory should not exist yet. The current directory must contain the Fast Downward `Vagrantfile` for
-the desired [release](https://www.fast-downward.org/latest/releases).
-
-You can create your virtual machine from the current directory as follows:
-
-``` bash
-# Set up the VM.
-mkdir my-fast-downward-vm
-cp Vagrantfile my-fast-downward-vm/
-
-# Skip next line if you don't need LP support.
-export DOWNWARD_LP_INSTALLERS=/path/to/lp/installers
-
-# Set up the VM.
-# After this step you can now safely delete the LP installers and unset the environment variable.
-cd my-fast-downward-vm
-vagrant up
-```
+For Vagrant to work you also need a "provider" such as VirtualBox, VMware, Hyper-V.
 
 Note:
 
--   The !SoPlex LP solver is included automatically. If you want to also
-    use the CPLEX LP solver within the planner, its installer file must
-    be present in the directory `/path/to/lp/installers`. As of Fast
-    Downward 23.06, you will need CPLEX 22.1.1 (installer filename
-    `cplex_studio2211.linux-x86-64.bin`). 
+- Not all provider versions and Vagrant versions are compatible!
+- We recommend using Vagrant 2.4.1 and [VirtualBox 7.0.20](https://www.virtualbox.org/wiki/Download_Old_Builds_7_0).
 
-### Vagrant Usage
-You can run the planner as follows:
+To create your virtual machine using Vagrant create a new directory `<my-fast-downward-vm>` containing only the Fast Downward Vagrantfile for
+the desired [release](https://www.fast-downward.org/latest/releases). 
+
+If you want to use LP solvers see [LP Solvers](#lp_solvers).
+
+Otherwise, you can set up your virtual machine from the `<my-fast-downward-vm>` directory using:
+    
+    vagrant up
+
+#### LP solvers
+
+The !SoPlex LP solver is included automatically. If you want to also
+use the CPLEX LP solver within the planner, its installer file must
+be present in the directory `<path-to-lp-installers>`. As of Fast
+Downward 23.06, you will need CPLEX 22.1.1 (installer filename
+`cplex_studio2211.linux-x86-64.bin`). 
+
+To set up your virtual machine from the `<my-fast-downward-vm>` directory as follows:
 
 ``` bash
-# From the my-fast-downward-vm directory
+export DOWNWARD_LP_INSTALLERS=<path-to-lp-installers>
 
-# log into the VM.
-vagrant ssh
-
-# Run the planner.
-downward/fast-downward.py [your planner options]
-
-# Log out from the VM.
-logout
+vagrant up
 ```
 
-Assume you want to solve the gripper planning task `prob01.pddl` using A* search with the blind heuristic. To do so you can run the following:
+You can now safely delete the LP installers and unset the environment variable.
+
+### Vagrant Usage
+You can run the planner from *within* the vagrant VM as follows:
+
+    downward/fast-downward.py <your-planner-options>
+
+Assume you want to solve the gripper planning task `prob01.pddl` from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
 
 ``` bash
-# From the my-fast-downward-vm directory 
+# From the <my-fast-downward-vm> directory 
 
-# Upload the benchmarks to the destination path on your vagrant machine
-vagrant upload path-to-benchmarks/gripper destination
+# Upload the benchmarks to the benchmarks directory on your vagrant machine
+vagrant upload <path-to-benchmarks> benchmarks/
 
 # Log into the VM.
 vagrant ssh
 
 # Run the planner.
-downward/fast-downward.py /vagrant/destination/gripper/prob01.pddl --search "astar(blind())"
+downward/fast-downward.py /vagrant/benchmarks/gripper/prob01.pddl --search "astar(lmcut())"
 
 # Log out from the VM.
 logout
+
+# Shut down the machine
+vagrant halt
 ```
 
-Here `path-to-benchmarks` can be an absolute or relative path. Alternatively a predefined path variable, e.g. `$BENCHMARKS` can be used.
+Here `<path-to-benchmarks>` refers to your local benchmarks directory containing the [gripper benchmarks](https://github.com/aibasel/downward-benchmarks/tree/master/gripper).
+It can be specified as an absolute path, relative path (only as of Docker Engine version 23) or using a predefined path variable, e.g. `$BENCHMARKS`.
 
 See more planner options at [planner usage](planner-usage.md).
 
@@ -156,13 +155,14 @@ aware that things can break or degrade with every commit.
 ### Source Code Usage
 You can run the planner as follows:
 
-    ./fast-downward.py [your planner options]
+    ./fast-downward.py <your-planner-options>
 
-Assume you want to solve the gripper planning task `prob01.pddl` using A* search with the blind heuristic. To do so you can run the following:
+Assume you want to solve the gripper planning task `prob01.pddl` from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
 
-    ./fast-downward.py path-to-benchmarks/gripper/prob01.pddl --search "astar(blind())"
+    ./fast-downward.py <path-to-benchmarks>/gripper/prob01.pddl --search "astar(lmcut())"
 
-Here `path-to-benchmarks` can be an absolute or relative path. Alternatively a predefined path variable, e.g. `$BENCHMARKS` can be used.
+Here `<path-to-benchmarks>` refers to your local benchmarks directory containing the [gripper benchmarks](https://github.com/aibasel/downward-benchmarks/tree/master/gripper).
+It can be specified as an absolute path, relative path or using a predefined path variable, e.g. `$BENCHMARKS`.
 
 See more planner options at [planner usage](planner-usage.md).
 

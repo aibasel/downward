@@ -20,19 +20,19 @@ participated in IPC 2011, please also check the page on
 ## Translate component
 To translate a PDDL input task into a SAS+ task without performing a search run the following:
 
-    ./fast-downward.py --translate [path/to/domain.pddl] path/to/problem.pddl
+    ./fast-downward.py --translate [<path-to-domain>/domain.pddl] <path-to-problem>/problem.pddl
 
 Note:
 
 -   Giving the domain file as input is optional. 
-    In case no domain file is specified, the component will search for a file called `domain.pddl` located in the same folder as the task file. 
+    In case no domain file is specified, the component will search for a file called `domain.pddl` located in `<path-to-problem>` directory. 
 -   The paths to the domain/task files can be absolute, relative or contain path variables.
 -   Translator component options can be specified after the input files following the `--translator-options` flag.
 
 ## Search component
 To run a search on a PDDL input task run the following:
 
-    ./fast-downward.py [path/to/domain.pddl] path/to/problem.pddl --search "some-search-algorithm(some-evaluator)"
+    ./fast-downward.py [<path-to-domain>/domain.pddl] <path-to-problem>/problem.pddl --search "<some-search-algorithm>(<some-evaluator>)"
 
 Note:
 
@@ -41,7 +41,7 @@ Note:
 -   Giving the domain file as input is optional. 
     In case no domain file is specified, the component will search for a file called `domain.pddl` located in the same folder as the task file. 
 -   The paths to the domain/task files can be absolute, relative or contain path variables.
--   `some-search-algorithm` can be any of the [search algorithms](search/SearchAlgorithm.md) (e.g. `astar`)and `some-evaluator` can be one or more [evaluator specifications](search/Evaluator.md) (e.g. `lmcut()`).
+-   `<some-search-algorithm>` can be any of the [search algorithms](search/SearchAlgorithm.md) (e.g. `astar`)and `<some-evaluator>` can be one or more [evaluator specifications](search/Evaluator.md) (e.g. `lmcut()`).
 -   Search component options can be specified anywhere after the input files. Search component options following translator component options need to first be escaped with the `--search-options` flag.
 
 ### Caveats
@@ -50,22 +50,22 @@ The search options are built with flexibility in mind, not ease of
 use. It is very easy to use option settings that look plausible, yet
 introduce significant inefficiencies. For example, an invocation like
 
-    ./fast-downward.py path/to/problem.pddl --search "lazy_greedy([ff()], preferred=[ff()])"
+    ./fast-downward.py <path-to-problem>/problem.pddl --search "lazy_greedy([ff()], preferred=[ff()])"
 
 looks plausible, yet is hugely inefficient since it will compute the FF
 heuristic twice per state. To circumvent this a `let`-expression could be used (see [here](search-plugin-syntax.md#variables_as_parameters)):
 
-    ./fast-downward.py path/to/problem.pddl --search "let(hff, ff(), lazy_greedy([hff], preferred=[hff]))"
+    ./fast-downward.py <path-to-problem>/problem.pddl --search "let(hff, ff(), lazy_greedy([hff], preferred=[hff]))"
 
 ## Validating plans
 To validate a plan found by some search algorithm using [VAL](https://github.com/KCL-Planning/VAL) run the following:
 
-    ./fast-downward.py --validate [path/to/domain.pddl] path/to/problem.pddl --search "some-search-algorithm(some-evaluator)"
+    ./fast-downward.py --validate [<path-to-domain>/domain.pddl] <path-to-problem>/problem.pddl --search "<some-search-algorithm>(<some-evaluator>)"
 
 Note:
 
--   [VAL](https://github.com/KCL-Planning/VAL) must be downloaded and added to the PATH.
--   The search algorithm must be specified (see [above](##search_component)).
+-   [VAL](https://github.com/KCL-Planning/VAL) must be available locally and added to the PATH.
+-   The search algorithm must be specified (see [above](#search_component)).
 
 ## Exit codes
 
