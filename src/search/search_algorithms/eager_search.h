@@ -61,11 +61,11 @@ private:
     std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory;
 
 
-    std::shared_ptr<TaskIndependentEvaluator> f_evaluator;
+    std::shared_ptr<TaskIndependentComponent<Evaluator>> f_evaluator;
 
-    std::vector<TaskIndependentEvaluator *> path_dependent_evaluators;
-    std::vector<std::shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators;
-    std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator;
+    std::vector<TaskIndependentComponent<Evaluator> *> path_dependent_evaluators;
+    std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>> preferred_operator_evaluators;
+    std::shared_ptr<TaskIndependentComponent<Evaluator>> lazy_evaluator;
 
     std::shared_ptr<PruningMethod> pruning_method;
 
@@ -77,10 +77,10 @@ public:
     TaskIndependentEagerSearch(
         std::shared_ptr<TaskIndependentOpenListFactory> open_list_factory,
         bool reopen_closed_nodes,
-        std::shared_ptr<TaskIndependentEvaluator> f_evaluator,
-        std::vector<std::shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
+        std::shared_ptr<TaskIndependentComponent<Evaluator>> f_evaluator,
+        std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>> preferred_operator_evaluators,
         std::shared_ptr<PruningMethod> pruning_method,
-        std::shared_ptr<TaskIndependentEvaluator> lazy_evaluator,
+        std::shared_ptr<TaskIndependentComponent<Evaluator>> lazy_evaluator,
         OperatorCost cost_type,
         int bound,
         double max_time,
@@ -94,7 +94,7 @@ public:
 extern void add_eager_search_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<std::shared_ptr<PruningMethod>,
-                  std::shared_ptr<TaskIndependentEvaluator>, OperatorCost, int, double,
+                  std::shared_ptr<TaskIndependentComponent<Evaluator>>, OperatorCost, int, double,
                   std::string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts);
 }

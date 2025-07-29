@@ -313,10 +313,10 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
 TaskIndependentEagerSearch::TaskIndependentEagerSearch(
     shared_ptr<TaskIndependentOpenListFactory> open_list_factory,
     bool reopen_closed_nodes,
-    shared_ptr<TaskIndependentEvaluator> f_evaluator,
-    vector<shared_ptr<TaskIndependentEvaluator>> preferred_operator_evaluators,
+    shared_ptr<TaskIndependentComponent<Evaluator>> f_evaluator,
+    vector<shared_ptr<TaskIndependentComponent<Evaluator>>> preferred_operator_evaluators,
     shared_ptr<PruningMethod> pruning_method,
-    shared_ptr<TaskIndependentEvaluator> lazy_evaluator,
+    shared_ptr<TaskIndependentComponent<Evaluator>> lazy_evaluator,
     OperatorCost cost_type,
     int bound,
     double max_time,
@@ -342,7 +342,7 @@ std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specifi
                                                                                   int depth) const {
     vector<shared_ptr<Evaluator>> td_evaluators(preferred_operator_evaluators.size());
     transform(preferred_operator_evaluators.begin(), preferred_operator_evaluators.end(), td_evaluators.begin(),
-              [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentEvaluator> &eval) {
+              [this, &task, &component_map, &depth](const shared_ptr<TaskIndependentComponent<Evaluator>> &eval) {
                   return eval->get_task_specific(task, component_map, depth);
               }
               );
@@ -381,12 +381,12 @@ void add_eager_search_options_to_feature(
     add_search_algorithm_options_to_feature(feature, description);
 }
 
-tuple<shared_ptr<PruningMethod>, shared_ptr<TaskIndependentEvaluator>, OperatorCost,
+tuple<shared_ptr<PruningMethod>, shared_ptr<TaskIndependentComponent<Evaluator>>, OperatorCost,
       int, double, string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         get_search_pruning_arguments_from_options(opts),
-        make_tuple(opts.get<shared_ptr<TaskIndependentEvaluator>>(
+        make_tuple(opts.get<shared_ptr<TaskIndependentComponent<Evaluator>>>(
                        "lazy_evaluator", nullptr)),
         get_search_algorithm_arguments_from_options(opts)
         );

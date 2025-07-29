@@ -103,16 +103,16 @@ using WeightedEval = weighted_evaluator::WeightedEvaluator;
 //issue559//        boost);
 //issue559//}
 
-pair<shared_ptr<TaskIndependentOpenListFactory>, const shared_ptr<TaskIndependentEvaluator>>
+pair<shared_ptr<TaskIndependentOpenListFactory>, const shared_ptr<TaskIndependentComponent<Evaluator>>>
 create_task_independent_astar_open_list_factory_and_f_eval(
-    const shared_ptr<TaskIndependentEvaluator> &h_eval, const string &description, utils::Verbosity verbosity
+    const shared_ptr<TaskIndependentComponent<Evaluator>> &h_eval, const string &description, utils::Verbosity verbosity
     ) {
     shared_ptr<TIGEval> g = make_shared<TIGEval>(description + ".g_eval", verbosity);
-    shared_ptr<TaskIndependentEvaluator> f =
+    shared_ptr<TaskIndependentComponent<Evaluator>> f =
         make_shared<TISumEval>(
-            vector<shared_ptr<TaskIndependentEvaluator>>({g, h_eval}),
+            vector<shared_ptr<TaskIndependentComponent<Evaluator>>>({g, h_eval}),
             description + ".f_eval", verbosity);
-    vector<shared_ptr<TaskIndependentEvaluator>> evals = {f, h_eval};
+    vector<shared_ptr<TaskIndependentComponent<Evaluator>>> evals = {f, h_eval};
 
     shared_ptr<TaskIndependentOpenListFactory> open =
         make_shared<tiebreaking_open_list::TaskIndependentTieBreakingOpenListFactory>(

@@ -24,10 +24,7 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
 
 TaskIndependentGEvaluator::TaskIndependentGEvaluator(const string &description,
                                                      utils::Verbosity verbosity)
-    : TaskIndependentEvaluator(
-          false,
-          false,
-          false,
+    : TaskIndependentComponent<Evaluator>(
           description,
           verbosity) {
 }
@@ -47,7 +44,7 @@ shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific([[maybe_un
 
 
 class GEvaluatorFeature
-    : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentGEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentComponent<Evaluator>, TaskIndependentGEvaluator> {
 public:
     GEvaluatorFeature() : TypedFeature("g") {
         document_subcategory("evaluators_basic");

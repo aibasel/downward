@@ -47,16 +47,16 @@ public:
 
 
 
-class TaskIndependentCombiningEvaluator : public TaskIndependentEvaluator {
-protected:
-    std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators;
-public:
-    TaskIndependentCombiningEvaluator(
-        std::vector<std::shared_ptr<TaskIndependentEvaluator>> subevaluators,
-        const std::string &description,
-        utils::Verbosity verbosity);
-    virtual ~TaskIndependentCombiningEvaluator() override = default;
-};
+////class TaskIndependentCombiningEvaluator : public TaskIndependentEvaluator {
+////protected:
+////    std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>> subevaluators;
+////public:
+////    TaskIndependentCombiningEvaluator(
+////        std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>> subevaluators,
+////        const std::string &description,
+////        utils::Verbosity verbosity);
+////    virtual ~TaskIndependentCombiningEvaluator() override = default;
+////};
 
 
 
@@ -64,7 +64,7 @@ public:
 
 extern void add_combining_evaluator_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<std::vector<std::shared_ptr<TaskIndependentEvaluator>>,
+extern std::tuple<std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>>,
                   const std::string, utils::Verbosity>
 get_combining_evaluator_arguments_from_options(
     const plugins::Options &opts);

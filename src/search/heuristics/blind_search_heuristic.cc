@@ -38,7 +38,10 @@ TaskIndependentBlindSearchHeuristic::TaskIndependentBlindSearchHeuristic(
     bool cache_estimates,
     const string &description,
     utils::Verbosity verbosity)
-    : TaskIndependentHeuristic(transform, cache_estimates, description, verbosity) {
+    : TaskIndependentComponent<Evaluator>(description, verbosity)
+    , transform(transform)
+    , cache_estimates(cache_estimates)
+    {
 }
 
 TaskIndependentBlindSearchHeuristic::~TaskIndependentBlindSearchHeuristic() {
@@ -49,7 +52,7 @@ std::shared_ptr<Evaluator> TaskIndependentBlindSearchHeuristic::create_task_spec
     [[maybe_unused]] std::unique_ptr<ComponentMap> &component_map,
     [[maybe_unused]] int depth) const {
     return make_shared<BlindSearchHeuristic>(
-        task_transformation/*->get_task_specific(
+        transform/*->get_task_specific(
             task, component_map,
             depth >= 0 ? depth + 1 : depth)*/,
         cache_evaluator_values,
@@ -61,7 +64,7 @@ std::shared_ptr<Evaluator> TaskIndependentBlindSearchHeuristic::create_task_spec
 
 
 class BlindSearchHeuristicFeature
-    : public plugins::TypedFeature<TaskIndependentEvaluator, TaskIndependentBlindSearchHeuristic> {
+    : public plugins::TypedFeature<TaskIndependentComponent<Evaluator>, TaskIndependentBlindSearchHeuristic> {
 public:
     BlindSearchHeuristicFeature() : TypedFeature("blind") {
         document_title("Blind heuristic");

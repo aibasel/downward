@@ -15,8 +15,10 @@ public:
         utils::Verbosity verbosity);
 };
 
-class TaskIndependentBlindSearchHeuristic : public TaskIndependentHeuristic {
+class TaskIndependentBlindSearchHeuristic : public TaskIndependentComponent<Evaluator> {
 private:
+    std::shared_ptr</*TaskIndependent*/AbstractTask> transform;
+    bool cache_estimates;
     bool cache_evaluator_values;
     std::shared_ptr<Evaluator> create_task_specific(
         const std::shared_ptr<AbstractTask> &task,
