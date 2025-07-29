@@ -21,18 +21,9 @@ detailed discussion.
 ## Apptainer
 
 ### Apptainer Installation
-Apptainer's predecessor, Singularity, used to be shipped with Ubuntu
-Linux for some time, making its installation very convenient. As of this
-writing, this is no longer the case, but Ubuntu (deb) packages are
-available from the Apptainer developers. For a typical Ubuntu system,
-download the AMD64 deb package from
-<https://github.com/apptainer/apptainer/releases> and install it like so
-(example for Apptainer 1.2.2):
-
-    sudo apt install ./apptainer_1.2.2_amd64.deb
-
-We have tested Apptainer 1.2.2. If Apptainer isn't installed on your
-machine, check the following section.
+We have tested Apptainer 1.2.2.
+To install Apptainer 1.2.2 on your machine follow the steps provided [here](https://apptainer.org/docs/user/1.2/quick_start.html#quick-installation).
+If you want to use the newest version of Apptainer follow [these](https://apptainer.org/docs/user/main/quick_start.html#installation) steps instead.
 
 To download the Fast Downward image, run:
 
@@ -84,11 +75,11 @@ See more planner options at [planner usage](planner-usage.md).
 ## Vagrant
 
 ### Vagrant Installation
-To install Vagrant on your machine follow the steps provided [here](https://www.vagrantup.com/).
+To install Vagrant on your machine follow the steps provided [here](https://developer.hashicorp.com/vagrant/install).
 
 You want to create your Vagrant VM as subdirectory `my-fast-downward-vm` of the current directory. 
 The subdirectory should not exist yet. The current directory must contain the Fast Downward `Vagrantfile` for
-the desired [release](https://www.fast-downward.org/releases).
+the desired [release](https://www.fast-downward.org/latest/releases).
 
 You can create your virtual machine from the current directory as follows:
 
