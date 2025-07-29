@@ -41,14 +41,14 @@ Some possible calls for this specification (with `X` and `Xi` having type_x):
 
 ### Note
 
--   Search plugin names, parameter names and Enums are not case-sensitive. E.g., `AsTaR(BlInd(verBosiTy=VeRBosE))`
+-   Search plugin names, parameter names and enumeration names are not case-sensitive. E.g., `AsTaR(BlInd(verBosiTy=VeRBosE))`
 is equivalent to `astar(blind(verbosity=verbose))`
 
 
 -   To get positions and keywords for a search plugin, use
 
 ```
-fast-downward.py --search "" --help [Name]  // e.g. with Name=astar
+./fast-downward.py --search "" --help [Name]  // e.g. with Name=astar
 ```
 
 ## Parameter Types
@@ -92,7 +92,7 @@ Enumeration arguments should be specified by name and are not case-sensitive. E.
 
 To get enumeration names (and more) for a search plugin parameter, run the help command for the search plugin
 
-    fast-downward.py --search "" --help [Name]  // e.g. with Name=eager_greedy
+    ./fast-downward.py --search "" --help [Name]  // e.g. with Name=eager_greedy
 
 ## Variables as Parameters
 
