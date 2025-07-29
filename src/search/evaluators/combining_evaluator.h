@@ -47,19 +47,6 @@ public:
 
 
 
-////class TaskIndependentCombiningEvaluator : public TaskIndependentEvaluator {
-////protected:
-////    std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>> subevaluators;
-////public:
-////    TaskIndependentCombiningEvaluator(
-////        std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>> subevaluators,
-////        const std::string &description,
-////        utils::Verbosity verbosity);
-////    virtual ~TaskIndependentCombiningEvaluator() override = default;
-////};
-
-
-
 
 
 extern void add_combining_evaluator_options_to_feature(

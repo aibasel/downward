@@ -20,7 +20,7 @@ public:
         const std::string &description, utils::Verbosity verbosity);
 };
 
-class TaskIndependentSumEvaluator : public TaskIndependentComponent<Evaluator> {//combining_evaluator::TaskIndependentCombiningEvaluator {
+class TaskIndependentSumEvaluator : public TaskIndependentComponent<Evaluator> {
     std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>> subevaluators;
     virtual std::shared_ptr<Evaluator> create_task_specific(
         const std::shared_ptr<AbstractTask> &task,
