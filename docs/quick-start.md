@@ -145,12 +145,29 @@ See more planner options at [planner usage](planner-usage.md).
 ## Source Code
 
 ### Source Code Installation
-See the [build
-instructions](https://github.com/aibasel/downward/blob/main/BUILD.md)
-for a complete description on how to build the planner from source. We
-recommend using the [latest release](https://www.fast-downward.org/latest/releases), especially
-for scientific experiments. If you are using the main branch instead, be
-aware that things can break or degrade with every commit.
+
+We recommend using the [latest release](https://www.fast-downward.org/latest/releases), especially
+for scientific experiments. 
+
+#### Tarball
+Download the tarball from the [latest release](https://www.fast-downward.org/latest/releases).
+E.g. to build Fast Downward 24.06.01 download the tarball from [here](https://www.fast-downward.org/latest/releases/24.06/#downloads) and run the following: 
+
+    tar -xvzf fast-downward-24.06.1.tar.gz
+    cd fast-downward-24.06.1
+    ./build.py
+
+#### Repository
+Alternatively, you can fork/clone the latest release branch of the [repository](https://github.com/aibasel/downward) and build Fast Downward using:
+    
+    ./build.py
+
+Note:
+
+-   If you are using the main branch, be aware that things can break or degrade with every commit.
+
+See the [build instructions](https://github.com/aibasel/downward/blob/main/BUILD.md)
+for a complete description on how to build the planner from source.
 
 ### Source Code Usage
 You can run the planner as follows:

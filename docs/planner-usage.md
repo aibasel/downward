@@ -64,7 +64,7 @@ To validate a plan found by some search algorithm using [VAL](https://github.com
 
 Note:
 
--   [VAL](https://github.com/KCL-Planning/VAL) must be available locally and added to the PATH.
+-   [VAL](https://github.com/KCL-Planning/VAL) must be available locally and added to the PATH (detailed steps [here](https://github.com/aibasel/downward/blob/main/BUILD.md#optional-plan-validator)).
 -   The search algorithm must be specified (see [above](#search_component)).
 
 ## Exit codes
