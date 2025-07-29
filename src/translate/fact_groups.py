@@ -1,7 +1,7 @@
-import invariant_finder
-import options
-import pddl
-import timers
+from translate import invariant_finder
+from translate import options
+from translate import pddl
+from translate import timers
 from typing import Dict, List, Set, Tuple
 
 

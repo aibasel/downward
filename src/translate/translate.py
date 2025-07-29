@@ -2,6 +2,7 @@
 
 
 import os
+import signal
 import sys
 import traceback
 from typing import Dict, List, Optional, Tuple, Union
@@ -19,19 +20,18 @@ from collections import defaultdict
 from copy import deepcopy
 from itertools import product
 
-import axiom_rules
-import fact_groups
-import instantiate
-import normalize
-import options
-import pddl
-import pddl_parser
-import sas_tasks
-import signal
-import simplify
-import timers
-import tools
-import variable_order
+from translate import axiom_rules
+from translate import fact_groups
+from translate import instantiate
+from translate import normalize
+from translate import options
+from translate import pddl
+from translate import pddl_parser
+from translate import sas_tasks
+from translate import simplify
+from translate import timers
+from translate import tools
+from translate import variable_order
 
 # TODO: The translator may generate trivial derived variables which are always
 # true, for example if there ia a derived predicate in the input that only

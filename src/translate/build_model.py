@@ -4,8 +4,8 @@
 import sys
 import itertools
 
-import pddl
-import timers
+from translate import pddl
+from translate import timers
 from functools import reduce
 
 def convert_rules(prog):
@@ -326,9 +326,9 @@ def compute_model(prog):
     return queue.queue
 
 if __name__ == "__main__":
-    import pddl_parser
-    import normalize
-    import pddl_to_prolog
+    from translate import pddl_parser
+    from translate import normalize
+    from translate import pddl_to_prolog
 
     print("Parsing...")
     task = pddl_parser.open()

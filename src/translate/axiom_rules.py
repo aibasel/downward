@@ -1,7 +1,7 @@
-import options
-import pddl
-import sccs
-import timers
+from translate import options
+from translate import pddl
+from translate import sccs
+from translate import timers
 
 from collections import defaultdict
 from itertools import chain

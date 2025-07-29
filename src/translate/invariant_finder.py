@@ -7,10 +7,10 @@ import random
 import time
 from typing import List
 
-import invariants
-import options
-import pddl
-import timers
+from translate import invariants
+from translate import options
+from translate import pddl
+from translate import timers
 
 class BalanceChecker:
     def __init__(self, task, reachable_action_params):
@@ -150,8 +150,8 @@ def get_groups(task, reachable_action_params=None) -> List[List[pddl.Atom]]:
     return result
 
 if __name__ == "__main__":
-    import normalize
-    import pddl_parser
+    from translate import normalize
+    from translate import pddl_parser
 
     print("Parsing...")
     task = pddl_parser.open()

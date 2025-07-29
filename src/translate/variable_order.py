@@ -2,8 +2,8 @@ from collections import defaultdict, deque
 from itertools import chain
 import heapq
 
-import options
-import sccs
+from translate import options
+from translate import sccs
 
 DEBUG = False
 
