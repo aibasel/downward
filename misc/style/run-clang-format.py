@@ -48,7 +48,7 @@ def main():
     exe_error_str = f"Error: {executable} not found. Is it on the PATH?"
     flag = "-i" if args.modify else "--dry-run"
     cmd = [
-        executable, flag, f"--style=file:{config_file}"
+        executable, flag, "--Werror", f"--style=file:{config_file}"
     ] + src_files
     try:
         # Hide clean files printed on stdout.
