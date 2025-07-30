@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 
 """
-Run uncrustify on all C++ files in the repository.
+Run clang-format on all C++ files in the repository.
 """
 
 import argparse
@@ -20,7 +20,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "-m", "--modify", action="store_true",
-        help="modify the files that need to be uncrustified")
+        help="modify the files that need to be clang-formatted")
     parser.add_argument(
         "-f", "--force", action="store_true",
         help="modify files even if there are uncommited changes")
@@ -42,21 +42,24 @@ def main():
     if not args.force and args.modify and search_files_are_dirty():
         sys.exit(f"Error: {SEARCH_DIR} has uncommited changes.")
     src_files = utils.get_src_files(SEARCH_DIR, (".h", ".cc"))
-    print(f"Checking {len(src_files)} files with uncrustify.")
-    config_file = os.path.join(REPO, ".uncrustify.cfg")
-    executable = "uncrustify"
-    cmd = [executable, "-q", "-c", config_file] + src_files
-    if args.modify:
-        cmd.append("--no-backup")
-    else:
-        cmd.append("--check")
+    print(f"Checking {len(src_files)} files with clang-format.")
+    config_file = os.path.join(REPO, ".clang-format")
+    executable = "clang-format"
+    exe_error_str = f"Error: {executable} not found. Is it on the PATH?"
+    flag = "-i" if args.modify else "--dry-run"
+    cmd = [
+        executable, flag, f"--style=file:{config_file}"
+    ] + src_files
     try:
         # Hide clean files printed on stdout.
         returncode = subprocess.call(cmd, stdout=subprocess.PIPE)
-    except FileNotFoundError:
-        sys.exit(f"Error: {executable} not found. Is it on the PATH?")
+    except FileNotFoundError as not_found:
+        src_error_str = f"ERROR: Did not find file: '{not_found.filename}'."
+        error_str = exe_error_str if not_found==executable else src_error_str
+        sys.exit(error_str)
     if not args.modify and returncode != 0:
-        print('Run "tox -e fix-style" in the misc/ directory to fix the C++ style.')
+        print('Run "tox -e fix-style" in the misc/ directory to fix the C++ ' +
+            'style.')
     return returncode
 
 
