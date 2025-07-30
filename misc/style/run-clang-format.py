@@ -55,7 +55,7 @@ def main():
         returncode = subprocess.call(cmd, stdout=subprocess.PIPE)
     except FileNotFoundError as not_found:
         src_error_str = f"ERROR: Did not find file: '{not_found.filename}'."
-        error_str = exe_error_str if not_found==executable else src_error_str
+        error_str = exe_error_str if not_found == executable else src_error_str
         sys.exit(error_str)
     if not args.modify and returncode != 0:
         print('Run "tox -e fix-style" in the misc/ directory to fix the C++ ' +
