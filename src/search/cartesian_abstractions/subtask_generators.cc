@@ -107,8 +107,7 @@ SharedTasks TaskDuplicator::get_subtasks(
 }
 
 GoalDecomposition::GoalDecomposition(FactOrder order, int random_seed)
-    : fact_order(order),
-      rng(utils::get_rng(random_seed)) {
+    : fact_order(order), rng(utils::get_rng(random_seed)) {
 }
 
 SharedTasks GoalDecomposition::get_subtasks(

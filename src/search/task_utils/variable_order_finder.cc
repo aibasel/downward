@@ -17,8 +17,7 @@ namespace variable_order_finder {
 VariableOrderFinder::VariableOrderFinder(
     const TaskProxy &task_proxy, VariableOrderType variable_order_type,
     const shared_ptr<utils::RandomNumberGenerator> &rng)
-    : task_proxy(task_proxy),
-      variable_order_type(variable_order_type) {
+    : task_proxy(task_proxy), variable_order_type(variable_order_type) {
     int var_count = task_proxy.get_variables().size();
     if (variable_order_type == REVERSE_LEVEL) {
         for (int i = 0; i < var_count; ++i)

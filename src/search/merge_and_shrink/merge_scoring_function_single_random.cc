@@ -14,8 +14,7 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionSingleRandom::MergeScoringFunctionSingleRandom(
     int random_seed)
-    : random_seed(random_seed),
-      rng(utils::get_rng(random_seed)) {
+    : random_seed(random_seed), rng(utils::get_rng(random_seed)) {
 }
 
 vector<double> MergeScoringFunctionSingleRandom::compute_scores(

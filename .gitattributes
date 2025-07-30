@@ -2,4 +2,4 @@
 /.gitattributes export-ignore
 /.github export-ignore
 /.gitignore export-ignore
-/.uncrustify.cfg export-ignore
+/.clang-format export-ignore

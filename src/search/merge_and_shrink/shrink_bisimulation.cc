@@ -55,9 +55,7 @@ struct Signature {
     Signature(
         int h, bool is_goal, int group_,
         const SuccessorSignature &succ_signature_, int state_)
-        : group(group_),
-          succ_signature(succ_signature_),
-          state(state_) {
+        : group(group_), succ_signature(succ_signature_), state(state_) {
         if (is_goal) {
             assert(h == 0);
             h_and_goal = -1;
@@ -93,8 +91,7 @@ struct Signature {
 };
 
 ShrinkBisimulation::ShrinkBisimulation(bool greedy, AtLimit at_limit)
-    : greedy(greedy),
-      at_limit(at_limit) {
+    : greedy(greedy), at_limit(at_limit) {
 }
 
 int ShrinkBisimulation::initialize_groups(

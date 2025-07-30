@@ -175,8 +175,7 @@ ExplicitVariable::ExplicitVariable(istream &in) {
 
 ExplicitEffect::ExplicitEffect(
     int var, int value, vector<FactPair> &&conditions)
-    : fact(var, value),
-      conditions(move(conditions)) {
+    : fact(var, value), conditions(move(conditions)) {
 }
 
 void ExplicitOperator::read_pre_post(istream &in) {

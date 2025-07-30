@@ -13,8 +13,7 @@ namespace pdbs {
 CanonicalPDBs::CanonicalPDBs(
     const shared_ptr<PDBCollection> &pdbs,
     const shared_ptr<vector<PatternClique>> &pattern_cliques)
-    : pdbs(pdbs),
-      pattern_cliques(pattern_cliques) {
+    : pdbs(pdbs), pattern_cliques(pattern_cliques) {
     assert(pdbs);
     assert(pattern_cliques);
 }
