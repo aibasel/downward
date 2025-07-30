@@ -191,11 +191,10 @@ SearchStatus EagerSearch::step() {
     // This evaluates the expanded state (again) to get preferred ops
     EvaluationContext eval_context(s, node->get_g(), false, &statistics, true);
     ordered_set::OrderedSet<OperatorID> preferred_operators;
-    for (const shared_ptr<Evaluator> &preferred_operator_evaluator :
-         preferred_operator_evaluators) {
-        collect_preferred_operators(
-            eval_context, preferred_operator_evaluator.get(),
-            preferred_operators);
+    for (const shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
+        collect_preferred_operators(eval_context,
+                                    preferred_operator_evaluator.get(),
+                                    preferred_operators);
     }
 
     for (OperatorID op_id : applicable_ops) {
