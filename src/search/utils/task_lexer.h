@@ -64,8 +64,8 @@ public:
       separated by arbitrary whitespaces. Report error if the current
       line does not contain a token after the cursor position. Set
       cursor to the end of the read token. Afterwards the lexer is in
-      line reading mode, in which only read() and confirm_end_of_line()
-      are allowed.
+      line reading mode, in which only read(), confirm_end_of_line() and
+      get_line_number() are allowed.
     */
     std::string read();
     /*

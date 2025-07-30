@@ -229,6 +229,7 @@ int TaskParser::parse_int(const string &token) {
     return number;
 }
 
+// TODO: rename to check_natural_number
 void TaskParser::check_nat(const string &value_name, int value) {
     if (value < 0) {
         error("Expected non-negative number for " + value_name
@@ -244,6 +245,7 @@ int TaskParser::read_int(const string &value_name) {
         });
 }
 
+// TODO: rename to read_natural_number
 int TaskParser::read_nat(const string &value_name) {
     int value = read_int(value_name);
     check_nat(value_name, value);
@@ -269,6 +271,7 @@ void TaskParser::read_magic_line(const string &magic) {
         });
 }
 
+// TODO: consistent naming (facts vs. conditions)
 vector<FactPair> TaskParser::read_facts(
     bool read_from_single_line, const vector<ExplicitVariable> &variables) {
     return with_error_context(
@@ -569,6 +572,9 @@ vector<vector<set<FactPair>>> TaskParser::read_mutexes(
                     [&]() {return "mutex group " + to_string(i);},
                     [&]() {
                         read_magic_line("begin_mutex_group");
+                        /* TODO: we should use read_facts here, but we need to
+                           reconsider the error messages.
+                        */
                         int num_facts = read_nat("number of facts in mutex group");
                         lexer.confirm_end_of_line();
                         vector<FactPair> invariant_group;
@@ -880,6 +886,7 @@ void RootTask::convert_ancestor_state_values(
 void read_root_task(istream &in) {
     assert(!g_root_task);
     utils::TaskLexer lexer(in);
+    // TODO: construct lexer in TaskParser
     TaskParser parser(move(lexer));
     g_root_task = parser.parse();
 }
