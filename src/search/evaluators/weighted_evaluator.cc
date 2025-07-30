@@ -40,8 +40,31 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
     evaluator->get_path_dependent_evaluators(evals);
 }
 
+
+
+TaskIndependentWeightedEvaluator::TaskIndependentWeightedEvaluator(
+    const shared_ptr<TaskIndependentComponent<Evaluator>> &eval,
+    int weight,
+    const string &description,
+    utils::Verbosity verbosity)
+    : TaskIndependentComponent<Evaluator>(description, verbosity),
+      evaluator(eval),
+      weight(weight) {
+}
+
+std::shared_ptr<Evaluator> TaskIndependentWeightedEvaluator::create_task_specific(const shared_ptr <AbstractTask> &task,
+                                                                                  unique_ptr <ComponentMap> &component_map, int depth) const {
+    return make_shared<WeightedEvaluator>(
+        construct_task_specific(evaluator, task, component_map, depth),
+        construct_task_specific(weight, task, component_map, depth),
+        construct_task_specific(description, task, component_map, depth),
+        construct_task_specific(verbosity, task, component_map, depth)
+	);
+}
+
+
 class WeightedEvaluatorFeature
-    : public plugins::TypedFeature<Evaluator, WeightedEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentComponent<Evaluator>, TaskIndependentWeightedEvaluator> {
 public:
     WeightedEvaluatorFeature() : TypedFeature("weight") {
         document_subcategory("evaluators_basic");
@@ -49,15 +72,15 @@ public:
         document_synopsis(
             "Multiplies the value of the evaluator with the given weight.");
 
-        add_option<shared_ptr<Evaluator>>("eval", "evaluator");
+        add_option<shared_ptr<TaskIndependentComponent<Evaluator>>>("eval", "evaluator");
         add_option<int>("weight", "weight");
         add_evaluator_options_to_feature(*this, "weight");
     }
 
-    virtual shared_ptr<WeightedEvaluator>
+    virtual shared_ptr<TaskIndependentWeightedEvaluator>
     create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<WeightedEvaluator>(
-            opts.get<shared_ptr<Evaluator>>("eval"),
+        return plugins::make_shared_from_arg_tuples<TaskIndependentWeightedEvaluator>(
+            opts.get<shared_ptr<TaskIndependentComponent<Evaluator>>>("eval"),
             opts.get<int>("weight"),
             get_evaluator_arguments_from_options(opts)
             );

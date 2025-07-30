@@ -16,6 +16,9 @@ unique_ptr<EdgeOpenList> OpenListFactory::create_open_list() {
     return create_edge_open_list();
 }
 
+
+
+
 void add_open_list_options_to_feature(
     plugins::Feature &feature) {
     feature.add_option<bool>(
@@ -29,7 +32,7 @@ tuple<bool> get_open_list_arguments_from_options(
     return make_tuple(opts.get<bool>("pref_only"));
 }
 
-static class OpenListFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<OpenListFactory> {
+static class OpenListFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentComponent<OpenListFactory>> {
 public:
     OpenListFactoryCategoryPlugin() : TypedCategoryPlugin("OpenList") {
         // TODO: use document_synopsis() for the wiki page.

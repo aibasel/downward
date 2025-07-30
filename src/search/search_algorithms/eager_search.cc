@@ -26,9 +26,9 @@ EagerSearch::EagerSearch(
     const shared_ptr<PruningMethod> &pruning,
     const shared_ptr<Evaluator> &lazy_evaluator, OperatorCost cost_type,
     int bound, double max_time, const string &description,
-    utils::Verbosity verbosity)
+    utils::Verbosity verbosity, const shared_ptr<AbstractTask> &task)
     : SearchAlgorithm(
-          cost_type, bound, max_time, description, verbosity),
+          cost_type, bound, max_time, description, verbosity, task),
       reopen_closed_nodes(reopen_closed),
       open_list(open->create_state_open_list()),
       f_evaluator(f_eval),     // default nullptr
@@ -335,6 +335,57 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     }
 }
 
+TaskIndependentEagerSearch::TaskIndependentEagerSearch(
+    shared_ptr<TaskIndependentComponent<OpenListFactory>> open_list_factory,
+    bool reopen_closed_nodes,
+    shared_ptr<TaskIndependentComponent<Evaluator>> f_evaluator,
+    vector<shared_ptr<TaskIndependentComponent<Evaluator>>> preferred_operator_evaluators,
+    shared_ptr<PruningMethod> pruning_method,
+    shared_ptr<TaskIndependentComponent<Evaluator>> lazy_evaluator,
+    OperatorCost cost_type,
+    int bound,
+    double max_time,
+    const string &description,
+    utils::Verbosity verbosity
+    )
+    : TaskIndependentComponent<SearchAlgorithm>(description,
+                                                verbosity
+                                                ),
+      bound(bound),
+      cost_type(cost_type),
+      max_time(max_time),
+
+      reopen_closed_nodes(reopen_closed_nodes),
+      open_list_factory(move(open_list_factory)),
+      f_evaluator(f_evaluator),
+      preferred_operator_evaluators(preferred_operator_evaluators),
+      lazy_evaluator(lazy_evaluator),
+      pruning_method(pruning_method) {
+}
+
+std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(const shared_ptr <AbstractTask> &task,
+                                                                                  unique_ptr <ComponentMap> &component_map,
+                                                                                  int depth) const {
+    return make_shared<EagerSearch>(
+        construct_task_specific(open_list_factory, task, component_map, depth),
+        construct_task_specific(reopen_closed_nodes, task, component_map, depth),
+        construct_task_specific(f_evaluator, task, component_map, depth),
+        construct_task_specific(preferred_operator_evaluators, task, component_map, depth),
+        construct_task_specific(pruning_method, task, component_map, depth),
+        construct_task_specific(lazy_evaluator, task, component_map, depth),
+        construct_task_specific(cost_type, task, component_map, depth),
+        construct_task_specific(bound, task, component_map, depth),
+        construct_task_specific(max_time, task, component_map, depth),
+        construct_task_specific(description, task, component_map, depth),
+        construct_task_specific(verbosity, task, component_map, depth),
+        construct_task_specific(task, task, component_map, depth)
+        );
+}
+
+
+
+
+
 void add_eager_search_options_to_feature(
     plugins::Feature &feature, const string &description) {
     add_search_pruning_options_to_feature(feature);
@@ -343,12 +394,12 @@ void add_eager_search_options_to_feature(
     add_search_algorithm_options_to_feature(feature, description);
 }
 
-tuple<shared_ptr<PruningMethod>, shared_ptr<Evaluator>, OperatorCost,
+tuple<shared_ptr<PruningMethod>, shared_ptr<TaskIndependentComponent<Evaluator>>, OperatorCost,
       int, double, string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         get_search_pruning_arguments_from_options(opts),
-        make_tuple(opts.get<shared_ptr<Evaluator>>(
+        make_tuple(opts.get<shared_ptr<TaskIndependentComponent<Evaluator>>>(
                        "lazy_evaluator", nullptr)),
         get_search_algorithm_arguments_from_options(opts)
         );

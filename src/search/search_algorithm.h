@@ -1,6 +1,7 @@
 #ifndef SEARCH_ALGORITHM_H
 #define SEARCH_ALGORITHM_H
 
+#include "component.h"
 #include "operator_cost.h"
 #include "operator_id.h"
 #include "plan_manager.h"
@@ -30,7 +31,7 @@ class SuccessorGenerator;
 
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
-class SearchAlgorithm {
+class SearchAlgorithm : public Component {
     std::string description;
     SearchStatus status;
     bool solution_found;
@@ -62,7 +63,8 @@ protected:
 public:
     SearchAlgorithm(
         OperatorCost cost_type, int bound, double max_time,
-        const std::string &description, utils::Verbosity verbosity);
+        const std::string &description, utils::Verbosity verbosity,
+        const std::shared_ptr<AbstractTask> &_task);
     explicit SearchAlgorithm(const plugins::Options &opts); // TODO options object is needed for iterated search, the prototype for issue559 resolves this
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;

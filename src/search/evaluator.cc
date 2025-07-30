@@ -74,6 +74,20 @@ int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
 }
 
+
+
+
+TaskIndependentEvaluator::TaskIndependentEvaluator(
+    bool use_for_reporting_minima, bool use_for_boosting,
+    bool use_for_counting_evaluations,
+    const std::string &description, utils::Verbosity verbosity)
+    : TaskIndependentComponent(description, verbosity),
+      use_for_reporting_minima(use_for_reporting_minima),
+      use_for_boosting(use_for_boosting),
+      use_for_counting_evaluations(use_for_counting_evaluations) {
+}
+
+
 void add_evaluator_options_to_feature(
     plugins::Feature &feature, const string &description) {
     feature.add_option<string>(
@@ -91,7 +105,7 @@ tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
         );
 }
 
-static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<Evaluator> {
+static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentComponent<Evaluator>> {
 public:
     EvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {
         document_synopsis(
