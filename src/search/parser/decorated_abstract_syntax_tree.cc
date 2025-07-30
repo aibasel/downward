@@ -30,13 +30,11 @@ plugins::Any ConstructContext::get_variable(const string &name) const {
 
 LazyValue::LazyValue(
     const DecoratedASTNode &node, const ConstructContext &context)
-    : context(context),
-      node(node.clone()) {
+    : context(context), node(node.clone()) {
 }
 
 LazyValue::LazyValue(const LazyValue &other)
-    : context(other.context),
-      node(other.node->clone()) {
+    : context(other.context), node(other.node->clone()) {
 }
 
 plugins::Any LazyValue::construct_any() const {
@@ -76,9 +74,7 @@ plugins::Any DecoratedASTNode::construct() const {
 
 FunctionArgument::FunctionArgument(
     const string &key, DecoratedASTNodePtr value, bool lazy_construction)
-    : key(key),
-      value(move(value)),
-      lazy_construction(lazy_construction) {
+    : key(key), value(move(value)), lazy_construction(lazy_construction) {
 }
 
 string FunctionArgument::get_key() const {
@@ -369,9 +365,7 @@ void SymbolNode::dump(string indent) const {
 ConvertNode::ConvertNode(
     DecoratedASTNodePtr value, const plugins::Type &from_type,
     const plugins::Type &to_type)
-    : value(move(value)),
-      from_type(from_type),
-      to_type(to_type) {
+    : value(move(value)), from_type(from_type), to_type(to_type) {
 }
 
 plugins::Any ConvertNode::construct(ConstructContext &context) const {

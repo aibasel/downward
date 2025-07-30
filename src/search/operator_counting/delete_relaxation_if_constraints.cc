@@ -22,8 +22,7 @@ static void add_lp_variables(
 
 DeleteRelaxationIFConstraints::DeleteRelaxationIFConstraints(
     bool use_time_vars, bool use_integer_vars)
-    : use_time_vars(use_time_vars),
-      use_integer_vars(use_integer_vars) {
+    : use_time_vars(use_time_vars), use_integer_vars(use_integer_vars) {
 }
 
 int DeleteRelaxationIFConstraints::get_var_op_used(const OperatorProxy &op) {

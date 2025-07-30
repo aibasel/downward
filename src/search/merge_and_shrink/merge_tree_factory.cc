@@ -13,8 +13,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeTreeFactory::MergeTreeFactory(int random_seed, UpdateOption update_option)
-    : rng(utils::get_rng(random_seed)),
-      update_option(update_option) {
+    : rng(utils::get_rng(random_seed)), update_option(update_option) {
 }
 
 void MergeTreeFactory::dump_options(utils::LogProxy &log) const {

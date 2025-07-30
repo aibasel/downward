@@ -16,8 +16,7 @@ using namespace std;
 namespace landmarks {
 CostPartitioningAlgorithm::CostPartitioningAlgorithm(
     const vector<int> &operator_costs, const LandmarkGraph &graph)
-    : landmark_graph(graph),
-      operator_costs(operator_costs) {
+    : landmark_graph(graph), operator_costs(operator_costs) {
 }
 
 static const unordered_set<int> &get_achievers(

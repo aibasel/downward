@@ -6,8 +6,7 @@ using namespace std;
 
 namespace plugins {
 Feature::Feature(const Type &type, const string &key)
-    : type(type),
-      key(utils::tolower(key)) {
+    : type(type), key(utils::tolower(key)) {
 }
 
 void Feature::document_subcategory(const string &subcategory) {
@@ -142,9 +141,7 @@ string SubcategoryPlugin::get_synopsis() const {
 EnumPlugin::EnumPlugin(
     type_index type, const string &class_name,
     initializer_list<pair<string, string>> enum_values)
-    : type(type),
-      class_name(class_name),
-      enum_info(enum_values) {
+    : type(type), class_name(class_name), enum_info(enum_values) {
     RawRegistry::instance()->insert_enum_plugin(*this);
 }
 

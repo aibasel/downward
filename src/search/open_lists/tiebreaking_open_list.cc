@@ -143,9 +143,7 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
 TieBreakingOpenListFactory::TieBreakingOpenListFactory(
     const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
     bool pref_only)
-    : evals(evals),
-      unsafe_pruning(unsafe_pruning),
-      pref_only(pref_only) {
+    : evals(evals), unsafe_pruning(unsafe_pruning), pref_only(pref_only) {
     utils::verify_list_not_empty(evals, "evals");
 }
 

@@ -14,8 +14,7 @@ using namespace std;
 namespace landmarks {
 LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(
     const shared_ptr<LandmarkFactory> &lm_factory, utils::Verbosity verbosity)
-    : LandmarkFactory(verbosity),
-      landmark_factory(lm_factory) {
+    : LandmarkFactory(verbosity), landmark_factory(lm_factory) {
 }
 
 void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(
