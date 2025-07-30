@@ -204,9 +204,8 @@ public:
         MergeScoringFunctionTotalOrder::add_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeScoringFunctionTotalOrder> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<MergeScoringFunctionTotalOrder>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<MergeScoringFunctionTotalOrder>(
             opts.get<AtomicTSOrder>("atomic_ts_order"),
             opts.get<ProductTSOrder>("product_ts_order"),

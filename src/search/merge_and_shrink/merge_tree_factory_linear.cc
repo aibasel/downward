@@ -32,8 +32,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
         MergeTreeNode *right_child = new MergeTreeNode(vof.next());
         root = new MergeTreeNode(root, right_child);
     }
-    return utils::make_unique_ptr<MergeTree>(
-        root, rng, update_option);
+    return make_unique<MergeTree>(root, rng, update_option);
 }
 
 unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
@@ -94,8 +93,7 @@ unique_ptr<MergeTree> MergeTreeFactoryLinear::compute_merge_tree(
             root = new MergeTreeNode(root, right_child);
         }
     }
-    return utils::make_unique_ptr<MergeTree>(
-        root, rng, update_option);
+    return make_unique<MergeTree>(root, rng, update_option);
 }
 
 string MergeTreeFactoryLinear::name() const {
@@ -136,9 +134,8 @@ public:
         MergeTreeFactoryLinear::add_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeTreeFactoryLinear> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<MergeTreeFactoryLinear>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<MergeTreeFactoryLinear>(
             opts.get<variable_order_finder::VariableOrderType>(
                 "variable_order"),

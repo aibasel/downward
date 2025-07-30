@@ -3,7 +3,7 @@
 #include "../open_list.h"
 
 #include "../plugins/plugin.h"
-#include "../utils/memory.h"
+#include "../utils/component_errors.h"
 #include "../utils/system.h"
 
 #include <cassert>
@@ -131,17 +131,18 @@ AlternationOpenListFactory::AlternationOpenListFactory(
     const vector<shared_ptr<OpenListFactory>> &sublists, int boost)
     : sublists(sublists),
       boost(boost) {
+    utils::verify_list_not_empty(sublists, "sublists");
 }
 
 unique_ptr<StateOpenList>
 AlternationOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<AlternationOpenList<StateOpenListEntry>>(
+    return make_unique<AlternationOpenList<StateOpenListEntry>>(
         sublists, boost);
 }
 
 unique_ptr<EdgeOpenList>
 AlternationOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<AlternationOpenList<EdgeOpenListEntry>>(
+    return make_unique<AlternationOpenList<EdgeOpenListEntry>>(
         sublists, boost);
 }
 
@@ -163,11 +164,8 @@ public:
             "0");
     }
 
-    virtual shared_ptr<AlternationOpenListFactory> create_component(
-        const plugins::Options &opts,
-        const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<OpenListFactory>>(
-            context, opts, "sublists");
+    virtual shared_ptr<AlternationOpenListFactory>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<AlternationOpenListFactory>(
             opts.get_list<shared_ptr<OpenListFactory>>("sublists"),
             opts.get<int>("boost")

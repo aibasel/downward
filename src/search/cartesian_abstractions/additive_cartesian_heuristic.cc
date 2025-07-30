@@ -139,9 +139,8 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<AdditiveCartesianHeuristic> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<AdditiveCartesianHeuristic>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<AdditiveCartesianHeuristic>(
             opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks"),
             opts.get<int>("max_states"),

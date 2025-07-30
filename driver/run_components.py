@@ -10,6 +10,7 @@ from . import limits
 from . import portfolio_runner
 from . import returncodes
 from . import util
+from . import __version__
 from .plan_manager import PlanManager
 
 if os.name == "posix":
@@ -29,29 +30,39 @@ _VALIDATE_NAME = (shutil.which(f"validate{BINARY_EXT}") or
 VALIDATE = Path(_VALIDATE_NAME) if _VALIDATE_NAME else None
 
 
-def get_executable(build: str, rel_path: Path):
-    # First, consider 'build' to be a path directly to the binaries.
-    # The path can be absolute or relative to the current working
-    # directory.
-    build_dir = Path(build)
+class IncompleteBuildError(Exception):
+    pass
+
+
+def try_get_executable(build: str, rel_path: Path):
+    build_dir = util.BUILDS_DIR / build / "bin"
     if not build_dir.exists():
-        # If build is not a full path to the binaries, it might be the
-        # name of a build in our standard directory structure.
-        # in this case, the binaries are in
-        #   '<repo-root>/builds/<buildname>/bin'.
-        build_dir = util.BUILDS_DIR / build / "bin"
-        if not build_dir.exists():
-            returncodes.exit_with_driver_input_error(
-                f"Could not find build '{build}' at {build_dir}. "
-                f"Please run './build.py {build}'.")
+        raise IncompleteBuildError(
+            f"Could not find build '{build}' at {build_dir}.")
 
-    abs_path = build_dir / rel_path
-    if not abs_path.exists():
-        returncodes.exit_with_driver_input_error(
-            f"Could not find '{rel_path}' in build '{build}'. "
-            f"Please run './build.py {build}'.")
+    path = build_dir / rel_path
+    if not path.exists():
+        raise IncompleteBuildError(
+            f"Could not find '{rel_path}' in build '{build}'.")
 
-    return abs_path
+    return path
+
+def get_executable(build: str, rel_path: Path):
+    try:
+        return try_get_executable(build, rel_path)
+    except IncompleteBuildError as err:
+        returncodes.exit_with_driver_input_error(f"{err} Please run './build.py {build}'.")
+
+def report_version(build: str):
+    print(f"Fast Downward {__version__}")
+    try:
+        executable = try_get_executable(build, REL_SEARCH_PATH)
+        search_git_revision = subprocess.check_output([executable, "--internal-git-revision"])
+        print(f"git revision [{build}]: {search_git_revision.decode().strip()}")
+    except IncompleteBuildError:
+        print(f"git revision [{build}]: Build not found. Please run './build.py {build}'.")
+    except subprocess.CalledProcessError as err:
+        print(f"Cannot determine git revision of search binary. {err}")
 
 
 def run_translate(args):

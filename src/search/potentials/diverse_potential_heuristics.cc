@@ -174,9 +174,8 @@ public:
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PotentialMaxHeuristic> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<PotentialMaxHeuristic>
+    create_component(const plugins::Options &opts) const override {
         return make_shared<PotentialMaxHeuristic>(
             DiversePotentialHeuristics(
                 opts.get<int>("num_samples"),

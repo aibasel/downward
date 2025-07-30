@@ -2,7 +2,6 @@
 #define PLUGINS_ANY_H
 
 #include "../utils/language.h"
-#include "../utils/memory.h"
 
 #include <algorithm>
 #include <exception>
@@ -43,7 +42,7 @@ public:
         }
 
         virtual std::unique_ptr<Placeholder> clone() const override {
-            return utils::make_unique_ptr<Holder<ValueType>>(held);
+            return std::make_unique<Holder<ValueType>>(held);
         }
 
         virtual const std::type_info &type() const override {
@@ -70,7 +69,7 @@ public:
 
     template<typename ValueType>
     Any(const ValueType &value)
-        : content(utils::make_unique_ptr<Holder<ValueType>>(value)) {
+        : content(std::make_unique<Holder<ValueType>>(value)) {
     }
 
     ~Any() = default;

@@ -86,9 +86,8 @@ public:
             "systematic(2)");
     }
 
-    virtual shared_ptr<PhOConstraints> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<PhOConstraints>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<PhOConstraints>(
             opts.get<shared_ptr<pdbs::PatternCollectionGenerator>>(
                 "patterns"));

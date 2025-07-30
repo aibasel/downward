@@ -244,9 +244,8 @@ public:
             "vector-based approach.");
     }
 
-    virtual shared_ptr<ShrinkFH> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<ShrinkFH>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<ShrinkFH>(
             opts.get<ShrinkFH::HighLow>("shrink_f"),
             opts.get<ShrinkFH::HighLow>("shrink_h"),

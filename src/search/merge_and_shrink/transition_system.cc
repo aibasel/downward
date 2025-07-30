@@ -4,7 +4,6 @@
 #include "labels.h"
 
 #include "../utils/logging.h"
-#include "../utils/memory.h"
 
 #include <algorithm>
 #include <cassert>
@@ -281,7 +280,7 @@ unique_ptr<TransitionSystem> TransitionSystem::merge(
         local_label_infos.emplace_back(move(dead_labels), vector<Transition>(), cost);
     }
 
-    return utils::make_unique_ptr<TransitionSystem>(
+    return make_unique<TransitionSystem>(
         num_variables,
         move(incorporated_variables),
         ts1.labels,

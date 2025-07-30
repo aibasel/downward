@@ -22,9 +22,8 @@ public:
         add_search_algorithm_options_to_feature(*this, "lazy");
     }
 
-    virtual shared_ptr<lazy_search::LazySearch> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<lazy_search::LazySearch>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<lazy_search::LazySearch>(
             opts.get<shared_ptr<OpenListFactory>>("open"),
             opts.get<bool>("reopen_closed"),

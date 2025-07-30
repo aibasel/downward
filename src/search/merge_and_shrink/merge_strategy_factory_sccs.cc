@@ -95,7 +95,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
         merge_selector->initialize(task_proxy);
     }
 
-    return utils::make_unique_ptr<MergeStrategySCCs>(
+    return make_unique<MergeStrategySCCs>(
         fts,
         merge_selector,
         move(non_singleton_cg_sccs));
@@ -141,7 +141,7 @@ class MergeStrategyFactorySCCsFeature
     : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactorySCCs> {
 public:
     MergeStrategyFactorySCCsFeature() : TypedFeature("merge_sccs") {
-        document_title("Merge strategy SSCs");
+        document_title("Merge strategy SCCs");
         document_synopsis(
             "This merge strategy implements the algorithm described in the paper "
             + utils::format_conference_reference(
@@ -153,7 +153,8 @@ public:
                 "2358-2366",
                 "AAAI Press",
                 "2016") +
-            "In a nutshell, it computes the maximal SCCs of the causal graph, "
+            "In a nutshell, it computes the maximal strongly connected "
+            "components (SCCs) of the causal graph, "
             "obtaining a partitioning of the task's variables. Every such "
             "partition is then merged individually, using the specified fallback "
             "merge strategy, considering the SCCs in a configurable order. "
@@ -171,9 +172,8 @@ public:
         add_merge_strategy_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeStrategyFactorySCCs> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<MergeStrategyFactorySCCs>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<MergeStrategyFactorySCCs>(
             opts.get<OrderOfSCCs>("order_of_sccs"),
             opts.get<shared_ptr<MergeSelector>> ("merge_selector"),

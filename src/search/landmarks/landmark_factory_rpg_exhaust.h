@@ -5,12 +5,16 @@
 
 namespace landmarks {
 class LandmarkFactoryRpgExhaust : public LandmarkFactoryRelaxation {
-    const bool only_causal_landmarks;
-    virtual void generate_relaxed_landmarks(const std::shared_ptr<AbstractTask> &task,
-                                            Exploration &exploration) override;
+    const bool use_unary_relaxation;
+    void generate_goal_landmarks(const TaskProxy &task_proxy) const;
+    void generate_all_atomic_landmarks(
+        const TaskProxy &task_proxy, Exploration &exploration) const;
+    virtual void generate_relaxed_landmarks(
+        const std::shared_ptr<AbstractTask> &task,
+        Exploration &exploration) override;
 
 public:
-    explicit LandmarkFactoryRpgExhaust(bool only_causal_landmarks,
+    explicit LandmarkFactoryRpgExhaust(bool use_unary_relaxation,
                                        utils::Verbosity verbosity);
 
     virtual bool supports_conditional_effects() const override;

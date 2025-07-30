@@ -63,9 +63,8 @@ public:
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternGeneratorGreedy> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<PatternGeneratorGreedy>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<PatternGeneratorGreedy>(
             opts.get<int>("max_states"),
             get_generator_arguments_from_options(opts)

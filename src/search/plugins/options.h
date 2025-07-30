@@ -119,16 +119,6 @@ public:
     const std::string &get_unparsed_config() const;
     void set_unparsed_config(const std::string &config);
 };
-
-template<typename T>
-void verify_list_non_empty(const utils::Context &context,
-                           const plugins::Options &opts,
-                           const std::string &key) {
-    std::vector<T> list = opts.get_list<T>(key);
-    if (list.empty()) {
-        context.error("List argument '" + key + "' has to be non-empty.");
-    }
-}
 }
 
 #endif

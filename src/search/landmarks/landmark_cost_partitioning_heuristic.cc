@@ -33,13 +33,13 @@ LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
 }
 
 void LandmarkCostPartitioningHeuristic::check_unsupported_features(
-    const shared_ptr<LandmarkFactory> &lm_factory) {
+    const shared_ptr<LandmarkFactory> &landmark_factory) {
     if (task_properties::has_axioms(task_proxy)) {
         cerr << "Cost partitioning does not support axioms." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
-    if (!lm_factory->supports_conditional_effects()
+    if (!landmark_factory->supports_conditional_effects()
         && task_properties::has_conditional_effects(task_proxy)) {
         cerr << "Conditional effects not supported by the landmark "
              << "generation method." << endl;
@@ -48,18 +48,18 @@ void LandmarkCostPartitioningHeuristic::check_unsupported_features(
 }
 
 void LandmarkCostPartitioningHeuristic::set_cost_partitioning_algorithm(
-    CostPartitioningMethod cost_partitioning, lp::LPSolverType lpsolver,
-    bool alm) {
+    const CostPartitioningMethod cost_partitioning, lp::LPSolverType lpsolver,
+    bool use_action_landmarks) {
     if (cost_partitioning == CostPartitioningMethod::OPTIMAL) {
         cost_partitioning_algorithm =
-            utils::make_unique_ptr<OptimalCostPartitioningAlgorithm>(
+            make_unique<OptimalCostPartitioningAlgorithm>(
                 task_properties::get_operator_costs(task_proxy),
-                *lm_graph, lpsolver);
+                *landmark_graph, lpsolver);
     } else if (cost_partitioning == CostPartitioningMethod::UNIFORM) {
         cost_partitioning_algorithm =
-            utils::make_unique_ptr<UniformCostPartitioningAlgorithm>(
+            make_unique<UniformCostPartitioningAlgorithm>(
                 task_properties::get_operator_costs(task_proxy),
-                *lm_graph, alm);
+                *landmark_graph, use_action_landmarks);
     } else {
         ABORT("Unknown cost partitioning method");
     }
@@ -67,11 +67,11 @@ void LandmarkCostPartitioningHeuristic::set_cost_partitioning_algorithm(
 
 int LandmarkCostPartitioningHeuristic::get_heuristic_value(
     const State &ancestor_state) {
-    double epsilon = 0.01;
+    constexpr double epsilon = 0.01;
 
     double h_val =
         cost_partitioning_algorithm->get_cost_partitioned_heuristic_value(
-            *lm_status_manager, ancestor_state);
+            *landmark_status_manager, ancestor_state);
     if (h_val == numeric_limits<double>::max()) {
         return DEAD_END;
     } else {
@@ -144,14 +144,15 @@ public:
             "which point the above inequality might not hold anymore.");
         document_note(
             "Optimal Cost Partitioning",
-            "To use ``cost_partitioning=optimal``, you must build the planner with LP "
-            "support. See [build instructions https://github.com/aibasel/downward/blob/main/BUILD.md].");
+            "To use ``cost_partitioning=optimal``, you must build the "
+            "planner with LP support. See "
+            "[build instructions https://github.com/aibasel/downward/blob/main/BUILD.md].");
         document_note(
             "Preferred operators",
-            "Preferred operators should not be used for optimal planning. "
-            "See Evaluator#Landmark_sum_heuristic for more information "
-            "on using preferred operators; the comments there also apply "
-            "to this heuristic.");
+            "Preferred operators should not be used for optimal planning. See "
+            "Evaluator#Landmark_sum_heuristic for more information on using "
+            "preferred operators; the comments there also apply to this "
+            "heuristic.");
 
         document_language_support("action costs", "supported");
         document_language_support(
@@ -167,8 +168,7 @@ public:
     }
 
     virtual shared_ptr<LandmarkCostPartitioningHeuristic>
-    create_component(const plugins::Options &opts,
-                     const utils::Context &) const override {
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkCostPartitioningHeuristic>(
             get_landmark_heuristic_arguments_from_options(opts),
             opts.get<CostPartitioningMethod>("cost_partitioning"),

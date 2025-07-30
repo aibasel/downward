@@ -33,12 +33,12 @@ CGHeuristic::CGHeuristic(
     }
 
     if (max_cache_size > 0)
-        cache = utils::make_unique_ptr<CGCache>(task_proxy, max_cache_size, log);
+        cache = make_unique<CGCache>(task_proxy, max_cache_size, log);
 
     unsigned int num_vars = task_proxy.get_variables().size();
     prio_queues.reserve(num_vars);
     for (size_t i = 0; i < num_vars; ++i)
-        prio_queues.push_back(utils::make_unique_ptr<ValueNodeQueue>());
+        prio_queues.push_back(make_unique<ValueNodeQueue>());
 
     function<bool(int, int)> pruning_condition =
         [](int dtg_var, int cond_var) {return dtg_var <= cond_var;};
@@ -311,9 +311,8 @@ public:
         document_property("preferred operators", "yes");
     }
 
-    virtual shared_ptr<CGHeuristic> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<CGHeuristic>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<CGHeuristic>(
             opts.get<int>("max_cache_size"),
             tasks::get_axioms_arguments_from_options(opts),

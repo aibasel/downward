@@ -899,6 +899,8 @@ public:
 
     virtual shared_ptr<AbstractTask> create_component(
         const plugins::Options &, const utils::Context &) const override {
+    virtual shared_ptr<AbstractTask>
+    create_component(const plugins::Options &) const override {
         return g_root_task;
     }
 };

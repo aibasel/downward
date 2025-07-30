@@ -9,7 +9,6 @@
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
-#include <iostream>
 #include <unordered_map>
 #include <utility>
 
@@ -30,248 +29,256 @@ void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
     }
 
     compute_triggers(task_proxy);
+    PropositionLayer last_layer =
+        build_relaxed_plan_graph_with_labels(task_proxy);
+    extract_landmarks(task_proxy, last_layer);
+}
 
-    PropositionLayer last_prop_layer = build_relaxed_plan_graph_with_labels(task_proxy);
+/*
+  Check if any goal atom is unreachable in the delete relaxation. If so, we
+  create a graph with just this atom as landmark and empty achievers to signal
+  to the heuristic that the initial state as a dead-end.
+*/
+bool LandmarkFactoryZhuGivan::goal_is_reachable(
+    const TaskProxy &task_proxy, const PropositionLayer &prop_layer) const {
+    for (FactProxy goal : task_proxy.get_goals()) {
+        if (!prop_layer[goal.get_variable().get_id()][goal.get_value()].reached()) {
+            if (log.is_at_least_normal()) {
+                log << "Problem not solvable, even if relaxed." << endl;
+            }
+            Landmark landmark({goal.get_pair()}, ATOMIC, true);
+            landmark_graph->add_landmark(move(landmark));
+            return false;
+        }
+    }
+    return true;
+}
 
-    extract_landmarks(task_proxy, last_prop_layer);
+LandmarkNode *LandmarkFactoryZhuGivan::create_goal_landmark(
+    const FactPair &goal) const {
+    LandmarkNode *node;
+    if (landmark_graph->contains_atomic_landmark(goal)) {
+        node = &landmark_graph->get_atomic_landmark_node(goal);
+        node->get_landmark().is_true_in_goal = true;
+    } else {
+        Landmark landmark({goal}, ATOMIC, true);
+        node = &landmark_graph->add_landmark(move(landmark));
+    }
+    return node;
+}
 
-    if (!use_orders) {
-        discard_all_orderings();
+void LandmarkFactoryZhuGivan::extract_landmarks_and_orderings_from_goal_labels(
+    const FactPair &goal, const PropositionLayer &prop_layer,
+    LandmarkNode *goal_landmark_node) const {
+    const PlanGraphNode &goal_node = prop_layer[goal.var][goal.value];
+    assert(goal_node.reached());
+
+    for (const FactPair &atom : goal_node.labels) {
+        if (atom == goal) {
+            // Ignore label on itself.
+            continue;
+        }
+
+        LandmarkNode *node;
+        if (landmark_graph->contains_atomic_landmark(atom)) {
+            node = &landmark_graph->get_atomic_landmark_node(atom);
+        } else {
+            Landmark landmark({atom}, ATOMIC);
+            node = &landmark_graph->add_landmark(move(landmark));
+        }
+        if (use_orders) {
+            assert(!node->parents.contains(goal_landmark_node));
+            assert(!goal_landmark_node->children.contains(node));
+            add_or_replace_ordering_if_stronger(
+                *node, *goal_landmark_node, OrderingType::NATURAL);
+        }
     }
 }
 
 void LandmarkFactoryZhuGivan::extract_landmarks(
-    const TaskProxy &task_proxy, const PropositionLayer &last_prop_layer) {
-    /*
-      We first check if at least one of the goal facts is relaxed unreachable.
-      In this case we create a graph with just this fact as landmark. Since
-      the landmark will have no achievers, the heuristic can detect the
-      initial state as a dead-end.
-     */
-    for (FactProxy goal : task_proxy.get_goals()) {
-        if (!last_prop_layer[goal.get_variable().get_id()][goal.get_value()].reached()) {
-            if (log.is_at_least_normal()) {
-                log << "Problem not solvable, even if relaxed." << endl;
-            }
-            Landmark landmark({goal.get_pair()}, false, false, true);
-            lm_graph->add_landmark(move(landmark));
-            return;
-        }
+    const TaskProxy &task_proxy,
+    const PropositionLayer &last_prop_layer) const {
+    if (!goal_is_reachable(task_proxy, last_prop_layer)) {
+        return;
     }
-
-    State initial_state = task_proxy.get_initial_state();
-    // insert goal landmarks and mark them as goals
     for (FactProxy goal : task_proxy.get_goals()) {
-        FactPair goal_lm = goal.get_pair();
-        LandmarkNode *lm_node;
-        if (lm_graph->contains_simple_landmark(goal_lm)) {
-            lm_node = &lm_graph->get_simple_landmark(goal_lm);
-            lm_node->get_landmark().is_true_in_goal = true;
-        } else {
-            Landmark landmark({goal_lm}, false, false, true);
-            lm_node = &lm_graph->add_landmark(move(landmark));
-        }
-        // extract landmarks from goal labels
-        const plan_graph_node &goal_node =
-            last_prop_layer[goal_lm.var][goal_lm.value];
-
-        assert(goal_node.reached());
-
-        for (const FactPair &lm : goal_node.labels) {
-            if (lm == goal_lm) // ignore label on itself
-                continue;
-            LandmarkNode *node;
-            // Add new landmarks
-            if (!lm_graph->contains_simple_landmark(lm)) {
-                Landmark landmark({lm}, false, false);
-                node = &lm_graph->add_landmark(move(landmark));
-            } else {
-                node = &lm_graph->get_simple_landmark(lm);
-            }
-            // Add order: lm ->_{nat} lm
-            assert(node->parents.find(lm_node) == node->parents.end());
-            assert(lm_node->children.find(node) == lm_node->children.end());
-            edge_add(*node, *lm_node, EdgeType::NATURAL);
-        }
+        FactPair goal_atom = goal.get_pair();
+        LandmarkNode *node = create_goal_landmark(goal_atom);
+        extract_landmarks_and_orderings_from_goal_labels(
+            goal_atom, last_prop_layer, node);
     }
 }
+
+LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::initialize_relaxed_plan_graph(
+    const TaskProxy &task_proxy, unordered_set<int> &triggered_ops) const {
+    const State &initial_state = task_proxy.get_initial_state();
+    const VariablesProxy &variables = task_proxy.get_variables();
+    PropositionLayer initial_layer;
+    initial_layer.resize(variables.size());
+    for (VariableProxy var : variables) {
+        int var_id = var.get_id();
+        initial_layer[var_id].resize(var.get_domain_size());
+
+        // Label nodes from initial state.
+        int value = initial_state[var].get_value();
+        initial_layer[var_id][value].labels.emplace(var_id, value);
+
+        triggered_ops.insert(
+            triggers[var_id][value].begin(), triggers[var_id][value].end());
+    }
+    return initial_layer;
+}
+
+void LandmarkFactoryZhuGivan::propagate_labels_until_fixed_point_reached(
+    const TaskProxy &task_proxy, unordered_set<int> &&triggered_ops,
+    PropositionLayer &current_layer) const {
+    bool changes = true;
+    while (changes) {
+        PropositionLayer next_layer(current_layer);
+        unordered_set<int> next_triggers;
+        changes = false;
+        for (int op_or_axiom_id : triggered_ops) {
+            const OperatorProxy &op =
+                get_operator_or_axiom(task_proxy, op_or_axiom_id);
+            if (operator_is_applicable(op, current_layer)) {
+                LandmarkSet changed = apply_operator_and_propagate_labels(
+                    op, current_layer, next_layer);
+                if (!changed.empty()) {
+                    changes = true;
+                    for (const FactPair &landmark : changed)
+                        next_triggers.insert(
+                            triggers[landmark.var][landmark.value].begin(),
+                            triggers[landmark.var][landmark.value].end());
+                }
+            }
+        }
+        swap(current_layer, next_layer);
+        swap(triggered_ops, next_triggers);
+    }
+}
+
 
 LandmarkFactoryZhuGivan::PropositionLayer LandmarkFactoryZhuGivan::build_relaxed_plan_graph_with_labels(
     const TaskProxy &task_proxy) const {
     assert(!triggers.empty());
 
-    PropositionLayer current_prop_layer;
-    unordered_set<int> triggered(task_proxy.get_operators().size() + task_proxy.get_axioms().size());
+    unordered_set<int> triggered_ops(
+        task_proxy.get_operators().size() + task_proxy.get_axioms().size());
+    PropositionLayer current_layer =
+        initialize_relaxed_plan_graph(task_proxy, triggered_ops);
 
-    // set initial layer
-    State initial_state = task_proxy.get_initial_state();
-    VariablesProxy variables = task_proxy.get_variables();
-    current_prop_layer.resize(variables.size());
-    for (VariableProxy var : variables) {
-        int var_id = var.get_id();
-        current_prop_layer[var_id].resize(var.get_domain_size());
+    /*
+      Operators without preconditions do not propagate labels. So if they have
+      no conditional effects, it is only necessary to apply them once. If they
+      have conditional effects, they will be triggered again at later stages.
+    */
+    triggered_ops.insert(operators_without_preconditions.begin(),
+                         operators_without_preconditions.end());
+    propagate_labels_until_fixed_point_reached(
+        task_proxy, move(triggered_ops), current_layer);
+    return current_layer;
+}
 
-        // label nodes from initial state
-        int value = initial_state[var].get_value();
-        current_prop_layer[var_id][value].labels.emplace(var_id, value);
-
-        triggered.insert(triggers[var_id][value].begin(), triggers[var_id][value].end());
-    }
-    // Operators without preconditions do not propagate labels. So if they have
-    // no conditional effects, is only necessary to apply them once. (If they
-    // have conditional effects, they will be triggered at later stages again).
-    triggered.insert(operators_without_preconditions.begin(),
-                     operators_without_preconditions.end());
-
-    bool changes = true;
-    while (changes) {
-        PropositionLayer next_prop_layer(current_prop_layer);
-        unordered_set<int> next_triggered;
-        changes = false;
-        for (int op_or_axiom_id : triggered) {
-            OperatorProxy op = get_operator_or_axiom(task_proxy, op_or_axiom_id);
-            if (operator_applicable(op, current_prop_layer)) {
-                lm_set changed = apply_operator_and_propagate_labels(
-                    op, current_prop_layer, next_prop_layer);
-                if (!changed.empty()) {
-                    changes = true;
-                    for (const FactPair &lm : changed)
-                        next_triggered.insert(
-                            triggers[lm.var][lm.value].begin(),
-                            triggers[lm.var][lm.value].end());
-                }
-            }
+bool LandmarkFactoryZhuGivan::operator_is_applicable(
+    const OperatorProxy &op, const PropositionLayer &state) {
+    for (FactProxy atom : op.get_preconditions()) {
+        auto [var, value] = atom.get_pair();
+        if (!state[var][value].reached()) {
+            return false;
         }
-        current_prop_layer = next_prop_layer;
-        triggered = next_triggered;
     }
-
-    return current_prop_layer;
-}
-
-bool LandmarkFactoryZhuGivan::operator_applicable(const OperatorProxy &op,
-                                                  const PropositionLayer &state) const {
-    // test preconditions
-    for (FactProxy fact : op.get_preconditions())
-        if (!state[fact.get_variable().get_id()][fact.get_value()].reached())
-            return false;
     return true;
 }
 
-bool LandmarkFactoryZhuGivan::operator_cond_effect_fires(
-    const EffectConditionsProxy &effect_conditions, const PropositionLayer &layer) const {
-    for (FactProxy effect_condition : effect_conditions)
-        if (!layer[effect_condition.get_variable().get_id()][effect_condition.get_value()].reached())
+bool LandmarkFactoryZhuGivan::conditional_effect_fires(
+    const EffectConditionsProxy &effect_conditions,
+    const PropositionLayer &layer) {
+    for (FactProxy effect_condition : effect_conditions) {
+        auto [var, value] = effect_condition.get_pair();
+        if (!layer[var][value].reached()) {
             return false;
+        }
+    }
     return true;
 }
 
-static lm_set _union(const lm_set &a, const lm_set &b) {
-    if (a.size() < b.size())
-        return _union(b, a);
-
-    lm_set result = a;
-
-    for (lm_set::const_iterator it = b.begin(); it != b.end(); ++it)
-        result.insert(*it);
+LandmarkSet LandmarkFactoryZhuGivan::union_of_condition_labels(
+    const ConditionsProxy &conditions, const PropositionLayer &current) {
+    LandmarkSet result;
+    for (FactProxy precondition : conditions) {
+        auto [var, value] = precondition.get_pair();
+        union_inplace(result, current[var][value].labels);
+    }
     return result;
 }
 
-static lm_set _intersection(const lm_set &a, const lm_set &b) {
-    if (a.size() > b.size())
-        return _intersection(b, a);
+// Returns whether labels have changed or `atom` has just been reached.
+static bool propagate_labels(
+    LandmarkSet &labels, const LandmarkSet &new_labels, const FactPair &atom) {
+    int old_labels_size = static_cast<int>(labels.size());
 
-    lm_set result;
-
-    for (lm_set::const_iterator it = a.begin(); it != a.end(); ++it)
-        if (b.find(*it) != b.end())
-            result.insert(*it);
-    return result;
-}
-
-lm_set LandmarkFactoryZhuGivan::union_of_precondition_labels(const OperatorProxy &op,
-                                                             const PropositionLayer &current) const {
-    lm_set result;
-
-    // TODO This looks like an O(n^2) algorithm where O(n log n) would do, a
-    // bit like the Python string concatenation anti-pattern.
-    for (FactProxy precondition : op.get_preconditions())
-        result = _union(result,
-                        current[precondition.get_variable().get_id()][precondition.get_value()].labels);
-
-    return result;
-}
-
-lm_set LandmarkFactoryZhuGivan::union_of_condition_labels(
-    const EffectConditionsProxy &effect_conditions, const PropositionLayer &current) const {
-    lm_set result;
-    for (FactProxy effect_condition : effect_conditions)
-        result = _union(result, current[effect_condition.get_variable().get_id()][effect_condition.get_value()].labels);
-
-    return result;
-}
-
-static bool _propagate_labels(lm_set &labels, const lm_set &new_labels,
-                              const FactPair &prop) {
-    lm_set old_labels = labels;
-
-    if (!labels.empty()) {
-        labels = _intersection(labels, new_labels);
-    } else {
+    // If this is the first time `atom` is reached, it has an empty label set.
+    if (labels.empty()) {
         labels = new_labels;
+    } else {
+        labels = get_intersection(labels, new_labels);
     }
-    labels.insert(prop);
+    // `atom` is a landmark for itself.
+    labels.insert(atom);
 
-    assert(old_labels.empty() || old_labels.size() >= labels.size());
-    assert(!labels.empty());
-    // test if labels have changed or proposition has just been reached:
-    // if it has just been reached:
-    // (old_labels.size() == 0) && (labels.size() >= 1)
-    // if old_labels.size() == labels.size(), then labels have not been refined
-    // by intersection.
-    return old_labels.size() != labels.size();
+    /*
+      Updates should always reduce the label set (intersection), except in the
+      special case where `atom` was reached for the first time.
+
+      It would be more accurate to actually test the superset relationship
+      instead of just comparing set sizes. However, doing so requires storing a
+      copy of `labels` just to assert this. Also, it's probably reasonable to
+      trust the implementation of `get_intersection` used above enough to not
+      even assert this at all here.
+    */
+    int new_labels_size = static_cast<int>(labels.size());
+    assert(old_labels_size == 0 || old_labels_size >= new_labels_size);
+    return old_labels_size != new_labels_size;
 }
 
-lm_set LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
+LandmarkSet LandmarkFactoryZhuGivan::apply_operator_and_propagate_labels(
     const OperatorProxy &op, const PropositionLayer &current,
     PropositionLayer &next) const {
-    assert(operator_applicable(op, current));
+    assert(operator_is_applicable(op, current));
+    LandmarkSet precondition_labels =
+        union_of_condition_labels(op.get_preconditions(), current);
 
-    lm_set result;
-    lm_set precond_label_union = union_of_precondition_labels(op, current);
-
-    for (EffectProxy effect : op.get_effects()) {
-        FactPair effect_fact = effect.get_fact().get_pair();
-
-        if (next[effect_fact.var][effect_fact.value].labels.size() == 1)
+    LandmarkSet result;
+    for (const EffectProxy &effect : op.get_effects()) {
+        FactPair atom = effect.get_fact().get_pair();
+        if (next[atom.var][atom.value].labels.size() == 1) {
+            // The only landmark for `atom` is `atom` itself.
             continue;
-
-        if (operator_cond_effect_fires(effect.get_conditions(), current)) {
-            const lm_set precond_label_union_with_condeff = _union(
-                precond_label_union, union_of_condition_labels(
-                    // NOTE: this equals precond_label_union, if effects[i] is
-                    // not a conditional effect.
-                    effect.get_conditions(), current));
-
-            if (_propagate_labels(next[effect_fact.var][effect_fact.value].labels,
-                                  precond_label_union_with_condeff, effect_fact))
-                result.insert(effect_fact);
+        }
+        if (conditional_effect_fires(effect.get_conditions(), current)) {
+            LandmarkSet condition_labels =
+                union_of_condition_labels(effect.get_conditions(), current);
+            union_inplace(condition_labels, precondition_labels);
+            bool labels_changed = propagate_labels(
+                next[atom.var][atom.value].labels, condition_labels, atom);
+            if (labels_changed) {
+                result.insert(atom);
+            }
         }
     }
-
     return result;
 }
 
 void LandmarkFactoryZhuGivan::compute_triggers(const TaskProxy &task_proxy) {
     assert(triggers.empty());
 
-    // initialize empty triggers
-    VariablesProxy variables = task_proxy.get_variables();
+    // Initialize the data structure.
+    const VariablesProxy &variables = task_proxy.get_variables();
     triggers.resize(variables.size());
-    for (size_t i = 0; i < variables.size(); ++i)
+    for (int i = 0; i < static_cast<int>(variables.size()); ++i) {
         triggers[i].resize(variables[i].get_domain_size());
+    }
 
-    // compute triggers
     for (OperatorProxy op : task_proxy.get_operators()) {
         add_operator_to_triggers(op);
     }
@@ -280,25 +287,23 @@ void LandmarkFactoryZhuGivan::compute_triggers(const TaskProxy &task_proxy) {
     }
 }
 
-void LandmarkFactoryZhuGivan::add_operator_to_triggers(const OperatorProxy &op) {
-    // Collect possible triggers first.
-    lm_set possible_triggers;
-
+void LandmarkFactoryZhuGivan::add_operator_to_triggers(
+    const OperatorProxy &op) {
     int op_or_axiom_id = get_operator_or_axiom_id(op);
-    PreconditionsProxy preconditions = op.get_preconditions();
-    for (FactProxy precondition : preconditions)
-        possible_triggers.insert(precondition.get_pair());
-
-    for (EffectProxy effect : op.get_effects()) {
-        for (FactProxy effect_condition : effect.get_conditions())
-            possible_triggers.insert(effect_condition.get_pair());
+    const PreconditionsProxy &preconditions = op.get_preconditions();
+    for (FactProxy precondition : preconditions) {
+        auto [var, value] = precondition.get_pair();
+        triggers[var][value].push_back(op_or_axiom_id);
     }
-    if (preconditions.empty())
+    for (EffectProxy effect : op.get_effects()) {
+        for (FactProxy effect_condition : effect.get_conditions()) {
+            auto [var, value] = effect_condition.get_pair();
+            triggers[var][value].push_back(op_or_axiom_id);
+        }
+    }
+    if (preconditions.empty()) {
         operators_without_preconditions.push_back(op_or_axiom_id);
-
-    // Add operator to triggers vector.
-    for (const FactPair &lm : possible_triggers)
-        triggers[lm.var][lm.value].push_back(op_or_axiom_id);
+    }
 }
 
 bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
@@ -324,8 +329,7 @@ public:
     }
 
     virtual shared_ptr<LandmarkFactoryZhuGivan> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryZhuGivan>(
             get_use_orders_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));

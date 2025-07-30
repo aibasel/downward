@@ -1,7 +1,6 @@
 #include "domain_transition_graph.h"
 
 #include "../utils/hash.h"
-#include "../utils/memory.h"
 
 #include <algorithm>
 #include <cassert>
@@ -36,7 +35,7 @@ void DTGFactory::allocate_graphs_and_nodes(DTGs &dtgs) {
     for (VariableProxy var : variables) {
         int var_id = var.get_id();
         int range = var.get_domain_size();
-        dtgs[var_id] = utils::make_unique_ptr<DomainTransitionGraph>(var_id, range);
+        dtgs[var_id] = make_unique<DomainTransitionGraph>(var_id, range);
     }
 }
 

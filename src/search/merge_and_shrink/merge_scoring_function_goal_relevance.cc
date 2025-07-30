@@ -51,7 +51,8 @@ public:
             "All other candidates get a score of positive infinity.");
     }
 
-    virtual shared_ptr<MergeScoringFunctionGoalRelevance> create_component(const plugins::Options &, const utils::Context &) const override {
+    virtual shared_ptr<MergeScoringFunctionGoalRelevance>
+    create_component(const plugins::Options &) const override {
         return make_shared<MergeScoringFunctionGoalRelevance>();
     }
 };

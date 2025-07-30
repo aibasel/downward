@@ -35,11 +35,8 @@ public:
             *this, "sum");
     }
 
-    virtual shared_ptr<SumEvaluator> create_component(
-        const plugins::Options &opts,
-        const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(
-            context, opts, "evals");
+    virtual shared_ptr<SumEvaluator>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<SumEvaluator>(
             combining_evaluator::get_combining_evaluator_arguments_from_options(
                 opts));

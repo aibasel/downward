@@ -18,7 +18,6 @@
 #include <cassert>
 #include <iostream>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 using namespace std;
@@ -35,7 +34,7 @@ class SortFactsByIncreasingHaddValues {
 public:
     explicit SortFactsByIncreasingHaddValues(
         const shared_ptr<AbstractTask> &task)
-        : hadd(utils::make_unique_ptr<additive_heuristic::AdditiveHeuristic>(
+        : hadd(make_unique<additive_heuristic::AdditiveHeuristic>(
                    tasks::AxiomHandlingType::APPROXIMATE_NEGATIVE, task,
                    false, "h^add within CEGAR abstractions",
                    utils::Verbosity::SILENT)) {
@@ -158,16 +157,16 @@ SharedTasks LandmarkDecomposition::get_subtasks(
     SharedTasks subtasks;
     const shared_ptr<landmarks::LandmarkGraph> landmark_graph =
         get_landmark_graph(task);
-    utils::HashMap<FactPair, landmarks::LandmarkNode *> fact_to_landmark_map =
-        get_fact_to_landmark_map(landmark_graph);
-    Facts landmark_facts = get_fact_landmarks(*landmark_graph);
+    utils::HashMap<FactPair, landmarks::LandmarkNode *> atom_to_landmark_map =
+        get_atom_to_landmark_map(landmark_graph);
+    Facts landmark_facts = get_atom_landmarks(*landmark_graph);
     filter_and_order_facts(task, fact_order, landmark_facts, *rng, log);
     for (const FactPair &landmark : landmark_facts) {
         shared_ptr<AbstractTask> subtask =
             make_shared<extra_tasks::ModifiedGoalsTask>(task, Facts {landmark});
         if (combine_facts) {
             subtask = build_domain_abstracted_task(
-                subtask, fact_to_landmark_map[landmark]);
+                subtask, atom_to_landmark_map[landmark]);
         }
         subtasks.push_back(subtask);
     }
@@ -199,9 +198,8 @@ public:
             plugins::Bounds("1", "infinity"));
     }
 
-    virtual shared_ptr<TaskDuplicator> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<TaskDuplicator>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<TaskDuplicator>(
             opts.get<int>("copies"));
     }
@@ -216,9 +214,8 @@ public:
         add_fact_order_option(*this);
     }
 
-    virtual shared_ptr<GoalDecomposition> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<GoalDecomposition>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<GoalDecomposition>(
             get_fact_order_arguments_from_options(opts));
     }
@@ -238,9 +235,8 @@ public:
             "true");
     }
 
-    virtual shared_ptr<LandmarkDecomposition> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<LandmarkDecomposition>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkDecomposition>(
             get_fact_order_arguments_from_options(opts),
             opts.get<bool>("combine_facts"));

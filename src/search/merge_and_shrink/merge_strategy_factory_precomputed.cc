@@ -5,7 +5,6 @@
 #include "merge_tree.h"
 
 #include "../plugins/plugin.h"
-#include "../utils/memory.h"
 
 using namespace std;
 
@@ -21,7 +20,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strateg
     const TaskProxy &task_proxy, const FactoredTransitionSystem &fts) {
     unique_ptr<MergeTree> merge_tree =
         merge_tree_factory->compute_merge_tree(task_proxy);
-    return utils::make_unique_ptr<MergeStrategyPrecomputed>(fts, move(merge_tree));
+    return make_unique<MergeStrategyPrecomputed>(fts, move(merge_tree));
 }
 
 bool MergeStrategyFactoryPrecomputed::requires_init_distances() const {
@@ -68,9 +67,8 @@ public:
             "merge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))"
             "\n}}}");
     }
-    virtual shared_ptr<MergeStrategyFactoryPrecomputed> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<MergeStrategyFactoryPrecomputed>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<MergeStrategyFactoryPrecomputed>(
             opts.get<shared_ptr<MergeTreeFactory>>("merge_tree"),
             get_merge_strategy_arguments_from_options(opts)

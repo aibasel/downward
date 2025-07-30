@@ -7,7 +7,6 @@
 #include "../utils/collections.h"
 #include "../utils/hash.h"
 #include "../utils/markup.h"
-#include "../utils/memory.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -140,17 +139,18 @@ TypeBasedOpenListFactory::TypeBasedOpenListFactory(
     const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
     : evaluators(evaluators),
       random_seed(random_seed) {
+    utils::verify_list_not_empty(evaluators, "evaluators");
 }
 
 unique_ptr<StateOpenList>
 TypeBasedOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<TypeBasedOpenList<StateOpenListEntry>>(
+    return make_unique<TypeBasedOpenList<StateOpenListEntry>>(
         evaluators, random_seed);
 }
 
 unique_ptr<EdgeOpenList>
 TypeBasedOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<TypeBasedOpenList<EdgeOpenListEntry>>(
+    return make_unique<TypeBasedOpenList<EdgeOpenListEntry>>(
         evaluators, random_seed);
 }
 
@@ -182,11 +182,8 @@ public:
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TypeBasedOpenListFactory> create_component(
-        const plugins::Options &opts,
-        const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<Evaluator>>(
-            context, opts, "evaluators");
+    virtual shared_ptr<TypeBasedOpenListFactory>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<TypeBasedOpenListFactory>(
             opts.get_list<shared_ptr<Evaluator>>("evaluators"),
             utils::get_rng_arguments_from_options(opts)

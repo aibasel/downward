@@ -422,9 +422,8 @@ public:
             "merging).");
     }
 
-    virtual shared_ptr<ShrinkBisimulation> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<ShrinkBisimulation>
+    create_component(const plugins::Options &opts) const override {
         return make_shared<ShrinkBisimulation>(
             opts.get<bool>("greedy"),
             opts.get<AtLimit>("at_limit")

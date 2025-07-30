@@ -21,7 +21,11 @@ jobs:
       matrix:
         version:
           - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: gcc-12, cxx: g++-12, run_tox_tests: true}
-          - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: clang-15, cxx: clang++-15, run_tox_tests: false}
+          # NOTE: Temporarily removing support for the second compiler of the
+          # older Ubuntu LTS because clang-15 does not support certain C++20
+          # features we would like to use (e.g., `ranges` and `views`
+          # libraries).
+          # - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: clang-15, cxx: clang++-15, run_tox_tests: false}
           - {ubuntu: 'ubuntu-24.04', python: '3.10', cc: gcc-14, cxx: g++-14, run_tox_tests: true}
           - {ubuntu: 'ubuntu-24.04', python: '3.10', cc: clang-18, cxx: clang++-18, run_tox_tests: false}
     env:
@@ -122,8 +126,9 @@ jobs:
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
 
-      - name: Delete artifact
+      - name: Delete artifact (ignore if not found)
         uses: geekyeggo/delete-artifact@v2
+        continue-on-error: true  
         with:
           name: compiled-planner-${{ matrix.version.ubuntu }}
 
@@ -137,7 +142,6 @@ jobs:
           pip3 install tox
           sudo apt-get -y install zlib1g-dev libgmp3-dev gcc flex bison
 
-        # NOTE: VAL does not compile with clang-12.
       - name: Install VAL
         run: |
           git clone https://github.com/KCL-Planning/VAL.git
@@ -160,7 +164,7 @@ jobs:
       - name: Run driver, translator and search tests
         run: |
           cd misc/
-          tox -e driver,translator,search,parameters,autodoc
+          tox -e driver,translator,search,parameters,generate-docs
 
       - name: Run CPLEX tests
         if: ${{ env.CPLEX_URL != 0 }}

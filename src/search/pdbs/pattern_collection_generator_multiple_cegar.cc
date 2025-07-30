@@ -68,9 +68,7 @@ public:
     }
 
     virtual shared_ptr<PatternCollectionGeneratorMultipleCegar>
-    create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorMultipleCegar>(
             get_cegar_wildcard_arguments_from_options(opts),
             get_multiple_arguments_from_options(opts)

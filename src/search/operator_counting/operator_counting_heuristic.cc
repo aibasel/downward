@@ -3,6 +3,7 @@
 #include "constraint_generator.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/component_errors.h"
 #include "../utils/markup.h"
 #include "../utils/strings.h"
 
@@ -19,6 +20,7 @@ OperatorCountingHeuristic::OperatorCountingHeuristic(
     : Heuristic(transform, cache_estimates, description, verbosity),
       constraint_generators(constraint_generators),
       lp_solver(lpsolver) {
+    utils::verify_list_not_empty(constraint_generators, "constraint_generators");
     lp_solver.set_mip_gap(0);
     named_vector::NamedVector<lp::LPVariable> variables;
     double infinity = lp_solver.get_infinity();
@@ -116,11 +118,8 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<OperatorCountingHeuristic> create_component(
-        const plugins::Options &opts,
-        const utils::Context &context) const override {
-        plugins::verify_list_non_empty<shared_ptr<ConstraintGenerator>>(
-            context, opts, "constraint_generators");
+    virtual shared_ptr<OperatorCountingHeuristic>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<OperatorCountingHeuristic>(
             opts.get_list<shared_ptr<ConstraintGenerator>>(
                 "constraint_generators"),

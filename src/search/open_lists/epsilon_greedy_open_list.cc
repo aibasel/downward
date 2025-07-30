@@ -6,7 +6,6 @@
 #include "../plugins/plugin.h"
 #include "../utils/collections.h"
 #include "../utils/markup.h"
-#include "../utils/memory.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -149,13 +148,13 @@ EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
 
 unique_ptr<StateOpenList>
 EpsilonGreedyOpenListFactory::create_state_open_list() {
-    return utils::make_unique_ptr<EpsilonGreedyOpenList<StateOpenListEntry>>(
+    return make_unique<EpsilonGreedyOpenList<StateOpenListEntry>>(
         eval, epsilon, random_seed, pref_only);
 }
 
 unique_ptr<EdgeOpenList>
 EpsilonGreedyOpenListFactory::create_edge_open_list() {
-    return utils::make_unique_ptr<EpsilonGreedyOpenList<EdgeOpenListEntry>>(
+    return make_unique<EpsilonGreedyOpenList<EdgeOpenListEntry>>(
         eval, epsilon, random_seed, pref_only);
 }
 
@@ -189,9 +188,8 @@ public:
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<EpsilonGreedyOpenListFactory> create_component(
-        const plugins::Options &opts,
-        const utils::Context &) const override {
+    virtual shared_ptr<EpsilonGreedyOpenListFactory>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<EpsilonGreedyOpenListFactory>(
             opts.get<shared_ptr<Evaluator>>("eval"),
             opts.get<double>("epsilon"),

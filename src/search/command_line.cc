@@ -1,5 +1,6 @@
 #include "command_line.h"
 
+#include "git_revision.h"
 #include "plan_manager.h"
 #include "search_algorithm.h"
 
@@ -124,11 +125,9 @@ static shared_ptr<SearchAlgorithm> parse_cmd_line_aux(const vector<string> &args
             plugins::Registry registry = plugins::RawRegistry::instance()->construct_registry();
             unique_ptr<plugins::DocPrinter> doc_printer;
             if (txt2tags)
-                doc_printer = utils::make_unique_ptr<plugins::Txt2TagsPrinter>(
-                    cout, registry);
+                doc_printer = make_unique<plugins::Txt2TagsPrinter>(cout, registry);
             else
-                doc_printer = utils::make_unique_ptr<plugins::PlainPrinter>(
-                    cout, registry);
+                doc_printer = make_unique<plugins::PlainPrinter>(cout, registry);
             if (plugin_names.empty()) {
                 doc_printer->print_all();
             } else {
@@ -186,18 +185,23 @@ shared_ptr<SearchAlgorithm> parse_cmd_line(
     return parse_cmd_line_aux(args);
 }
 
+string get_revision_info() {
+    return string("Search code revision: ") + g_git_revision;
+}
 
-string usage(const string &progname) {
+string get_usage(const string &progname) {
     return "usage: \n" +
            progname + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
            "* SEARCH (SearchAlgorithm): configuration of the search algorithm\n"
            "* OUTPUT (filename): translator output\n\n"
            "Options:\n"
            "--help [NAME]\n"
-           "    Prints help for all heuristics, open lists, etc. called NAME.\n"
-           "    Without parameter: prints help for everything available\n"
+           "    Print help for all heuristics, open lists, etc. called NAME.\n"
+           "    Without parameter: print help for everything available\n"
+           "--internal-git-revision\n"
+           "    Print the revision of the code used to build this binary.\n"
            "--internal-plan-file FILENAME\n"
-           "    Plan will be output to a file called FILENAME\n\n"
+           "    Output the plan to a file called FILENAME\n\n"
            "--internal-previous-portfolio-plans COUNTER\n"
            "    This planner call is part of a portfolio which already created\n"
            "    plan files FILENAME.1 up to FILENAME.COUNTER.\n"

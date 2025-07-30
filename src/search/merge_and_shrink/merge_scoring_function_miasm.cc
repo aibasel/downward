@@ -51,7 +51,7 @@ vector<double> MergeScoringFunctionMIASM::compute_scores(
                 silent_log);
 
             // Compute distances for the product and count the alive states.
-            unique_ptr<Distances> distances = utils::make_unique_ptr<Distances>(*product);
+            unique_ptr<Distances> distances = make_unique<Distances>(*product);
             const bool compute_init_distances = true;
             const bool compute_goal_distances = true;
             distances->compute_distances(compute_init_distances, compute_goal_distances, silent_log);
@@ -169,16 +169,13 @@ public:
             "true");
     }
 
-    virtual shared_ptr<MergeScoringFunctionMIASM> create_component(
-        const plugins::Options &opts,
-        const utils::Context &context) const override {
-        plugins::Options options_copy(opts);
-        handle_shrink_limit_options_defaults(options_copy, context);
+    virtual shared_ptr<MergeScoringFunctionMIASM>
+    create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<MergeScoringFunctionMIASM>(
-            options_copy.get<shared_ptr<ShrinkStrategy>>("shrink_strategy"),
+            opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy"),
             get_transition_system_size_limit_arguments_from_options(
-                options_copy),
-            options_copy.get<bool>("use_caching")
+                opts),
+            opts.get<bool>("use_caching")
             );
     }
 };
