@@ -314,7 +314,7 @@ class LandmarkFactoryZhuGivanFeature
     : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryZhuGivan> {
 public:
     LandmarkFactoryZhuGivanFeature() : TypedFeature("lm_zg") {
-        document_title("Zhu/Givan Landmarks");
+        document_title("Zhu/Givan landmarks");
         document_synopsis(
             "The landmark generation method introduced by "
             "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");

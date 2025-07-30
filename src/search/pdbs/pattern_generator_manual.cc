@@ -35,6 +35,7 @@ class PatternGeneratorManualFeature
     : public plugins::TypedFeature<PatternGenerator, PatternGeneratorManual> {
 public:
     PatternGeneratorManualFeature() : TypedFeature("manual_pattern") {
+        document_title("Manual pattern");
         add_list_option<int>(
             "pattern",
             "list of variable numbers of the planning task that should be used as "

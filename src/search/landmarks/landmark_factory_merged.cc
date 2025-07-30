@@ -175,7 +175,7 @@ class LandmarkFactoryMergedFeature
     : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryMerged> {
 public:
     LandmarkFactoryMergedFeature() : TypedFeature("lm_merged") {
-        document_title("Merged Landmarks");
+        document_title("Merged landmarks");
         document_synopsis(
             "Merges the landmarks and orderings from the parameter landmarks");
 

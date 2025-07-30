@@ -55,7 +55,7 @@ tuple<utils::Verbosity> get_generator_arguments_from_options(
 static class PatternCollectionGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<PatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorCategoryPlugin() : TypedCategoryPlugin("PatternCollectionGenerator") {
-        document_synopsis("Factory for pattern collections");
+        document_synopsis("This page describes generators for collections of patterns.");
     }
 }
 _category_plugin_collection;
@@ -63,7 +63,7 @@ _category_plugin_collection;
 static class PatternGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<PatternGenerator> {
 public:
     PatternGeneratorCategoryPlugin() : TypedCategoryPlugin("PatternGenerator") {
-        document_synopsis("Factory for single patterns");
+        document_synopsis("This page describes generators for single patterns.");
     }
 }
 _category_plugin_single;

@@ -35,6 +35,7 @@ class PatternCollectionGeneratorManualFeature
     : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorManual> {
 public:
     PatternCollectionGeneratorManualFeature() : TypedFeature("manual_patterns") {
+        document_title("Manual patterns");
         add_list_option<Pattern>(
             "patterns",
             "list of patterns (which are lists of variable numbers of the planning "
