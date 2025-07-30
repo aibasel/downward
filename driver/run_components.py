@@ -72,18 +72,17 @@ def run_translate(args):
         args.translate_memory_limit, args.overall_memory_limit)
 
     # Check existence of translate in build.
-    get_executable(args.build, REL_TRANSLATE_PATH)
+    translate = get_executable(args.build, REL_TRANSLATE_PATH)
 
     assert sys.executable, "Path to interpreter could not be found"
     cmd = [sys.executable] + ["-m", "translate"] + args.translate_inputs + args.translate_options
-    path = str(util.BUILDS_DIR / args.build / "bin")
 
     stderr, returncode = call.get_error_output_and_returncode(
         "translator",
         cmd,
         time_limit=time_limit,
         memory_limit=memory_limit,
-        prepend_python_path=path)
+        prepend_to_python_path=translate.parent)
 
     # We collect stderr of the translator and print it here, unless
     # the translator ran out of memory and all output in stderr is

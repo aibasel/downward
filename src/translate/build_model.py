@@ -1,12 +1,12 @@
 #! /usr/bin/env python3
 
 
-import sys
 import itertools
+from functools import reduce
+import sys
 
 from translate import pddl
 from translate import timers
-from functools import reduce
 
 def convert_rules(prog):
     RULE_TYPES = {
