@@ -23,12 +23,12 @@ static bool is_whitespace(const string &s) {
 }
 
 
-TaskParserError::TaskParserError(const std::string &msg)
+TaskParserError::TaskParserError(const string &msg)
     : Exception(msg) {
 }
 
 
-void TaskParserError::add_context(const std::string &line) {
+void TaskParserError::add_context(const string &line) {
     context.push_back(line);
 }
 
@@ -99,7 +99,7 @@ bool TaskLexer::is_in_line_reading_mode() const {
     return !tokens.empty();
 }
 
-void TaskLexer::error(const std::string &message) const {
+void TaskLexer::error(const string &message) const {
     throw TaskParserError(message);
 }
 
