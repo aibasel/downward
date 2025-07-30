@@ -1,9 +1,31 @@
 import argparse
+import os
 import sys
 
 
+# The following code is used to show the usage instructions from argparse as
+# "usage: python3 -m translate" (or analogously for other python executables)
+# instead of "usage: __main__.py" if the package is called as a package.
+# This is the default behaviour of argparse.ArgumentParser since Python 3.12,
+# so we can remove this code once that is the oldest supported python version.
+def infer_prog():
+    main_mod = sys.modules['__main__']
+    spec = getattr(main_mod, '__spec__', None)
+
+    if spec is not None:
+        # Invoked via `python -m ...`
+        module_name = spec.name
+        if module_name.endswith('.__main__'):
+            module_name = module_name.rsplit('.', 1)[0]
+        python_exec = os.path.basename(sys.executable)
+        return f"{python_exec} -m {module_name}"
+    else:
+        # Invoked as script directly.
+        return os.path.basename(sys.argv[0])
+
+
 def parse_args():
-    argparser = argparse.ArgumentParser()
+    argparser = argparse.ArgumentParser(prog=infer_prog())
     argparser.add_argument(
         "domain", help="path to domain pddl file")
     argparser.add_argument(
