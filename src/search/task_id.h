@@ -16,14 +16,21 @@ class TaskID {
     const std::uintptr_t value;
 public:
     explicit TaskID(const AbstractTask *task)
-        : value(reinterpret_cast<uintptr_t>(task)) {}
+        : value(reinterpret_cast<uintptr_t>(task)) {
+    }
     TaskID() = delete;
 
-    bool operator==(const TaskID &other) const { return value == other.value; }
+    bool operator==(const TaskID &other) const {
+        return value == other.value;
+    }
 
-    bool operator!=(const TaskID &other) const { return !(*this == other); }
+    bool operator!=(const TaskID &other) const {
+        return !(*this == other);
+    }
 
-    std::uint64_t hash() const { return value; }
+    std::uint64_t hash() const {
+        return value;
+    }
 };
 
 namespace utils {

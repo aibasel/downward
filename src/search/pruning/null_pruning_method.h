@@ -5,11 +5,13 @@
 
 namespace null_pruning_method {
 class NullPruningMethod : public PruningMethod {
-    virtual void prune(const State &, std::vector<OperatorID> &) override {}
+    virtual void prune(const State &, std::vector<OperatorID> &) override {
+    }
 public:
     explicit NullPruningMethod(utils::Verbosity verbosity);
     virtual void initialize(const std::shared_ptr<AbstractTask> &) override;
-    virtual void print_statistics() const override {}
+    virtual void print_statistics() const override {
+    }
 };
 }
 

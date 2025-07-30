@@ -24,24 +24,31 @@ using Value = int;
 class ArrayPoolIndex {
     friend class ArrayPool;
     int position;
-    ArrayPoolIndex(int position) : position(position) {}
+    ArrayPoolIndex(int position) : position(position) {
+    }
 public:
-    ArrayPoolIndex() : position(INVALID_INDEX) {}
+    ArrayPoolIndex() : position(INVALID_INDEX) {
+    }
 };
 
 class ArrayPoolSlice {
 public:
     using Iterator = std::vector<Value>::const_iterator;
-    Iterator begin() { return first; }
+    Iterator begin() {
+        return first;
+    }
 
-    Iterator end() { return last; }
+    Iterator end() {
+        return last;
+    }
 private:
     friend class ArrayPool;
 
     Iterator first;
     Iterator last;
 
-    ArrayPoolSlice(Iterator first, Iterator last) : first(first), last(last) {}
+    ArrayPoolSlice(Iterator first, Iterator last) : first(first), last(last) {
+    }
 };
 
 class ArrayPool {

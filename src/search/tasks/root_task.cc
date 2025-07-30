@@ -502,7 +502,8 @@ void read_root_task(istream &in) {
 class RootTaskFeature
     : public plugins::TypedFeature<AbstractTask, AbstractTask> {
 public:
-    RootTaskFeature() : TypedFeature("no_transform") {}
+    RootTaskFeature() : TypedFeature("no_transform") {
+    }
 
     virtual shared_ptr<AbstractTask> create_component(
         const plugins::Options &) const override {

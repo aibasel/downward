@@ -24,15 +24,25 @@ public:
         elements.emplace_back(std::forward<_Args>(__args)...);
     }
 
-    void push_back(const T &element) { elements.push_back(element); }
+    void push_back(const T &element) {
+        elements.push_back(element);
+    }
 
-    void push_back(T &&element) { elements.push_back(std::move(element)); }
+    void push_back(T &&element) {
+        elements.push_back(std::move(element));
+    }
 
-    T &operator[](int index) { return elements[index]; }
+    T &operator[](int index) {
+        return elements[index];
+    }
 
-    const T &operator[](int index) const { return elements[index]; }
+    const T &operator[](int index) const {
+        return elements[index];
+    }
 
-    bool has_names() const { return !names.empty(); }
+    bool has_names() const {
+        return !names.empty();
+    }
 
     void set_name(int index, const std::string &name) {
         assert(index >= 0 && index < size());
@@ -62,13 +72,21 @@ public:
         }
     }
 
-    int size() const { return elements.size(); }
+    int size() const {
+        return elements.size();
+    }
 
-    typename std::vector<T>::reference back() { return elements.back(); }
+    typename std::vector<T>::reference back() {
+        return elements.back();
+    }
 
-    typename std::vector<T>::iterator begin() { return elements.begin(); }
+    typename std::vector<T>::iterator begin() {
+        return elements.begin();
+    }
 
-    typename std::vector<T>::iterator end() { return elements.end(); }
+    typename std::vector<T>::iterator end() {
+        return elements.end();
+    }
 
     typename std::vector<T>::const_iterator begin() const {
         return elements.begin();

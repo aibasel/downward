@@ -47,9 +47,13 @@ public:
     virtual void initialize(const TaskProxy &task_proxy) override;
     static void add_options_to_feature(plugins::Feature &feature);
 
-    virtual bool requires_init_distances() const override { return false; }
+    virtual bool requires_init_distances() const override {
+        return false;
+    }
 
-    virtual bool requires_goal_distances() const override { return false; }
+    virtual bool requires_goal_distances() const override {
+        return false;
+    }
 };
 }
 

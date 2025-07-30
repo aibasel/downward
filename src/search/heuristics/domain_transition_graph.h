@@ -84,17 +84,16 @@ struct ValueTransitionLabel {
     ValueTransitionLabel(
         int op_id, bool axiom, const std::vector<LocalAssignment> &precond,
         const std::vector<LocalAssignment> &effect)
-        : op_id(op_id),
-          is_axiom(axiom),
-          precond(precond),
-          effect(effect) {}
+        : op_id(op_id), is_axiom(axiom), precond(precond), effect(effect) {
+    }
 };
 
 struct ValueTransition {
     ValueNode *target;
     std::vector<ValueTransitionLabel> labels;
 
-    ValueTransition(ValueNode *targ) : target(targ) {}
+    ValueTransition(ValueNode *targ) : target(targ) {
+    }
 
     void simplify(const TaskProxy &task_proxy);
 };
@@ -114,7 +113,8 @@ struct ValueNode {
         : parent_graph(parent),
           value(val),
           reached_from(nullptr),
-          reached_by(nullptr) {}
+          reached_by(nullptr) {
+    }
 };
 
 class DomainTransitionGraph {

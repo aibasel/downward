@@ -9,8 +9,11 @@ namespace utils {
 class Duration {
     double seconds;
 public:
-    explicit Duration(double seconds) : seconds(seconds) {}
-    operator double() const { return seconds; }
+    explicit Duration(double seconds) : seconds(seconds) {
+    }
+    operator double() const {
+        return seconds;
+    }
 };
 
 std::ostream &operator<<(std::ostream &os, const Duration &time);

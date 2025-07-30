@@ -53,9 +53,12 @@ enum class ExitCode {
 class ExitException : public std::exception {
     ExitCode exitcode;
 public:
-    explicit ExitException(ExitCode exitcode) : exitcode(exitcode) {}
+    explicit ExitException(ExitCode exitcode) : exitcode(exitcode) {
+    }
 
-    ExitCode get_exitcode() const { return exitcode; }
+    ExitCode get_exitcode() const {
+        return exitcode;
+    }
 };
 
 NO_RETURN extern void exit_with(ExitCode returncode);

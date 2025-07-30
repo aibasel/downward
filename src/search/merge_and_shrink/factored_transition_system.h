@@ -33,7 +33,9 @@ public:
     FTSConstIterator(const FactoredTransitionSystem &fts, bool end);
     void operator++();
 
-    int operator*() const { return current_index; }
+    int operator*() const {
+        return current_index;
+    }
 
     bool operator==(const FTSConstIterator &rhs) const {
         return current_index == rhs.current_index;
@@ -177,17 +179,27 @@ public:
     */
     bool is_factor_trivial(int index) const;
 
-    int get_num_active_entries() const { return num_active_entries; }
+    int get_num_active_entries() const {
+        return num_active_entries;
+    }
 
     // Used by LabelReduction and MergeScoringFunctionDFP
-    const Labels &get_labels() const { return *labels; }
+    const Labels &get_labels() const {
+        return *labels;
+    }
 
     // The following methods are used for iterating over the FTS
-    FTSConstIterator begin() const { return FTSConstIterator(*this, false); }
+    FTSConstIterator begin() const {
+        return FTSConstIterator(*this, false);
+    }
 
-    FTSConstIterator end() const { return FTSConstIterator(*this, true); }
+    FTSConstIterator end() const {
+        return FTSConstIterator(*this, true);
+    }
 
-    int get_size() const { return transition_systems.size(); }
+    int get_size() const {
+        return transition_systems.size();
+    }
 
     bool is_active(int index) const;
 };

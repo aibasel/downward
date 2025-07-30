@@ -41,9 +41,13 @@ public:
     explicit Distances(const TransitionSystem &transition_system);
     ~Distances() = default;
 
-    bool are_init_distances_computed() const { return init_distances_computed; }
+    bool are_init_distances_computed() const {
+        return init_distances_computed;
+    }
 
-    bool are_goal_distances_computed() const { return goal_distances_computed; }
+    bool are_goal_distances_computed() const {
+        return goal_distances_computed;
+    }
 
     void compute_distances(
         bool compute_init_distances, bool compute_goal_distances,

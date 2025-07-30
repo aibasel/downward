@@ -27,7 +27,9 @@ public:
         std::vector<int>::const_iterator it);
     LabelsConstIterator &operator++();
 
-    int operator*() const { return static_cast<int>(current_pos); }
+    int operator*() const {
+        return static_cast<int>(current_pos);
+    }
 
     bool operator==(const LabelsConstIterator &rhs) const {
         return it == rhs.it;
@@ -57,11 +59,17 @@ public:
     void dump_labels() const;
 
     // The summed number of both inactive and active labels.
-    int get_num_total_labels() const { return label_costs.size(); }
+    int get_num_total_labels() const {
+        return label_costs.size();
+    }
 
-    int get_max_num_labels() const { return max_num_labels; }
+    int get_max_num_labels() const {
+        return max_num_labels;
+    }
 
-    int get_num_active_labels() const { return num_active_labels; }
+    int get_num_active_labels() const {
+        return num_active_labels;
+    }
 
     LabelsConstIterator begin() const {
         return LabelsConstIterator(label_costs, label_costs.begin());

@@ -111,7 +111,8 @@ public:
         const vector<PatternClique> &pattern_cliques, int num_variables)
         : patterns(patterns),
           pattern_cliques(pattern_cliques),
-          num_variables(num_variables) {}
+          num_variables(num_variables) {
+    }
 
     vector<bool> get_pruned_cliques(
         const utils::CountdownTimer &timer, utils::LogProxy &log) {

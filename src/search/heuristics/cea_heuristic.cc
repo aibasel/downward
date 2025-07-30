@@ -69,7 +69,8 @@ struct LocalTransition {
         // expand_transition.
     }
 
-    ~LocalTransition() {}
+    ~LocalTransition() {
+    }
 };
 
 struct LocalProblemNode {
@@ -98,9 +99,11 @@ struct LocalProblemNode {
           cost(-1),
           expanded(false),
           context(context_size, -1),
-          reached_by(nullptr) {}
+          reached_by(nullptr) {
+    }
 
-    ~LocalProblemNode() {}
+    ~LocalProblemNode() {
+    }
 };
 
 struct LocalProblem {
@@ -108,9 +111,11 @@ struct LocalProblem {
     vector<LocalProblemNode> nodes;
     vector<int> *context_variables;
 public:
-    LocalProblem() : base_priority(-1) {}
+    LocalProblem() : base_priority(-1) {
+    }
 
-    ~LocalProblem() {}
+    ~LocalProblem() {
+    }
 };
 
 LocalProblem *ContextEnhancedAdditiveHeuristic::get_local_problem(

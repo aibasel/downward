@@ -25,11 +25,17 @@ public:
     */
     int unrank(int index, int var) const;
 
-    const Pattern &get_pattern() const { return pattern; }
+    const Pattern &get_pattern() const {
+        return pattern;
+    }
 
-    int get_num_abstract_states() const { return num_abstract_states; }
+    int get_num_abstract_states() const {
+        return num_abstract_states;
+    }
 
-    int get_multiplier(int var) const { return hash_multipliers[var]; }
+    int get_multiplier(int var) const {
+        return hash_multipliers[var];
+    }
 };
 
 class PatternDatabase {
@@ -44,10 +50,14 @@ public:
     PatternDatabase(Projection &&projection, std::vector<int> &&distances);
     int get_value(const std::vector<int> &state) const;
 
-    const Pattern &get_pattern() const { return projection.get_pattern(); }
+    const Pattern &get_pattern() const {
+        return projection.get_pattern();
+    }
 
     // The size of the PDB is the number of abstract states.
-    int get_size() const { return projection.get_num_abstract_states(); }
+    int get_size() const {
+        return projection.get_num_abstract_states();
+    }
 
     /*
       Return the average h-value over all states, where dead-ends are

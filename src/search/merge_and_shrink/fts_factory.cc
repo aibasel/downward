@@ -42,7 +42,8 @@ class FTSFactory {
               relevant_labels(move(other.relevant_labels)),
               num_states(other.num_states),
               goal_states(move(other.goal_states)),
-              init_state(other.init_state) {}
+              init_state(other.init_state) {
+        }
         TransitionSystemData() = default;
         TransitionSystemData(TransitionSystemData &other) = delete;
         TransitionSystemData &operator=(TransitionSystemData &other) = delete;

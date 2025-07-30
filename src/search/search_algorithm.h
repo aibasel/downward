@@ -59,7 +59,8 @@ protected:
     bool is_unit_cost;
     double max_time;
 
-    virtual void initialize() {}
+    virtual void initialize() {
+    }
     virtual SearchStatus step() = 0;
 
     void set_plan(const Plan &plan);
@@ -80,11 +81,21 @@ public:
     SearchStatus get_status() const;
     const Plan &get_plan() const;
     void search();
-    const SearchStatistics &get_statistics() const { return statistics; }
-    void set_bound(int b) { bound = b; }
-    int get_bound() { return bound; }
-    PlanManager &get_plan_manager() { return plan_manager; }
-    std::string get_description() { return description; }
+    const SearchStatistics &get_statistics() const {
+        return statistics;
+    }
+    void set_bound(int b) {
+        bound = b;
+    }
+    int get_bound() {
+        return bound;
+    }
+    PlanManager &get_plan_manager() {
+        return plan_manager;
+    }
+    std::string get_description() {
+        return description;
+    }
 };
 
 /*

@@ -37,9 +37,13 @@ public:
         const TransitionSystem &ts, const Distances &distances, int target_size,
         utils::LogProxy &log) const override;
 
-    virtual bool requires_init_distances() const override { return false; }
+    virtual bool requires_init_distances() const override {
+        return false;
+    }
 
-    virtual bool requires_goal_distances() const override { return true; }
+    virtual bool requires_goal_distances() const override {
+        return true;
+    }
 };
 }
 

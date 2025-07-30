@@ -54,7 +54,8 @@ public:
         // Default constructor needed for resize() in pack_bins.
     }
 
-    ~VariableInfo() {}
+    ~VariableInfo() {
+    }
 
     int get(const Bin *buffer) const {
         return (buffer[bin_index] & read_mask) >> shift;

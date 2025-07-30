@@ -37,7 +37,9 @@ public:
 
     void set_pdb(const std::shared_ptr<PatternDatabase> &pdb);
 
-    TaskProxy get_task_proxy() const { return task_proxy; }
+    TaskProxy get_task_proxy() const {
+        return task_proxy;
+    }
 
     const Pattern &get_pattern() const;
     std::shared_ptr<PatternDatabase> get_pdb();

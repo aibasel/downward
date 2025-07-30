@@ -95,7 +95,8 @@ public:
     MaxCliqueComputer(
         const vector<vector<int>> &graph_, vector<vector<int>> &max_cliques_)
         : graph(graph_),
-          max_cliques(max_cliques_) {}
+          max_cliques(max_cliques_) {
+    }
 
     void compute() {
         vector<int> vertices_1;

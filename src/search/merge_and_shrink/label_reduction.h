@@ -82,8 +82,12 @@ public:
         const std::pair<int, int> &next_merge, FactoredTransitionSystem &fts,
         utils::LogProxy &log) const;
     void dump_options(utils::LogProxy &log) const;
-    bool reduce_before_shrinking() const { return lr_before_shrinking; }
-    bool reduce_before_merging() const { return lr_before_merging; }
+    bool reduce_before_shrinking() const {
+        return lr_before_shrinking;
+    }
+    bool reduce_before_merging() const {
+        return lr_before_merging;
+    }
 };
 }
 
