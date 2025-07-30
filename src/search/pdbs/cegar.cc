@@ -387,7 +387,7 @@ bool CEGAR::get_flaws_for_pattern(
             bool raise_goal_flaw = false;
             for (const FactPair &goal : goals) {
                 int goal_var_id = goal.var;
-                if (final_state[goal_var_id].get_value() != goal.value &&
+                if (final_state[goal_var_id] != goal.value &&
                     !blacklisted_variables.count(goal_var_id)) {
                     flaws.emplace_back(collection_index, goal_var_id);
                     raise_goal_flaw = true;
