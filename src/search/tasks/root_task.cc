@@ -113,17 +113,17 @@ class TaskParser {
     utils::TaskLexer lexer;
 
     template<typename Func, typename FuncOrStr>
-    auto with_error_context(FuncOrStr &&message, Func &&func) -> std::invoke_result_t<Func> {
+    auto with_error_context(FuncOrStr &&message, Func &&func) -> invoke_result_t<Func> {
         int line = this->get_line_number();
         try {
-            using ResultType = std::invoke_result_t<Func>;
-            if constexpr (std::is_void_v<ResultType>) {
-                std::forward<Func>(func)();
+            using ResultType = invoke_result_t<Func>;
+            if constexpr (is_void_v<ResultType>) {
+                forward<Func>(func)();
             } else {
-                return std::forward<Func>(func)();
+                return forward<Func>(func)();
             }
         } catch (utils::TaskParserError &error) {
-            if constexpr (std::is_convertible_v<FuncOrStr, std::string>) {
+            if constexpr (is_convertible_v<FuncOrStr, string>) {
                 this->add_error_line(error, line, message);
             } else {
                 this->add_error_line(error, line, message());
@@ -132,7 +132,7 @@ class TaskParser {
         }
     }
 
-    void error(const std::string &message) {
+    void error(const string &message) {
         throw utils::TaskParserError(message);
     }
 
