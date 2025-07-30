@@ -33,8 +33,7 @@ MergeTreeNode::MergeTreeNode(int ts_index)
 }
 
 MergeTreeNode::MergeTreeNode(
-    MergeTreeNode *left_child,
-    MergeTreeNode *right_child)
+    MergeTreeNode *left_child, MergeTreeNode *right_child)
     : parent(nullptr),
       left_child(left_child),
       right_child(right_child),
@@ -84,7 +83,8 @@ MergeTreeNode *MergeTreeNode::get_parent_of_ts_index(int index) {
         return this;
     }
 
-    if (right_child && right_child->is_leaf() && right_child->ts_index == index) {
+    if (right_child && right_child->is_leaf() &&
+        right_child->ts_index == index) {
         return this;
     }
 
@@ -108,10 +108,12 @@ int MergeTreeNode::compute_num_internal_nodes() const {
     } else {
         int number_of_internal_nodes = 1; // count the node itself
         if (left_child) {
-            number_of_internal_nodes += left_child->compute_num_internal_nodes();
+            number_of_internal_nodes +=
+                left_child->compute_num_internal_nodes();
         }
         if (right_child) {
-            number_of_internal_nodes += right_child->compute_num_internal_nodes();
+            number_of_internal_nodes +=
+                right_child->compute_num_internal_nodes();
         }
         return number_of_internal_nodes;
     }
@@ -132,8 +134,7 @@ void MergeTreeNode::inorder(
 }
 
 MergeTree::MergeTree(
-    MergeTreeNode *root,
-    const shared_ptr<utils::RandomNumberGenerator> &rng,
+    MergeTreeNode *root, const shared_ptr<utils::RandomNumberGenerator> &rng,
     UpdateOption update_option)
     : root(root), rng(rng), update_option(update_option) {
 }
@@ -159,7 +160,8 @@ pair<MergeTreeNode *, MergeTreeNode *> MergeTree::get_parents_of_ts_indices(
     int found_indices = 0;
     while (!copy->is_leaf()) {
         MergeTreeNode *next_merge = copy->get_left_most_sibling();
-        pair<int, int> merge = next_merge->erase_children_and_set_index(new_index);
+        pair<int, int> merge =
+            next_merge->erase_children_and_set_index(new_index);
         if (merge.first == ts_index1 || merge.second == ts_index1) {
             ++found_indices;
         }
@@ -221,8 +223,9 @@ void MergeTree::update(pair<int, int> merge, int new_index) {
             surviving_node->left_child->ts_index == ts_index2) {
             surviving_leaf = surviving_node->left_child;
         } else {
-            assert(surviving_node->right_child->ts_index == ts_index1 ||
-                   surviving_node->right_child->ts_index == ts_index2);
+            assert(
+                surviving_node->right_child->ts_index == ts_index1 ||
+                surviving_node->right_child->ts_index == ts_index2);
             surviving_leaf = surviving_node->right_child;
         }
         surviving_leaf->ts_index = new_index;
@@ -253,8 +256,9 @@ void MergeTree::update(pair<int, int> merge, int new_index) {
 
             removed_node->right_child = nullptr;
         } else {
-            assert(removed_node->right_child->ts_index == ts_index1 ||
-                   removed_node->right_child->ts_index == ts_index2);
+            assert(
+                removed_node->right_child->ts_index == ts_index1 ||
+                removed_node->right_child->ts_index == ts_index2);
             surviving_child_of_removed_node = removed_node->left_child;
             removed_node->left_child = nullptr;
         }
@@ -264,7 +268,7 @@ void MergeTree::update(pair<int, int> merge, int new_index) {
         }
 
         // Finally delete removed_node (this also deletes its child
-        //corresponding to one of the merged indices, but not the other one).
+        // corresponding to one of the merged indices, but not the other one).
         delete removed_node;
         removed_node = nullptr;
 
@@ -275,10 +279,12 @@ void MergeTree::update(pair<int, int> merge, int new_index) {
             // parent_of_removed_node can be nullptr if removed_node
             // was the root node
             if (!parent_of_removed_node->left_child) {
-                parent_of_removed_node->left_child = surviving_child_of_removed_node;
+                parent_of_removed_node->left_child =
+                    surviving_child_of_removed_node;
             } else {
                 assert(!parent_of_removed_node->right_child);
-                parent_of_removed_node->right_child = surviving_child_of_removed_node;
+                parent_of_removed_node->right_child =
+                    surviving_child_of_removed_node;
             }
         }
     }
@@ -286,8 +292,7 @@ void MergeTree::update(pair<int, int> merge, int new_index) {
 
 void MergeTree::inorder_traversal(
     int indentation_offset, utils::LogProxy &log) const {
-    log << "Merge tree, read from left to right (90° rotated tree): "
-        << endl;
+    log << "Merge tree, read from left to right (90° rotated tree): " << endl;
     return root->inorder(indentation_offset, 0, log);
 }
 }

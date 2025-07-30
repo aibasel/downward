@@ -61,16 +61,17 @@ class LandmarkFactoryZhuGivan : public LandmarkFactoryRelaxation {
     PropositionLayer build_relaxed_plan_graph_with_labels(
         const TaskProxy &task_proxy) const;
 
-    bool goal_is_reachable(const TaskProxy &task_proxy,
-                           const PropositionLayer &prop_layer) const;
+    bool goal_is_reachable(
+        const TaskProxy &task_proxy, const PropositionLayer &prop_layer) const;
     LandmarkNode *create_goal_landmark(const FactPair &goal) const;
     void extract_landmarks_and_orderings_from_goal_labels(
         const FactPair &goal, const PropositionLayer &prop_layer,
         LandmarkNode *goal_landmark_node) const;
     /* Construct a landmark graph using the landmarks on the given
        proposition layer. */
-    void extract_landmarks(const TaskProxy &task_proxy,
-                           const PropositionLayer &last_prop_layer) const;
+    void extract_landmarks(
+        const TaskProxy &task_proxy,
+        const PropositionLayer &last_prop_layer) const;
 
     // Link an operators to its propositions in the trigger list.
     void add_operator_to_triggers(const OperatorProxy &op);
@@ -80,8 +81,7 @@ class LandmarkFactoryZhuGivan : public LandmarkFactoryRelaxation {
         Exploration &exploration) override;
 
 public:
-    LandmarkFactoryZhuGivan(
-        bool use_orders, utils::Verbosity verbosity);
+    LandmarkFactoryZhuGivan(bool use_orders, utils::Verbosity verbosity);
 
     virtual bool supports_conditional_effects() const override;
 };

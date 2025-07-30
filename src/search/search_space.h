@@ -19,9 +19,9 @@ class SearchNode {
     State state;
     SearchNodeInfo &info;
 
-    void update_parent(const SearchNode &parent_node,
-                       const OperatorProxy &parent_op,
-                       int adjusted_cost);
+    void update_parent(
+        const SearchNode &parent_node, const OperatorProxy &parent_op,
+        int adjusted_cost);
 public:
     SearchNode(const State &state, SearchNodeInfo &info);
 
@@ -36,24 +36,23 @@ public:
     int get_real_g() const;
 
     void open_initial();
-    void open_new_node(const SearchNode &parent_node,
-                       const OperatorProxy &parent_op,
-                       int adjusted_cost);
-    void reopen_closed_node(const SearchNode &parent_node,
-                            const OperatorProxy &parent_op,
-                            int adjusted_cost);
-    void update_open_node_parent(const SearchNode &parent_node,
-                                 const OperatorProxy &parent_op,
-                                 int adjusted_cost);
-    void update_closed_node_parent(const SearchNode &parent_node,
-                                   const OperatorProxy &parent_op,
-                                   int adjusted_cost);
+    void open_new_node(
+        const SearchNode &parent_node, const OperatorProxy &parent_op,
+        int adjusted_cost);
+    void reopen_closed_node(
+        const SearchNode &parent_node, const OperatorProxy &parent_op,
+        int adjusted_cost);
+    void update_open_node_parent(
+        const SearchNode &parent_node, const OperatorProxy &parent_op,
+        int adjusted_cost);
+    void update_closed_node_parent(
+        const SearchNode &parent_node, const OperatorProxy &parent_op,
+        int adjusted_cost);
     void close();
     void mark_as_dead_end();
 
     void dump(const TaskProxy &task_proxy, utils::LogProxy &log) const;
 };
-
 
 class SearchSpace {
     PerStateInformation<SearchNodeInfo> search_node_infos;
@@ -64,8 +63,8 @@ public:
     SearchSpace(StateRegistry &state_registry, utils::LogProxy &log);
 
     SearchNode get_node(const State &state);
-    void trace_path(const State &goal_state,
-                    std::vector<OperatorID> &path) const;
+    void trace_path(
+        const State &goal_state, std::vector<OperatorID> &path) const;
 
     void dump(const TaskProxy &task_proxy) const;
     void print_statistics() const;

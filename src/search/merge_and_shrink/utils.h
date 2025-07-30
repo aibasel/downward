@@ -29,9 +29,7 @@ class TransitionSystem;
   are preferred over less balanced ones.
 */
 extern std::pair<int, int> compute_shrink_sizes(
-    int size1,
-    int size2,
-    int max_states_before_merge,
+    int size1, int size2, int max_states_before_merge,
     int max_states_after_merge);
 
 /*
@@ -47,14 +45,9 @@ extern std::pair<int, int> compute_shrink_sizes(
   factors was shrunk.
 */
 extern bool shrink_before_merge_step(
-    FactoredTransitionSystem &fts,
-    int index1,
-    int index2,
-    int max_states,
-    int max_states_before_merge,
-    int shrink_threshold_before_merge,
-    const ShrinkStrategy &shrink_strategy,
-    utils::LogProxy &log);
+    FactoredTransitionSystem &fts, int index1, int index2, int max_states,
+    int max_states_before_merge, int shrink_threshold_before_merge,
+    const ShrinkStrategy &shrink_strategy, utils::LogProxy &log);
 
 /*
   Prune unreachable and/or irrelevant states of the factor at index. This
@@ -64,19 +57,15 @@ extern bool shrink_before_merge_step(
   TODO: maybe this functionality belongs to a new class PruneStrategy.
 */
 extern bool prune_step(
-    FactoredTransitionSystem &fts,
-    int index,
-    bool prune_unreachable_states,
-    bool prune_irrelevant_states,
-    utils::LogProxy &log);
+    FactoredTransitionSystem &fts, int index, bool prune_unreachable_states,
+    bool prune_irrelevant_states, utils::LogProxy &log);
 
 /*
   Compute the abstraction mapping based on the given state equivalence
   relation.
 */
 extern std::vector<int> compute_abstraction_mapping(
-    int num_states,
-    const StateEquivalenceRelation &equivalence_relation);
+    int num_states, const StateEquivalenceRelation &equivalence_relation);
 
 extern bool is_goal_relevant(const TransitionSystem &ts);
 }

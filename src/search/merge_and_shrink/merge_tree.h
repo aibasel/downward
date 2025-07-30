@@ -35,15 +35,16 @@ struct MergeTreeNode {
     // Find the parent node for the given index.
     MergeTreeNode *get_parent_of_ts_index(int index);
     int compute_num_internal_nodes() const;
-    void inorder(int offset, int current_indentation, utils::LogProxy &log) const;
+    void inorder(
+        int offset, int current_indentation, utils::LogProxy &log) const;
 
     bool is_leaf() const {
         return !left_child && !right_child;
     }
 
     bool has_two_leaf_children() const {
-        return left_child && right_child &&
-               left_child->is_leaf() && right_child->is_leaf();
+        return left_child && right_child && left_child->is_leaf() &&
+               right_child->is_leaf();
     }
 };
 

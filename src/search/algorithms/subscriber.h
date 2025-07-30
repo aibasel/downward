@@ -34,7 +34,6 @@
   }
 */
 
-
 namespace subscriber {
 template<typename T>
 class SubscriberService;
@@ -55,7 +54,8 @@ public:
           We have to copy the services because unsubscribing erases the
           current service during the iteration.
         */
-        std::unordered_set<const SubscriberService<T> *> services_copy(services);
+        std::unordered_set<const SubscriberService<T> *> services_copy(
+            services);
         for (const SubscriberService<T> *service : services_copy) {
             service->unsubscribe(this);
         }

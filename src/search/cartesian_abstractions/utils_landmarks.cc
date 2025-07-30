@@ -1,9 +1,9 @@
 #include "utils_landmarks.h"
 
-#include "../plugins/plugin.h"
 #include "../landmarks/landmark.h"
 #include "../landmarks/landmark_factory_hm.h"
 #include "../landmarks/landmark_graph.h"
+#include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
 #include <algorithm>
@@ -15,7 +15,8 @@ using namespace landmarks;
 
 namespace cartesian_abstractions {
 static FactPair get_atom(const Landmark &landmark) {
-    // We assume that the given Landmarks are from an h^m landmark graph with m=1.
+    // We assume that the given Landmarks are from an h^m landmark graph with
+    // m=1.
     assert(landmark.type == ATOMIC);
     assert(landmark.atoms.size() == 1);
     return landmark.atoms[0];
@@ -43,8 +44,8 @@ utils::HashMap<FactPair, LandmarkNode *> get_atom_to_landmark_map(
     const shared_ptr<LandmarkGraph> &graph) {
     // All landmarks are atomic, i.e., each has exactly one atom.
     assert(all_of(graph->begin(), graph->end(), [](auto &node) {
-                      return node->get_landmark().atoms.size() == 1;
-                  }));
+        return node->get_landmark().atoms.size() == 1;
+    }));
     utils::HashMap<FactPair, landmarks::LandmarkNode *> atom_to_landmark_map;
     for (const auto &node : *graph) {
         const FactPair &atom = node->get_landmark().atoms[0];

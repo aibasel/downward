@@ -20,9 +20,8 @@ protected:
 public:
     explicit PotentialHeuristic(
         std::unique_ptr<PotentialFunction> function,
-        const std::shared_ptr<AbstractTask> &transform,
-        bool cache_estimates, const std::string &description,
-        utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+        const std::string &description, utils::Verbosity verbosity);
 };
 }
 

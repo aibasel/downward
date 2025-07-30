@@ -6,8 +6,8 @@
 #include <vector>
 
 namespace ff_heuristic {
-using relaxation_heuristic::PropID;
 using relaxation_heuristic::OpID;
+using relaxation_heuristic::PropID;
 
 using relaxation_heuristic::NO_OP;
 
@@ -34,9 +34,8 @@ protected:
 public:
     FFHeuristic(
         tasks::AxiomHandlingType axioms,
-        const std::shared_ptr<AbstractTask> &transform,
-        bool cache_estimates, const std::string &description,
-        utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+        const std::string &description, utils::Verbosity verbosity);
 };
 }
 

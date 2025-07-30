@@ -108,8 +108,7 @@ class Pruner {
 public:
     Pruner(
         const PatternCollection &patterns,
-        const vector<PatternClique> &pattern_cliques,
-        int num_variables)
+        const vector<PatternClique> &pattern_cliques, int num_variables)
         : patterns(patterns),
           pattern_cliques(pattern_cliques),
           num_variables(num_variables) {
@@ -141,7 +140,8 @@ public:
                   information we collected so far.
                 */
                 if (log.is_at_least_normal()) {
-                    log << "Time limit reached. Abort dominance pruning." << endl;
+                    log << "Time limit reached. Abort dominance pruning."
+                        << endl;
                 }
                 break;
             }
@@ -152,11 +152,8 @@ public:
 };
 
 void prune_dominated_cliques(
-    PatternCollection &patterns,
-    PDBCollection &pdbs,
-    vector<PatternClique> &pattern_cliques,
-    int num_variables,
-    double max_time,
+    PatternCollection &patterns, PDBCollection &pdbs,
+    vector<PatternClique> &pattern_cliques, int num_variables, double max_time,
     utils::LogProxy &log) {
     if (log.is_at_least_normal()) {
         log << "Running dominance pruning..." << endl;
@@ -166,10 +163,8 @@ void prune_dominated_cliques(
     int num_patterns = patterns.size();
     int num_cliques = pattern_cliques.size();
 
-    vector<bool> pruned = Pruner(
-        patterns,
-        pattern_cliques,
-        num_variables).get_pruned_cliques(timer, log);
+    vector<bool> pruned = Pruner(patterns, pattern_cliques, num_variables)
+                              .get_pruned_cliques(timer, log);
 
     vector<PatternClique> remaining_pattern_cliques;
     vector<bool> is_remaining_pattern(num_patterns, false);
@@ -192,7 +187,8 @@ void prune_dominated_cliques(
     remaining_patterns.reserve(num_remaining_patterns);
     remaining_pdbs.reserve(num_remaining_patterns);
     vector<PatternID> old_to_new_pattern_id(num_patterns, -1);
-    for (PatternID old_pattern_id = 0; old_pattern_id < num_patterns; ++old_pattern_id) {
+    for (PatternID old_pattern_id = 0; old_pattern_id < num_patterns;
+         ++old_pattern_id) {
         if (is_remaining_pattern[old_pattern_id]) {
             PatternID new_pattern_id = remaining_patterns.size();
             old_to_new_pattern_id[old_pattern_id] = new_pattern_id;

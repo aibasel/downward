@@ -34,7 +34,8 @@
 
 namespace tasks {
 enum class AxiomHandlingType {
-    APPROXIMATE_NEGATIVE, APPROXIMATE_NEGATIVE_CYCLES
+    APPROXIMATE_NEGATIVE,
+    APPROXIMATE_NEGATIVE_CYCLES
 };
 
 struct DefaultValueAxiom {
@@ -42,7 +43,8 @@ struct DefaultValueAxiom {
     std::vector<FactPair> condition;
 
     DefaultValueAxiom(FactPair head, std::vector<FactPair> &&condition)
-        : head(head), condition(condition) {}
+        : head(head), condition(condition) {
+    }
 };
 
 class DefaultValueAxiomsTask : public DelegatingTask {
@@ -63,20 +65,23 @@ class DefaultValueAxiomsTask : public DelegatingTask {
         std::set<std::set<FactPair>> &results);
 public:
     explicit DefaultValueAxiomsTask(
-        const std::shared_ptr<AbstractTask> &parent,
-        AxiomHandlingType axioms);
+        const std::shared_ptr<AbstractTask> &parent, AxiomHandlingType axioms);
     virtual ~DefaultValueAxiomsTask() override = default;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;
-    virtual std::string get_operator_name(int index, bool is_axiom) const override;
-    virtual int get_num_operator_preconditions(int index, bool is_axiom) const override;
+    virtual std::string get_operator_name(
+        int index, bool is_axiom) const override;
+    virtual int get_num_operator_preconditions(
+        int index, bool is_axiom) const override;
     virtual FactPair get_operator_precondition(
         int op_index, int fact_index, bool is_axiom) const override;
-    virtual int get_num_operator_effects(int op_index, bool is_axiom) const override;
+    virtual int get_num_operator_effects(
+        int op_index, bool is_axiom) const override;
     virtual int get_num_operator_effect_conditions(
         int op_index, int eff_index, bool is_axiom) const override;
     virtual FactPair get_operator_effect_condition(
-        int op_index, int eff_index, int cond_index, bool is_axiom) const override;
+        int op_index, int eff_index, int cond_index,
+        bool is_axiom) const override;
     virtual FactPair get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const override;
 
@@ -84,8 +89,7 @@ public:
 };
 
 extern std::shared_ptr<AbstractTask> get_default_value_axioms_task_if_needed(
-    const std::shared_ptr<AbstractTask> &task,
-    AxiomHandlingType axioms);
+    const std::shared_ptr<AbstractTask> &task, AxiomHandlingType axioms);
 extern void add_axioms_option_to_feature(plugins::Feature &feature);
 extern std::tuple<AxiomHandlingType> get_axioms_arguments_from_options(
     const plugins::Options &opts);

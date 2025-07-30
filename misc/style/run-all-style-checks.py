@@ -51,7 +51,7 @@ def check_cc_files():
 
 
 def check_cplusplus_style():
-    return subprocess.call(["./run-uncrustify.py"], cwd=DIR) == 0
+    return subprocess.call(["./run-clang-format.py"], cwd=DIR) == 0
 
 
 def main():

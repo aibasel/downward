@@ -18,15 +18,15 @@ using namespace std;
 namespace pdbs {
 PatternGeneratorGreedy::PatternGeneratorGreedy(
     int max_states, utils::Verbosity verbosity)
-    : PatternGenerator(verbosity),
-      max_states(max_states) {
+    : PatternGenerator(verbosity), max_states(max_states) {
 }
 
 string PatternGeneratorGreedy::name() const {
     return "greedy pattern generator";
 }
 
-PatternInformation PatternGeneratorGreedy::compute_pattern(const shared_ptr<AbstractTask> &task) {
+PatternInformation PatternGeneratorGreedy::compute_pattern(
+    const shared_ptr<AbstractTask> &task) {
     TaskProxy task_proxy(*task);
     Pattern pattern;
     variable_order_finder::VariableOrderFinder order(
@@ -58,17 +58,15 @@ public:
         add_option<int>(
             "max_states",
             "maximal number of abstract states in the pattern database.",
-            "1000000",
-            plugins::Bounds("1", "infinity"));
+            "1000000", plugins::Bounds("1", "infinity"));
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternGeneratorGreedy>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<PatternGeneratorGreedy> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<PatternGeneratorGreedy>(
             opts.get<int>("max_states"),
-            get_generator_arguments_from_options(opts)
-            );
+            get_generator_arguments_from_options(opts));
     }
 };
 

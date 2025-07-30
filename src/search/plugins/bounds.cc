@@ -3,8 +3,7 @@
 using namespace std;
 
 namespace plugins {
-Bounds::Bounds(const string &min, const string &max)
-    : min(min), max(max) {
+Bounds::Bounds(const string &min, const string &max) : min(min), max(max) {
 }
 
 bool Bounds::has_bound() const {

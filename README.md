@@ -61,16 +61,16 @@ active, and in case of ties, by the earliest year the person started
 contributing, and finally by last name.
 
 - 2003-2025 Malte Helmert
+- 2008-2016, 2018-2025 Gabriele Roeger
 - 2009, 2025 Christian Muise
-- 2008-2016, 2018-2024 Gabriele Roeger
-- 2010-2024 Jendrik Seipp
+- 2010-2025 Jendrik Seipp
+- 2012-2025 Florian Pommerening
+- 2021-2025 Clemens Büchner
+- 2022-2025 Remo Christen
+- 2022-2025 Simon Dold
 - 2010-2011, 2013-2024 Silvan Sievers
-- 2012-2024 Florian Pommerening
 - 2013, 2015-2024 Salomé Eriksson
 - 2018-2024 Patrick Ferber
-- 2021-2024 Clemens Büchner
-- 2022-2024 Remo Christen
-- 2022-2024 Simon Dold
 - 2023-2024 Claudia S. Grundke
 - 2024 Martín Pozo
 - 2024 Tanja Schindler

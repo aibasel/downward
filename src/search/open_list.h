@@ -1,13 +1,12 @@
 #ifndef OPEN_LIST_H
 #define OPEN_LIST_H
 
-#include <set>
-
 #include "evaluation_context.h"
 #include "operator_id.h"
 
-class StateID;
+#include <set>
 
+class StateID;
 
 template<class Entry>
 class OpenList {
@@ -21,8 +20,8 @@ protected:
       to be inserted is not preferred. Hence, these conditions need
       not be checked by the implementation.
     */
-    virtual void do_insertion(EvaluationContext &eval_context,
-                              const Entry &entry) = 0;
+    virtual void do_insertion(
+        EvaluationContext &eval_context, const Entry &entry) = 0;
 
 public:
     explicit OpenList(bool preferred_only = false);
@@ -125,13 +124,11 @@ public:
         EvaluationContext &eval_context) const = 0;
 };
 
-
 using StateOpenListEntry = StateID;
 using EdgeOpenListEntry = std::pair<StateID, OperatorID>;
 
 using StateOpenList = OpenList<StateOpenListEntry>;
 using EdgeOpenList = OpenList<EdgeOpenListEntry>;
-
 
 template<class Entry>
 OpenList<Entry>::OpenList(bool only_preferred)

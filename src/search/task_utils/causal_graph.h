@@ -17,7 +17,6 @@
   and do the memory profiling.
 */
 
-
 /*
   An IntRelation represents a relation on a set {0, ..., K - 1} as an
   adjacency list, encoded as a vector<vector<int> >. For example, the

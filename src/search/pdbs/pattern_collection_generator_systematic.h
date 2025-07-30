@@ -27,17 +27,18 @@ class PatternCollectionGeneratorSystematic : public PatternCollectionGenerator {
     const size_t max_pattern_size;
     const bool only_interesting_patterns;
     std::shared_ptr<PatternCollection> patterns;
-    PatternSet pattern_set;  // Cleared after pattern computation.
+    PatternSet pattern_set; // Cleared after pattern computation.
 
     void enqueue_pattern_if_new(const Pattern &pattern);
-    void compute_eff_pre_neighbors(const causal_graph::CausalGraph &cg,
-                                   const Pattern &pattern,
-                                   std::vector<int> &result) const;
-    void compute_connection_points(const causal_graph::CausalGraph &cg,
-                                   const Pattern &pattern,
-                                   std::vector<int> &result) const;
+    void compute_eff_pre_neighbors(
+        const causal_graph::CausalGraph &cg, const Pattern &pattern,
+        std::vector<int> &result) const;
+    void compute_connection_points(
+        const causal_graph::CausalGraph &cg, const Pattern &pattern,
+        std::vector<int> &result) const;
 
-    void build_sga_patterns(const TaskProxy &task_proxy, const causal_graph::CausalGraph &cg);
+    void build_sga_patterns(
+        const TaskProxy &task_proxy, const causal_graph::CausalGraph &cg);
     void build_patterns(const TaskProxy &task_proxy);
     void build_patterns_naive(const TaskProxy &task_proxy);
     virtual std::string name() const override;

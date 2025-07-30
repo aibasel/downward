@@ -16,30 +16,25 @@ class ShrinkBisimulation : public ShrinkStrategy {
     const AtLimit at_limit;
 
     void compute_abstraction(
-        const TransitionSystem &ts,
-        const Distances &distances,
-        int target_size,
+        const TransitionSystem &ts, const Distances &distances, int target_size,
         StateEquivalenceRelation &equivalence_relation) const;
 
     int initialize_groups(
-        const TransitionSystem &ts,
-        const Distances &distances,
+        const TransitionSystem &ts, const Distances &distances,
         std::vector<int> &state_to_group) const;
 
     void compute_signatures(
-        const TransitionSystem &ts,
-        const Distances &distances,
+        const TransitionSystem &ts, const Distances &distances,
         std::vector<Signature> &signatures,
         const std::vector<int> &state_to_group) const;
 protected:
-    virtual void dump_strategy_specific_options(utils::LogProxy &log) const override;
+    virtual void dump_strategy_specific_options(
+        utils::LogProxy &log) const override;
     virtual std::string name() const override;
 public:
     explicit ShrinkBisimulation(bool greedy, AtLimit at_limit);
     virtual StateEquivalenceRelation compute_equivalence_relation(
-        const TransitionSystem &ts,
-        const Distances &distances,
-        int target_size,
+        const TransitionSystem &ts, const Distances &distances, int target_size,
         utils::LogProxy &log) const override;
 
     virtual bool requires_init_distances() const override {

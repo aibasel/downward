@@ -10,8 +10,7 @@ using namespace std;
 
 EvaluationContext::EvaluationContext(
     const EvaluatorCache &cache, const State &state, int g_value,
-    bool is_preferred, SearchStatistics *statistics,
-    bool calculate_preferred)
+    bool is_preferred, SearchStatistics *statistics, bool calculate_preferred)
     : cache(cache),
       state(state),
       g_value(g_value),
@@ -20,34 +19,34 @@ EvaluationContext::EvaluationContext(
       calculate_preferred(calculate_preferred) {
 }
 
-
 EvaluationContext::EvaluationContext(
-    const EvaluationContext &other, int g_value,
-    bool is_preferred, SearchStatistics *statistics, bool calculate_preferred)
-    : EvaluationContext(other.cache, other.state, g_value, is_preferred,
-                        statistics, calculate_preferred) {
+    const EvaluationContext &other, int g_value, bool is_preferred,
+    SearchStatistics *statistics, bool calculate_preferred)
+    : EvaluationContext(
+          other.cache, other.state, g_value, is_preferred, statistics,
+          calculate_preferred) {
 }
 
 EvaluationContext::EvaluationContext(
     const State &state, int g_value, bool is_preferred,
     SearchStatistics *statistics, bool calculate_preferred)
-    : EvaluationContext(EvaluatorCache(), state, g_value, is_preferred,
-                        statistics, calculate_preferred) {
+    : EvaluationContext(
+          EvaluatorCache(), state, g_value, is_preferred, statistics,
+          calculate_preferred) {
 }
 
 EvaluationContext::EvaluationContext(
-    const State &state,
-    SearchStatistics *statistics, bool calculate_preferred)
-    : EvaluationContext(EvaluatorCache(), state, INVALID, false,
-                        statistics, calculate_preferred) {
+    const State &state, SearchStatistics *statistics, bool calculate_preferred)
+    : EvaluationContext(
+          EvaluatorCache(), state, INVALID, false, statistics,
+          calculate_preferred) {
 }
 
 const EvaluationResult &EvaluationContext::get_result(Evaluator *evaluator) {
     EvaluationResult &result = cache[evaluator];
     if (result.is_uninitialized()) {
         result = evaluator->compute_result(*this);
-        if (statistics &&
-            evaluator->is_used_for_counting_evaluations() &&
+        if (statistics && evaluator->is_used_for_counting_evaluations() &&
             result.get_count_evaluation()) {
             statistics->inc_evaluations();
         }
@@ -87,11 +86,10 @@ int EvaluationContext::get_evaluator_value_or_infinity(Evaluator *eval) {
     return get_result(eval).get_evaluator_value();
 }
 
-const vector<OperatorID> &
-EvaluationContext::get_preferred_operators(Evaluator *eval) {
+const vector<OperatorID> &EvaluationContext::get_preferred_operators(
+    Evaluator *eval) {
     return get_result(eval).get_preferred_operators();
 }
-
 
 bool EvaluationContext::get_calculate_preferred() const {
     return calculate_preferred;

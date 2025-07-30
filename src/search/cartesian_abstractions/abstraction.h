@@ -46,7 +46,8 @@ class Abstraction {
     void initialize_trivial_abstraction(const std::vector<int> &domain_sizes);
 
 public:
-    Abstraction(const std::shared_ptr<AbstractTask> &task, utils::LogProxy &log);
+    Abstraction(
+        const std::shared_ptr<AbstractTask> &task, utils::LogProxy &log);
     ~Abstraction();
 
     Abstraction(const Abstraction &) = delete;

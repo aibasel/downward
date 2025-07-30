@@ -26,20 +26,16 @@ namespace pdbs {
   pattern due to the size limit or if the time limit is reached.
 */
 extern Pattern generate_random_pattern(
-    int max_pdb_size,
-    double max_time,
-    utils::LogProxy &log,
+    int max_pdb_size, double max_time, utils::LogProxy &log,
     const std::shared_ptr<utils::RandomNumberGenerator> &rng,
-    const TaskProxy &task_proxy,
-    int goal_variable,
+    const TaskProxy &task_proxy, int goal_variable,
     std::vector<std::vector<int>> &cg_neighbors);
 
 extern void add_random_pattern_implementation_notes_to_feature(
     plugins::Feature &feature);
 extern void add_random_pattern_bidirectional_option_to_feature(
     plugins::Feature &feature);
-extern std::tuple<bool>
-get_random_pattern_bidirectional_arguments_from_options(
+extern std::tuple<bool> get_random_pattern_bidirectional_arguments_from_options(
     const plugins::Options &opts);
 }
 

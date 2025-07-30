@@ -22,7 +22,8 @@ protected:
     std::unique_ptr<EdgeOpenList> open_list;
 
     // Search behavior parameters
-    bool reopen_closed_nodes; // whether to reopen closed nodes upon finding lower g paths
+    bool reopen_closed_nodes; // whether to reopen closed nodes upon finding
+                              // lower g paths
     bool randomize_successors;
     bool preferred_successors_first;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
@@ -50,13 +51,11 @@ protected:
 
 public:
     LazySearch(
-        const std::shared_ptr<OpenListFactory> &open,
-        bool reopen_closed,
+        const std::shared_ptr<OpenListFactory> &open, bool reopen_closed,
         const std::vector<std::shared_ptr<Evaluator>> &evaluators,
         bool randomize_successors, bool preferred_successors_first,
-        int random_seed, OperatorCost cost_type, int bound,
-        double max_time, const std::string &description,
-        utils::Verbosity verbosity);
+        int random_seed, OperatorCost cost_type, int bound, double max_time,
+        const std::string &description, utils::Verbosity verbosity);
 
     virtual void print_statistics() const override;
 };

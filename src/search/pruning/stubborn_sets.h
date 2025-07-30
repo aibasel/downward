@@ -11,8 +11,8 @@ inline FactPair find_unsatisfied_condition(
 class StubbornSets : public PruningMethod {
     void compute_sorted_operators(const TaskProxy &task_proxy);
     void compute_achievers(const TaskProxy &task_proxy);
-    virtual void prune(const State &state,
-                       std::vector<OperatorID> &op_ids) override;
+    virtual void prune(
+        const State &state, std::vector<OperatorID> &op_ids) override;
 protected:
     /*
       We copy some parts of the task here, so we can avoid the more expensive
@@ -48,8 +48,10 @@ protected:
       rather than an arbitrary variable order. (However, so far, there is no
       experimental evidence that this is a particularly good order.)
     */
-    FactPair find_unsatisfied_precondition(int op_no, const State &state) const {
-        return find_unsatisfied_condition(sorted_op_preconditions[op_no], state);
+    FactPair find_unsatisfied_precondition(
+        int op_no, const State &state) const {
+        return find_unsatisfied_condition(
+            sorted_op_preconditions[op_no], state);
     }
 
     virtual void compute_stubborn_set(const State &state) = 0;

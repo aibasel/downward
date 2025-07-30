@@ -39,8 +39,8 @@
 template<class Entry>
 class PerStateInformation : public subscriber::Subscriber<StateRegistry> {
     const Entry default_value;
-    using EntryVectorMap = std::unordered_map<const StateRegistry *,
-                                              segmented_vector::SegmentedVector<Entry> * >;
+    using EntryVectorMap = std::unordered_map<
+        const StateRegistry *, segmented_vector::SegmentedVector<Entry> *>;
     EntryVectorMap entries_by_registry;
 
     mutable const StateRegistry *cached_registry;
@@ -48,11 +48,12 @@ class PerStateInformation : public subscriber::Subscriber<StateRegistry> {
 
     /*
       Returns the SegmentedVector associated with the given StateRegistry.
-      If no vector is associated with this registry yet, an empty one is created.
-      Both the registry and the returned vector are cached to speed up
+      If no vector is associated with this registry yet, an empty one is
+      created. Both the registry and the returned vector are cached to speed up
       consecutive calls with the same registry.
     */
-    segmented_vector::SegmentedVector<Entry> *get_entries(const StateRegistry *registry) {
+    segmented_vector::SegmentedVector<Entry> *get_entries(
+        const StateRegistry *registry) {
         if (cached_registry != registry) {
             cached_registry = registry;
             auto it = entries_by_registry.find(registry);
@@ -64,7 +65,9 @@ class PerStateInformation : public subscriber::Subscriber<StateRegistry> {
                 cached_entries = it->second;
             }
         }
-        assert(cached_registry == registry && cached_entries == entries_by_registry[registry]);
+        assert(
+            cached_registry == registry &&
+            cached_entries == entries_by_registry[registry]);
         return cached_entries;
     }
 
@@ -74,14 +77,17 @@ class PerStateInformation : public subscriber::Subscriber<StateRegistry> {
       Otherwise, both the registry and the returned vector are cached to speed
       up consecutive calls with the same registry.
     */
-    const segmented_vector::SegmentedVector<Entry> *get_entries(const StateRegistry *registry) const {
+    const segmented_vector::SegmentedVector<Entry> *get_entries(
+        const StateRegistry *registry) const {
         if (cached_registry != registry) {
             const auto it = entries_by_registry.find(registry);
             if (it == entries_by_registry.end()) {
                 return nullptr;
             } else {
                 cached_registry = registry;
-                cached_entries = const_cast<segmented_vector::SegmentedVector<Entry> *>(it->second);
+                cached_entries =
+                    const_cast<segmented_vector::SegmentedVector<Entry> *>(
+                        it->second);
             }
         }
         assert(cached_registry == registry);
@@ -90,9 +96,7 @@ class PerStateInformation : public subscriber::Subscriber<StateRegistry> {
 
 public:
     PerStateInformation()
-        : default_value(),
-          cached_registry(nullptr),
-          cached_entries(nullptr) {
+        : default_value(), cached_registry(nullptr), cached_entries(nullptr) {
     }
 
     explicit PerStateInformation(const Entry &default_value_)
@@ -117,7 +121,8 @@ public:
                       << "unregistered state." << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
-        segmented_vector::SegmentedVector<Entry> *entries = get_entries(registry);
+        segmented_vector::SegmentedVector<Entry> *entries =
+            get_entries(registry);
         int state_id = state.get_id().value;
         assert(state.get_id() != StateID::no_state);
         size_t virtual_size = registry->size();
@@ -135,7 +140,8 @@ public:
                       << "unregistered state." << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
-        const segmented_vector::SegmentedVector<Entry> *entries = get_entries(registry);
+        const segmented_vector::SegmentedVector<Entry> *entries =
+            get_entries(registry);
         if (!entries) {
             return default_value;
         }
@@ -149,7 +155,8 @@ public:
         return (*entries)[state_id];
     }
 
-    virtual void notify_service_destroyed(const StateRegistry *registry) override {
+    virtual void notify_service_destroyed(
+        const StateRegistry *registry) override {
         delete entries_by_registry[registry];
         entries_by_registry.erase(registry);
         if (registry == cached_registry) {

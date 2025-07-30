@@ -21,8 +21,8 @@ class AlternationOpenList : public OpenList<Entry> {
 
     const int boost_amount;
 protected:
-    virtual void do_insertion(EvaluationContext &eval_context,
-                              const Entry &entry) override;
+    virtual void do_insertion(
+        EvaluationContext &eval_context, const Entry &entry) override;
 
 public:
     AlternationOpenList(
@@ -34,12 +34,10 @@ public:
     virtual void boost_preferred() override;
     virtual void get_path_dependent_evaluators(
         set<Evaluator *> &evals) override;
-    virtual bool is_dead_end(
-        EvaluationContext &eval_context) const override;
+    virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
 };
-
 
 template<class Entry>
 AlternationOpenList<Entry>::AlternationOpenList(
@@ -126,37 +124,31 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
     return false;
 }
 
-
 AlternationOpenListFactory::AlternationOpenListFactory(
     const vector<shared_ptr<OpenListFactory>> &sublists, int boost)
-    : sublists(sublists),
-      boost(boost) {
+    : sublists(sublists), boost(boost) {
     utils::verify_list_not_empty(sublists, "sublists");
 }
 
-unique_ptr<StateOpenList>
-AlternationOpenListFactory::create_state_open_list() {
+unique_ptr<StateOpenList> AlternationOpenListFactory::create_state_open_list() {
     return make_unique<AlternationOpenList<StateOpenListEntry>>(
         sublists, boost);
 }
 
-unique_ptr<EdgeOpenList>
-AlternationOpenListFactory::create_edge_open_list() {
-    return make_unique<AlternationOpenList<EdgeOpenListEntry>>(
-        sublists, boost);
+unique_ptr<EdgeOpenList> AlternationOpenListFactory::create_edge_open_list() {
+    return make_unique<AlternationOpenList<EdgeOpenListEntry>>(sublists, boost);
 }
 
 class AlternationOpenListFeature
-    : public plugins::TypedFeature<OpenListFactory, AlternationOpenListFactory> {
+    : public plugins::TypedFeature<
+          OpenListFactory, AlternationOpenListFactory> {
 public:
     AlternationOpenListFeature() : TypedFeature("alt") {
         document_title("Alternation open list");
-        document_synopsis(
-            "alternates between several open lists.");
+        document_synopsis("alternates between several open lists.");
 
         add_list_option<shared_ptr<OpenListFactory>>(
-            "sublists",
-            "open lists between which this one alternates");
+            "sublists", "open lists between which this one alternates");
         add_option<int>(
             "boost",
             "boost value for contained open lists that are restricted "
@@ -164,12 +156,11 @@ public:
             "0");
     }
 
-    virtual shared_ptr<AlternationOpenListFactory>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<AlternationOpenListFactory> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<AlternationOpenListFactory>(
             opts.get_list<shared_ptr<OpenListFactory>>("sublists"),
-            opts.get<int>("boost")
-            );
+            opts.get<int>("boost"));
     }
 };
 

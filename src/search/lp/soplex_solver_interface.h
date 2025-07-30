@@ -31,12 +31,15 @@ public:
     SoPlexSolverInterface();
 
     virtual void load_problem(const LinearProgram &lp) override;
-    virtual void add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints) override;
+    virtual void add_temporary_constraints(
+        const named_vector::NamedVector<LPConstraint> &constraints) override;
     virtual void clear_temporary_constraints() override;
     virtual double get_infinity() const override;
 
-    virtual void set_objective_coefficients(const std::vector<double> &coefficients) override;
-    virtual void set_objective_coefficient(int index, double coefficient) override;
+    virtual void set_objective_coefficients(
+        const std::vector<double> &coefficients) override;
+    virtual void set_objective_coefficient(
+        int index, double coefficient) override;
     virtual void set_constraint_lower_bound(int index, double bound) override;
     virtual void set_constraint_upper_bound(int index, double bound) override;
     virtual void set_variable_lower_bound(int index, double bound) override;

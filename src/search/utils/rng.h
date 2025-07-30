@@ -12,7 +12,8 @@ class RandomNumberGenerator {
     std::mt19937 rng;
 
 public:
-    RandomNumberGenerator(); // Seed with a value depending on time and process ID.
+    RandomNumberGenerator(); // Seed with a value depending on time and process
+                             // ID.
     explicit RandomNumberGenerator(int seed);
     RandomNumberGenerator(const RandomNumberGenerator &) = delete;
     RandomNumberGenerator &operator=(const RandomNumberGenerator &) = delete;

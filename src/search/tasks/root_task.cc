@@ -13,7 +13,6 @@
 #include <unordered_set>
 #include <vector>
 
-
 using namespace std;
 using utils::ExitCode;
 
@@ -31,14 +30,12 @@ struct ExplicitVariable {
     explicit ExplicitVariable(istream &in);
 };
 
-
 struct ExplicitEffect {
     FactPair fact;
     vector<FactPair> conditions;
 
     ExplicitEffect(int var, int value, vector<FactPair> &&conditions);
 };
-
 
 struct ExplicitOperator {
     vector<FactPair> preconditions;
@@ -51,7 +48,6 @@ struct ExplicitOperator {
     ExplicitOperator(istream &in, bool is_an_axiom, bool use_metric);
 };
 
-
 class RootTask : public AbstractTask {
     vector<ExplicitVariable> variables;
     // TODO: think about using hash sets here.
@@ -62,8 +58,10 @@ class RootTask : public AbstractTask {
     vector<FactPair> goals;
 
     const ExplicitVariable &get_variable(int var) const;
-    const ExplicitEffect &get_effect(int op_id, int effect_id, bool is_axiom) const;
-    const ExplicitOperator &get_operator_or_axiom(int index, bool is_axiom) const;
+    const ExplicitEffect &get_effect(
+        int op_id, int effect_id, bool is_axiom) const;
+    const ExplicitOperator &get_operator_or_axiom(
+        int index, bool is_axiom) const;
 
 public:
     explicit RootTask(istream &in);
@@ -78,8 +76,7 @@ public:
         const FactPair &fact1, const FactPair &fact2) const override;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;
-    virtual string get_operator_name(
-        int index, bool is_axiom) const override;
+    virtual string get_operator_name(int index, bool is_axiom) const override;
     virtual int get_num_operators() const override;
     virtual int get_num_operator_preconditions(
         int index, bool is_axiom) const override;
@@ -90,7 +87,8 @@ public:
     virtual int get_num_operator_effect_conditions(
         int op_index, int eff_index, bool is_axiom) const override;
     virtual FactPair get_operator_effect_condition(
-        int op_index, int eff_index, int cond_index, bool is_axiom) const override;
+        int op_index, int eff_index, int cond_index,
+        bool is_axiom) const override;
     virtual FactPair get_operator_effect(
         int op_index, int eff_index, bool is_axiom) const override;
     virtual int convert_operator_index(
@@ -103,29 +101,31 @@ public:
 
     virtual vector<int> get_initial_state_values() const override;
     virtual void convert_ancestor_state_values(
-        vector<int> &values,
-        const AbstractTask *ancestor_task) const override;
+        vector<int> &values, const AbstractTask *ancestor_task) const override;
 };
 
-
-static void check_fact(const FactPair &fact, const vector<ExplicitVariable> &variables) {
+static void check_fact(
+    const FactPair &fact, const vector<ExplicitVariable> &variables) {
     if (!utils::in_bounds(fact.var, variables)) {
         cerr << "Invalid variable id: " << fact.var << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     if (fact.value < 0 || fact.value >= variables[fact.var].domain_size) {
-        cerr << "Invalid value for variable " << fact.var << ": " << fact.value << endl;
+        cerr << "Invalid value for variable " << fact.var << ": " << fact.value
+             << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
 }
 
-static void check_facts(const vector<FactPair> &facts, const vector<ExplicitVariable> &variables) {
+static void check_facts(
+    const vector<FactPair> &facts, const vector<ExplicitVariable> &variables) {
     for (FactPair fact : facts) {
         check_fact(fact, variables);
     }
 }
 
-static void check_facts(const ExplicitOperator &action, const vector<ExplicitVariable> &variables) {
+static void check_facts(
+    const ExplicitOperator &action, const vector<ExplicitVariable> &variables) {
     check_facts(action.preconditions, variables);
     for (const ExplicitEffect &eff : action.effects) {
         check_fact(eff.fact, variables);
@@ -173,12 +173,10 @@ ExplicitVariable::ExplicitVariable(istream &in) {
     check_magic(in, "end_variable");
 }
 
-
 ExplicitEffect::ExplicitEffect(
     int var, int value, vector<FactPair> &&conditions)
     : fact(var, value), conditions(move(conditions)) {
 }
-
 
 void ExplicitOperator::read_pre_post(istream &in) {
     vector<FactPair> conditions = read_facts(in);
@@ -190,7 +188,8 @@ void ExplicitOperator::read_pre_post(istream &in) {
     effects.emplace_back(var, value_post, move(conditions));
 }
 
-ExplicitOperator::ExplicitOperator(istream &in, bool is_an_axiom, bool use_metric)
+ExplicitOperator::ExplicitOperator(
+    istream &in, bool is_an_axiom, bool use_metric)
     : is_an_axiom(is_an_axiom) {
     if (!is_an_axiom) {
         check_magic(in, "begin_operator");
@@ -250,7 +249,8 @@ static vector<ExplicitVariable> read_variables(istream &in) {
     return variables;
 }
 
-static vector<vector<set<FactPair>>> read_mutexes(istream &in, const vector<ExplicitVariable> &variables) {
+static vector<vector<set<FactPair>>> read_mutexes(
+    istream &in, const vector<ExplicitVariable> &variables) {
     vector<vector<set<FactPair>>> inconsistent_facts(variables.size());
     for (size_t i = 0; i < variables.size(); ++i)
         inconsistent_facts[i].resize(variables[i].domain_size);
@@ -406,7 +406,8 @@ string RootTask::get_fact_name(const FactPair &fact) const {
     return get_variable(fact.var).fact_names[fact.value];
 }
 
-bool RootTask::are_facts_mutex(const FactPair &fact1, const FactPair &fact2) const {
+bool RootTask::are_facts_mutex(
+    const FactPair &fact1, const FactPair &fact2) const {
     if (fact1.var == fact2.var) {
         // Same variable: mutex iff different value.
         return fact1.value != fact2.value;
@@ -503,8 +504,8 @@ public:
     RootTaskFeature() : TypedFeature("no_transform") {
     }
 
-    virtual shared_ptr<AbstractTask>
-    create_component(const plugins::Options &) const override {
+    virtual shared_ptr<AbstractTask> create_component(
+        const plugins::Options &) const override {
         return g_root_task;
     }
 };

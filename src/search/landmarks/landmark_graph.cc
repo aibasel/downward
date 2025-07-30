@@ -40,7 +40,6 @@ LandmarkNode &LandmarkGraph::get_disjunctive_landmark_node(
     return *(disjunctive_landmarks_to_nodes.find(atom)->second);
 }
 
-
 bool LandmarkGraph::contains_atomic_landmark(const FactPair &atom) const {
     return atomic_landmarks_to_nodes.contains(atom);
 }
@@ -52,8 +51,8 @@ bool LandmarkGraph::contains_disjunctive_landmark(const FactPair &atom) const {
 bool LandmarkGraph::contains_overlapping_disjunctive_landmark(
     const utils::HashSet<FactPair> &atoms) const {
     return ranges::any_of(atoms, [&](const FactPair &atom) {
-                              return contains_disjunctive_landmark(atom);
-                          });
+        return contains_disjunctive_landmark(atom);
+    });
 }
 
 bool LandmarkGraph::contains_superset_disjunctive_landmark(
@@ -90,10 +89,11 @@ LandmarkNode *LandmarkGraph::add_node(Landmark &&landmark) {
 }
 
 LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark_to_add) {
-    assert(landmark_to_add.type == CONJUNCTIVE || ranges::all_of(
-               landmark_to_add.atoms, [&](const FactPair &atom) {
-                   return !contains_landmark(atom);
-               }));
+    assert(
+        landmark_to_add.type == CONJUNCTIVE ||
+        ranges::all_of(landmark_to_add.atoms, [&](const FactPair &atom) {
+            return !contains_landmark(atom);
+        }));
     /*
       TODO: Avoid having to fetch landmark after moving it. This will only be
       possible after removing the assumption that landmarks don't overlap
@@ -148,25 +148,23 @@ void LandmarkGraph::remove_node_occurrences(LandmarkNode *node) {
 
 void LandmarkGraph::remove_node(LandmarkNode *node) {
     remove_node_occurrences(node);
-    const auto it =
-        ranges::find_if(nodes, [&node](const auto &other) {
-                            return other.get() == node;
-                        });
+    const auto it = ranges::find_if(
+        nodes, [&node](const auto &other) { return other.get() == node; });
     assert(it != nodes.end());
     nodes.erase(it);
 }
 
 void LandmarkGraph::remove_node_if(
-    const function<bool (const LandmarkNode &)> &remove_node_condition) {
+    const function<bool(const LandmarkNode &)> &remove_node_condition) {
     for (const auto &node : nodes) {
         if (remove_node_condition(*node)) {
             remove_node_occurrences(node.get());
         }
     }
-    erase_if(nodes,
-             [&remove_node_condition](const unique_ptr<LandmarkNode> &node) {
-                 return remove_node_condition(*node);
-             });
+    erase_if(
+        nodes, [&remove_node_condition](const unique_ptr<LandmarkNode> &node) {
+            return remove_node_condition(*node);
+        });
 }
 
 void LandmarkGraph::set_landmark_ids() {

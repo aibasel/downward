@@ -27,13 +27,12 @@ EagerSearch::EagerSearch(
     const shared_ptr<Evaluator> &lazy_evaluator, OperatorCost cost_type,
     int bound, double max_time, const string &description,
     utils::Verbosity verbosity)
-    : SearchAlgorithm(
-          cost_type, bound, max_time, description, verbosity),
+    : SearchAlgorithm(cost_type, bound, max_time, description, verbosity),
       reopen_closed_nodes(reopen_closed),
       open_list(open->create_state_open_list()),
-      f_evaluator(f_eval),     // default nullptr
+      f_evaluator(f_eval), // default nullptr
       preferred_operator_evaluators(preferred),
-      lazy_evaluator(lazy_evaluator),     // default nullptr
+      lazy_evaluator(lazy_evaluator), // default nullptr
       pruning_method(pruning) {
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
@@ -44,8 +43,7 @@ EagerSearch::EagerSearch(
 void EagerSearch::initialize() {
     log << "Conducting best first search"
         << (reopen_closed_nodes ? " with" : " without")
-        << " reopening closed nodes, (real) bound = " << bound
-        << endl;
+        << " reopening closed nodes, (real) bound = " << bound << endl;
     assert(open_list);
 
     set<Evaluator *> evals;
@@ -55,7 +53,8 @@ void EagerSearch::initialize() {
       Collect path-dependent evaluators that are used for preferred operators
       (in case they are not also used in the open list).
     */
-    for (const shared_ptr<Evaluator> &evaluator : preferred_operator_evaluators) {
+    for (const shared_ptr<Evaluator> &evaluator :
+         preferred_operator_evaluators) {
         evaluator->get_path_dependent_evaluators(evals);
     }
 
@@ -161,7 +160,8 @@ optional<SearchNode> EagerSearch::get_next_node_to_expand() {
 
             if (lazy_evaluator->is_estimate_cached(s)) {
                 int old_h = lazy_evaluator->get_cached_estimate(s);
-                int new_h = eval_context.get_evaluator_value_or_infinity(lazy_evaluator.get());
+                int new_h = eval_context.get_evaluator_value_or_infinity(
+                    lazy_evaluator.get());
                 if (open_list->is_dead_end(eval_context)) {
                     node.mark_as_dead_end();
                     statistics.inc_dead_ends();
@@ -327,7 +327,8 @@ void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
 }
 
 /* TODO: HACK! This is very inefficient for simply looking up an h value.
-   Also, if h values are not saved it would recompute h for each and every state. */
+   Also, if h values are not saved it would recompute h for each and every
+   state. */
 void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     if (f_evaluator) {
         int f_value = eval_context.get_evaluator_value(f_evaluator.get());
@@ -343,14 +344,13 @@ void add_eager_search_options_to_feature(
     add_search_algorithm_options_to_feature(feature, description);
 }
 
-tuple<shared_ptr<PruningMethod>, shared_ptr<Evaluator>, OperatorCost,
-      int, double, string, utils::Verbosity>
+tuple<
+    shared_ptr<PruningMethod>, shared_ptr<Evaluator>, OperatorCost, int, double,
+    string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         get_search_pruning_arguments_from_options(opts),
-        make_tuple(opts.get<shared_ptr<Evaluator>>(
-                       "lazy_evaluator", nullptr)),
-        get_search_algorithm_arguments_from_options(opts)
-        );
+        make_tuple(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
+        get_search_algorithm_arguments_from_options(opts));
 }
 }
