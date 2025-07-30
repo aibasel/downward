@@ -72,7 +72,7 @@ void TaskLexer::initialize_tokens() {
     assert(tokens.empty());
     assert(token_number == 0);
     get_next_nonempty_line();
-    if (current_line != "") {
+    if (!current_line.empty()) {
         istringstream stream(current_line);
         string word;
         /* NOTE: The following ignores whitespace within and in
@@ -120,7 +120,7 @@ string TaskLexer::read_line() {
               "the previous line.");
     }
     get_next_nonempty_line();
-    if (current_line == "") {
+    if (current_line.empty()) {
         error("Unexpected end of task.");
     }
     return current_line;
@@ -147,7 +147,7 @@ void TaskLexer::confirm_end_of_input() {
         ABORT("Tried to confirm end of input while reading a line as tokens.");
     }
     get_next_nonempty_line();
-    if (current_line != "") {
+    if (!current_line.empty()) {
         error("Expected end of task, found non-empty line " + current_line);
     }
 }
