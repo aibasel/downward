@@ -17,7 +17,7 @@ AlignTrailingComments:
   Kind: Never
 # Force enum entries on multiple lines.
 AllowShortEnumsOnASingleLine: false
-# Put empty functions onto a single line.
+# Force short functions across multiple lines.
 AllowShortFunctionsOnASingleLine: None
 # Force line breaks after template declarations.
 # Less strict alternative for clang-format >= 19:
