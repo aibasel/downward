@@ -9,8 +9,6 @@
 #include <vector>
 
 namespace utils {
-
-
 /*
   TODO: The following class is used directly by both the task lexer,
   which lives in utils, and the task parser, which lives in tasks.

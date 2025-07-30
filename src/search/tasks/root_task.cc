@@ -383,7 +383,7 @@ void TaskParser::read_pre_post_axiom(
             with_error_context(
                 [&]() {
                     return "checking layering condition, head variable "
-                        + to_string(var) + " with layer " + to_string(axiom_layer);
+                    + to_string(var) + " with layer " + to_string(axiom_layer);
                 }, [&]() {
                     check_layering_condition(axiom_layer, conditions, variables);
                 });
@@ -397,7 +397,7 @@ void TaskParser::read_pre_post_axiom(
 void TaskParser::read_conditional_effect(
     ExplicitOperator &op, const vector<ExplicitVariable> &variables) {
     vector<FactPair> conditions = read_facts(true, variables);
-    with_error_context (
+    with_error_context(
         "parsing pre-post of affected variable",
         [&]() {
             int var = read_nat("affected variable");
@@ -682,7 +682,7 @@ vector<ExplicitOperator> TaskParser::read_actions(
             }
             return actions;
         });
- }
+}
 
 TaskParser::TaskParser(utils::TaskLexer &&lexer)
     : lexer(move(lexer)) {
@@ -721,7 +721,7 @@ shared_ptr<AbstractTask> TaskParser::read_task() {
         move(initial_state_values), move(goals));
     AxiomEvaluator &axiom_evaluator = g_axiom_evaluators[TaskProxy(*task)];
     axiom_evaluator.evaluate(task->get_initial_state_values());
-   return task;
+    return task;
 }
 
 shared_ptr<AbstractTask> TaskParser::parse() {
