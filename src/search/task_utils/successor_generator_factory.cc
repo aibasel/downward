@@ -59,11 +59,16 @@ struct OperatorRange {
     int begin;
     int end;
 
-    OperatorRange(int begin, int end) : begin(begin), end(end) {}
+    OperatorRange(int begin, int end) : begin(begin), end(end) {
+    }
 
-    bool empty() const { return begin == end; }
+    bool empty() const {
+        return begin == end;
+    }
 
-    int span() const { return end - begin; }
+    int span() const {
+        return end - begin;
+    }
 };
 
 class OperatorInfo {
@@ -76,13 +81,16 @@ class OperatorInfo {
 public:
     OperatorInfo(OperatorID op, vector<FactPair> precondition)
         : op(op),
-          precondition(move(precondition)) {}
+          precondition(move(precondition)) {
+    }
 
     bool operator<(const OperatorInfo &other) const {
         return precondition < other.precondition;
     }
 
-    OperatorID get_op() const { return op; }
+    OperatorID get_op() const {
+        return op;
+    }
 
     // Returns -1 as a past-the-end sentinel.
     int get_var(int depth) const {
@@ -93,7 +101,9 @@ public:
         }
     }
 
-    int get_value(int depth) const { return precondition[depth].value; }
+    int get_value(int depth) const {
+        return precondition[depth].value;
+    }
 };
 
 enum class GroupOperatorsBy {
@@ -128,9 +138,12 @@ public:
         : operator_infos(operator_infos),
           depth(depth),
           group_by(group_by),
-          range(range) {}
+          range(range) {
+    }
 
-    bool done() const { return range.empty(); }
+    bool done() const {
+        return range.empty();
+    }
 
     pair<int, OperatorRange> next() {
         assert(!range.empty());

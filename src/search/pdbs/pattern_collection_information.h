@@ -46,7 +46,9 @@ public:
     void set_pattern_cliques(
         const std::shared_ptr<std::vector<PatternClique>> &pattern_cliques);
 
-    TaskProxy get_task_proxy() const { return task_proxy; }
+    TaskProxy get_task_proxy() const {
+        return task_proxy;
+    }
 
     std::shared_ptr<PatternCollection> get_patterns() const;
     std::shared_ptr<PDBCollection> get_pdbs();

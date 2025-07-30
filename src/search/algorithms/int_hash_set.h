@@ -88,11 +88,15 @@ class IntHashSet {
 
         static const KeyType empty_bucket_key = -1;
 
-        Bucket() : key(empty_bucket_key), hash(0) {}
+        Bucket() : key(empty_bucket_key), hash(0) {
+        }
 
-        Bucket(KeyType key, HashType hash) : key(key), hash(hash) {}
+        Bucket(KeyType key, HashType hash) : key(key), hash(hash) {
+        }
 
-        bool full() const { return key != empty_bucket_key; }
+        bool full() const {
+            return key != empty_bucket_key;
+        }
     };
 
     Hasher hasher;
@@ -101,7 +105,9 @@ class IntHashSet {
     int num_entries;
     int num_resizes;
 
-    int capacity() const { return buckets.size(); }
+    int capacity() const {
+        return buckets.size();
+    }
 
     void rehash(int new_capacity) {
         assert(new_capacity >= 1);
@@ -266,9 +272,12 @@ public:
           equal(equal),
           buckets(1),
           num_entries(0),
-          num_resizes(0) {}
+          num_resizes(0) {
+    }
 
-    int size() const { return num_entries; }
+    int size() const {
+        return num_entries;
+    }
 
     /*
       Insert a key into the hash set.

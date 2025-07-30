@@ -49,11 +49,13 @@ public:
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) = 0;
 
-    virtual void notify_initial_state(const State & /*initial_state*/) {}
+    virtual void notify_initial_state(const State & /*initial_state*/) {
+    }
 
     virtual void notify_state_transition(
         const State & /*parent_state*/, OperatorID /*op_id*/,
-        const State & /*state*/) {}
+        const State & /*state*/) {
+    }
 
     /*
       compute_result should compute the estimate and possibly

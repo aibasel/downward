@@ -54,7 +54,9 @@ extern std::ostream &operator<<(std::ostream &out, const Token &token);
 namespace std {
 template<>
 struct hash<parser::TokenType> {
-    size_t operator()(const parser::TokenType &t) const { return size_t(t); }
+    size_t operator()(const parser::TokenType &t) const {
+        return size_t(t);
+    }
 };
 }
 #endif

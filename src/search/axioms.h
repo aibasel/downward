@@ -24,14 +24,15 @@ class AxiomEvaluator {
               unsatisfied_conditions(cond_count),
               effect_var(eff_var),
               effect_val(eff_val),
-              effect_literal(eff_literal) {}
+              effect_literal(eff_literal) {
+        }
     };
     struct NegationByFailureInfo {
         int var_no;
         AxiomLiteral *literal;
         NegationByFailureInfo(int var, AxiomLiteral *lit)
-            : var_no(var),
-              literal(lit) {}
+            : var_no(var), literal(lit) {
+        }
     };
 
     bool task_has_axioms;

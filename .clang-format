@@ -18,7 +18,7 @@ AlignTrailingComments:
 # Force enum entries on multiple lines.
 AllowShortEnumsOnASingleLine: false
 # Put empty functions onto a single line.
-AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortFunctionsOnASingleLine: None
 # Force line breaks after template declarations.
 # Less strict alternative for clang-format >= 19:
 #   BreakTemplateDeclarations: Leave
@@ -50,7 +50,7 @@ IndentWidth: 4
 # Do not allow empty lines at start of block.
 KeepEmptyLinesAtTheStartOfBlocks: false
 # Put initializer list either on one line or one entry per line.
-PackConstructorInitializers: CurrentLine
+PackConstructorInitializers: NextLine
 # Avoid line breaks between return type and function name.
 PenaltyReturnTypeOnItsOwnLine: 120
 # This was not consistent in the code base, now we have to force one choice.

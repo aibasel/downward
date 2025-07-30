@@ -55,15 +55,21 @@ public:
       Returns the effect of the abstract operator in form of a value
       change (+ or -) to an abstract state index
     */
-    int get_hash_effect() const { return hash_effect; }
+    int get_hash_effect() const {
+        return hash_effect;
+    }
 
-    int get_concrete_op_id() const { return concrete_op_id; }
+    int get_concrete_op_id() const {
+        return concrete_op_id;
+    }
 
     /*
       Returns the cost of the abstract operator (same as the cost of
       the original concrete operator)
     */
-    int get_cost() const { return cost; }
+    int get_cost() const {
+        return cost;
+    }
 
     void dump(
         const Pattern &pattern, const VariablesProxy &variables,

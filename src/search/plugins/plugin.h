@@ -107,7 +107,8 @@ class TypedFeature : public FeatureAuto<Constructed> {
 public:
     TypedFeature(const std::string &key)
         : FeatureAuto<Constructed>(
-              TypeRegistry::instance()->get_type<BasePtr>(), key) {}
+              TypeRegistry::instance()->get_type<BasePtr>(), key) {
+    }
 
     Any construct(
         const Options &options, const utils::Context &context) const override {
@@ -149,7 +150,8 @@ public:
 template<typename T>
 class FeaturePlugin : public Plugin {
 public:
-    FeaturePlugin() : Plugin() {}
+    FeaturePlugin() : Plugin() {
+    }
     virtual std::shared_ptr<Feature> create_feature() const override {
         return std::make_shared<T>();
     }
@@ -209,7 +211,8 @@ public:
     TypedCategoryPlugin(const std::string &category_name)
         : CategoryPlugin(
               typeid(std::shared_ptr<T>),
-              utils::get_type_name<std::shared_ptr<T>>(), category_name) {}
+              utils::get_type_name<std::shared_ptr<T>>(), category_name) {
+    }
 };
 
 class SubcategoryPlugin {
@@ -248,7 +251,8 @@ public:
         std::initializer_list<std::pair<std::string, std::string>> enum_values)
         : EnumPlugin(
               typeid(T), utils::get_type_name<std::shared_ptr<T>>(),
-              enum_values) {}
+              enum_values) {
+    }
 };
 
 template<typename T>

@@ -39,13 +39,25 @@ class LPConstraint {
 public:
     LPConstraint(double lower_bound, double upper_bound);
 
-    const std::vector<int> &get_variables() const { return variables; }
-    const std::vector<double> &get_coefficients() const { return coefficients; }
+    const std::vector<int> &get_variables() const {
+        return variables;
+    }
+    const std::vector<double> &get_coefficients() const {
+        return coefficients;
+    }
 
-    double get_lower_bound() const { return lower_bound; }
-    void set_lower_bound(double lb) { lower_bound = lb; }
-    double get_upper_bound() const { return upper_bound; }
-    void set_upper_bound(double ub) { upper_bound = ub; }
+    double get_lower_bound() const {
+        return lower_bound;
+    }
+    void set_lower_bound(double lb) {
+        lower_bound = lb;
+    }
+    double get_upper_bound() const {
+        return upper_bound;
+    }
+    void set_upper_bound(double ub) {
+        upper_bound = ub;
+    }
 
     void clear();
     bool empty() const;
@@ -85,7 +97,8 @@ public:
         : sense(sense),
           variables(std::move(variables)),
           constraints(std::move(constraints)),
-          infinity(infinity) {}
+          infinity(infinity) {
+    }
 
     /*
       Variables and constraints can be given a custom name for debugging

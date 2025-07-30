@@ -48,9 +48,13 @@ protected:
 public:
     ShrinkFH(HighLow shrink_f, HighLow shrink_h, int random_seed);
 
-    virtual bool requires_init_distances() const override { return true; }
+    virtual bool requires_init_distances() const override {
+        return true;
+    }
 
-    virtual bool requires_goal_distances() const override { return true; }
+    virtual bool requires_goal_distances() const override {
+        return true;
+    }
 };
 }
 

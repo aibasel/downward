@@ -39,19 +39,32 @@ public:
         : pdb(move(pdb)),
           plan(move(plan)),
           unsolvable(unsolvable),
-          solved(false) {}
+          solved(false) {
+    }
 
-    const shared_ptr<PatternDatabase> &get_pdb() const { return pdb; }
+    const shared_ptr<PatternDatabase> &get_pdb() const {
+        return pdb;
+    }
 
-    const Pattern &get_pattern() const { return pdb->get_pattern(); }
+    const Pattern &get_pattern() const {
+        return pdb->get_pattern();
+    }
 
-    const vector<vector<OperatorID>> &get_plan() const { return plan; }
+    const vector<vector<OperatorID>> &get_plan() const {
+        return plan;
+    }
 
-    bool is_unsolvable() const { return unsolvable; }
+    bool is_unsolvable() const {
+        return unsolvable;
+    }
 
-    void mark_as_solved() { solved = true; }
+    void mark_as_solved() {
+        solved = true;
+    }
 
-    bool is_solved() { return solved; }
+    bool is_solved() {
+        return solved;
+    }
 };
 
 struct Flaw {
@@ -60,7 +73,8 @@ struct Flaw {
 
     Flaw(int collection_index, int variable)
         : collection_index(collection_index),
-          variable(variable) {}
+          variable(variable) {
+    }
 };
 
 using FlawList = vector<Flaw>;

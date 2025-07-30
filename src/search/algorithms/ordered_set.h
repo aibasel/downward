@@ -61,7 +61,9 @@ public:
         return ordered_items[pos];
     }
 
-    const std::vector<T> &get_as_vector() const { return ordered_items; }
+    const std::vector<T> &get_as_vector() const {
+        return ordered_items;
+    }
 
     std::vector<T> pop_as_vector() {
         std::vector<T> items = std::move(ordered_items);

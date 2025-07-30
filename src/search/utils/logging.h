@@ -40,9 +40,8 @@ class Log {
 
 public:
     explicit Log(Verbosity verbosity)
-        : stream(std::cout),
-          verbosity(verbosity),
-          line_has_started(false) {}
+        : stream(std::cout), verbosity(verbosity), line_has_started(false) {
+    }
 
     template<typename T>
     Log &operator<<(const T &elem) {
@@ -64,7 +63,9 @@ public:
         return *this;
     }
 
-    Verbosity get_verbosity() const { return verbosity; }
+    Verbosity get_verbosity() const {
+        return verbosity;
+    }
 };
 
 /*
@@ -86,7 +87,8 @@ private:
     std::shared_ptr<Log> log;
 
 public:
-    explicit LogProxy(const std::shared_ptr<Log> &log) : log(log) {}
+    explicit LogProxy(const std::shared_ptr<Log> &log) : log(log) {
+    }
 
     template<typename T>
     LogProxy &operator<<(const T &elem) {
@@ -113,7 +115,9 @@ public:
     }
 
     // TODO: implement an option for logging warnings.
-    bool is_warning() const { return true; }
+    bool is_warning() const {
+        return true;
+    }
 };
 
 /*

@@ -104,11 +104,21 @@ class CplexSolverInterface : public SolverInterface {
         void assign_row_by_row(
             const named_vector::NamedVector<LPConstraint> &constraints);
 
-        double *get_coefficients() { return to_cplex_array(coefficients); }
-        int *get_indices() { return to_cplex_array(indices); }
-        int *get_starts() { return to_cplex_array(starts); }
-        int *get_counts() { return to_cplex_array(counts); }
-        int get_num_nonzeros() { return coefficients.size(); }
+        double *get_coefficients() {
+            return to_cplex_array(coefficients);
+        }
+        int *get_indices() {
+            return to_cplex_array(indices);
+        }
+        int *get_starts() {
+            return to_cplex_array(starts);
+        }
+        int *get_counts() {
+            return to_cplex_array(counts);
+        }
+        int get_num_nonzeros() {
+            return coefficients.size();
+        }
     };
 
     class CplexColumnsInfo {
@@ -122,10 +132,18 @@ class CplexSolverInterface : public SolverInterface {
         std::vector<double> objective;
     public:
         void assign(const named_vector::NamedVector<LPVariable> &variables);
-        double *get_lb() { return to_cplex_array(lb); }
-        double *get_ub() { return to_cplex_array(ub); }
-        char *get_type() { return to_cplex_array(type); }
-        double *get_objective() { return to_cplex_array(objective); }
+        double *get_lb() {
+            return to_cplex_array(lb);
+        }
+        double *get_ub() {
+            return to_cplex_array(ub);
+        }
+        char *get_type() {
+            return to_cplex_array(type);
+        }
+        double *get_objective() {
+            return to_cplex_array(objective);
+        }
     };
 
     class CplexRowsInfo {
@@ -147,11 +165,21 @@ class CplexSolverInterface : public SolverInterface {
         void assign(
             const named_vector::NamedVector<LPConstraint> &constraints,
             int offset = 0, bool dense_range_values = true);
-        double *get_rhs() { return to_cplex_array(rhs); }
-        char *get_sense() { return to_cplex_array(sense); }
-        double *get_range_values() { return to_cplex_array(range_values); }
-        int *get_range_indices() { return to_cplex_array(range_indices); }
-        int get_num_ranged_rows() { return range_indices.size(); }
+        double *get_rhs() {
+            return to_cplex_array(rhs);
+        }
+        char *get_sense() {
+            return to_cplex_array(sense);
+        }
+        double *get_range_values() {
+            return to_cplex_array(range_values);
+        }
+        int *get_range_indices() {
+            return to_cplex_array(range_indices);
+        }
+        int get_num_ranged_rows() {
+            return range_indices.size();
+        }
     };
 
     class CplexNameData {
@@ -176,7 +204,9 @@ class CplexSolverInterface : public SolverInterface {
             }
         }
 
-        int size() { return names.size(); }
+        int size() {
+            return names.size();
+        }
         int *get_indices() {
             if (indices.empty()) {
                 return nullptr;

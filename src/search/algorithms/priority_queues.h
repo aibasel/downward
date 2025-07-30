@@ -33,8 +33,10 @@ class AbstractQueue {
 public:
     typedef std::pair<int, Value> Entry;
 
-    AbstractQueue() {}
-    virtual ~AbstractQueue() {}
+    AbstractQueue() {
+    }
+    virtual ~AbstractQueue() {
+    }
 
     virtual void push(int key, const Value &value) = 0;
     virtual Entry pop() = 0;
@@ -90,9 +92,11 @@ class HeapQueue : public AbstractQueue<Value> {
 
     Heap heap;
 public:
-    HeapQueue() {}
+    HeapQueue() {
+    }
 
-    virtual ~HeapQueue() {}
+    virtual ~HeapQueue() {
+    }
 
     virtual void push(int key, const Value &value) {
         assert(is_valid_key(key));
@@ -106,9 +110,13 @@ public:
         return result;
     }
 
-    virtual bool empty() const { return heap.empty(); }
+    virtual bool empty() const {
+        return heap.empty();
+    }
 
-    virtual void clear() { heap.c.clear(); }
+    virtual void clear() {
+        heap.c.clear();
+    }
 
     static HeapQueue<Value> *create_from_sorted_entries_destructively(
         std::vector<Entry> &entries) {
@@ -120,7 +128,8 @@ public:
         return result;
     }
 
-    virtual void add_virtual_pushes(int /*num_extra_pushes*/) {}
+    virtual void add_virtual_pushes(int /*num_extra_pushes*/) {
+    }
 };
 
 template<typename Value>
@@ -164,9 +173,11 @@ class BucketQueue : public AbstractQueue<Value> {
         current_bucket_no = 0;
     }
 public:
-    BucketQueue() : current_bucket_no(0), num_entries(0), num_pushes(0) {}
+    BucketQueue() : current_bucket_no(0), num_entries(0), num_pushes(0) {
+    }
 
-    virtual ~BucketQueue() {}
+    virtual ~BucketQueue() {
+    }
 
     virtual void push(int key, const Value &value) {
         assert(is_valid_key(key));
@@ -191,7 +202,9 @@ public:
         return std::make_pair(current_bucket_no, top_element);
     }
 
-    virtual bool empty() const { return num_entries == 0; }
+    virtual bool empty() const {
+        return num_entries == 0;
+    }
 
     virtual void clear() {
         for (int i = current_bucket_no; num_entries != 0; ++i) {
@@ -236,9 +249,12 @@ class AdaptiveQueue {
 public:
     typedef std::pair<int, Value> Entry;
 
-    AdaptiveQueue() : wrapped_queue(new BucketQueue<Value>) {}
+    AdaptiveQueue() : wrapped_queue(new BucketQueue<Value>) {
+    }
 
-    ~AdaptiveQueue() { delete wrapped_queue; }
+    ~AdaptiveQueue() {
+        delete wrapped_queue;
+    }
 
     void push(int key, const Value &value) {
         AbstractQueue<Value> *q = wrapped_queue->convert_if_necessary(key);
@@ -249,11 +265,17 @@ public:
         wrapped_queue->push(key, value);
     }
 
-    Entry pop() { return wrapped_queue->pop(); }
+    Entry pop() {
+        return wrapped_queue->pop();
+    }
 
-    bool empty() const { return wrapped_queue->empty(); }
+    bool empty() const {
+        return wrapped_queue->empty();
+    }
 
-    void clear() { wrapped_queue->clear(); }
+    void clear() {
+        wrapped_queue->clear();
+    }
 
     void add_virtual_pushes(int num_extra_pushes) {
         wrapped_queue->add_virtual_pushes(num_extra_pushes);

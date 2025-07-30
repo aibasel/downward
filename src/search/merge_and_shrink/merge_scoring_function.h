@@ -14,7 +14,8 @@ namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class MergeScoringFunction {
     virtual std::string name() const = 0;
-    virtual void dump_function_specific_options(utils::LogProxy &) const {}
+    virtual void dump_function_specific_options(utils::LogProxy &) const {
+    }
 protected:
     bool initialized;
 public:
@@ -27,7 +28,9 @@ public:
     virtual bool requires_goal_distances() const = 0;
 
     // Overriding methods must set initialized to true.
-    virtual void initialize(const TaskProxy &) { initialized = true; }
+    virtual void initialize(const TaskProxy &) {
+        initialized = true;
+    }
 
     void dump_options(utils::LogProxy &log) const;
 };

@@ -120,8 +120,8 @@ class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
             const segmented_vector::SegmentedArrayVector<PackedStateBin>
                 &state_data_pool,
             int state_size)
-            : state_data_pool(state_data_pool),
-              state_size(state_size) {}
+            : state_data_pool(state_data_pool), state_size(state_size) {
+        }
 
         int_hash_set::HashType operator()(int id) const {
             const PackedStateBin *data = state_data_pool[id];
@@ -141,8 +141,8 @@ class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
             const segmented_vector::SegmentedArrayVector<PackedStateBin>
                 &state_data_pool,
             int state_size)
-            : state_data_pool(state_data_pool),
-              state_size(state_size) {}
+            : state_data_pool(state_data_pool), state_size(state_size) {
+        }
 
         bool operator()(int lhs, int rhs) const {
             const PackedStateBin *lhs_data = state_data_pool[lhs];
@@ -174,9 +174,13 @@ class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
 public:
     explicit StateRegistry(const TaskProxy &task_proxy);
 
-    const TaskProxy &get_task_proxy() const { return task_proxy; }
+    const TaskProxy &get_task_proxy() const {
+        return task_proxy;
+    }
 
-    int get_num_variables() const { return num_variables; }
+    int get_num_variables() const {
+        return num_variables;
+    }
 
     const int_packer::IntPacker &get_state_packer() const {
         return state_packer;
@@ -214,7 +218,9 @@ public:
     /*
       Returns the number of states registered so far.
     */
-    size_t size() const { return registered_states.size(); }
+    size_t size() const {
+        return registered_states.size();
+    }
 
     int get_state_size_in_bytes() const;
 
@@ -239,8 +245,7 @@ public:
         StateID pos;
 
         const_iterator(const StateRegistry &registry, size_t start)
-            : registry(registry),
-              pos(start) {
+            : registry(registry), pos(start) {
             utils::unused_variable(this->registry);
         }
     public:
@@ -258,14 +263,22 @@ public:
             return !(*this == rhs);
         }
 
-        StateID operator*() { return pos; }
+        StateID operator*() {
+            return pos;
+        }
 
-        StateID *operator->() { return &pos; }
+        StateID *operator->() {
+            return &pos;
+        }
     };
 
-    const_iterator begin() const { return const_iterator(*this, 0); }
+    const_iterator begin() const {
+        return const_iterator(*this, 0);
+    }
 
-    const_iterator end() const { return const_iterator(*this, size()); }
+    const_iterator end() const {
+        return const_iterator(*this, size());
+    }
 };
 
 #endif

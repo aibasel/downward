@@ -41,7 +41,8 @@ struct RelaxedOperator {
           cost(-1),
           unsatisfied_preconditions(-1),
           h_max_supporter_cost(-1),
-          h_max_supporter(nullptr) {}
+          h_max_supporter(nullptr) {
+    }
 
     inline void update_h_max_supporter();
 };

@@ -38,7 +38,9 @@ struct MergeTreeNode {
     void inorder(
         int offset, int current_indentation, utils::LogProxy &log) const;
 
-    bool is_leaf() const { return !left_child && !right_child; }
+    bool is_leaf() const {
+        return !left_child && !right_child;
+    }
 
     bool has_two_leaf_children() const {
         return left_child && right_child && left_child->is_leaf() &&
@@ -102,7 +104,9 @@ public:
     */
     void update(std::pair<int, int> merge, int new_index);
 
-    bool done() const { return root->is_leaf(); }
+    bool done() const {
+        return root->is_leaf();
+    }
 
     int compute_num_internal_nodes() const {
         return root->compute_num_internal_nodes();

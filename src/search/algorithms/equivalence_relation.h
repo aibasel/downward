@@ -27,21 +27,33 @@ class Block {
     friend class EquivalenceRelation;
     BlockListIter it_intersection_block;
 public:
-    bool empty() const { return elements.empty(); }
+    bool empty() const {
+        return elements.empty();
+    }
 
     ElementListIter insert(int element) {
         return elements.insert(elements.end(), element);
     }
 
-    void erase(ElementListIter it) { elements.erase(it); }
+    void erase(ElementListIter it) {
+        elements.erase(it);
+    }
 
-    ElementListIter begin() { return elements.begin(); }
+    ElementListIter begin() {
+        return elements.begin();
+    }
 
-    ElementListIter end() { return elements.end(); }
+    ElementListIter end() {
+        return elements.end();
+    }
 
-    ElementListConstIter begin() const { return elements.begin(); }
+    ElementListConstIter begin() const {
+        return elements.begin();
+    }
 
-    ElementListConstIter end() const { return elements.end(); }
+    ElementListConstIter end() const {
+        return elements.end();
+    }
 };
 
 class EquivalenceRelation {
@@ -60,8 +72,12 @@ class EquivalenceRelation {
 public:
     explicit EquivalenceRelation(const std::vector<int> &elements);
 
-    BlockListConstIter begin() const { return blocks.begin(); }
-    BlockListConstIter end() const { return blocks.end(); }
+    BlockListConstIter begin() const {
+        return blocks.begin();
+    }
+    BlockListConstIter end() const {
+        return blocks.end();
+    }
 
     /*
       Refining a relation with a block X is equivalent to splitting every block

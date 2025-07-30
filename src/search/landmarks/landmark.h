@@ -36,9 +36,13 @@ public:
             (type != ATOMIC && atoms.size() > 1));
     }
 
-    bool operator==(const Landmark &other) const { return this == &other; }
+    bool operator==(const Landmark &other) const {
+        return this == &other;
+    }
 
-    bool operator!=(const Landmark &other) const { return !(*this == other); }
+    bool operator!=(const Landmark &other) const {
+        return !(*this == other);
+    }
 
     const std::vector<FactPair> atoms;
     const LandmarkType type;
