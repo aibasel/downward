@@ -17,8 +17,7 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactory::LandmarkFactory(utils::Verbosity verbosity)
-    : log(get_log_for_verbosity(verbosity)),
-      landmark_graph(nullptr) {
+    : log(get_log_for_verbosity(verbosity)), landmark_graph(nullptr) {
 }
 
 void LandmarkFactory::resize_operators_providing_effect(

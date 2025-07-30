@@ -24,9 +24,7 @@ class EpsilonGreedyOpenList : public OpenList<Entry> {
         int h;
         Entry entry;
         HeapNode(int id, int h, const Entry &entry)
-            : id(id),
-              h(h),
-              entry(entry) {
+            : id(id), h(h), entry(entry) {
         }
 
         bool operator>(const HeapNode &other) const {

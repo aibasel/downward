@@ -69,8 +69,7 @@ bool Type::can_convert_into(const Type &other) const {
 }
 
 BasicType::BasicType(type_index type, const string &class_name)
-    : type(type),
-      class_name(class_name) {
+    : type(type), class_name(class_name) {
 }
 
 bool BasicType::operator==(const Type &other) const {
@@ -191,8 +190,7 @@ size_t EmptyListType::get_hash() const {
 }
 
 EnumType::EnumType(type_index type, const EnumInfo &documented_values)
-    : type(type),
-      documented_values(documented_values) {
+    : type(type), documented_values(documented_values) {
     values.reserve(documented_values.size());
     for (const auto &value_and_doc : documented_values) {
         values.push_back(utils::tolower(value_and_doc.first));

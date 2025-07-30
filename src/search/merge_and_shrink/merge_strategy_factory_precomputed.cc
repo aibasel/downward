@@ -11,8 +11,7 @@ using namespace std;
 namespace merge_and_shrink {
 MergeStrategyFactoryPrecomputed::MergeStrategyFactoryPrecomputed(
     const shared_ptr<MergeTreeFactory> &merge_tree, utils::Verbosity verbosity)
-    : MergeStrategyFactory(verbosity),
-      merge_tree_factory(merge_tree) {
+    : MergeStrategyFactory(verbosity), merge_tree_factory(merge_tree) {
 }
 
 unique_ptr<MergeStrategy>

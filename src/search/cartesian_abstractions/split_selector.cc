@@ -16,9 +16,7 @@ using namespace std;
 namespace cartesian_abstractions {
 SplitSelector::SplitSelector(
     const shared_ptr<AbstractTask> &task, PickSplit pick)
-    : task(task),
-      task_proxy(*task),
-      pick(pick) {
+    : task(task), task_proxy(*task), pick(pick) {
     if (pick == PickSplit::MIN_HADD || pick == PickSplit::MAX_HADD) {
         additive_heuristic = make_unique<additive_heuristic::AdditiveHeuristic>(
             tasks::AxiomHandlingType::APPROXIMATE_NEGATIVE, task, false,

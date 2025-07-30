@@ -18,8 +18,7 @@ class LandmarkNode;
 LandmarkFactoryMerged::LandmarkFactoryMerged(
     const vector<shared_ptr<LandmarkFactory>> &lm_factories,
     utils::Verbosity verbosity)
-    : LandmarkFactory(verbosity),
-      landmark_factories(lm_factories) {
+    : LandmarkFactory(verbosity), landmark_factories(lm_factories) {
     utils::verify_list_not_empty(lm_factories, "lm_factories");
 }
 

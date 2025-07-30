@@ -18,8 +18,7 @@ using namespace std;
 namespace pdbs {
 PatternGeneratorGreedy::PatternGeneratorGreedy(
     int max_states, utils::Verbosity verbosity)
-    : PatternGenerator(verbosity),
-      max_states(max_states) {
+    : PatternGenerator(verbosity), max_states(max_states) {
 }
 
 string PatternGeneratorGreedy::name() const {

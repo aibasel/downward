@@ -101,8 +101,7 @@ void Context::warn(const string &message) const {
 }
 
 TraceBlock::TraceBlock(Context &context, const string &block_name)
-    : context(context),
-      block_name(context.decorate_block_name(block_name)) {
+    : context(context), block_name(context.decorate_block_name(block_name)) {
     context.enter_block(this->block_name);
 }
 

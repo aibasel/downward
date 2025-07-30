@@ -14,8 +14,7 @@ using namespace std;
 namespace pdbs {
 PatternGeneratorManual::PatternGeneratorManual(
     const vector<int> &pattern, utils::Verbosity verbosity)
-    : PatternGenerator(verbosity),
-      pattern(pattern) {
+    : PatternGenerator(verbosity), pattern(pattern) {
 }
 
 string PatternGeneratorManual::name() const {

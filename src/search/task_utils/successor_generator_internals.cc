@@ -70,8 +70,7 @@ using namespace std;
 namespace successor_generator {
 GeneratorForkBinary::GeneratorForkBinary(
     unique_ptr<GeneratorBase> generator1, unique_ptr<GeneratorBase> generator2)
-    : generator1(move(generator1)),
-      generator2(move(generator2)) {
+    : generator1(move(generator1)), generator2(move(generator2)) {
     /* There is no reason to use a fork if only one of the generators exists.
        Use the existing generator directly if one of them exists or a nullptr
        otherwise. */

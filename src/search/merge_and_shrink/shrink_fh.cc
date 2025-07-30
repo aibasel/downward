@@ -20,9 +20,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 ShrinkFH::ShrinkFH(HighLow shrink_f, HighLow shrink_h, int random_seed)
-    : ShrinkBucketBased(random_seed),
-      f_start(shrink_f),
-      h_start(shrink_h) {
+    : ShrinkBucketBased(random_seed), f_start(shrink_f), h_start(shrink_h) {
 }
 
 vector<ShrinkBucketBased::Bucket> ShrinkFH::partition_into_buckets(

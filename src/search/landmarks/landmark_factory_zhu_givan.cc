@@ -17,8 +17,7 @@ using namespace std;
 namespace landmarks {
 LandmarkFactoryZhuGivan::LandmarkFactoryZhuGivan(
     bool use_orders, utils::Verbosity verbosity)
-    : LandmarkFactoryRelaxation(verbosity),
-      use_orders(use_orders) {
+    : LandmarkFactoryRelaxation(verbosity), use_orders(use_orders) {
 }
 
 void LandmarkFactoryZhuGivan::generate_relaxed_landmarks(
