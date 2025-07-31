@@ -189,9 +189,9 @@ void EagerSearch::collect_preferred_operators_for_node(
         node.get_state(), node.get_g(), false, &statistics, true);
     for (const shared_ptr<Evaluator> &preferred_operator_evaluator :
          preferred_operator_evaluators) {
-        collect_preferred_operators(eval_context,
-                                    preferred_operator_evaluator.get(),
-                                    preferred_operators);
+        collect_preferred_operators(
+            eval_context, preferred_operator_evaluator.get(),
+            preferred_operators);
     }
 }
 
@@ -206,8 +206,7 @@ SearchStatus EagerSearch::expand(const SearchNode &node) {
     return IN_PROGRESS;
 }
 
-void EagerSearch::generate_successors(
-    const SearchNode &node) {
+void EagerSearch::generate_successors(const SearchNode &node) {
     const State &state = node.get_state();
 
     vector<OperatorID> applicable_operators;
