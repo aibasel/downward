@@ -96,4 +96,4 @@ def setup():
     copy_args_to_module(args)
 
 
-setup()
+#setup()

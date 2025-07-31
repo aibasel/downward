@@ -3,6 +3,7 @@ import signal
 import sys
 import traceback
 
+from translate import options
 from translate import pddl_parser
 from translate.main import main
 
@@ -20,6 +21,7 @@ def handle_sigxcpu(signum, stackframe):
     os._exit(TRANSLATE_OUT_OF_TIME)
 
 if __name__ == "__main__":
+    options.setup()
     try:
         signal.signal(signal.SIGXCPU, handle_sigxcpu)
     except AttributeError:

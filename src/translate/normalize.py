@@ -426,7 +426,9 @@ def condition_to_rule_body(parameters: Sequence[pddl.TypedObject],
     return result
 
 if __name__ == "__main__":
+    from translate import options
     from translate import pddl_parser
+    options.setup()
     task = pddl_parser.open()
     normalize(task)
     task.dump()

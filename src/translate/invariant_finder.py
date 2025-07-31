@@ -152,7 +152,8 @@ def get_groups(task, reachable_action_params=None) -> List[List[pddl.Atom]]:
 if __name__ == "__main__":
     from translate import normalize
     from translate import pddl_parser
-
+    
+    options.setup()
     print("Parsing...")
     task = pddl_parser.open()
     print("Normalizing...")

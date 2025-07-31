@@ -326,10 +326,12 @@ def compute_model(prog):
     return queue.queue
 
 if __name__ == "__main__":
-    from translate import pddl_parser
     from translate import normalize
+    from translate import options
+    from translate import pddl_parser
     from translate import pddl_to_prolog
-
+    
+    options.setup()
     print("Parsing...")
     task = pddl_parser.open()
     print("Normalizing...")

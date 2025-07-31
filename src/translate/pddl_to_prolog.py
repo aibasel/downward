@@ -176,7 +176,9 @@ def translate(task):
 
 
 if __name__ == "__main__":
+    from translate import options
     from translate import pddl_parser
+    options.setup()
     task = pddl_parser.open()
     normalize.normalize(task)
     prog = translate(task)
