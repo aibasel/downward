@@ -502,8 +502,7 @@ class RootTaskFeature
 public:
     RootTaskFeature() : TypedFeature("no_transform") {
      document_title("Root task");
-        document_synopsis(
-            "No transformation (i.e. root task).");
+     document_synopsis("No transformation of the input task.");
     }
 
     virtual shared_ptr<AbstractTask>
