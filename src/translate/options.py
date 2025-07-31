@@ -88,12 +88,9 @@ def parse_args(args=None):
 
 def get_options():
     global options
-    if options is None:
-        options = parse_args()
     return options
 
 
-def use_default_options():
-    args = "<dummy domain> <dummy problem>"
+def set_options(arguments=None):
     global options
-    options = parse_args(args)
+    options = parse_args(arguments)
