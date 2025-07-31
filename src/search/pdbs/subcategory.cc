@@ -6,6 +6,5 @@ public:
     PDBGroupPlugin() : SubcategoryPlugin("heuristics_pdb") {
         document_title("Pattern database heuristics");
     }
-}
-_subcategory_plugin;
+} _subcategory_plugin;
 }

@@ -6,13 +6,13 @@
 #include <cassert>
 #include <unordered_map>
 
-
 template<class T>
 class ConstArrayView {
     const T *p;
     int size_;
 public:
-    ConstArrayView(const T *p, int size) : p(p), size_(size) {}
+    ConstArrayView(const T *p, int size) : p(p), size_(size) {
+    }
     ConstArrayView(const ConstArrayView<T> &other) = default;
 
     ConstArrayView<T> &operator=(const ConstArrayView<T> &other) = default;
@@ -32,7 +32,8 @@ class ArrayView {
     T *p;
     int size_;
 public:
-    ArrayView(T *p, int size) : p(p), size_(size) {}
+    ArrayView(T *p, int size) : p(p), size_(size) {
+    }
     ArrayView(const ArrayView<T> &other) = default;
 
     ArrayView<T> &operator=(const ArrayView<T> &other) = default;
@@ -70,27 +71,32 @@ public:
 template<class Element>
 class PerStateArray : public subscriber::Subscriber<StateRegistry> {
     const std::vector<Element> default_array;
-    using EntryArrayVectorMap = std::unordered_map<const StateRegistry *,
-                                                   segmented_vector::SegmentedArrayVector<Element> *>;
+    using EntryArrayVectorMap = std::unordered_map<
+        const StateRegistry *,
+        segmented_vector::SegmentedArrayVector<Element> *>;
     EntryArrayVectorMap entry_arrays_by_registry;
 
     mutable const StateRegistry *cached_registry;
     mutable segmented_vector::SegmentedArrayVector<Element> *cached_entries;
 
-    segmented_vector::SegmentedArrayVector<Element> *get_entries(const StateRegistry *registry) {
+    segmented_vector::SegmentedArrayVector<Element> *get_entries(
+        const StateRegistry *registry) {
         if (cached_registry != registry) {
             cached_registry = registry;
             auto it = entry_arrays_by_registry.find(registry);
             if (it == entry_arrays_by_registry.end()) {
-                cached_entries = new segmented_vector::SegmentedArrayVector<Element>(
-                    default_array.size());
+                cached_entries =
+                    new segmented_vector::SegmentedArrayVector<Element>(
+                        default_array.size());
                 entry_arrays_by_registry[registry] = cached_entries;
                 registry->subscribe(this);
             } else {
                 cached_entries = it->second;
             }
         }
-        assert(cached_registry == registry && cached_entries == entry_arrays_by_registry[registry]);
+        assert(
+            cached_registry == registry &&
+            cached_entries == entry_arrays_by_registry[registry]);
         return cached_entries;
     }
 
@@ -102,7 +108,8 @@ class PerStateArray : public subscriber::Subscriber<StateRegistry> {
                 return nullptr;
             } else {
                 cached_registry = registry;
-                cached_entries = const_cast<segmented_vector::SegmentedArrayVector<Element> *>(
+                cached_entries = const_cast<
+                    segmented_vector::SegmentedArrayVector<Element> *>(
                     it->second);
             }
         }
@@ -133,7 +140,8 @@ public:
                       << "state." << std::endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
-        segmented_vector::SegmentedArrayVector<Element> *entries = get_entries(registry);
+        segmented_vector::SegmentedArrayVector<Element> *entries =
+            get_entries(registry);
         int state_id = state.get_id().value;
         assert(state.get_id() != StateID::no_state);
         size_t virtual_size = registry->size();
@@ -165,10 +173,12 @@ public:
             ABORT("PerStateArray::operator[] const tried to access "
                   "non-existing entry.");
         }
-        return ConstArrayView<Element>((*entries)[state_id], default_array.size());
+        return ConstArrayView<Element>(
+            (*entries)[state_id], default_array.size());
     }
 
-    virtual void notify_service_destroyed(const StateRegistry *registry) override {
+    virtual void notify_service_destroyed(
+        const StateRegistry *registry) override {
         delete entry_arrays_by_registry[registry];
         entry_arrays_by_registry.erase(registry);
         if (registry == cached_registry) {

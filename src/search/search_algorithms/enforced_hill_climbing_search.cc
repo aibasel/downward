@@ -25,8 +25,8 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
       ignore costs since EHC is supposed to implement a breadth-first
       search, not a uniform-cost search. So this seems to be a bug.
     */
-    shared_ptr<Evaluator> g_evaluator = make_shared<GEval>(
-        "ehc.g_eval", verbosity);
+    shared_ptr<Evaluator> g_evaluator =
+        make_shared<GEval>("ehc.g_eval", verbosity);
 
     if (!use_preferred ||
         preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
@@ -42,21 +42,18 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
           open list code.
         */
         vector<shared_ptr<Evaluator>> evals = {
-            g_evaluator, make_shared<PrefEval>(
-                "ehc.pref_eval", verbosity)};
+            g_evaluator, make_shared<PrefEval>("ehc.pref_eval", verbosity)};
         return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(
             evals, false, true);
     }
 }
 
-
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     const shared_ptr<Evaluator> &h, PreferredUsage preferred_usage,
-    const vector<shared_ptr<Evaluator>> &preferred,
-    OperatorCost cost_type, int bound, double max_time,
-    const string &description, utils::Verbosity verbosity)
-    : SearchAlgorithm(
-          cost_type, bound, max_time, description, verbosity),
+    const vector<shared_ptr<Evaluator>> &preferred, OperatorCost cost_type,
+    int bound, double max_time, const string &description,
+    utils::Verbosity verbosity)
+    : SearchAlgorithm(cost_type, bound, max_time, description, verbosity),
       evaluator(h),
       preferred_operator_evaluators(preferred),
       preferred_usage(preferred_usage),
@@ -73,14 +70,15 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
     for (Evaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_initial_state(initial_state);
     }
-    use_preferred = find(preferred_operator_evaluators.begin(),
-                         preferred_operator_evaluators.end(), evaluator) !=
-        preferred_operator_evaluators.end();
+    use_preferred = find(
+                        preferred_operator_evaluators.begin(),
+                        preferred_operator_evaluators.end(),
+                        evaluator) != preferred_operator_evaluators.end();
 
-    open_list = create_ehc_open_list_factory(
-        verbosity, use_preferred, preferred_usage)->create_edge_open_list();
+    open_list =
+        create_ehc_open_list_factory(verbosity, use_preferred, preferred_usage)
+            ->create_edge_open_list();
 }
-
 
 void EnforcedHillClimbingSearch::reach_state(
     const State &parent, OperatorID op_id, const State &state) {
@@ -91,15 +89,18 @@ void EnforcedHillClimbingSearch::reach_state(
 
 void EnforcedHillClimbingSearch::initialize() {
     assert(evaluator);
-    log << "Conducting enforced hill-climbing search, (real) bound = "
-        << bound << endl;
+    log << "Conducting enforced hill-climbing search, (real) bound = " << bound
+        << endl;
     if (use_preferred) {
         log << "Using preferred operators for "
-            << (preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST ?
-            "ranking successors" : "pruning") << endl;
+            << (preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST
+                    ? "ranking successors"
+                    : "pruning")
+            << endl;
     }
 
-    bool dead_end = current_eval_context.is_evaluator_value_infinite(evaluator.get());
+    bool dead_end =
+        current_eval_context.is_evaluator_value_infinite(evaluator.get());
     statistics.inc_evaluated_states();
     print_initial_evaluator_values(current_eval_context);
 
@@ -118,9 +119,7 @@ void EnforcedHillClimbingSearch::initialize() {
 }
 
 void EnforcedHillClimbingSearch::insert_successor_into_open_list(
-    const EvaluationContext &eval_context,
-    int parent_g,
-    OperatorID op_id,
+    const EvaluationContext &eval_context, int parent_g, OperatorID op_id,
     bool preferred) {
     OperatorProxy op = task_proxy.get_operators()[op_id];
     int succ_g = parent_g + get_adjusted_cost(op);
@@ -138,17 +137,18 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
 
     ordered_set::OrderedSet<OperatorID> preferred_operators;
     if (use_preferred) {
-        for (const shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
-            collect_preferred_operators(eval_context,
-                                        preferred_operator_evaluator.get(),
-                                        preferred_operators);
+        for (const shared_ptr<Evaluator> &preferred_operator_evaluator :
+             preferred_operator_evaluators) {
+            collect_preferred_operators(
+                eval_context, preferred_operator_evaluator.get(),
+                preferred_operators);
         }
     }
 
-    if (use_preferred && preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
+    if (use_preferred &&
+        preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
         for (OperatorID op_id : preferred_operators) {
-            insert_successor_into_open_list(
-                eval_context, node_g, op_id, true);
+            insert_successor_into_open_list(eval_context, node_g, op_id, true);
         }
     } else {
         /* The successor ranking implied by RANK_BY_PREFERRED is done
@@ -157,8 +157,8 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
         successor_generator.generate_applicable_ops(
             eval_context.get_state(), successor_operators);
         for (OperatorID op_id : successor_operators) {
-            bool preferred = use_preferred &&
-                preferred_operators.contains(op_id);
+            bool preferred =
+                use_preferred && preferred_operators.contains(op_id);
             insert_successor_into_open_list(
                 eval_context, node_g, op_id, preferred);
         }
@@ -192,7 +192,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
 
         // d: distance from initial node in this EHC phase
         int d = parent_node.get_g() - current_phase_start_g +
-            get_adjusted_cost(last_op);
+                get_adjusted_cost(last_op);
 
         if (parent_node.get_real_g() + last_op.get_cost() >= bound)
             continue;
@@ -214,8 +214,8 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
             }
 
             int h = eval_context.get_evaluator_value(evaluator.get());
-            node.open_new_node(parent_node, last_op,
-                               get_adjusted_cost(last_op));
+            node.open_new_node(
+                parent_node, last_op, get_adjusted_cost(last_op));
 
             if (h < current_eval_context.get_evaluator_value(evaluator.get())) {
                 ++num_ehc_phases;
@@ -260,7 +260,8 @@ void EnforcedHillClimbingSearch::print_statistics() const {
 }
 
 class EnforcedHillClimbingSearchFeature
-    : public plugins::TypedFeature<SearchAlgorithm, EnforcedHillClimbingSearch> {
+    : public plugins::TypedFeature<
+          SearchAlgorithm, EnforcedHillClimbingSearch> {
 public:
     EnforcedHillClimbingSearchFeature() : TypedFeature("ehc") {
         document_title("Lazy enforced hill-climbing");
@@ -268,34 +269,29 @@ public:
 
         add_option<shared_ptr<Evaluator>>("h", "heuristic");
         add_option<PreferredUsage>(
-            "preferred_usage",
-            "preferred operator usage",
+            "preferred_usage", "preferred operator usage",
             "prune_by_preferred");
         add_list_option<shared_ptr<Evaluator>>(
-            "preferred",
-            "use preferred operators of these evaluators",
-            "[]");
+            "preferred", "use preferred operators of these evaluators", "[]");
         add_search_algorithm_options_to_feature(*this, "ehc");
     }
 
-    virtual shared_ptr<EnforcedHillClimbingSearch>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<EnforcedHillClimbingSearch> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<EnforcedHillClimbingSearch>(
             opts.get<shared_ptr<Evaluator>>("h"),
             opts.get<PreferredUsage>("preferred_usage"),
             opts.get_list<shared_ptr<Evaluator>>("preferred"),
-            get_search_algorithm_arguments_from_options(opts)
-            );
+            get_search_algorithm_arguments_from_options(opts));
     }
 };
 
 static plugins::FeaturePlugin<EnforcedHillClimbingSearchFeature> _plugin;
 
-static plugins::TypedEnumPlugin<PreferredUsage> _enum_plugin({
-        {"prune_by_preferred",
-         "prune successors achieved by non-preferred operators"},
-        {"rank_preferred_first",
-         "first insert successors achieved by preferred operators, "
-         "then those by non-preferred operators"}
-    });
+static plugins::TypedEnumPlugin<PreferredUsage> _enum_plugin(
+    {{"prune_by_preferred",
+      "prune successors achieved by non-preferred operators"},
+     {"rank_preferred_first",
+      "first insert successors achieved by preferred operators, "
+      "then those by non-preferred operators"}});
 }

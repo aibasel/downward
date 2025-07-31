@@ -35,8 +35,7 @@ public:
 };
 
 DomainAbstractedTaskFactory::DomainAbstractedTaskFactory(
-    const shared_ptr<AbstractTask> &parent,
-    const VarToGroups &value_groups) {
+    const shared_ptr<AbstractTask> &parent, const VarToGroups &value_groups) {
     TaskProxy parent_proxy(*parent);
     if (task_properties::has_axioms(parent_proxy)) {
         ABORT("DomainAbstractedTask doesn't support axioms.");
@@ -61,7 +60,8 @@ DomainAbstractedTaskFactory::DomainAbstractedTaskFactory(
 
     // Apply domain abstraction to initial state.
     for (size_t var_id = 0; var_id < initial_state_values.size(); ++var_id) {
-        initial_state_values[var_id] = value_map[var_id][initial_state_values[var_id]];
+        initial_state_values[var_id] =
+            value_map[var_id][initial_state_values[var_id]];
     }
 
     // Apply domain abstraction to goals.
@@ -103,7 +103,8 @@ string DomainAbstractedTaskFactory::get_combined_fact_name(
     return name.str();
 }
 
-void DomainAbstractedTaskFactory::combine_values(int var, const ValueGroups &groups) {
+void DomainAbstractedTaskFactory::combine_values(
+    int var, const ValueGroups &groups) {
     vector<string> combined_fact_names;
     unordered_set<int> groups_union;
     int num_merged_values = 0;
@@ -151,8 +152,7 @@ shared_ptr<AbstractTask> DomainAbstractedTaskFactory::get_task() const {
 }
 
 shared_ptr<AbstractTask> build_domain_abstracted_task(
-    const shared_ptr<AbstractTask> &parent,
-    const VarToGroups &value_groups) {
+    const shared_ptr<AbstractTask> &parent, const VarToGroups &value_groups) {
     return DomainAbstractedTaskFactory(parent, value_groups).get_task();
 }
 }

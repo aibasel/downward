@@ -5,6 +5,7 @@
 #include "../search_algorithm.h"
 
 #include <memory>
+#include <optional>
 #include <vector>
 
 class Evaluator;
@@ -32,14 +33,21 @@ class EagerSearch : public SearchAlgorithm {
     void update_f_value_statistics(EvaluationContext &eval_context);
     void reward_progress();
 
+    std::optional<SearchNode> get_next_node_to_expand();
+    void collect_preferred_operators_for_node(
+        const SearchNode &node,
+        ordered_set::OrderedSet<OperatorID> &preferred_operators);
+    SearchStatus expand(const SearchNode &node);
+    void generate_successors(const SearchNode &node);
+
 protected:
     virtual void initialize() override;
     virtual SearchStatus step() override;
 
 public:
     explicit EagerSearch(
-        const std::shared_ptr<OpenListFactory> &open,
-        bool reopen_closed, const std::shared_ptr<Evaluator> &f_eval,
+        const std::shared_ptr<OpenListFactory> &open, bool reopen_closed,
+        const std::shared_ptr<Evaluator> &f_eval,
         const std::vector<std::shared_ptr<Evaluator>> &preferred,
         const std::shared_ptr<PruningMethod> &pruning,
         const std::shared_ptr<Evaluator> &lazy_evaluator,
@@ -53,9 +61,9 @@ public:
 
 extern void add_eager_search_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<std::shared_ptr<PruningMethod>,
-                  std::shared_ptr<Evaluator>, OperatorCost, int, double,
-                  std::string, utils::Verbosity>
+extern std::tuple<
+    std::shared_ptr<PruningMethod>, std::shared_ptr<Evaluator>, OperatorCost,
+    int, double, std::string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts);
 }
 

@@ -21,8 +21,8 @@ public:
     void set_is_part_of_anytime_portfolio(bool is_part_of_anytime_portfolio);
 
     /*
-      Set generates_multiple_plan_files to true if the planner can find more than
-      one plan and should number the plans as FILENAME.1, ..., FILENAME.n.
+      Set generates_multiple_plan_files to true if the planner can find more
+      than one plan and should number the plans as FILENAME.1, ..., FILENAME.n.
     */
     void save_plan(
         const Plan &plan, const TaskProxy &task_proxy,

@@ -32,7 +32,8 @@ PatternCollectionInformation PatternCollectionGeneratorManual::compute_patterns(
 }
 
 class PatternCollectionGeneratorManualFeature
-    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorManual> {
+    : public plugins::TypedFeature<
+          PatternCollectionGenerator, PatternCollectionGeneratorManual> {
 public:
     PatternCollectionGeneratorManualFeature() : TypedFeature("manual_patterns") {
         document_title("Manual patterns");
@@ -43,12 +44,12 @@ public:
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorManual>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorManual>(
+    virtual shared_ptr<PatternCollectionGeneratorManual> create_component(
+        const plugins::Options &opts) const override {
+        return plugins::make_shared_from_arg_tuples<
+            PatternCollectionGeneratorManual>(
             opts.get_list<Pattern>("patterns"),
-            get_generator_arguments_from_options(opts)
-            );
+            get_generator_arguments_from_options(opts));
     }
 };
 

@@ -2,6 +2,7 @@
 
 #include "../evaluation_context.h"
 #include "../evaluation_result.h"
+
 #include "../plugins/plugin.h"
 
 #include <cstdlib>
@@ -11,13 +12,12 @@ using namespace std;
 
 namespace weighted_evaluator {
 WeightedEvaluator::WeightedEvaluator(
-    const shared_ptr<Evaluator> &eval, int weight,
-    const string &description, utils::Verbosity verbosity)
+    const shared_ptr<Evaluator> &eval, int weight, const string &description,
+    utils::Verbosity verbosity)
     : Evaluator(false, false, false, description, verbosity),
       evaluator(eval),
       weight(weight) {
 }
-
 
 bool WeightedEvaluator::dead_ends_are_reliable() const {
     return evaluator->dead_ends_are_reliable();
@@ -54,13 +54,11 @@ public:
         add_evaluator_options_to_feature(*this, "weight");
     }
 
-    virtual shared_ptr<WeightedEvaluator>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<WeightedEvaluator> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<WeightedEvaluator>(
-            opts.get<shared_ptr<Evaluator>>("eval"),
-            opts.get<int>("weight"),
-            get_evaluator_arguments_from_options(opts)
-            );
+            opts.get<shared_ptr<Evaluator>>("eval"), opts.get<int>("weight"),
+            get_evaluator_arguments_from_options(opts));
     }
 };
 

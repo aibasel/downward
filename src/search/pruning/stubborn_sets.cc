@@ -7,8 +7,7 @@ using namespace std;
 
 namespace stubborn_sets {
 StubbornSets::StubbornSets(utils::Verbosity verbosity)
-    : PruningMethod(verbosity),
-      num_operators(-1) {
+    : PruningMethod(verbosity), num_operators(-1) {
 }
 
 void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
@@ -36,10 +35,10 @@ void StubbornSets::compute_sorted_operators(const TaskProxy &task_proxy) {
 
     sorted_op_effects = utils::map_vector<vector<FactPair>>(
         operators, [](const OperatorProxy &op) {
-            return utils::sorted<FactPair>(
-                utils::map_vector<FactPair>(
-                    op.get_effects(),
-                    [](const EffectProxy &eff) {return eff.get_fact().get_pair();}));
+            return utils::sorted<FactPair>(utils::map_vector<FactPair>(
+                op.get_effects(), [](const EffectProxy &eff) {
+                    return eff.get_fact().get_pair();
+                }));
         });
 }
 

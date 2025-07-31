@@ -22,13 +22,10 @@
 #include <stdlib.h>
 
 #define ABORT(msg) \
-    ( \
-        (std::cerr << "Critical error in file " << __FILE__ \
-                   << ", line " << __LINE__ << ": " << std::endl \
-                   << (msg) << std::endl), \
-        (abort()), \
-        (void)0 \
-    )
+    ((std::cerr << "Critical error in file " << __FILE__ << ", line " \
+                << __LINE__ << ": " << std::endl \
+                << (msg) << std::endl), \
+     (abort()), (void)0)
 
 namespace utils {
 enum class ExitCode {
@@ -40,8 +37,8 @@ enum class ExitCode {
     SUCCESS = 0,
 
     // 10-19: exit codes denoting no plan was found (without any error)
-    SEARCH_UNSOLVABLE = 11,  // Task is provably unsolvable with given bound.
-    SEARCH_UNSOLVED_INCOMPLETE = 12,  // Search ended without finding a solution.
+    SEARCH_UNSOLVABLE = 11, // Task is provably unsolvable with given bound.
+    SEARCH_UNSOLVED_INCOMPLETE = 12, // Search ended without finding a solution.
 
     // 20-29: "expected" failures
     SEARCH_OUT_OF_MEMORY = 22,
@@ -56,8 +53,7 @@ enum class ExitCode {
 class ExitException : public std::exception {
     ExitCode exitcode;
 public:
-    explicit ExitException(ExitCode exitcode)
-        : exitcode(exitcode) {
+    explicit ExitException(ExitCode exitcode) : exitcode(exitcode) {
     }
 
     ExitCode get_exitcode() const {

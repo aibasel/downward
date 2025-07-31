@@ -14,7 +14,8 @@ namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class MergeScoringFunction {
     virtual std::string name() const = 0;
-    virtual void dump_function_specific_options(utils::LogProxy &) const {}
+    virtual void dump_function_specific_options(utils::LogProxy &) const {
+    }
 protected:
     bool initialized;
 public:

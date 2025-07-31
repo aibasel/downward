@@ -1,7 +1,5 @@
 #include "landmark_factory_hm.h"
 
-#include <numeric>
-
 #include "exploration.h"
 #include "landmark.h"
 
@@ -14,6 +12,7 @@
 #include "../utils/markup.h"
 #include "../utils/system.h"
 
+#include <numeric>
 #include <ranges>
 #include <set>
 #include <unordered_set>
@@ -38,10 +37,12 @@ static void set_difference(vector<int> &set1, const vector<int> &set2) {
     swap(set1, result);
 }
 
-static bool are_mutex(const VariablesProxy &variables,
-                      const FactPair &atom1, const FactPair &atom2) {
-    return variables[atom1.var].get_fact(atom1.value).is_mutex(
-        variables[atom2.var].get_fact(atom2.value));
+static bool are_mutex(
+    const VariablesProxy &variables, const FactPair &atom1,
+    const FactPair &atom2) {
+    return variables[atom1.var]
+        .get_fact(atom1.value)
+        .is_mutex(variables[atom2.var].get_fact(atom2.value));
 }
 
 void LandmarkFactoryHM::get_m_sets_including_current_var(
@@ -51,12 +52,12 @@ void LandmarkFactoryHM::get_m_sets_including_current_var(
     for (int value = 0; value < domain_size; ++value) {
         FactPair atom(current_var, value);
         bool use_var = ranges::none_of(current, [&](const FactPair &other) {
-                                           return are_mutex(variables, atom, other);
-                                       });
+            return are_mutex(variables, atom, other);
+        });
         if (use_var) {
             current.push_back(atom);
-            get_m_sets(variables, num_included + 1, current_var + 1,
-                       current, subsets);
+            get_m_sets(
+                variables, num_included + 1, current_var + 1, current, subsets);
             current.pop_back();
         }
     }
@@ -83,17 +84,18 @@ void LandmarkFactoryHM::get_m_sets(
 }
 
 void LandmarkFactoryHM::get_m_sets_of_set_including_current_proposition(
-    const VariablesProxy &variables, int num_included,
-    int current_index, Propositions &current,
-    vector<Propositions> &subsets, const Propositions &superset) {
+    const VariablesProxy &variables, int num_included, int current_index,
+    Propositions &current, vector<Propositions> &subsets,
+    const Propositions &superset) {
     const FactPair &atom = superset[current_index];
     bool use_proposition = ranges::none_of(current, [&](const FactPair &other) {
-                                               return are_mutex(variables, atom, other);
-                                           });
+        return are_mutex(variables, atom, other);
+    });
     if (use_proposition) {
         current.push_back(atom);
-        get_m_sets_of_set(variables, num_included + 1, current_index + 1,
-                          current, subsets, superset);
+        get_m_sets_of_set(
+            variables, num_included + 1, current_index + 1, current, subsets,
+            superset);
         current.pop_back();
     }
 }
@@ -116,24 +118,25 @@ void LandmarkFactoryHM::get_m_sets_of_set(
     get_m_sets_of_set_including_current_proposition(
         variables, num_included, current_index, current, subsets, superset);
     // Do not include proposition at `current_index` in set.
-    get_m_sets_of_set(variables, num_included, current_index + 1,
-                      current, subsets, superset);
+    get_m_sets_of_set(
+        variables, num_included, current_index + 1, current, subsets, superset);
 }
 
-void LandmarkFactoryHM::get_split_m_sets_including_current_proposition_from_first(
-    const VariablesProxy &variables, int num_included1, int num_included2,
-    int current_index1, int current_index2, Propositions &current,
-    vector<Propositions> &subsets, const Propositions &superset1,
-    const Propositions &superset2) {
+void LandmarkFactoryHM::
+    get_split_m_sets_including_current_proposition_from_first(
+        const VariablesProxy &variables, int num_included1, int num_included2,
+        int current_index1, int current_index2, Propositions &current,
+        vector<Propositions> &subsets, const Propositions &superset1,
+        const Propositions &superset2) {
     const FactPair &atom = superset1[current_index1];
     bool use_proposition = ranges::none_of(current, [&](const FactPair &other) {
-                                               return are_mutex(variables, atom, other);
-                                           });
+        return are_mutex(variables, atom, other);
+    });
     if (use_proposition) {
         current.push_back(atom);
-        get_split_m_sets(variables, num_included1 + 1, num_included2,
-                         current_index1 + 1, current_index2,
-                         current, subsets, superset1, superset2);
+        get_split_m_sets(
+            variables, num_included1 + 1, num_included2, current_index1 + 1,
+            current_index2, current, subsets, superset1, superset2);
         current.pop_back();
     }
 }
@@ -142,9 +145,9 @@ void LandmarkFactoryHM::get_split_m_sets_including_current_proposition_from_firs
    that all subsets have >= 1 elements from each superset. */
 void LandmarkFactoryHM::get_split_m_sets(
     const VariablesProxy &variables, int num_included1, int num_included2,
-    int current_index1, int current_index2,
-    Propositions &current, vector<Propositions> &subsets,
-    const Propositions &superset1, const Propositions &superset2) {
+    int current_index1, int current_index2, Propositions &current,
+    vector<Propositions> &subsets, const Propositions &superset1,
+    const Propositions &superset2) {
     int superset1_size = static_cast<int>(superset1.size());
     int superset2_size = static_cast<int>(superset2.size());
     assert(superset1_size > 0);
@@ -172,8 +175,9 @@ void LandmarkFactoryHM::get_split_m_sets(
     } else {
         /*
           Switching order of 1 and 2 here to avoid code duplication in the form
-          of a function `get_split_m_sets_including_current_proposition_from_second`
-          analogous to `get_split_m_sets_including_current_proposition_from_first`.
+          of a function
+          `get_split_m_sets_including_current_proposition_from_second` analogous
+          to `get_split_m_sets_including_current_proposition_from_first`.
         */
         get_split_m_sets_including_current_proposition_from_first(
             variables, num_included2, num_included1, current_index2,
@@ -223,8 +227,8 @@ static bool proposition_variables_disjoint(
   We assume the variables in `superset1` and `superset2` are disjoint.
 */
 vector<Propositions> LandmarkFactoryHM::get_split_m_sets(
-    const VariablesProxy &variables,
-    const Propositions &superset1, const Propositions &superset2) {
+    const VariablesProxy &variables, const Propositions &superset1,
+    const Propositions &superset2) {
     assert(proposition_variables_disjoint(superset1, superset2));
     Propositions c;
     vector<Propositions> subsets;
@@ -256,9 +260,9 @@ void LandmarkFactoryHM::print_proposition(
     if (log.is_at_least_verbose()) {
         VariableProxy var = variables[proposition.var];
         FactProxy atom = var.get_fact(proposition.value);
-        log << atom.get_name() << " ("
-            << var.get_name() << "(" << atom.get_variable().get_id() << ")"
-            << "->" << atom.get_value() << ")";
+        log << atom.get_name() << " (" << var.get_name() << "("
+            << atom.get_variable().get_id() << ")" << "->" << atom.get_value()
+            << ")";
     }
 }
 
@@ -339,7 +343,8 @@ void LandmarkFactoryHM::print_proposition_set(
 }
 
 set<FactPair> LandmarkFactoryHM::print_effect_condition(
-    const VariablesProxy &variables, const vector<int> &effect_conditions) const {
+    const VariablesProxy &variables,
+    const vector<int> &effect_conditions) const {
     set<FactPair> effect_condition_set;
     log << "effect conditions:\n";
     for (int effect_condition : effect_conditions) {
@@ -454,8 +459,8 @@ Propositions LandmarkFactoryHM::initialize_preconditions(
 Propositions LandmarkFactoryHM::initialize_postconditions(
     const VariablesProxy &variables, const OperatorProxy &op,
     PiMOperator &pm_op) {
-    Propositions postcondition = get_operator_postcondition(
-        static_cast<int>(variables.size()), op);
+    Propositions postcondition =
+        get_operator_postcondition(static_cast<int>(variables.size()), op);
     vector<Propositions> subsets = get_m_sets(variables, postcondition);
     pm_op.effect.reserve(subsets.size());
 
@@ -486,7 +491,7 @@ vector<int> LandmarkFactoryHM::compute_noop_effect(
     const vector<Propositions> &postconditions) {
     vector<int> noop_effect;
     noop_effect.reserve(postconditions.size());
-    for (const auto &subset: postconditions) {
+    for (const auto &subset : postconditions) {
         assert(static_cast<int>(subset.size()) <= m);
         assert(set_indices.contains(subset));
         int set_index = set_indices[subset];
@@ -496,9 +501,9 @@ vector<int> LandmarkFactoryHM::compute_noop_effect(
 }
 
 void LandmarkFactoryHM::add_conditional_noop(
-    PiMOperator &pm_op, int op_id,
-    const VariablesProxy &variables, const Propositions &propositions,
-    const Propositions &preconditions, const Propositions &postconditions) {
+    PiMOperator &pm_op, int op_id, const VariablesProxy &variables,
+    const Propositions &propositions, const Propositions &preconditions,
+    const Propositions &postconditions) {
     int noop_index = static_cast<int>(pm_op.conditional_noops.size());
 
     /*
@@ -533,12 +538,13 @@ void LandmarkFactoryHM::initialize_noops(
         if (static_cast<int>(propositions.size()) >= m) {
             break;
         }
-        if (proposition_set_variables_disjoint(postconditions, propositions)
-            && proposition_sets_are_mutex(variables, postconditions,
-                                          propositions)) {
+        if (proposition_set_variables_disjoint(postconditions, propositions) &&
+            proposition_sets_are_mutex(
+                variables, postconditions, propositions)) {
             // For each such set, add a "conditional effect" to the operator.
-            add_conditional_noop(pm_op, op_id, variables,
-                                 propositions, preconditions, postconditions);
+            add_conditional_noop(
+                pm_op, op_id, variables, propositions, preconditions,
+                postconditions);
         }
     }
     pm_op.conditional_noops.shrink_to_fit();
@@ -619,10 +625,9 @@ void LandmarkFactoryHM::discard_conjunctive_landmarks() {
         log << "Discarding " << landmark_graph->get_num_conjunctive_landmarks()
             << " conjunctive landmarks" << endl;
     }
-    landmark_graph->remove_node_if(
-        [](const LandmarkNode &node) {
-            return node.get_landmark().type == CONJUNCTIVE;
-        });
+    landmark_graph->remove_node_if([](const LandmarkNode &node) {
+        return node.get_landmark().type == CONJUNCTIVE;
+    });
 }
 
 static bool operator_can_achieve_landmark(
@@ -638,8 +643,8 @@ static bool operator_can_achieve_landmark(
             continue;
         }
         auto mutex = [&](const FactPair &other) {
-                return are_mutex(variables, atom, other);
-            };
+            return are_mutex(variables, atom, other);
+        };
         if (ranges::any_of(postcondition, mutex)) {
             return false;
         }
@@ -742,7 +747,8 @@ void LandmarkFactoryHM::propagate_pm_propositions(
     }
 }
 
-LandmarkFactoryHM::TriggerSet LandmarkFactoryHM::mark_state_propositions_reached(
+LandmarkFactoryHM::TriggerSet
+LandmarkFactoryHM::mark_state_propositions_reached(
     const State &state, const VariablesProxy &variables) {
     vector<Propositions> state_propositions = get_m_sets(variables, state);
     TriggerSet triggers;
@@ -772,8 +778,8 @@ void LandmarkFactoryHM::collect_condition_landmarks(
     const vector<int> &condition, vector<int> &landmarks) const {
     for (int proposition : condition) {
         const vector<int> &other_landmarks = hm_table[proposition].landmarks;
-        landmarks.insert(landmarks.end(), other_landmarks.begin(),
-                         other_landmarks.end());
+        landmarks.insert(
+            landmarks.end(), other_landmarks.begin(), other_landmarks.end());
     }
     // Each proposition is a landmark for itself but not stored for itself.
     landmarks.insert(landmarks.end(), condition.begin(), condition.end());
@@ -807,8 +813,8 @@ void LandmarkFactoryHM::update_proposition_landmark(
     if (ranges::find(landmarks, proposition) == landmarks.end()) {
         hm_entry.first_achievers.insert(op_id);
         if (use_orders) {
-            set_intersection(hm_entry.precondition_landmarks,
-                             precondition_landmarks);
+            set_intersection(
+                hm_entry.precondition_landmarks, precondition_landmarks);
         }
     }
 
@@ -823,20 +829,20 @@ void LandmarkFactoryHM::update_effect_landmarks(
     for (int proposition : effect) {
         HMEntry &hm_entry = hm_table[proposition];
         if (hm_entry.reached) {
-            update_proposition_landmark(op_id, proposition, landmarks,
-                                        precondition_landmarks, triggers);
+            update_proposition_landmark(
+                op_id, proposition, landmarks, precondition_landmarks,
+                triggers);
         } else {
             initialize_proposition_landmark(
-                op_id, hm_entry, landmarks, precondition_landmarks,
-                triggers);
+                op_id, hm_entry, landmarks, precondition_landmarks, triggers);
         }
     }
 }
 
 void LandmarkFactoryHM::update_noop_landmarks(
     const unordered_set<int> &current_triggers, const PiMOperator &op,
-    const vector<int> &landmarks,
-    const vector<int> &prerequisites, TriggerSet &next_triggers) {
+    const vector<int> &landmarks, const vector<int> &prerequisites,
+    TriggerSet &next_triggers) {
     if (current_triggers.empty()) {
         /*
           The landmarks for the operator have changed, so we have to recompute
@@ -876,8 +882,9 @@ void LandmarkFactoryHM::compute_hm_landmarks(const TaskProxy &task_proxy) {
                     precondition.end());
                 utils::sort_unique(precondition_landmarks);
             }
-            update_effect_landmarks(op_id, op.effect, landmarks,
-                                    precondition_landmarks, next_trigger);
+            update_effect_landmarks(
+                op_id, op.effect, landmarks, precondition_landmarks,
+                next_trigger);
             update_noop_landmarks(
                 triggers, op, landmarks, precondition_landmarks, next_trigger);
         }
@@ -910,8 +917,8 @@ void LandmarkFactoryHM::compute_noop_landmarks(
     }
 
     update_effect_landmarks(
-        op_id, effect, conditional_noop_landmarks,
-        conditional_noop_necessary, next_trigger);
+        op_id, effect, conditional_noop_landmarks, conditional_noop_necessary,
+        next_trigger);
 }
 
 void LandmarkFactoryHM::add_landmark_node(int set_index, bool goal) {
@@ -922,14 +929,15 @@ void LandmarkFactoryHM::add_landmark_node(int set_index, bool goal) {
         assert(!facts.empty());
         LandmarkType type = facts.size() == 1 ? ATOMIC : CONJUNCTIVE;
         Landmark landmark(move(facts), type, goal);
-        landmark.first_achievers.insert(hm_entry.first_achievers.begin(),
-                                        hm_entry.first_achievers.end());
+        landmark.first_achievers.insert(
+            hm_entry.first_achievers.begin(), hm_entry.first_achievers.end());
         landmark_nodes[set_index] =
             &landmark_graph->add_landmark(move(landmark));
     }
 }
 
-unordered_set<int> LandmarkFactoryHM::collect_and_add_landmarks_to_landmark_graph(
+unordered_set<int>
+LandmarkFactoryHM::collect_and_add_landmarks_to_landmark_graph(
     const VariablesProxy &variables, const Propositions &goals) {
     unordered_set<int> landmarks;
     for (const Propositions &goal_subset : get_m_sets(variables, goals)) {
@@ -1008,8 +1016,7 @@ void LandmarkFactoryHM::add_landmark_orderings(
     }
 }
 
-void LandmarkFactoryHM::construct_landmark_graph(
-    const TaskProxy &task_proxy) {
+void LandmarkFactoryHM::construct_landmark_graph(const TaskProxy &task_proxy) {
     Propositions goals =
         task_properties::get_fact_pairs(task_proxy.get_goals());
     VariablesProxy variables = task_proxy.get_variables();
@@ -1050,29 +1057,23 @@ public:
                 "https://ai.dmi.unibas.ch/papers/keyder-et-al-ecai2010.pdf",
                 "Proceedings of the 19th European Conference on Artificial "
                 "Intelligence (ECAI 2010)",
-                "335-340",
-                "IOS Press",
-                "2010"));
+                "335-340", "IOS Press", "2010"));
 
         add_option<int>(
             "m", "subset size (if unsure, use the default of 2)", "2");
         add_option<bool>(
-            "conjunctive_landmarks",
-            "keep conjunctive landmarks",
-            "true");
+            "conjunctive_landmarks", "keep conjunctive landmarks", "true");
         add_use_orders_option_to_feature(*this);
         add_landmark_factory_options_to_feature(*this);
 
         document_language_support(
-            "conditional_effects",
-            "ignored, i.e. not supported");
+            "conditional_effects", "ignored, i.e. not supported");
     }
 
     virtual shared_ptr<LandmarkFactoryHM> create_component(
         const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<LandmarkFactoryHM>(
-            opts.get<int>("m"),
-            opts.get<bool>("conjunctive_landmarks"),
+            opts.get<int>("m"), opts.get<bool>("conjunctive_landmarks"),
             get_use_orders_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));
     }

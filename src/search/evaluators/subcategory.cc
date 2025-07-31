@@ -6,6 +6,5 @@ public:
     EvaluatorGroupPlugin() : SubcategoryPlugin("evaluators_basic") {
         document_title("Basic evaluators");
     }
-}
-_subcategory_plugin;
+} _subcategory_plugin;
 }

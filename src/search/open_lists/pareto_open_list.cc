@@ -38,8 +38,8 @@ class ParetoOpenList : public OpenList<Entry> {
     void remove_key(const KeyType &key);
 
 protected:
-    virtual void do_insertion(EvaluationContext &eval_context,
-                              const Entry &entry) override;
+    virtual void do_insertion(
+        EvaluationContext &eval_context, const Entry &entry) override;
 
 public:
     ParetoOpenList(
@@ -49,17 +49,17 @@ public:
     virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
-    virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
-    virtual bool is_dead_end(
-        EvaluationContext &eval_context) const override;
+    virtual void get_path_dependent_evaluators(
+        set<Evaluator *> &evals) override;
+    virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
 };
 
 template<class Entry>
 ParetoOpenList<Entry>::ParetoOpenList(
-    const vector<shared_ptr<Evaluator>> &evals,
-    bool state_uniform_selection, int random_seed, bool pref_only)
+    const vector<shared_ptr<Evaluator>> &evals, bool state_uniform_selection,
+    int random_seed, bool pref_only)
     : OpenList<Entry>(pref_only),
       rng(utils::get_rng(random_seed)),
       state_uniform_selection(state_uniform_selection),
@@ -125,7 +125,8 @@ void ParetoOpenList<Entry>::do_insertion(
     vector<int> key;
     key.reserve(evaluators.size());
     for (const shared_ptr<Evaluator> &evaluator : evaluators)
-        key.push_back(eval_context.get_evaluator_value_or_infinity(evaluator.get()));
+        key.push_back(
+            eval_context.get_evaluator_value_or_infinity(evaluator.get()));
 
     Bucket &bucket = buckets[key];
     bool newkey = bucket.empty();
@@ -197,8 +198,7 @@ void ParetoOpenList<Entry>::get_path_dependent_evaluators(
 }
 
 template<class Entry>
-bool ParetoOpenList<Entry>::is_dead_end(
-    EvaluationContext &eval_context) const {
+bool ParetoOpenList<Entry>::is_dead_end(EvaluationContext &eval_context) const {
     // TODO: Document this behaviour.
     // If one safe heuristic detects a dead end, return true.
     if (is_reliable_dead_end(eval_context))
@@ -221,22 +221,20 @@ bool ParetoOpenList<Entry>::is_reliable_dead_end(
 }
 
 ParetoOpenListFactory::ParetoOpenListFactory(
-    const vector<shared_ptr<Evaluator>> &evals,
-    bool state_uniform_selection, int random_seed, bool pref_only)
+    const vector<shared_ptr<Evaluator>> &evals, bool state_uniform_selection,
+    int random_seed, bool pref_only)
     : evals(evals),
       state_uniform_selection(state_uniform_selection),
       random_seed(random_seed),
       pref_only(pref_only) {
 }
 
-unique_ptr<StateOpenList>
-ParetoOpenListFactory::create_state_open_list() {
+unique_ptr<StateOpenList> ParetoOpenListFactory::create_state_open_list() {
     return make_unique<ParetoOpenList<StateOpenListEntry>>(
         evals, state_uniform_selection, random_seed, pref_only);
 }
 
-unique_ptr<EdgeOpenList>
-ParetoOpenListFactory::create_edge_open_list() {
+unique_ptr<EdgeOpenList> ParetoOpenListFactory::create_edge_open_list() {
     return make_unique<ParetoOpenList<EdgeOpenListEntry>>(
         evals, state_uniform_selection, random_seed, pref_only);
 }
@@ -262,14 +260,13 @@ public:
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<ParetoOpenListFactory>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<ParetoOpenListFactory> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<ParetoOpenListFactory>(
             opts.get_list<shared_ptr<Evaluator>>("evals"),
             opts.get<bool>("state_uniform_selection"),
             utils::get_rng_arguments_from_options(opts),
-            get_open_list_arguments_from_options(opts)
-            );
+            get_open_list_arguments_from_options(opts));
     }
 };
 

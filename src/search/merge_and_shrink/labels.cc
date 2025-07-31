@@ -12,9 +12,10 @@ using namespace std;
 
 namespace merge_and_shrink {
 LabelsConstIterator::LabelsConstIterator(
-    const vector<int> &label_costs,
-    vector<int>::const_iterator it)
-    : end_it(label_costs.end()), it(it), current_pos(distance(label_costs.begin(), it)) {
+    const vector<int> &label_costs, vector<int>::const_iterator it)
+    : end_it(label_costs.end()),
+      it(it),
+      current_pos(distance(label_costs.begin(), it)) {
     advance_to_next_valid_index();
 }
 
@@ -67,8 +68,7 @@ void Labels::dump_labels() const {
     utils::g_log << "active labels:" << endl;
     for (size_t label = 0; label < label_costs.size(); ++label) {
         if (label_costs[label] != -1) {
-            utils::g_log << "label " << label
-                         << ", cost " << label_costs[label]
+            utils::g_log << "label " << label << ", cost " << label_costs[label]
                          << endl;
         }
     }

@@ -18,9 +18,10 @@
   to eager and lazy search.
 */
 
+#include "../utils/logging.h"
+
 #include <memory>
 #include <vector>
-#include "../utils/logging.h"
 
 class Evaluator;
 class OpenListFactory;
@@ -62,11 +63,10 @@ extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
   The resulting open list factory produces a tie-breaking open list
   ordered primarily on g + h and secondarily on h.
 */
-extern std::pair<std::shared_ptr<OpenListFactory>,
-                 const std::shared_ptr<Evaluator>>
+extern std::pair<
+    std::shared_ptr<OpenListFactory>, const std::shared_ptr<Evaluator>>
 create_astar_open_list_factory_and_f_eval(
-    const std::shared_ptr<Evaluator> &h_eval,
-    utils::Verbosity verbosity);
+    const std::shared_ptr<Evaluator> &h_eval, utils::Verbosity verbosity);
 }
 
 #endif

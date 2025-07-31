@@ -68,8 +68,7 @@ void LandmarkCutLandmarks::build_relaxed_operator(const OperatorProxy &op) {
 
 void LandmarkCutLandmarks::add_relaxed_operator(
     vector<RelaxedProposition *> &&precondition,
-    vector<RelaxedProposition *> &&effects,
-    int op_id, int base_cost) {
+    vector<RelaxedProposition *> &&effects, int op_id, int base_cost) {
     RelaxedOperator relaxed_op(
         move(precondition), move(effects), op_id, base_cost);
     if (relaxed_op.preconditions.empty())
