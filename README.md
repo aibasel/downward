@@ -68,6 +68,7 @@ contributing, and finally by last name.
 - 2021-2025 Clemens Büchner
 - 2022-2025 Remo Christen
 - 2022-2025 Simon Dold
+- 2025 Travis Rivera Petit
 - 2010-2011, 2013-2024 Silvan Sievers
 - 2013, 2015-2024 Salomé Eriksson
 - 2018-2024 Patrick Ferber
