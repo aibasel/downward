@@ -13,7 +13,6 @@ using utils::ExitCode;
 namespace utils {
 static const string end_of_line_sentinel("\n");
 
-
 static bool is_whitespace(const string &s) {
     for (char c : s) {
         if (!isspace(c))
@@ -22,11 +21,8 @@ static bool is_whitespace(const string &s) {
     return true;
 }
 
-
-TaskParserError::TaskParserError(const string &msg)
-    : Exception(msg) {
+TaskParserError::TaskParserError(const string &msg) : Exception(msg) {
 }
-
 
 void TaskParserError::add_context(const string &line) {
     context.push_back(line);
@@ -49,9 +45,7 @@ void TaskParserError::print_with_context(ostream &out) const {
     out << get_message() << endl;
 }
 
-
-TaskLexer::TaskLexer(istream &stream)
-    : stream(stream) {
+TaskLexer::TaskLexer(istream &stream) : stream(stream) {
 }
 
 void TaskLexer::get_next_nonempty_line() {
@@ -136,9 +130,9 @@ void TaskLexer::confirm_end_of_line() {
         token_number = 0;
         tokens.clear();
     } else {
-        error("Expected end of line after token "
-              + to_string(token_number - 1) + " but line contains "
-              + to_string(tokens.size() - 1) + " tokens.");
+        error(
+            "Expected end of line after token " + to_string(token_number - 1) +
+            " but line contains " + to_string(tokens.size() - 1) + " tokens.");
     }
 }
 

@@ -28,7 +28,6 @@ public:
     void print_with_context(std::ostream &out) const;
 };
 
-
 /*
   Split a task encoding in the translator output format into tokens.
   Read a complete line as a single token *or* split a line into
