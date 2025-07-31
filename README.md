@@ -65,16 +65,17 @@ contributing, and finally by last name.
 - 2009, 2025 Christian Muise
 - 2010-2025 Jendrik Seipp
 - 2012-2025 Florian Pommerening
+- 2013, 2015-2025 Salomé Eriksson
 - 2021-2025 Clemens Büchner
 - 2022-2025 Remo Christen
 - 2022-2025 Simon Dold
+- 2023-2025 Claudia S. Grundke
+- 2024–2025 Tanja Schindler
+- 2024-2025 David Speck
+- 2025 Travis Rivera Petit
 - 2010-2011, 2013-2024 Silvan Sievers
-- 2013, 2015-2024 Salomé Eriksson
 - 2018-2024 Patrick Ferber
-- 2023-2024 Claudia S. Grundke
 - 2024 Martín Pozo
-- 2024 Tanja Schindler
-- 2024 David Speck
 - 2015, 2021-2023 Thomas Keller
 - 2018-2020, 2023 Augusto B. Corrêa
 - 2023 Victor Paléologue
