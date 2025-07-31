@@ -1,8 +1,8 @@
 #! /usr/bin/env python3
 
 
-import itertools
 from functools import reduce
+import itertools
 import sys
 
 from translate import pddl

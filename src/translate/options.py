@@ -1,5 +1,5 @@
+from pathlib import Path
 import argparse
-import os
 import sys
 
 
@@ -17,11 +17,11 @@ def infer_prog():
         module_name = spec.name
         if module_name.endswith('.__main__'):
             module_name = module_name.rsplit('.', 1)[0]
-        python_exec = os.path.basename(sys.executable)
+        python_exec = Path(sys.executable).name
         return f"{python_exec} -m {module_name}"
     else:
         # Invoked as script directly.
-        return os.path.basename(sys.argv[0])
+        return Path(sys.argv[0]).name
 
 
 def parse_args():
