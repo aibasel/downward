@@ -27,7 +27,7 @@ jobs:
 
       - name: Install clang-format
         run: |
-          sudo apt-get -y install clang-format
+          sudo apt-get -y install clang-format-18
 
       - name: Run code style tests
         run: |
