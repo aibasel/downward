@@ -44,7 +44,7 @@ def main():
     src_files = utils.get_src_files(SEARCH_DIR, (".h", ".cc"))
     print(f"Checking {len(src_files)} files with clang-format.")
     config_file = os.path.join(REPO, ".clang-format")
-    executable = "clang-format"
+    executable = "clang-format-18"
     exe_error_str = f"Error: {executable} not found. Is it on the PATH?"
     flag = "-i" if args.modify else "--dry-run"
     cmd = [
