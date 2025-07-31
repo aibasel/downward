@@ -21,7 +21,7 @@ detailed discussion.
 ## Apptainer
 
 ### Apptainer Installation
-To run the Apptainer image, first install one of the [releases](https://github.com/apptainer/apptainer/releases) or follow the steps provided [here](https://apptainer.org/docs/user/main/quick_start.html#installation).
+To run the Apptainer image, first install one of the [Apptainer releases](https://github.com/apptainer/apptainer/releases) or follow the steps provided on the [Apptainer page](https://apptainer.org/docs/user/main/quick_start.html#installation).
 We tested with versions 1.2.2 and 1.4.1.
 
 To download the Fast Downward image, run:
@@ -33,19 +33,16 @@ You can run the planner as follows:
 
     ./fast-downward.sif <your-planner-options>
 
-Assume you want to solve the gripper planning task `prob01.pddl` from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
+Assume you want to solve a planning task from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
 
-    ./fast-downward.sif <path-to-benchmarks>/gripper/prob01.pddl --search "astar(lmcut())"
-
-Here `<path-to-benchmarks>` refers to your local benchmarks directory containing the [gripper benchmarks](https://github.com/aibasel/downward-benchmarks/tree/master/gripper).
-It can be specified as an absolute path, relative path or using a predefined path variable, e.g. `$BENCHMARKS`.
+    ./fast-downward.sif <domain.pddl> <task.pddl> --search "astar(lmcut())"
 
 See more planner options at [planner usage](planner-usage.md).
 
 ## Docker
 
 ### Docker Installation
-To install Docker on your machine follow the steps provided [here](https://docs.docker.com/get-docker/).
+To install Docker on your machine follow the steps provided on the [Docker page](https://docs.docker.com/get-docker/).
 
 ### Docker Usage
 You can run the planner as follows:
@@ -58,25 +55,25 @@ Note:
 -   The Docker image for Fast Downward is installed on your machine as a side-effect of the command.
 -   You can use the Docker flag `-rm` for cleaning up the container (recommended)
 
-Assume you want to solve the gripper planning task `prob01.pddl` from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
+Assume you want to solve a planning task from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
 
-    sudo docker run --rm -v <path-to-benchmarks>:/benchmarks aibasel/downward /benchmarks/gripper/prob01.pddl --search "astar(lmcut())"
+    sudo docker run --rm -v <path-to-benchmarks>:/benchmarks aibasel/downward /benchmarks/<domain.pddl> /benchmarks/<task.pddl> --search "astar(lmcut())"
 
-Here `<path-to-benchmarks>` refers to your local benchmarks directory containing the [gripper benchmarks](https://github.com/aibasel/downward-benchmarks/tree/master/gripper).
-It can be specified as an absolute path, relative path (only as of Docker Engine version 23) or using a predefined path variable, e.g. `$BENCHMARKS`.
+Here `<path-to-benchmarks>` refers to your local directory containing your domain and task file.
 
 Note:
 
 -   The Docker flag `-v` mounts the local directory `<path-to-benchmarks>` of your host 
     machine under the container directory `/benchmarks`, which is the
     place where the containerised planner looks for the problem.
+-   `<path-to-benchmarks>` must be an absolute path; relative paths are only supported as of Docker Engine version 23.
 
 See more planner options at [planner usage](planner-usage.md).
 
 ## Vagrant
 
 ### Vagrant Installation
-To install Vagrant on your machine follow the steps provided [here](https://developer.hashicorp.com/vagrant/install).
+To install Vagrant on your machine follow the steps provided on the [Vagrant page](https://developer.hashicorp.com/vagrant/install).
 For Vagrant to work you also need a "provider" such as VirtualBox, VMware, Hyper-V.
 
 Note:
@@ -87,9 +84,9 @@ Note:
 To create your virtual machine using Vagrant create a new directory `<my-fast-downward-vm>` containing only the Fast Downward Vagrantfile for
 the desired [release](https://www.fast-downward.org/latest/releases). 
 
-If you want to use LP solvers see [LP Solvers](#lp_solvers).
+If you want to use LP solvers follow the steps under [LP Solvers](#lp_solvers).
 
-Otherwise, you can set up your virtual machine from the `<my-fast-downward-vm>` directory using:
+Otherwise, you can set up your virtual machine directly from the `<my-fast-downward-vm>` directory using:
     
     vagrant up
 
@@ -116,7 +113,7 @@ You can run the planner from *within* the vagrant VM as follows:
 
     downward/fast-downward.py <your-planner-options>
 
-Assume you want to solve the gripper planning task `prob01.pddl` from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
+Assume you want to solve a planning task from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
 
 ``` bash
 # From the <my-fast-downward-vm> directory 
@@ -128,7 +125,7 @@ vagrant upload <path-to-benchmarks> benchmarks/
 vagrant ssh
 
 # Run the planner.
-downward/fast-downward.py /vagrant/benchmarks/gripper/prob01.pddl --search "astar(lmcut())"
+downward/fast-downward.py /vagrant/benchmarks/<domain.pddl> /vagrant/benchmarks/<task.pddl> --search "astar(lmcut())"
 
 # Log out from the VM.
 logout
@@ -137,8 +134,7 @@ logout
 vagrant halt
 ```
 
-Here `<path-to-benchmarks>` refers to your local benchmarks directory containing the [gripper benchmarks](https://github.com/aibasel/downward-benchmarks/tree/master/gripper).
-It can be specified as an absolute path, relative path (only as of Docker Engine version 23) or using a predefined path variable, e.g. `$BENCHMARKS`.
+Here `<path-to-benchmarks>` refers to your local directory containing your domain and task file.
 
 See more planner options at [planner usage](planner-usage.md).
 
@@ -147,7 +143,8 @@ See more planner options at [planner usage](planner-usage.md).
 ### Source Code Installation
 
 We recommend using the [latest release](https://www.fast-downward.org/latest/releases), especially
-for scientific experiments. 
+for scientific experiments. See the [build instructions](https://github.com/aibasel/downward/blob/main/BUILD.md)
+for a complete description on how to build the planner from source.
 
 #### Tarball
 Download the tarball from the [latest release](https://www.fast-downward.org/latest/releases).
@@ -158,28 +155,16 @@ E.g. to build Fast Downward 24.06.01 download the tarball from [here](https://ww
     ./build.py
 
 #### Repository
-Alternatively, you can fork/clone the latest release branch of the [repository](https://github.com/aibasel/downward) and build Fast Downward using:
-    
-    ./build.py
-
-Note:
-
--   If you are using the main branch, be aware that things can break or degrade with every commit.
-
-See the [build instructions](https://github.com/aibasel/downward/blob/main/BUILD.md)
-for a complete description on how to build the planner from source.
+Alternatively, you can fork/clone the [repository](https://github.com/aibasel/downward). If you are using the main branch, be aware that things can break or degrade with every commit.
 
 ### Source Code Usage
 You can run the planner as follows:
 
     ./fast-downward.py <your-planner-options>
 
-Assume you want to solve the gripper planning task `prob01.pddl` from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
+Assume you want to solve a planning task from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
 
-    ./fast-downward.py <path-to-benchmarks>/gripper/prob01.pddl --search "astar(lmcut())"
-
-Here `<path-to-benchmarks>` refers to your local benchmarks directory containing the [gripper benchmarks](https://github.com/aibasel/downward-benchmarks/tree/master/gripper).
-It can be specified as an absolute path, relative path or using a predefined path variable, e.g. `$BENCHMARKS`.
+    ./fast-downward.py <domain.pddl> <task.pddl> --search "astar(lmcut())"
 
 See more planner options at [planner usage](planner-usage.md).
 
