@@ -1,6 +1,6 @@
 from typing import List
 
-from .pddl_types import TypedObject
+from translate.pddl.pddl_types import TypedObject
 
 class Predicate:
     def __init__(self, name: str, arguments: List[TypedObject]) -> None:

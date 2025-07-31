@@ -1,8 +1,8 @@
 from typing import List
 
-from . import conditions
-from .conditions import Atom, Condition, Literal
-from .pddl_types import TypedObject
+from translate.pddl import conditions
+from translate.pddl.conditions import Atom, Condition, Literal
+from translate.pddl.pddl_types import TypedObject
 
 
 class Axiom:

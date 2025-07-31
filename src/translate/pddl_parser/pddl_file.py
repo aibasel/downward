@@ -1,6 +1,6 @@
-from . import lisp_parser
-from . import parse_error
-from . import parsing_functions
+from translate.pddl_parser import lisp_parser
+from translate.pddl_parser import parse_error
+from translate.pddl_parser import parsing_functions
 
 file_open = open
 
@@ -29,9 +29,9 @@ def open(domain_filename=None, task_filename=None):
         # at the head of this file because open is exposed in __init__.py
         # and as a result importing anything of the pddl_parser package in
         # external code would then trigger this arg parse.
-        import options
-        domain_filename = domain_filename or options.domain
-        task_filename = task_filename or options.task
+        from translate.options import get_options
+        domain_filename = domain_filename or get_options().domain
+        task_filename = task_filename or get_options().task
 
     domain_pddl = parse_pddl_file("domain", domain_filename)
     task_pddl = parse_pddl_file("task", task_filename)

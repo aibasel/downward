@@ -1,11 +1,11 @@
 import contextlib
 import sys
 
-import graph
-import options
-import pddl
-from .warning import print_warning
-from .parse_error import ParseError
+from translate import graph
+from translate import pddl
+from translate.options import get_options
+from translate.pddl_parser.warning import print_warning
+from translate.pddl_parser.parse_error import ParseError
 
 TYPED_LIST_SEPARATOR = "-"
 
@@ -516,7 +516,7 @@ def parse_action(context, alist, type_dict, predicate_dict, constant_names):
             context.error(f"Missing fields. Expecting {SYNTAX_ACTION}.")
         for _ in iterator:
             context.error(f"Too many fields. Expecting {SYNTAX_ACTION}")
-    if eff or options.keep_no_ops:
+    if eff or get_options().keep_no_ops:
         return pddl.Action(name, parameters, len(parameters),
                            precondition, eff, cost)
     else:

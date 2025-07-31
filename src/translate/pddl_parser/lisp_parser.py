@@ -1,6 +1,6 @@
 __all__ = ["parse_nested_list"]
 
-from .parse_error import ParseError
+from translate.pddl_parser.parse_error import ParseError
 
 # Basic functions for parsing PDDL (Lisp) files.
 def parse_nested_list(input_file):

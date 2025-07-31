@@ -1,9 +1,7 @@
 #! /usr/bin/env python3
 
 
-import os
 import sys
-import traceback
 from typing import Dict, List, Optional, Tuple, Union
 
 VarValPair = Tuple[int, int]
@@ -19,19 +17,18 @@ from collections import defaultdict
 from copy import deepcopy
 from itertools import product
 
-import axiom_rules
-import fact_groups
-import instantiate
-import normalize
-import options
-import pddl
-import pddl_parser
-import sas_tasks
-import signal
-import simplify
-import timers
-import tools
-import variable_order
+from translate import axiom_rules
+from translate import fact_groups
+from translate import instantiate
+from translate import normalize
+from translate import pddl
+from translate import pddl_parser
+from translate import sas_tasks
+from translate import simplify
+from translate import timers
+from translate import tools
+from translate import variable_order
+from translate.options import get_options
 
 # TODO: The translator may generate trivial derived variables which are always
 # true, for example if there ia a derived predicate in the input that only
@@ -44,13 +41,6 @@ import variable_order
 # non-derived).
 
 DEBUG = False
-
-
-## For a full list of exit codes, please see driver/returncodes.py. Here,
-## we only list codes that are used by the translator component of the planner.
-TRANSLATE_OUT_OF_MEMORY = 20
-TRANSLATE_OUT_OF_TIME = 21
-TRANSLATE_INPUT_ERROR = 31
 
 simplified_effect_condition_counter = 0
 added_implied_precondition_counter = 0
@@ -282,7 +272,7 @@ def translate_strips_operator_aux(operator, dictionary, ranges, mutex_dict,
 
 def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
                        implied_facts):
-    if options.add_implied_preconditions:
+    if get_options().add_implied_preconditions:
         implied_precondition = set()
         for fact in condition.items():
             implied_precondition.update(implied_facts[fact])
@@ -305,7 +295,7 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
                                                   effects_on_var):
                     global simplified_effect_condition_counter
                     simplified_effect_condition_counter += 1
-                if (options.add_implied_preconditions and pre == -1 and
+                if (get_options().add_implied_preconditions and pre == -1 and
                         (var, 1 - post) in implied_precondition):
                     global added_implied_precondition_counter
                     added_implied_precondition_counter += 1
@@ -331,7 +321,7 @@ def build_sas_operator(name, condition, effects_by_variable, cost, ranges,
             # the condition on var is not a prevail condition but a
             # precondition, so we remove it from the prevail condition
             condition.pop(var, -1)
-    if not pre_post and not options.keep_no_ops:  # operator is noop
+    if not pre_post and not get_options().keep_no_ops:  # operator is noop
         return None
     prevail = list(condition.items())
     return sas_tasks.SASOperator(name, prevail, pre_post, cost)
@@ -449,7 +439,7 @@ def translate_task(
         # size of variable domains in full encoding
         mutex_ranges: List[int],
         # representation of all mutex groups in terms of encoding from
-        # strips_to_sas (or [] if not options.use_partial_encoding)
+        # strips_to_sas (or [] if not get_options().use_partial_encoding)
         mutex_key: List[List[VarValPair]],
         init: List[Union[pddl.Atom, pddl.Assign]],
         goals: List[pddl.Literal],
@@ -459,9 +449,9 @@ def translate_task(
         implied_facts: Dict[VarValPair, List[VarValPair]]) -> sas_tasks.SASTask:
     with timers.timing("Processing axioms", block=True):
         axioms, axiom_layer_dict = axiom_rules.handle_axioms(actions, axioms, goals,
-                                                             options.layer_strategy)
+                                                             get_options().layer_strategy)
 
-    if options.dump_task:
+    if get_options().dump_task:
         # Remove init facts that don't occur in strips_to_sas: they're constant.
         nonconstant_init = filter(strips_to_sas.get, init)
         dump_task(nonconstant_init, goals, actions, axioms, axiom_layer_dict)
@@ -563,13 +553,13 @@ def pddl_to_sas(task):
 
     with timers.timing("Building STRIPS to SAS dictionary"):
         ranges, strips_to_sas = strips_to_sas_dictionary(
-            groups, assert_partial=options.use_partial_encoding)
+            groups, assert_partial=get_options().use_partial_encoding)
 
     with timers.timing("Building dictionary for full mutex groups"):
         mutex_ranges, mutex_dict = strips_to_sas_dictionary(
             mutex_groups, assert_partial=False)
 
-    if options.add_implied_preconditions:
+    if get_options().add_implied_preconditions:
         with timers.timing("Building implied facts dictionary..."):
             implied_facts = build_implied_facts(strips_to_sas, groups,
                                                 mutex_groups)
@@ -577,7 +567,7 @@ def pddl_to_sas(task):
         implied_facts = {}
 
     with timers.timing("Building mutex information", block=True):
-        if options.use_partial_encoding:
+        if get_options().use_partial_encoding:
             mutex_key = build_mutex_key(strips_to_sas, mutex_groups)
             # mutex key represents the same information as mutex_groups but in
             # FDR representation from strips_to_sas dictionary.
@@ -601,7 +591,7 @@ def pddl_to_sas(task):
     print("%d implied preconditions added" %
           added_implied_precondition_counter)
 
-    if options.filter_unreachable_facts:
+    if get_options().filter_unreachable_facts:
         with timers.timing("Detecting unreachable propositions", block=True):
             try:
                 simplify.filter_unreachable_propositions(sas_task)
@@ -610,17 +600,17 @@ def pddl_to_sas(task):
             except simplify.TriviallySolvable:
                 return solvable_sas_task("Simplified to empty goal")
 
-    if options.reorder_variables or options.filter_unimportant_vars:
+    if get_options().reorder_variables or get_options().options.filter_unimportant_vars:
         with timers.timing("Reordering and filtering variables", block=True):
             variable_order.find_and_apply_variable_order(
-                sas_task, options.reorder_variables,
-                options.filter_unimportant_vars)
+                sas_task, get_options().reorder_variables,
+                get_options().filter_unimportant_vars)
 
     return sas_task
 
 
 def build_mutex_key(strips_to_sas, groups):
-    assert options.use_partial_encoding
+    assert get_options().use_partial_encoding
     group_keys = []
     for group in groups:
         group_key = []
@@ -703,12 +693,12 @@ def main():
     timer = timers.Timer()
     with timers.timing("Parsing", True):
         task = pddl_parser.open(
-            domain_filename=options.domain, task_filename=options.task)
+            domain_filename=get_options().domain, task_filename=get_options().task)
 
     with timers.timing("Normalizing task"):
         normalize.normalize(task)
 
-    if options.generate_relaxed_task:
+    if get_options().generate_relaxed_task:
         # Remove delete effects.
         for action in task.actions:
             for index, effect in reversed(list(enumerate(action.effects))):
@@ -719,40 +709,6 @@ def main():
     dump_statistics(sas_task)
 
     with timers.timing("Writing output"):
-        with open(options.sas_file, "w") as output_file:
+        with open(get_options().sas_file, "w") as output_file:
             sas_task.output(output_file)
     print("Done! %s" % timer)
-
-
-def handle_sigxcpu(signum, stackframe):
-    print()
-    print("Translator hit the time limit")
-    # sys.exit() is not safe to be called from within signal handlers, but
-    # os._exit() is.
-    os._exit(TRANSLATE_OUT_OF_TIME)
-
-
-if __name__ == "__main__":
-    try:
-        signal.signal(signal.SIGXCPU, handle_sigxcpu)
-    except AttributeError:
-        print("Warning! SIGXCPU is not available on your platform. "
-              "This means that the planner cannot be gracefully terminated "
-              "when using a time limit, which, however, is probably "
-              "supported on your platform anyway.")
-    try:
-        # Reserve about 10 MB of emergency memory.
-        # https://stackoverflow.com/questions/19469608/
-        emergency_memory = b"x" * 10**7
-        main()
-    except MemoryError:
-        del emergency_memory
-        print()
-        print("Translator ran out of memory, traceback:")
-        print("=" * 79)
-        traceback.print_exc(file=sys.stdout)
-        print("=" * 79)
-        sys.exit(TRANSLATE_OUT_OF_MEMORY)
-    except pddl_parser.ParseError as e:
-        print(e)
-        sys.exit(TRANSLATE_INPUT_ERROR)

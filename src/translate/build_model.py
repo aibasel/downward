@@ -1,12 +1,12 @@
 #! /usr/bin/env python3
 
 
-import sys
-import itertools
-
-import pddl
-import timers
 from functools import reduce
+import itertools
+import sys
+
+from translate import pddl
+from translate import timers
 
 def convert_rules(prog):
     RULE_TYPES = {
@@ -326,10 +326,12 @@ def compute_model(prog):
     return queue.queue
 
 if __name__ == "__main__":
-    import pddl_parser
-    import normalize
-    import pddl_to_prolog
+    from translate import normalize
+    from translate import pddl_parser
+    from translate import pddl_to_prolog
+    from translate.options import set_options
 
+    set_options() # use command line options
     print("Parsing...")
     task = pddl_parser.open()
     print("Normalizing...")
