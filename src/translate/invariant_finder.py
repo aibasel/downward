@@ -153,7 +153,7 @@ if __name__ == "__main__":
     from translate import normalize
     from translate import pddl_parser
     from translate.options import set_options
-    
+
     set_options() # use command line options
     print("Parsing...")
     task = pddl_parser.open()

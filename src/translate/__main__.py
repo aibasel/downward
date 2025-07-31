@@ -21,7 +21,7 @@ def handle_sigxcpu(signum, stackframe):
 
 if __name__ == "__main__":
     from translate.options import set_options
-   
+
     set_options() # use command line options
     try:
         signal.signal(signal.SIGXCPU, handle_sigxcpu)

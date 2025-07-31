@@ -87,7 +87,6 @@ def parse_args(args=None):
 
 
 def get_options():
-    global options
     return options
 
 
