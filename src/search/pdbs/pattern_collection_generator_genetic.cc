@@ -308,7 +308,7 @@ class PatternCollectionGeneratorGeneticFeature
           PatternCollectionGenerator, PatternCollectionGeneratorGenetic> {
 public:
     PatternCollectionGeneratorGeneticFeature() : TypedFeature("genetic") {
-        document_title("Genetic Algorithm Patterns");
+        document_title("Genetic algorithm patterns");
         document_synopsis(
             "The following paper describes the automated creation of pattern "
             "databases with a genetic algorithm. Pattern collections are initially "
@@ -352,7 +352,7 @@ public:
             "Note", "This pattern generation method uses the "
                     "zero/one pattern database heuristic.");
         document_note(
-            "Implementation Notes",
+            "Implementation notes",
             "The standard genetic algorithm procedure as described in the paper is "
             "implemented in Fast Downward. The implementation is close to the "
             "paper.\n\n"

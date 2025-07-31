@@ -48,7 +48,7 @@ class PatternGeneratorRandomFeature
     : public plugins::TypedFeature<PatternGenerator, PatternGeneratorRandom> {
 public:
     PatternGeneratorRandomFeature() : TypedFeature("random_pattern") {
-        document_title("Random Pattern");
+        document_title("Random pattern");
         document_synopsis(
             "This pattern generator implements the 'single randomized "
             "causal graph' algorithm described in experiments of the the paper" +

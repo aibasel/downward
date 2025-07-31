@@ -121,7 +121,7 @@ public:
         add_open_list_options_to_feature(*this);
 
         document_note(
-            "Implementation Notes",
+            "Implementation notes",
             "Elements with the same evaluator value are stored in double-ended "
             "queues, called \"buckets\". The open list stores a map from evaluator "
             "values to buckets. Pushing and popping from a bucket runs in constant "
