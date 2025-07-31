@@ -501,8 +501,8 @@ class RootTaskFeature
     : public plugins::TypedFeature<AbstractTask, AbstractTask> {
 public:
     RootTaskFeature() : TypedFeature("no_transform") {
-     document_title("Root task");
-     document_synopsis("No transformation of the input task.");
+        document_title("Root task");
+        document_synopsis("No transformation of the input task.");
     }
 
     virtual shared_ptr<AbstractTask>

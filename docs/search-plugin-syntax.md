@@ -41,14 +41,14 @@ Some possible calls for this specification (with `X` and `Xi` having type_x):
 
 ### Note
 
--   Search plugin names, parameter names and enumeration names are not case-sensitive. E.g., `AsTaR(BlInd(verBosiTy=VeRBosE))`
+-   Search plugin names, parameter names and enumeration names are not case-sensitive. For example, `AsTaR(BlInd(verBosiTy=VeRBosE))`
 is equivalent to `astar(blind(verbosity=verbose))`
 
 
 -   To get positions and keywords for a search plugin, use
 
 ```
-./fast-downward.py --search "" --help [Name]  // e.g. with Name=astar
+./fast-downward.py --search "" --help <name>  // e.g. with <name>=astar
 ```
 
 ## Parameter Types
@@ -63,7 +63,7 @@ Parameters of type `bool` are specified by strings `true` or `false`.
 Parameters of type `int` can be specified as "infinity". This means that the
 parameter will take the value `numeric_limits<int>::max()`, which is usually
 equal to 2^31 - 1. If an `int` parameter value ends with "K", "M" or "G", the
-value is multiplied by one thousand, one million or one billion, respectively. E.g.,
+value is multiplied by one thousand, one million or one billion, respectively. For example,
 
     bound=2K
 
@@ -74,25 +74,25 @@ is equivalent to
 ### Strings
 
 Parameters of type `string` can be specified in double quotes. Nested quotes
-can be escaped as `\"`, backslashes as `\\`, and newlines as `\n`. E.g.,
+can be escaped as `\"`, backslashes as `\\`, and newlines as `\n`. For example,
 
     filename="C:\\some.file"
 
 ### Lists
 
-List arguments have to be enclosed in square brackets now. E.g.,
+List arguments have to be enclosed in square brackets now. For example,
 
     lazy_greedy([h1, h2], preferred=[])
 
 ### Enumerations
 
-Enumeration arguments should be specified by name and are not case-sensitive. E.g.,
+Enumeration arguments should be specified by name and are not case-sensitive. For example,
 
     eager_greedy([h1,h2], cost_type=normal)
 
 To get enumeration names (and more) for a search plugin parameter, run the help command for the search plugin
 
-    ./fast-downward.py --search "" --help [Name]  // e.g. with Name=eager_greedy
+    ./fast-downward.py --search "" --help <name>  // e.g. with <name>=eager_greedy
 
 ## Variables as Parameters
 

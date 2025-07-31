@@ -214,7 +214,7 @@ class GoalDecompositionFeature
 public:
     GoalDecompositionFeature() : TypedFeature("goals") {
         document_title("Abstraction by goals");
-        document_synopsis("For each goal atom of the original task one subproblem is generated having only the atom as goal.");
+        document_synopsis("For each goal atom of the original task one subproblem is generated having only the atom as its goal.");
         add_fact_order_option(*this);
     }
 
