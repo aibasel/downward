@@ -188,7 +188,7 @@ void Txt2TagsPrinter::print_category_synopsis(const string &synopsis,
            << "Predefinitions using ``--evaluator``, ``--heuristic``, and "
            << "``--landmarks`` are automatically transformed into ``let``-"
            << "expressions but are deprecated. "
-           << "(See [here](../search-plugin-syntax.md#variables_as_parameters))"
+           << "(See [search plugin syntax ../search-plugin-syntax.md#variables_as_parameters])"
            << endl;
     }
     os << endl;
@@ -295,7 +295,7 @@ void PlainPrinter::print_category_synopsis(const string &synopsis,
            << "Predefinitions using ``--evaluator``, ``--heuristic``, and "
            << "``--landmarks`` are automatically transformed into ``let``-"
            << "expressions but are deprecated. "
-           << "(See [here](../search-plugin-syntax.md#variables_as_parameters))"
+           << "(See [search plugin syntax ../search-plugin-syntax.md#variables_as_parameters])"
            << endl;
     }
 }
