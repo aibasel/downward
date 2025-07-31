@@ -54,7 +54,7 @@ def main():
         # Hide clean files printed on stdout.
         returncode = subprocess.call(cmd, stdout=subprocess.PIPE)
     except FileNotFoundError as not_found:
-        src_error_str = f"ERROR: Did not find file: '{not_found.filename}'."
+        src_error_str = f"Error: Did not find file: '{not_found.filename}'."
         error_str = exe_error_str if not_found == executable else src_error_str
         sys.exit(error_str)
     if not args.modify and returncode != 0:
