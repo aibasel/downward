@@ -1,4 +1,3 @@
-from translate import options
 from translate import pddl
 from translate import sccs
 from translate import timers

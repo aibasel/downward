@@ -26,8 +26,8 @@ filter_unreachable_propositions.)
 from collections import defaultdict
 from itertools import count
 
-from translate import options
 from translate import sas_tasks
+from translate.options import get_options
 
 DEBUG = False
 
@@ -370,7 +370,7 @@ class VarValueRenaming:
                 new_var = new_entry[0]
                 new_prevail_vars.discard(new_var)
 
-        if not new_pre_post and not options.keep_no_ops:
+        if not new_pre_post and not get_options().keep_no_ops:
             # The operator has no effect.
             return None
         new_prevail = sorted(

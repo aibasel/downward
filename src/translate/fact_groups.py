@@ -1,7 +1,7 @@
 from translate import invariant_finder
-from translate import options
 from translate import pddl
 from translate import timers
+from translate.options import get_options
 from typing import Dict, List, Set, Tuple
 
 
@@ -51,7 +51,7 @@ class GroupCoverQueue:
     __nonzero__ = __bool__
     def pop(self):
         result = list(self.top) # Copy; this group will shrink further.
-        if options.use_partial_encoding:
+        if get_options().use_partial_encoding:
             for fact in result:
                 for group in self.groups_by_fact[fact]:
                     group.remove(fact)

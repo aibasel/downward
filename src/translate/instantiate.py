@@ -120,10 +120,8 @@ def explore(task):
 
 
 if __name__ == "__main__":
-    from translate import options
     from translate import pddl_parser
 
-    options.setup()
     task = pddl_parser.open()
     relaxed_reachable, atoms, actions, goals, axioms, _ = explore(task)
     print("goal relaxed reachable: %s" % relaxed_reachable)

@@ -7,7 +7,7 @@ from translate.pddl.effects import Effect
 from translate.pddl.f_expression import Increase
 from translate.pddl.pddl_types import TypedObject
 
-from translate import options
+from translate.options import get_options
 
 class Action:
     def __init__(self, name: str, parameters: List[TypedObject],
@@ -94,7 +94,7 @@ class Action:
         for eff in self.effects:
             eff.instantiate(var_mapping, init_facts, fluent_facts,
                             objects_by_type, effects)
-        if effects or options.keep_no_ops:
+        if effects or get_options().keep_no_ops:
             if metric:
                 if self.cost is None:
                     cost = 0

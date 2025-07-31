@@ -2,6 +2,7 @@ from pathlib import Path
 import argparse
 import sys
 
+options = None
 
 # The following code is used to show the usage instructions from argparse as
 # "usage: python3 -m translate" (or analogously for other python executables)
@@ -24,7 +25,7 @@ def infer_prog():
         return Path(sys.argv[0]).name
 
 
-def parse_args():
+def parse_args(args=None):
     argparser = argparse.ArgumentParser(prog=infer_prog())
     argparser.add_argument(
         "domain", help="path to domain pddl file")
@@ -82,18 +83,17 @@ def parse_args():
         help="How to assign layers to derived variables. 'min' attempts to put as "
         "many variables into the same layer as possible, while 'max' puts each variable "
         "into its own layer unless it is part of a cycle.")
-    return argparser.parse_args()
+    return argparser.parse_args(args)
 
 
-def copy_args_to_module(args):
-    module_dict = sys.modules[__name__].__dict__
-    for key, value in vars(args).items():
-        module_dict[key] = value
+def get_options():
+    global options
+    if options is None:
+        options = parse_args()
+    return options
 
 
-def setup():
-    args = parse_args()
-    copy_args_to_module(args)
-
-
-#setup()
+def use_default_options():
+    args = "<dummy domain> <dummy problem>"
+    global options
+    options = parse_args(args)
