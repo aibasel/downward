@@ -17,16 +17,19 @@ namespace cg_heuristic {
 class CGCache {
     TaskProxy task_proxy;
     std::vector<std::vector<int>> cache;
-    std::vector<std::vector<domain_transition_graph::ValueTransitionLabel *>> helpful_transition_cache;
+    std::vector<std::vector<domain_transition_graph::ValueTransitionLabel *>>
+        helpful_transition_cache;
     std::vector<std::vector<int>> depends_on;
 
     int get_index(int var, const State &state, int from_val, int to_val) const;
     int compute_required_cache_size(
-        int var_id, const std::vector<int> &depends_on, int max_cache_size) const;
+        int var_id, const std::vector<int> &depends_on,
+        int max_cache_size) const;
 public:
     static const int NOT_COMPUTED = -2;
 
-    CGCache(const TaskProxy &task_proxy, int max_cache_size, utils::LogProxy &log);
+    CGCache(
+        const TaskProxy &task_proxy, int max_cache_size, utils::LogProxy &log);
 
     bool is_cached(int var) const {
         return !cache[var].empty();
@@ -36,8 +39,8 @@ public:
         return cache[var][get_index(var, state, from_val, to_val)];
     }
 
-    void store(int var, const State &state,
-               int from_val, int to_val, int cost) {
+    void store(
+        int var, const State &state, int from_val, int to_val, int cost) {
         cache[var][get_index(var, state, from_val, to_val)] = cost;
     }
 

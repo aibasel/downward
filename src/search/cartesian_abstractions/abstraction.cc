@@ -18,8 +18,10 @@
 using namespace std;
 
 namespace cartesian_abstractions {
-Abstraction::Abstraction(const shared_ptr<AbstractTask> &task, utils::LogProxy &log)
-    : transition_system(make_unique<TransitionSystem>(TaskProxy(*task).get_operators())),
+Abstraction::Abstraction(
+    const shared_ptr<AbstractTask> &task, utils::LogProxy &log)
+    : transition_system(
+          make_unique<TransitionSystem>(TaskProxy(*task).get_operators())),
       concrete_initial_state(TaskProxy(*task).get_initial_state()),
       goal_facts(task_properties::get_fact_pairs(TaskProxy(*task).get_goals())),
       refinement_hierarchy(make_unique<RefinementHierarchy>(task)),
@@ -62,7 +64,8 @@ void Abstraction::mark_all_states_as_goals() {
     }
 }
 
-void Abstraction::initialize_trivial_abstraction(const vector<int> &domain_sizes) {
+void Abstraction::initialize_trivial_abstraction(
+    const vector<int> &domain_sizes) {
     unique_ptr<AbstractState> init_state =
         AbstractState::get_trivial_abstract_state(domain_sizes);
     init_id = init_state->get_id();

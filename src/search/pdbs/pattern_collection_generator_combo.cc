@@ -33,9 +33,9 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::compute_patterns(
     TaskProxy task_proxy(*task);
     shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
 
-    PatternGeneratorGreedy large_pattern_generator(
-        max_states, verbosity);
-    Pattern large_pattern = large_pattern_generator.generate(task).get_pattern();
+    PatternGeneratorGreedy large_pattern_generator(max_states, verbosity);
+    Pattern large_pattern =
+        large_pattern_generator.generate(task).get_pattern();
     set<int> used_vars(large_pattern.begin(), large_pattern.end());
     patterns->push_back(move(large_pattern));
 
@@ -51,23 +51,22 @@ PatternCollectionInformation PatternCollectionGeneratorCombo::compute_patterns(
 }
 
 class PatternCollectionGeneratorComboFeature
-    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorCombo> {
+    : public plugins::TypedFeature<
+          PatternCollectionGenerator, PatternCollectionGeneratorCombo> {
 public:
     PatternCollectionGeneratorComboFeature() : TypedFeature("combo") {
         add_option<int>(
-            "max_states",
-            "maximum abstraction size for combo strategy",
-            "1000000",
-            plugins::Bounds("1", "infinity"));
+            "max_states", "maximum abstraction size for combo strategy",
+            "1000000", plugins::Bounds("1", "infinity"));
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorCombo>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorCombo>(
+    virtual shared_ptr<PatternCollectionGeneratorCombo> create_component(
+        const plugins::Options &opts) const override {
+        return plugins::make_shared_from_arg_tuples<
+            PatternCollectionGeneratorCombo>(
             opts.get<int>("max_states"),
-            get_generator_arguments_from_options(opts)
-            );
+            get_generator_arguments_from_options(opts));
     }
 };
 

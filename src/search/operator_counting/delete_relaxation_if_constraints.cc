@@ -11,20 +11,18 @@
 using namespace std;
 
 namespace operator_counting {
-static void add_lp_variables(int count, LPVariables &variables, vector<int> &indices,
-                             double lower, double upper, double objective,
-                             bool is_integer) {
+static void add_lp_variables(
+    int count, LPVariables &variables, vector<int> &indices, double lower,
+    double upper, double objective, bool is_integer) {
     for (int i = 0; i < count; ++i) {
         indices.push_back(variables.size());
         variables.emplace_back(lower, upper, objective, is_integer);
     }
 }
 
-
 DeleteRelaxationIFConstraints::DeleteRelaxationIFConstraints(
     bool use_time_vars, bool use_integer_vars)
-    : use_time_vars(use_time_vars),
-      use_integer_vars(use_integer_vars) {
+    : use_time_vars(use_time_vars), use_integer_vars(use_integer_vars) {
 }
 
 int DeleteRelaxationIFConstraints::get_var_op_used(const OperatorProxy &op) {
@@ -60,14 +58,15 @@ void DeleteRelaxationIFConstraints::create_auxiliary_variables(
     int num_vars = vars.size();
 
     // op_used
-    add_lp_variables(num_ops, variables, lp_var_id_op_used, 0, 1, 0, use_integer_vars);
+    add_lp_variables(
+        num_ops, variables, lp_var_id_op_used, 0, 1, 0, use_integer_vars);
 
     // fact_reached
     lp_var_id_fact_reached.resize(num_vars);
     for (VariableProxy var : vars) {
-        add_lp_variables(var.get_domain_size(), variables,
-                         lp_var_id_fact_reached[var.get_id()],
-                         0, 1, 0, use_integer_vars);
+        add_lp_variables(
+            var.get_domain_size(), variables,
+            lp_var_id_fact_reached[var.get_id()], 0, 1, 0, use_integer_vars);
     }
 
     // first_achiever
@@ -75,28 +74,32 @@ void DeleteRelaxationIFConstraints::create_auxiliary_variables(
     for (OperatorProxy op : ops) {
         lp_var_id_first_achiever[op.get_id()].resize(num_vars);
         for (VariableProxy var : vars) {
-            add_lp_variables(var.get_domain_size(), variables,
-                             lp_var_id_first_achiever[op.get_id()][var.get_id()],
-                             0, 1, 0, use_integer_vars);
+            add_lp_variables(
+                var.get_domain_size(), variables,
+                lp_var_id_first_achiever[op.get_id()][var.get_id()], 0, 1, 0,
+                use_integer_vars);
         }
     }
 
     if (use_time_vars) {
         // op_time
-        add_lp_variables(num_ops, variables, lp_var_id_op_time, 0, num_ops, 0, use_integer_vars);
+        add_lp_variables(
+            num_ops, variables, lp_var_id_op_time, 0, num_ops, 0,
+            use_integer_vars);
 
         // fact_time
         lp_var_id_fact_time.resize(num_vars);
         for (VariableProxy var : vars) {
-            add_lp_variables(var.get_domain_size(), variables,
-                             lp_var_id_fact_time[var.get_id()],
-                             0, num_ops, 0, use_integer_vars);
+            add_lp_variables(
+                var.get_domain_size(), variables,
+                lp_var_id_fact_time[var.get_id()], 0, num_ops, 0,
+                use_integer_vars);
         }
     }
 }
 
-void DeleteRelaxationIFConstraints::create_constraints(const TaskProxy &task_proxy,
-                                                       lp::LinearProgram &lp) {
+void DeleteRelaxationIFConstraints::create_constraints(
+    const TaskProxy &task_proxy, lp::LinearProgram &lp) {
     LPVariables &variables = lp.get_variables();
     LPConstraints &constraints = lp.get_constraints();
     double infinity = lp.get_infinity();
@@ -213,14 +216,12 @@ void DeleteRelaxationIFConstraints::create_constraints(const TaskProxy &task_pro
     }
 }
 
-
 void DeleteRelaxationIFConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) {
     TaskProxy task_proxy(*task);
     create_auxiliary_variables(task_proxy, lp.get_variables());
     create_constraints(task_proxy, lp);
 }
-
 
 bool DeleteRelaxationIFConstraints::update_constraints(
     const State &state, lp::LPSolver &lp_solver) {
@@ -231,30 +232,32 @@ bool DeleteRelaxationIFConstraints::update_constraints(
     last_state.clear();
     // Set new bounds.
     for (FactProxy f : state) {
-        lp_solver.set_constraint_lower_bound(get_constraint_id(f.get_pair()), -1);
+        lp_solver.set_constraint_lower_bound(
+            get_constraint_id(f.get_pair()), -1);
         last_state.push_back(f.get_pair());
     }
     return false;
 }
 
 class DeleteRelaxationIFConstraintsFeature
-    : public plugins::TypedFeature<ConstraintGenerator, DeleteRelaxationIFConstraints> {
+    : public plugins::TypedFeature<
+          ConstraintGenerator, DeleteRelaxationIFConstraints> {
 public:
-    DeleteRelaxationIFConstraintsFeature() : TypedFeature("delete_relaxation_if_constraints") {
+    DeleteRelaxationIFConstraintsFeature()
+        : TypedFeature("delete_relaxation_if_constraints") {
         document_title("Delete relaxation constraints from Imai and Fukunaga");
         document_synopsis(
             "Operator-counting constraints based on the delete relaxation. By "
             "default the constraints encode an easy-to-compute relaxation of h^+^. "
             "With the right settings, these constraints can be used to compute the "
             "optimal delete-relaxation heuristic h^+^ (see example below). "
-            "For details, see" + utils::format_journal_reference(
+            "For details, see" +
+            utils::format_journal_reference(
                 {"Tatsuya Imai", "Alex Fukunaga"},
                 "On a practical, integer-linear programming model for delete-free"
                 "tasks and its use as a heuristic for cost-optimal planning",
                 "https://www.jair.org/index.php/jair/article/download/10972/26119/",
-                "Journal of Artificial Intelligence Research",
-                "54",
-                "631-677",
+                "Journal of Artificial Intelligence Research", "54", "631-677",
                 "2015"));
 
         add_option<bool>(
@@ -288,8 +291,8 @@ public:
             "option {{{delete_relaxation_rr_constraints}}}.\n");
     }
 
-    virtual shared_ptr<DeleteRelaxationIFConstraints>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<DeleteRelaxationIFConstraints> create_component(
+        const plugins::Options &opts) const override {
         return make_shared<DeleteRelaxationIFConstraints>(
             opts.get<bool>("use_time_vars"),
             opts.get<bool>("use_integer_vars"));

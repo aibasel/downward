@@ -50,10 +50,11 @@ class HMHeuristic : public Heuristic {
     void generate_all_tuples();
     void generate_all_tuples_aux(int var, int sz, const Tuple &base);
 
-    void generate_all_partial_tuples(const Tuple &base_tuple,
-                                     std::vector<Tuple> &res) const;
-    void generate_all_partial_tuples_aux(const Tuple &base_tuple, const Tuple &t, int index,
-                                         int sz, std::vector<Tuple> &res) const;
+    void generate_all_partial_tuples(
+        const Tuple &base_tuple, std::vector<Tuple> &res) const;
+    void generate_all_partial_tuples_aux(
+        const Tuple &base_tuple, const Tuple &t, int index, int sz,
+        std::vector<Tuple> &res) const;
 
     void dump_table() const;
 

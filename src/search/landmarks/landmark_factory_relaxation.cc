@@ -8,8 +8,7 @@
 using namespace std;
 
 namespace landmarks {
-LandmarkFactoryRelaxation::LandmarkFactoryRelaxation(
-    utils::Verbosity verbosity)
+LandmarkFactoryRelaxation::LandmarkFactoryRelaxation(utils::Verbosity verbosity)
     : LandmarkFactory(verbosity) {
 }
 

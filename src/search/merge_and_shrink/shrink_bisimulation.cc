@@ -12,8 +12,8 @@
 
 #include <algorithm>
 #include <cassert>
-#include <limits>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <unordered_map>
 
@@ -52,9 +52,9 @@ struct Signature {
     SuccessorSignature succ_signature;
     int state;
 
-    Signature(int h, bool is_goal, int group_,
-              const SuccessorSignature &succ_signature_,
-              int state_)
+    Signature(
+        int h, bool is_goal, int group_,
+        const SuccessorSignature &succ_signature_, int state_)
         : group(group_), succ_signature(succ_signature_), state(state_) {
         if (is_goal) {
             assert(h == 0);
@@ -77,30 +77,25 @@ struct Signature {
     void dump(utils::LogProxy &log) const {
         if (log.is_at_least_debug()) {
             log << "Signature(h_and_goal = " << h_and_goal
-                << ", group = " << group
-                << ", state = " << state
+                << ", group = " << group << ", state = " << state
                 << ", succ_sig = [";
             for (size_t i = 0; i < succ_signature.size(); ++i) {
                 if (i)
                     log << ", ";
-                log << "(" << succ_signature[i].first
-                    << "," << succ_signature[i].second
-                    << ")";
+                log << "(" << succ_signature[i].first << ","
+                    << succ_signature[i].second << ")";
             }
             log << "])" << endl;
         }
     }
 };
 
-
 ShrinkBisimulation::ShrinkBisimulation(bool greedy, AtLimit at_limit)
-    : greedy(greedy),
-      at_limit(at_limit) {
+    : greedy(greedy), at_limit(at_limit) {
 }
 
 int ShrinkBisimulation::initialize_groups(
-    const TransitionSystem &ts,
-    const Distances &distances,
+    const TransitionSystem &ts, const Distances &distances,
     vector<int> &state_to_group) const {
     /* Group 0 holds all goal states.
 
@@ -124,8 +119,8 @@ int ShrinkBisimulation::initialize_groups(
             assert(h == 0);
             state_to_group[state] = 0;
         } else {
-            pair<GroupMap::iterator, bool> result = h_to_group.insert(
-                make_pair(h, num_groups));
+            pair<GroupMap::iterator, bool> result =
+                h_to_group.insert(make_pair(h, num_groups));
             state_to_group[state] = result.first->second;
             if (result.second) {
                 // We inserted a new element => a new group was started.
@@ -137,10 +132,8 @@ int ShrinkBisimulation::initialize_groups(
 }
 
 void ShrinkBisimulation::compute_signatures(
-    const TransitionSystem &ts,
-    const Distances &distances,
-    vector<Signature> &signatures,
-    const vector<int> &state_to_group) const {
+    const TransitionSystem &ts, const Distances &distances,
+    vector<Signature> &signatures, const vector<int> &state_to_group) const {
     assert(signatures.empty());
 
     // Step 1: Compute bare state signatures (without transition information).
@@ -150,12 +143,13 @@ void ShrinkBisimulation::compute_signatures(
         if (h == INF) {
             h = IRRELEVANT;
         }
-        Signature signature(h, ts.is_goal_state(state),
-                            state_to_group[state], SuccessorSignature(),
-                            state);
+        Signature signature(
+            h, ts.is_goal_state(state), state_to_group[state],
+            SuccessorSignature(), state);
         signatures.push_back(signature);
     }
-    signatures.push_back(Signature(SENTINEL, false, -1, SuccessorSignature(), -1));
+    signatures.push_back(
+        Signature(SENTINEL, false, -1, SuccessorSignature(), -1));
 
     // Step 2: Add transition information.
     int label_group_counter = 0;
@@ -184,7 +178,8 @@ void ShrinkBisimulation::compute_signatures(
             label_reduction=exact(before_shrinking=true,before_merging=false)))
     */
     for (const LocalLabelInfo &local_label_info : ts) {
-        const vector<Transition> &transitions = local_label_info.get_transitions();
+        const vector<Transition> &transitions =
+            local_label_info.get_transitions();
         for (const Transition &transition : transitions) {
             assert(signatures[transition.src + 1].state == transition.src);
             bool skip_transition = false;
@@ -228,17 +223,15 @@ void ShrinkBisimulation::compute_signatures(
     for (size_t i = 0; i < signatures.size(); ++i) {
         SuccessorSignature &succ_sig = signatures[i].succ_signature;
         ::sort(succ_sig.begin(), succ_sig.end());
-        succ_sig.erase(::unique(succ_sig.begin(), succ_sig.end()),
-                       succ_sig.end());
+        succ_sig.erase(
+            ::unique(succ_sig.begin(), succ_sig.end()), succ_sig.end());
     }
 
     ::sort(signatures.begin(), signatures.end());
 }
 
 StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
-    const TransitionSystem &ts,
-    const Distances &distances,
-    int target_size,
+    const TransitionSystem &ts, const Distances &distances, int target_size,
     utils::LogProxy &) const {
     assert(distances.are_goal_distances_computed());
     int num_states = ts.get_size();
@@ -320,8 +313,8 @@ StateEquivalenceRelation ShrinkBisimulation::compute_equivalence_relation(
                     if (prev_sig.group != curr_sig.group) {
                         // Start first group of a block; keep old group no.
                         new_group_no = curr_sig.group;
-                    } else if (prev_sig.succ_signature
-                               != curr_sig.succ_signature) {
+                    } else if (
+                        prev_sig.succ_signature != curr_sig.succ_signature) {
                         new_group_no = num_groups++;
                         assert(num_groups <= target_size);
                     }
@@ -361,7 +354,8 @@ string ShrinkBisimulation::name() const {
     return "bisimulation";
 }
 
-void ShrinkBisimulation::dump_strategy_specific_options(utils::LogProxy &log) const {
+void ShrinkBisimulation::dump_strategy_specific_options(
+    utils::LogProxy &log) const {
     if (log.is_at_least_normal()) {
         log << "Bisimulation type: " << (greedy ? "greedy" : "exact") << endl;
         log << "At limit: ";
@@ -383,21 +377,19 @@ public:
         document_title("Bismulation based shrink strategy");
         document_synopsis(
             "This shrink strategy implements the algorithm described in"
-            " the paper:" + utils::format_conference_reference(
+            " the paper:" +
+            utils::format_conference_reference(
                 {"Raz Nissim", "Joerg Hoffmann", "Malte Helmert"},
                 "Computing Perfect Heuristics in Polynomial Time: On Bisimulation"
                 " and Merge-and-Shrink Abstractions in Optimal Planning.",
                 "https://ai.dmi.unibas.ch/papers/nissim-et-al-ijcai2011.pdf",
                 "Proceedings of the Twenty-Second International Joint Conference"
                 " on Artificial Intelligence (IJCAI 2011)",
-                "1983-1990",
-                "AAAI Press",
-                "2011"));
+                "1983-1990", "AAAI Press", "2011"));
 
         add_option<bool>("greedy", "use greedy bisimulation", "false");
         add_option<AtLimit>(
-            "at_limit",
-            "what to do when the size limit is hit", "return");
+            "at_limit", "what to do when the size limit is hit", "return");
 
         document_note(
             "shrink_bisimulation(greedy=true)",
@@ -422,22 +414,17 @@ public:
             "merging).");
     }
 
-    virtual shared_ptr<ShrinkBisimulation>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<ShrinkBisimulation> create_component(
+        const plugins::Options &opts) const override {
         return make_shared<ShrinkBisimulation>(
-            opts.get<bool>("greedy"),
-            opts.get<AtLimit>("at_limit")
-            );
+            opts.get<bool>("greedy"), opts.get<AtLimit>("at_limit"));
     }
 };
 
 static plugins::FeaturePlugin<ShrinkBisimulationFeature> _plugin;
 
-static plugins::TypedEnumPlugin<AtLimit> _enum_plugin({
-        {"return",
-         "stop without refining the equivalence class further"},
-        {"use_up",
-         "continue refining the equivalence class until "
-         "the size limit is hit"}
-    });
+static plugins::TypedEnumPlugin<AtLimit> _enum_plugin(
+    {{"return", "stop without refining the equivalence class further"},
+     {"use_up", "continue refining the equivalence class until "
+                "the size limit is hit"}});
 }

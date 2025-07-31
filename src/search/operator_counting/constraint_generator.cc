@@ -9,12 +9,13 @@ void ConstraintGenerator::initialize_constraints(
     const shared_ptr<AbstractTask> &, lp::LinearProgram &) {
 }
 
-static class ConstraintGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<ConstraintGenerator> {
+static class ConstraintGeneratorCategoryPlugin
+    : public plugins::TypedCategoryPlugin<ConstraintGenerator> {
 public:
-    ConstraintGeneratorCategoryPlugin() : TypedCategoryPlugin("ConstraintGenerator") {
+    ConstraintGeneratorCategoryPlugin()
+        : TypedCategoryPlugin("ConstraintGenerator") {
         // TODO: Replace empty string by synopsis for the wiki page.
-        //document_synopsis("");
+        // document_synopsis("");
     }
-}
-_category_plugin;
+} _category_plugin;
 }

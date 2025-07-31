@@ -14,11 +14,11 @@
 
 using namespace std;
 Heuristic::Heuristic(
-    const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates, const string &description,
-    utils::Verbosity verbosity)
+    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
     : Evaluator(true, true, true, description, verbosity),
-      heuristic_cache(HEntry(NO_VALUE, true)), //TODO: is true really a good idea here?
+      heuristic_cache(
+          HEntry(NO_VALUE, true)), // TODO: is true really a good idea here?
       cache_evaluator_values(cache_estimates),
       task(transform),
       task_proxy(*task) {
@@ -28,7 +28,8 @@ Heuristic::~Heuristic() {
 }
 
 void Heuristic::set_preferred(const OperatorProxy &op) {
-    preferred_operators.insert(op.get_ancestor_operator_id(tasks::g_root_task.get()));
+    preferred_operators.insert(
+        op.get_ancestor_operator_id(tasks::g_root_task.get()));
 }
 
 State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
@@ -42,7 +43,8 @@ void add_heuristic_options_to_feature(
         "Optional task transformation for the heuristic."
         " Currently, adapt_costs() and no_transform() are available.",
         "no_transform()");
-    feature.add_option<bool>("cache_estimates", "cache heuristic estimates", "true");
+    feature.add_option<bool>(
+        "cache_estimates", "cache heuristic estimates", "true");
     add_evaluator_options_to_feature(feature, description);
 }
 
@@ -51,8 +53,7 @@ get_heuristic_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
             opts.get<shared_ptr<AbstractTask>>("transform"),
-            opts.get<bool>("cache_estimates")
-            ),
+            opts.get<bool>("cache_estimates")),
         get_evaluator_arguments_from_options(opts));
 }
 
@@ -97,7 +98,8 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     OperatorsProxy global_operators = global_task_proxy.get_operators();
     if (heuristic != EvaluationResult::INFTY) {
         for (OperatorID op_id : preferred_operators)
-            assert(task_properties::is_applicable(global_operators[op_id], state));
+            assert(
+                task_properties::is_applicable(global_operators[op_id], state));
     }
 #endif
 

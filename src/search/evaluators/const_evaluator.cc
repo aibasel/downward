@@ -7,8 +7,7 @@ using namespace std;
 namespace const_evaluator {
 ConstEvaluator::ConstEvaluator(
     int value, const string &description, utils::Verbosity verbosity)
-    : Evaluator(false, false, false, description, verbosity),
-      value(value) {
+    : Evaluator(false, false, false, description, verbosity), value(value) {
 }
 
 EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
@@ -26,19 +25,15 @@ public:
         document_synopsis("Returns a constant value.");
 
         add_option<int>(
-            "value",
-            "the constant value",
-            "1",
+            "value", "the constant value", "1",
             plugins::Bounds("0", "infinity"));
         add_evaluator_options_to_feature(*this, "const");
     }
 
-    virtual shared_ptr<ConstEvaluator>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<ConstEvaluator> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<ConstEvaluator>(
-            opts.get<int>("value"),
-            get_evaluator_arguments_from_options(opts)
-            );
+            opts.get<int>("value"), get_evaluator_arguments_from_options(opts));
     }
 };
 
