@@ -64,7 +64,8 @@ static void breadth_first_search(
 void Distances::compute_init_distances_unit_cost() {
     vector<vector<int>> forward_graph(get_num_states());
     for (const LocalLabelInfo &local_label_info : transition_system) {
-        const vector<Transition> &transitions = local_label_info.get_transitions();
+        const vector<Transition> &transitions =
+            local_label_info.get_transitions();
         for (const Transition &transition : transitions) {
             forward_graph[transition.src].push_back(transition.target);
         }
@@ -79,7 +80,8 @@ void Distances::compute_init_distances_unit_cost() {
 void Distances::compute_goal_distances_unit_cost() {
     vector<vector<int>> backward_graph(get_num_states());
     for (const LocalLabelInfo &local_label_info : transition_system) {
-        const vector<Transition> &transitions = local_label_info.get_transitions();
+        const vector<Transition> &transitions =
+            local_label_info.get_transitions();
         for (const Transition &transition : transitions) {
             backward_graph[transition.target].push_back(transition.src);
         }
@@ -97,8 +99,7 @@ void Distances::compute_goal_distances_unit_cost() {
 
 static void dijkstra_search(
     const vector<vector<pair<int, int>>> &graph,
-    priority_queues::AdaptiveQueue<int> &queue,
-    vector<int> &distances) {
+    priority_queues::AdaptiveQueue<int> &queue, vector<int> &distances) {
     while (!queue.empty()) {
         pair<int, int> top_pair = queue.pop();
         int distance = top_pair.first;
@@ -123,7 +124,8 @@ static void dijkstra_search(
 void Distances::compute_init_distances_general_cost() {
     vector<vector<pair<int, int>>> forward_graph(get_num_states());
     for (const LocalLabelInfo &local_label_info : transition_system) {
-        const vector<Transition> &transitions = local_label_info.get_transitions();
+        const vector<Transition> &transitions =
+            local_label_info.get_transitions();
         int cost = local_label_info.get_cost();
         for (const Transition &transition : transitions) {
             forward_graph[transition.src].push_back(
@@ -142,7 +144,8 @@ void Distances::compute_init_distances_general_cost() {
 void Distances::compute_goal_distances_general_cost() {
     vector<vector<pair<int, int>>> backward_graph(get_num_states());
     for (const LocalLabelInfo &local_label_info : transition_system) {
-        const vector<Transition> &transitions = local_label_info.get_transitions();
+        const vector<Transition> &transitions =
+            local_label_info.get_transitions();
         int cost = local_label_info.get_cost();
         for (const Transition &transition : transitions) {
             backward_graph[transition.target].push_back(
@@ -163,8 +166,7 @@ void Distances::compute_goal_distances_general_cost() {
 }
 
 void Distances::compute_distances(
-    bool compute_init_distances,
-    bool compute_goal_distances,
+    bool compute_init_distances, bool compute_goal_distances,
     utils::LogProxy &log) {
     assert(compute_init_distances || compute_goal_distances);
     /*
@@ -190,7 +192,8 @@ void Distances::compute_distances(
           Otherwise, when computing distances, the previous (invalid)
           distance information must have been cleared before.
         */
-        assert(!are_init_distances_computed() && !are_goal_distances_computed());
+        assert(
+            !are_init_distances_computed() && !are_goal_distances_computed());
         assert(init_distances.empty() && goal_distances.empty());
     }
 
@@ -260,8 +263,7 @@ void Distances::compute_distances(
 
 void Distances::apply_abstraction(
     const StateEquivalenceRelation &state_equivalence_relation,
-    bool compute_init_distances,
-    bool compute_goal_distances,
+    bool compute_init_distances, bool compute_goal_distances,
     utils::LogProxy &log) {
     if (compute_init_distances) {
         assert(are_init_distances_computed());
@@ -288,7 +290,8 @@ void Distances::apply_abstraction(
             state_equivalence_relation[new_state];
         assert(!state_equivalence_class.empty());
 
-        StateEquivalenceClass::const_iterator pos = state_equivalence_class.begin();
+        StateEquivalenceClass::const_iterator pos =
+            state_equivalence_class.begin();
         int new_init_dist = -1;
         int new_goal_dist = -1;
         if (compute_init_distances) {
@@ -300,11 +303,13 @@ void Distances::apply_abstraction(
 
         ++pos;
         for (; pos != state_equivalence_class.end(); ++pos) {
-            if (compute_init_distances && init_distances[*pos] != new_init_dist) {
+            if (compute_init_distances &&
+                init_distances[*pos] != new_init_dist) {
                 must_recompute = true;
                 break;
             }
-            if (compute_goal_distances && goal_distances[*pos] != new_goal_dist) {
+            if (compute_goal_distances &&
+                goal_distances[*pos] != new_goal_dist) {
                 must_recompute = true;
                 break;
             }
@@ -327,8 +332,7 @@ void Distances::apply_abstraction(
                 << "simplification was not f-preserving!" << endl;
         }
         clear_distances();
-        compute_distances(
-            compute_init_distances, compute_goal_distances, log);
+        compute_distances(compute_init_distances, compute_goal_distances, log);
     } else {
         init_distances = move(new_init_distances);
         goal_distances = move(new_goal_distances);
@@ -366,7 +370,8 @@ void Distances::statistics(utils::LogProxy &log) const {
         if (!are_goal_distances_computed()) {
             log << "goal distances not computed";
         } else if (transition_system.is_solvable(*this)) {
-            log << "init h=" << get_goal_distance(transition_system.get_init_state());
+            log << "init h="
+                << get_goal_distance(transition_system.get_init_state());
         } else {
             log << "transition system is unsolvable";
         }

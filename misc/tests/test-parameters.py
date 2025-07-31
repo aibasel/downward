@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+
 HELP = """\
 Check that parameters for the command line features match the parameters
  of the C++ constructors. Use txt2tags to compare the parameters
@@ -107,25 +108,26 @@ def extract_feature_parameter_list(feature_name):
 
 def extract_feature_name_and_cpp_class(cc_file, cc_files, cwd, num):
     source_without_comments = subprocess.check_output(
-        ["gcc", "-fpreprocessed", "-dD", "-E", cc_file]).decode("utf-8")
+        ["gcc", "-fpreprocessed", "-dD", "-E",
+         cc_file]).decode("utf-8").replace('\n', ' ').replace('\r', '')
     name_pattern = r'TypedFeature\("([^"]*)"\)'
     class_pattern = r'TypedFeature<(.*?)> {'
     feature_names = []
     class_names = []
     feature_error_msgs = []
     class_error_msgs = []
-    for line in source_without_comments.splitlines():
-        if re.search(name_pattern, line):
-            feature_name = re.search(name_pattern, line).group(1)
-            feature_error_msg = "feature_name: " + feature_name + "\n"
-            feature_names.append(feature_name)
-            feature_error_msgs.append(feature_error_msg)
-        if re.search(class_pattern, line):
-            feature_class = re.search(class_pattern, line).group(1)
-            class_name = feature_class.split()[-1].split("::")[-1]
-            class_error_msg = "class_name: " + class_name + "\n"
-            class_names.append(class_name)
-            class_error_msgs.append(class_error_msg)
+
+    for feature_name in re.findall(name_pattern, source_without_comments):
+        feature_error_msg = "feature_name: " + feature_name + "\n"
+        feature_names.append(feature_name)
+        feature_error_msgs.append(feature_error_msg)
+
+    for class_name in re.findall(class_pattern, source_without_comments):
+        class_name = class_name.split(' ')[-1].split("::")[-1]
+        class_error_msg = "class_name: " + class_name + "\n"
+        class_names.append(class_name)
+        class_error_msgs.append(class_error_msg)
+
     return (feature_names[num], class_names[num],
            feature_error_msgs[num] + class_error_msgs[num])
 

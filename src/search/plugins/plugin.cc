@@ -21,8 +21,7 @@ void Feature::document_synopsis(const string &note) {
     synopsis = note;
 }
 
-void Feature::document_property(
-    const string &property, const string &note) {
+void Feature::document_property(const string &property, const string &note) {
     properties.emplace_back(property, note);
 }
 
@@ -77,9 +76,12 @@ Plugin::Plugin() {
 }
 
 CategoryPlugin::CategoryPlugin(
-    type_index pointer_type, const string &class_name, const string &category_name)
-    : pointer_type(pointer_type), class_name(class_name),
-      category_name(category_name), can_be_bound_to_variable(false) {
+    type_index pointer_type, const string &class_name,
+    const string &category_name)
+    : pointer_type(pointer_type),
+      class_name(class_name),
+      category_name(category_name),
+      can_be_bound_to_variable(false) {
     RawRegistry::instance()->insert_category_plugin(*this);
 }
 
@@ -136,8 +138,9 @@ string SubcategoryPlugin::get_synopsis() const {
     return synopsis;
 }
 
-EnumPlugin::EnumPlugin(type_index type, const string &class_name,
-                       initializer_list<pair<string, string>> enum_values)
+EnumPlugin::EnumPlugin(
+    type_index type, const string &class_name,
+    initializer_list<pair<string, string>> enum_values)
     : type(type), class_name(class_name), enum_info(enum_values) {
     RawRegistry::instance()->insert_enum_plugin(*this);
 }

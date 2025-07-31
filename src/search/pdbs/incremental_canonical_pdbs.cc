@@ -12,8 +12,8 @@ namespace pdbs {
 IncrementalCanonicalPDBs::IncrementalCanonicalPDBs(
     const TaskProxy &task_proxy, const PatternCollection &intitial_patterns)
     : task_proxy(task_proxy),
-      patterns(make_shared<PatternCollection>(intitial_patterns.begin(),
-                                              intitial_patterns.end())),
+      patterns(make_shared<PatternCollection>(
+          intitial_patterns.begin(), intitial_patterns.end())),
       pattern_databases(make_shared<PDBCollection>()),
       pattern_cliques(nullptr),
       size(0) {
@@ -37,8 +37,7 @@ void IncrementalCanonicalPDBs::add_pdb(const shared_ptr<PatternDatabase> &pdb) {
 }
 
 void IncrementalCanonicalPDBs::recompute_pattern_cliques() {
-    pattern_cliques = compute_pattern_cliques(*patterns,
-                                              are_additive);
+    pattern_cliques = compute_pattern_cliques(*patterns, are_additive);
 }
 
 vector<PatternClique> IncrementalCanonicalPDBs::get_pattern_cliques(
@@ -55,7 +54,8 @@ int IncrementalCanonicalPDBs::get_value(const State &state) const {
 bool IncrementalCanonicalPDBs::is_dead_end(const State &state) const {
     state.unpack();
     for (const shared_ptr<PatternDatabase> &pdb : *pattern_databases)
-        if (pdb->get_value(state.get_unpacked_values()) == numeric_limits<int>::max())
+        if (pdb->get_value(state.get_unpacked_values()) ==
+            numeric_limits<int>::max())
             return true;
     return false;
 }

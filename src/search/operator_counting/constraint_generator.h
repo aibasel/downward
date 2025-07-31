@@ -1,10 +1,10 @@
 #ifndef OPERATOR_COUNTING_CONSTRAINT_GENERATOR_H
 #define OPERATOR_COUNTING_CONSTRAINT_GENERATOR_H
 
+#include "../algorithms/named_vector.h"
+
 #include <memory>
 #include <vector>
-
-#include "../algorithms/named_vector.h"
 
 class AbstractTask;
 class State;

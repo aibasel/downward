@@ -15,7 +15,8 @@ class RawRegistry {
 
     FeatureTypes collect_types(std::vector<std::string> &errors) const;
     void validate_category_names(std::vector<std::string> &errors) const;
-    SubcategoryPlugins collect_subcategory_plugins(std::vector<std::string> &errors) const;
+    SubcategoryPlugins collect_subcategory_plugins(
+        std::vector<std::string> &errors) const;
     Features collect_features(
         const SubcategoryPlugins &subcategory_plugins,
         std::vector<std::string> &errors) const;

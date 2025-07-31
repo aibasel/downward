@@ -6,8 +6,8 @@
 
 #include "../algorithms/named_vector.h"
 
-#include <cstring>
 #include <cplex.h>
+#include <cstring>
 
 namespace lp {
 template<typename T>
@@ -87,7 +87,7 @@ class CplexSolverInterface : public SolverInterface {
           entries for column 2 (4.5 and 7.2).
          */
         std::vector<int> counts;
-public:
+    public:
         /*
           When loading a whole LP, column-by-column data better matches CPLEX's
           internal data structures, so we prefer this encoding.
@@ -104,11 +104,21 @@ public:
         void assign_row_by_row(
             const named_vector::NamedVector<LPConstraint> &constraints);
 
-        double *get_coefficients() {return to_cplex_array(coefficients);}
-        int *get_indices() {return to_cplex_array(indices);}
-        int *get_starts() {return to_cplex_array(starts);}
-        int *get_counts() {return to_cplex_array(counts);}
-        int get_num_nonzeros() {return coefficients.size();}
+        double *get_coefficients() {
+            return to_cplex_array(coefficients);
+        }
+        int *get_indices() {
+            return to_cplex_array(indices);
+        }
+        int *get_starts() {
+            return to_cplex_array(starts);
+        }
+        int *get_counts() {
+            return to_cplex_array(counts);
+        }
+        int get_num_nonzeros() {
+            return coefficients.size();
+        }
     };
 
     class CplexColumnsInfo {
@@ -120,12 +130,20 @@ public:
         std::vector<char> type;
         // Objective value of each column (variable)
         std::vector<double> objective;
-public:
+    public:
         void assign(const named_vector::NamedVector<LPVariable> &variables);
-        double *get_lb() {return to_cplex_array(lb);}
-        double *get_ub() {return to_cplex_array(ub);}
-        char *get_type() {return to_cplex_array(type);}
-        double *get_objective() {return to_cplex_array(objective);}
+        double *get_lb() {
+            return to_cplex_array(lb);
+        }
+        double *get_ub() {
+            return to_cplex_array(ub);
+        }
+        char *get_type() {
+            return to_cplex_array(type);
+        }
+        double *get_objective() {
+            return to_cplex_array(objective);
+        }
     };
 
     class CplexRowsInfo {
@@ -143,19 +161,31 @@ public:
           rows that are ranged rows.
          */
         std::vector<int> range_indices;
-public:
-        void assign(const named_vector::NamedVector<LPConstraint> &constraints, int offset = 0, bool dense_range_values = true);
-        double *get_rhs() {return to_cplex_array(rhs);}
-        char *get_sense() {return to_cplex_array(sense);}
-        double *get_range_values() {return to_cplex_array(range_values);}
-        int *get_range_indices() {return to_cplex_array(range_indices);}
-        int get_num_ranged_rows() {return range_indices.size();}
+    public:
+        void assign(
+            const named_vector::NamedVector<LPConstraint> &constraints,
+            int offset = 0, bool dense_range_values = true);
+        double *get_rhs() {
+            return to_cplex_array(rhs);
+        }
+        char *get_sense() {
+            return to_cplex_array(sense);
+        }
+        double *get_range_values() {
+            return to_cplex_array(range_values);
+        }
+        int *get_range_indices() {
+            return to_cplex_array(range_indices);
+        }
+        int get_num_ranged_rows() {
+            return range_indices.size();
+        }
     };
 
     class CplexNameData {
         std::vector<char *> names;
         std::vector<int> indices;
-public:
+    public:
         template<typename T>
         explicit CplexNameData(const named_vector::NamedVector<T> &values) {
             if (values.has_names()) {
@@ -165,7 +195,8 @@ public:
                 for (int i = 0; i < num_values; ++i) {
                     const std::string &name = values.get_name(i);
                     if (!name.empty()) {
-                        // CPLEX copies the names, so the const_cast should be fine.
+                        // CPLEX copies the names, so the const_cast should be
+                        // fine.
                         names.push_back(const_cast<char *>(name.data()));
                         indices.push_back(i);
                     }
@@ -173,7 +204,9 @@ public:
             }
         }
 
-        int size() {return names.size();}
+        int size() {
+            return names.size();
+        }
         int *get_indices() {
             if (indices.empty()) {
                 return nullptr;
@@ -220,11 +253,14 @@ public:
     virtual ~CplexSolverInterface() override;
 
     virtual void load_problem(const LinearProgram &lp) override;
-    virtual void add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints) override;
+    virtual void add_temporary_constraints(
+        const named_vector::NamedVector<LPConstraint> &constraints) override;
     virtual void clear_temporary_constraints() override;
     virtual double get_infinity() const override;
-    virtual void set_objective_coefficients(const std::vector<double> &coefficients) override;
-    virtual void set_objective_coefficient(int index, double coefficient) override;
+    virtual void set_objective_coefficients(
+        const std::vector<double> &coefficients) override;
+    virtual void set_objective_coefficient(
+        int index, double coefficient) override;
     virtual void set_constraint_lower_bound(int index, double bound) override;
     virtual void set_constraint_upper_bound(int index, double bound) override;
     virtual void set_variable_lower_bound(int index, double bound) override;

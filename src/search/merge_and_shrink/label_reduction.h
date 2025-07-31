@@ -72,17 +72,14 @@ class LabelReduction {
         utils::LogProxy &log) const;
     equivalence_relation::EquivalenceRelation
     compute_combinable_equivalence_relation(
-        int ts_index,
-        const FactoredTransitionSystem &fts) const;
+        int ts_index, const FactoredTransitionSystem &fts) const;
 public:
     LabelReduction(
-        bool before_shrinking, bool before_merging,
-        LabelReductionMethod method,
+        bool before_shrinking, bool before_merging, LabelReductionMethod method,
         LabelReductionSystemOrder system_order, int random_seed);
     void initialize(const TaskProxy &task_proxy);
     bool reduce(
-        const std::pair<int, int> &next_merge,
-        FactoredTransitionSystem &fts,
+        const std::pair<int, int> &next_merge, FactoredTransitionSystem &fts,
         utils::LogProxy &log) const;
     void dump_options(utils::LogProxy &log) const;
     bool reduce_before_shrinking() const {

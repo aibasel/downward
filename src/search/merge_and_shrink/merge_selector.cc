@@ -49,7 +49,8 @@ void MergeSelector::dump_options(utils::LogProxy &log) const {
     }
 }
 
-static class MergeSelectorCategoryPlugin : public plugins::TypedCategoryPlugin<MergeSelector> {
+static class MergeSelectorCategoryPlugin
+    : public plugins::TypedCategoryPlugin<MergeSelector> {
 public:
     MergeSelectorCategoryPlugin() : TypedCategoryPlugin("MergeSelector") {
         document_synopsis(
@@ -59,6 +60,5 @@ public:
             "'stateless', but they can also easily be used in different 'combined' "
             "merged strategies.");
     }
-}
-_category_plugin;
+} _category_plugin;
 }

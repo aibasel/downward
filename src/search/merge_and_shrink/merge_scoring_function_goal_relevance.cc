@@ -40,9 +40,11 @@ string MergeScoringFunctionGoalRelevance::name() const {
 }
 
 class MergeScoringFunctionGoalRelevanceFeature
-    : public plugins::TypedFeature<MergeScoringFunction, MergeScoringFunctionGoalRelevance> {
+    : public plugins::TypedFeature<
+          MergeScoringFunction, MergeScoringFunctionGoalRelevance> {
 public:
-    MergeScoringFunctionGoalRelevanceFeature() : TypedFeature("goal_relevance") {
+    MergeScoringFunctionGoalRelevanceFeature()
+        : TypedFeature("goal_relevance") {
         document_title("Goal relevance scoring");
         document_synopsis(
             "This scoring function assigns a merge candidate a value of 0 iff at "
@@ -51,8 +53,8 @@ public:
             "All other candidates get a score of positive infinity.");
     }
 
-    virtual shared_ptr<MergeScoringFunctionGoalRelevance>
-    create_component(const plugins::Options &) const override {
+    virtual shared_ptr<MergeScoringFunctionGoalRelevance> create_component(
+        const plugins::Options &) const override {
         return make_shared<MergeScoringFunctionGoalRelevance>();
     }
 };

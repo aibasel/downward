@@ -16,13 +16,16 @@ class MergeSelectorScoreBasedFiltering : public MergeSelector {
     std::vector<std::shared_ptr<MergeScoringFunction>> merge_scoring_functions;
 protected:
     virtual std::string name() const override;
-    virtual void dump_selector_specific_options(utils::LogProxy &log) const override;
+    virtual void dump_selector_specific_options(
+        utils::LogProxy &log) const override;
 public:
     explicit MergeSelectorScoreBasedFiltering(
-        const std::vector<std::shared_ptr<MergeScoringFunction>> &scoring_functions);
+        const std::vector<std::shared_ptr<MergeScoringFunction>>
+            &scoring_functions);
     virtual std::pair<int, int> select_merge(
         const FactoredTransitionSystem &fts,
-        const std::vector<int> &indices_subset = std::vector<int>()) const override;
+        const std::vector<int> &indices_subset =
+            std::vector<int>()) const override;
     virtual void initialize(const TaskProxy &task_proxy) override;
     virtual bool requires_init_distances() const override;
     virtual bool requires_goal_distances() const override;

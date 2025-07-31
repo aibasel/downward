@@ -8,7 +8,6 @@
 
 #include "../task_utils/causal_graph.h"
 #include "../task_utils/task_properties.h"
-
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 #include "../utils/math.h"
@@ -23,8 +22,8 @@ int compute_pdb_size(const TaskProxy &task_proxy, const Pattern &pattern) {
     int size = 1;
     for (int var : pattern) {
         int domain_size = task_proxy.get_variables()[var].get_domain_size();
-        if (utils::is_product_within_limit(size, domain_size,
-                                           numeric_limits<int>::max())) {
+        if (utils::is_product_within_limit(
+                size, domain_size, numeric_limits<int>::max())) {
             size *= domain_size;
         } else {
             cerr << "Given pattern is too large! (Overflow occurred): " << endl;
@@ -56,7 +55,8 @@ bool is_operator_relevant(const Pattern &pattern, const OperatorProxy &op) {
 
 vector<FactPair> get_goals_in_random_order(
     const TaskProxy &task_proxy, utils::RandomNumberGenerator &rng) {
-    vector<FactPair> goals = task_properties::get_fact_pairs(task_proxy.get_goals());
+    vector<FactPair> goals =
+        task_properties::get_fact_pairs(task_proxy.get_goals());
     rng.shuffle(goals);
     return goals;
 }
@@ -80,17 +80,19 @@ vector<int> get_non_goal_variables(const TaskProxy &task_proxy) {
 }
 
 vector<vector<int>> compute_cg_neighbors(
-    const shared_ptr<AbstractTask> &task,
-    bool bidirectional) {
+    const shared_ptr<AbstractTask> &task, bool bidirectional) {
     TaskProxy task_proxy(*task);
     int num_vars = task_proxy.get_variables().size();
-    const causal_graph::CausalGraph &cg = causal_graph::get_causal_graph(task.get());
+    const causal_graph::CausalGraph &cg =
+        causal_graph::get_causal_graph(task.get());
     vector<vector<int>> cg_neighbors(num_vars);
     for (int var_id = 0; var_id < num_vars; ++var_id) {
         cg_neighbors[var_id] = cg.get_predecessors(var_id);
         if (bidirectional) {
             const vector<int> &successors = cg.get_successors(var_id);
-            cg_neighbors[var_id].insert(cg_neighbors[var_id].end(), successors.begin(), successors.end());
+            cg_neighbors[var_id].insert(
+                cg_neighbors[var_id].end(), successors.begin(),
+                successors.end());
         }
         utils::sort_unique(cg_neighbors[var_id]);
     }
@@ -98,8 +100,7 @@ vector<vector<int>> compute_cg_neighbors(
 }
 
 PatternCollectionInformation get_pattern_collection_info(
-    const TaskProxy &task_proxy,
-    const shared_ptr<PDBCollection> &pdbs,
+    const TaskProxy &task_proxy, const shared_ptr<PDBCollection> &pdbs,
     utils::LogProxy &log) {
     shared_ptr<PatternCollection> patterns = make_shared<PatternCollection>();
     patterns->reserve(pdbs->size());
@@ -112,10 +113,8 @@ PatternCollectionInformation get_pattern_collection_info(
 }
 
 void dump_pattern_generation_statistics(
-    const string &identifier,
-    utils::Duration runtime,
-    const PatternInformation &pattern_info,
-    utils::LogProxy &log) {
+    const string &identifier, utils::Duration runtime,
+    const PatternInformation &pattern_info, utils::LogProxy &log) {
     const Pattern &pattern = pattern_info.get_pattern();
     if (log.is_at_least_normal()) {
         log << identifier << " pattern: " << pattern << endl;
@@ -127,17 +126,15 @@ void dump_pattern_generation_statistics(
 }
 
 void dump_pattern_collection_generation_statistics(
-    const string &identifier,
-    utils::Duration runtime,
-    const PatternCollectionInformation &pci,
-    utils::LogProxy &log) {
+    const string &identifier, utils::Duration runtime,
+    const PatternCollectionInformation &pci, utils::LogProxy &log) {
     const PatternCollection &pattern_collection = *pci.get_patterns();
     if (log.is_at_least_normal()) {
-        log << identifier << " number of patterns: " << pattern_collection.size()
-            << endl;
+        log << identifier
+            << " number of patterns: " << pattern_collection.size() << endl;
         log << identifier << " total PDB size: "
-            << compute_total_pdb_size(
-            pci.get_task_proxy(), pattern_collection) << endl;
+            << compute_total_pdb_size(pci.get_task_proxy(), pattern_collection)
+            << endl;
         log << identifier << " computation time: " << runtime << endl;
     }
 }
@@ -150,8 +147,6 @@ string get_rovner_et_al_reference() {
         "https://ai.dmi.unibas.ch/papers/rovner-et-al-icaps2019.pdf",
         "Proceedings of the 29th International Conference on Automated "
         "Planning and Scheduling (ICAPS 2019)",
-        "362-367",
-        "AAAI Press",
-        "2019");
+        "362-367", "AAAI Press", "2019");
 }
 }

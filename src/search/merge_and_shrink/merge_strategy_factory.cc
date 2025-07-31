@@ -28,14 +28,14 @@ tuple<utils::Verbosity> get_merge_strategy_arguments_from_options(
     return utils::get_log_arguments_from_options(opts);
 }
 
-
-static class MergeStrategyFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<MergeStrategyFactory> {
+static class MergeStrategyFactoryCategoryPlugin
+    : public plugins::TypedCategoryPlugin<MergeStrategyFactory> {
 public:
-    MergeStrategyFactoryCategoryPlugin() : TypedCategoryPlugin("MergeStrategy") {
+    MergeStrategyFactoryCategoryPlugin()
+        : TypedCategoryPlugin("MergeStrategy") {
         document_synopsis(
             "This page describes the various merge strategies supported "
             "by the planner.");
     }
-}
-_category_plugin;
+} _category_plugin;
 }

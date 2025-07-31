@@ -11,8 +11,7 @@ class ModifiedOperatorCostsTask : public tasks::DelegatingTask {
 
 public:
     ModifiedOperatorCostsTask(
-        const std::shared_ptr<AbstractTask> &parent,
-        std::vector<int> &&costs);
+        const std::shared_ptr<AbstractTask> &parent, std::vector<int> &&costs);
     virtual ~ModifiedOperatorCostsTask() override = default;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;

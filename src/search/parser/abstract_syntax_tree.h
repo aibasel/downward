@@ -35,8 +35,9 @@ class LetNode : public ASTNode {
     ASTNodePtr variable_definition;
     ASTNodePtr nested_value;
 public:
-    LetNode(const std::string &variable_name, ASTNodePtr variable_definition,
-            ASTNodePtr nested_value);
+    LetNode(
+        const std::string &variable_name, ASTNodePtr variable_definition,
+        ASTNodePtr nested_value);
     DecoratedASTNodePtr decorate(DecorateContext &context) const override;
     void dump(std::string indent) const override;
     const plugins::Type &get_type(DecorateContext &context) const override;
@@ -48,29 +49,25 @@ class FunctionCallNode : public ASTNode {
     std::unordered_map<std::string, ASTNodePtr> keyword_arguments;
     std::string unparsed_config;
 
-    using CollectedArguments = std::unordered_map<std::string, FunctionArgument>;
+    using CollectedArguments =
+        std::unordered_map<std::string, FunctionArgument>;
     bool collect_argument(
-        const ASTNode &arg,
-        const plugins::ArgumentInfo &arg_info,
-        DecorateContext &context,
-        CollectedArguments &arguments) const;
+        const ASTNode &arg, const plugins::ArgumentInfo &arg_info,
+        DecorateContext &context, CollectedArguments &arguments) const;
     void collect_keyword_arguments(
         const std::vector<plugins::ArgumentInfo> &argument_infos,
-        DecorateContext &context,
-        CollectedArguments &arguments) const;
+        DecorateContext &context, CollectedArguments &arguments) const;
     void collect_positional_arguments(
         const std::vector<plugins::ArgumentInfo> &argument_infos,
-        DecorateContext &context,
-        CollectedArguments &arguments) const;
+        DecorateContext &context, CollectedArguments &arguments) const;
     void collect_default_values(
         const std::vector<plugins::ArgumentInfo> &argument_infos,
-        DecorateContext &context,
-        CollectedArguments &arguments) const;
+        DecorateContext &context, CollectedArguments &arguments) const;
 public:
-    FunctionCallNode(const std::string &name,
-                     std::vector<ASTNodePtr> &&positional_arguments,
-                     std::unordered_map<std::string, ASTNodePtr> &&keyword_arguments,
-                     const std::string &unparsed_config);
+    FunctionCallNode(
+        const std::string &name, std::vector<ASTNodePtr> &&positional_arguments,
+        std::unordered_map<std::string, ASTNodePtr> &&keyword_arguments,
+        const std::string &unparsed_config);
     DecoratedASTNodePtr decorate(DecorateContext &context) const override;
     void dump(std::string indent) const override;
     const plugins::Type &get_type(DecorateContext &context) const override;
@@ -82,7 +79,8 @@ public:
     explicit ListNode(std::vector<ASTNodePtr> &&elements);
     DecoratedASTNodePtr decorate(DecorateContext &context) const override;
     void dump(std::string indent) const override;
-    const plugins::Type *get_common_element_type(DecorateContext &context) const;
+    const plugins::Type *get_common_element_type(
+        DecorateContext &context) const;
     const plugins::Type &get_type(DecorateContext &context) const override;
 };
 
