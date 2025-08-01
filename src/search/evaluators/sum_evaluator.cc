@@ -37,11 +37,10 @@ TaskIndependentSumEvaluator::TaskIndependentSumEvaluator(
 std::shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(
     const shared_ptr <AbstractTask> &task,
     unique_ptr <ComponentMap> &component_map, int depth) const {
-    return make_shared<SumEvaluator>(
-        construct_task_specific(subevaluators, task, component_map, depth),
-        construct_task_specific(description, task, component_map, depth),
-        construct_task_specific(verbosity, task, component_map, depth)
-        );
+
+    return specify<SumEvaluator>(
+        subevaluators, description, verbosity,
+        task, component_map, depth);
 }
 
 

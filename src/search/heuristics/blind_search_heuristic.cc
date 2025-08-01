@@ -50,12 +50,7 @@ std::shared_ptr<Evaluator> TaskIndependentBlindSearchHeuristic::create_task_spec
     const shared_ptr<AbstractTask> &task,
     std::unique_ptr<ComponentMap> &component_map,
     int depth) const {
-    return make_shared<BlindSearchHeuristic>(
-        construct_task_specific(transform, task, component_map, depth),
-        construct_task_specific(cache_evaluator_values, task, component_map, depth),
-        construct_task_specific(description, task, component_map, depth),
-        construct_task_specific(verbosity, task, component_map, depth)
-        );
+	return specify<BlindSearchHeuristic>(transform, cache_evaluator_values, description, verbosity, task, component_map, depth);
 }
 
 

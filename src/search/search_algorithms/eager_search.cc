@@ -339,24 +339,23 @@ TaskIndependentEagerSearch::TaskIndependentEagerSearch(
 }
 
 std::shared_ptr<SearchAlgorithm> TaskIndependentEagerSearch::create_task_specific(const shared_ptr <AbstractTask> &task,
-                                                                                  unique_ptr <ComponentMap> &component_map,
-                                                                                  int depth) const {
-    return make_shared<EagerSearch>(
-        construct_task_specific(open_list_factory, task, component_map, depth),
-        construct_task_specific(reopen_closed_nodes, task, component_map, depth),
-        construct_task_specific(f_evaluator, task, component_map, depth),
-        construct_task_specific(preferred_operator_evaluators, task, component_map, depth),
-        construct_task_specific(pruning_method, task, component_map, depth),
-        construct_task_specific(lazy_evaluator, task, component_map, depth),
-        construct_task_specific(cost_type, task, component_map, depth),
-        construct_task_specific(bound, task, component_map, depth),
-        construct_task_specific(max_time, task, component_map, depth),
-        construct_task_specific(description, task, component_map, depth),
-        construct_task_specific(verbosity, task, component_map, depth),
-        construct_task_specific(task, task, component_map, depth)
-        );
+              unique_ptr <ComponentMap> &component_map,
+              int depth) const {
+    return specify<EagerSearch>(
+        open_list_factory,
+        reopen_closed_nodes,
+        f_evaluator,
+        preferred_operator_evaluators,
+        pruning_method,
+        lazy_evaluator,
+        cost_type,
+        bound,
+        max_time,
+        description,
+        verbosity,
+        task,
+        task, component_map, depth);
 }
-
 
 
 

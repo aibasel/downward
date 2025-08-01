@@ -5,6 +5,7 @@
 
 #include "utils/logging.h"
 #include "utils/hash.h"
+#include "utils/tuples.h"
 
 #include <memory>
 #include <vector>
@@ -57,16 +58,17 @@ public:
     std::shared_ptr<TaskSpecificComponent> get_task_specific(
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map, int depth = -1) const {
+        int indent = depth >= 0 ? depth : 0;
         std::shared_ptr<TaskSpecificComponent> component;
         const std::pair<const TaskIndependentComponentBase *, const std::shared_ptr<AbstractTask> *> key = std::make_pair(this, &task);
         if (component_map->count(key)) {
-            log << std::string(depth, '.')
+            log << std::string(indent, '.')
                 << "Reusing task specific component '" << description
                 << "'..." << std::endl;
             component = dynamic_pointer_cast<TaskSpecificComponent>(
                 component_map->at(key));
         } else {
-            log << std::string(depth, '.')
+            log << std::string(indent, '.')
                 << "Creating task specific component '" << description
                 << "'..." << std::endl;
             component = create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
@@ -78,7 +80,55 @@ public:
 };
 
 
+template<typename R, typename ... Args>
+std::shared_ptr<R> make_from_rev(
+    std::unique_ptr<ComponentMap> &component_map,
+    const std::shared_ptr<AbstractTask> &task,
+	Args&&... args
+    ) {
+    int DEFAULT_DEPTH = -1;
+    return construct_task_specific_from_tuple<R>(reverse_tuple(std::forward_as_tuple(std::forward<Args>(args)...)), task, component_map, DEFAULT_DEPTH);
+}
 
+
+template<typename R, typename ... Args>
+std::shared_ptr<R> make_from_rev(
+    int depth,
+    std::unique_ptr<ComponentMap> &component_map,
+    const std::shared_ptr<AbstractTask> &task,
+	Args&&... args
+    ) {
+    return construct_task_specific_from_tuple<R>(reverse_tuple(std::forward_as_tuple(std::forward<Args>(args)...)), task, component_map, depth);
+}
+
+
+template<typename R, typename ... Args>
+std::shared_ptr<R> specify(Args&&... args) {
+return std::apply(
+    [](auto&&... unpacked_args) {
+        return make_from_rev<R>(
+          std::forward<decltype(unpacked_args)>(unpacked_args)...);
+        },
+        reverse_tuple(std::forward_as_tuple(std::forward<Args>(args)...))
+    );
+}
+
+
+template<typename R, typename TupleT>
+std::shared_ptr<R> construct_task_specific_from_tuple(
+	TupleT&& tuple,
+    const std::shared_ptr<AbstractTask> &task,
+    std::unique_ptr<ComponentMap> &component_map,
+    int depth) {
+    return std::apply(
+    [&task, &component_map, &depth]<typename... Ts>(Ts&&... args) {
+        return std::make_shared<R>(
+            construct_task_specific(std::forward<Ts>(args),task, component_map, depth)...
+        );
+    },
+    std::forward<TupleT>(tuple)
+        );
+}
 
 
 // const shared_pointer<TI<T>>
