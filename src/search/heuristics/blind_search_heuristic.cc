@@ -13,6 +13,7 @@ using namespace std;
 
 namespace blind_search_heuristic {
 BlindSearchHeuristic::BlindSearchHeuristic(
+    [[maybe_unused]] const shared_ptr<AbstractTask> &task,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
@@ -33,30 +34,30 @@ int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
 
 
 
-TaskIndependentBlindSearchHeuristic::TaskIndependentBlindSearchHeuristic(
-    const shared_ptr</*TaskIndependent*/ AbstractTask> transform,
-    bool cache_estimates,
-    const string &description,
-    utils::Verbosity verbosity)
-    : TaskIndependentComponent<Evaluator>(description, verbosity)
-      , transform(transform)
-      , cache_estimates(cache_estimates) {
-}
+//TaskIndependentBlindSearchHeuristic::TaskIndependentBlindSearchHeuristic(
+//    const shared_ptr</*TaskIndependent*/ AbstractTask> transform,
+//    bool cache_estimates,
+//    const string &description,
+//    utils::Verbosity verbosity)
+//    : TaskIndependentComponent<Evaluator>(description, verbosity)
+//      , transform(transform)
+//      , cache_estimates(cache_estimates) {
+//}
+//
+//TaskIndependentBlindSearchHeuristic::~TaskIndependentBlindSearchHeuristic() {
+//}
+//
+//std::shared_ptr<Evaluator> TaskIndependentBlindSearchHeuristic::create_task_specific(
+//    const shared_ptr<AbstractTask> &task,
+//    std::unique_ptr<ComponentMap> &component_map,
+//    int depth) const {
+//	return specify<BlindSearchHeuristic>(transform, cache_evaluator_values, description, verbosity, task, component_map, depth);
+//}
 
-TaskIndependentBlindSearchHeuristic::~TaskIndependentBlindSearchHeuristic() {
-}
-
-std::shared_ptr<Evaluator> TaskIndependentBlindSearchHeuristic::create_task_specific(
-    const shared_ptr<AbstractTask> &task,
-    std::unique_ptr<ComponentMap> &component_map,
-    int depth) const {
-	return specify<BlindSearchHeuristic>(transform, cache_evaluator_values, description, verbosity, task, component_map, depth);
-}
-
-
+using TaskIndependentBlindSearchHeuristic = TaskIndependentComponentFeature<BlindSearchHeuristic, Evaluator, BlindSearchHeuristicArgs>;
 
 class BlindSearchHeuristicFeature
-    : public plugins::TypedFeature<TaskIndependentComponent<Evaluator>, TaskIndependentBlindSearchHeuristic> {
+    : public plugins::TypedFeature<TaskIndependentComponentType<Evaluator>, TaskIndependentBlindSearchHeuristic> {
 public:
     BlindSearchHeuristicFeature() : TypedFeature("blind") {
         document_title("Blind heuristic");
@@ -78,7 +79,7 @@ public:
 
     virtual shared_ptr<TaskIndependentBlindSearchHeuristic>
     create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<TaskIndependentBlindSearchHeuristic>(
+        return plugins::make_shared_from_arg_tuples_NEW<TaskIndependentBlindSearchHeuristic>(
             get_heuristic_arguments_from_options(opts)
             );
     }

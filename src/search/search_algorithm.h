@@ -31,6 +31,13 @@ class SuccessorGenerator;
 
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
+using SearchAlgorithmArgs = std::tuple<
+    OperatorCost, //cost_type, 
+    int, //bound,
+    double, //max_time
+    ComponentArgs
+    >;
+
 class SearchAlgorithm : public Component {
     std::string description;
     SearchStatus status;

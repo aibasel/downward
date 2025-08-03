@@ -8,16 +8,24 @@
 #include "utils/tuples.h"
 
 #include <memory>
+#include <tuple>
 #include <vector>
 
 class AbstractTask;
 
+using ComponentArgs = std::tuple<const std::string, utils::Verbosity>;
 class Component {
 public:
     virtual ~Component() = default;
 };
 
+template <typename T>
+struct is_component {
+    static constexpr bool value = std::is_base_of<Component, T>::value;
+};
+
 class TaskIndependentComponentBase {
+protected:
 protected:
     const std::string description;
     const utils::Verbosity verbosity;
@@ -29,49 +37,114 @@ public:
           verbosity(verbosity),
           log(utils::get_log_for_verbosity(verbosity)) {}
     virtual ~TaskIndependentComponentBase() = default;
-    std::string get_description() const {return description;}
+    virtual std::string get_description() const = 0;
     PlanManager &get_plan_manager() {return plan_manager;}
 };
 
 using ComponentMap = utils::HashMap<const std::pair<const TaskIndependentComponentBase *, const std::shared_ptr<AbstractTask> *>,
                                     std::shared_ptr<Component>>;
 
-template<typename TaskSpecificComponent>
-class TaskIndependentComponent : public TaskIndependentComponentBase {
-    virtual std::shared_ptr<TaskSpecificComponent> create_task_specific(
+template<typename TaskSpecificComponentType>
+class TaskIndependentComponentType : public TaskIndependentComponentBase {
+    virtual std::shared_ptr<TaskSpecificComponentType> create_task_specific(
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
         int depth) const = 0;
 public:
-    explicit TaskIndependentComponent(const std::string &description,
+    TaskIndependentComponentType()
+        : TaskIndependentComponentBase("issue559.default_type_decription", utils::Verbosity::NORMAL) {}
+    TaskIndependentComponentType(const std::string &description,
                                       utils::Verbosity verbosity)
         : TaskIndependentComponentBase(description, verbosity) {}
+    std::string get_description() const override {return description;}
+    virtual std::shared_ptr<TaskSpecificComponentType> get_task_specific(
+        const std::shared_ptr<AbstractTask> &task, int depth = -1) const = 0;
+    virtual std::shared_ptr<TaskSpecificComponentType> get_task_specific(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map, int depth = -1) const = 0;
+};
 
+//// === FlattenTuple ===
+//template <typename T>
+//struct FlattenTuple {
+//    using type = std::tuple<T>;
+//};
+//
+//template <typename... Ts>
+//struct FlattenTuple<std::tuple<Ts...>> {
+//    using type = decltype(std::tuple_cat(typename FlattenTuple<Ts>::type{}...));
+//};
+//
+//// type wrapper based on inheritance
+//template <typename T>
+//using ToTaskIndependentIfComponent = std::conditional_t<
+//    is_component<T>::value,
+//    TaskIndependentComponentType<T>,
+//    T
+//>;
+//
+//// Transform a tuple into one with types conditionally wrapped
+//template <typename Tuple>
+//struct TupleToTaskIndependent;
+//
+//template <typename... Ts>
+//struct TupleToTaskIndependent<std::tuple<Ts...>> {
+//    using type = std::tuple<ToTaskIndependentIfComponent<Ts>...>;
+//};
+//
+////Full flattening + wrapping combined
+//template <typename T>
+//struct InnerTaskIndependent {
+//    using Flat = typename FlattenTuple<T>::type;
+//    using type = typename TupleToTaskIndependent<Flat>::type;
+//};
+//
+//template <typename T>
+//using InnerTaskIndependnet_t = typename InnerTaskIndependent<T>::type;
 
-    std::shared_ptr<TaskSpecificComponent> get_task_specific(
-        const std::shared_ptr<AbstractTask> &task, int depth = -1) const {
-        utils::g_log << std::string(depth >= 0 ? depth : 0, ' ') << "Creating " << description << " as root component..." << std::endl;
+template<typename TaskSpecificComponentFeature, typename TaskSpecificType, typename FeatureArguments>
+class TaskIndependentComponentFeature : public TaskIndependentComponentType<TaskSpecificType> {
+    FeatureArguments args;
+    
+    virtual std::shared_ptr<TaskSpecificType> create_task_specific(
+        const std::shared_ptr<AbstractTask> &task,
+        std::unique_ptr<ComponentMap> &component_map,
+        int depth) const override {
+
+            return construct_task_specific_from_tuple<TaskSpecificComponentFeature>(args, task, component_map, depth);
+	};
+public:
+    explicit TaskIndependentComponentFeature(FeatureArguments _args)
+        : args(std::move(_args)) {};
+
+    //template<typename ... XArgs>
+    //explicit TaskIndependentComponentFeature(XArgs&& ... args) : 
+    //    TaskIndependentComponentFeature/*<TaskSpecificComponentFeature,TaskSpecificType, FeatureArguments>*/(reverse_tuple(std::forward_as_tuple(std::forward<XArgs>(args)...))) {    }
+
+    std::shared_ptr<TaskSpecificType> get_task_specific(
+        const std::shared_ptr<AbstractTask> &task, int depth = -1) const override {
+        utils::g_log << std::string(depth >= 0 ? depth : 0, ' ') << "Creating " << this->description << " as root component..." << std::endl;
         std::unique_ptr<ComponentMap> component_map = std::make_unique<ComponentMap>();
         return get_task_specific(task, component_map, depth);
     }
 
-    std::shared_ptr<TaskSpecificComponent> get_task_specific(
+    std::shared_ptr<TaskSpecificType> get_task_specific(
         const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map, int depth = -1) const {
+        std::unique_ptr<ComponentMap> &component_map, int depth = -1) const override {
         int indent = depth >= 0 ? depth : 0;
-        std::shared_ptr<TaskSpecificComponent> component;
+        std::shared_ptr<TaskSpecificComponentFeature> component;
         const std::pair<const TaskIndependentComponentBase *, const std::shared_ptr<AbstractTask> *> key = std::make_pair(this, &task);
         if (component_map->count(key)) {
-            log << std::string(indent, '.')
-                << "Reusing task specific component '" << description
+            this->log << std::string(indent, '.')
+                << "Reusing task specific component '" << this->description
                 << "'..." << std::endl;
-            component = dynamic_pointer_cast<TaskSpecificComponent>(
+            component = dynamic_pointer_cast<TaskSpecificComponentFeature>(
                 component_map->at(key));
         } else {
-            log << std::string(indent, '.')
-                << "Creating task specific component '" << description
+            this->log << std::string(indent, '.')
+                << "Creating task specific component '" << this->description
                 << "'..." << std::endl;
-            component = create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth);
+            component = dynamic_pointer_cast<TaskSpecificComponentFeature>(create_task_specific(task, component_map, depth >= 0 ? depth + 1 : depth));
             component_map->emplace(key, component);
         }
         return component;
@@ -116,25 +189,25 @@ return std::apply(
 
 template<typename R, typename TupleT>
 std::shared_ptr<R> construct_task_specific_from_tuple(
-	TupleT&& tuple,
+	TupleT&& _tuple,
     const std::shared_ptr<AbstractTask> &task,
     std::unique_ptr<ComponentMap> &component_map,
-    int depth) {
+    int depth = -1) {
     return std::apply(
     [&task, &component_map, &depth]<typename... Ts>(Ts&&... args) {
         return std::make_shared<R>(
             construct_task_specific(std::forward<Ts>(args),task, component_map, depth)...
         );
     },
-    std::forward<TupleT>(tuple)
-        );
+    std::tuple_cat(std::tuple(task),std::forward<TupleT>(_tuple)
+        ));
 }
 
 
 // const shared_pointer<TI<T>>
 template<typename T>
 std::shared_ptr<T> construct_task_specific(
-    const std::shared_ptr<TaskIndependentComponent<T>> &ptr,
+    const std::shared_ptr<TaskIndependentComponentType<T>> &ptr,
     const std::shared_ptr<AbstractTask> &task,
     std::unique_ptr<ComponentMap> &component_map,
     int depth) {
@@ -169,6 +242,7 @@ T construct_task_specific(
     [[maybe_unused]] int depth) {
     return elem;
 }
+
 
 
 

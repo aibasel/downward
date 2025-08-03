@@ -457,7 +457,7 @@ create_fast_downward_library(
 	#issue559 #best_first_open_list
         sum_evaluator
         tiebreaking_open_list
-        weighted_evaluator
+	#issue559weighted_evaluator
     DEPENDENCY_ONLY
 )
 

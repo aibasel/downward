@@ -37,13 +37,13 @@ State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
 
 
 
-TaskIndependentHeuristic::TaskIndependentHeuristic(const shared_ptr<AbstractTask> &task_transformation,
-                                                   bool cache_evaluator_values, const string &description,
-                                                   utils::Verbosity verbosity)
-    : TaskIndependentEvaluator(true, true, true, description, verbosity),
-      cache_evaluator_values(cache_evaluator_values),
-      task_transformation(task_transformation) {
-}
+//TaskIndependentHeuristic::TaskIndependentHeuristic(const shared_ptr<AbstractTask> &task_transformation,
+//                                                   bool cache_evaluator_values, const string &description,
+//                                                   utils::Verbosity verbosity)
+//    : TaskIndependentEvaluator(true, true, true, description, verbosity),
+//      cache_evaluator_values(cache_evaluator_values),
+//      task_transformation(task_transformation) {
+//}
 
 
 

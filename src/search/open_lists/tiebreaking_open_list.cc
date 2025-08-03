@@ -8,6 +8,7 @@
 #include <cassert>
 #include <deque>
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -30,6 +31,8 @@ class TieBreakingOpenList : public OpenList<Entry> {
     bool allow_unsafe_pruning;
 
     int dimension() const;
+    const std::string description;
+    const utils::Verbosity verbosity;
 
 protected:
     virtual void do_insertion(EvaluationContext &eval_context,
@@ -38,7 +41,8 @@ protected:
 public:
     TieBreakingOpenList(
         const vector<shared_ptr<Evaluator>> &evals,
-        bool unsafe_pruning, bool pref_only);
+        bool unsafe_pruning, bool pref_only,
+	const std::string description, utils::Verbosity verbosity);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
@@ -54,10 +58,14 @@ public:
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(
     const vector<shared_ptr<Evaluator>> &evals,
-    bool unsafe_pruning, bool pref_only)
+    bool unsafe_pruning, bool pref_only,
+const std::string description,
+utils::Verbosity verbosity
+)
     : OpenList<Entry>(pref_only),
       size(0), evaluators(evals),
-      allow_unsafe_pruning(unsafe_pruning) {
+      allow_unsafe_pruning(unsafe_pruning),
+description(description), verbosity(verbosity){
 }
 
 template<class Entry>
@@ -140,55 +148,58 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
 }
 
 TieBreakingOpenListFactory::TieBreakingOpenListFactory(
+    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<Evaluator>> &evals,
-    bool unsafe_pruning, bool pref_only)
+    bool unsafe_pruning, bool pref_only,
+const string description, utils::Verbosity verbosity)
     : evals(evals),
       unsafe_pruning(unsafe_pruning),
-      pref_only(pref_only) {
+      pref_only(pref_only),
+description(description), verbosity(verbosity){
     utils::verify_list_not_empty(evals, "evals");// should be in TI
 }
 
 unique_ptr<StateOpenList>
 TieBreakingOpenListFactory::create_state_open_list() {
     return make_unique<TieBreakingOpenList<StateOpenListEntry>>(
-        evals, unsafe_pruning, pref_only);
+        evals, unsafe_pruning, pref_only, description, verbosity);
 }
 
 unique_ptr<EdgeOpenList>
 TieBreakingOpenListFactory::create_edge_open_list() {
     return make_unique<TieBreakingOpenList<EdgeOpenListEntry>>(
-        evals, unsafe_pruning, pref_only);
+        evals, unsafe_pruning, pref_only, description, verbosity);
 }
 
 
 
-TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFactory(
-    vector<shared_ptr<TaskIndependentComponent<Evaluator>>> evals,
-    bool pref_only,
-    bool allow_unsafe_pruning)
-    : TaskIndependentComponent<OpenListFactory>("TieBreakingOpenListFactory", utils::Verbosity::NORMAL),
-      pref_only(pref_only), evals(evals), allow_unsafe_pruning(allow_unsafe_pruning) {
-}
+//TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFactory(
+//    vector<shared_ptr<TaskIndependentComponent<Evaluator>>> evals,
+//    bool pref_only,
+//    bool allow_unsafe_pruning)
+//    : TaskIndependentComponent<OpenListFactory>("TieBreakingOpenListFactory", utils::Verbosity::NORMAL),
+//      pref_only(pref_only), evals(evals), allow_unsafe_pruning(allow_unsafe_pruning) {
+//}
+//
+//
+//std::shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific(const shared_ptr <AbstractTask> &task,
+//                             unique_ptr <ComponentMap> &component_map, int depth) const {
+//    return specify<TieBreakingOpenListFactory>(
+//        evals, pref_only, allow_unsafe_pruning, task, component_map, depth
+//	);
+//}
 
 
-std::shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific(const shared_ptr <AbstractTask> &task,
-                             unique_ptr <ComponentMap> &component_map, int depth) const {
-    return specify<TieBreakingOpenListFactory>(
-        evals, pref_only, allow_unsafe_pruning, task, component_map, depth
-	);
-}
-
-
-
+using TaskIndependentTieBreakingOpenListFactory = TaskIndependentComponentFeature<TieBreakingOpenListFactory, OpenListFactory, TieBreakingOpenListFactoryArgs>;
 
 class TieBreakingOpenListFeature
-    : public plugins::TypedFeature<TaskIndependentComponent<OpenListFactory>, TaskIndependentTieBreakingOpenListFactory> {
+    : public plugins::TypedFeature<TaskIndependentComponentType<OpenListFactory>, TaskIndependentTieBreakingOpenListFactory> {
 public:
     TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
         document_title("Tie-breaking open list");
         document_synopsis("");
 
-        add_list_option<shared_ptr<TaskIndependentComponent<Evaluator>>>("evals", "evaluators");
+        add_list_option<shared_ptr<TaskIndependentComponentType<Evaluator>>>("evals", "evaluators");
         add_option<bool>(
             "unsafe_pruning",
             "allow unsafe pruning when the main evaluator regards a state a dead end",
@@ -198,10 +209,12 @@ public:
 
     virtual shared_ptr<TaskIndependentTieBreakingOpenListFactory>
     create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<TaskIndependentTieBreakingOpenListFactory>(
-            opts.get_list<shared_ptr<TaskIndependentComponent<Evaluator>>>("evals"),
+        return plugins::make_shared_from_arg_tuples_NEW<TaskIndependentTieBreakingOpenListFactory>(
+            opts.get_list<shared_ptr<TaskIndependentComponentType<Evaluator>>>("evals"),
             opts.get<bool>("unsafe_pruning"),
-            get_open_list_arguments_from_options(opts)
+            get_open_list_arguments_from_options(opts),
+			"DEFAULT_OPENLIST_DESCRIPTION_ISSUE559",
+			utils::Verbosity::NORMAL
             );
     }
 };

@@ -59,16 +59,16 @@ void CombiningEvaluator::get_path_dependent_evaluators(
 
 void add_combining_evaluator_options_to_feature(
     plugins::Feature &feature, const string &description) {
-    feature.add_list_option<shared_ptr<TaskIndependentComponent<Evaluator>>>(
+    feature.add_list_option<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
         "evals", "at least one evaluator");
     add_evaluator_options_to_feature(feature, description);
 }
 
-tuple<vector<shared_ptr<TaskIndependentComponent<Evaluator>>>, const string, utils::Verbosity>
+tuple<const vector<shared_ptr<TaskIndependentComponentType<Evaluator>>>, const string, utils::Verbosity>
 get_combining_evaluator_arguments_from_options(
     const plugins::Options &opts) {
     return tuple_cat(
-        make_tuple(opts.get_list<shared_ptr<TaskIndependentComponent<Evaluator>>>("evals")),
+        make_tuple(opts.get_list<shared_ptr<TaskIndependentComponentType<Evaluator>>>("evals")),
         get_evaluator_arguments_from_options(opts)
         );
 }

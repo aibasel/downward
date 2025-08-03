@@ -24,9 +24,8 @@
 
 class Evaluator;
 template<typename T>
-class TaskIndependentComponent;
+class TaskIndependentComponentType;
 class OpenListFactory;
-class TaskIndependentOpenListFactory;
 
 namespace search_common {
 //issue559///*
@@ -65,11 +64,11 @@ namespace search_common {
   The resulting open list factory produces a tie-breaking open list
   ordered primarily on g + h and secondarily on h.
 */
-extern std::pair<      std::shared_ptr<TaskIndependentComponent<OpenListFactory>>,
-                       const std::shared_ptr<TaskIndependentComponent<Evaluator>>
+extern std::pair<      std::shared_ptr<TaskIndependentComponentType<OpenListFactory>>,
+                       const std::shared_ptr<TaskIndependentComponentType<Evaluator>>
                        >
 create_task_independent_astar_open_list_factory_and_f_eval(
-    const std::shared_ptr<TaskIndependentComponent<Evaluator>> &h_eval,
+    const std::shared_ptr<TaskIndependentComponentType<Evaluator>> &h_eval,
     const std::string &description,
     utils::Verbosity verbosity);
 }

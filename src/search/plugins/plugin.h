@@ -139,6 +139,14 @@ std::shared_ptr<T> make_shared_from_arg_tuples(Arguments... arguments) {
             std::tuple<Arguments...>(std::forward<Arguments>(arguments) ...)));
 }
 
+template<typename T, typename ... Arguments>
+std::shared_ptr<T> make_shared_from_arg_tuples_NEW(Arguments... arguments) {
+
+
+
+	return std::make_shared<T>(std::move(utils::flatten_tuple(std::tuple<Arguments...>(std::forward<Arguments>(arguments) ...))));
+}
+
 class Plugin {
 public:
     Plugin();

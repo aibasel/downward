@@ -4,11 +4,13 @@
 #include "../evaluator.h"
 
 #include <memory>
+#include <tuple>
 
 namespace plugins {
 class Options;
 }
 
+using WeightedEvaluatorArgs = std::tuple<const std::shared_ptr<Evaluator>, int, ComponentArgs>;
 namespace weighted_evaluator {
 class WeightedEvaluator : public Evaluator {
     std::shared_ptr<Evaluator> evaluator;
@@ -25,22 +27,22 @@ public:
     virtual void get_path_dependent_evaluators(std::set<Evaluator *> &evals) override;
 };
 
-class TaskIndependentWeightedEvaluator : public TaskIndependentComponent<Evaluator> {
-    std::shared_ptr<TaskIndependentComponent<Evaluator>> evaluator;
-    int weight;
-    std::shared_ptr<Evaluator> create_task_specific(
-        const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const override;
-public:
-    explicit TaskIndependentWeightedEvaluator(
-        const std::shared_ptr<TaskIndependentComponent<Evaluator>> &eval,
-        int weight,
-        const std::string &description,
-        utils::Verbosity verbosity);
-
-    virtual ~TaskIndependentWeightedEvaluator() override = default;
-};
+//class TaskIndependentWeightedEvaluator : public TaskIndependentComponent<Evaluator> {
+//    std::shared_ptr<TaskIndependentComponent<Evaluator>> evaluator;
+//    int weight;
+//    std::shared_ptr<Evaluator> create_task_specific(
+//        const std::shared_ptr<AbstractTask> &task,
+//        std::unique_ptr<ComponentMap> &component_map,
+//        int depth) const override;
+//public:
+//    explicit TaskIndependentWeightedEvaluator(
+//        const std::shared_ptr<TaskIndependentComponent<Evaluator>> &eval,
+//        int weight,
+//        const std::string &description,
+//        utils::Verbosity verbosity);
+//
+//    virtual ~TaskIndependentWeightedEvaluator() override = default;
+//};
 }
 
 #endif

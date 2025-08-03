@@ -12,7 +12,8 @@ prototype = ["-DCMAKE_BUILD_TYPE=Release",
              "-DLIBRARY_PLUGIN_EAGER_ENABLED=YES",
              "-DLIBRARY_PLUGIN_ASTAR_ENABLED=YES",
 #             "-DLIBRARY_LANDMARK_CUT_HEURISTIC_ENABLED=YES",
-             "-DLIBRARY_BLIND_SEARCH_HEURISTIC_ENABLED=YES"]
+             "-DLIBRARY_BLIND_SEARCH_HEURISTIC_ENABLED=YES",
+             ]
  
 DEFAULT = "prototype"
 #DEFAULT = "release"

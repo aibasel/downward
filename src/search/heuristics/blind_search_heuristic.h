@@ -4,35 +4,42 @@
 #include "../heuristic.h"
 
 namespace blind_search_heuristic {
+using BlindSearchHeuristicArgs = std::tuple<
+        const std::shared_ptr<AbstractTask> ,//&transform,
+        bool ,//cache_estimates, 
+        const std::string ,//&description,
+        utils::Verbosity //verbosity);
+>;
 class BlindSearchHeuristic : public Heuristic {
     int min_operator_cost;
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     BlindSearchHeuristic(
+        const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<AbstractTask> &transform,
         bool cache_estimates, const std::string &description,
         utils::Verbosity verbosity);
 };
 
-class TaskIndependentBlindSearchHeuristic : public TaskIndependentComponent<Evaluator> {
-private:
-    std::shared_ptr</*TaskIndependent*/ AbstractTask> transform;
-    bool cache_estimates;
-    bool cache_evaluator_values;
-    std::shared_ptr<Evaluator> create_task_specific(
-        const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const override;
-public:
-    TaskIndependentBlindSearchHeuristic(
-        const std::shared_ptr</*TaskIndependent*/ AbstractTask> transform,
-        bool cache_estimates,
-        const std::string &description,
-        utils::Verbosity verbosity);
-
-    virtual ~TaskIndependentBlindSearchHeuristic() override;
-};
+//class TaskIndependentBlindSearchHeuristic : public TaskIndependentComponent<Evaluator> {
+//private:
+//    std::shared_ptr</*TaskIndependent*/ AbstractTask> transform;
+//    bool cache_estimates;
+//    bool cache_evaluator_values;
+//    std::shared_ptr<Evaluator> create_task_specific(
+//        const std::shared_ptr<AbstractTask> &task,
+//        std::unique_ptr<ComponentMap> &component_map,
+//        int depth) const override;
+//public:
+//    TaskIndependentBlindSearchHeuristic(
+//        const std::shared_ptr</*TaskIndependent*/ AbstractTask> transform,
+//        bool cache_estimates,
+//        const std::string &description,
+//        utils::Verbosity verbosity);
+//
+//    virtual ~TaskIndependentBlindSearchHeuristic() override;
+//};
 }
 
 #endif

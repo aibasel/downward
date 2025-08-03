@@ -15,8 +15,8 @@
 using namespace std;
 
 namespace search_common {
-using TIGEval = g_evaluator::TaskIndependentGEvaluator;
-using TISumEval = sum_evaluator::TaskIndependentSumEvaluator;
+using TIGEval = TaskIndependentComponentFeature<g_evaluator::GEvaluator, Evaluator, g_evaluator::GEvaluatorArgs>;
+using TISumEval = TaskIndependentComponentFeature<sum_evaluator::SumEvaluator, Evaluator, sum_evaluator::SumEvaluatorArgs>;
 using WeightedEval = weighted_evaluator::WeightedEvaluator;
 
 //issue559///*
@@ -103,20 +103,23 @@ using WeightedEval = weighted_evaluator::WeightedEvaluator;
 //issue559//        boost);
 //issue559//}
 
-pair<shared_ptr<TaskIndependentComponent<OpenListFactory>>, const shared_ptr<TaskIndependentComponent<Evaluator>>>
+pair<shared_ptr<TaskIndependentComponentType<OpenListFactory>>, const shared_ptr<TaskIndependentComponentType<Evaluator>>>
 create_task_independent_astar_open_list_factory_and_f_eval(
-    const shared_ptr<TaskIndependentComponent<Evaluator>> &h_eval, const string &description, utils::Verbosity verbosity
+    const shared_ptr<TaskIndependentComponentType<Evaluator>> &h_eval, const string &description, utils::Verbosity verbosity
     ) {
-    shared_ptr<TIGEval> g = make_shared<TIGEval>(description + ".g_eval", verbosity);
-    shared_ptr<TaskIndependentComponent<Evaluator>> f =
-        make_shared<TISumEval>(
-            vector<shared_ptr<TaskIndependentComponent<Evaluator>>>({g, h_eval}),
-            description + ".f_eval", verbosity);
-    vector<shared_ptr<TaskIndependentComponent<Evaluator>>> evals = {f, h_eval};
+    shared_ptr<TIGEval> g = make_shared<TIGEval>(tuple(description + ".g_eval", verbosity));
+    shared_ptr<TaskIndependentComponentType<Evaluator>> f =
+        make_shared<TISumEval>(tuple(
+            vector<shared_ptr<TaskIndependentComponentType<Evaluator>>>({g, h_eval}),
+            description + ".f_eval", 
+			verbosity
+									));
+    vector<shared_ptr<TaskIndependentComponentType<Evaluator>>> evals = {f, h_eval};
 
-    shared_ptr<TaskIndependentComponent<OpenListFactory>> open =
-        make_shared<tiebreaking_open_list::TaskIndependentTieBreakingOpenListFactory>(
-            evals, false, false);
+    shared_ptr<TaskIndependentComponentType<OpenListFactory>> 
+open =
+        make_shared<TaskIndependentComponentFeature<tiebreaking_open_list::TieBreakingOpenListFactory, OpenListFactory, TieBreakingOpenListFactoryArgs>>(
+			tuple(evals, false ,false, description + ".tiebreaking_openlist", verbosity));
     return make_pair(open, f);
 }
 }

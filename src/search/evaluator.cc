@@ -10,6 +10,15 @@ using namespace std;
 
 
 Evaluator::Evaluator(
+    EvaluatorArgs args)
+    : description(get<0>(args.second)),
+      use_for_reporting_minima(get<0>(args.first)),
+      use_for_boosting(get<1>(args.first)),
+      use_for_counting_evaluations(get<2>(args.first)),
+      log(utils::get_log_for_verbosity(get<1>(args.second))) {
+}
+
+Evaluator::Evaluator(
     bool use_for_reporting_minima, bool use_for_boosting,
     bool use_for_counting_evaluations, const string &description,
     utils::Verbosity verbosity)
@@ -77,15 +86,15 @@ int Evaluator::get_cached_estimate(const State &) const {
 
 
 
-TaskIndependentEvaluator::TaskIndependentEvaluator(
-    bool use_for_reporting_minima, bool use_for_boosting,
-    bool use_for_counting_evaluations,
-    const std::string &description, utils::Verbosity verbosity)
-    : TaskIndependentComponent(description, verbosity),
-      use_for_reporting_minima(use_for_reporting_minima),
-      use_for_boosting(use_for_boosting),
-      use_for_counting_evaluations(use_for_counting_evaluations) {
-}
+//TaskIndependentEvaluator::TaskIndependentEvaluator(
+//    bool use_for_reporting_minima, bool use_for_boosting,
+//    bool use_for_counting_evaluations,
+//    const std::string &description, utils::Verbosity verbosity)
+//    : TaskIndependentComponent(description, verbosity),
+//      use_for_reporting_minima(use_for_reporting_minima),
+//      use_for_boosting(use_for_boosting),
+//      use_for_counting_evaluations(use_for_counting_evaluations) {
+//}
 
 
 void add_evaluator_options_to_feature(
@@ -105,7 +114,7 @@ tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
         );
 }
 
-static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentComponent<Evaluator>> {
+static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentComponentType<Evaluator>> {
 public:
     EvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {
         document_synopsis(

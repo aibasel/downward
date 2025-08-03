@@ -14,7 +14,7 @@ namespace combining_evaluator {
   MaxEvaluator, which captures the common aspects of their behaviour.
 */
 class CombiningEvaluator : public Evaluator {
-    std::vector<std::shared_ptr<Evaluator>> subevaluators;
+    const std::vector<std::shared_ptr<Evaluator>> subevaluators;
     bool all_dead_ends_are_reliable;
 protected:
     virtual int combine_values(const std::vector<int> &values) = 0;
@@ -51,7 +51,7 @@ public:
 
 extern void add_combining_evaluator_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>>,
+extern std::tuple<const std::vector<std::shared_ptr<TaskIndependentComponentType<Evaluator>>>,
                   const std::string, utils::Verbosity>
 get_combining_evaluator_arguments_from_options(
     const plugins::Options &opts);

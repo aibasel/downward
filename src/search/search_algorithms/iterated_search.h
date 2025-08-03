@@ -9,8 +9,23 @@
 #include <vector>
 
 namespace iterated_search {
+
+using IteratedSearchArgs = std::tuple<
+       std::tuple<std::vector<std::shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>> ,//search_algorithms,
+// HACK the singlton tuple is just used to prevent the searches from being specified when the outer iterated search is being specified.
+        bool ,//pass_bound,
+        bool ,//repeat_last_phase,
+        bool ,//continue_on_fail,
+        bool ,//continue_on_solve,
+        OperatorCost ,//cost_type,
+        int ,//bound,
+        double ,//max_time,
+        const std::string ,//&name,
+        utils::Verbosity //verbosity
+      >;
+
 class IteratedSearch : public SearchAlgorithm {
-    std::vector<std::shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms;
+    std::vector<std::shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>> search_algorithms;
 
     bool pass_bound;
     bool repeat_last_phase;
@@ -30,42 +45,8 @@ class IteratedSearch : public SearchAlgorithm {
 
 public:
     IteratedSearch(
-        std::vector<std::shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms,
-        bool pass_bound,
-        bool repeat_last_phase,
-        bool continue_on_fail,
-        bool continue_on_solve,
-        OperatorCost cost_type,
-        int bound,
-        double max_time,
-        const std::string &name,
-        utils::Verbosity verbosity,
-        const std::shared_ptr<AbstractTask> &task);
-
-    virtual void save_plan_if_necessary() override;
-    virtual void print_statistics() const override;
-};
-
-
-class TaskIndependentIteratedSearch : public TaskIndependentComponent<SearchAlgorithm> {
-private:
-    int bound;
-    OperatorCost cost_type;
-    double max_time;
-    std::vector<std::shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms;
-
-    bool pass_bound;
-    bool repeat_last_phase;
-    bool continue_on_fail;
-    bool continue_on_solve;
-
-    std::shared_ptr<SearchAlgorithm> create_task_specific(
         const std::shared_ptr<AbstractTask> &task,
-        std::unique_ptr<ComponentMap> &component_map,
-        int depth) const override;
-public:
-    TaskIndependentIteratedSearch(
-        std::vector<std::shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms,
+        std::tuple<std::vector<std::shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>> search_algorithms,
         bool pass_bound,
         bool repeat_last_phase,
         bool continue_on_fail,
@@ -76,8 +57,42 @@ public:
         const std::string &name,
         utils::Verbosity verbosity);
 
-    virtual ~TaskIndependentIteratedSearch() override = default;
+    virtual void save_plan_if_necessary() override;
+    virtual void print_statistics() const override;
 };
+
+
+//class TaskIndependentIteratedSearch : public TaskIndependentComponent<SearchAlgorithm> {
+//private:
+//    int bound;
+//    OperatorCost cost_type;
+//    double max_time;
+//    std::vector<std::shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms;
+//
+//    bool pass_bound;
+//    bool repeat_last_phase;
+//    bool continue_on_fail;
+//    bool continue_on_solve;
+//
+//    std::shared_ptr<SearchAlgorithm> create_task_specific(
+//        const std::shared_ptr<AbstractTask> &task,
+//        std::unique_ptr<ComponentMap> &component_map,
+//        int depth) const override;
+//public:
+//    TaskIndependentIteratedSearch(
+//        std::vector<std::shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms,
+//        bool pass_bound,
+//        bool repeat_last_phase,
+//        bool continue_on_fail,
+//        bool continue_on_solve,
+//        OperatorCost cost_type,
+//        int bound,
+//        double max_time,
+//        const std::string &name,
+//        utils::Verbosity verbosity);
+//
+//    virtual ~TaskIndependentIteratedSearch() override = default;
+//};
 }
 
 #endif

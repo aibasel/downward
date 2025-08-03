@@ -8,6 +8,7 @@ using namespace std;
 
 namespace sum_evaluator {
 SumEvaluator::SumEvaluator(
+        [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<Evaluator>> &evals,
     const string &description, utils::Verbosity verbosity)
     : CombiningEvaluator(evals, description, verbosity) {
@@ -24,30 +25,30 @@ int SumEvaluator::combine_values(const vector<int> &values) {
 }
 
 
-TaskIndependentSumEvaluator::TaskIndependentSumEvaluator(
-    const vector<shared_ptr<TaskIndependentComponent<Evaluator>>> &subevaluators,
-    const string &description,
-    utils::Verbosity verbosity)
-    : TaskIndependentComponent<Evaluator>(
-          description,
-          verbosity),
-      subevaluators(subevaluators) {
-}
+//TaskIndependentSumEvaluator::TaskIndependentSumEvaluator(
+//    const vector<shared_ptr<TaskIndependentComponent<Evaluator>>> &subevaluators,
+//    const string &description,
+//    utils::Verbosity verbosity)
+//    : TaskIndependentComponent<Evaluator>(
+//          description,
+//          verbosity),
+//      subevaluators(subevaluators) {
+//}
+//
+//std::shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(
+//    const shared_ptr <AbstractTask> &task,
+//    unique_ptr <ComponentMap> &component_map, int depth) const {
+//
+//    return specify<SumEvaluator>(
+//        subevaluators, description, verbosity,
+//        task, component_map, depth);
+//}
 
-std::shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(
-    const shared_ptr <AbstractTask> &task,
-    unique_ptr <ComponentMap> &component_map, int depth) const {
 
-    return specify<SumEvaluator>(
-        subevaluators, description, verbosity,
-        task, component_map, depth);
-}
-
-
-
+using TaskIndependentSumEvaluator = TaskIndependentComponentFeature<SumEvaluator,Evaluator,SumEvaluatorArgs>;
 
 class SumEvaluatorFeature
-    : public plugins::TypedFeature<TaskIndependentComponent<Evaluator>, TaskIndependentSumEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentComponentType<Evaluator>, TaskIndependentSumEvaluator>  {
 public:
     SumEvaluatorFeature() : TypedFeature("sum") {
         document_subcategory("evaluators_basic");
@@ -60,7 +61,7 @@ public:
 
     virtual shared_ptr<TaskIndependentSumEvaluator>
     create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<TaskIndependentSumEvaluator>(
+        return plugins::make_shared_from_arg_tuples_NEW<TaskIndependentSumEvaluator>(
             combining_evaluator::get_combining_evaluator_arguments_from_options(
                 opts));
     }
