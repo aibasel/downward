@@ -87,6 +87,10 @@ def parse_args(args=None):
 
 
 def get_options():
+    if options is None:
+        msg = ("No options provided (via options.set_options(...)). For example"
+               " 'options.set_options([<domain file>, <problem_file>])'.")
+        raise RuntimeError(msg)
     return options
 
 
