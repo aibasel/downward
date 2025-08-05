@@ -1,9 +1,32 @@
+from pathlib import Path
 import argparse
 import sys
 
+options = None
 
-def parse_args():
-    argparser = argparse.ArgumentParser()
+# The following code is used to show the usage instructions from argparse as
+# "usage: python3 -m translate" (or analogously for other python executables)
+# instead of "usage: __main__.py" if the package is called as a package.
+# This is the default behaviour of argparse.ArgumentParser since Python 3.12,
+# so we can remove this code once that is the oldest supported python version.
+def infer_prog():
+    main_mod = sys.modules['__main__']
+    spec = getattr(main_mod, '__spec__', None)
+
+    if spec is not None:
+        # Invoked via `python -m ...`
+        module_name = spec.name
+        if module_name.endswith('.__main__'):
+            module_name = module_name.rsplit('.', 1)[0]
+        python_exec = Path(sys.executable).name
+        return f"{python_exec} -m {module_name}"
+    else:
+        # Invoked as script directly.
+        return Path(sys.argv[0]).name
+
+
+def parse_args(args=None):
+    argparser = argparse.ArgumentParser(prog=infer_prog())
     argparser.add_argument(
         "domain", help="path to domain pddl file")
     argparser.add_argument(
@@ -60,18 +83,17 @@ def parse_args():
         help="How to assign layers to derived variables. 'min' attempts to put as "
         "many variables into the same layer as possible, while 'max' puts each variable "
         "into its own layer unless it is part of a cycle.")
-    return argparser.parse_args()
+    return argparser.parse_args(args)
 
 
-def copy_args_to_module(args):
-    module_dict = sys.modules[__name__].__dict__
-    for key, value in vars(args).items():
-        module_dict[key] = value
+def get_options():
+    if options is None:
+        msg = ("No options provided (via options.set_options(...)). For example"
+               " 'options.set_options([<domain file>, <problem_file>])'.")
+        raise RuntimeError(msg)
+    return options
 
 
-def setup():
-    args = parse_args()
-    copy_args_to_module(args)
-
-
-setup()
+def set_options(arguments=None):
+    global options
+    options = parse_args(arguments)

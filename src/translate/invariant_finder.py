@@ -7,10 +7,10 @@ import random
 import time
 from typing import List
 
-import invariants
-import options
-import pddl
-import timers
+from translate import invariants
+from translate import pddl
+from translate import timers
+from translate.options import get_options
 
 class BalanceChecker:
     def __init__(self, task, reachable_action_params):
@@ -92,7 +92,7 @@ def get_initial_invariants(task):
             yield invariants.Invariant((part,))
 
 def find_invariants(task, reachable_action_params):
-    limit = options.invariant_generation_max_candidates
+    limit = get_options().invariant_generation_max_candidates
     candidates = deque(itertools.islice(get_initial_invariants(task), 0, limit))
     print(len(candidates), "initial candidates")
     seen_candidates = set(candidates)
@@ -107,7 +107,7 @@ def find_invariants(task, reachable_action_params):
     start_time = time.process_time()
     while candidates:
         candidate = candidates.popleft()
-        if time.process_time() - start_time > options.invariant_generation_max_time:
+        if time.process_time() - start_time > get_options().invariant_generation_max_time:
             print("Time limit reached, aborting invariant generation")
             return
         if candidate.check_balance(balance_checker, enqueue_func):
@@ -150,9 +150,11 @@ def get_groups(task, reachable_action_params=None) -> List[List[pddl.Atom]]:
     return result
 
 if __name__ == "__main__":
-    import normalize
-    import pddl_parser
+    from translate import normalize
+    from translate import pddl_parser
+    from translate.options import set_options
 
+    set_options() # use command line options
     print("Parsing...")
     task = pddl_parser.open()
     print("Normalizing...")

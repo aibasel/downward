@@ -20,8 +20,7 @@ elif os.name == "nt":
 else:
     returncodes.exit_with_driver_unsupported_error("Unsupported OS: " + os.name)
 
-# TODO: We might want to turn translate into a module and call it with "python3 -m translate".
-REL_TRANSLATE_PATH = Path("translate") / "translate.py"
+REL_TRANSLATE_PATH = Path("translate")
 REL_SEARCH_PATH = Path(f"downward{BINARY_EXT}")
 # Older versions of VAL use lower case, newer versions upper case. We prefer the
 # older version because this is what our build instructions recommend.
@@ -71,15 +70,19 @@ def run_translate(args):
         args.translate_time_limit, args.overall_time_limit)
     memory_limit = limits.get_memory_limit(
         args.translate_memory_limit, args.overall_memory_limit)
+
+    # Check existence of translate in build.
     translate = get_executable(args.build, REL_TRANSLATE_PATH)
+
     assert sys.executable, "Path to interpreter could not be found"
-    cmd = [sys.executable] + [translate] + args.translate_inputs + args.translate_options
+    cmd = [sys.executable] + ["-m", "translate"] + args.translate_inputs + args.translate_options
 
     stderr, returncode = call.get_error_output_and_returncode(
         "translator",
         cmd,
         time_limit=time_limit,
-        memory_limit=memory_limit)
+        memory_limit=memory_limit,
+        prepend_to_python_path=translate.parent)
 
     # We collect stderr of the translator and print it here, unless
     # the translator ran out of memory and all output in stderr is

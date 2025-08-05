@@ -1,6 +1,6 @@
 from typing import List
 
-from .pddl_types import TypedObject
+from translate.pddl.pddl_types import TypedObject
 
 
 # Conditions (of any type) are immutable, because they need to
