@@ -472,7 +472,7 @@ void add_hillclimbing_options_to_feature(plugins::Feature &feature) {
         "Note", "This pattern generation method generates patterns optimized "
                 "for use with the canonical pattern database heuristic.");
     feature.document_note(
-        "Implementation Notes",
+        "Implementation notes",
         "The following will very briefly describe the algorithm and explain "
         "the differences between the original implementation from 2007 and the "
         "new one in Fast Downward.\n\n"

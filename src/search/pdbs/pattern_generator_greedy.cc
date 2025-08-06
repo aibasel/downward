@@ -55,6 +55,7 @@ class PatternGeneratorGreedyFeature
     : public plugins::TypedFeature<PatternGenerator, PatternGeneratorGreedy> {
 public:
     PatternGeneratorGreedyFeature() : TypedFeature("greedy") {
+        document_title("Greedy");
         add_option<int>(
             "max_states",
             "maximal number of abstract states in the pattern database.",

@@ -85,7 +85,7 @@ class LandmarkFactoryRpgExhaustFeature
     : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgExhaust> {
 public:
     LandmarkFactoryRpgExhaustFeature() : TypedFeature("lm_exhaust") {
-        document_title("Exhaustive Landmarks");
+        document_title("Exhaustive landmarks");
         document_synopsis(
             "Exhaustively checks for each atom if it is a landmark."
             "This check is done using relaxed planning.");

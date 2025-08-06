@@ -754,10 +754,9 @@ class LandmarkFactoryRpgSaspFeature
     : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgSasp> {
 public:
     LandmarkFactoryRpgSaspFeature() : TypedFeature("lm_rhw") {
-        document_title("RHW Landmarks");
+        document_title("RHW landmarks");
         document_synopsis("The landmark generation method introduced by "
                           "Richter, Helmert and Westphal (AAAI 2008).");
-
         add_option<bool>(
             "disjunctive_landmarks", "keep disjunctive landmarks", "true");
         add_use_orders_option_to_feature(*this);

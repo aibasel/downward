@@ -6,7 +6,7 @@ static class PotentialHeuristicsGroupPlugin
 public:
     PotentialHeuristicsGroupPlugin()
         : SubcategoryPlugin("heuristics_potentials") {
-        document_title("Potential Heuristics");
+        document_title("Potential heuristics");
     }
 } _subcategory_plugin;
 }
