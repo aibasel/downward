@@ -18,8 +18,6 @@ class Feature;
 class Options;
 }
 
-using HeurisitcSpecificArgs = std::tuple<>;
-using HeurisitcArgs = std::pair<HeurisitcSpecificArgs, EvaluatorArgs>;
 class Heuristic : public Evaluator {
     struct HEntry {
         /* dirty is conceptually a bool, but Visual C++ does not support
@@ -92,20 +90,6 @@ public:
     virtual bool is_estimate_cached(const State &state) const override;
     virtual int get_cached_estimate(const State &state) const override;
 };
-
-
-//class TaskIndependentHeuristic : public TaskIndependentEvaluator {
-//protected:
-//    bool cache_evaluator_values;
-//    std::shared_ptr</*TaskIndependent*/ AbstractTask> task_transformation;
-//public:
-//    TaskIndependentHeuristic(const std::shared_ptr</*TaskIndependent*/ AbstractTask> &task_transformation,
-//                             bool cache_evaluator_values,
-//                             const std::string &description,
-//                             utils::Verbosity verbosity);
-//    virtual ~TaskIndependentHeuristic() = default;
-//};
-
 
 
 extern void add_heuristic_options_to_feature(

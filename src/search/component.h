@@ -200,16 +200,16 @@ std::shared_ptr<R> make_from_rev(
 }
 
 
-template<typename R, typename ... Args>
-std::shared_ptr<R> specify(Args&&... args) {
-return std::apply(
-    [](auto&&... unpacked_args) {
-        return make_from_rev<R>(
-          std::forward<decltype(unpacked_args)>(unpacked_args)...);
-        },
-        reverse_tuple(std::forward_as_tuple(std::forward<Args>(args)...))
-    );
-}
+//template<typename R, typename ... Args>
+//std::shared_ptr<R> specify(Args&&... args) {
+//return std::apply(
+//    [](auto&&... unpacked_args) {
+//        return make_from_rev<R>(
+//          std::forward<decltype(unpacked_args)>(unpacked_args)...);
+//        },
+//        reverse_tuple(std::forward_as_tuple(std::forward<Args>(args)...))
+//    );
+//}
 
 
 template<typename R, typename TupleT>

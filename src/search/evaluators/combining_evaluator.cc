@@ -54,9 +54,6 @@ void CombiningEvaluator::get_path_dependent_evaluators(
         subevaluator->get_path_dependent_evaluators(evals);
 }
 
-
-
-
 void add_combining_evaluator_options_to_feature(
     plugins::Feature &feature, const string &description) {
     feature.add_list_option<shared_ptr<TaskIndependentComponentType<Evaluator>>>(

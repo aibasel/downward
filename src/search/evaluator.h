@@ -16,8 +16,6 @@ namespace plugins {
 class Options;
 }
 
-using EvaluatorSpecificArgs = std::tuple<bool, bool, bool>;
-using EvaluatorArgs = std::pair<EvaluatorSpecificArgs, ComponentArgs>;
 class Evaluator : public Component {
     const std::string description;
     const bool use_for_reporting_minima;
@@ -26,7 +24,6 @@ class Evaluator : public Component {
 protected:
     mutable utils::LogProxy log;
 public:
-    Evaluator(EvaluatorArgs args);
     Evaluator(
         bool use_for_reporting_minima, bool use_for_boosting,
         bool use_for_counting_evaluations,
@@ -103,22 +100,6 @@ public:
     */
     virtual int get_cached_estimate(const State &state) const;
 };
-
-
-//class TaskIndependentEvaluator : public TaskIndependentComponent<Evaluator> {
-//    [[maybe_unused]] const bool use_for_reporting_minima;
-//    [[maybe_unused]] const bool use_for_boosting;
-//    [[maybe_unused]] const bool use_for_counting_evaluations;
-//public:
-//    explicit TaskIndependentEvaluator(
-//        bool use_for_reporting_minima, bool use_for_boosting,
-//        bool use_for_counting_evaluations,
-//        const std::string &description, utils::Verbosity verbosity);
-//    virtual ~TaskIndependentEvaluator() = default;
-//};
-
-
-
 
 extern void add_evaluator_options_to_feature(
     plugins::Feature &feature, const std::string &description);

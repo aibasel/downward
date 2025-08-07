@@ -44,11 +44,6 @@ public:
         std::set<Evaluator *> &evals) override;
 };
 
-
-
-
-
-
 extern void add_combining_evaluator_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<const std::vector<std::shared_ptr<TaskIndependentComponentType<Evaluator>>>,

@@ -10,15 +10,6 @@ using namespace std;
 
 
 Evaluator::Evaluator(
-    EvaluatorArgs args)
-    : description(get<0>(args.second)),
-      use_for_reporting_minima(get<0>(args.first)),
-      use_for_boosting(get<1>(args.first)),
-      use_for_counting_evaluations(get<2>(args.first)),
-      log(utils::get_log_for_verbosity(get<1>(args.second))) {
-}
-
-Evaluator::Evaluator(
     bool use_for_reporting_minima, bool use_for_boosting,
     bool use_for_counting_evaluations, const string &description,
     utils::Verbosity verbosity)
@@ -82,7 +73,6 @@ bool Evaluator::is_estimate_cached(const State &) const {
 int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
 }
-
 
 void add_evaluator_options_to_feature(
     plugins::Feature &feature, const string &description) {

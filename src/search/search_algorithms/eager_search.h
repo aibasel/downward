@@ -66,47 +66,6 @@ public:
     void dump_search_space() const;
 };
 
-
-//class TaskIndependentEagerSearch : public TaskIndependentComponent<SearchAlgorithm> {
-//private:
-//    int bound;
-//    OperatorCost cost_type;
-//    double max_time;
-//    const bool reopen_closed_nodes;
-//
-//    std::shared_ptr<TaskIndependentComponent<OpenListFactory>> open_list_factory;
-//
-//
-//    std::shared_ptr<TaskIndependentComponent<Evaluator>> f_evaluator;
-//
-//    std::vector<TaskIndependentComponent<Evaluator> *> path_dependent_evaluators;
-//    std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>> preferred_operator_evaluators;
-//    std::shared_ptr<TaskIndependentComponent<Evaluator>> lazy_evaluator;
-//
-//    std::shared_ptr<PruningMethod> pruning_method;
-//
-//    std::shared_ptr<SearchAlgorithm> create_task_specific(
-//        const std::shared_ptr<AbstractTask> &task,
-//        std::unique_ptr<ComponentMap> &component_map,
-//        int depth) const override;
-//public:
-//    TaskIndependentEagerSearch(
-//        std::shared_ptr<TaskIndependentComponent<OpenListFactory>> open_list_factory,
-//        bool reopen_closed_nodes,
-//        std::shared_ptr<TaskIndependentComponent<Evaluator>> f_evaluator,
-//        std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>> preferred_operator_evaluators,
-//        std::shared_ptr<PruningMethod> pruning_method,
-//        std::shared_ptr<TaskIndependentComponent<Evaluator>> lazy_evaluator,
-//        OperatorCost cost_type,
-//        int bound,
-//        double max_time,
-//        const std::string &description,
-//        utils::Verbosity verbosity);
-//
-//    virtual ~TaskIndependentEagerSearch() override = default;
-//};
-
-
 extern void add_eager_search_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<std::shared_ptr<PruningMethod>,

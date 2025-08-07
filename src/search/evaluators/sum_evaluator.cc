@@ -24,7 +24,6 @@ int SumEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
-
 using TaskIndependentSumEvaluator = TaskIndependentComponentFeature<SumEvaluator,Evaluator,SumEvaluatorArgs>;
 
 class SumEvaluatorFeature

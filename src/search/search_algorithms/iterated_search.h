@@ -11,7 +11,7 @@
 namespace iterated_search {
 class HackPlaceholder{
 public: HackPlaceholder(){std::cout << "HACK :-(" << std::endl;}};
-using IteratedSearchArgs = std::tuple<
+using IteratedSearchArgs = WrapArgs<
        std::pair<std::vector<std::shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>,HackPlaceholder> ,//search_algorithms,
 // HACK the pair is just used to prevent the searches from being specified when the outer iterated search is being specified.
         bool ,//pass_bound,
@@ -61,39 +61,6 @@ public:
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
 };
-
-
-//class TaskIndependentIteratedSearch : public TaskIndependentComponent<SearchAlgorithm> {
-//private:
-//    int bound;
-//    OperatorCost cost_type;
-//    double max_time;
-//    std::vector<std::shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms;
-//
-//    bool pass_bound;
-//    bool repeat_last_phase;
-//    bool continue_on_fail;
-//    bool continue_on_solve;
-//
-//    std::shared_ptr<SearchAlgorithm> create_task_specific(
-//        const std::shared_ptr<AbstractTask> &task,
-//        std::unique_ptr<ComponentMap> &component_map,
-//        int depth) const override;
-//public:
-//    TaskIndependentIteratedSearch(
-//        std::vector<std::shared_ptr<TaskIndependentComponent<SearchAlgorithm>>> search_algorithms,
-//        bool pass_bound,
-//        bool repeat_last_phase,
-//        bool continue_on_fail,
-//        bool continue_on_solve,
-//        OperatorCost cost_type,
-//        int bound,
-//        double max_time,
-//        const std::string &name,
-//        utils::Verbosity verbosity);
-//
-//    virtual ~TaskIndependentIteratedSearch() override = default;
-//};
 }
 
 #endif

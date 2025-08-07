@@ -14,7 +14,7 @@ template<typename T>
 class TaskIndependentComponentType;
 
 namespace sum_evaluator {
-using SumEvaluatorArgs = 
+using SumEvaluatorArgs =
     WrapArgs <
          const std::vector<
               std::shared_ptr<
@@ -33,7 +33,6 @@ public:
         const std::vector<std::shared_ptr<Evaluator>> &evals,
             const std::string &description, utils::Verbosity verbosity);
 };
-
 }
 
 #endif
