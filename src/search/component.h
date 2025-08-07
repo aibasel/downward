@@ -19,13 +19,7 @@ public:
     virtual ~Component() = default;
 };
 
-template <typename T>
-struct is_component {
-    static constexpr bool value = std::is_base_of<Component, T>::value;
-};
-
 class TaskIndependentComponentBase {
-protected:
 protected:
     const std::string description;
     const utils::Verbosity verbosity;
@@ -51,8 +45,6 @@ class TaskIndependentComponentType : public TaskIndependentComponentBase {
         std::unique_ptr<ComponentMap> &component_map,
         int depth) const = 0;
 public:
-    TaskIndependentComponentType()
-        : TaskIndependentComponentBase("issue559.default_type_decription", utils::Verbosity::NORMAL) {}
     TaskIndependentComponentType(const std::string &description,
                                       utils::Verbosity verbosity)
         : TaskIndependentComponentBase(description, verbosity) {}
@@ -64,43 +56,76 @@ public:
         std::unique_ptr<ComponentMap> &component_map, int depth = -1) const = 0;
 };
 
-//// === FlattenTuple ===
-//template <typename T>
-//struct FlattenTuple {
-//    using type = std::tuple<T>;
-//};
-//
-//template <typename... Ts>
-//struct FlattenTuple<std::tuple<Ts...>> {
-//    using type = decltype(std::tuple_cat(typename FlattenTuple<Ts>::type{}...));
-//};
-//
-//// type wrapper based on inheritance
-//template <typename T>
-//using ToTaskIndependentIfComponent = std::conditional_t<
-//    is_component<T>::value,
-//    TaskIndependentComponentType<T>,
-//    T
-//>;
-//
-//// Transform a tuple into one with types conditionally wrapped
-//template <typename Tuple>
-//struct TupleToTaskIndependent;
-//
-//template <typename... Ts>
-//struct TupleToTaskIndependent<std::tuple<Ts...>> {
-//    using type = std::tuple<ToTaskIndependentIfComponent<Ts>...>;
-//};
-//
-////Full flattening + wrapping combined
-//template <typename T>
-//struct InnerTaskIndependent {
-//    using Flat = typename FlattenTuple<T>::type;
-//    using type = typename TupleToTaskIndependent<Flat>::type;
-//};
-//
-//template <typename T>
-//using InnerTaskIndependnet_t = typename InnerTaskIndependent<T>::type;
+
+// = = = wrapping logic = = =
+
+template <typename T>
+struct is_component {
+    static constexpr bool value = std::is_base_of<Component, T>::value;
+};
+
+
+// return without wrapping if it is 
+// no shared pointer to component
+// nor vector to shared pointerss to components
+template <typename T>
+struct wrap_if_component {
+    using type = T;
+};
+
+
+// wrap shared pointer to component
+// to shared pointer to TaskIndependentComponentType
+template <typename T>
+struct wrap_if_component<std::shared_ptr<T>> {
+    using type = std::conditional_t<
+        is_component<T>::value,
+        std::shared_ptr<TaskIndependentComponentType<T>>,
+        std::shared_ptr<T>
+    >;
+};
+
+
+// wrap vector of shared pointers to components
+// to vector of shared pointers to TaskIndependentComponentType
+template <typename T>
+struct wrap_if_component<std::vector<std::shared_ptr<T>>> {
+    using type = std::conditional_t<
+        is_component<T>::value,
+        std::vector<std::shared_ptr<TaskIndependentComponentType<T>>>,
+        std::vector<std::shared_ptr<T>>
+    >;
+};
+
+// wrap if component but preserve const
+template <typename T>
+struct wrap_if_component<const T> {
+    using type = std::add_const_t<typename wrap_if_component<T>::type>;
+};
+
+
+
+template <typename T>
+using wrap_if_component_t = typename wrap_if_component<T>::type;
+
+
+
+// iterate entries and wrap them with a TaskIndependentType
+// if it is a Component
+template <typename Tuple>
+struct wrap_entry_wise;
+
+template <typename... Args>
+struct wrap_entry_wise<std::tuple<Args...>> {
+    using type = std::tuple<wrap_if_component_t<Args>...>;
+};
+
+
+// receive type list, wrap them in a tuple (because we only want to use them as the one and only field in TaskIndependentComponentFeature besides description and verbosity), forward it to wrap each entry one by one.
+template <typename... Ts>
+using WrapArgs = wrap_entry_wise<std::tuple<Ts...>>::type;
+
+
 
 template<typename TaskSpecificComponentFeature, typename TaskSpecificType, typename FeatureArguments>
 class TaskIndependentComponentFeature : public TaskIndependentComponentType<TaskSpecificType> {
@@ -115,11 +140,11 @@ class TaskIndependentComponentFeature : public TaskIndependentComponentType<Task
 	};
 public:
     explicit TaskIndependentComponentFeature(FeatureArguments _args)
-        : args(std::move(_args)) {};
-
-    //template<typename ... XArgs>
-    //explicit TaskIndependentComponentFeature(XArgs&& ... args) : 
-    //    TaskIndependentComponentFeature/*<TaskSpecificComponentFeature,TaskSpecificType, FeatureArguments>*/(reverse_tuple(std::forward_as_tuple(std::forward<XArgs>(args)...))) {    }
+        : TaskIndependentComponentType<TaskSpecificType>(
+               std::get<std::tuple_size<decltype(args)>::value - 2>(_args), //get description (always second to last argument)
+               std::get<std::tuple_size<decltype(args)>::value - 1>(_args) //get verbosity (always last argument)
+             ),
+         args(std::move(_args)) {};
 
     std::shared_ptr<TaskSpecificType> get_task_specific(
         const std::shared_ptr<AbstractTask> &task, int depth = -1) const override {

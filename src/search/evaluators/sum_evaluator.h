@@ -15,16 +15,15 @@ class TaskIndependentComponentType;
 
 namespace sum_evaluator {
 using SumEvaluatorArgs = 
-    std::tuple<
+    WrapArgs <
          const std::vector<
               std::shared_ptr<
-                   TaskIndependentComponentType<
-                        Evaluator
-                   >
+                  Evaluator
               >
          >,
-    const std::string,
-    utils::Verbosity>;
+         const std::string,
+         utils::Verbosity
+    >;
 class SumEvaluator : public combining_evaluator::CombiningEvaluator {
 protected:
     virtual int combine_values(const std::vector<int> &values) override;
@@ -35,19 +34,6 @@ public:
             const std::string &description, utils::Verbosity verbosity);
 };
 
-//class TaskIndependentSumEvaluator : public TaskIndependentComponent<Evaluator> {
-//    std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>> subevaluators;
-//    virtual std::shared_ptr<Evaluator> create_task_specific(
-//        const std::shared_ptr<AbstractTask> &task,
-//        std::unique_ptr<ComponentMap> &component_map,
-//        int depth) const override;
-//public:
-//    TaskIndependentSumEvaluator(
-//        const std::vector<std::shared_ptr<TaskIndependentComponent<Evaluator>>> &subevaluators,
-//        const std::string &description, utils::Verbosity verbosity);
-//
-//    virtual ~TaskIndependentSumEvaluator() override = default;
-//};
 }
 
 #endif

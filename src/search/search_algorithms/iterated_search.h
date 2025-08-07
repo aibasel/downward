@@ -9,10 +9,11 @@
 #include <vector>
 
 namespace iterated_search {
-
+class HackPlaceholder{
+public: HackPlaceholder(){std::cout << "HACK :-(" << std::endl;}};
 using IteratedSearchArgs = std::tuple<
-       std::tuple<std::vector<std::shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>> ,//search_algorithms,
-// HACK the singlton tuple is just used to prevent the searches from being specified when the outer iterated search is being specified.
+       std::pair<std::vector<std::shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>,HackPlaceholder> ,//search_algorithms,
+// HACK the pair is just used to prevent the searches from being specified when the outer iterated search is being specified.
         bool ,//pass_bound,
         bool ,//repeat_last_phase,
         bool ,//continue_on_fail,
@@ -46,7 +47,7 @@ class IteratedSearch : public SearchAlgorithm {
 public:
     IteratedSearch(
         const std::shared_ptr<AbstractTask> &task,
-        std::tuple<std::vector<std::shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>> search_algorithms,
+        std::pair<std::vector<std::shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>,HackPlaceholder> search_algorithms,
         bool pass_bound,
         bool repeat_last_phase,
         bool continue_on_fail,
