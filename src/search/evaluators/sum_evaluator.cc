@@ -25,26 +25,6 @@ int SumEvaluator::combine_values(const vector<int> &values) {
 }
 
 
-//TaskIndependentSumEvaluator::TaskIndependentSumEvaluator(
-//    const vector<shared_ptr<TaskIndependentComponent<Evaluator>>> &subevaluators,
-//    const string &description,
-//    utils::Verbosity verbosity)
-//    : TaskIndependentComponent<Evaluator>(
-//          description,
-//          verbosity),
-//      subevaluators(subevaluators) {
-//}
-//
-//std::shared_ptr<Evaluator> TaskIndependentSumEvaluator::create_task_specific(
-//    const shared_ptr <AbstractTask> &task,
-//    unique_ptr <ComponentMap> &component_map, int depth) const {
-//
-//    return specify<SumEvaluator>(
-//        subevaluators, description, verbosity,
-//        task, component_map, depth);
-//}
-
-
 using TaskIndependentSumEvaluator = TaskIndependentComponentFeature<SumEvaluator,Evaluator,SumEvaluatorArgs>;
 
 class SumEvaluatorFeature

@@ -22,31 +22,6 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
 }
 
 
-
-//TaskIndependentGEvaluator::TaskIndependentGEvaluator(
-//    TaskIndepenendGEvaluatorArgs args)
-//    : TaskIndependentComponent<Evaluator>(
-//          get<0>(args),
-//          get<1>(args)) {
-//	cout << "NEW CALL" << description << endl;
-//}
-//
-//TaskIndependentGEvaluator::TaskIndependentGEvaluator(const string &description,
-//                                                     utils::Verbosity verbosity)
-//    : TaskIndependentComponent<Evaluator>(
-//          description,
-//          verbosity) {
-//	cout << "OLD CALL" << description << endl;
-//}
-//
-//shared_ptr<Evaluator> TaskIndependentGEvaluator::create_task_specific( const shared_ptr <AbstractTask> &task,
-//     unique_ptr <ComponentMap> &component_map,
-//     int depth) const {
-//    return specify<GEvaluator>(description,verbosity,task,component_map,depth);
-//}
-
-
-
 class GEvaluatorFeature
     : public plugins
 ::TypedFeature<TaskIndependentComponentType<Evaluator>, TaskIndependentComponentFeature<GEvaluator, Evaluator, GEvaluatorArgs>> {

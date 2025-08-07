@@ -172,24 +172,6 @@ TieBreakingOpenListFactory::create_edge_open_list() {
 }
 
 
-
-//TaskIndependentTieBreakingOpenListFactory::TaskIndependentTieBreakingOpenListFactory(
-//    vector<shared_ptr<TaskIndependentComponent<Evaluator>>> evals,
-//    bool pref_only,
-//    bool allow_unsafe_pruning)
-//    : TaskIndependentComponent<OpenListFactory>("TieBreakingOpenListFactory", utils::Verbosity::NORMAL),
-//      pref_only(pref_only), evals(evals), allow_unsafe_pruning(allow_unsafe_pruning) {
-//}
-//
-//
-//std::shared_ptr<OpenListFactory> TaskIndependentTieBreakingOpenListFactory::create_task_specific(const shared_ptr <AbstractTask> &task,
-//                             unique_ptr <ComponentMap> &component_map, int depth) const {
-//    return specify<TieBreakingOpenListFactory>(
-//        evals, pref_only, allow_unsafe_pruning, task, component_map, depth
-//	);
-//}
-
-
 using TaskIndependentTieBreakingOpenListFactory = TaskIndependentComponentFeature<TieBreakingOpenListFactory, OpenListFactory, TieBreakingOpenListFactoryArgs>;
 
 class TieBreakingOpenListFeature

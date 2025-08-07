@@ -35,18 +35,6 @@ State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
     return task_proxy.convert_ancestor_state(ancestor_state);
 }
 
-
-
-//TaskIndependentHeuristic::TaskIndependentHeuristic(const shared_ptr<AbstractTask> &task_transformation,
-//                                                   bool cache_evaluator_values, const string &description,
-//                                                   utils::Verbosity verbosity)
-//    : TaskIndependentEvaluator(true, true, true, description, verbosity),
-//      cache_evaluator_values(cache_evaluator_values),
-//      task_transformation(task_transformation) {
-//}
-
-
-
 void add_heuristic_options_to_feature(
     plugins::Feature &feature, const string &description) {
     feature.add_option<shared_ptr<AbstractTask>>(

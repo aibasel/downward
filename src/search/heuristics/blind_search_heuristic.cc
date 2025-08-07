@@ -33,27 +33,6 @@ int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 
-
-//TaskIndependentBlindSearchHeuristic::TaskIndependentBlindSearchHeuristic(
-//    const shared_ptr</*TaskIndependent*/ AbstractTask> transform,
-//    bool cache_estimates,
-//    const string &description,
-//    utils::Verbosity verbosity)
-//    : TaskIndependentComponent<Evaluator>(description, verbosity)
-//      , transform(transform)
-//      , cache_estimates(cache_estimates) {
-//}
-//
-//TaskIndependentBlindSearchHeuristic::~TaskIndependentBlindSearchHeuristic() {
-//}
-//
-//std::shared_ptr<Evaluator> TaskIndependentBlindSearchHeuristic::create_task_specific(
-//    const shared_ptr<AbstractTask> &task,
-//    std::unique_ptr<ComponentMap> &component_map,
-//    int depth) const {
-//	return specify<BlindSearchHeuristic>(transform, cache_evaluator_values, description, verbosity, task, component_map, depth);
-//}
-
 using TaskIndependentBlindSearchHeuristic = TaskIndependentComponentFeature<BlindSearchHeuristic, Evaluator, BlindSearchHeuristicArgs>;
 
 class BlindSearchHeuristicFeature

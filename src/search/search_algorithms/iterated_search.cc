@@ -136,48 +136,6 @@ void IteratedSearch::save_plan_if_necessary() {
 }
 
 
-//TaskIndependentIteratedSearch::TaskIndependentIteratedSearch(
-//    vector<shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>> search_algorithms,
-//    bool pass_bound,
-//    bool repeat_last_phase,
-//    bool continue_on_fail,
-//    bool continue_on_solve,
-//    OperatorCost cost_type,
-//    int bound,
-//    double max_time,
-//    const string &name,
-//    utils::Verbosity verbosity
-//    )
-//    : TaskIndependentComponent<SearchAlgorithm>(
-//          name,
-//          verbosity
-//          ),
-//      bound(bound),
-//      cost_type(cost_type),
-//      max_time(max_time),
-//      search_algorithms(search_algorithms),
-//      pass_bound(pass_bound),
-//      repeat_last_phase(repeat_last_phase),
-//      continue_on_fail(continue_on_fail),
-//      continue_on_solve(continue_on_solve) {
-//}
-//
-//std::shared_ptr<SearchAlgorithm> TaskIndependentIteratedSearch::create_task_specific(const shared_ptr <AbstractTask> &task,
-//                                                                                     [[maybe_unused]] unique_ptr <ComponentMap> &component_map,
-//                                                                                     [[maybe_unused]] int depth) const {
-//    return make_shared<IteratedSearch>(search_algorithms,
-//                                       pass_bound,
-//                                       repeat_last_phase,
-//                                       continue_on_fail,
-//                                       continue_on_solve,
-//                                       cost_type,
-//                                       bound,
-//                                       max_time,
-//                                       description,
-//                                       verbosity,
-//                                       task);
-//}
-
 using TaskIndependentIteratedSearch = TaskIndependentComponentFeature<IteratedSearch, SearchAlgorithm, IteratedSearchArgs>;
 
 class IteratedSearchFeature
