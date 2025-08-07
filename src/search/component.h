@@ -5,7 +5,6 @@
 
 #include "utils/logging.h"
 #include "utils/hash.h"
-#include "utils/tuples.h"
 
 #include <memory>
 #include <tuple>
@@ -177,41 +176,6 @@ public:
 
 };
 
-
-template<typename R, typename ... Args>
-std::shared_ptr<R> make_from_rev(
-    std::unique_ptr<ComponentMap> &component_map,
-    const std::shared_ptr<AbstractTask> &task,
-	Args&&... args
-    ) {
-    int DEFAULT_DEPTH = -1;
-    return construct_task_specific_from_tuple<R>(reverse_tuple(std::forward_as_tuple(std::forward<Args>(args)...)), task, component_map, DEFAULT_DEPTH);
-}
-
-
-template<typename R, typename ... Args>
-std::shared_ptr<R> make_from_rev(
-    int depth,
-    std::unique_ptr<ComponentMap> &component_map,
-    const std::shared_ptr<AbstractTask> &task,
-	Args&&... args
-    ) {
-    return construct_task_specific_from_tuple<R>(reverse_tuple(std::forward_as_tuple(std::forward<Args>(args)...)), task, component_map, depth);
-}
-
-
-//template<typename R, typename ... Args>
-//std::shared_ptr<R> specify(Args&&... args) {
-//return std::apply(
-//    [](auto&&... unpacked_args) {
-//        return make_from_rev<R>(
-//          std::forward<decltype(unpacked_args)>(unpacked_args)...);
-//        },
-//        reverse_tuple(std::forward_as_tuple(std::forward<Args>(args)...))
-//    );
-//}
-
-
 template<typename R, typename TupleT>
 std::shared_ptr<R> construct_task_specific_from_tuple(
 	TupleT&& _tuple,
@@ -267,8 +231,5 @@ T construct_task_specific(
     [[maybe_unused]] int depth) {
     return elem;
 }
-
-
-
 
 #endif

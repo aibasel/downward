@@ -28,19 +28,4 @@ auto flatten_tuple_elements(
 }
 }
 
-
-template<std::size_t N, std::size_t... Is, typename Tp>
-constexpr auto reverse_tuple_impl(std::index_sequence<Is...>, Tp&& tp) {
-    return std::forward_as_tuple(
-        std::get<N - 1 - Is>(std::forward<Tp>(tp))...
-    );
-}
-
-template<typename Tp,
-         std::size_t N = std::tuple_size<std::remove_reference_t<Tp>>::value,
-         typename S = std::make_index_sequence<N>>
-constexpr auto reverse_tuple(Tp&& tp) {
-    return reverse_tuple_impl<N>(S{}, std::forward<Tp>(tp));
-}
-
 #endif
