@@ -20,12 +20,12 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
     return result;
 }
 
-using TaskIndependentGEvaluator = TaskIndependentComponentFeature<
-                                  GEvaluator, Evaluator, GEvaluatorArgs>;
+using TaskIndependentGEvaluator =
+    TaskIndependentComponentFeature<GEvaluator, Evaluator, GEvaluatorArgs>;
 
-class GEvaluatorFeature : public plugins ::TypedFeature<
-                              TaskIndependentComponentType<Evaluator>,
-                              TaskIndependentGEvaluator> {
+class GEvaluatorFeature
+    : public plugins ::TypedFeature<
+          TaskIndependentComponentType<Evaluator>, TaskIndependentGEvaluator> {
 public:
     GEvaluatorFeature() : TypedFeature("g") {
         document_subcategory("evaluators_basic");
@@ -35,8 +35,8 @@ public:
         add_evaluator_options_to_feature(*this, "g");
     }
 
-    virtual shared_ptr<TaskIndependentGEvaluator>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<TaskIndependentGEvaluator> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples_NEW<
             TaskIndependentGEvaluator>(
             get_evaluator_arguments_from_options(opts));
