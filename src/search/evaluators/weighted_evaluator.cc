@@ -41,9 +41,6 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
     evaluator->get_path_dependent_evaluators(evals);
 }
 
-
-
-
 using TaskIndependentWeightedEvaluator = TaskIndependentComponentFeature<WeightedEvaluator, Evaluator, WeightedEvaluatorArgs>;
 
 class WeightedEvaluatorFeature

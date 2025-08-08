@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+namespace tiebreaking_open_list {
 using TieBreakingOpenListFactoryArgs = WrapArgs<
     const std::vector<std::shared_ptr<TaskIndependentComponentType<Evaluator>>>, //evals
     bool, //unsafe_pruning
@@ -12,7 +13,6 @@ using TieBreakingOpenListFactoryArgs = WrapArgs<
     const std::string,
     utils::Verbosity
     >;
-namespace tiebreaking_open_list {
 class TieBreakingOpenListFactory : public OpenListFactory {
     std::vector<std::shared_ptr<Evaluator>> evals;
     bool unsafe_pruning;

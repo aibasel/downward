@@ -31,8 +31,6 @@ class TieBreakingOpenList : public OpenList<Entry> {
     bool allow_unsafe_pruning;
 
     int dimension() const;
-    const std::string description;
-    const utils::Verbosity verbosity;
 
 protected:
     virtual void do_insertion(EvaluationContext &eval_context,
@@ -41,8 +39,7 @@ protected:
 public:
     TieBreakingOpenList(
         const vector<shared_ptr<Evaluator>> &evals,
-        bool unsafe_pruning, bool pref_only,
-        const std::string description, utils::Verbosity verbosity);
+        bool unsafe_pruning, bool pref_only);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
@@ -58,14 +55,10 @@ public:
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(
     const vector<shared_ptr<Evaluator>> &evals,
-    bool unsafe_pruning, bool pref_only,
-    const std::string description,
-    utils::Verbosity verbosity
-    )
+    bool unsafe_pruning, bool pref_only)
     : OpenList<Entry>(pref_only),
       size(0), evaluators(evals),
-      allow_unsafe_pruning(unsafe_pruning),
-      description(description), verbosity(verbosity) {
+      allow_unsafe_pruning(unsafe_pruning) {
 }
 
 template<class Entry>
@@ -162,13 +155,13 @@ TieBreakingOpenListFactory::TieBreakingOpenListFactory(
 unique_ptr<StateOpenList>
 TieBreakingOpenListFactory::create_state_open_list() {
     return make_unique<TieBreakingOpenList<StateOpenListEntry>>(
-        evals, unsafe_pruning, pref_only, description, verbosity);
+        evals, unsafe_pruning, pref_only);
 }
 
 unique_ptr<EdgeOpenList>
 TieBreakingOpenListFactory::create_edge_open_list() {
     return make_unique<TieBreakingOpenList<EdgeOpenListEntry>>(
-        evals, unsafe_pruning, pref_only, description, verbosity);
+        evals, unsafe_pruning, pref_only);
 }
 
 

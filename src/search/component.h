@@ -12,7 +12,6 @@
 
 class AbstractTask;
 
-using ComponentArgs = std::tuple<const std::string, utils::Verbosity>;
 class Component {
 public:
     virtual ~Component() = default;
@@ -191,7 +190,7 @@ std::shared_ptr<R> construct_task_specific_from_tuple(
 }
 
 
-// const shared_pointer<TI<T>>
+// shared_pointer<TI<T>>
 template<typename T>
 std::shared_ptr<T> construct_task_specific(
     const std::shared_ptr<TaskIndependentComponentType<T>> &ptr,

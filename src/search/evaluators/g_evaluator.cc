@@ -21,7 +21,6 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
     return result;
 }
 
-
 class GEvaluatorFeature
     : public plugins
       ::TypedFeature<TaskIndependentComponentType<Evaluator>, TaskIndependentComponentFeature<GEvaluator, Evaluator, GEvaluatorArgs>> {

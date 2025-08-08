@@ -27,10 +27,9 @@ EagerSearch::EagerSearch(
     const shared_ptr<PruningMethod> &pruning,
     const shared_ptr<Evaluator> &lazy_evaluator, OperatorCost cost_type,
     int bound, double max_time, const string &description,
-    utils::Verbosity verbosity
-    )
+    utils::Verbosity verbosity)
     : SearchAlgorithm(
-          cost_type, bound, max_time, description, verbosity, task),
+          task, cost_type, bound, max_time, description, verbosity),
       reopen_closed_nodes(reopen_closed),
       open_list(open->create_state_open_list()),
       f_evaluator(f_eval),     // default nullptr
@@ -311,7 +310,6 @@ void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
         statistics.report_f_value_progress(f_value);
     }
 }
-
 
 void add_eager_search_options_to_feature(
     plugins::Feature &feature, const string &description) {

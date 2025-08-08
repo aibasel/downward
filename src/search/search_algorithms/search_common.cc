@@ -118,7 +118,7 @@ create_task_independent_astar_open_list_factory_and_f_eval(
 
     shared_ptr<TaskIndependentComponentType<OpenListFactory>>
     open =
-        make_shared<TaskIndependentComponentFeature<tiebreaking_open_list::TieBreakingOpenListFactory, OpenListFactory, TieBreakingOpenListFactoryArgs>>(
+        make_shared<TaskIndependentComponentFeature<tiebreaking_open_list::TieBreakingOpenListFactory, OpenListFactory, tiebreaking_open_list::TieBreakingOpenListFactoryArgs>>(
             tuple(evals, false, false, description + ".tiebreaking_openlist", verbosity));
     return make_pair(open, f);
 }

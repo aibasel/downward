@@ -31,13 +31,6 @@ class SuccessorGenerator;
 
 enum SearchStatus {IN_PROGRESS, TIMEOUT, FAILED, SOLVED};
 
-using SearchAlgorithmArgs = std::tuple<
-    OperatorCost, //cost_type,
-    int, //bound,
-    double, //max_time
-    ComponentArgs
-    >;
-
 class SearchAlgorithm : public Component {
     std::string description;
     SearchStatus status;
@@ -69,9 +62,9 @@ protected:
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
     SearchAlgorithm(
+        const std::shared_ptr<AbstractTask> &_task,
         OperatorCost cost_type, int bound, double max_time,
-        const std::string &description, utils::Verbosity verbosity,
-        const std::shared_ptr<AbstractTask> &_task);
+        const std::string &description, utils::Verbosity verbosity);
     explicit SearchAlgorithm(const plugins::Options &opts); // TODO options object is needed for iterated search, the prototype for issue559 resolves this
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;

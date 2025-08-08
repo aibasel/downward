@@ -23,12 +23,12 @@ IteratedSearch::IteratedSearch(
     const string &name,
     utils::Verbosity verbosity
     ) : SearchAlgorithm(
+            task,
             cost_type,
             bound,
             max_time,
             name,
-            verbosity,
-            task),
+            verbosity),
         search_algorithms(get<0>(search_algorithms)),
         pass_bound(pass_bound),
         repeat_last_phase(repeat_last_phase),
@@ -40,7 +40,16 @@ IteratedSearch::IteratedSearch(
         iterated_found_solution(false) {
 }
 
+shared_ptr<SearchAlgorithm> IteratedSearch::get_search_algorithm(
+    int algorithm_index) {
 
+    log << "Starting search: '"
+        << search_algorithms[algorithm_index]->get_description()
+        << "'" << endl;
+    return search_algorithms[algorithm_index]->get_task_specific(task, 1);
+
+
+}
 
 shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
     int num_phases = search_algorithms.size();
@@ -53,15 +62,13 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
            this overrides continue_on_fail.
         */
         if (repeat_last_phase && last_phase_found_solution) {
-            log << "Starting search: '" << search_algorithms[search_algorithms.size() - 1]->get_description() << "'" << endl;
-            return search_algorithms[search_algorithms.size() - 1]->get_task_specific(task, 1);
+            return get_search_algorithm(search_algorithms.size() - 1);
         } else {
             return nullptr;
         }
     }
 
-    log << "Starting search: '" << search_algorithms[phase]->get_description() << "'" << endl;
-    return search_algorithms[phase]->get_task_specific(task, 1);
+    return get_search_algorithm(phase);
 }
 
 SearchStatus IteratedSearch::step() {

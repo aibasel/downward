@@ -16,9 +16,6 @@ unique_ptr<EdgeOpenList> OpenListFactory::create_open_list() {
     return create_edge_open_list();
 }
 
-
-
-
 void add_open_list_options_to_feature(
     plugins::Feature &feature) {
     feature.add_option<bool>(
