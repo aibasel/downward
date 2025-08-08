@@ -9,10 +9,8 @@
 using namespace std;
 
 namespace cartesian_abstractions {
-AbstractSearch::AbstractSearch(
-    const vector<int> &operator_costs)
-    : operator_costs(operator_costs),
-      search_info(1) {
+AbstractSearch::AbstractSearch(const vector<int> &operator_costs)
+    : operator_costs(operator_costs), search_info(1) {
 }
 
 void AbstractSearch::reset(int num_states) {
@@ -23,11 +21,13 @@ void AbstractSearch::reset(int num_states) {
     }
 }
 
-unique_ptr<Solution> AbstractSearch::extract_solution(int init_id, int goal_id) const {
+unique_ptr<Solution> AbstractSearch::extract_solution(
+    int init_id, int goal_id) const {
     unique_ptr<Solution> solution = make_unique<Solution>();
     int current_id = goal_id;
     while (current_id != init_id) {
-        const Transition &prev = search_info[current_id].get_incoming_transition();
+        const Transition &prev =
+            search_info[current_id].get_incoming_transition();
         solution->emplace_front(prev.op_id, current_id);
         assert(prev.target_id != current_id);
         current_id = prev.target_id;
@@ -65,15 +65,15 @@ void AbstractSearch::update_goal_distances(const Solution &solution) {
     }
     for (auto &info : search_info) {
         if (info.get_g_value() < INF) {
-            int new_h = max(info.get_h_value(), solution_cost - info.get_g_value());
+            int new_h =
+                max(info.get_h_value(), solution_cost - info.get_g_value());
             info.increase_h_value_to(new_h);
         }
     }
 }
 
 unique_ptr<Solution> AbstractSearch::find_solution(
-    const vector<Transitions> &transitions,
-    int init_id,
+    const vector<Transitions> &transitions, int init_id,
     const Goals &goal_ids) {
     reset(transitions.size());
     search_info[init_id].decrease_g_value_to(0);
@@ -127,7 +127,8 @@ int AbstractSearch::astar_search(
                 assert(f >= 0);
                 assert(f != INF);
                 open_queue.push(f, succ_id);
-                search_info[succ_id].set_incoming_transition(Transition(op_id, state_id));
+                search_info[succ_id].set_incoming_transition(
+                    Transition(op_id, state_id));
             }
         }
     }
@@ -151,10 +152,8 @@ void AbstractSearch::copy_h_value_to_children(int v, int v1, int v2) {
     set_h_value(v2, h);
 }
 
-
 vector<int> compute_distances(
-    const vector<Transitions> &transitions,
-    const vector<int> &costs,
+    const vector<Transitions> &transitions, const vector<int> &costs,
     const unordered_set<int> &start_ids) {
     vector<int> distances(transitions.size(), INF);
     priority_queues::AdaptiveQueue<int> open_queue;

@@ -1,9 +1,9 @@
 from typing import Iterable, List, Union
 
-from . import conditions
-from .f_expression import Increase
-from .conditions import Condition, Literal
-from .pddl_types import TypedObject
+from translate.pddl import conditions
+from translate.pddl.f_expression import Increase
+from translate.pddl.conditions import Condition, Literal
+from translate.pddl.pddl_types import TypedObject
 
 AnyEffect = Union["ConditionalEffect", "ConjunctiveEffect", "UniversalEffect",
                   "SimpleEffect", "CostEffect"]

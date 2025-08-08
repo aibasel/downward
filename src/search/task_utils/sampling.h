@@ -16,7 +16,7 @@ namespace utils {
 class RandomNumberGenerator;
 }
 
-using DeadEndDetector = std::function<bool (State)>;
+using DeadEndDetector = std::function<bool(State)>;
 
 namespace sampling {
 /*
@@ -24,15 +24,15 @@ namespace sampling {
 */
 class RandomWalkSampler {
     const OperatorsProxy operators;
-    const std::unique_ptr<successor_generator::SuccessorGenerator> successor_generator;
+    const std::unique_ptr<successor_generator::SuccessorGenerator>
+        successor_generator;
     const State initial_state;
     const double average_operator_costs;
     utils::RandomNumberGenerator &rng;
 
 public:
     RandomWalkSampler(
-        const TaskProxy &task_proxy,
-        utils::RandomNumberGenerator &rng);
+        const TaskProxy &task_proxy, utils::RandomNumberGenerator &rng);
     ~RandomWalkSampler();
 
     /*
@@ -47,8 +47,7 @@ public:
       value should be an estimate of the solution cost.
     */
     State sample_state(
-        int init_h,
-        const DeadEndDetector &is_dead_end = [] (const State &) {
+        int init_h, const DeadEndDetector &is_dead_end = [](const State &) {
             return false;
         }) const;
 };

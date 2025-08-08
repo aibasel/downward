@@ -52,9 +52,7 @@ public:
             "to zero for all other affected patterns.");
 
         add_option<shared_ptr<PatternCollectionGenerator>>(
-            "patterns",
-            "pattern generation method",
-            "systematic(1)");
+            "patterns", "pattern generation method", "systematic(1)");
         add_heuristic_options_to_feature(*this, "zopdbs");
 
         document_language_support("action costs", "supported");
@@ -67,12 +65,11 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<ZeroOnePDBsHeuristic>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<ZeroOnePDBsHeuristic> create_component(
+        const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<ZeroOnePDBsHeuristic>(
             opts.get<shared_ptr<PatternCollectionGenerator>>("patterns"),
-            get_heuristic_arguments_from_options(opts)
-            );
+            get_heuristic_arguments_from_options(opts));
     }
 };
 

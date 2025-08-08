@@ -35,7 +35,7 @@ pair<int, int> MergeStrategySCCs::get_next() {
         if (non_singleton_cg_sccs.empty()) {
             // We are done dealing with all SCCs, allow merging any factors.
             current_ts_indices.reserve(fts.get_num_active_entries());
-            for (int ts_index: fts) {
+            for (int ts_index : fts) {
                 current_ts_indices.push_back(ts_index);
             }
         } else {
@@ -54,7 +54,8 @@ pair<int, int> MergeStrategySCCs::get_next() {
     }
 
     // Select the next merge for the current set of indices.
-    pair<int, int > next_pair = merge_selector->select_merge(fts, current_ts_indices);
+    pair<int, int> next_pair =
+        merge_selector->select_merge(fts, current_ts_indices);
 
     // Remove the two merged indices from the current index set.
     for (vector<int>::iterator it = current_ts_indices.begin();

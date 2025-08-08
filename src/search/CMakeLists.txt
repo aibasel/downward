@@ -177,6 +177,7 @@ create_fast_downward_library(
         utils/system
         utils/system_unix
         utils/system_windows
+        utils/task_lexer
         utils/timer
         utils/tuples
     CORE_LIBRARY

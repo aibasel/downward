@@ -10,8 +10,8 @@ using namespace std;
 
 namespace combining_evaluator {
 CombiningEvaluator::CombiningEvaluator(
-    const vector<shared_ptr<Evaluator>> &evals,
-    const string &description, utils::Verbosity verbosity)
+    const vector<shared_ptr<Evaluator>> &evals, const string &description,
+    utils::Verbosity verbosity)
     : Evaluator(false, false, false, description, verbosity),
       subevaluators(evals) {
     utils::verify_list_not_empty(evals, "evals"); // TODO issue559 move to TI?
@@ -34,7 +34,8 @@ EvaluationResult CombiningEvaluator::compute_result(
 
     // Collect component values. Return infinity if any is infinite.
     for (const shared_ptr<Evaluator> &subevaluator : subevaluators) {
-        int value = eval_context.get_evaluator_value_or_infinity(subevaluator.get());
+        int value =
+            eval_context.get_evaluator_value_or_infinity(subevaluator.get());
         if (value == EvaluationResult::INFTY) {
             result.set_evaluator_value(value);
             return result;

@@ -42,13 +42,10 @@ IteratedSearch::IteratedSearch(
 
 shared_ptr<SearchAlgorithm> IteratedSearch::get_search_algorithm(
     int algorithm_index) {
-
     log << "Starting search: '"
         << search_algorithms[algorithm_index]->get_description()
         << "'" << endl;
     return search_algorithms[algorithm_index]->get_task_specific(task, 1);
-
-
 }
 
 shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
@@ -163,17 +160,12 @@ public:
             "The iterated search bound is tightened whenever a component finds "
             "a cheaper plan.",
             "true");
+        add_option<bool>("repeat_last", "repeat last phase of search", "false");
         add_option<bool>(
-            "repeat_last",
-            "repeat last phase of search",
+            "continue_on_fail", "continue search after no solution found",
             "false");
         add_option<bool>(
-            "continue_on_fail",
-            "continue search after no solution found",
-            "false");
-        add_option<bool>(
-            "continue_on_solve",
-            "continue search after solution found",
+            "continue_on_solve", "continue search after solution found",
             "true");
         add_search_algorithm_options_to_feature(*this, "iterated");
 
@@ -198,7 +190,6 @@ public:
             "lazy_wastar([h],w=1)]))\"\n"
             "```");
     }
-
 
 
     virtual shared_ptr<TaskIndependentIteratedSearch> create_component(const plugins::Options &opts) const override {

@@ -12,7 +12,8 @@ namespace pdbs {
   This pattern collection generator uses the CEGAR algorithm to compute a
   disjoint pattern collection for the given task. See cegar.h for more details.
 */
-class PatternCollectionGeneratorDisjointCegar : public PatternCollectionGenerator {
+class PatternCollectionGeneratorDisjointCegar
+    : public PatternCollectionGenerator {
     const int max_pdb_size;
     const int max_collection_size;
     const double max_time;
@@ -25,8 +26,7 @@ class PatternCollectionGeneratorDisjointCegar : public PatternCollectionGenerato
 public:
     PatternCollectionGeneratorDisjointCegar(
         int max_pdb_size, int max_collection_size, double max_time,
-        bool use_wildcard_plans, int random_seed,
-        utils::Verbosity verbosity);
+        bool use_wildcard_plans, int random_seed, utils::Verbosity verbosity);
 };
 }
 

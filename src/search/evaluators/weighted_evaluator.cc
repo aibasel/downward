@@ -2,6 +2,7 @@
 
 #include "../evaluation_context.h"
 #include "../evaluation_result.h"
+
 #include "../plugins/plugin.h"
 
 #include <cstdlib>
@@ -18,7 +19,6 @@ WeightedEvaluator::WeightedEvaluator(
       evaluator(eval),
       weight(weight) {
 }
-
 
 bool WeightedEvaluator::dead_ends_are_reliable() const {
     return evaluator->dead_ends_are_reliable();

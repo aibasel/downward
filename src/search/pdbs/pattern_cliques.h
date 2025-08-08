@@ -15,9 +15,9 @@ extern VariableAdditivity compute_additive_vars(const TaskProxy &task_proxy);
 
 /* Returns true iff the two patterns are additive i.e. there is no operator
    which affects variables in pattern one as well as in pattern two. */
-extern bool are_patterns_additive(const Pattern &pattern1,
-                                  const Pattern &pattern2,
-                                  const VariableAdditivity &are_additive);
+extern bool are_patterns_additive(
+    const Pattern &pattern1, const Pattern &pattern2,
+    const VariableAdditivity &are_additive);
 
 /*
   Computes pattern cliques of the given patterns.
@@ -73,8 +73,7 @@ extern std::shared_ptr<std::vector<PatternClique>> compute_pattern_cliques(
 extern std::vector<PatternClique> compute_pattern_cliques_with_pattern(
     const PatternCollection &patterns,
     const std::vector<PatternClique> &known_pattern_cliques,
-    const Pattern &new_pattern,
-    const VariableAdditivity &are_additive);
+    const Pattern &new_pattern, const VariableAdditivity &are_additive);
 }
 
 #endif

@@ -4,7 +4,6 @@
 #include "constraint_generator.h"
 
 #include "../algorithms/named_vector.h"
-
 #include "../pdbs/types.h"
 
 #include <memory>
@@ -28,7 +27,8 @@ public:
         const std::shared_ptr<pdbs::PatternCollectionGenerator> &patterns);
 
     virtual void initialize_constraints(
-        const std::shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) override;
+        const std::shared_ptr<AbstractTask> &task,
+        lp::LinearProgram &lp) override;
     virtual bool update_constraints(
         const State &state, lp::LPSolver &lp_solver) override;
 };

@@ -18,9 +18,10 @@
   to eager and lazy search.
 */
 
+#include "../utils/logging.h"
+
 #include <memory>
 #include <vector>
-#include "../utils/logging.h"
 
 class Evaluator;
 template<typename T>

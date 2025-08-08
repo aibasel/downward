@@ -1,7 +1,6 @@
 #include "blind_search_heuristic.h"
 
 #include "../plugins/plugin.h"
-
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 
@@ -17,8 +16,7 @@ BlindSearchHeuristic::BlindSearchHeuristic(
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
-      min_operator_cost(
-          task_properties::get_min_operator_cost(task_proxy)) {
+      min_operator_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing blind search heuristic '" << description << "'..." << endl;
     }

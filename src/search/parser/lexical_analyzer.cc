@@ -12,8 +12,9 @@ using namespace std;
 
 namespace parser {
 static regex build_regex(const string &s) {
-    return regex("^\\s*(" + s + ")\\s*",
-                 regex_constants::ECMAScript | regex_constants::icase);
+    return regex(
+        "^\\s*(" + s + ")\\s*",
+        regex_constants::ECMAScript | regex_constants::icase);
 }
 
 static vector<pair<TokenType, regex>> construct_token_type_expressions() {
@@ -40,19 +41,20 @@ static vector<pair<TokenType, regex>> construct_token_type_expressions() {
           'infinity', 'true', 'false', and 'let') from being recognized as
           identifiers.
         */
-        {TokenType::IDENTIFIER, R"([a-zA-Z_]\w*)"}
-    };
+        {TokenType::IDENTIFIER, R"([a-zA-Z_]\w*)"}};
     vector<pair<TokenType, regex>> token_type_expression;
     token_type_expression.reserve(token_type_str_expression.size());
     for (const auto &pair : token_type_str_expression) {
-        token_type_expression.emplace_back(pair.first, build_regex(pair.second));
+        token_type_expression.emplace_back(
+            pair.first, build_regex(pair.second));
     }
     return token_type_expression;
 }
 static const vector<pair<TokenType, regex>> token_type_expressions =
     construct_token_type_expressions();
 
-static string highlight_position(const string &text, string::const_iterator pos) {
+static string highlight_position(
+    const string &text, string::const_iterator pos) {
     ostringstream message_stream;
     int distance_to_highlight = pos - text.begin();
     for (const string &line : utils::split(text, "\n")) {
@@ -86,7 +88,9 @@ TokenStream split_tokens(const string &text) {
         for (const auto &type_and_expression : token_type_expressions) {
             TokenType token_type = type_and_expression.first;
             const regex &expression = type_and_expression.second;
-            if (regex_search(start, end, match, expression, regex_constants::match_continuous)) {
+            if (regex_search(
+                    start, end, match, expression,
+                    regex_constants::match_continuous)) {
                 tokens.push_back({match[1], token_type});
                 start += match[0].length();
                 has_match = true;
@@ -94,8 +98,9 @@ TokenStream split_tokens(const string &text) {
             }
         }
         if (!has_match) {
-            context.error("Unable to recognize next token:\n" +
-                          highlight_position(text, start));
+            context.error(
+                "Unable to recognize next token:\n" +
+                highlight_position(text, start));
         }
     }
     return TokenStream(move(tokens));

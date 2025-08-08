@@ -2,6 +2,7 @@
 
 #include "../evaluation_context.h"
 #include "../evaluation_result.h"
+
 #include "../plugins/plugin.h"
 
 using namespace std;
@@ -13,7 +14,6 @@ GEvaluator::GEvaluator(
     utils::Verbosity verbosity)
     : Evaluator(false, false, false, description, verbosity) {
 }
-
 
 EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
     EvaluationResult result;

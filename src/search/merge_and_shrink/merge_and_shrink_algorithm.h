@@ -53,9 +53,7 @@ class MergeAndShrinkAlgorithm {
     void warn_on_unusual_options() const;
     bool ran_out_of_time(const utils::CountdownTimer &timer) const;
     void statistics(int maximum_intermediate_size) const;
-    void main_loop(
-        FactoredTransitionSystem &fts,
-        const TaskProxy &task_proxy);
+    void main_loop(FactoredTransitionSystem &fts, const TaskProxy &task_proxy);
     void handle_shrink_limit_defaults();
 public:
     MergeAndShrinkAlgorithm(
@@ -63,20 +61,21 @@ public:
         const std::shared_ptr<ShrinkStrategy> &shrink_strategy,
         const std::shared_ptr<LabelReduction> &label_reduction,
         bool prune_unreachable_states, bool prune_irrelevant_states,
-        int max_states, int max_states_before_merge,
-        int threshold_before_merge, double main_loop_max_time,
-        utils::Verbosity verbosity);
-    FactoredTransitionSystem build_factored_transition_system(const TaskProxy &task_proxy);
+        int max_states, int max_states_before_merge, int threshold_before_merge,
+        double main_loop_max_time, utils::Verbosity verbosity);
+    FactoredTransitionSystem build_factored_transition_system(
+        const TaskProxy &task_proxy);
 };
 
-extern void add_merge_and_shrink_algorithm_options_to_feature(plugins::Feature &feature);
-std::tuple<std::shared_ptr<MergeStrategyFactory>,
-           std::shared_ptr<ShrinkStrategy>,
-           std::shared_ptr<LabelReduction>, bool, bool, int, int, int,
-           double>
+extern void add_merge_and_shrink_algorithm_options_to_feature(
+    plugins::Feature &feature);
+std::tuple<
+    std::shared_ptr<MergeStrategyFactory>, std::shared_ptr<ShrinkStrategy>,
+    std::shared_ptr<LabelReduction>, bool, bool, int, int, int, double>
 get_merge_and_shrink_algorithm_arguments_from_options(
     const plugins::Options &opts);
-extern void add_transition_system_size_limit_options_to_feature(plugins::Feature &feature);
+extern void add_transition_system_size_limit_options_to_feature(
+    plugins::Feature &feature);
 std::tuple<int, int, int>
 get_transition_system_size_limit_arguments_from_options(
     const plugins::Options &opts);

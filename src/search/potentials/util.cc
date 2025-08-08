@@ -15,8 +15,7 @@ using namespace std;
 
 namespace potentials {
 vector<State> sample_without_dead_end_detection(
-    PotentialOptimizer &optimizer,
-    int num_samples,
+    PotentialOptimizer &optimizer, int num_samples,
     utils::RandomNumberGenerator &rng) {
     const shared_ptr<AbstractTask> task = optimizer.get_task();
     const TaskProxy task_proxy(*task);
@@ -33,15 +32,14 @@ vector<State> sample_without_dead_end_detection(
 }
 
 string get_admissible_potentials_reference() {
-    return "The algorithm is based on" + utils::format_conference_reference(
-        {"Jendrik Seipp", "Florian Pommerening", "Malte Helmert"},
-        "New Optimization Functions for Potential Heuristics",
-        "https://ai.dmi.unibas.ch/papers/seipp-et-al-icaps2015.pdf",
-        "Proceedings of the 25th International Conference on"
-        " Automated Planning and Scheduling (ICAPS 2015)",
-        "193-201",
-        "AAAI Press",
-        "2015");
+    return "The algorithm is based on" +
+           utils::format_conference_reference(
+               {"Jendrik Seipp", "Florian Pommerening", "Malte Helmert"},
+               "New Optimization Functions for Potential Heuristics",
+               "https://ai.dmi.unibas.ch/papers/seipp-et-al-icaps2015.pdf",
+               "Proceedings of the 25th International Conference on"
+               " Automated Planning and Scheduling (ICAPS 2015)",
+               "193-201", "AAAI Press", "2015");
 }
 
 void add_admissible_potentials_options_to_feature(
@@ -61,21 +59,18 @@ void add_admissible_potentials_options_to_feature(
         "very high weights can cause numerical instability in the LP solver, "
         "while using very low weights limits the choice of potential "
         "heuristics. For details, see the ICAPS paper cited above.",
-        "1e8",
-        plugins::Bounds("0.0", "infinity"));
+        "1e8", plugins::Bounds("0.0", "infinity"));
     lp::add_lp_solver_option_to_feature(feature);
     add_heuristic_options_to_feature(feature, description);
 }
 
-
-tuple<double, lp::LPSolverType, shared_ptr<AbstractTask>, bool, string,
-      utils::Verbosity>
-get_admissible_potential_arguments_from_options(
-    const plugins::Options &opts) {
+tuple<
+    double, lp::LPSolverType, shared_ptr<AbstractTask>, bool, string,
+    utils::Verbosity>
+get_admissible_potential_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(opts.get<double>("max_potential")),
         lp::get_lp_solver_arguments_from_options(opts),
-        get_heuristic_arguments_from_options(opts)
-        );
+        get_heuristic_arguments_from_options(opts));
 }
 }

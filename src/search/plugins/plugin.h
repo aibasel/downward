@@ -12,8 +12,8 @@
 #include "../utils/tuples.h"
 
 #include <string>
-#include <typeindex>
 #include <type_traits>
+#include <typeindex>
 #include <vector>
 
 namespace utils {
@@ -36,24 +36,22 @@ public:
     virtual ~Feature() = default;
     Feature(const Feature &) = delete;
 
-    virtual Any construct(const Options &opts, const utils::Context &context) const = 0;
+    virtual Any construct(
+        const Options &opts, const utils::Context &context) const = 0;
 
     /* Add option with default value. Use def_val=ArgumentInfo::NO_DEFAULT for
        optional parameters without default values. */
     template<typename T>
     void add_option(
-        const std::string &key,
-        const std::string &help = "",
+        const std::string &key, const std::string &help = "",
         const std::string &default_value = "",
         const Bounds &bounds = Bounds::unlimited(),
         bool lazy_construction = false);
 
     template<typename T>
     void add_list_option(
-        const std::string &key,
-        const std::string &help = "",
-        const std::string &default_value = "",
-        bool lazy_construction = false);
+        const std::string &key, const std::string &help = "",
+        const std::string &default_value = "", bool lazy_construction = false);
 
     void document_subcategory(const std::string &subcategory);
     void document_title(const std::string &title);
@@ -63,7 +61,8 @@ public:
     void document_language_support(
         const std::string &feature, const std::string &note);
     void document_note(
-        const std::string &title, const std::string &note, bool long_text = false);
+        const std::string &title, const std::string &note,
+        bool long_text = false);
 
     const Type &get_type() const;
     std::string get_key() const;
@@ -76,13 +75,12 @@ public:
     const std::vector<NoteInfo> &get_notes() const;
 };
 
-
 template<typename Constructed>
 class FeatureWithDefault : public Feature {
 protected:
     using Feature::Feature;
-    virtual std::shared_ptr<Constructed>
-    create_component(const Options &options) const {
+    virtual std::shared_ptr<Constructed> create_component(
+        const Options &options) const {
         return std::make_shared<Constructed>(options);
     }
 };
@@ -91,27 +89,29 @@ template<typename Constructed>
 class FeatureWithoutDefault : public Feature {
 protected:
     using Feature::Feature;
-    virtual std::shared_ptr<Constructed>
-    create_component(const Options &) const = 0;
+    virtual std::shared_ptr<Constructed> create_component(
+        const Options &) const = 0;
 };
 
 template<typename Constructed>
 using FeatureAuto = typename std::conditional<
     std::is_constructible<Constructed, const Options &>::value,
-    FeatureWithDefault<Constructed>,
-    FeatureWithoutDefault<Constructed>>::type;
+    FeatureWithDefault<Constructed>, FeatureWithoutDefault<Constructed>>::type;
 
 template<typename Base, typename Constructed>
 class TypedFeature : public FeatureAuto<Constructed> {
     using BasePtr = std::shared_ptr<Base>;
-    static_assert(std::is_base_of<Base, Constructed>::value,
-                  "Constructed must derive from Base");
+    static_assert(
+        std::is_base_of<Base, Constructed>::value,
+        "Constructed must derive from Base");
 public:
     TypedFeature(const std::string &key)
-        : FeatureAuto<Constructed>(TypeRegistry::instance()->get_type<BasePtr>(), key) {
+        : FeatureAuto<Constructed>(
+              TypeRegistry::instance()->get_type<BasePtr>(), key) {
     }
 
-    Any construct(const Options &options, const utils::Context &context) const override {
+    Any construct(
+        const Options &options, const utils::Context &context) const override {
         std::shared_ptr<Base> ptr;
         try {
             ptr = this->create_component(options);
@@ -128,15 +128,15 @@ public:
   before calling the constructor. The resulting arguments will be used
   as arguments to make_shared.
 */
-template<typename T, typename ... Arguments>
+template<typename T, typename... Arguments>
 std::shared_ptr<T> make_shared_from_arg_tuples(Arguments... arguments) {
     return std::apply(
-        [](auto &&... flattened_args) {
+        [](auto &&...flattened_args) {
             return std::make_shared<T>(
-                std::forward<decltype(flattened_args)>(flattened_args) ...);
+                std::forward<decltype(flattened_args)>(flattened_args)...);
         },
         utils::flatten_tuple(
-            std::tuple<Arguments...>(std::forward<Arguments>(arguments) ...)));
+            std::tuple<Arguments...>(std::forward<Arguments>(arguments)...)));
 }
 
 // issue559 the following should replace the one above.
@@ -203,8 +203,7 @@ class CategoryPlugin {
     bool can_be_bound_to_variable;
 public:
     CategoryPlugin(
-        std::type_index pointer_type,
-        const std::string &class_name,
+        std::type_index pointer_type, const std::string &class_name,
         const std::string &category_name);
     virtual ~CategoryPlugin() = default;
     CategoryPlugin(const CategoryPlugin &) = delete;
@@ -223,9 +222,9 @@ template<typename T>
 class TypedCategoryPlugin : public CategoryPlugin {
 public:
     TypedCategoryPlugin(const std::string &category_name)
-        : CategoryPlugin(typeid(std::shared_ptr<T>),
-                         utils::get_type_name<std::shared_ptr<T>>(),
-                         category_name) {
+        : CategoryPlugin(
+              typeid(std::shared_ptr<T>),
+              utils::get_type_name<std::shared_ptr<T>>(), category_name) {
     }
 };
 
@@ -249,8 +248,9 @@ class EnumPlugin {
     std::string class_name;
     EnumInfo enum_info;
 public:
-    EnumPlugin(std::type_index type, const std::string &class_name,
-               std::initializer_list<std::pair<std::string, std::string>> enum_values);
+    EnumPlugin(
+        std::type_index type, const std::string &class_name,
+        std::initializer_list<std::pair<std::string, std::string>> enum_values);
 
     std::type_index get_type() const;
     std::string get_class_name() const;
@@ -260,31 +260,30 @@ public:
 template<typename T>
 class TypedEnumPlugin : public EnumPlugin {
 public:
-    TypedEnumPlugin(std::initializer_list<std::pair<std::string, std::string>> enum_values)
-        : EnumPlugin(typeid(T), utils::get_type_name<std::shared_ptr<T>>(), enum_values) {
+    TypedEnumPlugin(
+        std::initializer_list<std::pair<std::string, std::string>> enum_values)
+        : EnumPlugin(
+              typeid(T), utils::get_type_name<std::shared_ptr<T>>(),
+              enum_values) {
     }
 };
 
-
 template<typename T>
 void Feature::add_option(
-    const std::string &key,
-    const std::string &help,
-    const std::string &default_value,
-    const Bounds &bounds,
+    const std::string &key, const std::string &help,
+    const std::string &default_value, const Bounds &bounds,
     bool lazy_construction) {
-    arguments.emplace_back(key, help, TypeRegistry::instance()->get_type<T>(),
-                           default_value, bounds, lazy_construction);
+    arguments.emplace_back(
+        key, help, TypeRegistry::instance()->get_type<T>(), default_value,
+        bounds, lazy_construction);
 }
 
 template<typename T>
 void Feature::add_list_option(
-    const std::string &key,
-    const std::string &help,
-    const std::string &default_value,
-    bool lazy_construction) {
-    add_option<std::vector<T>>(key, help, default_value, Bounds::unlimited(),
-                               lazy_construction);
+    const std::string &key, const std::string &help,
+    const std::string &default_value, bool lazy_construction) {
+    add_option<std::vector<T>>(
+        key, help, default_value, Bounds::unlimited(), lazy_construction);
 }
 }
 

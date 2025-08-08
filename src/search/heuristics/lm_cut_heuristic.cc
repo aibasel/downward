@@ -28,8 +28,7 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
     State state = convert_ancestor_state(ancestor_state);
     int total_cost = 0;
     bool dead_end = landmark_generator->compute_landmarks(
-        state,
-        [&total_cost](int cut_cost) {total_cost += cut_cost;},
+        state, [&total_cost](int cut_cost) { total_cost += cut_cost; },
         nullptr);
 
     if (dead_end)

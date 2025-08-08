@@ -59,8 +59,7 @@ struct OperatorRange {
     int begin;
     int end;
 
-    OperatorRange(int begin, int end)
-        : begin(begin), end(end) {
+    OperatorRange(int begin, int end) : begin(begin), end(end) {
     }
 
     bool empty() const {
@@ -72,7 +71,6 @@ struct OperatorRange {
     }
 };
 
-
 class OperatorInfo {
     /*
       The attributes are not const because we must support
@@ -82,8 +80,7 @@ class OperatorInfo {
     vector<FactPair> precondition;
 public:
     OperatorInfo(OperatorID op, vector<FactPair> precondition)
-        : op(op),
-          precondition(move(precondition)) {
+        : op(op), precondition(move(precondition)) {
     }
 
     bool operator<(const OperatorInfo &other) const {
@@ -108,12 +105,10 @@ public:
     }
 };
 
-
 enum class GroupOperatorsBy {
     VAR,
     VALUE
 };
-
 
 class OperatorGrouper {
     const vector<OperatorInfo> &operator_infos;
@@ -137,10 +132,8 @@ class OperatorGrouper {
     }
 public:
     explicit OperatorGrouper(
-        const vector<OperatorInfo> &operator_infos,
-        int depth,
-        GroupOperatorsBy group_by,
-        OperatorRange range)
+        const vector<OperatorInfo> &operator_infos, int depth,
+        GroupOperatorsBy group_by, OperatorRange range)
         : operator_infos(operator_infos),
           depth(depth),
           group_by(group_by),
@@ -162,7 +155,6 @@ public:
         return make_pair(key, group_range);
     }
 };
-
 
 SuccessorGeneratorFactory::SuccessorGeneratorFactory(
     const TaskProxy &task_proxy)
@@ -219,7 +211,8 @@ GeneratorPtr SuccessorGeneratorFactory::construct_switch(
     }
 
     int vector_bytes = utils::estimate_vector_bytes<GeneratorPtr>(var_domain);
-    int hash_bytes = utils::estimate_unordered_map_bytes<int, GeneratorPtr>(num_children);
+    int hash_bytes =
+        utils::estimate_unordered_map_bytes<int, GeneratorPtr>(num_children);
     if (hash_bytes < vector_bytes) {
         unordered_map<int, GeneratorPtr> generator_by_value;
         for (auto &item : values_and_generators)
@@ -249,7 +242,8 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
             // Handle a group of immediately applicable operators.
             nodes.push_back(construct_leaf(var_range));
         } else {
-            // Handle a group of operators sharing the first precondition variable.
+            // Handle a group of operators sharing the first precondition
+            // variable.
             ValuesAndGenerators values_and_generators;
             OperatorGrouper grouper_by_value(
                 operator_infos, depth, GroupOperatorsBy::VALUE, var_range);
@@ -262,8 +256,7 @@ GeneratorPtr SuccessorGeneratorFactory::construct_recursive(
                     value, construct_recursive(depth + 1, value_range));
             }
 
-            nodes.push_back(construct_switch(
-                                var, move(values_and_generators)));
+            nodes.push_back(construct_switch(var, move(values_and_generators)));
         }
     }
     return construct_fork(move(nodes));

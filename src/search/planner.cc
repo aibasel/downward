@@ -1,10 +1,9 @@
 #include "command_line.h"
-
 #include "git_revision.h"
 #include "search_algorithm.h"
 
-#include "tasks/root_task.h"
 #include "task_utils/task_properties.h"
+#include "tasks/root_task.h"
 #include "utils/logging.h"
 #include "utils/system.h"
 #include "utils/timer.h"
@@ -16,8 +15,10 @@ using utils::ExitCode;
 
 int main(int argc, const char **argv) {
     try {
-        if (argc == 2 && static_cast<string>(argv[1]) == "--internal-git-revision") {
-            // We handle this option before registering event handlers to avoid printing peak memory on exit.
+        if (argc == 2 &&
+            static_cast<string>(argv[1]) == "--internal-git-revision") {
+            // We handle this option before registering event handlers to avoid
+            // printing peak memory on exit.
             cout << g_git_revision << endl;
             exit(0);
         }
@@ -55,8 +56,8 @@ int main(int argc, const char **argv) {
         utils::g_log << "Total time: " << utils::g_timer << endl;
 
         ExitCode exitcode = search_algorithm->found_solution()
-            ? ExitCode::SUCCESS
-            : ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
+                                ? ExitCode::SUCCESS
+                                : ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
         exit_with(exitcode);
     } catch (const utils::ExitException &e) {
         /* To ensure that all destructors are called before the program exits,

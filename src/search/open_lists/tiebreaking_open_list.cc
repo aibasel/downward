@@ -33,31 +33,31 @@ class TieBreakingOpenList : public OpenList<Entry> {
     int dimension() const;
 
 protected:
-    virtual void do_insertion(EvaluationContext &eval_context,
-                              const Entry &entry) override;
+    virtual void do_insertion(
+        EvaluationContext &eval_context, const Entry &entry) override;
 
 public:
     TieBreakingOpenList(
-        const vector<shared_ptr<Evaluator>> &evals,
-        bool unsafe_pruning, bool pref_only);
+        const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
+        bool pref_only);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
-    virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
-    virtual bool is_dead_end(
-        EvaluationContext &eval_context) const override;
+    virtual void get_path_dependent_evaluators(
+        set<Evaluator *> &evals) override;
+    virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
 };
 
-
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(
-    const vector<shared_ptr<Evaluator>> &evals,
-    bool unsafe_pruning, bool pref_only)
+    const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
+    bool pref_only)
     : OpenList<Entry>(pref_only),
-      size(0), evaluators(evals),
+      size(0),
+      evaluators(evals),
       allow_unsafe_pruning(unsafe_pruning) {
 }
 
@@ -67,7 +67,8 @@ void TieBreakingOpenList<Entry>::do_insertion(
     vector<int> key;
     key.reserve(evaluators.size());
     for (const shared_ptr<Evaluator> &evaluator : evaluators)
-        key.push_back(eval_context.get_evaluator_value_or_infinity(evaluator.get()));
+        key.push_back(
+            eval_context.get_evaluator_value_or_infinity(evaluator.get()));
 
     buckets[key].push_back(entry);
     ++size;
@@ -152,14 +153,12 @@ TieBreakingOpenListFactory::TieBreakingOpenListFactory(
     utils::verify_list_not_empty(evals, "evals");// should be in TI
 }
 
-unique_ptr<StateOpenList>
-TieBreakingOpenListFactory::create_state_open_list() {
+unique_ptr<StateOpenList> TieBreakingOpenListFactory::create_state_open_list() {
     return make_unique<TieBreakingOpenList<StateOpenListEntry>>(
         evals, unsafe_pruning, pref_only);
 }
 
-unique_ptr<EdgeOpenList>
-TieBreakingOpenListFactory::create_edge_open_list() {
+unique_ptr<EdgeOpenList> TieBreakingOpenListFactory::create_edge_open_list() {
     return make_unique<TieBreakingOpenList<EdgeOpenListEntry>>(
         evals, unsafe_pruning, pref_only);
 }

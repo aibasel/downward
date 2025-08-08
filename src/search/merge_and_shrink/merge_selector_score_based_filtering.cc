@@ -43,8 +43,8 @@ pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
 
     for (const shared_ptr<MergeScoringFunction> &scoring_function :
          merge_scoring_functions) {
-        vector<double> scores = scoring_function->compute_scores(
-            fts, merge_candidates);
+        vector<double> scores =
+            scoring_function->compute_scores(fts, merge_candidates);
         merge_candidates = get_remaining_candidates(merge_candidates, scores);
         if (merge_candidates.size() == 1) {
             break;
@@ -53,8 +53,9 @@ pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
 
     if (merge_candidates.size() > 1) {
         cerr << "More than one merge candidate remained after computing all "
-            "scores! Did you forget to include a uniquely tie-breaking "
-            "scoring function, e.g. total_order or single_random?" << endl;
+                "scores! Did you forget to include a uniquely tie-breaking "
+                "scoring function, e.g. total_order or single_random?"
+             << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 
@@ -62,8 +63,8 @@ pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
 }
 
 void MergeSelectorScoreBasedFiltering::initialize(const TaskProxy &task_proxy) {
-    for (shared_ptr<MergeScoringFunction> &scoring_function
-         : merge_scoring_functions) {
+    for (shared_ptr<MergeScoringFunction> &scoring_function :
+         merge_scoring_functions) {
         scoring_function->initialize(task_proxy);
     }
 }
@@ -75,16 +76,16 @@ string MergeSelectorScoreBasedFiltering::name() const {
 void MergeSelectorScoreBasedFiltering::dump_selector_specific_options(
     utils::LogProxy &log) const {
     if (log.is_at_least_normal()) {
-        for (const shared_ptr<MergeScoringFunction> &scoring_function
-             : merge_scoring_functions) {
+        for (const shared_ptr<MergeScoringFunction> &scoring_function :
+             merge_scoring_functions) {
             scoring_function->dump_options(log);
         }
     }
 }
 
 bool MergeSelectorScoreBasedFiltering::requires_init_distances() const {
-    for (const shared_ptr<MergeScoringFunction> &scoring_function
-         : merge_scoring_functions) {
+    for (const shared_ptr<MergeScoringFunction> &scoring_function :
+         merge_scoring_functions) {
         if (scoring_function->requires_init_distances()) {
             return true;
         }
@@ -93,8 +94,8 @@ bool MergeSelectorScoreBasedFiltering::requires_init_distances() const {
 }
 
 bool MergeSelectorScoreBasedFiltering::requires_goal_distances() const {
-    for (const shared_ptr<MergeScoringFunction> &scoring_function
-         : merge_scoring_functions) {
+    for (const shared_ptr<MergeScoringFunction> &scoring_function :
+         merge_scoring_functions) {
         if (scoring_function->requires_goal_distances()) {
             return true;
         }
@@ -103,9 +104,11 @@ bool MergeSelectorScoreBasedFiltering::requires_goal_distances() const {
 }
 
 class MergeSelectorScoreBasedFilteringFeature
-    : public plugins::TypedFeature<MergeSelector, MergeSelectorScoreBasedFiltering> {
+    : public plugins::TypedFeature<
+          MergeSelector, MergeSelectorScoreBasedFiltering> {
 public:
-    MergeSelectorScoreBasedFilteringFeature() : TypedFeature("score_based_filtering") {
+    MergeSelectorScoreBasedFilteringFeature()
+        : TypedFeature("score_based_filtering") {
         document_title("Score based filtering merge selector");
         document_synopsis(
             "This merge selector has a list of scoring functions, which are used "
@@ -117,12 +120,11 @@ public:
             "The list of scoring functions used to compute scores for candidates.");
     }
 
-    virtual shared_ptr<MergeSelectorScoreBasedFiltering>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<MergeSelectorScoreBasedFiltering> create_component(
+        const plugins::Options &opts) const override {
         return make_shared<MergeSelectorScoreBasedFiltering>(
             opts.get_list<shared_ptr<MergeScoringFunction>>(
-                "scoring_functions")
-            );
+                "scoring_functions"));
     }
 };
 

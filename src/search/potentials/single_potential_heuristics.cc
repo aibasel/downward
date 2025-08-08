@@ -15,9 +15,8 @@ enum class OptimizeFor {
 };
 
 static unique_ptr<PotentialFunction> create_potential_function(
-    const shared_ptr<AbstractTask> &transform,
-    lp::LPSolverType lpsolver, double max_potential,
-    OptimizeFor opt_func) {
+    const shared_ptr<AbstractTask> &transform, lp::LPSolverType lpsolver,
+    double max_potential, OptimizeFor opt_func) {
     PotentialOptimizer optimizer(transform, lpsolver, max_potential);
     const AbstractTask &task = *transform;
     TaskProxy task_proxy(task);
@@ -37,7 +36,8 @@ static unique_ptr<PotentialFunction> create_potential_function(
 class InitialStatePotentialHeuristicFeature
     : public plugins::TypedFeature<Evaluator, PotentialHeuristic> {
 public:
-    InitialStatePotentialHeuristicFeature() : TypedFeature("initial_state_potential") {
+    InitialStatePotentialHeuristicFeature()
+        : TypedFeature("initial_state_potential") {
         document_subcategory("heuristics_potentials");
         document_title("Potential heuristic optimized for initial state");
         document_synopsis(get_admissible_potentials_reference());
@@ -46,28 +46,27 @@ public:
             *this, "initial_state_potential");
     }
 
-    virtual shared_ptr<PotentialHeuristic>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<PotentialHeuristic> create_component(
+        const plugins::Options &opts) const override {
         return make_shared<PotentialHeuristic>(
             create_potential_function(
                 opts.get<shared_ptr<AbstractTask>>("transform"),
                 opts.get<lp::LPSolverType>("lpsolver"),
-                opts.get<double>("max_potential"),
-                OptimizeFor::INITIAL_STATE),
+                opts.get<double>("max_potential"), OptimizeFor::INITIAL_STATE),
             opts.get<shared_ptr<AbstractTask>>("transform"),
-            opts.get<bool>("cache_estimates"),
-            opts.get<string>("description"),
-            opts.get<utils::Verbosity>("verbosity")
-            );
+            opts.get<bool>("cache_estimates"), opts.get<string>("description"),
+            opts.get<utils::Verbosity>("verbosity"));
     }
 };
 
-static plugins::FeaturePlugin<InitialStatePotentialHeuristicFeature> _plugin_initial_state;
+static plugins::FeaturePlugin<InitialStatePotentialHeuristicFeature>
+    _plugin_initial_state;
 
 class AllStatesPotentialHeuristicFeature
     : public plugins::TypedFeature<Evaluator, PotentialHeuristic> {
 public:
-    AllStatesPotentialHeuristicFeature() : TypedFeature("all_states_potential") {
+    AllStatesPotentialHeuristicFeature()
+        : TypedFeature("all_states_potential") {
         document_subcategory("heuristics_potentials");
         document_title("Potential heuristic optimized for all states");
         document_synopsis(get_admissible_potentials_reference());
@@ -76,21 +75,19 @@ public:
             *this, "all_states_potential");
     }
 
-    virtual shared_ptr<PotentialHeuristic>
-    create_component(const plugins::Options &opts) const override {
+    virtual shared_ptr<PotentialHeuristic> create_component(
+        const plugins::Options &opts) const override {
         return make_shared<PotentialHeuristic>(
             create_potential_function(
                 opts.get<shared_ptr<AbstractTask>>("transform"),
                 opts.get<lp::LPSolverType>("lpsolver"),
-                opts.get<double>("max_potential"),
-                OptimizeFor::ALL_STATES),
+                opts.get<double>("max_potential"), OptimizeFor::ALL_STATES),
             opts.get<shared_ptr<AbstractTask>>("transform"),
-            opts.get<bool>("cache_estimates"),
-            opts.get<string>("description"),
-            opts.get<utils::Verbosity>("verbosity")
-            );
+            opts.get<bool>("cache_estimates"), opts.get<string>("description"),
+            opts.get<utils::Verbosity>("verbosity"));
     }
 };
 
-static plugins::FeaturePlugin<AllStatesPotentialHeuristicFeature> _plugin_all_states;
+static plugins::FeaturePlugin<AllStatesPotentialHeuristicFeature>
+    _plugin_all_states;
 }

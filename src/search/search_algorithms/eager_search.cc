@@ -32,9 +32,9 @@ EagerSearch::EagerSearch(
           task, cost_type, bound, max_time, description, verbosity),
       reopen_closed_nodes(reopen_closed),
       open_list(open->create_state_open_list()),
-      f_evaluator(f_eval),     // default nullptr
+      f_evaluator(f_eval), // default nullptr
       preferred_operator_evaluators(preferred),
-      lazy_evaluator(lazy_evaluator),     // default nullptr
+      lazy_evaluator(lazy_evaluator), // default nullptr
       pruning_method(pruning) {
     if (lazy_evaluator && !lazy_evaluator->does_cache_estimates()) {
         cerr << "lazy_evaluator must cache its estimates" << endl;
@@ -45,8 +45,7 @@ EagerSearch::EagerSearch(
 void EagerSearch::initialize() {
     log << "Conducting best first search"
         << (reopen_closed_nodes ? " with" : " without")
-        << " reopening closed nodes, (real) bound = " << bound
-        << endl;
+        << " reopening closed nodes, (real) bound = " << bound << endl;
     assert(open_list);
 
     set<Evaluator *> evals;
@@ -56,7 +55,8 @@ void EagerSearch::initialize() {
       Collect path-dependent evaluators that are used for preferred operators
       (in case they are not also used in the open list).
     */
-    for (const shared_ptr<Evaluator> &evaluator : preferred_operator_evaluators) {
+    for (const shared_ptr<Evaluator> &evaluator :
+         preferred_operator_evaluators) {
         evaluator->get_path_dependent_evaluators(evals);
     }
 
@@ -116,24 +116,30 @@ void EagerSearch::print_statistics() const {
 }
 
 SearchStatus EagerSearch::step() {
-    optional<SearchNode> node;
-    while (true) {
-        if (open_list->empty()) {
-            log << "Completely explored state space -- no solution!" << endl;
-            return FAILED;
-        }
+    optional<SearchNode> node = get_next_node_to_expand();
+    if (!node.has_value()) {
+        assert(open_list->empty());
+        log << "Completely explored state space -- no solution!" << endl;
+        return FAILED;
+    }
+
+    return expand(node.value());
+}
+
+optional<SearchNode> EagerSearch::get_next_node_to_expand() {
+    while (!open_list->empty()) {
         StateID id = open_list->remove_min();
         State s = state_registry.lookup_state(id);
-        node.emplace(search_space.get_node(s));
+        SearchNode node = search_space.get_node(s);
 
-        if (node->is_closed())
+        if (node.is_closed())
             continue;
 
         /*
           We can pass calculate_preferred=false here since preferred
           operators are computed when the state is expanded.
         */
-        EvaluationContext eval_context(s, node->get_g(), false, &statistics);
+        EvaluationContext eval_context(s, node.get_g(), false, &statistics);
 
         if (lazy_evaluator) {
             /*
@@ -151,14 +157,15 @@ SearchStatus EagerSearch::step() {
               we have accumulated more information in the meantime. Then upon
               second expansion we have a dead-end node which we must ignore.
             */
-            if (node->is_dead_end())
+            if (node.is_dead_end())
                 continue;
 
             if (lazy_evaluator->is_estimate_cached(s)) {
                 int old_h = lazy_evaluator->get_cached_estimate(s);
-                int new_h = eval_context.get_evaluator_value_or_infinity(lazy_evaluator.get());
+                int new_h = eval_context.get_evaluator_value_or_infinity(
+                    lazy_evaluator.get());
                 if (open_list->is_dead_end(eval_context)) {
-                    node->mark_as_dead_end();
+                    node.mark_as_dead_end();
                     statistics.inc_dead_ends();
                     continue;
                 }
@@ -169,54 +176,73 @@ SearchStatus EagerSearch::step() {
             }
         }
 
-        node->close();
-        assert(!node->is_dead_end());
+        node.close();
+        assert(!node.is_dead_end());
         update_f_value_statistics(eval_context);
-        statistics.inc_expanded();
-        break;
+        return node;
     }
+    return nullopt;
+}
 
-    const State &s = node->get_state();
-    if (check_goal_and_set_plan(s))
+void EagerSearch::collect_preferred_operators_for_node(
+    const SearchNode &node,
+    ordered_set::OrderedSet<OperatorID> &preferred_operators) {
+    EvaluationContext eval_context(
+        node.get_state(), node.get_g(), false, &statistics, true);
+    for (const shared_ptr<Evaluator> &preferred_operator_evaluator :
+         preferred_operator_evaluators) {
+        collect_preferred_operators(
+            eval_context, preferred_operator_evaluator.get(),
+            preferred_operators);
+    }
+}
+
+SearchStatus EagerSearch::expand(const SearchNode &node) {
+    statistics.inc_expanded();
+
+    const State &state = node.get_state();
+    if (check_goal_and_set_plan(state))
         return SOLVED;
 
-    vector<OperatorID> applicable_ops;
-    successor_generator.generate_applicable_ops(s, applicable_ops);
+    generate_successors(node);
+    return IN_PROGRESS;
+}
+
+void EagerSearch::generate_successors(const SearchNode &node) {
+    const State &state = node.get_state();
+
+    vector<OperatorID> applicable_operators;
+    successor_generator.generate_applicable_ops(state, applicable_operators);
 
     /*
       TODO: When preferred operators are in use, a preferred operator will be
       considered by the preferred operator queues even when it is pruned.
     */
-    pruning_method->prune_operators(s, applicable_ops);
+    pruning_method->prune_operators(state, applicable_operators);
 
     // This evaluates the expanded state (again) to get preferred ops
-    EvaluationContext eval_context(s, node->get_g(), false, &statistics, true);
     ordered_set::OrderedSet<OperatorID> preferred_operators;
-    for (const shared_ptr<Evaluator> &preferred_operator_evaluator : preferred_operator_evaluators) {
-        collect_preferred_operators(eval_context,
-                                    preferred_operator_evaluator.get(),
-                                    preferred_operators);
-    }
+    collect_preferred_operators_for_node(node, preferred_operators);
 
-    for (OperatorID op_id : applicable_ops) {
+    for (OperatorID op_id : applicable_operators) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
-        if ((node->get_real_g() + op.get_cost()) >= bound)
+        if ((node.get_real_g() + op.get_cost()) >= bound)
             continue;
 
-        State succ_state = state_registry.get_successor_state(s, op);
+        State succ_state = state_registry.get_successor_state(state, op);
         statistics.inc_generated();
-        bool is_preferred = preferred_operators.contains(op_id);
 
         SearchNode succ_node = search_space.get_node(succ_state);
 
         for (Evaluator *evaluator : path_dependent_evaluators) {
-            evaluator->notify_state_transition(s, op_id, succ_state);
+            evaluator->notify_state_transition(state, op_id, succ_state);
         }
 
         // Previously encountered dead end. Don't re-evaluate.
         if (succ_node.is_dead_end())
             continue;
 
+        bool is_preferred = preferred_operators.contains(op_id);
         if (succ_node.is_new()) {
             /*
               We have not seen this state before.
@@ -226,7 +252,7 @@ SearchStatus EagerSearch::step() {
               hence the stupid computation of succ_g.
               TODO: Make this less fragile.
             */
-            int succ_g = node->get_g() + get_adjusted_cost(op);
+            int succ_g = node.get_g() + get_adjusted_cost(op);
 
             EvaluationContext succ_eval_context(
                 succ_state, succ_g, is_preferred, &statistics);
@@ -237,18 +263,18 @@ SearchStatus EagerSearch::step() {
                 statistics.inc_dead_ends();
                 continue;
             }
-            succ_node.open_new_node(*node, op, get_adjusted_cost(op));
+            succ_node.open_new_node(node, op, get_adjusted_cost(op));
 
             open_list->insert(succ_eval_context, succ_state.get_id());
             if (search_progress.check_progress(succ_eval_context)) {
                 statistics.print_checkpoint_line(succ_node.get_g());
                 reward_progress();
             }
-        } else if (succ_node.get_g() > node->get_g() + get_adjusted_cost(op)) {
+        } else if (succ_node.get_g() > node.get_g() + get_adjusted_cost(op)) {
             // We found a new cheapest path to an open or closed state.
             if (succ_node.is_open()) {
                 succ_node.update_open_node_parent(
-                    *node, op, get_adjusted_cost(op));
+                    node, op, get_adjusted_cost(op));
                 EvaluationContext succ_eval_context(
                     succ_state, succ_node.get_g(), is_preferred, &statistics);
                 open_list->insert(succ_eval_context, succ_state.get_id());
@@ -261,7 +287,7 @@ SearchStatus EagerSearch::step() {
                   consistent heuristic).
                 */
                 statistics.inc_reopened();
-                succ_node.reopen_closed_node(*node, op, get_adjusted_cost(op));
+                succ_node.reopen_closed_node(node, op, get_adjusted_cost(op));
                 EvaluationContext succ_eval_context(
                     succ_state, succ_node.get_g(), is_preferred, &statistics);
                 open_list->insert(succ_eval_context, succ_state.get_id());
@@ -273,16 +299,15 @@ SearchStatus EagerSearch::step() {
                 */
                 assert(succ_node.is_closed() && !reopen_closed_nodes);
                 succ_node.update_closed_node_parent(
-                    *node, op, get_adjusted_cost(op));
+                    node, op, get_adjusted_cost(op));
             }
         } else {
             /*
               We found an equally or more expensive path to an open or closed
-              state.
+              state. There is nothing we need to do.
             */
         }
     }
-    return IN_PROGRESS;
 }
 
 void EagerSearch::reward_progress() {
@@ -303,7 +328,8 @@ void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
 }
 
 /* TODO: HACK! This is very inefficient for simply looking up an h value.
-   Also, if h values are not saved it would recompute h for each and every state. */
+   Also, if h values are not saved it would recompute h for each and every
+   state. */
 void EagerSearch::update_f_value_statistics(EvaluationContext &eval_context) {
     if (f_evaluator) {
         int f_value = eval_context.get_evaluator_value(f_evaluator.get());

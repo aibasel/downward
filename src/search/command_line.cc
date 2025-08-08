@@ -24,7 +24,6 @@ static void input_error(const string &msg) {
     utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
 }
 
-
 static int parse_int_arg(const string &name, const string &value) {
     try {
         return stoi(value);
@@ -35,7 +34,8 @@ static int parse_int_arg(const string &name, const string &value) {
     }
 }
 
-static vector<string> replace_old_style_predefinitions(const vector<string> &args) {
+static vector<string> replace_old_style_predefinitions(
+    const vector<string> &args) {
     vector<string> new_args;
     int num_predefinitions = 0;
     bool has_search_argument = false;
@@ -45,9 +45,11 @@ static vector<string> replace_old_style_predefinitions(const vector<string> &arg
         string arg = args[i];
         bool is_last = (i == args.size() - 1);
 
-        if (arg == "--evaluator" || arg == "--heuristic" || arg == "--landmarks") {
+        if (arg == "--evaluator" || arg == "--heuristic" ||
+            arg == "--landmarks") {
             if (has_search_argument)
-                input_error("predefinitions are forbidden after the '--search' argument");
+                input_error(
+                    "predefinitions are forbidden after the '--search' argument");
             if (is_last)
                 input_error("missing argument after " + arg);
             ++i;
@@ -57,7 +59,8 @@ static vector<string> replace_old_style_predefinitions(const vector<string> &arg
             string key = predefinition[0];
             string definition = predefinition[1];
             if (!utils::is_alpha_numeric(key))
-                input_error("predefinition key has to be alphanumeric: '" + key + "'");
+                input_error(
+                    "predefinition key has to be alphanumeric: '" + key + "'");
             new_search_argument << "let(" << key << "," << definition << ",";
             num_predefinitions++;
         } else if (arg == "--search") {
@@ -106,7 +109,8 @@ static shared_ptr<TaskIndependentComponentType<SearchAlgorithm>> parse_cmd_line_
                 plugins::Any constructed = decorated->construct();
                 ti_search_algorithm = plugins::any_cast<TISearchPtr>(constructed);
             } catch (const plugins::BadAnyCast &) {
-                input_error("Could not interpret the argument of --search as a search algorithm.");
+                input_error(
+                    "Could not interpret the argument of --search as a search algorithm.");
             } catch (const utils::ContextError &e) {
                 input_error(e.get_message());
             }
@@ -122,12 +126,15 @@ static shared_ptr<TaskIndependentComponentType<SearchAlgorithm>> parse_cmd_line_
                     plugin_names.push_back(help_arg);
                 }
             }
-            plugins::Registry registry = plugins::RawRegistry::instance()->construct_registry();
+            plugins::Registry registry =
+                plugins::RawRegistry::instance()->construct_registry();
             unique_ptr<plugins::DocPrinter> doc_printer;
             if (txt2tags)
-                doc_printer = make_unique<plugins::Txt2TagsPrinter>(cout, registry);
+                doc_printer =
+                    make_unique<plugins::Txt2TagsPrinter>(cout, registry);
             else
-                doc_printer = make_unique<plugins::PlainPrinter>(cout, registry);
+                doc_printer =
+                    make_unique<plugins::PlainPrinter>(cout, registry);
             if (plugin_names.empty()) {
                 doc_printer->print_all();
             } else {
@@ -144,12 +151,14 @@ static shared_ptr<TaskIndependentComponentType<SearchAlgorithm>> parse_cmd_line_
             plan_filename = args[i];
         } else if (arg == "--internal-previous-portfolio-plans") {
             if (is_last)
-                input_error("missing argument after --internal-previous-portfolio-plans");
+                input_error(
+                    "missing argument after --internal-previous-portfolio-plans");
             ++i;
             is_part_of_anytime_portfolio = true;
             num_previously_generated_plans = parse_int_arg(arg, args[i]);
             if (num_previously_generated_plans < 0)
-                input_error("argument for --internal-previous-portfolio-plans must be positive");
+                input_error(
+                    "argument for --internal-previous-portfolio-plans must be positive");
         } else {
             input_error("unknown option " + arg);
         }
@@ -158,8 +167,10 @@ static shared_ptr<TaskIndependentComponentType<SearchAlgorithm>> parse_cmd_line_
     if (ti_search_algorithm) {
         PlanManager &plan_manager = ti_search_algorithm->get_plan_manager();
         plan_manager.set_plan_filename(plan_filename);
-        plan_manager.set_num_previously_generated_plans(num_previously_generated_plans);
-        plan_manager.set_is_part_of_anytime_portfolio(is_part_of_anytime_portfolio);
+        plan_manager.set_num_previously_generated_plans(
+            num_previously_generated_plans);
+        plan_manager.set_is_part_of_anytime_portfolio(
+            is_part_of_anytime_portfolio);
     }
     return ti_search_algorithm;
 }
@@ -190,8 +201,8 @@ string get_revision_info() {
 }
 
 string get_usage(const string &progname) {
-    return "usage: \n" +
-           progname + " [OPTIONS] --search SEARCH < OUTPUT\n\n"
+    return "usage: \n" + progname +
+           " [OPTIONS] --search SEARCH < OUTPUT\n\n"
            "* SEARCH (SearchAlgorithm): configuration of the search algorithm\n"
            "* OUTPUT (filename): translator output\n\n"
            "Options:\n"
