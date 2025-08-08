@@ -28,7 +28,7 @@ EagerSearch::EagerSearch(
     const shared_ptr<Evaluator> &lazy_evaluator, OperatorCost cost_type,
     int bound, double max_time, const string &description,
     utils::Verbosity verbosity
-)
+    )
     : SearchAlgorithm(
           cost_type, bound, max_time, description, verbosity, task),
       reopen_closed_nodes(reopen_closed),

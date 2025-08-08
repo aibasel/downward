@@ -42,7 +42,7 @@ public:
     TieBreakingOpenList(
         const vector<shared_ptr<Evaluator>> &evals,
         bool unsafe_pruning, bool pref_only,
-	const std::string description, utils::Verbosity verbosity);
+        const std::string description, utils::Verbosity verbosity);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
@@ -59,13 +59,13 @@ template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(
     const vector<shared_ptr<Evaluator>> &evals,
     bool unsafe_pruning, bool pref_only,
-const std::string description,
-utils::Verbosity verbosity
-)
+    const std::string description,
+    utils::Verbosity verbosity
+    )
     : OpenList<Entry>(pref_only),
       size(0), evaluators(evals),
       allow_unsafe_pruning(unsafe_pruning),
-description(description), verbosity(verbosity){
+      description(description), verbosity(verbosity) {
 }
 
 template<class Entry>
@@ -151,11 +151,11 @@ TieBreakingOpenListFactory::TieBreakingOpenListFactory(
     [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<Evaluator>> &evals,
     bool unsafe_pruning, bool pref_only,
-const string description, utils::Verbosity verbosity)
+    const string description, utils::Verbosity verbosity)
     : evals(evals),
       unsafe_pruning(unsafe_pruning),
       pref_only(pref_only),
-description(description), verbosity(verbosity){
+      description(description), verbosity(verbosity) {
     utils::verify_list_not_empty(evals, "evals");// should be in TI
 }
 
@@ -195,8 +195,8 @@ public:
             opts.get_list<shared_ptr<TaskIndependentComponentType<Evaluator>>>("evals"),
             opts.get<bool>("unsafe_pruning"),
             get_open_list_arguments_from_options(opts),
-			"DEFAULT_OPENLIST_DESCRIPTION_ISSUE559",
-			utils::Verbosity::NORMAL
+            "DEFAULT_OPENLIST_DESCRIPTION_ISSUE559",
+            utils::Verbosity::NORMAL
             );
     }
 };

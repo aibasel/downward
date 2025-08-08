@@ -11,7 +11,7 @@ using namespace std;
 
 namespace weighted_evaluator {
 WeightedEvaluator::WeightedEvaluator(
-        [[maybe_unused]] const shared_ptr<AbstractTask> &task,
+    [[maybe_unused]] const shared_ptr<AbstractTask> &task,
     const shared_ptr<Evaluator> &eval, int weight,
     const string &description, utils::Verbosity verbosity)
     : Evaluator(false, false, false, description, verbosity),

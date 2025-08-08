@@ -6,9 +6,8 @@
 using namespace std;
 
 namespace plugin_eager {
-
-using TaskIndependentEagerSearch = TaskIndependentComponentFeature<eager_search::EagerSearch, SearchAlgorithm, 
-eager_search::EagerSearchArgs>;
+using TaskIndependentEagerSearch = TaskIndependentComponentFeature<eager_search::EagerSearch, SearchAlgorithm,
+                                                                   eager_search::EagerSearchArgs>;
 
 class EagerSearchFeature
     : public plugins::TypedFeature<TaskIndependentComponentType<SearchAlgorithm>, TaskIndependentEagerSearch> {

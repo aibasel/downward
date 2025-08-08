@@ -17,18 +17,18 @@ class Feature;
 
 namespace eager_search {
 using EagerSearchArgs = std::tuple<
-        std::shared_ptr<TaskIndependentComponentType<OpenListFactory>> ,//open,
-        bool, //reopen_closed, 
-	std::shared_ptr<TaskIndependentComponentType<Evaluator>> , //f_eval,
-        std::vector<std::shared_ptr<TaskIndependentComponentType<Evaluator>>> , //preferred,
-        std::shared_ptr<PruningMethod> ,//pruning,
-        std::shared_ptr<TaskIndependentComponentType<Evaluator>> ,//lazy_evaluator,
-    OperatorCost, //cost_type, 
+    std::shared_ptr<TaskIndependentComponentType<OpenListFactory>>,     //open,
+    bool,     //reopen_closed,
+    std::shared_ptr<TaskIndependentComponentType<Evaluator>>,      //f_eval,
+    std::vector<std::shared_ptr<TaskIndependentComponentType<Evaluator>>>,      //preferred,
+    std::shared_ptr<PruningMethod>,     //pruning,
+    std::shared_ptr<TaskIndependentComponentType<Evaluator>>,     //lazy_evaluator,
+    OperatorCost, //cost_type,
     int, //bound,
     double, //max_time
-const std::string, // description
-utils::Verbosity //verbositiy
-	>;
+    const std::string, // description
+    utils::Verbosity //verbositiy
+    >;
 class EagerSearch : public SearchAlgorithm {
     const bool reopen_closed_nodes;
 
@@ -58,8 +58,7 @@ public:
         const std::shared_ptr<PruningMethod> &pruning,
         const std::shared_ptr<Evaluator> &lazy_evaluator,
         OperatorCost cost_type, int bound, double max_time,
-        const std::string &description, utils::Verbosity verbosity
-        );
+        const std::string &description, utils::Verbosity verbosity);
 
     virtual void print_statistics() const override;
 

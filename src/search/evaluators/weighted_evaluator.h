@@ -11,17 +11,17 @@ class Options;
 }
 
 namespace weighted_evaluator {
-using WeightedEvaluatorArgs  = 
+using WeightedEvaluatorArgs =
     WrapArgs<
         const std::shared_ptr<
             TaskIndependentComponentType<
                 Evaluator
-            >
-        >,
+                >
+            >,
         int,
         const std::string,
         utils::Verbosity
-    >;
+        >;
 class WeightedEvaluator : public Evaluator {
     std::shared_ptr<Evaluator> evaluator;
     int weight;
@@ -37,7 +37,6 @@ public:
         EvaluationContext &eval_context) override;
     virtual void get_path_dependent_evaluators(std::set<Evaluator *> &evals) override;
 };
-
 }
 
 #endif

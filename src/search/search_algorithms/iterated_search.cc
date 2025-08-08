@@ -11,8 +11,8 @@ using namespace std;
 namespace iterated_search {
 IteratedSearch::IteratedSearch(
     const shared_ptr<AbstractTask> &task,
-    pair<vector<shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>,iterated_search::HackPlaceholder> 
-	search_algorithms,
+    pair<vector<shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>, iterated_search::HackPlaceholder>
+    search_algorithms,
     bool pass_bound,
     bool repeat_last_phase,
     bool continue_on_fail,
@@ -198,19 +198,19 @@ public:
         utils::verify_list_not_empty(opts.get_list<shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>(
                                          "search_algorithms"), "search_algorithms");
         return make_shared<TaskIndependentIteratedSearch>(
-			tuple(
-            pair(opts.get_list<shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>(
-                "search_algorithms"),HackPlaceholder()),
-            opts.get<bool>("pass_bound"),
-            opts.get<bool>("repeat_last"),
-            opts.get<bool>("continue_on_fail"),
-            opts.get<bool>("continue_on_solve"),
-            opts.get<OperatorCost>("cost_type"),
-            opts.get<int>("bound"),
-            opts.get<double>("max_time"),
-            opts.get<string>("description"),
-            opts.get<utils::Verbosity>("verbosity")
-			));
+            tuple(
+                pair(opts.get_list<shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>(
+                         "search_algorithms"), HackPlaceholder()),
+                opts.get<bool>("pass_bound"),
+                opts.get<bool>("repeat_last"),
+                opts.get<bool>("continue_on_fail"),
+                opts.get<bool>("continue_on_solve"),
+                opts.get<OperatorCost>("cost_type"),
+                opts.get<int>("bound"),
+                opts.get<double>("max_time"),
+                opts.get<string>("description"),
+                opts.get<utils::Verbosity>("verbosity")
+                ));
     }
 };
 
