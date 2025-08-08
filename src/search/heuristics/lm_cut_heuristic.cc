@@ -36,10 +36,12 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
     return total_cost;
 }
 
-using TaskIndependentLandmarkCutHeuristic = TaskIndependentComponentFeature<LandmarkCutHeuristic, Evaluator, LandmarkCutHeuristicArgs>;
+using TaskIndependentLandmarkCutHeuristic = TaskIndependentComponentFeature<
+    LandmarkCutHeuristic, Evaluator, LandmarkCutHeuristicArgs>;
 
-class LandmarkCutHeuristicFeature
-    : public plugins::TypedFeature<TaskIndependentComponentType<Evaluator>, TaskIndependentLandmarkCutHeuristic> {
+class LandmarkCutHeuristicFeature : public plugins::TypedFeature<
+                                        TaskIndependentComponentType<Evaluator>,
+                                        TaskIndependentLandmarkCutHeuristic> {
 public:
     LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
@@ -56,11 +58,11 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<TaskIndependentLandmarkCutHeuristic>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples_NEW<TaskIndependentLandmarkCutHeuristic>(
-            get_heuristic_arguments_from_options(opts)
-            );
+    virtual shared_ptr<TaskIndependentLandmarkCutHeuristic> create_component(
+        const plugins::Options &opts) const override {
+        return plugins::make_shared_from_arg_tuples_NEW<
+            TaskIndependentLandmarkCutHeuristic>(
+            get_heuristic_arguments_from_options(opts));
     }
 };
 

@@ -8,7 +8,6 @@
 
 #include <memory>
 
-
 class OpenListFactory : public Component {
 public:
     OpenListFactory() = default;

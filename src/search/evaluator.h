@@ -2,7 +2,6 @@
 #define EVALUATOR_H
 
 #include "component.h"
-
 #include "evaluation_result.h"
 
 #include "utils/logging.h"

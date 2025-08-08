@@ -40,10 +40,11 @@ int main(int argc, const char **argv) {
             unit_cost = task_properties::is_unit_cost(task_proxy);
         }
 
-        shared_ptr<TaskIndependentComponentType<SearchAlgorithm>> ti_search_algorithm =
-            parse_cmd_line(argc, argv, unit_cost);
+        shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>
+            ti_search_algorithm = parse_cmd_line(argc, argv, unit_cost);
 
-        shared_ptr<SearchAlgorithm> search_algorithm = ti_search_algorithm->get_task_specific(tasks::g_root_task, 0);
+        shared_ptr<SearchAlgorithm> search_algorithm =
+            ti_search_algorithm->get_task_specific(tasks::g_root_task, 0);
 
         utils::Timer search_timer;
         search_algorithm->search();

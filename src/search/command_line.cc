@@ -84,12 +84,14 @@ static vector<string> replace_old_style_predefinitions(
     return new_args;
 }
 
-static shared_ptr<TaskIndependentComponentType<SearchAlgorithm>> parse_cmd_line_aux(const vector<string> &args) {
+static shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>
+parse_cmd_line_aux(const vector<string> &args) {
     string plan_filename = "sas_plan";
     int num_previously_generated_plans = 0;
     bool is_part_of_anytime_portfolio = false;
 
-    using TISearchPtr = shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>;
+    using TISearchPtr =
+        shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>;
     TISearchPtr ti_search_algorithm = nullptr;
     // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
@@ -107,7 +109,8 @@ static shared_ptr<TaskIndependentComponentType<SearchAlgorithm>> parse_cmd_line_
                 parser::ASTNodePtr parsed = parser::parse(tokens);
                 parser::DecoratedASTNodePtr decorated = parsed->decorate();
                 plugins::Any constructed = decorated->construct();
-                ti_search_algorithm = plugins::any_cast<TISearchPtr>(constructed);
+                ti_search_algorithm =
+                    plugins::any_cast<TISearchPtr>(constructed);
             } catch (const plugins::BadAnyCast &) {
                 input_error(
                     "Could not interpret the argument of --search as a search algorithm.");

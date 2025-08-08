@@ -87,7 +87,9 @@ tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
         utils::get_log_arguments_from_options(opts));
 }
 
-static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentComponentType<Evaluator>> {
+static class EvaluatorCategoryPlugin
+    : public plugins::TypedCategoryPlugin<
+          TaskIndependentComponentType<Evaluator>> {
 public:
     EvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {
         document_synopsis(

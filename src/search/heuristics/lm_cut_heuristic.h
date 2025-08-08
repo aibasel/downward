@@ -11,10 +11,10 @@ class Options;
 
 namespace lm_cut_heuristic {
 using LandmarkCutHeuristicArgs = WrapArgs<
-    const std::shared_ptr<AbstractTask>,    // &transform,
-    bool,    // cache_estimates,
-    const std::string,    // &description,
-    utils::Verbosity    // verbosity);
+    const std::shared_ptr<AbstractTask>, // &transform,
+    bool, // cache_estimates,
+    const std::string, // &description,
+    utils::Verbosity // verbosity);
     >;
 class LandmarkCutLandmarks;
 
@@ -25,9 +25,8 @@ class LandmarkCutHeuristic : public Heuristic {
 public:
     LandmarkCutHeuristic(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<AbstractTask> &transform,
-        bool cache_estimates, const std::string &description,
-        utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+        const std::string &description, utils::Verbosity verbosity);
 };
 }
 

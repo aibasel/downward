@@ -39,9 +39,8 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
 }
 
 SearchAlgorithm::SearchAlgorithm(
-    const shared_ptr<AbstractTask> &_task,
-    OperatorCost cost_type, int bound, double max_time,
-    const string &description, utils::Verbosity verbosity)
+    const shared_ptr<AbstractTask> &_task, OperatorCost cost_type, int bound,
+    double max_time, const string &description, utils::Verbosity verbosity)
     : description(description),
       status(IN_PROGRESS),
       solution_found(false),
@@ -235,7 +234,9 @@ tuple<bool, bool, int> get_successors_order_arguments_from_options(
         utils::get_rng_arguments_from_options(opts));
 }
 
-static class SearchAlgorithmCategoryPlugin : public plugins::TypedCategoryPlugin<TaskIndependentComponentType<SearchAlgorithm>> {
+static class SearchAlgorithmCategoryPlugin
+    : public plugins::TypedCategoryPlugin<
+          TaskIndependentComponentType<SearchAlgorithm>> {
 public:
     SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("SearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.
