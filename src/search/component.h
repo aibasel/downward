@@ -17,12 +17,17 @@ public:
     virtual ~Component() = default;
 };
 
+template<typename T>
+struct is_component {
+    static constexpr bool value = std::is_base_of<Component, T>::value;
+};
+
 class TaskIndependentComponentBase {
 protected:
     const std::string description;
     const utils::Verbosity verbosity;
     mutable utils::LogProxy log;
-    PlanManager plan_manager;
+    PlanManager plan_manager; // only used for SearchAlgorithms
 public:
     TaskIndependentComponentBase(
         const std::string &description, utils::Verbosity verbosity)
@@ -31,7 +36,9 @@ public:
           log(utils::get_log_for_verbosity(verbosity)) {
     }
     virtual ~TaskIndependentComponentBase() = default;
-    virtual std::string get_description() const = 0;
+    std::string get_description() const {
+        return description;
+    }
     PlanManager &get_plan_manager() {
         return plan_manager;
     }
@@ -53,9 +60,6 @@ public:
         const std::string &description, utils::Verbosity verbosity)
         : TaskIndependentComponentBase(description, verbosity) {
     }
-    std::string get_description() const override {
-        return description;
-    }
     virtual std::shared_ptr<TaskSpecificComponentType> get_task_specific(
         const std::shared_ptr<AbstractTask> &task, int depth = -1) const = 0;
     virtual std::shared_ptr<TaskSpecificComponentType> get_task_specific(
@@ -66,38 +70,21 @@ public:
 // = = = wrapping logic = = =
 
 template<typename T>
-struct is_component {
-    static constexpr bool value = std::is_base_of<Component, T>::value;
-};
-
-// return without wrapping if it is
-// no shared pointer to component
-// nor vector to shared pointerss to components
-template<typename T>
 struct wrap_if_component {
-    using type = T;
+    using type = std::conditional_t<
+        is_component<T>::value, TaskIndependentComponentType<T>, T>;
 };
 
-// wrap shared pointer to component
-// to shared pointer to TaskIndependentComponentType
 template<typename T>
 struct wrap_if_component<std::shared_ptr<T>> {
-    using type = std::conditional_t<
-        is_component<T>::value,
-        std::shared_ptr<TaskIndependentComponentType<T>>, std::shared_ptr<T>>;
+    using type = std::shared_ptr<typename wrap_if_component<T>::type>;
 };
 
-// wrap vector of shared pointers to components
-// to vector of shared pointers to TaskIndependentComponentType
 template<typename T>
-struct wrap_if_component<std::vector<std::shared_ptr<T>>> {
-    using type = std::conditional_t<
-        is_component<T>::value,
-        std::vector<std::shared_ptr<TaskIndependentComponentType<T>>>,
-        std::vector<std::shared_ptr<T>>>;
+struct wrap_if_component<std::vector<T>> {
+    using type = std::vector<typename wrap_if_component<T>::type>;
 };
 
-// wrap if component but preserve const
 template<typename T>
 struct wrap_if_component<const T> {
     using type = std::add_const_t<typename wrap_if_component<T>::type>;
@@ -116,9 +103,9 @@ struct wrap_entry_wise<std::tuple<Args...>> {
     using type = std::tuple<wrap_if_component_t<Args>...>;
 };
 
-// receive type list, wrap them in a tuple (because we only want to use them as
-// the one and only field in TaskIndependentComponentFeature besides description
-// and verbosity), forward it to wrap each entry one by one.
+// receive type list, wrap them in a tuple because we only want to use them as
+// the one and only field in TaskIndependentComponentFeature,
+// forward it to wrap each entry one by one.
 template<typename... Ts>
 using WrapArgs = wrap_entry_wise<std::tuple<Ts...>>::type;
 
@@ -133,7 +120,7 @@ class TaskIndependentComponentFeature
         const std::shared_ptr<AbstractTask> &task,
         std::unique_ptr<ComponentMap> &component_map,
         int depth) const override {
-        return construct_task_specific_from_tuple<TaskSpecificComponentFeature>(
+        return create_task_specific_from_tuple<TaskSpecificComponentFeature>(
             args, task, component_map, depth);
     }
 public:
@@ -188,12 +175,12 @@ public:
 };
 
 template<typename R, typename TupleT>
-std::shared_ptr<R> construct_task_specific_from_tuple(
+std::shared_ptr<R> create_task_specific_from_tuple(
     TupleT &&_tuple, const std::shared_ptr<AbstractTask> &task,
     std::unique_ptr<ComponentMap> &component_map, int depth = -1) {
     return std::apply(
         [&task, &component_map, &depth]<typename... Ts>(Ts &&...args) {
-            return std::make_shared<R>(construct_task_specific(
+            return std::make_shared<R>(get_task_specific_entry(
                 std::forward<Ts>(args), task, component_map, depth)...);
         },
         std::tuple_cat(std::tuple(task), std::forward<TupleT>(_tuple)));
@@ -201,7 +188,7 @@ std::shared_ptr<R> construct_task_specific_from_tuple(
 
 // shared_pointer<TI<T>>
 template<typename T>
-std::shared_ptr<T> construct_task_specific(
+std::shared_ptr<T> get_task_specific_entry(
     const std::shared_ptr<TaskIndependentComponentType<T>> &ptr,
     const std::shared_ptr<AbstractTask> &task,
     std::unique_ptr<ComponentMap> &component_map, int depth) {
@@ -213,24 +200,24 @@ std::shared_ptr<T> construct_task_specific(
 
 // vectors
 template<typename T>
-auto construct_task_specific(
+auto get_task_specific_entry(
     const std::vector<T> &vec, const std::shared_ptr<AbstractTask> &task,
     std::unique_ptr<ComponentMap> &component_map, int depth) {
-    std::vector<decltype(construct_task_specific(
+    std::vector<decltype(get_task_specific_entry(
         vec[0], task, component_map, depth))>
         result;
     result.reserve(vec.size());
 
     for (const auto &elem : vec) {
         result.push_back(
-            construct_task_specific(elem, task, component_map, depth));
+            get_task_specific_entry(elem, task, component_map, depth));
     }
     return result;
 }
 
 // other leafes
 template<typename T>
-T construct_task_specific(
+T get_task_specific_entry(
     const T &elem, [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
     [[maybe_unused]] std::unique_ptr<ComponentMap> &component_map,
     [[maybe_unused]] int depth) {
