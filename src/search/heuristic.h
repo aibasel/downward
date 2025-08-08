@@ -91,7 +91,6 @@ public:
     virtual int get_cached_estimate(const State &state) const override;
 };
 
-
 extern void add_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<
