@@ -12,6 +12,7 @@ using namespace std;
 
 namespace weighted_evaluator {
 WeightedEvaluator::WeightedEvaluator(
+    [[maybe_unused]] const shared_ptr<AbstractTask> &task,
     const shared_ptr<Evaluator> &eval, int weight, const string &description,
     utils::Verbosity verbosity)
     : Evaluator(false, false, false, description, verbosity),
@@ -40,8 +41,12 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
     evaluator->get_path_dependent_evaluators(evals);
 }
 
-class WeightedEvaluatorFeature
-    : public plugins::TypedFeature<Evaluator, WeightedEvaluator> {
+using TaskIndependentWeightedEvaluator = TaskIndependentComponentFeature<
+    WeightedEvaluator, Evaluator, WeightedEvaluatorArgs>;
+
+class WeightedEvaluatorFeature : public plugins::TypedFeature<
+                                     TaskIndependentComponentType<Evaluator>,
+                                     TaskIndependentWeightedEvaluator> {
 public:
     WeightedEvaluatorFeature() : TypedFeature("weight") {
         document_subcategory("evaluators_basic");
@@ -49,15 +54,19 @@ public:
         document_synopsis(
             "Multiplies the value of the evaluator with the given weight.");
 
-        add_option<shared_ptr<Evaluator>>("eval", "evaluator");
+        add_option<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
+            "eval", "evaluator");
         add_option<int>("weight", "weight");
         add_evaluator_options_to_feature(*this, "weight");
     }
 
-    virtual shared_ptr<WeightedEvaluator> create_component(
+    virtual shared_ptr<TaskIndependentWeightedEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<WeightedEvaluator>(
-            opts.get<shared_ptr<Evaluator>>("eval"), opts.get<int>("weight"),
+        return plugins::make_shared_from_arg_tuples_NEW<
+            TaskIndependentWeightedEvaluator>(
+            opts.get<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
+                "eval"),
+            opts.get<int>("weight"),
             get_evaluator_arguments_from_options(opts));
     }
 };
