@@ -34,7 +34,7 @@ values listed (here Enum0, Enum1, Enum2).
 
 Some possible calls for this specification (with `X` and `Xi` having type_x):
 
--   `name(P, [Q], R)`: `s` and `v` have their default values `v1` and `Enum1`
+-   `name(P, [Q], R)`: `s` and `t` have their default values `v1` and `Enum1`
 -   `name(P, [Q1, Q2], R, t=Enum2)`: `s` has its default value `v1`
 -   `name(t=Enum1, r=R, qs=[Q1, Q2], s=S1, p=P)` is equivalent to
     `name(P, [Q1, Q2], R, S1, Enum1)`

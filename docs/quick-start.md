@@ -1,7 +1,7 @@
 # Quick start
 This page provides you with different options for setting up Fast Downward on your machine. 
 
-Fast Downward is released in four flavours: tarball, Apptainer (formerly
+Fast Downward is released in four flavours: Tarball, Apptainer (formerly
 known as Singularity), Docker and Vagrant. Here we provide instructions
 to get you started as quickly as possible. You can find more usage
 information at [planner usage](planner-usage.md).
@@ -33,7 +33,7 @@ You can run the planner as follows:
 
     ./fast-downward.sif <your-planner-options>
 
-Assume you want to solve a planning task from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
+Assume you want to solve a planning task (e.g. from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks)) using A* search with the LM-cut heuristic. To do so you can run the following:
 
     ./fast-downward.sif <domain.pddl> <task.pddl> --search "astar(lmcut())"
 
@@ -55,7 +55,7 @@ Note:
 -   The Docker image for Fast Downward is installed on your machine as a side-effect of the command.
 -   You can use the Docker flag `-rm` for cleaning up the container (recommended)
 
-Assume you want to solve a planning task from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
+Assume you want to solve a planning task (e.g. from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks)) using A* search with the LM-cut heuristic. To do so you can run the following:
 
     sudo docker run --rm -v <path-to-benchmarks>:/benchmarks aibasel/downward \
     /benchmarks/<domain.pddl> /benchmarks/<task.pddl> \
@@ -94,7 +94,7 @@ Otherwise, you can set up your virtual machine directly from the `<my-fast-downw
 
 #### LP solvers
 
-The !SoPlex LP solver is included automatically. If you want to also
+The SoPlex LP solver is included automatically. If you want to also
 use the CPLEX LP solver within the planner, its installer file must
 be present in the directory `<path-to-lp-installers>`. As of Fast
 Downward 23.06, you will need CPLEX 22.1.1 (installer filename
@@ -115,7 +115,7 @@ You can run the planner from *within* the vagrant VM as follows:
 
     downward/fast-downward.py <your-planner-options>
 
-Assume you want to solve a planning task from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
+Assume you want to solve a planning task (e.g. from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks)) using A* search with the LM-cut heuristic. To do so you can run the following:
 
 ``` bash
 # From the <my-fast-downward-vm> directory 
@@ -152,7 +152,7 @@ for a complete description on how to build the planner from source.
 
 #### Tarball
 Download the tarball from the [latest release](https://www.fast-downward.org/latest/releases).
-E.g. to build Fast Downward 24.06.01 download the tarball from [here](https://www.fast-downward.org/latest/releases/24.06/#downloads) and run the following: 
+E.g. to build Fast Downward 24.06.01 download the tarball from the [Fast Downward 24.06 release page](https://www.fast-downward.org/latest/releases/24.06/#downloads) and run the following: 
 
     tar -xvzf fast-downward-24.06.1.tar.gz
     cd fast-downward-24.06.1
@@ -166,7 +166,7 @@ You can run the planner as follows:
 
     ./fast-downward.py <your-planner-options>
 
-Assume you want to solve a planning task from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
+Assume you want to solve a planning task (e.g. from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks)) using A* search with the LM-cut heuristic. To do so you can run the following:
 
     ./fast-downward.py <domain.pddl> <task.pddl> --search "astar(lmcut())"
 
@@ -178,4 +178,4 @@ See more planner options at [planner usage](planner-usage.md).
 -   See other ways of invoking the planner on
     [planner usage](planner-usage.md).
 -   Read about recommended [experiment
-    setups](https://github.com/aibasel/downward#scientific-experiments).
+    setups](/#scientific_experiments).

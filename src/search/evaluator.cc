@@ -93,7 +93,7 @@ public:
     EvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {
         document_synopsis(
             "An evaluator specification is either a newly created evaluator "
-            "instance or an evaluator that has been defined previously. "
+            "instance or an evaluator that has been [defined previously ../search-plugin-syntax.md#variables_as_parameters]. "
             "This page describes how one can specify a new evaluator instance.\n\n"
             "For evaluators that are heuristic, it is stated which of the following properties hold:\n\n"
             " * **admissible:** h(s) <= h*(s) for all states s\n"

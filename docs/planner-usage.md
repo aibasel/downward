@@ -83,7 +83,7 @@ introduce significant inefficiencies. For example, an invocation like
     --search "lazy_greedy([ff()], preferred=[ff()])"
 
 looks plausible, yet is hugely inefficient since it will compute the FF
-heuristic twice per state. To circumvent this a `let`-expression could be used (see [here](search-plugin-syntax.md#variables_as_parameters)):
+heuristic twice per state. To circumvent this a [`let`-expression](search-plugin-syntax.md#variables_as_parameters) could be used:
 
     ./fast-downward.py [<domain.pddl>] <task.pddl> \
     --search "let(hff, ff(), lazy_greedy([hff], preferred=[hff]))"
@@ -96,7 +96,7 @@ To validate a plan found by some search algorithm using [VAL](https://github.com
 
 Note:
 
--   [VAL](https://github.com/KCL-Planning/VAL) must be available locally and added to the PATH (detailed steps [here](https://github.com/aibasel/downward/blob/main/BUILD.md#optional-plan-validator)).
+-   [VAL](https://github.com/KCL-Planning/VAL) must be available locally and added to the PATH (see [Plan Validator](https://github.com/aibasel/downward/blob/main/BUILD.md#optional-plan-validator)).
 -   The search algorithm must be specified (see [Search component](#search_component)).
 
 ## Exit codes
