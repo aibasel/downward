@@ -35,7 +35,8 @@ class PatternCollectionGeneratorManualFeature
     : public plugins::TypedFeature<
           PatternCollectionGenerator, PatternCollectionGeneratorManual> {
 public:
-    PatternCollectionGeneratorManualFeature() : TypedFeature("manual_patterns") {
+    PatternCollectionGeneratorManualFeature()
+        : TypedFeature("manual_patterns") {
         document_title("Manual patterns");
         add_list_option<Pattern>(
             "patterns",

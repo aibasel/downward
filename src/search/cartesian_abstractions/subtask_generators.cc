@@ -184,7 +184,8 @@ class TaskDuplicatorFeature
 public:
     TaskDuplicatorFeature() : TypedFeature("original") {
         document_title("No abstraction");
-        document_synopsis("Copies of the original task are used as subproblems.");
+        document_synopsis(
+            "Copies of the original task are used as subproblems.");
         add_option<int>(
             "copies", "number of task copies", "1",
             plugins::Bounds("1", "infinity"));
@@ -204,7 +205,8 @@ class GoalDecompositionFeature
 public:
     GoalDecompositionFeature() : TypedFeature("goals") {
         document_title("Abstraction by goals");
-        document_synopsis("For each goal atom of the original task one subproblem is generated having only the atom as its goal.");
+        document_synopsis(
+            "For each goal atom of the original task one subproblem is generated having only the atom as its goal.");
         add_fact_order_option(*this);
     }
 
@@ -222,7 +224,8 @@ class LandmarkDecompositionFeature
 public:
     LandmarkDecompositionFeature() : TypedFeature("landmarks") {
         document_title("Abstraction by landmarks");
-        document_synopsis("For each fact landmark of the delete relaxation of the original task one subproblem is generated having only the landmark as goal. This is a generalization of abstractions by goals.");
+        document_synopsis(
+            "For each fact landmark of the delete relaxation of the original task one subproblem is generated having only the landmark as goal. This is a generalization of abstractions by goals.");
         add_fact_order_option(*this);
         add_option<bool>(
             "combine_facts", "combine landmark facts with domain abstraction",
@@ -243,7 +246,8 @@ static class SubtaskGeneratorCategoryPlugin
     : public plugins::TypedCategoryPlugin<SubtaskGenerator> {
 public:
     SubtaskGeneratorCategoryPlugin() : TypedCategoryPlugin("SubtaskGenerator") {
-        document_synopsis("This page describes different subtask (abstraction) generators. They are used by the Evaluator#additive_cartesian_cegar_heuristic .");
+        document_synopsis(
+            "This page describes different subtask (abstraction) generators. They are used by the Evaluator#additive_cartesian_cegar_heuristic .");
     }
 } _category_plugin;
 
