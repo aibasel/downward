@@ -34,24 +34,25 @@ public:
         document_note("Closed nodes", "Closed node are not re-opened");
         document_note(
             "Equivalent statements using general eager search",
-            "\n```\n--search let(h2, eval2, eager_greedy([eval1, h2], preferred=[h2], boost=100))\n```\n"
+            "\n```\n--search \"let(h2, eval2, eager_greedy([eval1, h2], preferred=[h2], boost=100))\"\n```\n"
             "is equivalent to\n"
-            "```\n--search let(h1, eval1, let(h2, eval2, eager(alt([single(h1), single(h1, pref_only=true), single(h2), \n"
-            "                    single(h2, pref_only=true)], boost=100),\n"
-            "               preferred=[h2])))\n```\n"
+            "```\n--search \"let(h1, eval1, let(h2, eval2,\n"
+            "              eager(alt([single(h1), single(h1, pref_only=true), \n"
+            "                         single(h2), single(h2, pref_only=true)], boost=100),\n"
+            "                    preferred=[h2])))\"\n```\n"
             "------------------------------------------------------------\n"
-            "```\n--search eager_greedy([eval1, eval2])\n```\n"
+            "```\n--search \"eager_greedy([eval1, eval2])\"\n```\n"
             "is equivalent to\n"
-            "```\n--search eager(alt([single(eval1), single(eval2)]))\n```\n"
+            "```\n--search \"eager(alt([single(eval1), single(eval2)]))\"\n```\n"
             "------------------------------------------------------------\n"
-            "```\n--search let(h1, eval1, eager_greedy([h1], preferred=[h1]))\n```\n"
+            "```\n--search \"let(h1, eval1, eager_greedy([h1], preferred=[h1]))\"\n```\n"
             "is equivalent to\n"
-            "```\n--search let(h1, eval1, eager(alt([single(h1), single(h1, pref_only=true)]),\n"
-            "               preferred=[h1]))\n```\n"
+            "```\n--search \"let(h1, eval1, eager(alt([single(h1), single(h1, pref_only=true)]),\n"
+            "                               preferred=[h1]))\"\n```\n"
             "------------------------------------------------------------\n"
-            "```\n--search eager_greedy([eval1])\n```\n"
+            "```\n--search \"eager_greedy([eval1])\"\n```\n"
             "is equivalent to\n"
-            "```\n--search eager(single(eval1))\n```\n",
+            "```\n--search \"eager(single(eval1))\"\n```\n",
             true);
     }
 

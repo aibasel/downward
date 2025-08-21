@@ -57,7 +57,9 @@ Note:
 
 Assume you want to solve a planning task from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks) using A* search with the LM-cut heuristic. To do so you can run the following:
 
-    sudo docker run --rm -v <path-to-benchmarks>:/benchmarks aibasel/downward /benchmarks/<domain.pddl> /benchmarks/<task.pddl> --search "astar(lmcut())"
+    sudo docker run --rm -v <path-to-benchmarks>:/benchmarks aibasel/downward \
+    /benchmarks/<domain.pddl> /benchmarks/<task.pddl> \
+    --search "astar(lmcut())"
 
 Here `<path-to-benchmarks>` refers to your local directory containing your domain and task file.
 
@@ -125,7 +127,9 @@ vagrant upload <path-to-benchmarks> benchmarks/
 vagrant ssh
 
 # Run the planner.
-downward/fast-downward.py /vagrant/benchmarks/<domain.pddl> /vagrant/benchmarks/<task.pddl> --search "astar(lmcut())"
+downward/fast-downward.py \
+/vagrant/benchmarks/<domain.pddl> /vagrant/benchmarks/<task.pddl> \
+--search "astar(lmcut())"
 
 # Log out from the VM.
 logout

@@ -106,7 +106,7 @@ but will extend the support for other feature types in the future.
 
 Variables can be defined with
 
-    let(var_name, definition, expression)
+    "let(var_name, definition, expression)"
 
 -   `var_name`: a variable name that should denote the feature
 -   `definition`: an expression defining the value of the variable
@@ -133,12 +133,12 @@ option. They are internally converted to `let`-expressions.
 
 The command lines
 
-    --evaluator name=definition --search expression
-    --landmarks name=definition --search expression
+    --evaluator "name=definition" --search "expression"
+    --landmarks "name=definition" --search "expression"
 
 are both transformed to
 
-    --search let(name, definition, expression)
+    --search "let(name, definition, expression)"
 
 ## Conditional options
 

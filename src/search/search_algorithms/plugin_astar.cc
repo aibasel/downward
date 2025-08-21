@@ -31,10 +31,11 @@ public:
             "This option is currently only present for the A* algorithm.");
         document_note(
             "Equivalent statements using general eager search",
-            "\n```\n--search astar(evaluator)\n```\n"
+            "\n```\n--search \"astar(evaluator)\"\n```\n"
             "is equivalent to\n"
-            "```\n--search let(h, evaluator, eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
-            "               reopen_closed=true, f_eval=sum([g(), h])))\n"
+            "```\n--search \"let(h, evaluator, \n"
+            "              eager(tiebreaking([sum([g(), h]), h], unsafe_pruning=false),\n"
+            "                    reopen_closed=true, f_eval=sum([g(), h])))\"\n"
             "```\n",
             true);
     }

@@ -31,7 +31,8 @@ Note:
 ## Search component
 To run a search on a PDDL input task run the following:
 
-    ./fast-downward.py [<domain.pddl>] <task.pddl> --search "<some-search-algorithm>(<algorithm-parameters>)"
+    ./fast-downward.py [<domain.pddl>] <task.pddl> \
+    --search "<some-search-algorithm>(<algorithm-parameters>)"
 
 Note:
 
@@ -78,17 +79,20 @@ The search options are built with flexibility in mind, not ease of
 use. It is very easy to use option settings that look plausible, yet
 introduce significant inefficiencies. For example, an invocation like
 
-    ./fast-downward.py [<domain.pddl>] <task.pddl> --search "lazy_greedy([ff()], preferred=[ff()])"
+    ./fast-downward.py [<domain.pddl>] <task.pddl> \
+    --search "lazy_greedy([ff()], preferred=[ff()])"
 
 looks plausible, yet is hugely inefficient since it will compute the FF
 heuristic twice per state. To circumvent this a `let`-expression could be used (see [here](search-plugin-syntax.md#variables_as_parameters)):
 
-    ./fast-downward.py [<domain.pddl>] <task.pddl> --search "let(hff, ff(), lazy_greedy([hff], preferred=[hff]))"
+    ./fast-downward.py [<domain.pddl>] <task.pddl> \
+    --search "let(hff, ff(), lazy_greedy([hff], preferred=[hff]))"
 
 ## Validating plans
 To validate a plan found by some search algorithm using [VAL](https://github.com/KCL-Planning/VAL) run the following:
 
-    ./fast-downward.py --validate [<domain.pddl>] <task.pddl> --search "<some-search-algorithm>(<algorithm-parameters>)"
+    ./fast-downward.py --validate [<domain.pddl>] <task.pddl> \
+    --search "<some-search-algorithm>(<algorithm-parameters>)"
 
 Note:
 

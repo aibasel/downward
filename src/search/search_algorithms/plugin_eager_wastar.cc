@@ -30,8 +30,8 @@ public:
             "Note",
             "Eager weighted A* search uses an alternation open list "
             "while A* search uses a tie-breaking open list. Consequently, "
-            "\n```\n--search eager_wastar([h()], w=1)\n```\n"
-            "is **not** equivalent to\n```\n--search astar(h())\n```\n");
+            "\n```\n--search \"eager_wastar([h()], w=1)\"\n```\n"
+            "is **not** equivalent to\n```\n--search \"astar(h())\"\n```\n");
     }
 
     virtual shared_ptr<eager_search::EagerSearch> create_component(
