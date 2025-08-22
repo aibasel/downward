@@ -19,7 +19,7 @@ static class AbstractTaskCategoryPlugin
     : public plugins::TypedCategoryPlugin<AbstractTask> {
 public:
     AbstractTaskCategoryPlugin() : TypedCategoryPlugin("AbstractTask") {
-        // TODO: Replace empty string by synopsis for the wiki page.
-        document_synopsis("");
+        document_synopsis(
+            "This page describes available transformations of the root task.");
     }
 } _category_plugin;

@@ -136,14 +136,19 @@ public:
             "To obtain the configurations called dyn-MIASM described in the paper, "
             "use the following configuration of the merge-and-shrink heuristic "
             "and adapt the tie-breaking criteria of {{{total_order}}} as desired:\n"
-            "{{{\nmerge_and_shrink(merge_strategy=merge_stateless(merge_selector="
-            "score_based_filtering(scoring_functions=[sf_miasm(shrink_strategy="
-            "shrink_bisimulation(greedy=false),max_states=50000,"
-            "threshold_before_merge=1),total_order(atomic_ts_order=reverse_level,"
-            "product_ts_order=new_to_old,atomic_before_product=true)])),"
-            "shrink_strategy=shrink_bisimulation(greedy=false),label_reduction="
-            "exact(before_shrinking=true,before_merging=false),max_states=50000,"
-            "threshold_before_merge=1)\n}}}");
+            "{{{\nmerge_and_shrink(\n"
+            "   merge_strategy=merge_stateless(\n"
+            "       merge_selector=score_based_filtering(\n"
+            "           scoring_functions=[\n"
+            "               sf_miasm(shrink_strategy=shrink_bisimulation(greedy=false),\n"
+            "                        max_states=50000,threshold_before_merge=1),\n"
+            "               total_order(atomic_ts_order=reverse_level,\n"
+            "                           product_ts_order=new_to_old,\n"
+            "                           atomic_before_product=true)])),\n"
+            "   shrink_strategy=shrink_bisimulation(greedy=false),\n"
+            "   label_reduction=exact(before_shrinking=true,before_merging=false),\n"
+            "   max_states=50000,\n"
+            "   threshold_before_merge=1)\n}}}");
         document_note(
             "Note",
             "Unless you know what you are doing, we recommend using the same "

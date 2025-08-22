@@ -222,11 +222,15 @@ public:
             "can be expensive to compute, we also recommend limiting time by "
             "setting {{{main_loop_max_time}}} to a finite value. A sensible "
             "value would be half of the time allocated for the planner.\n"
-            "{{{\nmerge_and_shrink(shrink_strategy=shrink_bisimulation(greedy=false),"
-            "merge_strategy=merge_sccs(order_of_sccs=topological,merge_selector="
-            "score_based_filtering(scoring_functions=[goal_relevance(),dfp(),"
-            "total_order()])),label_reduction=exact(before_shrinking=true,"
-            "before_merging=false),max_states=50k,threshold_before_merge=1)\n}}}\n");
+            "{{{\nmerge_and_shrink(\n"
+            "   merge_strategy=merge_sccs(\n"
+            "       order_of_sccs=topological,\n"
+            "       merge_selector=score_based_filtering(\n"
+            "           scoring_functions=[goal_relevance(),dfp(),total_order()])),\n"
+            "   shrink_strategy=shrink_bisimulation(greedy=false),\n"
+            "   label_reduction=exact(before_shrinking=true,before_merging=false),\n"
+            "   max_states=50k,\n"
+            "   threshold_before_merge=1)\n}}}\n");
 
         document_language_support("action costs", "supported");
         document_language_support(

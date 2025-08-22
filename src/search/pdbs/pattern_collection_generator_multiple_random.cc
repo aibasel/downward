@@ -59,7 +59,7 @@ class PatternCollectionGeneratorMultipleRandomFeature
 public:
     PatternCollectionGeneratorMultipleRandomFeature()
         : TypedFeature("random_patterns") {
-        document_title("Multiple Random Patterns");
+        document_title("Multiple random patterns");
         document_synopsis(
             "This pattern collection generator implements the 'multiple "
             "randomized causal graph' (mRCG) algorithm described in experiments of "

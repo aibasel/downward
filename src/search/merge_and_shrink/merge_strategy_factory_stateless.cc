@@ -56,14 +56,17 @@ public:
             "Note",
             "Examples include the DFP merge strategy, which can be obtained using:\n"
             "{{{\n"
-            "merge_strategy=merge_stateless(merge_selector=score_based_filtering("
-            "scoring_functions=[goal_relevance,dfp,total_order(<order_option>))]))"
+            "merge_strategy=merge_stateless(\n"
+            "   merge_selector=score_based_filtering(\n"
+            "       scoring_functions=[goal_relevance,dfp,total_order(<order_option>))]))"
             "\n}}}\n"
             "and the (dynamic/score-based) MIASM strategy, which can be obtained "
             "using:\n"
             "{{{\n"
-            "merge_strategy=merge_stateless(merge_selector=score_based_filtering("
-            "scoring_functions=[sf_miasm(<shrinking_options>),total_order(<order_option>)]"
+            "merge_strategy=merge_stateless(\n"
+            "   merge_selector=score_based_filtering(\n"
+            "       scoring_functions=[sf_miasm(<shrinking_options>),\n"
+            "                          total_order(<order_option>)]))"
             "\n}}}");
     }
 

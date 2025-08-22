@@ -1,3 +1,4 @@
+This page should help you decide which Fast Downward setup is most suitable for your use case.
 Back to [quick start](quick-start.md).
 
 ## Run-time comparison

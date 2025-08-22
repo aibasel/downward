@@ -1047,7 +1047,7 @@ class LandmarkFactoryHMFeature
 public:
     LandmarkFactoryHMFeature() : TypedFeature("lm_hm") {
         // document_group("");
-        document_title("h^m Landmarks");
+        document_title("h^m landmarks");
         document_synopsis(
             "The landmark generation method introduced in the "
             "following paper" +

@@ -52,7 +52,8 @@ static class PatternCollectionGeneratorCategoryPlugin
 public:
     PatternCollectionGeneratorCategoryPlugin()
         : TypedCategoryPlugin("PatternCollectionGenerator") {
-        document_synopsis("Factory for pattern collections");
+        document_synopsis(
+            "This page describes generators for collections of patterns.");
     }
 } _category_plugin_collection;
 
@@ -60,7 +61,8 @@ static class PatternGeneratorCategoryPlugin
     : public plugins::TypedCategoryPlugin<PatternGenerator> {
 public:
     PatternGeneratorCategoryPlugin() : TypedCategoryPlugin("PatternGenerator") {
-        document_synopsis("Factory for single patterns");
+        document_synopsis(
+            "This page describes generators for single patterns.");
     }
 } _category_plugin_single;
 }

@@ -605,9 +605,10 @@ public:
             "To compute the optimal delete-relaxation heuristic h^+^, use"
             "integer variables and some way of enforcing acyclicity (other "
             "than \"none\"). For example\n"
-            "{{{\noperatorcounting([delete_relaxation_rr_constraints("
-            "acyclicity_type=vertex_elimination, use_integer_vars=true)], "
-            "use_integer_operator_counts=true))\n}}}\n");
+            "{{{\noperatorcounting(\n"
+            "   [delete_relaxation_rr_constraints(acyclicity_type=vertex_elimination,\n"
+            "                                     use_integer_vars=true)],\n"
+            "   use_integer_operator_counts=true)\n}}}\n");
         document_note(
             "Note",
             "While the delete-relaxation constraints by Imai and Fukunaga "

@@ -55,6 +55,7 @@ class PatternCollectionGeneratorComboFeature
           PatternCollectionGenerator, PatternCollectionGeneratorCombo> {
 public:
     PatternCollectionGeneratorComboFeature() : TypedFeature("combo") {
+        document_title("Combo");
         add_option<int>(
             "max_states", "maximum abstraction size for combo strategy",
             "1000000", plugins::Bounds("1", "infinity"));

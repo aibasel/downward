@@ -282,8 +282,9 @@ public:
         document_note(
             "Example",
             "To compute the optimal delete-relaxation heuristic h^+^, use\n"
-            "{{{\noperatorcounting([delete_relaxation_if_constraints(use_time_vars=true, "
-            "use_integer_vars=true)], use_integer_operator_counts=true))\n}}}\n");
+            "{{{\noperatorcounting(\n"
+            "   [delete_relaxation_if_constraints(use_time_vars=true,use_integer_vars=true)],\n"
+            "   use_integer_operator_counts=true)\n}}}\n");
         document_note(
             "Note",
             "For best performance we recommend using the alternative "
