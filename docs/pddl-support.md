@@ -66,8 +66,8 @@ section describes how Fast Downward handles such cases.
   is used in the `:predicates` section. For example, defining `(somepredicate ?x -
   (either type1 type2))` is allowed (but ignored). Furthermore, type validity
   is not checked for the `:predicates` section.
-- **empty list before type specification:** While most (if not all) PDDL
-  specifications require at least one token before a type specification (e. g.
+- **empty list before type specification:** While all PDDL specifications we
+  know require at least one token before a type specification (e. g.
   `(someobject1 someobject2 - sometype)`), Fast Downward only prints a warning
   instead of raising an error when nothing is given before a type
   specification (e. g. `(- sometype)`). The reason is that the woodworking
