@@ -139,6 +139,20 @@ std::shared_ptr<T> make_shared_from_arg_tuples(Arguments... arguments) {
             std::tuple<Arguments...>(std::forward<Arguments>(arguments)...)));
 }
 
+// issue559 the following should replace the one above.
+/*
+  Expects constructor arguments of T. Consecutive arguments may be
+  grouped in a tuple. All arguments will be combined as one tuple.
+  All inner tuples will be flattened before calling the constructor.
+  The resulting tuple will be used as argument to make_shared.
+  Relies on the constructor of T expecting only a single tuple as argument.
+*/
+template<typename T, typename... Arguments>
+std::shared_ptr<T> make_shared_from_arg_tuples_NEW(Arguments... arguments) {
+    return std::make_shared<T>(std::move(utils::flatten_tuple(
+        std::tuple<Arguments...>(std::forward<Arguments>(arguments)...))));
+}
+
 class Plugin {
 public:
     Plugin();
@@ -261,8 +275,8 @@ void Feature::add_option(
     const std::string &default_value, const Bounds &bounds,
     bool lazy_construction) {
     arguments.emplace_back(
-        key, help, TypeRegistry::instance()->get_type<T>(), default_value,
-        bounds, lazy_construction);
+        key, help, TypeRegistry::instance()->get_type<wrap_if_component_t<T>>(),
+        default_value, bounds, lazy_construction);
 }
 
 template<typename T>
