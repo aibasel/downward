@@ -91,7 +91,7 @@ using WeightedEval = weighted_evaluator::WeightedEvaluator;
 // g_eval, weight, eval)); issue559// issue559//    return
 // create_alternation_open_list_factory_aux(f_evals, preferred, boost);
 // issue559//}
-// start issue559 comment
+// end issue559 comment
 
 pair<
     shared_ptr<TaskIndependentComponentType<OpenListFactory>>,
