@@ -139,8 +139,7 @@ public:
         document_title("Iterated search");
         document_synopsis("");
 
-        add_list_option<
-            shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>(
+        add_list_option<shared_ptr<SearchAlgorithm>>(
             "search_algorithms", "list of search algorithms for each phase",
             "");
         add_option<bool>(
@@ -184,15 +183,11 @@ public:
     virtual shared_ptr<TaskIndependentIteratedSearch> create_component(
         const plugins::Options &opts) const override {
         utils::verify_list_not_empty(
-            opts.get_list<
-                shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>(
-                "search_algorithms"),
+            opts.get_list<shared_ptr<SearchAlgorithm>>("search_algorithms"),
             "search_algorithms");
         return make_shared<TaskIndependentIteratedSearch>(tuple(
             pair(
-                opts.get_list<
-                    shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>(
-                    "search_algorithms"),
+                opts.get_list<shared_ptr<SearchAlgorithm>>("search_algorithms"),
                 HackPlaceholder()),
             opts.get<bool>("pass_bound"), opts.get<bool>("repeat_last"),
             opts.get<bool>("continue_on_fail"),

@@ -19,9 +19,8 @@ public:
             "as f-function. "
             "We break ties using the evaluator. Closed nodes are re-opened.");
 
-        add_option<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
-            "eval", "evaluator for h-value");
-        add_option<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
+        add_option<shared_ptr<Evaluator>>("eval", "evaluator for h-value");
+        add_option<shared_ptr<Evaluator>>(
             "lazy_evaluator",
             "An evaluator that re-evaluates a state before it is expanded.",
             plugins::ArgumentInfo::NO_DEFAULT);
@@ -49,8 +48,7 @@ public:
         plugins::Options options_copy(opts);
         auto temp = search_common::
             create_task_independent_astar_open_list_factory_and_f_eval(
-                opts.get<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
-                    "eval"),
+                opts.get<shared_ptr<Evaluator>>("eval"),
                 opts.get<string>("description"),
                 opts.get<utils::Verbosity>("verbosity"));
         options_copy.set("open", temp.first);
@@ -61,16 +59,10 @@ public:
         options_copy.set("preferred", preferred_list);
         return plugins::make_shared_from_arg_tuples_NEW<
             TaskIndependentEagerSearch>(
-            options_copy
-                .get<shared_ptr<TaskIndependentComponentType<OpenListFactory>>>(
-                    "open"),
+            options_copy.get<shared_ptr<OpenListFactory>>("open"),
             options_copy.get<bool>("reopen_closed"),
-            options_copy
-                .get<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
-                    "f_eval", nullptr),
-            options_copy
-                .get_list<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
-                    "preferred"),
+            options_copy.get<shared_ptr<Evaluator>>("f_eval", nullptr),
+            options_copy.get_list<shared_ptr<Evaluator>>("preferred"),
             eager_search::get_eager_search_arguments_from_options(
                 options_copy));
     }

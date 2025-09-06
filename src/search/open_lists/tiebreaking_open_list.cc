@@ -175,8 +175,7 @@ public:
         document_title("Tie-breaking open list");
         document_synopsis("");
 
-        add_list_option<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
-            "evals", "evaluators");
+        add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
         add_option<bool>(
             "unsafe_pruning",
             "allow unsafe pruning when the main evaluator regards a state a dead end",

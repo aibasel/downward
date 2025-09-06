@@ -11,8 +11,7 @@ class Options;
 
 namespace weighted_evaluator {
 using WeightedEvaluatorArgs = WrapArgs<
-    const std::shared_ptr<TaskIndependentComponentType<Evaluator>>, int,
-    const std::string, utils::Verbosity>;
+    const std::shared_ptr<Evaluator>, int, const std::string, utils::Verbosity>;
 class WeightedEvaluator : public Evaluator {
     std::shared_ptr<Evaluator> evaluator;
     int weight;

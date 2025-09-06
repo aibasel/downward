@@ -17,15 +17,14 @@ public:
         document_title("Eager best-first search");
         document_synopsis("");
 
-        add_option<shared_ptr<TaskIndependentComponentType<OpenListFactory>>>(
-            "open", "open list");
+        add_option<shared_ptr<OpenListFactory>>("open", "open list");
         add_option<bool>("reopen_closed", "reopen closed nodes", "false");
-        add_option<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
+        add_option<shared_ptr<Evaluator>>(
             "f_eval",
             "set evaluator for jump statistics. "
             "(Optional; if no evaluator is used, jump statistics will not be displayed.)",
             plugins::ArgumentInfo::NO_DEFAULT);
-        add_list_option<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
+        add_list_option<shared_ptr<Evaluator>>(
             "preferred", "use preferred operators of these evaluators", "[]");
         eager_search::add_eager_search_options_to_feature(*this, "eager");
     }
@@ -34,13 +33,10 @@ public:
         const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples_NEW<
             TaskIndependentEagerSearch>(
-            opts.get<shared_ptr<TaskIndependentComponentType<OpenListFactory>>>(
-                "open"),
+            opts.get<shared_ptr<OpenListFactory>>("open"),
             opts.get<bool>("reopen_closed"),
-            opts.get<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
-                "f_eval", nullptr),
-            opts.get_list<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
-                "preferred"),
+            opts.get<shared_ptr<Evaluator>>("f_eval", nullptr),
+            opts.get_list<shared_ptr<Evaluator>>("preferred"),
             eager_search::get_eager_search_arguments_from_options(opts));
     }
 };

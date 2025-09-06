@@ -275,8 +275,8 @@ void Feature::add_option(
     const std::string &default_value, const Bounds &bounds,
     bool lazy_construction) {
     arguments.emplace_back(
-        key, help, TypeRegistry::instance()->get_type<T>(), default_value,
-        bounds, lazy_construction);
+        key, help, TypeRegistry::instance()->get_type<wrap_if_component_t<T>>(),
+        default_value, bounds, lazy_construction);
 }
 
 template<typename T>
