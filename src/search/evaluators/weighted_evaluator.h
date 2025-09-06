@@ -4,7 +4,6 @@
 #include "../evaluator.h"
 
 #include <memory>
-#include <tuple>
 
 namespace plugins {
 class Options;

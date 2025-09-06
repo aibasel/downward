@@ -7,6 +7,7 @@
 #include "utils/logging.h"
 
 #include <memory>
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -113,6 +114,15 @@ struct wrap_entry_wise<std::tuple<Args...>> {
 // receive type list, wrap them in a tuple because we only want to use them as
 // the one and only field in TaskIndependentComponentFeature,
 // forward it to wrap each entry one by one.
+
+
+/*
+ * Create a tuple with the provided arguments but wrap each
+ * type `T` that has Component as base class with
+ * `TaskIndependentComponentFeature<T>`.
+ * For forward declaration of T add
+ * `template <> struct is_component<T> : std::true_type {};`
+*/
 template<typename... Ts>
 using WrapArgs = wrap_entry_wise<std::tuple<Ts...>>::type;
 

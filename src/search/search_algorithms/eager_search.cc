@@ -344,9 +344,9 @@ void add_eager_search_options_to_feature(
     add_search_algorithm_options_to_feature(feature, description);
 }
 
-tuple<
+WrapArgs<
     shared_ptr<PruningMethod>,
-    shared_ptr<TaskIndependentComponentType<Evaluator>>, OperatorCost, int,
+    shared_ptr<Evaluator>, OperatorCost, int,
     double, string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(

@@ -10,9 +10,6 @@ namespace plugins {
 class Options;
 }
 
-template<typename T>
-class TaskIndependentComponentType;
-
 namespace sum_evaluator {
 using SumEvaluatorArgs = WrapArgs<
     const std::vector<std::shared_ptr<Evaluator>>, const std::string,

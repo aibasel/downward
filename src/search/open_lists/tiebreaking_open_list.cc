@@ -8,9 +8,7 @@
 #include <cassert>
 #include <deque>
 #include <map>
-#include <string>
 #include <utility>
-#include <vector>
 
 using namespace std;
 
@@ -144,7 +142,7 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
 TieBreakingOpenListFactory::TieBreakingOpenListFactory(
     [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
-    bool pref_only, const string description, utils::Verbosity verbosity)
+    bool pref_only, const string &description, utils::Verbosity verbosity)
     : evals(evals),
       unsafe_pruning(unsafe_pruning),
       pref_only(pref_only),

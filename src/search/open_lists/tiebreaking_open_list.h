@@ -4,6 +4,7 @@
 #include "../open_list_factory.h"
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace tiebreaking_open_list {
@@ -23,7 +24,7 @@ public:
     TieBreakingOpenListFactory(
         const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<Evaluator>> &evals,
-        bool unsafe_pruning, bool pref_only, const std::string description,
+        bool unsafe_pruning, bool pref_only, const std::string &description,
         utils::Verbosity verbosity);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
