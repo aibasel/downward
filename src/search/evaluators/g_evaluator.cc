@@ -24,8 +24,7 @@ using TaskIndependentGEvaluator =
     TaskIndependentComponentFeature<GEvaluator, Evaluator, GEvaluatorArgs>;
 
 class GEvaluatorFeature
-    : public plugins ::TypedFeature<
-          TaskIndependentComponentType<Evaluator>, TaskIndependentGEvaluator> {
+    : public plugins ::TypedFeature<Evaluator, TaskIndependentGEvaluator> {
 public:
     GEvaluatorFeature() : TypedFeature("g") {
         document_subcategory("evaluators_basic");

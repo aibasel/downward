@@ -350,9 +350,7 @@ WrapArgs<
 get_eager_search_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         get_search_pruning_arguments_from_options(opts),
-        make_tuple(
-            opts.get<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
-                "lazy_evaluator", nullptr)),
+        make_tuple(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
         get_search_algorithm_arguments_from_options(opts));
 }
 }

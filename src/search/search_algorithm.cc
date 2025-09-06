@@ -235,8 +235,7 @@ tuple<bool, bool, int> get_successors_order_arguments_from_options(
 }
 
 static class SearchAlgorithmCategoryPlugin
-    : public plugins::TypedCategoryPlugin<
-          TaskIndependentComponentType<SearchAlgorithm>> {
+    : public plugins::TypedCategoryPlugin<SearchAlgorithm> {
 public:
     SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("SearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.

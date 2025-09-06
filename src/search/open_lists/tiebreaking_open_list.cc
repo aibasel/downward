@@ -168,8 +168,7 @@ using TaskIndependentTieBreakingOpenListFactory =
 
 class TieBreakingOpenListFeature
     : public plugins::TypedFeature<
-          TaskIndependentComponentType<OpenListFactory>,
-          TaskIndependentTieBreakingOpenListFactory> {
+          OpenListFactory, TaskIndependentTieBreakingOpenListFactory> {
 public:
     TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
         document_title("Tie-breaking open list");
@@ -187,8 +186,7 @@ public:
     create_component(const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples_NEW<
             TaskIndependentTieBreakingOpenListFactory>(
-            opts.get_list<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
-                "evals"),
+            opts.get_list<shared_ptr<Evaluator>>("evals"),
             opts.get<bool>("unsafe_pruning"),
             get_open_list_arguments_from_options(opts),
             "DEFAULT_OPENLIST_DESCRIPTION_ISSUE559", utils::Verbosity::NORMAL);

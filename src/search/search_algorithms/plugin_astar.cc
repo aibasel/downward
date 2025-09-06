@@ -9,8 +9,7 @@ namespace plugin_astar {
 using TaskIndependentEagerSearch = TaskIndependentComponentFeature<
     eager_search::EagerSearch, SearchAlgorithm, eager_search::EagerSearchArgs>;
 class AStarSearchFeature : public plugins::TypedFeature<
-                               TaskIndependentComponentType<SearchAlgorithm>,
-                               TaskIndependentEagerSearch> {
+                               SearchAlgorithm, TaskIndependentEagerSearch> {
 public:
     AStarSearchFeature() : TypedFeature("astar") {
         document_title("A* search (eager)");

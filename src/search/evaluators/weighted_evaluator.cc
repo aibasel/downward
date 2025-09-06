@@ -44,9 +44,9 @@ void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
 using TaskIndependentWeightedEvaluator = TaskIndependentComponentFeature<
     WeightedEvaluator, Evaluator, WeightedEvaluatorArgs>;
 
-class WeightedEvaluatorFeature : public plugins::TypedFeature<
-                                     TaskIndependentComponentType<Evaluator>,
-                                     TaskIndependentWeightedEvaluator> {
+class WeightedEvaluatorFeature
+    : public plugins::TypedFeature<
+          Evaluator, TaskIndependentWeightedEvaluator> {
 public:
     WeightedEvaluatorFeature() : TypedFeature("weight") {
         document_subcategory("evaluators_basic");
@@ -54,8 +54,7 @@ public:
         document_synopsis(
             "Multiplies the value of the evaluator with the given weight.");
 
-        add_option<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
-            "eval", "evaluator");
+        add_option<shared_ptr<Evaluator>>("eval", "evaluator");
         add_option<int>("weight", "weight");
         add_evaluator_options_to_feature(*this, "weight");
     }
@@ -64,9 +63,7 @@ public:
         const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples_NEW<
             TaskIndependentWeightedEvaluator>(
-            opts.get<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
-                "eval"),
-            opts.get<int>("weight"),
+            opts.get<shared_ptr<Evaluator>>("eval"), opts.get<int>("weight"),
             get_evaluator_arguments_from_options(opts));
     }
 };

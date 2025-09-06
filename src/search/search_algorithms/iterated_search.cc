@@ -131,9 +131,9 @@ void IteratedSearch::save_plan_if_necessary() {
 using TaskIndependentIteratedSearch = TaskIndependentComponentFeature<
     IteratedSearch, SearchAlgorithm, IteratedSearchArgs>;
 
-class IteratedSearchFeature : public plugins::TypedFeature<
-                                  TaskIndependentComponentType<SearchAlgorithm>,
-                                  TaskIndependentIteratedSearch> {
+class IteratedSearchFeature
+    : public plugins::TypedFeature<
+          SearchAlgorithm, TaskIndependentIteratedSearch> {
 public:
     IteratedSearchFeature() : TypedFeature("iterated") {
         document_title("Iterated search");

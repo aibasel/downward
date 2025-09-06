@@ -27,9 +27,8 @@ int SumEvaluator::combine_values(const vector<int> &values) {
 using TaskIndependentSumEvaluator =
     TaskIndependentComponentFeature<SumEvaluator, Evaluator, SumEvaluatorArgs>;
 
-class SumEvaluatorFeature : public plugins::TypedFeature<
-                                TaskIndependentComponentType<Evaluator>,
-                                TaskIndependentSumEvaluator> {
+class SumEvaluatorFeature
+    : public plugins::TypedFeature<Evaluator, TaskIndependentSumEvaluator> {
 public:
     SumEvaluatorFeature() : TypedFeature("sum") {
         document_subcategory("evaluators_basic");

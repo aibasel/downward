@@ -10,8 +10,7 @@ using TaskIndependentEagerSearch = TaskIndependentComponentFeature<
     eager_search::EagerSearch, SearchAlgorithm, eager_search::EagerSearchArgs>;
 
 class EagerSearchFeature : public plugins::TypedFeature<
-                               TaskIndependentComponentType<SearchAlgorithm>,
-                               TaskIndependentEagerSearch> {
+                               SearchAlgorithm, TaskIndependentEagerSearch> {
 public:
     EagerSearchFeature() : TypedFeature("eager") {
         document_title("Eager best-first search");

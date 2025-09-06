@@ -34,9 +34,9 @@ int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
 using TaskIndependentBlindSearchHeuristic = TaskIndependentComponentFeature<
     BlindSearchHeuristic, Evaluator, BlindSearchHeuristicArgs>;
 
-class BlindSearchHeuristicFeature : public plugins::TypedFeature<
-                                        TaskIndependentComponentType<Evaluator>,
-                                        TaskIndependentBlindSearchHeuristic> {
+class BlindSearchHeuristicFeature
+    : public plugins::TypedFeature<
+          Evaluator, TaskIndependentBlindSearchHeuristic> {
 public:
     BlindSearchHeuristicFeature() : TypedFeature("blind") {
         document_title("Blind heuristic");

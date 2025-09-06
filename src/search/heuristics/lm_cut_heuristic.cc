@@ -39,9 +39,9 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 using TaskIndependentLandmarkCutHeuristic = TaskIndependentComponentFeature<
     LandmarkCutHeuristic, Evaluator, LandmarkCutHeuristicArgs>;
 
-class LandmarkCutHeuristicFeature : public plugins::TypedFeature<
-                                        TaskIndependentComponentType<Evaluator>,
-                                        TaskIndependentLandmarkCutHeuristic> {
+class LandmarkCutHeuristicFeature
+    : public plugins::TypedFeature<
+          Evaluator, TaskIndependentLandmarkCutHeuristic> {
 public:
     LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
