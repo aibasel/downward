@@ -9,10 +9,12 @@
 #include <vector>
 
 class Evaluator;
-template <> struct is_component<Evaluator> : std::true_type {};
+template<>
+struct is_component<Evaluator> : std::true_type {};
 class PruningMethod;
 class OpenListFactory;
-template <> struct is_component<OpenListFactory> : std::true_type {};
+template<>
+struct is_component<OpenListFactory> : std::true_type {};
 
 namespace plugins {
 class Feature;
@@ -79,9 +81,8 @@ public:
 extern void add_eager_search_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern WrapArgs<
-    std::shared_ptr<PruningMethod>,
-    std::shared_ptr<Evaluator>, OperatorCost, int,
-    double, std::string, utils::Verbosity>
+    std::shared_ptr<PruningMethod>, std::shared_ptr<Evaluator>, OperatorCost,
+    int, double, std::string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts);
 }
 

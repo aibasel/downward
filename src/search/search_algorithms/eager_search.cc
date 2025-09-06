@@ -345,9 +345,8 @@ void add_eager_search_options_to_feature(
 }
 
 WrapArgs<
-    shared_ptr<PruningMethod>,
-    shared_ptr<Evaluator>, OperatorCost, int,
-    double, string, utils::Verbosity>
+    shared_ptr<PruningMethod>, shared_ptr<Evaluator>, OperatorCost, int, double,
+    string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         get_search_pruning_arguments_from_options(opts),

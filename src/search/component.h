@@ -18,17 +18,15 @@ public:
     virtual ~Component() = default;
 };
 
-
-// Not using constexpr with std::is_base_of as this does not work for forward declarations
-template <typename T, typename = void>
+// Not using constexpr with std::is_base_of as this does not work for forward
+// declarations
+template<typename T, typename = void>
 struct is_component : std::false_type {};
 
-template <typename T>
-struct is_component<T,
-    std::void_t<decltype(static_cast<Component*>(std::declval<T*>()))>>
+template<typename T>
+struct is_component<
+    T, std::void_t<decltype(static_cast<Component *>(std::declval<T *>()))>>
     : std::true_type {};
-
-
 
 class TaskIndependentComponentBase {
 protected:
@@ -115,14 +113,13 @@ struct wrap_entry_wise<std::tuple<Args...>> {
 // the one and only field in TaskIndependentComponentFeature,
 // forward it to wrap each entry one by one.
 
-
 /*
  * Create a tuple with the provided arguments but wrap each
  * type `T` that has Component as base class with
  * `TaskIndependentComponentFeature<T>`.
  * For forward declaration of T add
  * `template <> struct is_component<T> : std::true_type {};`
-*/
+ */
 template<typename... Ts>
 using WrapArgs = wrap_entry_wise<std::tuple<Ts...>>::type;
 

@@ -63,9 +63,7 @@ void add_combining_evaluator_options_to_feature(
     add_evaluator_options_to_feature(feature, description);
 }
 
-WrapArgs<
-    vector<shared_ptr<Evaluator>>, const string,
-    utils::Verbosity>
+WrapArgs<vector<shared_ptr<Evaluator>>, const string, utils::Verbosity>
 get_combining_evaluator_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
