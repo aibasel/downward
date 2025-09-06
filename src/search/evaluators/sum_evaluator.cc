@@ -41,7 +41,7 @@ public:
 
     virtual shared_ptr<TaskIndependentSumEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples_NEW<
+        return plugins::make_shared_from_arg_tuples<
             TaskIndependentSumEvaluator>(
             combining_evaluator::get_combining_evaluator_arguments_from_options(
                 opts));

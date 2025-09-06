@@ -29,7 +29,7 @@ using IteratedSearchArgs = WrapArgs<
     OperatorCost, // cost_type,
     int, // bound,
     double, // max_time,
-    const std::string, //&name,
+    std::string, //&name,
     utils::Verbosity // verbosity
     >;
 

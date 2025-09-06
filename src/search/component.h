@@ -148,6 +148,13 @@ public:
           args(std::move(_args)) {
     }
 
+    template<typename... Args>
+    explicit TaskIndependentComponentFeature(Args &&...args_)
+        requires std::constructible_from<FeatureArguments, Args...>
+        : TaskIndependentComponentFeature(
+              FeatureArguments(std::forward<Args>(args_)...)) {
+    }
+
     std::shared_ptr<TaskSpecificType> get_task_specific(
         const std::shared_ptr<AbstractTask> &task,
         int depth = -1) const override {

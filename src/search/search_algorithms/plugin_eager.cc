@@ -30,8 +30,7 @@ public:
 
     virtual shared_ptr<TaskIndependentEagerSearch> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples_NEW<
-            TaskIndependentEagerSearch>(
+        return plugins::make_shared_from_arg_tuples<TaskIndependentEagerSearch>(
             opts.get<shared_ptr<OpenListFactory>>("open"),
             opts.get<bool>("reopen_closed"),
             opts.get<shared_ptr<Evaluator>>("f_eval", nullptr),

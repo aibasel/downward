@@ -36,8 +36,7 @@ public:
 
     virtual shared_ptr<TaskIndependentGEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples_NEW<
-            TaskIndependentGEvaluator>(
+        return plugins::make_shared_from_arg_tuples<TaskIndependentGEvaluator>(
             get_evaluator_arguments_from_options(opts));
     }
 };

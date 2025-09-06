@@ -61,7 +61,7 @@ public:
 
     virtual shared_ptr<TaskIndependentWeightedEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples_NEW<
+        return plugins::make_shared_from_arg_tuples<
             TaskIndependentWeightedEvaluator>(
             opts.get<shared_ptr<Evaluator>>("eval"), opts.get<int>("weight"),
             get_evaluator_arguments_from_options(opts));

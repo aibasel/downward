@@ -100,12 +100,12 @@ create_task_independent_astar_open_list_factory_and_f_eval(
     const shared_ptr<TaskIndependentComponentType<Evaluator>> &h_eval,
     const string &description, utils::Verbosity verbosity) {
     shared_ptr<TIGEval> g =
-        make_shared<TIGEval>(tuple(description + ".g_eval", verbosity));
+        make_shared<TIGEval>(description + ".g_eval", verbosity);
     shared_ptr<TaskIndependentComponentType<Evaluator>> f =
-        make_shared<TISumEval>(tuple(
+        make_shared<TISumEval>(
             vector<shared_ptr<TaskIndependentComponentType<Evaluator>>>(
                 {g, h_eval}),
-            description + ".f_eval", verbosity));
+            description + ".f_eval", verbosity);
     vector<shared_ptr<TaskIndependentComponentType<Evaluator>>> evals = {
         f, h_eval};
 
@@ -113,9 +113,8 @@ create_task_independent_astar_open_list_factory_and_f_eval(
         make_shared<TaskIndependentComponentFeature<
             tiebreaking_open_list::TieBreakingOpenListFactory, OpenListFactory,
             tiebreaking_open_list::TieBreakingOpenListFactoryArgs>>(
-            tuple(
-                evals, false, false, description + ".tiebreaking_openlist",
-                verbosity));
+            evals, false, false, description + ".tiebreaking_openlist",
+            verbosity);
     return make_pair(open, f);
 }
 }

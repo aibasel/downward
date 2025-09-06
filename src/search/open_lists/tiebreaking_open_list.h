@@ -9,11 +9,11 @@
 
 namespace tiebreaking_open_list {
 using TieBreakingOpenListFactoryArgs = WrapArgs<
-    const std::vector<
+    std::vector<
         std::shared_ptr<TaskIndependentComponentType<Evaluator>>>, // evals
     bool, // unsafe_pruning
     bool, // pref_only
-    const std::string, utils::Verbosity>;
+    std::string, utils::Verbosity>;
 class TieBreakingOpenListFactory : public OpenListFactory {
     std::vector<std::shared_ptr<Evaluator>> evals;
     bool unsafe_pruning;

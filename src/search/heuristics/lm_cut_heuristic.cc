@@ -60,7 +60,7 @@ public:
 
     virtual shared_ptr<TaskIndependentLandmarkCutHeuristic> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples_NEW<
+        return plugins::make_shared_from_arg_tuples<
             TaskIndependentLandmarkCutHeuristic>(
             get_heuristic_arguments_from_options(opts));
     }

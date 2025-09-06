@@ -22,16 +22,16 @@ class Feature;
 
 namespace eager_search {
 using EagerSearchArgs = WrapArgs<
-    const std::shared_ptr<OpenListFactory>, // open,
+    std::shared_ptr<OpenListFactory>, // open,
     bool, // reopen_closed,
-    const std::shared_ptr<Evaluator>, // f_eval,
-    const std::vector<std::shared_ptr<Evaluator>>, // preferred,
-    const std::shared_ptr<PruningMethod>, // pruning,
-    const std::shared_ptr<Evaluator>, // lazy_evaluator,
+    std::shared_ptr<Evaluator>, // f_eval,
+    std::vector<std::shared_ptr<Evaluator>>, // preferred,
+    std::shared_ptr<PruningMethod>, // pruning,
+    std::shared_ptr<Evaluator>, // lazy_evaluator,
     OperatorCost, // cost_type,
     int, // bound,
     double, // max_time
-    const std::string, // description
+    std::string, // description
     utils::Verbosity // verbositiy
     >;
 

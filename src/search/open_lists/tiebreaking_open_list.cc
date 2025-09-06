@@ -184,7 +184,7 @@ public:
 
     virtual shared_ptr<TaskIndependentTieBreakingOpenListFactory>
     create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples_NEW<
+        return plugins::make_shared_from_arg_tuples<
             TaskIndependentTieBreakingOpenListFactory>(
             opts.get_list<shared_ptr<Evaluator>>("evals"),
             opts.get<bool>("unsafe_pruning"),

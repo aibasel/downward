@@ -12,8 +12,7 @@ class Options;
 
 namespace sum_evaluator {
 using SumEvaluatorArgs = WrapArgs<
-    const std::vector<std::shared_ptr<Evaluator>>, const std::string,
-    utils::Verbosity>;
+    std::vector<std::shared_ptr<Evaluator>>, std::string, utils::Verbosity>;
 class SumEvaluator : public combining_evaluator::CombiningEvaluator {
 protected:
     virtual int combine_values(const std::vector<int> &values) override;
