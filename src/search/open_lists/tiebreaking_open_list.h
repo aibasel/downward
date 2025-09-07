@@ -8,9 +8,9 @@
 #include <vector>
 
 namespace tiebreaking_open_list {
-using TieBreakingOpenListFactoryArgs = WrapArgs<
+using TieBreakingOpenListFactoryArgs = std::tuple<
     std::vector<
-        std::shared_ptr<TaskIndependentComponentType<Evaluator>>>, // evals
+        std::shared_ptr<Evaluator>>, // evals
     bool, // unsafe_pruning
     bool, // pref_only
     std::string, utils::Verbosity>;

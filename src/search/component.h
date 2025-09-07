@@ -5,6 +5,7 @@
 
 #include "utils/hash.h"
 #include "utils/logging.h"
+#include "utils/tuples.h"
 
 #include <memory>
 #include <string>
@@ -112,21 +113,37 @@ struct wrap_entry_wise<std::tuple<Args...>> {
 // the one and only field in TaskIndependentComponentFeature,
 // forward it to wrap each entry one by one.
 
+template <typename Tuple>
+struct wrap_helper;
+
+template <typename... Ts>
+struct wrap_helper<std::tuple<Ts...>> {
+    using type = wrap_entry_wise<std::tuple<Ts...>>::type;
+};
+
+/*
+ * Create a new tuple with the provided tuple arguments but wrap each
+ * type `T` that has Component as base class with
+ * `TaskIndependentComponentFeature<T>`.
+ */
+template <typename Tuple>
+using WrapArgs2 = typename wrap_helper<Tuple>::type;
+
 /*
  * Create a tuple with the provided arguments but wrap each
  * type `T` that has Component as base class with
  * `TaskIndependentComponentFeature<T>`.
- * For forward declaration of T add
- * `template <> struct is_component<T> : std::true_type {};`
  */
 template<typename... Ts>
 using WrapArgs = wrap_entry_wise<std::tuple<Ts...>>::type;
 
+
 template<
     typename TaskSpecificComponentFeature, typename TaskSpecificType,
-    typename FeatureArguments>
+    typename UnwrappedFeatureArguments>
 class TaskIndependentComponentFeature
     : public TaskIndependentComponentType<TaskSpecificType> {
+    using FeatureArguments = WrapArgs2<UnwrappedFeatureArguments>;
     FeatureArguments args;
 
     virtual std::shared_ptr<TaskSpecificType> create_task_specific(

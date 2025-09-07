@@ -4,7 +4,7 @@
 #include "../evaluator.h"
 
 namespace g_evaluator {
-using GEvaluatorArgs = WrapArgs<std::string, utils::Verbosity>;
+using GEvaluatorArgs = std::tuple<std::string, utils::Verbosity>;
 class GEvaluator : public Evaluator {
 public:
     GEvaluator(

@@ -4,7 +4,7 @@
 #include "../heuristic.h"
 
 namespace blind_search_heuristic {
-using BlindSearchHeuristicArgs = WrapArgs<
+using BlindSearchHeuristicArgs = std::tuple<
     std::shared_ptr<AbstractTask>, //&transform,
     bool, // cache_estimates,
     std::string, //&description,

@@ -11,7 +11,7 @@ class Options;
 }
 
 namespace sum_evaluator {
-using SumEvaluatorArgs = WrapArgs<
+using SumEvaluatorArgs = std::tuple<
     std::vector<std::shared_ptr<Evaluator>>, std::string, utils::Verbosity>;
 class SumEvaluator : public combining_evaluator::CombiningEvaluator {
 protected:

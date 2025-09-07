@@ -15,7 +15,7 @@ public:
         std::cout << "HACK :-(" << std::endl;
     }
 };
-using IteratedSearchArgs = WrapArgs<
+using IteratedSearchArgs = std::tuple<
     std::pair<
         std::vector<
             std::shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>,

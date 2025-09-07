@@ -21,7 +21,7 @@ class Feature;
 }
 
 namespace eager_search {
-using EagerSearchArgs = WrapArgs<
+using EagerSearchArgs = std::tuple<
     std::shared_ptr<OpenListFactory>, // open,
     bool, // reopen_closed,
     std::shared_ptr<Evaluator>, // f_eval,
