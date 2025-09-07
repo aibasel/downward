@@ -18,15 +18,14 @@ public:
     virtual ~Component() = default;
 };
 
-// Not using constexpr with std::is_base_of as this does not work for forward
-// declarations
-template<typename T, typename = void>
-struct is_component : std::false_type {};
+template<typename T>
+concept Complete = requires { sizeof(T); };
 
 template<typename T>
-struct is_component<
-    T, std::void_t<decltype(static_cast<Component *>(std::declval<T *>()))>>
-    : std::true_type {};
+struct is_component : std::false_type {};
+
+template<Complete T>
+struct is_component<T> : std::bool_constant<std::is_base_of_v<Component, T>> {};
 
 class TaskIndependentComponentBase {
 protected:
