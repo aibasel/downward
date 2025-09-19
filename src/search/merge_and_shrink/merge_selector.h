@@ -21,14 +21,14 @@ protected:
     virtual std::string name() const = 0;
     virtual void dump_selector_specific_options(utils::LogProxy &) const {
     }
-    
+
 public:
     MergeSelector() = default;
     virtual ~MergeSelector() = default;
     // Select a merge candidate from all possible candidates.
     std::pair<int, int> select_merge(const FactoredTransitionSystem &fts) const;
     /*
-     * Select a merge candidate from the given candidates, which must be valid 
+     * Select a merge candidate from the given candidates, which must be valid
      * candidates for the given FTS.
      */
     virtual std::pair<int, int> select_merge_from_candidates(

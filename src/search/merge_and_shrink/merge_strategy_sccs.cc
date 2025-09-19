@@ -56,8 +56,7 @@ pair<int, int> MergeStrategySCCs::get_next() {
     // Compute all merge candidates for the current set of indices.
     vector<pair<int, int>> merge_candidates;
     merge_candidates.reserve(
-        (current_ts_indices.size() * (current_ts_indices.size() - 1)) /
-        2);
+        (current_ts_indices.size() * (current_ts_indices.size() - 1)) / 2);
     assert(current_ts_indices.size() > 1);
     for (size_t i = 0; i < current_ts_indices.size(); ++i) {
         int ts_index1 = current_ts_indices[i];
@@ -70,8 +69,8 @@ pair<int, int> MergeStrategySCCs::get_next() {
     }
 
     // Select the next merge for the current set of indices.
-    pair<int, int> next_pair =
-        merge_selector->select_merge_from_candidates(fts, move(merge_candidates));
+    pair<int, int> next_pair = merge_selector->select_merge_from_candidates(
+        fts, move(merge_candidates));
 
     // Remove the two merged indices from the current index set.
     for (vector<int>::iterator it = current_ts_indices.begin();

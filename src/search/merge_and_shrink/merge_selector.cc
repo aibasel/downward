@@ -20,7 +20,7 @@ vector<pair<int, int>> MergeSelector::compute_merge_candidates(
     for (int ts_index1 = 0; ts_index1 < fts.get_size(); ++ts_index1) {
         if (fts.is_active(ts_index1)) {
             for (int ts_index2 = ts_index1 + 1; ts_index2 < fts.get_size();
-                    ++ts_index2) {
+                 ++ts_index2) {
                 if (fts.is_active(ts_index2)) {
                     merge_candidates.emplace_back(ts_index1, ts_index2);
                 }
@@ -30,11 +30,10 @@ vector<pair<int, int>> MergeSelector::compute_merge_candidates(
     return merge_candidates;
 }
 
-pair<int, int> MergeSelector::select_merge(const FactoredTransitionSystem &fts) const {
-    vector<pair<int, int>> merge_candidates =
-        compute_merge_candidates(fts);
+pair<int, int> MergeSelector::select_merge(
+    const FactoredTransitionSystem &fts) const {
+    vector<pair<int, int>> merge_candidates = compute_merge_candidates(fts);
     return select_merge_from_candidates(fts, move(merge_candidates));
-
 }
 
 void MergeSelector::dump_options(utils::LogProxy &log) const {
