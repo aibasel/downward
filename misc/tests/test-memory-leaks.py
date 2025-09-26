@@ -1,7 +1,6 @@
 import errno
 import os
-import pipes
-import re
+import shlex
 import subprocess
 import sys
 
@@ -36,7 +35,7 @@ SUPPRESSION_FILES = [
 ]
 
 def escape_list(l):
-    return " ".join(pipes.quote(x) for x in l)
+    return " ".join(shlex.quote(x) for x in l)
 
 
 def run_plan_script(task, config, custom_suppression_files):

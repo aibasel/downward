@@ -2,8 +2,8 @@
 
 import json
 import os
-import pipes
 import re
+import shlex
 import subprocess
 import sys
 
@@ -111,7 +111,7 @@ def check_search_code_with_clang_tidy():
         "-checks=-*," + ",".join(checks),
         f"-config={config}",
     ]
-    print("Running clang-tidy: " + " ".join(pipes.quote(x) for x in cmd))
+    print("Running clang-tidy: " + " ".join(shlex.quote(x) for x in cmd))
     print()
     # Don't check returncode here because clang-tidy exits with 1 if it finds any issues.
     try:
@@ -129,7 +129,7 @@ def check_search_code_with_clang_tidy():
         fix_cmd = cmd + [
             "-clang-apply-replacements-binary=clang-apply-replacements-16", "-fix"]
         print("\nYou may be able to fix some of these issues with the following command:\n" +
-            " ".join(pipes.quote(x) for x in fix_cmd))
+            " ".join(shlex.quote(x) for x in fix_cmd))
         sys.exit(1)
     elif not errors and p.returncode != 0:
         sys.exit(p.stderr)
