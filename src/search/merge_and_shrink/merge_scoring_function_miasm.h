@@ -13,9 +13,9 @@ class ShrinkStrategy;
 class MergeScoringFunctionMIASM : public MergeScoringFunction {
     const bool use_caching;
     std::shared_ptr<ShrinkStrategy> shrink_strategy;
-    const int max_states;
-    const int max_states_before_merge;
-    const int shrink_threshold_before_merge;
+    int max_states;
+    int max_states_before_merge;
+    int shrink_threshold_before_merge;
     utils::LogProxy silent_log;
     std::vector<std::vector<std::optional<double>>>
         cached_scores_by_merge_candidate_indices;

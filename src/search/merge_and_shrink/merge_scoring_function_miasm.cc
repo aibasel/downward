@@ -25,6 +25,11 @@ MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
       max_states_before_merge(max_states_before_merge),
       shrink_threshold_before_merge(threshold_before_merge),
       silent_log(utils::get_silent_log()) {
+    tie(this->max_states, this->max_states_before_merge,
+        this->shrink_threshold_before_merge) =
+        handle_shrink_limit_defaults(
+            this->max_states, this->max_states_before_merge,
+            this->shrink_threshold_before_merge, silent_log);
 }
 
 vector<double> MergeScoringFunctionMIASM::compute_scores(

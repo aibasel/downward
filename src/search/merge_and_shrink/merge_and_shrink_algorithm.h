@@ -54,7 +54,6 @@ class MergeAndShrinkAlgorithm {
     bool ran_out_of_time(const utils::CountdownTimer &timer) const;
     void statistics(int maximum_intermediate_size) const;
     void main_loop(FactoredTransitionSystem &fts, const TaskProxy &task_proxy);
-    void handle_shrink_limit_defaults();
 public:
     MergeAndShrinkAlgorithm(
         const std::shared_ptr<MergeStrategyFactory> &merge_strategy,
@@ -67,6 +66,9 @@ public:
         const TaskProxy &task_proxy);
 };
 
+extern std::tuple<int, int, int> handle_shrink_limit_defaults(
+    int max_states, int max_states_before_merge,
+    int shrink_threshold_before_merge, utils::LogProxy &log);
 extern void add_merge_and_shrink_algorithm_options_to_feature(
     plugins::Feature &feature);
 std::tuple<
