@@ -11,8 +11,8 @@
 using namespace std;
 
 namespace merge_and_shrink {
-vector<pair<int, int>> MergeSelector::compute_merge_candidates(
-    const FactoredTransitionSystem &fts) const {
+static vector<pair<int, int>> compute_merge_candidates(
+    const FactoredTransitionSystem &fts) {
     vector<pair<int, int>> merge_candidates;
     merge_candidates.reserve(
         (fts.get_num_active_entries() * (fts.get_num_active_entries() - 1)) /
@@ -32,8 +32,7 @@ vector<pair<int, int>> MergeSelector::compute_merge_candidates(
 
 pair<int, int> MergeSelector::select_merge(
     const FactoredTransitionSystem &fts) const {
-    vector<pair<int, int>> merge_candidates = compute_merge_candidates(fts);
-    return select_merge_from_candidates(fts, move(merge_candidates));
+    return select_merge_from_candidates(fts, compute_merge_candidates(fts));
 }
 
 void MergeSelector::dump_options(utils::LogProxy &log) const {

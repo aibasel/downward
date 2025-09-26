@@ -13,10 +13,6 @@ class LogProxy;
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class MergeSelector {
-private:
-    std::vector<std::pair<int, int>> compute_merge_candidates(
-        const FactoredTransitionSystem &fts) const;
-
 protected:
     virtual std::string name() const = 0;
     virtual void dump_selector_specific_options(utils::LogProxy &) const {
