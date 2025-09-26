@@ -56,13 +56,19 @@ MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(
       log(utils::get_log_for_verbosity(verbosity)),
       main_loop_max_time(main_loop_max_time),
       starting_peak_memory(0) {
-    handle_shrink_limit_defaults();
+    tie(this->max_states, this->max_states_before_merge,
+        this->shrink_threshold_before_merge) =
+        handle_shrink_limit_defaults(
+            this->max_states, this->max_states_before_merge,
+            this->shrink_threshold_before_merge, log);
     // Asserting fields (not parameters).
     assert(this->max_states_before_merge >= 1);
     assert(this->max_states >= this->max_states_before_merge);
 }
 
-void MergeAndShrinkAlgorithm::handle_shrink_limit_defaults() {
+tuple<int, int, int> handle_shrink_limit_defaults(
+    int max_states, int max_states_before_merge,
+    int shrink_threshold_before_merge, utils::LogProxy &log) {
     // If none of the two state limits has been set: set default limit.
     if (max_states == -1 && max_states_before_merge == -1) {
         max_states = 50000;
@@ -110,6 +116,8 @@ void MergeAndShrinkAlgorithm::handle_shrink_limit_defaults() {
                 << "correcting threshold." << endl;
         }
     }
+    return make_tuple(
+        max_states, max_states_before_merge, shrink_threshold_before_merge);
 }
 
 void MergeAndShrinkAlgorithm::report_peak_memory_delta(bool final) const {
