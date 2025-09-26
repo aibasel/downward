@@ -22,10 +22,9 @@ public:
     explicit MergeSelectorScoreBasedFiltering(
         const std::vector<std::shared_ptr<MergeScoringFunction>>
             &scoring_functions);
-    virtual std::pair<int, int> select_merge(
+    virtual std::pair<int, int> select_merge_from_candidates(
         const FactoredTransitionSystem &fts,
-        const std::vector<int> &indices_subset =
-            std::vector<int>()) const override;
+        std::vector<std::pair<int, int>> &&merge_candidates) const override;
     virtual void initialize(const TaskProxy &task_proxy) override;
     virtual bool requires_init_distances() const override;
     virtual bool requires_goal_distances() const override;
