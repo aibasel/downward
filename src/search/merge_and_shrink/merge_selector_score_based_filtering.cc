@@ -35,12 +35,9 @@ static vector<pair<int, int>> get_remaining_candidates(
     return result;
 }
 
-pair<int, int> MergeSelectorScoreBasedFiltering::select_merge(
+pair<int, int> MergeSelectorScoreBasedFiltering::select_merge_from_candidates(
     const FactoredTransitionSystem &fts,
-    const vector<int> &indices_subset) const {
-    vector<pair<int, int>> merge_candidates =
-        compute_merge_candidates(fts, indices_subset);
-
+    vector<pair<int, int>> &&merge_candidates) const {
     for (const shared_ptr<MergeScoringFunction> &scoring_function :
          merge_scoring_functions) {
         vector<double> scores =
