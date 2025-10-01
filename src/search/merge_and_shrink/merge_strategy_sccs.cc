@@ -26,8 +26,7 @@ MergeStrategySCCs::~MergeStrategySCCs() {
 }
 
 static void compute_merge_candidates(
-    const vector<int> &indices,
-    vector<pair<int, int>> &merge_candidates) {
+    const vector<int> &indices, vector<pair<int, int>> &merge_candidates) {
     for (size_t i = 0; i < indices.size(); ++i) {
         int ts_index1 = indices[i];
         for (size_t j = i + 1; j < indices.size(); ++j) {
@@ -48,7 +47,8 @@ pair<int, int> MergeStrategySCCs::get_next() {
         if (allow_working_on_all_clusters) {
             // Compute merge candidate pairs for each cluster.
             factor_to_cluster.resize(fts.get_size(), -1);
-            for (size_t cluster_index = 0; cluster_index < unfinished_clusters.size(); ++cluster_index) {
+            for (size_t cluster_index = 0;
+                 cluster_index < unfinished_clusters.size(); ++cluster_index) {
                 const vector<int> &cluster = unfinished_clusters[cluster_index];
                 for (int factor : cluster) {
                     factor_to_cluster[factor] = cluster_index;
@@ -61,32 +61,35 @@ pair<int, int> MergeStrategySCCs::get_next() {
             compute_merge_candidates(cluster, merge_candidates);
         }
         // Select the next merge from the allowed merge candidates.
-        pair<int, int > next_pair = merge_selector->select_merge_from_candidates(
+        pair<int, int> next_pair = merge_selector->select_merge_from_candidates(
             fts, move(merge_candidates));
 
         // Get the cluster from which we selected the next merge.
         int affected_cluster_index;
         if (allow_working_on_all_clusters) {
             affected_cluster_index = factor_to_cluster[next_pair.first];
-            assert(affected_cluster_index == factor_to_cluster[next_pair.second]);
+            assert(
+                affected_cluster_index == factor_to_cluster[next_pair.second]);
         } else {
             affected_cluster_index = 0;
         }
 
         // Remove the two merged indices from that cluster.
-        vector<int> &affected_cluster = unfinished_clusters[affected_cluster_index];
+        vector<int> &affected_cluster =
+            unfinished_clusters[affected_cluster_index];
         for (vector<int>::iterator it = affected_cluster.begin();
              it != affected_cluster.end();) {
             if (*it == next_pair.first || *it == next_pair.second) {
                 it = affected_cluster.erase(it);
-                } else {
+            } else {
                 ++it;
             }
         }
 
         if (affected_cluster.empty()) {
             // If the cluster got empty, remove it.
-            unfinished_clusters.erase(unfinished_clusters.begin() + affected_cluster_index);
+            unfinished_clusters.erase(
+                unfinished_clusters.begin() + affected_cluster_index);
         } else {
             // Otherwise, add the index of the to-be-created product factor.
             affected_cluster.push_back(fts.get_size());

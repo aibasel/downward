@@ -24,8 +24,7 @@ public:
     MergeStrategyFactorySCCs(
         const OrderOfSCCs &order_of_sccs,
         const std::shared_ptr<MergeSelector> &merge_selector,
-        bool allow_working_on_all_clusters,
-        utils::Verbosity verbosity);
+        bool allow_working_on_all_clusters, utils::Verbosity verbosity);
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,
         const FactoredTransitionSystem &fts) override;

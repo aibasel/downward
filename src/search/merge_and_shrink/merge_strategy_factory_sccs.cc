@@ -34,8 +34,7 @@ static bool compare_sccs_decreasing(
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(
     const OrderOfSCCs &order_of_sccs,
     const shared_ptr<MergeSelector> &merge_selector,
-    bool allow_working_on_all_clusters,
-    utils::Verbosity verbosity)
+    bool allow_working_on_all_clusters, utils::Verbosity verbosity)
     : MergeStrategyFactory(verbosity),
       order_of_sccs(order_of_sccs),
       merge_selector(merge_selector),
@@ -100,9 +99,7 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
     }
 
     return make_unique<MergeStrategySCCs>(
-        fts,
-        merge_selector,
-        move(non_singleton_cg_sccs),
+        fts, merge_selector, move(non_singleton_cg_sccs),
         allow_working_on_all_clusters);
 }
 
@@ -197,8 +194,7 @@ public:
             opts.get<OrderOfSCCs>("order_of_sccs"),
             opts.get<shared_ptr<MergeSelector>>("merge_selector"),
             opts.get<bool>("allow_working_on_all_clusters"),
-            get_merge_strategy_arguments_from_options(opts)
-            );
+            get_merge_strategy_arguments_from_options(opts));
     }
 };
 
