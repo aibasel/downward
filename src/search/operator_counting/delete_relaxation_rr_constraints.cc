@@ -602,7 +602,7 @@ public:
 
         document_note(
             "Example",
-            "To compute the optimal delete-relaxation heuristic h^+^, use"
+            "To compute the optimal delete-relaxation heuristic h^+^, use "
             "integer variables and some way of enforcing acyclicity (other "
             "than \"none\"). For example\n"
             "{{{\noperatorcounting(\n"
