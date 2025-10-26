@@ -46,4 +46,3 @@ if __name__ == "__main__":
     except pddl_parser.ParseError as e:
         print(e)
         sys.exit(TRANSLATE_INPUT_ERROR)
-    main()
