@@ -35,7 +35,7 @@ jobs:
           # We thus only test on Windows 2022 for now.
           # - {os: "windows-2025", vc: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
           - {os: "windows-2022", vc: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
-        python-version: [3.8]
+        python-version: [3.9]
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
