@@ -26,9 +26,11 @@ jobs:
     strategy:
       matrix:
         platform:
-          - {os: "windows-2025", vc: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
-          # We do not test on Windows 2022 at the moment because the compiler that runner uses is the same as the one for Windows 2025.
-          # - {os: "windows-2022", vc: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
+          # The compiler used by the runner for Windows 2022 and Windows 2025 is
+          # the same. We could just run tests on Windows 2025 but there the silent
+          # CPLEX installation fails. We thus only test on 2022.
+          # - {os: "windows-2025", vc: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
+          - {os: "windows-2022", vc: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
         python-version: [3.8]
     steps:
       - name: Clone repository
@@ -72,8 +74,6 @@ jobs:
           echo "https://www.ibm.com/docs/en/icos/22.1.1?topic=2211-silent-installation-cplex-optimization-studio"
           curl.exe --output cplex.exe $ENV:CPLEX_URL
 
-          echo "Executing CPLEX Installer"
-          Start-Process -FilePath .\cplex.exe -PassThru | Wait-Process
           echo "Install CPLEX"
           Start-Process -FilePath .\cplex.exe -ArgumentList "-f", "$ENV:GITHUB_WORKSPACE\.github\workflows\misc\cplex2211_windows_installer.properties" -PassThru | Wait-Process
           del .\cplex.exe
