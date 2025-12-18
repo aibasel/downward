@@ -73,7 +73,7 @@ jobs:
           curl.exe --output cplex.exe $ENV:CPLEX_URL
 
           echo "Executing CPLEX Installer"
-          .\cplex.exe
+          Start-Process -FilePath .\cplex.exe -PassThru | Wait-Process
           echo "Install CPLEX"
           Start-Process -FilePath .\cplex.exe -ArgumentList "-f", "$ENV:GITHUB_WORKSPACE\.github\workflows\misc\cplex2211_windows_installer.properties" -PassThru | Wait-Process
           del .\cplex.exe
