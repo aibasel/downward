@@ -15,8 +15,8 @@ jobs:
     strategy:
       matrix:
         version:
-          - {macos: macos-13, python: '3.10'}
           - {macos: macos-14, python: '3.10'}
+          - {macos: macos-15, python: '3.14'}
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
