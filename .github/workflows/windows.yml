@@ -29,7 +29,7 @@ jobs:
           # The compiler used by the runner for Windows 2022 and Windows 2025 is
           # the same. We could just run tests on Windows 2025 but there the silent
           # CPLEX installation fails. We thus only test on 2022.
-          # - {os: "windows-2025", vc: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
+          - {os: "windows-2025", vc: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
           - {os: "windows-2022", vc: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\VC\\Auxiliary\\Build\\vcvarsall.bat"}
         python-version: [3.8]
     steps:
@@ -75,6 +75,9 @@ jobs:
           curl.exe --output cplex.exe $ENV:CPLEX_URL
 
           echo "Install CPLEX"
+
+          Get-WmiObject -Class Win32_LogicalDisk | Select-Object -Property DeviceID, VolumeName, @{Label='FreeSpace (Gb)'; expression={($_.FreeSpace/1GB).ToString('F2')}}, @{Label='Total (Gb)'; expression={($_.Size/1GB).ToString('F2')}}, @{label='FreePercent'; expression={[Math]::Round(($_.freespace / $_.size) * 100, 2)}}|ft
+
           Start-Process -FilePath .\cplex.exe -ArgumentList "-f", "$ENV:GITHUB_WORKSPACE\.github\workflows\misc\cplex2211_windows_installer.properties" -PassThru | Wait-Process
           del .\cplex.exe
 
