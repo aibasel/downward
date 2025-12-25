@@ -929,7 +929,6 @@ create_fast_downward_library(
         pdbs/max_cliques
         pdbs/pattern_cliques
         pdbs/pattern_collection_information
-        pdbs/pattern_collection_generator_combo
         pdbs/pattern_collection_generator_disjoint_cegar
         pdbs/pattern_collection_generator_genetic
         pdbs/pattern_collection_generator_hillclimbing
