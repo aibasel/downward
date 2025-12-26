@@ -23,8 +23,6 @@ CGHeuristic::CGHeuristic(
     : Heuristic(
           tasks::get_default_value_axioms_task_if_needed(transform, axioms),
           cache_estimates, description, verbosity),
-      cache_hits(0),
-      cache_misses(0),
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
@@ -94,12 +92,8 @@ int CGHeuristic::get_transition_cost(
     bool use_the_cache = cache && cache->is_cached(var_no);
     if (use_the_cache) {
         int cached_val = cache->lookup(var_no, state, start_val, goal_val);
-        if (cached_val != CGCache::NOT_COMPUTED) {
-            ++cache_hits;
+        if (cached_val != CGCache::NOT_COMPUTED)
             return cached_val;
-        }
-    } else {
-        ++cache_misses;
     }
 
     ValueNode *start = &dtg->nodes[start_val];

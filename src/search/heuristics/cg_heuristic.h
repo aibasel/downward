@@ -26,8 +26,6 @@ class CGHeuristic : public Heuristic {
         transition_graphs;
 
     std::unique_ptr<CGCache> cache;
-    int cache_hits;
-    int cache_misses;
 
     int helpful_transition_extraction_counter;
 
