@@ -9,7 +9,6 @@
 #include <deque>
 #include <map>
 #include <utility>
-#include <vector>
 
 using namespace std;
 
@@ -141,10 +140,15 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
 }
 
 TieBreakingOpenListFactory::TieBreakingOpenListFactory(
+    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
-    bool pref_only)
-    : evals(evals), unsafe_pruning(unsafe_pruning), pref_only(pref_only) {
-    utils::verify_list_not_empty(evals, "evals");
+    bool pref_only, const string &description, utils::Verbosity verbosity)
+    : evals(evals),
+      unsafe_pruning(unsafe_pruning),
+      pref_only(pref_only),
+      description(description),
+      verbosity(verbosity) {
+    utils::verify_list_not_empty(evals, "evals"); // should be in TI
 }
 
 unique_ptr<StateOpenList> TieBreakingOpenListFactory::create_state_open_list() {
@@ -157,9 +161,14 @@ unique_ptr<EdgeOpenList> TieBreakingOpenListFactory::create_edge_open_list() {
         evals, unsafe_pruning, pref_only);
 }
 
+using TaskIndependentTieBreakingOpenListFactory =
+    TaskIndependentComponentFeature<
+        TieBreakingOpenListFactory, OpenListFactory,
+        TieBreakingOpenListFactoryArgs>;
+
 class TieBreakingOpenListFeature
     : public plugins::TypedFeature<
-          OpenListFactory, TieBreakingOpenListFactory> {
+          OpenListFactory, TaskIndependentTieBreakingOpenListFactory> {
 public:
     TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
         document_title("Tie-breaking open list");
@@ -173,12 +182,14 @@ public:
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TieBreakingOpenListFactory> create_component(
-        const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<TieBreakingOpenListFactory>(
+    virtual shared_ptr<TaskIndependentTieBreakingOpenListFactory>
+    create_component(const plugins::Options &opts) const override {
+        return plugins::make_shared_from_arg_tuples<
+            TaskIndependentTieBreakingOpenListFactory>(
             opts.get_list<shared_ptr<Evaluator>>("evals"),
             opts.get<bool>("unsafe_pruning"),
-            get_open_list_arguments_from_options(opts));
+            get_open_list_arguments_from_options(opts),
+            "DEFAULT_OPENLIST_DESCRIPTION_ISSUE559", utils::Verbosity::NORMAL);
     }
 };
 
