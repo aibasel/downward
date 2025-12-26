@@ -20,12 +20,18 @@ const int CGCache::NOT_COMPUTED;
 CGCache::CGCache(
     const TaskProxy &task_proxy, int max_cache_size, utils::LogProxy &log)
     : task_proxy(task_proxy) {
+
+    /*
+      Get the causal graph first because this can trigger output
+      that we don't want to have in the middle of the output of this function.
+    */
+    const causal_graph::CausalGraph &cg = task_proxy.get_causal_graph();
+
     if (log.is_at_least_normal()) {
         log << "Initializing heuristic cache... " << flush;
     }
 
     int var_count = task_proxy.get_variables().size();
-    const causal_graph::CausalGraph &cg = task_proxy.get_causal_graph();
 
     // Compute inverted causal graph.
     depends_on.resize(var_count);

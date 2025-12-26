@@ -161,7 +161,7 @@ struct CausalGraphBuilder {
 
 CausalGraph::CausalGraph(const TaskProxy &task_proxy) {
     utils::Timer timer;
-    utils::g_log << "building causal graph..." << flush;
+    utils::g_log << "Building causal graph... " << flush;
     int num_variables = task_proxy.get_variables().size();
     CausalGraphBuilder cg_builder(num_variables);
 
@@ -179,7 +179,7 @@ CausalGraph::CausalGraph(const TaskProxy &task_proxy) {
     cg_builder.succ_builder.compute_relation(successors);
 
     // dump(task_proxy);
-    utils::g_log << "done! [t=" << timer << "]" << endl;
+    utils::g_log << "done!" << endl;
 }
 
 void CausalGraph::dump(const TaskProxy &task_proxy) const {
