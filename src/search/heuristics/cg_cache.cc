@@ -20,7 +20,6 @@ const int CGCache::NOT_COMPUTED;
 CGCache::CGCache(
     const TaskProxy &task_proxy, int max_cache_size, utils::LogProxy &log)
     : task_proxy(task_proxy) {
-
     /*
       Get the causal graph first because this can trigger output
       that we don't want to have in the middle of the output of this function.
