@@ -10,6 +10,7 @@ import sys
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
 SRC_DIR = os.path.join(REPO, "src")
+CLANG_TIDY_VERSION = "18"
 
 import utils
 
@@ -104,10 +105,10 @@ def check_search_code_with_clang_tidy():
         {{key: performance-unnecessary-value-param.AllowedTypes, value: "{';'.join(LIGHTWEIGHT_TYPES)}"}},\
     ]}}""".replace("    ", "")
     cmd = [
-        "run-clang-tidy-16",
+        f"run-clang-tidy-{CLANG_TIDY_VERSION}",
         "-quiet",
         "-p", build_dir,
-        "-clang-tidy-binary=clang-tidy-16",
+        f"-clang-tidy-binary=clang-tidy-{CLANG_TIDY_VERSION}",
         "-checks=-*," + ",".join(checks),
         f"-config={config}",
     ]
@@ -117,7 +118,7 @@ def check_search_code_with_clang_tidy():
     try:
         p = subprocess.run(cmd, cwd=DIR, text=True, capture_output=True, check=False)
     except FileNotFoundError:
-        sys.exit(f"run-clang-tidy-16 not found. Is it on the PATH?")
+        sys.exit(f"run-clang-tidy-{CLANG_TIDY_VERSION} not found. Is it on the PATH?")
     output = f"{p.stdout}\n{p.stderr}"
     errors = re.findall(r"^(.*:\d+:\d+: .*(?:warning|error): .*)$", output, flags=re.M)
     filtered_errors = [error for error in errors if not any(ignore in error for ignore in IGNORES)]
@@ -127,7 +128,7 @@ def check_search_code_with_clang_tidy():
         for error in filtered_errors:
             print(error)
         fix_cmd = cmd + [
-            "-clang-apply-replacements-binary=clang-apply-replacements-16", "-fix"]
+            f"-clang-apply-replacements-binary=clang-apply-replacements-{CLANG_TIDY_VERSION}", "-fix"]
         print("\nYou may be able to fix some of these issues with the following command:\n" +
             " ".join(shlex.quote(x) for x in fix_cmd))
         sys.exit(1)

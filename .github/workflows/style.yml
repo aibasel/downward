@@ -23,7 +23,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip3 install tox
-          sudo apt-get -y install clang-tidy-16
+          sudo apt-get -y install clang-tidy-18
 
       - name: Install clang-format
         run: |
