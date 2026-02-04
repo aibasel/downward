@@ -18,6 +18,7 @@ namespace lp {
 enum class LPSolverType {
     CPLEX,
     SOPLEX,
+    HIGHS,
     GUROBI
 };
 

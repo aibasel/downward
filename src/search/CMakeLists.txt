@@ -610,6 +610,16 @@ if(USE_LP)
         target_link_libraries(lp_solver INTERFACE gurobi::gurobi)
         target_sources(lp_solver INTERFACE lp/gurobi_solver_interface.h lp/gurobi_solver_interface.cc)
     endif()
+
+    find_package(HiGHS CONFIG QUIET)
+    if(HiGHS_FOUND)
+        target_compile_definitions(lp_solver INTERFACE HAS_HIGHS)
+        target_link_libraries(lp_solver INTERFACE highs::highs)
+        target_sources(lp_solver INTERFACE
+            lp/highs_solver_interface.h
+            lp/highs_solver_interface.cc
+        )
+    endif()
 endif()
 
 create_fast_downward_library(

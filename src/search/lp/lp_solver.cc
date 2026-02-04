@@ -9,6 +9,9 @@
 #ifdef HAS_GUROBI
 #include "gurobi_solver_interface.h"
 #endif
+#ifdef HAS_HIGHS
+#include "highs_solver_interface.h"
+#endif
 
 #include "../plugins/plugin.h"
 
@@ -147,6 +150,14 @@ LPSolver::LPSolver(LPSolverType solver_type) {
         missing_solver = "Gurobi";
 #endif
         break;
+    case LPSolverType::HIGHS:
+#ifdef HAS_HIGHS
+        pimpl = make_unique<HiGHSSolverInterface>();
+#else
+        missing_solver = "HiGHS";
+#endif
+        break;
+
     default:
         ABORT("Unknown LP solver type.");
     }
@@ -256,5 +267,6 @@ void LPSolver::print_statistics() const {
 static plugins::TypedEnumPlugin<LPSolverType> _enum_plugin(
     {{"cplex", "commercial solver by IBM"},
      {"soplex", "open source solver by ZIB"},
+     {"highs", "open source solver by the HiGHS team"},
      {"gurobi", "commercial solver by Gurobi"}});
 }
