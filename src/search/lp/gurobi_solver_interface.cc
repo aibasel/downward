@@ -46,6 +46,7 @@ NO_RETURN void handle_gurobi_error(GRBenv *env, int error_code) {
     const char *msg = env ? GRBgeterrormsg(env) : nullptr;
     if (msg) {
         cerr << msg << endl;
+        cerr << "Gurobi error code: " << error_code << endl;
     } else {
         cerr << "Gurobi error: code " << error_code << endl;
     }
@@ -85,25 +86,21 @@ void add_constraint(GRBenv *env, GRBmodel *model, const LPConstraint &constraint
 
     double lb = constraint.get_lower_bound();
     double ub = constraint.get_upper_bound();
-    if (lb > ub) {
-        // Add a trivially unsatisfiable row. 
-        // TODO: should we handle this differently?
-        GRB_CALL(env, GRBaddconstr, model, 0, nullptr, nullptr, GRB_LESS_EQUAL, -1.0, nullptr);
-        return;
-    }
-    if (is_neg_infinity(lb) && is_pos_infinity(ub)) {
-        // Constraint without bounds: do nothing.
-        // TODO: is this the right behavior?
-        return;
-    }
-    if (is_neg_infinity(lb)) {
+
+    if (!is_neg_infinity(lb) && !is_pos_infinity(ub)) {
+        cerr << "Error: Two-sided constraints are not supported by Gurobi." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    } else if (is_neg_infinity(lb) && is_pos_infinity(ub)) {
+        cerr << " Adding free constraint." << endl;
+        GRB_CALL(env, GRBaddconstr, model, numnz, cind, cval, GRB_LESS_EQUAL, ub, nullptr); // We add a <= +infinity constraint whenever we have a free constraint. Whether the sense is '<=' or '>=' will be handled by the bounds.
+    }else if (is_neg_infinity(lb)) {
         GRB_CALL(env, GRBaddconstr, model, numnz, cind, cval, GRB_LESS_EQUAL, ub, nullptr);
     } else if (is_pos_infinity(ub)) {
         GRB_CALL(env, GRBaddconstr, model, numnz, cind, cval, GRB_GREATER_EQUAL, lb, nullptr);
     } else if (lb == ub) {
         GRB_CALL(env, GRBaddconstr, model, numnz, cind, cval, GRB_EQUAL, lb, nullptr);
     } else {
-        cerr << "Range constraints are not supported by Gurobi." << endl;
+        cerr << "Two-sided constraints are not supported by Gurobi." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 }
@@ -122,7 +119,7 @@ GurobiSolverInterface::~GurobiSolverInterface() {
     if (model) {
         GRBfreemodel(model);
     }
-    if (env) {
+    if (env) { 
         GRBfreeenv(env);
     }
 }
@@ -155,20 +152,20 @@ void GurobiSolverInterface::load_problem(const LinearProgram &lp) {
     GRB_CALL(env, GRBnewmodel, env, &model, "downward", num_vars, obj_ptr, lb_ptr, ub_ptr, vtype_ptr, nullptr);
     GRB_CALL(env, GRBsetintattr, model, GRB_INT_ATTR_MODELSENSE, objective_sense_to_gurobi(lp.get_sense()));
     const auto &constraints = lp.get_constraints();
+    num_permanent_constraints = 0;
+    num_temporary_constraints = 0;
     for (const LPConstraint &constraint : constraints) {
         add_constraint(env, model, constraint);
+        num_permanent_constraints++;
     }
-    //GRB_CALL(env, GRBupdatemodel, model);
-    num_permanent_constraints = constraints.size();
-    num_temporary_constraints = 0;
-    model_dirty = true;
+    GRB_CALL(env, GRBupdatemodel, model);
+    model_dirty = false;
 }
 
 void GurobiSolverInterface::add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints) {
     for (const LPConstraint &constraint : constraints) {
         add_constraint(env, model, constraint);
     }
-    //GRB_CALL(env, GRBupdatemodel, model);
     model_dirty = true;
     num_temporary_constraints += constraints.size();
 }
@@ -180,7 +177,6 @@ void GurobiSolverInterface::clear_temporary_constraints() {
     vector<int> indices(num_temporary_constraints);
     iota(indices.begin(), indices.end(), num_permanent_constraints);
     GRB_CALL(env, GRBdelconstrs, model, num_temporary_constraints, indices.data());
-    //GRB_CALL(env, GRBupdatemodel, model);
     model_dirty = true;
     num_temporary_constraints = 0;
 }
@@ -190,39 +186,38 @@ double GurobiSolverInterface::get_infinity() const {
 }
 
 void GurobiSolverInterface::set_objective_coefficients(const vector<double> &coefficients) {
+    assert(coefficients.size() == get_num_variables());
     int num_coefficients = coefficients.size();
     if (!num_coefficients) {
         return;
     }                                                                                // TODO: is there a more elegant way to handle this?
     GRB_CALL(env, GRBsetdblattrarray, model, GRB_DBL_ATTR_OBJ, 0, num_coefficients, const_cast<double *>(coefficients.data()));
-    //GRB_CALL(env, GRBupdatemodel, model);
     model_dirty = true;
 }
 
 void GurobiSolverInterface::set_objective_coefficient(int index, double coefficient) {
+    assert(index >= 0 && index < get_num_variables());
     GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_OBJ, index, coefficient);
-    //GRB_CALL(env, GRBupdatemodel, model);
     model_dirty = true;
 }
 
 void GurobiSolverInterface::set_constraint_lower_bound(int index, double bound) {
+    assert(index >= 0 && index < get_num_constraints());
     char sense;
+    double current_rhs;
     GRB_CALL(env, GRBgetcharattrelement, model, GRB_CHAR_ATTR_SENSE, index, &sense);
-    if(sense == GRB_LESS_EQUAL) {
-        if (!is_neg_infinity(bound)) {
+    GRB_CALL(env, GRBgetdblattrelement, model, GRB_DBL_ATTR_RHS, index, &current_rhs);       
+    if(sense == GRB_LESS_EQUAL) { // Constraint is of the form ax <= b
+        if (!is_pos_infinity(current_rhs)) { // Constraint is of the form ax <= finite value
             cerr << "Error: cannot set lower bound on <= constraint to a finite value." << endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-        }
-        return;
-    }
-    else if(sense == GRB_GREATER_EQUAL) {  
-        if (is_neg_infinity(bound)) {
-            cerr << "Error: cannot set lower bound on >= constraint to -infinity." << endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-        } else {
+        } else { // Constraint is of the form ax <= infty, which is essentially a free constraint
+            GRB_CALL(env, GRBsetcharattrelement, model, GRB_CHAR_ATTR_SENSE, index, GRB_GREATER_EQUAL); // change sense to >=
             GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_RHS, index, bound);
-            return;
         }
+    }
+    else if(sense == GRB_GREATER_EQUAL) {  // constraint is of the form ax >= b
+        GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_RHS, index, bound);
     }
     else if(sense == GRB_EQUAL) {
         double current_rhs;
@@ -231,53 +226,46 @@ void GurobiSolverInterface::set_constraint_lower_bound(int index, double bound) 
             cerr << "Error: cannot change lower bound on = constraint." << endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
-        return;
     }
-    //GRB_CALL(env, GRBupdatemodel, model);
     model_dirty = true;
 }
 
 void GurobiSolverInterface::set_constraint_upper_bound(int index, double bound) {
+    assert(index >= 0 && index < get_num_constraints());
     char sense;
+    double current_rhs;
     GRB_CALL(env, GRBgetcharattrelement, model, GRB_CHAR_ATTR_SENSE, index, &sense);
-    if(sense == GRB_LESS_EQUAL) {
-        if (is_pos_infinity(bound)) {
-            cerr << "Error: cannot set upper bound on <= constraint to +infinity." << endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
-        } else {
-            GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_RHS, index, bound);
-            return;
-        }
-    }
-    else if(sense == GRB_GREATER_EQUAL) {  
-        if (!is_pos_infinity(bound)) {
+    GRB_CALL(env, GRBgetdblattrelement, model, GRB_DBL_ATTR_RHS, index, &current_rhs);
+    if(sense == GRB_LESS_EQUAL) { // constraint is of the form ax <= b
+        GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_RHS, index, bound);  
+    } else if(sense == GRB_GREATER_EQUAL) {  // constraint is of the form ax >= b
+        if (!is_neg_infinity(current_rhs)) { // constraint is of the form ax >= finite_value 
             cerr << "Error: cannot set upper bound on >= constraint to a finite value." << endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        }else { // constraint is of the form ax >= -infinity, we is essentially a free constraint
+            GRB_CALL(env, GRBsetcharattrelement, model, GRB_CHAR_ATTR_SENSE, index, GRB_LESS_EQUAL); // change sense to <=
+            GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_RHS, index, bound);
         }
-        return;
-    }
-    else if(sense == GRB_EQUAL) {
+    } else if(sense == GRB_EQUAL) { // constraint is of the form ax = b
         double current_rhs;
         GRB_CALL(env, GRBgetdblattrelement, model, GRB_DBL_ATTR_RHS, index, &current_rhs);
         if (current_rhs != bound) {
             cerr << "Error: cannot change upper bound on = constraint." << endl;
             utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
-        return;
     }
-    //GRB_CALL(env, GRBupdatemodel, model);
     model_dirty = true;
 }
 
 void GurobiSolverInterface::set_variable_lower_bound(int index, double bound) {
+    assert(index >= 0 && index < get_num_variables());
     GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_LB, index, bound);
-    //GRB_CALL(env, GRBupdatemodel, model);
     model_dirty = true;
 }
 
 void GurobiSolverInterface::set_variable_upper_bound(int index, double bound) {
+    assert(index >= 0 && index < get_num_variables());
     GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_UB, index, bound);
-    //GRB_CALL(env, GRBupdatemodel, model);
     model_dirty = true;
 }
 
@@ -294,10 +282,6 @@ void GurobiSolverInterface::solve() {
 }
 
 void GurobiSolverInterface::write_lp(const string &filename) const {
-    //if (model_dirty) {
-    //    GRB_CALL(env, GRBupdatemodel, model);
-    //    model_dirty = false;
-    //}
     GRB_CALL(env, GRBwrite, model, filename.c_str());
 }
 
@@ -305,7 +289,6 @@ void GurobiSolverInterface::write_lp(const string &filename) const {
 void GurobiSolverInterface::print_failure_analysis() const {
     int status = 0;
     GRB_CALL(env, GRBgetintattr, model, GRB_INT_ATTR_STATUS, &status);
-    cout << "Gurobi status code: " << status << endl;
 }
 
 // TODO: check if a solution is available
