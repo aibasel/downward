@@ -21,6 +21,7 @@ find_path(GUROBI_INCLUDE_DIR
 find_library(GUROBI_LIBRARY
     NAMES
         gurobi130   # Gurobi 13.0
+	gurobi110
     HINTS ${HINT_PATHS}
     PATH_SUFFIXES lib 
 )
