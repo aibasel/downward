@@ -448,8 +448,11 @@ def translate_task(
         metric: bool,
         implied_facts: Dict[VarValPair, List[VarValPair]]) -> sas_tasks.SASTask:
     with timers.timing("Processing axioms", block=True):
-        axioms, axiom_layer_dict = axiom_rules.handle_axioms(actions, axioms, goals,
-                                                             get_options().layer_strategy)
+        try:
+            axioms, axiom_layer_dict = axiom_rules.handle_axioms(actions, axioms, goals,
+                                                                 get_options().layer_strategy)
+        except ValueError as e:
+            raise pddl_parser.ParseError(e)
 
     if get_options().dump_task:
         # Remove init facts that don't occur in strips_to_sas: they're constant.
