@@ -6,6 +6,9 @@
 #ifdef HAS_SOPLEX
 #include "soplex_solver_interface.h"
 #endif
+#ifdef HAS_GUROBI
+#include "gurobi_solver_interface.h"
+#endif
 
 #include "../plugins/plugin.h"
 
@@ -137,6 +140,13 @@ LPSolver::LPSolver(LPSolverType solver_type) {
         missing_solver = "SoPlex";
 #endif
         break;
+    case LPSolverType::GUROBI:
+#ifdef HAS_GUROBI
+        pimpl = make_unique<GurobiSolverInterface>();
+#else
+        missing_solver = "Gurobi";
+#endif
+        break;
     default:
         ABORT("Unknown LP solver type.");
     }
@@ -245,5 +255,6 @@ void LPSolver::print_statistics() const {
 
 static plugins::TypedEnumPlugin<LPSolverType> _enum_plugin(
     {{"cplex", "commercial solver by IBM"},
-     {"soplex", "open source solver by ZIB"}});
+     {"soplex", "open source solver by ZIB"},
+     {"gurobi", "commercial solver by Gurobi"}});
 }

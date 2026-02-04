@@ -594,12 +594,21 @@ if(USE_LP)
         target_sources(lp_solver INTERFACE lp/cplex_solver_interface.h lp/cplex_solver_interface.cc)
     endif()
 
+
     find_package(soplex 7.1.0 QUIET)
     if (SOPLEX_FOUND)
         message(STATUS "Found SoPlex: ${SOPLEX_INCLUDE_DIRS}")
         target_link_libraries(lp_solver INTERFACE libsoplex)
         target_compile_definitions(lp_solver INTERFACE HAS_SOPLEX)
         target_sources(lp_solver INTERFACE lp/soplex_solver_interface.h lp/soplex_solver_interface.cc)
+    endif()
+
+    find_package(Gurobi QUIET)
+    if(Gurobi_FOUND)
+        message(STATUS "Found Gurobi: ${GUROBI_LIBRARY} ${GUROBI_INCLUDE_DIR}")
+        target_compile_definitions(lp_solver INTERFACE HAS_GUROBI)
+        target_link_libraries(lp_solver INTERFACE gurobi::gurobi)
+        target_sources(lp_solver INTERFACE lp/gurobi_solver_interface.h lp/gurobi_solver_interface.cc)
     endif()
 endif()
 
