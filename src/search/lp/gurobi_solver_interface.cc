@@ -108,7 +108,7 @@ void add_constraint(GRBenv *env, GRBmodel *model, const LPConstraint &constraint
 } // Have to add this otherwise the compiler complains.
 
 GurobiSolverInterface::GurobiSolverInterface(): env(nullptr), model(nullptr), num_permanent_constraints(0), num_temporary_constraints(0), model_dirty(false) {
-    GRB_CALL(env, GRBloadenvinternal, &env, "", GRB_VERSION_MAJOR, GRB_VERSION_MINOR, GRB_VERSION_TECHNICAL);
+    GRB_CALL(env, GRBloadenv, &env, "");
     GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_OUTPUTFLAG, 0);
     GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_LOGTOCONSOLE, 0);
     GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_THREADS, 1);
