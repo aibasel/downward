@@ -87,11 +87,21 @@ void add_constraint(GRBenv *env, GRBmodel *model, const LPConstraint &constraint
     double lb = constraint.get_lower_bound();
     double ub = constraint.get_upper_bound();
 
-    if (!is_neg_infinity(lb) && !is_pos_infinity(ub)) {
+    if (!is_neg_infinity(lb) && !is_pos_infinity(ub) && lb != ub) {
         cerr << "Error: Two-sided constraints are not supported by Gurobi." << endl;
+        cerr << "Constraint: " << lb << " <= ";
+        for (size_t i = 0; i < indices.size(); ++i) {
+            if (i > 0) {
+                cerr << " + ";
+            }
+            cerr  << "x" << indices[i] << " * " << coefficients[i];
+        }
+        cerr << " <= " << ub << endl;
+        cerr << "Infinity value: " << GRB_INFINITY << endl;
+        cerr << "Lower bound is finite: " << !is_neg_infinity(lb) << endl;
+        cerr << "Upper bound is finite: " << !is_pos_infinity(ub) << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     } else if (is_neg_infinity(lb) && is_pos_infinity(ub)) {
-    //    cerr << " Adding free constraint." << endl;
         GRB_CALL(env, GRBaddconstr, model, numnz, cind, cval, GRB_LESS_EQUAL, ub, nullptr); // We add a <= +infinity constraint whenever we have a free constraint. Whether the sense is '<=' or '>=' will be handled by the bounds.
     }else if (is_neg_infinity(lb)) {
         GRB_CALL(env, GRBaddconstr, model, numnz, cind, cval, GRB_LESS_EQUAL, ub, nullptr);
@@ -108,7 +118,8 @@ void add_constraint(GRBenv *env, GRBmodel *model, const LPConstraint &constraint
 } // Have to add this otherwise the compiler complains.
 
 GurobiSolverInterface::GurobiSolverInterface(): env(nullptr), model(nullptr), num_permanent_constraints(0), num_temporary_constraints(0), model_dirty(false) {
-    GRB_CALL(env, GRBloadenv, &env, "");
+    //GRB_CALL(env, GRBloadenv, &env, "");
+    GRBloadenv(&env, "");
     GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_OUTPUTFLAG, 0);
     GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_LOGTOCONSOLE, 0);
     GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_THREADS, 1);

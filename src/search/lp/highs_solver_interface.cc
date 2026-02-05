@@ -26,6 +26,9 @@ void HiGHSSolverInterface::load_problem(const LinearProgram &lp) {
         highs_ok(highs_.changeObjectiveSense(ObjSense::kMinimize), "changeObjectiveSense");
     }
 
+    highs_ok(highs_.setOptionValue("output_flag", false), "setOptionValue(output_flag)");
+    highs_ok(highs_.setOptionValue("log_to_console", false), "setOptionValue(log_to_console)");
+
     // variables
     named_vector::NamedVector<LPVariable> vars = lp.get_variables();
     const int n = static_cast<int>(vars.size());
@@ -61,7 +64,7 @@ void HiGHSSolverInterface::load_problem(const LinearProgram &lp) {
     num_permanent_constraints = lp.get_constraints().size();
     num_temporary_constraints = 0;
 
-    cout << "so far so good" << endl;
+    //cout << "so far so good" << endl;
 }
 
 void HiGHSSolverInterface::add_temporary_constraints(
