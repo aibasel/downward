@@ -14,6 +14,7 @@ import utils
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
 SEARCH_DIR = os.path.join(REPO, "src", "search")
+CLANG_FORMAT_VERSION = "18"
 
 
 def parse_args():
@@ -40,14 +41,14 @@ def search_files_are_dirty():
 def get_clang_format_version():
     try:
         result = subprocess.run(
-            ["clang-format-18", "--version"],
+            [f"clang-format-{CLANG_FORMAT_VERSION}", "--version"],
             capture_output=True,
             text=True,
             check=True
         )
         return result.stdout.strip()
     except (FileNotFoundError, subprocess.CalledProcessError):
-        return "clang-format-18 not found"
+        return f"clang-format-{CLANG_FORMAT_VERSION} not found"
 
 
 def main():
@@ -57,7 +58,7 @@ def main():
     src_files = utils.get_src_files(SEARCH_DIR, (".h", ".cc"))
     print(f"Checking {len(src_files)} files with clang-format.")
     config_file = os.path.join(REPO, ".clang-format")
-    executable = "clang-format-18"
+    executable = f"clang-format-{CLANG_FORMAT_VERSION}"
     exe_error_str = f"Error: {executable} not found. Is it on the PATH?"
     flag = "-i" if args.modify else "--dry-run"
     cmd = [
