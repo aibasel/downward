@@ -91,7 +91,7 @@ void add_constraint(GRBenv *env, GRBmodel *model, const LPConstraint &constraint
         cerr << "Error: Two-sided constraints are not supported by Gurobi." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     } else if (is_neg_infinity(lb) && is_pos_infinity(ub)) {
-        cerr << " Adding free constraint." << endl;
+    //    cerr << " Adding free constraint." << endl;
         GRB_CALL(env, GRBaddconstr, model, numnz, cind, cval, GRB_LESS_EQUAL, ub, nullptr); // We add a <= +infinity constraint whenever we have a free constraint. Whether the sense is '<=' or '>=' will be handled by the bounds.
     }else if (is_neg_infinity(lb)) {
         GRB_CALL(env, GRBaddconstr, model, numnz, cind, cval, GRB_LESS_EQUAL, ub, nullptr);
