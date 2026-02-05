@@ -190,9 +190,9 @@ lp::LinearProgram OptimalCostPartitioningAlgorithm::build_initial_lp() {
       say that the operator's total cost must fall between 0 and the real
       operator cost.
     */
-    lp_constraints.resize(num_rows, lp::LPConstraint(0.0, 0.0));
+    lp_constraints.resize(num_rows, lp::LPConstraint(-lp_solver.get_infinity(), 0.0)); // TODO: is this right?
     for (size_t op_id = 0; op_id < operator_costs.size(); ++op_id) {
-        lp_constraints[op_id].set_lower_bound(0);
+        //lp_constraints[op_id].set_lower_bound(0); TODO:: is this right?
         lp_constraints[op_id].set_upper_bound(operator_costs[op_id]);
     }
 

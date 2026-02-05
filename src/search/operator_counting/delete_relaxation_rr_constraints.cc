@@ -348,7 +348,7 @@ void DeleteRelaxationRRConstraints::create_constraints(
                 pair<FactPair, FactPair> key = make_pair(pre, eff);
                 if (!constraint3_ids.contains(key)) {
                     constraint3_ids[key] = constraints.size();
-                    lp::LPConstraint constraint(0, 1);
+                    lp::LPConstraint constraint(0, lp.get_infinity()); // TODO: is this right?
                     constraint.insert(lp_var_ids.id_of_fp(pre), 1);
                     constraints.push_back(move(constraint));
                 }
