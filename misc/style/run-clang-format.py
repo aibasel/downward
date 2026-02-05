@@ -37,6 +37,19 @@ def search_files_are_dirty():
     return bool(subprocess.check_output(cmd, cwd=REPO))
 
 
+def get_clang_format_version():
+    try:
+        result = subprocess.run(
+            ["clang-format-18", "--version"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return result.stdout.strip()
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return "clang-format-18 not found"
+
+
 def main():
     args = parse_args()
     if not args.force and args.modify and search_files_are_dirty():
@@ -58,6 +71,8 @@ def main():
         error_str = exe_error_str if not_found == executable else src_error_str
         sys.exit(error_str)
     if not args.modify and returncode != 0:
+        version = get_clang_format_version()
+        print(f"Format issue detected by: {version}")
         print('Run "tox -e fix-style" in the misc/ directory to fix the C++ ' +
             'style.')
     return returncode
