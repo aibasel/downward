@@ -1,6 +1,7 @@
 from translate import pddl
 from translate import sccs
 from translate import timers
+from translate.pddl_parser.parse_error import ParseError
 
 from collections import defaultdict
 from itertools import chain
@@ -190,7 +191,7 @@ def compute_clusters(axioms, goals, operators):
         for to_variable in depends_on:
             to_cluster = variable_to_cluster[to_variable]
             if from_cluster is to_cluster:
-                raise ValueError("axioms are not stratifiable")
+                raise ParseError("Error: The axioms are not stratifiable.")
             from_cluster.negative_children.add(to_cluster)
 
     return clusters
