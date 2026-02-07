@@ -167,12 +167,12 @@ class TypeRegistry {
     template<typename T>
     void insert_basic_type(const std::string &name);
     const Type &get_nonlist_type(std::type_index type) const;
+
+    TypeRegistry();
 public:
     static BasicType NO_TYPE;
     static SymbolType SYMBOL_TYPE;
     static EmptyListType EMPTY_LIST_TYPE;
-
-    TypeRegistry();
 
     const FeatureType &create_feature_type(const CategoryPlugin &plugin);
     const EnumType &create_enum_type(const EnumPlugin &plugin);
