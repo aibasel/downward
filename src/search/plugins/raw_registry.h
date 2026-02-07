@@ -20,7 +20,8 @@ public:
     void insert_plugin(const Plugin &plugin);
 
     const std::vector<const CategoryPlugin *> &get_category_plugins() const;
-    const std::vector<const SubcategoryPlugin *> &get_subcategory_plugins() const;
+    const std::vector<const SubcategoryPlugin *> &
+    get_subcategory_plugins() const;
     const std::vector<const EnumPlugin *> &get_enum_plugins() const;
     const std::vector<const Plugin *> &get_plugins() const;
 

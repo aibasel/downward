@@ -9,10 +9,12 @@
 using namespace std;
 
 namespace plugins {
-static void validate_category_names(const RawRegistry &raw_registry, vector<string> &errors) {
+static void validate_category_names(
+    const RawRegistry &raw_registry, vector<string> &errors) {
     unordered_map<string, vector<string>> category_name_to_class_names;
     unordered_map<string, vector<string>> class_name_to_category_names;
-    for (const CategoryPlugin *category_plugin : raw_registry.get_category_plugins()) {
+    for (const CategoryPlugin *category_plugin :
+         raw_registry.get_category_plugins()) {
         string class_name = category_plugin->get_class_name();
         string category_name = category_plugin->get_category_name();
         category_name_to_class_names[category_name].push_back(class_name);
@@ -40,12 +42,12 @@ static void validate_category_names(const RawRegistry &raw_registry, vector<stri
 }
 
 static SubcategoryPlugins collect_subcategory_plugins(
-    const RawRegistry &raw_registry,
-    vector<string> &errors) {
+    const RawRegistry &raw_registry, vector<string> &errors) {
     SubcategoryPlugins subcategory_plugin_map;
     unordered_map<string, int> occurrences;
 
-    for (const SubcategoryPlugin *subcategory_plugin : raw_registry.get_subcategory_plugins()) {
+    for (const SubcategoryPlugin *subcategory_plugin :
+         raw_registry.get_subcategory_plugins()) {
         ++occurrences[subcategory_plugin->get_subcategory_name()];
         subcategory_plugin_map.emplace(
             subcategory_plugin->get_subcategory_name(), subcategory_plugin);
@@ -65,8 +67,7 @@ static SubcategoryPlugins collect_subcategory_plugins(
 
 static Features collect_features(
     const RawRegistry &raw_registry,
-    const SubcategoryPlugins &subcategory_plugins,
-    vector<string> &errors) {
+    const SubcategoryPlugins &subcategory_plugins, vector<string> &errors) {
     Features features;
     unordered_map<string, int> feature_key_occurrences;
     for (const Plugin *plugin : raw_registry.get_plugins()) {
@@ -76,7 +77,7 @@ static Features collect_features(
         features[feature_key] = move(feature);
     }
 
-           // Check that feature_keys are unique
+    // Check that feature_keys are unique
     for (const auto &pair : feature_key_occurrences) {
         const string &feature_key = pair.first;
         int occurrences = pair.second;
@@ -87,7 +88,7 @@ static Features collect_features(
         }
     }
 
-           // Check that all subcategories used in features are defined
+    // Check that all subcategories used in features are defined
     for (const auto &item : features) {
         const string &feature_key = item.first;
         const Feature &feature = *item.second;
@@ -101,7 +102,7 @@ static Features collect_features(
         }
     }
 
-           // Check that all types used in features are defined
+    // Check that all types used in features are defined
     unordered_set<type_index> missing_types;
     for (const auto &item : features) {
         const string &feature_key = item.first;
@@ -143,8 +144,7 @@ Registry::Registry() {
     vector<string> errors;
     feature_types = TypeRegistry::instance()->get_feature_types();
     validate_category_names(raw_registry, errors);
-    subcategory_plugins =
-        collect_subcategory_plugins(raw_registry, errors);
+    subcategory_plugins = collect_subcategory_plugins(raw_registry, errors);
     features = collect_features(raw_registry, subcategory_plugins, errors);
 
     if (!errors.empty()) {

@@ -80,7 +80,8 @@ protected:
     virtual void print_category_footer() const override;
 
 public:
-    PlainPrinter(std::ostream &out, const Registry &registry, bool print_all = false);
+    PlainPrinter(
+        std::ostream &out, const Registry &registry, bool print_all = false);
 };
 }
 

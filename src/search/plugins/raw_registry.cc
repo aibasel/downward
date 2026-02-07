@@ -29,11 +29,13 @@ void RawRegistry::insert_plugin(const Plugin &plugin) {
     plugins.push_back(&plugin);
 }
 
-const vector<const CategoryPlugin *> &RawRegistry::get_category_plugins() const{
+const vector<const CategoryPlugin *> &
+RawRegistry::get_category_plugins() const {
     return category_plugins;
 }
 
-const vector<const SubcategoryPlugin *> &RawRegistry::get_subcategory_plugins() const {
+const vector<const SubcategoryPlugin *> &
+RawRegistry::get_subcategory_plugins() const {
     return subcategory_plugins;
 }
 

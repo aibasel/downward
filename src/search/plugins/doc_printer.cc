@@ -200,7 +200,8 @@ void Txt2TagsPrinter::print_category_footer() const {
     os << endl << ">>>>CATEGORYEND<<<<" << endl;
 }
 
-PlainPrinter::PlainPrinter(ostream &out, const Registry &registry, bool print_all)
+PlainPrinter::PlainPrinter(
+    ostream &out, const Registry &registry, bool print_all)
     : DocPrinter(out, registry), print_all(print_all) {
 }
 

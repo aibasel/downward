@@ -325,7 +325,8 @@ TypeRegistry::TypeRegistry() {
         names.push_back("EnumPlugin(" + enum_plugin->get_class_name() + ")");
     }
 
-    for (const CategoryPlugin *category_plugin : raw_registry.get_category_plugins()) {
+    for (const CategoryPlugin *category_plugin :
+         raw_registry.get_category_plugins()) {
         vector<string> &names =
             type_to_names[category_plugin->get_pointer_type()];
         if (names.empty()) {
@@ -381,7 +382,8 @@ const FeatureType &TypeRegistry::create_feature_type(
     return type_ref;
 }
 
-const EnumType &TypeRegistry::create_enum_type(const EnumPlugin &plugin, vector<string> &errors) {
+const EnumType &TypeRegistry::create_enum_type(
+    const EnumPlugin &plugin, vector<string> &errors) {
     type_index type = plugin.get_type();
     const EnumInfo &values = plugin.get_enum_info();
     if (registered_types.count(type)) {

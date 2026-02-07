@@ -167,8 +167,10 @@ class TypeRegistry {
         registered_list_types;
     template<typename T>
     void insert_basic_type(const std::string &name);
-    const FeatureType &create_feature_type(const CategoryPlugin &plugin, std::vector<std::string> &errors);
-    const EnumType &create_enum_type(const EnumPlugin &plugin, std::vector<std::string> &errors);
+    const FeatureType &create_feature_type(
+        const CategoryPlugin &plugin, std::vector<std::string> &errors);
+    const EnumType &create_enum_type(
+        const EnumPlugin &plugin, std::vector<std::string> &errors);
 
     const Type &get_nonlist_type(std::type_index type) const;
 
