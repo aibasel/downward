@@ -9,44 +9,6 @@
 using namespace std;
 
 namespace plugins {
-static const FeatureTypes collect_types(const RawRegistry &raw_registry, vector<string> &errors) {
-    FeatureTypes feature_types;
-    unordered_map<type_index, vector<string>> type_to_names;
-
-    for (const EnumPlugin *enum_plugin : raw_registry.get_enum_plugins()) {
-        vector<string> &names = type_to_names[enum_plugin->get_type()];
-        if (names.empty()) {
-            TypeRegistry::instance()->create_enum_type(*enum_plugin);
-        }
-        names.push_back("EnumPlugin(" + enum_plugin->get_class_name() + ")");
-    }
-
-    for (const CategoryPlugin *category_plugin : raw_registry.get_category_plugins()) {
-        vector<string> &names =
-            type_to_names[category_plugin->get_pointer_type()];
-        if (names.empty()) {
-            const FeatureType &type =
-                TypeRegistry::instance()->create_feature_type(*category_plugin);
-            feature_types.push_back(&type);
-        }
-        names.push_back(
-            "CategoryPlugin(" + category_plugin->get_class_name() + ", " +
-            category_plugin->get_category_name() + ")");
-    }
-
-    /* Check that each type index is only used once for either an enum or a
-       category. */
-    for (const auto &pair : type_to_names) {
-        const vector<string> &names = pair.second;
-        if (names.size() > 1) {
-            errors.push_back(
-                "Multiple plugins are defined for the same type: " +
-                utils::join(names, ", ") + "'.");
-        }
-    }
-    return feature_types;
-}
-
 static void validate_category_names(const RawRegistry &raw_registry, vector<string> &errors) {
     unordered_map<string, vector<string>> category_name_to_class_names;
     unordered_map<string, vector<string>> class_name_to_category_names;
@@ -179,7 +141,7 @@ static Features collect_features(
 Registry::Registry() {
     const RawRegistry &raw_registry = *RawRegistry::instance();
     vector<string> errors;
-    feature_types = collect_types(raw_registry, errors);
+    feature_types = TypeRegistry::instance()->get_feature_types();
     validate_category_names(raw_registry, errors);
     subcategory_plugins =
         collect_subcategory_plugins(raw_registry, errors);

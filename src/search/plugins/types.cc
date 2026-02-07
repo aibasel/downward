@@ -308,10 +308,53 @@ EmptyListType TypeRegistry::EMPTY_LIST_TYPE;
 BasicType TypeRegistry::NO_TYPE = BasicType(typeid(void), "<no type>");
 
 TypeRegistry::TypeRegistry() {
+    vector<string> errors;
+    const RawRegistry &raw_registry = *RawRegistry::instance();
+    unordered_map<type_index, vector<string>> type_to_names;
+
     insert_basic_type<bool>("bool");
     insert_basic_type<string>("string");
     insert_basic_type<int>("int");
     insert_basic_type<double>("double");
+
+    for (const EnumPlugin *enum_plugin : raw_registry.get_enum_plugins()) {
+        vector<string> &names = type_to_names[enum_plugin->get_type()];
+        if (names.empty()) {
+            create_enum_type(*enum_plugin, errors);
+        }
+        names.push_back("EnumPlugin(" + enum_plugin->get_class_name() + ")");
+    }
+
+    for (const CategoryPlugin *category_plugin : raw_registry.get_category_plugins()) {
+        vector<string> &names =
+            type_to_names[category_plugin->get_pointer_type()];
+        if (names.empty()) {
+            create_feature_type(*category_plugin, errors);
+        }
+        names.push_back(
+            "CategoryPlugin(" + category_plugin->get_class_name() + ", " +
+            category_plugin->get_category_name() + ")");
+    }
+
+    /* Check that each type index is only used once for either an enum or a
+       category. */
+    for (const auto &pair : type_to_names) {
+        const vector<string> &names = pair.second;
+        if (names.size() > 1) {
+            errors.push_back(
+                "Multiple plugins are defined for the same type: " +
+                utils::join(names, ", ") + "'.");
+        }
+    }
+
+    if (!errors.empty()) {
+        sort(errors.begin(), errors.end());
+        cerr << "Internal type registry error(s):" << endl;
+        for (const string &error : errors) {
+            cerr << error << endl;
+        }
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
 }
 
 template<typename T>
@@ -321,10 +364,10 @@ void TypeRegistry::insert_basic_type(const string &name) {
 }
 
 const FeatureType &TypeRegistry::create_feature_type(
-    const CategoryPlugin &plugin) {
+    const CategoryPlugin &plugin, vector<string> &errors) {
     type_index type = plugin.get_pointer_type();
     if (registered_types.count(type)) {
-        ABORT(
+        errors.push_back(
             "Creating the FeatureType '" + plugin.get_class_name() +
             "' but the type '" + registered_types[type]->name() +
             "' already exists and has the same type_index.");
@@ -333,15 +376,16 @@ const FeatureType &TypeRegistry::create_feature_type(
         plugin.get_pointer_type(), plugin.get_category_name(),
         plugin.get_synopsis(), plugin.supports_variable_binding());
     const FeatureType &type_ref = *type_ptr;
+    feature_types.push_back(type_ptr.get());
     registered_types[type] = move(type_ptr);
     return type_ref;
 }
 
-const EnumType &TypeRegistry::create_enum_type(const EnumPlugin &plugin) {
+const EnumType &TypeRegistry::create_enum_type(const EnumPlugin &plugin, vector<string> &errors) {
     type_index type = plugin.get_type();
     const EnumInfo &values = plugin.get_enum_info();
     if (registered_types.count(type)) {
-        ABORT(
+        errors.push_back(
             "Creating the EnumType '" + plugin.get_class_name() +
             "' but the type '" + registered_types[type]->name() +
             "' already exists and has the same type_index.");
@@ -367,4 +411,9 @@ const Type &TypeRegistry::get_nonlist_type(type_index type) const {
     }
     return *registered_types.at(type);
 }
+
+const FeatureTypes &TypeRegistry::get_feature_types() const {
+    return feature_types;
+}
+
 }
