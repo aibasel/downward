@@ -161,25 +161,31 @@ class TypeRegistry {
     };
 
     std::unordered_map<std::type_index, std::unique_ptr<Type>> registered_types;
+    FeatureTypes feature_types;
     std::unordered_map<
         const Type *, std::unique_ptr<ListType>, SemanticHash, SemanticEqual>
         registered_list_types;
     template<typename T>
     void insert_basic_type(const std::string &name);
+    const FeatureType &create_feature_type(
+        const CategoryPlugin &plugin, std::vector<std::string> &errors);
+    const EnumType &create_enum_type(
+        const EnumPlugin &plugin, std::vector<std::string> &errors);
+
     const Type &get_nonlist_type(std::type_index type) const;
+
+    TypeRegistry();
 public:
     static BasicType NO_TYPE;
     static SymbolType SYMBOL_TYPE;
     static EmptyListType EMPTY_LIST_TYPE;
 
-    TypeRegistry();
-
-    const FeatureType &create_feature_type(const CategoryPlugin &plugin);
-    const EnumType &create_enum_type(const EnumPlugin &plugin);
     const ListType &create_list_type(const Type &element_type);
 
     template<typename T>
     const Type &get_type();
+
+    const FeatureTypes &get_feature_types() const;
 
     static TypeRegistry *instance() {
         static TypeRegistry instance_;

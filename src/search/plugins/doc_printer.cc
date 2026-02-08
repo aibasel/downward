@@ -10,7 +10,7 @@
 using namespace std;
 
 namespace plugins {
-DocPrinter::DocPrinter(ostream &out, Registry &registry)
+DocPrinter::DocPrinter(ostream &out, const Registry &registry)
     : os(out), registry(registry) {
 }
 
@@ -93,7 +93,7 @@ void DocPrinter::print_feature(const Feature &feature) const {
     print_properties(feature);
 }
 
-Txt2TagsPrinter::Txt2TagsPrinter(ostream &out, Registry &registry)
+Txt2TagsPrinter::Txt2TagsPrinter(ostream &out, const Registry &registry)
     : DocPrinter(out, registry) {
 }
 
@@ -200,7 +200,8 @@ void Txt2TagsPrinter::print_category_footer() const {
     os << endl << ">>>>CATEGORYEND<<<<" << endl;
 }
 
-PlainPrinter::PlainPrinter(ostream &out, Registry &registry, bool print_all)
+PlainPrinter::PlainPrinter(
+    ostream &out, const Registry &registry, bool print_all)
     : DocPrinter(out, registry), print_all(print_all) {
 }
 

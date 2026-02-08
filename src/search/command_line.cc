@@ -127,8 +127,7 @@ static shared_ptr<SearchAlgorithm> parse_cmd_line_aux(
                     plugin_names.push_back(help_arg);
                 }
             }
-            plugins::Registry registry =
-                plugins::RawRegistry::instance()->construct_registry();
+            const plugins::Registry &registry = *plugins::Registry::instance();
             unique_ptr<plugins::DocPrinter> doc_printer;
             if (txt2tags)
                 doc_printer =
