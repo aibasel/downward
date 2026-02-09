@@ -18,6 +18,17 @@
 using namespace std;
 
 namespace lp {
+
+std::ostream& operator<<(std::ostream& os, Sense s) {
+    switch (s) {
+        case Sense::GE: return os << ">=";
+        case Sense::LE: return os << "<=";
+        case Sense::EQ: return os << "==";
+    }
+    return os;
+}
+
+
 void add_lp_solver_option_to_feature(plugins::Feature &feature) {
     feature.add_option<LPSolverType>(
         "lpsolver",
@@ -35,8 +46,8 @@ tuple<LPSolverType> get_lp_solver_arguments_from_options(
     return make_tuple(opts.get<LPSolverType>("lpsolver"));
 }
 
-LPConstraint::LPConstraint(double lower_bound, double upper_bound)
-    : lower_bound(lower_bound), upper_bound(upper_bound) {
+LPConstraint::LPConstraint(Sense sense, double right_hand_side)
+    : sense(sense), right_hand_side(right_hand_side) {
 }
 
 void LPConstraint::clear() {
@@ -55,13 +66,6 @@ void LPConstraint::insert(int index, double coefficient) {
 
 ostream &LPConstraint::dump(
     ostream &stream, const LinearProgram *program) const {
-    double infinity = numeric_limits<double>::infinity();
-    if (program) {
-        infinity = program->get_infinity();
-    }
-    if (lower_bound != -infinity) {
-        stream << lower_bound << " <= ";
-    }
     for (size_t i = 0; i < variables.size(); ++i) {
         if (i != 0)
             stream << " + ";
@@ -75,19 +79,14 @@ ostream &LPConstraint::dump(
         }
         stream << coefficients[i] << " * " << variable_name;
     }
-    if (upper_bound != infinity) {
-        stream << " <= " << upper_bound;
-    } else if (lower_bound == -infinity) {
-        stream << " <= infinity";
-    }
+    stream << get_sense() << get_right_hand_side();
     return stream;
 }
 
 LPVariable::LPVariable(
-    double lower_bound, double upper_bound, double objective_coefficient,
-    bool is_integer)
-    : lower_bound(lower_bound),
-      upper_bound(upper_bound),
+    Sense sense, double right_hand_side, double objective_coefficient, bool is_integer = false)
+    : sense(sense),
+      right_hand_side(right_hand_side),
       objective_coefficient(objective_coefficient),
       is_integer(is_integer) {
 }
@@ -196,23 +195,16 @@ void LPSolver::set_objective_coefficient(int index, double coefficient) {
     pimpl->set_objective_coefficient(index, coefficient);
 }
 
-void LPSolver::set_constraint_lower_bound(int index, double bound) {
-    pimpl->set_constraint_lower_bound(index, bound);
+void LPSolver::set_constraint_bound(int index, Sense sense, double right_hand_side) {
+    pimpl->set_constraint_bound(index, sense, right_hand_side);
 }
 
-void LPSolver::set_constraint_upper_bound(int index, double bound) {
-    pimpl->set_constraint_upper_bound(index, bound);
-}
-
-void LPSolver::set_variable_lower_bound(int index, double bound) {
-    pimpl->set_variable_lower_bound(index, bound);
-}
-
-void LPSolver::set_variable_upper_bound(int index, double bound) {
-    pimpl->set_variable_upper_bound(index, bound);
+void LPSolver::set_variable_bound(int index, Sense sense, double right_hand_side) {
+    pimpl->set_variable_bound(index, sense, right_hand_side);
 }
 
 void LPSolver::set_mip_gap(double gap) {
+    // relative mip gap
     pimpl->set_mip_gap(gap);
 }
 

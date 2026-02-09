@@ -33,13 +33,20 @@ std::tuple<LPSolverType> get_lp_solver_arguments_from_options(
 
 class LinearProgram;
 
+enum class Sense {
+  GE, LE, EQ
+};
+
+std::ostream& operator<<(std::ostream& os, Sense s);
+
+
 class LPConstraint {
     std::vector<int> variables;
     std::vector<double> coefficients;
-    double lower_bound;
-    double upper_bound;
+    Sense sense;
+    double right_hand_side;
 public:
-    LPConstraint(double lower_bound, double upper_bound);
+    LPConstraint(Sense sense, double right_hand_side);
 
     const std::vector<int> &get_variables() const {
         return variables;
@@ -48,17 +55,12 @@ public:
         return coefficients;
     }
 
-    double get_lower_bound() const {
-        return lower_bound;
+    double get_right_hand_side() const {
+        return right_hand_side;
     }
-    void set_lower_bound(double lb) {
-        lower_bound = lb;
-    }
-    double get_upper_bound() const {
-        return upper_bound;
-    }
-    void set_upper_bound(double ub) {
-        upper_bound = ub;
+
+    Sense get_sense() const {
+        return sense;
     }
 
     void clear();
@@ -71,13 +73,13 @@ public:
 };
 
 struct LPVariable {
-    double lower_bound;
-    double upper_bound;
+    Sense sense;
+    double right_hand_side;
     double objective_coefficient;
     bool is_integer;
 
     LPVariable(
-        double lower_bound, double upper_bound, double objective_coefficient,
+        Sense sense, double right_hand_side, double objective_coefficient,
         bool is_integer = false);
 };
 
@@ -130,10 +132,8 @@ public:
 
     void set_objective_coefficients(const std::vector<double> &coefficients);
     void set_objective_coefficient(int index, double coefficient);
-    void set_constraint_lower_bound(int index, double bound);
-    void set_constraint_upper_bound(int index, double bound);
-    void set_variable_lower_bound(int index, double bound);
-    void set_variable_upper_bound(int index, double bound);
+    void set_constraint_bound(int index, Sense sense, double right_hand_side);
+    void set_variable_bound(int index, Sense sense, double right_hand_side);
 
     void set_mip_gap(double gap);
 
