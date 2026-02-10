@@ -60,6 +60,8 @@ Currently, this list is sorted by the last year the person has been
 active, and in case of ties, by the earliest year the person started
 contributing, and finally by last name.
 
+- 2022-2026 Remo Christen
+- 2022-2026 Simon Dold
 - 2003-2025 Malte Helmert
 - 2008-2016, 2018-2025 Gabriele Roeger
 - 2009, 2025 Christian Muise
@@ -68,8 +70,6 @@ contributing, and finally by last name.
 - 2012-2025 Florian Pommerening
 - 2013, 2015-2025 Salomé Eriksson
 - 2021-2025 Clemens Büchner
-- 2022-2025 Remo Christen
-- 2022-2025 Simon Dold
 - 2023-2025 Claudia S. Grundke
 - 2024–2025 Tanja Schindler
 - 2024-2025 David Speck

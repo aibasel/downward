@@ -34,18 +34,22 @@ FixNamespaceComments: false
 IncludeBlocks: Regroup
 # Regex is not case sensitive by default.
 IncludeCategories:
+# The main header for a source file automatically gets Priority 0.
+# Headers that are neighbors.
   - Regex:           '^"[^/]+"$'
     Priority:        1
-  - Regex:           '^"\.\./[^/]+"$'
-    Priority:        2
-  - Regex:           '^"\.\./.+"$'
-    Priority:        3
-# The next regex covers cases such as '"tasks/cost_adapted_task.h"' (without the
-# '../' prefix.
+# Headers in neighboring subdirectories.
   - Regex:           '^"[^/]+/[^/]+"$'
+    Priority:        2
+# Headers in parent directory.
+  - Regex:           '^"\.\./[^/]+"$'
     Priority:        3
-  - Regex:           '^<.+>$'
+# Headers in subdirectories of parent directory.
+  - Regex:           '^"\.\./.+"$'
     Priority:        4
+# Standard libraries.
+  - Regex:           '^<.+>$'
+    Priority:        5
 IndentWidth: 4
 # Do not allow empty lines at start of block.
 KeepEmptyLinesAtTheStartOfBlocks: false
