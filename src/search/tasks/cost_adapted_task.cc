@@ -31,7 +31,17 @@ class CostAdaptedTaskFeature
 public:
     CostAdaptedTaskFeature() : TypedFeature("adapt_costs") {
         document_title("Cost-adapted task");
-        document_synopsis("A cost-adapting transformation of the root task.");
+        document_synopsis(
+            "A cost-adapting transformation of the root task. Related paper:" +
+            utils::format_journal_reference(
+                {"Silvia Richter", "Matthias Westphal"},
+                "The LAMA Planner: Guiding Cost-Based Anytime Planning with Landmarks",
+                "https://doi.org/10.1613/jair.2972",
+                "Journal of Artificial Intelligence Research",
+                "39",
+                "127-177",
+                "2010"
+            ));
 
         add_cost_type_options_to_feature(*this);
     }
