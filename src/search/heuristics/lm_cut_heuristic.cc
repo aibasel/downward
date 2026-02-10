@@ -14,6 +14,7 @@ using namespace std;
 
 namespace lm_cut_heuristic {
 LandmarkCutHeuristic::LandmarkCutHeuristic(
+    [[maybe_unused]] const shared_ptr<AbstractTask> &task,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
@@ -35,8 +36,12 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
     return total_cost;
 }
 
+using TaskIndependentLandmarkCutHeuristic = TaskIndependentComponentFeature<
+    LandmarkCutHeuristic, Evaluator, LandmarkCutHeuristicArgs>;
+
 class LandmarkCutHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, LandmarkCutHeuristic> {
+    : public plugins::TypedFeature<
+          Evaluator, TaskIndependentLandmarkCutHeuristic> {
 public:
     LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
@@ -53,9 +58,10 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<LandmarkCutHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentLandmarkCutHeuristic> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LandmarkCutHeuristic>(
+        return plugins::make_shared_from_arg_tuples<
+            TaskIndependentLandmarkCutHeuristic>(
             get_heuristic_arguments_from_options(opts));
     }
 };

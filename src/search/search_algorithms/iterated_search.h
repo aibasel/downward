@@ -9,8 +9,33 @@
 #include <vector>
 
 namespace iterated_search {
+class HackPlaceholder {
+public:
+    HackPlaceholder() {
+        std::cout << "HACK :-(" << std::endl;
+    }
+};
+using IteratedSearchArgs = std::tuple<
+    std::pair<
+        std::vector<
+            std::shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>,
+        HackPlaceholder>, // search_algorithms,
+    // HACK the pair is just used to prevent the searches from being specified
+    // when the outer iterated search is being specified.
+    bool, // pass_bound,
+    bool, // repeat_last_phase,
+    bool, // continue_on_fail,
+    bool, // continue_on_solve,
+    OperatorCost, // cost_type,
+    int, // bound,
+    double, // max_time,
+    std::string, //&name,
+    utils::Verbosity // verbosity
+    >;
+
 class IteratedSearch : public SearchAlgorithm {
-    std::vector<parser::LazyValue> algorithm_configs;
+    std::vector<std::shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>
+        search_algorithms;
 
     bool pass_bound;
     bool repeat_last_phase;
@@ -30,9 +55,16 @@ class IteratedSearch : public SearchAlgorithm {
     virtual SearchStatus step() override;
 
 public:
-    IteratedSearch(const plugins::Options
-                       &opts); // TODO this still needs the options objects, the
-                               // prototype for issue559 resolves this
+    IteratedSearch(
+        const std::shared_ptr<AbstractTask> &task,
+        std::pair<
+            std::vector<
+                std::shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>,
+            HackPlaceholder>
+            search_algorithms,
+        bool pass_bound, bool repeat_last_phase, bool continue_on_fail,
+        bool continue_on_solve, OperatorCost cost_type, int bound,
+        double max_time, const std::string &name, utils::Verbosity verbosity);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;

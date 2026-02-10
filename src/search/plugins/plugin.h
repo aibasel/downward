@@ -100,9 +100,11 @@ using FeatureAuto = typename std::conditional<
 
 template<typename Base, typename Constructed>
 class TypedFeature : public FeatureAuto<Constructed> {
-    using BasePtr = std::shared_ptr<Base>;
+    using BasePtr = std::shared_ptr<wrap_if_component_t<
+        Base>>; // 559 for prototype. For full version it should alway wrap and
+                // maybe assert to be a component.
     static_assert(
-        std::is_base_of<Base, Constructed>::value,
+        std::is_base_of<wrap_if_component_t<Base>, Constructed>::value,
         "Constructed must derive from Base");
 public:
     TypedFeature(const std::string &key)
@@ -112,7 +114,7 @@ public:
 
     Any construct(
         const Options &options, const utils::Context &context) const override {
-        std::shared_ptr<Base> ptr;
+        BasePtr ptr;
         try {
             ptr = this->create_component(options);
         } catch (const utils::ComponentArgumentError &e) {
@@ -210,8 +212,9 @@ class TypedCategoryPlugin : public CategoryPlugin {
 public:
     TypedCategoryPlugin(const std::string &category_name)
         : CategoryPlugin(
-              typeid(std::shared_ptr<T>),
-              utils::get_type_name<std::shared_ptr<T>>(), category_name) {
+              typeid(std::shared_ptr<wrap_if_component_t<T>>),
+              utils::get_type_name<std::shared_ptr<wrap_if_component_t<T>>>(),
+              category_name) {
     }
 };
 
@@ -261,8 +264,8 @@ void Feature::add_option(
     const std::string &default_value, const Bounds &bounds,
     bool lazy_construction) {
     arguments.emplace_back(
-        key, help, TypeRegistry::instance()->get_type<T>(), default_value,
-        bounds, lazy_construction);
+        key, help, TypeRegistry::instance()->get_type<wrap_if_component_t<T>>(),
+        default_value, bounds, lazy_construction);
 }
 
 template<typename T>

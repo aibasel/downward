@@ -1,6 +1,7 @@
 #ifndef EVALUATOR_H
 #define EVALUATOR_H
 
+#include "component.h"
 #include "evaluation_result.h"
 
 #include "utils/logging.h"
@@ -14,7 +15,7 @@ namespace plugins {
 class Options;
 }
 
-class Evaluator {
+class Evaluator : public Component {
     const std::string description;
     const bool use_for_reporting_minima;
     const bool use_for_boosting;

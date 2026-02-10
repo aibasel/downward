@@ -12,12 +12,14 @@ using namespace std;
 
 namespace blind_search_heuristic {
 BlindSearchHeuristic::BlindSearchHeuristic(
+    [[maybe_unused]] const shared_ptr<AbstractTask> &task,
     const shared_ptr<AbstractTask> &transform, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : Heuristic(transform, cache_estimates, description, verbosity),
       min_operator_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
-        log << "Initializing blind search heuristic..." << endl;
+        log << "Initializing blind search heuristic '" << description << "'..."
+            << endl;
     }
 }
 
@@ -29,8 +31,12 @@ int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
         return min_operator_cost;
 }
 
+using TaskIndependentBlindSearchHeuristic = TaskIndependentComponentFeature<
+    BlindSearchHeuristic, Evaluator, BlindSearchHeuristicArgs>;
+
 class BlindSearchHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, BlindSearchHeuristic> {
+    : public plugins::TypedFeature<
+          Evaluator, TaskIndependentBlindSearchHeuristic> {
 public:
     BlindSearchHeuristicFeature() : TypedFeature("blind") {
         document_title("Blind heuristic");
@@ -50,9 +56,10 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<BlindSearchHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentBlindSearchHeuristic> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<BlindSearchHeuristic>(
+        return plugins::make_shared_from_arg_tuples<
+            TaskIndependentBlindSearchHeuristic>(
             get_heuristic_arguments_from_options(opts));
     }
 };

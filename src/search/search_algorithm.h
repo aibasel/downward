@@ -1,6 +1,7 @@
 #ifndef SEARCH_ALGORITHM_H
 #define SEARCH_ALGORITHM_H
 
+#include "component.h"
 #include "operator_cost.h"
 #include "operator_id.h"
 #include "plan_manager.h"
@@ -35,7 +36,7 @@ enum SearchStatus {
     SOLVED
 };
 
-class SearchAlgorithm {
+class SearchAlgorithm : public Component {
     std::string description;
     SearchStatus status;
     bool solution_found;
@@ -68,8 +69,9 @@ protected:
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
     SearchAlgorithm(
-        OperatorCost cost_type, int bound, double max_time,
-        const std::string &description, utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &_task, OperatorCost cost_type,
+        int bound, double max_time, const std::string &description,
+        utils::Verbosity verbosity);
     explicit SearchAlgorithm(
         const plugins::Options
             &opts); // TODO options object is needed for iterated search, the

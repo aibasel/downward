@@ -20,6 +20,7 @@ using namespace std;
 
 namespace eager_search {
 EagerSearch::EagerSearch(
+    const std::shared_ptr<AbstractTask> &task,
     const shared_ptr<OpenListFactory> &open, bool reopen_closed,
     const shared_ptr<Evaluator> &f_eval,
     const vector<shared_ptr<Evaluator>> &preferred,
@@ -27,7 +28,7 @@ EagerSearch::EagerSearch(
     const shared_ptr<Evaluator> &lazy_evaluator, OperatorCost cost_type,
     int bound, double max_time, const string &description,
     utils::Verbosity verbosity)
-    : SearchAlgorithm(cost_type, bound, max_time, description, verbosity),
+    : SearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
       reopen_closed_nodes(reopen_closed),
       open_list(open->create_state_open_list()),
       f_evaluator(f_eval), // default nullptr
@@ -343,7 +344,7 @@ void add_eager_search_options_to_feature(
     add_search_algorithm_options_to_feature(feature, description);
 }
 
-tuple<
+WrapArgs<
     shared_ptr<PruningMethod>, shared_ptr<Evaluator>, OperatorCost, int, double,
     string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts) {
