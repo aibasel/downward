@@ -37,6 +37,7 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
+    virtual bool pruning_is_safe() const override;
 };
 
 template<class Entry>
@@ -121,6 +122,16 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
     for (const auto &sublist : open_lists)
         if (sublist->is_reliable_dead_end(eval_context))
             return true;
+    return false;
+}
+
+template<class Entry>
+bool AlternationOpenList<Entry>::pruning_is_safe() const {
+    for (const auto &sublist: open_lists) {
+        if (sublist->pruning_is_safe()) {
+            return true;
+        }
+    }
     return false;
 }
 

@@ -318,6 +318,16 @@ void EagerSearch::dump_search_space() const {
     search_space.dump(task_proxy);
 }
 
+bool EagerSearch::is_complete() const {
+    if (!open_list->pruning_is_safe()) {
+        return false;
+    }
+    if (!pruning_method->is_safe()) {
+        return false;
+    }
+    return true;
+}
+
 void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {
     if (f_evaluator) {
         int f_value = eval_context.get_evaluator_value(f_evaluator.get());

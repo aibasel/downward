@@ -77,6 +77,9 @@ public:
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
+    virtual bool is_complete() const {
+        return false;
+    }
     bool found_solution() const;
     SearchStatus get_status() const;
     const Plan &get_plan() const;

@@ -57,6 +57,7 @@ public:
     virtual void print_statistics() const override;
 
     void dump_search_space() const;
+    virtual bool is_complete() const override;
 };
 
 extern void add_eager_search_options_to_feature(
