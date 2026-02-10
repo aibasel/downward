@@ -47,8 +47,10 @@ def get_clang_format_version():
             check=True
         )
         return result.stdout.strip()
-    except (FileNotFoundError, subprocess.CalledProcessError):
+    except FileNotFoundError:
         return f"clang-format-{CLANG_FORMAT_VERSION} not found"
+    except subprocess.CalledProcessError as e:
+        return f"Error running clang-format: {e.stderr.strip()}"
 
 
 def main():
