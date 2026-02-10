@@ -48,6 +48,7 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
+    virtual bool pruning_is_safe() const override;
 };
 
 template<class Entry>
@@ -137,6 +138,30 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
         if (eval_context.is_evaluator_value_infinite(evaluator.get()) &&
             evaluator->dead_ends_are_reliable())
             return true;
+    return false;
+}
+
+template<class Entry>
+bool TieBreakingOpenList<Entry>::pruning_is_safe() const {
+    if (this->only_contains_preferred_entries()) {
+        return false;
+    }
+    assert(!evaluators.empty());
+    if (evaluators[0]->dead_ends_are_reliable()) {
+        return true;
+    }
+    // At this point we know that the first evaluator is unsafe.
+    if (allow_unsafe_pruning) {
+        return false;
+    }
+    // Even if the first evaluator is unsafe we can still say that
+    // pruning_is_safe is true if (allow_unsafe_pruning is false and) at least
+    // one other evaluator is safe.
+    for (auto eval: evaluators) {
+        if (eval->dead_ends_are_reliable()) {
+            return true;
+        }
+    }
     return false;
 }
 
