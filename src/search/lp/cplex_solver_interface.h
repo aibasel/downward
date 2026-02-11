@@ -32,24 +32,6 @@ class CplexSolverInterface : public SolverInterface {
     int num_permanent_constraints;
 
     /*
-      Our public interface allows using constraints of the form
-        LB <= expression <= UB
-      In cases where LB > UB, this constraint is trivially unsatisfiable.
-      CPLEX does not represent constraints like this and instead uses range
-      values, where the constraint is represented like this
-        expression - RNG = LB
-      where RNG is a variable restricted to take values from 0 to (UB - LB).
-      If LB > UB, the semantic instead is that RNG takes negative values between
-      (UB - LB) and 0. This means that in CPLEX, the constraint never is
-      trivially unsolvable. We still set the range value and the right-hand side
-      as described above but use negative range values to represent trivially
-      unsatisfiable constraints. The following two counters track how many such
-      constraints we have in the permanent and the temporary constraints.
-    */
-    int num_unsatisfiable_constraints;
-    int num_unsatisfiable_temp_constraints;
-
-    /*
       Matrix data in CPLEX format for loading a new problem. Matrix entries are
       stored in sparse form: non-zero coefficients are either stored
       column-by-column (in that case the column is the major dimension and the
@@ -149,36 +131,16 @@ class CplexSolverInterface : public SolverInterface {
     class CplexRowsInfo {
         // Right-hand side value of a row
         std::vector<double> rhs;
-        // Sense of a row (Greater or equal, Less or equal, Equal, or Range)
+        // Sense of a row (Greater or equal, Less or equal, or Equal)
         std::vector<char> sense;
-        /*
-          If the sense of a row is Range, then its value is restricted to the
-          interval (RHS, RHS + range_value).
-         */
-        std::vector<double> range_values;
-        /*
-          In case not all rows specify a sense, this gives the indices of the
-          rows that are ranged rows.
-         */
-        std::vector<int> range_indices;
     public:
-        void assign(
-            const named_vector::NamedVector<LPConstraint> &constraints,
-            int offset = 0, bool dense_range_values = true);
+        void assign(const named_vector::NamedVector<LPConstraint> &constraints);
+        
         double *get_rhs() {
             return to_cplex_array(rhs);
         }
         char *get_sense() {
             return to_cplex_array(sense);
-        }
-        double *get_range_values() {
-            return to_cplex_array(range_values);
-        }
-        int *get_range_indices() {
-            return to_cplex_array(range_indices);
-        }
-        int get_num_ranged_rows() {
-            return range_indices.size();
         }
     };
 
@@ -233,21 +195,6 @@ class CplexSolverInterface : public SolverInterface {
     CplexColumnsInfo columns;
     CplexRowsInfo rows;
     std::vector<int> objective_indices;
-
-    /*
-      We store a copy of the current constraint bounds. We need to know the
-      current bounds when changing bounds, and accessing them through the CPLEX
-      interface has a significant overhead. Storing these vectors overlaps with
-      storing CplexRowsInfo above. The difference is that CplexRowsInfo stores
-      more information and we reuse it for temporary constraints, while we want
-      to keep the following vectors always synchronized with the full LP
-      (permanent and temporary constraints).
-     */
-    std::vector<double> constraint_lower_bounds;
-    std::vector<double> constraint_upper_bounds;
-
-    bool is_trivially_unsolvable() const;
-    void change_constraint_bounds(int index, double lb, double ub);
 public:
     CplexSolverInterface();
     virtual ~CplexSolverInterface() override;

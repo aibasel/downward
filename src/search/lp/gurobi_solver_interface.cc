@@ -180,7 +180,7 @@ void GurobiSolverInterface::add_temporary_constraints(const named_vector::NamedV
     }
     model_dirty = true;
     num_temporary_constraints += constraints.size();
-    cerr << ">>>>> Added " << constraints.size() << " temporary constraints. Total temporary constraints: " << num_temporary_constraints << endl;
+    //cerr << ">>>>> Added " << constraints.size() << " temporary constraints. Total temporary constraints: " << num_temporary_constraints << endl;
 }
 
 void GurobiSolverInterface::clear_temporary_constraints() {
@@ -192,7 +192,7 @@ void GurobiSolverInterface::clear_temporary_constraints() {
     GRB_CALL(env, GRBdelconstrs, model, num_temporary_constraints, indices.data());
     model_dirty = true;
     num_temporary_constraints = 0;
-    cerr << ">>>>> Cleared temporary constraints. Total temporary constraints: " << num_temporary_constraints << endl;
+    //cerr << ">>>>> Cleared temporary constraints. Total temporary constraints: " << num_temporary_constraints << endl;
 }
 
 double GurobiSolverInterface::get_infinity() const {
@@ -207,28 +207,28 @@ void GurobiSolverInterface::set_objective_coefficients(const vector<double> &coe
     }                                                                                // TODO: is there a more elegant way to handle this?
     GRB_CALL(env, GRBsetdblattrarray, model, GRB_DBL_ATTR_OBJ, 0, num_coefficients, const_cast<double *>(coefficients.data()));
     model_dirty = true;
-    cerr << ">>>>> New objective coefficients: [";
-    for (int i = 0; i < num_coefficients; ++i) {
-        cerr << coefficients[i];
-        if (i + 1 < num_coefficients) {
-            cerr << ", ";
-        }
-    }
-    cerr << "]" << endl;
+    //cerr << ">>>>> New objective coefficients: [";
+    //for (int i = 0; i < num_coefficients; ++i) {
+    //    cerr << coefficients[i];
+    //    if (i + 1 < num_coefficients) {
+    //        cerr << ", ";
+    //    }
+    //}
+    //cerr << "]" << endl;
 }
 
 void GurobiSolverInterface::set_objective_coefficient(int index, double coefficient) {
     //assert(index >= 0 && index < get_num_variables());
     GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_OBJ, index, coefficient);
     model_dirty = true;
-    cerr << ">>>>> New objective coefficient for variable " << index << ": " << coefficient << endl;
+    //cerr << ">>>>> New objective coefficient for variable " << index << ": " << coefficient << endl;
 }
 
 void GurobiSolverInterface::set_constraint_rhs(int index, double bound) {
     assert(index >= 0 && index < get_num_constraints());
     GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_RHS, index, bound);
     model_dirty = true;
-    cerr << ">>>>> New right-hand side for constraint " << index << ": " << bound << endl;
+    //cerr << ">>>>> New right-hand side for constraint " << index << ": " << bound << endl;
 }
 
 void GurobiSolverInterface::set_constraint_sense(int index, lp::Sense sense) {
@@ -253,14 +253,14 @@ void GurobiSolverInterface::set_variable_lower_bound(int index, double bound) {
     //assert(index >= 0 && index < get_num_variables());
     GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_LB, index, bound);
     model_dirty = true;
-    cerr << ">>>>> New lower bound for variable " << index << ": " << bound << endl;
+    //cerr << ">>>>> New lower bound for variable " << index << ": " << bound << endl;
 }
 
 void GurobiSolverInterface::set_variable_upper_bound(int index, double bound) {
     //assert(index >= 0 && index < get_num_variables());
     GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_UB, index, bound);
     model_dirty = true;
-    cerr << ">>>>> New upper bound for variable " << index << ": " << bound << endl;
+    //cerr << ">>>>> New upper bound for variable " << index << ": " << bound << endl;
 }
 
 void GurobiSolverInterface::set_mip_gap(double gap) {
@@ -289,7 +289,7 @@ void GurobiSolverInterface::print_failure_analysis() const {
 bool GurobiSolverInterface::is_infeasible() const {
     int status = 0;
     GRB_CALL(env, GRBgetintattr, model, GRB_INT_ATTR_STATUS, &status);
-    cerr << ">>>>> Is infeasible?  " << (status == GRB_INFEASIBLE) << endl;
+    //cerr << ">>>>> Is infeasible?  " << (status == GRB_INFEASIBLE) << endl;
     return status == GRB_INFEASIBLE;
 }
 
@@ -297,7 +297,7 @@ bool GurobiSolverInterface::is_infeasible() const {
 bool GurobiSolverInterface::is_unbounded() const {
     int status = 0;
     GRB_CALL(env, GRBgetintattr, model, GRB_INT_ATTR_STATUS, &status);
-    cerr << ">>>>> Is unbounded?  " << (status == GRB_UNBOUNDED) << endl;
+    //cerr << ">>>>> Is unbounded?  " << (status == GRB_UNBOUNDED) << endl;
     return status == GRB_UNBOUNDED;
 }
 
@@ -305,7 +305,7 @@ bool GurobiSolverInterface::is_unbounded() const {
 bool GurobiSolverInterface::has_optimal_solution() const {
     int status = 0;
     GRB_CALL(env, GRBgetintattr, model, GRB_INT_ATTR_STATUS, &status);
-    cerr << ">>>>> Has optimal solution?  " << (status == GRB_OPTIMAL) << endl;
+    //cerr << ">>>>> Has optimal solution?  " << (status == GRB_OPTIMAL) << endl;
     return status == GRB_OPTIMAL;
 }
 
@@ -313,7 +313,7 @@ bool GurobiSolverInterface::has_optimal_solution() const {
 double GurobiSolverInterface::get_objective_value() const {
     double value = 0.0;
     GRB_CALL(env, GRBgetdblattr, model, GRB_DBL_ATTR_OBJVAL, &value);
-    cerr << ">>>>> Objective value: " << value << endl;
+    //cerr << ">>>>> Objective value: " << value << endl;
     return value;
 }
 
@@ -325,31 +325,31 @@ vector<double> GurobiSolverInterface::extract_solution() const {
     if (num_variables > 0) {
         GRB_CALL(env, GRBgetdblattrarray, model, GRB_DBL_ATTR_X, 0, num_variables, solution.data());
     }
-    cerr << ">>>>> Extracted solution: [";
-    for (int i = 0; i < num_variables; ++i) {
-        cerr << solution[i];
-        if (i + 1 < num_variables) {
-            cerr << ", ";
-        }
-    }
-    cerr << "]" << endl;
+    //cerr << ">>>>> Extracted solution: [";
+    //for (int i = 0; i < num_variables; ++i) {
+    //    cerr << solution[i];
+    //    if (i + 1 < num_variables) {
+    //        cerr << ", ";
+    //    }
+    //}
+    //cerr << "]" << endl;
     return solution;
 }
 
 int GurobiSolverInterface::get_num_variables() const {
     int num_variables = 0;
     GRB_CALL(env, GRBgetintattr, model, GRB_INT_ATTR_NUMVARS, &num_variables);
-    cerr << ">>>>> Number of variables: " << num_variables << endl;
+    //cerr << ">>>>> Number of variables: " << num_variables << endl;
     return num_variables;
 }
 
 int GurobiSolverInterface::get_num_constraints() const {
-    cerr << ">>>>> Number of constraints: " << (num_permanent_constraints + num_temporary_constraints) << endl;
+    //cerr << ">>>>> Number of constraints: " << (num_permanent_constraints + num_temporary_constraints) << endl;
     return num_permanent_constraints + num_temporary_constraints;
 }
 
 bool GurobiSolverInterface::has_temporary_constraints() const {
-    cerr << ">>>>> Has temporary constraints?  " << (num_temporary_constraints > 0) << endl;
+    //cerr << ">>>>> Has temporary constraints?  " << (num_temporary_constraints > 0) << endl;
     return num_temporary_constraints > 0;
 }
 
