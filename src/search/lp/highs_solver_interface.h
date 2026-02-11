@@ -11,9 +11,9 @@
 namespace lp {
 class HiGHSSolverInterface : public SolverInterface {
     mutable Highs highs_;
-    HighsModelStatus model_status_ = HighsModelStatus::kNotset;
     int num_permanent_constraints;
     int num_temporary_constraints;
+    vector<lp::Sense> constraint_senses;
 public:
     HiGHSSolverInterface();
 

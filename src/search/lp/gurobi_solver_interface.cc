@@ -234,19 +234,19 @@ void GurobiSolverInterface::set_constraint_rhs(int index, double bound) {
 void GurobiSolverInterface::set_constraint_sense(int index, lp::Sense sense) {
     assert(index >= 0 && index < get_num_constraints());
     if (sense == lp::Sense::GE) {
-        GRB_CALL(env, GRBsetdblattrelement, model, GRB_CHAR_ATTR_SENSE, index, GRB_GREATER_EQUAL);
+        GRB_CALL(env, GRBsetcharattrelement, model, GRB_CHAR_ATTR_SENSE, index, GRB_GREATER_EQUAL);
     } else if (sense == lp::Sense::LE) {
-        GRB_CALL(env, GRBsetdblattrelement, model, GRB_CHAR_ATTR_SENSE, index, GRB_LESS_EQUAL);
+        GRB_CALL(env, GRBsetcharattrelement, model, GRB_CHAR_ATTR_SENSE, index, GRB_LESS_EQUAL);
     } else if (sense == lp::Sense::EQ) {
-        GRB_CALL(env, GRBsetdblattrelement, model, GRB_CHAR_ATTR_SENSE, index, GRB_EQUAL);
+        GRB_CALL(env, GRBsetcharattrelement, model, GRB_CHAR_ATTR_SENSE, index, GRB_EQUAL);
     } else {
         cerr << "Error: Unknown constraint sense." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     model_dirty = true;
-    cerr << ">>>>> New sense for constraint " << index << ": " 
-         << (sense == lp::Sense::GE ? "GE" : (sense == lp::Sense::LE ? "LE" : (sense == lp::Sense::EQ ? "EQ" : "UNKNOWN"))) 
-         << endl;
+    //cerr << ">>>>> New sense for constraint " << index << ": " 
+    //     << (sense == lp::Sense::GE ? "GE" : (sense == lp::Sense::LE ? "LE" : (sense == lp::Sense::EQ ? "EQ" : "UNKNOWN"))) 
+    //     << endl;
 }
 
 void GurobiSolverInterface::set_variable_lower_bound(int index, double bound) {

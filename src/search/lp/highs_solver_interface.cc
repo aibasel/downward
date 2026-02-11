@@ -14,13 +14,6 @@ struct RowBounds {
     double upper;
 };
 
-bool is_neg_inf(double value, double inf) {
-    return value <= -inf;
-}
-
-bool is_pos_inf(double value, double inf) {
-    return value >= inf;
-}
 
 RowBounds sense_rhs_to_bounds(const Highs &highs, Sense sense, double rhs) {
     const double inf = highs.getInfinity();
@@ -33,38 +26,6 @@ RowBounds sense_rhs_to_bounds(const Highs &highs, Sense sense, double rhs) {
             return {rhs, rhs};
     }
     throw std::runtime_error("Unknown constraint sense in HiGHS interface");
-}
-
-Sense bounds_to_sense(double lb, double ub, double inf) {
-    const bool lb_inf = is_neg_inf(lb, inf);
-    const bool ub_inf = is_pos_inf(ub, inf);
-
-    if (lb_inf && !ub_inf) {
-        return Sense::LE;
-    }
-    if (!lb_inf && ub_inf) {
-        return Sense::GE;
-    }
-    if (!lb_inf && !ub_inf && lb == ub) {
-        return Sense::EQ;
-    }
-    throw std::runtime_error("HiGHS constraint has unsupported ranged bounds");
-}
-
-double bounds_to_rhs(double lb, double ub, double inf) {
-    const bool lb_inf = is_neg_inf(lb, inf);
-    const bool ub_inf = is_pos_inf(ub, inf);
-
-    if (lb_inf && !ub_inf) {
-        return ub;
-    }
-    if (!lb_inf && ub_inf) {
-        return lb;
-    }
-    if (!lb_inf && !ub_inf && lb == ub) {
-        return lb;
-    }
-    throw std::runtime_error("HiGHS constraint has unsupported ranged bounds");
 }
 } // namespace
 
@@ -121,6 +82,7 @@ void HiGHSSolverInterface::load_problem(const LinearProgram &lp) {
                                idx.data(),
                                val.data()),
                  "addRow");
+        constraint_senses.push_back(c.get_sense());
     }
     num_permanent_constraints = lp.get_constraints().size();
     num_temporary_constraints = 0;
@@ -167,6 +129,7 @@ void HiGHSSolverInterface::add_temporary_constraints(
                                idx.data(),
                                val.data()),
                  "addRow(temporary_constraints)");
+        constraint_senses.push_back(c.get_sense());
     }
 
     //cerr << "@@@@@@@@@@@@@@@@@@@@@ Warning: add_temporary_constraints does not update the constraint right-hand side and sense. Make sure to call set_constraint_rhs and set_constraint_sense if the right-hand side or sense should be changed." << endl;
@@ -180,7 +143,7 @@ void HiGHSSolverInterface::clear_temporary_constraints() {
     const int fst_temp_row = num_permanent_constraints;
     const int lst_temp_row = highs_.getNumRow() - 1;
     highs_ok(highs_.deleteRows(fst_temp_row, lst_temp_row), "deleteRows");
-
+    constraint_senses.resize(num_permanent_constraints);
     num_temporary_constraints = 0;
 }
 
@@ -223,25 +186,36 @@ void HiGHSSolverInterface::set_objective_coefficient(int index, double coefficie
 }
 
 void HiGHSSolverInterface::set_constraint_rhs(int index, double right_hand_side) {
-    const double inf = highs_.getInfinity();
     const double lb = highs_.getLp().row_lower_[index];
     const double ub = highs_.getLp().row_upper_[index];
-    const Sense sense = bounds_to_sense(lb, ub, inf);
-    const RowBounds bounds = sense_rhs_to_bounds(highs_, sense, right_hand_side);
-    highs_ok(highs_.changeRowBounds(index, bounds.lower, bounds.upper), "changeRowBounds(rhs)");
-    //cerr << ">>>>> New rhs for constraint " << index << ": " << right_hand_side << endl;
+    const lp::Sense sense = constraint_senses[index];  
+
+    if(sense == lp::Sense::GE) {
+        highs_ok(highs_.changeRowBounds(index, right_hand_side, ub), "changeRowBounds(rhs)");
+    }
+    else if(sense == lp::Sense::LE) {
+        highs_ok(highs_.changeRowBounds(index, lb, right_hand_side), "changeRowBounds(rhs)");
+    }
+    else if(sense == lp::Sense::EQ) {
+        highs_ok(highs_.changeRowBounds(index, right_hand_side, right_hand_side), "changeRowBounds(rhs)");    
+    } else {
+        throw std::runtime_error("Error: Unknown constraint sense.");
+    }
 }
 
 void HiGHSSolverInterface::set_constraint_sense(int index, lp::Sense sense) {
-    const double inf = highs_.getInfinity();
+    // Get bounds
     const double lb = highs_.getLp().row_lower_[index];
-    const double ub = highs_.getLp().row_upper_[index];
-    const double rhs = bounds_to_rhs(lb, ub, inf);
-    const RowBounds bounds = sense_rhs_to_bounds(highs_, sense, rhs);
-    highs_ok(highs_.changeRowBounds(index, bounds.lower, bounds.upper), "changeRowBounds(sense)");
-    //cerr << ">>>>> New sense for constraint " << index << ": " 
-    //        << (sense == lp::Sense::GE ? "GE" : (sense == lp::Sense::LE ? "LE" : (sense == lp::Sense::EQ ? "EQ" : "UNKNOWN"))) 
-    //        << endl;
+    const double ub = highs_.getLp().row_upper_[index]; 
+    // Update vector with constraint senses
+    constraint_senses[index] = sense; 
+    // Throw error if the new sense is unknown or the sense is equality but the bounds are not equal
+    if (sense == lp::Sense::EQ && lb != ub) {
+        throw std::runtime_error("Error: Cannot set sense to EQ for constraint " + std::to_string(index) + " because the lower and upper bounds are not equal.");
+    }
+     else if (sense != lp::Sense::GE && sense != lp::Sense::LE && sense != lp::Sense::EQ) {
+        throw std::runtime_error("Error: Unknown constraint sense.");
+     }
 }
 
 void HiGHSSolverInterface::set_variable_lower_bound(int index, double bound) {
