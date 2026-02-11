@@ -27,6 +27,7 @@ class SoPlexSolverInterface : public SolverInterface {
     mutable soplex::SoPlex soplex;
     int num_permanent_constraints;
     int num_temporary_constraints;
+    std::vector<lp::Sense> constraint_senses;
 public:
     SoPlexSolverInterface();
 

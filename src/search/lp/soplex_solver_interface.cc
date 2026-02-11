@@ -94,12 +94,25 @@ void SoPlexSolverInterface::load_problem(const LinearProgram &lp) {
     soplex.addRowsReal(constraints_to_row_set(lp.get_constraints()));
     num_permanent_constraints = lp.get_constraints().size();
     num_temporary_constraints = 0;
+
+    const auto &cons = lp.get_constraints();
+    const int m = static_cast<int>(cons.size());
+    for (int r = 0; r < m; ++r) {
+        const auto &c = cons[r];
+        constraint_senses.push_back(c.get_sense());
+    }
+
 }
 
 void SoPlexSolverInterface::add_temporary_constraints(
     const named_vector::NamedVector<LPConstraint> &constraints) {
     soplex.addRowsReal(constraints_to_row_set(constraints));
-    num_temporary_constraints = constraints.size();
+    num_temporary_constraints += constraints.size();
+
+    for (int i = 0; i < (int)constraints.size(); ++i) {
+        const auto &c = constraints[i];
+        constraint_senses.push_back(c.get_sense());
+    }
 }
 
 void SoPlexSolverInterface::clear_temporary_constraints() {
@@ -107,6 +120,7 @@ void SoPlexSolverInterface::clear_temporary_constraints() {
         int first = num_permanent_constraints;
         int last = first + num_temporary_constraints - 1;
         soplex.removeRowRangeReal(first, last, nullptr);
+        constraint_senses.resize(num_permanent_constraints);
         num_temporary_constraints = 0;
     }
 }
@@ -265,21 +279,19 @@ void SoPlexSolverInterface::print_statistics() const {
 }
 
 void SoPlexSolverInterface::set_constraint_rhs(int index, double b) {
-    const double lhs = soplex.lhsReal(index);
-    const double rhs = soplex.rhsReal(index);
+    const lp::Sense sense = constraint_senses[index];  
 
-    const bool lhs_is_neginf = (lhs == -infinity);
-    const bool rhs_is_posinf = (rhs ==  infinity);
-
-    if (lhs_is_neginf && !rhs_is_posinf) {
-        soplex.changeRhsReal(index, b);
-    } else if (!lhs_is_neginf && rhs_is_posinf) {
+    if(sense == lp::Sense::GE) {
         soplex.changeLhsReal(index, b);
-    } else if (!lhs_is_neginf && !rhs_is_posinf && lhs == rhs) {
+    }
+    else if(sense == lp::Sense::LE) {
+        soplex.changeRhsReal(index, b);
+    }
+    else if(sense == lp::Sense::EQ) {
         soplex.changeLhsReal(index, b);
         soplex.changeRhsReal(index, b);
     } else {
-        throw std::logic_error("invalid constraint");
+        throw std::runtime_error("Error: Unknown constraint sense.");
     }
 }
 
@@ -289,6 +301,8 @@ void SoPlexSolverInterface::set_constraint_sense(int index, lp::Sense sense) {
 
     const bool lhs_is_neginf = (lhs == -infinity);
     const bool rhs_is_posinf = (rhs ==  infinity);
+
+    constraint_senses[index] = sense; 
 
     double b;
     if (lhs_is_neginf && !rhs_is_posinf) {
