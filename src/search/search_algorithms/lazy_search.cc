@@ -234,4 +234,8 @@ void LazySearch::print_statistics() const {
     statistics.print_detailed_statistics();
     search_space.print_statistics();
 }
+
+bool LazySearch::is_complete() const {
+    return open_list->pruning_is_safe();
+}
 }

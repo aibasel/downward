@@ -123,7 +123,7 @@ public:
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const = 0;
     virtual bool pruning_is_safe() const {
-      return false;
+        return false;
     }
 };
 
