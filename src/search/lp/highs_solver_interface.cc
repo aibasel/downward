@@ -169,8 +169,8 @@ void HiGHSSolverInterface::add_temporary_constraints(
                  "addRow(temporary_constraints)");
     }
 
-    cerr << "@@@@@@@@@@@@@@@@@@@@@ Warning: add_temporary_constraints does not update the constraint right-hand side and sense. Make sure to call set_constraint_rhs and set_constraint_sense if the right-hand side or sense should be changed." << endl;
-    exit(1);
+    //cerr << "@@@@@@@@@@@@@@@@@@@@@ Warning: add_temporary_constraints does not update the constraint right-hand side and sense. Make sure to call set_constraint_rhs and set_constraint_sense if the right-hand side or sense should be changed." << endl;
+   // exit(1);
 }
 
 void HiGHSSolverInterface::clear_temporary_constraints() {
@@ -207,19 +207,19 @@ void HiGHSSolverInterface::set_objective_coefficients(const std::vector<double>&
                  "changeColCost(vec)");
     }
 
-    cerr << ">>>>> New objective coefficients: [";
-    for (int i = 0; i < n; ++i) {
-        cerr << coefficients[i];
-        if (i + 1 < n) {
-            cerr << ", ";
-        }
-    }
-    cerr << "]" << endl;
+    //cerr << ">>>>> New objective coefficients: [";
+    //for (int i = 0; i < n; ++i) {
+    //    cerr << coefficients[i];
+    //    if (i + 1 < n) {
+    //        cerr << ", ";
+    //    }
+    //}
+    //cerr << "]" << endl;
 }
 
 void HiGHSSolverInterface::set_objective_coefficient(int index, double coefficient) {
     highs_ok(highs_.changeColCost(index, coefficient), "changeColCost");
-    cerr << ">>>>> New objective coefficient for variable " << index << ": " << coefficient << endl;
+    //cerr << ">>>>> New objective coefficient for variable " << index << ": " << coefficient << endl;
 }
 
 void HiGHSSolverInterface::set_constraint_rhs(int index, double right_hand_side) {
@@ -229,7 +229,7 @@ void HiGHSSolverInterface::set_constraint_rhs(int index, double right_hand_side)
     const Sense sense = bounds_to_sense(lb, ub, inf);
     const RowBounds bounds = sense_rhs_to_bounds(highs_, sense, right_hand_side);
     highs_ok(highs_.changeRowBounds(index, bounds.lower, bounds.upper), "changeRowBounds(rhs)");
-    cerr << ">>>>> New rhs for constraint " << index << ": " << right_hand_side << endl;
+    //cerr << ">>>>> New rhs for constraint " << index << ": " << right_hand_side << endl;
 }
 
 void HiGHSSolverInterface::set_constraint_sense(int index, lp::Sense sense) {
@@ -239,21 +239,21 @@ void HiGHSSolverInterface::set_constraint_sense(int index, lp::Sense sense) {
     const double rhs = bounds_to_rhs(lb, ub, inf);
     const RowBounds bounds = sense_rhs_to_bounds(highs_, sense, rhs);
     highs_ok(highs_.changeRowBounds(index, bounds.lower, bounds.upper), "changeRowBounds(sense)");
-    cerr << ">>>>> New sense for constraint " << index << ": " 
-            << (sense == lp::Sense::GE ? "GE" : (sense == lp::Sense::LE ? "LE" : (sense == lp::Sense::EQ ? "EQ" : "UNKNOWN"))) 
-            << endl;
+    //cerr << ">>>>> New sense for constraint " << index << ": " 
+    //        << (sense == lp::Sense::GE ? "GE" : (sense == lp::Sense::LE ? "LE" : (sense == lp::Sense::EQ ? "EQ" : "UNKNOWN"))) 
+    //        << endl;
 }
 
 void HiGHSSolverInterface::set_variable_lower_bound(int index, double bound) {
     const double ub = highs_.getLp().col_upper_[index];
     highs_ok(highs_.changeColBounds(index, bound, ub), "changeColBounds(lb)"); 
-    cerr << ">>>>> New lower bound for variable " << index << ": " << bound << endl;
+    //cerr << ">>>>> New lower bound for variable " << index << ": " << bound << endl;
 }
 
 void HiGHSSolverInterface::set_variable_upper_bound(int index, double bound) {
     const double lb = highs_.getLp().col_lower_[index];
     highs_ok(highs_.changeColBounds(index, lb, bound), "changeColBounds(ub)");
-    cerr << ">>>>> New upper bound for variable " << index << ": " << bound << endl;
+    //cerr << ">>>>> New upper bound for variable " << index << ": " << bound << endl;
 }
 
 void HiGHSSolverInterface::set_mip_gap(double gap) {
@@ -273,24 +273,24 @@ void HiGHSSolverInterface::print_failure_analysis() const {
 }
 
 bool HiGHSSolverInterface::is_infeasible() const {
-    cerr << ">>>>> Is infeasible?  " << (highs_.getModelStatus() == HighsModelStatus::kInfeasible) << endl;
+    //cerr << ">>>>> Is infeasible?  " << (highs_.getModelStatus() == HighsModelStatus::kInfeasible) << endl;
     return highs_.getModelStatus() == HighsModelStatus::kInfeasible;
 }
 
 bool HiGHSSolverInterface::is_unbounded() const {
-    cerr << ">>>>> Is unbounded?  " << (highs_.getModelStatus() == HighsModelStatus::kUnbounded) << endl;
+    //cerr << ">>>>> Is unbounded?  " << (highs_.getModelStatus() == HighsModelStatus::kUnbounded) << endl;
     return highs_.getModelStatus() == HighsModelStatus::kUnbounded;
 }
 
 bool HiGHSSolverInterface::has_optimal_solution() const {
-    cerr << ">>>>> Has optimal solution?  " << (highs_.getModelStatus() == HighsModelStatus::kOptimal) << endl;
+    //cerr << ">>>>> Has optimal solution?  " << (highs_.getModelStatus() == HighsModelStatus::kOptimal) << endl;
     return highs_.getModelStatus() == HighsModelStatus::kOptimal;
 }
 
 double HiGHSSolverInterface::get_objective_value() const {
     assert(has_optimal_solution());
     const HighsInfo& info = highs_.getInfo();
-    cerr << ">>>>> Objective value: " << info.objective_function_value << endl;
+    //cerr << ">>>>> Objective value: " << info.objective_function_value << endl;
     return info.objective_function_value;
 }
 
@@ -302,29 +302,29 @@ std::vector<double> HiGHSSolverInterface::extract_solution() const {
     for (int i = 0; i < n; i++){
         x[i] = sol.col_value[i];
     }
-    cerr << ">>>>> Extracted solution: [";
-    for (int i = 0; i < n; ++i) {
-        cerr << x[i];
-        if (i + 1 < n) {
-            cerr << ", ";
-        }
-    }
-    cerr << "]" << endl;
+    //cerr << ">>>>> Extracted solution: [";
+    //for (int i = 0; i < n; ++i) {
+    //    cerr << x[i];
+    //    if (i + 1 < n) {
+    //        cerr << ", ";
+    //    }
+    //}
+    //cerr << "]" << endl;
     return x;
 }
 
 int HiGHSSolverInterface::get_num_variables() const {
-    cerr << ">>>>> Number of variables: " << highs_.getNumCol() << endl;
+    //cerr << ">>>>> Number of variables: " << highs_.getNumCol() << endl;
     return highs_.getNumCol();
 }
 
 int HiGHSSolverInterface::get_num_constraints() const {
-    cerr << ">>>>> Number of constraints: " << highs_.getNumRow() << endl;
+    //cerr << ">>>>> Number of constraints: " << highs_.getNumRow() << endl;
     return highs_.getNumRow();
 }
 
 bool HiGHSSolverInterface::has_temporary_constraints() const {
-    cerr << ">>>>> Has temporary constraints?  " << (num_temporary_constraints > 0) << endl;
+    //cerr << ">>>>> Has temporary constraints?  " << (num_temporary_constraints > 0) << endl;
     return num_temporary_constraints != 0;
 }
 
