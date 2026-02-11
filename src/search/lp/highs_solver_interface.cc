@@ -90,7 +90,7 @@ void HiGHSSolverInterface::load_problem(const LinearProgram &lp) {
     highs_ok(highs_.setOptionValue("log_to_console", false), "setOptionValue(log_to_console)");
 
     // variables
-    named_vector::NamedVector<LPVariable> vars = lp.get_variables();
+    const auto &vars = lp.get_variables();
     const int n = static_cast<int>(vars.size());
     for (int i = 0; i < n; ++i) {
         const auto &v = vars[i];
