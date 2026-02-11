@@ -64,6 +64,7 @@ void LPConstraint::insert(int index, double coefficient) {
     coefficients.push_back(coefficient);
 }
 
+// TODO: double check that this preserves the semantics of the old implementation.
 ostream &LPConstraint::dump(
     ostream &stream, const LinearProgram *program) const {
     for (size_t i = 0; i < variables.size(); ++i) {
@@ -84,9 +85,10 @@ ostream &LPConstraint::dump(
 }
 
 LPVariable::LPVariable(
-    Sense sense, double right_hand_side, double objective_coefficient, bool is_integer = false)
-    : sense(sense),
-      right_hand_side(right_hand_side),
+    double lower_bound, double upper_bound, double objective_coefficient,
+    bool is_integer)
+    : lower_bound(lower_bound),
+      upper_bound(upper_bound),
       objective_coefficient(objective_coefficient),
       is_integer(is_integer) {
 }
@@ -195,16 +197,23 @@ void LPSolver::set_objective_coefficient(int index, double coefficient) {
     pimpl->set_objective_coefficient(index, coefficient);
 }
 
-void LPSolver::set_constraint_bound(int index, Sense sense, double right_hand_side) {
-    pimpl->set_constraint_bound(index, sense, right_hand_side);
+void LPSolver::set_constraint_rhs(int index, double right_hand_side) {
+    pimpl->set_constraint_rhs(index, right_hand_side);
 }
 
-void LPSolver::set_variable_bound(int index, Sense sense, double right_hand_side) {
-    pimpl->set_variable_bound(index, sense, right_hand_side);
+void LPSolver::set_constraint_sense(int index, Sense sense) {
+    pimpl->set_constraint_sense(index, sense);
+}
+
+void LPSolver::set_variable_lower_bound(int index, double bound) {
+    pimpl->set_variable_lower_bound(index, bound);
+}
+
+void LPSolver::set_variable_upper_bound(int index, double bound) {
+    pimpl->set_variable_upper_bound(index, bound);
 }
 
 void LPSolver::set_mip_gap(double gap) {
-    // relative mip gap
     pimpl->set_mip_gap(gap);
 }
 

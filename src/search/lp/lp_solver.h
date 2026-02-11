@@ -34,7 +34,9 @@ std::tuple<LPSolverType> get_lp_solver_arguments_from_options(
 class LinearProgram;
 
 enum class Sense {
-  GE, LE, EQ
+  GE, // ax >= b
+  LE, // ax <= b
+  EQ  // ax = b
 };
 
 std::ostream& operator<<(std::ostream& os, Sense s);
@@ -63,6 +65,14 @@ public:
         return sense;
     }
 
+    void set_right_hand_side(double rhs) {
+        right_hand_side = rhs;
+    }
+
+    void set_sense(Sense s) {
+        sense = s;
+    }
+
     void clear();
     bool empty() const;
     // Coefficients must be added without duplicate indices.
@@ -73,13 +83,13 @@ public:
 };
 
 struct LPVariable {
-    Sense sense;
-    double right_hand_side;
+    double lower_bound;
+    double upper_bound;
     double objective_coefficient;
     bool is_integer;
 
     LPVariable(
-        Sense sense, double right_hand_side, double objective_coefficient,
+        double lower_bound, double upper_bound, double objective_coefficient,
         bool is_integer = false);
 };
 
@@ -132,8 +142,10 @@ public:
 
     void set_objective_coefficients(const std::vector<double> &coefficients);
     void set_objective_coefficient(int index, double coefficient);
-    void set_constraint_bound(int index, Sense sense, double right_hand_side);
-    void set_variable_bound(int index, Sense sense, double right_hand_side);
+    void set_constraint_rhs(int index, double right_hand_side);
+    void set_constraint_sense(int index, Sense sense);
+    void set_variable_lower_bound(int index, double bound);
+    void set_variable_upper_bound(int index, double bound);
 
     void set_mip_gap(double gap);
 

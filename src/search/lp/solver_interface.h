@@ -12,6 +12,7 @@ class NamedVector;
 namespace lp {
 class LinearProgram;
 class LPConstraint;
+enum class Sense;
 
 class SolverInterface {
 public:
@@ -26,8 +27,8 @@ public:
     virtual void set_objective_coefficients(
         const std::vector<double> &coefficients) = 0;
     virtual void set_objective_coefficient(int index, double coefficient) = 0;
-    virtual void set_constraint_lower_bound(int index, double bound) = 0;
-    virtual void set_constraint_upper_bound(int index, double bound) = 0;
+    virtual void set_constraint_rhs(int index, double right_hand_side) = 0;
+    virtual void set_constraint_sense(int index, lp::Sense sense) = 0;
     virtual void set_variable_lower_bound(int index, double bound) = 0;
     virtual void set_variable_upper_bound(int index, double bound) = 0;
 
