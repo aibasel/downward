@@ -26,8 +26,8 @@ public:
     virtual void set_objective_coefficients(
         const std::vector<double> &coefficients) override;
     virtual void set_objective_coefficient(int index, double coefficient) override;
-    virtual void set_constraint_lower_bound(int index, double bound) override;
-    virtual void set_constraint_upper_bound(int index, double bound) override;
+    virtual void set_constraint_rhs(int index, double right_hand_side) override;
+    virtual void set_constraint_sense(int index, lp::Sense sense) override;
     virtual void set_variable_lower_bound(int index, double bound) override;
     virtual void set_variable_upper_bound(int index, double bound) override;
 

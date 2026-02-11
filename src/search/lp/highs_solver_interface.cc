@@ -8,6 +8,66 @@ using namespace std;
 
 namespace lp {
 
+namespace {
+struct RowBounds {
+    double lower;
+    double upper;
+};
+
+bool is_neg_inf(double value, double inf) {
+    return value <= -inf;
+}
+
+bool is_pos_inf(double value, double inf) {
+    return value >= inf;
+}
+
+RowBounds sense_rhs_to_bounds(const Highs &highs, Sense sense, double rhs) {
+    const double inf = highs.getInfinity();
+    switch (sense) {
+        case Sense::GE:
+            return {rhs, inf};
+        case Sense::LE:
+            return {-inf, rhs};
+        case Sense::EQ:
+            return {rhs, rhs};
+    }
+    throw std::runtime_error("Unknown constraint sense in HiGHS interface");
+}
+
+Sense bounds_to_sense(double lb, double ub, double inf) {
+    const bool lb_inf = is_neg_inf(lb, inf);
+    const bool ub_inf = is_pos_inf(ub, inf);
+
+    if (lb_inf && !ub_inf) {
+        return Sense::LE;
+    }
+    if (!lb_inf && ub_inf) {
+        return Sense::GE;
+    }
+    if (!lb_inf && !ub_inf && lb == ub) {
+        return Sense::EQ;
+    }
+    throw std::runtime_error("HiGHS constraint has unsupported ranged bounds");
+}
+
+double bounds_to_rhs(double lb, double ub, double inf) {
+    const bool lb_inf = is_neg_inf(lb, inf);
+    const bool ub_inf = is_pos_inf(ub, inf);
+
+    if (lb_inf && !ub_inf) {
+        return ub;
+    }
+    if (!lb_inf && ub_inf) {
+        return lb;
+    }
+    if (!lb_inf && !ub_inf && lb == ub) {
+        return lb;
+    }
+    throw std::runtime_error("HiGHS constraint has unsupported ranged bounds");
+}
+} // namespace
+
 static void highs_ok(HighsStatus s, const char* where) {
     if (s == HighsStatus::kOk) return;
     throw std::runtime_error(std::string("HiGHS error in ") + where);
@@ -54,8 +114,9 @@ void HiGHSSolverInterface::load_problem(const LinearProgram &lp) {
         const auto &val = c.get_coefficients();
         assert(idx.size() == val.size());
 
-        highs_ok(highs_.addRow(c.get_lower_bound(),
-                               c.get_upper_bound(),
+        const RowBounds bounds = sense_rhs_to_bounds(highs_, c.get_sense(), c.get_right_hand_side());
+        highs_ok(highs_.addRow(bounds.lower,
+                               bounds.upper,
                                (int)idx.size(),
                                idx.data(),
                                val.data()),
@@ -64,7 +125,29 @@ void HiGHSSolverInterface::load_problem(const LinearProgram &lp) {
     num_permanent_constraints = lp.get_constraints().size();
     num_temporary_constraints = 0;
 
-    //cout << "so far so good" << endl;
+    // Print model 
+    //cerr << "Model loaded with " << n << " variables and " << m << " constraints." << endl;
+    //for (int i = 0; i < n; ++i) {
+    //    cerr << "Variable " << i << ": obj=" << vars[i].objective_coefficient
+    //         << ", lb=" << vars[i].lower_bound
+    //         << ", ub=" << vars[i].upper_bound
+    //         << ", is_integer=" << vars[i].is_integer
+    //         << endl;
+    //}
+    // for (int r = 0; r < m; ++r) {
+    //    const auto &c = cons[r];
+    //    cerr << "Constraint " << r << ": sense=" 
+    //         << (c.get_sense() == lp::Sense::GE ? "GE" : (c.get_sense() == lp::Sense::LE ? "LE" : (c.get_sense() == lp::Sense::EQ ? "EQ" : "UNKNOWN"))) 
+    //         << ", rhs=" << c.get_right_hand_side()
+    //         << ", coefficients=[";
+    //    for (size_t i = 0; i < c.get_variables().size(); ++i) {
+    //        cerr << "(" << c.get_variables()[i] << ": " << c.get_coefficients()[i] << ")";
+    //        if (i + 1 < c.get_variables().size()) {
+    //            cerr << ", ";
+    //        }
+    //    }
+    //    cerr << "]" << endl;
+    //}
 }
 
 void HiGHSSolverInterface::add_temporary_constraints(
@@ -76,13 +159,18 @@ void HiGHSSolverInterface::add_temporary_constraints(
         const auto &idx = c.get_variables();
         const auto &val = c.get_coefficients();
 
-        highs_ok(highs_.addRow(c.get_lower_bound(),
-                               c.get_upper_bound(),
+        const RowBounds bounds = sense_rhs_to_bounds(highs_, c.get_sense(), c.get_right_hand_side());
+
+        highs_ok(highs_.addRow(bounds.lower,
+                               bounds.upper,
                                (int)idx.size(),
                                idx.data(),
                                val.data()),
                  "addRow(temporary_constraints)");
     }
+
+    cerr << "@@@@@@@@@@@@@@@@@@@@@ Warning: add_temporary_constraints does not update the constraint right-hand side and sense. Make sure to call set_constraint_rhs and set_constraint_sense if the right-hand side or sense should be changed." << endl;
+    exit(1);
 }
 
 void HiGHSSolverInterface::clear_temporary_constraints() {
@@ -98,10 +186,10 @@ void HiGHSSolverInterface::clear_temporary_constraints() {
 
 double HiGHSSolverInterface::get_infinity() const {
     return highs_.getInfinity();
+    //return 1e100;
 }
 
-void HiGHSSolverInterface::set_objective_coefficients(
-    const std::vector<double>& coefficients)
+void HiGHSSolverInterface::set_objective_coefficients(const std::vector<double>& coefficients)
 {
     const int n = highs_.getNumCol();
 
@@ -118,30 +206,54 @@ void HiGHSSolverInterface::set_objective_coefficients(
         highs_ok(highs_.changeColCost(i, coefficients[i]),
                  "changeColCost(vec)");
     }
+
+    cerr << ">>>>> New objective coefficients: [";
+    for (int i = 0; i < n; ++i) {
+        cerr << coefficients[i];
+        if (i + 1 < n) {
+            cerr << ", ";
+        }
+    }
+    cerr << "]" << endl;
 }
 
 void HiGHSSolverInterface::set_objective_coefficient(int index, double coefficient) {
     highs_ok(highs_.changeColCost(index, coefficient), "changeColCost");
+    cerr << ">>>>> New objective coefficient for variable " << index << ": " << coefficient << endl;
 }
 
-void HiGHSSolverInterface::set_constraint_lower_bound(int index, double bound) {
-    const double ub = highs_.getLp().row_upper_[index];
-    highs_ok(highs_.changeRowBounds(index, bound, ub), "changeRowBounds(lb)");
-}
-
-void HiGHSSolverInterface::set_constraint_upper_bound(int index, double bound) {
+void HiGHSSolverInterface::set_constraint_rhs(int index, double right_hand_side) {
+    const double inf = highs_.getInfinity();
     const double lb = highs_.getLp().row_lower_[index];
-    highs_ok(highs_.changeRowBounds(index, lb, bound), "changeRowBounds(ub)");
+    const double ub = highs_.getLp().row_upper_[index];
+    const Sense sense = bounds_to_sense(lb, ub, inf);
+    const RowBounds bounds = sense_rhs_to_bounds(highs_, sense, right_hand_side);
+    highs_ok(highs_.changeRowBounds(index, bounds.lower, bounds.upper), "changeRowBounds(rhs)");
+    cerr << ">>>>> New rhs for constraint " << index << ": " << right_hand_side << endl;
+}
+
+void HiGHSSolverInterface::set_constraint_sense(int index, lp::Sense sense) {
+    const double inf = highs_.getInfinity();
+    const double lb = highs_.getLp().row_lower_[index];
+    const double ub = highs_.getLp().row_upper_[index];
+    const double rhs = bounds_to_rhs(lb, ub, inf);
+    const RowBounds bounds = sense_rhs_to_bounds(highs_, sense, rhs);
+    highs_ok(highs_.changeRowBounds(index, bounds.lower, bounds.upper), "changeRowBounds(sense)");
+    cerr << ">>>>> New sense for constraint " << index << ": " 
+            << (sense == lp::Sense::GE ? "GE" : (sense == lp::Sense::LE ? "LE" : (sense == lp::Sense::EQ ? "EQ" : "UNKNOWN"))) 
+            << endl;
 }
 
 void HiGHSSolverInterface::set_variable_lower_bound(int index, double bound) {
     const double ub = highs_.getLp().col_upper_[index];
     highs_ok(highs_.changeColBounds(index, bound, ub), "changeColBounds(lb)"); 
+    cerr << ">>>>> New lower bound for variable " << index << ": " << bound << endl;
 }
 
 void HiGHSSolverInterface::set_variable_upper_bound(int index, double bound) {
     const double lb = highs_.getLp().col_lower_[index];
     highs_ok(highs_.changeColBounds(index, lb, bound), "changeColBounds(ub)");
+    cerr << ">>>>> New upper bound for variable " << index << ": " << bound << endl;
 }
 
 void HiGHSSolverInterface::set_mip_gap(double gap) {
@@ -152,7 +264,6 @@ void HiGHSSolverInterface::solve() {
     highs_ok(highs_.run(), "run");
 }
 
-
 void HiGHSSolverInterface::write_lp(const std::string &filename) const {
     highs_ok(highs_.writeModel(filename), "writeModel");
 }
@@ -162,20 +273,24 @@ void HiGHSSolverInterface::print_failure_analysis() const {
 }
 
 bool HiGHSSolverInterface::is_infeasible() const {
+    cerr << ">>>>> Is infeasible?  " << (highs_.getModelStatus() == HighsModelStatus::kInfeasible) << endl;
     return highs_.getModelStatus() == HighsModelStatus::kInfeasible;
 }
 
 bool HiGHSSolverInterface::is_unbounded() const {
+    cerr << ">>>>> Is unbounded?  " << (highs_.getModelStatus() == HighsModelStatus::kUnbounded) << endl;
     return highs_.getModelStatus() == HighsModelStatus::kUnbounded;
 }
 
 bool HiGHSSolverInterface::has_optimal_solution() const {
+    cerr << ">>>>> Has optimal solution?  " << (highs_.getModelStatus() == HighsModelStatus::kOptimal) << endl;
     return highs_.getModelStatus() == HighsModelStatus::kOptimal;
 }
 
 double HiGHSSolverInterface::get_objective_value() const {
     assert(has_optimal_solution());
     const HighsInfo& info = highs_.getInfo();
+    cerr << ">>>>> Objective value: " << info.objective_function_value << endl;
     return info.objective_function_value;
 }
 
@@ -187,18 +302,29 @@ std::vector<double> HiGHSSolverInterface::extract_solution() const {
     for (int i = 0; i < n; i++){
         x[i] = sol.col_value[i];
     }
+    cerr << ">>>>> Extracted solution: [";
+    for (int i = 0; i < n; ++i) {
+        cerr << x[i];
+        if (i + 1 < n) {
+            cerr << ", ";
+        }
+    }
+    cerr << "]" << endl;
     return x;
 }
 
 int HiGHSSolverInterface::get_num_variables() const {
+    cerr << ">>>>> Number of variables: " << highs_.getNumCol() << endl;
     return highs_.getNumCol();
 }
 
 int HiGHSSolverInterface::get_num_constraints() const {
+    cerr << ">>>>> Number of constraints: " << highs_.getNumRow() << endl;
     return highs_.getNumRow();
 }
 
 bool HiGHSSolverInterface::has_temporary_constraints() const {
+    cerr << ">>>>> Has temporary constraints?  " << (num_temporary_constraints > 0) << endl;
     return num_temporary_constraints != 0;
 }
 
