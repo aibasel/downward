@@ -155,7 +155,7 @@ bool TieBreakingOpenList<Entry>::pruning_is_safe() const {
         return false;
     }
     // Even if the first evaluator is unsafe we can still say that
-    // pruning_is_safe is true if (allow_unsafe_pruning is false and) at least
+    // pruning is safe if (allow_unsafe_pruning is false and) at least
     // one other evaluator is safe.
     for (auto eval: evaluators) {
         if (eval->dead_ends_are_reliable()) {
