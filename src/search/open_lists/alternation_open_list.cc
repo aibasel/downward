@@ -129,7 +129,7 @@ template<class Entry>
 bool AlternationOpenList<Entry>::pruning_is_safe() const {
     // If at least one of the sub-lists ensures that no solvable state is
     // pruned we know that this also holds for AlternationOpenList.
-    for (const auto &sublist: open_lists) {
+    for (const auto &sublist : open_lists) {
         if (sublist->pruning_is_safe()) {
             return true;
         }
