@@ -234,6 +234,33 @@ create_fast_downward_library(
         open_lists/type_based_open_list
 )
 
+
+create_fast_downward_library(
+    NAME SOFTMIN_OPEN_LIST
+    HELP "Open list that randomly selects h with a probability that is a softmax over different h values. (Kuroiwa and Beck, ICAPS2022)"
+    SOURCES
+        open_lists/softmin_open_list
+        open_lists/softmin_heap_open_list
+        open_lists/softmin_type_based_open_list
+)
+
+create_fast_downward_library(
+    NAME LINEAR_WEIGHTED_OPEN_LIST
+    HELP "Open list that randomly selects h with a probability that is linearly interpolated between max/min h. (Kuroiwa and Beck, ICAPS2022)"
+    SOURCES
+        open_lists/linear_weighted_open_list
+        open_lists/linear_weighted_heap_open_list
+        open_lists/linear_weighted_type_based_open_list
+)
+
+create_fast_downward_library(
+    NAME NTH_BEST_FIRST_OPEN_LIST
+    HELP "Open list that randomly selects from the n th best element. (Kuroiwa and Beck, ICAPS2022)"
+    SOURCES
+        open_lists/nth_best_first_open_list
+        open_lists/nth_type_based_open_list
+)
+
 create_fast_downward_library(
     NAME dynamic_bitset
     HELP "Poor man's version of boost::dynamic_bitset"
