@@ -77,6 +77,10 @@ public:
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
+    /*
+      is_complete returns true if the search algorithm cannot "overlook" any
+      solvable state.
+    */
     virtual bool is_complete() const = 0;
     bool found_solution() const;
     SearchStatus get_status() const;
