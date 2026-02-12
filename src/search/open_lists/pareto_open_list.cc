@@ -54,6 +54,7 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
+    virtual bool pruning_is_safe() const override;
 };
 
 template<class Entry>
@@ -217,6 +218,21 @@ bool ParetoOpenList<Entry>::is_reliable_dead_end(
         if (eval_context.is_evaluator_value_infinite(evaluator.get()) &&
             evaluator->dead_ends_are_reliable())
             return true;
+    return false;
+}
+
+template<class Entry>
+bool ParetoOpenList<Entry>::pruning_is_safe() const {
+    if (this->only_contains_preferred_entries()) {
+        return false;
+    }
+    /* If at least one of the evaluators ensures that no solvable state
+       is pruned we know that this also holds for ParetoOpenList. */
+    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
+        if (evaluator->dead_ends_are_reliable()) {
+            return true;
+        }
+    }
     return false;
 }
 
