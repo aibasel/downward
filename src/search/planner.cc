@@ -56,6 +56,8 @@ int main(int argc, const char **argv) {
         ExitCode exitcode;
         if (search_algorithm->found_solution()) {
             exitcode = ExitCode::SUCCESS;
+        } else if (search_algorithm->get_status() == SearchStatus::TIMEOUT) {
+            exitcode = ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
         } else if (search_algorithm->is_complete()) {
             exitcode = ExitCode::SEARCH_UNSOLVABLE;
         } else {
