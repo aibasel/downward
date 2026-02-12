@@ -17,11 +17,11 @@ CombiningEvaluator::CombiningEvaluator(
     utils::verify_list_not_empty(evals, "evals");
     all_dead_ends_are_reliable = true;
     for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
-        if (!subevaluator->dead_ends_are_reliable())
+        if (!subevaluator->is_safe())
             all_dead_ends_are_reliable = false;
 }
 
-bool CombiningEvaluator::dead_ends_are_reliable() const {
+bool CombiningEvaluator::is_safe() const {
     return all_dead_ends_are_reliable;
 }
 

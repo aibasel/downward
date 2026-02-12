@@ -29,7 +29,7 @@ public:
         const std::string &description, utils::Verbosity verbosity,
         tasks::AxiomHandlingType axioms);
 
-    virtual bool dead_ends_are_reliable() const override;
+    virtual bool is_safe() const override;
 };
 }
 

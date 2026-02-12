@@ -106,7 +106,7 @@ void EnforcedHillClimbingSearch::initialize() {
 
     if (dead_end) {
         log << "Initial state is a dead end, no solution" << endl;
-        if (evaluator->dead_ends_are_reliable())
+        if (evaluator->is_safe())
             utils::exit_with(ExitCode::SEARCH_UNSOLVABLE);
         else
             utils::exit_with(ExitCode::SEARCH_UNSOLVED_INCOMPLETE);
