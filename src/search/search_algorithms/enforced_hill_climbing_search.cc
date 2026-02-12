@@ -259,6 +259,11 @@ void EnforcedHillClimbingSearch::print_statistics() const {
     }
 }
 
+bool EnforcedHillClimbingSearch::is_complete() const {
+    // Enforced hill climbing searches cannot guarantee completeness.
+    return false;
+}
+
 class EnforcedHillClimbingSearchFeature
     : public plugins::TypedFeature<
           SearchAlgorithm, EnforcedHillClimbingSearch> {
