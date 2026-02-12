@@ -36,6 +36,7 @@ public:
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
+    virtual bool is_complete() const override;
 };
 }
 

@@ -131,6 +131,32 @@ void IteratedSearch::save_plan_if_necessary() {
     // each successful search iteration.
 }
 
+bool IteratedSearch::is_complete() const {
+    /*
+      TODO
+      - return true if the first search algorithm is complete
+      - otherwise, return false if continue_on_fail == false (and the first
+        search algorithm is not complete)
+      - otherwise (continue_on_fail == true and first search algorithm is not
+        complete) return true if at least one (other) search algorithm is
+        complete
+      - otherwise (continue_on_fail == true and all search algorithms are not
+        complete) return false
+
+      Before we solve the component interaction problem, we cannot
+      access the necessary information from within a constant function.
+
+      Once we can implement this function we also want to change IteratedSearch
+      such it automatically stops once a complete search finds no solution.
+      In that case the continue_on_fail option would not really be useful
+      anymore and should be removed. (Result of discussion between Claudia,
+      Malte, and Gabi.)
+    */
+    log << "Warning: the completeness check for IteratedSearch is not yet implemented."
+        << endl;
+    return false;
+}
+
 class IteratedSearchFeature
     : public plugins::TypedFeature<SearchAlgorithm, IteratedSearch> {
 public:
