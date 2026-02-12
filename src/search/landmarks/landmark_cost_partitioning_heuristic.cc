@@ -77,7 +77,7 @@ int LandmarkCostPartitioningHeuristic::get_heuristic_value(
     }
 }
 
-bool LandmarkCostPartitioningHeuristic::dead_ends_are_reliable() const {
+bool LandmarkCostPartitioningHeuristic::is_safe() const {
     return true;
 }
 

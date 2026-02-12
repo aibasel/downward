@@ -216,7 +216,7 @@ bool ParetoOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
     for (const shared_ptr<Evaluator> &evaluator : evaluators)
         if (eval_context.is_evaluator_value_infinite(evaluator.get()) &&
-            evaluator->dead_ends_are_reliable())
+            evaluator->is_safe())
             return true;
     return false;
 }
@@ -229,7 +229,7 @@ bool ParetoOpenList<Entry>::is_complete() const {
     /* If at least one of the evaluators ensures that no solvable state
        is pruned we know that this also holds for ParetoOpenList. */
     for (const shared_ptr<Evaluator> &evaluator : evaluators) {
-        if (evaluator->dead_ends_are_reliable()) {
+        if (evaluator->is_safe()) {
             return true;
         }
     }

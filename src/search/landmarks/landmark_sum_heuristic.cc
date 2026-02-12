@@ -103,7 +103,7 @@ int LandmarkSumHeuristic::get_heuristic_value(const State &ancestor_state) {
     return h;
 }
 
-bool LandmarkSumHeuristic::dead_ends_are_reliable() const {
+bool LandmarkSumHeuristic::is_safe() const {
     return dead_ends_reliable;
 }
 

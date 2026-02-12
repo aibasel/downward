@@ -136,7 +136,7 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
     for (const shared_ptr<Evaluator> &evaluator : evaluators)
         if (eval_context.is_evaluator_value_infinite(evaluator.get()) &&
-            evaluator->dead_ends_are_reliable())
+            evaluator->is_safe())
             return true;
     return false;
 }
@@ -147,7 +147,7 @@ bool TieBreakingOpenList<Entry>::is_complete() const {
         return false;
     }
     assert(!evaluators.empty());
-    if (evaluators[0]->dead_ends_are_reliable()) {
+    if (evaluators[0]->is_safe()) {
         return true;
     }
     // At this point we know that the first evaluator is unsafe.
@@ -160,7 +160,7 @@ bool TieBreakingOpenList<Entry>::is_complete() const {
       one other evaluator is safe.
     */
     for (const shared_ptr<Evaluator> &evaluator : evaluators) {
-        if (evaluator->dead_ends_are_reliable()) {
+        if (evaluator->is_safe()) {
             return true;
         }
     }
