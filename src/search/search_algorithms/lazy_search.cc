@@ -236,6 +236,6 @@ void LazySearch::print_statistics() const {
 }
 
 bool LazySearch::is_complete() const {
-    return open_list->pruning_is_safe();
+    return open_list->is_complete();
 }
 }

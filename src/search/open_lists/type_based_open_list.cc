@@ -43,7 +43,7 @@ public:
         EvaluationContext &eval_context) const override;
     virtual void get_path_dependent_evaluators(
         set<Evaluator *> &evals) override;
-    virtual bool pruning_is_safe() const override;
+    virtual bool is_complete() const override;
 };
 
 template<class Entry>
@@ -136,7 +136,7 @@ void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
 }
 
 template<class Entry>
-bool TypeBasedOpenList<Entry>::pruning_is_safe() const {
+bool TypeBasedOpenList<Entry>::is_complete() const {
     /* If at least one of the evaluators ensures that no solvable state
        is pruned we know that this also holds for TypeBasedOpenList. */
     for (const shared_ptr<Evaluator> &evaluator : evaluators) {

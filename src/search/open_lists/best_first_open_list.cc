@@ -36,7 +36,7 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-    virtual bool pruning_is_safe() const override;
+    virtual bool is_complete() const override;
 };
 
 template<class Entry>
@@ -98,7 +98,7 @@ bool BestFirstOpenList<Entry>::is_reliable_dead_end(
 }
 
 template<class Entry>
-bool BestFirstOpenList<Entry>::pruning_is_safe() const {
+bool BestFirstOpenList<Entry>::is_complete() const {
     if (this->only_contains_preferred_entries()) {
         return false;
     }
