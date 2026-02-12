@@ -52,7 +52,7 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-    virtual bool pruning_is_safe() const override;
+    virtual bool is_complete() const override;
     virtual void get_path_dependent_evaluators(
         set<Evaluator *> &evals) override;
     virtual bool empty() const override;
@@ -121,7 +121,7 @@ bool EpsilonGreedyOpenList<Entry>::is_reliable_dead_end(
 }
 
 template<class Entry>
-bool EpsilonGreedyOpenList<Entry>::pruning_is_safe() const {
+bool EpsilonGreedyOpenList<Entry>::is_complete() const {
     if (this->only_contains_preferred_entries()) {
         return false;
     }
