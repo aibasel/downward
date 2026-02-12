@@ -349,6 +349,13 @@ bool CEGAR::get_flaws_for_pattern(
     PatternInfo &pattern_info = *pattern_collection[collection_index];
     if (pattern_info.is_unsolvable()) {
         log << "task is unsolvable." << endl;
+        /*
+          TODO: This is not the control flow we want, the heuristic
+          should not just terminate the planner, but rather
+          communicate with the search somehow. Exiting like this means
+          we might not get output we would expect, and also it can be
+          wrong if we are on a transformed task.
+        */
         utils::exit_with(utils::ExitCode::SEARCH_UNSOLVABLE);
     }
 
