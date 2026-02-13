@@ -8,6 +8,7 @@
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
+#include <algorithm>
 #include <cassert>
 #include <deque>
 #include <set>
@@ -226,14 +227,8 @@ bool ParetoOpenList<Entry>::is_complete() const {
     if (this->only_contains_preferred_entries()) {
         return false;
     }
-    /* If at least one of the evaluators ensures that no solvable state
-       is pruned we know that this also holds for ParetoOpenList. */
-    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
-        if (evaluator->is_safe()) {
-            return true;
-        }
-    }
-    return false;
+    auto is_safe = [](const auto &evaluator) { return evaluator->is_safe(); };
+    return ranges::any_of(evaluators, is_safe);
 }
 
 ParetoOpenListFactory::ParetoOpenListFactory(

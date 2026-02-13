@@ -8,6 +8,7 @@
 
 #include <cassert>
 #include <memory>
+#include <ranges>
 #include <vector>
 
 using namespace std;
@@ -129,12 +130,16 @@ template<class Entry>
 bool AlternationOpenList<Entry>::is_complete() const {
     /* If at least one of the sub-lists ensures that no solvable state is
        pruned we know that this also holds for AlternationOpenList. */
-    for (const auto &sublist : open_lists) {
+    /* for (const auto &sublist : open_lists) {
         if (sublist->is_complete()) {
             return true;
         }
     }
-    return false;
+    return false; */
+    auto is_complete = [](const auto &sublist) {
+        return sublist->is_complete();
+    };
+    return ranges::any_of(open_lists, is_complete);
 }
 
 AlternationOpenListFactory::AlternationOpenListFactory(

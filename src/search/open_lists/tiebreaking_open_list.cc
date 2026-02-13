@@ -155,16 +155,12 @@ bool TieBreakingOpenList<Entry>::is_complete() const {
         return false;
     }
     /*
-      Even if the first evaluator is unsafe we can still say that
-      pruning is safe if (allow_unsafe_pruning is false and) at least
+      Even if the first evaluator is unsafe we can still ensure
+      completeness if (allow_unsafe_pruning is false and) at least
       one other evaluator is safe.
     */
-    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
-        if (evaluator->is_safe()) {
-            return true;
-        }
-    }
-    return false;
+    auto is_safe = [](const auto &evaluator) { return evaluator->is_safe(); };
+    return ranges::any_of(evaluators, is_safe);
 }
 
 TieBreakingOpenListFactory::TieBreakingOpenListFactory(

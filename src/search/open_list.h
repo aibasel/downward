@@ -123,9 +123,8 @@ public:
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const = 0;
     /*
-      is_complete returns true if the open list cannot "overlook" any solvable
-      state. Thus, if the open list is "complete" then it can be used to detect
-      unsolvability of a task.
+      If for some solvable task no reachable goal state is ever inserted
+      into the open list then it is not complete, i.e. is_complete is false.
     */
     virtual bool is_complete() const = 0;
 };
