@@ -137,14 +137,8 @@ void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
 
 template<class Entry>
 bool TypeBasedOpenList<Entry>::is_complete() const {
-    /* If at least one of the evaluators ensures that no solvable state
-       is pruned we know that this also holds for TypeBasedOpenList. */
-    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
-        if (evaluator->is_safe()) {
-            return true;
-        }
-    }
-    return false;
+    auto is_safe = [](const auto &evaluator) { return evaluator->is_safe(); };
+    return ranges::any_of(evaluators, is_safe);
 }
 
 TypeBasedOpenListFactory::TypeBasedOpenListFactory(
