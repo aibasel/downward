@@ -115,7 +115,7 @@ shared_ptr<SearchAlgorithm> IteratedSearch::bind_current_search() {
 SearchStatus IteratedSearch::step() {
     shared_ptr<SearchAlgorithm> task_specific_search = bind_current_search();
     if (!task_specific_search) {
-        return found_solution() ? SOLVED : FAILED;
+        return get_finished_search_status();
     }
     if (pass_bound && best_bound < task_specific_search->get_bound()) {
         task_specific_search->set_bound(best_bound);
@@ -184,7 +184,7 @@ SearchStatus IteratedSearch::step_return_value() {
             return IN_PROGRESS;
         } else {
             log << "No solution found - stop searching" << endl;
-            return iterated_found_solution ? SOLVED : FAILED;
+            return get_finished_search_status();
         }
     }
 }
@@ -241,6 +241,7 @@ public:
 };
 
 bool IteratedSearch::is_complete() const {
+    // TODO adjust to relative completeness of sub-searches
     /*
       TODO
       - return true if the first search algorithm is complete
