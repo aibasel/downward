@@ -63,7 +63,7 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
 SearchStatus IteratedSearch::step() {
     shared_ptr<SearchAlgorithm> current_search = create_current_phase();
     if (!current_search) {
-        return found_solution() ? SOLVED : FAILED;
+        return get_finished_search_status();
     }
     if (pass_bound && best_bound < current_search->get_bound()) {
         current_search->set_bound(best_bound);
@@ -116,7 +116,7 @@ SearchStatus IteratedSearch::step_return_value() {
             return IN_PROGRESS;
         } else {
             log << "No solution found - stop searching" << endl;
-            return iterated_found_solution ? SOLVED : FAILED;
+            return get_finished_search_status();
         }
     }
 }
@@ -132,6 +132,7 @@ void IteratedSearch::save_plan_if_necessary() {
 }
 
 bool IteratedSearch::is_complete() const {
+    // TODO adjust to relative completeness of sub-searches
     /*
       TODO
       - return true if the first search algorithm is complete
