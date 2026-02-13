@@ -99,6 +99,18 @@ SearchStatus SearchAlgorithm::get_status() const {
     return status;
 }
 
+SearchStatus SearchAlgorithm::get_finished_search_status() const {
+    if (found_solution()) {
+        return SOLVED;
+    } else if (is_unbounded() && is_complete_within_bound()) {
+        return UNSOLVABLE;
+    } else if (is_complete_within_bound()) {
+        return UNSOLVABLE_WITHIN_BOUND;
+    } else {
+        return FAILED;
+    }
+}
+
 const Plan &SearchAlgorithm::get_plan() const {
     assert(solution_found);
     return plan;

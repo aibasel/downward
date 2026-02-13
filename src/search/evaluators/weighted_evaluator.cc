@@ -19,8 +19,8 @@ WeightedEvaluator::WeightedEvaluator(
       weight(weight) {
 }
 
-bool WeightedEvaluator::dead_ends_are_reliable() const {
-    return evaluator->dead_ends_are_reliable();
+bool WeightedEvaluator::is_safe() const {
+    return evaluator->is_safe();
 }
 
 EvaluationResult WeightedEvaluator::compute_result(

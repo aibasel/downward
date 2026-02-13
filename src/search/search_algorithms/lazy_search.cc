@@ -122,7 +122,7 @@ void LazySearch::generate_successors() {
 SearchStatus LazySearch::fetch_next_state() {
     if (open_list->empty()) {
         log << "Completely explored state space -- no solution!" << endl;
-        return FAILED;
+        return get_finished_search_status();
     }
 
     EdgeOpenListEntry next = open_list->remove_min();
@@ -233,5 +233,9 @@ void LazySearch::reward_progress() {
 void LazySearch::print_statistics() const {
     statistics.print_detailed_statistics();
     search_space.print_statistics();
+}
+
+bool LazySearch::is_complete_within_bound() const {
+    return open_list->is_complete();
 }
 }

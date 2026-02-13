@@ -36,6 +36,7 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
+    virtual bool is_complete() const override;
 };
 
 template<class Entry>
@@ -93,7 +94,15 @@ bool BestFirstOpenList<Entry>::is_dead_end(
 template<class Entry>
 bool BestFirstOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
-    return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
+    return is_dead_end(eval_context) && evaluator->is_safe();
+}
+
+template<class Entry>
+bool BestFirstOpenList<Entry>::is_complete() const {
+    if (this->only_contains_preferred_entries()) {
+        return false;
+    }
+    return evaluator->is_safe();
 }
 
 BestFirstOpenListFactory::BestFirstOpenListFactory(

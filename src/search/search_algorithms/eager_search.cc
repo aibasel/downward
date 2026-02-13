@@ -118,9 +118,8 @@ SearchStatus EagerSearch::step() {
     if (!node.has_value()) {
         assert(open_list->empty());
         log << "Completely explored state space -- no solution!" << endl;
-        return FAILED;
+        return get_finished_search_status();
     }
-
     return expand(node.value());
 }
 
@@ -316,6 +315,10 @@ void EagerSearch::reward_progress() {
 
 void EagerSearch::dump_search_space() const {
     search_space.dump(task_proxy);
+}
+
+bool EagerSearch::is_complete_within_bound() const {
+    return open_list->is_complete() && pruning_method->is_safe();
 }
 
 void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {

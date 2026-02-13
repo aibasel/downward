@@ -43,6 +43,7 @@ public:
         EvaluationContext &eval_context) const override;
     virtual void get_path_dependent_evaluators(
         set<Evaluator *> &evals) override;
+    virtual bool is_complete() const override;
 };
 
 template<class Entry>
@@ -119,7 +120,7 @@ template<class Entry>
 bool TypeBasedOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
     for (const shared_ptr<Evaluator> &evaluator : evaluators) {
-        if (evaluator->dead_ends_are_reliable() &&
+        if (evaluator->is_safe() &&
             eval_context.is_evaluator_value_infinite(evaluator.get()))
             return true;
     }
@@ -132,6 +133,12 @@ void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
     for (const shared_ptr<Evaluator> &evaluator : evaluators) {
         evaluator->get_path_dependent_evaluators(evals);
     }
+}
+
+template<class Entry>
+bool TypeBasedOpenList<Entry>::is_complete() const {
+    auto is_safe = [](const auto &evaluator) { return evaluator->is_safe(); };
+    return ranges::any_of(evaluators, is_safe);
 }
 
 TypeBasedOpenListFactory::TypeBasedOpenListFactory(

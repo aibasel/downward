@@ -122,6 +122,11 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const = 0;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const = 0;
+    /*
+      If for some solvable task no reachable goal state is ever inserted
+      into the open list then it is not complete, i.e. is_complete is false.
+    */
+    virtual bool is_complete() const = 0;
 };
 
 using StateOpenListEntry = StateID;

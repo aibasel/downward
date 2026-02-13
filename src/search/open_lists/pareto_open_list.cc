@@ -8,6 +8,7 @@
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
+#include <algorithm>
 #include <cassert>
 #include <deque>
 #include <set>
@@ -54,6 +55,7 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
+    virtual bool is_complete() const override;
 };
 
 template<class Entry>
@@ -215,9 +217,18 @@ bool ParetoOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
     for (const shared_ptr<Evaluator> &evaluator : evaluators)
         if (eval_context.is_evaluator_value_infinite(evaluator.get()) &&
-            evaluator->dead_ends_are_reliable())
+            evaluator->is_safe())
             return true;
     return false;
+}
+
+template<class Entry>
+bool ParetoOpenList<Entry>::is_complete() const {
+    if (this->only_contains_preferred_entries()) {
+        return false;
+    }
+    auto is_safe = [](const auto &evaluator) { return evaluator->is_safe(); };
+    return ranges::any_of(evaluators, is_safe);
 }
 
 ParetoOpenListFactory::ParetoOpenListFactory(

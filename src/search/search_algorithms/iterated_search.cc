@@ -63,7 +63,7 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
 SearchStatus IteratedSearch::step() {
     shared_ptr<SearchAlgorithm> current_search = create_current_phase();
     if (!current_search) {
-        return found_solution() ? SOLVED : FAILED;
+        return get_finished_search_status();
     }
     if (pass_bound && best_bound < current_search->get_bound()) {
         current_search->set_bound(best_bound);
@@ -116,7 +116,7 @@ SearchStatus IteratedSearch::step_return_value() {
             return IN_PROGRESS;
         } else {
             log << "No solution found - stop searching" << endl;
-            return iterated_found_solution ? SOLVED : FAILED;
+            return get_finished_search_status();
         }
     }
 }
@@ -129,6 +129,34 @@ void IteratedSearch::print_statistics() const {
 void IteratedSearch::save_plan_if_necessary() {
     // We don't need to save here, as we automatically save after
     // each successful search iteration.
+}
+
+bool IteratedSearch::is_complete_within_bound() const {
+    /*
+      TODO
+      - return true if the first search algorithm is complete and its bound is
+        greater or equal to that of IteratedSearch, i.e. if it is complete
+        within the bound of IteratedSearch
+      - otherwise (the first search algorithm is not complete within
+        IteratedSearch's bound), return false if continue_on_fail == false
+      - otherwise (continue_on_fail == true and first search algorithm is not
+        complete within IteratedSearch's bound), return true if at least one
+        (other) search algorithm is complete within IteratedSearch's bound
+      - otherwise (continue_on_fail == true and all search algorithms are not
+        complete within IteratedSearch's bound), return false
+
+      Before we solve the component interaction problem, we cannot
+      access the necessary information from within a constant function.
+
+      Once we can implement this function we also want to change IteratedSearch
+      such it automatically stops once a complete search finds no solution.
+      In that case the continue_on_fail option would not really be useful
+      anymore and should be removed. (Result of discussion between Claudia,
+      Malte, and Gabi.)
+    */
+    log << "Warning: the completeness check for IteratedSearch is not yet implemented."
+        << endl;
+    return false;
 }
 
 class IteratedSearchFeature

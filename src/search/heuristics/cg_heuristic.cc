@@ -44,7 +44,7 @@ CGHeuristic::CGHeuristic(
     transition_graphs = factory.build_dtgs();
 }
 
-bool CGHeuristic::dead_ends_are_reliable() const {
+bool CGHeuristic::is_safe() const {
     return false;
 }
 

@@ -29,12 +29,12 @@ public:
     virtual ~Evaluator() = default;
 
     /*
-      dead_ends_are_reliable should return true if the evaluator is
-      "safe", i.e., infinite estimates can be trusted.
+      is_safe returns true if the evaluator reports dead ends reliably,
+      i.e., if its infinite estimates can be trusted.
 
       The default implementation returns true.
     */
-    virtual bool dead_ends_are_reliable() const;
+    virtual bool is_safe() const;
 
     /*
       get_path_dependent_evaluators should insert all path-dependent

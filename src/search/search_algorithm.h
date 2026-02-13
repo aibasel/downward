@@ -12,6 +12,7 @@
 
 #include "utils/logging.h"
 
+#include <limits>
 #include <vector>
 
 namespace plugins {
@@ -32,6 +33,8 @@ enum SearchStatus {
     IN_PROGRESS,
     TIMEOUT,
     FAILED,
+    UNSOLVABLE,
+    UNSOLVABLE_WITHIN_BOUND,
     SOLVED
 };
 
@@ -77,8 +80,14 @@ public:
     virtual ~SearchAlgorithm();
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
+    /*
+      is_complete_within_bound returns true if the search algorithm finds
+      a plan within the bound if a plan exists.
+    */
+    virtual bool is_complete_within_bound() const = 0;
     bool found_solution() const;
     SearchStatus get_status() const;
+    SearchStatus get_finished_search_status() const;
     const Plan &get_plan() const;
     void search();
     const SearchStatistics &get_statistics() const {
@@ -89,6 +98,9 @@ public:
     }
     int get_bound() {
         return bound;
+    }
+    bool is_unbounded() const {
+        return bound == std::numeric_limits<int>::max();
     }
     PlanManager &get_plan_manager() {
         return plan_manager;

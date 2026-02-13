@@ -24,7 +24,7 @@ public:
         const std::string &description, utils::Verbosity verbosity);
 
     /*
-      Note: dead_ends_are_reliable() is a state-independent method, so
+      Note: is_safe() is a state-independent method, so
       it only returns true if all subevaluators report dead ends reliably.
 
       Note that we could get more fine-grained information when
@@ -35,8 +35,7 @@ public:
       way to exploit such state-based information, and hence we do not
       compute it.
     */
-
-    virtual bool dead_ends_are_reliable() const override;
+    virtual bool is_safe() const override;
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
 
