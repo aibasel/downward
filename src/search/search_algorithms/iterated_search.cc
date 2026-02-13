@@ -131,7 +131,7 @@ void IteratedSearch::save_plan_if_necessary() {
     // each successful search iteration.
 }
 
-bool IteratedSearch::is_complete() const {
+bool IteratedSearch::is_complete_within_bound() const {
     // TODO adjust to relative completeness of sub-searches
     /*
       TODO

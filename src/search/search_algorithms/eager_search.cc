@@ -317,7 +317,7 @@ void EagerSearch::dump_search_space() const {
     search_space.dump(task_proxy);
 }
 
-bool EagerSearch::is_complete() const {
+bool EagerSearch::is_complete_within_bound() const {
     return open_list->is_complete() && pruning_method->is_safe();
 }
 

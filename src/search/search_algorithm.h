@@ -81,10 +81,10 @@ public:
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
     /*
-      is_complete returns true if the search algorithm finds a plan
-       within the bound if a plan exists.
+      is_complete_within_bound returns true if the search algorithm finds
+      a plan within the bound if a plan exists.
     */
-    virtual bool is_complete() const = 0;
+    virtual bool is_complete_within_bound() const = 0;
     bool found_solution() const;
     SearchStatus get_status() const;
     SearchStatus get_finished_search_status() const;

@@ -102,9 +102,9 @@ SearchStatus SearchAlgorithm::get_status() const {
 SearchStatus SearchAlgorithm::get_finished_search_status() const {
     if (found_solution()) {
         return SOLVED;
-    } else if (is_unbounded() && is_complete()) {
+    } else if (is_unbounded() && is_complete_within_bound()) {
         return UNSOLVABLE;
-    } else if (is_complete()) {
+    } else if (is_complete_within_bound()) {
         return UNSOLVABLE_WITHIN_BOUND;
     } else {
         return FAILED;

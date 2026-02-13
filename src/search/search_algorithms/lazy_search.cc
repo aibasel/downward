@@ -235,7 +235,7 @@ void LazySearch::print_statistics() const {
     search_space.print_statistics();
 }
 
-bool LazySearch::is_complete() const {
+bool LazySearch::is_complete_within_bound() const {
     return open_list->is_complete();
 }
 }
