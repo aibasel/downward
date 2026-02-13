@@ -261,7 +261,7 @@ void EnforcedHillClimbingSearch::print_statistics() const {
     }
 }
 
-bool EnforcedHillClimbingSearch::is_complete() const {
+bool EnforcedHillClimbingSearch::is_complete_within_bound() const {
     // Enforced hill climbing searches cannot guarantee completeness.
     return false;
 }

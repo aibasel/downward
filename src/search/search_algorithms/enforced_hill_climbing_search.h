@@ -61,7 +61,7 @@ public:
         const std::string &description, utils::Verbosity verbosity);
 
     virtual void print_statistics() const override;
-    virtual bool is_complete() const override;
+    virtual bool is_complete_within_bound() const override;
 };
 }
 
