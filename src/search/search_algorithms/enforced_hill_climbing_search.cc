@@ -243,11 +243,6 @@ void EnforcedHillClimbingSearch::print_statistics() const {
     statistics.print_detailed_statistics();
 
     log << "EHC phases: " << num_ehc_phases << endl;
-    assert(num_ehc_phases != 0);
-    log << "Average expansions per EHC phase: "
-        << static_cast<double>(statistics.get_expanded()) / num_ehc_phases
-        << endl;
-
     for (auto count : d_counts) {
         int depth = count.first;
         int phases = count.second.first;
