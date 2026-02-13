@@ -62,6 +62,7 @@ contributing, and finally by last name.
 
 - 2022-2026 Remo Christen
 - 2022-2026 Simon Dold
+- 2025-2026 Esther Mugdan
 - 2003-2025 Malte Helmert
 - 2008-2016, 2018-2025 Gabriele Roeger
 - 2009, 2025 Christian Muise
