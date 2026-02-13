@@ -132,17 +132,18 @@ void IteratedSearch::save_plan_if_necessary() {
 }
 
 bool IteratedSearch::is_complete_within_bound() const {
-    // TODO adjust to relative completeness of sub-searches
     /*
       TODO
-      - return true if the first search algorithm is complete
-      - otherwise, return false if continue_on_fail == false (and the first
-        search algorithm is not complete)
+      - return true if the first search algorithm is complete and its bound is
+        greater or equal to that of IteratedSearch, i.e. if it is complete
+        within the bound of IteratedSearch
+      - otherwise (the first search algorithm is not complete within
+        IteratedSearch's bound), return false if continue_on_fail == false
       - otherwise (continue_on_fail == true and first search algorithm is not
-        complete) return true if at least one (other) search algorithm is
-        complete
+        complete within IteratedSearch's bound), return true if at least one
+        (other) search algorithm is complete within IteratedSearch's bound
       - otherwise (continue_on_fail == true and all search algorithms are not
-        complete) return false
+        complete within IteratedSearch's bound), return false
 
       Before we solve the component interaction problem, we cannot
       access the necessary information from within a constant function.
