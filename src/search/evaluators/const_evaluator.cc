@@ -16,7 +16,7 @@ EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
     return result;
 }
 bool ConstEvaluator::is_safe() const {
-    int infinity = std::numeric_limits<int>::max();
+    int infinity = numeric_limits<int>::max();
     return value < infinity;
 }
 
