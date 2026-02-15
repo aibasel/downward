@@ -15,9 +15,8 @@ using namespace std;
 namespace landmarks {
 LandmarkHeuristic::LandmarkHeuristic(
     const shared_ptr<AbstractTask> &task, bool use_preferred_operators,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
-    : Heuristic(task, transform, cache_estimates, description, verbosity),
+    bool cache_estimates, const string &description, utils::Verbosity verbosity)
+    : Heuristic(task, cache_estimates, description, verbosity),
       initial_landmark_graph_has_cycle_of_natural_orderings(false),
       use_preferred_operators(use_preferred_operators),
       successor_generator(nullptr) {
@@ -69,6 +68,8 @@ void LandmarkHeuristic::initialize(
       transforms costs and/or adds negated axioms. However, there is currently
       no good way to do this, so we use this incomplete, slightly less safe
       test.
+
+       issue559 update the comment after switching to task-independent classes.
     */
     if (task != tasks::g_root_task &&
         dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr &&
@@ -261,8 +262,8 @@ void add_landmark_heuristic_options_to_feature(
 }
 
 tuple<
-    shared_ptr<LandmarkFactory>, bool, bool, bool, bool,
-    shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
+    shared_ptr<LandmarkFactory>, bool, bool, bool, bool, bool, string,
+    utils::Verbosity>
 get_landmark_heuristic_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(

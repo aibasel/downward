@@ -21,9 +21,8 @@ static ZeroOnePDBs get_zero_one_pdbs_from_generator(
 ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
     const shared_ptr<AbstractTask> &task,
     const shared_ptr<PatternCollectionGenerator> &patterns,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
-    : Heuristic(task, transform, cache_estimates, description, verbosity),
+    bool cache_estimates, const string &description, utils::Verbosity verbosity)
+    : Heuristic(task, cache_estimates, description, verbosity),
       zero_one_pdbs(get_zero_one_pdbs_from_generator(task, patterns)) {
 }
 

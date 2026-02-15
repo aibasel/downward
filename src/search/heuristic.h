@@ -53,12 +53,6 @@ protected:
     PerStateInformation<HEntry> heuristic_cache;
     bool cache_evaluator_values;
 
-    // Hold a reference to the task implementation and pass it to objects that
-    // need it.
-    const std::shared_ptr<AbstractTask> task;
-    // Use task_proxy to access task information.
-    TaskProxy task_proxy;
-
     enum {
         DEAD_END = -1,
         NO_VALUE = -2
@@ -76,31 +70,8 @@ protected:
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
-    /*
-      issue559
-      It looks wrong that heuristic gets two task parameters but is intended:
-
-      `task` is the task passed in when binding the component (not yet done)
-            and is stored in the base class TaskSpecificComponent. Eventually
-            this will be the only input. For now it is unused.
-
-      `transform` it the argument parsed from the commandline. Eventually, we
-            want to remove it but we first have to have a replacement for
-            configurations that currently use it. The goal is to create a
-            heuristic `CostAdaptedHeuristic` (or similar) that takes another
-            heuristic and a cost type as a parameter, transforms the task and
-            passes it on to the other evaluator. Once we have that, we have to
-            either remove `transform` from the arguments of heuristics, or
-            keep it as a deprecated feature but re-write it in the option
-            parser (i.e., rewrite expressions like
-               "h(transform=cost_adapted_task(type), **kwargs)"
-            to
-               "cost_adapted_heuristic(h(**kwargs), type)",
-            ideally on the level of the AST, not on a string level.
-    */
     Heuristic(
-        const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+        const std::shared_ptr<AbstractTask> &task, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 
     virtual void get_path_dependent_evaluators(
@@ -117,7 +88,6 @@ public:
 
 extern void add_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<
-    std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity>
+extern std::tuple<bool, std::string, utils::Verbosity>
 get_heuristic_arguments_from_options(const plugins::Options &opts);
 #endif

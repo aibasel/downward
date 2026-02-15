@@ -63,8 +63,7 @@ protected:
 
 public:
     HMHeuristic(
-        const std::shared_ptr<AbstractTask> &task, int m,
-        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+        const std::shared_ptr<AbstractTask> &task, int m, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;

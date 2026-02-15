@@ -9,10 +9,9 @@ using namespace std;
 namespace potentials {
 PotentialHeuristic::PotentialHeuristic(
     const shared_ptr<AbstractTask> &task,
-    unique_ptr<PotentialFunction> function,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    unique_ptr<PotentialFunction> function, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(task, transform, cache_estimates, description, verbosity),
+    : Heuristic(task, cache_estimates, description, verbosity),
       function(move(function)) {
 }
 

@@ -412,11 +412,10 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     const shared_ptr<AbstractTask> &task, tasks::AxiomHandlingType axioms,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : Heuristic(
-          task,
-          tasks::get_default_value_axioms_task_if_needed(transform, axioms),
+          tasks::get_default_value_axioms_task_if_needed(task, axioms), // issue559 move this transformation to task-independent level
           cache_estimates, description, verbosity),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {

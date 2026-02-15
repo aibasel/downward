@@ -15,11 +15,10 @@ enum class OptimizeFor {
 };
 
 static unique_ptr<PotentialFunction> create_potential_function(
-    const shared_ptr<AbstractTask> &transform, lp::LPSolverType lpsolver,
+    const shared_ptr<AbstractTask> &task, lp::LPSolverType lpsolver,
     double max_potential, OptimizeFor opt_func) {
-    PotentialOptimizer optimizer(transform, lpsolver, max_potential);
-    const AbstractTask &task = *transform;
-    TaskProxy task_proxy(task);
+    PotentialOptimizer optimizer(task, lpsolver, max_potential);
+    TaskProxy task_proxy(*task);
     switch (opt_func) {
     case OptimizeFor::INITIAL_STATE:
         optimizer.optimize_for_state(task_proxy.get_initial_state());
@@ -51,10 +50,9 @@ public:
         return make_shared<PotentialHeuristic>(
             tasks::g_root_task,
             create_potential_function(
-                opts.get<shared_ptr<AbstractTask>>("transform"),
+                tasks::g_root_task,
                 opts.get<lp::LPSolverType>("lpsolver"),
                 opts.get<double>("max_potential"), OptimizeFor::INITIAL_STATE),
-            opts.get<shared_ptr<AbstractTask>>("transform"),
             opts.get<bool>("cache_estimates"), opts.get<string>("description"),
             opts.get<utils::Verbosity>("verbosity"));
     }
@@ -81,10 +79,9 @@ public:
         return make_shared<PotentialHeuristic>(
             tasks::g_root_task,
             create_potential_function(
-                opts.get<shared_ptr<AbstractTask>>("transform"),
+                tasks::g_root_task,
                 opts.get<lp::LPSolverType>("lpsolver"),
                 opts.get<double>("max_potential"), OptimizeFor::ALL_STATES),
-            opts.get<shared_ptr<AbstractTask>>("transform"),
             opts.get<bool>("cache_estimates"), opts.get<string>("description"),
             opts.get<utils::Verbosity>("verbosity"));
     }

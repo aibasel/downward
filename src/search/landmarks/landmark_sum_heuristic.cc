@@ -33,13 +33,12 @@ static bool are_dead_ends_reliable(
 LandmarkSumHeuristic::LandmarkSumHeuristic(
     const shared_ptr<AbstractTask> &task,
     const shared_ptr<LandmarkFactory> &lm_factory, bool pref, bool prog_goal,
-    bool prog_gn, bool prog_r, const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates, const string &description, utils::Verbosity verbosity,
-    tasks::AxiomHandlingType axioms)
+    bool prog_gn, bool prog_r, bool cache_estimates, const string &description,
+    utils::Verbosity verbosity, tasks::AxiomHandlingType axioms)
     : LandmarkHeuristic(
-          task, pref,
-          tasks::get_default_value_axioms_task_if_needed(transform, axioms),
-          cache_estimates, description, verbosity),
+          tasks::get_default_value_axioms_task_if_needed(
+              task, axioms), // issue559 move this transformation to task-independent level
+          pref, cache_estimates, description, verbosity),
       dead_ends_reliable(are_dead_ends_reliable(lm_factory, task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark sum heuristic..." << endl;

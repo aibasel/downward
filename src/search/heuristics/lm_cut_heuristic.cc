@@ -14,10 +14,9 @@ using namespace std;
 
 namespace lm_cut_heuristic {
 LandmarkCutHeuristic::LandmarkCutHeuristic(
-    const shared_ptr<AbstractTask> &task,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const shared_ptr<AbstractTask> &task, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(task, transform, cache_estimates, description, verbosity),
+    : Heuristic(task, cache_estimates, description, verbosity),
       landmark_generator(make_unique<LandmarkCutLandmarks>(task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cut heuristic..." << endl;

@@ -16,9 +16,8 @@ OperatorCountingHeuristic::OperatorCountingHeuristic(
     const shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<ConstraintGenerator>> &constraint_generators,
     bool use_integer_operator_counts, lp::LPSolverType lpsolver,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
-    : Heuristic(task, transform, cache_estimates, description, verbosity),
+    bool cache_estimates, const string &description, utils::Verbosity verbosity)
+    : Heuristic(task, cache_estimates, description, verbosity),
       constraint_generators(constraint_generators),
       lp_solver(lpsolver) {
     utils::verify_list_not_empty(

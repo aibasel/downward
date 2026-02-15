@@ -17,10 +17,10 @@ using namespace std;
 
 namespace cartesian_abstractions {
 static vector<CartesianHeuristicFunction> generate_heuristic_functions(
+    const shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<SubtaskGenerator>> &subtask_generators,
     int max_states, int max_transitions, double max_time, PickSplit pick,
-    bool use_general_costs, int random_seed,
-    const shared_ptr<AbstractTask> &transform, utils::LogProxy &log) {
+    bool use_general_costs, int random_seed, utils::LogProxy &log) {
     if (log.is_at_least_normal()) {
         log << "Initializing additive Cartesian heuristic..." << endl;
     }
@@ -28,20 +28,19 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
     CostSaturation cost_saturation(
         subtask_generators, max_states, max_transitions, max_time, pick,
         use_general_costs, *rng, log);
-    return cost_saturation.generate_heuristic_functions(transform);
+    return cost_saturation.generate_heuristic_functions(task);
 }
 
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
     const shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<SubtaskGenerator>> &subtasks, int max_states,
     int max_transitions, double max_time, PickSplit pick,
-    bool use_general_costs, int random_seed,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    bool use_general_costs, int random_seed, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(task, transform, cache_estimates, description, verbosity),
+    : Heuristic(task, cache_estimates, description, verbosity),
       heuristic_functions(generate_heuristic_functions(
-          subtasks, max_states, max_transitions, max_time, pick,
-          use_general_costs, random_seed, transform, log)) {
+          task, subtasks, max_states, max_transitions, max_time, pick,
+          use_general_costs, random_seed, log)) {
 }
 
 int AdditiveCartesianHeuristic::compute_heuristic(const State &ancestor_state) {

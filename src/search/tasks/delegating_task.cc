@@ -4,7 +4,7 @@ using namespace std;
 
 namespace tasks {
 DelegatingTask::DelegatingTask(const shared_ptr<AbstractTask> &parent)
-    : AbstractTask(parent), parent(parent) {
+    : parent(parent) {
 }
 
 int DelegatingTask::get_num_variables() const {

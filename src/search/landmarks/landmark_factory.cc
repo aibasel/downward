@@ -159,6 +159,8 @@ void LandmarkFactory::log_landmark_graph_info(
   function will also get access to a TaskProxy. Then we need to ensure that the
   TaskProxy used by the Exploration object is the same as the TaskProxy object
   passed to this function.
+
+  issue559: update comment above after switching to task-independent classes.
 */
 shared_ptr<LandmarkGraph> LandmarkFactory::compute_landmark_graph(
     const shared_ptr<AbstractTask> &task) {

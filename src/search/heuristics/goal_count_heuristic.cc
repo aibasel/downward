@@ -8,10 +8,9 @@ using namespace std;
 
 namespace goal_count_heuristic {
 GoalCountHeuristic::GoalCountHeuristic(
-    const shared_ptr<AbstractTask> &task,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const shared_ptr<AbstractTask> &task, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(task, transform, cache_estimates, description, verbosity) {
+    : Heuristic(task, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing goal count heuristic..." << endl;
     }

@@ -18,11 +18,10 @@ using namespace domain_transition_graph;
 namespace cg_heuristic {
 CGHeuristic::CGHeuristic(
     const shared_ptr<AbstractTask> &task, int max_cache_size,
-    tasks::AxiomHandlingType axioms, const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates, const string &description, utils::Verbosity verbosity)
+    tasks::AxiomHandlingType axioms, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
     : Heuristic(
-          task,
-          tasks::get_default_value_axioms_task_if_needed(transform, axioms),
+          tasks::get_default_value_axioms_task_if_needed(task, axioms), // issue559 move this transformation to task-independent level
           cache_estimates, description, verbosity),
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {

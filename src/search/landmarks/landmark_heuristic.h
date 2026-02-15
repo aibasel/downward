@@ -49,8 +49,8 @@ protected:
 public:
     LandmarkHeuristic(
         const std::shared_ptr<AbstractTask> &task, bool use_preferred_operators,
-        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
-        const std::string &description, utils::Verbosity verbosity);
+        bool cache_estimates, const std::string &description,
+        utils::Verbosity verbosity);
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) override {
@@ -66,8 +66,8 @@ public:
 extern void add_landmark_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<
-    std::shared_ptr<LandmarkFactory>, bool, bool, bool, bool,
-    std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity>
+    std::shared_ptr<LandmarkFactory>, bool, bool, bool, bool, bool, std::string,
+    utils::Verbosity>
 get_landmark_heuristic_arguments_from_options(const plugins::Options &opts);
 }
 

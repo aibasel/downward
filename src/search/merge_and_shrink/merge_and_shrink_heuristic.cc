@@ -27,9 +27,9 @@ MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
     const shared_ptr<LabelReduction> &label_reduction,
     bool prune_unreachable_states, bool prune_irrelevant_states, int max_states,
     int max_states_before_merge, int threshold_before_merge,
-    double main_loop_max_time, const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates, const string &description, utils::Verbosity verbosity)
-    : Heuristic(task, transform, cache_estimates, description, verbosity) {
+    double main_loop_max_time, bool cache_estimates, const string &description,
+    utils::Verbosity verbosity)
+    : Heuristic(task, cache_estimates, description, verbosity) {
     log << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(
         merge_strategy, shrink_strategy, label_reduction,

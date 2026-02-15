@@ -42,11 +42,12 @@ static void optimize_for_samples(
 */
 static vector<unique_ptr<PotentialFunction>>
 create_sample_based_potential_functions(
+    const shared_ptr<AbstractTask> &task,
     int num_samples, int num_heuristics, double max_potential,
-    lp::LPSolverType lpsolver, const shared_ptr<AbstractTask> &transform,
+    lp::LPSolverType lpsolver,
     int random_seed) {
     vector<unique_ptr<PotentialFunction>> functions;
-    PotentialOptimizer optimizer(transform, lpsolver, max_potential);
+    PotentialOptimizer optimizer(task, lpsolver, max_potential);
     shared_ptr<utils::RandomNumberGenerator> rng(utils::get_rng(random_seed));
     for (int i = 0; i < num_heuristics; ++i) {
         optimize_for_samples(optimizer, num_samples, *rng);
@@ -81,12 +82,11 @@ public:
         return make_shared<PotentialMaxHeuristic>(
             tasks::g_root_task,
             create_sample_based_potential_functions(
+                tasks::g_root_task,
                 opts.get<int>("num_samples"), opts.get<int>("num_heuristics"),
                 opts.get<double>("max_potential"),
                 opts.get<lp::LPSolverType>("lpsolver"),
-                opts.get<shared_ptr<AbstractTask>>("transform"),
                 opts.get<int>("random_seed")),
-            opts.get<shared_ptr<AbstractTask>>("transform"),
             opts.get<bool>("cache_estimates"), opts.get<string>("description"),
             opts.get<utils::Verbosity>("verbosity"));
     }

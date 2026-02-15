@@ -67,8 +67,7 @@ protected:
 public:
     AdditiveHeuristic(
         const std::shared_ptr<AbstractTask> &task,
-        tasks::AxiomHandlingType axioms,
-        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+        tasks::AxiomHandlingType axioms, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 
     /*
