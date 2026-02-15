@@ -91,7 +91,27 @@ tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
 static class EvaluatorCategoryPlugin
     : public plugins::TypedCategoryPlugin<Evaluator> {
 public:
-    EvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {
+    EvaluatorCategoryPlugin() : TypedCategoryPlugin("Task-specific Evaluator") {
+        document_synopsis(
+            "An evaluator specification is either a newly created evaluator "
+            "instance or an evaluator that has been [defined previously ../search-plugin-syntax.md#variables_as_parameters]. "
+            "This page describes how one can specify a new evaluator instance.\n\n"
+            "For evaluators that are heuristic, it is stated which of the following properties hold:\n\n"
+            " * **admissible:** h(s) <= h*(s) for all states s\n"
+            " * **consistent:** h(s) <= c(s, s') + h(s') for all states s "
+            "connected to states s' by an action with cost c(s, s')\n"
+            " * **safe:** h(s) = infinity is only true for states "
+            "with h*(s) = infinity\n"
+            " * **preferred operators:** this heuristic identifies "
+            "preferred operators ");
+        allow_variable_binding();
+    }
+} _deprecated_category_plugin;
+
+static class TaskIndependentEvaluatorCategoryPlugin
+    : public plugins::TypedCategoryPlugin<TaskIndependentEvaluator> {
+public:
+    TaskIndependentEvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {
         document_synopsis(
             "An evaluator specification is either a newly created evaluator "
             "instance or an evaluator that has been [defined previously ../search-plugin-syntax.md#variables_as_parameters]. "
