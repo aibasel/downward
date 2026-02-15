@@ -15,14 +15,14 @@ CombiningEvaluator::CombiningEvaluator(
     : Evaluator(false, false, false, description, verbosity),
       subevaluators(evals) {
     utils::verify_list_not_empty(evals, "evals");
-    all_dead_ends_are_reliable = true;
+    all_subevaluators_are_safe = true;
     for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
         if (!subevaluator->is_safe())
-            all_dead_ends_are_reliable = false;
+            all_subevaluators_are_safe = false;
 }
 
 bool CombiningEvaluator::is_safe() const {
-    return all_dead_ends_are_reliable;
+    return all_subevaluators_are_safe;
 }
 
 EvaluationResult CombiningEvaluator::compute_result(
