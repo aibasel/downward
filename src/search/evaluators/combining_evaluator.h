@@ -15,7 +15,7 @@ namespace combining_evaluator {
 */
 class CombiningEvaluator : public Evaluator {
     std::vector<std::shared_ptr<Evaluator>> subevaluators;
-    bool all_dead_ends_are_reliable;
+    bool all_subevaluators_are_safe;
 protected:
     virtual int combine_values(const std::vector<int> &values) = 0;
 public:
@@ -25,13 +25,13 @@ public:
 
     /*
       Note: is_safe() is a state-independent method, so
-      it only returns true if all subevaluators report dead ends reliably.
+      it only returns true if all subevaluators are safe.
 
       Note that we could get more fine-grained information when
       considering of reliability for a given evaluated state. For
-      example, if we use h1 (unreliable) and h2 (reliable) and have a
+      example, if we use h1 (unsafe) and h2 (safe) and have a
       state where h1 is finite and h2 is infinite, then we can
-      *reliably* mark the state as a dead end. There is currently no
+      *safely* mark the state as a dead end. There is currently no
       way to exploit such state-based information, and hence we do not
       compute it.
     */

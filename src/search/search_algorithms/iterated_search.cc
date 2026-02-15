@@ -145,7 +145,7 @@ bool IteratedSearch::is_complete_within_bound() const {
       - otherwise (continue_on_fail == true and all search algorithms are not
         complete within IteratedSearch's bound), return false
 
-      Before we solve the component interaction problem, we cannot
+      Before we solve the component interaction problem (issue559), we cannot
       access the necessary information from within a constant function.
 
       Once we can implement this function we also want to change IteratedSearch
