@@ -8,7 +8,6 @@
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
-#include <algorithm>
 #include <cassert>
 #include <deque>
 #include <set>
@@ -227,8 +226,10 @@ bool ParetoOpenList<Entry>::is_complete() const {
     if (this->only_contains_preferred_entries()) {
         return false;
     }
-    auto is_safe = [](const auto &evaluator) { return evaluator->is_safe(); };
-    return ranges::any_of(evaluators, is_safe);
+    auto is_evaluator_safe = [](const auto &evaluator) {
+        return evaluator->is_safe();
+    };
+    return ranges::any_of(evaluators, is_evaluator_safe);
 }
 
 ParetoOpenListFactory::ParetoOpenListFactory(
