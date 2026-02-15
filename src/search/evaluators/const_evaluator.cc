@@ -15,6 +15,10 @@ EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
     result.set_evaluator_value(value);
     return result;
 }
+bool ConstEvaluator::is_safe() const {
+    int infinity = std::numeric_limits<int>::max();
+    return value < infinity;
+}
 
 class ConstEvaluatorFeature
     : public plugins::TypedFeature<Evaluator, ConstEvaluator> {
