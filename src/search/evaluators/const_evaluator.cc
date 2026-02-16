@@ -1,5 +1,7 @@
 #include "const_evaluator.h"
 
+#include "../evaluation_result.h"
+
 #include "../plugins/plugin.h"
 
 using namespace std;
@@ -16,8 +18,7 @@ EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
     return result;
 }
 bool ConstEvaluator::is_safe() const {
-    int infinity = numeric_limits<int>::max();
-    return value < infinity;
+    return value < EvaluationResult::INFTY;
 }
 
 class ConstEvaluatorFeature

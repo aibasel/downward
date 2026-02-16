@@ -20,6 +20,12 @@ WeightedEvaluator::WeightedEvaluator(
 }
 
 bool WeightedEvaluator::is_safe() const {
+    if (weight == 0) {
+        return true;
+    }
+    if (weight == EvaluationResult::INFTY) {
+        return false;
+    }
     return evaluator->is_safe();
 }
 
