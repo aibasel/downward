@@ -37,11 +37,8 @@ public:
                 {"Silvia Richter", "Matthias Westphal"},
                 "The LAMA Planner: Guiding Cost-Based Anytime Planning with Landmarks",
                 "https://doi.org/10.1613/jair.2972",
-                "Journal of Artificial Intelligence Research",
-                "39",
-                "127-177",
-                "2010"
-            ));
+                "Journal of Artificial Intelligence Research", "39", "127-177",
+                "2010"));
 
         add_cost_type_options_to_feature(*this);
     }
