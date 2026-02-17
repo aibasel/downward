@@ -168,7 +168,7 @@ public:
         return plugins::make_shared_from_arg_tuples<
             LandmarkCostPartitioningHeuristic>(
             tasks::g_root_task,
-            get_landmark_heuristic_arguments_from_options(opts),
+            get_landmark_heuristic_arguments_from_options(opts, tasks::g_root_task),
             opts.get<CostPartitioningMethod>("cost_partitioning"),
             opts.get<bool>("alm"),
             lp::get_lp_solver_arguments_from_options(opts));

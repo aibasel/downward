@@ -379,11 +379,10 @@ bool LandmarkFactoryReasonableOrdersHPS::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryReasonableOrdersHPSFeature
-    : public plugins::TypedFeature<
-          LandmarkFactory, LandmarkFactoryReasonableOrdersHPS> {
+    : public plugins::TaskIndependentFeature<TaskIndependentLandmarkFactory> {
 public:
     LandmarkFactoryReasonableOrdersHPSFeature()
-        : TypedFeature("lm_reasonable_orders_hps") {
+        : TaskIndependentFeature("lm_reasonable_orders_hps") {
         document_title("HPS orders");
         document_synopsis(
             "Adds reasonable orders described in the following paper" +
@@ -406,7 +405,7 @@ public:
             "effect on the performance of LAMA (Büchner et al., 2023) and "
             "decided to remove them in issue1089.");
 
-        add_option<shared_ptr<LandmarkFactory>>("lm_factory");
+        add_option<shared_ptr<TaskIndependentLandmarkFactory>>("lm_factory");
         add_landmark_factory_options_to_feature(*this);
 
         // TODO: correct?
@@ -414,12 +413,11 @@ public:
             "conditional_effects", "supported if subcomponent supports them");
     }
 
-    virtual shared_ptr<LandmarkFactoryReasonableOrdersHPS> create_component(
+    virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            LandmarkFactoryReasonableOrdersHPS>(
-            tasks::g_root_task,
-            opts.get<shared_ptr<LandmarkFactory>>("lm_factory"),
+        return make_shared_component<
+            LandmarkFactoryReasonableOrdersHPS, LandmarkFactory>(
+            opts.get<shared_ptr<TaskIndependentLandmarkFactory>>("lm_factory"),
             get_landmark_factory_arguments_from_options(opts));
     }
 };

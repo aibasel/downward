@@ -173,14 +173,14 @@ bool LandmarkFactoryMerged::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryMergedFeature
-    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryMerged> {
+    : public plugins::TaskIndependentFeature<TaskIndependentLandmarkFactory> {
 public:
-    LandmarkFactoryMergedFeature() : TypedFeature("lm_merged") {
+    LandmarkFactoryMergedFeature() : TaskIndependentFeature("lm_merged") {
         document_title("Merged landmarks");
         document_synopsis(
             "Merges the landmarks and orderings from the parameter landmarks");
 
-        add_list_option<shared_ptr<LandmarkFactory>>("lm_factories");
+        add_list_option<shared_ptr<TaskIndependentLandmarkFactory>>("lm_factories");
         add_landmark_factory_options_to_feature(*this);
 
         document_note(
@@ -195,11 +195,10 @@ public:
             "conditional_effects", "supported if all components support them");
     }
 
-    virtual shared_ptr<LandmarkFactoryMerged> create_component(
+    virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LandmarkFactoryMerged>(
-            tasks::g_root_task,
-            opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories"),
+        return make_shared_component<LandmarkFactoryMerged, LandmarkFactory>(
+            opts.get_list<shared_ptr<TaskIndependentLandmarkFactory>>("lm_factories"),
             get_landmark_factory_arguments_from_options(opts));
     }
 };

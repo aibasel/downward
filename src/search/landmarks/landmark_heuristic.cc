@@ -242,7 +242,7 @@ void add_landmark_heuristic_options_to_feature(
             "Automated Planning and Scheduling (ICAPS 2023)",
             "70-79", "AAAI Press", "2023"));
 
-    feature.add_option<shared_ptr<LandmarkFactory>>(
+    feature.add_option<shared_ptr<TaskIndependentLandmarkFactory>>(
         "lm_factory", "the set of landmarks to use for this heuristic. "
                       "The set of landmarks can be specified here, "
                       "or predefined (see LandmarkFactory).");
@@ -264,10 +264,12 @@ void add_landmark_heuristic_options_to_feature(
 tuple<
     shared_ptr<LandmarkFactory>, bool, bool, bool, bool, bool, string,
     utils::Verbosity>
-get_landmark_heuristic_arguments_from_options(const plugins::Options &opts) {
+get_landmark_heuristic_arguments_from_options(
+    const plugins::Options &opts, const shared_ptr<AbstractTask> &task) {
     return tuple_cat(
         make_tuple(
-            opts.get<shared_ptr<LandmarkFactory>>("lm_factory"),
+            opts.get<shared_ptr<TaskIndependentLandmarkFactory>>("lm_factory")
+                ->bind_task(task), // issue559 remove once callers want a task-independent factory
             opts.get<bool>("pref"), opts.get<bool>("prog_goal"),
             opts.get<bool>("prog_gn"), opts.get<bool>("prog_r")),
         get_heuristic_arguments_from_options(opts));

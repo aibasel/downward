@@ -314,9 +314,9 @@ bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryZhuGivanFeature
-    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryZhuGivan> {
+    : public plugins::TaskIndependentFeature<TaskIndependentLandmarkFactory> {
 public:
-    LandmarkFactoryZhuGivanFeature() : TypedFeature("lm_zg") {
+    LandmarkFactoryZhuGivanFeature() : TaskIndependentFeature("lm_zg") {
         document_title("Zhu/Givan landmarks");
         document_synopsis("The landmark generation method introduced by "
                           "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
@@ -329,10 +329,10 @@ public:
             "We think they are supported, but this is not 100% sure.");
     }
 
-    virtual shared_ptr<LandmarkFactoryZhuGivan> create_component(
+    virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LandmarkFactoryZhuGivan>(
-            tasks::g_root_task, get_use_orders_arguments_from_options(opts),
+        return make_shared_component<LandmarkFactoryZhuGivan, LandmarkFactory>(
+            get_use_orders_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));
     }
 };

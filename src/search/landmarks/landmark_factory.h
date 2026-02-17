@@ -18,7 +18,7 @@ class Feature;
 }
 
 namespace landmarks {
-class LandmarkFactory : TaskSpecificComponent {
+class LandmarkFactory : public TaskSpecificComponent {
     AbstractTask *landmark_graph_task;
     std::vector<std::vector<std::vector<int>>> operators_providing_effect;
 
@@ -66,6 +66,7 @@ public:
         return achievers_calculated;
     }
 };
+using TaskIndependentLandmarkFactory = TaskIndependentComponent<LandmarkFactory>;
 
 extern void add_landmark_factory_options_to_feature(plugins::Feature &feature);
 extern std::tuple<utils::Verbosity> get_landmark_factory_arguments_from_options(

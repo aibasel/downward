@@ -122,6 +122,27 @@ public:
     }
 };
 
+template<typename ComponentType>
+class TaskIndependentFeature : public FeatureWithoutDefault<ComponentType> {
+    using ComponentTypePtr = std::shared_ptr<ComponentType>;
+public:
+    TaskIndependentFeature(const std::string &key)
+        : FeatureWithoutDefault<ComponentType>(
+              TypeRegistry::instance()->get_type<ComponentTypePtr>(), key) {
+    }
+
+    Any construct(
+        const Options &options, const utils::Context &context) const override {
+        ComponentTypePtr ptr;
+        try {
+            ptr = this->create_component(options);
+        } catch (const utils::ComponentArgumentError &e) {
+            context.error(e.get_message());
+        }
+        return Any(ptr);
+    }
+};
+
 /*
   Expects constructor arguments of T. Consecutive arguments may be
   grouped in a tuple. All tuples in the arguments will be flattened

@@ -83,9 +83,9 @@ bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryRpgExhaustFeature
-    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgExhaust> {
+    : public plugins::TaskIndependentFeature<TaskIndependentLandmarkFactory> {
 public:
-    LandmarkFactoryRpgExhaustFeature() : TypedFeature("lm_exhaust") {
+    LandmarkFactoryRpgExhaustFeature() : TaskIndependentFeature("lm_exhaust") {
         document_title("Exhaustive landmarks");
         document_synopsis(
             "Exhaustively checks for each atom if it is a landmark."
@@ -107,10 +107,10 @@ public:
             "conditional_effects", "ignored, i.e. not supported");
     }
 
-    virtual shared_ptr<LandmarkFactoryRpgExhaust> create_component(
+    virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgExhaust>(
-            tasks::g_root_task, opts.get<bool>("use_unary_relaxation"),
+        return make_shared_component<LandmarkFactoryRpgExhaust, LandmarkFactory>(
+            opts.get<bool>("use_unary_relaxation"),
             get_landmark_factory_arguments_from_options(opts));
     }
 };

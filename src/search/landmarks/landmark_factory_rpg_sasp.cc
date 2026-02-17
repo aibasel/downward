@@ -752,9 +752,9 @@ bool LandmarkFactoryRpgSasp::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryRpgSaspFeature
-    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgSasp> {
+    : public plugins::TaskIndependentFeature<TaskIndependentLandmarkFactory> {
 public:
-    LandmarkFactoryRpgSaspFeature() : TypedFeature("lm_rhw") {
+    LandmarkFactoryRpgSaspFeature() : TaskIndependentFeature("lm_rhw") {
         document_title("RHW landmarks");
         document_synopsis("The landmark generation method introduced by "
                           "Richter, Helmert and Westphal (AAAI 2008).");
@@ -766,10 +766,10 @@ public:
         document_language_support("conditional_effects", "supported");
     }
 
-    virtual shared_ptr<LandmarkFactoryRpgSasp> create_component(
+    virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgSasp>(
-            tasks::g_root_task, opts.get<bool>("disjunctive_landmarks"),
+        return make_shared_component<LandmarkFactoryRpgSasp, LandmarkFactory>(
+            opts.get<bool>("disjunctive_landmarks"),
             get_use_orders_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));
     }

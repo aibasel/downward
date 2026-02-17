@@ -205,9 +205,10 @@ bool get_use_orders_arguments_from_options(const plugins::Options &opts) {
 }
 
 static class LandmarkFactoryCategoryPlugin
-    : public plugins::TypedCategoryPlugin<LandmarkFactory> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentLandmarkFactory> {
 public:
-    LandmarkFactoryCategoryPlugin() : TypedCategoryPlugin("LandmarkFactory") {
+    LandmarkFactoryCategoryPlugin()
+        : TypedCategoryPlugin("LandmarkFactory") {
         document_synopsis(
             "A landmark factory specification is either a newly created "
             "instance or a landmark factory that has been defined previously. "

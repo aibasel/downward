@@ -24,6 +24,14 @@ template<class... Ts, std::size_t... Is>
 auto flatten_tuple_elements(std::tuple<Ts...> &&t, std::index_sequence<Is...>) {
     return std::tuple_cat(flatten_tuple(std::get<Is>(std::move(t)))...);
 }
+
+template<typename T, typename Tuple>
+struct PrependedTuple;
+
+template<typename T, typename... Ts>
+struct PrependedTuple<T, std::tuple<Ts...>> {
+    using type = std::tuple<T, Ts...>;
+};
 }
 
 #endif

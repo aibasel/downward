@@ -1043,9 +1043,9 @@ bool LandmarkFactoryHM::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryHMFeature
-    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryHM> {
+    : public plugins::TaskIndependentFeature<TaskIndependentLandmarkFactory> {
 public:
-    LandmarkFactoryHMFeature() : TypedFeature("lm_hm") {
+    LandmarkFactoryHMFeature() : TaskIndependentFeature("lm_hm") {
         // document_group("");
         document_title("h^m landmarks");
         document_synopsis(
@@ -1070,11 +1070,10 @@ public:
             "conditional_effects", "ignored, i.e. not supported");
     }
 
-    virtual shared_ptr<LandmarkFactoryHM> create_component(
+    virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LandmarkFactoryHM>(
-            tasks::g_root_task, opts.get<int>("m"),
-            opts.get<bool>("conjunctive_landmarks"),
+        return make_shared_component<LandmarkFactoryHM, LandmarkFactory>(
+            opts.get<int>("m"), opts.get<bool>("conjunctive_landmarks"),
             get_use_orders_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));
     }
