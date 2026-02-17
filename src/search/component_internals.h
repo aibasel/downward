@@ -76,6 +76,8 @@ auto bind_task_recursively(
 }
 
 template<typename T>
+// issue559 decide if we want this restriction
+    requires(!std::convertible_to<T, std::shared_ptr<TaskSpecificComponent>>)
 auto bind_task_recursively(
     const T &t, const std::shared_ptr<AbstractTask> &, Cache &) {
     return t;
