@@ -32,7 +32,7 @@ namespace operator_counting {
       Example: constraints from landmarks generated for a given state, e.g.
       using the LM-Cut method.
 */
-class ConstraintGenerator : TaskSpecificComponent {
+class ConstraintGenerator : public TaskSpecificComponent {
 public:
     explicit ConstraintGenerator(const std::shared_ptr<AbstractTask> &task);
 
@@ -53,6 +53,9 @@ public:
     virtual bool update_constraints(
         const State &state, lp::LPSolver &lp_solver) = 0;
 };
+
+using TaskIndependentConstraintGenerator =
+    TaskIndependentComponent<ConstraintGenerator>;
 }
 
 #endif

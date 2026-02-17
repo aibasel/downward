@@ -15,7 +15,7 @@ void ConstraintGenerator::initialize_constraints(
 }
 
 static class ConstraintGeneratorCategoryPlugin
-    : public plugins::TypedCategoryPlugin<ConstraintGenerator> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentConstraintGenerator> {
 public:
     ConstraintGeneratorCategoryPlugin()
         : TypedCategoryPlugin("ConstraintGenerator") {

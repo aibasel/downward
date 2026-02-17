@@ -46,9 +46,10 @@ bool LMCutConstraints::update_constraints(
 }
 
 class LMCutConstraintsFeature
-    : public plugins::TypedFeature<ConstraintGenerator, LMCutConstraints> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentConstraintGenerator> {
 public:
-    LMCutConstraintsFeature() : TypedFeature("lmcut_constraints") {
+    LMCutConstraintsFeature() : TaskIndependentFeature("lmcut_constraints") {
         document_title("LM-cut landmark constraints");
         document_synopsis(
             "Computes a set of landmarks in each state using the LM-cut method. "
@@ -74,9 +75,9 @@ public:
                 "2268-2274", "AAAI Press", "2013"));
     }
 
-    virtual shared_ptr<LMCutConstraints> create_component(
+    virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &) const override {
-        return make_shared<LMCutConstraints>(tasks::g_root_task);
+        return make_shared_component<LMCutConstraints, ConstraintGenerator>();
     }
 };
 

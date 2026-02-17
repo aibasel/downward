@@ -558,21 +558,19 @@ bool DeleteRelaxationRRConstraints::update_constraints(
 }
 
 class DeleteRelaxationRRConstraintsFeature
-    : public plugins::TypedFeature<
-          ConstraintGenerator, DeleteRelaxationRRConstraints> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentConstraintGenerator> {
 public:
     DeleteRelaxationRRConstraintsFeature()
-        : TypedFeature("delete_relaxation_rr_constraints") {
+        : TaskIndependentFeature("delete_relaxation_rr_constraints") {
         document_title(
             "Delete relaxation constraints from Rankooh and Rintanen");
         document_synopsis(
             "Operator-counting constraints based on the delete relaxation. By "
             "default the constraints encode an easy-to-compute relaxation of "
-            "h^+^. "
-            "With the right settings, these constraints can be used to compute "
-            "the "
-            "optimal delete-relaxation heuristic h^+^ (see example below). "
-            "For details, see" +
+            "h^+^. With the right settings, these constraints can be used to "
+            "compute the optimal delete-relaxation heuristic h^+^ (see example "
+            "below). For details, see" +
             utils::format_journal_reference(
                 {"Masood Feyzbakhsh Rankooh", "Jussi Rintanen"},
                 "Efficient Computation and Informative Estimation of"
@@ -621,10 +619,11 @@ public:
             "configuration, and some relaxations offer tighter bounds.\n");
     }
 
-    virtual shared_ptr<DeleteRelaxationRRConstraints> create_component(
+    virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared<DeleteRelaxationRRConstraints>(
-            tasks::g_root_task, opts.get<AcyclicityType>("acyclicity_type"),
+        return make_shared_component<
+            DeleteRelaxationRRConstraints, ConstraintGenerator>(
+            opts.get<AcyclicityType>("acyclicity_type"),
             opts.get<bool>("use_integer_vars"));
     }
 };

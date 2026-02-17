@@ -5,6 +5,7 @@
 #include "task_proxy.h"
 
 #include "plugins/plugin.h"
+#include "utils/tuples.h"
 
 #include <memory>
 
@@ -102,7 +103,7 @@ template<typename T, typename ComponentType, typename... Args>
 std::shared_ptr<TaskIndependentComponent<ComponentType>>
 make_shared_component(Args &&...args) {
     auto flat_args =
-        flatten_tuple(std::make_tuple(std::forward<Args>(args)...));
+        utils::flatten_tuple(std::make_tuple(std::forward<Args>(args)...));
     return make_shared<
         AutoTaskIndependentComponent<T, ComponentType, decltype(flat_args)>>(
         move(flat_args));

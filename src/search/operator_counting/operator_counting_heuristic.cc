@@ -87,7 +87,7 @@ public:
                 " on Automated Planning and Scheduling (ICAPS 2014)",
                 "226-234", "AAAI Press", "2014"));
 
-        add_list_option<shared_ptr<ConstraintGenerator>>(
+        add_list_option<shared_ptr<TaskIndependentConstraintGenerator>>(
             "constraint_generators",
             "methods that generate constraints over operator-counting variables");
         add_option<bool>(
@@ -122,10 +122,19 @@ public:
 
     virtual shared_ptr<OperatorCountingHeuristic> create_component(
         const plugins::Options &opts) const override {
+        // issue559 remove these lines, use commented out line below instead
+        auto constraint_generators =
+            opts.get_list<shared_ptr<TaskIndependentConstraintGenerator>>(
+                "constraint_generators");
+        Cache cache;
+        auto bound_constraint_generators = bind_task_recursively(
+            constraint_generators, tasks::g_root_task, cache);
+
         return plugins::make_shared_from_arg_tuples<OperatorCountingHeuristic>(
             tasks::g_root_task,
-            opts.get_list<shared_ptr<ConstraintGenerator>>(
-                "constraint_generators"),
+//            opts.get_list<shared_ptr<TaskIndependentConstraintGenerator>>(
+//                "constraint_generators"),
+            move(bound_constraint_generators),
             opts.get<bool>("use_integer_operator_counts"),
             lp::get_lp_solver_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));

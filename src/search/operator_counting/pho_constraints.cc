@@ -65,9 +65,10 @@ bool PhOConstraints::update_constraints(
 }
 
 class PhOConstraintsFeature
-    : public plugins::TypedFeature<ConstraintGenerator, PhOConstraints> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentConstraintGenerator> {
 public:
-    PhOConstraintsFeature() : TypedFeature("pho_constraints") {
+    PhOConstraintsFeature() : TaskIndependentFeature("pho_constraints") {
         document_title("Posthoc optimization constraints");
         document_synopsis(
             "The generator will compute a PDB for each pattern and add the"
@@ -85,11 +86,10 @@ public:
             "patterns", "pattern generation method", "systematic(2)");
     }
 
-    virtual shared_ptr<PhOConstraints> create_component(
+    virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PhOConstraints>(
-            tasks::g_root_task,
-            opts.get<shared_ptr<pdbs::TaskIndependentPatternCollectionGenerator>>("patterns")->bind_task(tasks::g_root_task));
+        return make_shared_component<PhOConstraints, ConstraintGenerator>(
+            opts.get<shared_ptr<pdbs::TaskIndependentPatternCollectionGenerator>>("patterns"));
     }
 };
 

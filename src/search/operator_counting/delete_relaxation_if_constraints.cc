@@ -243,11 +243,11 @@ bool DeleteRelaxationIFConstraints::update_constraints(
 }
 
 class DeleteRelaxationIFConstraintsFeature
-    : public plugins::TypedFeature<
-          ConstraintGenerator, DeleteRelaxationIFConstraints> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentConstraintGenerator> {
 public:
     DeleteRelaxationIFConstraintsFeature()
-        : TypedFeature("delete_relaxation_if_constraints") {
+        : TaskIndependentFeature("delete_relaxation_if_constraints") {
         document_title("Delete relaxation constraints from Imai and Fukunaga");
         document_synopsis(
             "Operator-counting constraints based on the delete relaxation. By "
@@ -295,10 +295,10 @@ public:
             "option {{{delete_relaxation_rr_constraints}}}.\n");
     }
 
-    virtual shared_ptr<DeleteRelaxationIFConstraints> create_component(
+    virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared<DeleteRelaxationIFConstraints>(
-            tasks::g_root_task, opts.get<bool>("use_time_vars"),
+        return make_shared_component<DeleteRelaxationIFConstraints, ConstraintGenerator>(
+            opts.get<bool>("use_time_vars"),
             opts.get<bool>("use_integer_vars"));
     }
 };
