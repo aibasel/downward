@@ -105,7 +105,7 @@ public:
             "S in A is the sum of the heuristic values for all patterns in S "
             "for a given state.");
 
-        add_option<shared_ptr<PatternCollectionGenerator>>(
+        add_option<shared_ptr<TaskIndependentPatternCollectionGenerator>>(
             "patterns", "pattern generation method", "systematic(1)");
         add_canonical_pdbs_options_to_feature(*this);
         add_heuristic_options_to_feature(*this, "cpdbs");
@@ -124,7 +124,7 @@ public:
         const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<CanonicalPDBsHeuristic>(
             tasks::g_root_task,
-            opts.get<shared_ptr<PatternCollectionGenerator>>("patterns"),
+            opts.get<shared_ptr<TaskIndependentPatternCollectionGenerator>>("patterns")->bind_task(tasks::g_root_task),
             get_canonical_pdbs_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));
     }

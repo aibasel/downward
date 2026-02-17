@@ -45,9 +45,9 @@ PatternInformation PatternGeneratorRandom::compute_pattern(
 }
 
 class PatternGeneratorRandomFeature
-    : public plugins::TypedFeature<PatternGenerator, PatternGeneratorRandom> {
+    : public plugins::TaskIndependentFeature<TaskIndependentPatternGenerator> {
 public:
-    PatternGeneratorRandomFeature() : TypedFeature("random_pattern") {
+    PatternGeneratorRandomFeature() : TaskIndependentFeature("random_pattern") {
         document_title("Random pattern");
         document_synopsis(
             "This pattern generator implements the 'single randomized "
@@ -71,10 +71,10 @@ public:
         add_random_pattern_implementation_notes_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternGeneratorRandom> create_component(
+    virtual shared_ptr<TaskIndependentPatternGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PatternGeneratorRandom>(
-            tasks::g_root_task, opts.get<int>("max_pdb_size"),
+        return make_shared_component<PatternGeneratorRandom, PatternGenerator>(
+            opts.get<int>("max_pdb_size"),
             opts.get<double>("max_time"),
             get_random_pattern_bidirectional_arguments_from_options(opts),
             utils::get_rng_arguments_from_options(opts),

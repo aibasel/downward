@@ -81,7 +81,7 @@ public:
                 " Conference on Artificial Intelligence (IJCAI 2013)",
                 "2357-2364", "AAAI Press", "2013"));
 
-        add_option<shared_ptr<pdbs::PatternCollectionGenerator>>(
+        add_option<shared_ptr<pdbs::TaskIndependentPatternCollectionGenerator>>(
             "patterns", "pattern generation method", "systematic(2)");
     }
 
@@ -89,7 +89,7 @@ public:
         const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<PhOConstraints>(
             tasks::g_root_task,
-            opts.get<shared_ptr<pdbs::PatternCollectionGenerator>>("patterns"));
+            opts.get<shared_ptr<pdbs::TaskIndependentPatternCollectionGenerator>>("patterns")->bind_task(tasks::g_root_task));
     }
 };
 

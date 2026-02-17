@@ -41,11 +41,11 @@ PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
 }
 
 class PatternCollectionGeneratorMultipleCegarFeature
-    : public plugins::TypedFeature<
-          PatternCollectionGenerator, PatternCollectionGeneratorMultipleCegar> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorMultipleCegarFeature()
-        : TypedFeature("multiple_cegar") {
+        : TaskIndependentFeature("multiple_cegar") {
         document_title("Multiple CEGAR");
         document_synopsis(
             "This pattern collection generator implements the multiple CEGAR "
@@ -63,11 +63,11 @@ public:
         add_multiple_algorithm_implementation_notes_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorMultipleCegar>
+    virtual shared_ptr<TaskIndependentPatternCollectionGenerator>
     create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            PatternCollectionGeneratorMultipleCegar>(
-            tasks::g_root_task, get_cegar_wildcard_arguments_from_options(opts),
+        return make_shared_component<
+            PatternCollectionGeneratorMultipleCegar, PatternCollectionGenerator>(
+            get_cegar_wildcard_arguments_from_options(opts),
             get_multiple_arguments_from_options(opts));
     }
 };

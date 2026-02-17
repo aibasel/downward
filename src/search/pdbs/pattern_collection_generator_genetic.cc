@@ -304,10 +304,10 @@ PatternCollectionGeneratorGenetic::compute_patterns(
 }
 
 class PatternCollectionGeneratorGeneticFeature
-    : public plugins::TypedFeature<
-          PatternCollectionGenerator, PatternCollectionGeneratorGenetic> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentPatternCollectionGenerator> {
 public:
-    PatternCollectionGeneratorGeneticFeature() : TypedFeature("genetic") {
+    PatternCollectionGeneratorGeneticFeature() : TaskIndependentFeature("genetic") {
         document_title("Genetic algorithm patterns");
         document_synopsis(
             "The following paper describes the automated creation of pattern "
@@ -388,11 +388,11 @@ public:
         document_language_support("axioms", "not supported");
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorGenetic> create_component(
+    virtual shared_ptr<TaskIndependentPatternCollectionGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            PatternCollectionGeneratorGenetic>(
-            tasks::g_root_task, opts.get<int>("pdb_max_size"),
+        return make_shared_component<
+            PatternCollectionGeneratorGenetic, PatternCollectionGenerator>(
+            opts.get<int>("pdb_max_size"),
             opts.get<int>("num_collections"), opts.get<int>("num_episodes"),
             opts.get<double>("mutation_probability"),
             opts.get<bool>("disjoint"),

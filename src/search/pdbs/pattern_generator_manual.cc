@@ -32,9 +32,9 @@ PatternInformation PatternGeneratorManual::compute_pattern(
 }
 
 class PatternGeneratorManualFeature
-    : public plugins::TypedFeature<PatternGenerator, PatternGeneratorManual> {
+    : public plugins::TaskIndependentFeature<TaskIndependentPatternGenerator> {
 public:
-    PatternGeneratorManualFeature() : TypedFeature("manual_pattern") {
+    PatternGeneratorManualFeature() : TaskIndependentFeature("manual_pattern") {
         document_title("Manual pattern");
         add_list_option<int>(
             "pattern",
@@ -43,10 +43,10 @@ public:
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternGeneratorManual> create_component(
+    virtual shared_ptr<TaskIndependentPatternGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PatternGeneratorManual>(
-            tasks::g_root_task, opts.get_list<int>("pattern"),
+        return make_shared_component<PatternGeneratorManual, PatternGenerator>(
+            opts.get_list<int>("pattern"),
             get_generator_arguments_from_options(opts));
     }
 };

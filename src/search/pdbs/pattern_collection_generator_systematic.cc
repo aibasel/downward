@@ -289,10 +289,10 @@ PatternCollectionGeneratorSystematic::compute_patterns(
 }
 
 class PatternCollectionGeneratorSystematicFeature
-    : public plugins::TypedFeature<
-          PatternCollectionGenerator, PatternCollectionGeneratorSystematic> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentPatternCollectionGenerator> {
 public:
-    PatternCollectionGeneratorSystematicFeature() : TypedFeature("systematic") {
+    PatternCollectionGeneratorSystematicFeature() : TaskIndependentFeature("systematic") {
         document_title("Systematically generated patterns");
         document_synopsis(
             "Generates all (interesting) patterns with up to pattern_max_size "
@@ -317,11 +317,11 @@ public:
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorSystematic> create_component(
+    virtual shared_ptr<TaskIndependentPatternCollectionGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            PatternCollectionGeneratorSystematic>(
-            tasks::g_root_task, opts.get<int>("pattern_max_size"),
+        return make_shared_component<
+            PatternCollectionGeneratorSystematic, PatternCollectionGenerator>(
+            opts.get<int>("pattern_max_size"),
             opts.get<bool>("only_interesting_patterns"),
             get_generator_arguments_from_options(opts));
     }

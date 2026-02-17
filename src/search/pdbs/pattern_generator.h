@@ -39,6 +39,9 @@ public:
         const std::shared_ptr<AbstractTask> &task);
 };
 
+using TaskIndependentPatternCollectionGenerator =
+    TaskIndependentComponent<PatternCollectionGenerator>;
+
 class PatternGenerator : public TaskSpecificComponent {
     virtual std::string name() const = 0;
     virtual PatternInformation compute_pattern(
@@ -51,6 +54,9 @@ public:
 
     PatternInformation generate(const std::shared_ptr<AbstractTask> &task);
 };
+
+using TaskIndependentPatternGenerator =
+    TaskIndependentComponent<PatternGenerator>;
 
 extern void add_generator_options_to_feature(plugins::Feature &feature);
 extern std::tuple<utils::Verbosity> get_generator_arguments_from_options(

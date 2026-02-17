@@ -54,12 +54,11 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
 }
 
 class PatternCollectionGeneratorMultipleRandomFeature
-    : public plugins::TypedFeature<
-          PatternCollectionGenerator,
-          PatternCollectionGeneratorMultipleRandom> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorMultipleRandomFeature()
-        : TypedFeature("random_patterns") {
+        : TaskIndependentFeature("random_patterns") {
         document_title("Multiple random patterns");
         document_synopsis(
             "This pattern collection generator implements the 'multiple "
@@ -78,11 +77,10 @@ public:
         add_multiple_algorithm_implementation_notes_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorMultipleRandom>
+    virtual shared_ptr<TaskIndependentPatternCollectionGenerator>
     create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            PatternCollectionGeneratorMultipleRandom>(
-            tasks::g_root_task,
+        return make_shared_component<
+            PatternCollectionGeneratorMultipleRandom, PatternCollectionGenerator>(
             get_random_pattern_bidirectional_arguments_from_options(opts),
             get_multiple_arguments_from_options(opts));
     }

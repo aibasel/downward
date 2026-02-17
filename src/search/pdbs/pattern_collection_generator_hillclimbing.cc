@@ -582,11 +582,11 @@ static basic_string<char> paper_references() {
 }
 
 class PatternCollectionGeneratorHillclimbingFeature
-    : public plugins::TypedFeature<
-          PatternCollectionGenerator, PatternCollectionGeneratorHillclimbing> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorHillclimbingFeature()
-        : TypedFeature("hillclimbing") {
+        : TaskIndependentFeature("hillclimbing") {
         document_title("Hill climbing");
         document_synopsis(
             "This algorithm uses hill climbing to generate patterns "
@@ -597,11 +597,11 @@ public:
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorHillclimbing> create_component(
+    virtual shared_ptr<TaskIndependentPatternCollectionGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            PatternCollectionGeneratorHillclimbing>(
-            tasks::g_root_task, get_hillclimbing_arguments_from_options(opts),
+        return make_shared_component<
+            PatternCollectionGeneratorHillclimbing, PatternCollectionGenerator>(
+            get_hillclimbing_arguments_from_options(opts),
             get_generator_arguments_from_options(opts));
     }
 };

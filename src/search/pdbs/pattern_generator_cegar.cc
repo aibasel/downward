@@ -39,9 +39,9 @@ PatternInformation PatternGeneratorCEGAR::compute_pattern(
 }
 
 class PatternGeneratorCEGARFeature
-    : public plugins::TypedFeature<PatternGenerator, PatternGeneratorCEGAR> {
+    : public plugins::TaskIndependentFeature<TaskIndependentPatternGenerator> {
 public:
-    PatternGeneratorCEGARFeature() : TypedFeature("cegar_pattern") {
+    PatternGeneratorCEGARFeature() : TaskIndependentFeature("cegar_pattern") {
         document_title("CEGAR");
         document_synopsis(
             "This pattern generator uses the CEGAR algorithm restricted to a "
@@ -66,10 +66,10 @@ public:
         add_cegar_implementation_notes_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternGeneratorCEGAR> create_component(
+    virtual shared_ptr<TaskIndependentPatternGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PatternGeneratorCEGAR>(
-            tasks::g_root_task, opts.get<int>("max_pdb_size"),
+        return make_shared_component<PatternGeneratorCEGAR, PatternGenerator>(
+            opts.get<int>("max_pdb_size"),
             opts.get<double>("max_time"),
             get_cegar_wildcard_arguments_from_options(opts),
             utils::get_rng_arguments_from_options(opts),

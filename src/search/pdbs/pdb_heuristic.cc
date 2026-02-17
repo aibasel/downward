@@ -62,7 +62,7 @@ public:
             "First used in domain-independent planning by:" +
             paper_references());
 
-        add_option<shared_ptr<PatternGenerator>>(
+        add_option<shared_ptr<TaskIndependentPatternGenerator>>(
             "pattern", "pattern generation method", "greedy()");
         add_heuristic_options_to_feature(*this, "pdb");
 
@@ -80,7 +80,7 @@ public:
         const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<PDBHeuristic>(
             tasks::g_root_task,
-            opts.get<shared_ptr<PatternGenerator>>("pattern"),
+            opts.get<shared_ptr<TaskIndependentPatternGenerator>>("pattern")->bind_task(tasks::g_root_task),
             get_heuristic_arguments_from_options(opts));
     }
 };
