@@ -187,9 +187,9 @@ void ShrinkFH::dump_strategy_specific_options(utils::LogProxy &log) const {
     }
 }
 
-class ShrinkFHFeature : public plugins::TypedFeature<ShrinkStrategy, ShrinkFH> {
+class ShrinkFHFeature : public plugins::TaskIndependentFeature<TaskIndependentShrinkStrategy> {
 public:
-    ShrinkFHFeature() : TypedFeature("shrink_fh") {
+    ShrinkFHFeature() : TaskIndependentFeature("shrink_fh") {
         document_title("f-preserving shrink strategy");
         document_synopsis(
             "This shrink strategy implements the algorithm described in"
@@ -239,10 +239,10 @@ public:
             "vector-based approach.");
     }
 
-    virtual shared_ptr<ShrinkFH> create_component(
+    virtual shared_ptr<TaskIndependentShrinkStrategy> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<ShrinkFH>(
-            tasks::g_root_task, opts.get<ShrinkFH::HighLow>("shrink_f"),
+        return make_shared_component<ShrinkFH, ShrinkStrategy>(
+            opts.get<ShrinkFH::HighLow>("shrink_f"),
             opts.get<ShrinkFH::HighLow>("shrink_h"),
             get_shrink_bucket_arguments_from_options(opts));
     }

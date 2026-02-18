@@ -248,7 +248,7 @@ public:
         const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<MergeAndShrinkHeuristic>(
             tasks::g_root_task,
-            get_merge_and_shrink_algorithm_arguments_from_options(opts),
+            get_merge_and_shrink_algorithm_arguments_from_options(opts, tasks::g_root_task),
             get_heuristic_arguments_from_options(opts));
     }
 };

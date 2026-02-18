@@ -372,9 +372,9 @@ void ShrinkBisimulation::dump_strategy_specific_options(
 }
 
 class ShrinkBisimulationFeature
-    : public plugins::TypedFeature<ShrinkStrategy, ShrinkBisimulation> {
+    : public plugins::TaskIndependentFeature<TaskIndependentShrinkStrategy> {
 public:
-    ShrinkBisimulationFeature() : TypedFeature("shrink_bisimulation") {
+    ShrinkBisimulationFeature() : TaskIndependentFeature("shrink_bisimulation") {
         document_title("Bismulation based shrink strategy");
         document_synopsis(
             "This shrink strategy implements the algorithm described in"
@@ -415,10 +415,10 @@ public:
             "merging).");
     }
 
-    virtual shared_ptr<ShrinkBisimulation> create_component(
+    virtual shared_ptr<TaskIndependentShrinkStrategy> create_component(
         const plugins::Options &opts) const override {
-        return make_shared<ShrinkBisimulation>(
-            tasks::g_root_task, opts.get<bool>("greedy"),
+        return make_shared_component<ShrinkBisimulation, ShrinkStrategy>(
+            opts.get<bool>("greedy"),
             opts.get<AtLimit>("at_limit"));
     }
 };

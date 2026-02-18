@@ -473,7 +473,7 @@ void add_merge_and_shrink_algorithm_options_to_feature(
         "]))}}}");
 
     // Shrink strategy option.
-    feature.add_option<shared_ptr<ShrinkStrategy>>(
+    feature.add_option<shared_ptr<TaskIndependentShrinkStrategy>>(
         "shrink_strategy",
         "See detailed documentation for shrink strategies. "
         "We currently recommend non-greedy shrink_bisimulation, which can be "
@@ -515,11 +515,11 @@ tuple<
     shared_ptr<MergeStrategyFactory>, shared_ptr<ShrinkStrategy>,
     shared_ptr<LabelReduction>, bool, bool, int, int, int, double>
 get_merge_and_shrink_algorithm_arguments_from_options(
-    const plugins::Options &opts) {
+    const plugins::Options &opts, const shared_ptr<AbstractTask> &task) {
     return tuple_cat(
         make_tuple(
             opts.get<shared_ptr<MergeStrategyFactory>>("merge_strategy"),
-            opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy"),
+            opts.get<shared_ptr<TaskIndependentShrinkStrategy>>("shrink_strategy")->bind_task(task),
             opts.get<shared_ptr<LabelReduction>>("label_reduction", nullptr),
             opts.get<bool>("prune_unreachable_states"),
             opts.get<bool>("prune_irrelevant_states")),

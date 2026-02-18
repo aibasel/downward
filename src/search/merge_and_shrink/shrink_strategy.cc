@@ -28,7 +28,7 @@ string ShrinkStrategy::get_name() const {
 }
 
 static class ShrinkStrategyCategoryPlugin
-    : public plugins::TypedCategoryPlugin<ShrinkStrategy> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentShrinkStrategy> {
 public:
     ShrinkStrategyCategoryPlugin() : TypedCategoryPlugin("ShrinkStrategy") {
         document_synopsis(

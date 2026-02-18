@@ -132,7 +132,7 @@ public:
         // TODO: use shrink strategy and limit options from
         // MergeAndShrinkHeuristic instead of having the identical options here
         // again.
-        add_option<shared_ptr<ShrinkStrategy>>(
+        add_option<shared_ptr<TaskIndependentShrinkStrategy>>(
             "shrink_strategy",
             "We recommend setting this to match the shrink strategy configuration "
             "given to {{{merge_and_shrink}}}, see note below.");
@@ -183,7 +183,7 @@ public:
         const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<MergeScoringFunctionMIASM>(
             tasks::g_root_task,
-            opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy"),
+            opts.get<shared_ptr<TaskIndependentShrinkStrategy>>("shrink_strategy")->bind_task(tasks::g_root_task),
             get_transition_system_size_limit_arguments_from_options(opts),
             opts.get<bool>("use_caching"));
     }

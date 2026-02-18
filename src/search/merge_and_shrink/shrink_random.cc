@@ -34,19 +34,19 @@ string ShrinkRandom::name() const {
 }
 
 class ShrinkRandomFeature
-    : public plugins::TypedFeature<ShrinkStrategy, ShrinkRandom> {
+    : public plugins::TaskIndependentFeature<TaskIndependentShrinkStrategy> {
 public:
-    ShrinkRandomFeature() : TypedFeature("shrink_random") {
+    ShrinkRandomFeature() : TaskIndependentFeature("shrink_random") {
         document_title("Random");
         document_synopsis("");
 
         add_shrink_bucket_options_to_feature(*this);
     }
 
-    virtual shared_ptr<ShrinkRandom> create_component(
+    virtual shared_ptr<TaskIndependentShrinkStrategy> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<ShrinkRandom>(
-            tasks::g_root_task, get_shrink_bucket_arguments_from_options(opts));
+        return make_shared_component<ShrinkRandom, ShrinkStrategy>(
+            get_shrink_bucket_arguments_from_options(opts));
     }
 };
 
