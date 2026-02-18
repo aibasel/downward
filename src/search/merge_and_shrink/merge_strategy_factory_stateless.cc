@@ -39,10 +39,11 @@ bool MergeStrategyFactoryStateless::requires_goal_distances() const {
 }
 
 class MergeStrategyFactoryStatelessFeature
-    : public plugins::TypedFeature<
-          MergeStrategyFactory, MergeStrategyFactoryStateless> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentMergeStrategyFactory> {
 public:
-    MergeStrategyFactoryStatelessFeature() : TypedFeature("merge_stateless") {
+    MergeStrategyFactoryStatelessFeature()
+        : TaskIndependentFeature("merge_stateless") {
         document_title("Stateless merge strategy");
         document_synopsis(
             "This merge strategy has a merge selector, which computes the next "
@@ -71,12 +72,11 @@ public:
             "\n}}}");
     }
 
-    virtual shared_ptr<MergeStrategyFactoryStateless> create_component(
+    virtual shared_ptr<TaskIndependentMergeStrategyFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            MergeStrategyFactoryStateless>(
-            tasks::g_root_task,
-            opts.get<shared_ptr<TaskIndependentMergeSelector>>("merge_selector")->bind_task(tasks::g_root_task),
+        return make_shared_component<
+            MergeStrategyFactoryStateless, MergeStrategyFactory>(
+            opts.get<shared_ptr<TaskIndependentMergeSelector>>("merge_selector"),
             get_merge_strategy_arguments_from_options(opts));
     }
 };

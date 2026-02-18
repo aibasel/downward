@@ -137,10 +137,10 @@ string MergeStrategyFactorySCCs::name() const {
 }
 
 class MergeStrategyFactorySCCsFeature
-    : public plugins::TypedFeature<
-          MergeStrategyFactory, MergeStrategyFactorySCCs> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentMergeStrategyFactory> {
 public:
-    MergeStrategyFactorySCCsFeature() : TypedFeature("merge_sccs") {
+    MergeStrategyFactorySCCsFeature() : TaskIndependentFeature("merge_sccs") {
         document_title("Merge strategy SCCs");
         document_synopsis(
             "This merge strategy implements the algorithm described in the paper " +
@@ -167,11 +167,11 @@ public:
         add_merge_strategy_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeStrategyFactorySCCs> create_component(
+    virtual shared_ptr<TaskIndependentMergeStrategyFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<MergeStrategyFactorySCCs>(
-            tasks::g_root_task, opts.get<OrderOfSCCs>("order_of_sccs"),
-            opts.get<shared_ptr<TaskIndependentMergeSelector>>("merge_selector")->bind_task(tasks::g_root_task),
+        return make_shared_component<MergeStrategyFactorySCCs, MergeStrategyFactory>(
+            opts.get<OrderOfSCCs>("order_of_sccs"),
+            opts.get<shared_ptr<TaskIndependentMergeSelector>>("merge_selector"),
             get_merge_strategy_arguments_from_options(opts));
     }
 };

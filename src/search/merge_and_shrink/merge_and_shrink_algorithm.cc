@@ -464,7 +464,7 @@ MergeAndShrinkAlgorithm::build_factored_transition_system(
 void add_merge_and_shrink_algorithm_options_to_feature(
     plugins::Feature &feature) {
     // Merge strategy option.
-    feature.add_option<shared_ptr<MergeStrategyFactory>>(
+    feature.add_option<shared_ptr<TaskIndependentMergeStrategyFactory>>(
         "merge_strategy",
         "See detailed documentation for merge strategies. "
         "We currently recommend SCC-DFP, which can be achieved using "
@@ -518,7 +518,7 @@ get_merge_and_shrink_algorithm_arguments_from_options(
     const plugins::Options &opts, const shared_ptr<AbstractTask> &task) {
     return tuple_cat(
         make_tuple(
-            opts.get<shared_ptr<MergeStrategyFactory>>("merge_strategy"),
+            opts.get<shared_ptr<TaskIndependentMergeStrategyFactory>>("merge_strategy")->bind_task(task),
             opts.get<shared_ptr<TaskIndependentShrinkStrategy>>("shrink_strategy")->bind_task(task),
             opts.get<shared_ptr<LabelReduction>>("label_reduction", nullptr),
             opts.get<bool>("prune_unreachable_states"),

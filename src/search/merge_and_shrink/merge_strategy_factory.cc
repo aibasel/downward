@@ -31,7 +31,7 @@ tuple<utils::Verbosity> get_merge_strategy_arguments_from_options(
 }
 
 static class MergeStrategyFactoryCategoryPlugin
-    : public plugins::TypedCategoryPlugin<MergeStrategyFactory> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentMergeStrategyFactory> {
 public:
     MergeStrategyFactoryCategoryPlugin()
         : TypedCategoryPlugin("MergeStrategy") {
