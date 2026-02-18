@@ -2,6 +2,7 @@
 
 #include "evaluation_context.h"
 #include "evaluator.h"
+#include "pruning_method.h"
 
 #include "algorithms/ordered_set.h"
 #include "plugins/plugin.h"
@@ -161,7 +162,7 @@ void print_initial_evaluator_values(const EvaluationContext &eval_context) {
    classes.
    TODO: Figure out where it belongs and move it there. */
 void add_search_pruning_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<shared_ptr<PruningMethod>>(
+    feature.add_option<shared_ptr<TaskIndependentPruningMethod>>(
         "pruning",
         "Pruning methods can prune or reorder the set of applicable operators in "
         "each state and thereby influence the number and order of successor states "
@@ -170,8 +171,8 @@ void add_search_pruning_options_to_feature(plugins::Feature &feature) {
 }
 
 tuple<shared_ptr<PruningMethod>> get_search_pruning_arguments_from_options(
-    const plugins::Options &opts) {
-    return make_tuple(opts.get<shared_ptr<PruningMethod>>("pruning"));
+    const plugins::Options &opts, const shared_ptr<AbstractTask> &task) {
+    return make_tuple(opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning")->bind_task(task));
 }
 
 void add_search_algorithm_options_to_feature(

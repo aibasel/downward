@@ -78,7 +78,7 @@ tuple<utils::Verbosity> get_pruning_arguments_from_options(
 }
 
 static class PruningMethodCategoryPlugin
-    : public plugins::TypedCategoryPlugin<PruningMethod> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentPruningMethod> {
 public:
     PruningMethodCategoryPlugin() : TypedCategoryPlugin("PruningMethod") {
         document_synopsis(

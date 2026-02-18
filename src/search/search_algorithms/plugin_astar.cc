@@ -58,7 +58,7 @@ public:
             options_copy.get<shared_ptr<Evaluator>>("f_eval", nullptr),
             options_copy.get_list<shared_ptr<Evaluator>>("preferred"),
             eager_search::get_eager_search_arguments_from_options(
-                options_copy));
+                options_copy, tasks::g_root_task));
     }
 };
 

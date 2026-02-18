@@ -115,7 +115,7 @@ class PruningMethod;
 
 extern void add_search_pruning_options_to_feature(plugins::Feature &feature);
 extern std::tuple<std::shared_ptr<PruningMethod>>
-get_search_pruning_arguments_from_options(const plugins::Options &opts);
+get_search_pruning_arguments_from_options(const plugins::Options &opts, const std::shared_ptr<AbstractTask> &task);  // issue559 task argument is temporary until we switch Evaluators to task-independent classes
 extern void add_search_algorithm_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<OperatorCost, int, double, std::string, utils::Verbosity>

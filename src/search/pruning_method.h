@@ -40,6 +40,7 @@ public:
     void prune_operators(const State &state, std::vector<OperatorID> &op_ids);
     virtual void print_statistics() const;
 };
+using TaskIndependentPruningMethod = TaskIndependentComponent<PruningMethod>;
 
 extern void add_pruning_options_to_feature(plugins::Feature &feature);
 extern std::tuple<utils::Verbosity> get_pruning_arguments_from_options(

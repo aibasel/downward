@@ -17,9 +17,9 @@ void NullPruningMethod::initialize(const shared_ptr<AbstractTask> &task) {
 }
 
 class NullPruningMethodFeature
-    : public plugins::TypedFeature<PruningMethod, NullPruningMethod> {
+    : public plugins::TaskIndependentFeature<TaskIndependentPruningMethod> {
 public:
-    NullPruningMethodFeature() : TypedFeature("null") {
+    NullPruningMethodFeature() : TaskIndependentFeature("null") {
         // document_group("");
         document_title("No pruning");
         document_synopsis(
@@ -29,10 +29,10 @@ public:
         add_pruning_options_to_feature(*this);
     }
 
-    virtual shared_ptr<NullPruningMethod> create_component(
+    virtual shared_ptr<TaskIndependentPruningMethod> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<NullPruningMethod>(
-            tasks::g_root_task, get_pruning_arguments_from_options(opts));
+        return make_shared_component<NullPruningMethod, PruningMethod>(
+            get_pruning_arguments_from_options(opts));
     }
 };
 

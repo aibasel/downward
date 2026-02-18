@@ -252,10 +252,10 @@ void StubbornSetsAtomCentric::handle_stubborn_operator(
 }
 
 class StubbornSetsAtomCentricFeature
-    : public plugins::TypedFeature<PruningMethod, StubbornSetsAtomCentric> {
+    : public plugins::TaskIndependentFeature<TaskIndependentPruningMethod> {
 public:
     StubbornSetsAtomCentricFeature()
-        : TypedFeature("atom_centric_stubborn_sets") {
+        : TaskIndependentFeature("atom_centric_stubborn_sets") {
         document_title("Atom-centric stubborn sets");
         document_synopsis(
             "Stubborn sets are a state pruning method which computes a subset "
@@ -286,10 +286,10 @@ public:
         add_pruning_options_to_feature(*this);
     }
 
-    virtual shared_ptr<StubbornSetsAtomCentric> create_component(
+    virtual shared_ptr<TaskIndependentPruningMethod> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<StubbornSetsAtomCentric>(
-            tasks::g_root_task, opts.get<bool>("use_sibling_shortcut"),
+        return make_shared_component<StubbornSetsAtomCentric, PruningMethod>(
+            opts.get<bool>("use_sibling_shortcut"),
             opts.get<AtomSelectionStrategy>("atom_selection_strategy"),
             get_pruning_arguments_from_options(opts));
     }

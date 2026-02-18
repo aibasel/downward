@@ -65,7 +65,7 @@ extern void add_eager_search_options_to_feature(
 extern std::tuple<
     std::shared_ptr<PruningMethod>, std::shared_ptr<Evaluator>, OperatorCost,
     int, double, std::string, utils::Verbosity>
-get_eager_search_arguments_from_options(const plugins::Options &opts);
+get_eager_search_arguments_from_options(const plugins::Options &opts, const std::shared_ptr<AbstractTask> &task); // issue559 task argument is temporary until we switch Evaluators to task-independent classes
 }
 
 #endif

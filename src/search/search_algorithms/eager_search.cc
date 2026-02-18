@@ -347,9 +347,9 @@ void add_eager_search_options_to_feature(
 tuple<
     shared_ptr<PruningMethod>, shared_ptr<Evaluator>, OperatorCost, int, double,
     string, utils::Verbosity>
-get_eager_search_arguments_from_options(const plugins::Options &opts) {
+get_eager_search_arguments_from_options(const plugins::Options &opts, const shared_ptr<AbstractTask> &task) {
     return tuple_cat(
-        get_search_pruning_arguments_from_options(opts),
+        get_search_pruning_arguments_from_options(opts, task),
         make_tuple(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
         get_search_algorithm_arguments_from_options(opts));
 }

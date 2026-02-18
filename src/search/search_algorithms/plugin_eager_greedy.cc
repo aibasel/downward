@@ -65,7 +65,7 @@ public:
                 opts.get_list<shared_ptr<Evaluator>>("preferred"),
                 opts.get<int>("boost")),
             false, nullptr, opts.get_list<shared_ptr<Evaluator>>("preferred"),
-            eager_search::get_eager_search_arguments_from_options(opts));
+            eager_search::get_eager_search_arguments_from_options(opts, tasks::g_root_task));
     }
 };
 
