@@ -2,6 +2,7 @@
 
 #include "cartesian_heuristic_function.h"
 #include "cost_saturation.h"
+#include "subtask_generators.h"
 #include "types.h"
 #include "utils.h"
 
@@ -90,7 +91,7 @@ public:
                 "Journal of Artificial Intelligence Research", "62", "535-577",
                 "2018"));
 
-        add_list_option<shared_ptr<SubtaskGenerator>>(
+        add_list_option<shared_ptr<TaskIndependentSubtaskGenerator>>(
             "subtasks", "subtask generators", "[landmarks(),goals()]");
         add_option<int>(
             "max_states",
@@ -125,9 +126,18 @@ public:
 
     virtual shared_ptr<AdditiveCartesianHeuristic> create_component(
         const plugins::Options &opts) const override {
+        // issue559 remove these lines, use commented out line below instead
+        auto subtask_generators =
+            opts.get_list<shared_ptr<TaskIndependentSubtaskGenerator>>(
+                "subtasks");
+        Cache cache;
+        auto bound_subtask_generators = bind_task_recursively(
+            subtask_generators, tasks::g_root_task, cache);
+
         return plugins::make_shared_from_arg_tuples<AdditiveCartesianHeuristic>(
             tasks::g_root_task,
-            opts.get_list<shared_ptr<SubtaskGenerator>>("subtasks"),
+//            opts.get_list<shared_ptr<TaskIndependentSubtaskGenerator>>("subtasks"),
+            bound_subtask_generators,
             opts.get<int>("max_states"), opts.get<int>("max_transitions"),
             opts.get<double>("max_time"), opts.get<PickSplit>("pick"),
             opts.get<bool>("use_general_costs"),

@@ -19,8 +19,7 @@ SplitSelector::SplitSelector(
     : task(task), task_proxy(*task), pick(pick) {
     if (pick == PickSplit::MIN_HADD || pick == PickSplit::MAX_HADD) {
         additive_heuristic = make_unique<additive_heuristic::AdditiveHeuristic>(
-            task, // issue559 TODO
-            tasks::AxiomHandlingType::APPROXIMATE_NEGATIVE, false,
+            task, tasks::AxiomHandlingType::APPROXIMATE_NEGATIVE, false,
             "h^add within CEGAR abstractions", utils::Verbosity::SILENT);
         additive_heuristic->compute_heuristic_for_cegar(
             task_proxy.get_initial_state());

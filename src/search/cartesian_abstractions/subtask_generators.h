@@ -44,6 +44,9 @@ public:
         utils::LogProxy &log) const = 0;
 };
 
+using TaskIndependentSubtaskGenerator =
+    TaskIndependentComponent<SubtaskGenerator>;
+
 /*
   Return copies of the original task.
 */

@@ -35,7 +35,7 @@ public:
     explicit SortFactsByIncreasingHaddValues(
         const shared_ptr<AbstractTask> &task)
         : hadd(make_unique<additive_heuristic::AdditiveHeuristic>(
-              task, // issue559 TODO
+              task,
               tasks::AxiomHandlingType::APPROXIMATE_NEGATIVE, false,
               "h^add within CEGAR abstractions", utils::Verbosity::SILENT)) {
         TaskProxy task_proxy(*task);
@@ -191,9 +191,9 @@ static tuple<FactOrder, int> get_fact_order_arguments_from_options(
 }
 
 class TaskDuplicatorFeature
-    : public plugins::TypedFeature<SubtaskGenerator, TaskDuplicator> {
+    : public plugins::TaskIndependentFeature<TaskIndependentSubtaskGenerator> {
 public:
-    TaskDuplicatorFeature() : TypedFeature("original") {
+    TaskDuplicatorFeature() : TaskIndependentFeature("original") {
         document_title("No abstraction");
         document_synopsis(
             "Copies of the original task are used as subproblems.");
@@ -202,38 +202,38 @@ public:
             plugins::Bounds("1", "infinity"));
     }
 
-    virtual shared_ptr<TaskDuplicator> create_component(
+    virtual shared_ptr<TaskIndependentSubtaskGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<TaskDuplicator>(
-            tasks::g_root_task, opts.get<int>("copies"));
+        return make_shared_component<TaskDuplicator, SubtaskGenerator>(
+            opts.get<int>("copies"));
     }
 };
 
 static plugins::FeaturePlugin<TaskDuplicatorFeature> _plugin_original;
 
 class GoalDecompositionFeature
-    : public plugins::TypedFeature<SubtaskGenerator, GoalDecomposition> {
+    : public plugins::TaskIndependentFeature<TaskIndependentSubtaskGenerator> {
 public:
-    GoalDecompositionFeature() : TypedFeature("goals") {
+    GoalDecompositionFeature() : TaskIndependentFeature("goals") {
         document_title("Abstraction by goals");
         document_synopsis(
             "For each goal atom of the original task one subproblem is generated having only the atom as its goal.");
         add_fact_order_option(*this);
     }
 
-    virtual shared_ptr<GoalDecomposition> create_component(
+    virtual shared_ptr<TaskIndependentSubtaskGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<GoalDecomposition>(
-            tasks::g_root_task, get_fact_order_arguments_from_options(opts));
+        return make_shared_component<GoalDecomposition, SubtaskGenerator>(
+            get_fact_order_arguments_from_options(opts));
     }
 };
 
 static plugins::FeaturePlugin<GoalDecompositionFeature> _plugin_goals;
 
 class LandmarkDecompositionFeature
-    : public plugins::TypedFeature<SubtaskGenerator, LandmarkDecomposition> {
+    : public plugins::TaskIndependentFeature<TaskIndependentSubtaskGenerator> {
 public:
-    LandmarkDecompositionFeature() : TypedFeature("landmarks") {
+    LandmarkDecompositionFeature() : TaskIndependentFeature("landmarks") {
         document_title("Abstraction by landmarks");
         document_synopsis(
             "For each fact landmark of the delete relaxation of the original task one subproblem is generated having only the landmark as goal. This is a generalization of abstractions by goals.");
@@ -243,10 +243,10 @@ public:
             "true");
     }
 
-    virtual shared_ptr<LandmarkDecomposition> create_component(
+    virtual shared_ptr<TaskIndependentSubtaskGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LandmarkDecomposition>(
-            tasks::g_root_task, get_fact_order_arguments_from_options(opts),
+        return make_shared_component<LandmarkDecomposition, SubtaskGenerator>(
+            get_fact_order_arguments_from_options(opts),
             opts.get<bool>("combine_facts"));
     }
 };
@@ -254,7 +254,7 @@ public:
 static plugins::FeaturePlugin<LandmarkDecompositionFeature> _plugin_landmarks;
 
 static class SubtaskGeneratorCategoryPlugin
-    : public plugins::TypedCategoryPlugin<SubtaskGenerator> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentSubtaskGenerator> {
 public:
     SubtaskGeneratorCategoryPlugin() : TypedCategoryPlugin("SubtaskGenerator") {
         document_synopsis(
