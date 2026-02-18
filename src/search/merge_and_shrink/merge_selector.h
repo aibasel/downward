@@ -38,6 +38,8 @@ public:
     virtual bool requires_init_distances() const = 0;
     virtual bool requires_goal_distances() const = 0;
 };
+
+using TaskIndependentMergeSelector = TaskIndependentComponent<MergeSelector>;
 }
 
 #endif

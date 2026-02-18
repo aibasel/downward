@@ -48,7 +48,7 @@ void MergeSelector::dump_options(utils::LogProxy &log) const {
 }
 
 static class MergeSelectorCategoryPlugin
-    : public plugins::TypedCategoryPlugin<MergeSelector> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentMergeSelector> {
 public:
     MergeSelectorCategoryPlugin() : TypedCategoryPlugin("MergeSelector") {
         document_synopsis(

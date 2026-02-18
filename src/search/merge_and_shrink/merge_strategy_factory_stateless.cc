@@ -49,7 +49,7 @@ public:
             "merge only depending on the current state of the factored transition "
             "system, not requiring any additional information.");
 
-        add_option<shared_ptr<MergeSelector>>(
+        add_option<shared_ptr<TaskIndependentMergeSelector>>(
             "merge_selector", "The merge selector to be used.");
         add_merge_strategy_options_to_feature(*this);
 
@@ -76,7 +76,7 @@ public:
         return plugins::make_shared_from_arg_tuples<
             MergeStrategyFactoryStateless>(
             tasks::g_root_task,
-            opts.get<shared_ptr<MergeSelector>>("merge_selector"),
+            opts.get<shared_ptr<TaskIndependentMergeSelector>>("merge_selector")->bind_task(tasks::g_root_task),
             get_merge_strategy_arguments_from_options(opts));
     }
 };

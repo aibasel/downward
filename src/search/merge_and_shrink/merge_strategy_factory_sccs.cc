@@ -162,7 +162,7 @@ public:
 
         add_option<OrderOfSCCs>(
             "order_of_sccs", "how the SCCs should be ordered", "topological");
-        add_option<shared_ptr<MergeSelector>>(
+        add_option<shared_ptr<TaskIndependentMergeSelector>>(
             "merge_selector", "the fallback merge strategy to use");
         add_merge_strategy_options_to_feature(*this);
     }
@@ -171,7 +171,7 @@ public:
         const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<MergeStrategyFactorySCCs>(
             tasks::g_root_task, opts.get<OrderOfSCCs>("order_of_sccs"),
-            opts.get<shared_ptr<MergeSelector>>("merge_selector"),
+            opts.get<shared_ptr<TaskIndependentMergeSelector>>("merge_selector")->bind_task(tasks::g_root_task),
             get_merge_strategy_arguments_from_options(opts));
     }
 };
