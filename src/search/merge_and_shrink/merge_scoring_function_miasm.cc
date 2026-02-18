@@ -105,10 +105,10 @@ string MergeScoringFunctionMIASM::name() const {
 }
 
 class MergeScoringFunctionMIASMFeature
-    : public plugins::TypedFeature<
-          MergeScoringFunction, MergeScoringFunctionMIASM> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentMergeScoringFunction> {
 public:
-    MergeScoringFunctionMIASMFeature() : TypedFeature("sf_miasm") {
+    MergeScoringFunctionMIASMFeature() : TaskIndependentFeature("sf_miasm") {
         document_title("MIASM");
         document_synopsis(
             "This scoring function favors merging transition systems such that in "
@@ -179,11 +179,10 @@ public:
             "true");
     }
 
-    virtual shared_ptr<MergeScoringFunctionMIASM> create_component(
+    virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<MergeScoringFunctionMIASM>(
-            tasks::g_root_task,
-            opts.get<shared_ptr<TaskIndependentShrinkStrategy>>("shrink_strategy")->bind_task(tasks::g_root_task),
+        return make_shared_component<MergeScoringFunctionMIASM, MergeScoringFunction>(
+            opts.get<shared_ptr<TaskIndependentShrinkStrategy>>("shrink_strategy"),
             get_transition_system_size_limit_arguments_from_options(opts),
             opts.get<bool>("use_caching"));
     }

@@ -22,7 +22,7 @@ void MergeScoringFunction::dump_options(utils::LogProxy &log) const {
 }
 
 static class MergeScoringFunctionCategoryPlugin
-    : public plugins::TypedCategoryPlugin<MergeScoringFunction> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentMergeScoringFunction> {
 public:
     MergeScoringFunctionCategoryPlugin()
         : TypedCategoryPlugin("MergeScoringFunction") {

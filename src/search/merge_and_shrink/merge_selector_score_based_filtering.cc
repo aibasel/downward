@@ -113,16 +113,26 @@ public:
             "iteratively to compute scores for merge candidates, keeping the best "
             "ones (with minimal scores) until only one is left.");
 
-        add_list_option<shared_ptr<MergeScoringFunction>>(
+        add_list_option<shared_ptr<TaskIndependentMergeScoringFunction>>(
             "scoring_functions",
             "The list of scoring functions used to compute scores for candidates.");
     }
 
     virtual shared_ptr<MergeSelectorScoreBasedFiltering> create_component(
         const plugins::Options &opts) const override {
+        // issue559 remove these lines, use commented out line below instead
+        auto scoring_functions =
+            opts.get_list<shared_ptr<TaskIndependentMergeScoringFunction>>(
+                "scoring_functions");
+        Cache cache;
+        auto bound_scoring_functions = bind_task_recursively(
+            scoring_functions, tasks::g_root_task, cache);
+
         return make_shared<MergeSelectorScoreBasedFiltering>(
-            tasks::g_root_task, opts.get_list<shared_ptr<MergeScoringFunction>>(
-                                    "scoring_functions"));
+            tasks::g_root_task,
+//            opts.get_list<shared_ptr<TaskIndependentMergeScoringFunction>>(
+//                    "scoring_functions"),
+            bound_scoring_functions);
     }
 };
 

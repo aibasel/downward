@@ -182,10 +182,10 @@ void MergeScoringFunctionTotalOrder::add_options_to_feature(
 }
 
 class MergeScoringFunctionTotalOrderFeature
-    : public plugins::TypedFeature<
-          MergeScoringFunction, MergeScoringFunctionTotalOrder> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentMergeScoringFunction> {
 public:
-    MergeScoringFunctionTotalOrderFeature() : TypedFeature("total_order") {
+    MergeScoringFunctionTotalOrderFeature() : TaskIndependentFeature("total_order") {
         document_title("Total order");
         document_synopsis(
             "This scoring function computes a total order on the merge candidates, "
@@ -207,11 +207,11 @@ public:
         MergeScoringFunctionTotalOrder::add_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeScoringFunctionTotalOrder> create_component(
+    virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            MergeScoringFunctionTotalOrder>(
-            tasks::g_root_task, opts.get<AtomicTSOrder>("atomic_ts_order"),
+        return make_shared_component<
+            MergeScoringFunctionTotalOrder, MergeScoringFunction>(
+            opts.get<AtomicTSOrder>("atomic_ts_order"),
             opts.get<ProductTSOrder>("product_ts_order"),
             opts.get<bool>("atomic_before_product"),
             utils::get_rng_arguments_from_options(opts));

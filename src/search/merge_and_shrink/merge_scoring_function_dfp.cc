@@ -107,10 +107,10 @@ string MergeScoringFunctionDFP::name() const {
 }
 
 class MergeScoringFunctionDFPFeature
-    : public plugins::TypedFeature<
-          MergeScoringFunction, MergeScoringFunctionDFP> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentMergeScoringFunction> {
 public:
-    MergeScoringFunctionDFPFeature() : TypedFeature("dfp") {
+    MergeScoringFunctionDFPFeature() : TaskIndependentFeature("dfp") {
         document_title("DFP scoring");
         document_synopsis(
             "This scoring function computes the 'DFP' score as described in the "
@@ -143,9 +143,9 @@ public:
             "   threshold_before_merge=1)\n}}}");
     }
 
-    virtual shared_ptr<MergeScoringFunctionDFP> create_component(
+    virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &) const override {
-        return make_shared<MergeScoringFunctionDFP>(tasks::g_root_task);
+        return make_shared_component<MergeScoringFunctionDFP, MergeScoringFunction>();
     }
 };
 
