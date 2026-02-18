@@ -118,9 +118,9 @@ void MergeTreeFactoryLinear::add_options_to_feature(plugins::Feature &feature) {
 }
 
 class MergeTreeFactoryLinearFeature
-    : public plugins::TypedFeature<MergeTreeFactory, MergeTreeFactoryLinear> {
+    : public plugins::TaskIndependentFeature<TaskIndependentMergeTreeFactory> {
 public:
-    MergeTreeFactoryLinearFeature() : TypedFeature("linear") {
+    MergeTreeFactoryLinearFeature() : TaskIndependentFeature("linear") {
         document_title("Linear merge trees");
         document_synopsis(
             "These merge trees implement several linear merge orders, which "
@@ -136,10 +136,9 @@ public:
         MergeTreeFactoryLinear::add_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeTreeFactoryLinear> create_component(
+    virtual shared_ptr<TaskIndependentMergeTreeFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<MergeTreeFactoryLinear>(
-            tasks::g_root_task,
+        return make_shared_component<MergeTreeFactoryLinear, MergeTreeFactory>(
             opts.get<variable_order_finder::VariableOrderType>(
                 "variable_order"),
             get_merge_tree_arguments_from_options(opts));

@@ -56,7 +56,7 @@ public:
             "with this merge tree, i.e. all merges are performed exactly as given "
             "by the merge tree.");
 
-        add_option<shared_ptr<MergeTreeFactory>>(
+        add_option<shared_ptr<TaskIndependentMergeTreeFactory>>(
             "merge_tree", "The precomputed merge tree.");
         add_merge_strategy_options_to_feature(*this);
 
@@ -73,7 +73,7 @@ public:
         return plugins::make_shared_from_arg_tuples<
             MergeStrategyFactoryPrecomputed>(
             tasks::g_root_task,
-            opts.get<shared_ptr<MergeTreeFactory>>("merge_tree"),
+            opts.get<shared_ptr<TaskIndependentMergeTreeFactory>>("merge_tree")->bind_task(tasks::g_root_task),
             get_merge_strategy_arguments_from_options(opts));
     }
 };

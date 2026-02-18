@@ -65,7 +65,7 @@ tuple<int, UpdateOption> get_merge_tree_arguments_from_options(
 }
 
 static class MergeTreeFactoryCategoryPlugin
-    : public plugins::TypedCategoryPlugin<MergeTreeFactory> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentMergeTreeFactory> {
 public:
     MergeTreeFactoryCategoryPlugin() : TypedCategoryPlugin("MergeTree") {
         document_synopsis(
