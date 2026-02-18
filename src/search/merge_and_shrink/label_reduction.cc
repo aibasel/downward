@@ -296,9 +296,9 @@ void LabelReduction::dump_options(utils::LogProxy &log) const {
 }
 
 class LabelReductionFeature
-    : public plugins::TypedFeature<LabelReduction, LabelReduction> {
+    : public plugins::TaskIndependentFeature<TaskIndependentLabelReduction> {
 public:
-    LabelReductionFeature() : TypedFeature("exact") {
+    LabelReductionFeature() : TaskIndependentFeature("exact") {
         document_title("Exact generalized label reduction");
         document_synopsis(
             "This class implements the exact generalized label reduction "
@@ -340,10 +340,10 @@ public:
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<LabelReduction> create_component(
+    virtual shared_ptr<TaskIndependentLabelReduction> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LabelReduction>(
-            tasks::g_root_task, opts.get<bool>("before_shrinking"),
+        return make_shared_component<LabelReduction, LabelReduction>(
+            opts.get<bool>("before_shrinking"),
             opts.get<bool>("before_merging"),
             opts.get<LabelReductionMethod>("method"),
             opts.get<LabelReductionSystemOrder>("system_order"),
@@ -354,7 +354,7 @@ public:
 static plugins::FeaturePlugin<LabelReductionFeature> _plugin;
 
 static class LabelReductionCategoryPlugin
-    : public plugins::TypedCategoryPlugin<LabelReduction> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentLabelReduction> {
 public:
     LabelReductionCategoryPlugin() : TypedCategoryPlugin("LabelReduction") {
         document_synopsis(

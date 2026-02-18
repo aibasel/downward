@@ -480,7 +480,7 @@ void add_merge_and_shrink_algorithm_options_to_feature(
         "achieved using {{{shrink_strategy=shrink_bisimulation(greedy=false)}}}");
 
     // Label reduction option.
-    feature.add_option<shared_ptr<LabelReduction>>(
+    feature.add_option<shared_ptr<TaskIndependentLabelReduction>>(
         "label_reduction",
         "See detailed documentation for labels. There is currently only "
         "one 'option' to use label_reduction, which is {{{label_reduction=exact}}} "
@@ -516,11 +516,19 @@ tuple<
     shared_ptr<LabelReduction>, bool, bool, int, int, int, double>
 get_merge_and_shrink_algorithm_arguments_from_options(
     const plugins::Options &opts, const shared_ptr<AbstractTask> &task) {
+    // issue559 remove these after making evaluators task-independent, use the commented out line below instead
+    auto label_reduction = opts.get<shared_ptr<TaskIndependentLabelReduction>>("label_reduction", nullptr);
+    shared_ptr<LabelReduction> bound_label_reduction;
+    if (label_reduction) {
+        bound_label_reduction = label_reduction->bind_task(task);
+    }
+
     return tuple_cat(
         make_tuple(
             opts.get<shared_ptr<TaskIndependentMergeStrategyFactory>>("merge_strategy")->bind_task(task),
             opts.get<shared_ptr<TaskIndependentShrinkStrategy>>("shrink_strategy")->bind_task(task),
-            opts.get<shared_ptr<LabelReduction>>("label_reduction", nullptr),
+            //opts.get<shared_ptr<TaskIndependentLabelReduction>>("label_reduction", nullptr),
+            bound_label_reduction,
             opts.get<bool>("prune_unreachable_states"),
             opts.get<bool>("prune_irrelevant_states")),
         get_transition_system_size_limit_arguments_from_options(opts),

@@ -94,6 +94,8 @@ public:
         return lr_before_merging;
     }
 };
+
+using TaskIndependentLabelReduction = TaskIndependentComponent<LabelReduction>;
 }
 
 #endif
