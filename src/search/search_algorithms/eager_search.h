@@ -45,7 +45,7 @@ protected:
     virtual SearchStatus step() override;
 
 public:
-    explicit EagerSearch(
+    EagerSearch(
         const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<OpenListFactory> &open, bool reopen_closed,
         const std::shared_ptr<Evaluator> &f_eval,

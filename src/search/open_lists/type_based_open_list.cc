@@ -152,9 +152,9 @@ unique_ptr<EdgeOpenList> TypeBasedOpenListFactory::create_edge_open_list() {
 }
 
 class TypeBasedOpenListFeature
-    : public plugins::TypedFeature<OpenListFactory, TypeBasedOpenListFactory> {
+    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
 public:
-    TypeBasedOpenListFeature() : TypedFeature("type_based") {
+    TypeBasedOpenListFeature() : TaskIndependentFeature("type_based") {
         document_title("Type-based open list");
         document_synopsis(
             "Uses multiple evaluators to assign entries to buckets. "
@@ -178,13 +178,10 @@ public:
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TypeBasedOpenListFactory> create_component(
+    virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        Cache cache; // issue559 remove
-
-        return plugins::make_shared_from_arg_tuples<TypeBasedOpenListFactory>(
-            tasks::g_root_task,
-            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evaluators"), tasks::g_root_task, cache),
+        return make_shared_component<TypeBasedOpenListFactory, OpenListFactory>(
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evaluators"),
             utils::get_rng_arguments_from_options(opts));
     }
 };

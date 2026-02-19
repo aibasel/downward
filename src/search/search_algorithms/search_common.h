@@ -19,13 +19,12 @@
 */
 
 #include "../evaluator.h"
+#include "../open_list_factory.h"
+
 #include "../utils/logging.h"
 
 #include <memory>
 #include <vector>
-
-class Evaluator;
-class OpenListFactory;
 
 namespace search_common {
 /*
@@ -40,9 +39,9 @@ namespace search_common {
   for the alternation open list, then that sublist is returned
   directly.
 */
-extern std::shared_ptr<OpenListFactory> create_greedy_open_list_factory(
-    const std::vector<std::shared_ptr<Evaluator>> &evals,
-    const std::vector<std::shared_ptr<Evaluator>> &preferred_evaluators,
+extern std::shared_ptr<TaskIndependentOpenListFactory> create_greedy_open_list_factory(
+    const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &evals,
+    const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &preferred_evaluators,
     int boost);
 
 /*
@@ -52,9 +51,9 @@ extern std::shared_ptr<OpenListFactory> create_greedy_open_list_factory(
   documentation there), except that the open lists use evalators based
   on g + w * h rather than using h directly.
 */
-extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
-    const std::vector<std::shared_ptr<Evaluator>> &base_evals,
-    const std::vector<std::shared_ptr<Evaluator>> &preferred, int boost,
+extern std::shared_ptr<TaskIndependentOpenListFactory> create_wastar_open_list_factory(
+    const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &base_evals,
+    const std::vector<std::shared_ptr<TaskIndependentEvaluator>> &preferred, int boost,
     int weight, utils::Verbosity verbosity);
 
 /*
@@ -65,7 +64,7 @@ extern std::shared_ptr<OpenListFactory> create_wastar_open_list_factory(
   ordered primarily on g + h and secondarily on h.
 */
 extern std::pair<
-    std::shared_ptr<OpenListFactory>, const std::shared_ptr<TaskIndependentEvaluator>>
+    std::shared_ptr<TaskIndependentOpenListFactory>, const std::shared_ptr<TaskIndependentEvaluator>>
 create_astar_open_list_factory_and_f_eval(
     const std::shared_ptr<TaskIndependentEvaluator> &h_eval, utils::Verbosity verbosity);
 }

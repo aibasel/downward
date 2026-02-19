@@ -70,9 +70,9 @@ public:
         return plugins::make_shared_from_arg_tuples<lazy_search::LazySearch>(
             tasks::g_root_task,
             search_common::create_greedy_open_list_factory(
-                bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"), tasks::g_root_task, cache),
-                bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
-                opts.get<int>("boost")),
+                opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
+                opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
+                opts.get<int>("boost"))->bind_task(tasks::g_root_task),
             opts.get<bool>("reopen_closed"),
             bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
             get_successors_order_arguments_from_options(opts),

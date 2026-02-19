@@ -111,9 +111,9 @@ unique_ptr<EdgeOpenList> BestFirstOpenListFactory::create_edge_open_list() {
 }
 
 class BestFirstOpenListFeature
-    : public plugins::TypedFeature<OpenListFactory, BestFirstOpenListFactory> {
+    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
 public:
-    BestFirstOpenListFeature() : TypedFeature("single") {
+    BestFirstOpenListFeature() : TaskIndependentFeature("single") {
         document_title("Best-first open list");
         document_synopsis(
             "Open list that uses a single evaluator and FIFO tiebreaking.");
@@ -130,10 +130,10 @@ public:
             "takes time O(log(n)), where n is the number of buckets.");
     }
 
-    virtual shared_ptr<BestFirstOpenListFactory> create_component(
+    virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<BestFirstOpenListFactory>(
-            tasks::g_root_task, opts.get<shared_ptr<TaskIndependentEvaluator>>("eval")->bind_task(tasks::g_root_task),
+        return make_shared_component<BestFirstOpenListFactory, OpenListFactory>(
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
             get_open_list_arguments_from_options(opts));
     }
 };

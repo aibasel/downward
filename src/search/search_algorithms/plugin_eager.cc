@@ -13,7 +13,7 @@ public:
         document_title("Eager best-first search");
         document_synopsis("");
 
-        add_option<shared_ptr<OpenListFactory>>("open", "open list");
+        add_option<shared_ptr<TaskIndependentOpenListFactory>>("open", "open list");
         add_option<bool>("reopen_closed", "reopen closed nodes", "false");
         add_option<shared_ptr<TaskIndependentEvaluator>>(
             "f_eval",
@@ -30,7 +30,7 @@ public:
         Cache cache; // issue559 remove
 
         return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
-            tasks::g_root_task, opts.get<shared_ptr<OpenListFactory>>("open"),
+            tasks::g_root_task, opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open")->bind_task(tasks::g_root_task),
             opts.get<bool>("reopen_closed"),
             bind_task_recursively(opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr), tasks::g_root_task, cache),
             bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),

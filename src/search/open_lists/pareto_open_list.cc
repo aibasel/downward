@@ -242,9 +242,9 @@ unique_ptr<EdgeOpenList> ParetoOpenListFactory::create_edge_open_list() {
 }
 
 class ParetoOpenListFeature
-    : public plugins::TypedFeature<OpenListFactory, ParetoOpenListFactory> {
+    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
 public:
-    ParetoOpenListFeature() : TypedFeature("pareto") {
+    ParetoOpenListFeature() : TaskIndependentFeature("pareto") {
         document_title("Pareto open list");
         document_synopsis(
             "Selects one of the Pareto-optimal (regarding the sub-evaluators) "
@@ -262,13 +262,10 @@ public:
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<ParetoOpenListFactory> create_component(
+    virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        Cache cache; // issue559 remove
-
-        return plugins::make_shared_from_arg_tuples<ParetoOpenListFactory>(
-            tasks::g_root_task,
-            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"), tasks::g_root_task, cache),
+        return make_shared_component<ParetoOpenListFactory, OpenListFactory>(
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
             opts.get<bool>("state_uniform_selection"),
             utils::get_rng_arguments_from_options(opts),
             get_open_list_arguments_from_options(opts));

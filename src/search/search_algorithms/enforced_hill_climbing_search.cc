@@ -19,20 +19,19 @@ using PrefEval = pref_evaluator::PrefEvaluator;
 
 static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
     utils::Verbosity verbosity, bool use_preferred,
-    PreferredUsage preferred_usage) {
+    PreferredUsage preferred_usage, const shared_ptr<AbstractTask> &task) {
     /*
       TODO: this g-evaluator should probably be set up to always
       ignore costs since EHC is supposed to implement a breadth-first
       search, not a uniform-cost search. So this seems to be a bug.
     */
-    shared_ptr<Evaluator> g_evaluator = make_shared<GEval>(
-        tasks::g_root_task, "ehc.g_eval", verbosity); // issue559 TODO
+    shared_ptr<Evaluator> g_evaluator =
+        make_shared<GEval>(task, "ehc.g_eval", verbosity);
 
     if (!use_preferred ||
         preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
         return make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(
-            tasks::g_root_task, // issue559
-            g_evaluator, false);
+            task, g_evaluator, false);
     } else {
         /*
           TODO: Reduce code duplication with search_common.cc,
@@ -43,12 +42,10 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
           open list code.
         */
         vector<shared_ptr<Evaluator>> evals = {
-            g_evaluator, make_shared<PrefEval>(
-                             tasks::g_root_task, "ehc.pref_eval",
-                             verbosity)}; // issue559 TODO
+            g_evaluator,
+            make_shared<PrefEval>(task, "ehc.pref_eval", verbosity)};
         return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(
-            tasks::g_root_task, // issue559
-            evals, false, true);
+            task, evals, false, true);
     }
 }
 
@@ -80,9 +77,9 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
                         preferred_operator_evaluators.end(),
                         evaluator) != preferred_operator_evaluators.end();
 
-    open_list =
-        create_ehc_open_list_factory(verbosity, use_preferred, preferred_usage)
-            ->create_edge_open_list();
+    open_list = create_ehc_open_list_factory(
+                    verbosity, use_preferred, preferred_usage, task)
+                    ->create_edge_open_list();
 }
 
 void EnforcedHillClimbingSearch::reach_state(
@@ -286,9 +283,14 @@ public:
         Cache cache; // issue559 remove
 
         return plugins::make_shared_from_arg_tuples<EnforcedHillClimbingSearch>(
-            tasks::g_root_task, opts.get<shared_ptr<TaskIndependentEvaluator>>("h")->bind_task(tasks::g_root_task),
+            tasks::g_root_task,
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("h")->bind_task(
+                tasks::g_root_task),
             opts.get<PreferredUsage>("preferred_usage"),
-            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
+            bind_task_recursively(
+                opts.get_list<shared_ptr<TaskIndependentEvaluator>>(
+                    "preferred"),
+                tasks::g_root_task, cache),
             get_search_algorithm_arguments_from_options(opts));
     }
 };

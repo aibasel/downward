@@ -141,13 +141,12 @@ unique_ptr<EdgeOpenList> AlternationOpenListFactory::create_edge_open_list() {
 }
 
 class AlternationOpenListFeature
-    : public plugins::TypedFeature<
-          OpenListFactory, AlternationOpenListFactory> {
+    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
 public:
-    AlternationOpenListFeature() : TypedFeature("alt") {
+    AlternationOpenListFeature() : TaskIndependentFeature("alt") {
         document_title("Alternation open list");
         document_synopsis("Alternates between several open lists.");
-        add_list_option<shared_ptr<OpenListFactory>>(
+        add_list_option<shared_ptr<TaskIndependentOpenListFactory>>(
             "sublists", "open lists between which this one alternates");
         add_option<int>(
             "boost",
@@ -156,11 +155,10 @@ public:
             "0");
     }
 
-    virtual shared_ptr<AlternationOpenListFactory> create_component(
+    virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<AlternationOpenListFactory>(
-            tasks::g_root_task,
-            opts.get_list<shared_ptr<OpenListFactory>>("sublists"),
+        return make_shared_component<AlternationOpenListFactory, OpenListFactory>(
+            opts.get_list<shared_ptr<TaskIndependentOpenListFactory>>("sublists"),
             opts.get<int>("boost"));
     }
 };

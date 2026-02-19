@@ -162,10 +162,9 @@ unique_ptr<EdgeOpenList> TieBreakingOpenListFactory::create_edge_open_list() {
 }
 
 class TieBreakingOpenListFeature
-    : public plugins::TypedFeature<
-          OpenListFactory, TieBreakingOpenListFactory> {
+    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
 public:
-    TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
+    TieBreakingOpenListFeature() : TaskIndependentFeature("tiebreaking") {
         document_title("Tie-breaking open list");
         document_synopsis("");
 
@@ -177,13 +176,10 @@ public:
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TieBreakingOpenListFactory> create_component(
+    virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        Cache cache; // issue559 remove
-
-        return plugins::make_shared_from_arg_tuples<TieBreakingOpenListFactory>(
-            tasks::g_root_task,
-            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"), tasks::g_root_task, cache),
+        return make_shared_component<TieBreakingOpenListFactory, OpenListFactory>(
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
             opts.get<bool>("unsafe_pruning"),
             get_open_list_arguments_from_options(opts));
     }

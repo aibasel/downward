@@ -56,7 +56,7 @@ public:
 
         return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
             tasks::g_root_task,
-            options_copy.get<shared_ptr<OpenListFactory>>("open"),
+            options_copy.get<shared_ptr<TaskIndependentOpenListFactory>>("open")->bind_task(tasks::g_root_task),
             options_copy.get<bool>("reopen_closed"),
             bind_task_recursively(options_copy.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr), tasks::g_root_task, cache),
             bind_task_recursively(options_copy.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),

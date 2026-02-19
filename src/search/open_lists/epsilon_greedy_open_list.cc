@@ -159,10 +159,9 @@ unique_ptr<EdgeOpenList> EpsilonGreedyOpenListFactory::create_edge_open_list() {
 }
 
 class EpsilonGreedyOpenListFeature
-    : public plugins::TypedFeature<
-          OpenListFactory, EpsilonGreedyOpenListFactory> {
+    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
 public:
-    EpsilonGreedyOpenListFeature() : TypedFeature("epsilon_greedy") {
+    EpsilonGreedyOpenListFeature() : TaskIndependentFeature("epsilon_greedy") {
         document_title("Epsilon-greedy open list");
         document_synopsis(
             "Chooses an entry uniformly randomly with probability "
@@ -186,11 +185,10 @@ public:
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<EpsilonGreedyOpenListFactory> create_component(
+    virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            EpsilonGreedyOpenListFactory>(
-            tasks::g_root_task, opts.get<shared_ptr<TaskIndependentEvaluator>>("eval")->bind_task(tasks::g_root_task),
+        return make_shared_component<EpsilonGreedyOpenListFactory, OpenListFactory>(
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
             opts.get<double>("epsilon"),
             utils::get_rng_arguments_from_options(opts),
             get_open_list_arguments_from_options(opts));
