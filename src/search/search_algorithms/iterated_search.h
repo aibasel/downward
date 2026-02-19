@@ -10,8 +10,8 @@
 
 namespace iterated_search {
 class IteratedSearch : public SearchAlgorithm {
-    std::vector<parser::LazyValue> algorithm_configs;
-
+    std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>>
+        algorithm_configs;
     bool pass_bound;
     bool repeat_last_phase;
     bool continue_on_fail;
@@ -32,9 +32,12 @@ class IteratedSearch : public SearchAlgorithm {
 public:
     IteratedSearch(
         const std::shared_ptr<AbstractTask> &task,
-        const plugins::Options
-            &opts); // TODO this still needs the options objects, the
-                    // prototype for issue559 resolves this
+        const std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>>
+            &algorithm_configs,
+        bool pass_bound, bool repeat_last, bool continue_on_fail,
+        bool continue_on_solve, OperatorCost cost_type, int bound,
+        double max_time, const std::string &description,
+        utils::Verbosity verbosity);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
