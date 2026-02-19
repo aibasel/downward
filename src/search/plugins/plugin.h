@@ -45,13 +45,12 @@ public:
     void add_option(
         const std::string &key, const std::string &help = "",
         const std::string &default_value = "",
-        const Bounds &bounds = Bounds::unlimited(),
-        bool lazy_construction = false);
+        const Bounds &bounds = Bounds::unlimited());
 
     template<typename T>
     void add_list_option(
         const std::string &key, const std::string &help = "",
-        const std::string &default_value = "", bool lazy_construction = false);
+        const std::string &default_value = "");
 
     void document_subcategory(const std::string &subcategory);
     void document_title(const std::string &title);
@@ -73,35 +72,6 @@ public:
     const std::vector<PropertyInfo> &get_properties() const;
     const std::vector<LanguageSupportInfo> &get_language_support() const;
     const std::vector<NoteInfo> &get_notes() const;
-};
-
-
-// issue559 remove this class once all features return TaskIndependentComponents
-template<typename Base, typename Constructed>
-class TypedFeature : public Feature {
-    using BasePtr = std::shared_ptr<Base>;
-    static_assert(
-        std::is_base_of<Base, Constructed>::value,
-        "Constructed must derive from Base");
-protected:
-    using Feature::Feature;
-    virtual std::shared_ptr<Constructed> create_component(
-        const Options &) const = 0;
-public:
-    TypedFeature(const std::string &key)
-        : Feature(TypeRegistry::instance()->get_type<BasePtr>(), key) {
-    }
-
-    Any construct(
-        const Options &options, const utils::Context &context) const override {
-        std::shared_ptr<Base> ptr;
-        try {
-            ptr = this->create_component(options);
-        } catch (const utils::ComponentArgumentError &e) {
-            context.error(e.get_message());
-        }
-        return Any(ptr);
-    }
 };
 
 template<typename ComponentType>
@@ -263,19 +233,18 @@ public:
 template<typename T>
 void Feature::add_option(
     const std::string &key, const std::string &help,
-    const std::string &default_value, const Bounds &bounds,
-    bool lazy_construction) {
+    const std::string &default_value, const Bounds &bounds) {
     arguments.emplace_back(
         key, help, TypeRegistry::instance()->get_type<T>(), default_value,
-        bounds, lazy_construction);
+        bounds);
 }
 
 template<typename T>
 void Feature::add_list_option(
     const std::string &key, const std::string &help,
-    const std::string &default_value, bool lazy_construction) {
+    const std::string &default_value) {
     add_option<std::vector<T>>(
-        key, help, default_value, Bounds::unlimited(), lazy_construction);
+        key, help, default_value, Bounds::unlimited());
 }
 }
 

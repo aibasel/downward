@@ -67,11 +67,6 @@ public:
         const std::shared_ptr<AbstractTask> &task, OperatorCost cost_type,
         int bound, double max_time, const std::string &description,
         utils::Verbosity verbosity);
-    SearchAlgorithm(
-        const std::shared_ptr<AbstractTask> &task,
-        const plugins::Options
-            &opts); // TODO options object is needed for iterated search, the
-                    // prototype for issue559 resolves this
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
     bool found_solution() const;
