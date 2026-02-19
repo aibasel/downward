@@ -5,8 +5,6 @@
 
 #include "../component.h"
 
-#include "../tasks/root_task.h" // issue559 remove
-
 #include <string>
 #include <vector>
 

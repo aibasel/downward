@@ -51,8 +51,8 @@ RelaxationHeuristic::RelaxationHeuristic(
     const shared_ptr<AbstractTask> &task, tasks::AxiomHandlingType axioms,
     bool cache_estimates, const string &description, utils::Verbosity verbosity)
     : Heuristic(
-          tasks::get_default_value_axioms_task_if_needed(
-              task, axioms), // issue559 move this transformation to task-independent level
+          // issue559 move this transformation to task-independent level?
+          tasks::get_default_value_axioms_task_if_needed(task, axioms),
           cache_estimates, description, verbosity) {
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));

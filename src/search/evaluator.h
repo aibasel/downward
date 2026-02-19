@@ -4,7 +4,6 @@
 #include "component.h"
 #include "evaluation_result.h"
 
-#include "tasks/root_task.h" // issue559 remove
 #include "utils/logging.h"
 
 #include <set>

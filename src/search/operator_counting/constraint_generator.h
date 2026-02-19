@@ -4,7 +4,6 @@
 #include "../component.h"
 
 #include "../algorithms/named_vector.h"
-#include "../tasks/root_task.h" // issue559 remove
 
 #include <memory>
 #include <vector>

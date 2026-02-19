@@ -5,7 +5,6 @@
 #include "open_list.h"
 
 #include "plugins/plugin.h"
-#include "tasks/root_task.h" // issue559 remove
 
 #include <memory>
 

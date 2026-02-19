@@ -36,8 +36,8 @@ LandmarkSumHeuristic::LandmarkSumHeuristic(
     bool prog_gn, bool prog_r, bool cache_estimates, const string &description,
     utils::Verbosity verbosity, tasks::AxiomHandlingType axioms)
     : LandmarkHeuristic(
-          tasks::get_default_value_axioms_task_if_needed(
-              task, axioms), // issue559 move this transformation to task-independent level
+          // issue559 move this transformation to task-independent level?
+          tasks::get_default_value_axioms_task_if_needed(task, axioms),
           pref, cache_estimates, description, verbosity),
       dead_ends_reliable(are_dead_ends_reliable(lm_factory, task_proxy)) {
     if (log.is_at_least_normal()) {

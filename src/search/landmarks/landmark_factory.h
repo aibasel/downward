@@ -5,7 +5,6 @@
 
 #include "../component.h"
 
-#include "../tasks/root_task.h" // issue559 remove
 #include "../utils/logging.h"
 
 #include <vector>
