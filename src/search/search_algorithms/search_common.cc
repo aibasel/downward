@@ -104,15 +104,14 @@ shared_ptr<OpenListFactory> create_wastar_open_list_factory(
     return create_alternation_open_list_factory_aux(f_evals, preferred, boost);
 }
 
-pair<shared_ptr<OpenListFactory>, const shared_ptr<Evaluator>>
+pair<shared_ptr<OpenListFactory>, const shared_ptr<TaskIndependentEvaluator>>
 create_astar_open_list_factory_and_f_eval(
-    const shared_ptr<Evaluator> &h_eval, utils::Verbosity verbosity) {
-    shared_ptr<GEval> g = make_shared<GEval>(
-        tasks::g_root_task, "astar.g_eval", verbosity); // issue559 TODO
-    shared_ptr<Evaluator> f = make_shared<SumEval>(
-        tasks::g_root_task, // issue559 TODO
-        vector<shared_ptr<Evaluator>>({g, h_eval}), "astar.f_eval", verbosity);
-    vector<shared_ptr<Evaluator>> evals = {f, h_eval};
+    const shared_ptr<TaskIndependentEvaluator> &h_eval, utils::Verbosity verbosity) {
+    shared_ptr<TaskIndependentEvaluator> g = make_shared_component<GEval, Evaluator>(
+        "astar.g_eval", verbosity);
+    shared_ptr<TaskIndependentEvaluator> f = make_shared_component<SumEval, Evaluator>(
+        vector<shared_ptr<TaskIndependentEvaluator>>({g, h_eval}), "astar.f_eval", verbosity);
+    vector<shared_ptr<Evaluator>> evals = {f->bind_task(tasks::g_root_task), h_eval->bind_task(tasks::g_root_task)}; // issue559
 
     shared_ptr<OpenListFactory> open =
         make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(

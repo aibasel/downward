@@ -59,9 +59,9 @@ int AdditiveCartesianHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class AdditiveCartesianHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, AdditiveCartesianHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    AdditiveCartesianHeuristicFeature() : TypedFeature("cegar") {
+    AdditiveCartesianHeuristicFeature() : TaskIndependentFeature("cegar") {
         document_title("Additive Cartesian CEGAR heuristic");
         document_synopsis(
             "See the paper introducing counterexample-guided Cartesian "
@@ -124,20 +124,10 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<AdditiveCartesianHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        // issue559 remove these lines, use commented out line below instead
-        auto subtask_generators =
-            opts.get_list<shared_ptr<TaskIndependentSubtaskGenerator>>(
-                "subtasks");
-        Cache cache;
-        auto bound_subtask_generators = bind_task_recursively(
-            subtask_generators, tasks::g_root_task, cache);
-
-        return plugins::make_shared_from_arg_tuples<AdditiveCartesianHeuristic>(
-            tasks::g_root_task,
-//            opts.get_list<shared_ptr<TaskIndependentSubtaskGenerator>>("subtasks"),
-            bound_subtask_generators,
+        return make_shared_component<AdditiveCartesianHeuristic, Evaluator>(
+            opts.get_list<shared_ptr<TaskIndependentSubtaskGenerator>>("subtasks"),
             opts.get<int>("max_states"), opts.get<int>("max_transitions"),
             opts.get<double>("max_time"), opts.get<PickSplit>("pick"),
             opts.get<bool>("use_general_costs"),

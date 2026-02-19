@@ -272,21 +272,23 @@ public:
         document_title("Lazy enforced hill-climbing");
         document_synopsis("");
 
-        add_option<shared_ptr<Evaluator>>("h", "heuristic");
+        add_option<shared_ptr<TaskIndependentEvaluator>>("h", "heuristic");
         add_option<PreferredUsage>(
             "preferred_usage", "preferred operator usage",
             "prune_by_preferred");
-        add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "preferred", "use preferred operators of these evaluators", "[]");
         add_search_algorithm_options_to_feature(*this, "ehc");
     }
 
     virtual shared_ptr<EnforcedHillClimbingSearch> create_component(
         const plugins::Options &opts) const override {
+        Cache cache; // issue559 remove
+
         return plugins::make_shared_from_arg_tuples<EnforcedHillClimbingSearch>(
-            tasks::g_root_task, opts.get<shared_ptr<Evaluator>>("h"),
+            tasks::g_root_task, opts.get<shared_ptr<TaskIndependentEvaluator>>("h")->bind_task(tasks::g_root_task),
             opts.get<PreferredUsage>("preferred_usage"),
-            opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
             get_search_algorithm_arguments_from_options(opts));
     }
 };

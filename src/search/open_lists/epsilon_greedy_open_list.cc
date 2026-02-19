@@ -178,7 +178,7 @@ public:
                 " on Automated Planning and Scheduling (ICAPS 2014)",
                 "375-379", "AAAI Press", "2014"));
 
-        add_option<shared_ptr<Evaluator>>("eval", "evaluator");
+        add_option<shared_ptr<TaskIndependentEvaluator>>("eval", "evaluator");
         add_option<double>(
             "epsilon", "probability for choosing the next entry randomly",
             "0.2", plugins::Bounds("0.0", "1.0"));
@@ -190,7 +190,7 @@ public:
         const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<
             EpsilonGreedyOpenListFactory>(
-            tasks::g_root_task, opts.get<shared_ptr<Evaluator>>("eval"),
+            tasks::g_root_task, opts.get<shared_ptr<TaskIndependentEvaluator>>("eval")->bind_task(tasks::g_root_task),
             opts.get<double>("epsilon"),
             utils::get_rng_arguments_from_options(opts),
             get_open_list_arguments_from_options(opts));

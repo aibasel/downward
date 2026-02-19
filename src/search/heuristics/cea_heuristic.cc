@@ -451,10 +451,9 @@ bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
 }
 
 class ContextEnhancedAdditiveHeuristicFeature
-    : public plugins::TypedFeature<
-          Evaluator, ContextEnhancedAdditiveHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    ContextEnhancedAdditiveHeuristicFeature() : TypedFeature("cea") {
+    ContextEnhancedAdditiveHeuristicFeature() : TaskIndependentFeature("cea") {
         document_title("Context-enhanced additive heuristic");
 
         tasks::add_axioms_option_to_feature(*this);
@@ -470,11 +469,10 @@ public:
         document_property("preferred operators", "yes");
     }
 
-    virtual shared_ptr<ContextEnhancedAdditiveHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            ContextEnhancedAdditiveHeuristic>(
-            tasks::g_root_task, tasks::get_axioms_arguments_from_options(opts),
+        return make_shared_component<ContextEnhancedAdditiveHeuristic, Evaluator>(
+            tasks::get_axioms_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));
     }
 };

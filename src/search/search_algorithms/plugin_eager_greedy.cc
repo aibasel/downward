@@ -13,8 +13,8 @@ public:
         document_title("Greedy search (eager)");
         document_synopsis("");
 
-        add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
-        add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>("evals", "evaluators");
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "preferred", "use preferred operators of these evaluators", "[]");
         add_option<int>(
             "boost", "boost value for preferred operator open lists", "0");
@@ -58,13 +58,16 @@ public:
 
     virtual shared_ptr<eager_search::EagerSearch> create_component(
         const plugins::Options &opts) const override {
+        Cache cache; // issue559 remove
+
         return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
             tasks::g_root_task,
             search_common::create_greedy_open_list_factory(
-                opts.get_list<shared_ptr<Evaluator>>("evals"),
-                opts.get_list<shared_ptr<Evaluator>>("preferred"),
+                bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"), tasks::g_root_task, cache),
+                bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
                 opts.get<int>("boost")),
-            false, nullptr, opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            false, nullptr,
+            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
             eager_search::get_eager_search_arguments_from_options(opts, tasks::g_root_task));
     }
 };

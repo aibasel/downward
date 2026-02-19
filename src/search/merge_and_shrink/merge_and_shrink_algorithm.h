@@ -1,11 +1,12 @@
 #ifndef MERGE_AND_SHRINK_MERGE_AND_SHRINK_ALGORITHM_H
 #define MERGE_AND_SHRINK_MERGE_AND_SHRINK_ALGORITHM_H
 
+#include "../component.h" // issue559 remove
+
 #include "../utils/logging.h"
 
 #include <memory>
 
-class AbstractTask; // issue559 remove
 class TaskProxy;
 
 namespace plugins {
@@ -73,10 +74,12 @@ extern std::tuple<int, int, int> handle_shrink_limit_defaults(
 extern void add_merge_and_shrink_algorithm_options_to_feature(
     plugins::Feature &feature);
 std::tuple<
-    std::shared_ptr<MergeStrategyFactory>, std::shared_ptr<ShrinkStrategy>,
-    std::shared_ptr<LabelReduction>, bool, bool, int, int, int, double>
+    std::shared_ptr<TaskIndependentComponent<MergeStrategyFactory>>,
+    std::shared_ptr<TaskIndependentComponent<ShrinkStrategy>>,
+    std::shared_ptr<TaskIndependentComponent<LabelReduction>>, bool, bool, int,  // issue559 find a way to use the type aliases here
+    int, int, double>
 get_merge_and_shrink_algorithm_arguments_from_options(
-    const plugins::Options &opts, const std::shared_ptr<AbstractTask> &task); // issue559 task argument is temporary until we switch Evaluators to task-independent classes
+    const plugins::Options &opts);
 extern void add_transition_system_size_limit_options_to_feature(
     plugins::Feature &feature);
 std::tuple<int, int, int>

@@ -348,9 +348,11 @@ tuple<
     shared_ptr<PruningMethod>, shared_ptr<Evaluator>, OperatorCost, int, double,
     string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts, const shared_ptr<AbstractTask> &task) {
+    Cache cache; // issue559 remove
+
     return tuple_cat(
         get_search_pruning_arguments_from_options(opts, task),
-        make_tuple(opts.get<shared_ptr<Evaluator>>("lazy_evaluator", nullptr)),
+        make_tuple(bind_task_recursively(opts.get<shared_ptr<TaskIndependentEvaluator>>("lazy_evaluator", nullptr), task, cache)),
         get_search_algorithm_arguments_from_options(opts));
 }
 }

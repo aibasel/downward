@@ -169,7 +169,7 @@ public:
         document_title("Tie-breaking open list");
         document_synopsis("");
 
-        add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>("evals", "evaluators");
         add_option<bool>(
             "unsafe_pruning",
             "allow unsafe pruning when the main evaluator regards a state a dead end",
@@ -179,8 +179,11 @@ public:
 
     virtual shared_ptr<TieBreakingOpenListFactory> create_component(
         const plugins::Options &opts) const override {
+        Cache cache; // issue559 remove
+
         return plugins::make_shared_from_arg_tuples<TieBreakingOpenListFactory>(
-            tasks::g_root_task, opts.get_list<shared_ptr<Evaluator>>("evals"),
+            tasks::g_root_task,
+            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"), tasks::g_root_task, cache),
             opts.get<bool>("unsafe_pruning"),
             get_open_list_arguments_from_options(opts));
     }

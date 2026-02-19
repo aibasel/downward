@@ -82,11 +82,10 @@ bool LandmarkCostPartitioningHeuristic::dead_ends_are_reliable() const {
 }
 
 class LandmarkCostPartitioningHeuristicFeature
-    : public plugins::TypedFeature<
-          Evaluator, LandmarkCostPartitioningHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
     LandmarkCostPartitioningHeuristicFeature()
-        : TypedFeature("landmark_cost_partitioning") {
+        : TaskIndependentFeature("landmark_cost_partitioning") {
         document_title("Landmark cost partitioning heuristic");
         document_synopsis(
             "Formerly known as the admissible landmark heuristic.\n"
@@ -163,12 +162,11 @@ public:
         document_property("safe", "yes");
     }
 
-    virtual shared_ptr<LandmarkCostPartitioningHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            LandmarkCostPartitioningHeuristic>(
-            tasks::g_root_task,
-            get_landmark_heuristic_arguments_from_options(opts, tasks::g_root_task),
+        return make_shared_component<
+            LandmarkCostPartitioningHeuristic, Evaluator>(
+            get_landmark_heuristic_arguments_from_options(opts),
             opts.get<CostPartitioningMethod>("cost_partitioning"),
             opts.get<bool>("alm"),
             lp::get_lp_solver_arguments_from_options(opts));

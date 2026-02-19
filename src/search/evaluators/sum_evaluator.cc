@@ -25,9 +25,9 @@ int SumEvaluator::combine_values(const vector<int> &values) {
 }
 
 class SumEvaluatorFeature
-    : public plugins::TypedFeature<Evaluator, SumEvaluator> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    SumEvaluatorFeature() : TypedFeature("sum") {
+    SumEvaluatorFeature() : TaskIndependentFeature("sum") {
         document_subcategory("evaluators_basic");
         document_title("Sum evaluator");
         document_synopsis("Calculates the sum of the sub-evaluators.");
@@ -36,10 +36,9 @@ public:
             *this, "sum");
     }
 
-    virtual shared_ptr<SumEvaluator> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<SumEvaluator>(
-            tasks::g_root_task,
+        return make_shared_component<SumEvaluator, Evaluator>(
             combining_evaluator::get_combining_evaluator_arguments_from_options(
                 opts));
     }

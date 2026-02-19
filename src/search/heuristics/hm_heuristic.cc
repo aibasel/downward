@@ -253,9 +253,9 @@ void HMHeuristic::dump_table() const {
 }
 
 class HMHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, HMHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    HMHeuristicFeature() : TypedFeature("hm") {
+    HMHeuristicFeature() : TaskIndependentFeature("hm") {
         document_title("h^m heuristic");
 
         add_option<int>(
@@ -277,10 +277,10 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<HMHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<HMHeuristic>(
-            tasks::g_root_task, opts.get<int>("m"),
+        return make_shared_component<HMHeuristic, Evaluator>(
+            opts.get<int>("m"),
             get_heuristic_arguments_from_options(opts));
     }
 };

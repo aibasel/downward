@@ -16,8 +16,8 @@ public:
         document_synopsis(
             "Weighted A* is a special case of lazy best first search.");
 
-        add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
-        add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>("evals", "evaluators");
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "preferred", "use preferred operators of these evaluators", "[]");
         add_option<bool>("reopen_closed", "reopen closed nodes", "true");
         add_option<int>(
@@ -69,15 +69,17 @@ public:
 
     virtual shared_ptr<lazy_search::LazySearch> create_component(
         const plugins::Options &opts) const override {
+        Cache cache; // issue559 remove
+
         return plugins::make_shared_from_arg_tuples<lazy_search::LazySearch>(
             tasks::g_root_task,
             search_common::create_wastar_open_list_factory(
-                opts.get_list<shared_ptr<Evaluator>>("evals"),
-                opts.get_list<shared_ptr<Evaluator>>("preferred"),
+                bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"), tasks::g_root_task, cache),
+                bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
                 opts.get<int>("boost"), opts.get<int>("w"),
                 opts.get<utils::Verbosity>("verbosity")),
             opts.get<bool>("reopen_closed"),
-            opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
             get_successors_order_arguments_from_options(opts),
             get_search_algorithm_arguments_from_options(opts));
     }

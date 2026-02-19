@@ -172,7 +172,7 @@ public:
                 " on Artificial Intelligence (AAAI 2014)",
                 "2395-2401", "AAAI Press", "2014"));
 
-        add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "evaluators",
             "Evaluators used to determine the bucket for each entry.");
         utils::add_rng_options_to_feature(*this);
@@ -180,9 +180,11 @@ public:
 
     virtual shared_ptr<TypeBasedOpenListFactory> create_component(
         const plugins::Options &opts) const override {
+        Cache cache; // issue559 remove
+
         return plugins::make_shared_from_arg_tuples<TypeBasedOpenListFactory>(
             tasks::g_root_task,
-            opts.get_list<shared_ptr<Evaluator>>("evaluators"),
+            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evaluators"), tasks::g_root_task, cache),
             utils::get_rng_arguments_from_options(opts));
     }
 };

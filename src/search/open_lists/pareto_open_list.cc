@@ -250,7 +250,7 @@ public:
             "Selects one of the Pareto-optimal (regarding the sub-evaluators) "
             "entries for removal.");
 
-        add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>("evals", "evaluators");
         add_option<bool>(
             "state_uniform_selection",
             "When removing an entry, we select a non-dominated bucket "
@@ -264,8 +264,11 @@ public:
 
     virtual shared_ptr<ParetoOpenListFactory> create_component(
         const plugins::Options &opts) const override {
+        Cache cache; // issue559 remove
+
         return plugins::make_shared_from_arg_tuples<ParetoOpenListFactory>(
-            tasks::g_root_task, opts.get_list<shared_ptr<Evaluator>>("evals"),
+            tasks::g_root_task,
+            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"), tasks::g_root_task, cache),
             opts.get<bool>("state_uniform_selection"),
             utils::get_rng_arguments_from_options(opts),
             get_open_list_arguments_from_options(opts));

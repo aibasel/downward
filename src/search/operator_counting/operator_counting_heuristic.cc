@@ -65,9 +65,9 @@ int OperatorCountingHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class OperatorCountingHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, OperatorCountingHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    OperatorCountingHeuristicFeature() : TypedFeature("operatorcounting") {
+    OperatorCountingHeuristicFeature() : TaskIndependentFeature("operatorcounting") {
         document_title("Operator-counting heuristic");
         document_synopsis(
             "An operator-counting heuristic computes a linear program (LP) in each "
@@ -120,21 +120,11 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<OperatorCountingHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        // issue559 remove these lines, use commented out line below instead
-        auto constraint_generators =
+        return make_shared_component<OperatorCountingHeuristic, Evaluator>(
             opts.get_list<shared_ptr<TaskIndependentConstraintGenerator>>(
-                "constraint_generators");
-        Cache cache;
-        auto bound_constraint_generators = bind_task_recursively(
-            constraint_generators, tasks::g_root_task, cache);
-
-        return plugins::make_shared_from_arg_tuples<OperatorCountingHeuristic>(
-            tasks::g_root_task,
-//            opts.get_list<shared_ptr<TaskIndependentConstraintGenerator>>(
-//                "constraint_generators"),
-            move(bound_constraint_generators),
+                "constraint_generators"),
             opts.get<bool>("use_integer_operator_counts"),
             lp::get_lp_solver_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));

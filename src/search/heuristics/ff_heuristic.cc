@@ -70,9 +70,9 @@ int FFHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class FFHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, FFHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    FFHeuristicFeature() : TypedFeature("ff") {
+    FFHeuristicFeature() : TaskIndependentFeature("ff") {
         document_title("FF heuristic");
 
         relaxation_heuristic::add_relaxation_heuristic_options_to_feature(
@@ -88,10 +88,9 @@ public:
         document_property("preferred operators", "yes");
     }
 
-    virtual shared_ptr<FFHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<FFHeuristic>(
-            tasks::g_root_task,
+        return make_shared_component<FFHeuristic, Evaluator>(
             relaxation_heuristic::
                 get_relaxation_heuristic_arguments_from_options(opts));
     }

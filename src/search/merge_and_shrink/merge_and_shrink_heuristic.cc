@@ -2,8 +2,11 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
+#include "label_reduction.h"                  // issue559 necessary for concept?
 #include "merge_and_shrink_algorithm.h"
 #include "merge_and_shrink_representation.h"
+#include "merge_strategy_factory.h"           // issue559 necessary for concept?
+#include "shrink_strategy.h"                  // issue559 necessary for concept?
 #include "transition_system.h"
 #include "types.h"
 
@@ -139,9 +142,9 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class MergeAndShrinkHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, MergeAndShrinkHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    MergeAndShrinkHeuristicFeature() : TypedFeature("merge_and_shrink") {
+    MergeAndShrinkHeuristicFeature() : TaskIndependentFeature("merge_and_shrink") {
         document_title("Merge-and-shrink heuristic");
         document_synopsis(
             "This heuristic implements the algorithm described in the following "
@@ -244,11 +247,10 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<MergeAndShrinkHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<MergeAndShrinkHeuristic>(
-            tasks::g_root_task,
-            get_merge_and_shrink_algorithm_arguments_from_options(opts, tasks::g_root_task),
+        return make_shared_component<MergeAndShrinkHeuristic, Evaluator>(
+            get_merge_and_shrink_algorithm_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));
     }
 };

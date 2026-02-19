@@ -20,9 +20,9 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
     return result;
 }
 
-class GEvaluatorFeature : public plugins::TypedFeature<Evaluator, GEvaluator> {
+class GEvaluatorFeature : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    GEvaluatorFeature() : TypedFeature("g") {
+    GEvaluatorFeature() : TaskIndependentFeature("g") {
         document_subcategory("evaluators_basic");
         document_title("g-value evaluator");
         document_synopsis(
@@ -30,10 +30,10 @@ public:
         add_evaluator_options_to_feature(*this, "g");
     }
 
-    virtual shared_ptr<GEvaluator> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<GEvaluator>(
-            tasks::g_root_task, get_evaluator_arguments_from_options(opts));
+        return make_shared_component<GEvaluator, Evaluator>(
+            get_evaluator_arguments_from_options(opts));
     }
 };
 

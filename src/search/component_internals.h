@@ -46,8 +46,12 @@ concept Bindable =
 template<Bindable T>
 auto bind_task_recursively(
     const std::shared_ptr<T> &component,
-    const std::shared_ptr<AbstractTask> &task, Cache &cache) {
-    return component->bind_task(task, cache);
+    const std::shared_ptr<AbstractTask> &task, Cache &cache)
+    -> decltype(component->bind_task(task, cache)) {
+    if (component) {
+        return component->bind_task(task, cache);
+    }
+    return nullptr;
 }
 
 template<typename T>

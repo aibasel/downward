@@ -25,9 +25,9 @@ EvaluationResult PrefEvaluator::compute_result(
 }
 
 class PrefEvaluatorFeature
-    : public plugins::TypedFeature<Evaluator, PrefEvaluator> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    PrefEvaluatorFeature() : TypedFeature("pref") {
+    PrefEvaluatorFeature() : TaskIndependentFeature("pref") {
         document_subcategory("evaluators_basic");
         document_title("Preference evaluator");
         document_synopsis("Returns 0 if preferred is true and 1 otherwise.");
@@ -35,10 +35,10 @@ public:
         add_evaluator_options_to_feature(*this, "pref");
     }
 
-    virtual shared_ptr<PrefEvaluator> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PrefEvaluator>(
-            tasks::g_root_task, get_evaluator_arguments_from_options(opts));
+        return make_shared_component<PrefEvaluator, Evaluator>(
+            get_evaluator_arguments_from_options(opts));
     }
 };
 

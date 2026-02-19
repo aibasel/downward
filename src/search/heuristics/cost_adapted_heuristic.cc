@@ -20,10 +20,9 @@ TaskIndependentCostAdaptedHeuristic::TaskIndependentCostAdaptedHeuristic(
 }
 
 class CostAdaptedHeuristicFeature
-    : public plugins::TypedFeature<
-          TaskIndependentEvaluator, TaskIndependentCostAdaptedHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    CostAdaptedHeuristicFeature() : TypedFeature("cost_adapted_heuristic") {
+    CostAdaptedHeuristicFeature() : TaskIndependentFeature("cost_adapted_heuristic") {
         document_title("Cost-adapted heuristic");
         document_synopsis(
             "Evaluates the nested heuristic on a task with a modified cost"
@@ -53,7 +52,7 @@ public:
             "preferred operators", "if the nested heuristic supports them");
     }
 
-    virtual shared_ptr<TaskIndependentCostAdaptedHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return make_shared<TaskIndependentCostAdaptedHeuristic>(
             opts.get<shared_ptr<TaskIndependentEvaluator>>("nested"),

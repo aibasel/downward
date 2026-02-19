@@ -24,9 +24,9 @@ int MaxEvaluator::combine_values(const vector<int> &values) {
 }
 
 class MaxEvaluatorFeature
-    : public plugins::TypedFeature<Evaluator, MaxEvaluator> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    MaxEvaluatorFeature() : TypedFeature("max") {
+    MaxEvaluatorFeature() : TaskIndependentFeature("max") {
         document_subcategory("evaluators_basic");
         document_title("Max evaluator");
         document_synopsis("Calculates the maximum of the sub-evaluators.");
@@ -34,10 +34,9 @@ public:
             *this, "max");
     }
 
-    virtual shared_ptr<MaxEvaluator> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<MaxEvaluator>(
-            tasks::g_root_task,
+        return make_shared_component<MaxEvaluator, Evaluator>(
             combining_evaluator::get_combining_evaluator_arguments_from_options(
                 opts));
     }

@@ -286,9 +286,9 @@ void CGHeuristic::mark_helpful_transitions(
 }
 
 class CGHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, CGHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    CGHeuristicFeature() : TypedFeature("cg") {
+    CGHeuristicFeature() : TaskIndependentFeature("cg") {
         document_title("Causal graph heuristic");
 
         add_option<int>(
@@ -308,10 +308,10 @@ public:
         document_property("preferred operators", "yes");
     }
 
-    virtual shared_ptr<CGHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<CGHeuristic>(
-            tasks::g_root_task, opts.get<int>("max_cache_size"),
+        return make_shared_component<CGHeuristic, Evaluator>(
+            opts.get<int>("max_cache_size"),
             tasks::get_axioms_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));
     }

@@ -92,9 +92,9 @@ tuple<double> get_canonical_pdbs_arguments_from_options(
 }
 
 class CanonicalPDBsHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, CanonicalPDBsHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    CanonicalPDBsHeuristicFeature() : TypedFeature("cpdbs") {
+    CanonicalPDBsHeuristicFeature() : TaskIndependentFeature("cpdbs") {
         document_subcategory("heuristics_pdb");
         document_title("Canonical PDB");
         document_synopsis(
@@ -120,11 +120,10 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<CanonicalPDBsHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<CanonicalPDBsHeuristic>(
-            tasks::g_root_task,
-            opts.get<shared_ptr<TaskIndependentPatternCollectionGenerator>>("patterns")->bind_task(tasks::g_root_task),
+        return make_shared_component<CanonicalPDBsHeuristic, Evaluator>(
+            opts.get<shared_ptr<TaskIndependentPatternCollectionGenerator>>("patterns"),
             get_canonical_pdbs_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));
     }

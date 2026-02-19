@@ -118,7 +118,7 @@ public:
         document_synopsis(
             "Open list that uses a single evaluator and FIFO tiebreaking.");
 
-        add_option<shared_ptr<Evaluator>>("eval", "evaluator");
+        add_option<shared_ptr<TaskIndependentEvaluator>>("eval", "evaluator");
         add_open_list_options_to_feature(*this);
 
         document_note(
@@ -133,7 +133,7 @@ public:
     virtual shared_ptr<BestFirstOpenListFactory> create_component(
         const plugins::Options &opts) const override {
         return plugins::make_shared_from_arg_tuples<BestFirstOpenListFactory>(
-            tasks::g_root_task, opts.get<shared_ptr<Evaluator>>("eval"),
+            tasks::g_root_task, opts.get<shared_ptr<TaskIndependentEvaluator>>("eval")->bind_task(tasks::g_root_task),
             get_open_list_arguments_from_options(opts));
     }
 };

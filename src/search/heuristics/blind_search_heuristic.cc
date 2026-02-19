@@ -30,9 +30,9 @@ int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class BlindSearchHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, BlindSearchHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    BlindSearchHeuristicFeature() : TypedFeature("blind") {
+    BlindSearchHeuristicFeature() : TaskIndependentFeature("blind") {
         document_title("Blind heuristic");
         document_synopsis(
             "Returns cost of cheapest action for non-goal states, "
@@ -50,10 +50,10 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<BlindSearchHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<BlindSearchHeuristic>(
-            tasks::g_root_task, get_heuristic_arguments_from_options(opts));
+        return make_shared_component<BlindSearchHeuristic, Evaluator>(
+            get_heuristic_arguments_from_options(opts));
     }
 };
 

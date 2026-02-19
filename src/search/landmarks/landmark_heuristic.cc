@@ -262,14 +262,12 @@ void add_landmark_heuristic_options_to_feature(
 }
 
 tuple<
-    shared_ptr<LandmarkFactory>, bool, bool, bool, bool, bool, string,
-    utils::Verbosity>
-get_landmark_heuristic_arguments_from_options(
-    const plugins::Options &opts, const shared_ptr<AbstractTask> &task) {
+    shared_ptr<TaskIndependentLandmarkFactory>, bool, bool, bool, bool, bool,
+    string, utils::Verbosity>
+get_landmark_heuristic_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
-            opts.get<shared_ptr<TaskIndependentLandmarkFactory>>("lm_factory")
-                ->bind_task(task), // issue559 remove once callers want a task-independent factory
+            opts.get<shared_ptr<TaskIndependentLandmarkFactory>>("lm_factory"),
             opts.get<bool>("pref"), opts.get<bool>("prog_goal"),
             opts.get<bool>("prog_gn"), opts.get<bool>("prog_r")),
         get_heuristic_arguments_from_options(opts));

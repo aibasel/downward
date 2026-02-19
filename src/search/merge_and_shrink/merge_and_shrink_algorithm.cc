@@ -512,23 +512,15 @@ void add_merge_and_shrink_algorithm_options_to_feature(
 }
 
 tuple<
-    shared_ptr<MergeStrategyFactory>, shared_ptr<ShrinkStrategy>,
-    shared_ptr<LabelReduction>, bool, bool, int, int, int, double>
+    shared_ptr<TaskIndependentMergeStrategyFactory>, shared_ptr<TaskIndependentShrinkStrategy>,
+    shared_ptr<TaskIndependentLabelReduction>, bool, bool, int, int, int, double>
 get_merge_and_shrink_algorithm_arguments_from_options(
-    const plugins::Options &opts, const shared_ptr<AbstractTask> &task) {
-    // issue559 remove these after making evaluators task-independent, use the commented out line below instead
-    auto label_reduction = opts.get<shared_ptr<TaskIndependentLabelReduction>>("label_reduction", nullptr);
-    shared_ptr<LabelReduction> bound_label_reduction;
-    if (label_reduction) {
-        bound_label_reduction = label_reduction->bind_task(task);
-    }
-
+    const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
-            opts.get<shared_ptr<TaskIndependentMergeStrategyFactory>>("merge_strategy")->bind_task(task),
-            opts.get<shared_ptr<TaskIndependentShrinkStrategy>>("shrink_strategy")->bind_task(task),
-            //opts.get<shared_ptr<TaskIndependentLabelReduction>>("label_reduction", nullptr),
-            bound_label_reduction,
+            opts.get<shared_ptr<TaskIndependentMergeStrategyFactory>>("merge_strategy"),
+            opts.get<shared_ptr<TaskIndependentShrinkStrategy>>("shrink_strategy"),
+            opts.get<shared_ptr<TaskIndependentLabelReduction>>("label_reduction", nullptr),
             opts.get<bool>("prune_unreachable_states"),
             opts.get<bool>("prune_irrelevant_states")),
         get_transition_system_size_limit_arguments_from_options(opts),

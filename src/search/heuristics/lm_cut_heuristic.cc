@@ -36,9 +36,9 @@ int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class LandmarkCutHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, LandmarkCutHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
+    LandmarkCutHeuristicFeature() : TaskIndependentFeature("lmcut") {
         document_title("Landmark-cut heuristic");
 
         add_heuristic_options_to_feature(*this, "lmcut");
@@ -53,10 +53,10 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<LandmarkCutHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LandmarkCutHeuristic>(
-            tasks::g_root_task, get_heuristic_arguments_from_options(opts));
+        return make_shared_component<LandmarkCutHeuristic, Evaluator>(
+            get_heuristic_arguments_from_options(opts));
     }
 };
 

@@ -35,9 +35,9 @@ int ZeroOnePDBsHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class ZeroOnePDBsHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, ZeroOnePDBsHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    ZeroOnePDBsHeuristicFeature() : TypedFeature("zopdbs") {
+    ZeroOnePDBsHeuristicFeature() : TaskIndependentFeature("zopdbs") {
         document_subcategory("heuristics_pdb");
         document_title("Zero-One PDB");
         document_synopsis(
@@ -65,11 +65,10 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<ZeroOnePDBsHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<ZeroOnePDBsHeuristic>(
-            tasks::g_root_task,
-            opts.get<shared_ptr<TaskIndependentPatternCollectionGenerator>>("patterns")->bind_task(tasks::g_root_task),
+        return make_shared_component<ZeroOnePDBsHeuristic, Evaluator>(
+            opts.get<shared_ptr<TaskIndependentPatternCollectionGenerator>>("patterns"),
             get_heuristic_arguments_from_options(opts));
     }
 };
