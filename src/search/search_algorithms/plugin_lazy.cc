@@ -7,9 +7,9 @@ using namespace std;
 
 namespace plugin_lazy {
 class LazySearchFeature
-    : public plugins::TypedFeature<SearchAlgorithm, lazy_search::LazySearch> {
+    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
 public:
-    LazySearchFeature() : TypedFeature("lazy") {
+    LazySearchFeature() : TaskIndependentFeature("lazy") {
         document_title("Lazy best-first search");
         document_synopsis("");
 
@@ -21,14 +21,12 @@ public:
         add_search_algorithm_options_to_feature(*this, "lazy");
     }
 
-    virtual shared_ptr<lazy_search::LazySearch> create_component(
+    virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        Cache cache; // issue559 remove
-
-        return plugins::make_shared_from_arg_tuples<lazy_search::LazySearch>(
-            tasks::g_root_task, opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open")->bind_task(tasks::g_root_task),
+        return make_shared_component<lazy_search::LazySearch, SearchAlgorithm>(
+            opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
             opts.get<bool>("reopen_closed"),
-            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
             get_successors_order_arguments_from_options(opts),
             get_search_algorithm_arguments_from_options(opts));
     }

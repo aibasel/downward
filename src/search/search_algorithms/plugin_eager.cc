@@ -7,9 +7,9 @@ using namespace std;
 
 namespace plugin_eager {
 class EagerSearchFeature
-    : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
+    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
 public:
-    EagerSearchFeature() : TypedFeature("eager") {
+    EagerSearchFeature() : TaskIndependentFeature("eager") {
         document_title("Eager best-first search");
         document_synopsis("");
 
@@ -25,16 +25,14 @@ public:
         eager_search::add_eager_search_options_to_feature(*this, "eager");
     }
 
-    virtual shared_ptr<eager_search::EagerSearch> create_component(
+    virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        Cache cache; // issue559 remove
-
-        return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
-            tasks::g_root_task, opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open")->bind_task(tasks::g_root_task),
+        return make_shared_component<eager_search::EagerSearch, SearchAlgorithm>(
+            opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
             opts.get<bool>("reopen_closed"),
-            bind_task_recursively(opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr), tasks::g_root_task, cache),
-            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
-            eager_search::get_eager_search_arguments_from_options(opts, tasks::g_root_task));
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
+            eager_search::get_eager_search_arguments_from_options(opts));
     }
 };
 

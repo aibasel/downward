@@ -1,6 +1,7 @@
 #ifndef SEARCH_ALGORITHMS_EAGER_SEARCH_H
 #define SEARCH_ALGORITHMS_EAGER_SEARCH_H
 
+#include "../evaluator.h"
 #include "../open_list.h"
 #include "../search_algorithm.h"
 
@@ -63,9 +64,10 @@ public:
 extern void add_eager_search_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<
-    std::shared_ptr<PruningMethod>, std::shared_ptr<Evaluator>, OperatorCost,
-    int, double, std::string, utils::Verbosity>
-get_eager_search_arguments_from_options(const plugins::Options &opts, const std::shared_ptr<AbstractTask> &task); // issue559 task argument is temporary until we switch Evaluators to task-independent classes
+    std::shared_ptr<TaskIndependentPruningMethod>,
+    std::shared_ptr<TaskIndependentEvaluator>, OperatorCost, int, double,
+    std::string, utils::Verbosity>
+get_eager_search_arguments_from_options(const plugins::Options &opts);
 }
 
 #endif

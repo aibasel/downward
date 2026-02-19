@@ -5,6 +5,7 @@
 #include "operator_cost.h"
 #include "operator_id.h"
 #include "plan_manager.h"
+#include "pruning_method.h"
 #include "search_progress.h"
 #include "search_space.h"
 #include "search_statistics.h"
@@ -43,12 +44,6 @@ class SearchAlgorithm : public TaskSpecificComponent {
     bool solution_found;
     Plan plan;
 protected:
-    // Hold a reference to the task implementation and pass it to objects that
-    // need it.
-    const std::shared_ptr<AbstractTask> task;
-    // Use task_proxy to access task information.
-    TaskProxy task_proxy;
-
     mutable utils::LogProxy log;
     PlanManager plan_manager;
     StateRegistry state_registry;
@@ -101,6 +96,8 @@ public:
     }
 };
 
+using TaskIndependentSearchAlgorithm = TaskIndependentComponent<SearchAlgorithm>;
+
 /*
   Print evaluator values of all evaluators evaluated in the evaluation context.
 */
@@ -111,11 +108,9 @@ extern void collect_preferred_operators(
     EvaluationContext &eval_context, Evaluator *preferred_operator_evaluator,
     ordered_set::OrderedSet<OperatorID> &preferred_operators);
 
-class PruningMethod;
-
 extern void add_search_pruning_options_to_feature(plugins::Feature &feature);
-extern std::tuple<std::shared_ptr<PruningMethod>>
-get_search_pruning_arguments_from_options(const plugins::Options &opts, const std::shared_ptr<AbstractTask> &task);  // issue559 task argument is temporary until we switch Evaluators to task-independent classes
+extern std::tuple<std::shared_ptr<TaskIndependentPruningMethod>>
+get_search_pruning_arguments_from_options(const plugins::Options &opts);
 extern void add_search_algorithm_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<OperatorCost, int, double, std::string, utils::Verbosity>

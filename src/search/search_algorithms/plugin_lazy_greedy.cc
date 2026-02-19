@@ -9,9 +9,9 @@ namespace plugin_lazy_greedy {
 static const string DEFAULT_LAZY_BOOST = "1000";
 
 class LazyGreedySearchFeature
-    : public plugins::TypedFeature<SearchAlgorithm, lazy_search::LazySearch> {
+    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
 public:
-    LazyGreedySearchFeature() : TypedFeature("lazy_greedy") {
+    LazyGreedySearchFeature() : TaskIndependentFeature("lazy_greedy") {
         document_title("Greedy search (lazy)");
         document_synopsis("");
 
@@ -63,18 +63,15 @@ public:
             true);
     }
 
-    virtual shared_ptr<lazy_search::LazySearch> create_component(
+    virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        Cache cache; // issue559 remove
-
-        return plugins::make_shared_from_arg_tuples<lazy_search::LazySearch>(
-            tasks::g_root_task,
+        return make_shared_component<lazy_search::LazySearch, SearchAlgorithm>(
             search_common::create_greedy_open_list_factory(
                 opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
                 opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
-                opts.get<int>("boost"))->bind_task(tasks::g_root_task),
+                opts.get<int>("boost")),
             opts.get<bool>("reopen_closed"),
-            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
             get_successors_order_arguments_from_options(opts),
             get_search_algorithm_arguments_from_options(opts));
     }

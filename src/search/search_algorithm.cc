@@ -46,8 +46,6 @@ SearchAlgorithm::SearchAlgorithm(
       description(description),
       status(IN_PROGRESS),
       solution_found(false),
-      task(tasks::g_root_task),
-      task_proxy(*task),
       log(utils::get_log_for_verbosity(verbosity)),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
@@ -73,8 +71,6 @@ SearchAlgorithm::SearchAlgorithm(
       description(opts.get_unparsed_config()),
       status(IN_PROGRESS),
       solution_found(false),
-      task(tasks::g_root_task),
-      task_proxy(*task),
       log(utils::get_log_for_verbosity(
           opts.get<utils::Verbosity>("verbosity"))),
       state_registry(task_proxy),
@@ -170,9 +166,9 @@ void add_search_pruning_options_to_feature(plugins::Feature &feature) {
         "null()");
 }
 
-tuple<shared_ptr<PruningMethod>> get_search_pruning_arguments_from_options(
-    const plugins::Options &opts, const shared_ptr<AbstractTask> &task) {
-    return make_tuple(opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning")->bind_task(task));
+tuple<shared_ptr<TaskIndependentPruningMethod>> get_search_pruning_arguments_from_options(
+    const plugins::Options &opts) {
+    return make_tuple(opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning"));
 }
 
 void add_search_algorithm_options_to_feature(
@@ -235,8 +231,18 @@ tuple<bool, bool, int> get_successors_order_arguments_from_options(
         utils::get_rng_arguments_from_options(opts));
 }
 
-static class SearchAlgorithmCategoryPlugin
+static class TaskSpecificSearchAlgorithmCategoryPlugin
     : public plugins::TypedCategoryPlugin<SearchAlgorithm> {
+public:
+    TaskSpecificSearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("Task-specific SearchAlgorithm") {
+        // TODO: Replace add synopsis for the wiki page.
+        document_synopsis(
+            "This page describes the supported search algorithms.");
+    }
+} _old_category_plugin;
+
+static class SearchAlgorithmCategoryPlugin
+    : public plugins::TypedCategoryPlugin<TaskIndependentSearchAlgorithm> {
 public:
     SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("SearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.

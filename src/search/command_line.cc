@@ -85,12 +85,12 @@ static vector<string> replace_old_style_predefinitions(
 }
 
 static shared_ptr<SearchAlgorithm> parse_cmd_line_aux(
-    const vector<string> &args) {
+    const vector<string> &args, const shared_ptr<AbstractTask> &task) {
     string plan_filename = "sas_plan";
     int num_previously_generated_plans = 0;
     bool is_part_of_anytime_portfolio = false;
 
-    using SearchPtr = shared_ptr<SearchAlgorithm>;
+    using SearchPtr = shared_ptr<TaskIndependentSearchAlgorithm>;
     SearchPtr search_algorithm = nullptr;
     // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
@@ -164,19 +164,23 @@ static shared_ptr<SearchAlgorithm> parse_cmd_line_aux(
         }
     }
 
+    // issue559 move this logic to planner.cc?
+    shared_ptr<SearchAlgorithm> bound_search_algorithm;
     if (search_algorithm) {
-        PlanManager &plan_manager = search_algorithm->get_plan_manager();
+        bound_search_algorithm = search_algorithm->bind_task(task);
+        PlanManager &plan_manager = bound_search_algorithm->get_plan_manager();
         plan_manager.set_plan_filename(plan_filename);
         plan_manager.set_num_previously_generated_plans(
             num_previously_generated_plans);
         plan_manager.set_is_part_of_anytime_portfolio(
             is_part_of_anytime_portfolio);
     }
-    return search_algorithm;
+    return bound_search_algorithm;
 }
 
 shared_ptr<SearchAlgorithm> parse_cmd_line(
-    int argc, const char **argv, bool is_unit_cost) {
+    int argc, const char **argv, bool is_unit_cost,
+    const shared_ptr<AbstractTask> &task) {
     vector<string> args;
     bool active = true;
     for (int i = 1; i < argc; ++i) {
@@ -193,7 +197,7 @@ shared_ptr<SearchAlgorithm> parse_cmd_line(
         }
     }
     args = replace_old_style_predefinitions(args);
-    return parse_cmd_line_aux(args);
+    return parse_cmd_line_aux(args, task);
 }
 
 string get_revision_info() {

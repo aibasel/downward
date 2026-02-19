@@ -262,10 +262,9 @@ void EnforcedHillClimbingSearch::print_statistics() const {
 }
 
 class EnforcedHillClimbingSearchFeature
-    : public plugins::TypedFeature<
-          SearchAlgorithm, EnforcedHillClimbingSearch> {
+    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
 public:
-    EnforcedHillClimbingSearchFeature() : TypedFeature("ehc") {
+    EnforcedHillClimbingSearchFeature() : TaskIndependentFeature("ehc") {
         document_title("Lazy enforced hill-climbing");
         document_synopsis("");
 
@@ -278,19 +277,12 @@ public:
         add_search_algorithm_options_to_feature(*this, "ehc");
     }
 
-    virtual shared_ptr<EnforcedHillClimbingSearch> create_component(
+    virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        Cache cache; // issue559 remove
-
-        return plugins::make_shared_from_arg_tuples<EnforcedHillClimbingSearch>(
-            tasks::g_root_task,
-            opts.get<shared_ptr<TaskIndependentEvaluator>>("h")->bind_task(
-                tasks::g_root_task),
+        return make_shared_component<EnforcedHillClimbingSearch, SearchAlgorithm>(
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("h"),
             opts.get<PreferredUsage>("preferred_usage"),
-            bind_task_recursively(
-                opts.get_list<shared_ptr<TaskIndependentEvaluator>>(
-                    "preferred"),
-                tasks::g_root_task, cache),
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
             get_search_algorithm_arguments_from_options(opts));
     }
 };

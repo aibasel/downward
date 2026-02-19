@@ -7,9 +7,9 @@ using namespace std;
 
 namespace plugin_eager_greedy {
 class EagerGreedySearchFeature
-    : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
+    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
 public:
-    EagerGreedySearchFeature() : TypedFeature("eager_greedy") {
+    EagerGreedySearchFeature() : TaskIndependentFeature("eager_greedy") {
         document_title("Greedy search (eager)");
         document_synopsis("");
 
@@ -56,19 +56,16 @@ public:
             true);
     }
 
-    virtual shared_ptr<eager_search::EagerSearch> create_component(
+    virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        Cache cache; // issue559 remove
-
-        return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
-            tasks::g_root_task,
+        return make_shared_component<eager_search::EagerSearch, SearchAlgorithm>(
             search_common::create_greedy_open_list_factory(
                 opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
                 opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
-                opts.get<int>("boost"))->bind_task(tasks::g_root_task),
-            false, nullptr,
-            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
-            eager_search::get_eager_search_arguments_from_options(opts, tasks::g_root_task));
+                opts.get<int>("boost")),
+            false, shared_ptr<TaskIndependentEvaluator>(nullptr),
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
+            eager_search::get_eager_search_arguments_from_options(opts));
     }
 };
 

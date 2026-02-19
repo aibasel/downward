@@ -7,9 +7,9 @@ using namespace std;
 
 namespace plugin_eager_wastar {
 class EagerWAstarSearchFeature
-    : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
+    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
 public:
-    EagerWAstarSearchFeature() : TypedFeature("eager_wastar") {
+    EagerWAstarSearchFeature() : TaskIndependentFeature("eager_wastar") {
         document_title("Eager weighted A* search");
         document_synopsis("");
 
@@ -34,21 +34,18 @@ public:
             "is **not** equivalent to\n```\n--search \"astar(h())\"\n```\n");
     }
 
-    virtual shared_ptr<eager_search::EagerSearch> create_component(
+    virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        Cache cache; // issue559 remove
-
-        return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
-            tasks::g_root_task,
+        return make_shared_component<eager_search::EagerSearch, SearchAlgorithm>(
             search_common::create_wastar_open_list_factory(
                 opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
                 opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
                 opts.get<int>("boost"), opts.get<int>("w"),
-                opts.get<utils::Verbosity>("verbosity"))->bind_task(tasks::g_root_task),
+                opts.get<utils::Verbosity>("verbosity")),
             opts.get<bool>("reopen_closed"),
-            bind_task_recursively(opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr), tasks::g_root_task, cache),
-            bind_task_recursively(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
-            eager_search::get_eager_search_arguments_from_options(opts, tasks::g_root_task));
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
+            eager_search::get_eager_search_arguments_from_options(opts));
     }
 };
 

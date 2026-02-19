@@ -7,9 +7,9 @@ using namespace std;
 
 namespace plugin_astar {
 class AStarSearchFeature
-    : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
+    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
 public:
-    AStarSearchFeature() : TypedFeature("astar") {
+    AStarSearchFeature() : TaskIndependentFeature("astar") {
         document_title("A* search (eager)");
         document_synopsis(
             "A* is a special case of eager best first search that uses g+h "
@@ -40,7 +40,7 @@ public:
             true);
     }
 
-    virtual shared_ptr<eager_search::EagerSearch> create_component(
+    virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
         plugins::Options options_copy(opts);
         auto temp = search_common::create_astar_open_list_factory_and_f_eval(
@@ -52,16 +52,13 @@ public:
         vector<shared_ptr<TaskIndependentEvaluator>> preferred_list;
         options_copy.set("preferred", preferred_list);
 
-        Cache cache; // issue559 remove
-
-        return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
-            tasks::g_root_task,
-            options_copy.get<shared_ptr<TaskIndependentOpenListFactory>>("open")->bind_task(tasks::g_root_task),
+        return make_shared_component<eager_search::EagerSearch, SearchAlgorithm>(
+            options_copy.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
             options_copy.get<bool>("reopen_closed"),
-            bind_task_recursively(options_copy.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr), tasks::g_root_task, cache),
-            bind_task_recursively(options_copy.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"), tasks::g_root_task, cache),
+            options_copy.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
+            options_copy.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
             eager_search::get_eager_search_arguments_from_options(
-                options_copy, tasks::g_root_task));
+                options_copy));
     }
 };
 
