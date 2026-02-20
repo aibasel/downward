@@ -56,15 +56,20 @@ int main(int argc, const char **argv) {
 
         SearchStatus search_status = search_algorithm->get_status();
         ExitCode exitcode;
-        if (search_status == SearchStatus::SOLVED) {
+        switch (search_status) {
+        case SearchStatus::SOLVED:
             exitcode = ExitCode::SUCCESS;
-        } else if (search_status == SearchStatus::TIMEOUT) {
+            break;
+        case SearchStatus::TIMEOUT:
             exitcode = ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
-        } else if (search_status == SearchStatus::UNSOLVABLE) {
+            break;
+        case SearchStatus::UNSOLVABLE:
             exitcode = ExitCode::SEARCH_UNSOLVABLE;
-        } else if (search_status == SearchStatus::UNSOLVABLE_WITHIN_BOUND) {
+            break;
+        case SearchStatus::UNSOLVABLE_WITHIN_BOUND:
             exitcode = ExitCode::SEARCH_UNSOLVABLE_WITHIN_BOUND;
-        } else {
+            break;
+        default:
             assert(search_status == SearchStatus::FAILED);
             exitcode = ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
         }
