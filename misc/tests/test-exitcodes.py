@@ -38,6 +38,7 @@ SEARCH_TASKS = {
     "strips": "miconic/s1-0.pddl",
     "axioms": "philosophers/p01-phil2.pddl",
     "cond-eff": "miconic-simpleadl/s1-0.pddl",
+    "unsolvable": "blocks-unsolvable/probBLOCKS-4-0.pddl",
     "large": "satellite/p25-HC-pfile5.pddl",
 }
 
@@ -121,6 +122,16 @@ SEARCH_TESTS = [
         defaultdict(lambda: returncodes.SEARCH_UNSUPPORTED)),
     ("cond-eff", [], MERGE_AND_SHRINK,
         defaultdict(lambda: returncodes.SUCCESS)),
+    ("unsolvable", [], "astar(blind())",
+        defaultdict(lambda: returncodes.SEARCH_UNSOLVABLE)),
+    ("unsolvable", [], "lazy(single(lmcut()))",
+        defaultdict(lambda: returncodes.SEARCH_UNSOLVABLE)),
+    ("unsolvable", [], "eager(alt([single(const(infinity)),single(const(1))]))",
+        defaultdict(lambda: returncodes.SEARCH_UNSOLVABLE)),
+    ("unsolvable", [], "ehc(blind())",
+        defaultdict(lambda: returncodes.SEARCH_UNSOLVED_INCOMPLETE)),
+    ("unsolvable", [], "eager(single(blind(),pref_only=true))",
+        defaultdict(lambda: returncodes.SEARCH_UNSOLVED_INCOMPLETE)),
     # We cannot set/enforce memory limits on Windows/macOS and thus expect
     # DRIVER_UNSUPPORTED as exit code in those cases.
     ("large", ["--search-memory-limit", "100M"], MERGE_AND_SHRINK,
