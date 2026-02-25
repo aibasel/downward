@@ -9,7 +9,7 @@ using namespace std;
 namespace merge_and_shrink {
 MergeStrategyFactory::MergeStrategyFactory(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
-    : TaskSpecificComponent(task),
+    : components::TaskSpecificComponent(task),
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 

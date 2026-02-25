@@ -12,7 +12,7 @@ Evaluator::Evaluator(
     const shared_ptr<AbstractTask> task, bool use_for_reporting_minima,
     bool use_for_boosting, bool use_for_counting_evaluations,
     const string &description, utils::Verbosity verbosity)
-    : TaskSpecificComponent(task),
+    : components::TaskSpecificComponent(task),
       description(description),
       use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),

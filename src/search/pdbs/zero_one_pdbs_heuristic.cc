@@ -67,7 +67,7 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<ZeroOnePDBsHeuristic, Evaluator>(
+        return components::make_shared_component<ZeroOnePDBsHeuristic, Evaluator>(
             opts.get<shared_ptr<TaskIndependentPatternCollectionGenerator>>("patterns"),
             get_heuristic_arguments_from_options(opts));
     }

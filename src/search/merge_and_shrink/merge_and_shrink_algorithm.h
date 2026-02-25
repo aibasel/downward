@@ -74,9 +74,9 @@ extern std::tuple<int, int, int> handle_shrink_limit_defaults(
 extern void add_merge_and_shrink_algorithm_options_to_feature(
     plugins::Feature &feature);
 std::tuple<
-    std::shared_ptr<TaskIndependentComponent<MergeStrategyFactory>>,
-    std::shared_ptr<TaskIndependentComponent<ShrinkStrategy>>,
-    std::shared_ptr<TaskIndependentComponent<LabelReduction>>, bool, bool, int,  // issue559 find a way to use the type aliases here
+    std::shared_ptr<components::TaskIndependentComponent<MergeStrategyFactory>>,
+    std::shared_ptr<components::TaskIndependentComponent<ShrinkStrategy>>,
+    std::shared_ptr<components::TaskIndependentComponent<LabelReduction>>, bool, bool, int,  // issue559 find a way to use the type aliases here
     int, int, double>
 get_merge_and_shrink_algorithm_arguments_from_options(
     const plugins::Options &opts);

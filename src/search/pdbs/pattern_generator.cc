@@ -9,7 +9,7 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGenerator::PatternCollectionGenerator(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
-    : TaskSpecificComponent(task),
+    : components::TaskSpecificComponent(task),
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 
@@ -26,7 +26,7 @@ PatternCollectionInformation PatternCollectionGenerator::generate(
 
 PatternGenerator::PatternGenerator(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
-    : TaskSpecificComponent(task),
+    : components::TaskSpecificComponent(task),
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 

@@ -68,7 +68,7 @@ public:
 
     virtual shared_ptr<TaskIndependentPatternGenerator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<PatternGeneratorCEGAR, PatternGenerator>(
+        return components::make_shared_component<PatternGeneratorCEGAR, PatternGenerator>(
             opts.get<int>("max_pdb_size"),
             opts.get<double>("max_time"),
             get_cegar_wildcard_arguments_from_options(opts),

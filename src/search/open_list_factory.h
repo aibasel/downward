@@ -8,7 +8,7 @@
 
 #include <memory>
 
-class OpenListFactory : public TaskSpecificComponent {
+class OpenListFactory : public components::TaskSpecificComponent {
 protected:
     explicit OpenListFactory(const std::shared_ptr<AbstractTask> &task);
 public:
@@ -27,7 +27,7 @@ public:
     std::unique_ptr<OpenList<T>> create_open_list();
 };
 
-using TaskIndependentOpenListFactory = TaskIndependentComponent<OpenListFactory>;
+using TaskIndependentOpenListFactory = components::TaskIndependentComponent<OpenListFactory>;
 
 extern void add_open_list_options_to_feature(plugins::Feature &feature);
 extern std::tuple<bool> get_open_list_arguments_from_options(

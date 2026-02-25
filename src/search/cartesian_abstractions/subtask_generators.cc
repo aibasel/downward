@@ -95,7 +95,7 @@ static Facts filter_and_order_facts(
 }
 
 SubtaskGenerator::SubtaskGenerator(const shared_ptr<AbstractTask> &task)
-    : TaskSpecificComponent(task) {
+    : components::TaskSpecificComponent(task) {
 }
 
 TaskDuplicator::TaskDuplicator(const shared_ptr<AbstractTask> &task, int copies)
@@ -204,7 +204,7 @@ public:
 
     virtual shared_ptr<TaskIndependentSubtaskGenerator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<TaskDuplicator, SubtaskGenerator>(
+        return components::make_shared_component<TaskDuplicator, SubtaskGenerator>(
             opts.get<int>("copies"));
     }
 };
@@ -223,7 +223,7 @@ public:
 
     virtual shared_ptr<TaskIndependentSubtaskGenerator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<GoalDecomposition, SubtaskGenerator>(
+        return components::make_shared_component<GoalDecomposition, SubtaskGenerator>(
             get_fact_order_arguments_from_options(opts));
     }
 };
@@ -245,7 +245,7 @@ public:
 
     virtual shared_ptr<TaskIndependentSubtaskGenerator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<LandmarkDecomposition, SubtaskGenerator>(
+        return components::make_shared_component<LandmarkDecomposition, SubtaskGenerator>(
             get_fact_order_arguments_from_options(opts),
             opts.get<bool>("combine_facts"));
     }

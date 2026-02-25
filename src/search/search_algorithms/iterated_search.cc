@@ -130,7 +130,7 @@ void IteratedSearch::save_plan_if_necessary() {
 }
 
 class TaskIndependentIteratedSearch
-    : public TaskIndependentComponent<SearchAlgorithm> {
+    : public components::TaskIndependentComponent<SearchAlgorithm> {
     std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>>
         algorithm_configs;
     bool pass_bound;
@@ -144,7 +144,7 @@ class TaskIndependentIteratedSearch
     utils::Verbosity verbosity;
 protected:
     virtual std::shared_ptr<SearchAlgorithm> create_task_specific_component(
-        const std::shared_ptr<AbstractTask> &task, Cache &) const {
+        const std::shared_ptr<AbstractTask> &task, components::Cache &) const {
         // issue559 do we have to copy the cache to IteratedSearch here to avoid recomputation later on?
         return make_shared<IteratedSearch>(
             task,

@@ -65,7 +65,7 @@ public:
 extern void add_landmark_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<
-    std::shared_ptr<TaskIndependentComponent<LandmarkFactory>>, bool, bool, bool, bool, // issue559 find a way to use the type aliases here
+    std::shared_ptr<components::TaskIndependentComponent<LandmarkFactory>>, bool, bool, bool, bool, // issue559 find a way to use the type aliases here
     bool, std::string, utils::Verbosity>
 get_landmark_heuristic_arguments_from_options(
     const plugins::Options &opts);

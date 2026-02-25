@@ -42,7 +42,7 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
 SearchAlgorithm::SearchAlgorithm(
     const shared_ptr<AbstractTask> &task, OperatorCost cost_type, int bound,
     double max_time, const string &description, utils::Verbosity verbosity)
-    : TaskSpecificComponent(task),
+    : components::TaskSpecificComponent(task),
       description(description),
       status(IN_PROGRESS),
       solution_found(false),

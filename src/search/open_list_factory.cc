@@ -6,7 +6,7 @@
 using namespace std;
 
 OpenListFactory::OpenListFactory(const shared_ptr<AbstractTask> &task)
-    : TaskSpecificComponent(task) {
+    : components::TaskSpecificComponent(task) {
 }
 
 template<>

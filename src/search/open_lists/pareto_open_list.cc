@@ -264,7 +264,7 @@ public:
 
     virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<ParetoOpenListFactory, OpenListFactory>(
+        return components::make_shared_component<ParetoOpenListFactory, OpenListFactory>(
             opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
             opts.get<bool>("state_uniform_selection"),
             utils::get_rng_arguments_from_options(opts),

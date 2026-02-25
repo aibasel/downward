@@ -15,7 +15,7 @@ namespace plugins {
 class Options;
 }
 
-class Evaluator : public TaskSpecificComponent {
+class Evaluator : public components::TaskSpecificComponent {
     const std::string description;
     const bool use_for_reporting_minima;
     const bool use_for_boosting;
@@ -97,7 +97,7 @@ public:
     virtual int get_cached_estimate(const State &state) const;
 };
 
-using TaskIndependentEvaluator = TaskIndependentComponent<Evaluator>;
+using TaskIndependentEvaluator = components::TaskIndependentComponent<Evaluator>;
 
 extern void add_evaluator_options_to_feature(
     plugins::Feature &feature, const std::string &description);

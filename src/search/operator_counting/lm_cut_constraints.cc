@@ -77,7 +77,7 @@ public:
 
     virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &) const override {
-        return make_shared_component<LMCutConstraints, ConstraintGenerator>();
+        return components::make_shared_component<LMCutConstraints, ConstraintGenerator>();
     }
 };
 

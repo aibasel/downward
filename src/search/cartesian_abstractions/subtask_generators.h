@@ -36,7 +36,7 @@ enum class FactOrder {
 /*
   Create focused subtasks.
 */
-class SubtaskGenerator : public TaskSpecificComponent {
+class SubtaskGenerator : public components::TaskSpecificComponent {
 public:
     explicit SubtaskGenerator(const std::shared_ptr<AbstractTask> &task);
     virtual SharedTasks get_subtasks(
@@ -45,7 +45,7 @@ public:
 };
 
 using TaskIndependentSubtaskGenerator =
-    TaskIndependentComponent<SubtaskGenerator>;
+    components::TaskIndependentComponent<SubtaskGenerator>;
 
 /*
   Return copies of the original task.

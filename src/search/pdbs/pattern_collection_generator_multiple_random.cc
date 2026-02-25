@@ -79,7 +79,7 @@ public:
 
     virtual shared_ptr<TaskIndependentPatternCollectionGenerator>
     create_component(const plugins::Options &opts) const override {
-        return make_shared_component<
+        return components::make_shared_component<
             PatternCollectionGeneratorMultipleRandom, PatternCollectionGenerator>(
             get_random_pattern_bidirectional_arguments_from_options(opts),
             get_multiple_arguments_from_options(opts));

@@ -70,7 +70,7 @@ public:
     }
     virtual shared_ptr<TaskIndependentMergeStrategyFactory> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<
+        return components::make_shared_component<
             MergeStrategyFactoryPrecomputed, MergeStrategyFactory>(
             opts.get<shared_ptr<TaskIndependentMergeTreeFactory>>("merge_tree"),
             get_merge_strategy_arguments_from_options(opts));

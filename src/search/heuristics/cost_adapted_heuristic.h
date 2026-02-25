@@ -13,7 +13,7 @@ class TaskIndependentCostAdaptedHeuristic : public TaskIndependentEvaluator {
     OperatorCost cost_type;
 
     virtual std::shared_ptr<Evaluator> create_task_specific_component(
-        const std::shared_ptr<AbstractTask> &task, Cache &cache) const override;
+        const std::shared_ptr<AbstractTask> &task, components::Cache &cache) const override;
 public:
     TaskIndependentCostAdaptedHeuristic(
         std::shared_ptr<TaskIndependentEvaluator> nested,

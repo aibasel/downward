@@ -27,24 +27,24 @@ create_alternation_open_list_factory_aux(
     const vector<shared_ptr<TaskIndependentEvaluator>> &preferred_evaluators,
     int boost) {
     if (evals.size() == 1 && preferred_evaluators.empty()) {
-        return make_shared_component<
+        return components::make_shared_component<
             standard_scalar_open_list::BestFirstOpenListFactory,
             OpenListFactory>(evals[0], false);
     } else {
         vector<shared_ptr<TaskIndependentOpenListFactory>> subfactories;
         for (const shared_ptr<TaskIndependentEvaluator> &evaluator : evals) {
             subfactories.push_back(
-                make_shared_component<
+                components::make_shared_component<
                     standard_scalar_open_list::BestFirstOpenListFactory,
                     OpenListFactory>(evaluator, false));
             if (!preferred_evaluators.empty()) {
                 subfactories.push_back(
-                    make_shared_component<
+                    components::make_shared_component<
                         standard_scalar_open_list::BestFirstOpenListFactory,
                         OpenListFactory>(evaluator, true));
             }
         }
-        return make_shared_component<
+        return components::make_shared_component<
             alternation_open_list::AlternationOpenListFactory, OpenListFactory>(
             subfactories, boost);
     }
@@ -78,10 +78,10 @@ static shared_ptr<TaskIndependentEvaluator> create_wastar_eval(
     if (weight == 1) {
         w_h_eval = h_eval;
     } else {
-        w_h_eval = make_shared_component<WeightedEval, Evaluator>(
+        w_h_eval = components::make_shared_component<WeightedEval, Evaluator>(
             h_eval, weight, "wastar.w_h_eval", verbosity);
     }
-    return make_shared_component<SumEval, Evaluator>(
+    return components::make_shared_component<SumEval, Evaluator>(
         vector<shared_ptr<TaskIndependentEvaluator>>({g_eval, w_h_eval}), "wastar.eval",
         verbosity);
 }
@@ -91,7 +91,7 @@ shared_ptr<TaskIndependentOpenListFactory> create_wastar_open_list_factory(
     const vector<shared_ptr<TaskIndependentEvaluator>> &preferred, int boost, int weight,
     utils::Verbosity verbosity) {
     utils::verify_list_not_empty(evals, "evals");
-    shared_ptr<TaskIndependentEvaluator> g_eval = make_shared_component<GEval, Evaluator>(
+    shared_ptr<TaskIndependentEvaluator> g_eval = components::make_shared_component<GEval, Evaluator>(
         "wastar.g_eval", verbosity);
     vector<shared_ptr<TaskIndependentEvaluator>> f_evals;
     f_evals.reserve(evals.size());
@@ -108,14 +108,14 @@ create_astar_open_list_factory_and_f_eval(
     const shared_ptr<TaskIndependentEvaluator> &h_eval,
     utils::Verbosity verbosity) {
     shared_ptr<TaskIndependentEvaluator> g =
-        make_shared_component<GEval, Evaluator>("astar.g_eval", verbosity);
+        components::make_shared_component<GEval, Evaluator>("astar.g_eval", verbosity);
     shared_ptr<TaskIndependentEvaluator> f =
-        make_shared_component<SumEval, Evaluator>(
+        components::make_shared_component<SumEval, Evaluator>(
             vector<shared_ptr<TaskIndependentEvaluator>>({g, h_eval}),
             "astar.f_eval", verbosity);
     vector<shared_ptr<TaskIndependentEvaluator>> evals = {f, h_eval};
 
-    shared_ptr<TaskIndependentOpenListFactory> open = make_shared_component<
+    shared_ptr<TaskIndependentOpenListFactory> open = components::make_shared_component<
         tiebreaking_open_list::TieBreakingOpenListFactory, OpenListFactory>(
         evals, false, false);
     return make_pair(open, f);

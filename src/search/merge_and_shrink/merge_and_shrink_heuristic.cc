@@ -246,7 +246,7 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<MergeAndShrinkHeuristic, Evaluator>(
+        return components::make_shared_component<MergeAndShrinkHeuristic, Evaluator>(
             get_merge_and_shrink_algorithm_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));
     }

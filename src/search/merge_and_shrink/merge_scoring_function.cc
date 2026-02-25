@@ -10,7 +10,7 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunction::MergeScoringFunction(
     const std::shared_ptr<AbstractTask> &task)
-    : TaskSpecificComponent(task), initialized(false) {
+    : components::TaskSpecificComponent(task), initialized(false) {
 }
 
 void MergeScoringFunction::dump_options(utils::LogProxy &log) const {

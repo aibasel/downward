@@ -197,7 +197,7 @@ public:
 
     virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<LandmarkFactoryMerged, LandmarkFactory>(
+        return components::make_shared_component<LandmarkFactoryMerged, LandmarkFactory>(
             opts.get_list<shared_ptr<TaskIndependentLandmarkFactory>>("lm_factories"),
             get_landmark_factory_arguments_from_options(opts));
     }

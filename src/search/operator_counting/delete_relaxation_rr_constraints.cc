@@ -621,7 +621,7 @@ public:
 
     virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<
+        return components::make_shared_component<
             DeleteRelaxationRRConstraints, ConstraintGenerator>(
             opts.get<AcyclicityType>("acyclicity_type"),
             opts.get<bool>("use_integer_vars"));

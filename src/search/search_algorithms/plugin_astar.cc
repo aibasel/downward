@@ -52,7 +52,7 @@ public:
         vector<shared_ptr<TaskIndependentEvaluator>> preferred_list;
         options_copy.set("preferred", preferred_list);
 
-        return make_shared_component<eager_search::EagerSearch, SearchAlgorithm>(
+        return components::make_shared_component<eager_search::EagerSearch, SearchAlgorithm>(
             options_copy.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
             options_copy.get<bool>("reopen_closed"),
             options_copy.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),

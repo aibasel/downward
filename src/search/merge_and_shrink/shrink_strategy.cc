@@ -12,7 +12,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 ShrinkStrategy::ShrinkStrategy(const shared_ptr<AbstractTask> &task)
-    : TaskSpecificComponent(task) {
+    : components::TaskSpecificComponent(task) {
 }
 
 void ShrinkStrategy::dump_options(utils::LogProxy &log) const {

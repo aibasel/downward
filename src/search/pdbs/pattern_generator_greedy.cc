@@ -66,7 +66,7 @@ public:
 
     virtual shared_ptr<TaskIndependentPatternGenerator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<PatternGeneratorGreedy, PatternGenerator>(
+        return components::make_shared_component<PatternGeneratorGreedy, PatternGenerator>(
             opts.get<int>("max_states"),
             get_generator_arguments_from_options(opts));
     }

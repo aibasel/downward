@@ -16,7 +16,7 @@ namespace merge_and_shrink {
 class Distances;
 class TransitionSystem;
 
-class ShrinkStrategy : public TaskSpecificComponent {
+class ShrinkStrategy : public components::TaskSpecificComponent {
 protected:
     virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options(utils::LogProxy &log) const = 0;
@@ -47,7 +47,7 @@ public:
     std::string get_name() const;
 };
 
-using TaskIndependentShrinkStrategy = TaskIndependentComponent<ShrinkStrategy>;
+using TaskIndependentShrinkStrategy = components::TaskIndependentComponent<ShrinkStrategy>;
 }
 
 #endif

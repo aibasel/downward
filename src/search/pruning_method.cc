@@ -10,7 +10,7 @@ using namespace std;
 
 PruningMethod::PruningMethod(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
-    : TaskSpecificComponent(task),
+    : components::TaskSpecificComponent(task),
       timer(false),
       log(utils::get_log_for_verbosity(verbosity)),
       task(nullptr) {

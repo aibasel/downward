@@ -169,7 +169,7 @@ public:
 
     virtual shared_ptr<TaskIndependentMergeStrategyFactory> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<MergeStrategyFactorySCCs, MergeStrategyFactory>(
+        return components::make_shared_component<MergeStrategyFactorySCCs, MergeStrategyFactory>(
             opts.get<OrderOfSCCs>("order_of_sccs"),
             opts.get<shared_ptr<TaskIndependentMergeSelector>>("merge_selector"),
             get_merge_strategy_arguments_from_options(opts));

@@ -32,7 +32,7 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<GEvaluator, Evaluator>(
+        return components::make_shared_component<GEvaluator, Evaluator>(
             get_evaluator_arguments_from_options(opts));
     }
 };

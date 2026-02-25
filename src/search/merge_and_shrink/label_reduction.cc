@@ -30,7 +30,7 @@ LabelReduction::LabelReduction(
     const std::shared_ptr<AbstractTask> &task, bool before_shrinking,
     bool before_merging, LabelReductionMethod method,
     LabelReductionSystemOrder system_order, int random_seed)
-    : TaskSpecificComponent(task),
+    : components::TaskSpecificComponent(task),
       lr_before_shrinking(before_shrinking),
       lr_before_merging(before_merging),
       lr_method(method),
@@ -342,7 +342,7 @@ public:
 
     virtual shared_ptr<TaskIndependentLabelReduction> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<LabelReduction, LabelReduction>(
+        return components::make_shared_component<LabelReduction, LabelReduction>(
             opts.get<bool>("before_shrinking"),
             opts.get<bool>("before_merging"),
             opts.get<LabelReductionMethod>("method"),

@@ -15,7 +15,7 @@ namespace merge_and_shrink {
 MergeTreeFactory::MergeTreeFactory(
     const shared_ptr<AbstractTask> &task, int random_seed,
     UpdateOption update_option)
-    : TaskSpecificComponent(task),
+    : components::TaskSpecificComponent(task),
       rng(utils::get_rng(random_seed)),
       update_option(update_option) {
 }

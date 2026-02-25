@@ -145,7 +145,7 @@ public:
 
     virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &) const override {
-        return make_shared_component<MergeScoringFunctionDFP, MergeScoringFunction>();
+        return components::make_shared_component<MergeScoringFunctionDFP, MergeScoringFunction>();
     }
 };
 

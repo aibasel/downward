@@ -37,7 +37,7 @@ enum SearchStatus {
     SOLVED
 };
 
-class SearchAlgorithm : public TaskSpecificComponent {
+class SearchAlgorithm : public components::TaskSpecificComponent {
     std::string description;
     SearchStatus status;
     bool solution_found;
@@ -90,7 +90,7 @@ public:
     }
 };
 
-using TaskIndependentSearchAlgorithm = TaskIndependentComponent<SearchAlgorithm>;
+using TaskIndependentSearchAlgorithm = components::TaskIndependentComponent<SearchAlgorithm>;
 
 /*
   Print evaluator values of all evaluators evaluated in the evaluation context.

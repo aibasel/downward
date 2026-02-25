@@ -209,7 +209,7 @@ public:
 
     virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<
+        return components::make_shared_component<
             MergeScoringFunctionTotalOrder, MergeScoringFunction>(
             opts.get<AtomicTSOrder>("atomic_ts_order"),
             opts.get<ProductTSOrder>("product_ts_order"),

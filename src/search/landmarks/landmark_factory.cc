@@ -18,7 +18,7 @@ using namespace std;
 namespace landmarks {
 LandmarkFactory::LandmarkFactory(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
-    : TaskSpecificComponent(task),
+    : components::TaskSpecificComponent(task),
       log(get_log_for_verbosity(verbosity)),
       landmark_graph(nullptr) {
 }

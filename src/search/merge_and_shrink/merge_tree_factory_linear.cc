@@ -138,7 +138,7 @@ public:
 
     virtual shared_ptr<TaskIndependentMergeTreeFactory> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<MergeTreeFactoryLinear, MergeTreeFactory>(
+        return components::make_shared_component<MergeTreeFactoryLinear, MergeTreeFactory>(
             opts.get<variable_order_finder::VariableOrderType>(
                 "variable_order"),
             get_merge_tree_arguments_from_options(opts));

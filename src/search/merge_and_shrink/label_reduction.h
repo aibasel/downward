@@ -55,7 +55,7 @@ enum class LabelReductionSystemOrder {
     RANDOM
 };
 
-class LabelReduction : public TaskSpecificComponent {
+class LabelReduction : public components::TaskSpecificComponent {
     // Options for label reduction
     std::vector<int> transition_system_order;
     bool lr_before_shrinking;
@@ -93,7 +93,7 @@ public:
     }
 };
 
-using TaskIndependentLabelReduction = TaskIndependentComponent<LabelReduction>;
+using TaskIndependentLabelReduction = components::TaskIndependentComponent<LabelReduction>;
 }
 
 #endif

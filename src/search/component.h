@@ -11,6 +11,7 @@
 
 class AbstractTask;
 
+namespace components {
 /*
   Base class for all classes that represent components bound to a specific
   task, like Evaluator, SearchAlgorithm, and OpenList.
@@ -48,7 +49,7 @@ public:
   Base class of all task-independent components of a specific type
   (e.g. Evaluator).
 */
-template<TaskSpecificType ComponentType>
+template<internals::TaskSpecificType ComponentType>
 class TaskIndependentComponent : public TaskIndependentComponentBase {
     virtual std::shared_ptr<ComponentType> create_task_specific_component(
         const std::shared_ptr<AbstractTask> &task, Cache &cache) const = 0;
@@ -84,7 +85,7 @@ public:
   this component, it recursively binds all these arguments to the task and
   instantiates the task-specific component.
 */
-template<typename T, ComponentTypeOf<T> ComponentType, ComponentArgsFor<T> Args>
+template<typename T, internals::ComponentTypeOf<T> ComponentType, internals::ComponentArgsFor<T> Args>
 class AutoTaskIndependentComponent
     : public TaskIndependentComponent<ComponentType> {
     Args args;
@@ -92,7 +93,7 @@ class AutoTaskIndependentComponent
     virtual std::shared_ptr<ComponentType> create_task_specific_component(
         const std::shared_ptr<AbstractTask> &task,
         Cache &cache) const override {
-        auto bound_args = bind_task_recursively(args, task, cache);
+        auto bound_args = internals::bind_task_recursively(args, task, cache);
         return plugins::make_shared_from_arg_tuples<T>(task, bound_args);
     }
 
@@ -109,5 +110,6 @@ make_shared_component(Args &&...args) {
     return make_shared<
         AutoTaskIndependentComponent<T, ComponentType, decltype(flat_args)>>(
         move(flat_args));
+}
 }
 #endif

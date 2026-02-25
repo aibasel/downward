@@ -472,7 +472,7 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared_component<ContextEnhancedAdditiveHeuristic, Evaluator>(
+        return components::make_shared_component<ContextEnhancedAdditiveHeuristic, Evaluator>(
             tasks::get_axioms_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));
     }

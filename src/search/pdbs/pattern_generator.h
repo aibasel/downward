@@ -24,7 +24,7 @@ class RandomNumberGenerator;
 }
 
 namespace pdbs {
-class PatternCollectionGenerator : public TaskSpecificComponent {
+class PatternCollectionGenerator : public components::TaskSpecificComponent {
     virtual std::string name() const = 0;
     virtual PatternCollectionInformation compute_patterns(
         const std::shared_ptr<AbstractTask> &task) = 0;
@@ -39,9 +39,9 @@ public:
 };
 
 using TaskIndependentPatternCollectionGenerator =
-    TaskIndependentComponent<PatternCollectionGenerator>;
+    components::TaskIndependentComponent<PatternCollectionGenerator>;
 
-class PatternGenerator : public TaskSpecificComponent {
+class PatternGenerator : public components::TaskSpecificComponent {
     virtual std::string name() const = 0;
     virtual PatternInformation compute_pattern(
         const std::shared_ptr<AbstractTask> &task) = 0;
@@ -55,7 +55,7 @@ public:
 };
 
 using TaskIndependentPatternGenerator =
-    TaskIndependentComponent<PatternGenerator>;
+    components::TaskIndependentComponent<PatternGenerator>;
 
 extern void add_generator_options_to_feature(plugins::Feature &feature);
 extern std::tuple<utils::Verbosity> get_generator_arguments_from_options(

@@ -55,7 +55,7 @@ public:
     }
 
     virtual std::shared_ptr<Evaluator> create_task_specific_component(
-        const std::shared_ptr<AbstractTask> &task, Cache &) const override {
+        const std::shared_ptr<AbstractTask> &task, components::Cache &) const override {
         unique_ptr<PotentialFunction> potential_function =
             create_potential_function(task, lpsolver, max_potential, opt_func);
         return make_shared<PotentialHeuristic>(
