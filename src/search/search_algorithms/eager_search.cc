@@ -117,7 +117,6 @@ SearchStatus EagerSearch::step() {
     optional<SearchNode> node = get_next_node_to_expand();
     if (!node.has_value()) {
         assert(open_list->empty());
-        log << "Completely explored state space -- no solution!" << endl;
         return get_finished_search_status();
     }
     return expand(node.value());

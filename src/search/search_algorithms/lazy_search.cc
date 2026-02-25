@@ -121,7 +121,6 @@ void LazySearch::generate_successors() {
 
 SearchStatus LazySearch::fetch_next_state() {
     if (open_list->empty()) {
-        log << "Completely explored state space -- no solution!" << endl;
         return get_finished_search_status();
     }
 
