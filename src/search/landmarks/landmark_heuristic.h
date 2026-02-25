@@ -1,6 +1,8 @@
 #ifndef LANDMARKS_LANDMARK_HEURISTIC_H
 #define LANDMARKS_LANDMARK_HEURISTIC_H
 
+#include "landmark_factory.h" // issue559 remove?
+
 #include "../heuristic.h"
 
 #include "../tasks/default_value_axioms_task.h"
@@ -13,9 +15,6 @@ class SuccessorGenerator;
 }
 
 namespace landmarks {
-class LandmarkFactory;
-class LandmarkGraph;
-class LandmarkNode;
 class LandmarkStatusManager;
 
 class LandmarkHeuristic : public Heuristic {

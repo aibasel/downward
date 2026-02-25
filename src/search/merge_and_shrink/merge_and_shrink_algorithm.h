@@ -1,7 +1,10 @@
 #ifndef MERGE_AND_SHRINK_MERGE_AND_SHRINK_ALGORITHM_H
 #define MERGE_AND_SHRINK_MERGE_AND_SHRINK_ALGORITHM_H
 
-#include "../component.h" // issue559 remove
+#include "merge_strategy_factory.h"  // issue559 remove?
+#include "shrink_strategy.h"  // issue559 remove?
+#include "label_reduction.h" // issue559 remove?
+#include "../component.h" // issue559 remove?
 
 #include "../utils/logging.h"
 
@@ -21,9 +24,6 @@ class CountdownTimer;
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
-class LabelReduction;
-class MergeStrategyFactory;
-class ShrinkStrategy;
 
 class MergeAndShrinkAlgorithm {
     // TODO: when the option parser supports it, the following should become

@@ -45,17 +45,20 @@ public:
 };
 
 /*
-  Base class of all components of a specific type (e.g. Evaluator).
+  Base class of all task-independent components of a specific type
+  (e.g. Evaluator).
 */
-template<typename ComponentType>
+template<TaskSpecificType ComponentType>
 class TaskIndependentComponent : public TaskIndependentComponentBase {
     virtual std::shared_ptr<ComponentType> create_task_specific_component(
         const std::shared_ptr<AbstractTask> &task, Cache &cache) const = 0;
 
 public:
-    std::shared_ptr<ComponentType> bind_task(
+    using BoundType = std::shared_ptr<ComponentType>;
+
+    BoundType bind_task(
         const std::shared_ptr<AbstractTask> &task, Cache &cache) const {
-        std::shared_ptr<ComponentType> component;
+        BoundType component;
         const CacheKey key = std::make_pair(this, task.get());
         if (cache.count(key)) {
             std::shared_ptr<TaskSpecificComponent> entry = cache.at(key);
@@ -68,8 +71,7 @@ public:
         return component;
     }
 
-    std::shared_ptr<ComponentType> bind_task(
-        const std::shared_ptr<AbstractTask> &task) const {
+    BoundType bind_task(const std::shared_ptr<AbstractTask> &task) const {
         Cache cache;
         return bind_task(task, cache);
     }

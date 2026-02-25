@@ -17,6 +17,12 @@ using CacheKey =
     std::pair<const TaskIndependentComponentBase *, const AbstractTask *>;
 using Cache = utils::HashMap<CacheKey, std::shared_ptr<TaskSpecificComponent>>;
 
+template<typename T>
+concept BasicType =
+    std::convertible_to<T, std::string> || std::is_same_v<T, int> ||
+    std::is_same_v<T, double> || std::is_same_v<T, bool> ||
+    std::is_enum_v<std::remove_cvref_t<T>>;
+
 template<typename Args>
 struct BoundArgs {
     using type = decltype(bind_task_recursively(
@@ -36,18 +42,17 @@ concept ComponentTypeOf =
     std::derived_from<T, ComponentType>;
 
 template<typename T>
-concept Bindable =
-    requires(T t, const std::shared_ptr<AbstractTask> &task, Cache &cache) {
-        {
-            t.bind_task(task, cache)
-        } -> std::convertible_to<std::shared_ptr<TaskSpecificComponent>>;
-    };
+concept TaskSpecificType =
+    std::derived_from<T, TaskSpecificComponent>;
 
-template<Bindable T>
+template<typename T>
+concept TaskIndependentType =
+    std::derived_from<T, TaskIndependentComponentBase>;
+
+template<TaskIndependentType T>
 auto bind_task_recursively(
     const std::shared_ptr<T> &component,
-    const std::shared_ptr<AbstractTask> &task, Cache &cache)
-    -> decltype(component->bind_task(task, cache)) {
+    const std::shared_ptr<AbstractTask> &task, Cache &cache) -> T::BoundType {
     if (component) {
         return component->bind_task(task, cache);
     }
@@ -79,9 +84,7 @@ auto bind_task_recursively(
         args);
 }
 
-template<typename T>
-// issue559 decide if we want this restriction
-    requires(!std::convertible_to<T, std::shared_ptr<TaskSpecificComponent>>)
+template<BasicType T>
 auto bind_task_recursively(
     const T &t, const std::shared_ptr<AbstractTask> &, Cache &) {
     return t;
