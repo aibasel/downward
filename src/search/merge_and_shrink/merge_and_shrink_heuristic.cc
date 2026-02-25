@@ -2,11 +2,8 @@
 
 #include "distances.h"
 #include "factored_transition_system.h"
-#include "label_reduction.h"                  // issue559 necessary for concept?
 #include "merge_and_shrink_algorithm.h"
 #include "merge_and_shrink_representation.h"
-#include "merge_strategy_factory.h"           // issue559 necessary for concept?
-#include "shrink_strategy.h"                  // issue559 necessary for concept?
 #include "transition_system.h"
 #include "types.h"
 
