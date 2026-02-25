@@ -237,8 +237,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
             }
         }
     }
-    log << "No solution - FAILED" << endl;
-    return FAILED;
+    return get_finished_search_status();
 }
 
 void EnforcedHillClimbingSearch::print_statistics() const {
