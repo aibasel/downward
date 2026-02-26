@@ -32,6 +32,13 @@ template<typename T, typename... Ts>
 struct PrependedTuple<T, std::tuple<Ts...>> {
     using type = std::tuple<T, Ts...>;
 };
-}
 
+template<typename... Ts>
+struct FlatTuple {
+    using type = decltype(flatten_tuple(std::declval<std::tuple<Ts...>>()));
+};
+
+template<typename... Ts>
+using FlatTuple_t = FlatTuple<Ts...>::type;
+}
 #endif
