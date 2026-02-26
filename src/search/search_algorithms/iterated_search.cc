@@ -12,11 +12,13 @@ namespace iterated_search {
 IteratedSearch::IteratedSearch(
     const shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<TaskIndependentSearchAlgorithm>> &algorithm_configs,
-    bool pass_bound, bool repeat_last, bool continue_on_fail,
-    bool continue_on_solve, OperatorCost cost_type, int bound, double max_time,
-    const string &description, utils::Verbosity verbosity)
+    const components::Cache &cache, bool pass_bound, bool repeat_last,
+    bool continue_on_fail, bool continue_on_solve, OperatorCost cost_type,
+    int bound, double max_time, const string &description,
+    utils::Verbosity verbosity)
     : SearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
       algorithm_configs(algorithm_configs),
+      cache(cache),
       pass_bound(pass_bound),
       repeat_last_phase(repeat_last),
       continue_on_fail(continue_on_fail),
@@ -33,7 +35,7 @@ shared_ptr<SearchAlgorithm> IteratedSearch::get_search_algorithm(
     shared_ptr<TaskIndependentSearchAlgorithm> &algorithm_config =
         algorithm_configs[algorithm_configs_index];
     shared_ptr<SearchAlgorithm> search_algorithm =
-        algorithm_config->bind_task(task);
+        algorithm_config->bind_task(task, cache);
     log << "Starting search: " << search_algorithm->get_description() << endl;
     return search_algorithm;
 }
@@ -144,13 +146,12 @@ class TaskIndependentIteratedSearch
     utils::Verbosity verbosity;
 protected:
     virtual std::shared_ptr<SearchAlgorithm> create_task_specific_component(
-        const std::shared_ptr<AbstractTask> &task, components::Cache &) const {
-        // issue559 do we have to copy the cache to IteratedSearch here to avoid recomputation later on?
+        const std::shared_ptr<AbstractTask> &task,
+        components::Cache &cache) const {
         return make_shared<IteratedSearch>(
-            task,
-            algorithm_configs, pass_bound, repeat_last_phase, continue_on_fail,
-            continue_on_solve, cost_type, bound, max_time, description,
-            verbosity);
+            task, algorithm_configs, cache, pass_bound, repeat_last_phase,
+            continue_on_fail, continue_on_solve, cost_type, bound, max_time,
+            description, verbosity);
     }
 
 public:
@@ -223,7 +224,8 @@ public:
 
     virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<TaskIndependentIteratedSearch>(
+        return plugins::make_shared_from_arg_tuples<
+            TaskIndependentIteratedSearch>(
             opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
                 "algorithm_configs"),
             opts.get<bool>("pass_bound"), opts.get<bool>("repeat_last"),

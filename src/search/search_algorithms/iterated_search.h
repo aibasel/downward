@@ -1,6 +1,7 @@
 #ifndef SEARCH_ALGORITHMS_ITERATED_SEARCH_H
 #define SEARCH_ALGORITHMS_ITERATED_SEARCH_H
 
+#include "../component.h"
 #include "../search_algorithm.h"
 
 #include "../parser/decorated_abstract_syntax_tree.h"
@@ -12,6 +13,7 @@ namespace iterated_search {
 class IteratedSearch : public SearchAlgorithm {
     std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>>
         algorithm_configs;
+    components::Cache cache;
     bool pass_bound;
     bool repeat_last_phase;
     bool continue_on_fail;
@@ -34,6 +36,7 @@ public:
         const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>>
             &algorithm_configs,
+        const components::Cache &cache,
         bool pass_bound, bool repeat_last, bool continue_on_fail,
         bool continue_on_solve, OperatorCost cost_type, int bound,
         double max_time, const std::string &description,
