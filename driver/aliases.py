@@ -7,9 +7,9 @@ ALIASES = {}
 
 ALIASES["seq-sat-fd-autotune-1"] = [
     "--search",
-    "let(hff, ff(transform=adapt_costs(one)),"
+    "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
     "let(hcea, cea(),"
-    "let(hcg, cg(transform=adapt_costs(plusone)),"
+    "let(hcg, cost_adapted_heuristic(cg(),cost_type=plusone),"
     "let(hgc, goalcount(),"
     "let(hAdd, add(),"
     """iterated([
@@ -51,9 +51,9 @@ eager(alt([tiebreaking([sum([g(),weight(hAdd,10)]),hAdd]),
 
 ALIASES["seq-sat-fd-autotune-2"] = [
     "--search",
-    "let(hcea, cea(transform=adapt_costs(plusone)),"
-    "let(hcg, cg(transform=adapt_costs(one)),"
-    "let(hgc, goalcount(transform=adapt_costs(plusone)),"
+    "let(hcea, cost_adapted_heuristic(cea(),cost_type=plusone),"
+    "let(hcg, cost_adapted_heuristic(cg(),cost_type=one),"
+    "let(hgc, cost_adapted_heuristic(goalcount(),cost_type=plusone),"
     "let(hff, ff(),"
     """iterated([
 ehc(hcea,preferred=[hcea],preferred_usage=prune_by_preferred,cost_type=normal),
@@ -103,10 +103,10 @@ def _get_lama(pref):
             lazy_wastar([hff,hlm],preferred=[hff,hlm],w=1)
          ],repeat_last=true,continue_on_fail=true)))""",
         "--if-non-unit-cost",
-        f"let(hlm1, landmark_sum(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one),pref={pref}),"
-        "let(hff1, ff(transform=adapt_costs(one)),"
-        f"let(hlm2, landmark_sum(lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(plusone),pref={pref}),"
-        "let(hff2, ff(transform=adapt_costs(plusone)),"
+        f"let(hlm1, cost_adapted_heuristic(landmark_sum(lm_reasonable_orders_hps(lm_rhw()),pref={pref}),cost_type=one),"
+        "let(hff1, cost_adapted_heuristic(ff(),cost_type=one),"
+        f"let(hlm2, cost_adapted_heuristic(landmark_sum(lm_reasonable_orders_hps(lm_rhw()),pref={pref}),cost_type=plusone),"
+        "let(hff2, cost_adapted_heuristic(ff(),cost_type=plusone),"
         """iterated([
             lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],
                  cost_type=one,reopen_closed=false),
@@ -126,8 +126,8 @@ ALIASES["lama"] = _get_lama(pref="false")
 
 ALIASES["lama-first"] = [
     "--search",
-    "let(hlm, landmark_sum(lm_factory=lm_reasonable_orders_hps(lm_rhw()),transform=adapt_costs(one),pref=false),"
-    "let(hff, ff(transform=adapt_costs(one)),"
+    "let(hlm, cost_adapted_heuristic(landmark_sum(lm_factory=lm_reasonable_orders_hps(lm_rhw()),pref=false),cost_type=one),"
+    "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
     """lazy_greedy([hff,hlm],preferred=[hff,hlm],
                                cost_type=one,reopen_closed=false)))"""]
 
