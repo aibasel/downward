@@ -94,14 +94,14 @@ def configs_satisficing_core():
         # LAMA first
         "lama-first": [
             "--search",
-            "let(hlm,cost_adapted_heuristic(landmark_sum(lm_factory=lm_reasonable_orders_hps(lm_rhw()),pref=false),cost_type=one),"
-            "let(hff,cost_adapted_heuristic(ff(),cost_type=one),"
+            "let(hlm,eval_modify_costs(landmark_sum(lm_factory=lm_reasonable_orders_hps(lm_rhw()),pref=false),cost_type=one),"
+            "let(hff,eval_modify_costs(ff(),cost_type=one),"
             "lazy_greedy([hff,hlm],preferred=[hff,hlm],"
             "cost_type=one,reopen_closed=false)))"],
         "lama-first-typed": [
             "--search",
-            "let(hlm,cost_adapted_heuristic(landmark_sum(lm_factory=lm_reasonable_orders_hps(lm_rhw()),pref=false),cost_type=one),"
-            "let(hff,cost_adapted_heuristic(ff(),cost_type=one),"
+            "let(hlm,eval_modify_costs(landmark_sum(lm_factory=lm_reasonable_orders_hps(lm_rhw()),pref=false),cost_type=one),"
+            "let(hff,eval_modify_costs(ff(),cost_type=one),"
             "lazy(alt([single(hff), single(hff, pref_only=true),"
             "single(hlm), single(hlm, pref_only=true), type_based([hff, g()])], boost=1000),"
             "preferred=[hff,hlm], cost_type=one, reopen_closed=false, randomize_successors=true,"

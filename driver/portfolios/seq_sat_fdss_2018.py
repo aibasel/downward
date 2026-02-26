@@ -11,142 +11,142 @@ https://ai.dmi.unibas.ch/papers/seipp-roeger-ipc2018.pdf
 OPTIMAL = False
 CONFIGS = [
     (26, ["--search",
-        "let(hlm, cost_adapted_heuristic(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
+        "let(hlm, eval_modify_costs(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=one),"
         "lazy(alt([single(hff),single(hff,pref_only=true),single(hlm),single(hlm,pref_only=true),type_based([hff,g()])],boost=1000),preferred=[hff,hlm],cost_type=one,reopen_closed=false,randomize_successors=true,preferred_successors_first=false,bound=BOUND)))"]),
     (25, ["--search",
         "let(lmg, lm_rhw(disjunctive_landmarks=true,use_orders=false),"
-        "let(hlm, cost_adapted_heuristic(landmark_cost_partitioning(lmg),cost_type=one),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
+        "let(hlm, eval_modify_costs(landmark_cost_partitioning(lmg),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=one),"
         "lazy(alt([type_based([g()]),single(hlm),single(hlm,pref_only=true),single(hff),single(hff,pref_only=true)],boost=0),preferred=[hlm],reopen_closed=false,cost_type=plusone,bound=BOUND))))"]),
     (135, ["--search",
-        "let(hlm, cost_adapted_heuristic(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
+        "let(hlm, eval_modify_costs(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=one),"
         "lazy(alt([single(hff),single(hff,pref_only=true),single(hlm),single(hlm,pref_only=true)],boost=1000),preferred=[hff,hlm],cost_type=one,reopen_closed=false,randomize_successors=false,preferred_successors_first=true,bound=BOUND)))"]),
     (59, ["--search",
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
-        "let(hlm, cost_adapted_heuristic(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=one),"
+        "let(hlm, eval_modify_costs(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
         "eager_greedy([hff,hlm],preferred=[hff,hlm],cost_type=one,bound=BOUND)))"]),
     (23, ["--search",
-        "let(hlm, cost_adapted_heuristic(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
+        "let(hlm, eval_modify_costs(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=one),"
         "lazy(alt([single(hff),single(hff,pref_only=true),single(hlm),single(hlm,pref_only=true)],boost=1000),preferred=[hff,hlm],cost_type=one,reopen_closed=false,randomize_successors=true,preferred_successors_first=true,bound=BOUND)))"]),
     (57, ["--search",
         "let(lmg, lm_rhw(disjunctive_landmarks=true,use_orders=false),"
-        "let(hcg, cost_adapted_heuristic(cg(),cost_type=plusone),"
-        "let(hlm, cost_adapted_heuristic(landmark_cost_partitioning(lmg),cost_type=plusone),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=plusone),"
+        "let(hcg, eval_modify_costs(cg(),cost_type=plusone),"
+        "let(hlm, eval_modify_costs(landmark_cost_partitioning(lmg),cost_type=plusone),"
+        "let(hff, eval_modify_costs(ff(),cost_type=plusone),"
         "lazy(alt([single(sum([g(),weight(hlm,10)])),single(sum([g(),weight(hlm,10)]),pref_only=true),single(sum([g(),weight(hff,10)])),single(sum([g(),weight(hff,10)]),pref_only=true),single(sum([g(),weight(hcg,10)])),single(sum([g(),weight(hcg,10)]),pref_only=true)],boost=1000),preferred=[hlm,hcg],reopen_closed=false,cost_type=plusone,bound=BOUND)))))"]),
     (17, ["--search",
-        "let(hcea, cost_adapted_heuristic(cea(),cost_type=one),"
-        "let(hlm, cost_adapted_heuristic(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
+        "let(hcea, eval_modify_costs(cea(),cost_type=one),"
+        "let(hlm, eval_modify_costs(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
         "lazy_greedy([hcea,hlm],preferred=[hcea,hlm],cost_type=one,bound=BOUND)))"]),
     (12, ["--search",
-        "let(hadd, cost_adapted_heuristic(add(),cost_type=one),"
-        "let(hlm, cost_adapted_heuristic(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
+        "let(hadd, eval_modify_costs(add(),cost_type=one),"
+        "let(hlm, eval_modify_costs(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
         "lazy(alt([type_based([g()]),single(hadd),single(hadd,pref_only=true),single(hlm),single(hlm,pref_only=true)]),preferred=[hadd,hlm],cost_type=one,bound=BOUND)))"]),
     (26, ["--search",
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=one),"
         "lazy(alt([single(sum([g(),weight(hff,10)])),single(sum([g(),weight(hff,10)]),pref_only=true)],boost=2000),preferred=[hff],reopen_closed=false,cost_type=one,bound=BOUND))"]),
     (28, ["--search",
-        "let(hcg, cost_adapted_heuristic(cg(),cost_type=one),"
-        "let(hlm, cost_adapted_heuristic(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
+        "let(hcg, eval_modify_costs(cg(),cost_type=one),"
+        "let(hlm, eval_modify_costs(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
         "eager(alt([type_based([g()]),single(hcg),single(hcg,pref_only=true),single(hlm),single(hlm,pref_only=true)]),preferred=[hcg,hlm],cost_type=one,bound=BOUND)))"]),
     (29, ["--search",
         "let(lmg, lm_rhw(disjunctive_landmarks=true,use_orders=true),"
-        "let(hcea, cost_adapted_heuristic(cea(),cost_type=plusone),"
-        "let(hlm, cost_adapted_heuristic(landmark_cost_partitioning(lmg),cost_type=plusone),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=plusone),"
+        "let(hcea, eval_modify_costs(cea(),cost_type=plusone),"
+        "let(hlm, eval_modify_costs(landmark_cost_partitioning(lmg),cost_type=plusone),"
+        "let(hff, eval_modify_costs(ff(),cost_type=plusone),"
         "lazy(alt([single(hlm),single(hlm,pref_only=true),single(hff),single(hff,pref_only=true),single(hcea),single(hcea,pref_only=true)],boost=0),preferred=[hlm,hcea],reopen_closed=false,cost_type=plusone,bound=BOUND)))))"]),
     (88, ["--search",
-        "let(hcea, cost_adapted_heuristic(cea(),cost_type=one),"
-        "let(hlm, cost_adapted_heuristic(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
+        "let(hcea, eval_modify_costs(cea(),cost_type=one),"
+        "let(hlm, eval_modify_costs(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
         "lazy_wastar([hcea,hlm],w=3,preferred=[hcea,hlm],cost_type=one,bound=BOUND)))"]),
     (8, ["--search",
-        "let(hcg, cost_adapted_heuristic(cg(),cost_type=one),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
+        "let(hcg, eval_modify_costs(cg(),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=one),"
         "lazy(alt([single(sum([g(),weight(hff,10)])),single(sum([g(),weight(hff,10)]),pref_only=true),single(sum([g(),weight(hcg,10)])),single(sum([g(),weight(hcg,10)]),pref_only=true)],boost=100),preferred=[hcg],reopen_closed=false,cost_type=one,bound=BOUND)))"]),
     (54, ["--search",
-        "let(hgoalcount, cost_adapted_heuristic(goalcount(),cost_type=plusone),"
+        "let(hgoalcount, eval_modify_costs(goalcount(),cost_type=plusone),"
         "let(hff, ff(),"
         "lazy(alt([single(sum([g(),weight(hff,10)])),single(sum([g(),weight(hff,10)]),pref_only=true),single(sum([g(),weight(hgoalcount,10)])),single(sum([g(),weight(hgoalcount,10)]),pref_only=true)],boost=2000),preferred=[hff,hgoalcount],reopen_closed=false,cost_type=one,bound=BOUND)))"]),
     (24, ["--search",
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
-        "let(hlm, cost_adapted_heuristic(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=one),"
+        "let(hlm, eval_modify_costs(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
         "eager(alt([type_based([g()]),single(sum([g(),weight(hff,3)])),single(sum([g(),weight(hff,3)]),pref_only=true),single(sum([g(),weight(hlm,3)])),single(sum([g(),weight(hlm,3)]),pref_only=true)]),preferred=[hff,hlm],cost_type=one,bound=BOUND)))"]),
     (29, ["--search",
         "let(lmg, lm_rhw(disjunctive_landmarks=false,use_orders=true),"
-        "let(hlm, cost_adapted_heuristic(landmark_sum(lmg),cost_type=one),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
+        "let(hlm, eval_modify_costs(landmark_sum(lmg),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=one),"
         "let(hblind, blind(),"
         "lazy(alt([type_based([g()]),single(sum([g(),weight(hblind,2)])),single(sum([g(),weight(hblind,2)]),pref_only=true),single(sum([g(),weight(hlm,2)])),single(sum([g(),weight(hlm,2)]),pref_only=true),single(sum([g(),weight(hff,2)])),single(sum([g(),weight(hff,2)]),pref_only=true)],boost=4419),preferred=[hlm],reopen_closed=true,cost_type=one,bound=BOUND)))))"]),
     (30, ["--search",
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=one),"
         "lazy_wastar([hff],w=3,preferred=[hff],cost_type=one,bound=BOUND))"]),
     (28, ["--search",
-        "let(hcg, cost_adapted_heuristic(cg(),cost_type=plusone),"
+        "let(hcg, eval_modify_costs(cg(),cost_type=plusone),"
         "lazy(alt([type_based([g()]),single(hcg),single(hcg,pref_only=true)],boost=0),preferred=[hcg],reopen_closed=true,cost_type=plusone,bound=BOUND))"]),
     (58, ["--search",
-        "let(hcg, cost_adapted_heuristic(cg(),cost_type=one),"
-        "let(hlm, cost_adapted_heuristic(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
+        "let(hcg, eval_modify_costs(cg(),cost_type=one),"
+        "let(hlm, eval_modify_costs(landmark_sum(lm_reasonable_orders_hps(lm_rhw())),cost_type=one),"
         "lazy(alt([type_based([g()]),single(sum([g(),weight(hcg,3)])),single(sum([g(),weight(hcg,3)]),pref_only=true),single(sum([g(),weight(hlm,3)])),single(sum([g(),weight(hlm,3)]),pref_only=true)]),preferred=[hcg,hlm],cost_type=one,bound=BOUND)))"]),
     (26, ["--search",
-        "let(hcea, cost_adapted_heuristic(cea(),cost_type=one),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=plusone),"
+        "let(hcea, eval_modify_costs(cea(),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=plusone),"
         "let(hblind, blind(),"
         "eager(alt([single(sum([g(),weight(hblind,10)])),single(sum([g(),weight(hblind,10)]),pref_only=true),single(sum([g(),weight(hff,10)])),single(sum([g(),weight(hff,10)]),pref_only=true),single(sum([g(),weight(hcea,10)])),single(sum([g(),weight(hcea,10)]),pref_only=true)],boost=536),preferred=[hff],reopen_closed=false,bound=BOUND))))"]),
     (27, ["--search",
-        "let(hcea, cost_adapted_heuristic(cea(),cost_type=one),"
+        "let(hcea, eval_modify_costs(cea(),cost_type=one),"
         "eager_greedy([hcea],preferred=[hcea],cost_type=one,bound=BOUND))"]),
     (50, ["--search",
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=one),"
         "eager(alt([single(sum([g(),weight(hff,3)])),single(sum([g(),weight(hff,3)]),pref_only=true)]),preferred=[hff],cost_type=one,bound=BOUND))"]),
     (28, ["--search",
-        "let(hgoalcount, cost_adapted_heuristic(goalcount(),cost_type=one),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=plusone),"
+        "let(hgoalcount, eval_modify_costs(goalcount(),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=plusone),"
         "let(hblind, blind(),"
         "let(hcg, cg(),"
         "lazy(alt([type_based([g()]),single(sum([weight(g(),2),weight(hblind,3)])),single(sum([weight(g(),2),weight(hblind,3)]),pref_only=true),single(sum([weight(g(),2),weight(hff,3)])),single(sum([weight(g(),2),weight(hff,3)]),pref_only=true),single(sum([weight(g(),2),weight(hcg,3)])),single(sum([weight(g(),2),weight(hcg,3)]),pref_only=true),single(sum([weight(g(),2),weight(hgoalcount,3)])),single(sum([weight(g(),2),weight(hgoalcount,3)]),pref_only=true)],boost=3662),preferred=[hff],reopen_closed=true,bound=BOUND)))))"]),
     (29, ["--search",
-        "let(hgoalcount, cost_adapted_heuristic(goalcount(),cost_type=one),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=plusone),"
+        "let(hgoalcount, eval_modify_costs(goalcount(),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=plusone),"
         "let(hblind, blind(),"
         "let(hcg, cg(),"
         "lazy(alt([single(sum([weight(g(),2),weight(hblind,3)])),single(sum([weight(g(),2),weight(hblind,3)]),pref_only=true),single(sum([weight(g(),2),weight(hff,3)])),single(sum([weight(g(),2),weight(hff,3)]),pref_only=true),single(sum([weight(g(),2),weight(hcg,3)])),single(sum([weight(g(),2),weight(hcg,3)]),pref_only=true),single(sum([weight(g(),2),weight(hgoalcount,3)])),single(sum([weight(g(),2),weight(hgoalcount,3)]),pref_only=true)],boost=3662),preferred=[hff],reopen_closed=true,bound=BOUND)))))"]),
     (21, ["--search",
-        "let(hcg, cost_adapted_heuristic(cg(),cost_type=plusone),"
+        "let(hcg, eval_modify_costs(cg(),cost_type=plusone),"
         "lazy(alt([single(sum([g(),weight(hcg,10)])),single(sum([g(),weight(hcg,10)]),pref_only=true)],boost=0),preferred=[hcg],reopen_closed=false,cost_type=plusone,bound=BOUND))"]),
     (21, ["--search",
-        "let(hcg, cost_adapted_heuristic(cg(),cost_type=one),"
+        "let(hcg, eval_modify_costs(cg(),cost_type=one),"
         "eager(alt([single(sum([g(),weight(hcg,3)])),single(sum([g(),weight(hcg,3)]),pref_only=true)]),preferred=[hcg],cost_type=one,bound=BOUND))"]),
     (24, ["--search",
         "let(lmg, lm_reasonable_orders_hps(lm_rhw(disjunctive_landmarks=true,use_orders=true)),"
         "let(hblind, blind(),"
         "let(hadd, add(),"
-        "let(hlm, cost_adapted_heuristic(landmark_sum(lmg,pref=true),cost_type=plusone),"
+        "let(hlm, eval_modify_costs(landmark_sum(lmg,pref=true),cost_type=plusone),"
         "let(hff, ff(),"
         "lazy(alt([single(sum([weight(g(),2),weight(hblind,3)])),single(sum([weight(g(),2),weight(hblind,3)]),pref_only=true),single(sum([weight(g(),2),weight(hff,3)])),single(sum([weight(g(),2),weight(hff,3)]),pref_only=true),single(sum([weight(g(),2),weight(hlm,3)])),single(sum([weight(g(),2),weight(hlm,3)]),pref_only=true),single(sum([weight(g(),2),weight(hadd,3)])),single(sum([weight(g(),2),weight(hadd,3)]),pref_only=true)],boost=2474),preferred=[hadd],reopen_closed=false,cost_type=one,bound=BOUND))))))"]),
     (28, ["--search",
         "let(hblind, blind(),"
         "let(hadd, add(),"
-        "let(hcg, cost_adapted_heuristic(cg(),cost_type=one),"
+        "let(hcg, eval_modify_costs(cg(),cost_type=one),"
         "let(hhmax, hmax(),"
         "eager(alt([tiebreaking([sum([g(),weight(hblind,7)]),hblind]),tiebreaking([sum([g(),weight(hhmax,7)]),hhmax]),tiebreaking([sum([g(),weight(hadd,7)]),hadd]),tiebreaking([sum([g(),weight(hcg,7)]),hcg])],boost=2142),preferred=[],reopen_closed=true,bound=BOUND)))))"]),
     (28, ["--search",
-        "let(hadd, cost_adapted_heuristic(add(),cost_type=plusone),"
+        "let(hadd, eval_modify_costs(add(),cost_type=plusone),"
         "let(hff, ff(),"
         "lazy(alt([tiebreaking([sum([weight(g(),4),weight(hff,5)]),hff]),tiebreaking([sum([weight(g(),4),weight(hff,5)]),hff],pref_only=true),tiebreaking([sum([weight(g(),4),weight(hadd,5)]),hadd]),tiebreaking([sum([weight(g(),4),weight(hadd,5)]),hadd],pref_only=true)],boost=2537),preferred=[hff,hadd],reopen_closed=true,bound=BOUND)))"]),
     (53, ["--search",
         "let(lmg, lm_hm(conjunctive_landmarks=false,use_orders=false,m=1),"
-        "let(hlm, cost_adapted_heuristic(landmark_cost_partitioning(lmg),cost_type=plusone),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=plusone),"
+        "let(hlm, eval_modify_costs(landmark_cost_partitioning(lmg),cost_type=plusone),"
+        "let(hff, eval_modify_costs(ff(),cost_type=plusone),"
         "lazy(alt([type_based([g()]),single(hlm),single(hlm,pref_only=true),single(hff),single(hff,pref_only=true)],boost=5000),preferred=[hlm],reopen_closed=false,bound=BOUND))))"]),
     (29, ["--search",
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=one),"
         "lazy(alt([single(sum([weight(g(),2),weight(hff,3)])),single(sum([weight(g(),2),weight(hff,3)]),pref_only=true)],boost=5000),preferred=[hff],reopen_closed=true,cost_type=one,bound=BOUND))"]),
     (27, ["--search",
         "let(hblind, blind(),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
+        "let(hff, eval_modify_costs(ff(),cost_type=one),"
         "eager(alt([single(sum([g(),weight(hblind,2)])),single(sum([g(),weight(hff,2)]))],boost=4480),preferred=[],reopen_closed=true,bound=BOUND)))"]),
     (29, ["--search",
         "let(lmg, lm_hm(conjunctive_landmarks=false,use_orders=false,m=1),"
@@ -160,18 +160,18 @@ CONFIGS = [
         "lazy(alt([tiebreaking([sum([g(),weight(hlm,10)]),hlm]),tiebreaking([sum([g(),weight(hlm,10)]),hlm],pref_only=true),tiebreaking([sum([g(),weight(hff,10)]),hff]),tiebreaking([sum([g(),weight(hff,10)]),hff],pref_only=true)],boost=200),preferred=[hlm],reopen_closed=true,cost_type=plusone,bound=BOUND))))"]),
     (87, ["--search",
         "let(lmg, lm_hm(conjunctive_landmarks=false,use_orders=false,m=1),"
-        "let(hcg, cost_adapted_heuristic(cg(),cost_type=one),"
+        "let(hcg, eval_modify_costs(cg(),cost_type=one),"
         "let(hlm, landmark_cost_partitioning(lmg),"
         "lazy(alt([single(hlm),single(hlm,pref_only=true),single(hcg),single(hcg,pref_only=true)],boost=0),preferred=[hcg],reopen_closed=false,cost_type=one,bound=BOUND))))"]),
     (30, ["--search",
         "let(lmg, lm_exhaust(),"
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=plusone),"
+        "let(hff, eval_modify_costs(ff(),cost_type=plusone),"
         "let(hhmax, hmax(),"
         "let(hblind, blind(),"
-        "let(hlm, cost_adapted_heuristic(landmark_cost_partitioning(lmg,pref=false),cost_type=one),"
+        "let(hlm, eval_modify_costs(landmark_cost_partitioning(lmg,pref=false),cost_type=one),"
         "lazy(alt([type_based([g()]),single(sum([g(),weight(hblind,3)])),single(sum([g(),weight(hblind,3)]),pref_only=true),single(sum([g(),weight(hff,3)])),single(sum([g(),weight(hff,3)]),pref_only=true),single(sum([g(),weight(hlm,3)])),single(sum([g(),weight(hlm,3)]),pref_only=true),single(sum([g(),weight(hhmax,3)])),single(sum([g(),weight(hhmax,3)]),pref_only=true)],boost=3052),preferred=[hff],reopen_closed=true,bound=BOUND))))))"]),
     (56, ["--search",
-        "let(hff, cost_adapted_heuristic(ff(),cost_type=plusone),"
+        "let(hff, eval_modify_costs(ff(),cost_type=plusone),"
         "lazy(alt([tiebreaking([sum([g(),hff]),hff]),tiebreaking([sum([g(),hff]),hff],pref_only=true)],boost=432),preferred=[hff],reopen_closed=true,cost_type=one,bound=BOUND))"]),
     (19, ["--search",
         "let(lmg, lm_merged([lm_rhw(disjunctive_landmarks=false,use_orders=true),lm_hm(m=1,conjunctive_landmarks=true,use_orders=true)]),"
@@ -180,7 +180,7 @@ CONFIGS = [
         "lazy(alt([single(sum([g(),weight(hff,10)])),single(sum([g(),weight(hff,10)]),pref_only=true),single(sum([g(),weight(hlm,10)])),single(sum([g(),weight(hlm,10)]),pref_only=true)],boost=500),preferred=[hff],reopen_closed=false,cost_type=plusone,bound=BOUND))))"]),
     (56, ["--search",
         "let(lmg, lm_exhaust(),"
-        "let(hgoalcount, cost_adapted_heuristic(goalcount(),cost_type=plusone),"
+        "let(hgoalcount, eval_modify_costs(goalcount(),cost_type=plusone),"
         "let(hlm, landmark_sum(lmg),"
         "let(hff, ff(),"
         "let(hblind, blind(),"

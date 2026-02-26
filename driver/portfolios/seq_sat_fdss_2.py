@@ -6,35 +6,35 @@ REGEX_SEARCH = re.compile(r".*((eager_greedy|lazy_greedy)\(.*\))\)")
 CONFIGS = [
     # eager_greedy_ff
     (330, ["--search",
-          "let(h, cost_adapted_heuristic(ff(),cost_type=H_COST_TYPE),"
+          "let(h, eval_modify_costs(ff(),cost_type=H_COST_TYPE),"
           "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # lazy_greedy_ff
     (411, ["--search",
-          "let(h, cost_adapted_heuristic(ff(),cost_type=H_COST_TYPE),"
+          "let(h, eval_modify_costs(ff(),cost_type=H_COST_TYPE),"
           "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # eager_greedy_cea
     (213, ["--search",
-          "let(h, cost_adapted_heuristic(cea(),cost_type=H_COST_TYPE),"
+          "let(h, eval_modify_costs(cea(),cost_type=H_COST_TYPE),"
           "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # lazy_greedy_cea
     (57, ["--search",
-          "let(h, cost_adapted_heuristic(cea(),cost_type=H_COST_TYPE),"
+          "let(h, eval_modify_costs(cea(),cost_type=H_COST_TYPE),"
           "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # eager_greedy_add
     (204, ["--search",
-          "let(h, cost_adapted_heuristic(add(),cost_type=H_COST_TYPE),"
+          "let(h, eval_modify_costs(add(),cost_type=H_COST_TYPE),"
           "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # eager_greedy_cg
     (208, ["--search",
-          "let(h, cost_adapted_heuristic(cg(),cost_type=H_COST_TYPE),"
+          "let(h, eval_modify_costs(cg(),cost_type=H_COST_TYPE),"
           "eager_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # lazy_greedy_cg
     (109, ["--search",
-          "let(h, cost_adapted_heuristic(cg(),cost_type=H_COST_TYPE),"
+          "let(h, eval_modify_costs(cg(),cost_type=H_COST_TYPE),"
           "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
     # lazy_greedy_add
     (63, ["--search",
-          "let(h, cost_adapted_heuristic(add(),cost_type=H_COST_TYPE),"
+          "let(h, eval_modify_costs(add(),cost_type=H_COST_TYPE),"
           "lazy_greedy([h],preferred=[h],cost_type=S_COST_TYPE,bound=BOUND))"]),
      ]
 

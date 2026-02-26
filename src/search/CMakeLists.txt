@@ -349,6 +349,16 @@ create_fast_downward_library(
 )
 
 create_fast_downward_library(
+    NAME modify_costs_evaluator
+    HELP "Evaluator modifying the costs"
+    SOURCES
+        evaluators/modify_costs_evaluator
+    DEPENDS
+        core_tasks
+        task_properties
+)
+
+create_fast_downward_library(
     NAME max_evaluator
     HELP "The max evaluator"
     SOURCES
@@ -657,14 +667,6 @@ create_fast_downward_library(
         default_value_axioms_task
         domain_transition_graph
         priority_queues
-        task_properties
-)
-create_fast_downward_library(
-    NAME cost_adapted_heuristic
-    HELP "The cost adapted heuristic"
-    SOURCES heuristics/cost_adapted_heuristic
-    DEPENDS
-        core_tasks
         task_properties
 )
 

@@ -149,7 +149,7 @@ public:
             "since it is often better to focus on distance from goal (i.e. "
             "length of the plan) rather than cost. In experiments we achieved "
             "the best performance wrapping this heuristic in "
-            "'cost_adapted_heuristic(..., cost_type=one)' to enforce unit costs.");
+            "'eval_modify_costs(..., cost_type=one)' to enforce unit costs.");
         document_note(
             "Preferred operators",
             "Computing preferred operators is *only enabled* when setting "
