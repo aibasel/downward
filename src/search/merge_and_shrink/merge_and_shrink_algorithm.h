@@ -1,10 +1,9 @@
 #ifndef MERGE_AND_SHRINK_MERGE_AND_SHRINK_ALGORITHM_H
 #define MERGE_AND_SHRINK_MERGE_AND_SHRINK_ALGORITHM_H
 
-#include "merge_strategy_factory.h"  // issue559 remove?
-#include "shrink_strategy.h"  // issue559 remove?
-#include "label_reduction.h" // issue559 remove?
-#include "../component.h" // issue559 remove?
+#include "merge_strategy_factory.h"
+#include "shrink_strategy.h"
+#include "label_reduction.h"
 
 #include "../utils/logging.h"
 
@@ -74,9 +73,9 @@ extern std::tuple<int, int, int> handle_shrink_limit_defaults(
 extern void add_merge_and_shrink_algorithm_options_to_feature(
     plugins::Feature &feature);
 std::tuple<
-    std::shared_ptr<components::TaskIndependentComponent<MergeStrategyFactory>>,
-    std::shared_ptr<components::TaskIndependentComponent<ShrinkStrategy>>,
-    std::shared_ptr<components::TaskIndependentComponent<LabelReduction>>, bool, bool, int,  // issue559 find a way to use the type aliases here
+    std::shared_ptr<TaskIndependentMergeStrategyFactory>,
+    std::shared_ptr<TaskIndependentShrinkStrategy>,
+    std::shared_ptr<TaskIndependentLabelReduction>, bool, bool, int,
     int, int, double>
 get_merge_and_shrink_algorithm_arguments_from_options(
     const plugins::Options &opts);
