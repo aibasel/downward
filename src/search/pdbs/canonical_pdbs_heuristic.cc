@@ -122,7 +122,7 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<CanonicalPDBsHeuristic, Evaluator>(
+        return components::make_auto_task_independent_component<CanonicalPDBsHeuristic, Evaluator>(
             opts.get<shared_ptr<TaskIndependentPatternCollectionGenerator>>("patterns"),
             get_canonical_pdbs_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));

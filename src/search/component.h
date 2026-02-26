@@ -115,7 +115,7 @@ template<typename T, typename ComponentType, typename... Args>
     requires internals::ComponentTypeOf<ComponentType, T> &&
              internals::ComponentArgsFor<utils::FlatTuple_t<Args...>, T>
 std::shared_ptr<TaskIndependentComponent<ComponentType>>
-make_shared_component(Args &&...args) {
+make_auto_task_independent_component(Args &&...args) {
     using FlatArgs = utils::FlatTuple_t<Args...>;
     using AutoComponent =
         AutoTaskIndependentComponent<T, ComponentType, FlatArgs>;

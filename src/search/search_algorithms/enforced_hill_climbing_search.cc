@@ -279,7 +279,7 @@ public:
 
     virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<EnforcedHillClimbingSearch, SearchAlgorithm>(
+        return components::make_auto_task_independent_component<EnforcedHillClimbingSearch, SearchAlgorithm>(
             opts.get<shared_ptr<TaskIndependentEvaluator>>("h"),
             opts.get<PreferredUsage>("preferred_usage"),
             opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),

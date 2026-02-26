@@ -181,7 +181,7 @@ public:
 
     virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<MergeScoringFunctionMIASM, MergeScoringFunction>(
+        return components::make_auto_task_independent_component<MergeScoringFunctionMIASM, MergeScoringFunction>(
             opts.get<shared_ptr<TaskIndependentShrinkStrategy>>("shrink_strategy"),
             get_transition_system_size_limit_arguments_from_options(opts),
             opts.get<bool>("use_caching"));

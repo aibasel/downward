@@ -82,7 +82,7 @@ public:
 
     virtual shared_ptr<TaskIndependentPatternCollectionGenerator>
     create_component(const plugins::Options &opts) const override {
-        return components::make_shared_component<
+        return components::make_auto_task_independent_component<
             PatternCollectionGeneratorDisjointCegar, PatternCollectionGenerator>(
             opts.get<int>("max_pdb_size"),
             opts.get<int>("max_collection_size"), opts.get<double>("max_time"),

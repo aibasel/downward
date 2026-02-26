@@ -122,7 +122,7 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<OperatorCountingHeuristic, Evaluator>(
+        return components::make_auto_task_independent_component<OperatorCountingHeuristic, Evaluator>(
             opts.get_list<shared_ptr<TaskIndependentConstraintGenerator>>(
                 "constraint_generators"),
             opts.get<bool>("use_integer_operator_counts"),

@@ -58,7 +58,7 @@ public:
 
     virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<eager_search::EagerSearch, SearchAlgorithm>(
+        return components::make_auto_task_independent_component<eager_search::EagerSearch, SearchAlgorithm>(
             search_common::create_greedy_open_list_factory(
                 opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
                 opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),

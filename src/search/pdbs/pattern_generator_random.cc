@@ -73,7 +73,7 @@ public:
 
     virtual shared_ptr<TaskIndependentPatternGenerator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<PatternGeneratorRandom, PatternGenerator>(
+        return components::make_auto_task_independent_component<PatternGeneratorRandom, PatternGenerator>(
             opts.get<int>("max_pdb_size"),
             opts.get<double>("max_time"),
             get_random_pattern_bidirectional_arguments_from_options(opts),

@@ -164,7 +164,7 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<
+        return components::make_auto_task_independent_component<
             LandmarkCostPartitioningHeuristic, Evaluator>(
             get_landmark_heuristic_arguments_from_options(opts),
             opts.get<CostPartitioningMethod>("cost_partitioning"),

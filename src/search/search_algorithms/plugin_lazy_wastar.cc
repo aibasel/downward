@@ -69,7 +69,7 @@ public:
 
     virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<lazy_search::LazySearch, SearchAlgorithm>(
+        return components::make_auto_task_independent_component<lazy_search::LazySearch, SearchAlgorithm>(
             search_common::create_wastar_open_list_factory(
                 opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
                 opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),

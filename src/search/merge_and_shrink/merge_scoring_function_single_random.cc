@@ -62,7 +62,7 @@ public:
 
     virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<
+        return components::make_auto_task_independent_component<
             MergeScoringFunctionSingleRandom, MergeScoringFunction>(
             utils::get_rng_arguments_from_options(opts));
     }

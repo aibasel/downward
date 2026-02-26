@@ -88,7 +88,7 @@ public:
 
     virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<PhOConstraints, ConstraintGenerator>(
+        return components::make_auto_task_independent_component<PhOConstraints, ConstraintGenerator>(
             opts.get<shared_ptr<pdbs::TaskIndependentPatternCollectionGenerator>>("patterns"));
     }
 };

@@ -122,7 +122,7 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<HSPMaxHeuristic, Evaluator>(
+        return components::make_auto_task_independent_component<HSPMaxHeuristic, Evaluator>(
             relaxation_heuristic::
                 get_relaxation_heuristic_arguments_from_options(opts));
     }

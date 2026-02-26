@@ -415,7 +415,7 @@ public:
 
     virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<
+        return components::make_auto_task_independent_component<
             LandmarkFactoryReasonableOrdersHPS, LandmarkFactory>(
             opts.get<shared_ptr<TaskIndependentLandmarkFactory>>("lm_factory"),
             get_landmark_factory_arguments_from_options(opts));

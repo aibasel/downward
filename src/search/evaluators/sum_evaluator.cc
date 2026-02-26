@@ -38,7 +38,7 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<SumEvaluator, Evaluator>(
+        return components::make_auto_task_independent_component<SumEvaluator, Evaluator>(
             combining_evaluator::get_combining_evaluator_arguments_from_options(
                 opts));
     }

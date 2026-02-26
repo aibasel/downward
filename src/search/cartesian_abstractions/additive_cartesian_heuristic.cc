@@ -126,7 +126,7 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<AdditiveCartesianHeuristic, Evaluator>(
+        return components::make_auto_task_independent_component<AdditiveCartesianHeuristic, Evaluator>(
             opts.get_list<shared_ptr<TaskIndependentSubtaskGenerator>>("subtasks"),
             opts.get<int>("max_states"), opts.get<int>("max_transitions"),
             opts.get<double>("max_time"), opts.get<PickSplit>("pick"),

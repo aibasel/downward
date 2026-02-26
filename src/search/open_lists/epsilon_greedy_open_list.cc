@@ -187,7 +187,7 @@ public:
 
     virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        return components::make_shared_component<EpsilonGreedyOpenListFactory, OpenListFactory>(
+        return components::make_auto_task_independent_component<EpsilonGreedyOpenListFactory, OpenListFactory>(
             opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
             opts.get<double>("epsilon"),
             utils::get_rng_arguments_from_options(opts),
