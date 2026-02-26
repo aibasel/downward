@@ -8,14 +8,14 @@
 #include <memory.h>
 
 namespace cost_adapted_evaluator {
-class TaskIndependentCostAdaptedEvaluator : public TaskIndependentEvaluator {
+class TaskIndependentModifyCostsEvaluator : public TaskIndependentEvaluator {
     std::shared_ptr<TaskIndependentEvaluator> nested;
     OperatorCost cost_type;
 
     virtual std::shared_ptr<Evaluator> create_task_specific_component(
         const std::shared_ptr<AbstractTask> &task, components::Cache &cache) const override;
 public:
-    TaskIndependentCostAdaptedEvaluator(
+    TaskIndependentModifyCostsEvaluator(
         std::shared_ptr<TaskIndependentEvaluator> nested,
         OperatorCost cost_type);
 };

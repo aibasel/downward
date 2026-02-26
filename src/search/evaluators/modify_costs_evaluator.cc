@@ -7,23 +7,24 @@ using namespace std;
 
 namespace cost_adapted_evaluator {
 shared_ptr<Evaluator>
-TaskIndependentCostAdaptedEvaluator::create_task_specific_component(
+TaskIndependentModifyCostsEvaluator::create_task_specific_component(
     const shared_ptr<AbstractTask> &task, components::Cache &cache) const {
     shared_ptr<AbstractTask> cost_adapted_task =
         make_shared<tasks::CostAdaptedTask>(task, cost_type);
     return nested->bind_task(cost_adapted_task, cache);
 }
 
-TaskIndependentCostAdaptedEvaluator::TaskIndependentCostAdaptedEvaluator(
+TaskIndependentModifyCostsEvaluator::TaskIndependentModifyCostsEvaluator(
     shared_ptr<TaskIndependentEvaluator> nested, OperatorCost cost_type)
     : nested(nested), cost_type(cost_type) {
 }
 
-class CostAdaptedEvaluatorFeature
+class ModifyCostEvaluatorFeature
     : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    CostAdaptedEvaluatorFeature() : TaskIndependentFeature("eval_modify_costs") {
+    ModifyCostEvaluatorFeature() : TaskIndependentFeature("eval_modify_costs") {
         document_title("Cost-modifying evaluator");
+        document_subcategory("evaluators_basic");
         document_synopsis(
             "Evaluates the nested evaluator on a task with a modified cost"
             "function");
@@ -54,11 +55,11 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared<TaskIndependentCostAdaptedEvaluator>(
+        return make_shared<TaskIndependentModifyCostsEvaluator>(
             opts.get<shared_ptr<TaskIndependentEvaluator>>("nested"),
             opts.get<OperatorCost>("cost_type"));
     }
 };
 
-static plugins::FeaturePlugin<CostAdaptedEvaluatorFeature> _plugin;
+static plugins::FeaturePlugin<ModifyCostEvaluatorFeature> _plugin;
 }
