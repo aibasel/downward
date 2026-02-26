@@ -76,7 +76,7 @@ CONFIGS = [
         "eager(alt([type_based([g()]),single(sum([g(),weight(hff,3)])),single(sum([g(),weight(hff,3)]),pref_only=true),single(sum([g(),weight(hlm,3)])),single(sum([g(),weight(hlm,3)]),pref_only=true)]),preferred=[hff,hlm],cost_type=one,bound=BOUND)))"]),
     (29, ["--search",
         "let(lmg, lm_rhw(disjunctive_landmarks=false,use_orders=true),"
-        "let(hlm, cost_adapted_heuristic(landmark_sum(lmg),cost_type=one)),"
+        "let(hlm, cost_adapted_heuristic(landmark_sum(lmg),cost_type=one),"
         "let(hff, cost_adapted_heuristic(ff(),cost_type=one),"
         "let(hblind, blind(),"
         "lazy(alt([type_based([g()]),single(sum([g(),weight(hblind,2)])),single(sum([g(),weight(hblind,2)]),pref_only=true),single(sum([g(),weight(hlm,2)])),single(sum([g(),weight(hlm,2)]),pref_only=true),single(sum([g(),weight(hff,2)])),single(sum([g(),weight(hff,2)]),pref_only=true)],boost=4419),preferred=[hlm],reopen_closed=true,cost_type=one,bound=BOUND)))))"]),
