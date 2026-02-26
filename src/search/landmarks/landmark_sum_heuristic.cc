@@ -148,8 +148,8 @@ public:
             "achieve it. For satisficing search this can be counterproductive "
             "since it is often better to focus on distance from goal (i.e. "
             "length of the plan) rather than cost. In experiments we achieved "
-            "the best performance using the option "
-            "'transform=adapt_costs(one)' to enforce unit costs.");
+            "the best performance wrapping this heuristic in "
+            "'cost_adapted_heuristic(..., cost_type=one)' to enforce unit costs.");
         document_note(
             "Preferred operators",
             "Computing preferred operators is *only enabled* when setting "
