@@ -43,12 +43,13 @@ using PackedStateBin = int_packer::IntPacker::Bin;
 /*
   Overview of the task interface.
 
-  The task interface is divided into two parts: a set of proxy classes for
-  accessing task information (TaskProxy, OperatorProxy, etc.) and task
-  implementations (subclasses of AbstractTask). Each proxy class knows which
-  AbstractTask it belongs to and uses its methods to retrieve information about
-  the task. RootTask is the AbstractTask that encapsulates the unmodified
-  original task that the planner received as input.
+  The task interface is divided into two parts: a set of proxy classes
+  for accessing task information (TaskProxy, OperatorProxy, etc.) and
+  task implementations (subclasses of AbstractTask). Each proxy class
+  knows which AbstractTask it belongs to and uses its methods to retrieve
+  information about the task. RootTask is the AbstractTask that
+  encapsulates the unmodified original task that the planner received
+  as input.
 
   Example code for creating a new task object and accessing its operators:
 
@@ -56,50 +57,40 @@ using PackedStateBin = int_packer::IntPacker::Bin;
       for (OperatorProxy op : task->get_operators())
           utils::g_log << op.get_name() << endl;
 
-  Since proxy classes only store a reference to the AbstractTask and some
-  indices, they can be copied cheaply.
+  Since proxy classes only store a reference to the AbstractTask and
+  some indices, they can be copied cheaply.
 
-  In addition to the lightweight proxy classes, the task interface consists of
-  the State class, which is used to hold state information for TaskProxy tasks.
-  The State class contains packed or unpacked state data and shares the
-  ownership with its copies, so it is cheap to copy but expensive to create. If
-  performance is absolutely critical, the values of a state can be unpacked and
-  accessed as a vector<int>.
+  In addition to the lightweight proxy classes, the task interface
+  consists of the State class, which is used to hold state information
+  for TaskProxy tasks. The State class contains packed or unpacked state data
+  and shares the ownership with its copies, so it is cheap to copy but
+  expensive to create. If performance is absolutely critical, the values of a
+  state can be unpacked and accessed as a vector<int>.
 
-  Heuristics and search algorithms may use task transformations internally by
-  passing on a transformed task to nested components (see CostAdaptedHeuristic
-  for an example). In that case, they are responsible for translating
-  information from the task they received to the transformed task and back.
-  This usually involves two transformations (for CostAdaptedHeuristic both of
-  them are identity transformations, so this cannot be seen in the example):
-    * converting states of the parent task to states of the task used in
-      the nested component
-    * converting operators of the nested component to operators of the parent task
-      (e.g., for reporting preferred operators).
+  For now, heuristics work with a TaskProxy that can represent a transformed
+  view of the original task. The search algorithms work on the unmodified root
+  task. We therefore need to do two conversions between the search and the
+  heuristics: converting states of the root task to states of the task used in
+  the heuristic computation and converting operators of the task used by the
+  heuristic to operators of the task used by the search for reporting preferred
+  operators.
+  These conversions are done by the Heuristic base class with
+  Heuristic::convert_ancestor_state() and Heuristic::set_preferred().
 
-  Example of a fantasy heuristic using a (hypothetical) task projection:
-
-    virtual shared_ptr<Evaluator>
-    TaskIndependentFantasyHeuristic::create_task_specific_component(
-        const shared_ptr<AbstractTask> &task, components::Cache &) const override {
-        shared_ptr<AbstractTask> projected_task = make_shared<ProjectedTask>(task);
-        shared_ptr<Evaluator> nested_heuristic =
-            make_shared<FanasyNestedHeuristic>(projected_task);
-        return make_shared<FantasyHeuristic>(task, projected_task, nested_heuristic);
-    }
-
-    int FantasyHeuristic::compute_heuristic(const State &state) {
-        State projected_state = TaskProxy(projected_task).convert_ancestor_state(state);
-        int value = nested_heuristic->compute_heuristic(projected_state);
-        for (OperatorID opid : nested_heuristic.preferred_operators) {
-            OperatorProxy op = projected_task.get_operators()[opid];
-            OperatorID original_opid = op.get_ancestor_operator_id(task);
-            set_preferred(original_opid);
-        }
-    }
+      int FantasyHeuristic::compute_heuristic(const State &ancestor_state) {
+          State state = convert_ancestor_state(ancestor_state);
+          set_preferred(task->get_operators()[42]);
+          int sum = 0;
+          for (FactProxy fact : state)
+              sum += fact.get_value();
+          return sum;
+      }
 
   For helper functions that work on task related objects, please see the
   task_properties.h module.
+
+  TODO: update this after we get rid of convert_ancestor_state and
+  get_ancestor_operator_id.
 */
 
 template<typename T>

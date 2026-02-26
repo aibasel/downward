@@ -24,7 +24,7 @@ Heuristic::Heuristic(
 
 void Heuristic::set_preferred(const OperatorProxy &op) {
     preferred_operators.insert(
-        op.get_ancestor_operator_id(tasks::g_root_task.get())); // issue559 TODO
+        op.get_ancestor_operator_id(tasks::g_root_task.get()));
 }
 
 State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
