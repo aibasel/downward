@@ -5,6 +5,8 @@
 #include "../plugins/plugin.h"
 #include "../tasks/cost_adapted_task.h"
 
+#include <utility>
+
 using namespace std;
 
 namespace cost_adapted_evaluator {
@@ -64,7 +66,7 @@ TaskIndependentModifyCostsEvaluator::create_task_specific_component(
 
 TaskIndependentModifyCostsEvaluator::TaskIndependentModifyCostsEvaluator(
     shared_ptr<TaskIndependentEvaluator> nested, OperatorCost cost_type)
-    : nested(nested), cost_type(cost_type) {
+    : nested(move(nested)), cost_type(cost_type) {
 }
 
 class ModifyCostEvaluatorFeature
