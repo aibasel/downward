@@ -1,11 +1,58 @@
 #include "modify_costs_evaluator.h"
 
+#include "../evaluation_context.h"
+
 #include "../plugins/plugin.h"
 #include "../tasks/cost_adapted_task.h"
 
 using namespace std;
 
 namespace cost_adapted_evaluator {
+bool ModifyCostsEvaluator::dead_ends_are_reliable() const {
+    return nested->dead_ends_are_reliable();
+}
+
+void ModifyCostsEvaluator::get_path_dependent_evaluators(
+    set<Evaluator *> &evals) {
+    nested->get_path_dependent_evaluators(evals);
+}
+
+void ModifyCostsEvaluator::notify_initial_state(const State &initial_state) {
+    /*
+      TODO issue1208: Once we remove the task transformation code from
+      heuristics, we might have to transform the task here. While the state data
+      doesn't change, the State class currently references the task it belongs
+      to, and `nested` uses a different task.
+    */
+    nested->notify_initial_state(initial_state);
+}
+
+void ModifyCostsEvaluator::notify_state_transition(
+    const State &parent_state, OperatorID op_id, const State &state) {
+    // TODO issue1208: see above
+    nested->notify_state_transition(parent_state, op_id, state);
+}
+
+EvaluationResult ModifyCostsEvaluator::compute_result(
+    EvaluationContext &eval_context) {
+    // TODO issue1208: see above (in particular, eval_context is specific to a state)
+    return nested->compute_result(eval_context);
+}
+
+bool ModifyCostsEvaluator::does_cache_estimates() const {
+    return nested->does_cache_estimates();
+}
+
+bool ModifyCostsEvaluator::is_estimate_cached(const State &state) const {
+    // TODO issue1208: see above
+    return nested->is_estimate_cached(state);
+}
+
+int ModifyCostsEvaluator::get_cached_estimate(const State &state) const {
+    // TODO issue1208: see above
+    return nested->get_cached_estimate(state);
+}
+
 shared_ptr<Evaluator>
 TaskIndependentModifyCostsEvaluator::create_task_specific_component(
     const shared_ptr<AbstractTask> &task, components::Cache &cache) const {
