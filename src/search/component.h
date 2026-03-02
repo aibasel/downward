@@ -57,6 +57,19 @@ class TaskIndependentComponent : public TaskIndependentComponentBase {
 public:
     using BoundType = std::shared_ptr<ComponentType>;
 
+    /*
+      Returns a task-specific component for the given task.
+
+      The cache ensures that if the same task is bound to the same
+      task-independent component multiple times during construction (for example
+      when using a heuristic both for heuristic values and for preferred
+      operators), the task-specific component is shared.
+
+      In most cases, the cache information doesn't persist after the
+      construction has completed, but there are cases where it is kept alive
+      because it is needed later, for example in iterated search algorithms.
+      This is comparable to capturing local variables in a closure.
+    */
     BoundType bind_task(
         const std::shared_ptr<AbstractTask> &task, Cache &cache) const {
         BoundType component;
