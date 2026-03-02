@@ -8,8 +8,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeScoringFunction::MergeScoringFunction(
-    const shared_ptr<AbstractTask> &task)
+MergeScoringFunction::MergeScoringFunction(const shared_ptr<AbstractTask> &task)
     : components::TaskSpecificComponent(task), initialized(false) {
 }
 
