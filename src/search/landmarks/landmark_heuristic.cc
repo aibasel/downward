@@ -69,9 +69,10 @@ void LandmarkHeuristic::initialize(
       no good way to do this, so we use this incomplete, slightly less safe
       test.
 
-       issue559 update the comment after switching to task-independent classes.
+      issue1208 update the comment after removing the task transformation code.
+      The check can hopefully just be removed.
     */
-    if (task != tasks::g_root_task && // issue559 TODO
+    if (task != tasks::g_root_task &&
         dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr &&
         dynamic_cast<tasks::DefaultValueAxiomsTask *>(task.get()) == nullptr) {
         cerr << "The landmark heuristics currently only support "

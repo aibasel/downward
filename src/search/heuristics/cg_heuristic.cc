@@ -21,7 +21,7 @@ CGHeuristic::CGHeuristic(
     tasks::AxiomHandlingType axioms, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : Heuristic(
-          // issue559 move this transformation to task-independent level?
+          // issue1208 move this transformation to task-independent level?
           tasks::get_default_value_axioms_task_if_needed(task, axioms),
           cache_estimates, description, verbosity),
       helpful_transition_extraction_counter(0),
