@@ -13,7 +13,8 @@ public:
         document_title("Greedy search (eager)");
         document_synopsis("");
 
-        add_list_option<shared_ptr<TaskIndependentEvaluator>>("evals", "evaluators");
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
+            "evals", "evaluators");
         add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "preferred", "use preferred operators of these evaluators", "[]");
         add_option<int>(
@@ -58,10 +59,12 @@ public:
 
     virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<eager_search::EagerSearch, SearchAlgorithm>(
+        return components::make_auto_task_independent_component<
+            eager_search::EagerSearch, SearchAlgorithm>(
             search_common::create_greedy_open_list_factory(
                 opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
-                opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
+                opts.get_list<shared_ptr<TaskIndependentEvaluator>>(
+                    "preferred"),
                 opts.get<int>("boost")),
             false, shared_ptr<TaskIndependentEvaluator>(nullptr),
             opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),

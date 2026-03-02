@@ -140,9 +140,10 @@ void add_search_pruning_options_to_feature(plugins::Feature &feature) {
         "null()");
 }
 
-tuple<shared_ptr<TaskIndependentPruningMethod>> get_search_pruning_arguments_from_options(
-    const plugins::Options &opts) {
-    return make_tuple(opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning"));
+tuple<shared_ptr<TaskIndependentPruningMethod>>
+get_search_pruning_arguments_from_options(const plugins::Options &opts) {
+    return make_tuple(
+        opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning"));
 }
 
 void add_search_algorithm_options_to_feature(
@@ -208,7 +209,8 @@ tuple<bool, bool, int> get_successors_order_arguments_from_options(
 static class TaskSpecificSearchAlgorithmCategoryPlugin
     : public plugins::TypedCategoryPlugin<SearchAlgorithm> {
 public:
-    TaskSpecificSearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("Task-specific SearchAlgorithm") {
+    TaskSpecificSearchAlgorithmCategoryPlugin()
+        : TypedCategoryPlugin("Task-specific SearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.
         document_synopsis(
             "This page describes the supported search algorithms.");

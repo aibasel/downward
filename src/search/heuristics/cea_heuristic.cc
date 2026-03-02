@@ -412,8 +412,7 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     const shared_ptr<AbstractTask> &task, tasks::AxiomHandlingType axioms,
-    bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
+    bool cache_estimates, const string &description, utils::Verbosity verbosity)
     : Heuristic(
           // issue1208 move this transformation to task-independent level?
           tasks::get_default_value_axioms_task_if_needed(task, axioms),
@@ -472,7 +471,8 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<ContextEnhancedAdditiveHeuristic, Evaluator>(
+        return components::make_auto_task_independent_component<
+            ContextEnhancedAdditiveHeuristic, Evaluator>(
             tasks::get_axioms_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));
     }

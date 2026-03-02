@@ -45,9 +45,8 @@ bool LMCutConstraints::update_constraints(
     }
 }
 
-class LMCutConstraintsFeature
-    : public plugins::TaskIndependentFeature<
-          TaskIndependentConstraintGenerator> {
+class LMCutConstraintsFeature : public plugins::TaskIndependentFeature<
+                                    TaskIndependentConstraintGenerator> {
 public:
     LMCutConstraintsFeature() : TaskIndependentFeature("lmcut_constraints") {
         document_title("LM-cut landmark constraints");
@@ -77,7 +76,8 @@ public:
 
     virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &) const override {
-        return components::make_auto_task_independent_component<LMCutConstraints, ConstraintGenerator>();
+        return components::make_auto_task_independent_component<
+            LMCutConstraints, ConstraintGenerator>();
     }
 };
 

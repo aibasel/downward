@@ -76,7 +76,8 @@ public:
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
             MergeStrategyFactoryStateless, MergeStrategyFactory>(
-            opts.get<shared_ptr<TaskIndependentMergeSelector>>("merge_selector"),
+            opts.get<shared_ptr<TaskIndependentMergeSelector>>(
+                "merge_selector"),
             get_merge_strategy_arguments_from_options(opts));
     }
 };

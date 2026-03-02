@@ -311,7 +311,8 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<CGHeuristic, Evaluator>(
+        return components::make_auto_task_independent_component<
+            CGHeuristic, Evaluator>(
             opts.get<int>("max_cache_size"),
             tasks::get_axioms_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));

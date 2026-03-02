@@ -62,10 +62,13 @@ void add_combining_evaluator_options_to_feature(
     add_evaluator_options_to_feature(feature, description);
 }
 
-tuple<vector<shared_ptr<TaskIndependentEvaluator>>, const string, utils::Verbosity>
+tuple<
+    vector<shared_ptr<TaskIndependentEvaluator>>, const string,
+    utils::Verbosity>
 get_combining_evaluator_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
-        make_tuple(opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals")),
+        make_tuple(
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals")),
         get_evaluator_arguments_from_options(opts));
 }
 }

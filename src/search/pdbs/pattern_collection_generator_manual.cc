@@ -46,8 +46,8 @@ public:
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TaskIndependentPatternCollectionGenerator> create_component(
-        const plugins::Options &opts) const override {
+    virtual shared_ptr<TaskIndependentPatternCollectionGenerator>
+    create_component(const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
             PatternCollectionGeneratorManual, PatternCollectionGenerator>(
             opts.get_list<Pattern>("patterns"),

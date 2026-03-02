@@ -67,7 +67,8 @@ int OperatorCountingHeuristic::compute_heuristic(const State &ancestor_state) {
 class OperatorCountingHeuristicFeature
     : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    OperatorCountingHeuristicFeature() : TaskIndependentFeature("operatorcounting") {
+    OperatorCountingHeuristicFeature()
+        : TaskIndependentFeature("operatorcounting") {
         document_title("Operator-counting heuristic");
         document_synopsis(
             "An operator-counting heuristic computes a linear program (LP) in each "
@@ -122,7 +123,8 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<OperatorCountingHeuristic, Evaluator>(
+        return components::make_auto_task_independent_component<
+            OperatorCountingHeuristic, Evaluator>(
             opts.get_list<shared_ptr<TaskIndependentConstraintGenerator>>(
                 "constraint_generators"),
             opts.get<bool>("use_integer_operator_counts"),

@@ -47,7 +47,8 @@ public:
     std::string get_name() const;
 };
 
-using TaskIndependentShrinkStrategy = components::TaskIndependentComponent<ShrinkStrategy>;
+using TaskIndependentShrinkStrategy =
+    components::TaskIndependentComponent<ShrinkStrategy>;
 }
 
 #endif

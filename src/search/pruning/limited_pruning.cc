@@ -90,7 +90,8 @@ public:
 
     virtual shared_ptr<TaskIndependentPruningMethod> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<LimitedPruning, PruningMethod>(
+        return components::make_auto_task_independent_component<
+            LimitedPruning, PruningMethod>(
             opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning"),
             opts.get<double>("min_required_pruning_ratio"),
             opts.get<int>("expansions_before_checking_pruning_ratio"),

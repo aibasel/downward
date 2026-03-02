@@ -180,7 +180,8 @@ public:
         document_synopsis(
             "Merges the landmarks and orderings from the parameter landmarks");
 
-        add_list_option<shared_ptr<TaskIndependentLandmarkFactory>>("lm_factories");
+        add_list_option<shared_ptr<TaskIndependentLandmarkFactory>>(
+            "lm_factories");
         add_landmark_factory_options_to_feature(*this);
 
         document_note(
@@ -197,8 +198,10 @@ public:
 
     virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<LandmarkFactoryMerged, LandmarkFactory>(
-            opts.get_list<shared_ptr<TaskIndependentLandmarkFactory>>("lm_factories"),
+        return components::make_auto_task_independent_component<
+            LandmarkFactoryMerged, LandmarkFactory>(
+            opts.get_list<shared_ptr<TaskIndependentLandmarkFactory>>(
+                "lm_factories"),
             get_landmark_factory_arguments_from_options(opts));
     }
 };

@@ -67,8 +67,7 @@ extern void add_landmark_heuristic_options_to_feature(
 extern std::tuple<
     std::shared_ptr<TaskIndependentLandmarkFactory>, bool, bool, bool, bool,
     bool, std::string, utils::Verbosity>
-get_landmark_heuristic_arguments_from_options(
-    const plugins::Options &opts);
+get_landmark_heuristic_arguments_from_options(const plugins::Options &opts);
 }
 
 #endif

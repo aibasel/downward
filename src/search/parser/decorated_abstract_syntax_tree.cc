@@ -43,8 +43,7 @@ plugins::Any DecoratedASTNode::construct() const {
     return construct(context);
 }
 
-FunctionArgument::FunctionArgument(
-    const string &key, DecoratedASTNodePtr value)
+FunctionArgument::FunctionArgument(const string &key, DecoratedASTNodePtr value)
     : key(key), value(move(value)) {
 }
 

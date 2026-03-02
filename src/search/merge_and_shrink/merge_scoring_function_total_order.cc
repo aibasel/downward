@@ -185,7 +185,8 @@ class MergeScoringFunctionTotalOrderFeature
     : public plugins::TaskIndependentFeature<
           TaskIndependentMergeScoringFunction> {
 public:
-    MergeScoringFunctionTotalOrderFeature() : TaskIndependentFeature("total_order") {
+    MergeScoringFunctionTotalOrderFeature()
+        : TaskIndependentFeature("total_order") {
         document_title("Total order");
         document_synopsis(
             "This scoring function computes a total order on the merge candidates, "

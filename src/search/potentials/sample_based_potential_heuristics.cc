@@ -42,10 +42,8 @@ static void optimize_for_samples(
 */
 static vector<unique_ptr<PotentialFunction>>
 create_sample_based_potential_functions(
-    const shared_ptr<AbstractTask> &task,
-    int num_samples, int num_heuristics, double max_potential,
-    lp::LPSolverType lpsolver,
-    int random_seed) {
+    const shared_ptr<AbstractTask> &task, int num_samples, int num_heuristics,
+    double max_potential, lp::LPSolverType lpsolver, int random_seed) {
     vector<unique_ptr<PotentialFunction>> functions;
     PotentialOptimizer optimizer(task, lpsolver, max_potential);
     shared_ptr<utils::RandomNumberGenerator> rng(utils::get_rng(random_seed));
@@ -82,7 +80,8 @@ public:
     }
 
     virtual std::shared_ptr<Evaluator> create_task_specific_component(
-        const std::shared_ptr<AbstractTask> &task, components::Cache &) const override {
+        const std::shared_ptr<AbstractTask> &task,
+        components::Cache &) const override {
         vector<unique_ptr<PotentialFunction>> potential_functions =
             create_sample_based_potential_functions(
                 task, num_samples, num_heuristics, max_potential, lpsolver,

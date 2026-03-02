@@ -64,9 +64,8 @@ bool PhOConstraints::update_constraints(
     return false;
 }
 
-class PhOConstraintsFeature
-    : public plugins::TaskIndependentFeature<
-          TaskIndependentConstraintGenerator> {
+class PhOConstraintsFeature : public plugins::TaskIndependentFeature<
+                                  TaskIndependentConstraintGenerator> {
 public:
     PhOConstraintsFeature() : TaskIndependentFeature("pho_constraints") {
         document_title("Posthoc optimization constraints");
@@ -88,8 +87,11 @@ public:
 
     virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<PhOConstraints, ConstraintGenerator>(
-            opts.get<shared_ptr<pdbs::TaskIndependentPatternCollectionGenerator>>("patterns"));
+        return components::make_auto_task_independent_component<
+            PhOConstraints, ConstraintGenerator>(
+            opts.get<
+                shared_ptr<pdbs::TaskIndependentPatternCollectionGenerator>>(
+                "patterns"));
     }
 };
 

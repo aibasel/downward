@@ -16,7 +16,8 @@ public:
             "as f-function. "
             "We break ties using the evaluator. Closed nodes are re-opened.");
 
-        add_option<shared_ptr<TaskIndependentEvaluator>>("eval", "evaluator for h-value");
+        add_option<shared_ptr<TaskIndependentEvaluator>>(
+            "eval", "evaluator for h-value");
         add_option<shared_ptr<TaskIndependentEvaluator>>(
             "lazy_evaluator",
             "An evaluator that re-evaluates a state before it is expanded.",
@@ -52,11 +53,15 @@ public:
         vector<shared_ptr<TaskIndependentEvaluator>> preferred_list;
         options_copy.set("preferred", preferred_list);
 
-        return components::make_auto_task_independent_component<eager_search::EagerSearch, SearchAlgorithm>(
-            options_copy.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
+        return components::make_auto_task_independent_component<
+            eager_search::EagerSearch, SearchAlgorithm>(
+            options_copy.get<shared_ptr<TaskIndependentOpenListFactory>>(
+                "open"),
             options_copy.get<bool>("reopen_closed"),
-            options_copy.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
-            options_copy.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
+            options_copy.get<shared_ptr<TaskIndependentEvaluator>>(
+                "f_eval", nullptr),
+            options_copy.get_list<shared_ptr<TaskIndependentEvaluator>>(
+                "preferred"),
             eager_search::get_eager_search_arguments_from_options(
                 options_copy));
     }

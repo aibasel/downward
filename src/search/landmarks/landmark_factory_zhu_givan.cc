@@ -331,7 +331,8 @@ public:
 
     virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<LandmarkFactoryZhuGivan, LandmarkFactory>(
+        return components::make_auto_task_independent_component<
+            LandmarkFactoryZhuGivan, LandmarkFactory>(
             get_use_orders_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));
     }

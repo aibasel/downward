@@ -155,7 +155,8 @@ static ParsedSearchOptions parse_cmd_line_aux(const vector<string> &args) {
                     "missing argument after --internal-previous-portfolio-plans");
             ++i;
             parsed_options.is_part_of_anytime_portfolio = true;
-            parsed_options.num_previously_generated_plans = parse_int_arg(arg, args[i]);
+            parsed_options.num_previously_generated_plans =
+                parse_int_arg(arg, args[i]);
             if (parsed_options.num_previously_generated_plans < 0)
                 input_error(
                     "argument for --internal-previous-portfolio-plans must be positive");

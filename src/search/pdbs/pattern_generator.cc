@@ -51,7 +51,8 @@ tuple<utils::Verbosity> get_generator_arguments_from_options(
 }
 
 static class PatternCollectionGeneratorCategoryPlugin
-    : public plugins::TypedCategoryPlugin<TaskIndependentPatternCollectionGenerator> {
+    : public plugins::TypedCategoryPlugin<
+          TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorCategoryPlugin()
         : TypedCategoryPlugin("PatternCollectionGenerator") {

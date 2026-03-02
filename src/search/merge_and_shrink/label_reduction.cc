@@ -342,7 +342,8 @@ public:
 
     virtual shared_ptr<TaskIndependentLabelReduction> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<LabelReduction, LabelReduction>(
+        return components::make_auto_task_independent_component<
+            LabelReduction, LabelReduction>(
             opts.get<bool>("before_shrinking"),
             opts.get<bool>("before_merging"),
             opts.get<LabelReductionMethod>("method"),

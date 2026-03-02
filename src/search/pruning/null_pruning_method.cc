@@ -31,7 +31,8 @@ public:
 
     virtual shared_ptr<TaskIndependentPruningMethod> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<NullPruningMethod, PruningMethod>(
+        return components::make_auto_task_independent_component<
+            NullPruningMethod, PruningMethod>(
             get_pruning_arguments_from_options(opts));
     }
 };

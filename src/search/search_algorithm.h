@@ -90,7 +90,8 @@ public:
     }
 };
 
-using TaskIndependentSearchAlgorithm = components::TaskIndependentComponent<SearchAlgorithm>;
+using TaskIndependentSearchAlgorithm =
+    components::TaskIndependentComponent<SearchAlgorithm>;
 
 /*
   Print evaluator values of all evaluators evaluated in the evaluation context.

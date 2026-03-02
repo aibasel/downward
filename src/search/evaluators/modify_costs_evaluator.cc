@@ -35,7 +35,8 @@ void ModifyCostsEvaluator::notify_state_transition(
 
 EvaluationResult ModifyCostsEvaluator::compute_result(
     EvaluationContext &eval_context) {
-    // TODO issue1208: see above (in particular, eval_context is specific to a state)
+    // TODO issue1208: see above (in particular, eval_context is specific to a
+    // state)
     return nested->compute_result(eval_context);
 }
 

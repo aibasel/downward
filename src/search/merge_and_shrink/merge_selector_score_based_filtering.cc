@@ -119,9 +119,10 @@ public:
 
     virtual shared_ptr<TaskIndependentMergeSelector> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<MergeSelectorScoreBasedFiltering, MergeSelector>(
+        return components::make_auto_task_independent_component<
+            MergeSelectorScoreBasedFiltering, MergeSelector>(
             opts.get_list<shared_ptr<TaskIndependentMergeScoringFunction>>(
-                    "scoring_functions"));
+                "scoring_functions"));
     }
 };
 

@@ -180,7 +180,8 @@ public:
 
     virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<TypeBasedOpenListFactory, OpenListFactory>(
+        return components::make_auto_task_independent_component<
+            TypeBasedOpenListFactory, OpenListFactory>(
             opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evaluators"),
             utils::get_rng_arguments_from_options(opts));
     }

@@ -157,8 +157,10 @@ public:
 
     virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<AlternationOpenListFactory, OpenListFactory>(
-            opts.get_list<shared_ptr<TaskIndependentOpenListFactory>>("sublists"),
+        return components::make_auto_task_independent_component<
+            AlternationOpenListFactory, OpenListFactory>(
+            opts.get_list<shared_ptr<TaskIndependentOpenListFactory>>(
+                "sublists"),
             opts.get<int>("boost"));
     }
 };

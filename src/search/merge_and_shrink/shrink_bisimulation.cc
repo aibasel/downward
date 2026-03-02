@@ -374,7 +374,8 @@ void ShrinkBisimulation::dump_strategy_specific_options(
 class ShrinkBisimulationFeature
     : public plugins::TaskIndependentFeature<TaskIndependentShrinkStrategy> {
 public:
-    ShrinkBisimulationFeature() : TaskIndependentFeature("shrink_bisimulation") {
+    ShrinkBisimulationFeature()
+        : TaskIndependentFeature("shrink_bisimulation") {
         document_title("Bismulation based shrink strategy");
         document_synopsis(
             "This shrink strategy implements the algorithm described in"
@@ -417,9 +418,9 @@ public:
 
     virtual shared_ptr<TaskIndependentShrinkStrategy> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<ShrinkBisimulation, ShrinkStrategy>(
-            opts.get<bool>("greedy"),
-            opts.get<AtLimit>("at_limit"));
+        return components::make_auto_task_independent_component<
+            ShrinkBisimulation, ShrinkStrategy>(
+            opts.get<bool>("greedy"), opts.get<AtLimit>("at_limit"));
     }
 };
 

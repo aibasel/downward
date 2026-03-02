@@ -37,8 +37,8 @@ LandmarkSumHeuristic::LandmarkSumHeuristic(
     utils::Verbosity verbosity, tasks::AxiomHandlingType axioms)
     : LandmarkHeuristic(
           // issue1208 move this transformation to task-independent level?
-          tasks::get_default_value_axioms_task_if_needed(task, axioms),
-          pref, cache_estimates, description, verbosity),
+          tasks::get_default_value_axioms_task_if_needed(task, axioms), pref,
+          cache_estimates, description, verbosity),
       dead_ends_reliable(are_dead_ends_reliable(lm_factory, task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark sum heuristic..." << endl;
@@ -193,7 +193,8 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<LandmarkSumHeuristic, Evaluator>(
+        return components::make_auto_task_independent_component<
+            LandmarkSumHeuristic, Evaluator>(
             get_landmark_heuristic_arguments_from_options(opts),
             tasks::get_axioms_arguments_from_options(opts));
     }

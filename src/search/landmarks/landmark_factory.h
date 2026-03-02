@@ -65,7 +65,8 @@ public:
         return achievers_calculated;
     }
 };
-using TaskIndependentLandmarkFactory = components::TaskIndependentComponent<LandmarkFactory>;
+using TaskIndependentLandmarkFactory =
+    components::TaskIndependentComponent<LandmarkFactory>;
 
 extern void add_landmark_factory_options_to_feature(plugins::Feature &feature);
 extern std::tuple<utils::Verbosity> get_landmark_factory_arguments_from_options(

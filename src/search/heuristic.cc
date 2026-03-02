@@ -38,11 +38,10 @@ void add_heuristic_options_to_feature(
     add_evaluator_options_to_feature(feature, description);
 }
 
-tuple<bool, string, utils::Verbosity>
-get_heuristic_arguments_from_options(const plugins::Options &opts) {
+tuple<bool, string, utils::Verbosity> get_heuristic_arguments_from_options(
+    const plugins::Options &opts) {
     return tuple_cat(
-        make_tuple(
-            opts.get<bool>("cache_estimates")),
+        make_tuple(opts.get<bool>("cache_estimates")),
         get_evaluator_arguments_from_options(opts));
 }
 

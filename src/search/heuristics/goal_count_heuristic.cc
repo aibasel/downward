@@ -49,7 +49,8 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<GoalCountHeuristic, Evaluator>(
+        return components::make_auto_task_independent_component<
+            GoalCountHeuristic, Evaluator>(
             get_heuristic_arguments_from_options(opts));
     }
 };

@@ -91,7 +91,8 @@ tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
 static class TaskIndependentEvaluatorCategoryPlugin
     : public plugins::TypedCategoryPlugin<TaskIndependentEvaluator> {
 public:
-    TaskIndependentEvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {
+    TaskIndependentEvaluatorCategoryPlugin()
+        : TypedCategoryPlugin("Evaluator") {
         document_synopsis(
             "An evaluator specification is either a newly created evaluator "
             "instance or an evaluator that has been [defined previously ../search-plugin-syntax.md#variables_as_parameters]. "

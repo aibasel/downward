@@ -66,7 +66,8 @@ public:
     virtual shared_ptr<TaskIndependentPatternCollectionGenerator>
     create_component(const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            PatternCollectionGeneratorMultipleCegar, PatternCollectionGenerator>(
+            PatternCollectionGeneratorMultipleCegar,
+            PatternCollectionGenerator>(
             get_cegar_wildcard_arguments_from_options(opts),
             get_multiple_arguments_from_options(opts));
     }

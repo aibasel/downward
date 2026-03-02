@@ -292,7 +292,8 @@ class PatternCollectionGeneratorSystematicFeature
     : public plugins::TaskIndependentFeature<
           TaskIndependentPatternCollectionGenerator> {
 public:
-    PatternCollectionGeneratorSystematicFeature() : TaskIndependentFeature("systematic") {
+    PatternCollectionGeneratorSystematicFeature()
+        : TaskIndependentFeature("systematic") {
         document_title("Systematically generated patterns");
         document_synopsis(
             "Generates all (interesting) patterns with up to pattern_max_size "
@@ -317,8 +318,8 @@ public:
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TaskIndependentPatternCollectionGenerator> create_component(
-        const plugins::Options &opts) const override {
+    virtual shared_ptr<TaskIndependentPatternCollectionGenerator>
+    create_component(const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
             PatternCollectionGeneratorSystematic, PatternCollectionGenerator>(
             opts.get<int>("pattern_max_size"),

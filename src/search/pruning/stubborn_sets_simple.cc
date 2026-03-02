@@ -78,7 +78,8 @@ void StubbornSetsSimple::handle_stubborn_operator(
 class StubbornSetsSimpleFeature
     : public plugins::TaskIndependentFeature<TaskIndependentPruningMethod> {
 public:
-    StubbornSetsSimpleFeature() : TaskIndependentFeature("stubborn_sets_simple") {
+    StubbornSetsSimpleFeature()
+        : TaskIndependentFeature("stubborn_sets_simple") {
         document_title("Stubborn sets simple");
         document_synopsis(
             "Stubborn sets represent a state pruning method which computes a subset "
@@ -107,7 +108,8 @@ public:
 
     virtual shared_ptr<TaskIndependentPruningMethod> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<StubbornSetsSimple, PruningMethod>(
+        return components::make_auto_task_independent_component<
+            StubbornSetsSimple, PruningMethod>(
             get_pruning_arguments_from_options(opts));
     }
 };

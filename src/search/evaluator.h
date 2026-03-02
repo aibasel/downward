@@ -97,7 +97,8 @@ public:
     virtual int get_cached_estimate(const State &state) const;
 };
 
-using TaskIndependentEvaluator = components::TaskIndependentComponent<Evaluator>;
+using TaskIndependentEvaluator =
+    components::TaskIndependentComponent<Evaluator>;
 
 extern void add_evaluator_options_to_feature(
     plugins::Feature &feature, const std::string &description);

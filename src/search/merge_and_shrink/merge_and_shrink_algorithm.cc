@@ -512,15 +512,20 @@ void add_merge_and_shrink_algorithm_options_to_feature(
 }
 
 tuple<
-    shared_ptr<TaskIndependentMergeStrategyFactory>, shared_ptr<TaskIndependentShrinkStrategy>,
-    shared_ptr<TaskIndependentLabelReduction>, bool, bool, int, int, int, double>
+    shared_ptr<TaskIndependentMergeStrategyFactory>,
+    shared_ptr<TaskIndependentShrinkStrategy>,
+    shared_ptr<TaskIndependentLabelReduction>, bool, bool, int, int, int,
+    double>
 get_merge_and_shrink_algorithm_arguments_from_options(
     const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
-            opts.get<shared_ptr<TaskIndependentMergeStrategyFactory>>("merge_strategy"),
-            opts.get<shared_ptr<TaskIndependentShrinkStrategy>>("shrink_strategy"),
-            opts.get<shared_ptr<TaskIndependentLabelReduction>>("label_reduction", nullptr),
+            opts.get<shared_ptr<TaskIndependentMergeStrategyFactory>>(
+                "merge_strategy"),
+            opts.get<shared_ptr<TaskIndependentShrinkStrategy>>(
+                "shrink_strategy"),
+            opts.get<shared_ptr<TaskIndependentLabelReduction>>(
+                "label_reduction", nullptr),
             opts.get<bool>("prune_unreachable_states"),
             opts.get<bool>("prune_irrelevant_states")),
         get_transition_system_size_limit_arguments_from_options(opts),

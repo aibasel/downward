@@ -93,7 +93,8 @@ public:
     }
 };
 
-using TaskIndependentLabelReduction = components::TaskIndependentComponent<LabelReduction>;
+using TaskIndependentLabelReduction =
+    components::TaskIndependentComponent<LabelReduction>;
 }
 
 #endif

@@ -27,7 +27,8 @@ public:
     std::unique_ptr<OpenList<T>> create_open_list();
 };
 
-using TaskIndependentOpenListFactory = components::TaskIndependentComponent<OpenListFactory>;
+using TaskIndependentOpenListFactory =
+    components::TaskIndependentComponent<OpenListFactory>;
 
 extern void add_open_list_options_to_feature(plugins::Feature &feature);
 extern std::tuple<bool> get_open_list_arguments_from_options(

@@ -48,7 +48,8 @@ public:
     virtual bool requires_goal_distances() const = 0;
 };
 
-using TaskIndependentMergeTreeFactory = components::TaskIndependentComponent<MergeTreeFactory>;
+using TaskIndependentMergeTreeFactory =
+    components::TaskIndependentComponent<MergeTreeFactory>;
 
 // Derived classes must call this method in their parsing methods.
 extern void add_merge_tree_options_to_feature(plugins::Feature &feature);

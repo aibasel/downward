@@ -29,8 +29,7 @@ class FunctionArgument {
     std::string key;
     DecoratedASTNodePtr value;
 public:
-    FunctionArgument(
-        const std::string &key, DecoratedASTNodePtr value);
+    FunctionArgument(const std::string &key, DecoratedASTNodePtr value);
 
     std::string get_key() const;
     const DecoratedASTNode &get_value() const;

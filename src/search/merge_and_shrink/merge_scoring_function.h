@@ -36,7 +36,8 @@ public:
     void dump_options(utils::LogProxy &log) const;
 };
 
-using TaskIndependentMergeScoringFunction = components::TaskIndependentComponent<MergeScoringFunction>;
+using TaskIndependentMergeScoringFunction =
+    components::TaskIndependentComponent<MergeScoringFunction>;
 }
 
 #endif

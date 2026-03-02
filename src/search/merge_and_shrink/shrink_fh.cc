@@ -187,7 +187,8 @@ void ShrinkFH::dump_strategy_specific_options(utils::LogProxy &log) const {
     }
 }
 
-class ShrinkFHFeature : public plugins::TaskIndependentFeature<TaskIndependentShrinkStrategy> {
+class ShrinkFHFeature
+    : public plugins::TaskIndependentFeature<TaskIndependentShrinkStrategy> {
 public:
     ShrinkFHFeature() : TaskIndependentFeature("shrink_fh") {
         document_title("f-preserving shrink strategy");
@@ -241,7 +242,8 @@ public:
 
     virtual shared_ptr<TaskIndependentShrinkStrategy> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<ShrinkFH, ShrinkStrategy>(
+        return components::make_auto_task_independent_component<
+            ShrinkFH, ShrinkStrategy>(
             opts.get<ShrinkFH::HighLow>("shrink_f"),
             opts.get<ShrinkFH::HighLow>("shrink_h"),
             get_shrink_bucket_arguments_from_options(opts));

@@ -243,8 +243,7 @@ template<typename T>
 void Feature::add_list_option(
     const std::string &key, const std::string &help,
     const std::string &default_value) {
-    add_option<std::vector<T>>(
-        key, help, default_value, Bounds::unlimited());
+    add_option<std::vector<T>>(key, help, default_value, Bounds::unlimited());
 }
 }
 

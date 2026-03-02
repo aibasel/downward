@@ -54,8 +54,7 @@ struct IsConstructibleFromArgsTuple<T, std::tuple<Ts...>> {
 };
 
 template<typename T, typename Args>
-concept ConstructibleFromArgsTuple = IsConstructibleFromArgsTuple<
-    T, Args>::value;
+concept ConstructibleFromArgsTuple =
+    IsConstructibleFromArgsTuple<T, Args>::value;
 }
 #endif
-

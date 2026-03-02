@@ -13,7 +13,8 @@ public:
         document_title("Lazy best-first search");
         document_synopsis("");
 
-        add_option<shared_ptr<TaskIndependentOpenListFactory>>("open", "open list");
+        add_option<shared_ptr<TaskIndependentOpenListFactory>>(
+            "open", "open list");
         add_option<bool>("reopen_closed", "reopen closed nodes", "false");
         add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "preferred", "use preferred operators of these evaluators", "[]");
@@ -23,7 +24,8 @@ public:
 
     virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<lazy_search::LazySearch, SearchAlgorithm>(
+        return components::make_auto_task_independent_component<
+            lazy_search::LazySearch, SearchAlgorithm>(
             opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
             opts.get<bool>("reopen_closed"),
             opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),

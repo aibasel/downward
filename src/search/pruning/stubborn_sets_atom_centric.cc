@@ -288,7 +288,8 @@ public:
 
     virtual shared_ptr<TaskIndependentPruningMethod> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<StubbornSetsAtomCentric, PruningMethod>(
+        return components::make_auto_task_independent_component<
+            StubbornSetsAtomCentric, PruningMethod>(
             opts.get<bool>("use_sibling_shortcut"),
             opts.get<AtomSelectionStrategy>("atom_selection_strategy"),
             get_pruning_arguments_from_options(opts));

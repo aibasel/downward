@@ -13,7 +13,8 @@ public:
         document_title("Eager best-first search");
         document_synopsis("");
 
-        add_option<shared_ptr<TaskIndependentOpenListFactory>>("open", "open list");
+        add_option<shared_ptr<TaskIndependentOpenListFactory>>(
+            "open", "open list");
         add_option<bool>("reopen_closed", "reopen closed nodes", "false");
         add_option<shared_ptr<TaskIndependentEvaluator>>(
             "f_eval",
@@ -27,7 +28,8 @@ public:
 
     virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<eager_search::EagerSearch, SearchAlgorithm>(
+        return components::make_auto_task_independent_component<
+            eager_search::EagerSearch, SearchAlgorithm>(
             opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
             opts.get<bool>("reopen_closed"),
             opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),
