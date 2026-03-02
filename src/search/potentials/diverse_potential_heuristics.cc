@@ -161,8 +161,8 @@ class TaskIndependentDiversePotentialHeuristics
     string description;
     utils::Verbosity verbosity;
 protected:
-    virtual std::shared_ptr<Evaluator> create_task_specific_component(
-        const std::shared_ptr<AbstractTask> &task,
+    virtual shared_ptr<Evaluator> create_task_specific_component(
+        const shared_ptr<AbstractTask> &task,
         components::Cache &) const override {
         DiversePotentialHeuristics diverse_potential_heuristics(
             task, num_samples, max_num_heuristics, max_potential, lpsolver,
@@ -175,7 +175,7 @@ public:
     TaskIndependentDiversePotentialHeuristics(
         int num_samples, int max_num_heuristics, double max_potential,
         lp::LPSolverType lpsolver, int random_seed, bool cache_estimates,
-        const std::string &description, utils::Verbosity verbosity);
+        const string &description, utils::Verbosity verbosity);
 };
 
 TaskIndependentDiversePotentialHeuristics::

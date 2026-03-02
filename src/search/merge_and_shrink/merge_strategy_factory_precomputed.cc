@@ -10,7 +10,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyFactoryPrecomputed::MergeStrategyFactoryPrecomputed(
-    const std::shared_ptr<AbstractTask> &task,
+    const shared_ptr<AbstractTask> &task,
     const shared_ptr<MergeTreeFactory> &merge_tree, utils::Verbosity verbosity)
     : MergeStrategyFactory(task, verbosity), merge_tree_factory(merge_tree) {
 }

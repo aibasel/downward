@@ -17,7 +17,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
-    const std::shared_ptr<AbstractTask> &task,
+    const shared_ptr<AbstractTask> &task,
     shared_ptr<ShrinkStrategy> shrink_strategy, int max_states,
     int max_states_before_merge, int threshold_before_merge, bool use_caching)
     : MergeScoringFunction(task),

@@ -79,8 +79,8 @@ public:
           verbosity(verbosity) {
     }
 
-    virtual std::shared_ptr<Evaluator> create_task_specific_component(
-        const std::shared_ptr<AbstractTask> &task,
+    virtual shared_ptr<Evaluator> create_task_specific_component(
+        const shared_ptr<AbstractTask> &task,
         components::Cache &) const override {
         vector<unique_ptr<PotentialFunction>> potential_functions =
             create_sample_based_potential_functions(

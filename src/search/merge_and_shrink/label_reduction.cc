@@ -27,7 +27,7 @@ using utils::ExitCode;
 
 namespace merge_and_shrink {
 LabelReduction::LabelReduction(
-    const std::shared_ptr<AbstractTask> &task, bool before_shrinking,
+    const shared_ptr<AbstractTask> &task, bool before_shrinking,
     bool before_merging, LabelReductionMethod method,
     LabelReductionSystemOrder system_order, int random_seed)
     : components::TaskSpecificComponent(task),

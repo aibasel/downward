@@ -133,7 +133,7 @@ void IteratedSearch::save_plan_if_necessary() {
 
 class TaskIndependentIteratedSearch
     : public components::TaskIndependentComponent<SearchAlgorithm> {
-    std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>>
+    vector<shared_ptr<TaskIndependentSearchAlgorithm>>
         algorithm_configs;
     bool pass_bound;
     bool repeat_last_phase;
@@ -145,8 +145,8 @@ class TaskIndependentIteratedSearch
     string description;
     utils::Verbosity verbosity;
 protected:
-    virtual std::shared_ptr<SearchAlgorithm> create_task_specific_component(
-        const std::shared_ptr<AbstractTask> &task,
+    virtual shared_ptr<SearchAlgorithm> create_task_specific_component(
+        const shared_ptr<AbstractTask> &task,
         components::Cache &cache) const {
         return make_shared<IteratedSearch>(
             task, algorithm_configs, cache, pass_bound, repeat_last_phase,
