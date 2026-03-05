@@ -44,19 +44,41 @@ int main(int argc, const char **argv) {
             parse_cmd_line(argc, argv, unit_cost);
 
         utils::Timer search_timer;
-        search_algorithm->search();
-        search_timer.stop();
-        utils::g_timer.stop();
 
-        search_algorithm->save_plan_if_necessary();
-        search_algorithm->print_statistics();
-        utils::g_log << "Search time: " << search_timer << endl;
-        utils::g_log << "Total time: " << utils::g_timer << endl;
+	try {
+	    search_algorithm->search();
+	} catch (const utils::ExitException &e) {
 
-        ExitCode exitcode = search_algorithm->found_solution()
-                                ? ExitCode::SUCCESS
-                                : ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
-        exit_with(exitcode);
+	    /* To ensure that all destructors are called before the program exits,
+	       we raise an exception in utils::exit_with() and let main() return. */
+
+	    // this branch happens only when ExitException is thrown inside search().
+
+	    search_timer.stop();
+	    utils::g_timer.stop();
+
+	    // NOTE: The following code may cons because it uses ostreams and strings.
+	    // We currently reserve the space for it with memory padding inside register_event_handlers (1MB).
+	    // TODO: make them reentrant.
+	    search_algorithm->print_statistics();
+	    utils::g_log << "Search time: " << search_timer << endl;
+	    utils::g_log << "Total time: " << utils::g_timer << endl;
+
+	    return static_cast<int>(e.get_exitcode());
+	}
+
+	search_timer.stop();
+	utils::g_timer.stop();
+
+	search_algorithm->save_plan_if_necessary();
+	search_algorithm->print_statistics();
+	utils::g_log << "Search time: " << search_timer << endl;
+	utils::g_log << "Total time: " << utils::g_timer << endl;
+
+	ExitCode exitcode = search_algorithm->found_solution()
+	    ? ExitCode::SUCCESS
+	    : ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
+	exit_with(exitcode);
     } catch (const utils::ExitException &e) {
         /* To ensure that all destructors are called before the program exits,
            we raise an exception in utils::exit_with() and let main() return. */
