@@ -43,6 +43,13 @@ public:
 class TaskIndependentComponentBase {
 public:
     virtual ~TaskIndependentComponentBase() = default;
+
+    virtual void get_task_preserving_subcomponents(
+        std::vector<TaskIndependentComponentBase *> & /*components*/) const {
+    }
+
+    virtual std::shared_ptr<TaskSpecificComponent> get_cached(
+        const std::shared_ptr<AbstractTask> &task) const = 0;
 };
 
 /*
@@ -52,8 +59,10 @@ public:
 template<internals::TaskSpecificType ComponentType>
 class TaskIndependentComponent : public TaskIndependentComponentBase {
     virtual std::shared_ptr<ComponentType> create_task_specific_component(
-        const std::shared_ptr<AbstractTask> &task, Cache &cache) const = 0;
-
+        const std::shared_ptr<AbstractTask> &task) const = 0;
+protected:
+    using CacheKey = const AbstractTask *;
+    mutable utils::HashMap<CacheKey, std::weak_ptr<ComponentType>> cache;
 public:
     using BoundType = std::shared_ptr<ComponentType>;
 
@@ -65,29 +74,37 @@ public:
       when using a heuristic both for heuristic values and for preferred
       operators), the task-specific component is shared.
 
-      In most cases, the cache information doesn't persist after the
-      construction has completed, but there are cases where it is kept alive
-      because it is needed later, for example in iterated search algorithms.
-      This is comparable to capturing local variables in a closure.
+      The cache will not keep created components alive, though. Components are
+      only reused, while a shared pointer to them exists (outside of the cache).
     */
-    BoundType bind_task(
-        const std::shared_ptr<AbstractTask> &task, Cache &cache) const {
-        BoundType component;
-        const CacheKey key = std::make_pair(this, task.get());
-        if (cache.count(key)) {
-            std::shared_ptr<TaskSpecificComponent> entry = cache.at(key);
-            component = std::dynamic_pointer_cast<ComponentType>(entry);
-            assert(component);
-        } else {
-            component = create_task_specific_component(task, cache);
+    BoundType bind_task(const std::shared_ptr<AbstractTask> &task) const {
+        BoundType component = get_cached_typed(task);
+        if (!component) {
+            const CacheKey key = task.get();
+            component = create_task_specific_component(task);
+            assert(!cache.contains(key));
             cache.emplace(key, component);
         }
         return component;
     }
 
-    BoundType bind_task(const std::shared_ptr<AbstractTask> &task) const {
-        Cache cache;
-        return bind_task(task, cache);
+    BoundType get_cached_typed(
+        const std::shared_ptr<AbstractTask> &task) const {
+        const CacheKey key = task.get();
+        if (cache.contains(key)) {
+            std::weak_ptr<ComponentType> entry = cache.at(key);
+            if (entry.expired()) {
+                cache.erase(key);
+            } else {
+                return entry.lock();
+            }
+        }
+        return nullptr;
+    }
+
+    virtual std::shared_ptr<TaskSpecificComponent> get_cached(
+        const std::shared_ptr<AbstractTask> &task) const override {
+        return get_cached_typed(task);
     }
 };
 
@@ -106,15 +123,19 @@ class AutoTaskIndependentComponent
     Args args;
 
     virtual std::shared_ptr<ComponentType> create_task_specific_component(
-        const std::shared_ptr<AbstractTask> &task,
-        Cache &cache) const override {
+        const std::shared_ptr<AbstractTask> &task) const override {
         internals::BoundArgs_t<Args> bound_args =
-            internals::bind_task_recursively(args, task, cache);
+            internals::bind_task_recursively(args, task);
         return plugins::make_shared_from_arg_tuples<T>(task, bound_args);
     }
 
 public:
     explicit AutoTaskIndependentComponent(Args &&args) : args(move(args)) {
+    }
+
+    virtual void get_task_preserving_subcomponents(
+        std::vector<TaskIndependentComponentBase *> &components) const override {
+        internals::collect_task_preserving_components(args, components);
     }
 };
 

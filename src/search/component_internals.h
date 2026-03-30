@@ -15,10 +15,6 @@ namespace components {
 class TaskSpecificComponent;
 class TaskIndependentComponentBase;
 
-using CacheKey =
-    std::pair<const TaskIndependentComponentBase *, const AbstractTask *>;
-using Cache = utils::HashMap<CacheKey, std::shared_ptr<TaskSpecificComponent>>;
-
 namespace internals {
 template<typename T>
 concept BasicType =
@@ -84,41 +80,74 @@ concept ComponentTypeOf =
 template<TaskIndependentType T>
 BoundArgs_t<std::shared_ptr<T>> bind_task_recursively(
     const std::shared_ptr<T> &component,
-    const std::shared_ptr<AbstractTask> &task, Cache &cache) {
+    const std::shared_ptr<AbstractTask> &task) {
     if (component) {
-        return component->bind_task(task, cache);
+        return component->bind_task(task);
     }
     return nullptr;
 }
 
 template<BasicType T>
-BoundArgs_t<T> bind_task_recursively(
-    const T &t, const std::shared_ptr<AbstractTask> &, Cache &) {
+BoundArgs_t<T>
+bind_task_recursively(const T &t, const std::shared_ptr<AbstractTask> &) {
     return t;
 }
 
 template<typename T>
 BoundArgs_t<std::vector<T>> bind_task_recursively(
-    const std::vector<T> &vec, const std::shared_ptr<AbstractTask> &task,
-    Cache &cache) {
+    const std::vector<T> &vec, const std::shared_ptr<AbstractTask> &task) {
     BoundArgs_t<std::vector<T>> result;
     result.reserve(vec.size());
     for (const auto &elem : vec) {
-        result.push_back(bind_task_recursively(elem, task, cache));
+        result.push_back(bind_task_recursively(elem, task));
     }
     return result;
 }
 
 template<typename... Args>
 BoundArgs_t<std::tuple<Args...>> bind_task_recursively(
-    const std::tuple<Args...> &args, const std::shared_ptr<AbstractTask> &task,
-    Cache &cache) {
+    const std::tuple<Args...> &args,
+    const std::shared_ptr<AbstractTask> &task) {
     return std::apply(
         [&](const Args &...elems) {
-            return std::make_tuple(
-                bind_task_recursively(elems, task, cache)...);
+            return std::make_tuple(bind_task_recursively(elems, task)...);
         },
         args);
+}
+
+template<BasicType T>
+void collect_task_preserving_components(
+    const T &, std::vector<TaskIndependentComponentBase *> &) {
+}
+
+template<TaskIndependentType T>
+void collect_task_preserving_components(
+    const std::shared_ptr<T> &component,
+    std::vector<TaskIndependentComponentBase *> &out) {
+    if (component) {
+        out.push_back(component.get());
+        component->get_task_preserving_subcomponents(out);
+    }
+}
+
+template<typename T>
+void collect_task_preserving_components(
+    const std::vector<T> &vec,
+    std::vector<TaskIndependentComponentBase *> &out) {
+    for (const auto &elem : vec) {
+        collect_task_preserving_components(elem, out);
+    }
+}
+
+template<typename... Ts>
+void collect_task_preserving_components(
+    const std::tuple<Ts...> &tuple,
+    std::vector<TaskIndependentComponentBase *> &out) {
+    std::apply(
+        [&](const Ts &...elems) {
+            (collect_task_preserving_components(elems, out), ...);
+        },
+        tuple);
 }
 }
 }

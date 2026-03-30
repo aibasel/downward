@@ -58,10 +58,10 @@ int ModifyCostsEvaluator::get_cached_estimate(const State &state) const {
 
 shared_ptr<Evaluator>
 TaskIndependentModifyCostsEvaluator::create_task_specific_component(
-    const shared_ptr<AbstractTask> &task, components::Cache &cache) const {
+    const shared_ptr<AbstractTask> &task) const {
     shared_ptr<AbstractTask> cost_adapted_task =
         make_shared<tasks::CostAdaptedTask>(task, cost_type);
-    return nested->bind_task(cost_adapted_task, cache);
+    return nested->bind_task(cost_adapted_task);
 }
 
 TaskIndependentModifyCostsEvaluator::TaskIndependentModifyCostsEvaluator(

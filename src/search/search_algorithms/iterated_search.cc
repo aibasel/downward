@@ -12,13 +12,11 @@ namespace iterated_search {
 IteratedSearch::IteratedSearch(
     const shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<TaskIndependentSearchAlgorithm>> &algorithm_configs,
-    const components::Cache &cache, bool pass_bound, bool repeat_last,
-    bool continue_on_fail, bool continue_on_solve, OperatorCost cost_type,
-    int bound, double max_time, const string &description,
-    utils::Verbosity verbosity)
+    bool pass_bound, bool repeat_last, bool continue_on_fail,
+    bool continue_on_solve, OperatorCost cost_type, int bound, double max_time,
+    const string &description, utils::Verbosity verbosity)
     : SearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
       algorithm_configs(algorithm_configs),
-      cache(cache),
       pass_bound(pass_bound),
       repeat_last_phase(repeat_last),
       continue_on_fail(continue_on_fail),
@@ -30,12 +28,50 @@ IteratedSearch::IteratedSearch(
     utils::verify_list_not_empty(algorithm_configs, "algorithm_configs");
 }
 
+void IteratedSearch::update_retention_set() {
+    unordered_set<TIComponent *> seen;
+    vector<std::shared_ptr<TSComponent>> new_retained_components;
+    /*
+      Loop through all future phases. If repeat_last_phase is true, then the
+      last phase always is considered a future phase, even if we currently are
+      in the last phase.
+    */
+    int start = phase;
+    int end = algorithm_configs.size();
+    if (start == end && start >= 1 && repeat_last_phase) {
+        --start;
+    }
+    for (int i = start; i < end; ++i) {
+        vector<TIComponent *> future_ti_components;
+        future_ti_components.push_back(algorithm_configs[i].get());
+        algorithm_configs[i]->get_task_preserving_subcomponents(
+            future_ti_components);
+        for (TIComponent *ti_component : future_ti_components) {
+            if (!seen.contains(ti_component)) {
+                seen.insert(ti_component);
+                std::shared_ptr<TSComponent> ts_component =
+                    ti_component->get_cached(task);
+                if (ts_component) {
+                    new_retained_components.push_back(ts_component);
+                }
+            }
+        }
+    }
+    /*
+      It is important to collect the retained components in a copy of
+      retained_components, rather than clearing the vector and using it
+      directly. This could cause retained components to go out of scope and
+      be destroyed before the new entries are computed.
+    */
+    retained_components.swap(new_retained_components);
+}
+
 shared_ptr<SearchAlgorithm> IteratedSearch::get_search_algorithm(
     int algorithm_configs_index) {
     shared_ptr<TaskIndependentSearchAlgorithm> &algorithm_config =
         algorithm_configs[algorithm_configs_index];
     shared_ptr<SearchAlgorithm> search_algorithm =
-        algorithm_config->bind_task(task, cache);
+        algorithm_config->bind_task(task);
     log << "Starting search: " << search_algorithm->get_description() << endl;
     return search_algorithm;
 }
@@ -95,6 +131,20 @@ SearchStatus IteratedSearch::step() {
     statistics.inc_generated_ops(current_stats.get_generated_ops());
     statistics.inc_reopened(current_stats.get_reopened());
 
+    /*
+      It is important to first update the retention set, then drop shared
+      pointers for the current task-specific search and the current
+      task-independent search. (Note that the last phase might be repeated. In
+      that case, we cannot delete the task-independent search.)
+    */
+    update_retention_set();
+    current_search = nullptr;
+    int num_phases = algorithm_configs.size();
+    if (!(phase - 1 >= num_phases && repeat_last_phase &&
+          last_phase_found_solution)) {
+        algorithm_configs[phase - 1] = nullptr;
+    }
+
     return step_return_value();
 }
 
@@ -145,9 +195,9 @@ class TaskIndependentIteratedSearch
     utils::Verbosity verbosity;
 protected:
     virtual shared_ptr<SearchAlgorithm> create_task_specific_component(
-        const shared_ptr<AbstractTask> &task, components::Cache &cache) const {
+        const shared_ptr<AbstractTask> &task) const {
         return make_shared<IteratedSearch>(
-            task, algorithm_configs, cache, pass_bound, repeat_last_phase,
+            task, algorithm_configs, pass_bound, repeat_last_phase,
             continue_on_fail, continue_on_solve, cost_type, bound, max_time,
             description, verbosity);
     }

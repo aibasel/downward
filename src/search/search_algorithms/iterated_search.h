@@ -11,9 +11,11 @@
 
 namespace iterated_search {
 class IteratedSearch : public SearchAlgorithm {
+    using TIComponent = components::TaskIndependentComponentBase;
+    using TSComponent = components::TaskSpecificComponent;
+
     std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>>
         algorithm_configs;
-    components::Cache cache;
     bool pass_bound;
     bool repeat_last_phase;
     bool continue_on_fail;
@@ -24,6 +26,9 @@ class IteratedSearch : public SearchAlgorithm {
     int best_bound;
     bool iterated_found_solution;
 
+    std::vector<std::shared_ptr<TSComponent>> retained_components;
+
+    void update_retention_set();
     std::shared_ptr<SearchAlgorithm> get_search_algorithm(
         int algorithm_configs_index);
     std::shared_ptr<SearchAlgorithm> create_current_phase();
@@ -36,9 +41,9 @@ public:
         const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>>
             &algorithm_configs,
-        const components::Cache &cache, bool pass_bound, bool repeat_last,
-        bool continue_on_fail, bool continue_on_solve, OperatorCost cost_type,
-        int bound, double max_time, const std::string &description,
+        bool pass_bound, bool repeat_last, bool continue_on_fail,
+        bool continue_on_solve, OperatorCost cost_type, int bound,
+        double max_time, const std::string &description,
         utils::Verbosity verbosity);
 
     virtual void save_plan_if_necessary() override;
