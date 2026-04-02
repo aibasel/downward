@@ -116,5 +116,5 @@ cat << EOF
 ===============================================================================
 Successfully prepared tag $TAG.
 Please continue with the steps on
-https://www.fast-downward.org/ForDevelopers/ReleaseWorkflow
+https://www.fast-downward.org/latest/for-developers/release-workflow/
 EOF
