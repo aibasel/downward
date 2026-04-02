@@ -47,7 +47,6 @@ jobs:
 
 
       - name: Install zlib
-        if: ${{ env.CPLEX_URL != 0 }}
         shell: cmd
         run: |
           call "${{ matrix.platform.vc }}" %ARCH%
