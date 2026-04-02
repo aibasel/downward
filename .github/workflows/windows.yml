@@ -52,7 +52,10 @@ jobs:
           call "${{ matrix.platform.vc }}" %ARCH%
 
           cd ..
-          curl.exe -f --output zlib.zip %ZLIB_URL%
+          curl.exe -f --output zlib.zip %ZLIB_URL% || (
+            echo ERROR: Failed to download zlib from %ZLIB_URL%
+            exit /b 1
+          )
           unzip zlib.zip
           del zlib.zip
           mkdir zlib
