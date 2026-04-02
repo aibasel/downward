@@ -47,7 +47,7 @@ jobs:
 
 
       - name: Install zlib
-        if: ${{ env.CPLEX_URL != 0 }}
+        # if: ${{ env.CPLEX_URL != 0 }}
         shell: cmd
         run: |
           call "${{ matrix.platform.vc }}" %ARCH%
@@ -68,7 +68,8 @@ jobs:
 
           echo "Compile zlib library"
           cd include
-          nmake /f win32/Makefile.msc
+          cmake -S . -B build -G "NMake Makefiles"
+          cmake --build build
           mkdir ..\lib
           move zdll.lib ..\lib\zdll.lib
           move zlib.lib ..\lib\zlib.lib
