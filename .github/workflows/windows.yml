@@ -53,7 +53,7 @@ jobs:
           call "${{ matrix.platform.vc }}" %ARCH%
 
           cd ..
-          curl.exe --output zlib.zip %ZLIB_URL%
+          curl.exe -f --output zlib.zip %ZLIB_URL%
           unzip zlib.zip
           del zlib.zip
           mkdir zlib
