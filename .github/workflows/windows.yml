@@ -61,7 +61,6 @@ jobs:
           unzip zlib.zip
           del zlib.zip
           mkdir zlib
-          tree -L 3 ..
           cd zlib
 
           echo "Set up zlib include directory"
@@ -69,10 +68,7 @@ jobs:
 
           echo "Compile zlib library"
           cd include
-          tree -L 3 ..
           nmake /f win32/Makefile.msc
-          # cmake -S . -B build -G "NMake Makefiles"
-          # cmake --build build
           mkdir ..\lib
           move zdll.lib ..\lib\zdll.lib
           move zlib.lib ..\lib\zlib.lib
