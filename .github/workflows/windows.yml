@@ -54,6 +54,7 @@ jobs:
           cd ..
           curl.exe -f --output zlib.zip %ZLIB_URL% || (
             echo ERROR: Failed to download zlib from %ZLIB_URL%
+            echo zlib release could be outdated. Check https://zlib.net/.
             exit /b 1
           )
           unzip zlib.zip
