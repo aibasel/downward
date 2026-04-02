@@ -15,7 +15,7 @@ env:
   cplex_DIR: D:\a\cplex
 
   CPLEX_URL: "${{ secrets.CPLEX2211_WINDOWS_URL }}"
-  ZLIB_URL: "https://www.zlib.net/zlib132.zip"
+  ZLIB_URL: "https://www.zlib.net/zlib131.zip"
 
 
 jobs:
@@ -47,6 +47,7 @@ jobs:
 
 
       - name: Install zlib
+        if: ${{ env.CPLEX_URL != 0 }}
         shell: cmd
         run: |
           call "${{ matrix.platform.vc }}" %ARCH%
