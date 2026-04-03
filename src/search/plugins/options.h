@@ -3,6 +3,8 @@
 
 #include "any.h"
 
+#include "../component.h"
+
 #include "../utils/language.h"
 #include "../utils/logging.h"
 #include "../utils/system.h"
@@ -86,7 +88,7 @@ public:
     }
 
     template<typename T>
-    T get(const std::string &key) const {
+    wrap_if_component_t<T> get(const std::string &key) const {
         const auto it = storage.find(key);
         if (it == storage.end()) {
             ABORT(
@@ -94,7 +96,9 @@ public:
                 " (type: " + utils::get_type_name<T>() + ")");
         }
         try {
-            T result = OptionsAnyCaster<T, void>::cast(it->second);
+            wrap_if_component_t<T> result =
+                OptionsAnyCaster<wrap_if_component_t<T>, void>::cast(
+                    it->second);
             return result;
         } catch (const BadAnyCast &) {
             ABORT(
@@ -105,16 +109,18 @@ public:
     }
 
     template<typename T>
-    T get(const std::string &key, const T &default_value) const {
+    wrap_if_component_t<T>
+    get(const std::string &key,
+        const wrap_if_component_t<T> &default_value) const {
         if (storage.count(key))
-            return get<T>(key);
+            return get<wrap_if_component_t<T>>(key);
         else
             return default_value;
     }
 
     template<typename T>
-    std::vector<T> get_list(const std::string &key) const {
-        return get<std::vector<T>>(key);
+    std::vector<wrap_if_component_t<T>> get_list(const std::string &key) const {
+        return get<std::vector<wrap_if_component_t<T>>>(key);
     }
 
     bool contains(const std::string &key) const;

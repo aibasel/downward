@@ -9,39 +9,36 @@
 using namespace std;
 
 namespace iterated_search {
-IteratedSearch::IteratedSearch(const plugins::Options &opts)
-    : SearchAlgorithm(opts),
-      algorithm_configs(opts.get_list<parser::LazyValue>("algorithm_configs")),
-      pass_bound(opts.get<bool>("pass_bound")),
-      repeat_last_phase(opts.get<bool>("repeat_last")),
-      continue_on_fail(opts.get<bool>("continue_on_fail")),
-      continue_on_solve(opts.get<bool>("continue_on_solve")),
+IteratedSearch::IteratedSearch(
+    const shared_ptr<AbstractTask> &task,
+    pair<
+        vector<shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>>,
+        iterated_search::HackPlaceholder>
+        search_algorithms,
+    bool pass_bound, bool repeat_last_phase, bool continue_on_fail,
+    bool continue_on_solve, OperatorCost cost_type, int bound, double max_time,
+    const string &name, utils::Verbosity verbosity)
+    : SearchAlgorithm(task, cost_type, bound, max_time, name, verbosity),
+      search_algorithms(get<0>(search_algorithms)),
+      pass_bound(pass_bound),
+      repeat_last_phase(repeat_last_phase),
+      continue_on_fail(continue_on_fail),
+      continue_on_solve(continue_on_solve),
       phase(0),
       last_phase_found_solution(false),
       best_bound(bound),
       iterated_found_solution(false) {
-    utils::verify_list_not_empty(algorithm_configs, "algorithm_configs");
 }
 
 shared_ptr<SearchAlgorithm> IteratedSearch::get_search_algorithm(
-    int algorithm_configs_index) {
-    parser::LazyValue &algorithm_config =
-        algorithm_configs[algorithm_configs_index];
-    shared_ptr<SearchAlgorithm> search_algorithm;
-    try {
-        search_algorithm =
-            algorithm_config.construct<shared_ptr<SearchAlgorithm>>();
-    } catch (const utils::ContextError &e) {
-        cerr << "Delayed construction of LazyValue failed" << endl;
-        cerr << e.get_message() << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
-    }
-    log << "Starting search: " << search_algorithm->get_description() << endl;
-    return search_algorithm;
+    int algorithm_index) {
+    log << "Starting search: '"
+        << search_algorithms[algorithm_index]->get_description() << "'" << endl;
+    return search_algorithms[algorithm_index]->get_task_specific(task, 1);
 }
 
 shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
-    int num_phases = algorithm_configs.size();
+    int num_phases = search_algorithms.size();
     if (phase >= num_phases) {
         /* We've gone through all searches. We continue if
            repeat_last_phase is true, but *not* if we didn't find a
@@ -51,7 +48,7 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
            this overrides continue_on_fail.
         */
         if (repeat_last_phase && last_phase_found_solution) {
-            return get_search_algorithm(algorithm_configs.size() - 1);
+            return get_search_algorithm(search_algorithms.size() - 1);
         } else {
             return nullptr;
         }
@@ -131,16 +128,20 @@ void IteratedSearch::save_plan_if_necessary() {
     // each successful search iteration.
 }
 
+using TaskIndependentIteratedSearch = TaskIndependentComponentFeature<
+    IteratedSearch, SearchAlgorithm, IteratedSearchArgs>;
+
 class IteratedSearchFeature
-    : public plugins::TypedFeature<SearchAlgorithm, IteratedSearch> {
+    : public plugins::TypedFeature<
+          SearchAlgorithm, TaskIndependentIteratedSearch> {
 public:
     IteratedSearchFeature() : TypedFeature("iterated") {
         document_title("Iterated search");
         document_synopsis("");
 
         add_list_option<shared_ptr<SearchAlgorithm>>(
-            "algorithm_configs", "list of search algorithms for each phase", "",
-            true);
+            "search_algorithms", "list of search algorithms for each phase",
+            "");
         add_option<bool>(
             "pass_bound",
             "use the bound of iterated search as a bound for its component "
@@ -179,26 +180,21 @@ public:
             "```");
     }
 
-    virtual shared_ptr<IteratedSearch> create_component(
+    virtual shared_ptr<TaskIndependentIteratedSearch> create_component(
         const plugins::Options &opts) const override {
-        plugins::Options options_copy(opts);
-        /*
-          The options entry 'algorithm_configs' is a LazyValue representing a
-          list of search algorithms. But iterated search expects a list of
-          LazyValues, each representing a search algorithm. We unpack this first
-          layer of laziness here to report potential errors in a more useful
-          context.
-
-          TODO: the medium-term plan is to get rid of LazyValue completely
-          and let the features create builders that in turn create the actual
-          search algorithms. Then we no longer need to be lazy because creating
-          the builder is a light-weight operation.
-        */
-        vector<parser::LazyValue> algorithm_configs =
-            opts.get<parser::LazyValue>("algorithm_configs")
-                .construct_lazy_list();
-        options_copy.set("algorithm_configs", algorithm_configs);
-        return make_shared<IteratedSearch>(options_copy);
+        utils::verify_list_not_empty(
+            opts.get_list<shared_ptr<SearchAlgorithm>>("search_algorithms"),
+            "search_algorithms");
+        return make_shared<TaskIndependentIteratedSearch>(tuple(
+            pair(
+                opts.get_list<shared_ptr<SearchAlgorithm>>("search_algorithms"),
+                HackPlaceholder()),
+            opts.get<bool>("pass_bound"), opts.get<bool>("repeat_last"),
+            opts.get<bool>("continue_on_fail"),
+            opts.get<bool>("continue_on_solve"),
+            opts.get<OperatorCost>("cost_type"), opts.get<int>("bound"),
+            opts.get<double>("max_time"), opts.get<string>("description"),
+            opts.get<utils::Verbosity>("verbosity")));
     }
 };
 

@@ -84,20 +84,21 @@ static vector<string> replace_old_style_predefinitions(
     return new_args;
 }
 
-static shared_ptr<SearchAlgorithm> parse_cmd_line_aux(
-    const vector<string> &args) {
+static shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>
+parse_cmd_line_aux(const vector<string> &args) {
     string plan_filename = "sas_plan";
     int num_previously_generated_plans = 0;
     bool is_part_of_anytime_portfolio = false;
 
-    using SearchPtr = shared_ptr<SearchAlgorithm>;
-    SearchPtr search_algorithm = nullptr;
+    using TISearchPtr =
+        shared_ptr<TaskIndependentComponentType<SearchAlgorithm>>;
+    TISearchPtr ti_search_algorithm = nullptr;
     // TODO: Remove code duplication.
     for (size_t i = 0; i < args.size(); ++i) {
         const string &arg = args[i];
         bool is_last = (i == args.size() - 1);
         if (arg == "--search") {
-            if (search_algorithm)
+            if (ti_search_algorithm)
                 input_error("multiple --search arguments defined");
             if (is_last)
                 input_error("missing argument after --search");
@@ -108,7 +109,8 @@ static shared_ptr<SearchAlgorithm> parse_cmd_line_aux(
                 parser::ASTNodePtr parsed = parser::parse(tokens);
                 parser::DecoratedASTNodePtr decorated = parsed->decorate();
                 plugins::Any constructed = decorated->construct();
-                search_algorithm = plugins::any_cast<SearchPtr>(constructed);
+                ti_search_algorithm =
+                    plugins::any_cast<TISearchPtr>(constructed);
             } catch (const plugins::BadAnyCast &) {
                 input_error(
                     "Could not interpret the argument of --search as a search algorithm.");
@@ -164,18 +166,18 @@ static shared_ptr<SearchAlgorithm> parse_cmd_line_aux(
         }
     }
 
-    if (search_algorithm) {
-        PlanManager &plan_manager = search_algorithm->get_plan_manager();
+    if (ti_search_algorithm) {
+        PlanManager &plan_manager = ti_search_algorithm->get_plan_manager();
         plan_manager.set_plan_filename(plan_filename);
         plan_manager.set_num_previously_generated_plans(
             num_previously_generated_plans);
         plan_manager.set_is_part_of_anytime_portfolio(
             is_part_of_anytime_portfolio);
     }
-    return search_algorithm;
+    return ti_search_algorithm;
 }
 
-shared_ptr<SearchAlgorithm> parse_cmd_line(
+shared_ptr<TaskIndependentComponentType<SearchAlgorithm>> parse_cmd_line(
     int argc, const char **argv, bool is_unit_cost) {
     vector<string> args;
     bool active = true;
