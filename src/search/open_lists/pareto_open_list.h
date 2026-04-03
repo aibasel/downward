@@ -11,6 +11,7 @@ class ParetoOpenListFactory : public OpenListFactory {
     bool pref_only;
 public:
     ParetoOpenListFactory(
+        const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<Evaluator>> &evals,
         bool state_uniform_selection, int random_seed, bool pref_only);
 

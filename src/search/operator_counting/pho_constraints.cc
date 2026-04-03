@@ -16,8 +16,9 @@ using namespace std;
 
 namespace operator_counting {
 PhOConstraints::PhOConstraints(
+    const shared_ptr<AbstractTask> &task,
     const shared_ptr<pdbs::PatternCollectionGenerator> &patterns)
-    : pattern_generator(patterns) {
+    : ConstraintGenerator(task), pattern_generator(patterns) {
 }
 
 void PhOConstraints::initialize_constraints(
@@ -63,10 +64,10 @@ bool PhOConstraints::update_constraints(
     return false;
 }
 
-class PhOConstraintsFeature
-    : public plugins::TypedFeature<ConstraintGenerator, PhOConstraints> {
+class PhOConstraintsFeature : public plugins::TaskIndependentFeature<
+                                  TaskIndependentConstraintGenerator> {
 public:
-    PhOConstraintsFeature() : TypedFeature("pho_constraints") {
+    PhOConstraintsFeature() : TaskIndependentFeature("pho_constraints") {
         document_title("Posthoc optimization constraints");
         document_synopsis(
             "The generator will compute a PDB for each pattern and add the"
@@ -80,14 +81,17 @@ public:
                 " Conference on Artificial Intelligence (IJCAI 2013)",
                 "2357-2364", "AAAI Press", "2013"));
 
-        add_option<shared_ptr<pdbs::PatternCollectionGenerator>>(
+        add_option<shared_ptr<pdbs::TaskIndependentPatternCollectionGenerator>>(
             "patterns", "pattern generation method", "systematic(2)");
     }
 
-    virtual shared_ptr<PhOConstraints> create_component(
+    virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PhOConstraints>(
-            opts.get<shared_ptr<pdbs::PatternCollectionGenerator>>("patterns"));
+        return components::make_auto_task_independent_component<
+            PhOConstraints, ConstraintGenerator>(
+            opts.get<
+                shared_ptr<pdbs::TaskIndependentPatternCollectionGenerator>>(
+                "patterns"));
     }
 };
 

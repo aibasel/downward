@@ -22,11 +22,12 @@ protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     OperatorCountingHeuristic(
+        const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<ConstraintGenerator>>
             &constraint_generators,
         bool use_integer_operator_counts, lp::LPSolverType lpsolver,
-        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
-        const std::string &description, utils::Verbosity verbosity);
+        bool cache_estimates, const std::string &description,
+        utils::Verbosity verbosity);
 };
 }
 

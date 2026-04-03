@@ -15,6 +15,7 @@ class BestFirstOpenListFactory : public OpenListFactory {
     bool pref_only;
 public:
     BestFirstOpenListFactory(
+        const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<Evaluator> &eval, bool pref_only);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;

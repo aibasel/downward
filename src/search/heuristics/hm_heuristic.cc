@@ -12,9 +12,9 @@ using namespace std;
 
 namespace hm_heuristic {
 HMHeuristic::HMHeuristic(
-    int m, const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const shared_ptr<AbstractTask> &task, int m, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, description, verbosity),
+    : Heuristic(task, cache_estimates, description, verbosity),
       m(m),
       has_cond_effects(task_properties::has_conditional_effects(task_proxy)),
       goals(task_properties::get_fact_pairs(task_proxy.get_goals())) {
@@ -253,9 +253,9 @@ void HMHeuristic::dump_table() const {
 }
 
 class HMHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, HMHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    HMHeuristicFeature() : TypedFeature("hm") {
+    HMHeuristicFeature() : TaskIndependentFeature("hm") {
         document_title("h^m heuristic");
 
         add_option<int>(
@@ -277,9 +277,10 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<HMHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<HMHeuristic>(
+        return components::make_auto_task_independent_component<
+            HMHeuristic, Evaluator>(
             opts.get<int>("m"), get_heuristic_arguments_from_options(opts));
     }
 };

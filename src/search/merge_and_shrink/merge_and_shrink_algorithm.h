@@ -1,6 +1,10 @@
 #ifndef MERGE_AND_SHRINK_MERGE_AND_SHRINK_ALGORITHM_H
 #define MERGE_AND_SHRINK_MERGE_AND_SHRINK_ALGORITHM_H
 
+#include "label_reduction.h"
+#include "merge_strategy_factory.h"
+#include "shrink_strategy.h"
+
 #include "../utils/logging.h"
 
 #include <memory>
@@ -19,9 +23,6 @@ class CountdownTimer;
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
-class LabelReduction;
-class MergeStrategyFactory;
-class ShrinkStrategy;
 
 class MergeAndShrinkAlgorithm {
     // TODO: when the option parser supports it, the following should become
@@ -72,8 +73,10 @@ extern std::tuple<int, int, int> handle_shrink_limit_defaults(
 extern void add_merge_and_shrink_algorithm_options_to_feature(
     plugins::Feature &feature);
 std::tuple<
-    std::shared_ptr<MergeStrategyFactory>, std::shared_ptr<ShrinkStrategy>,
-    std::shared_ptr<LabelReduction>, bool, bool, int, int, int, double>
+    std::shared_ptr<TaskIndependentMergeStrategyFactory>,
+    std::shared_ptr<TaskIndependentShrinkStrategy>,
+    std::shared_ptr<TaskIndependentLabelReduction>, bool, bool, int, int, int,
+    double>
 get_merge_and_shrink_algorithm_arguments_from_options(
     const plugins::Options &opts);
 extern void add_transition_system_size_limit_options_to_feature(

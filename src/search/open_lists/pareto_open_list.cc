@@ -221,9 +221,11 @@ bool ParetoOpenList<Entry>::is_reliable_dead_end(
 }
 
 ParetoOpenListFactory::ParetoOpenListFactory(
+    const shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<Evaluator>> &evals, bool state_uniform_selection,
     int random_seed, bool pref_only)
-    : evals(evals),
+    : OpenListFactory(task),
+      evals(evals),
       state_uniform_selection(state_uniform_selection),
       random_seed(random_seed),
       pref_only(pref_only) {
@@ -240,15 +242,16 @@ unique_ptr<EdgeOpenList> ParetoOpenListFactory::create_edge_open_list() {
 }
 
 class ParetoOpenListFeature
-    : public plugins::TypedFeature<OpenListFactory, ParetoOpenListFactory> {
+    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
 public:
-    ParetoOpenListFeature() : TypedFeature("pareto") {
+    ParetoOpenListFeature() : TaskIndependentFeature("pareto") {
         document_title("Pareto open list");
         document_synopsis(
             "Selects one of the Pareto-optimal (regarding the sub-evaluators) "
             "entries for removal.");
 
-        add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
+            "evals", "evaluators");
         add_option<bool>(
             "state_uniform_selection",
             "When removing an entry, we select a non-dominated bucket "
@@ -260,10 +263,11 @@ public:
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<ParetoOpenListFactory> create_component(
+    virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<ParetoOpenListFactory>(
-            opts.get_list<shared_ptr<Evaluator>>("evals"),
+        return components::make_auto_task_independent_component<
+            ParetoOpenListFactory, OpenListFactory>(
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
             opts.get<bool>("state_uniform_selection"),
             utils::get_rng_arguments_from_options(opts),
             get_open_list_arguments_from_options(opts));

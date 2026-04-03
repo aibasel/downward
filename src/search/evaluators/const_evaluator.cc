@@ -6,8 +6,10 @@ using namespace std;
 
 namespace const_evaluator {
 ConstEvaluator::ConstEvaluator(
-    int value, const string &description, utils::Verbosity verbosity)
-    : Evaluator(false, false, false, description, verbosity), value(value) {
+    const shared_ptr<AbstractTask> &task, int value, const string &description,
+    utils::Verbosity verbosity)
+    : Evaluator(task, false, false, false, description, verbosity),
+      value(value) {
 }
 
 EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
@@ -17,9 +19,9 @@ EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
 }
 
 class ConstEvaluatorFeature
-    : public plugins::TypedFeature<Evaluator, ConstEvaluator> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    ConstEvaluatorFeature() : TypedFeature("const") {
+    ConstEvaluatorFeature() : TaskIndependentFeature("const") {
         document_subcategory("evaluators_basic");
         document_title("Constant evaluator");
         document_synopsis("Returns a constant value.");
@@ -30,9 +32,10 @@ public:
         add_evaluator_options_to_feature(*this, "const");
     }
 
-    virtual shared_ptr<ConstEvaluator> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<ConstEvaluator>(
+        return components::make_auto_task_independent_component<
+            ConstEvaluator, Evaluator>(
             opts.get<int>("value"), get_evaluator_arguments_from_options(opts));
     }
 };

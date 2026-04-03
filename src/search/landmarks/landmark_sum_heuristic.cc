@@ -31,13 +31,13 @@ static bool are_dead_ends_reliable(
 }
 
 LandmarkSumHeuristic::LandmarkSumHeuristic(
+    const shared_ptr<AbstractTask> &task,
     const shared_ptr<LandmarkFactory> &lm_factory, bool pref, bool prog_goal,
-    bool prog_gn, bool prog_r, const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates, const string &description, utils::Verbosity verbosity,
-    tasks::AxiomHandlingType axioms)
+    bool prog_gn, bool prog_r, bool cache_estimates, const string &description,
+    utils::Verbosity verbosity, tasks::AxiomHandlingType axioms)
     : LandmarkHeuristic(
-          pref,
-          tasks::get_default_value_axioms_task_if_needed(transform, axioms),
+          // issue1208 move this transformation to task-independent level?
+          tasks::get_default_value_axioms_task_if_needed(task, axioms), pref,
           cache_estimates, description, verbosity),
       dead_ends_reliable(are_dead_ends_reliable(lm_factory, task_proxy)) {
     if (log.is_at_least_normal()) {
@@ -108,9 +108,9 @@ bool LandmarkSumHeuristic::dead_ends_are_reliable() const {
 }
 
 class LandmarkSumHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, LandmarkSumHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    LandmarkSumHeuristicFeature() : TypedFeature("landmark_sum") {
+    LandmarkSumHeuristicFeature() : TaskIndependentFeature("landmark_sum") {
         document_title("Landmark sum heuristic");
         document_synopsis(
             "Formerly known as the landmark heuristic or landmark count "
@@ -148,8 +148,8 @@ public:
             "achieve it. For satisficing search this can be counterproductive "
             "since it is often better to focus on distance from goal (i.e. "
             "length of the plan) rather than cost. In experiments we achieved "
-            "the best performance using the option "
-            "'transform=adapt_costs(one)' to enforce unit costs.");
+            "the best performance wrapping this heuristic in "
+            "'eval_modify_costs(..., cost_type=one)' to enforce unit costs.");
         document_note(
             "Preferred operators",
             "Computing preferred operators is *only enabled* when setting "
@@ -191,9 +191,10 @@ public:
                     "using a LandmarkFactory not supporting them");
     }
 
-    virtual shared_ptr<LandmarkSumHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LandmarkSumHeuristic>(
+        return components::make_auto_task_independent_component<
+            LandmarkSumHeuristic, Evaluator>(
             get_landmark_heuristic_arguments_from_options(opts),
             tasks::get_axioms_arguments_from_options(opts));
     }

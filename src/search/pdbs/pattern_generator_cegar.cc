@@ -17,9 +17,9 @@ using namespace std;
 
 namespace pdbs {
 PatternGeneratorCEGAR::PatternGeneratorCEGAR(
-    int max_pdb_size, double max_time, bool use_wildcard_plans, int random_seed,
-    utils::Verbosity verbosity)
-    : PatternGenerator(verbosity),
+    const shared_ptr<AbstractTask> &task, int max_pdb_size, double max_time,
+    bool use_wildcard_plans, int random_seed, utils::Verbosity verbosity)
+    : PatternGenerator(task, verbosity),
       max_pdb_size(max_pdb_size),
       max_time(max_time),
       use_wildcard_plans(use_wildcard_plans),
@@ -39,9 +39,9 @@ PatternInformation PatternGeneratorCEGAR::compute_pattern(
 }
 
 class PatternGeneratorCEGARFeature
-    : public plugins::TypedFeature<PatternGenerator, PatternGeneratorCEGAR> {
+    : public plugins::TaskIndependentFeature<TaskIndependentPatternGenerator> {
 public:
-    PatternGeneratorCEGARFeature() : TypedFeature("cegar_pattern") {
+    PatternGeneratorCEGARFeature() : TaskIndependentFeature("cegar_pattern") {
         document_title("CEGAR");
         document_synopsis(
             "This pattern generator uses the CEGAR algorithm restricted to a "
@@ -66,9 +66,10 @@ public:
         add_cegar_implementation_notes_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternGeneratorCEGAR> create_component(
+    virtual shared_ptr<TaskIndependentPatternGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PatternGeneratorCEGAR>(
+        return components::make_auto_task_independent_component<
+            PatternGeneratorCEGAR, PatternGenerator>(
             opts.get<int>("max_pdb_size"), opts.get<double>("max_time"),
             get_cegar_wildcard_arguments_from_options(opts),
             utils::get_rng_arguments_from_options(opts),

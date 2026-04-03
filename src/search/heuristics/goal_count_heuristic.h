@@ -9,7 +9,7 @@ protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     GoalCountHeuristic(
-        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+        const std::shared_ptr<AbstractTask> &task, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 };
 }

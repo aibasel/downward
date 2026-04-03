@@ -8,9 +8,10 @@ using namespace std;
 
 namespace max_evaluator {
 MaxEvaluator::MaxEvaluator(
+    const shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<Evaluator>> &evals, const string &description,
     utils::Verbosity verbosity)
-    : CombiningEvaluator(evals, description, verbosity) {
+    : CombiningEvaluator(task, evals, description, verbosity) {
 }
 
 int MaxEvaluator::combine_values(const vector<int> &values) {
@@ -23,9 +24,9 @@ int MaxEvaluator::combine_values(const vector<int> &values) {
 }
 
 class MaxEvaluatorFeature
-    : public plugins::TypedFeature<Evaluator, MaxEvaluator> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    MaxEvaluatorFeature() : TypedFeature("max") {
+    MaxEvaluatorFeature() : TaskIndependentFeature("max") {
         document_subcategory("evaluators_basic");
         document_title("Max evaluator");
         document_synopsis("Calculates the maximum of the sub-evaluators.");
@@ -33,9 +34,10 @@ public:
             *this, "max");
     }
 
-    virtual shared_ptr<MaxEvaluator> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<MaxEvaluator>(
+        return components::make_auto_task_independent_component<
+            MaxEvaluator, Evaluator>(
             combining_evaluator::get_combining_evaluator_arguments_from_options(
                 opts));
     }

@@ -138,9 +138,10 @@ void EpsilonGreedyOpenList<Entry>::clear() {
 }
 
 EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
-    const shared_ptr<Evaluator> &eval, double epsilon, int random_seed,
-    bool pref_only)
-    : eval(eval),
+    const shared_ptr<AbstractTask> &task, const shared_ptr<Evaluator> &eval,
+    double epsilon, int random_seed, bool pref_only)
+    : OpenListFactory(task),
+      eval(eval),
       epsilon(epsilon),
       random_seed(random_seed),
       pref_only(pref_only) {
@@ -158,10 +159,9 @@ unique_ptr<EdgeOpenList> EpsilonGreedyOpenListFactory::create_edge_open_list() {
 }
 
 class EpsilonGreedyOpenListFeature
-    : public plugins::TypedFeature<
-          OpenListFactory, EpsilonGreedyOpenListFactory> {
+    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
 public:
-    EpsilonGreedyOpenListFeature() : TypedFeature("epsilon_greedy") {
+    EpsilonGreedyOpenListFeature() : TaskIndependentFeature("epsilon_greedy") {
         document_title("Epsilon-greedy open list");
         document_synopsis(
             "Chooses an entry uniformly randomly with probability "
@@ -177,7 +177,7 @@ public:
                 " on Automated Planning and Scheduling (ICAPS 2014)",
                 "375-379", "AAAI Press", "2014"));
 
-        add_option<shared_ptr<Evaluator>>("eval", "evaluator");
+        add_option<shared_ptr<TaskIndependentEvaluator>>("eval", "evaluator");
         add_option<double>(
             "epsilon", "probability for choosing the next entry randomly",
             "0.2", plugins::Bounds("0.0", "1.0"));
@@ -185,11 +185,11 @@ public:
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<EpsilonGreedyOpenListFactory> create_component(
+    virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            EpsilonGreedyOpenListFactory>(
-            opts.get<shared_ptr<Evaluator>>("eval"),
+        return components::make_auto_task_independent_component<
+            EpsilonGreedyOpenListFactory, OpenListFactory>(
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
             opts.get<double>("epsilon"),
             utils::get_rng_arguments_from_options(opts),
             get_open_list_arguments_from_options(opts));

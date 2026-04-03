@@ -88,6 +88,9 @@ using PackedStateBin = int_packer::IntPacker::Bin;
 
   For helper functions that work on task related objects, please see the
   task_properties.h module.
+
+  TODO: update this after we get rid of convert_ancestor_state and
+  get_ancestor_operator_id.
 */
 
 template<typename T>

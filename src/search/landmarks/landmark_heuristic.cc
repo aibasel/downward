@@ -14,9 +14,9 @@ using namespace std;
 
 namespace landmarks {
 LandmarkHeuristic::LandmarkHeuristic(
-    bool use_preferred_operators, const shared_ptr<AbstractTask> &transform,
+    const shared_ptr<AbstractTask> &task, bool use_preferred_operators,
     bool cache_estimates, const string &description, utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, description, verbosity),
+    : Heuristic(task, cache_estimates, description, verbosity),
       initial_landmark_graph_has_cycle_of_natural_orderings(false),
       use_preferred_operators(use_preferred_operators),
       successor_generator(nullptr) {
@@ -68,6 +68,9 @@ void LandmarkHeuristic::initialize(
       transforms costs and/or adds negated axioms. However, there is currently
       no good way to do this, so we use this incomplete, slightly less safe
       test.
+
+      issue1208 update the comment after removing the task transformation code.
+      The check can hopefully just be removed.
     */
     if (task != tasks::g_root_task &&
         dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr &&
@@ -240,7 +243,7 @@ void add_landmark_heuristic_options_to_feature(
             "Automated Planning and Scheduling (ICAPS 2023)",
             "70-79", "AAAI Press", "2023"));
 
-    feature.add_option<shared_ptr<LandmarkFactory>>(
+    feature.add_option<shared_ptr<TaskIndependentLandmarkFactory>>(
         "lm_factory", "the set of landmarks to use for this heuristic. "
                       "The set of landmarks can be specified here, "
                       "or predefined (see LandmarkFactory).");
@@ -260,12 +263,12 @@ void add_landmark_heuristic_options_to_feature(
 }
 
 tuple<
-    shared_ptr<LandmarkFactory>, bool, bool, bool, bool,
-    shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
+    shared_ptr<TaskIndependentLandmarkFactory>, bool, bool, bool, bool, bool,
+    string, utils::Verbosity>
 get_landmark_heuristic_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(
-            opts.get<shared_ptr<LandmarkFactory>>("lm_factory"),
+            opts.get<shared_ptr<TaskIndependentLandmarkFactory>>("lm_factory"),
             opts.get<bool>("pref"), opts.get<bool>("prog_goal"),
             opts.get<bool>("prog_gn"), opts.get<bool>("prog_r")),
         get_heuristic_arguments_from_options(opts));

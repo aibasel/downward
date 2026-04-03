@@ -15,6 +15,7 @@ class PatternCollectionGeneratorManual : public PatternCollectionGenerator {
         const std::shared_ptr<AbstractTask> &task) override;
 public:
     explicit PatternCollectionGeneratorManual(
+        const std::shared_ptr<AbstractTask> &task,
         const std::vector<Pattern> &patterns, utils::Verbosity verbosity);
 };
 }

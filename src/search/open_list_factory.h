@@ -1,17 +1,17 @@
 #ifndef OPEN_LIST_FACTORY_H
 #define OPEN_LIST_FACTORY_H
 
+#include "component.h"
 #include "open_list.h"
 
 #include "plugins/plugin.h"
 
 #include <memory>
 
-class OpenListFactory {
+class OpenListFactory : public components::TaskSpecificComponent {
+protected:
+    explicit OpenListFactory(const std::shared_ptr<AbstractTask> &task);
 public:
-    OpenListFactory() = default;
-    virtual ~OpenListFactory() = default;
-
     OpenListFactory(const OpenListFactory &) = delete;
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() = 0;
@@ -26,6 +26,9 @@ public:
     template<typename T>
     std::unique_ptr<OpenList<T>> create_open_list();
 };
+
+using TaskIndependentOpenListFactory =
+    components::TaskIndependentComponent<OpenListFactory>;
 
 extern void add_open_list_options_to_feature(plugins::Feature &feature);
 extern std::tuple<bool> get_open_list_arguments_from_options(

@@ -411,10 +411,11 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(
 }
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
-    tasks::AxiomHandlingType axioms, const shared_ptr<AbstractTask> &transform,
+    const shared_ptr<AbstractTask> &task, tasks::AxiomHandlingType axioms,
     bool cache_estimates, const string &description, utils::Verbosity verbosity)
     : Heuristic(
-          tasks::get_default_value_axioms_task_if_needed(transform, axioms),
+          // issue1208 move this transformation to task-independent level?
+          tasks::get_default_value_axioms_task_if_needed(task, axioms),
           cache_estimates, description, verbosity),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
@@ -450,10 +451,9 @@ bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
 }
 
 class ContextEnhancedAdditiveHeuristicFeature
-    : public plugins::TypedFeature<
-          Evaluator, ContextEnhancedAdditiveHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    ContextEnhancedAdditiveHeuristicFeature() : TypedFeature("cea") {
+    ContextEnhancedAdditiveHeuristicFeature() : TaskIndependentFeature("cea") {
         document_title("Context-enhanced additive heuristic");
 
         tasks::add_axioms_option_to_feature(*this);
@@ -469,10 +469,10 @@ public:
         document_property("preferred operators", "yes");
     }
 
-    virtual shared_ptr<ContextEnhancedAdditiveHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            ContextEnhancedAdditiveHeuristic>(
+        return components::make_auto_task_independent_component<
+            ContextEnhancedAdditiveHeuristic, Evaluator>(
             tasks::get_axioms_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));
     }

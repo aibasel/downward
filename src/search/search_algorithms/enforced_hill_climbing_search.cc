@@ -19,19 +19,19 @@ using PrefEval = pref_evaluator::PrefEvaluator;
 
 static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
     utils::Verbosity verbosity, bool use_preferred,
-    PreferredUsage preferred_usage) {
+    PreferredUsage preferred_usage, const shared_ptr<AbstractTask> &task) {
     /*
       TODO: this g-evaluator should probably be set up to always
       ignore costs since EHC is supposed to implement a breadth-first
       search, not a uniform-cost search. So this seems to be a bug.
     */
     shared_ptr<Evaluator> g_evaluator =
-        make_shared<GEval>("ehc.g_eval", verbosity);
+        make_shared<GEval>(task, "ehc.g_eval", verbosity);
 
     if (!use_preferred ||
         preferred_usage == PreferredUsage::PRUNE_BY_PREFERRED) {
         return make_shared<standard_scalar_open_list::BestFirstOpenListFactory>(
-            g_evaluator, false);
+            task, g_evaluator, false);
     } else {
         /*
           TODO: Reduce code duplication with search_common.cc,
@@ -42,18 +42,20 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
           open list code.
         */
         vector<shared_ptr<Evaluator>> evals = {
-            g_evaluator, make_shared<PrefEval>("ehc.pref_eval", verbosity)};
+            g_evaluator,
+            make_shared<PrefEval>(task, "ehc.pref_eval", verbosity)};
         return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(
-            evals, false, true);
+            task, evals, false, true);
     }
 }
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
-    const shared_ptr<Evaluator> &h, PreferredUsage preferred_usage,
+    const shared_ptr<AbstractTask> &task, const shared_ptr<Evaluator> &h,
+    PreferredUsage preferred_usage,
     const vector<shared_ptr<Evaluator>> &preferred, OperatorCost cost_type,
     int bound, double max_time, const string &description,
     utils::Verbosity verbosity)
-    : SearchAlgorithm(cost_type, bound, max_time, description, verbosity),
+    : SearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
       evaluator(h),
       preferred_operator_evaluators(preferred),
       preferred_usage(preferred_usage),
@@ -75,9 +77,9 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
                         preferred_operator_evaluators.end(),
                         evaluator) != preferred_operator_evaluators.end();
 
-    open_list =
-        create_ehc_open_list_factory(verbosity, use_preferred, preferred_usage)
-            ->create_edge_open_list();
+    open_list = create_ehc_open_list_factory(
+                    verbosity, use_preferred, preferred_usage, task)
+                    ->create_edge_open_list();
 }
 
 void EnforcedHillClimbingSearch::reach_state(
@@ -260,28 +262,28 @@ void EnforcedHillClimbingSearch::print_statistics() const {
 }
 
 class EnforcedHillClimbingSearchFeature
-    : public plugins::TypedFeature<
-          SearchAlgorithm, EnforcedHillClimbingSearch> {
+    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
 public:
-    EnforcedHillClimbingSearchFeature() : TypedFeature("ehc") {
+    EnforcedHillClimbingSearchFeature() : TaskIndependentFeature("ehc") {
         document_title("Lazy enforced hill-climbing");
         document_synopsis("");
 
-        add_option<shared_ptr<Evaluator>>("h", "heuristic");
+        add_option<shared_ptr<TaskIndependentEvaluator>>("h", "heuristic");
         add_option<PreferredUsage>(
             "preferred_usage", "preferred operator usage",
             "prune_by_preferred");
-        add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "preferred", "use preferred operators of these evaluators", "[]");
         add_search_algorithm_options_to_feature(*this, "ehc");
     }
 
-    virtual shared_ptr<EnforcedHillClimbingSearch> create_component(
+    virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<EnforcedHillClimbingSearch>(
-            opts.get<shared_ptr<Evaluator>>("h"),
+        return components::make_auto_task_independent_component<
+            EnforcedHillClimbingSearch, SearchAlgorithm>(
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("h"),
             opts.get<PreferredUsage>("preferred_usage"),
-            opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
             get_search_algorithm_arguments_from_options(opts));
     }
 };

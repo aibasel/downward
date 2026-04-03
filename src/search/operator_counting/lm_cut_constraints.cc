@@ -11,6 +11,10 @@
 using namespace std;
 
 namespace operator_counting {
+LMCutConstraints::LMCutConstraints(const shared_ptr<AbstractTask> &task)
+    : ConstraintGenerator(task) {
+}
+
 void LMCutConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &) {
     TaskProxy task_proxy(*task);
@@ -41,10 +45,10 @@ bool LMCutConstraints::update_constraints(
     }
 }
 
-class LMCutConstraintsFeature
-    : public plugins::TypedFeature<ConstraintGenerator, LMCutConstraints> {
+class LMCutConstraintsFeature : public plugins::TaskIndependentFeature<
+                                    TaskIndependentConstraintGenerator> {
 public:
-    LMCutConstraintsFeature() : TypedFeature("lmcut_constraints") {
+    LMCutConstraintsFeature() : TaskIndependentFeature("lmcut_constraints") {
         document_title("LM-cut landmark constraints");
         document_synopsis(
             "Computes a set of landmarks in each state using the LM-cut method. "
@@ -70,9 +74,10 @@ public:
                 "2268-2274", "AAAI Press", "2013"));
     }
 
-    virtual shared_ptr<LMCutConstraints> create_component(
+    virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &) const override {
-        return make_shared<LMCutConstraints>();
+        return components::make_auto_task_independent_component<
+            LMCutConstraints, ConstraintGenerator>();
     }
 };
 

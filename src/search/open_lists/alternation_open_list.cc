@@ -125,8 +125,9 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
 }
 
 AlternationOpenListFactory::AlternationOpenListFactory(
+    const shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<OpenListFactory>> &sublists, int boost)
-    : sublists(sublists), boost(boost) {
+    : OpenListFactory(task), sublists(sublists), boost(boost) {
     utils::verify_list_not_empty(sublists, "sublists");
 }
 
@@ -140,13 +141,12 @@ unique_ptr<EdgeOpenList> AlternationOpenListFactory::create_edge_open_list() {
 }
 
 class AlternationOpenListFeature
-    : public plugins::TypedFeature<
-          OpenListFactory, AlternationOpenListFactory> {
+    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
 public:
-    AlternationOpenListFeature() : TypedFeature("alt") {
+    AlternationOpenListFeature() : TaskIndependentFeature("alt") {
         document_title("Alternation open list");
         document_synopsis("Alternates between several open lists.");
-        add_list_option<shared_ptr<OpenListFactory>>(
+        add_list_option<shared_ptr<TaskIndependentOpenListFactory>>(
             "sublists", "open lists between which this one alternates");
         add_option<int>(
             "boost",
@@ -155,10 +155,12 @@ public:
             "0");
     }
 
-    virtual shared_ptr<AlternationOpenListFactory> create_component(
+    virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<AlternationOpenListFactory>(
-            opts.get_list<shared_ptr<OpenListFactory>>("sublists"),
+        return components::make_auto_task_independent_component<
+            AlternationOpenListFactory, OpenListFactory>(
+            opts.get_list<shared_ptr<TaskIndependentOpenListFactory>>(
+                "sublists"),
             opts.get<int>("boost"));
     }
 };

@@ -11,10 +11,9 @@ using namespace std;
 namespace ff_heuristic {
 // construction and destruction
 FFHeuristic::FFHeuristic(
-    tasks::AxiomHandlingType axioms, const shared_ptr<AbstractTask> &transform,
+    const shared_ptr<AbstractTask> &task, tasks::AxiomHandlingType axioms,
     bool cache_estimates, const string &description, utils::Verbosity verbosity)
-    : AdditiveHeuristic(
-          axioms, transform, cache_estimates, description, verbosity),
+    : AdditiveHeuristic(task, axioms, cache_estimates, description, verbosity),
       relaxed_plan(task_proxy.get_operators().size(), false) {
     if (log.is_at_least_normal()) {
         log << "Initializing FF heuristic..." << endl;
@@ -71,9 +70,9 @@ int FFHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class FFHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, FFHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    FFHeuristicFeature() : TypedFeature("ff") {
+    FFHeuristicFeature() : TaskIndependentFeature("ff") {
         document_title("FF heuristic");
 
         relaxation_heuristic::add_relaxation_heuristic_options_to_feature(
@@ -89,9 +88,10 @@ public:
         document_property("preferred operators", "yes");
     }
 
-    virtual shared_ptr<FFHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<FFHeuristic>(
+        return components::make_auto_task_independent_component<
+            FFHeuristic, Evaluator>(
             relaxation_heuristic::
                 get_relaxation_heuristic_arguments_from_options(opts));
     }

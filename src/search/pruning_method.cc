@@ -8,8 +8,10 @@
 
 using namespace std;
 
-PruningMethod::PruningMethod(utils::Verbosity verbosity)
-    : timer(false),
+PruningMethod::PruningMethod(
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
+    : components::TaskSpecificComponent(task),
+      timer(false),
       log(utils::get_log_for_verbosity(verbosity)),
       task(nullptr) {
 }
@@ -76,7 +78,7 @@ tuple<utils::Verbosity> get_pruning_arguments_from_options(
 }
 
 static class PruningMethodCategoryPlugin
-    : public plugins::TypedCategoryPlugin<PruningMethod> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentPruningMethod> {
 public:
     PruningMethodCategoryPlugin() : TypedCategoryPlugin("PruningMethod") {
         document_synopsis(

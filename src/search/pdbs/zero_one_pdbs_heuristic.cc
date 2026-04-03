@@ -19,10 +19,10 @@ static ZeroOnePDBs get_zero_one_pdbs_from_generator(
 }
 
 ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
+    const shared_ptr<AbstractTask> &task,
     const shared_ptr<PatternCollectionGenerator> &patterns,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, description, verbosity),
+    bool cache_estimates, const string &description, utils::Verbosity verbosity)
+    : Heuristic(task, cache_estimates, description, verbosity),
       zero_one_pdbs(get_zero_one_pdbs_from_generator(task, patterns)) {
 }
 
@@ -35,9 +35,9 @@ int ZeroOnePDBsHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class ZeroOnePDBsHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, ZeroOnePDBsHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    ZeroOnePDBsHeuristicFeature() : TypedFeature("zopdbs") {
+    ZeroOnePDBsHeuristicFeature() : TaskIndependentFeature("zopdbs") {
         document_subcategory("heuristics_pdb");
         document_title("Zero-One PDB");
         document_synopsis(
@@ -51,7 +51,7 @@ public:
             "into account for one pattern (the first one which it affects) and set "
             "to zero for all other affected patterns.");
 
-        add_option<shared_ptr<PatternCollectionGenerator>>(
+        add_option<shared_ptr<TaskIndependentPatternCollectionGenerator>>(
             "patterns", "pattern generation method", "systematic(1)");
         add_heuristic_options_to_feature(*this, "zopdbs");
 
@@ -65,10 +65,12 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<ZeroOnePDBsHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<ZeroOnePDBsHeuristic>(
-            opts.get<shared_ptr<PatternCollectionGenerator>>("patterns"),
+        return components::make_auto_task_independent_component<
+            ZeroOnePDBsHeuristic, Evaluator>(
+            opts.get<shared_ptr<TaskIndependentPatternCollectionGenerator>>(
+                "patterns"),
             get_heuristic_arguments_from_options(opts));
     }
 };

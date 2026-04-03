@@ -9,6 +9,7 @@ class AlternationOpenListFactory : public OpenListFactory {
     int boost;
 public:
     AlternationOpenListFactory(
+        const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<OpenListFactory>> &sublists,
         int boost);
 
