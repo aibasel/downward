@@ -24,6 +24,10 @@ void LimitedPruning::initialize(const shared_ptr<AbstractTask> &task) {
     log << "pruning method: limited" << endl;
 }
 
+bool LimitedPruning::is_safe() const {
+    return pruning_method->is_safe();
+}
+
 void LimitedPruning::prune(const State &state, vector<OperatorID> &op_ids) {
     if (is_pruning_disabled) {
         return;

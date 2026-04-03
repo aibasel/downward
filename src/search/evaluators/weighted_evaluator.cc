@@ -19,8 +19,14 @@ WeightedEvaluator::WeightedEvaluator(
       weight(weight) {
 }
 
-bool WeightedEvaluator::dead_ends_are_reliable() const {
-    return evaluator->dead_ends_are_reliable();
+bool WeightedEvaluator::is_safe() const {
+    if (weight == 0) {
+        return true;
+    }
+    if (weight == EvaluationResult::INFTY) {
+        return false;
+    }
+    return evaluator->is_safe();
 }
 
 EvaluationResult WeightedEvaluator::compute_result(
