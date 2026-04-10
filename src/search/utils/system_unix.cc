@@ -42,6 +42,10 @@
 using namespace std;
 
 namespace utils {
+
+static void* emergency_reserve = nullptr;
+static const std::size_t reserve_size = 1024 * 1024; // 1MB
+
 static void write_reentrant(int filedescr, const char *message, int len) {
     while (len > 0) {
         int written;
@@ -164,8 +168,21 @@ static void out_of_memory_handler() {
       memory is not sufficient, we can consider using sigaltstack to reserve
       memory for the stack of the signal handler and raising a signal here.
     */
-    write_reentrant_str(STDOUT_FILENO, "Failed to allocate memory.\n");
-    exit_with_reentrant(ExitCode::SEARCH_OUT_OF_MEMORY);
+    // Above is an old comment. The old behavior immediately went to the else branch.
+    // Instead of exiting immediately, we free the padding memory,
+    // throw utils::ExitException, catch it in main, and exit gracefully.
+    // Throwing and catching the exception unwinds the stack, which ensures running the destructors.
+    // Masataro Asai 2026/03/05
+    if (emergency_reserve) {
+        std::free(emergency_reserve);
+        emergency_reserve = nullptr;
+	write_reentrant_str(STDOUT_FILENO, "Failed to allocate memory.\n");
+	write_reentrant_str(STDOUT_FILENO, "Trying to exit gracefully.\n");
+	exit_with(ExitCode::SEARCH_OUT_OF_MEMORY);
+    } else {
+	write_reentrant_str(STDOUT_FILENO, "Failed to allocate memory (second time). Exiting.\n");
+	exit_with_reentrant(ExitCode::SEARCH_OUT_OF_MEMORY);
+    }
 }
 
 static void signal_handler(int signal_number) {
@@ -223,6 +240,8 @@ int get_peak_memory_in_kb() {
 }
 
 void register_event_handlers() {
+    emergency_reserve = std::malloc(reserve_size);
+
     // Terminate when running out of memory.
     set_new_handler(out_of_memory_handler);
 
