@@ -15,13 +15,14 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorMultipleRandom::
     PatternCollectionGeneratorMultipleRandom(
-        bool bidirectional, int max_pdb_size, int max_collection_size,
+        const shared_ptr<AbstractTask> &task, bool bidirectional,
+        int max_pdb_size, int max_collection_size,
         double pattern_generation_max_time, double total_max_time,
         double stagnation_limit, double blacklist_trigger_percentage,
         bool enable_blacklist_on_stagnation, int random_seed,
         utils::Verbosity verbosity)
     : PatternCollectionGeneratorMultiple(
-          max_pdb_size, max_collection_size, pattern_generation_max_time,
+          task, max_pdb_size, max_collection_size, pattern_generation_max_time,
           total_max_time, stagnation_limit, blacklist_trigger_percentage,
           enable_blacklist_on_stagnation, random_seed, verbosity),
       bidirectional(bidirectional) {
@@ -53,12 +54,11 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
 }
 
 class PatternCollectionGeneratorMultipleRandomFeature
-    : public plugins::TypedFeature<
-          PatternCollectionGenerator,
-          PatternCollectionGeneratorMultipleRandom> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorMultipleRandomFeature()
-        : TypedFeature("random_patterns") {
+        : TaskIndependentFeature("random_patterns") {
         document_title("Multiple random patterns");
         document_synopsis(
             "This pattern collection generator implements the 'multiple "
@@ -77,10 +77,11 @@ public:
         add_multiple_algorithm_implementation_notes_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorMultipleRandom>
+    virtual shared_ptr<TaskIndependentPatternCollectionGenerator>
     create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            PatternCollectionGeneratorMultipleRandom>(
+        return components::make_auto_task_independent_component<
+            PatternCollectionGeneratorMultipleRandom,
+            PatternCollectionGenerator>(
             get_random_pattern_bidirectional_arguments_from_options(opts),
             get_multiple_arguments_from_options(opts));
     }

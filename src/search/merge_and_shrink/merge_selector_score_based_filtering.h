@@ -20,6 +20,7 @@ protected:
         utils::LogProxy &log) const override;
 public:
     explicit MergeSelectorScoreBasedFiltering(
+        const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<MergeScoringFunction>>
             &scoring_functions);
     virtual std::pair<int, int> select_merge_from_candidates(

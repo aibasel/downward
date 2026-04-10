@@ -105,7 +105,9 @@ class DeleteRelaxationRRConstraints : public ConstraintGenerator {
         const TaskProxy &task_proxy, const LPVariableIDs &lp_var_ids,
         lp::LinearProgram &lp);
 public:
-    explicit DeleteRelaxationRRConstraints(const plugins::Options &opts);
+    DeleteRelaxationRRConstraints(
+        const std::shared_ptr<AbstractTask> &task,
+        AcyclicityType acyclicity_type, bool use_integer_vars);
 
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task,

@@ -7,14 +7,15 @@ using namespace std;
 
 namespace plugin_eager_greedy {
 class EagerGreedySearchFeature
-    : public plugins::TypedFeature<SearchAlgorithm, eager_search::EagerSearch> {
+    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
 public:
-    EagerGreedySearchFeature() : TypedFeature("eager_greedy") {
+    EagerGreedySearchFeature() : TaskIndependentFeature("eager_greedy") {
         document_title("Greedy search (eager)");
         document_synopsis("");
 
-        add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
-        add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
+            "evals", "evaluators");
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "preferred", "use preferred operators of these evaluators", "[]");
         add_option<int>(
             "boost", "boost value for preferred operator open lists", "0");
@@ -56,14 +57,17 @@ public:
             true);
     }
 
-    virtual shared_ptr<eager_search::EagerSearch> create_component(
+    virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<eager_search::EagerSearch>(
+        return components::make_auto_task_independent_component<
+            eager_search::EagerSearch, SearchAlgorithm>(
             search_common::create_greedy_open_list_factory(
-                opts.get_list<shared_ptr<Evaluator>>("evals"),
-                opts.get_list<shared_ptr<Evaluator>>("preferred"),
+                opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
+                opts.get_list<shared_ptr<TaskIndependentEvaluator>>(
+                    "preferred"),
                 opts.get<int>("boost")),
-            false, nullptr, opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            false, shared_ptr<TaskIndependentEvaluator>(nullptr),
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
             eager_search::get_eager_search_arguments_from_options(opts));
     }
 };

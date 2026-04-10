@@ -2,6 +2,7 @@
 
 #include "evaluation_context.h"
 #include "evaluator.h"
+#include "pruning_method.h"
 
 #include "algorithms/ordered_set.h"
 #include "plugins/plugin.h"
@@ -39,13 +40,12 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
 }
 
 SearchAlgorithm::SearchAlgorithm(
-    OperatorCost cost_type, int bound, double max_time,
-    const string &description, utils::Verbosity verbosity)
-    : description(description),
+    const shared_ptr<AbstractTask> &task, OperatorCost cost_type, int bound,
+    double max_time, const string &description, utils::Verbosity verbosity)
+    : components::TaskSpecificComponent(task),
+      description(description),
       status(IN_PROGRESS),
       solution_found(false),
-      task(tasks::g_root_task),
-      task_proxy(*task),
       log(utils::get_log_for_verbosity(verbosity)),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
@@ -60,35 +60,6 @@ SearchAlgorithm::SearchAlgorithm(
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
     }
     task_properties::print_variable_statistics(task_proxy);
-}
-
-SearchAlgorithm::SearchAlgorithm(
-    const plugins::Options
-        &opts) // TODO options object is needed for iterated search, the
-               // prototype for issue559 resolves this
-    : description(opts.get_unparsed_config()),
-      status(IN_PROGRESS),
-      solution_found(false),
-      task(tasks::g_root_task),
-      task_proxy(*task),
-      log(utils::get_log_for_verbosity(
-          opts.get<utils::Verbosity>("verbosity"))),
-      state_registry(task_proxy),
-      successor_generator(get_successor_generator(task_proxy, log)),
-      search_space(state_registry, log),
-      statistics(log),
-      cost_type(opts.get<OperatorCost>("cost_type")),
-      is_unit_cost(task_properties::is_unit_cost(task_proxy)),
-      max_time(opts.get<double>("max_time")) {
-    if (opts.get<int>("bound") < 0) {
-        cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
-        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    }
-    bound = opts.get<int>("bound");
-    task_properties::print_variable_statistics(task_proxy);
-}
-
-SearchAlgorithm::~SearchAlgorithm() {
 }
 
 bool SearchAlgorithm::found_solution() const {
@@ -161,7 +132,7 @@ void print_initial_evaluator_values(const EvaluationContext &eval_context) {
    classes.
    TODO: Figure out where it belongs and move it there. */
 void add_search_pruning_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<shared_ptr<PruningMethod>>(
+    feature.add_option<shared_ptr<TaskIndependentPruningMethod>>(
         "pruning",
         "Pruning methods can prune or reorder the set of applicable operators in "
         "each state and thereby influence the number and order of successor states "
@@ -169,9 +140,10 @@ void add_search_pruning_options_to_feature(plugins::Feature &feature) {
         "null()");
 }
 
-tuple<shared_ptr<PruningMethod>> get_search_pruning_arguments_from_options(
-    const plugins::Options &opts) {
-    return make_tuple(opts.get<shared_ptr<PruningMethod>>("pruning"));
+tuple<shared_ptr<TaskIndependentPruningMethod>>
+get_search_pruning_arguments_from_options(const plugins::Options &opts) {
+    return make_tuple(
+        opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning"));
 }
 
 void add_search_algorithm_options_to_feature(
@@ -234,8 +206,19 @@ tuple<bool, bool, int> get_successors_order_arguments_from_options(
         utils::get_rng_arguments_from_options(opts));
 }
 
-static class SearchAlgorithmCategoryPlugin
+static class TaskSpecificSearchAlgorithmCategoryPlugin
     : public plugins::TypedCategoryPlugin<SearchAlgorithm> {
+public:
+    TaskSpecificSearchAlgorithmCategoryPlugin()
+        : TypedCategoryPlugin("Task-specific SearchAlgorithm") {
+        // TODO: Replace add synopsis for the wiki page.
+        document_synopsis(
+            "This page describes the supported search algorithms.");
+    }
+} _old_category_plugin;
+
+static class SearchAlgorithmCategoryPlugin
+    : public plugins::TypedCategoryPlugin<TaskIndependentSearchAlgorithm> {
 public:
     SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("SearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.

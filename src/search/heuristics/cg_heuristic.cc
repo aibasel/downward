@@ -17,11 +17,12 @@ using namespace domain_transition_graph;
 
 namespace cg_heuristic {
 CGHeuristic::CGHeuristic(
-    int max_cache_size, tasks::AxiomHandlingType axioms,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const shared_ptr<AbstractTask> &task, int max_cache_size,
+    tasks::AxiomHandlingType axioms, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : Heuristic(
-          tasks::get_default_value_axioms_task_if_needed(transform, axioms),
+          // issue1208 move this transformation to task-independent level?
+          tasks::get_default_value_axioms_task_if_needed(task, axioms),
           cache_estimates, description, verbosity),
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
@@ -286,9 +287,9 @@ void CGHeuristic::mark_helpful_transitions(
 }
 
 class CGHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, CGHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    CGHeuristicFeature() : TypedFeature("cg") {
+    CGHeuristicFeature() : TaskIndependentFeature("cg") {
         document_title("Causal graph heuristic");
 
         add_option<int>(
@@ -308,9 +309,10 @@ public:
         document_property("preferred operators", "yes");
     }
 
-    virtual shared_ptr<CGHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<CGHeuristic>(
+        return components::make_auto_task_independent_component<
+            CGHeuristic, Evaluator>(
             opts.get<int>("max_cache_size"),
             tasks::get_axioms_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));

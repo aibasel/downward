@@ -1,9 +1,5 @@
 #include "abstract_task.h"
 
-#include "per_task_information.h"
-
-#include "plugins/plugin.h"
-
 #include <iostream>
 
 using namespace std;
@@ -14,12 +10,3 @@ ostream &operator<<(ostream &os, const FactPair &fact_pair) {
     os << fact_pair.var << "=" << fact_pair.value;
     return os;
 }
-
-static class AbstractTaskCategoryPlugin
-    : public plugins::TypedCategoryPlugin<AbstractTask> {
-public:
-    AbstractTaskCategoryPlugin() : TypedCategoryPlugin("AbstractTask") {
-        document_synopsis(
-            "This page describes available transformations of the root task.");
-    }
-} _category_plugin;

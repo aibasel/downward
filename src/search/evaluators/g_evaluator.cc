@@ -8,8 +8,10 @@
 using namespace std;
 
 namespace g_evaluator {
-GEvaluator::GEvaluator(const string &description, utils::Verbosity verbosity)
-    : Evaluator(false, false, false, description, verbosity) {
+GEvaluator::GEvaluator(
+    const shared_ptr<AbstractTask> &task, const string &description,
+    utils::Verbosity verbosity)
+    : Evaluator(task, false, false, false, description, verbosity) {
 }
 
 EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
@@ -18,9 +20,10 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
     return result;
 }
 
-class GEvaluatorFeature : public plugins::TypedFeature<Evaluator, GEvaluator> {
+class GEvaluatorFeature
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    GEvaluatorFeature() : TypedFeature("g") {
+    GEvaluatorFeature() : TaskIndependentFeature("g") {
         document_subcategory("evaluators_basic");
         document_title("g-value evaluator");
         document_synopsis(
@@ -28,10 +31,10 @@ public:
         add_evaluator_options_to_feature(*this, "g");
     }
 
-    virtual shared_ptr<GEvaluator> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<GEvaluator>(
-            get_evaluator_arguments_from_options(opts));
+        return components::make_auto_task_independent_component<
+            GEvaluator, Evaluator>(get_evaluator_arguments_from_options(opts));
     }
 };
 

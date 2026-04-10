@@ -11,8 +11,9 @@
 using namespace std;
 
 namespace operator_counting {
-StateEquationConstraints::StateEquationConstraints(utils::Verbosity verbosity)
-    : log(utils::get_log_for_verbosity(verbosity)) {
+StateEquationConstraints::StateEquationConstraints(
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
+    : ConstraintGenerator(task), log(utils::get_log_for_verbosity(verbosity)) {
 }
 
 static void add_indices_to_constraint(
@@ -120,11 +121,11 @@ bool StateEquationConstraints::update_constraints(
 }
 
 class StateEquationConstraintsFeature
-    : public plugins::TypedFeature<
-          ConstraintGenerator, StateEquationConstraints> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentConstraintGenerator> {
 public:
     StateEquationConstraintsFeature()
-        : TypedFeature("state_equation_constraints") {
+        : TaskIndependentFeature("state_equation_constraints") {
         document_title("State equation constraints");
         document_synopsis(
             "For each fact, a permanent constraint is added that considers the net "
@@ -160,9 +161,10 @@ public:
         utils::add_log_options_to_feature(*this);
     }
 
-    virtual shared_ptr<StateEquationConstraints> create_component(
+    virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<StateEquationConstraints>(
+        return components::make_auto_task_independent_component<
+            StateEquationConstraints, ConstraintGenerator>(
             utils::get_log_arguments_from_options(opts));
     }
 };

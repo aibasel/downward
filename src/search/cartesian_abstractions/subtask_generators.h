@@ -1,6 +1,8 @@
 #ifndef CARTESIAN_ABSTRACTIONS_SUBTASK_GENERATORS_H
 #define CARTESIAN_ABSTRACTIONS_SUBTASK_GENERATORS_H
 
+#include "../component.h"
+
 #include <memory>
 #include <vector>
 
@@ -34,13 +36,16 @@ enum class FactOrder {
 /*
   Create focused subtasks.
 */
-class SubtaskGenerator {
+class SubtaskGenerator : public components::TaskSpecificComponent {
 public:
+    explicit SubtaskGenerator(const std::shared_ptr<AbstractTask> &task);
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task,
         utils::LogProxy &log) const = 0;
-    virtual ~SubtaskGenerator() = default;
 };
+
+using TaskIndependentSubtaskGenerator =
+    components::TaskIndependentComponent<SubtaskGenerator>;
 
 /*
   Return copies of the original task.
@@ -49,7 +54,7 @@ class TaskDuplicator : public SubtaskGenerator {
     int num_copies;
 
 public:
-    explicit TaskDuplicator(int copies);
+    TaskDuplicator(const std::shared_ptr<AbstractTask> &task, int copies);
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task,
@@ -64,7 +69,9 @@ class GoalDecomposition : public SubtaskGenerator {
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
 public:
-    explicit GoalDecomposition(FactOrder order, int random_seed);
+    GoalDecomposition(
+        const std::shared_ptr<AbstractTask> &task, FactOrder order,
+        int random_seed);
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task,
@@ -87,8 +94,9 @@ class LandmarkDecomposition : public SubtaskGenerator {
         const landmarks::LandmarkNode *node) const;
 
 public:
-    explicit LandmarkDecomposition(
-        FactOrder order, int random_seed, bool combine_facts);
+    LandmarkDecomposition(
+        const std::shared_ptr<AbstractTask> &task, FactOrder order,
+        int random_seed, bool combine_facts);
 
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task,

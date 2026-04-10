@@ -17,9 +17,11 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
-    AtomicTSOrder atomic_ts_order, ProductTSOrder product_ts_order,
-    bool atomic_before_product, int random_seed)
-    : atomic_ts_order(atomic_ts_order),
+    const shared_ptr<AbstractTask> &task, AtomicTSOrder atomic_ts_order,
+    ProductTSOrder product_ts_order, bool atomic_before_product,
+    int random_seed)
+    : MergeScoringFunction(task),
+      atomic_ts_order(atomic_ts_order),
       product_ts_order(product_ts_order),
       atomic_before_product(atomic_before_product),
       random_seed(random_seed),
@@ -180,10 +182,11 @@ void MergeScoringFunctionTotalOrder::add_options_to_feature(
 }
 
 class MergeScoringFunctionTotalOrderFeature
-    : public plugins::TypedFeature<
-          MergeScoringFunction, MergeScoringFunctionTotalOrder> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentMergeScoringFunction> {
 public:
-    MergeScoringFunctionTotalOrderFeature() : TypedFeature("total_order") {
+    MergeScoringFunctionTotalOrderFeature()
+        : TaskIndependentFeature("total_order") {
         document_title("Total order");
         document_synopsis(
             "This scoring function computes a total order on the merge candidates, "
@@ -205,10 +208,10 @@ public:
         MergeScoringFunctionTotalOrder::add_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeScoringFunctionTotalOrder> create_component(
+    virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            MergeScoringFunctionTotalOrder>(
+        return components::make_auto_task_independent_component<
+            MergeScoringFunctionTotalOrder, MergeScoringFunction>(
             opts.get<AtomicTSOrder>("atomic_ts_order"),
             opts.get<ProductTSOrder>("product_ts_order"),
             opts.get<bool>("atomic_before_product"),

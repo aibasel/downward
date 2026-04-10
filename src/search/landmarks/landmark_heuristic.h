@@ -1,6 +1,8 @@
 #ifndef LANDMARKS_LANDMARK_HEURISTIC_H
 #define LANDMARKS_LANDMARK_HEURISTIC_H
 
+#include "landmark_factory.h"
+
 #include "../heuristic.h"
 
 #include "../tasks/default_value_axioms_task.h"
@@ -13,9 +15,6 @@ class SuccessorGenerator;
 }
 
 namespace landmarks {
-class LandmarkFactory;
-class LandmarkGraph;
-class LandmarkNode;
 class LandmarkStatusManager;
 
 class LandmarkHeuristic : public Heuristic {
@@ -48,9 +47,9 @@ protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     LandmarkHeuristic(
-        bool use_preferred_operators,
-        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
-        const std::string &description, utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &task, bool use_preferred_operators,
+        bool cache_estimates, const std::string &description,
+        utils::Verbosity verbosity);
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) override {
@@ -66,8 +65,8 @@ public:
 extern void add_landmark_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<
-    std::shared_ptr<LandmarkFactory>, bool, bool, bool, bool,
-    std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity>
+    std::shared_ptr<TaskIndependentLandmarkFactory>, bool, bool, bool, bool,
+    bool, std::string, utils::Verbosity>
 get_landmark_heuristic_arguments_from_options(const plugins::Options &opts);
 }
 

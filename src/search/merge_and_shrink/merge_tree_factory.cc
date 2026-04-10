@@ -12,8 +12,12 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeTreeFactory::MergeTreeFactory(int random_seed, UpdateOption update_option)
-    : rng(utils::get_rng(random_seed)), update_option(update_option) {
+MergeTreeFactory::MergeTreeFactory(
+    const shared_ptr<AbstractTask> &task, int random_seed,
+    UpdateOption update_option)
+    : components::TaskSpecificComponent(task),
+      rng(utils::get_rng(random_seed)),
+      update_option(update_option) {
 }
 
 void MergeTreeFactory::dump_options(utils::LogProxy &log) const {
@@ -61,7 +65,7 @@ tuple<int, UpdateOption> get_merge_tree_arguments_from_options(
 }
 
 static class MergeTreeFactoryCategoryPlugin
-    : public plugins::TypedCategoryPlugin<MergeTreeFactory> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentMergeTreeFactory> {
 public:
     MergeTreeFactoryCategoryPlugin() : TypedCategoryPlugin("MergeTree") {
         document_synopsis(

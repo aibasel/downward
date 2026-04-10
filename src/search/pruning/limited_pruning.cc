@@ -7,9 +7,10 @@ using namespace std;
 
 namespace limited_pruning {
 LimitedPruning::LimitedPruning(
+    const shared_ptr<AbstractTask> &task,
     const shared_ptr<PruningMethod> &pruning, double min_required_pruning_ratio,
     int expansions_before_checking_pruning_ratio, utils::Verbosity verbosity)
-    : PruningMethod(verbosity),
+    : PruningMethod(task, verbosity),
       pruning_method(pruning),
       min_required_pruning_ratio(min_required_pruning_ratio),
       num_expansions_before_checking_pruning_ratio(
@@ -55,9 +56,9 @@ void LimitedPruning::prune(const State &state, vector<OperatorID> &op_ids) {
 }
 
 class LimitedPruningFeature
-    : public plugins::TypedFeature<PruningMethod, LimitedPruning> {
+    : public plugins::TaskIndependentFeature<TaskIndependentPruningMethod> {
 public:
-    LimitedPruningFeature() : TypedFeature("limited_pruning") {
+    LimitedPruningFeature() : TaskIndependentFeature("limited_pruning") {
         document_title("Limited pruning");
         document_synopsis(
             "Limited pruning applies another pruning method and switches it off "
@@ -66,7 +67,7 @@ public:
             "divided by the sum of all operators before pruning, considering all "
             "previous expansions.");
 
-        add_option<shared_ptr<PruningMethod>>(
+        add_option<shared_ptr<TaskIndependentPruningMethod>>(
             "pruning", "the underlying pruning method to be applied");
         add_option<double>(
             "min_required_pruning_ratio",
@@ -87,10 +88,11 @@ public:
             "in an eager search such as astar.");
     }
 
-    virtual shared_ptr<LimitedPruning> create_component(
+    virtual shared_ptr<TaskIndependentPruningMethod> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LimitedPruning>(
-            opts.get<shared_ptr<PruningMethod>>("pruning"),
+        return components::make_auto_task_independent_component<
+            LimitedPruning, PruningMethod>(
+            opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning"),
             opts.get<double>("min_required_pruning_ratio"),
             opts.get<int>("expansions_before_checking_pruning_ratio"),
             get_pruning_arguments_from_options(opts));

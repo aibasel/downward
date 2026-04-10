@@ -13,11 +13,11 @@ using namespace std;
 
 namespace operator_counting {
 OperatorCountingHeuristic::OperatorCountingHeuristic(
+    const shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<ConstraintGenerator>> &constraint_generators,
     bool use_integer_operator_counts, lp::LPSolverType lpsolver,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, description, verbosity),
+    bool cache_estimates, const string &description, utils::Verbosity verbosity)
+    : Heuristic(task, cache_estimates, description, verbosity),
       constraint_generators(constraint_generators),
       lp_solver(lpsolver) {
     utils::verify_list_not_empty(
@@ -65,9 +65,10 @@ int OperatorCountingHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class OperatorCountingHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, OperatorCountingHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    OperatorCountingHeuristicFeature() : TypedFeature("operatorcounting") {
+    OperatorCountingHeuristicFeature()
+        : TaskIndependentFeature("operatorcounting") {
         document_title("Operator-counting heuristic");
         document_synopsis(
             "An operator-counting heuristic computes a linear program (LP) in each "
@@ -87,7 +88,7 @@ public:
                 " on Automated Planning and Scheduling (ICAPS 2014)",
                 "226-234", "AAAI Press", "2014"));
 
-        add_list_option<shared_ptr<ConstraintGenerator>>(
+        add_list_option<shared_ptr<TaskIndependentConstraintGenerator>>(
             "constraint_generators",
             "methods that generate constraints over operator-counting variables");
         add_option<bool>(
@@ -120,10 +121,11 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<OperatorCountingHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<OperatorCountingHeuristic>(
-            opts.get_list<shared_ptr<ConstraintGenerator>>(
+        return components::make_auto_task_independent_component<
+            OperatorCountingHeuristic, Evaluator>(
+            opts.get_list<shared_ptr<TaskIndependentConstraintGenerator>>(
                 "constraint_generators"),
             opts.get<bool>("use_integer_operator_counts"),
             lp::get_lp_solver_arguments_from_options(opts),

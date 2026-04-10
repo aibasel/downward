@@ -9,8 +9,9 @@ using namespace std;
 
 namespace pref_evaluator {
 PrefEvaluator::PrefEvaluator(
-    const string &description, utils::Verbosity verbosity)
-    : Evaluator(false, false, false, description, verbosity) {
+    const shared_ptr<AbstractTask> &task, const string &description,
+    utils::Verbosity verbosity)
+    : Evaluator(task, false, false, false, description, verbosity) {
 }
 
 EvaluationResult PrefEvaluator::compute_result(
@@ -24,9 +25,9 @@ EvaluationResult PrefEvaluator::compute_result(
 }
 
 class PrefEvaluatorFeature
-    : public plugins::TypedFeature<Evaluator, PrefEvaluator> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
-    PrefEvaluatorFeature() : TypedFeature("pref") {
+    PrefEvaluatorFeature() : TaskIndependentFeature("pref") {
         document_subcategory("evaluators_basic");
         document_title("Preference evaluator");
         document_synopsis("Returns 0 if preferred is true and 1 otherwise.");
@@ -34,9 +35,10 @@ public:
         add_evaluator_options_to_feature(*this, "pref");
     }
 
-    virtual shared_ptr<PrefEvaluator> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PrefEvaluator>(
+        return components::make_auto_task_independent_component<
+            PrefEvaluator, Evaluator>(
             get_evaluator_arguments_from_options(opts));
     }
 };

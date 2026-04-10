@@ -16,10 +16,10 @@ using namespace std;
 
 namespace potentials {
 DiversePotentialHeuristics::DiversePotentialHeuristics(
-    int num_samples, int max_num_heuristics, double max_potential,
-    lp::LPSolverType lpsolver, const shared_ptr<AbstractTask> &transform,
+    const shared_ptr<AbstractTask> &task, int num_samples,
+    int max_num_heuristics, double max_potential, lp::LPSolverType lpsolver,
     int random_seed, utils::Verbosity verbosity)
-    : optimizer(transform, lpsolver, max_potential),
+    : optimizer(task, lpsolver, max_potential),
       max_num_heuristics(max_num_heuristics),
       num_samples(num_samples),
       rng(utils::get_rng(random_seed)),
@@ -150,10 +150,53 @@ DiversePotentialHeuristics::find_functions() {
     return move(diverse_functions);
 }
 
-class DiversePotentialMaxHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, PotentialMaxHeuristic> {
+class TaskIndependentDiversePotentialHeuristics
+    : public TaskIndependentEvaluator {
+    int num_samples;
+    int max_num_heuristics;
+    double max_potential;
+    lp::LPSolverType lpsolver;
+    int random_seed;
+    bool cache_estimates;
+    string description;
+    utils::Verbosity verbosity;
+protected:
+    virtual shared_ptr<Evaluator> create_task_specific_component(
+        const shared_ptr<AbstractTask> &task) const override {
+        DiversePotentialHeuristics diverse_potential_heuristics(
+            task, num_samples, max_num_heuristics, max_potential, lpsolver,
+            random_seed, verbosity);
+        return make_shared<PotentialMaxHeuristic>(
+            task, diverse_potential_heuristics.find_functions(),
+            cache_estimates, description, verbosity);
+    }
 public:
-    DiversePotentialMaxHeuristicFeature() : TypedFeature("diverse_potentials") {
+    TaskIndependentDiversePotentialHeuristics(
+        int num_samples, int max_num_heuristics, double max_potential,
+        lp::LPSolverType lpsolver, int random_seed, bool cache_estimates,
+        const string &description, utils::Verbosity verbosity);
+};
+
+TaskIndependentDiversePotentialHeuristics::
+    TaskIndependentDiversePotentialHeuristics(
+        int num_samples, int max_num_heuristics, double max_potential,
+        lp::LPSolverType lpsolver, int random_seed, bool cache_estimates,
+        const string &description, utils::Verbosity verbosity)
+    : num_samples(num_samples),
+      max_num_heuristics(max_num_heuristics),
+      max_potential(max_potential),
+      lpsolver(lpsolver),
+      random_seed(random_seed),
+      cache_estimates(cache_estimates),
+      description(description),
+      verbosity(verbosity) {
+}
+
+class DiversePotentialMaxHeuristicFeature
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+public:
+    DiversePotentialMaxHeuristicFeature()
+        : TaskIndependentFeature("diverse_potentials") {
         document_subcategory("heuristics_potentials");
         document_title("Diverse potential heuristics");
         document_synopsis(get_admissible_potentials_reference());
@@ -169,20 +212,14 @@ public:
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PotentialMaxHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return make_shared<PotentialMaxHeuristic>(
-            DiversePotentialHeuristics(
-                opts.get<int>("num_samples"),
-                opts.get<int>("max_num_heuristics"),
-                opts.get<double>("max_potential"),
-                opts.get<lp::LPSolverType>("lpsolver"),
-                opts.get<shared_ptr<AbstractTask>>("transform"),
-                opts.get<int>("random_seed"),
-                opts.get<utils::Verbosity>("verbosity"))
-                .find_functions(),
-            opts.get<shared_ptr<AbstractTask>>("transform"),
-            opts.get<bool>("cache_estimates"), opts.get<string>("description"),
+        return make_shared<TaskIndependentDiversePotentialHeuristics>(
+            opts.get<int>("num_samples"), opts.get<int>("max_num_heuristics"),
+            opts.get<double>("max_potential"),
+            opts.get<lp::LPSolverType>("lpsolver"),
+            opts.get<int>("random_seed"), opts.get<bool>("cache_estimates"),
+            opts.get<string>("description"),
             opts.get<utils::Verbosity>("verbosity"));
     }
 };

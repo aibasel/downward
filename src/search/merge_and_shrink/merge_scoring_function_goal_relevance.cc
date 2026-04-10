@@ -9,6 +9,11 @@
 using namespace std;
 
 namespace merge_and_shrink {
+MergeScoringFunctionGoalRelevance::MergeScoringFunctionGoalRelevance(
+    const shared_ptr<AbstractTask> &task)
+    : MergeScoringFunction(task) {
+}
+
 vector<double> MergeScoringFunctionGoalRelevance::compute_scores(
     const FactoredTransitionSystem &fts,
     const vector<pair<int, int>> &merge_candidates) {
@@ -40,11 +45,11 @@ string MergeScoringFunctionGoalRelevance::name() const {
 }
 
 class MergeScoringFunctionGoalRelevanceFeature
-    : public plugins::TypedFeature<
-          MergeScoringFunction, MergeScoringFunctionGoalRelevance> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentMergeScoringFunction> {
 public:
     MergeScoringFunctionGoalRelevanceFeature()
-        : TypedFeature("goal_relevance") {
+        : TaskIndependentFeature("goal_relevance") {
         document_title("Goal relevance scoring");
         document_synopsis(
             "This scoring function assigns a merge candidate a value of 0 iff at "
@@ -53,9 +58,10 @@ public:
             "All other candidates get a score of positive infinity.");
     }
 
-    virtual shared_ptr<MergeScoringFunctionGoalRelevance> create_component(
+    virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &) const override {
-        return make_shared<MergeScoringFunctionGoalRelevance>();
+        return components::make_auto_task_independent_component<
+            MergeScoringFunctionGoalRelevance, MergeScoringFunction>();
     }
 };
 

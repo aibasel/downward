@@ -187,9 +187,11 @@ int DeleteRelaxationRRConstraints::LPVariableIDs::id_of_t(FactPair f) const {
 }
 
 DeleteRelaxationRRConstraints::DeleteRelaxationRRConstraints(
-    const plugins::Options &opts)
-    : acyclicity_type(opts.get<AcyclicityType>("acyclicity_type")),
-      use_integer_vars(opts.get<bool>("use_integer_vars")) {
+    const shared_ptr<AbstractTask> &task, AcyclicityType acyclicity_type,
+    bool use_integer_vars)
+    : ConstraintGenerator(task),
+      acyclicity_type(acyclicity_type),
+      use_integer_vars(use_integer_vars) {
 }
 
 int DeleteRelaxationRRConstraints::get_constraint_id(FactPair f) const {
@@ -556,21 +558,19 @@ bool DeleteRelaxationRRConstraints::update_constraints(
 }
 
 class DeleteRelaxationRRConstraintsFeature
-    : public plugins::TypedFeature<
-          ConstraintGenerator, DeleteRelaxationRRConstraints> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentConstraintGenerator> {
 public:
     DeleteRelaxationRRConstraintsFeature()
-        : TypedFeature("delete_relaxation_rr_constraints") {
+        : TaskIndependentFeature("delete_relaxation_rr_constraints") {
         document_title(
             "Delete relaxation constraints from Rankooh and Rintanen");
         document_synopsis(
             "Operator-counting constraints based on the delete relaxation. By "
             "default the constraints encode an easy-to-compute relaxation of "
-            "h^+^. "
-            "With the right settings, these constraints can be used to compute "
-            "the "
-            "optimal delete-relaxation heuristic h^+^ (see example below). "
-            "For details, see" +
+            "h^+^. With the right settings, these constraints can be used to "
+            "compute the optimal delete-relaxation heuristic h^+^ (see example "
+            "below). For details, see" +
             utils::format_journal_reference(
                 {"Masood Feyzbakhsh Rankooh", "Jussi Rintanen"},
                 "Efficient Computation and Informative Estimation of"
@@ -617,6 +617,14 @@ public:
             "recommend using this formulation as it can generally be solved "
             "more efficiently, in particular in case of the h^+^ "
             "configuration, and some relaxations offer tighter bounds.\n");
+    }
+
+    virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
+        const plugins::Options &opts) const override {
+        return components::make_auto_task_independent_component<
+            DeleteRelaxationRRConstraints, ConstraintGenerator>(
+            opts.get<AcyclicityType>("acyclicity_type"),
+            opts.get<bool>("use_integer_vars"));
     }
 };
 

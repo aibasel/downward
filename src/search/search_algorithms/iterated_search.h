@@ -1,6 +1,7 @@
 #ifndef SEARCH_ALGORITHMS_ITERATED_SEARCH_H
 #define SEARCH_ALGORITHMS_ITERATED_SEARCH_H
 
+#include "../component.h"
 #include "../search_algorithm.h"
 
 #include "../parser/decorated_abstract_syntax_tree.h"
@@ -10,8 +11,11 @@
 
 namespace iterated_search {
 class IteratedSearch : public SearchAlgorithm {
-    std::vector<parser::LazyValue> algorithm_configs;
+    using TIComponent = components::TaskIndependentComponentBase;
+    using TSComponent = components::TaskSpecificComponent;
 
+    std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>>
+        algorithm_configs;
     bool pass_bound;
     bool repeat_last_phase;
     bool continue_on_fail;
@@ -22,6 +26,9 @@ class IteratedSearch : public SearchAlgorithm {
     int best_bound;
     bool iterated_found_solution;
 
+    std::vector<std::shared_ptr<TSComponent>> retained_components;
+
+    void update_retention_set();
     std::shared_ptr<SearchAlgorithm> get_search_algorithm(
         int algorithm_configs_index);
     std::shared_ptr<SearchAlgorithm> create_current_phase();
@@ -30,9 +37,14 @@ class IteratedSearch : public SearchAlgorithm {
     virtual SearchStatus step() override;
 
 public:
-    IteratedSearch(const plugins::Options
-                       &opts); // TODO this still needs the options objects, the
-                               // prototype for issue559 resolves this
+    IteratedSearch(
+        const std::shared_ptr<AbstractTask> &task,
+        const std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>>
+            &algorithm_configs,
+        bool pass_bound, bool repeat_last, bool continue_on_fail,
+        bool continue_on_solve, OperatorCost cost_type, int bound,
+        double max_time, const std::string &description,
+        utils::Verbosity verbosity);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;

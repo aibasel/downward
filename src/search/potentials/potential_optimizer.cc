@@ -19,9 +19,9 @@ static int get_undefined_value(VariableProxy var) {
 }
 
 PotentialOptimizer::PotentialOptimizer(
-    const shared_ptr<AbstractTask> &transform, lp::LPSolverType lpsolver,
+    const shared_ptr<AbstractTask> &task, lp::LPSolverType lpsolver,
     double max_potential)
-    : task(transform),
+    : task(task),
       task_proxy(*task),
       lp_solver(lpsolver),
       max_potential(max_potential),

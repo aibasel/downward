@@ -23,8 +23,9 @@ static bool contain_conflicting_fact(
     return false;
 }
 
-StubbornSetsActionCentric::StubbornSetsActionCentric(utils::Verbosity verbosity)
-    : StubbornSets(verbosity) {
+StubbornSetsActionCentric::StubbornSetsActionCentric(
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
+    : StubbornSets(task, verbosity) {
 }
 
 void StubbornSetsActionCentric::compute_stubborn_set(const State &state) {

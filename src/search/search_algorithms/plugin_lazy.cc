@@ -7,26 +7,28 @@ using namespace std;
 
 namespace plugin_lazy {
 class LazySearchFeature
-    : public plugins::TypedFeature<SearchAlgorithm, lazy_search::LazySearch> {
+    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
 public:
-    LazySearchFeature() : TypedFeature("lazy") {
+    LazySearchFeature() : TaskIndependentFeature("lazy") {
         document_title("Lazy best-first search");
         document_synopsis("");
 
-        add_option<shared_ptr<OpenListFactory>>("open", "open list");
+        add_option<shared_ptr<TaskIndependentOpenListFactory>>(
+            "open", "open list");
         add_option<bool>("reopen_closed", "reopen closed nodes", "false");
-        add_list_option<shared_ptr<Evaluator>>(
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "preferred", "use preferred operators of these evaluators", "[]");
         add_successors_order_options_to_feature(*this);
         add_search_algorithm_options_to_feature(*this, "lazy");
     }
 
-    virtual shared_ptr<lazy_search::LazySearch> create_component(
+    virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<lazy_search::LazySearch>(
-            opts.get<shared_ptr<OpenListFactory>>("open"),
+        return components::make_auto_task_independent_component<
+            lazy_search::LazySearch, SearchAlgorithm>(
+            opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
             opts.get<bool>("reopen_closed"),
-            opts.get_list<shared_ptr<Evaluator>>("preferred"),
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),
             get_successors_order_arguments_from_options(opts),
             get_search_algorithm_arguments_from_options(opts));
     }

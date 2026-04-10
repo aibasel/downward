@@ -5,6 +5,10 @@
 
 using namespace std;
 
+OpenListFactory::OpenListFactory(const shared_ptr<AbstractTask> &task)
+    : components::TaskSpecificComponent(task) {
+}
+
 template<>
 unique_ptr<StateOpenList> OpenListFactory::create_open_list() {
     return create_state_open_list();
@@ -26,7 +30,7 @@ tuple<bool> get_open_list_arguments_from_options(const plugins::Options &opts) {
 }
 
 static class OpenListFactoryCategoryPlugin
-    : public plugins::TypedCategoryPlugin<OpenListFactory> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentOpenListFactory> {
 public:
     OpenListFactoryCategoryPlugin() : TypedCategoryPlugin("OpenList") {
         // TODO: use document_synopsis() for the wiki page.

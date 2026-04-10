@@ -17,9 +17,11 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
+    const shared_ptr<AbstractTask> &task,
     shared_ptr<ShrinkStrategy> shrink_strategy, int max_states,
     int max_states_before_merge, int threshold_before_merge, bool use_caching)
-    : use_caching(use_caching),
+    : MergeScoringFunction(task),
+      use_caching(use_caching),
       shrink_strategy(move(shrink_strategy)),
       max_states(max_states),
       max_states_before_merge(max_states_before_merge),
@@ -103,10 +105,10 @@ string MergeScoringFunctionMIASM::name() const {
 }
 
 class MergeScoringFunctionMIASMFeature
-    : public plugins::TypedFeature<
-          MergeScoringFunction, MergeScoringFunctionMIASM> {
+    : public plugins::TaskIndependentFeature<
+          TaskIndependentMergeScoringFunction> {
 public:
-    MergeScoringFunctionMIASMFeature() : TypedFeature("sf_miasm") {
+    MergeScoringFunctionMIASMFeature() : TaskIndependentFeature("sf_miasm") {
         document_title("MIASM");
         document_synopsis(
             "This scoring function favors merging transition systems such that in "
@@ -130,7 +132,7 @@ public:
         // TODO: use shrink strategy and limit options from
         // MergeAndShrinkHeuristic instead of having the identical options here
         // again.
-        add_option<shared_ptr<ShrinkStrategy>>(
+        add_option<shared_ptr<TaskIndependentShrinkStrategy>>(
             "shrink_strategy",
             "We recommend setting this to match the shrink strategy configuration "
             "given to {{{merge_and_shrink}}}, see note below.");
@@ -177,10 +179,12 @@ public:
             "true");
     }
 
-    virtual shared_ptr<MergeScoringFunctionMIASM> create_component(
+    virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<MergeScoringFunctionMIASM>(
-            opts.get<shared_ptr<ShrinkStrategy>>("shrink_strategy"),
+        return components::make_auto_task_independent_component<
+            MergeScoringFunctionMIASM, MergeScoringFunction>(
+            opts.get<shared_ptr<TaskIndependentShrinkStrategy>>(
+                "shrink_strategy"),
             get_transition_system_size_limit_arguments_from_options(opts),
             opts.get<bool>("use_caching"));
     }

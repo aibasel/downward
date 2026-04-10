@@ -64,9 +64,7 @@ void add_admissible_potentials_options_to_feature(
     add_heuristic_options_to_feature(feature, description);
 }
 
-tuple<
-    double, lp::LPSolverType, shared_ptr<AbstractTask>, bool, string,
-    utils::Verbosity>
+tuple<double, lp::LPSolverType, bool, string, utils::Verbosity>
 get_admissible_potential_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(opts.get<double>("max_potential")),

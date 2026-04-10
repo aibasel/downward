@@ -2,7 +2,6 @@
 
 #include "../axioms.h"
 
-#include "../plugins/plugin.h"
 #include "../utils/collections.h"
 #include "../utils/task_lexer.h"
 
@@ -885,20 +884,4 @@ void read_root_task(istream &in) {
     TaskParser parser(move(lexer));
     g_root_task = parser.parse();
 }
-
-class RootTaskFeature
-    : public plugins::TypedFeature<AbstractTask, AbstractTask> {
-public:
-    RootTaskFeature() : TypedFeature("no_transform") {
-        document_title("Root task");
-        document_synopsis("No transformation of the input task.");
-    }
-
-    virtual shared_ptr<AbstractTask> create_component(
-        const plugins::Options &) const override {
-        return g_root_task;
-    }
-};
-
-static plugins::FeaturePlugin<RootTaskFeature> _plugin;
 }

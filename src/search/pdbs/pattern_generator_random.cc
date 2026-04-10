@@ -17,9 +17,9 @@ using namespace std;
 
 namespace pdbs {
 PatternGeneratorRandom::PatternGeneratorRandom(
-    int max_pdb_size, double max_time, bool bidirectional, int random_seed,
-    utils::Verbosity verbosity)
-    : PatternGenerator(verbosity),
+    const shared_ptr<AbstractTask> &task, int max_pdb_size, double max_time,
+    bool bidirectional, int random_seed, utils::Verbosity verbosity)
+    : PatternGenerator(task, verbosity),
       max_pdb_size(max_pdb_size),
       max_time(max_time),
       bidirectional(bidirectional),
@@ -45,9 +45,9 @@ PatternInformation PatternGeneratorRandom::compute_pattern(
 }
 
 class PatternGeneratorRandomFeature
-    : public plugins::TypedFeature<PatternGenerator, PatternGeneratorRandom> {
+    : public plugins::TaskIndependentFeature<TaskIndependentPatternGenerator> {
 public:
-    PatternGeneratorRandomFeature() : TypedFeature("random_pattern") {
+    PatternGeneratorRandomFeature() : TaskIndependentFeature("random_pattern") {
         document_title("Random pattern");
         document_synopsis(
             "This pattern generator implements the 'single randomized "
@@ -71,9 +71,10 @@ public:
         add_random_pattern_implementation_notes_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternGeneratorRandom> create_component(
+    virtual shared_ptr<TaskIndependentPatternGenerator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PatternGeneratorRandom>(
+        return components::make_auto_task_independent_component<
+            PatternGeneratorRandom, PatternGenerator>(
             opts.get<int>("max_pdb_size"), opts.get<double>("max_time"),
             get_random_pattern_bidirectional_arguments_from_options(opts),
             utils::get_rng_arguments_from_options(opts),

@@ -11,7 +11,9 @@
 using namespace std;
 
 namespace merge_and_shrink {
-ShrinkRandom::ShrinkRandom(int random_seed) : ShrinkBucketBased(random_seed) {
+ShrinkRandom::ShrinkRandom(
+    const shared_ptr<AbstractTask> &task, int random_seed)
+    : ShrinkBucketBased(task, random_seed) {
 }
 
 vector<ShrinkBucketBased::Bucket> ShrinkRandom::partition_into_buckets(
@@ -32,18 +34,19 @@ string ShrinkRandom::name() const {
 }
 
 class ShrinkRandomFeature
-    : public plugins::TypedFeature<ShrinkStrategy, ShrinkRandom> {
+    : public plugins::TaskIndependentFeature<TaskIndependentShrinkStrategy> {
 public:
-    ShrinkRandomFeature() : TypedFeature("shrink_random") {
+    ShrinkRandomFeature() : TaskIndependentFeature("shrink_random") {
         document_title("Random");
         document_synopsis("");
 
         add_shrink_bucket_options_to_feature(*this);
     }
 
-    virtual shared_ptr<ShrinkRandom> create_component(
+    virtual shared_ptr<TaskIndependentShrinkStrategy> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<ShrinkRandom>(
+        return components::make_auto_task_independent_component<
+            ShrinkRandom, ShrinkStrategy>(
             get_shrink_bucket_arguments_from_options(opts));
     }
 };

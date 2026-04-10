@@ -141,9 +141,13 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
 }
 
 TieBreakingOpenListFactory::TieBreakingOpenListFactory(
+    const shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
     bool pref_only)
-    : evals(evals), unsafe_pruning(unsafe_pruning), pref_only(pref_only) {
+    : OpenListFactory(task),
+      evals(evals),
+      unsafe_pruning(unsafe_pruning),
+      pref_only(pref_only) {
     utils::verify_list_not_empty(evals, "evals");
 }
 
@@ -158,14 +162,14 @@ unique_ptr<EdgeOpenList> TieBreakingOpenListFactory::create_edge_open_list() {
 }
 
 class TieBreakingOpenListFeature
-    : public plugins::TypedFeature<
-          OpenListFactory, TieBreakingOpenListFactory> {
+    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
 public:
-    TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
+    TieBreakingOpenListFeature() : TaskIndependentFeature("tiebreaking") {
         document_title("Tie-breaking open list");
         document_synopsis("");
 
-        add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
+            "evals", "evaluators");
         add_option<bool>(
             "unsafe_pruning",
             "allow unsafe pruning when the main evaluator regards a state a dead end",
@@ -173,10 +177,11 @@ public:
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TieBreakingOpenListFactory> create_component(
+    virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<TieBreakingOpenListFactory>(
-            opts.get_list<shared_ptr<Evaluator>>("evals"),
+        return components::make_auto_task_independent_component<
+            TieBreakingOpenListFactory, OpenListFactory>(
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
             opts.get<bool>("unsafe_pruning"),
             get_open_list_arguments_from_options(opts));
     }
