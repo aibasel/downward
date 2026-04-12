@@ -39,12 +39,12 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
 }
 
 SearchAlgorithm::SearchAlgorithm(
-    OperatorCost cost_type, int bound, double max_time,
-    const string &description, utils::Verbosity verbosity)
+    const shared_ptr<AbstractTask> &_task, OperatorCost cost_type, int bound,
+    double max_time, const string &description, utils::Verbosity verbosity)
     : description(description),
       status(IN_PROGRESS),
       solution_found(false),
-      task(tasks::g_root_task),
+      task(_task),
       task_proxy(*task),
       log(utils::get_log_for_verbosity(verbosity)),
       state_registry(task_proxy),
@@ -126,7 +126,7 @@ void SearchAlgorithm::search() {
 
 bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
-        log << "Solution found!" << endl;
+        log << "Solution found! (by '" << description << "')" << endl;
         Plan plan;
         search_space.trace_path(state, plan);
         set_plan(plan);

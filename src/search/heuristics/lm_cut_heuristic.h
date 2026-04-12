@@ -10,6 +10,12 @@ class Options;
 }
 
 namespace lm_cut_heuristic {
+using LandmarkCutHeuristicArgs = std::tuple<
+    std::shared_ptr<AbstractTask>, // &transform,
+    bool, // cache_estimates,
+    std::string, // &description,
+    utils::Verbosity // verbosity);
+    >;
 class LandmarkCutLandmarks;
 
 class LandmarkCutHeuristic : public Heuristic {
@@ -18,6 +24,7 @@ class LandmarkCutHeuristic : public Heuristic {
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     LandmarkCutHeuristic(
+        const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 };
