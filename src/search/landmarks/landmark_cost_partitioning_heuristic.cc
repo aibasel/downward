@@ -89,25 +89,6 @@ public:
     LandmarkCostPartitioningHeuristicFeature()
         : TypedFeature("landmark_cost_partitioning") {
         document_title("Landmark cost partitioning heuristic");
-        document_synopsis(
-            "Formerly known as the admissible landmark heuristic.\n"
-            "See the papers" +
-            utils::format_conference_reference(
-                {"Erez Karpas", "Carmel Domshlak"},
-                "Cost-Optimal Planning with Landmarks",
-                "https://www.ijcai.org/Proceedings/09/Papers/288.pdf",
-                "Proceedings of the 21st International Joint Conference on "
-                "Artificial Intelligence (IJCAI 2009)",
-                "1728-1733", "AAAI Press", "2009") +
-            "and" +
-            utils::format_conference_reference(
-                {"Emil Keyder and Silvia Richter and Malte Helmert"},
-                "Sound and Complete Landmarks for And/Or Graphs",
-                "https://ai.dmi.unibas.ch/papers/keyder-et-al-ecai2010.pdf",
-                "Proceedings of the 19th European Conference on Artificial "
-                "Intelligence (ECAI 2010)",
-                "335-340", "IOS Press", "2010"));
-
         /*
           We usually have the options of base classes behind the options
           of specific implementations. In the case of landmark
@@ -125,6 +106,25 @@ public:
         add_option<bool>("alm", "use action landmarks", "true");
         lp::add_lp_solver_option_to_feature(*this);
 
+        document_note(
+            "History Note",
+            "Formerly known as the admissible landmark heuristic.\n"
+            "See the papers" +
+            utils::format_conference_reference(
+                {"Erez Karpas", "Carmel Domshlak"},
+                "Cost-Optimal Planning with Landmarks",
+                "https://www.ijcai.org/Proceedings/09/Papers/288.pdf",
+                "Proceedings of the 21st International Joint Conference on "
+                "Artificial Intelligence (IJCAI 2009)",
+                "1728-1733", "AAAI Press", "2009") +
+            "and" +
+            utils::format_conference_reference(
+                {"Emil Keyder and Silvia Richter and Malte Helmert"},
+                "Sound and Complete Landmarks for And/Or Graphs",
+                "https://ai.dmi.unibas.ch/papers/keyder-et-al-ecai2010.pdf",
+                "Proceedings of the 19th European Conference on Artificial "
+                "Intelligence (ECAI 2010)",
+                "335-340", "IOS Press", "2010"));
         document_note(
             "Usage with A*",
             "We recommend to add this heuristic as lazy_evaluator when using "

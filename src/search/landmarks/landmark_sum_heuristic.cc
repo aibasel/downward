@@ -112,7 +112,20 @@ class LandmarkSumHeuristicFeature
 public:
     LandmarkSumHeuristicFeature() : TypedFeature("landmark_sum") {
         document_title("Landmark sum heuristic");
-        document_synopsis(
+        /*
+          We usually have the options of base classes behind the options
+          of specific implementations. In the case of landmark
+          heuristics, we decided to have the common options at the front
+          because it feels more natural to specify the landmark factory
+          before the more specific arguments like the used LP solver in
+          the case of an optimal cost partitioning heuristic.
+        */
+        add_landmark_heuristic_options_to_feature(
+            *this, "landmark_sum_heuristic");
+        tasks::add_axioms_option_to_feature(*this);
+
+        document_note(
+            "History Note",
             "Formerly known as the landmark heuristic or landmark count "
             "heuristic.\n"
             "See the papers" +
@@ -130,18 +143,6 @@ public:
                 "http://www.aaai.org/Papers/JAIR/Vol39/JAIR-3903.pdf",
                 "Journal of Artificial Intelligence Research", "39", "127-177",
                 "2010"));
-        /*
-          We usually have the options of base classes behind the options
-          of specific implementations. In the case of landmark
-          heuristics, we decided to have the common options at the front
-          because it feels more natural to specify the landmark factory
-          before the more specific arguments like the used LP solver in
-          the case of an optimal cost partitioning heuristic.
-        */
-        add_landmark_heuristic_options_to_feature(
-            *this, "landmark_sum_heuristic");
-        tasks::add_axioms_option_to_feature(*this);
-
         document_note(
             "Note on performance for satisficing planning",
             "The cost of a landmark is based on the cost of the operators that "
