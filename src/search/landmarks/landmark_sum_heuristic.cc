@@ -129,20 +129,20 @@ public:
             "Formerly known as the landmark heuristic or landmark count "
             "heuristic.\n"
             "See the papers" +
-            utils::format_conference_reference(
-                {"Silvia Richter", "Malte Helmert", "Matthias Westphal"},
-                "Landmarks Revisited",
-                "https://ai.dmi.unibas.ch/papers/richter-et-al-aaai2008.pdf",
-                "Proceedings of the 23rd AAAI Conference on Artificial "
-                "Intelligence (AAAI 2008)",
-                "975-982", "AAAI Press", "2008") +
-            "and" +
-            utils::format_journal_reference(
-                {"Silvia Richter", "Matthias Westphal"},
-                "The LAMA Planner: Guiding Cost-Based Anytime Planning with Landmarks",
-                "http://www.aaai.org/Papers/JAIR/Vol39/JAIR-3903.pdf",
-                "Journal of Artificial Intelligence Research", "39", "127-177",
-                "2010"));
+                utils::format_conference_reference(
+                    {"Silvia Richter", "Malte Helmert", "Matthias Westphal"},
+                    "Landmarks Revisited",
+                    "https://ai.dmi.unibas.ch/papers/richter-et-al-aaai2008.pdf",
+                    "Proceedings of the 23rd AAAI Conference on Artificial "
+                    "Intelligence (AAAI 2008)",
+                    "975-982", "AAAI Press", "2008") +
+                "and" +
+                utils::format_journal_reference(
+                    {"Silvia Richter", "Matthias Westphal"},
+                    "The LAMA Planner: Guiding Cost-Based Anytime Planning with Landmarks",
+                    "http://www.aaai.org/Papers/JAIR/Vol39/JAIR-3903.pdf",
+                    "Journal of Artificial Intelligence Research", "39",
+                    "127-177", "2010"));
         document_note(
             "Note on performance for satisficing planning",
             "The cost of a landmark is based on the cost of the operators that "
