@@ -140,7 +140,7 @@ SearchStatus IteratedSearch::step() {
     update_retention_set();
     current_search = nullptr;
     int num_phases = algorithm_configs.size();
-    if (!(phase - 1 >= num_phases && repeat_last_phase &&
+    if (!(phase >= num_phases && repeat_last_phase &&
           last_phase_found_solution)) {
         algorithm_configs[phase - 1] = nullptr;
     }

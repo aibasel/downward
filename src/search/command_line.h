@@ -6,9 +6,6 @@
 #include <memory>
 #include <string>
 
-class AbstractTask;
-class SearchAlgorithm;
-
 struct ParsedSearchOptions {
     std::shared_ptr<TaskIndependentSearchAlgorithm> search_algorithm;
     std::string plan_filename;
