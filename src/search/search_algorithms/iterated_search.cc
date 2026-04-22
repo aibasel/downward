@@ -1,5 +1,8 @@
 #include "iterated_search.h"
 
+#include "../evaluator.h"
+
+#include "../landmarks/landmark_factory.h"
 #include "../plugins/plugin.h"
 #include "../utils/component_errors.h"
 #include "../utils/logging.h"
@@ -52,7 +55,19 @@ void IteratedSearch::update_retention_set() {
                 std::shared_ptr<TSComponent> ts_component =
                     ti_component->get_cached(task);
                 if (ts_component) {
-                    new_retained_components.push_back(ts_component);
+                    /*
+                      HACK: so far, we only re-use evaluators and landmark
+                      factories, as our search algorithms do not support being
+                      used more than once.
+                    */
+                    const Evaluator *evaluator =
+                        dynamic_cast<const Evaluator *>(ts_component.get());
+                    const landmarks::LandmarkFactory *landmarks =
+                        dynamic_cast<const landmarks::LandmarkFactory *>(
+                            ts_component.get());
+                    if (evaluator || landmarks) {
+                        new_retained_components.push_back(ts_component);
+                    }
                 }
             }
         }
@@ -142,7 +157,8 @@ SearchStatus IteratedSearch::step() {
     int num_phases = algorithm_configs.size();
     if (!(phase >= num_phases && repeat_last_phase &&
           last_phase_found_solution)) {
-        algorithm_configs[phase - 1] = nullptr;
+        int index = min(phase - 1, num_phases - 1);
+        algorithm_configs.at(index) = nullptr;
     }
 
     return step_return_value();
