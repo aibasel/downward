@@ -3,8 +3,8 @@ import signal
 import sys
 import traceback
 
-from translate import pddl_parser
-from translate.main import main
+from downward.translate import pddl_parser
+from downward.translate.main import main
 
 ## For a full list of exit codes, please see driver/returncodes.py. Here,
 ## we only list codes that are used by the translator component of the planner.
@@ -20,7 +20,7 @@ def handle_sigxcpu(signum, stackframe):
     os._exit(TRANSLATE_OUT_OF_TIME)
 
 if __name__ == "__main__":
-    from translate.options import set_options
+    from downward.translate.options import set_options
 
     set_options() # use command line options
     try:

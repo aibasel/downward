@@ -3,9 +3,9 @@
 
 import itertools
 
-from translate import normalize
-from translate import pddl
-from translate import timers
+from downward.translate import normalize
+from downward.translate import pddl
+from downward.translate import timers
 
 class PrologProgram:
     def __init__(self):
@@ -36,7 +36,7 @@ class PrologProgram:
         self.split_duplicate_arguments()
         self.convert_trivial_rules()
     def split_rules(self):
-        from translate import split_rules
+        from downward.translate import split_rules
         # Splits rules whose conditions can be partitioned in such a way that
         # the parts have disjoint variable sets, then split n-ary joins into
         # a number of binary joins, introducing new pseudo-predicates for the
@@ -176,8 +176,8 @@ def translate(task):
 
 
 if __name__ == "__main__":
-    from translate import pddl_parser
-    from translate.options import set_options
+    from downward.translate import pddl_parser
+    from downward.translate.options import set_options
 
     set_options() # use command line options
     task = pddl_parser.open()

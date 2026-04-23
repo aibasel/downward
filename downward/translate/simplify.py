@@ -26,8 +26,8 @@ filter_unreachable_propositions.)
 from collections import defaultdict
 from itertools import count
 
-from translate import sas_tasks
-from translate.options import get_options
+from downward.translate import sas_tasks
+from downward.translate.options import get_options
 
 DEBUG = False
 

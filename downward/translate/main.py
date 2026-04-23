@@ -17,18 +17,18 @@ from collections import defaultdict
 from copy import deepcopy
 from itertools import product
 
-from translate import axiom_rules
-from translate import fact_groups
-from translate import instantiate
-from translate import normalize
-from translate import pddl
-from translate import pddl_parser
-from translate import sas_tasks
-from translate import simplify
-from translate import timers
-from translate import tools
-from translate import variable_order
-from translate.options import get_options
+from downward.translate import axiom_rules
+from downward.translate import fact_groups
+from downward.translate import instantiate
+from downward.translate import normalize
+from downward.translate import pddl
+from downward.translate import pddl_parser
+from downward.translate import sas_tasks
+from downward.translate import simplify
+from downward.translate import timers
+from downward.translate import tools
+from downward.translate import variable_order
+from downward.translate.options import get_options
 
 # TODO: The translator may generate trivial derived variables which are always
 # true, for example if there ia a derived predicate in the input that only

@@ -1,6 +1,6 @@
 from typing import List
 
-from translate.pddl.pddl_types import TypedObject
+from downward.translate.pddl.pddl_types import TypedObject
 
 class Function:
     def __init__(self, name: str, arguments: List[TypedObject],

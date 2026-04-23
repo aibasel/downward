@@ -1,13 +1,13 @@
 import copy
 from typing import List, Optional, Tuple
 
-from translate.pddl import conditions
-from translate.pddl.conditions import Condition, Literal
-from translate.pddl.effects import Effect
-from translate.pddl.f_expression import Increase
-from translate.pddl.pddl_types import TypedObject
+from downward.translate.pddl import conditions
+from downward.translate.pddl.conditions import Condition, Literal
+from downward.translate.pddl.effects import Effect
+from downward.translate.pddl.f_expression import Increase
+from downward.translate.pddl.pddl_types import TypedObject
 
-from translate.options import get_options
+from downward.translate.options import get_options
 
 class Action:
     def __init__(self, name: str, parameters: List[TypedObject],

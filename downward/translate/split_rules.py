@@ -2,10 +2,10 @@
 # components" (where to conditions are related if they share a variabe) into
 # several rules, one for each connected component and one high-level rule.
 
-from translate.pddl_to_prolog import Rule, get_variables
-from translate import graph
-from translate import greedy_join
-from translate import pddl
+from downward.translate.pddl_to_prolog import Rule, get_variables
+from downward.translate import graph
+from downward.translate import greedy_join
+from downward.translate import pddl
 
 def get_connected_conditions(conditions):
     agraph = graph.Graph(conditions)
