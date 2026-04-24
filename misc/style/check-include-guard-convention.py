@@ -7,7 +7,7 @@ import sys
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
-SRC_DIR = os.path.join(REPO, "src")
+SRC_DIR = os.path.join(REPO, "downward")
 
 
 def check_header_files(component):

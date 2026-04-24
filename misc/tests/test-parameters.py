@@ -15,7 +15,7 @@ import sys
 
 DIR = Path(__file__).resolve().parent
 REPO = DIR.parents[1]
-SRC_DIR = REPO / "src"
+SRC_DIR = REPO / "downward"
 
 SHORT_HANDS = [
     "ipdb", # cpdbs(hillclimbing())

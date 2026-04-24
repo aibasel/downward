@@ -13,7 +13,7 @@ import utils
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
-SEARCH_DIR = os.path.join(REPO, "src", "search")
+SEARCH_DIR = os.path.join(REPO, "downward", "search")
 CLANG_FORMAT_VERSION = "18"
 
 

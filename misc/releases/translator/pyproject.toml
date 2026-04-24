@@ -1,0 +1,28 @@
+[project]
+name = "downward_translate"
+dynamic = ["version"]
+description = "Translator of the Fast Downward planning system"
+authors = [
+    {name = "UNIBAS Team"},
+]
+maintainers = [
+    {name = "Gabriele Röger", email = "gabriele.roeger@unibas.ch"},
+]
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "GPL-3.0-only"
+
+[project.urls]
+Homepage = "https://www.fast-downward.org"
+Issues = "https://issues.fast-downward.org"
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
