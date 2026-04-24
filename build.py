@@ -76,7 +76,7 @@ def get_builds_path():
 
 
 def get_src_path():
-    return os.path.join(get_project_root_path(), "src")
+    return os.path.join(get_project_root_path(), "downward")
 
 
 def get_build_path(config_name):
