@@ -82,7 +82,7 @@ def run_translate(args):
         cmd,
         time_limit=time_limit,
         memory_limit=memory_limit,
-        prepend_to_python_path=args.build)
+        prepend_to_python_path=translate.parent.parent)
 
     # We collect stderr of the translator and print it here, unless
     # the translator ran out of memory and all output in stderr is
