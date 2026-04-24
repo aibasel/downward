@@ -9,7 +9,7 @@ import sys
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
-SRC_DIR = os.path.join(REPO, "src")
+SRC_DIR = os.path.join(REPO, "downward")
 CLANG_TIDY_VERSION = "18"
 
 import utils
@@ -30,12 +30,12 @@ def check_search_code_with_clang_tidy():
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
     with open(os.devnull, 'w') as devnull:
-        subprocess.check_call(["cmake", "../../src"], cwd=build_dir, stdout=devnull)
+        subprocess.check_call(["cmake", "../../downward"], cwd=build_dir, stdout=devnull)
 
     # Create custom compilation database file. CMake outputs part of this information
     # when passing -DCMAKE_EXPORT_COMPILE_COMMANDS=ON, but the resulting file
     # contains no header files.
-    search_dir = os.path.join(REPO, "src/search")
+    search_dir = os.path.join(REPO, "downward/search")
     src_files = utils.get_src_files(search_dir, (".h", ".cc"))
     compile_commands = [{
         "directory": os.path.join(build_dir, "search"),

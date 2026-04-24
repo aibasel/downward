@@ -8,7 +8,7 @@ import sys
 
 DIR = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(DIR))
-LIBRARY_DEFINITION_FILE = os.path.join(REPO, "src", "search", "CMakeLists.txt")
+LIBRARY_DEFINITION_FILE = os.path.join(REPO, "downward", "downward", "CMakeLists.txt")
 BUILDS = os.path.join(REPO, "builds/test-dependencies")
 
 
@@ -62,7 +62,7 @@ libraries_failed_test = []
 for library in libraries:
     build_path = os.path.join(BUILDS, library.lower())
     config_cmd = [
-        "cmake", "-S", os.path.join(REPO, "src"), "-B", build_path,
+        "cmake", "-S", os.path.join(REPO, "downward"), "-B", build_path,
         "-DCMAKE_BUILD_TYPE=Debug", "-DDISABLE_LIBRARIES_BY_DEFAULT=YES",
         f"-DLIBRARY_{library.upper()}_ENABLED=True"
     ]
