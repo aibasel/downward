@@ -573,7 +573,7 @@ public:
             "For details, see" +
             utils::format_journal_reference(
                 {"Masood Feyzbakhsh Rankooh", "Jussi Rintanen"},
-                "Efficient Computation and Informative Estimation of"
+                "Efficient Computation and Informative Estimation of "
                 "h+ by Integer and Linear Programming"
                 "",
                 "https://ojs.aaai.org/index.php/ICAPS/article/view/19787/19546",
