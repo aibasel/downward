@@ -33,10 +33,12 @@ static bool compare_sccs_decreasing(
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(
     const OrderOfSCCs &order_of_sccs,
-    const shared_ptr<MergeSelector> &merge_selector, utils::Verbosity verbosity)
+    const shared_ptr<MergeSelector> &merge_selector,
+    bool allow_working_on_all_clusters, utils::Verbosity verbosity)
     : MergeStrategyFactory(verbosity),
       order_of_sccs(order_of_sccs),
-      merge_selector(merge_selector) {
+      merge_selector(merge_selector),
+      allow_working_on_all_clusters(allow_working_on_all_clusters) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
@@ -97,7 +99,8 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
     }
 
     return make_unique<MergeStrategySCCs>(
-        fts, merge_selector, move(non_singleton_cg_sccs));
+        fts, merge_selector, move(non_singleton_cg_sccs),
+        allow_working_on_all_clusters);
 }
 
 bool MergeStrategyFactorySCCs::requires_init_distances() const {
@@ -154,16 +157,34 @@ public:
             "In a nutshell, it computes the maximal strongly connected "
             "components (SCCs) of the causal graph, "
             "obtaining a partitioning of the task's variables. Every such "
-            "partition is then merged individually, using the specified fallback "
-            "merge strategy, considering the SCCs in a configurable order. "
-            "Afterwards, all resulting composite abstractions are merged to form "
-            "the final abstraction, again using the specified fallback merge "
-            "strategy and the configurable order of the SCCs.");
+            "partition is then merged individually, using the score-based merge "
+            "strategy specified via the merge_selector option. If "
+            "allow_working_on_all_clusters=true, then all pairs of factors in "
+            "each partition form the set of candidates scored by the score-based "
+            "merge strategy. Otherwise, SCC partitions are worked on 'one after "
+            "the other' in the order specified via 'order_of_sccs', and hence "
+            "only the pairs of factors of the 'current partition' form the set "
+            "of candidates. In both cases, once all partitions have been merged, "
+            "the resulting product factors are merged according to the score-"
+            "based merge strategy.");
+        document_note(
+            "Note regarding allow_working_on_all_clusters",
+            "The option allow_working_on_all_clusters was not introduced in the "
+            "original paper, hence to obtain exactly the configurations of that paper, "
+            "set the option to false.");
 
         add_option<OrderOfSCCs>(
-            "order_of_sccs", "how the SCCs should be ordered", "topological");
+            "order_of_sccs",
+            "how the SCCs should be ordered (only relevant if allow_working_on_all_clusters=false)",
+            "topological");
         add_option<shared_ptr<MergeSelector>>(
-            "merge_selector", "the fallback merge strategy to use");
+            "merge_selector",
+            "the score-based merge strategy used to merge factors within and across SCCs");
+        add_option<bool>(
+            "allow_working_on_all_clusters",
+            "if true, consider as merge candidates the pairs of factors of all SCCs. If "
+            "false, fully finish dealing with one cluster at a time.",
+            "true");
         add_merge_strategy_options_to_feature(*this);
     }
 
@@ -172,6 +193,7 @@ public:
         return plugins::make_shared_from_arg_tuples<MergeStrategyFactorySCCs>(
             opts.get<OrderOfSCCs>("order_of_sccs"),
             opts.get<shared_ptr<MergeSelector>>("merge_selector"),
+            opts.get<bool>("allow_working_on_all_clusters"),
             get_merge_strategy_arguments_from_options(opts));
     }
 };
