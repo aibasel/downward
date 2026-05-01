@@ -106,7 +106,7 @@ void EnforcedHillClimbingSearch::initialize() {
 
     if (dead_end) {
         log << "Initial state is a dead end, no solution" << endl;
-        if (evaluator->dead_ends_are_reliable())
+        if (evaluator->is_safe())
             utils::exit_with(ExitCode::SEARCH_UNSOLVABLE);
         else
             utils::exit_with(ExitCode::SEARCH_UNSOLVED_INCOMPLETE);
@@ -235,8 +235,7 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
             }
         }
     }
-    log << "No solution - FAILED" << endl;
-    return FAILED;
+    return get_finished_search_status();
 }
 
 void EnforcedHillClimbingSearch::print_statistics() const {
@@ -257,6 +256,10 @@ void EnforcedHillClimbingSearch::print_statistics() const {
             << " - Avg. Expansions: "
             << static_cast<double>(total_expansions) / phases << endl;
     }
+}
+
+bool EnforcedHillClimbingSearch::is_complete_within_bound() const {
+    return false;
 }
 
 class EnforcedHillClimbingSearchFeature

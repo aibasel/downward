@@ -19,7 +19,7 @@ Evaluator::Evaluator(
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 
-bool Evaluator::dead_ends_are_reliable() const {
+bool Evaluator::is_safe() const {
     return true;
 }
 

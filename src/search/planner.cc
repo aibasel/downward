@@ -8,6 +8,7 @@
 #include "utils/system.h"
 #include "utils/timer.h"
 
+#include <cassert>
 #include <iostream>
 
 using namespace std;
@@ -53,9 +54,25 @@ int main(int argc, const char **argv) {
         utils::g_log << "Search time: " << search_timer << endl;
         utils::g_log << "Total time: " << utils::g_timer << endl;
 
-        ExitCode exitcode = search_algorithm->found_solution()
-                                ? ExitCode::SUCCESS
-                                : ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
+        SearchStatus search_status = search_algorithm->get_status();
+        ExitCode exitcode;
+        switch (search_status) {
+        case SearchStatus::SOLVED:
+            exitcode = ExitCode::SUCCESS;
+            break;
+        case SearchStatus::TIMEOUT:
+            exitcode = ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
+            break;
+        case SearchStatus::UNSOLVABLE:
+            exitcode = ExitCode::SEARCH_UNSOLVABLE;
+            break;
+        case SearchStatus::UNSOLVABLE_WITHIN_BOUND:
+            exitcode = ExitCode::SEARCH_UNSOLVABLE_WITHIN_BOUND;
+            break;
+        default:
+            assert(search_status == SearchStatus::FAILED);
+            exitcode = ExitCode::SEARCH_UNSOLVED_INCOMPLETE;
+        }
         exit_with(exitcode);
     } catch (const utils::ExitException &e) {
         /* To ensure that all destructors are called before the program exits,

@@ -27,7 +27,7 @@ HMHeuristic::HMHeuristic(
     generate_all_tuples();
 }
 
-bool HMHeuristic::dead_ends_are_reliable() const {
+bool HMHeuristic::is_safe() const {
     return !task_properties::has_axioms(task_proxy) && !has_cond_effects;
 }
 

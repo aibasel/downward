@@ -1,5 +1,7 @@
 #include "const_evaluator.h"
 
+#include "../evaluation_result.h"
+
 #include "../plugins/plugin.h"
 
 using namespace std;
@@ -14,6 +16,9 @@ EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
     EvaluationResult result;
     result.set_evaluator_value(value);
     return result;
+}
+bool ConstEvaluator::is_safe() const {
+    return value < EvaluationResult::INFTY;
 }
 
 class ConstEvaluatorFeature

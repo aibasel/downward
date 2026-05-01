@@ -24,6 +24,7 @@ public:
         int expansions_before_checking_pruning_ratio,
         utils::Verbosity verbosity);
     virtual void initialize(const std::shared_ptr<AbstractTask> &) override;
+    virtual bool is_safe() const override;
 };
 }
 

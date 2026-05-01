@@ -37,6 +37,9 @@ public:
     virtual void initialize(const std::shared_ptr<AbstractTask> &task);
     void prune_operators(const State &state, std::vector<OperatorID> &op_ids);
     virtual void print_statistics() const;
+
+    // is_safe returns true if no solvable state can be pruned.
+    virtual bool is_safe() const = 0;
 };
 
 extern void add_pruning_options_to_feature(plugins::Feature &feature);

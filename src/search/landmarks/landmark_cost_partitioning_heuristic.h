@@ -32,7 +32,7 @@ public:
         CostPartitioningMethod cost_partitioning, bool alm,
         lp::LPSolverType lpsolver);
 
-    virtual bool dead_ends_are_reliable() const override;
+    virtual bool is_safe() const override;
 };
 }
 
