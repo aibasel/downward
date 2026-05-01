@@ -9,14 +9,32 @@
 #include <vector>
 
 class Evaluator;
+template<>
+struct is_component<Evaluator> : std::true_type {};
 class PruningMethod;
 class OpenListFactory;
+template<>
+struct is_component<OpenListFactory> : std::true_type {};
 
 namespace plugins {
 class Feature;
 }
 
 namespace eager_search {
+using EagerSearchArgs = std::tuple<
+    std::shared_ptr<OpenListFactory>, // open,
+    bool, // reopen_closed,
+    std::shared_ptr<Evaluator>, // f_eval,
+    std::vector<std::shared_ptr<Evaluator>>, // preferred,
+    std::shared_ptr<PruningMethod>, // pruning,
+    std::shared_ptr<Evaluator>, // lazy_evaluator,
+    OperatorCost, // cost_type,
+    int, // bound,
+    double, // max_time
+    std::string, // description
+    utils::Verbosity // verbositiy
+    >;
+
 class EagerSearch : public SearchAlgorithm {
     const bool reopen_closed_nodes;
 
@@ -46,6 +64,7 @@ protected:
 
 public:
     explicit EagerSearch(
+        const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<OpenListFactory> &open, bool reopen_closed,
         const std::shared_ptr<Evaluator> &f_eval,
         const std::vector<std::shared_ptr<Evaluator>> &preferred,
@@ -61,7 +80,7 @@ public:
 
 extern void add_eager_search_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<
+extern WrapArgs<
     std::shared_ptr<PruningMethod>, std::shared_ptr<Evaluator>, OperatorCost,
     int, double, std::string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts);

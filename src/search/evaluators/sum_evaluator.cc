@@ -8,6 +8,7 @@ using namespace std;
 
 namespace sum_evaluator {
 SumEvaluator::SumEvaluator(
+    [[maybe_unused]] const std::shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<Evaluator>> &evals, const string &description,
     utils::Verbosity verbosity)
     : CombiningEvaluator(evals, description, verbosity) {
@@ -23,8 +24,11 @@ int SumEvaluator::combine_values(const vector<int> &values) {
     return result;
 }
 
+using TaskIndependentSumEvaluator =
+    TaskIndependentComponentFeature<SumEvaluator, Evaluator, SumEvaluatorArgs>;
+
 class SumEvaluatorFeature
-    : public plugins::TypedFeature<Evaluator, SumEvaluator> {
+    : public plugins::TypedFeature<Evaluator, TaskIndependentSumEvaluator> {
 public:
     SumEvaluatorFeature() : TypedFeature("sum") {
         document_subcategory("evaluators_basic");
@@ -35,9 +39,10 @@ public:
             *this, "sum");
     }
 
-    virtual shared_ptr<SumEvaluator> create_component(
+    virtual shared_ptr<TaskIndependentSumEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<SumEvaluator>(
+        return plugins::make_shared_from_arg_tuples<
+            TaskIndependentSumEvaluator>(
             combining_evaluator::get_combining_evaluator_arguments_from_options(
                 opts));
     }
