@@ -589,17 +589,38 @@ create_fast_downward_library(
 if(USE_LP)
     find_package(Cplex 12)
     if(CPLEX_FOUND)
+        message(STATUS "Found CPLEX: ${CPLEX_DIR}")
         target_compile_definitions(lp_solver INTERFACE HAS_CPLEX)
         target_link_libraries(lp_solver INTERFACE cplex::cplex)
         target_sources(lp_solver INTERFACE lp/cplex_solver_interface.h lp/cplex_solver_interface.cc)
     endif()
 
+
     find_package(soplex 7.1.0 QUIET)
     if (SOPLEX_FOUND)
-        message(STATUS "Found SoPlex: ${SOPLEX_INCLUDE_DIRS}")
+        message(STATUS "Found SoPlex: ${SOPLEX_DIR}")
         target_link_libraries(lp_solver INTERFACE libsoplex)
         target_compile_definitions(lp_solver INTERFACE HAS_SOPLEX)
         target_sources(lp_solver INTERFACE lp/soplex_solver_interface.h lp/soplex_solver_interface.cc)
+    endif()
+
+    find_package(Gurobi QUIET)
+    if(Gurobi_FOUND)
+        message(STATUS "Found Gurobi: ${GUROBI_LIBRARY} ${GUROBI_INCLUDE_DIR}")
+        target_compile_definitions(lp_solver INTERFACE HAS_GUROBI)
+        target_link_libraries(lp_solver INTERFACE gurobi::gurobi)
+        target_sources(lp_solver INTERFACE lp/gurobi_solver_interface.h lp/gurobi_solver_interface.cc)
+    endif()
+
+    find_package(HiGHS CONFIG QUIET)
+    if(HiGHS_FOUND)
+        message(STATUS "Found HiGHS: ${HiGHS_DIR}")
+        target_compile_definitions(lp_solver INTERFACE HAS_HIGHS)
+        target_link_libraries(lp_solver INTERFACE highs::highs)
+        target_sources(lp_solver INTERFACE
+            lp/highs_solver_interface.h
+            lp/highs_solver_interface.cc
+        )
     endif()
 endif()
 

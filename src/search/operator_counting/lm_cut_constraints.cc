@@ -22,11 +22,19 @@ bool LMCutConstraints::update_constraints(
     const State &state, lp::LPSolver &lp_solver) {
     assert(landmark_generator);
     named_vector::NamedVector<lp::LPConstraint> constraints;
-    double infinity = lp_solver.get_infinity();
 
     bool dead_end = landmark_generator->compute_landmarks(
         state, nullptr, [&](const vector<int> &op_ids, int /*cost*/) {
-            constraints.emplace_back(1.0, infinity);
+            /*
+                    OLD INTERFACE CODE
+                constraints.emplace_back(1.0, infinity);
+                    NEW INTERFACE CODE
+                constraints.emplace_back(lp::Sense::GE, 1.0);
+
+                This creates a constraint of the form  1.0 <= ax <= infinity, which is equivalent to ax >= 1.0.
+                TODO: double check.
+            */
+            constraints.emplace_back(lp::Sense::GE, 1.0);
             lp::LPConstraint &landmark_constraint = constraints.back();
             for (int op_id : op_ids) {
                 landmark_constraint.insert(op_id, 1.0);
