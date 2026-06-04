@@ -156,7 +156,7 @@ SearchStatus IteratedSearch::step() {
     current_search = nullptr;
     int num_phases = algorithm_configs.size();
     if (phase < num_phases || !repeat_last_phase ||
-          !last_phase_found_solution) {
+        !last_phase_found_solution) {
         int index = min(phase - 1, num_phases - 1);
         algorithm_configs.at(index) = nullptr;
     }
