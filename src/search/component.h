@@ -134,7 +134,8 @@ public:
     }
 
     virtual void get_task_preserving_subcomponents(
-        std::vector<TaskIndependentComponentBase *> &components) const override {
+        std::vector<TaskIndependentComponentBase *> &components)
+        const override {
         internals::collect_task_preserving_components(args, components);
     }
 };
