@@ -81,7 +81,7 @@ To build the planner, from the top-level directory run:
 ```
 
 This creates the default build `release` in the directory `builds`. For information on alternative builds (e.g. `debug`) and further options, call
-`./build.py --help`. [Our website](https://www.fast-downward.org/ForDevelopers/CMake) has details on how to set up development builds.
+`./build.py --help`. [Our website](https://www.fast-downward.org/latest/for-developers/cmake/) has details on how to set up development builds.
 
 
 ### Compiling on Windows
@@ -90,7 +90,7 @@ Windows does not interpret the shebang in Python files, so you have to call `bui
 
 Note that compiling from the terminal is only possible with the right environment. The easiest way to get such an environment is to use the `Developer PowerShell for VS 2019` or `Developer PowerShell`.
 
-Alternatively, you can [create a Visual Studio Project](https://www.fast-downward.org/ForDevelopers/CMake#Custom_Builds), open it in Visual Studio and build from there. Visual Studio creates its binary files in subdirectories of the project that our driver script currently does not recognize. If you build with Visual Studio, you have to run the individual components of the planner yourself.
+Alternatively, you can [create a Visual Studio Project](https://www.fast-downward.org/latest/for-developers/cmake/#custom_builds), open it in Visual Studio and build from there. Visual Studio creates its binary files in subdirectories of the project that our driver script currently does not recognize. If you build with Visual Studio, you have to run the individual components of the planner yourself.
 
 ## Testing the build
 
