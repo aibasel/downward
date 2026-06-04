@@ -33,7 +33,7 @@ IteratedSearch::IteratedSearch(
 
 void IteratedSearch::update_retention_set() {
     unordered_set<TIComponent *> seen;
-    vector<std::shared_ptr<TSComponent>> new_retained_components;
+    vector<shared_ptr<TSComponent>> new_retained_components;
     /*
       Loop through all future phases. If repeat_last_phase is true, then the
       last phase always is considered a future phase, even if we currently are
@@ -52,7 +52,7 @@ void IteratedSearch::update_retention_set() {
         for (TIComponent *ti_component : future_ti_components) {
             if (!seen.contains(ti_component)) {
                 seen.insert(ti_component);
-                std::shared_ptr<TSComponent> ts_component =
+                shared_ptr<TSComponent> ts_component =
                     ti_component->get_cached(task);
                 if (ts_component) {
                     /*
