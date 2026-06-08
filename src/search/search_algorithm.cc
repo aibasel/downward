@@ -206,17 +206,6 @@ tuple<bool, bool, int> get_successors_order_arguments_from_options(
         utils::get_rng_arguments_from_options(opts));
 }
 
-static class TaskSpecificSearchAlgorithmCategoryPlugin
-    : public plugins::TypedCategoryPlugin<SearchAlgorithm> {
-public:
-    TaskSpecificSearchAlgorithmCategoryPlugin()
-        : TypedCategoryPlugin("Task-specific SearchAlgorithm") {
-        // TODO: Replace add synopsis for the wiki page.
-        document_synopsis(
-            "This page describes the supported search algorithms.");
-    }
-} _old_category_plugin;
-
 static class SearchAlgorithmCategoryPlugin
     : public plugins::TypedCategoryPlugin<TaskIndependentSearchAlgorithm> {
 public:
