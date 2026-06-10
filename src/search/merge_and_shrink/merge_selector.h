@@ -14,14 +14,14 @@ class LogProxy;
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
-class MergeSelector : public components::TaskSpecificComponent {
+class TaskSpecificMergeSelector : public components::TaskSpecificComponent {
 protected:
     virtual std::string name() const = 0;
     virtual void dump_selector_specific_options(utils::LogProxy &) const {
     }
 
 public:
-    explicit MergeSelector(const std::shared_ptr<AbstractTask> &task);
+    explicit TaskSpecificMergeSelector(const std::shared_ptr<AbstractTask> &task);
     // Select a merge candidate from all possible candidates.
     std::pair<int, int> select_merge(const FactoredTransitionSystem &fts) const;
     /*
@@ -38,7 +38,7 @@ public:
 };
 
 using TaskIndependentMergeSelector =
-    components::TaskIndependentComponent<MergeSelector>;
+    components::TaskIndependentComponent<TaskSpecificMergeSelector>;
 }
 
 #endif

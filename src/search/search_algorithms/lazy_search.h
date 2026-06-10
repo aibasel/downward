@@ -17,7 +17,7 @@
 class OpenListFactory;
 
 namespace lazy_search {
-class LazySearch : public SearchAlgorithm {
+class LazySearch : public TaskSpecificSearchAlgorithm {
 protected:
     std::unique_ptr<EdgeOpenList> open_list;
 
@@ -28,8 +28,8 @@ protected:
     bool preferred_successors_first;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
-    std::vector<Evaluator *> path_dependent_evaluators;
-    std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators;
+    std::vector<TaskSpecificEvaluator *> path_dependent_evaluators;
+    std::vector<std::shared_ptr<TaskSpecificEvaluator>> preferred_operator_evaluators;
 
     State current_state;
     StateID current_predecessor_id;
@@ -53,7 +53,7 @@ public:
     LazySearch(
         const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<OpenListFactory> &open, bool reopen_closed,
-        const std::vector<std::shared_ptr<Evaluator>> &evaluators,
+        const std::vector<std::shared_ptr<TaskSpecificEvaluator>> &evaluators,
         bool randomize_successors, bool preferred_successors_first,
         int random_seed, OperatorCost cost_type, int bound, double max_time,
         const std::string &description, utils::Verbosity verbosity);

@@ -27,7 +27,7 @@ class PatternDatabase;
 
 // Implementation of the pattern generation algorithm by Haslum et al.
 class PatternCollectionGeneratorHillclimbing
-    : public PatternCollectionGenerator {
+    : public TaskSpecificPatternCollectionGenerator {
     // maximum number of states for each pdb
     const int pdb_max_size;
     // maximum added size of all pdbs

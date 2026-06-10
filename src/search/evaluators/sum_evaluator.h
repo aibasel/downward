@@ -17,7 +17,7 @@ protected:
 public:
     SumEvaluator(
         const std::shared_ptr<AbstractTask> &task,
-        const std::vector<std::shared_ptr<Evaluator>> &evals,
+        const std::vector<std::shared_ptr<TaskSpecificEvaluator>> &evals,
         const std::string &description, utils::Verbosity verbosity);
 };
 }

@@ -21,7 +21,7 @@ namespace hm_heuristic {
   speed benchmarks.
 */
 
-class HMHeuristic : public Heuristic {
+class HMHeuristic : public TaskSpecificHeuristic {
     using Tuple = std::vector<FactPair>;
     // parameters
     const int m;

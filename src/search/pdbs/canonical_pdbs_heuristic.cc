@@ -16,7 +16,7 @@ using namespace std;
 namespace pdbs {
 static CanonicalPDBs get_canonical_pdbs(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<PatternCollectionGenerator> &pattern_generator,
+    const shared_ptr<TaskSpecificPatternCollectionGenerator> &pattern_generator,
     double max_time_dominance_pruning, utils::LogProxy &log) {
     utils::Timer timer;
     if (log.is_at_least_normal()) {
@@ -58,10 +58,10 @@ static CanonicalPDBs get_canonical_pdbs(
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<PatternCollectionGenerator> &patterns,
+    const shared_ptr<TaskSpecificPatternCollectionGenerator> &patterns,
     double max_time_dominance_pruning, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(task, cache_estimates, description, verbosity),
+    : TaskSpecificHeuristic(task, cache_estimates, description, verbosity),
       canonical_pdbs(
           get_canonical_pdbs(task, patterns, max_time_dominance_pruning, log)) {
 }
@@ -123,7 +123,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            CanonicalPDBsHeuristic, Evaluator>(
+            CanonicalPDBsHeuristic, TaskSpecificEvaluator>(
             opts.get<shared_ptr<TaskIndependentPatternCollectionGenerator>>(
                 "patterns"),
             get_canonical_pdbs_arguments_from_options(opts),

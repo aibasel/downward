@@ -33,8 +33,8 @@ static bool compare_sccs_decreasing(
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(
     const shared_ptr<AbstractTask> &task, const OrderOfSCCs &order_of_sccs,
-    const shared_ptr<MergeSelector> &merge_selector, utils::Verbosity verbosity)
-    : MergeStrategyFactory(task, verbosity),
+    const shared_ptr<TaskSpecificMergeSelector> &merge_selector, utils::Verbosity verbosity)
+    : TaskSpecificMergeStrategyFactory(task, verbosity),
       order_of_sccs(order_of_sccs),
       merge_selector(merge_selector) {
 }
@@ -170,7 +170,7 @@ public:
     virtual shared_ptr<TaskIndependentMergeStrategyFactory> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            MergeStrategyFactorySCCs, MergeStrategyFactory>(
+            MergeStrategyFactorySCCs, TaskSpecificMergeStrategyFactory>(
             opts.get<OrderOfSCCs>("order_of_sccs"),
             opts.get<shared_ptr<TaskIndependentMergeSelector>>(
                 "merge_selector"),

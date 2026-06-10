@@ -8,9 +8,9 @@ using namespace std;
 namespace limited_pruning {
 LimitedPruning::LimitedPruning(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<PruningMethod> &pruning, double min_required_pruning_ratio,
+    const shared_ptr<TaskSpecificPruningMethod> &pruning, double min_required_pruning_ratio,
     int expansions_before_checking_pruning_ratio, utils::Verbosity verbosity)
-    : PruningMethod(task, verbosity),
+    : TaskSpecificPruningMethod(task, verbosity),
       pruning_method(pruning),
       min_required_pruning_ratio(min_required_pruning_ratio),
       num_expansions_before_checking_pruning_ratio(
@@ -20,7 +20,7 @@ LimitedPruning::LimitedPruning(
 }
 
 void LimitedPruning::initialize(const shared_ptr<AbstractTask> &task) {
-    PruningMethod::initialize(task);
+    TaskSpecificPruningMethod::initialize(task);
     pruning_method->initialize(task);
     log << "pruning method: limited" << endl;
 }
@@ -91,7 +91,7 @@ public:
     virtual shared_ptr<TaskIndependentPruningMethod> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            LimitedPruning, PruningMethod>(
+            LimitedPruning, TaskSpecificPruningMethod>(
             opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning"),
             opts.get<double>("min_required_pruning_ratio"),
             opts.get<int>("expansions_before_checking_pruning_ratio"),

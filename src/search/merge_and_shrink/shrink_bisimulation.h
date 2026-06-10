@@ -11,7 +11,7 @@ enum class AtLimit {
     USE_UP
 };
 
-class ShrinkBisimulation : public ShrinkStrategy {
+class ShrinkBisimulation : public TaskSpecificShrinkStrategy {
     const bool greedy;
     const AtLimit at_limit;
 

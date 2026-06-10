@@ -12,7 +12,7 @@ class Options;
 namespace lm_cut_heuristic {
 class LandmarkCutLandmarks;
 
-class LandmarkCutHeuristic : public Heuristic {
+class LandmarkCutHeuristic : public TaskSpecificHeuristic {
     std::unique_ptr<LandmarkCutLandmarks> landmark_generator;
 
     virtual int compute_heuristic(const State &ancestor_state) override;

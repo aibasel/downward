@@ -4,7 +4,7 @@
 #include "merge_scoring_function.h"
 
 namespace merge_and_shrink {
-class MergeScoringFunctionGoalRelevance : public MergeScoringFunction {
+class MergeScoringFunctionGoalRelevance : public TaskSpecificMergeScoringFunction {
     virtual std::string name() const override;
 public:
     explicit MergeScoringFunctionGoalRelevance(

@@ -24,7 +24,7 @@ class FactoredTransitionSystem;
 class MergeTree;
 enum class UpdateOption;
 
-class MergeTreeFactory : public components::TaskSpecificComponent {
+class TaskSpecificMergeTreeFactory : public components::TaskSpecificComponent {
 protected:
     std::shared_ptr<utils::RandomNumberGenerator> rng;
     UpdateOption update_option;
@@ -32,7 +32,7 @@ protected:
     virtual void dump_tree_specific_options(utils::LogProxy &) const {
     }
 public:
-    MergeTreeFactory(
+    TaskSpecificMergeTreeFactory(
         const std::shared_ptr<AbstractTask> &task, int random_seed,
         UpdateOption update_option);
     void dump_options(utils::LogProxy &log) const;
@@ -49,7 +49,7 @@ public:
 };
 
 using TaskIndependentMergeTreeFactory =
-    components::TaskIndependentComponent<MergeTreeFactory>;
+    components::TaskIndependentComponent<TaskSpecificMergeTreeFactory>;
 
 // Derived classes must call this method in their parsing methods.
 extern void add_merge_tree_options_to_feature(plugins::Feature &feature);

@@ -75,7 +75,7 @@ struct HMEntry {
     }
 };
 
-class LandmarkFactoryHM : public LandmarkFactory {
+class LandmarkFactoryHM : public TaskSpecificLandmarkFactory {
     using TriggerSet = std::unordered_map<int, std::unordered_set<int>>;
 
     const int m;

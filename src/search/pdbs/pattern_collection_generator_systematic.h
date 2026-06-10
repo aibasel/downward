@@ -21,7 +21,7 @@ namespace pdbs {
 class CanonicalPDBsHeuristic;
 
 // Invariant: patterns are always sorted.
-class PatternCollectionGeneratorSystematic : public PatternCollectionGenerator {
+class PatternCollectionGeneratorSystematic : public TaskSpecificPatternCollectionGenerator {
     using PatternSet = utils::HashSet<Pattern>;
 
     const size_t max_pattern_size;

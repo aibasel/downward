@@ -8,7 +8,7 @@
 
 #include <unordered_map>
 
-class Evaluator;
+class TaskSpecificEvaluator;
 class SearchStatistics;
 
 /*
@@ -87,7 +87,7 @@ public:
         const State &state, SearchStatistics *statistics = nullptr,
         bool calculate_preferred = false);
 
-    const EvaluationResult &get_result(Evaluator *eval);
+    const EvaluationResult &get_result(TaskSpecificEvaluator *eval);
     const EvaluatorCache &get_cache() const;
     const State &get_state() const;
     int get_g_value() const;
@@ -104,10 +104,10 @@ public:
       treated uniformly, use get_evaluator_value_or_infinity(), which
       returns numeric_limits<int>::max() for infinite estimates.
     */
-    bool is_evaluator_value_infinite(Evaluator *eval);
-    int get_evaluator_value(Evaluator *eval);
-    int get_evaluator_value_or_infinity(Evaluator *eval);
-    const std::vector<OperatorID> &get_preferred_operators(Evaluator *eval);
+    bool is_evaluator_value_infinite(TaskSpecificEvaluator *eval);
+    int get_evaluator_value(TaskSpecificEvaluator *eval);
+    int get_evaluator_value_or_infinity(TaskSpecificEvaluator *eval);
+    const std::vector<OperatorID> &get_preferred_operators(TaskSpecificEvaluator *eval);
     bool get_calculate_preferred() const;
 };
 

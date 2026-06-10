@@ -25,7 +25,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
       ignore costs since EHC is supposed to implement a breadth-first
       search, not a uniform-cost search. So this seems to be a bug.
     */
-    shared_ptr<Evaluator> g_evaluator =
+    shared_ptr<TaskSpecificEvaluator> g_evaluator =
         make_shared<GEval>(task, "ehc.g_eval", verbosity);
 
     if (!use_preferred ||
@@ -41,7 +41,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
           constructor that encapsulates this work to the tie-breaking
           open list code.
         */
-        vector<shared_ptr<Evaluator>> evals = {
+        vector<shared_ptr<TaskSpecificEvaluator>> evals = {
             g_evaluator,
             make_shared<PrefEval>(task, "ehc.pref_eval", verbosity)};
         return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(
@@ -50,12 +50,12 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
 }
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
-    const shared_ptr<AbstractTask> &task, const shared_ptr<Evaluator> &h,
+    const shared_ptr<AbstractTask> &task, const shared_ptr<TaskSpecificEvaluator> &h,
     PreferredUsage preferred_usage,
-    const vector<shared_ptr<Evaluator>> &preferred, OperatorCost cost_type,
+    const vector<shared_ptr<TaskSpecificEvaluator>> &preferred, OperatorCost cost_type,
     int bound, double max_time, const string &description,
     utils::Verbosity verbosity)
-    : SearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
+    : TaskSpecificSearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
       evaluator(h),
       preferred_operator_evaluators(preferred),
       preferred_usage(preferred_usage),
@@ -63,13 +63,13 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       current_phase_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
-    for (const shared_ptr<Evaluator> &eval : preferred_operator_evaluators) {
+    for (const shared_ptr<TaskSpecificEvaluator> &eval : preferred_operator_evaluators) {
         eval->get_path_dependent_evaluators(path_dependent_evaluators);
     }
     evaluator->get_path_dependent_evaluators(path_dependent_evaluators);
 
     State initial_state = state_registry.get_initial_state();
-    for (Evaluator *evaluator : path_dependent_evaluators) {
+    for (TaskSpecificEvaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_initial_state(initial_state);
     }
     use_preferred = find(
@@ -84,7 +84,7 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
 
 void EnforcedHillClimbingSearch::reach_state(
     const State &parent, OperatorID op_id, const State &state) {
-    for (Evaluator *evaluator : path_dependent_evaluators) {
+    for (TaskSpecificEvaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_state_transition(parent, op_id, state);
     }
 }
@@ -139,7 +139,7 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
 
     ordered_set::OrderedSet<OperatorID> preferred_operators;
     if (use_preferred) {
-        for (const shared_ptr<Evaluator> &preferred_operator_evaluator :
+        for (const shared_ptr<TaskSpecificEvaluator> &preferred_operator_evaluator :
              preferred_operator_evaluators) {
             collect_preferred_operators(
                 eval_context, preferred_operator_evaluator.get(),
@@ -280,7 +280,7 @@ public:
     virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            EnforcedHillClimbingSearch, SearchAlgorithm>(
+            EnforcedHillClimbingSearch, TaskSpecificSearchAlgorithm>(
             opts.get<shared_ptr<TaskIndependentEvaluator>>("h"),
             opts.get<PreferredUsage>("preferred_usage"),
             opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),

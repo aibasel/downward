@@ -18,7 +18,7 @@ struct ValueNode;
 namespace cg_heuristic {
 class CGCache;
 
-class CGHeuristic : public Heuristic {
+class CGHeuristic : public TaskSpecificHeuristic {
     using ValueNodeQueue =
         priority_queues::AdaptiveQueue<domain_transition_graph::ValueNode *>;
     std::vector<std::unique_ptr<ValueNodeQueue>> prio_queues;

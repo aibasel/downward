@@ -61,7 +61,7 @@ static vector<int> compute_label_ranks(
 
 MergeScoringFunctionDFP::MergeScoringFunctionDFP(
     const shared_ptr<AbstractTask> &task)
-    : MergeScoringFunction(task) {
+    : TaskSpecificMergeScoringFunction(task) {
 }
 
 vector<double> MergeScoringFunctionDFP::compute_scores(
@@ -146,7 +146,7 @@ public:
     virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &) const override {
         return components::make_auto_task_independent_component<
-            MergeScoringFunctionDFP, MergeScoringFunction>();
+            MergeScoringFunctionDFP, TaskSpecificMergeScoringFunction>();
     }
 };
 

@@ -19,7 +19,7 @@ using namespace std;
 namespace type_based_open_list {
 template<class Entry>
 class TypeBasedOpenList : public OpenList<Entry> {
-    vector<shared_ptr<Evaluator>> evaluators;
+    vector<shared_ptr<TaskSpecificEvaluator>> evaluators;
     shared_ptr<utils::RandomNumberGenerator> rng;
 
     using Key = vector<int>;
@@ -33,7 +33,7 @@ protected:
 
 public:
     explicit TypeBasedOpenList(
-        const vector<shared_ptr<Evaluator>> &evaluators, int random_seed);
+        const vector<shared_ptr<TaskSpecificEvaluator>> &evaluators, int random_seed);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
@@ -42,7 +42,7 @@ public:
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
     virtual void get_path_dependent_evaluators(
-        set<Evaluator *> &evals) override;
+        set<TaskSpecificEvaluator *> &evals) override;
 };
 
 template<class Entry>
@@ -50,7 +50,7 @@ void TypeBasedOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     vector<int> key;
     key.reserve(evaluators.size());
-    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
+    for (const shared_ptr<TaskSpecificEvaluator> &evaluator : evaluators) {
         key.push_back(
             eval_context.get_evaluator_value_or_infinity(evaluator.get()));
     }
@@ -68,7 +68,7 @@ void TypeBasedOpenList<Entry>::do_insertion(
 
 template<class Entry>
 TypeBasedOpenList<Entry>::TypeBasedOpenList(
-    const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
+    const vector<shared_ptr<TaskSpecificEvaluator>> &evaluators, int random_seed)
     : evaluators(evaluators), rng(utils::get_rng(random_seed)) {
 }
 
@@ -108,7 +108,7 @@ bool TypeBasedOpenList<Entry>::is_dead_end(
     if (is_reliable_dead_end(eval_context))
         return true;
     // Otherwise, return true if all evaluators agree this is a dead-end.
-    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
+    for (const shared_ptr<TaskSpecificEvaluator> &evaluator : evaluators) {
         if (!eval_context.is_evaluator_value_infinite(evaluator.get()))
             return false;
     }
@@ -118,7 +118,7 @@ bool TypeBasedOpenList<Entry>::is_dead_end(
 template<class Entry>
 bool TypeBasedOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
-    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
+    for (const shared_ptr<TaskSpecificEvaluator> &evaluator : evaluators) {
         if (evaluator->dead_ends_are_reliable() &&
             eval_context.is_evaluator_value_infinite(evaluator.get()))
             return true;
@@ -128,15 +128,15 @@ bool TypeBasedOpenList<Entry>::is_reliable_dead_end(
 
 template<class Entry>
 void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
-    set<Evaluator *> &evals) {
-    for (const shared_ptr<Evaluator> &evaluator : evaluators) {
+    set<TaskSpecificEvaluator *> &evals) {
+    for (const shared_ptr<TaskSpecificEvaluator> &evaluator : evaluators) {
         evaluator->get_path_dependent_evaluators(evals);
     }
 }
 
 TypeBasedOpenListFactory::TypeBasedOpenListFactory(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
+    const vector<shared_ptr<TaskSpecificEvaluator>> &evaluators, int random_seed)
     : OpenListFactory(task), evaluators(evaluators), random_seed(random_seed) {
     utils::verify_list_not_empty(evaluators, "evaluators");
 }

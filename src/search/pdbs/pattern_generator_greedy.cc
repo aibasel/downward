@@ -19,7 +19,7 @@ namespace pdbs {
 PatternGeneratorGreedy::PatternGeneratorGreedy(
     const shared_ptr<AbstractTask> &task, int max_states,
     utils::Verbosity verbosity)
-    : PatternGenerator(task, verbosity), max_states(max_states) {
+    : TaskSpecificPatternGenerator(task, verbosity), max_states(max_states) {
 }
 
 string PatternGeneratorGreedy::name() const {
@@ -67,7 +67,7 @@ public:
     virtual shared_ptr<TaskIndependentPatternGenerator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            PatternGeneratorGreedy, PatternGenerator>(
+            PatternGeneratorGreedy, TaskSpecificPatternGenerator>(
             opts.get<int>("max_states"),
             get_generator_arguments_from_options(opts));
     }

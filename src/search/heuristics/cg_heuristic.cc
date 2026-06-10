@@ -20,7 +20,7 @@ CGHeuristic::CGHeuristic(
     const shared_ptr<AbstractTask> &task, int max_cache_size,
     tasks::AxiomHandlingType axioms, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(
+    : TaskSpecificHeuristic(
           // issue1208 move this transformation to task-independent level?
           tasks::get_default_value_axioms_task_if_needed(task, axioms),
           cache_estimates, description, verbosity),
@@ -312,7 +312,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            CGHeuristic, Evaluator>(
+            CGHeuristic, TaskSpecificEvaluator>(
             opts.get<int>("max_cache_size"),
             tasks::get_axioms_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));

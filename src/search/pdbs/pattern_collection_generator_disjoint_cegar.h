@@ -13,7 +13,7 @@ namespace pdbs {
   disjoint pattern collection for the given task. See cegar.h for more details.
 */
 class PatternCollectionGeneratorDisjointCegar
-    : public PatternCollectionGenerator {
+    : public TaskSpecificPatternCollectionGenerator {
     const int max_pdb_size;
     const int max_collection_size;
     const double max_time;

@@ -28,12 +28,12 @@ enum class PreferredUsage {
   an eager one. We hypothesize that both versions need to evaluate and store
   the same states anyways.
 */
-class EnforcedHillClimbingSearch : public SearchAlgorithm {
+class EnforcedHillClimbingSearch : public TaskSpecificSearchAlgorithm {
     std::unique_ptr<EdgeOpenList> open_list;
 
-    std::shared_ptr<Evaluator> evaluator;
-    std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators;
-    std::set<Evaluator *> path_dependent_evaluators;
+    std::shared_ptr<TaskSpecificEvaluator> evaluator;
+    std::vector<std::shared_ptr<TaskSpecificEvaluator>> preferred_operator_evaluators;
+    std::set<TaskSpecificEvaluator *> path_dependent_evaluators;
     bool use_preferred;
     PreferredUsage preferred_usage;
 
@@ -59,8 +59,8 @@ protected:
 public:
     EnforcedHillClimbingSearch(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<Evaluator> &h, PreferredUsage preferred_usage,
-        const std::vector<std::shared_ptr<Evaluator>> &preferred,
+        const std::shared_ptr<TaskSpecificEvaluator> &h, PreferredUsage preferred_usage,
+        const std::vector<std::shared_ptr<TaskSpecificEvaluator>> &preferred,
         OperatorCost cost_type, int bound, double max_time,
         const std::string &description, utils::Verbosity verbosity);
 

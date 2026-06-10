@@ -22,13 +22,13 @@ namespace eager_search {
 EagerSearch::EagerSearch(
     const shared_ptr<AbstractTask> &task,
     const shared_ptr<OpenListFactory> &open, bool reopen_closed,
-    const shared_ptr<Evaluator> &f_eval,
-    const vector<shared_ptr<Evaluator>> &preferred,
-    const shared_ptr<PruningMethod> &pruning,
-    const shared_ptr<Evaluator> &lazy_evaluator, OperatorCost cost_type,
+    const shared_ptr<TaskSpecificEvaluator> &f_eval,
+    const vector<shared_ptr<TaskSpecificEvaluator>> &preferred,
+    const shared_ptr<TaskSpecificPruningMethod> &pruning,
+    const shared_ptr<TaskSpecificEvaluator> &lazy_evaluator, OperatorCost cost_type,
     int bound, double max_time, const string &description,
     utils::Verbosity verbosity)
-    : SearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
+    : TaskSpecificSearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
       reopen_closed_nodes(reopen_closed),
       open_list(open->create_state_open_list()),
       f_evaluator(f_eval), // default nullptr
@@ -47,14 +47,14 @@ void EagerSearch::initialize() {
         << " reopening closed nodes, (real) bound = " << bound << endl;
     assert(open_list);
 
-    set<Evaluator *> evals;
+    set<TaskSpecificEvaluator *> evals;
     open_list->get_path_dependent_evaluators(evals);
 
     /*
       Collect path-dependent evaluators that are used for preferred operators
       (in case they are not also used in the open list).
     */
-    for (const shared_ptr<Evaluator> &evaluator :
+    for (const shared_ptr<TaskSpecificEvaluator> &evaluator :
          preferred_operator_evaluators) {
         evaluator->get_path_dependent_evaluators(evals);
     }
@@ -79,7 +79,7 @@ void EagerSearch::initialize() {
     path_dependent_evaluators.assign(evals.begin(), evals.end());
 
     State initial_state = state_registry.get_initial_state();
-    for (Evaluator *evaluator : path_dependent_evaluators) {
+    for (TaskSpecificEvaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_initial_state(initial_state);
     }
 
@@ -188,7 +188,7 @@ void EagerSearch::collect_preferred_operators_for_node(
     ordered_set::OrderedSet<OperatorID> &preferred_operators) {
     EvaluationContext eval_context(
         node.get_state(), node.get_g(), false, &statistics, true);
-    for (const shared_ptr<Evaluator> &preferred_operator_evaluator :
+    for (const shared_ptr<TaskSpecificEvaluator> &preferred_operator_evaluator :
          preferred_operator_evaluators) {
         collect_preferred_operators(
             eval_context, preferred_operator_evaluator.get(),
@@ -233,7 +233,7 @@ void EagerSearch::generate_successors(const SearchNode &node) {
 
         SearchNode succ_node = search_space.get_node(succ_state);
 
-        for (Evaluator *evaluator : path_dependent_evaluators) {
+        for (TaskSpecificEvaluator *evaluator : path_dependent_evaluators) {
             evaluator->notify_state_transition(state, op_id, succ_state);
         }
 

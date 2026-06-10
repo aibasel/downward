@@ -11,7 +11,7 @@ class PotentialFunction;
 /*
   Use an internal potential function to evaluate a given state.
 */
-class PotentialHeuristic : public Heuristic {
+class PotentialHeuristic : public TaskSpecificHeuristic {
     std::unique_ptr<PotentialFunction> function;
 
 protected:

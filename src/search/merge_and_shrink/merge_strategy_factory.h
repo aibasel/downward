@@ -19,14 +19,14 @@ namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class MergeStrategy;
 
-class MergeStrategyFactory : public components::TaskSpecificComponent {
+class TaskSpecificMergeStrategyFactory : public components::TaskSpecificComponent {
 protected:
     mutable utils::LogProxy log;
 
     virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options() const = 0;
 public:
-    MergeStrategyFactory(
+    TaskSpecificMergeStrategyFactory(
         const std::shared_ptr<AbstractTask> &task, utils::Verbosity verbosity);
     void dump_options() const;
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
@@ -36,7 +36,7 @@ public:
 };
 
 using TaskIndependentMergeStrategyFactory =
-    components::TaskIndependentComponent<MergeStrategyFactory>;
+    components::TaskIndependentComponent<TaskSpecificMergeStrategyFactory>;
 
 extern void add_merge_strategy_options_to_feature(plugins::Feature &feature);
 extern std::tuple<utils::Verbosity> get_merge_strategy_arguments_from_options(

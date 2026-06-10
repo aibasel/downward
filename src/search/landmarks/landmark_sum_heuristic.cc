@@ -16,7 +16,7 @@ using namespace std;
 
 namespace landmarks {
 static bool are_dead_ends_reliable(
-    const shared_ptr<LandmarkFactory> &lm_factory,
+    const shared_ptr<TaskSpecificLandmarkFactory> &lm_factory,
     const TaskProxy &task_proxy) {
     if (task_properties::has_axioms(task_proxy)) {
         return false;
@@ -32,7 +32,7 @@ static bool are_dead_ends_reliable(
 
 LandmarkSumHeuristic::LandmarkSumHeuristic(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<LandmarkFactory> &lm_factory, bool pref, bool prog_goal,
+    const shared_ptr<TaskSpecificLandmarkFactory> &lm_factory, bool pref, bool prog_goal,
     bool prog_gn, bool prog_r, bool cache_estimates, const string &description,
     utils::Verbosity verbosity, tasks::AxiomHandlingType axioms)
     : LandmarkHeuristic(
@@ -195,7 +195,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            LandmarkSumHeuristic, Evaluator>(
+            LandmarkSumHeuristic, TaskSpecificEvaluator>(
             get_landmark_heuristic_arguments_from_options(opts),
             tasks::get_axioms_arguments_from_options(opts));
     }

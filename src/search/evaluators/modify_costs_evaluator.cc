@@ -15,7 +15,7 @@ bool ModifyCostsEvaluator::dead_ends_are_reliable() const {
 }
 
 void ModifyCostsEvaluator::get_path_dependent_evaluators(
-    set<Evaluator *> &evals) {
+    set<TaskSpecificEvaluator *> &evals) {
     nested->get_path_dependent_evaluators(evals);
 }
 
@@ -56,7 +56,7 @@ int ModifyCostsEvaluator::get_cached_estimate(const State &state) const {
     return nested->get_cached_estimate(state);
 }
 
-shared_ptr<Evaluator>
+shared_ptr<TaskSpecificEvaluator>
 TaskIndependentModifyCostsEvaluator::create_task_specific_component(
     const shared_ptr<AbstractTask> &task) const {
     shared_ptr<AbstractTask> cost_adapted_task =

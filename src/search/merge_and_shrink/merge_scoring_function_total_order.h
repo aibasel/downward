@@ -26,7 +26,7 @@ enum class ProductTSOrder {
     RANDOM
 };
 
-class MergeScoringFunctionTotalOrder : public MergeScoringFunction {
+class MergeScoringFunctionTotalOrder : public TaskSpecificMergeScoringFunction {
     AtomicTSOrder atomic_ts_order;
     ProductTSOrder product_ts_order;
     bool atomic_before_product;

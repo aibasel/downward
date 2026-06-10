@@ -6,8 +6,8 @@
 #include <vector>
 
 namespace landmarks {
-class LandmarkFactoryMerged : public LandmarkFactory {
-    std::vector<std::shared_ptr<LandmarkFactory>> landmark_factories;
+class LandmarkFactoryMerged : public TaskSpecificLandmarkFactory {
+    std::vector<std::shared_ptr<TaskSpecificLandmarkFactory>> landmark_factories;
 
     std::vector<std::shared_ptr<LandmarkGraph>>
     generate_landmark_graphs_of_subfactories(
@@ -27,7 +27,7 @@ class LandmarkFactoryMerged : public LandmarkFactory {
 public:
     LandmarkFactoryMerged(
         const std::shared_ptr<AbstractTask> &task,
-        const std::vector<std::shared_ptr<LandmarkFactory>> &lm_factories,
+        const std::vector<std::shared_ptr<TaskSpecificLandmarkFactory>> &lm_factories,
         utils::Verbosity verbosity);
 
     virtual bool supports_conditional_effects() const override;

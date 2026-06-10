@@ -8,7 +8,7 @@ class RandomNumberGenerator;
 }
 
 namespace pdbs {
-class PatternGeneratorCEGAR : public PatternGenerator {
+class PatternGeneratorCEGAR : public TaskSpecificPatternGenerator {
     const int max_pdb_size;
     const double max_time;
     const bool use_wildcard_plans;

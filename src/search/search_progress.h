@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 class EvaluationContext;
-class Evaluator;
+class TaskSpecificEvaluator;
 
 namespace utils {
 class LogProxy;
@@ -19,9 +19,9 @@ class LogProxy;
 */
 
 class SearchProgress {
-    std::unordered_map<const Evaluator *, int> min_values;
+    std::unordered_map<const TaskSpecificEvaluator *, int> min_values;
 
-    bool process_evaluator_value(const Evaluator *evaluator, int value);
+    bool process_evaluator_value(const TaskSpecificEvaluator *evaluator, int value);
 
 public:
     SearchProgress() = default;

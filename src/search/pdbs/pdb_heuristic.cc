@@ -13,16 +13,16 @@ using namespace std;
 namespace pdbs {
 static shared_ptr<PatternDatabase> get_pdb_from_generator(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<PatternGenerator> &pattern_generator) {
+    const shared_ptr<TaskSpecificPatternGenerator> &pattern_generator) {
     PatternInformation pattern_info = pattern_generator->generate(task);
     return pattern_info.get_pdb();
 }
 
 PDBHeuristic::PDBHeuristic(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<PatternGenerator> &pattern, bool cache_estimates,
+    const shared_ptr<TaskSpecificPatternGenerator> &pattern, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(task, cache_estimates, description, verbosity),
+    : TaskSpecificHeuristic(task, cache_estimates, description, verbosity),
       pdb(get_pdb_from_generator(task, pattern)) {
 }
 
@@ -79,7 +79,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            PDBHeuristic, Evaluator>(
+            PDBHeuristic, TaskSpecificEvaluator>(
             opts.get<shared_ptr<TaskIndependentPatternGenerator>>("pattern"),
             get_heuristic_arguments_from_options(opts));
     }

@@ -8,8 +8,8 @@ class Options;
 }
 
 namespace limited_pruning {
-class LimitedPruning : public PruningMethod {
-    std::shared_ptr<PruningMethod> pruning_method;
+class LimitedPruning : public TaskSpecificPruningMethod {
+    std::shared_ptr<TaskSpecificPruningMethod> pruning_method;
     const double min_required_pruning_ratio;
     const int num_expansions_before_checking_pruning_ratio;
     int num_pruning_calls;
@@ -20,7 +20,7 @@ class LimitedPruning : public PruningMethod {
 public:
     explicit LimitedPruning(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<PruningMethod> &pruning,
+        const std::shared_ptr<TaskSpecificPruningMethod> &pruning,
         double min_required_pruning_ratio,
         int expansions_before_checking_pruning_ratio,
         utils::Verbosity verbosity);

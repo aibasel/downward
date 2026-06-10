@@ -12,9 +12,9 @@ using namespace std;
 
 namespace weighted_evaluator {
 WeightedEvaluator::WeightedEvaluator(
-    const shared_ptr<AbstractTask> &task, const shared_ptr<Evaluator> &eval,
+    const shared_ptr<AbstractTask> &task, const shared_ptr<TaskSpecificEvaluator> &eval,
     int weight, const string &description, utils::Verbosity verbosity)
-    : Evaluator(task, false, false, false, description, verbosity),
+    : TaskSpecificEvaluator(task, false, false, false, description, verbosity),
       evaluator(eval),
       weight(weight) {
 }
@@ -36,7 +36,7 @@ EvaluationResult WeightedEvaluator::compute_result(
     return result;
 }
 
-void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
+void WeightedEvaluator::get_path_dependent_evaluators(set<TaskSpecificEvaluator *> &evals) {
     evaluator->get_path_dependent_evaluators(evals);
 }
 
@@ -57,7 +57,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            WeightedEvaluator, Evaluator>(
+            WeightedEvaluator, TaskSpecificEvaluator>(
             opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
             opts.get<int>("weight"),
             get_evaluator_arguments_from_options(opts));

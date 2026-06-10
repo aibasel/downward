@@ -25,7 +25,7 @@ public:
     virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            lazy_search::LazySearch, SearchAlgorithm>(
+            lazy_search::LazySearch, TaskSpecificSearchAlgorithm>(
             opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
             opts.get<bool>("reopen_closed"),
             opts.get_list<shared_ptr<TaskIndependentEvaluator>>("preferred"),

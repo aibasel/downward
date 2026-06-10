@@ -24,12 +24,12 @@
 
 namespace type_based_open_list {
 class TypeBasedOpenListFactory : public OpenListFactory {
-    std::vector<std::shared_ptr<Evaluator>> evaluators;
+    std::vector<std::shared_ptr<TaskSpecificEvaluator>> evaluators;
     int random_seed;
 public:
     TypeBasedOpenListFactory(
         const std::shared_ptr<AbstractTask> &task,
-        const std::vector<std::shared_ptr<Evaluator>> &evaluators,
+        const std::vector<std::shared_ptr<TaskSpecificEvaluator>> &evaluators,
         int random_seed);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;

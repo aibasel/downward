@@ -9,7 +9,7 @@ using namespace std;
 namespace sum_evaluator {
 SumEvaluator::SumEvaluator(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<Evaluator>> &evals, const string &description,
+    const vector<shared_ptr<TaskSpecificEvaluator>> &evals, const string &description,
     utils::Verbosity verbosity)
     : CombiningEvaluator(task, evals, description, verbosity) {
 }
@@ -39,7 +39,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            SumEvaluator, Evaluator>(
+            SumEvaluator, TaskSpecificEvaluator>(
             combining_evaluator::get_combining_evaluator_arguments_from_options(
                 opts));
     }

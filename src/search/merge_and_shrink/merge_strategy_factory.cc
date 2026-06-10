@@ -7,13 +7,13 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeStrategyFactory::MergeStrategyFactory(
+TaskSpecificMergeStrategyFactory::TaskSpecificMergeStrategyFactory(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
     : components::TaskSpecificComponent(task),
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 
-void MergeStrategyFactory::dump_options() const {
+void TaskSpecificMergeStrategyFactory::dump_options() const {
     if (log.is_at_least_normal()) {
         log << "Merge strategy options:" << endl;
         log << "Type: " << name() << endl;

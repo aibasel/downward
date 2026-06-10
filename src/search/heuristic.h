@@ -18,7 +18,7 @@ class Feature;
 class Options;
 }
 
-class Heuristic : public Evaluator {
+class TaskSpecificHeuristic : public TaskSpecificEvaluator {
     struct HEntry {
         /* dirty is conceptually a bool, but Visual C++ does not support
            packing ints and bools together in a bitfield. */
@@ -70,12 +70,12 @@ protected:
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
-    Heuristic(
+    TaskSpecificHeuristic(
         const std::shared_ptr<AbstractTask> &task, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 
     virtual void get_path_dependent_evaluators(
-        std::set<Evaluator *> & /*evals*/) override {
+        std::set<TaskSpecificEvaluator *> & /*evals*/) override {
     }
 
     virtual EvaluationResult compute_result(

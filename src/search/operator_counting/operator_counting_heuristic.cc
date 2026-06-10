@@ -14,10 +14,10 @@ using namespace std;
 namespace operator_counting {
 OperatorCountingHeuristic::OperatorCountingHeuristic(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<ConstraintGenerator>> &constraint_generators,
+    const vector<shared_ptr<TaskSpecificConstraintGenerator>> &constraint_generators,
     bool use_integer_operator_counts, lp::LPSolverType lpsolver,
     bool cache_estimates, const string &description, utils::Verbosity verbosity)
-    : Heuristic(task, cache_estimates, description, verbosity),
+    : TaskSpecificHeuristic(task, cache_estimates, description, verbosity),
       constraint_generators(constraint_generators),
       lp_solver(lpsolver) {
     utils::verify_list_not_empty(
@@ -124,7 +124,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            OperatorCountingHeuristic, Evaluator>(
+            OperatorCountingHeuristic, TaskSpecificEvaluator>(
             opts.get_list<shared_ptr<TaskIndependentConstraintGenerator>>(
                 "constraint_generators"),
             opts.get<bool>("use_integer_operator_counts"),

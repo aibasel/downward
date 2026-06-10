@@ -48,7 +48,7 @@ static void compute_union_pattern(
 PatternCollectionGeneratorSystematic::PatternCollectionGeneratorSystematic(
     const shared_ptr<AbstractTask> &task, int pattern_max_size,
     bool only_interesting_patterns, utils::Verbosity verbosity)
-    : PatternCollectionGenerator(task, verbosity),
+    : TaskSpecificPatternCollectionGenerator(task, verbosity),
       max_pattern_size(pattern_max_size),
       only_interesting_patterns(only_interesting_patterns) {
 }
@@ -321,7 +321,7 @@ public:
     virtual shared_ptr<TaskIndependentPatternCollectionGenerator>
     create_component(const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            PatternCollectionGeneratorSystematic, PatternCollectionGenerator>(
+            PatternCollectionGeneratorSystematic, TaskSpecificPatternCollectionGenerator>(
             opts.get<int>("pattern_max_size"),
             opts.get<bool>("only_interesting_patterns"),
             get_generator_arguments_from_options(opts));

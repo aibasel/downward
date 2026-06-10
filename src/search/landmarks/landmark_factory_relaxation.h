@@ -6,7 +6,7 @@
 namespace landmarks {
 class Exploration;
 
-class LandmarkFactoryRelaxation : public LandmarkFactory {
+class LandmarkFactoryRelaxation : public TaskSpecificLandmarkFactory {
     void generate_landmarks(const std::shared_ptr<AbstractTask> &task) override;
 
     virtual void generate_relaxed_landmarks(

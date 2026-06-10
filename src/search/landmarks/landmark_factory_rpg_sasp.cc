@@ -769,7 +769,7 @@ public:
     virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            LandmarkFactoryRpgSasp, LandmarkFactory>(
+            LandmarkFactoryRpgSasp, TaskSpecificLandmarkFactory>(
             opts.get<bool>("disjunctive_landmarks"),
             get_use_orders_arguments_from_options(opts),
             get_landmark_factory_arguments_from_options(opts));

@@ -8,11 +8,11 @@ using namespace std;
 namespace null_pruning_method {
 NullPruningMethod::NullPruningMethod(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
-    : PruningMethod(task, verbosity) {
+    : TaskSpecificPruningMethod(task, verbosity) {
 }
 
 void NullPruningMethod::initialize(const shared_ptr<AbstractTask> &task) {
-    PruningMethod::initialize(task);
+    TaskSpecificPruningMethod::initialize(task);
     log << "pruning method: none" << endl;
 }
 
@@ -32,7 +32,7 @@ public:
     virtual shared_ptr<TaskIndependentPruningMethod> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            NullPruningMethod, PruningMethod>(
+            NullPruningMethod, TaskSpecificPruningMethod>(
             get_pruning_arguments_from_options(opts));
     }
 };

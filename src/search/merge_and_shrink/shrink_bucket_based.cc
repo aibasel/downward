@@ -14,7 +14,7 @@ using namespace std;
 namespace merge_and_shrink {
 ShrinkBucketBased::ShrinkBucketBased(
     const shared_ptr<AbstractTask> &task, int random_seed)
-    : ShrinkStrategy(task), rng(utils::get_rng(random_seed)) {
+    : TaskSpecificShrinkStrategy(task), rng(utils::get_rng(random_seed)) {
 }
 
 StateEquivalenceRelation ShrinkBucketBased::compute_abstraction(

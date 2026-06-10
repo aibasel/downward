@@ -18,7 +18,7 @@ IteratedSearch::IteratedSearch(
     bool pass_bound, bool repeat_last, bool continue_on_fail,
     bool continue_on_solve, OperatorCost cost_type, int bound, double max_time,
     const string &description, utils::Verbosity verbosity)
-    : SearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
+    : TaskSpecificSearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
       algorithm_configs(algorithm_configs),
       pass_bound(pass_bound),
       repeat_last_phase(repeat_last),
@@ -60,10 +60,10 @@ void IteratedSearch::update_retention_set() {
                       factories, as our search algorithms do not support being
                       used more than once.
                     */
-                    const Evaluator *evaluator =
-                        dynamic_cast<const Evaluator *>(ts_component.get());
-                    const landmarks::LandmarkFactory *landmarks =
-                        dynamic_cast<const landmarks::LandmarkFactory *>(
+                    const TaskSpecificEvaluator *evaluator =
+                        dynamic_cast<const TaskSpecificEvaluator *>(ts_component.get());
+                    const landmarks::TaskSpecificLandmarkFactory *landmarks =
+                        dynamic_cast<const landmarks::TaskSpecificLandmarkFactory *>(
                             ts_component.get());
                     if (evaluator || landmarks) {
                         new_retained_components.push_back(ts_component);
@@ -81,17 +81,17 @@ void IteratedSearch::update_retention_set() {
     retained_components.swap(new_retained_components);
 }
 
-shared_ptr<SearchAlgorithm> IteratedSearch::get_search_algorithm(
+shared_ptr<TaskSpecificSearchAlgorithm> IteratedSearch::get_search_algorithm(
     int algorithm_configs_index) {
     shared_ptr<TaskIndependentSearchAlgorithm> &algorithm_config =
         algorithm_configs[algorithm_configs_index];
-    shared_ptr<SearchAlgorithm> search_algorithm =
+    shared_ptr<TaskSpecificSearchAlgorithm> search_algorithm =
         algorithm_config->bind_task(task);
     log << "Starting search: " << search_algorithm->get_description() << endl;
     return search_algorithm;
 }
 
-shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
+shared_ptr<TaskSpecificSearchAlgorithm> IteratedSearch::create_current_phase() {
     int num_phases = algorithm_configs.size();
     if (phase >= num_phases) {
         /* We've gone through all searches. We continue if
@@ -112,7 +112,7 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
 }
 
 SearchStatus IteratedSearch::step() {
-    shared_ptr<SearchAlgorithm> current_search = create_current_phase();
+    shared_ptr<TaskSpecificSearchAlgorithm> current_search = create_current_phase();
     if (!current_search) {
         return found_solution() ? SOLVED : FAILED;
     }
@@ -198,7 +198,7 @@ void IteratedSearch::save_plan_if_necessary() {
 }
 
 class TaskIndependentIteratedSearch
-    : public components::TaskIndependentComponent<SearchAlgorithm> {
+    : public components::TaskIndependentComponent<TaskSpecificSearchAlgorithm> {
     vector<shared_ptr<TaskIndependentSearchAlgorithm>> algorithm_configs;
     bool pass_bound;
     bool repeat_last_phase;
@@ -210,7 +210,7 @@ class TaskIndependentIteratedSearch
     string description;
     utils::Verbosity verbosity;
 protected:
-    virtual shared_ptr<SearchAlgorithm> create_task_specific_component(
+    virtual shared_ptr<TaskSpecificSearchAlgorithm> create_task_specific_component(
         const shared_ptr<AbstractTask> &task) const {
         return make_shared<IteratedSearch>(
             task, algorithm_configs, pass_bound, repeat_last_phase,

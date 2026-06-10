@@ -11,7 +11,7 @@ namespace g_evaluator {
 GEvaluator::GEvaluator(
     const shared_ptr<AbstractTask> &task, const string &description,
     utils::Verbosity verbosity)
-    : Evaluator(task, false, false, false, description, verbosity) {
+    : TaskSpecificEvaluator(task, false, false, false, description, verbosity) {
 }
 
 EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
@@ -34,7 +34,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            GEvaluator, Evaluator>(get_evaluator_arguments_from_options(opts));
+            GEvaluator, TaskSpecificEvaluator>(get_evaluator_arguments_from_options(opts));
     }
 };
 

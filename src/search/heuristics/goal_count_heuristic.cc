@@ -10,7 +10,7 @@ namespace goal_count_heuristic {
 GoalCountHeuristic::GoalCountHeuristic(
     const shared_ptr<AbstractTask> &task, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(task, cache_estimates, description, verbosity) {
+    : TaskSpecificHeuristic(task, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing goal count heuristic..." << endl;
     }
@@ -50,7 +50,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            GoalCountHeuristic, Evaluator>(
+            GoalCountHeuristic, TaskSpecificEvaluator>(
             get_heuristic_arguments_from_options(opts));
     }
 };

@@ -39,9 +39,9 @@ static void log_progress(
     log << "M&S algorithm timer: " << timer << " (" << msg << ")" << endl;
 }
 MergeAndShrinkAlgorithm::MergeAndShrinkAlgorithm(
-    const shared_ptr<MergeStrategyFactory> &merge_strategy,
-    const shared_ptr<ShrinkStrategy> &shrink_strategy,
-    const shared_ptr<LabelReduction> &label_reduction,
+    const shared_ptr<TaskSpecificMergeStrategyFactory> &merge_strategy,
+    const shared_ptr<TaskSpecificShrinkStrategy> &shrink_strategy,
+    const shared_ptr<TaskSpecificLabelReduction> &label_reduction,
     bool prune_unreachable_states, bool prune_irrelevant_states, int max_states,
     int max_states_before_merge, int threshold_before_merge,
     double main_loop_max_time, utils::Verbosity verbosity)

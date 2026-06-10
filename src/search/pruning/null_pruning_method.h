@@ -4,7 +4,7 @@
 #include "../pruning_method.h"
 
 namespace null_pruning_method {
-class NullPruningMethod : public PruningMethod {
+class NullPruningMethod : public TaskSpecificPruningMethod {
     virtual void prune(const State &, std::vector<OperatorID> &) override {
     }
 public:

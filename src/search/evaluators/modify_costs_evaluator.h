@@ -8,17 +8,17 @@
 #include <memory.h>
 
 namespace cost_adapted_evaluator {
-class ModifyCostsEvaluator : public Evaluator {
-    std::shared_ptr<Evaluator> nested;
+class ModifyCostsEvaluator : public TaskSpecificEvaluator {
+    std::shared_ptr<TaskSpecificEvaluator> nested;
 public:
     ModifyCostsEvaluator(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<Evaluator> &nested,
+        const std::shared_ptr<TaskSpecificEvaluator> &nested,
         const std::string &description, utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;
     virtual void get_path_dependent_evaluators(
-        std::set<Evaluator *> &evals) override;
+        std::set<TaskSpecificEvaluator *> &evals) override;
     virtual void notify_initial_state(const State &initial_state) override;
     virtual void notify_state_transition(
         const State &parent_state, OperatorID op_id,
@@ -34,7 +34,7 @@ class TaskIndependentModifyCostsEvaluator : public TaskIndependentEvaluator {
     std::shared_ptr<TaskIndependentEvaluator> nested;
     OperatorCost cost_type;
 
-    virtual std::shared_ptr<Evaluator> create_task_specific_component(
+    virtual std::shared_ptr<TaskSpecificEvaluator> create_task_specific_component(
         const std::shared_ptr<AbstractTask> &task) const override;
 public:
     TaskIndependentModifyCostsEvaluator(

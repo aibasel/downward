@@ -9,7 +9,7 @@ namespace pdbs {
 class PatternDatabase;
 
 // Implements a heuristic for a single PDB.
-class PDBHeuristic : public Heuristic {
+class PDBHeuristic : public TaskSpecificHeuristic {
     std::shared_ptr<PatternDatabase> pdb;
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
@@ -26,7 +26,7 @@ public:
     */
     PDBHeuristic(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<PatternGenerator> &pattern_generator,
+        const std::shared_ptr<TaskSpecificPatternGenerator> &pattern_generator,
         bool cache_estimates, const std::string &description,
         utils::Verbosity verbosity);
 };

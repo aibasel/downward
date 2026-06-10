@@ -4,7 +4,7 @@
 #include "merge_scoring_function.h"
 
 namespace merge_and_shrink {
-class MergeScoringFunctionDFP : public MergeScoringFunction {
+class MergeScoringFunctionDFP : public TaskSpecificMergeScoringFunction {
     virtual std::string name() const override;
 public:
     explicit MergeScoringFunctionDFP(const std::shared_ptr<AbstractTask> &task);

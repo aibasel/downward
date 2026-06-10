@@ -17,7 +17,7 @@ class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
     std::unique_ptr<CostPartitioningAlgorithm> cost_partitioning_algorithm;
 
     void check_unsupported_features(
-        const std::shared_ptr<LandmarkFactory> &landmark_factory);
+        const std::shared_ptr<TaskSpecificLandmarkFactory> &landmark_factory);
     void set_cost_partitioning_algorithm(
         CostPartitioningMethod cost_partitioning, lp::LPSolverType lpsolver,
         bool use_action_landmarks);
@@ -26,7 +26,7 @@ class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
 public:
     LandmarkCostPartitioningHeuristic(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<LandmarkFactory> &lm_factory, bool pref,
+        const std::shared_ptr<TaskSpecificLandmarkFactory> &lm_factory, bool pref,
         bool prog_goal, bool prog_gn, bool prog_r, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity,
         CostPartitioningMethod cost_partitioning, bool alm,

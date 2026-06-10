@@ -29,7 +29,7 @@ public:
     virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            eager_search::EagerSearch, SearchAlgorithm>(
+            eager_search::EagerSearch, TaskSpecificSearchAlgorithm>(
             opts.get<shared_ptr<TaskIndependentOpenListFactory>>("open"),
             opts.get<bool>("reopen_closed"),
             opts.get<shared_ptr<TaskIndependentEvaluator>>("f_eval", nullptr),

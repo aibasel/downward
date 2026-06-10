@@ -54,7 +54,7 @@ public:
           verbosity(verbosity) {
     }
 
-    virtual shared_ptr<Evaluator> create_task_specific_component(
+    virtual shared_ptr<TaskSpecificEvaluator> create_task_specific_component(
         const shared_ptr<AbstractTask> &task) const override {
         unique_ptr<PotentialFunction> potential_function =
             create_potential_function(task, lpsolver, max_potential, opt_func);

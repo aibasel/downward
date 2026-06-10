@@ -20,7 +20,7 @@ MergeScoringFunctionTotalOrder::MergeScoringFunctionTotalOrder(
     const shared_ptr<AbstractTask> &task, AtomicTSOrder atomic_ts_order,
     ProductTSOrder product_ts_order, bool atomic_before_product,
     int random_seed)
-    : MergeScoringFunction(task),
+    : TaskSpecificMergeScoringFunction(task),
       atomic_ts_order(atomic_ts_order),
       product_ts_order(product_ts_order),
       atomic_before_product(atomic_before_product),
@@ -211,7 +211,7 @@ public:
     virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            MergeScoringFunctionTotalOrder, MergeScoringFunction>(
+            MergeScoringFunctionTotalOrder, TaskSpecificMergeScoringFunction>(
             opts.get<AtomicTSOrder>("atomic_ts_order"),
             opts.get<ProductTSOrder>("product_ts_order"),
             opts.get<bool>("atomic_before_product"),

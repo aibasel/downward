@@ -14,7 +14,7 @@ namespace hm_heuristic {
 HMHeuristic::HMHeuristic(
     const shared_ptr<AbstractTask> &task, int m, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(task, cache_estimates, description, verbosity),
+    : TaskSpecificHeuristic(task, cache_estimates, description, verbosity),
       m(m),
       has_cond_effects(task_properties::has_conditional_effects(task_proxy)),
       goals(task_properties::get_fact_pairs(task_proxy.get_goals())) {
@@ -280,7 +280,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            HMHeuristic, Evaluator>(
+            HMHeuristic, TaskSpecificEvaluator>(
             opts.get<int>("m"), get_heuristic_arguments_from_options(opts));
     }
 };

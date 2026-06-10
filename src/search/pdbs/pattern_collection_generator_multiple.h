@@ -33,7 +33,7 @@ namespace pdbs {
   computation method after a certain time to force some diversification or to
   enable said blacklisting when stagnating.
 */
-class PatternCollectionGeneratorMultiple : public PatternCollectionGenerator {
+class PatternCollectionGeneratorMultiple : public TaskSpecificPatternCollectionGenerator {
     const int max_pdb_size;
     const double pattern_generation_max_time;
     const double total_max_time;

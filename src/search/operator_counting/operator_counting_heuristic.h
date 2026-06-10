@@ -13,17 +13,17 @@ class Options;
 }
 
 namespace operator_counting {
-class ConstraintGenerator;
+class TaskSpecificConstraintGenerator;
 
-class OperatorCountingHeuristic : public Heuristic {
-    std::vector<std::shared_ptr<ConstraintGenerator>> constraint_generators;
+class OperatorCountingHeuristic : public TaskSpecificHeuristic {
+    std::vector<std::shared_ptr<TaskSpecificConstraintGenerator>> constraint_generators;
     lp::LPSolver lp_solver;
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     OperatorCountingHeuristic(
         const std::shared_ptr<AbstractTask> &task,
-        const std::vector<std::shared_ptr<ConstraintGenerator>>
+        const std::vector<std::shared_ptr<TaskSpecificConstraintGenerator>>
             &constraint_generators,
         bool use_integer_operator_counts, lp::LPSolverType lpsolver,
         bool cache_estimates, const std::string &description,

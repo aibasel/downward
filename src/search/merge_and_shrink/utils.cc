@@ -61,7 +61,7 @@ pair<int, int> compute_shrink_sizes(
 */
 static bool shrink_factor(
     FactoredTransitionSystem &fts, int index, int new_size,
-    int shrink_threshold_before_merge, const ShrinkStrategy &shrink_strategy,
+    int shrink_threshold_before_merge, const TaskSpecificShrinkStrategy &shrink_strategy,
     utils::LogProxy &log) {
     /*
       TODO: think about factoring out common logic of this function and the
@@ -93,7 +93,7 @@ static bool shrink_factor(
 bool shrink_before_merge_step(
     FactoredTransitionSystem &fts, int index1, int index2, int max_states,
     int max_states_before_merge, int shrink_threshold_before_merge,
-    const ShrinkStrategy &shrink_strategy, utils::LogProxy &log) {
+    const TaskSpecificShrinkStrategy &shrink_strategy, utils::LogProxy &log) {
     /*
       Compute the size limit for both transition systems as imposed by
       max_states and max_states_before_merge.

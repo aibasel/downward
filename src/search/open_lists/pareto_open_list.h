@@ -5,14 +5,14 @@
 
 namespace pareto_open_list {
 class ParetoOpenListFactory : public OpenListFactory {
-    std::vector<std::shared_ptr<Evaluator>> evals;
+    std::vector<std::shared_ptr<TaskSpecificEvaluator>> evals;
     bool state_uniform_selection;
     int random_seed;
     bool pref_only;
 public:
     ParetoOpenListFactory(
         const std::shared_ptr<AbstractTask> &task,
-        const std::vector<std::shared_ptr<Evaluator>> &evals,
+        const std::vector<std::shared_ptr<TaskSpecificEvaluator>> &evals,
         bool state_uniform_selection, int random_seed, bool pref_only);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;

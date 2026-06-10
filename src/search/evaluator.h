@@ -15,7 +15,7 @@ namespace plugins {
 class Options;
 }
 
-class Evaluator : public components::TaskSpecificComponent {
+class TaskSpecificEvaluator : public components::TaskSpecificComponent {
     const std::string description;
     const bool use_for_reporting_minima;
     const bool use_for_boosting;
@@ -23,7 +23,7 @@ class Evaluator : public components::TaskSpecificComponent {
 protected:
     mutable utils::LogProxy log;
 public:
-    Evaluator(
+    TaskSpecificEvaluator(
         const std::shared_ptr<AbstractTask> &task,
         bool use_for_reporting_minima, bool use_for_boosting,
         bool use_for_counting_evaluations, const std::string &description,
@@ -48,7 +48,7 @@ public:
       state transitions".
     */
     virtual void get_path_dependent_evaluators(
-        std::set<Evaluator *> &evals) = 0;
+        std::set<TaskSpecificEvaluator *> &evals) = 0;
 
     virtual void notify_initial_state(const State & /*initial_state*/) {
     }
@@ -99,7 +99,7 @@ public:
 };
 
 using TaskIndependentEvaluator =
-    components::TaskIndependentComponent<Evaluator>;
+    components::TaskIndependentComponent<TaskSpecificEvaluator>;
 
 extern void add_evaluator_options_to_feature(
     plugins::Feature &feature, const std::string &description);

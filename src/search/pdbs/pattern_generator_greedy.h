@@ -4,7 +4,7 @@
 #include "pattern_generator.h"
 
 namespace pdbs {
-class PatternGeneratorGreedy : public PatternGenerator {
+class PatternGeneratorGreedy : public TaskSpecificPatternGenerator {
     const int max_states;
 
     virtual std::string name() const override;

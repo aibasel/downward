@@ -36,21 +36,21 @@ enum class FactOrder {
 /*
   Create focused subtasks.
 */
-class SubtaskGenerator : public components::TaskSpecificComponent {
+class TaskSpecificSubtaskGenerator : public components::TaskSpecificComponent {
 public:
-    explicit SubtaskGenerator(const std::shared_ptr<AbstractTask> &task);
+    explicit TaskSpecificSubtaskGenerator(const std::shared_ptr<AbstractTask> &task);
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task,
         utils::LogProxy &log) const = 0;
 };
 
 using TaskIndependentSubtaskGenerator =
-    components::TaskIndependentComponent<SubtaskGenerator>;
+    components::TaskIndependentComponent<TaskSpecificSubtaskGenerator>;
 
 /*
   Return copies of the original task.
 */
-class TaskDuplicator : public SubtaskGenerator {
+class TaskDuplicator : public TaskSpecificSubtaskGenerator {
     int num_copies;
 
 public:
@@ -64,7 +64,7 @@ public:
 /*
   Use ModifiedGoalsTask to return a subtask for each goal fact.
 */
-class GoalDecomposition : public SubtaskGenerator {
+class GoalDecomposition : public TaskSpecificSubtaskGenerator {
     FactOrder fact_order;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
@@ -82,7 +82,7 @@ public:
   Nest ModifiedGoalsTask and DomainAbstractedTask to return subtasks
   focussing on a single landmark fact.
 */
-class LandmarkDecomposition : public SubtaskGenerator {
+class LandmarkDecomposition : public TaskSpecificSubtaskGenerator {
     FactOrder fact_order;
     bool combine_facts;
     std::shared_ptr<utils::RandomNumberGenerator> rng;

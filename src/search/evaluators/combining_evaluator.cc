@@ -11,13 +11,13 @@ using namespace std;
 namespace combining_evaluator {
 CombiningEvaluator::CombiningEvaluator(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<Evaluator>> &evals, const string &description,
+    const vector<shared_ptr<TaskSpecificEvaluator>> &evals, const string &description,
     utils::Verbosity verbosity)
-    : Evaluator(task, false, false, false, description, verbosity),
+    : TaskSpecificEvaluator(task, false, false, false, description, verbosity),
       subevaluators(evals) {
     utils::verify_list_not_empty(evals, "evals");
     all_dead_ends_are_reliable = true;
-    for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
+    for (const shared_ptr<TaskSpecificEvaluator> &subevaluator : subevaluators)
         if (!subevaluator->dead_ends_are_reliable())
             all_dead_ends_are_reliable = false;
 }
@@ -34,7 +34,7 @@ EvaluationResult CombiningEvaluator::compute_result(
     values.reserve(subevaluators.size());
 
     // Collect component values. Return infinity if any is infinite.
-    for (const shared_ptr<Evaluator> &subevaluator : subevaluators) {
+    for (const shared_ptr<TaskSpecificEvaluator> &subevaluator : subevaluators) {
         int value =
             eval_context.get_evaluator_value_or_infinity(subevaluator.get());
         if (value == EvaluationResult::INFTY) {
@@ -51,7 +51,7 @@ EvaluationResult CombiningEvaluator::compute_result(
 }
 
 void CombiningEvaluator::get_path_dependent_evaluators(
-    set<Evaluator *> &evals) {
+    set<TaskSpecificEvaluator *> &evals) {
     for (auto &subevaluator : subevaluators)
         subevaluator->get_path_dependent_evaluators(evals);
 }

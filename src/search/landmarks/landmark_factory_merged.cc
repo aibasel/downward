@@ -17,9 +17,9 @@ class LandmarkNode;
 
 LandmarkFactoryMerged::LandmarkFactoryMerged(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<LandmarkFactory>> &lm_factories,
+    const vector<shared_ptr<TaskSpecificLandmarkFactory>> &lm_factories,
     utils::Verbosity verbosity)
-    : LandmarkFactory(task, verbosity), landmark_factories(lm_factories) {
+    : TaskSpecificLandmarkFactory(task, verbosity), landmark_factories(lm_factories) {
     utils::verify_list_not_empty(lm_factories, "lm_factories");
 }
 
@@ -54,7 +54,7 @@ LandmarkFactoryMerged::generate_landmark_graphs_of_subfactories(
     vector<shared_ptr<LandmarkGraph>> landmark_graphs;
     landmark_graphs.reserve(landmark_factories.size());
     achievers_calculated = true;
-    for (const shared_ptr<LandmarkFactory> &landmark_factory :
+    for (const shared_ptr<TaskSpecificLandmarkFactory> &landmark_factory :
          landmark_factories) {
         landmark_graphs.push_back(
             landmark_factory->compute_landmark_graph(task));
@@ -167,7 +167,7 @@ void LandmarkFactoryMerged::postprocess() {
 bool LandmarkFactoryMerged::supports_conditional_effects() const {
     return ranges::all_of(
         landmark_factories,
-        [&](const shared_ptr<LandmarkFactory> &landmark_factory) {
+        [&](const shared_ptr<TaskSpecificLandmarkFactory> &landmark_factory) {
             return landmark_factory->supports_conditional_effects();
         });
 }
@@ -199,7 +199,7 @@ public:
     virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            LandmarkFactoryMerged, LandmarkFactory>(
+            LandmarkFactoryMerged, TaskSpecificLandmarkFactory>(
             opts.get_list<shared_ptr<TaskIndependentLandmarkFactory>>(
                 "lm_factories"),
             get_landmark_factory_arguments_from_options(opts));

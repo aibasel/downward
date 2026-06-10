@@ -87,7 +87,7 @@ public:
       TODO: This method can probably go away at some point.
     */
     virtual void get_path_dependent_evaluators(
-        std::set<Evaluator *> &evals) = 0;
+        std::set<TaskSpecificEvaluator *> &evals) = 0;
 
     /*
       Accessor method for only_preferred.

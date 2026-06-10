@@ -31,7 +31,7 @@ struct Proposition {
     ~Proposition() = default;
 };
 
-class StateEquationConstraints : public ConstraintGenerator {
+class StateEquationConstraints : public TaskSpecificConstraintGenerator {
     mutable utils::LogProxy log;
     std::vector<std::vector<Proposition>> propositions;
     // Map goal variables to their goal value and other variables to max int.
