@@ -16,7 +16,8 @@ TaskSpecificPruningMethod::TaskSpecificPruningMethod(
       task(nullptr) {
 }
 
-void TaskSpecificPruningMethod::initialize(const shared_ptr<AbstractTask> &task_) {
+void TaskSpecificPruningMethod::initialize(
+    const shared_ptr<AbstractTask> &task_) {
     assert(!task);
     task = task_;
     num_successors_before_pruning = 0;

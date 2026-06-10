@@ -9,7 +9,8 @@ using namespace std;
 namespace pdbs {
 static ZeroOnePDBs get_zero_one_pdbs_from_generator(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<TaskSpecificPatternCollectionGenerator> &pattern_generator) {
+    const shared_ptr<TaskSpecificPatternCollectionGenerator>
+        &pattern_generator) {
     PatternCollectionInformation pattern_collection_info =
         pattern_generator->generate(task);
     shared_ptr<PatternCollection> patterns =

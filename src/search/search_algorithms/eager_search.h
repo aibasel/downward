@@ -25,7 +25,8 @@ class EagerSearch : public TaskSpecificSearchAlgorithm {
     std::shared_ptr<TaskSpecificEvaluator> f_evaluator;
 
     std::vector<TaskSpecificEvaluator *> path_dependent_evaluators;
-    std::vector<std::shared_ptr<TaskSpecificEvaluator>> preferred_operator_evaluators;
+    std::vector<std::shared_ptr<TaskSpecificEvaluator>>
+        preferred_operator_evaluators;
     std::shared_ptr<TaskSpecificEvaluator> lazy_evaluator;
 
     std::shared_ptr<TaskSpecificPruningMethod> pruning_method;

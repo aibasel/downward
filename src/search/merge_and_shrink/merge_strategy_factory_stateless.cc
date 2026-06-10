@@ -10,8 +10,10 @@ using namespace std;
 namespace merge_and_shrink {
 MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<TaskSpecificMergeSelector> &merge_selector, utils::Verbosity verbosity)
-    : TaskSpecificMergeStrategyFactory(task, verbosity), merge_selector(merge_selector) {
+    const shared_ptr<TaskSpecificMergeSelector> &merge_selector,
+    utils::Verbosity verbosity)
+    : TaskSpecificMergeStrategyFactory(task, verbosity),
+      merge_selector(merge_selector) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(

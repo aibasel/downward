@@ -32,7 +32,8 @@ class EnforcedHillClimbingSearch : public TaskSpecificSearchAlgorithm {
     std::unique_ptr<EdgeOpenList> open_list;
 
     std::shared_ptr<TaskSpecificEvaluator> evaluator;
-    std::vector<std::shared_ptr<TaskSpecificEvaluator>> preferred_operator_evaluators;
+    std::vector<std::shared_ptr<TaskSpecificEvaluator>>
+        preferred_operator_evaluators;
     std::set<TaskSpecificEvaluator *> path_dependent_evaluators;
     bool use_preferred;
     PreferredUsage preferred_usage;
@@ -59,7 +60,8 @@ protected:
 public:
     EnforcedHillClimbingSearch(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<TaskSpecificEvaluator> &h, PreferredUsage preferred_usage,
+        const std::shared_ptr<TaskSpecificEvaluator> &h,
+        PreferredUsage preferred_usage,
         const std::vector<std::shared_ptr<TaskSpecificEvaluator>> &preferred,
         OperatorCost cost_type, int bound, double max_time,
         const std::string &description, utils::Verbosity verbosity);

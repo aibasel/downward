@@ -18,14 +18,16 @@ class TaskSpecificPatternCollectionGenerator;
 
 namespace operator_counting {
 class PhOConstraints : public TaskSpecificConstraintGenerator {
-    std::shared_ptr<pdbs::TaskSpecificPatternCollectionGenerator> pattern_generator;
+    std::shared_ptr<pdbs::TaskSpecificPatternCollectionGenerator>
+        pattern_generator;
 
     int constraint_offset;
     std::shared_ptr<pdbs::PDBCollection> pdbs;
 public:
     explicit PhOConstraints(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<pdbs::TaskSpecificPatternCollectionGenerator> &patterns);
+        const std::shared_ptr<pdbs::TaskSpecificPatternCollectionGenerator>
+            &patterns);
 
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task,

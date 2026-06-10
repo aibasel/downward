@@ -100,7 +100,8 @@ extern void print_initial_evaluator_values(
     const EvaluationContext &eval_context);
 
 extern void collect_preferred_operators(
-    EvaluationContext &eval_context, TaskSpecificEvaluator *preferred_operator_evaluator,
+    EvaluationContext &eval_context,
+    TaskSpecificEvaluator *preferred_operator_evaluator,
     ordered_set::OrderedSet<OperatorID> &preferred_operators);
 
 extern void add_search_pruning_options_to_feature(plugins::Feature &feature);

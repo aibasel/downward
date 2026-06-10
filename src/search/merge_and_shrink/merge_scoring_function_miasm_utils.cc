@@ -22,7 +22,8 @@ namespace merge_and_shrink {
 */
 static unique_ptr<TransitionSystem> copy_and_shrink_ts(
     const TransitionSystem &ts, const Distances &distances,
-    const TaskSpecificShrinkStrategy &shrink_strategy, int new_size, utils::LogProxy &log) {
+    const TaskSpecificShrinkStrategy &shrink_strategy, int new_size,
+    utils::LogProxy &log) {
     /*
       TODO: think about factoring out common logic of this function and the
       function shrink_factor in utils.cc

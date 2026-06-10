@@ -19,7 +19,8 @@ LandmarkFactoryMerged::LandmarkFactoryMerged(
     const shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<TaskSpecificLandmarkFactory>> &lm_factories,
     utils::Verbosity verbosity)
-    : TaskSpecificLandmarkFactory(task, verbosity), landmark_factories(lm_factories) {
+    : TaskSpecificLandmarkFactory(task, verbosity),
+      landmark_factories(lm_factories) {
     utils::verify_list_not_empty(lm_factories, "lm_factories");
 }
 

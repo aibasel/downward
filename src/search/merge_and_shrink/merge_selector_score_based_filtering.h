@@ -13,7 +13,8 @@ class Options;
 namespace merge_and_shrink {
 class TaskSpecificMergeScoringFunction;
 class MergeSelectorScoreBasedFiltering : public TaskSpecificMergeSelector {
-    std::vector<std::shared_ptr<TaskSpecificMergeScoringFunction>> merge_scoring_functions;
+    std::vector<std::shared_ptr<TaskSpecificMergeScoringFunction>>
+        merge_scoring_functions;
 protected:
     virtual std::string name() const override;
     virtual void dump_selector_specific_options(

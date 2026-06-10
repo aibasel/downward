@@ -17,10 +17,11 @@ using namespace std;
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<TaskSpecificLandmarkFactory> &lm_factory, bool pref, bool prog_goal,
-    bool prog_gn, bool prog_r, bool cache_estimates, const string &description,
-    utils::Verbosity verbosity, CostPartitioningMethod cost_partitioning,
-    bool alm, lp::LPSolverType lpsolver)
+    const shared_ptr<TaskSpecificLandmarkFactory> &lm_factory, bool pref,
+    bool prog_goal, bool prog_gn, bool prog_r, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity,
+    CostPartitioningMethod cost_partitioning, bool alm,
+    lp::LPSolverType lpsolver)
     : LandmarkHeuristic(task, pref, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;

@@ -33,7 +33,8 @@ static bool compare_sccs_decreasing(
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(
     const shared_ptr<AbstractTask> &task, const OrderOfSCCs &order_of_sccs,
-    const shared_ptr<TaskSpecificMergeSelector> &merge_selector, utils::Verbosity verbosity)
+    const shared_ptr<TaskSpecificMergeSelector> &merge_selector,
+    utils::Verbosity verbosity)
     : TaskSpecificMergeStrategyFactory(task, verbosity),
       order_of_sccs(order_of_sccs),
       merge_selector(merge_selector) {

@@ -45,8 +45,8 @@ protected:
 
 public:
     EpsilonGreedyOpenList(
-        const shared_ptr<TaskSpecificEvaluator> &eval, double epsilon, int random_seed,
-        bool pref_only);
+        const shared_ptr<TaskSpecificEvaluator> &eval, double epsilon,
+        int random_seed, bool pref_only);
 
     virtual Entry remove_min() override;
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
@@ -82,8 +82,8 @@ void EpsilonGreedyOpenList<Entry>::do_insertion(
 
 template<class Entry>
 EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(
-    const shared_ptr<TaskSpecificEvaluator> &eval, double epsilon, int random_seed,
-    bool pref_only)
+    const shared_ptr<TaskSpecificEvaluator> &eval, double epsilon,
+    int random_seed, bool pref_only)
     : OpenList<Entry>(pref_only),
       rng(utils::get_rng(random_seed)),
       evaluator(eval),
@@ -138,8 +138,9 @@ void EpsilonGreedyOpenList<Entry>::clear() {
 }
 
 EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
-    const shared_ptr<AbstractTask> &task, const shared_ptr<TaskSpecificEvaluator> &eval,
-    double epsilon, int random_seed, bool pref_only)
+    const shared_ptr<AbstractTask> &task,
+    const shared_ptr<TaskSpecificEvaluator> &eval, double epsilon,
+    int random_seed, bool pref_only)
     : OpenListFactory(task),
       eval(eval),
       epsilon(epsilon),

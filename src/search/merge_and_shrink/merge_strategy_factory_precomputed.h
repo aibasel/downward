@@ -6,7 +6,8 @@
 namespace merge_and_shrink {
 class TaskSpecificMergeTreeFactory;
 
-class MergeStrategyFactoryPrecomputed : public TaskSpecificMergeStrategyFactory {
+class MergeStrategyFactoryPrecomputed
+    : public TaskSpecificMergeStrategyFactory {
     std::shared_ptr<TaskSpecificMergeTreeFactory> merge_tree_factory;
 protected:
     virtual std::string name() const override;

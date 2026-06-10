@@ -38,7 +38,8 @@ enum class FactOrder {
 */
 class TaskSpecificSubtaskGenerator : public components::TaskSpecificComponent {
 public:
-    explicit TaskSpecificSubtaskGenerator(const std::shared_ptr<AbstractTask> &task);
+    explicit TaskSpecificSubtaskGenerator(
+        const std::shared_ptr<AbstractTask> &task);
     virtual SharedTasks get_subtasks(
         const std::shared_ptr<AbstractTask> &task,
         utils::LogProxy &log) const = 0;

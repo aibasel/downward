@@ -107,7 +107,8 @@ public:
     bool is_evaluator_value_infinite(TaskSpecificEvaluator *eval);
     int get_evaluator_value(TaskSpecificEvaluator *eval);
     int get_evaluator_value_or_infinity(TaskSpecificEvaluator *eval);
-    const std::vector<OperatorID> &get_preferred_operators(TaskSpecificEvaluator *eval);
+    const std::vector<OperatorID> &get_preferred_operators(
+        TaskSpecificEvaluator *eval);
     bool get_calculate_preferred() const;
 };
 

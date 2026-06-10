@@ -21,7 +21,8 @@ class LogProxy;
 class SearchProgress {
     std::unordered_map<const TaskSpecificEvaluator *, int> min_values;
 
-    bool process_evaluator_value(const TaskSpecificEvaluator *evaluator, int value);
+    bool process_evaluator_value(
+        const TaskSpecificEvaluator *evaluator, int value);
 
 public:
     SearchProgress() = default;

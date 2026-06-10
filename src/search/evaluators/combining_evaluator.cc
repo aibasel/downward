@@ -11,8 +11,8 @@ using namespace std;
 namespace combining_evaluator {
 CombiningEvaluator::CombiningEvaluator(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<TaskSpecificEvaluator>> &evals, const string &description,
-    utils::Verbosity verbosity)
+    const vector<shared_ptr<TaskSpecificEvaluator>> &evals,
+    const string &description, utils::Verbosity verbosity)
     : TaskSpecificEvaluator(task, false, false, false, description, verbosity),
       subevaluators(evals) {
     utils::verify_list_not_empty(evals, "evals");
@@ -34,7 +34,8 @@ EvaluationResult CombiningEvaluator::compute_result(
     values.reserve(subevaluators.size());
 
     // Collect component values. Return infinity if any is infinite.
-    for (const shared_ptr<TaskSpecificEvaluator> &subevaluator : subevaluators) {
+    for (const shared_ptr<TaskSpecificEvaluator> &subevaluator :
+         subevaluators) {
         int value =
             eval_context.get_evaluator_value_or_infinity(subevaluator.get());
         if (value == EvaluationResult::INFTY) {

@@ -24,10 +24,10 @@ class LandmarkSumHeuristic : public LandmarkHeuristic {
 public:
     LandmarkSumHeuristic(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<TaskSpecificLandmarkFactory> &lm_factory, bool pref,
-        bool prog_goal, bool prog_gn, bool prog_r, bool cache_estimates,
-        const std::string &description, utils::Verbosity verbosity,
-        tasks::AxiomHandlingType axioms);
+        const std::shared_ptr<TaskSpecificLandmarkFactory> &lm_factory,
+        bool pref, bool prog_goal, bool prog_gn, bool prog_r,
+        bool cache_estimates, const std::string &description,
+        utils::Verbosity verbosity, tasks::AxiomHandlingType axioms);
 
     virtual bool dead_ends_are_reliable() const override;
 };

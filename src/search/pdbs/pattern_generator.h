@@ -24,7 +24,8 @@ class RandomNumberGenerator;
 }
 
 namespace pdbs {
-class TaskSpecificPatternCollectionGenerator : public components::TaskSpecificComponent {
+class TaskSpecificPatternCollectionGenerator
+    : public components::TaskSpecificComponent {
     virtual std::string name() const = 0;
     virtual PatternCollectionInformation compute_patterns(
         const std::shared_ptr<AbstractTask> &task) = 0;
@@ -39,7 +40,8 @@ public:
 };
 
 using TaskIndependentPatternCollectionGenerator =
-    components::TaskIndependentComponent<TaskSpecificPatternCollectionGenerator>;
+    components::TaskIndependentComponent<
+        TaskSpecificPatternCollectionGenerator>;
 
 class TaskSpecificPatternGenerator : public components::TaskSpecificComponent {
     virtual std::string name() const = 0;

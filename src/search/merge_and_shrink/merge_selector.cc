@@ -30,7 +30,8 @@ static vector<pair<int, int>> compute_merge_candidates(
     return merge_candidates;
 }
 
-TaskSpecificMergeSelector::TaskSpecificMergeSelector(const shared_ptr<AbstractTask> &task)
+TaskSpecificMergeSelector::TaskSpecificMergeSelector(
+    const shared_ptr<AbstractTask> &task)
     : components::TaskSpecificComponent(task) {
 }
 

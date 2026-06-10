@@ -26,7 +26,8 @@ protected:
         EvaluationContext &eval_context, const Entry &entry) override;
 
 public:
-    BestFirstOpenList(const shared_ptr<TaskSpecificEvaluator> &eval, bool preferred_only);
+    BestFirstOpenList(
+        const shared_ptr<TaskSpecificEvaluator> &eval, bool preferred_only);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
@@ -97,8 +98,8 @@ bool BestFirstOpenList<Entry>::is_reliable_dead_end(
 }
 
 BestFirstOpenListFactory::BestFirstOpenListFactory(
-    const shared_ptr<AbstractTask> &task, const shared_ptr<TaskSpecificEvaluator> &eval,
-    bool pref_only)
+    const shared_ptr<AbstractTask> &task,
+    const shared_ptr<TaskSpecificEvaluator> &eval, bool pref_only)
     : OpenListFactory(task), eval(eval), pref_only(pref_only) {
 }
 

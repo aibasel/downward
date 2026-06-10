@@ -8,7 +8,8 @@ using namespace std;
 namespace limited_pruning {
 LimitedPruning::LimitedPruning(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<TaskSpecificPruningMethod> &pruning, double min_required_pruning_ratio,
+    const shared_ptr<TaskSpecificPruningMethod> &pruning,
+    double min_required_pruning_ratio,
     int expansions_before_checking_pruning_ratio, utils::Verbosity verbosity)
     : TaskSpecificPruningMethod(task, verbosity),
       pruning_method(pruning),

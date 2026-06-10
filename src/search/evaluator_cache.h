@@ -7,7 +7,8 @@
 
 class TaskSpecificEvaluator;
 
-using EvaluationResults = std::unordered_map<TaskSpecificEvaluator *, EvaluationResult>;
+using EvaluationResults =
+    std::unordered_map<TaskSpecificEvaluator *, EvaluationResult>;
 
 /*
   Store evaluation results for evaluators.

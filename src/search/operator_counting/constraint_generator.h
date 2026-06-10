@@ -31,9 +31,11 @@ namespace operator_counting {
       Example: constraints from landmarks generated for a given state, e.g.
       using the LM-Cut method.
 */
-class TaskSpecificConstraintGenerator : public components::TaskSpecificComponent {
+class TaskSpecificConstraintGenerator
+    : public components::TaskSpecificComponent {
 public:
-    explicit TaskSpecificConstraintGenerator(const std::shared_ptr<AbstractTask> &task);
+    explicit TaskSpecificConstraintGenerator(
+        const std::shared_ptr<AbstractTask> &task);
 
     /*
       Called upon initialization for the given task. Use this to add permanent

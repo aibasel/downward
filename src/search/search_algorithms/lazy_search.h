@@ -29,7 +29,8 @@ protected:
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
     std::vector<TaskSpecificEvaluator *> path_dependent_evaluators;
-    std::vector<std::shared_ptr<TaskSpecificEvaluator>> preferred_operator_evaluators;
+    std::vector<std::shared_ptr<TaskSpecificEvaluator>>
+        preferred_operator_evaluators;
 
     State current_state;
     StateID current_predecessor_id;

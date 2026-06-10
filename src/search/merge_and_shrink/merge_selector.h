@@ -21,7 +21,8 @@ protected:
     }
 
 public:
-    explicit TaskSpecificMergeSelector(const std::shared_ptr<AbstractTask> &task);
+    explicit TaskSpecificMergeSelector(
+        const std::shared_ptr<AbstractTask> &task);
     // Select a merge candidate from all possible candidates.
     std::pair<int, int> select_merge(const FactoredTransitionSystem &fts) const;
     /*

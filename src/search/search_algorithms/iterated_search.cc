@@ -18,7 +18,8 @@ IteratedSearch::IteratedSearch(
     bool pass_bound, bool repeat_last, bool continue_on_fail,
     bool continue_on_solve, OperatorCost cost_type, int bound, double max_time,
     const string &description, utils::Verbosity verbosity)
-    : TaskSpecificSearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
+    : TaskSpecificSearchAlgorithm(
+          task, cost_type, bound, max_time, description, verbosity),
       algorithm_configs(algorithm_configs),
       pass_bound(pass_bound),
       repeat_last_phase(repeat_last),
@@ -61,9 +62,11 @@ void IteratedSearch::update_retention_set() {
                       used more than once.
                     */
                     const TaskSpecificEvaluator *evaluator =
-                        dynamic_cast<const TaskSpecificEvaluator *>(ts_component.get());
+                        dynamic_cast<const TaskSpecificEvaluator *>(
+                            ts_component.get());
                     const landmarks::TaskSpecificLandmarkFactory *landmarks =
-                        dynamic_cast<const landmarks::TaskSpecificLandmarkFactory *>(
+                        dynamic_cast<
+                            const landmarks::TaskSpecificLandmarkFactory *>(
                             ts_component.get());
                     if (evaluator || landmarks) {
                         new_retained_components.push_back(ts_component);
@@ -112,7 +115,8 @@ shared_ptr<TaskSpecificSearchAlgorithm> IteratedSearch::create_current_phase() {
 }
 
 SearchStatus IteratedSearch::step() {
-    shared_ptr<TaskSpecificSearchAlgorithm> current_search = create_current_phase();
+    shared_ptr<TaskSpecificSearchAlgorithm> current_search =
+        create_current_phase();
     if (!current_search) {
         return found_solution() ? SOLVED : FAILED;
     }
@@ -210,8 +214,8 @@ class TaskIndependentIteratedSearch
     string description;
     utils::Verbosity verbosity;
 protected:
-    virtual shared_ptr<TaskSpecificSearchAlgorithm> create_task_specific_component(
-        const shared_ptr<AbstractTask> &task) const {
+    virtual shared_ptr<TaskSpecificSearchAlgorithm>
+    create_task_specific_component(const shared_ptr<AbstractTask> &task) const {
         return make_shared<IteratedSearch>(
             task, algorithm_configs, pass_bound, repeat_last_phase,
             continue_on_fail, continue_on_solve, cost_type, bound, max_time,

@@ -20,8 +20,8 @@ static shared_ptr<PatternDatabase> get_pdb_from_generator(
 
 PDBHeuristic::PDBHeuristic(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<TaskSpecificPatternGenerator> &pattern, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
+    const shared_ptr<TaskSpecificPatternGenerator> &pattern,
+    bool cache_estimates, const string &description, utils::Verbosity verbosity)
     : TaskSpecificHeuristic(task, cache_estimates, description, verbosity),
       pdb(get_pdb_from_generator(task, pattern)) {
 }

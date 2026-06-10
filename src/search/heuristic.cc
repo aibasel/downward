@@ -27,7 +27,8 @@ void TaskSpecificHeuristic::set_preferred(const OperatorProxy &op) {
         op.get_ancestor_operator_id(tasks::g_root_task.get()));
 }
 
-State TaskSpecificHeuristic::convert_ancestor_state(const State &ancestor_state) const {
+State TaskSpecificHeuristic::convert_ancestor_state(
+    const State &ancestor_state) const {
     return task_proxy.convert_ancestor_state(ancestor_state);
 }
 
@@ -45,7 +46,8 @@ tuple<bool, string, utils::Verbosity> get_heuristic_arguments_from_options(
         get_evaluator_arguments_from_options(opts));
 }
 
-EvaluationResult TaskSpecificHeuristic::compute_result(EvaluationContext &eval_context) {
+EvaluationResult TaskSpecificHeuristic::compute_result(
+    EvaluationContext &eval_context) {
     EvaluationResult result;
 
     assert(preferred_operators.empty());

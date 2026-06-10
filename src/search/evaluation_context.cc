@@ -42,7 +42,8 @@ EvaluationContext::EvaluationContext(
           calculate_preferred) {
 }
 
-const EvaluationResult &EvaluationContext::get_result(TaskSpecificEvaluator *evaluator) {
+const EvaluationResult &EvaluationContext::get_result(
+    TaskSpecificEvaluator *evaluator) {
     EvaluationResult &result = cache[evaluator];
     if (result.is_uninitialized()) {
         result = evaluator->compute_result(*this);
@@ -72,7 +73,8 @@ bool EvaluationContext::is_preferred() const {
     return preferred;
 }
 
-bool EvaluationContext::is_evaluator_value_infinite(TaskSpecificEvaluator *eval) {
+bool EvaluationContext::is_evaluator_value_infinite(
+    TaskSpecificEvaluator *eval) {
     return get_result(eval).is_infinite();
 }
 
@@ -82,7 +84,8 @@ int EvaluationContext::get_evaluator_value(TaskSpecificEvaluator *eval) {
     return h;
 }
 
-int EvaluationContext::get_evaluator_value_or_infinity(TaskSpecificEvaluator *eval) {
+int EvaluationContext::get_evaluator_value_or_infinity(
+    TaskSpecificEvaluator *eval) {
     return get_result(eval).get_evaluator_value();
 }
 

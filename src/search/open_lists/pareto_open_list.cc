@@ -58,8 +58,8 @@ public:
 
 template<class Entry>
 ParetoOpenList<Entry>::ParetoOpenList(
-    const vector<shared_ptr<TaskSpecificEvaluator>> &evals, bool state_uniform_selection,
-    int random_seed, bool pref_only)
+    const vector<shared_ptr<TaskSpecificEvaluator>> &evals,
+    bool state_uniform_selection, int random_seed, bool pref_only)
     : OpenList<Entry>(pref_only),
       rng(utils::get_rng(random_seed)),
       state_uniform_selection(state_uniform_selection),
@@ -222,8 +222,8 @@ bool ParetoOpenList<Entry>::is_reliable_dead_end(
 
 ParetoOpenListFactory::ParetoOpenListFactory(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<TaskSpecificEvaluator>> &evals, bool state_uniform_selection,
-    int random_seed, bool pref_only)
+    const vector<shared_ptr<TaskSpecificEvaluator>> &evals,
+    bool state_uniform_selection, int random_seed, bool pref_only)
     : OpenListFactory(task),
       evals(evals),
       state_uniform_selection(state_uniform_selection),

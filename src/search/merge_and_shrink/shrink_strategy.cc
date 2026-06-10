@@ -11,7 +11,8 @@
 using namespace std;
 
 namespace merge_and_shrink {
-TaskSpecificShrinkStrategy::TaskSpecificShrinkStrategy(const shared_ptr<AbstractTask> &task)
+TaskSpecificShrinkStrategy::TaskSpecificShrinkStrategy(
+    const shared_ptr<AbstractTask> &task)
     : components::TaskSpecificComponent(task) {
 }
 

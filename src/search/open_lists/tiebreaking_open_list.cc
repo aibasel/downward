@@ -37,8 +37,8 @@ protected:
 
 public:
     TieBreakingOpenList(
-        const vector<shared_ptr<TaskSpecificEvaluator>> &evals, bool unsafe_pruning,
-        bool pref_only);
+        const vector<shared_ptr<TaskSpecificEvaluator>> &evals,
+        bool unsafe_pruning, bool pref_only);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;

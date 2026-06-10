@@ -34,7 +34,8 @@ class TaskIndependentModifyCostsEvaluator : public TaskIndependentEvaluator {
     std::shared_ptr<TaskIndependentEvaluator> nested;
     OperatorCost cost_type;
 
-    virtual std::shared_ptr<TaskSpecificEvaluator> create_task_specific_component(
+    virtual std::shared_ptr<TaskSpecificEvaluator>
+    create_task_specific_component(
         const std::shared_ptr<AbstractTask> &task) const override;
 public:
     TaskIndependentModifyCostsEvaluator(

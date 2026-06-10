@@ -26,7 +26,8 @@ class TaskSpecificSubtaskGenerator;
   CartesianHeuristicFunctions into AdditiveCartesianHeuristic.
 */
 class CostSaturation {
-    const std::vector<std::shared_ptr<TaskSpecificSubtaskGenerator>> subtask_generators;
+    const std::vector<std::shared_ptr<TaskSpecificSubtaskGenerator>>
+        subtask_generators;
     const int max_states;
     const int max_non_looping_transitions;
     const double max_time;

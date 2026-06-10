@@ -16,7 +16,8 @@ namespace operator_counting {
 class TaskSpecificConstraintGenerator;
 
 class OperatorCountingHeuristic : public TaskSpecificHeuristic {
-    std::vector<std::shared_ptr<TaskSpecificConstraintGenerator>> constraint_generators;
+    std::vector<std::shared_ptr<TaskSpecificConstraintGenerator>>
+        constraint_generators;
     lp::LPSolver lp_solver;
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;

@@ -61,8 +61,8 @@ static bool landmark_graph_has_cycle_of_natural_orderings(
 }
 
 void LandmarkHeuristic::initialize(
-    const shared_ptr<TaskSpecificLandmarkFactory> &landmark_factory, bool prog_goal,
-    bool prog_gn, bool prog_r) {
+    const shared_ptr<TaskSpecificLandmarkFactory> &landmark_factory,
+    bool prog_goal, bool prog_gn, bool prog_r) {
     /*
       Actually, we should test if this is the root task or a task that *only*
       transforms costs and/or adds negated axioms. However, there is currently

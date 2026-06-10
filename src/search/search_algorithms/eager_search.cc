@@ -25,10 +25,11 @@ EagerSearch::EagerSearch(
     const shared_ptr<TaskSpecificEvaluator> &f_eval,
     const vector<shared_ptr<TaskSpecificEvaluator>> &preferred,
     const shared_ptr<TaskSpecificPruningMethod> &pruning,
-    const shared_ptr<TaskSpecificEvaluator> &lazy_evaluator, OperatorCost cost_type,
-    int bound, double max_time, const string &description,
-    utils::Verbosity verbosity)
-    : TaskSpecificSearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
+    const shared_ptr<TaskSpecificEvaluator> &lazy_evaluator,
+    OperatorCost cost_type, int bound, double max_time,
+    const string &description, utils::Verbosity verbosity)
+    : TaskSpecificSearchAlgorithm(
+          task, cost_type, bound, max_time, description, verbosity),
       reopen_closed_nodes(reopen_closed),
       open_list(open->create_state_open_list()),
       f_evaluator(f_eval), // default nullptr

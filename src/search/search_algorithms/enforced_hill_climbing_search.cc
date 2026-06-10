@@ -50,12 +50,13 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
 }
 
 EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
-    const shared_ptr<AbstractTask> &task, const shared_ptr<TaskSpecificEvaluator> &h,
-    PreferredUsage preferred_usage,
-    const vector<shared_ptr<TaskSpecificEvaluator>> &preferred, OperatorCost cost_type,
-    int bound, double max_time, const string &description,
-    utils::Verbosity verbosity)
-    : TaskSpecificSearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
+    const shared_ptr<AbstractTask> &task,
+    const shared_ptr<TaskSpecificEvaluator> &h, PreferredUsage preferred_usage,
+    const vector<shared_ptr<TaskSpecificEvaluator>> &preferred,
+    OperatorCost cost_type, int bound, double max_time,
+    const string &description, utils::Verbosity verbosity)
+    : TaskSpecificSearchAlgorithm(
+          task, cost_type, bound, max_time, description, verbosity),
       evaluator(h),
       preferred_operator_evaluators(preferred),
       preferred_usage(preferred_usage),
@@ -63,7 +64,8 @@ EnforcedHillClimbingSearch::EnforcedHillClimbingSearch(
       current_phase_start_g(-1),
       num_ehc_phases(0),
       last_num_expanded(-1) {
-    for (const shared_ptr<TaskSpecificEvaluator> &eval : preferred_operator_evaluators) {
+    for (const shared_ptr<TaskSpecificEvaluator> &eval :
+         preferred_operator_evaluators) {
         eval->get_path_dependent_evaluators(path_dependent_evaluators);
     }
     evaluator->get_path_dependent_evaluators(path_dependent_evaluators);
@@ -139,8 +141,8 @@ void EnforcedHillClimbingSearch::expand(EvaluationContext &eval_context) {
 
     ordered_set::OrderedSet<OperatorID> preferred_operators;
     if (use_preferred) {
-        for (const shared_ptr<TaskSpecificEvaluator> &preferred_operator_evaluator :
-             preferred_operator_evaluators) {
+        for (const shared_ptr<TaskSpecificEvaluator> &
+                 preferred_operator_evaluator : preferred_operator_evaluators) {
             collect_preferred_operators(
                 eval_context, preferred_operator_evaluator.get(),
                 preferred_operators);
