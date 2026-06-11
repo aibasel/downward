@@ -6,8 +6,8 @@
 #include <unordered_set>
 
 namespace landmarks {
-class LandmarkFactoryReasonableOrdersHPS : public LandmarkFactory {
-    std::shared_ptr<LandmarkFactory> landmark_factory;
+class LandmarkFactoryReasonableOrdersHPS : public TaskSpecificLandmarkFactory {
+    std::shared_ptr<TaskSpecificLandmarkFactory> landmark_factory;
 
     virtual void generate_landmarks(
         const std::shared_ptr<AbstractTask> &task) override;
@@ -30,7 +30,8 @@ class LandmarkFactoryReasonableOrdersHPS : public LandmarkFactory {
         const Landmark &landmark_b) const;
 public:
     LandmarkFactoryReasonableOrdersHPS(
-        const std::shared_ptr<LandmarkFactory> &lm_factory,
+        const std::shared_ptr<AbstractTask> &task,
+        const std::shared_ptr<TaskSpecificLandmarkFactory> &lm_factory,
         utils::Verbosity verbosity);
 
     virtual bool supports_conditional_effects() const override;

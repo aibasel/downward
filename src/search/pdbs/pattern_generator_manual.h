@@ -5,7 +5,7 @@
 #include "types.h"
 
 namespace pdbs {
-class PatternGeneratorManual : public PatternGenerator {
+class PatternGeneratorManual : public TaskSpecificPatternGenerator {
     Pattern pattern;
 
     virtual std::string name() const override;
@@ -13,6 +13,7 @@ class PatternGeneratorManual : public PatternGenerator {
         const std::shared_ptr<AbstractTask> &task) override;
 public:
     PatternGeneratorManual(
+        const std::shared_ptr<AbstractTask> &task,
         const std::vector<int> &pattern, utils::Verbosity verbosity);
 };
 }

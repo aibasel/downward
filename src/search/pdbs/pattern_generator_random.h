@@ -8,7 +8,7 @@ class RandomNumberGenerator;
 }
 
 namespace pdbs {
-class PatternGeneratorRandom : public PatternGenerator {
+class PatternGeneratorRandom : public TaskSpecificPatternGenerator {
     const int max_pdb_size;
     const double max_time;
     const bool bidirectional;
@@ -19,7 +19,8 @@ class PatternGeneratorRandom : public PatternGenerator {
         const std::shared_ptr<AbstractTask> &task) override;
 public:
     PatternGeneratorRandom(
-        int max_pdb_size, double max_time, bool bidirectional, int random_seed,
+        const std::shared_ptr<AbstractTask> &task, int max_pdb_size,
+        double max_time, bool bidirectional, int random_seed,
         utils::Verbosity verbosity);
 };
 }

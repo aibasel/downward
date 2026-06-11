@@ -26,10 +26,12 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
-LabelReduction::LabelReduction(
-    bool before_shrinking, bool before_merging, LabelReductionMethod method,
+TaskSpecificLabelReduction::TaskSpecificLabelReduction(
+    const shared_ptr<AbstractTask> &task, bool before_shrinking,
+    bool before_merging, LabelReductionMethod method,
     LabelReductionSystemOrder system_order, int random_seed)
-    : lr_before_shrinking(before_shrinking),
+    : components::TaskSpecificComponent(task),
+      lr_before_shrinking(before_shrinking),
       lr_before_merging(before_merging),
       lr_method(method),
       lr_system_order(system_order),
@@ -39,11 +41,11 @@ LabelReduction::LabelReduction(
         "Please turn on at least one of the options \"before_shrinking\" or \"before_merging\"!");
 }
 
-bool LabelReduction::initialized() const {
+bool TaskSpecificLabelReduction::initialized() const {
     return !transition_system_order.empty();
 }
 
-void LabelReduction::initialize(const TaskProxy &task_proxy) {
+void TaskSpecificLabelReduction::initialize(const TaskProxy &task_proxy) {
     assert(!initialized());
 
     // Compute the transition system order.
@@ -65,7 +67,7 @@ void LabelReduction::initialize(const TaskProxy &task_proxy) {
     }
 }
 
-void LabelReduction::compute_label_mapping(
+void TaskSpecificLabelReduction::compute_label_mapping(
     const equivalence_relation::EquivalenceRelation &relation,
     const FactoredTransitionSystem &fts,
     vector<pair<int, vector<int>>> &label_mapping, utils::LogProxy &log) const {
@@ -107,7 +109,7 @@ void LabelReduction::compute_label_mapping(
 }
 
 equivalence_relation::EquivalenceRelation
-LabelReduction::compute_combinable_equivalence_relation(
+TaskSpecificLabelReduction::compute_combinable_equivalence_relation(
     int ts_index, const FactoredTransitionSystem &fts) const {
     /*
       Returns an equivalence relation over labels s.t. l ~ l'
@@ -136,7 +138,7 @@ LabelReduction::compute_combinable_equivalence_relation(
     return relation;
 }
 
-bool LabelReduction::reduce(
+bool TaskSpecificLabelReduction::reduce(
     const pair<int, int> &next_merge, FactoredTransitionSystem &fts,
     utils::LogProxy &log) const {
     assert(initialized());
@@ -253,7 +255,7 @@ bool LabelReduction::reduce(
     return reduced;
 }
 
-void LabelReduction::dump_options(utils::LogProxy &log) const {
+void TaskSpecificLabelReduction::dump_options(utils::LogProxy &log) const {
     if (log.is_at_least_normal()) {
         log << "Label reduction options:" << endl;
         log << "Before merging: "
@@ -294,9 +296,9 @@ void LabelReduction::dump_options(utils::LogProxy &log) const {
 }
 
 class LabelReductionFeature
-    : public plugins::TypedFeature<LabelReduction, LabelReduction> {
+    : public plugins::TaskIndependentFeature<TaskIndependentLabelReduction> {
 public:
-    LabelReductionFeature() : TypedFeature("exact") {
+    LabelReductionFeature() : TaskIndependentFeature("exact") {
         document_title("Exact generalized label reduction");
         document_synopsis(
             "This class implements the exact generalized label reduction "
@@ -338,9 +340,10 @@ public:
         utils::add_rng_options_to_feature(*this);
     }
 
-    virtual shared_ptr<LabelReduction> create_component(
+    virtual shared_ptr<TaskIndependentLabelReduction> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LabelReduction>(
+        return components::make_auto_task_independent_component<
+            TaskSpecificLabelReduction, TaskSpecificLabelReduction>(
             opts.get<bool>("before_shrinking"),
             opts.get<bool>("before_merging"),
             opts.get<LabelReductionMethod>("method"),
@@ -352,7 +355,7 @@ public:
 static plugins::FeaturePlugin<LabelReductionFeature> _plugin;
 
 static class LabelReductionCategoryPlugin
-    : public plugins::TypedCategoryPlugin<LabelReduction> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentLabelReduction> {
 public:
     LabelReductionCategoryPlugin() : TypedCategoryPlugin("LabelReduction") {
         document_synopsis(

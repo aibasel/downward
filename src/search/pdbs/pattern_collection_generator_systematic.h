@@ -21,7 +21,8 @@ namespace pdbs {
 class CanonicalPDBsHeuristic;
 
 // Invariant: patterns are always sorted.
-class PatternCollectionGeneratorSystematic : public PatternCollectionGenerator {
+class PatternCollectionGeneratorSystematic
+    : public TaskSpecificPatternCollectionGenerator {
     using PatternSet = utils::HashSet<Pattern>;
 
     const size_t max_pattern_size;
@@ -46,8 +47,8 @@ class PatternCollectionGeneratorSystematic : public PatternCollectionGenerator {
         const std::shared_ptr<AbstractTask> &task) override;
 public:
     PatternCollectionGeneratorSystematic(
-        int pattern_max_size, bool only_interesting_patterns,
-        utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &task, int pattern_max_size,
+        bool only_interesting_patterns, utils::Verbosity verbosity);
 };
 }
 

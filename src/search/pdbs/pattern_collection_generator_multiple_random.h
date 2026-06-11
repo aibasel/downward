@@ -18,7 +18,8 @@ class PatternCollectionGeneratorMultipleRandom
         std::unordered_set<int> &&blacklisted_variables) override;
 public:
     PatternCollectionGeneratorMultipleRandom(
-        bool bidirectional, int max_pdb_size, int max_collection_size,
+        const std::shared_ptr<AbstractTask> &task, bool bidirectional,
+        int max_pdb_size, int max_collection_size,
         double pattern_generation_max_time, double total_max_time,
         double stagnation_limit, double blacklist_trigger_percentage,
         bool enable_blacklist_on_stagnation, int random_seed,

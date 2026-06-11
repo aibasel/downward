@@ -8,7 +8,7 @@ namespace stubborn_sets {
 inline FactPair find_unsatisfied_condition(
     const std::vector<FactPair> &conditions, const State &state);
 
-class StubbornSets : public PruningMethod {
+class StubbornSets : public TaskSpecificPruningMethod {
     void compute_sorted_operators(const TaskProxy &task_proxy);
     void compute_achievers(const TaskProxy &task_proxy);
     virtual void prune(
@@ -56,7 +56,8 @@ protected:
 
     virtual void compute_stubborn_set(const State &state) = 0;
 public:
-    explicit StubbornSets(utils::Verbosity verbosity);
+    explicit StubbornSets(
+        const std::shared_ptr<AbstractTask> &task, utils::Verbosity verbosity);
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 };
 

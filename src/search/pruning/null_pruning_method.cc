@@ -6,19 +6,20 @@
 using namespace std;
 
 namespace null_pruning_method {
-NullPruningMethod::NullPruningMethod(utils::Verbosity verbosity)
-    : PruningMethod(verbosity) {
+NullPruningMethod::NullPruningMethod(
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
+    : TaskSpecificPruningMethod(task, verbosity) {
 }
 
 void NullPruningMethod::initialize(const shared_ptr<AbstractTask> &task) {
-    PruningMethod::initialize(task);
+    TaskSpecificPruningMethod::initialize(task);
     log << "pruning method: none" << endl;
 }
 
 class NullPruningMethodFeature
-    : public plugins::TypedFeature<PruningMethod, NullPruningMethod> {
+    : public plugins::TaskIndependentFeature<TaskIndependentPruningMethod> {
 public:
-    NullPruningMethodFeature() : TypedFeature("null") {
+    NullPruningMethodFeature() : TaskIndependentFeature("null") {
         // document_group("");
         document_title("No pruning");
         document_synopsis(
@@ -28,9 +29,10 @@ public:
         add_pruning_options_to_feature(*this);
     }
 
-    virtual shared_ptr<NullPruningMethod> create_component(
+    virtual shared_ptr<TaskIndependentPruningMethod> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<NullPruningMethod>(
+        return components::make_auto_task_independent_component<
+            NullPruningMethod, TaskSpecificPruningMethod>(
             get_pruning_arguments_from_options(opts));
     }
 };

@@ -18,7 +18,7 @@ struct ValueNode;
 namespace cg_heuristic {
 class CGCache;
 
-class CGHeuristic : public Heuristic {
+class CGHeuristic : public TaskSpecificHeuristic {
     using ValueNodeQueue =
         priority_queues::AdaptiveQueue<domain_transition_graph::ValueNode *>;
     std::vector<std::unique_ptr<ValueNodeQueue>> prio_queues;
@@ -41,9 +41,9 @@ class CGHeuristic : public Heuristic {
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
-    explicit CGHeuristic(
-        int max_cache_size, tasks::AxiomHandlingType axiom_hanlding,
-        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    CGHeuristic(
+        const std::shared_ptr<AbstractTask> &task, int max_cache_size,
+        tasks::AxiomHandlingType axiom_hanlding, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
     virtual bool dead_ends_are_reliable() const override;
 };

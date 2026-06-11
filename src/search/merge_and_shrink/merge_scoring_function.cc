@@ -8,10 +8,13 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeScoringFunction::MergeScoringFunction() : initialized(false) {
+TaskSpecificMergeScoringFunction::TaskSpecificMergeScoringFunction(
+    const shared_ptr<AbstractTask> &task)
+    : components::TaskSpecificComponent(task), initialized(false) {
 }
 
-void MergeScoringFunction::dump_options(utils::LogProxy &log) const {
+void TaskSpecificMergeScoringFunction::dump_options(
+    utils::LogProxy &log) const {
     if (log.is_at_least_normal()) {
         log << "Merge scoring function:" << endl;
         log << "Name: " << name() << endl;
@@ -20,7 +23,7 @@ void MergeScoringFunction::dump_options(utils::LogProxy &log) const {
 }
 
 static class MergeScoringFunctionCategoryPlugin
-    : public plugins::TypedCategoryPlugin<MergeScoringFunction> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentMergeScoringFunction> {
 public:
     MergeScoringFunctionCategoryPlugin()
         : TypedCategoryPlugin("MergeScoringFunction") {

@@ -5,6 +5,8 @@
 #include "pattern_information.h"
 #include "types.h"
 
+#include "../component.h"
+
 #include "../utils/logging.h"
 
 #include <memory>
@@ -22,32 +24,40 @@ class RandomNumberGenerator;
 }
 
 namespace pdbs {
-class PatternCollectionGenerator {
+class TaskSpecificPatternCollectionGenerator
+    : public components::TaskSpecificComponent {
     virtual std::string name() const = 0;
     virtual PatternCollectionInformation compute_patterns(
         const std::shared_ptr<AbstractTask> &task) = 0;
 protected:
     mutable utils::LogProxy log;
 public:
-    explicit PatternCollectionGenerator(utils::Verbosity verbosity);
-    virtual ~PatternCollectionGenerator() = default;
+    TaskSpecificPatternCollectionGenerator(
+        const std::shared_ptr<AbstractTask> &task, utils::Verbosity verbosity);
 
     PatternCollectionInformation generate(
         const std::shared_ptr<AbstractTask> &task);
 };
 
-class PatternGenerator {
+using TaskIndependentPatternCollectionGenerator =
+    components::TaskIndependentComponent<
+        TaskSpecificPatternCollectionGenerator>;
+
+class TaskSpecificPatternGenerator : public components::TaskSpecificComponent {
     virtual std::string name() const = 0;
     virtual PatternInformation compute_pattern(
         const std::shared_ptr<AbstractTask> &task) = 0;
 protected:
     mutable utils::LogProxy log;
 public:
-    explicit PatternGenerator(utils::Verbosity verbosity);
-    virtual ~PatternGenerator() = default;
+    TaskSpecificPatternGenerator(
+        const std::shared_ptr<AbstractTask> &task, utils::Verbosity verbosity);
 
     PatternInformation generate(const std::shared_ptr<AbstractTask> &task);
 };
+
+using TaskIndependentPatternGenerator =
+    components::TaskIndependentComponent<TaskSpecificPatternGenerator>;
 
 extern void add_generator_options_to_feature(plugins::Feature &feature);
 extern std::tuple<utils::Verbosity> get_generator_arguments_from_options(

@@ -18,7 +18,7 @@ class Feature;
 class Options;
 }
 
-class Heuristic : public Evaluator {
+class TaskSpecificHeuristic : public TaskSpecificEvaluator {
     struct HEntry {
         /* dirty is conceptually a bool, but Visual C++ does not support
            packing ints and bools together in a bitfield. */
@@ -53,12 +53,6 @@ protected:
     PerStateInformation<HEntry> heuristic_cache;
     bool cache_evaluator_values;
 
-    // Hold a reference to the task implementation and pass it to objects that
-    // need it.
-    const std::shared_ptr<AbstractTask> task;
-    // Use task_proxy to access task information.
-    TaskProxy task_proxy;
-
     enum {
         DEAD_END = -1,
         NO_VALUE = -2
@@ -76,13 +70,12 @@ protected:
     State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
-    Heuristic(
-        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    TaskSpecificHeuristic(
+        const std::shared_ptr<AbstractTask> &task, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
-    virtual ~Heuristic() override;
 
     virtual void get_path_dependent_evaluators(
-        std::set<Evaluator *> & /*evals*/) override {
+        std::set<TaskSpecificEvaluator *> & /*evals*/) override {
     }
 
     virtual EvaluationResult compute_result(
@@ -95,7 +88,6 @@ public:
 
 extern void add_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<
-    std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity>
+extern std::tuple<bool, std::string, utils::Verbosity>
 get_heuristic_arguments_from_options(const plugins::Options &opts);
 #endif

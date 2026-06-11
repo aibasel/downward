@@ -80,7 +80,7 @@ static vector<int> compute_saturated_costs(
 }
 
 CostSaturation::CostSaturation(
-    const vector<shared_ptr<SubtaskGenerator>> &subtask_generators,
+    const vector<shared_ptr<TaskSpecificSubtaskGenerator>> &subtask_generators,
     int max_states, int max_non_looping_transitions, double max_time,
     PickSplit pick_split, bool use_general_costs,
     utils::RandomNumberGenerator &rng, utils::LogProxy &log)
@@ -122,7 +122,7 @@ vector<CartesianHeuristicFunction> CostSaturation::generate_heuristic_functions(
     };
 
     utils::reserve_extra_memory_padding(memory_padding_in_mb);
-    for (const shared_ptr<SubtaskGenerator> &subtask_generator :
+    for (const shared_ptr<TaskSpecificSubtaskGenerator> &subtask_generator :
          subtask_generators) {
         SharedTasks subtasks = subtask_generator->get_subtasks(task, log);
         build_abstractions(subtasks, timer, should_abort);

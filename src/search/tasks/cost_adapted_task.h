@@ -5,10 +5,6 @@
 
 #include "../operator_cost.h"
 
-namespace plugins {
-class Options;
-}
-
 namespace tasks {
 /*
   Task transformation that changes operator costs. If the parent task assigns

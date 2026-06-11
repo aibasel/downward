@@ -2,6 +2,7 @@
 
 #include "evaluation_context.h"
 #include "evaluator.h"
+#include "pruning_method.h"
 
 #include "algorithms/ordered_set.h"
 #include "plugins/plugin.h"
@@ -38,14 +39,13 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
     return successor_generator;
 }
 
-SearchAlgorithm::SearchAlgorithm(
-    OperatorCost cost_type, int bound, double max_time,
-    const string &description, utils::Verbosity verbosity)
-    : description(description),
+TaskSpecificSearchAlgorithm::TaskSpecificSearchAlgorithm(
+    const shared_ptr<AbstractTask> &task, OperatorCost cost_type, int bound,
+    double max_time, const string &description, utils::Verbosity verbosity)
+    : components::TaskSpecificComponent(task),
+      description(description),
       status(IN_PROGRESS),
       solution_found(false),
-      task(tasks::g_root_task),
-      task_proxy(*task),
       log(utils::get_log_for_verbosity(verbosity)),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
@@ -62,54 +62,25 @@ SearchAlgorithm::SearchAlgorithm(
     task_properties::print_variable_statistics(task_proxy);
 }
 
-SearchAlgorithm::SearchAlgorithm(
-    const plugins::Options
-        &opts) // TODO options object is needed for iterated search, the
-               // prototype for issue559 resolves this
-    : description(opts.get_unparsed_config()),
-      status(IN_PROGRESS),
-      solution_found(false),
-      task(tasks::g_root_task),
-      task_proxy(*task),
-      log(utils::get_log_for_verbosity(
-          opts.get<utils::Verbosity>("verbosity"))),
-      state_registry(task_proxy),
-      successor_generator(get_successor_generator(task_proxy, log)),
-      search_space(state_registry, log),
-      statistics(log),
-      cost_type(opts.get<OperatorCost>("cost_type")),
-      is_unit_cost(task_properties::is_unit_cost(task_proxy)),
-      max_time(opts.get<double>("max_time")) {
-    if (opts.get<int>("bound") < 0) {
-        cerr << "error: negative cost bound " << opts.get<int>("bound") << endl;
-        utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
-    }
-    bound = opts.get<int>("bound");
-    task_properties::print_variable_statistics(task_proxy);
-}
-
-SearchAlgorithm::~SearchAlgorithm() {
-}
-
-bool SearchAlgorithm::found_solution() const {
+bool TaskSpecificSearchAlgorithm::found_solution() const {
     return solution_found;
 }
 
-SearchStatus SearchAlgorithm::get_status() const {
+SearchStatus TaskSpecificSearchAlgorithm::get_status() const {
     return status;
 }
 
-const Plan &SearchAlgorithm::get_plan() const {
+const Plan &TaskSpecificSearchAlgorithm::get_plan() const {
     assert(solution_found);
     return plan;
 }
 
-void SearchAlgorithm::set_plan(const Plan &p) {
+void TaskSpecificSearchAlgorithm::set_plan(const Plan &p) {
     solution_found = true;
     plan = p;
 }
 
-void SearchAlgorithm::search() {
+void TaskSpecificSearchAlgorithm::search() {
     initialize();
     utils::CountdownTimer timer(max_time);
     while (status == IN_PROGRESS) {
@@ -124,7 +95,7 @@ void SearchAlgorithm::search() {
     log << "Actual search time: " << timer.get_elapsed_time() << endl;
 }
 
-bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {
+bool TaskSpecificSearchAlgorithm::check_goal_and_set_plan(const State &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
         log << "Solution found!" << endl;
         Plan plan;
@@ -135,19 +106,20 @@ bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {
     return false;
 }
 
-void SearchAlgorithm::save_plan_if_necessary() {
+void TaskSpecificSearchAlgorithm::save_plan_if_necessary() {
     if (found_solution()) {
         plan_manager.save_plan(get_plan(), task_proxy);
     }
 }
 
-int SearchAlgorithm::get_adjusted_cost(const OperatorProxy &op) const {
+int TaskSpecificSearchAlgorithm::get_adjusted_cost(
+    const OperatorProxy &op) const {
     return get_adjusted_action_cost(op, cost_type, is_unit_cost);
 }
 
 void print_initial_evaluator_values(const EvaluationContext &eval_context) {
     eval_context.get_cache().for_each_evaluator_result(
-        [](const Evaluator *eval, const EvaluationResult &result) {
+        [](const TaskSpecificEvaluator *eval, const EvaluationResult &result) {
             if (eval->is_used_for_reporting_minima()) {
                 eval->report_value_for_initial_state(result);
             }
@@ -161,7 +133,7 @@ void print_initial_evaluator_values(const EvaluationContext &eval_context) {
    classes.
    TODO: Figure out where it belongs and move it there. */
 void add_search_pruning_options_to_feature(plugins::Feature &feature) {
-    feature.add_option<shared_ptr<PruningMethod>>(
+    feature.add_option<shared_ptr<TaskIndependentPruningMethod>>(
         "pruning",
         "Pruning methods can prune or reorder the set of applicable operators in "
         "each state and thereby influence the number and order of successor states "
@@ -169,9 +141,10 @@ void add_search_pruning_options_to_feature(plugins::Feature &feature) {
         "null()");
 }
 
-tuple<shared_ptr<PruningMethod>> get_search_pruning_arguments_from_options(
-    const plugins::Options &opts) {
-    return make_tuple(opts.get<shared_ptr<PruningMethod>>("pruning"));
+tuple<shared_ptr<TaskIndependentPruningMethod>>
+get_search_pruning_arguments_from_options(const plugins::Options &opts) {
+    return make_tuple(
+        opts.get<shared_ptr<TaskIndependentPruningMethod>>("pruning"));
 }
 
 void add_search_algorithm_options_to_feature(
@@ -235,7 +208,7 @@ tuple<bool, bool, int> get_successors_order_arguments_from_options(
 }
 
 static class SearchAlgorithmCategoryPlugin
-    : public plugins::TypedCategoryPlugin<SearchAlgorithm> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentSearchAlgorithm> {
 public:
     SearchAlgorithmCategoryPlugin() : TypedCategoryPlugin("SearchAlgorithm") {
         // TODO: Replace add synopsis for the wiki page.
@@ -245,7 +218,8 @@ public:
 } _category_plugin;
 
 void collect_preferred_operators(
-    EvaluationContext &eval_context, Evaluator *preferred_operator_evaluator,
+    EvaluationContext &eval_context,
+    TaskSpecificEvaluator *preferred_operator_evaluator,
     ordered_set::OrderedSet<OperatorID> &preferred_operators) {
     if (!eval_context.is_evaluator_value_infinite(
             preferred_operator_evaluator)) {

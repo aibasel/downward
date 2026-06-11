@@ -20,7 +20,8 @@ namespace pdbs {
   Heuristics. Proceedings of the 4th Workshop on Model Checking and
   Artificial Intelligence (MoChArt 2006), pp. 35-50, 2007.
 */
-class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
+class PatternCollectionGeneratorGenetic
+    : public TaskSpecificPatternCollectionGenerator {
     // Maximum number of states for each pdb
     const int pdb_max_size;
     const int num_collections;
@@ -114,9 +115,9 @@ class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
         const std::shared_ptr<AbstractTask> &task) override;
 public:
     PatternCollectionGeneratorGenetic(
-        int pdb_max_size, int num_collections, int num_episodes,
-        double mutation_probability, bool disjoint, int random_seed,
-        utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &task, int pdb_max_size,
+        int num_collections, int num_episodes, double mutation_probability,
+        bool disjoint, int random_seed, utils::Verbosity verbosity);
 };
 }
 

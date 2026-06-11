@@ -75,7 +75,7 @@ struct HMEntry {
     }
 };
 
-class LandmarkFactoryHM : public LandmarkFactory {
+class LandmarkFactoryHM : public TaskSpecificLandmarkFactory {
     using TriggerSet = std::unordered_map<int, std::unordered_set<int>>;
 
     const int m;
@@ -233,7 +233,8 @@ class LandmarkFactoryHM : public LandmarkFactory {
 
 public:
     LandmarkFactoryHM(
-        int m, bool conjunctive_landmarks, bool use_orders,
+        const std::shared_ptr<AbstractTask> &task, int m,
+        bool conjunctive_landmarks, bool use_orders,
         utils::Verbosity verbosity);
 
     virtual bool supports_conditional_effects() const override;

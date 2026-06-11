@@ -13,14 +13,15 @@ namespace combining_evaluator {
   CombiningEvaluator is the base class for SumEvaluator and
   MaxEvaluator, which captures the common aspects of their behaviour.
 */
-class CombiningEvaluator : public Evaluator {
-    std::vector<std::shared_ptr<Evaluator>> subevaluators;
+class CombiningEvaluator : public TaskSpecificEvaluator {
+    std::vector<std::shared_ptr<TaskSpecificEvaluator>> subevaluators;
     bool all_dead_ends_are_reliable;
 protected:
     virtual int combine_values(const std::vector<int> &values) = 0;
 public:
     CombiningEvaluator(
-        const std::vector<std::shared_ptr<Evaluator>> &evals,
+        const std::shared_ptr<AbstractTask> &task,
+        const std::vector<std::shared_ptr<TaskSpecificEvaluator>> &evals,
         const std::string &description, utils::Verbosity verbosity);
 
     /*
@@ -41,13 +42,13 @@ public:
         EvaluationContext &eval_context) override;
 
     virtual void get_path_dependent_evaluators(
-        std::set<Evaluator *> &evals) override;
+        std::set<TaskSpecificEvaluator *> &evals) override;
 };
 
 extern void add_combining_evaluator_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<
-    std::vector<std::shared_ptr<Evaluator>>, const std::string,
+    std::vector<std::shared_ptr<TaskIndependentEvaluator>>, const std::string,
     utils::Verbosity>
 get_combining_evaluator_arguments_from_options(const plugins::Options &opts);
 }

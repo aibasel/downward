@@ -4,13 +4,13 @@
 #include "../heuristic.h"
 
 namespace blind_search_heuristic {
-class BlindSearchHeuristic : public Heuristic {
+class BlindSearchHeuristic : public TaskSpecificHeuristic {
     int min_operator_cost;
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
     BlindSearchHeuristic(
-        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+        const std::shared_ptr<AbstractTask> &task, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 };
 }

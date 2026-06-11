@@ -16,13 +16,13 @@ using namespace std;
 
 namespace landmarks {
 LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
-    const shared_ptr<LandmarkFactory> &lm_factory, bool pref, bool prog_goal,
-    bool prog_gn, bool prog_r, const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates, const string &description, utils::Verbosity verbosity,
+    const shared_ptr<AbstractTask> &task,
+    const shared_ptr<TaskSpecificLandmarkFactory> &lm_factory, bool pref,
+    bool prog_goal, bool prog_gn, bool prog_r, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity,
     CostPartitioningMethod cost_partitioning, bool alm,
     lp::LPSolverType lpsolver)
-    : LandmarkHeuristic(
-          pref, transform, cache_estimates, description, verbosity) {
+    : LandmarkHeuristic(task, pref, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cost partitioning heuristic..." << endl;
     }
@@ -32,7 +32,7 @@ LandmarkCostPartitioningHeuristic::LandmarkCostPartitioningHeuristic(
 }
 
 void LandmarkCostPartitioningHeuristic::check_unsupported_features(
-    const shared_ptr<LandmarkFactory> &landmark_factory) {
+    const shared_ptr<TaskSpecificLandmarkFactory> &landmark_factory) {
     if (task_properties::has_axioms(task_proxy)) {
         cerr << "Cost partitioning does not support axioms." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
@@ -83,11 +83,10 @@ bool LandmarkCostPartitioningHeuristic::dead_ends_are_reliable() const {
 }
 
 class LandmarkCostPartitioningHeuristicFeature
-    : public plugins::TypedFeature<
-          Evaluator, LandmarkCostPartitioningHeuristic> {
+    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
 public:
     LandmarkCostPartitioningHeuristicFeature()
-        : TypedFeature("landmark_cost_partitioning") {
+        : TaskIndependentFeature("landmark_cost_partitioning") {
         document_title("Landmark cost partitioning heuristic");
         /*
           We usually have the options of base classes behind the options
@@ -164,10 +163,10 @@ public:
         document_property("safe", "yes");
     }
 
-    virtual shared_ptr<LandmarkCostPartitioningHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            LandmarkCostPartitioningHeuristic>(
+        return components::make_auto_task_independent_component<
+            LandmarkCostPartitioningHeuristic, TaskSpecificEvaluator>(
             get_landmark_heuristic_arguments_from_options(opts),
             opts.get<CostPartitioningMethod>("cost_partitioning"),
             opts.get<bool>("alm"),

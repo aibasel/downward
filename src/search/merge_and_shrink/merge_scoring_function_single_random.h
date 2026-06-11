@@ -10,7 +10,8 @@ class RandomNumberGenerator;
 }
 
 namespace merge_and_shrink {
-class MergeScoringFunctionSingleRandom : public MergeScoringFunction {
+class MergeScoringFunctionSingleRandom
+    : public TaskSpecificMergeScoringFunction {
     int random_seed; // only for dump options
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
@@ -18,7 +19,8 @@ class MergeScoringFunctionSingleRandom : public MergeScoringFunction {
     virtual void dump_function_specific_options(
         utils::LogProxy &log) const override;
 public:
-    explicit MergeScoringFunctionSingleRandom(int random_seed);
+    MergeScoringFunctionSingleRandom(
+        const std::shared_ptr<AbstractTask> &task, int random_seed);
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,
         const std::vector<std::pair<int, int>> &merge_candidates) override;

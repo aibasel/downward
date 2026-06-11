@@ -1,5 +1,8 @@
 #include "iterated_search.h"
 
+#include "../evaluator.h"
+
+#include "../landmarks/landmark_factory.h"
 #include "../plugins/plugin.h"
 #include "../utils/component_errors.h"
 #include "../utils/logging.h"
@@ -9,13 +12,19 @@
 using namespace std;
 
 namespace iterated_search {
-IteratedSearch::IteratedSearch(const plugins::Options &opts)
-    : SearchAlgorithm(opts),
-      algorithm_configs(opts.get_list<parser::LazyValue>("algorithm_configs")),
-      pass_bound(opts.get<bool>("pass_bound")),
-      repeat_last_phase(opts.get<bool>("repeat_last")),
-      continue_on_fail(opts.get<bool>("continue_on_fail")),
-      continue_on_solve(opts.get<bool>("continue_on_solve")),
+IteratedSearch::IteratedSearch(
+    const shared_ptr<AbstractTask> &task,
+    const vector<shared_ptr<TaskIndependentSearchAlgorithm>> &algorithm_configs,
+    bool pass_bound, bool repeat_last, bool continue_on_fail,
+    bool continue_on_solve, OperatorCost cost_type, int bound, double max_time,
+    const string &description, utils::Verbosity verbosity)
+    : TaskSpecificSearchAlgorithm(
+          task, cost_type, bound, max_time, description, verbosity),
+      algorithm_configs(algorithm_configs),
+      pass_bound(pass_bound),
+      repeat_last_phase(repeat_last),
+      continue_on_fail(continue_on_fail),
+      continue_on_solve(continue_on_solve),
       phase(0),
       last_phase_found_solution(false),
       best_bound(bound),
@@ -23,24 +32,69 @@ IteratedSearch::IteratedSearch(const plugins::Options &opts)
     utils::verify_list_not_empty(algorithm_configs, "algorithm_configs");
 }
 
-shared_ptr<SearchAlgorithm> IteratedSearch::get_search_algorithm(
-    int algorithm_configs_index) {
-    parser::LazyValue &algorithm_config =
-        algorithm_configs[algorithm_configs_index];
-    shared_ptr<SearchAlgorithm> search_algorithm;
-    try {
-        search_algorithm =
-            algorithm_config.construct<shared_ptr<SearchAlgorithm>>();
-    } catch (const utils::ContextError &e) {
-        cerr << "Delayed construction of LazyValue failed" << endl;
-        cerr << e.get_message() << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_INPUT_ERROR);
+void IteratedSearch::update_retention_set() {
+    unordered_set<TIComponent *> seen;
+    vector<shared_ptr<TSComponent>> new_retained_components;
+    /*
+      Loop through all future phases. If repeat_last_phase is true, then the
+      last phase always is considered a future phase, even if we currently are
+      in the last phase.
+    */
+    int start = phase;
+    int end = algorithm_configs.size();
+    if (start >= end && start >= 1 && repeat_last_phase) {
+        start = end - 1;
     }
+    for (int i = start; i < end; ++i) {
+        vector<TIComponent *> future_ti_components;
+        future_ti_components.push_back(algorithm_configs[i].get());
+        algorithm_configs[i]->get_task_preserving_subcomponents(
+            future_ti_components);
+        for (TIComponent *ti_component : future_ti_components) {
+            if (!seen.contains(ti_component)) {
+                seen.insert(ti_component);
+                shared_ptr<TSComponent> ts_component =
+                    ti_component->get_cached(task);
+                if (ts_component) {
+                    /*
+                      HACK: so far, we only re-use evaluators and landmark
+                      factories, as our search algorithms do not support being
+                      used more than once.
+                    */
+                    const TaskSpecificEvaluator *evaluator =
+                        dynamic_cast<const TaskSpecificEvaluator *>(
+                            ts_component.get());
+                    const landmarks::TaskSpecificLandmarkFactory *landmarks =
+                        dynamic_cast<
+                            const landmarks::TaskSpecificLandmarkFactory *>(
+                            ts_component.get());
+                    if (evaluator || landmarks) {
+                        new_retained_components.push_back(ts_component);
+                    }
+                }
+            }
+        }
+    }
+    /*
+      It is important to collect the retained components in a copy of
+      retained_components, rather than clearing the vector and using it
+      directly. This could cause retained components to go out of scope and
+      be destroyed before the new entries are computed.
+    */
+    retained_components.swap(new_retained_components);
+}
+
+shared_ptr<TaskSpecificSearchAlgorithm> IteratedSearch::get_search_algorithm(
+    int algorithm_configs_index) {
+    shared_ptr<TaskIndependentSearchAlgorithm> &algorithm_config =
+        algorithm_configs[algorithm_configs_index];
+    shared_ptr<TaskSpecificSearchAlgorithm> search_algorithm =
+        algorithm_config->bind_task(task);
     log << "Starting search: " << search_algorithm->get_description() << endl;
     return search_algorithm;
 }
 
-shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
+shared_ptr<TaskSpecificSearchAlgorithm> IteratedSearch::create_current_phase() {
     int num_phases = algorithm_configs.size();
     if (phase >= num_phases) {
         /* We've gone through all searches. We continue if
@@ -61,7 +115,8 @@ shared_ptr<SearchAlgorithm> IteratedSearch::create_current_phase() {
 }
 
 SearchStatus IteratedSearch::step() {
-    shared_ptr<SearchAlgorithm> current_search = create_current_phase();
+    shared_ptr<TaskSpecificSearchAlgorithm> current_search =
+        create_current_phase();
     if (!current_search) {
         return found_solution() ? SOLVED : FAILED;
     }
@@ -94,6 +149,21 @@ SearchStatus IteratedSearch::step() {
     statistics.inc_generated(current_stats.get_generated());
     statistics.inc_generated_ops(current_stats.get_generated_ops());
     statistics.inc_reopened(current_stats.get_reopened());
+
+    /*
+      It is important to first update the retention set, then drop shared
+      pointers for the current task-specific search and the current
+      task-independent search. (Note that the last phase might be repeated. In
+      that case, we cannot delete the task-independent search.)
+    */
+    update_retention_set();
+    current_search = nullptr;
+    int num_phases = algorithm_configs.size();
+    if (phase < num_phases || !repeat_last_phase ||
+        !last_phase_found_solution) {
+        int index = min(phase - 1, num_phases - 1);
+        algorithm_configs.at(index) = nullptr;
+    }
 
     return step_return_value();
 }
@@ -131,16 +201,57 @@ void IteratedSearch::save_plan_if_necessary() {
     // each successful search iteration.
 }
 
-class IteratedSearchFeature
-    : public plugins::TypedFeature<SearchAlgorithm, IteratedSearch> {
+class TaskIndependentIteratedSearch
+    : public components::TaskIndependentComponent<TaskSpecificSearchAlgorithm> {
+    vector<shared_ptr<TaskIndependentSearchAlgorithm>> algorithm_configs;
+    bool pass_bound;
+    bool repeat_last_phase;
+    bool continue_on_fail;
+    bool continue_on_solve;
+    OperatorCost cost_type;
+    int bound;
+    double max_time;
+    string description;
+    utils::Verbosity verbosity;
+protected:
+    virtual shared_ptr<TaskSpecificSearchAlgorithm>
+    create_task_specific_component(const shared_ptr<AbstractTask> &task) const {
+        return make_shared<IteratedSearch>(
+            task, algorithm_configs, pass_bound, repeat_last_phase,
+            continue_on_fail, continue_on_solve, cost_type, bound, max_time,
+            description, verbosity);
+    }
+
 public:
-    IteratedSearchFeature() : TypedFeature("iterated") {
+    TaskIndependentIteratedSearch(
+        const vector<shared_ptr<TaskIndependentSearchAlgorithm>>
+            &algorithm_configs,
+        bool pass_bound, bool repeat_last, bool continue_on_fail,
+        bool continue_on_solve, OperatorCost cost_type, int bound,
+        double max_time, const string &description, utils::Verbosity verbosity)
+        : algorithm_configs(algorithm_configs),
+          pass_bound(pass_bound),
+          repeat_last_phase(repeat_last),
+          continue_on_fail(continue_on_fail),
+          continue_on_solve(continue_on_solve),
+          cost_type(cost_type),
+          bound(bound),
+          max_time(max_time),
+          description(description),
+          verbosity(verbosity) {
+    }
+};
+
+class IteratedSearchFeature
+    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
+public:
+    IteratedSearchFeature() : TaskIndependentFeature("iterated") {
         document_title("Iterated search");
         document_synopsis("");
 
-        add_list_option<shared_ptr<SearchAlgorithm>>(
-            "algorithm_configs", "list of search algorithms for each phase", "",
-            true);
+        add_list_option<shared_ptr<TaskIndependentSearchAlgorithm>>(
+            "algorithm_configs", "list of search algorithms for each phase",
+            "");
         add_option<bool>(
             "pass_bound",
             "use the bound of iterated search as a bound for its component "
@@ -179,26 +290,16 @@ public:
             "```");
     }
 
-    virtual shared_ptr<IteratedSearch> create_component(
+    virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        plugins::Options options_copy(opts);
-        /*
-          The options entry 'algorithm_configs' is a LazyValue representing a
-          list of search algorithms. But iterated search expects a list of
-          LazyValues, each representing a search algorithm. We unpack this first
-          layer of laziness here to report potential errors in a more useful
-          context.
-
-          TODO: the medium-term plan is to get rid of LazyValue completely
-          and let the features create builders that in turn create the actual
-          search algorithms. Then we no longer need to be lazy because creating
-          the builder is a light-weight operation.
-        */
-        vector<parser::LazyValue> algorithm_configs =
-            opts.get<parser::LazyValue>("algorithm_configs")
-                .construct_lazy_list();
-        options_copy.set("algorithm_configs", algorithm_configs);
-        return make_shared<IteratedSearch>(options_copy);
+        return plugins::make_shared_from_arg_tuples<
+            TaskIndependentIteratedSearch>(
+            opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
+                "algorithm_configs"),
+            opts.get<bool>("pass_bound"), opts.get<bool>("repeat_last"),
+            opts.get<bool>("continue_on_fail"),
+            opts.get<bool>("continue_on_solve"),
+            get_search_algorithm_arguments_from_options(opts));
     }
 };
 

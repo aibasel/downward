@@ -13,51 +13,41 @@
 #include <limits>
 
 using namespace std;
-Heuristic::Heuristic(
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+TaskSpecificHeuristic::TaskSpecificHeuristic(
+    const shared_ptr<AbstractTask> &task, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Evaluator(true, true, true, description, verbosity),
+    : TaskSpecificEvaluator(task, true, true, true, description, verbosity),
       heuristic_cache(
           HEntry(NO_VALUE, true)), // TODO: is true really a good idea here?
-      cache_evaluator_values(cache_estimates),
-      task(transform),
-      task_proxy(*task) {
+      cache_evaluator_values(cache_estimates) {
 }
 
-Heuristic::~Heuristic() {
-}
-
-void Heuristic::set_preferred(const OperatorProxy &op) {
+void TaskSpecificHeuristic::set_preferred(const OperatorProxy &op) {
     preferred_operators.insert(
         op.get_ancestor_operator_id(tasks::g_root_task.get()));
 }
 
-State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
+State TaskSpecificHeuristic::convert_ancestor_state(
+    const State &ancestor_state) const {
     return task_proxy.convert_ancestor_state(ancestor_state);
 }
 
 void add_heuristic_options_to_feature(
     plugins::Feature &feature, const string &description) {
-    feature.add_option<shared_ptr<AbstractTask>>(
-        "transform",
-        "Optional task transformation for the heuristic."
-        " Currently, adapt_costs() and no_transform() are available.",
-        "no_transform()");
     feature.add_option<bool>(
         "cache_estimates", "cache heuristic estimates", "true");
     add_evaluator_options_to_feature(feature, description);
 }
 
-tuple<shared_ptr<AbstractTask>, bool, string, utils::Verbosity>
-get_heuristic_arguments_from_options(const plugins::Options &opts) {
+tuple<bool, string, utils::Verbosity> get_heuristic_arguments_from_options(
+    const plugins::Options &opts) {
     return tuple_cat(
-        make_tuple(
-            opts.get<shared_ptr<AbstractTask>>("transform"),
-            opts.get<bool>("cache_estimates")),
+        make_tuple(opts.get<bool>("cache_estimates")),
         get_evaluator_arguments_from_options(opts));
 }
 
-EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
+EvaluationResult TaskSpecificHeuristic::compute_result(
+    EvaluationContext &eval_context) {
     EvaluationResult result;
 
     assert(preferred_operators.empty());
@@ -110,15 +100,15 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     return result;
 }
 
-bool Heuristic::does_cache_estimates() const {
+bool TaskSpecificHeuristic::does_cache_estimates() const {
     return cache_evaluator_values;
 }
 
-bool Heuristic::is_estimate_cached(const State &state) const {
+bool TaskSpecificHeuristic::is_estimate_cached(const State &state) const {
     return heuristic_cache[state].h != NO_VALUE;
 }
 
-int Heuristic::get_cached_estimate(const State &state) const {
+int TaskSpecificHeuristic::get_cached_estimate(const State &state) const {
     assert(is_estimate_cached(state));
     return heuristic_cache[state].h;
 }

@@ -31,7 +31,7 @@ struct Proposition {
     ~Proposition() = default;
 };
 
-class StateEquationConstraints : public ConstraintGenerator {
+class StateEquationConstraints : public TaskSpecificConstraintGenerator {
     mutable utils::LogProxy log;
     std::vector<std::vector<Proposition>> propositions;
     // Map goal variables to their goal value and other variables to max int.
@@ -42,7 +42,8 @@ class StateEquationConstraints : public ConstraintGenerator {
         named_vector::NamedVector<lp::LPConstraint> &constraints,
         double infinity);
 public:
-    explicit StateEquationConstraints(utils::Verbosity verbosity);
+    StateEquationConstraints(
+        const std::shared_ptr<AbstractTask> &task, utils::Verbosity verbosity);
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task,
         lp::LinearProgram &lp) override;

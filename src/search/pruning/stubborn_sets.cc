@@ -6,12 +6,13 @@
 using namespace std;
 
 namespace stubborn_sets {
-StubbornSets::StubbornSets(utils::Verbosity verbosity)
-    : PruningMethod(verbosity), num_operators(-1) {
+StubbornSets::StubbornSets(
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
+    : TaskSpecificPruningMethod(task, verbosity), num_operators(-1) {
 }
 
 void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
-    PruningMethod::initialize(task);
+    TaskSpecificPruningMethod::initialize(task);
     TaskProxy task_proxy(*task);
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);

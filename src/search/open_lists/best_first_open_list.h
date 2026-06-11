@@ -11,11 +11,12 @@
 
 namespace standard_scalar_open_list {
 class BestFirstOpenListFactory : public OpenListFactory {
-    std::shared_ptr<Evaluator> eval;
+    std::shared_ptr<TaskSpecificEvaluator> eval;
     bool pref_only;
 public:
     BestFirstOpenListFactory(
-        const std::shared_ptr<Evaluator> &eval, bool pref_only);
+        const std::shared_ptr<AbstractTask> &task,
+        const std::shared_ptr<TaskSpecificEvaluator> &eval, bool pref_only);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;
     virtual std::unique_ptr<EdgeOpenList> create_edge_open_list() override;

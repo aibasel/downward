@@ -30,7 +30,7 @@ class ParetoOpenList : public OpenList<Entry> {
     BucketMap buckets;
     KeySet nondominated;
     bool state_uniform_selection;
-    vector<shared_ptr<Evaluator>> evaluators;
+    vector<shared_ptr<TaskSpecificEvaluator>> evaluators;
 
     bool dominates(const KeyType &v1, const KeyType &v2) const;
     bool is_nondominated(
@@ -43,14 +43,14 @@ protected:
 
 public:
     ParetoOpenList(
-        const vector<shared_ptr<Evaluator>> &evals,
+        const vector<shared_ptr<TaskSpecificEvaluator>> &evals,
         bool state_uniform_selection, int random_seed, bool pref_only);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void get_path_dependent_evaluators(
-        set<Evaluator *> &evals) override;
+        set<TaskSpecificEvaluator *> &evals) override;
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
@@ -58,8 +58,8 @@ public:
 
 template<class Entry>
 ParetoOpenList<Entry>::ParetoOpenList(
-    const vector<shared_ptr<Evaluator>> &evals, bool state_uniform_selection,
-    int random_seed, bool pref_only)
+    const vector<shared_ptr<TaskSpecificEvaluator>> &evals,
+    bool state_uniform_selection, int random_seed, bool pref_only)
     : OpenList<Entry>(pref_only),
       rng(utils::get_rng(random_seed)),
       state_uniform_selection(state_uniform_selection),
@@ -124,7 +124,7 @@ void ParetoOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     vector<int> key;
     key.reserve(evaluators.size());
-    for (const shared_ptr<Evaluator> &evaluator : evaluators)
+    for (const shared_ptr<TaskSpecificEvaluator> &evaluator : evaluators)
         key.push_back(
             eval_context.get_evaluator_value_or_infinity(evaluator.get()));
 
@@ -192,8 +192,8 @@ void ParetoOpenList<Entry>::clear() {
 
 template<class Entry>
 void ParetoOpenList<Entry>::get_path_dependent_evaluators(
-    set<Evaluator *> &evals) {
-    for (const shared_ptr<Evaluator> &evaluator : evaluators)
+    set<TaskSpecificEvaluator *> &evals) {
+    for (const shared_ptr<TaskSpecificEvaluator> &evaluator : evaluators)
         evaluator->get_path_dependent_evaluators(evals);
 }
 
@@ -204,7 +204,7 @@ bool ParetoOpenList<Entry>::is_dead_end(EvaluationContext &eval_context) const {
     if (is_reliable_dead_end(eval_context))
         return true;
     // Otherwise, return true if all heuristics agree this is a dead-end.
-    for (const shared_ptr<Evaluator> &evaluator : evaluators)
+    for (const shared_ptr<TaskSpecificEvaluator> &evaluator : evaluators)
         if (!eval_context.is_evaluator_value_infinite(evaluator.get()))
             return false;
     return true;
@@ -213,7 +213,7 @@ bool ParetoOpenList<Entry>::is_dead_end(EvaluationContext &eval_context) const {
 template<class Entry>
 bool ParetoOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
-    for (const shared_ptr<Evaluator> &evaluator : evaluators)
+    for (const shared_ptr<TaskSpecificEvaluator> &evaluator : evaluators)
         if (eval_context.is_evaluator_value_infinite(evaluator.get()) &&
             evaluator->dead_ends_are_reliable())
             return true;
@@ -221,9 +221,11 @@ bool ParetoOpenList<Entry>::is_reliable_dead_end(
 }
 
 ParetoOpenListFactory::ParetoOpenListFactory(
-    const vector<shared_ptr<Evaluator>> &evals, bool state_uniform_selection,
-    int random_seed, bool pref_only)
-    : evals(evals),
+    const shared_ptr<AbstractTask> &task,
+    const vector<shared_ptr<TaskSpecificEvaluator>> &evals,
+    bool state_uniform_selection, int random_seed, bool pref_only)
+    : OpenListFactory(task),
+      evals(evals),
       state_uniform_selection(state_uniform_selection),
       random_seed(random_seed),
       pref_only(pref_only) {
@@ -240,15 +242,16 @@ unique_ptr<EdgeOpenList> ParetoOpenListFactory::create_edge_open_list() {
 }
 
 class ParetoOpenListFeature
-    : public plugins::TypedFeature<OpenListFactory, ParetoOpenListFactory> {
+    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
 public:
-    ParetoOpenListFeature() : TypedFeature("pareto") {
+    ParetoOpenListFeature() : TaskIndependentFeature("pareto") {
         document_title("Pareto open list");
         document_synopsis(
             "Selects one of the Pareto-optimal (regarding the sub-evaluators) "
             "entries for removal.");
 
-        add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
+            "evals", "evaluators");
         add_option<bool>(
             "state_uniform_selection",
             "When removing an entry, we select a non-dominated bucket "
@@ -260,10 +263,11 @@ public:
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<ParetoOpenListFactory> create_component(
+    virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<ParetoOpenListFactory>(
-            opts.get_list<shared_ptr<Evaluator>>("evals"),
+        return components::make_auto_task_independent_component<
+            ParetoOpenListFactory, OpenListFactory>(
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
             opts.get<bool>("state_uniform_selection"),
             utils::get_rng_arguments_from_options(opts),
             get_open_list_arguments_from_options(opts));

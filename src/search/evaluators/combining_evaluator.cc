@@ -10,13 +10,14 @@ using namespace std;
 
 namespace combining_evaluator {
 CombiningEvaluator::CombiningEvaluator(
-    const vector<shared_ptr<Evaluator>> &evals, const string &description,
-    utils::Verbosity verbosity)
-    : Evaluator(false, false, false, description, verbosity),
+    const shared_ptr<AbstractTask> &task,
+    const vector<shared_ptr<TaskSpecificEvaluator>> &evals,
+    const string &description, utils::Verbosity verbosity)
+    : TaskSpecificEvaluator(task, false, false, false, description, verbosity),
       subevaluators(evals) {
     utils::verify_list_not_empty(evals, "evals");
     all_dead_ends_are_reliable = true;
-    for (const shared_ptr<Evaluator> &subevaluator : subevaluators)
+    for (const shared_ptr<TaskSpecificEvaluator> &subevaluator : subevaluators)
         if (!subevaluator->dead_ends_are_reliable())
             all_dead_ends_are_reliable = false;
 }
@@ -33,7 +34,8 @@ EvaluationResult CombiningEvaluator::compute_result(
     values.reserve(subevaluators.size());
 
     // Collect component values. Return infinity if any is infinite.
-    for (const shared_ptr<Evaluator> &subevaluator : subevaluators) {
+    for (const shared_ptr<TaskSpecificEvaluator> &subevaluator :
+         subevaluators) {
         int value =
             eval_context.get_evaluator_value_or_infinity(subevaluator.get());
         if (value == EvaluationResult::INFTY) {
@@ -50,21 +52,24 @@ EvaluationResult CombiningEvaluator::compute_result(
 }
 
 void CombiningEvaluator::get_path_dependent_evaluators(
-    set<Evaluator *> &evals) {
+    set<TaskSpecificEvaluator *> &evals) {
     for (auto &subevaluator : subevaluators)
         subevaluator->get_path_dependent_evaluators(evals);
 }
 void add_combining_evaluator_options_to_feature(
     plugins::Feature &feature, const string &description) {
-    feature.add_list_option<shared_ptr<Evaluator>>(
+    feature.add_list_option<shared_ptr<TaskIndependentEvaluator>>(
         "evals", "at least one evaluator");
     add_evaluator_options_to_feature(feature, description);
 }
 
-tuple<vector<shared_ptr<Evaluator>>, const string, utils::Verbosity>
+tuple<
+    vector<shared_ptr<TaskIndependentEvaluator>>, const string,
+    utils::Verbosity>
 get_combining_evaluator_arguments_from_options(const plugins::Options &opts) {
     return tuple_cat(
-        make_tuple(opts.get_list<shared_ptr<Evaluator>>("evals")),
+        make_tuple(
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals")),
         get_evaluator_arguments_from_options(opts));
 }
 }

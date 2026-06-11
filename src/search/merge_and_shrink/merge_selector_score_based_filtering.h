@@ -11,16 +11,18 @@ class Options;
 }
 
 namespace merge_and_shrink {
-class MergeScoringFunction;
-class MergeSelectorScoreBasedFiltering : public MergeSelector {
-    std::vector<std::shared_ptr<MergeScoringFunction>> merge_scoring_functions;
+class TaskSpecificMergeScoringFunction;
+class MergeSelectorScoreBasedFiltering : public TaskSpecificMergeSelector {
+    std::vector<std::shared_ptr<TaskSpecificMergeScoringFunction>>
+        merge_scoring_functions;
 protected:
     virtual std::string name() const override;
     virtual void dump_selector_specific_options(
         utils::LogProxy &log) const override;
 public:
     explicit MergeSelectorScoreBasedFiltering(
-        const std::vector<std::shared_ptr<MergeScoringFunction>>
+        const std::shared_ptr<AbstractTask> &task,
+        const std::vector<std::shared_ptr<TaskSpecificMergeScoringFunction>>
             &scoring_functions);
     virtual std::pair<int, int> select_merge_from_candidates(
         const FactoredTransitionSystem &fts,

@@ -143,14 +143,10 @@ public:
 class Context {
 protected:
     static const std::string INDENT;
-    size_t initial_stack_size; // TODO: Can be removed once we got rid of
-                               // LazyValues
     std::vector<std::string> block_stack;
 
 public:
-    Context();
-    Context(const Context &context);
-    virtual ~Context();
+    virtual ~Context() = default;
     virtual std::string decorate_block_name(
         const std::string &block_name) const;
     void enter_block(const std::string &block_name);

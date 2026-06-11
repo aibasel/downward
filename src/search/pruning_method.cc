@@ -8,20 +8,23 @@
 
 using namespace std;
 
-PruningMethod::PruningMethod(utils::Verbosity verbosity)
-    : timer(false),
+TaskSpecificPruningMethod::TaskSpecificPruningMethod(
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
+    : components::TaskSpecificComponent(task),
+      timer(false),
       log(utils::get_log_for_verbosity(verbosity)),
       task(nullptr) {
 }
 
-void PruningMethod::initialize(const shared_ptr<AbstractTask> &task_) {
+void TaskSpecificPruningMethod::initialize(
+    const shared_ptr<AbstractTask> &task_) {
     assert(!task);
     task = task_;
     num_successors_before_pruning = 0;
     num_successors_after_pruning = 0;
 }
 
-void PruningMethod::prune_operators(
+void TaskSpecificPruningMethod::prune_operators(
     const State &state, vector<OperatorID> &op_ids) {
     assert(!task_properties::is_goal_state(TaskProxy(*task), state));
     /*
@@ -41,7 +44,7 @@ void PruningMethod::prune_operators(
     }
 }
 
-void PruningMethod::print_statistics() const {
+void TaskSpecificPruningMethod::print_statistics() const {
     if (log.is_at_least_normal()) {
         log << "total successors before pruning: "
             << num_successors_before_pruning << endl
@@ -76,7 +79,7 @@ tuple<utils::Verbosity> get_pruning_arguments_from_options(
 }
 
 static class PruningMethodCategoryPlugin
-    : public plugins::TypedCategoryPlugin<PruningMethod> {
+    : public plugins::TypedCategoryPlugin<TaskIndependentPruningMethod> {
 public:
     PruningMethodCategoryPlugin() : TypedCategoryPlugin("PruningMethod") {
         document_synopsis(

@@ -4,16 +4,17 @@
 #include "merge_strategy_factory.h"
 
 namespace merge_and_shrink {
-class MergeSelector;
+class TaskSpecificMergeSelector;
 
-class MergeStrategyFactoryStateless : public MergeStrategyFactory {
-    std::shared_ptr<MergeSelector> merge_selector;
+class MergeStrategyFactoryStateless : public TaskSpecificMergeStrategyFactory {
+    std::shared_ptr<TaskSpecificMergeSelector> merge_selector;
 protected:
     virtual std::string name() const override;
     virtual void dump_strategy_specific_options() const override;
 public:
     MergeStrategyFactoryStateless(
-        const std::shared_ptr<MergeSelector> &merge_selector,
+        const std::shared_ptr<AbstractTask> &task,
+        const std::shared_ptr<TaskSpecificMergeSelector> &merge_selector,
         utils::Verbosity verbosity);
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,

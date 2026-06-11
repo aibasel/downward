@@ -4,14 +4,16 @@
 #include "pattern_generator.h"
 
 namespace pdbs {
-class PatternGeneratorGreedy : public PatternGenerator {
+class PatternGeneratorGreedy : public TaskSpecificPatternGenerator {
     const int max_states;
 
     virtual std::string name() const override;
     virtual PatternInformation compute_pattern(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
-    PatternGeneratorGreedy(int max_states, utils::Verbosity verbosity);
+    PatternGeneratorGreedy(
+        const std::shared_ptr<AbstractTask> &task, int max_states,
+        utils::Verbosity verbosity);
 };
 }
 

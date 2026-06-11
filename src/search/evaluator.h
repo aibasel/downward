@@ -1,6 +1,7 @@
 #ifndef EVALUATOR_H
 #define EVALUATOR_H
 
+#include "component.h"
 #include "evaluation_result.h"
 
 #include "utils/logging.h"
@@ -14,7 +15,7 @@ namespace plugins {
 class Options;
 }
 
-class Evaluator {
+class TaskSpecificEvaluator : public components::TaskSpecificComponent {
     const std::string description;
     const bool use_for_reporting_minima;
     const bool use_for_boosting;
@@ -22,11 +23,11 @@ class Evaluator {
 protected:
     mutable utils::LogProxy log;
 public:
-    Evaluator(
+    TaskSpecificEvaluator(
+        const std::shared_ptr<AbstractTask> &task,
         bool use_for_reporting_minima, bool use_for_boosting,
         bool use_for_counting_evaluations, const std::string &description,
         utils::Verbosity verbosity);
-    virtual ~Evaluator() = default;
 
     /*
       dead_ends_are_reliable should return true if the evaluator is
@@ -47,7 +48,7 @@ public:
       state transitions".
     */
     virtual void get_path_dependent_evaluators(
-        std::set<Evaluator *> &evals) = 0;
+        std::set<TaskSpecificEvaluator *> &evals) = 0;
 
     virtual void notify_initial_state(const State & /*initial_state*/) {
     }
@@ -96,6 +97,9 @@ public:
     */
     virtual int get_cached_estimate(const State &state) const;
 };
+
+using TaskIndependentEvaluator =
+    components::TaskIndependentComponent<TaskSpecificEvaluator>;
 
 extern void add_evaluator_options_to_feature(
     plugins::Feature &feature, const std::string &description);
