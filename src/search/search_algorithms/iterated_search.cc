@@ -42,8 +42,8 @@ void IteratedSearch::update_retention_set() {
     */
     int start = phase;
     int end = algorithm_configs.size();
-    if (start == end && start >= 1 && repeat_last_phase) {
-        --start;
+    if (start >= end && start >= 1 && repeat_last_phase) {
+        start = end - 1;
     }
     for (int i = start; i < end; ++i) {
         vector<TIComponent *> future_ti_components;
