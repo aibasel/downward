@@ -90,17 +90,29 @@ public:
             "normal");
 
         document_language_support(
-            "action costs", "supported if the nested evaluator does");
+            "action costs", "supported if the nested evaluator supports them; "
+                            "otherwise not supported");
         document_language_support(
-            "conditional effects", "supported if the nested evaluator does");
+            "conditional effects",
+            "supported if the nested evaluator supports them; otherwise not "
+            "supported");
         document_language_support(
-            "axioms", "supported if the nested evaluator does");
+            "axioms",
+            "supported if the nested evaluator supports them; otherwise not "
+            "supported");
 
-        document_property("admissible", "if the nested evaluator is");
-        document_property("consistent", "if the nested evaluator is");
-        document_property("safe", "if the nested evaluator is");
         document_property(
-            "preferred operators", "if the nested evaluator supports them");
+            "admissible",
+            "yes, if the nested evaluator is admissible and the cost "
+            "modification does not increase the costs");
+        document_property(
+            "consistent",
+            "yes, if the nested evaluator is consistent and the cost "
+            "modification does not increase the costs");
+        document_property("safe", "yes, if the nested evaluator is safe");
+        document_property(
+            "preferred operators",
+            "yes, if the nested evaluator identifies preferred operators");
     }
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
