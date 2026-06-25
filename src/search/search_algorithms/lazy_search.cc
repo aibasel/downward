@@ -122,7 +122,7 @@ void LazySearch::generate_successors() {
 SearchStatus LazySearch::fetch_next_state() {
     if (open_list->empty()) {
         log << "Completely explored state space -- no solution!" << endl;
-        return FAILED;
+        return exhaustion_proves_unsolvability ? UNSOLVABLE : FAILED;
     }
 
     EdgeOpenListEntry next = open_list->remove_min();
@@ -216,6 +216,8 @@ SearchStatus LazySearch::step() {
             generate_successors();
             statistics.inc_expanded();
         } else {
+            if (!open_list->is_reliable_dead_end(current_eval_context))
+                exhaustion_proves_unsolvability = false;
             node.mark_as_dead_end();
             statistics.inc_dead_ends();
         }

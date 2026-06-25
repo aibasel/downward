@@ -34,7 +34,9 @@ if __name__ == "__main__":
         # Reserve about 10 MB of emergency memory.
         # https://stackoverflow.com/questions/19469608/
         emergency_memory = b"x" * 10**7
-        main()
+        # main() returns TRANSLATE_UNSOLVABLE if the task is unsolvable and
+        # None otherwise (in which case we exit with code 0).
+        sys.exit(main())
     except MemoryError:
         del emergency_memory
         print()

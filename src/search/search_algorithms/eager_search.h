@@ -29,6 +29,21 @@ class EagerSearch : public SearchAlgorithm {
 
     std::shared_ptr<PruningMethod> pruning_method;
 
+    /*
+      True as long as exhausting the open list would prove the task unsolvable.
+      We set this to false once we prune a state as a dead end based on
+      unreliable dead-end detection, because then completely exploring the
+      reachable state space no longer rules out that a solution exists.
+    */
+    bool exhaustion_proves_unsolvability = true;
+
+    /*
+      Call this whenever we prune a state for which open_list->is_dead_end()
+      holds. If the dead end is not reliable, exhausting the state space no
+      longer proves unsolvability.
+    */
+    void note_dead_end_pruning(EvaluationContext &eval_context);
+
     void start_f_value_statistics(EvaluationContext &eval_context);
     void update_f_value_statistics(EvaluationContext &eval_context);
     void reward_progress();

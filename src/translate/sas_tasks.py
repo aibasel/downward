@@ -36,6 +36,11 @@ class SASTask:
         self.axioms = sorted(axioms, key=lambda axiom: (
             axiom.condition, axiom.effect))
         self.metric = metric
+        # Set to True by the translator when it has detected that the task is
+        # unsolvable. The (trivially unsolvable) task is still emitted so that
+        # the search component works as before, but the translator additionally
+        # exits with the TRANSLATE_UNSOLVABLE exit code.
+        self.unsolvable = False
         if DEBUG:
             self.validate()
 

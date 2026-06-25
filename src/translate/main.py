@@ -30,6 +30,10 @@ from translate import tools
 from translate import variable_order
 from translate.options import get_options
 
+## For a full list of exit codes, please see driver/returncodes.py. Here, we
+## only list the code returned by main() when the task is unsolvable.
+TRANSLATE_UNSOLVABLE = 10
+
 # TODO: The translator may generate trivial derived variables which are always
 # true, for example if there ia a derived predicate in the input that only
 # depends on (non-derived) variables which are detected as always true.
@@ -472,7 +476,13 @@ def translate_task(
     if goal_dict_list is None:
         # "None" is a signal that the goal is unreachable because it
         # violates a mutex.
-        return unsolvable_sas_task("Goal violates a mutex")
+        conflict = describe_goal_mutex_violation(goals, mutex_dict)
+        if conflict:
+            reason = ("Goal violates a mutex: the goal atoms %s are mutually "
+                      "exclusive" % conflict)
+        else:
+            reason = "Goal violates a mutex"
+        return unsolvable_sas_task(reason)
 
     assert len(goal_dict_list) == 1, "Negative goal not supported"
     ## we could substitute the negative goal literal in
@@ -529,7 +539,49 @@ def solvable_sas_task(msg):
 
 def unsolvable_sas_task(msg):
     print("%s! Generating unsolvable task..." % msg)
-    return trivial_task(solvable=False)
+    task = trivial_task(solvable=False)
+    task.unsolvable = True
+    return task
+
+
+def describe_unreachable_goal_atoms(task, reachable_atoms):
+    """Return the positive goal atoms that can never become true: they are
+    neither relaxed reachable nor true in the initial state.
+
+    reachable_atoms is the set of relaxed-reachable fluent facts. We read the
+    goal directly from the (normalized) task because an unreachable positive
+    goal atom causes the instantiated goal to collapse to None.
+    """
+    goal = task.goal
+    if isinstance(goal, pddl.Conjunction):
+        goal_parts = goal.parts
+    elif isinstance(goal, pddl.Literal):
+        goal_parts = [goal]
+    else:
+        return []
+    init_facts = {fact for fact in task.init if isinstance(fact, pddl.Atom)}
+    return [part for part in goal_parts
+            if isinstance(part, pddl.Atom)
+            and part not in reachable_atoms
+            and part not in init_facts]
+
+
+def describe_goal_mutex_violation(goal_list, mutex_dict):
+    """Return a description of a pair of goal atoms that are mutually
+    exclusive, or None if no such pair of positive goal atoms is found.
+
+    This mirrors the positive-fact check in translate_strips_conditions_aux
+    but only for reporting purposes, so it never affects the translation.
+    """
+    assigned = {}  # mutex variable -> (value, goal atom assigning it)
+    for fact in goal_list:
+        if fact.negated:
+            continue
+        for var, val in mutex_dict.get(fact, []):
+            if var in assigned and assigned[var][0] != val:
+                return "%s and %s" % (assigned[var][1], fact)
+            assigned[var] = (val, fact)
+    return None
 
 def pddl_to_sas(task):
     with timers.timing("Instantiating", block=True):
@@ -537,9 +589,19 @@ def pddl_to_sas(task):
          reachable_action_params) = instantiate.explore(task)
 
     if not relaxed_reachable:
-        return unsolvable_sas_task("No relaxed solution")
+        unreached = describe_unreachable_goal_atoms(task, atoms)
+        if unreached:
+            reason = ("No relaxed solution: the following goal atoms are not "
+                      "reachable even in the delete relaxation: "
+                      + ", ".join(str(atom) for atom in unreached))
+        else:
+            reason = ("No relaxed solution: the goal is not reachable even in "
+                      "the delete relaxation")
+        return unsolvable_sas_task(reason)
     elif goal_list is None:
-        return unsolvable_sas_task("Trivially false goal")
+        return unsolvable_sas_task(
+            "Trivially false goal: the goal contains a fact that is "
+            "statically false (e.g. a negated static atom that always holds)")
 
     negative_in_goal = set()
     for item in goal_list:
@@ -712,3 +774,6 @@ def main():
         with open(get_options().sas_file, "w") as output_file:
             sas_task.output(output_file)
     print("Done! %s" % timer)
+
+    if sas_task.unsolvable:
+        return TRANSLATE_UNSOLVABLE

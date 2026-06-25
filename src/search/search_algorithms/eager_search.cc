@@ -92,6 +92,7 @@ void EagerSearch::initialize() {
 
     if (open_list->is_dead_end(eval_context)) {
         log << "Initial state is a dead end." << endl;
+        note_dead_end_pruning(eval_context);
     } else {
         if (search_progress.check_progress(eval_context))
             statistics.print_checkpoint_line(0);
@@ -107,6 +108,11 @@ void EagerSearch::initialize() {
     pruning_method->initialize(task);
 }
 
+void EagerSearch::note_dead_end_pruning(EvaluationContext &eval_context) {
+    if (!open_list->is_reliable_dead_end(eval_context))
+        exhaustion_proves_unsolvability = false;
+}
+
 void EagerSearch::print_statistics() const {
     statistics.print_detailed_statistics();
     search_space.print_statistics();
@@ -118,7 +124,7 @@ SearchStatus EagerSearch::step() {
     if (!node.has_value()) {
         assert(open_list->empty());
         log << "Completely explored state space -- no solution!" << endl;
-        return FAILED;
+        return exhaustion_proves_unsolvability ? UNSOLVABLE : FAILED;
     }
 
     return expand(node.value());
@@ -163,6 +169,7 @@ optional<SearchNode> EagerSearch::get_next_node_to_expand() {
                 int new_h = eval_context.get_evaluator_value_or_infinity(
                     lazy_evaluator.get());
                 if (open_list->is_dead_end(eval_context)) {
+                    note_dead_end_pruning(eval_context);
                     node.mark_as_dead_end();
                     statistics.inc_dead_ends();
                     continue;
@@ -257,6 +264,7 @@ void EagerSearch::generate_successors(const SearchNode &node) {
             statistics.inc_evaluated_states();
 
             if (open_list->is_dead_end(succ_eval_context)) {
+                note_dead_end_pruning(succ_eval_context);
                 succ_node.mark_as_dead_end();
                 statistics.inc_dead_ends();
                 continue;

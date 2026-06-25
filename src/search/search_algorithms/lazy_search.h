@@ -38,6 +38,13 @@ protected:
     int current_real_g;
     EvaluationContext current_eval_context;
 
+    /*
+      True as long as exhausting the open list would prove the task unsolvable.
+      Set to false once we prune a state as a dead end based on unreliable
+      dead-end detection (see EagerSearch for details).
+    */
+    bool exhaustion_proves_unsolvability = true;
+
     virtual void initialize() override;
     virtual SearchStatus step() override;
 

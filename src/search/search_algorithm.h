@@ -28,10 +28,18 @@ namespace successor_generator {
 class SuccessorGenerator;
 }
 
+/*
+  Search status values returned by step() and stored in the search algorithm.
+  FAILED means the search stopped without a solution but cannot rule out that
+  one exists (e.g. it gave up or pruned states based on unreliable dead-end
+  detection). UNSOLVABLE means the search proved that no solution exists (within
+  the current cost bound, if any).
+*/
 enum SearchStatus {
     IN_PROGRESS,
     TIMEOUT,
     FAILED,
+    UNSOLVABLE,
     SOLVED
 };
 
