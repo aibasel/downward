@@ -113,7 +113,9 @@ void CplexSolverInterface::CplexMatrix::assign_column_by_column(
     for (int var = 1; var < num_cols; ++var) {
         starts[var] = starts[var - 1] + counts[var - 1];
     }
-    assert(num_nonzeros == starts[num_cols - 1] + counts[num_cols - 1]);
+    assert(
+        num_cols == 0 ||
+        num_nonzeros == starts[num_cols - 1] + counts[num_cols - 1]);
 
     /*
       Set non-zero coefficients in the correct places of 'coefficients'
