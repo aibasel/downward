@@ -541,6 +541,7 @@ def unsolvable_sas_task(msg):
     print("%s! Generating unsolvable task..." % msg)
     task = trivial_task(solvable=False)
     task.unsolvable = True
+    task.unsolvable_reason = msg
     return task
 
 
@@ -775,5 +776,26 @@ def main():
             sas_task.output(output_file)
     print("Done! %s" % timer)
 
+    if get_options().diagnostics_json:
+        write_diagnostics_json(sas_task, get_options().diagnostics_json)
+
     if sas_task.unsolvable:
         return TRANSLATE_UNSOLVABLE
+
+
+def write_diagnostics_json(sas_task, path):
+    import json
+    record = {
+        "status": "unsolvable" if sas_task.unsolvable else "ok",
+        "reason": sas_task.unsolvable_reason,
+        "statistics": {
+            "variables": len(sas_task.variables.ranges),
+            "facts": sum(sas_task.variables.ranges),
+            "goal_facts": len(sas_task.goal.pairs),
+            "operators": len(sas_task.operators),
+            "axioms": len(sas_task.axioms),
+            "mutex_groups": len(sas_task.mutexes),
+        },
+    }
+    with open(path, "w") as f:
+        json.dump(record, f)

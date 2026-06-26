@@ -41,6 +41,9 @@ class SASTask:
         # the search component works as before, but the translator additionally
         # exits with the TRANSLATE_UNSOLVABLE exit code.
         self.unsolvable = False
+        # The reason produced by unsolvable_sas_task() (e.g. which goal atoms
+        # are unreachable), surfaced in the --diagnostics-json record.
+        self.unsolvable_reason = None
         if DEBUG:
             self.validate()
 

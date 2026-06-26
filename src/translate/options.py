@@ -82,6 +82,10 @@ def get_arg_parser():
         "--dump-task", action="store_true",
         help="dump human-readable SAS+ representation of the task")
     argparser.add_argument(
+        "--diagnostics-json", default=None,
+        help="write a machine-readable JSON diagnostics record (solvability "
+        "status, unsolvability reason, and translation statistics) to this path")
+    argparser.add_argument(
         "--layer-strategy", default="min", choices=["min", "max"],
         help="How to assign layers to derived variables. 'min' attempts to put as "
         "many variables into the same layer as possible, while 'max' puts each variable "
