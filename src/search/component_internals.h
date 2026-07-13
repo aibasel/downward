@@ -123,29 +123,29 @@ void collect_task_preserving_components(
 template<TaskIndependentType T>
 void collect_task_preserving_components(
     const std::shared_ptr<T> &component,
-    std::vector<TaskIndependentComponentBase *> &out) {
+    std::vector<TaskIndependentComponentBase *> &components) {
     if (component) {
-        out.push_back(component.get());
-        component->get_task_preserving_subcomponents(out);
+        components.push_back(component.get());
+        component->get_task_preserving_subcomponents(components);
     }
 }
 
 template<typename T>
 void collect_task_preserving_components(
     const std::vector<T> &vec,
-    std::vector<TaskIndependentComponentBase *> &out) {
+    std::vector<TaskIndependentComponentBase *> &components) {
     for (const auto &elem : vec) {
-        collect_task_preserving_components(elem, out);
+        collect_task_preserving_components(elem, components);
     }
 }
 
 template<typename... Ts>
 void collect_task_preserving_components(
     const std::tuple<Ts...> &tuple,
-    std::vector<TaskIndependentComponentBase *> &out) {
+    std::vector<TaskIndependentComponentBase *> &components) {
     std::apply(
         [&](const Ts &...elems) {
-            (collect_task_preserving_components(elems, out), ...);
+            (collect_task_preserving_components(elems, components), ...);
         },
         tuple);
 }

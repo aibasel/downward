@@ -70,9 +70,9 @@ public:
       Returns a task-specific component for the given task.
 
       The cache ensures that if the same task is bound to the same
-      task-independent component multiple times during construction (for example
-      when using a heuristic both for heuristic values and for preferred
-      operators), the task-specific component is shared.
+      task-independent component multiple times during construction (for
+      example, when using a heuristic both for heuristic values and for
+      preferred operators), the task-specific component is shared.
 
       The cache will not keep created components alive, though. Components are
       only reused, while a shared pointer to them exists (outside of the cache).
