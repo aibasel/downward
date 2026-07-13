@@ -9,7 +9,6 @@
 #include "algorithms/ordered_set.h"
 
 #include <memory>
-#include <vector>
 
 class TaskProxy;
 

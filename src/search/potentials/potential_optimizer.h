@@ -8,10 +8,6 @@
 #include <memory>
 #include <vector>
 
-namespace plugins {
-class Options;
-}
-
 namespace potentials {
 class PotentialFunction;
 

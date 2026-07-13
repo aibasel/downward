@@ -64,7 +64,7 @@ class DefaultValueAxiomsTask : public DelegatingTask {
         std::unordered_set<int> &hitting_set_vars,
         std::set<std::set<FactPair>> &results);
 public:
-    explicit DefaultValueAxiomsTask(
+    DefaultValueAxiomsTask(
         const std::shared_ptr<AbstractTask> &parent, AxiomHandlingType axioms);
     virtual ~DefaultValueAxiomsTask() override = default;
 

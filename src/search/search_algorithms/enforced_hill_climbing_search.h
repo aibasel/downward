@@ -11,10 +11,6 @@
 #include <utility>
 #include <vector>
 
-namespace plugins {
-class Options;
-}
-
 namespace enforced_hill_climbing_search {
 enum class PreferredUsage {
     PRUNE_BY_PREFERRED,

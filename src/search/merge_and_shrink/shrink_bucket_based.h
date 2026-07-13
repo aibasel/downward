@@ -49,7 +49,7 @@ protected:
     virtual std::vector<Bucket> partition_into_buckets(
         const TransitionSystem &ts, const Distances &Distances) const = 0;
 public:
-    explicit ShrinkBucketBased(
+    ShrinkBucketBased(
         const std::shared_ptr<AbstractTask> &task, int random_seed);
     virtual StateEquivalenceRelation compute_equivalence_relation(
         const TransitionSystem &ts, const Distances &distances, int target_size,

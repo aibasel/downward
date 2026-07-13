@@ -131,7 +131,7 @@ class OperatorGrouper {
         }
     }
 public:
-    explicit OperatorGrouper(
+    OperatorGrouper(
         const vector<OperatorInfo> &operator_infos, int depth,
         GroupOperatorsBy group_by, OperatorRange range)
         : operator_infos(operator_infos),

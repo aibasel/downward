@@ -8,10 +8,6 @@
 
 #include <memory>
 
-namespace plugins {
-class Options;
-}
-
 namespace pdbs {
 class TaskSpecificPatternCollectionGenerator;
 }
@@ -24,7 +20,7 @@ class PhOConstraints : public TaskSpecificConstraintGenerator {
     int constraint_offset;
     std::shared_ptr<pdbs::PDBCollection> pdbs;
 public:
-    explicit PhOConstraints(
+    PhOConstraints(
         const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<pdbs::TaskSpecificPatternCollectionGenerator>
             &patterns);

@@ -32,7 +32,7 @@ protected:
         EvaluationContext &eval_context, const Entry &entry) override;
 
 public:
-    explicit TypeBasedOpenList(
+    TypeBasedOpenList(
         const vector<shared_ptr<TaskSpecificEvaluator>> &evaluators,
         int random_seed);
 

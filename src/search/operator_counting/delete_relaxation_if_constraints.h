@@ -12,10 +12,6 @@ class LPConstraint;
 struct LPVariable;
 }
 
-namespace plugins {
-class Options;
-}
-
 namespace operator_counting {
 using LPConstraints = named_vector::NamedVector<lp::LPConstraint>;
 using LPVariables = named_vector::NamedVector<lp::LPVariable>;

@@ -25,7 +25,7 @@ protected:
     virtual void handle_stubborn_operator(
         const State &state, int op_no) override;
 public:
-    explicit StubbornSetsSimple(
+    StubbornSetsSimple(
         const std::shared_ptr<AbstractTask> &task, utils::Verbosity verbosity);
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) override;
 };

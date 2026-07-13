@@ -5,10 +5,6 @@
 
 #include <vector>
 
-namespace plugins {
-class Options;
-}
-
 namespace merge_and_shrink {
 /*
   NOTE: In case where we must merge across buckets (i.e. when

@@ -13,10 +13,6 @@ namespace landmarks {
 class LandmarkNode;
 }
 
-namespace plugins {
-class Options;
-}
-
 namespace utils {
 class RandomNumberGenerator;
 class LogProxy;

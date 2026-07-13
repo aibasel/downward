@@ -2,13 +2,11 @@
 
 #include "evaluation_context.h"
 #include "evaluator.h"
-#include "pruning_method.h"
 
 #include "algorithms/ordered_set.h"
 #include "plugins/plugin.h"
 #include "task_utils/successor_generator.h"
 #include "task_utils/task_properties.h"
-#include "tasks/root_task.h"
 #include "utils/countdown_timer.h"
 #include "utils/rng_options.h"
 #include "utils/system.h"
@@ -16,7 +14,6 @@
 
 #include <cassert>
 #include <iostream>
-#include <limits>
 
 using namespace std;
 using utils::ExitCode;

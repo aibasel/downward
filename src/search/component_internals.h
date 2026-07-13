@@ -1,7 +1,6 @@
 #ifndef COMPONENT_INTERNALS_H
 #define COMPONENT_INTERNALS_H
 
-#include "utils/hash.h"
 #include "utils/language.h"
 #include "utils/tuples.h"
 

@@ -9,9 +9,8 @@
 #include <memory>
 
 class OpenListFactory : public components::TaskSpecificComponent {
-protected:
-    explicit OpenListFactory(const std::shared_ptr<AbstractTask> &task);
 public:
+    explicit OpenListFactory(const std::shared_ptr<AbstractTask> &task);
     OpenListFactory(const OpenListFactory &) = delete;
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() = 0;

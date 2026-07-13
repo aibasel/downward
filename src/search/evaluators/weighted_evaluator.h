@@ -5,10 +5,6 @@
 
 #include <memory>
 
-namespace plugins {
-class Options;
-}
-
 namespace weighted_evaluator {
 class WeightedEvaluator : public TaskSpecificEvaluator {
     std::shared_ptr<TaskSpecificEvaluator> evaluator;

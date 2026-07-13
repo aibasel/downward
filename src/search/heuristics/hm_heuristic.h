@@ -3,15 +3,9 @@
 
 #include "../heuristic.h"
 
-#include <algorithm>
-#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-
-namespace plugins {
-class Options;
-}
 
 namespace hm_heuristic {
 /*

@@ -172,7 +172,7 @@ class TraceBlock {
     Context &context;
     std::string block_name;
 public:
-    explicit TraceBlock(Context &context, const std::string &block_name);
+    TraceBlock(Context &context, const std::string &block_name);
     ~TraceBlock();
 };
 

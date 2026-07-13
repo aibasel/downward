@@ -6,10 +6,6 @@
 #include <memory>
 #include <vector>
 
-namespace plugins {
-class Options;
-}
-
 namespace merge_and_shrink {
 class TaskSpecificMergeScoringFunction;
 class MergeSelectorScoreBasedFiltering : public TaskSpecificMergeSelector {
@@ -20,7 +16,7 @@ protected:
     virtual void dump_selector_specific_options(
         utils::LogProxy &log) const override;
 public:
-    explicit MergeSelectorScoreBasedFiltering(
+    MergeSelectorScoreBasedFiltering(
         const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<TaskSpecificMergeScoringFunction>>
             &scoring_functions);

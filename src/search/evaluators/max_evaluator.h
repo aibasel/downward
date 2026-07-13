@@ -5,10 +5,6 @@
 
 #include <vector>
 
-namespace plugins {
-class Options;
-}
-
 namespace max_evaluator {
 class MaxEvaluator : public combining_evaluator::CombiningEvaluator {
 protected:

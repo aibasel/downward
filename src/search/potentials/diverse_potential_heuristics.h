@@ -6,12 +6,7 @@
 #include "../utils/logging.h"
 
 #include <memory>
-#include <unordered_map>
 #include <vector>
-
-namespace plugins {
-class Options;
-}
 
 namespace utils {
 class RandomNumberGenerator;

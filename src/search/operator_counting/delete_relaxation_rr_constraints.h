@@ -15,10 +15,6 @@ class LPConstraint;
 struct LPVariable;
 }
 
-namespace plugins {
-class Options;
-}
-
 namespace operator_counting {
 class VEGraph;
 using LPConstraints = named_vector::NamedVector<lp::LPConstraint>;

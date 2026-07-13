@@ -13,10 +13,6 @@ namespace lp {
 class LPConstraint;
 }
 
-namespace plugins {
-class Options;
-}
-
 namespace operator_counting {
 /* A proposition is an atom of the form Var = Val. It stores the index of the
    constraint representing it in the LP */

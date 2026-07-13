@@ -6,10 +6,6 @@
 #include <memory>
 #include <vector>
 
-namespace plugins {
-class Options;
-}
-
 namespace sum_evaluator {
 class SumEvaluator : public combining_evaluator::CombiningEvaluator {
 protected:

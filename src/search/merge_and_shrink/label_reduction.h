@@ -12,10 +12,6 @@ namespace equivalence_relation {
 class EquivalenceRelation;
 }
 
-namespace plugins {
-class Options;
-}
-
 namespace utils {
 class LogProxy;
 class RandomNumberGenerator;
