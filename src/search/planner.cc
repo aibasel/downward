@@ -39,7 +39,7 @@ int main(int argc, const char **argv) {
             task = tasks::g_root_task;
             /*
               TODO once we get rid of g_root_task, the two lines above should
-              store be replaced by something like
+              be replaced by something like
                   task = tasks::read_task(cin)
             */
             utils::g_log << "done reading input!" << endl;
