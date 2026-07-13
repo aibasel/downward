@@ -118,7 +118,16 @@ void PotentialOptimizer::construct_lp() {
         for (FactProxy pre : op.get_preconditions()) {
             var_to_precondition[pre.get_variable().get_id()] = pre.get_value();
         }
-        lp::LPConstraint constraint(-infinity, op.get_cost());
+        /*
+                    OLD INTERFACE CODE
+            lp::LPConstraint constraint(-infinity, op.get_cost());
+                    NEW INTERFACE CODE
+            lp::LPConstraint constraint(lp::Sense::LE, op.get_cost());
+
+            This creates a constraint of the form  -infinity <= ax <= cost(o), which is equivalent to ax <= cost(o).
+            TODO: double check.
+        */
+        lp::LPConstraint constraint(lp::Sense::LE, op.get_cost());
         vector<pair<int, int>> coefficients;
         for (EffectProxy effect : op.get_effects()) {
             VariableProxy var = effect.get_fact().get_variable();
@@ -185,7 +194,17 @@ void PotentialOptimizer::construct_lp() {
             // Create constraint: P_{V=v} <= P_{V=u}
             // Note that we could eliminate variables P_{V=u} if V is
             // undefined in the goal.
-            lp::LPConstraint constraint(-infinity, 0);
+
+            /*
+                        OLD INTERFACE CODE
+                lp::LPConstraint constraint(-infinity, 0);
+                        NEW INTERFACE CODE
+                lp::LPConstraint constraint(lp::Sense::LE, 0);
+
+                This creates a constraint of the form -infinity <= ax <= 0, which is equivalent to ax <= 0.
+                TODO: double check.
+            */
+            lp::LPConstraint constraint(lp::Sense::LE, 0);
             constraint.insert(val_lp, 1);
             constraint.insert(undef_val_lp, -1);
             lp_constraints.push_back(constraint);
