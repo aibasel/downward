@@ -5,6 +5,8 @@
 
 namespace goal_count_heuristic {
 class GoalCountHeuristic : public Heuristic {
+    // caching the goals, avoiding FactProxy
+    std::vector<std::pair<int,int>> goals;
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:
