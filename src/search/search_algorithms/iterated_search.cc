@@ -40,9 +40,10 @@ void IteratedSearch::update_retention_set() {
       last phase always is considered a future phase, even if we currently are
       in the last phase.
     */
+    assert(!task_independent_searches.empty());
     int start = phase;
     int end = task_independent_searches.size();
-    if (start >= end && start >= 1 && repeat_last_phase) {
+    if (start >= end && repeat_last_phase) {
         start = end - 1;
     }
     for (int i = start; i < end; ++i) {
