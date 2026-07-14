@@ -242,9 +242,9 @@ unique_ptr<EdgeOpenList> ParetoOpenListFactory::create_edge_open_list() {
 }
 
 class ParetoOpenListFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
+    : public plugins::TypedFeature<TaskIndependentOpenListFactory> {
 public:
-    ParetoOpenListFeature() : TaskIndependentFeature("pareto") {
+    ParetoOpenListFeature() : TypedFeature("pareto") {
         document_title("Pareto open list");
         document_synopsis(
             "Selects one of the Pareto-optimal (regarding the sub-evaluators) "

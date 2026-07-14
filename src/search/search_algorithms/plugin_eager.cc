@@ -7,9 +7,9 @@ using namespace std;
 
 namespace plugin_eager {
 class EagerSearchFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
+    : public plugins::TypedFeature<TaskIndependentSearchAlgorithm> {
 public:
-    EagerSearchFeature() : TaskIndependentFeature("eager") {
+    EagerSearchFeature() : TypedFeature("eager") {
         document_title("Eager best-first search");
         document_synopsis("");
 

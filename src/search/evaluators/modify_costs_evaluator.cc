@@ -70,9 +70,9 @@ TaskIndependentModifyCostsEvaluator::TaskIndependentModifyCostsEvaluator(
 }
 
 class ModifyCostEvaluatorFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    ModifyCostEvaluatorFeature() : TaskIndependentFeature("eval_modify_costs") {
+    ModifyCostEvaluatorFeature() : TypedFeature("eval_modify_costs") {
         document_title("Cost-modifying evaluator");
         document_subcategory("evaluators_basic");
         document_synopsis(

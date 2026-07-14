@@ -44,11 +44,11 @@ void MergeStrategyFactoryPrecomputed::dump_strategy_specific_options() const {
 }
 
 class MergeStrategyFactoryPrecomputedFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentMergeStrategyFactory> {
 public:
     MergeStrategyFactoryPrecomputedFeature()
-        : TaskIndependentFeature("merge_precomputed") {
+        : TypedFeature("merge_precomputed") {
         document_title("Precomputed merge strategy");
         document_synopsis(
             "This merge strategy has a precomputed merge tree. Note that this "

@@ -174,9 +174,9 @@ bool LandmarkFactoryMerged::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryMergedFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentLandmarkFactory> {
+    : public plugins::TypedFeature<TaskIndependentLandmarkFactory> {
 public:
-    LandmarkFactoryMergedFeature() : TaskIndependentFeature("lm_merged") {
+    LandmarkFactoryMergedFeature() : TypedFeature("lm_merged") {
         document_title("Merged landmarks");
         document_synopsis(
             "Merges the landmarks and orderings from the parameter landmarks");

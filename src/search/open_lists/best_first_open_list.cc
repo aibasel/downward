@@ -112,9 +112,9 @@ unique_ptr<EdgeOpenList> BestFirstOpenListFactory::create_edge_open_list() {
 }
 
 class BestFirstOpenListFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
+    : public plugins::TypedFeature<TaskIndependentOpenListFactory> {
 public:
-    BestFirstOpenListFeature() : TaskIndependentFeature("single") {
+    BestFirstOpenListFeature() : TypedFeature("single") {
         document_title("Best-first open list");
         document_synopsis(
             "Open list that uses a single evaluator and FIFO tiebreaking.");

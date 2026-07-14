@@ -7,9 +7,9 @@ using namespace std;
 
 namespace plugin_astar {
 class AStarSearchFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
+    : public plugins::TypedFeature<TaskIndependentSearchAlgorithm> {
 public:
-    AStarSearchFeature() : TaskIndependentFeature("astar") {
+    AStarSearchFeature() : TypedFeature("astar") {
         document_title("A* search (eager)");
         document_synopsis(
             "A* is a special case of eager best first search that uses g+h "

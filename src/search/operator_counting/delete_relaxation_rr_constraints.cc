@@ -558,11 +558,11 @@ bool DeleteRelaxationRRConstraints::update_constraints(
 }
 
 class DeleteRelaxationRRConstraintsFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentConstraintGenerator> {
 public:
     DeleteRelaxationRRConstraintsFeature()
-        : TaskIndependentFeature("delete_relaxation_rr_constraints") {
+        : TypedFeature("delete_relaxation_rr_constraints") {
         document_title(
             "Delete relaxation constraints from Rankooh and Rintanen");
         document_synopsis(

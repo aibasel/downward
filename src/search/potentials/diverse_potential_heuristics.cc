@@ -193,10 +193,10 @@ TaskIndependentDiversePotentialHeuristics::
 }
 
 class DiversePotentialMaxHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
     DiversePotentialMaxHeuristicFeature()
-        : TaskIndependentFeature("diverse_potentials") {
+        : TypedFeature("diverse_potentials") {
         document_subcategory("heuristics_potentials");
         document_title("Diverse potential heuristics");
         document_synopsis(get_admissible_potentials_reference());

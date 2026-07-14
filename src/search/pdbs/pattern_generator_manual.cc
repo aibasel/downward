@@ -32,9 +32,9 @@ PatternInformation PatternGeneratorManual::compute_pattern(
 }
 
 class PatternGeneratorManualFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentPatternGenerator> {
+    : public plugins::TypedFeature<TaskIndependentPatternGenerator> {
 public:
-    PatternGeneratorManualFeature() : TaskIndependentFeature("manual_pattern") {
+    PatternGeneratorManualFeature() : TypedFeature("manual_pattern") {
         document_title("Manual pattern");
         add_list_option<int>(
             "pattern",

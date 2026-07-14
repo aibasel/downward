@@ -30,9 +30,9 @@ int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class BlindSearchHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    BlindSearchHeuristicFeature() : TaskIndependentFeature("blind") {
+    BlindSearchHeuristicFeature() : TypedFeature("blind") {
         document_title("Blind heuristic");
         document_synopsis(
             "Returns cost of cheapest action for non-goal states, "

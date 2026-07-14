@@ -30,9 +30,9 @@ int GoalCountHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class GoalCountHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    GoalCountHeuristicFeature() : TaskIndependentFeature("goalcount") {
+    GoalCountHeuristicFeature() : TypedFeature("goalcount") {
         document_title("Goal count heuristic");
 
         add_heuristic_options_to_feature(*this, "goalcount");

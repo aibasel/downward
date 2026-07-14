@@ -76,10 +76,10 @@ void StubbornSetsSimple::handle_stubborn_operator(
 }
 
 class StubbornSetsSimpleFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentPruningMethod> {
+    : public plugins::TypedFeature<TaskIndependentPruningMethod> {
 public:
     StubbornSetsSimpleFeature()
-        : TaskIndependentFeature("stubborn_sets_simple") {
+        : TypedFeature("stubborn_sets_simple") {
         document_title("Stubborn sets simple");
         document_synopsis(
             "Stubborn sets represent a state pruning method which computes a subset "

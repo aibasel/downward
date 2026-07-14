@@ -752,9 +752,9 @@ bool LandmarkFactoryRpgSasp::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryRpgSaspFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentLandmarkFactory> {
+    : public plugins::TypedFeature<TaskIndependentLandmarkFactory> {
 public:
-    LandmarkFactoryRpgSaspFeature() : TaskIndependentFeature("lm_rhw") {
+    LandmarkFactoryRpgSaspFeature() : TypedFeature("lm_rhw") {
         document_title("RHW landmarks");
         document_synopsis("The landmark generation method introduced by "
                           "Richter, Helmert and Westphal (AAAI 2008).");

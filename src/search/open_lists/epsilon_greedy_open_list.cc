@@ -160,9 +160,9 @@ unique_ptr<EdgeOpenList> EpsilonGreedyOpenListFactory::create_edge_open_list() {
 }
 
 class EpsilonGreedyOpenListFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
+    : public plugins::TypedFeature<TaskIndependentOpenListFactory> {
 public:
-    EpsilonGreedyOpenListFeature() : TaskIndependentFeature("epsilon_greedy") {
+    EpsilonGreedyOpenListFeature() : TypedFeature("epsilon_greedy") {
         document_title("Epsilon-greedy open list");
         document_synopsis(
             "Chooses an entry uniformly randomly with probability "

@@ -109,9 +109,9 @@ bool LandmarkSumHeuristic::dead_ends_are_reliable() const {
 }
 
 class LandmarkSumHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    LandmarkSumHeuristicFeature() : TaskIndependentFeature("landmark_sum") {
+    LandmarkSumHeuristicFeature() : TypedFeature("landmark_sum") {
         document_title("Landmark sum heuristic");
         /*
           We usually have the options of base classes behind the options

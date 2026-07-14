@@ -372,10 +372,10 @@ void ShrinkBisimulation::dump_strategy_specific_options(
 }
 
 class ShrinkBisimulationFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentShrinkStrategy> {
+    : public plugins::TypedFeature<TaskIndependentShrinkStrategy> {
 public:
     ShrinkBisimulationFeature()
-        : TaskIndependentFeature("shrink_bisimulation") {
+        : TypedFeature("shrink_bisimulation") {
         document_title("Bismulation based shrink strategy");
         document_synopsis(
             "This shrink strategy implements the algorithm described in"

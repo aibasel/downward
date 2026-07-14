@@ -7,9 +7,9 @@ using namespace std;
 
 namespace plugin_lazy {
 class LazySearchFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
+    : public plugins::TypedFeature<TaskIndependentSearchAlgorithm> {
 public:
-    LazySearchFeature() : TaskIndependentFeature("lazy") {
+    LazySearchFeature() : TypedFeature("lazy") {
         document_title("Lazy best-first search");
         document_synopsis("");
 

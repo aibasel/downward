@@ -1043,9 +1043,9 @@ bool LandmarkFactoryHM::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryHMFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentLandmarkFactory> {
+    : public plugins::TypedFeature<TaskIndependentLandmarkFactory> {
 public:
-    LandmarkFactoryHMFeature() : TaskIndependentFeature("lm_hm") {
+    LandmarkFactoryHMFeature() : TypedFeature("lm_hm") {
         // document_group("");
         document_title("h^m landmarks");
         document_synopsis(

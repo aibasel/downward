@@ -381,10 +381,10 @@ bool LandmarkFactoryReasonableOrdersHPS::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryReasonableOrdersHPSFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentLandmarkFactory> {
+    : public plugins::TypedFeature<TaskIndependentLandmarkFactory> {
 public:
     LandmarkFactoryReasonableOrdersHPSFeature()
-        : TaskIndependentFeature("lm_reasonable_orders_hps") {
+        : TypedFeature("lm_reasonable_orders_hps") {
         document_title("HPS orders");
         document_synopsis(
             "Adds reasonable orders described in the following paper" +

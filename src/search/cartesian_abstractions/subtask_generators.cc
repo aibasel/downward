@@ -191,9 +191,9 @@ static tuple<FactOrder, int> get_fact_order_arguments_from_options(
 }
 
 class TaskDuplicatorFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentSubtaskGenerator> {
+    : public plugins::TypedFeature<TaskIndependentSubtaskGenerator> {
 public:
-    TaskDuplicatorFeature() : TaskIndependentFeature("original") {
+    TaskDuplicatorFeature() : TypedFeature("original") {
         document_title("No abstraction");
         document_synopsis(
             "Copies of the original task are used as subproblems.");
@@ -213,9 +213,9 @@ public:
 static plugins::FeaturePlugin<TaskDuplicatorFeature> _plugin_original;
 
 class GoalDecompositionFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentSubtaskGenerator> {
+    : public plugins::TypedFeature<TaskIndependentSubtaskGenerator> {
 public:
-    GoalDecompositionFeature() : TaskIndependentFeature("goals") {
+    GoalDecompositionFeature() : TypedFeature("goals") {
         document_title("Abstraction by goals");
         document_synopsis(
             "For each goal atom of the original task one subproblem is generated having only the atom as its goal.");
@@ -233,9 +233,9 @@ public:
 static plugins::FeaturePlugin<GoalDecompositionFeature> _plugin_goals;
 
 class LandmarkDecompositionFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentSubtaskGenerator> {
+    : public plugins::TypedFeature<TaskIndependentSubtaskGenerator> {
 public:
-    LandmarkDecompositionFeature() : TaskIndependentFeature("landmarks") {
+    LandmarkDecompositionFeature() : TypedFeature("landmarks") {
         document_title("Abstraction by landmarks");
         document_synopsis(
             "For each fact landmark of the delete relaxation of the original task one subproblem is generated having only the landmark as goal. This is a generalization of abstractions by goals.");

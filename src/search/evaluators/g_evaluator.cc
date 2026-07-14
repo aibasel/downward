@@ -21,9 +21,9 @@ EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
 }
 
 class GEvaluatorFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    GEvaluatorFeature() : TaskIndependentFeature("g") {
+    GEvaluatorFeature() : TypedFeature("g") {
         document_subcategory("evaluators_basic");
         document_title("g-value evaluator");
         document_synopsis(

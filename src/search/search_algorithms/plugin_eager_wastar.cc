@@ -7,9 +7,9 @@ using namespace std;
 
 namespace plugin_eager_wastar {
 class EagerWAstarSearchFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
+    : public plugins::TypedFeature<TaskIndependentSearchAlgorithm> {
 public:
-    EagerWAstarSearchFeature() : TaskIndependentFeature("eager_wastar") {
+    EagerWAstarSearchFeature() : TypedFeature("eager_wastar") {
         document_title("Eager weighted A* search");
         document_synopsis("");
 

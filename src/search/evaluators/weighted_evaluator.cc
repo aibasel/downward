@@ -43,9 +43,9 @@ void WeightedEvaluator::get_path_dependent_evaluators(
 }
 
 class WeightedEvaluatorFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    WeightedEvaluatorFeature() : TaskIndependentFeature("weight") {
+    WeightedEvaluatorFeature() : TypedFeature("weight") {
         document_subcategory("evaluators_basic");
         document_title("Weighted evaluator");
         document_synopsis(

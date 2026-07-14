@@ -70,9 +70,9 @@ int FFHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class FFHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    FFHeuristicFeature() : TaskIndependentFeature("ff") {
+    FFHeuristicFeature() : TypedFeature("ff") {
         document_title("FF heuristic");
 
         relaxation_heuristic::add_relaxation_heuristic_options_to_feature(

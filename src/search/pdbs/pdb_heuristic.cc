@@ -51,9 +51,9 @@ static basic_string<char> paper_references() {
                "105-111", "AAAI Press", "2012");
 }
 class PDBHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    PDBHeuristicFeature() : TaskIndependentFeature("pdb") {
+    PDBHeuristicFeature() : TypedFeature("pdb") {
         document_subcategory("heuristics_pdb");
         document_title("Pattern database heuristic");
         document_synopsis(

@@ -9,9 +9,9 @@ namespace plugin_lazy_wastar {
 static const string DEFAULT_LAZY_BOOST = "1000";
 
 class LazyWAstarSearchFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
+    : public plugins::TypedFeature<TaskIndependentSearchAlgorithm> {
 public:
-    LazyWAstarSearchFeature() : TaskIndependentFeature("lazy_wastar") {
+    LazyWAstarSearchFeature() : TypedFeature("lazy_wastar") {
         document_title("(Weighted) A* search (lazy)");
         document_synopsis(
             "Weighted A* is a special case of lazy best first search.");

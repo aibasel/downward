@@ -40,11 +40,11 @@ PatternCollectionGeneratorDisjointCegar::compute_patterns(
 }
 
 class PatternCollectionGeneratorDisjointCegarFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorDisjointCegarFeature()
-        : TaskIndependentFeature("disjoint_cegar") {
+        : TypedFeature("disjoint_cegar") {
         document_title("Disjoint CEGAR");
         document_synopsis(
             "This pattern collection generator uses the CEGAR algorithm to "

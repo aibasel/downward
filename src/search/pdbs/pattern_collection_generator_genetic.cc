@@ -304,11 +304,11 @@ PatternCollectionGeneratorGenetic::compute_patterns(
 }
 
 class PatternCollectionGeneratorGeneticFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorGeneticFeature()
-        : TaskIndependentFeature("genetic") {
+        : TypedFeature("genetic") {
         document_title("Genetic algorithm patterns");
         document_synopsis(
             "The following paper describes the automated creation of pattern "

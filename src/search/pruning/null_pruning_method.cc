@@ -17,9 +17,9 @@ void NullPruningMethod::initialize(const shared_ptr<AbstractTask> &task) {
 }
 
 class NullPruningMethodFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentPruningMethod> {
+    : public plugins::TypedFeature<TaskIndependentPruningMethod> {
 public:
-    NullPruningMethodFeature() : TaskIndependentFeature("null") {
+    NullPruningMethodFeature() : TypedFeature("null") {
         // document_group("");
         document_title("No pruning");
         document_synopsis(

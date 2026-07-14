@@ -83,9 +83,9 @@ bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryRpgExhaustFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentLandmarkFactory> {
+    : public plugins::TypedFeature<TaskIndependentLandmarkFactory> {
 public:
-    LandmarkFactoryRpgExhaustFeature() : TaskIndependentFeature("lm_exhaust") {
+    LandmarkFactoryRpgExhaustFeature() : TypedFeature("lm_exhaust") {
         document_title("Exhaustive landmarks");
         document_synopsis(
             "Exhaustively checks for each atom if it is a landmark."

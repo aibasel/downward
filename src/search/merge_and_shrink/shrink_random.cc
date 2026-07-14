@@ -34,9 +34,9 @@ string ShrinkRandom::name() const {
 }
 
 class ShrinkRandomFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentShrinkStrategy> {
+    : public plugins::TypedFeature<TaskIndependentShrinkStrategy> {
 public:
-    ShrinkRandomFeature() : TaskIndependentFeature("shrink_random") {
+    ShrinkRandomFeature() : TypedFeature("shrink_random") {
         document_title("Random");
         document_synopsis("");
 

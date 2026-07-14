@@ -19,9 +19,9 @@ EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
 }
 
 class ConstEvaluatorFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    ConstEvaluatorFeature() : TaskIndependentFeature("const") {
+    ConstEvaluatorFeature() : TypedFeature("const") {
         document_subcategory("evaluators_basic");
         document_title("Constant evaluator");
         document_synopsis("Returns a constant value.");

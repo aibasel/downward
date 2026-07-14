@@ -138,10 +138,10 @@ string MergeStrategyFactorySCCs::name() const {
 }
 
 class MergeStrategyFactorySCCsFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentMergeStrategyFactory> {
 public:
-    MergeStrategyFactorySCCsFeature() : TaskIndependentFeature("merge_sccs") {
+    MergeStrategyFactorySCCsFeature() : TypedFeature("merge_sccs") {
         document_title("Merge strategy SCCs");
         document_synopsis(
             "This merge strategy implements the algorithm described in the paper " +

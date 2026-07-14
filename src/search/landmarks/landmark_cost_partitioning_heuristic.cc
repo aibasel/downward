@@ -83,10 +83,10 @@ bool LandmarkCostPartitioningHeuristic::dead_ends_are_reliable() const {
 }
 
 class LandmarkCostPartitioningHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
     LandmarkCostPartitioningHeuristicFeature()
-        : TaskIndependentFeature("landmark_cost_partitioning") {
+        : TypedFeature("landmark_cost_partitioning") {
         document_title("Landmark cost partitioning heuristic");
         /*
           We usually have the options of base classes behind the options

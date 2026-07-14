@@ -9,9 +9,9 @@ namespace plugin_lazy_greedy {
 static const string DEFAULT_LAZY_BOOST = "1000";
 
 class LazyGreedySearchFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
+    : public plugins::TypedFeature<TaskIndependentSearchAlgorithm> {
 public:
-    LazyGreedySearchFeature() : TaskIndependentFeature("lazy_greedy") {
+    LazyGreedySearchFeature() : TypedFeature("lazy_greedy") {
         document_title("Greedy search (lazy)");
         document_synopsis("");
 

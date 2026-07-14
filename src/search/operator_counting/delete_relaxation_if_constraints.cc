@@ -243,11 +243,11 @@ bool DeleteRelaxationIFConstraints::update_constraints(
 }
 
 class DeleteRelaxationIFConstraintsFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentConstraintGenerator> {
 public:
     DeleteRelaxationIFConstraintsFeature()
-        : TaskIndependentFeature("delete_relaxation_if_constraints") {
+        : TypedFeature("delete_relaxation_if_constraints") {
         document_title("Delete relaxation constraints from Imai and Fukunaga");
         document_synopsis(
             "Operator-counting constraints based on the delete relaxation. By "

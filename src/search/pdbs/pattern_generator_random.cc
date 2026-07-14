@@ -45,9 +45,9 @@ PatternInformation PatternGeneratorRandom::compute_pattern(
 }
 
 class PatternGeneratorRandomFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentPatternGenerator> {
+    : public plugins::TypedFeature<TaskIndependentPatternGenerator> {
 public:
-    PatternGeneratorRandomFeature() : TaskIndependentFeature("random_pattern") {
+    PatternGeneratorRandomFeature() : TypedFeature("random_pattern") {
         document_title("Random pattern");
         document_synopsis(
             "This pattern generator implements the 'single randomized "

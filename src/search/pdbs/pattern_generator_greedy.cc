@@ -53,9 +53,9 @@ PatternInformation PatternGeneratorGreedy::compute_pattern(
 }
 
 class PatternGeneratorGreedyFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentPatternGenerator> {
+    : public plugins::TypedFeature<TaskIndependentPatternGenerator> {
 public:
-    PatternGeneratorGreedyFeature() : TaskIndependentFeature("greedy") {
+    PatternGeneratorGreedyFeature() : TypedFeature("greedy") {
         document_title("Greedy");
         add_option<int>(
             "max_states",

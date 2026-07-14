@@ -162,9 +162,9 @@ unique_ptr<EdgeOpenList> TieBreakingOpenListFactory::create_edge_open_list() {
 }
 
 class TieBreakingOpenListFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
+    : public plugins::TypedFeature<TaskIndependentOpenListFactory> {
 public:
-    TieBreakingOpenListFeature() : TaskIndependentFeature("tiebreaking") {
+    TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
         document_title("Tie-breaking open list");
         document_synopsis("");
 

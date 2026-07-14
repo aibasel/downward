@@ -105,10 +105,10 @@ string MergeScoringFunctionMIASM::name() const {
 }
 
 class MergeScoringFunctionMIASMFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentMergeScoringFunction> {
 public:
-    MergeScoringFunctionMIASMFeature() : TaskIndependentFeature("sf_miasm") {
+    MergeScoringFunctionMIASMFeature() : TypedFeature("sf_miasm") {
         document_title("MIASM");
         document_synopsis(
             "This scoring function favors merging transition systems such that in "

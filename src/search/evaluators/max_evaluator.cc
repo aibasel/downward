@@ -24,9 +24,9 @@ int MaxEvaluator::combine_values(const vector<int> &values) {
 }
 
 class MaxEvaluatorFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    MaxEvaluatorFeature() : TaskIndependentFeature("max") {
+    MaxEvaluatorFeature() : TypedFeature("max") {
         document_subcategory("evaluators_basic");
         document_title("Max evaluator");
         document_synopsis("Calculates the maximum of the sub-evaluators.");

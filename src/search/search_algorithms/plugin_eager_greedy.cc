@@ -7,9 +7,9 @@ using namespace std;
 
 namespace plugin_eager_greedy {
 class EagerGreedySearchFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
+    : public plugins::TypedFeature<TaskIndependentSearchAlgorithm> {
 public:
-    EagerGreedySearchFeature() : TaskIndependentFeature("eager_greedy") {
+    EagerGreedySearchFeature() : TypedFeature("eager_greedy") {
         document_title("Greedy search (eager)");
         document_synopsis("");
 

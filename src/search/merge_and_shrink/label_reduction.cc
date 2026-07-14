@@ -296,9 +296,9 @@ void TaskSpecificLabelReduction::dump_options(utils::LogProxy &log) const {
 }
 
 class LabelReductionFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentLabelReduction> {
+    : public plugins::TypedFeature<TaskIndependentLabelReduction> {
 public:
-    LabelReductionFeature() : TaskIndependentFeature("exact") {
+    LabelReductionFeature() : TypedFeature("exact") {
         document_title("Exact generalized label reduction");
         document_synopsis(
             "This class implements the exact generalized label reduction "

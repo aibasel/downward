@@ -92,10 +92,10 @@ public:
 };
 
 class SampleBasedPotentialMaxHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
     SampleBasedPotentialMaxHeuristicFeature()
-        : TaskIndependentFeature("sample_based_potentials") {
+        : TypedFeature("sample_based_potentials") {
         document_subcategory("heuristics_potentials");
         document_title("Sample-based potential heuristics");
         document_synopsis(

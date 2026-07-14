@@ -118,9 +118,9 @@ void MergeTreeFactoryLinear::add_options_to_feature(plugins::Feature &feature) {
 }
 
 class MergeTreeFactoryLinearFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentMergeTreeFactory> {
+    : public plugins::TypedFeature<TaskIndependentMergeTreeFactory> {
 public:
-    MergeTreeFactoryLinearFeature() : TaskIndependentFeature("linear") {
+    MergeTreeFactoryLinearFeature() : TypedFeature("linear") {
         document_title("Linear merge trees");
         document_synopsis(
             "These merge trees implement several linear merge orders, which "

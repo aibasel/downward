@@ -141,9 +141,9 @@ unique_ptr<EdgeOpenList> AlternationOpenListFactory::create_edge_open_list() {
 }
 
 class AlternationOpenListFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
+    : public plugins::TypedFeature<TaskIndependentOpenListFactory> {
 public:
-    AlternationOpenListFeature() : TaskIndependentFeature("alt") {
+    AlternationOpenListFeature() : TypedFeature("alt") {
         document_title("Alternation open list");
         document_synopsis("Alternates between several open lists.");
         add_list_option<shared_ptr<TaskIndependentOpenListFactory>>(

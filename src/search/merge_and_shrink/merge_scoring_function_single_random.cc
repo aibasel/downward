@@ -48,11 +48,11 @@ void MergeScoringFunctionSingleRandom::dump_function_specific_options(
 }
 
 class MergeScoringFunctionSingleRandomFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentMergeScoringFunction> {
 public:
     MergeScoringFunctionSingleRandomFeature()
-        : TaskIndependentFeature("single_random") {
+        : TypedFeature("single_random") {
         document_title("Single random");
         document_synopsis(
             "This scoring function assigns exactly one merge candidate a score of "

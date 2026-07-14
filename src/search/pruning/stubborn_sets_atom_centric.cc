@@ -252,10 +252,10 @@ void StubbornSetsAtomCentric::handle_stubborn_operator(
 }
 
 class StubbornSetsAtomCentricFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentPruningMethod> {
+    : public plugins::TypedFeature<TaskIndependentPruningMethod> {
 public:
     StubbornSetsAtomCentricFeature()
-        : TaskIndependentFeature("atom_centric_stubborn_sets") {
+        : TypedFeature("atom_centric_stubborn_sets") {
         document_title("Atom-centric stubborn sets");
         document_synopsis(
             "Stubborn sets are a state pruning method which computes a subset "

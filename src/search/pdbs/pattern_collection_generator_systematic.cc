@@ -289,11 +289,11 @@ PatternCollectionGeneratorSystematic::compute_patterns(
 }
 
 class PatternCollectionGeneratorSystematicFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorSystematicFeature()
-        : TaskIndependentFeature("systematic") {
+        : TypedFeature("systematic") {
         document_title("Systematically generated patterns");
         document_synopsis(
             "Generates all (interesting) patterns with up to pattern_max_size "

@@ -139,10 +139,10 @@ int MergeAndShrinkHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class MergeAndShrinkHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
     MergeAndShrinkHeuristicFeature()
-        : TaskIndependentFeature("merge_and_shrink") {
+        : TypedFeature("merge_and_shrink") {
         document_title("Merge-and-shrink heuristic");
         document_synopsis(
             "This heuristic implements the algorithm described in the following "

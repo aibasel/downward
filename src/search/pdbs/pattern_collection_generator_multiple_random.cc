@@ -54,11 +54,11 @@ PatternInformation PatternCollectionGeneratorMultipleRandom::compute_pattern(
 }
 
 class PatternCollectionGeneratorMultipleRandomFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorMultipleRandomFeature()
-        : TaskIndependentFeature("random_patterns") {
+        : TypedFeature("random_patterns") {
         document_title("Multiple random patterns");
         document_synopsis(
             "This pattern collection generator implements the 'multiple "

@@ -314,9 +314,9 @@ bool LandmarkFactoryZhuGivan::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryZhuGivanFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentLandmarkFactory> {
+    : public plugins::TypedFeature<TaskIndependentLandmarkFactory> {
 public:
-    LandmarkFactoryZhuGivanFeature() : TaskIndependentFeature("lm_zg") {
+    LandmarkFactoryZhuGivanFeature() : TypedFeature("lm_zg") {
         document_title("Zhu/Givan landmarks");
         document_synopsis("The landmark generation method introduced by "
                           "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");

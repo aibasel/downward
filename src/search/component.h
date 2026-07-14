@@ -4,7 +4,6 @@
 #include "component_internals.h"
 #include "task_proxy.h"
 
-#include "plugins/plugin.h"
 #include "utils/tuples.h"
 
 #include <memory>
@@ -12,6 +11,23 @@
 class AbstractTask;
 
 namespace components {
+/*
+  Expects constructor arguments of T. Consecutive arguments may be
+  grouped in a tuple. All tuples in the arguments will be flattened
+  before calling the constructor. The resulting arguments will be used
+  as arguments to make_shared.
+*/
+template<typename T, typename... Arguments>
+std::shared_ptr<T> make_shared_from_arg_tuples(Arguments... arguments) {
+    return std::apply(
+        [](auto &&...flattened_args) {
+            return std::make_shared<T>(
+                std::forward<decltype(flattened_args)>(flattened_args)...);
+        },
+        utils::flatten_tuple(
+            std::tuple<Arguments...>(std::forward<Arguments>(arguments)...)));
+}
+
 /*
   Base class for all classes that represent components bound to a specific
   task, like Evaluator, SearchAlgorithm, and OpenList.
@@ -126,7 +142,7 @@ class AutoTaskIndependentComponent
         const std::shared_ptr<AbstractTask> &task) const override {
         internals::BoundArgs_t<Args> bound_args =
             internals::bind_task_recursively(args, task);
-        return plugins::make_shared_from_arg_tuples<T>(task, bound_args);
+        return make_shared_from_arg_tuples<T>(task, bound_args);
     }
 
 public:

@@ -188,9 +188,9 @@ void ShrinkFH::dump_strategy_specific_options(utils::LogProxy &log) const {
 }
 
 class ShrinkFHFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentShrinkStrategy> {
+    : public plugins::TypedFeature<TaskIndependentShrinkStrategy> {
 public:
-    ShrinkFHFeature() : TaskIndependentFeature("shrink_fh") {
+    ShrinkFHFeature() : TypedFeature("shrink_fh") {
         document_title("f-preserving shrink strategy");
         document_synopsis(
             "This shrink strategy implements the algorithm described in"

@@ -64,10 +64,10 @@ bool PhOConstraints::update_constraints(
     return false;
 }
 
-class PhOConstraintsFeature : public plugins::TaskIndependentFeature<
+class PhOConstraintsFeature : public plugins::TypedFeature<
                                   TaskIndependentConstraintGenerator> {
 public:
-    PhOConstraintsFeature() : TaskIndependentFeature("pho_constraints") {
+    PhOConstraintsFeature() : TypedFeature("pho_constraints") {
         document_title("Posthoc optimization constraints");
         document_synopsis(
             "The generator will compute a PDB for each pattern and add the"

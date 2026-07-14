@@ -253,9 +253,9 @@ void HMHeuristic::dump_table() const {
 }
 
 class HMHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    HMHeuristicFeature() : TaskIndependentFeature("hm") {
+    HMHeuristicFeature() : TypedFeature("hm") {
         document_title("h^m heuristic");
 
         add_option<int>(

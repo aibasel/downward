@@ -155,9 +155,9 @@ unique_ptr<EdgeOpenList> TypeBasedOpenListFactory::create_edge_open_list() {
 }
 
 class TypeBasedOpenListFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentOpenListFactory> {
+    : public plugins::TypedFeature<TaskIndependentOpenListFactory> {
 public:
-    TypeBasedOpenListFeature() : TaskIndependentFeature("type_based") {
+    TypeBasedOpenListFeature() : TypedFeature("type_based") {
         document_title("Type-based open list");
         document_synopsis(
             "Uses multiple evaluators to assign entries to buckets. "

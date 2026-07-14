@@ -92,9 +92,9 @@ tuple<double> get_canonical_pdbs_arguments_from_options(
 }
 
 class CanonicalPDBsHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    CanonicalPDBsHeuristicFeature() : TaskIndependentFeature("cpdbs") {
+    CanonicalPDBsHeuristicFeature() : TypedFeature("cpdbs") {
         document_subcategory("heuristics_pdb");
         document_title("Canonical PDB");
         document_synopsis(

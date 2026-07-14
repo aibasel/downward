@@ -122,11 +122,11 @@ bool StateEquationConstraints::update_constraints(
 }
 
 class StateEquationConstraintsFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentConstraintGenerator> {
 public:
     StateEquationConstraintsFeature()
-        : TaskIndependentFeature("state_equation_constraints") {
+        : TypedFeature("state_equation_constraints") {
         document_title("State equation constraints");
         document_synopsis(
             "For each fact, a permanent constraint is added that considers the net "

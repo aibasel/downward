@@ -39,9 +39,9 @@ PatternInformation PatternGeneratorCEGAR::compute_pattern(
 }
 
 class PatternGeneratorCEGARFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentPatternGenerator> {
+    : public plugins::TypedFeature<TaskIndependentPatternGenerator> {
 public:
-    PatternGeneratorCEGARFeature() : TaskIndependentFeature("cegar_pattern") {
+    PatternGeneratorCEGARFeature() : TypedFeature("cegar_pattern") {
         document_title("CEGAR");
         document_synopsis(
             "This pattern generator uses the CEGAR algorithm restricted to a "

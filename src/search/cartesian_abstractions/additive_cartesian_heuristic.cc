@@ -59,9 +59,9 @@ int AdditiveCartesianHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class AdditiveCartesianHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    AdditiveCartesianHeuristicFeature() : TaskIndependentFeature("cegar") {
+    AdditiveCartesianHeuristicFeature() : TypedFeature("cegar") {
         document_title("Additive Cartesian CEGAR heuristic");
         document_synopsis(
             "See the paper introducing counterexample-guided Cartesian "

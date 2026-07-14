@@ -287,9 +287,9 @@ void CGHeuristic::mark_helpful_transitions(
 }
 
 class CGHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    CGHeuristicFeature() : TaskIndependentFeature("cg") {
+    CGHeuristicFeature() : TypedFeature("cg") {
         document_title("Causal graph heuristic");
 
         add_option<int>(

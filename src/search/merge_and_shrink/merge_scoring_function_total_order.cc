@@ -182,11 +182,11 @@ void MergeScoringFunctionTotalOrder::add_options_to_feature(
 }
 
 class MergeScoringFunctionTotalOrderFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentMergeScoringFunction> {
 public:
     MergeScoringFunctionTotalOrderFeature()
-        : TaskIndependentFeature("total_order") {
+        : TypedFeature("total_order") {
         document_title("Total order");
         document_synopsis(
             "This scoring function computes a total order on the merge candidates, "

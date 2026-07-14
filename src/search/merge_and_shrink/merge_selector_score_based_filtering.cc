@@ -104,10 +104,10 @@ bool MergeSelectorScoreBasedFiltering::requires_goal_distances() const {
 }
 
 class MergeSelectorScoreBasedFilteringFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentMergeSelector> {
+    : public plugins::TypedFeature<TaskIndependentMergeSelector> {
 public:
     MergeSelectorScoreBasedFilteringFeature()
-        : TaskIndependentFeature("score_based_filtering") {
+        : TypedFeature("score_based_filtering") {
         document_title("Score based filtering merge selector");
         document_synopsis(
             "This merge selector has a list of scoring functions, which are used "

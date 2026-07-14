@@ -45,11 +45,11 @@ string MergeScoringFunctionGoalRelevance::name() const {
 }
 
 class MergeScoringFunctionGoalRelevanceFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentMergeScoringFunction> {
 public:
     MergeScoringFunctionGoalRelevanceFeature()
-        : TaskIndependentFeature("goal_relevance") {
+        : TypedFeature("goal_relevance") {
         document_title("Goal relevance scoring");
         document_synopsis(
             "This scoring function assigns a merge candidate a value of 0 iff at "

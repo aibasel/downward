@@ -25,9 +25,9 @@ EvaluationResult PrefEvaluator::compute_result(
 }
 
 class PrefEvaluatorFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    PrefEvaluatorFeature() : TaskIndependentFeature("pref") {
+    PrefEvaluatorFeature() : TypedFeature("pref") {
         document_subcategory("evaluators_basic");
         document_title("Preference evaluator");
         document_synopsis("Returns 0 if preferred is true and 1 otherwise.");

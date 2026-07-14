@@ -243,9 +243,9 @@ public:
 };
 
 class IteratedSearchFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
+    : public plugins::TypedFeature<TaskIndependentSearchAlgorithm> {
 public:
-    IteratedSearchFeature() : TaskIndependentFeature("iterated") {
+    IteratedSearchFeature() : TypedFeature("iterated") {
         document_title("Iterated search");
         document_synopsis("");
 
@@ -292,7 +292,7 @@ public:
 
     virtual shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
+        return components::make_shared_from_arg_tuples<
             TaskIndependentIteratedSearch>(
             opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
                 "algorithm_configs"),

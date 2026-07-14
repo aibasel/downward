@@ -582,11 +582,11 @@ static basic_string<char> paper_references() {
 }
 
 class PatternCollectionGeneratorHillclimbingFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorHillclimbingFeature()
-        : TaskIndependentFeature("hillclimbing") {
+        : TypedFeature("hillclimbing") {
         document_title("Hill climbing");
         document_synopsis(
             "This algorithm uses hill climbing to generate patterns "
@@ -611,9 +611,9 @@ static plugins::FeaturePlugin<PatternCollectionGeneratorHillclimbingFeature>
     _plugin;
 
 class IPDBFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    IPDBFeature() : TaskIndependentFeature("ipdb") {
+    IPDBFeature() : TypedFeature("ipdb") {
         document_subcategory("heuristics_pdb");
         document_title("iPDB");
         document_synopsis(

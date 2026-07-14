@@ -264,9 +264,9 @@ void EnforcedHillClimbingSearch::print_statistics() const {
 }
 
 class EnforcedHillClimbingSearchFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentSearchAlgorithm> {
+    : public plugins::TypedFeature<TaskIndependentSearchAlgorithm> {
 public:
-    EnforcedHillClimbingSearchFeature() : TaskIndependentFeature("ehc") {
+    EnforcedHillClimbingSearchFeature() : TypedFeature("ehc") {
         document_title("Lazy enforced hill-climbing");
         document_synopsis("");
 

@@ -65,10 +65,10 @@ public:
 };
 
 class InitialStatePotentialHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
     InitialStatePotentialHeuristicFeature()
-        : TaskIndependentFeature("initial_state_potential") {
+        : TypedFeature("initial_state_potential") {
         document_subcategory("heuristics_potentials");
         document_title("Potential heuristic optimized for initial state");
         document_synopsis(get_admissible_potentials_reference());
@@ -91,10 +91,10 @@ static plugins::FeaturePlugin<InitialStatePotentialHeuristicFeature>
     _plugin_initial_state;
 
 class AllStatesPotentialHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
     AllStatesPotentialHeuristicFeature()
-        : TaskIndependentFeature("all_states_potential") {
+        : TypedFeature("all_states_potential") {
         document_subcategory("heuristics_potentials");
         document_title("Potential heuristic optimized for all states");
         document_synopsis(get_admissible_potentials_reference());

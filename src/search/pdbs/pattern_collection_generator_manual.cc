@@ -33,11 +33,11 @@ PatternCollectionInformation PatternCollectionGeneratorManual::compute_patterns(
 }
 
 class PatternCollectionGeneratorManualFeature
-    : public plugins::TaskIndependentFeature<
+    : public plugins::TypedFeature<
           TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorManualFeature()
-        : TaskIndependentFeature("manual_patterns") {
+        : TypedFeature("manual_patterns") {
         document_title("Manual patterns");
         add_list_option<Pattern>(
             "patterns",

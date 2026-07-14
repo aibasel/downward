@@ -36,9 +36,9 @@ int ZeroOnePDBsHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class ZeroOnePDBsHeuristicFeature
-    : public plugins::TaskIndependentFeature<TaskIndependentEvaluator> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    ZeroOnePDBsHeuristicFeature() : TaskIndependentFeature("zopdbs") {
+    ZeroOnePDBsHeuristicFeature() : TypedFeature("zopdbs") {
         document_subcategory("heuristics_pdb");
         document_title("Zero-One PDB");
         document_synopsis(
