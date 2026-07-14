@@ -138,8 +138,7 @@ string MergeStrategyFactorySCCs::name() const {
 }
 
 class MergeStrategyFactorySCCsFeature
-    : public plugins::TypedFeature<
-          TaskIndependentMergeStrategyFactory> {
+    : public plugins::TypedFeature<TaskIndependentMergeStrategyFactory> {
 public:
     MergeStrategyFactorySCCsFeature() : TypedFeature("merge_sccs") {
         document_title("Merge strategy SCCs");

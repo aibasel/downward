@@ -45,8 +45,8 @@ bool LMCutConstraints::update_constraints(
     }
 }
 
-class LMCutConstraintsFeature : public plugins::TypedFeature<
-                                    TaskIndependentConstraintGenerator> {
+class LMCutConstraintsFeature
+    : public plugins::TypedFeature<TaskIndependentConstraintGenerator> {
 public:
     LMCutConstraintsFeature() : TypedFeature("lmcut_constraints") {
         document_title("LM-cut landmark constraints");

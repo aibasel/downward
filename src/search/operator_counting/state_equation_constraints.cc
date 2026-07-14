@@ -122,8 +122,7 @@ bool StateEquationConstraints::update_constraints(
 }
 
 class StateEquationConstraintsFeature
-    : public plugins::TypedFeature<
-          TaskIndependentConstraintGenerator> {
+    : public plugins::TypedFeature<TaskIndependentConstraintGenerator> {
 public:
     StateEquationConstraintsFeature()
         : TypedFeature("state_equation_constraints") {

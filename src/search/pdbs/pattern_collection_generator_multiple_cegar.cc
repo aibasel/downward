@@ -41,8 +41,7 @@ PatternInformation PatternCollectionGeneratorMultipleCegar::compute_pattern(
 }
 
 class PatternCollectionGeneratorMultipleCegarFeature
-    : public plugins::TypedFeature<
-          TaskIndependentPatternCollectionGenerator> {
+    : public plugins::TypedFeature<TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorMultipleCegarFeature()
         : TypedFeature("multiple_cegar") {

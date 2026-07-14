@@ -105,8 +105,7 @@ string MergeScoringFunctionMIASM::name() const {
 }
 
 class MergeScoringFunctionMIASMFeature
-    : public plugins::TypedFeature<
-          TaskIndependentMergeScoringFunction> {
+    : public plugins::TypedFeature<TaskIndependentMergeScoringFunction> {
 public:
     MergeScoringFunctionMIASMFeature() : TypedFeature("sf_miasm") {
         document_title("MIASM");

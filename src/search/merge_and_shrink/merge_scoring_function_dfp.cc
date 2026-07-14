@@ -107,8 +107,7 @@ string MergeScoringFunctionDFP::name() const {
 }
 
 class MergeScoringFunctionDFPFeature
-    : public plugins::TypedFeature<
-          TaskIndependentMergeScoringFunction> {
+    : public plugins::TypedFeature<TaskIndependentMergeScoringFunction> {
 public:
     MergeScoringFunctionDFPFeature() : TypedFeature("dfp") {
         document_title("DFP scoring");

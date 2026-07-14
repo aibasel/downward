@@ -558,8 +558,7 @@ bool DeleteRelaxationRRConstraints::update_constraints(
 }
 
 class DeleteRelaxationRRConstraintsFeature
-    : public plugins::TypedFeature<
-          TaskIndependentConstraintGenerator> {
+    : public plugins::TypedFeature<TaskIndependentConstraintGenerator> {
 public:
     DeleteRelaxationRRConstraintsFeature()
         : TypedFeature("delete_relaxation_rr_constraints") {

@@ -44,8 +44,7 @@ void MergeStrategyFactoryPrecomputed::dump_strategy_specific_options() const {
 }
 
 class MergeStrategyFactoryPrecomputedFeature
-    : public plugins::TypedFeature<
-          TaskIndependentMergeStrategyFactory> {
+    : public plugins::TypedFeature<TaskIndependentMergeStrategyFactory> {
 public:
     MergeStrategyFactoryPrecomputedFeature()
         : TypedFeature("merge_precomputed") {

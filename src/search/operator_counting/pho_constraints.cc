@@ -64,8 +64,8 @@ bool PhOConstraints::update_constraints(
     return false;
 }
 
-class PhOConstraintsFeature : public plugins::TypedFeature<
-                                  TaskIndependentConstraintGenerator> {
+class PhOConstraintsFeature
+    : public plugins::TypedFeature<TaskIndependentConstraintGenerator> {
 public:
     PhOConstraintsFeature() : TypedFeature("pho_constraints") {
         document_title("Posthoc optimization constraints");

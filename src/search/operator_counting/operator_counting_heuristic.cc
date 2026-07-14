@@ -68,8 +68,7 @@ int OperatorCountingHeuristic::compute_heuristic(const State &ancestor_state) {
 class OperatorCountingHeuristicFeature
     : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    OperatorCountingHeuristicFeature()
-        : TypedFeature("operatorcounting") {
+    OperatorCountingHeuristicFeature() : TypedFeature("operatorcounting") {
         document_title("Operator-counting heuristic");
         document_synopsis(
             "An operator-counting heuristic computes a linear program (LP) in each "

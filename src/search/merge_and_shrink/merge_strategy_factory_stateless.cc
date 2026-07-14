@@ -41,11 +41,9 @@ bool MergeStrategyFactoryStateless::requires_goal_distances() const {
 }
 
 class MergeStrategyFactoryStatelessFeature
-    : public plugins::TypedFeature<
-          TaskIndependentMergeStrategyFactory> {
+    : public plugins::TypedFeature<TaskIndependentMergeStrategyFactory> {
 public:
-    MergeStrategyFactoryStatelessFeature()
-        : TypedFeature("merge_stateless") {
+    MergeStrategyFactoryStatelessFeature() : TypedFeature("merge_stateless") {
         document_title("Stateless merge strategy");
         document_synopsis(
             "This merge strategy has a merge selector, which computes the next "

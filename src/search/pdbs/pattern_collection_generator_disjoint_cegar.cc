@@ -40,8 +40,7 @@ PatternCollectionGeneratorDisjointCegar::compute_patterns(
 }
 
 class PatternCollectionGeneratorDisjointCegarFeature
-    : public plugins::TypedFeature<
-          TaskIndependentPatternCollectionGenerator> {
+    : public plugins::TypedFeature<TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorDisjointCegarFeature()
         : TypedFeature("disjoint_cegar") {

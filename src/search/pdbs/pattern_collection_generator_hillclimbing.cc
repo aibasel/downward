@@ -582,8 +582,7 @@ static basic_string<char> paper_references() {
 }
 
 class PatternCollectionGeneratorHillclimbingFeature
-    : public plugins::TypedFeature<
-          TaskIndependentPatternCollectionGenerator> {
+    : public plugins::TypedFeature<TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorHillclimbingFeature()
         : TypedFeature("hillclimbing") {
@@ -610,8 +609,7 @@ public:
 static plugins::FeaturePlugin<PatternCollectionGeneratorHillclimbingFeature>
     _plugin;
 
-class IPDBFeature
-    : public plugins::TypedFeature<TaskIndependentEvaluator> {
+class IPDBFeature : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
     IPDBFeature() : TypedFeature("ipdb") {
         document_subcategory("heuristics_pdb");

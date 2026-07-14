@@ -91,8 +91,8 @@ shared_ptr<TaskSpecificSearchAlgorithm> IteratedSearch::bind_search(
         task_independent_searches[search_index];
     shared_ptr<TaskSpecificSearchAlgorithm> task_specific_search =
         task_indepenent_search->bind_task(task);
-    log << "Starting search: "
-        << task_specific_search->get_description() << endl;
+    log << "Starting search: " << task_specific_search->get_description()
+        << endl;
     return task_specific_search;
 }
 
@@ -144,7 +144,8 @@ SearchStatus IteratedSearch::step() {
     }
     task_specific_search->print_statistics();
 
-    const SearchStatistics &current_stats = task_specific_search->get_statistics();
+    const SearchStatistics &current_stats =
+        task_specific_search->get_statistics();
     statistics.inc_expanded(current_stats.get_expanded());
     statistics.inc_evaluated_states(current_stats.get_evaluated_states());
     statistics.inc_evaluations(current_stats.get_evaluations());

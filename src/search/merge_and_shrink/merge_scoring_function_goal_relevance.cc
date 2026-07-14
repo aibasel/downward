@@ -45,8 +45,7 @@ string MergeScoringFunctionGoalRelevance::name() const {
 }
 
 class MergeScoringFunctionGoalRelevanceFeature
-    : public plugins::TypedFeature<
-          TaskIndependentMergeScoringFunction> {
+    : public plugins::TypedFeature<TaskIndependentMergeScoringFunction> {
 public:
     MergeScoringFunctionGoalRelevanceFeature()
         : TypedFeature("goal_relevance") {
