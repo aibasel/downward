@@ -4,6 +4,7 @@
 #include "../evaluation_result.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/component_errors.h"
 
 #include <cstdlib>
 #include <sstream>
@@ -17,6 +18,7 @@ WeightedEvaluator::WeightedEvaluator(
     : Evaluator(false, false, false, description, verbosity),
       evaluator(eval),
       weight(weight) {
+    utils::verify_argument(weight >= 0, "Weight must be non-negative.");
 }
 
 bool WeightedEvaluator::dead_ends_are_reliable() const {
@@ -50,7 +52,8 @@ public:
             "Multiplies the value of the evaluator with the given weight.");
 
         add_option<shared_ptr<Evaluator>>("eval", "evaluator");
-        add_option<int>("weight", "weight");
+        add_option<int>(
+            "weight", "weight", "1", plugins::Bounds("0", "infinity"));
         add_evaluator_options_to_feature(*this, "weight");
     }
 
