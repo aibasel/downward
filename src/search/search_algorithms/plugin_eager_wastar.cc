@@ -20,8 +20,7 @@ public:
         add_option<int>(
             "boost", "boost value for preferred operator open lists", "0");
         add_option<int>(
-            "w", "evaluator weight", "1",
-            plugins::Bounds("0", "infinity"));
+            "w", "evaluator weight", "1", plugins::Bounds("0", "infinity"));
         eager_search::add_eager_search_options_to_feature(
             *this, "eager_wastar");
 

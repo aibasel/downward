@@ -24,8 +24,7 @@ public:
             "boost", "boost value for preferred operator open lists",
             DEFAULT_LAZY_BOOST);
         add_option<int>(
-            "w", "evaluator weight", "1",
-            plugins::Bounds("0", "infinity"));
+            "w", "evaluator weight", "1", plugins::Bounds("0", "infinity"));
         add_successors_order_options_to_feature(*this);
         add_search_algorithm_options_to_feature(*this, "lazy_wastar");
 

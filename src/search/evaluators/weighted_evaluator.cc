@@ -53,8 +53,7 @@ public:
 
         add_option<shared_ptr<Evaluator>>("eval", "evaluator");
         add_option<int>(
-            "weight", "weight", "1",
-            plugins::Bounds("0", "infinity"));
+            "weight", "weight", "1", plugins::Bounds("0", "infinity"));
         add_evaluator_options_to_feature(*this, "weight");
     }
 
