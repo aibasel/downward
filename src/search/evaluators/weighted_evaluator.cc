@@ -18,7 +18,6 @@ WeightedEvaluator::WeightedEvaluator(
     : Evaluator(false, false, false, description, verbosity),
       evaluator(eval),
       weight(weight) {
-
     utils::verify_argument(weight>=0, "Weight must be non-negative.");
 }
 
