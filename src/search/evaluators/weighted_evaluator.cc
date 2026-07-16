@@ -4,6 +4,7 @@
 #include "../evaluation_result.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/component_errors.h"
 
 #include <cstdlib>
 #include <sstream>
@@ -18,6 +19,7 @@ WeightedEvaluator::WeightedEvaluator(
     : TaskSpecificEvaluator(task, false, false, false, description, verbosity),
       evaluator(eval),
       weight(weight) {
+    utils::verify_argument(weight >= 0, "Weight must be non-negative.");
 }
 
 bool WeightedEvaluator::dead_ends_are_reliable() const {
@@ -51,7 +53,7 @@ public:
         document_synopsis(
             "Multiplies the value of the evaluator with the given weight.");
 
-        add_option<shared_ptr<TaskIndependentEvaluator>>("eval", "evaluator");
+        add_option<shared_ptr<Evaluator>>("eval", "evaluator");
         add_option<int>("weight", "weight");
         add_evaluator_options_to_feature(*this, "weight");
     }
