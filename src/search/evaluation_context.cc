@@ -42,8 +42,7 @@ EvaluationContext::EvaluationContext(
           calculate_preferred) {
 }
 
-const EvaluationResult &EvaluationContext::get_result(
-    Evaluator *evaluator) {
+const EvaluationResult &EvaluationContext::get_result(Evaluator *evaluator) {
     EvaluationResult &result = cache[evaluator];
     if (result.is_uninitialized()) {
         result = evaluator->compute_result(*this);
@@ -73,8 +72,7 @@ bool EvaluationContext::is_preferred() const {
     return preferred;
 }
 
-bool EvaluationContext::is_evaluator_value_infinite(
-    Evaluator *eval) {
+bool EvaluationContext::is_evaluator_value_infinite(Evaluator *eval) {
     return get_result(eval).is_infinite();
 }
 
@@ -84,8 +82,7 @@ int EvaluationContext::get_evaluator_value(Evaluator *eval) {
     return h;
 }
 
-int EvaluationContext::get_evaluator_value_or_infinity(
-    Evaluator *eval) {
+int EvaluationContext::get_evaluator_value_or_infinity(Evaluator *eval) {
     return get_result(eval).get_evaluator_value();
 }
 

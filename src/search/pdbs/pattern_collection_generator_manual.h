@@ -7,8 +7,7 @@
 #include <memory>
 
 namespace pdbs {
-class PatternCollectionGeneratorManual
-    : public PatternCollectionGenerator {
+class PatternCollectionGeneratorManual : public PatternCollectionGenerator {
     std::shared_ptr<PatternCollection> patterns;
 
     virtual std::string name() const override;

@@ -33,8 +33,7 @@ protected:
 
 public:
     TypeBasedOpenList(
-        const vector<shared_ptr<Evaluator>> &evaluators,
-        int random_seed);
+        const vector<shared_ptr<Evaluator>> &evaluators, int random_seed);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
@@ -69,8 +68,7 @@ void TypeBasedOpenList<Entry>::do_insertion(
 
 template<class Entry>
 TypeBasedOpenList<Entry>::TypeBasedOpenList(
-    const vector<shared_ptr<Evaluator>> &evaluators,
-    int random_seed)
+    const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
     : evaluators(evaluators), rng(utils::get_rng(random_seed)) {
 }
 
@@ -138,8 +136,7 @@ void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
 
 TypeBasedOpenListFactory::TypeBasedOpenListFactory(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<Evaluator>> &evaluators,
-    int random_seed)
+    const vector<shared_ptr<Evaluator>> &evaluators, int random_seed)
     : OpenListFactory(task), evaluators(evaluators), random_seed(random_seed) {
     utils::verify_list_not_empty(evaluators, "evaluators");
 }

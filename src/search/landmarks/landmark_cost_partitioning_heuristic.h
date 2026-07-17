@@ -26,11 +26,11 @@ class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
 public:
     LandmarkCostPartitioningHeuristic(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<LandmarkFactory> &lm_factory,
-        bool pref, bool prog_goal, bool prog_gn, bool prog_r,
-        bool cache_estimates, const std::string &description,
-        utils::Verbosity verbosity, CostPartitioningMethod cost_partitioning,
-        bool alm, lp::LPSolverType lpsolver);
+        const std::shared_ptr<LandmarkFactory> &lm_factory, bool pref,
+        bool prog_goal, bool prog_gn, bool prog_r, bool cache_estimates,
+        const std::string &description, utils::Verbosity verbosity,
+        CostPartitioningMethod cost_partitioning, bool alm,
+        lp::LPSolverType lpsolver);
 
     virtual bool dead_ends_are_reliable() const override;
 };

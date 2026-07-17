@@ -21,8 +21,7 @@ protected:
     virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options(utils::LogProxy &log) const = 0;
 public:
-    explicit ShrinkStrategy(
-        const std::shared_ptr<AbstractTask> &task);
+    explicit ShrinkStrategy(const std::shared_ptr<AbstractTask> &task);
 
     /*
       Compute a state equivalence relation over the states of the given

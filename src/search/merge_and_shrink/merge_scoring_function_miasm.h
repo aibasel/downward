@@ -26,8 +26,8 @@ class MergeScoringFunctionMIASM : public MergeScoringFunction {
 public:
     MergeScoringFunctionMIASM(
         const std::shared_ptr<AbstractTask> &task,
-        std::shared_ptr<ShrinkStrategy> shrink_strategy,
-        int max_states, int max_states_before_merge, int threshold_before_merge,
+        std::shared_ptr<ShrinkStrategy> shrink_strategy, int max_states,
+        int max_states_before_merge, int threshold_before_merge,
         bool use_caching);
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,

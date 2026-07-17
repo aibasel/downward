@@ -18,8 +18,7 @@ IteratedSearch::IteratedSearch(
     bool pass_bound, bool repeat_last, bool continue_on_fail,
     bool continue_on_solve, OperatorCost cost_type, int bound, double max_time,
     const string &description, utils::Verbosity verbosity)
-    : SearchAlgorithm(
-          task, cost_type, bound, max_time, description, verbosity),
+    : SearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
       task_independent_searches(algorithm_configs),
       pass_bound(pass_bound),
       repeat_last_phase(repeat_last),
@@ -63,11 +62,9 @@ void IteratedSearch::update_retention_set() {
                       used more than once.
                     */
                     const Evaluator *evaluator =
-                        dynamic_cast<const Evaluator *>(
-                            ts_component.get());
+                        dynamic_cast<const Evaluator *>(ts_component.get());
                     const landmarks::LandmarkFactory *landmarks =
-                        dynamic_cast<
-                            const landmarks::LandmarkFactory *>(
+                        dynamic_cast<const landmarks::LandmarkFactory *>(
                             ts_component.get());
                     if (evaluator || landmarks) {
                         new_retained_components.push_back(ts_component);
@@ -85,8 +82,7 @@ void IteratedSearch::update_retention_set() {
     retained_components.swap(new_retained_components);
 }
 
-shared_ptr<SearchAlgorithm> IteratedSearch::bind_search(
-    int search_index) {
+shared_ptr<SearchAlgorithm> IteratedSearch::bind_search(int search_index) {
     shared_ptr<TaskIndependentSearchAlgorithm> &task_indepenent_search =
         task_independent_searches[search_index];
     shared_ptr<SearchAlgorithm> task_specific_search =
@@ -117,8 +113,7 @@ shared_ptr<SearchAlgorithm> IteratedSearch::bind_current_search() {
 }
 
 SearchStatus IteratedSearch::step() {
-    shared_ptr<SearchAlgorithm> task_specific_search =
-        bind_current_search();
+    shared_ptr<SearchAlgorithm> task_specific_search = bind_current_search();
     if (!task_specific_search) {
         return found_solution() ? SOLVED : FAILED;
     }
@@ -217,8 +212,8 @@ class TaskIndependentIteratedSearch
     string description;
     utils::Verbosity verbosity;
 protected:
-    virtual shared_ptr<SearchAlgorithm>
-    create_task_specific_component(const shared_ptr<AbstractTask> &task) const {
+    virtual shared_ptr<SearchAlgorithm> create_task_specific_component(
+        const shared_ptr<AbstractTask> &task) const {
         return make_shared<IteratedSearch>(
             task, algorithm_configs, pass_bound, repeat_last_phase,
             continue_on_fail, continue_on_solve, cost_type, bound, max_time,

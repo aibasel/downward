@@ -9,8 +9,7 @@
 namespace merge_and_shrink {
 class MergeScoringFunction;
 class MergeSelectorScoreBasedFiltering : public MergeSelector {
-    std::vector<std::shared_ptr<MergeScoringFunction>>
-        merge_scoring_functions;
+    std::vector<std::shared_ptr<MergeScoringFunction>> merge_scoring_functions;
 protected:
     virtual std::string name() const override;
     virtual void dump_selector_specific_options(

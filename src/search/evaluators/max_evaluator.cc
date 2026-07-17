@@ -9,8 +9,8 @@ using namespace std;
 namespace max_evaluator {
 MaxEvaluator::MaxEvaluator(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<Evaluator>> &evals,
-    const string &description, utils::Verbosity verbosity)
+    const vector<shared_ptr<Evaluator>> &evals, const string &description,
+    utils::Verbosity verbosity)
     : CombiningEvaluator(task, evals, description, verbosity) {
 }
 

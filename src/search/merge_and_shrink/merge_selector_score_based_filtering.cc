@@ -12,10 +12,8 @@ using namespace std;
 namespace merge_and_shrink {
 MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<MergeScoringFunction>>
-        &scoring_functions)
-    : MergeSelector(task),
-      merge_scoring_functions(scoring_functions) {
+    const vector<shared_ptr<MergeScoringFunction>> &scoring_functions)
+    : MergeSelector(task), merge_scoring_functions(scoring_functions) {
 }
 
 static vector<pair<int, int>> get_remaining_candidates(
@@ -76,8 +74,8 @@ string MergeSelectorScoreBasedFiltering::name() const {
 void MergeSelectorScoreBasedFiltering::dump_selector_specific_options(
     utils::LogProxy &log) const {
     if (log.is_at_least_normal()) {
-        for (const shared_ptr<MergeScoringFunction>
-                 &scoring_function : merge_scoring_functions) {
+        for (const shared_ptr<MergeScoringFunction> &scoring_function :
+             merge_scoring_functions) {
             scoring_function->dump_options(log);
         }
     }

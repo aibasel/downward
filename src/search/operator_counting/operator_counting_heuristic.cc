@@ -14,8 +14,7 @@ using namespace std;
 namespace operator_counting {
 OperatorCountingHeuristic::OperatorCountingHeuristic(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<ConstraintGenerator>>
-        &constraint_generators,
+    const vector<shared_ptr<ConstraintGenerator>> &constraint_generators,
     bool use_integer_operator_counts, lp::LPSolverType lpsolver,
     bool cache_estimates, const string &description, utils::Verbosity verbosity)
     : Heuristic(task, cache_estimates, description, verbosity),

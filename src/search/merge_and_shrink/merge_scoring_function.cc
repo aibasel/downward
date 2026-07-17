@@ -8,13 +8,11 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeScoringFunction::MergeScoringFunction(
-    const shared_ptr<AbstractTask> &task)
+MergeScoringFunction::MergeScoringFunction(const shared_ptr<AbstractTask> &task)
     : components::TaskSpecificComponent(task), initialized(false) {
 }
 
-void MergeScoringFunction::dump_options(
-    utils::LogProxy &log) const {
+void MergeScoringFunction::dump_options(utils::LogProxy &log) const {
     if (log.is_at_least_normal()) {
         log << "Merge scoring function:" << endl;
         log << "Name: " << name() << endl;

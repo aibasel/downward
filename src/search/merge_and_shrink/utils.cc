@@ -61,8 +61,8 @@ pair<int, int> compute_shrink_sizes(
 */
 static bool shrink_factor(
     FactoredTransitionSystem &fts, int index, int new_size,
-    int shrink_threshold_before_merge,
-    const ShrinkStrategy &shrink_strategy, utils::LogProxy &log) {
+    int shrink_threshold_before_merge, const ShrinkStrategy &shrink_strategy,
+    utils::LogProxy &log) {
     /*
       TODO: think about factoring out common logic of this function and the
       function copy_and_shrink_ts in merge_scoring_function_miasm_utils.cc.

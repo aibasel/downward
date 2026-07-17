@@ -13,9 +13,8 @@ using namespace std;
 
 namespace weighted_evaluator {
 WeightedEvaluator::WeightedEvaluator(
-    const shared_ptr<AbstractTask> &task,
-    const shared_ptr<Evaluator> &eval, int weight,
-    const string &description, utils::Verbosity verbosity)
+    const shared_ptr<AbstractTask> &task, const shared_ptr<Evaluator> &eval,
+    int weight, const string &description, utils::Verbosity verbosity)
     : Evaluator(task, false, false, false, description, verbosity),
       evaluator(eval),
       weight(weight) {
@@ -39,8 +38,7 @@ EvaluationResult WeightedEvaluator::compute_result(
     return result;
 }
 
-void WeightedEvaluator::get_path_dependent_evaluators(
-    set<Evaluator *> &evals) {
+void WeightedEvaluator::get_path_dependent_evaluators(set<Evaluator *> &evals) {
     evaluator->get_path_dependent_evaluators(evals);
 }
 

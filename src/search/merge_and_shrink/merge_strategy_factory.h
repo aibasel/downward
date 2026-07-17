@@ -19,8 +19,7 @@ namespace merge_and_shrink {
 class FactoredTransitionSystem;
 class MergeStrategy;
 
-class MergeStrategyFactory
-    : public components::TaskSpecificComponent {
+class MergeStrategyFactory : public components::TaskSpecificComponent {
 protected:
     mutable utils::LogProxy log;
 

@@ -319,8 +319,7 @@ public:
     virtual shared_ptr<TaskIndependentPatternCollectionGenerator>
     create_component(const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            PatternCollectionGeneratorSystematic,
-            PatternCollectionGenerator>(
+            PatternCollectionGeneratorSystematic, PatternCollectionGenerator>(
             opts.get<int>("pattern_max_size"),
             opts.get<bool>("only_interesting_patterns"),
             get_generator_arguments_from_options(opts));

@@ -93,8 +93,7 @@ static Facts filter_and_order_facts(
     return facts;
 }
 
-SubtaskGenerator::SubtaskGenerator(
-    const shared_ptr<AbstractTask> &task)
+SubtaskGenerator::SubtaskGenerator(const shared_ptr<AbstractTask> &task)
     : components::TaskSpecificComponent(task) {
 }
 
@@ -205,8 +204,7 @@ public:
     virtual shared_ptr<TaskIndependentSubtaskGenerator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            TaskDuplicator, SubtaskGenerator>(
-            opts.get<int>("copies"));
+            TaskDuplicator, SubtaskGenerator>(opts.get<int>("copies"));
     }
 };
 

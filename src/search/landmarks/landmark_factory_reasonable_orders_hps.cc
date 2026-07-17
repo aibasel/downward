@@ -14,10 +14,8 @@ using namespace std;
 namespace landmarks {
 LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<LandmarkFactory> &lm_factory,
-    utils::Verbosity verbosity)
-    : LandmarkFactory(task, verbosity),
-      landmark_factory(lm_factory) {
+    const shared_ptr<LandmarkFactory> &lm_factory, utils::Verbosity verbosity)
+    : LandmarkFactory(task, verbosity), landmark_factory(lm_factory) {
 }
 
 void LandmarkFactoryReasonableOrdersHPS::generate_landmarks(

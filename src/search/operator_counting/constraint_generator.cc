@@ -5,8 +5,7 @@
 using namespace std;
 
 namespace operator_counting {
-ConstraintGenerator::ConstraintGenerator(
-    const shared_ptr<AbstractTask> &task)
+ConstraintGenerator::ConstraintGenerator(const shared_ptr<AbstractTask> &task)
     : components::TaskSpecificComponent(task) {
 }
 

@@ -16,8 +16,7 @@ PruningMethod::PruningMethod(
       task(nullptr) {
 }
 
-void PruningMethod::initialize(
-    const shared_ptr<AbstractTask> &task_) {
+void PruningMethod::initialize(const shared_ptr<AbstractTask> &task_) {
     assert(!task);
     task = task_;
     num_successors_before_pruning = 0;

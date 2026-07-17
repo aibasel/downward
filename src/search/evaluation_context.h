@@ -107,8 +107,7 @@ public:
     bool is_evaluator_value_infinite(Evaluator *eval);
     int get_evaluator_value(Evaluator *eval);
     int get_evaluator_value_or_infinity(Evaluator *eval);
-    const std::vector<OperatorID> &get_preferred_operators(
-        Evaluator *eval);
+    const std::vector<OperatorID> &get_preferred_operators(Evaluator *eval);
     bool get_calculate_preferred() const;
 };
 

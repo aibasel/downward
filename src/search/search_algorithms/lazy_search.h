@@ -29,8 +29,7 @@ protected:
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 
     std::vector<Evaluator *> path_dependent_evaluators;
-    std::vector<std::shared_ptr<Evaluator>>
-        preferred_operator_evaluators;
+    std::vector<std::shared_ptr<Evaluator>> preferred_operator_evaluators;
 
     State current_state;
     StateID current_predecessor_id;

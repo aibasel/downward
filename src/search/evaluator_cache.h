@@ -7,8 +7,7 @@
 
 class Evaluator;
 
-using EvaluationResults =
-    std::unordered_map<Evaluator *, EvaluationResult>;
+using EvaluationResults = std::unordered_map<Evaluator *, EvaluationResult>;
 
 /*
   Store evaluation results for evaluators.

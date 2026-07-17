@@ -20,8 +20,7 @@ namespace pdbs {
   Heuristics. Proceedings of the 4th Workshop on Model Checking and
   Artificial Intelligence (MoChArt 2006), pp. 35-50, 2007.
 */
-class PatternCollectionGeneratorGenetic
-    : public PatternCollectionGenerator {
+class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
     // Maximum number of states for each pdb
     const int pdb_max_size;
     const int num_collections;

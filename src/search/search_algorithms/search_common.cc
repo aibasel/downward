@@ -84,8 +84,7 @@ static shared_ptr<TaskIndependentEvaluator> create_wastar_eval(
             WeightedEval, Evaluator>(
             h_eval, weight, "wastar.w_h_eval", verbosity);
     }
-    return components::make_auto_task_independent_component<
-        SumEval, Evaluator>(
+    return components::make_auto_task_independent_component<SumEval, Evaluator>(
         vector<shared_ptr<TaskIndependentEvaluator>>({g_eval, w_h_eval}),
         "wastar.eval", verbosity);
 }
@@ -96,8 +95,8 @@ shared_ptr<TaskIndependentOpenListFactory> create_wastar_open_list_factory(
     int weight, utils::Verbosity verbosity) {
     utils::verify_list_not_empty(evals, "evals");
     shared_ptr<TaskIndependentEvaluator> g_eval =
-        components::make_auto_task_independent_component<
-            GEval, Evaluator>("wastar.g_eval", verbosity);
+        components::make_auto_task_independent_component<GEval, Evaluator>(
+            "wastar.g_eval", verbosity);
     vector<shared_ptr<TaskIndependentEvaluator>> f_evals;
     f_evals.reserve(evals.size());
     for (const shared_ptr<TaskIndependentEvaluator> &eval : evals)
@@ -113,11 +112,10 @@ create_astar_open_list_factory_and_f_eval(
     const shared_ptr<TaskIndependentEvaluator> &h_eval,
     utils::Verbosity verbosity) {
     shared_ptr<TaskIndependentEvaluator> g =
-        components::make_auto_task_independent_component<
-            GEval, Evaluator>("astar.g_eval", verbosity);
+        components::make_auto_task_independent_component<GEval, Evaluator>(
+            "astar.g_eval", verbosity);
     shared_ptr<TaskIndependentEvaluator> f =
-        components::make_auto_task_independent_component<
-            SumEval, Evaluator>(
+        components::make_auto_task_independent_component<SumEval, Evaluator>(
             vector<shared_ptr<TaskIndependentEvaluator>>({g, h_eval}),
             "astar.f_eval", verbosity);
     vector<shared_ptr<TaskIndependentEvaluator>> evals = {f, h_eval};

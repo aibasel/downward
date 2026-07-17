@@ -14,16 +14,14 @@ class PatternCollectionGenerator;
 
 namespace operator_counting {
 class PhOConstraints : public ConstraintGenerator {
-    std::shared_ptr<pdbs::PatternCollectionGenerator>
-        pattern_generator;
+    std::shared_ptr<pdbs::PatternCollectionGenerator> pattern_generator;
 
     int constraint_offset;
     std::shared_ptr<pdbs::PDBCollection> pdbs;
 public:
     PhOConstraints(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<pdbs::PatternCollectionGenerator>
-            &patterns);
+        const std::shared_ptr<pdbs::PatternCollectionGenerator> &patterns);
 
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task,

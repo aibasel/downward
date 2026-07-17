@@ -109,8 +109,7 @@ void SearchAlgorithm::save_plan_if_necessary() {
     }
 }
 
-int SearchAlgorithm::get_adjusted_cost(
-    const OperatorProxy &op) const {
+int SearchAlgorithm::get_adjusted_cost(const OperatorProxy &op) const {
     return get_adjusted_action_cost(op, cost_type, is_unit_cost);
 }
 
@@ -215,8 +214,7 @@ public:
 } _category_plugin;
 
 void collect_preferred_operators(
-    EvaluationContext &eval_context,
-    Evaluator *preferred_operator_evaluator,
+    EvaluationContext &eval_context, Evaluator *preferred_operator_evaluator,
     ordered_set::OrderedSet<OperatorID> &preferred_operators) {
     if (!eval_context.is_evaluator_value_infinite(
             preferred_operator_evaluator)) {
