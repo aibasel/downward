@@ -50,7 +50,7 @@ int main(int argc, const char **argv) {
         ParsedSearchOptions parsed_search_options =
             parse_cmd_line(argc, argv, unit_cost);
 
-        shared_ptr<TaskSpecificSearchAlgorithm> search_algorithm;
+        shared_ptr<SearchAlgorithm> search_algorithm;
         if (parsed_search_options.search_algorithm) {
             search_algorithm =
                 parsed_search_options.search_algorithm->bind_task(task);

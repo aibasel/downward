@@ -5,7 +5,7 @@
 
 namespace merge_and_shrink {
 class MergeScoringFunctionGoalRelevance
-    : public TaskSpecificMergeScoringFunction {
+    : public MergeScoringFunction {
     virtual std::string name() const override;
 public:
     explicit MergeScoringFunctionGoalRelevance(

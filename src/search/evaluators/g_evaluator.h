@@ -4,7 +4,7 @@
 #include "../evaluator.h"
 
 namespace g_evaluator {
-class GEvaluator : public TaskSpecificEvaluator {
+class GEvaluator : public Evaluator {
 public:
     GEvaluator(
         const std::shared_ptr<AbstractTask> &task,
@@ -14,7 +14,7 @@ public:
         EvaluationContext &eval_context) override;
 
     virtual void get_path_dependent_evaluators(
-        std::set<TaskSpecificEvaluator *> &) override {
+        std::set<Evaluator *> &) override {
     }
 };
 }

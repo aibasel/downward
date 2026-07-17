@@ -8,7 +8,7 @@
 
 namespace pdbs {
 class PatternCollectionGeneratorManual
-    : public TaskSpecificPatternCollectionGenerator {
+    : public PatternCollectionGenerator {
     std::shared_ptr<PatternCollection> patterns;
 
     virtual std::string name() const override;

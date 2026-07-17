@@ -4,7 +4,7 @@
 #include "../heuristic.h"
 
 namespace goal_count_heuristic {
-class GoalCountHeuristic : public TaskSpecificHeuristic {
+class GoalCountHeuristic : public Heuristic {
 protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 public:

@@ -13,21 +13,21 @@
 #include <limits>
 
 using namespace std;
-TaskSpecificHeuristic::TaskSpecificHeuristic(
+Heuristic::Heuristic(
     const shared_ptr<AbstractTask> &task, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : TaskSpecificEvaluator(task, true, true, true, description, verbosity),
+    : Evaluator(task, true, true, true, description, verbosity),
       heuristic_cache(
           HEntry(NO_VALUE, true)), // TODO: is true really a good idea here?
       cache_evaluator_values(cache_estimates) {
 }
 
-void TaskSpecificHeuristic::set_preferred(const OperatorProxy &op) {
+void Heuristic::set_preferred(const OperatorProxy &op) {
     preferred_operators.insert(
         op.get_ancestor_operator_id(tasks::g_root_task.get()));
 }
 
-State TaskSpecificHeuristic::convert_ancestor_state(
+State Heuristic::convert_ancestor_state(
     const State &ancestor_state) const {
     return task_proxy.convert_ancestor_state(ancestor_state);
 }
@@ -46,7 +46,7 @@ tuple<bool, string, utils::Verbosity> get_heuristic_arguments_from_options(
         get_evaluator_arguments_from_options(opts));
 }
 
-EvaluationResult TaskSpecificHeuristic::compute_result(
+EvaluationResult Heuristic::compute_result(
     EvaluationContext &eval_context) {
     EvaluationResult result;
 
@@ -100,15 +100,15 @@ EvaluationResult TaskSpecificHeuristic::compute_result(
     return result;
 }
 
-bool TaskSpecificHeuristic::does_cache_estimates() const {
+bool Heuristic::does_cache_estimates() const {
     return cache_evaluator_values;
 }
 
-bool TaskSpecificHeuristic::is_estimate_cached(const State &state) const {
+bool Heuristic::is_estimate_cached(const State &state) const {
     return heuristic_cache[state].h != NO_VALUE;
 }
 
-int TaskSpecificHeuristic::get_cached_estimate(const State &state) const {
+int Heuristic::get_cached_estimate(const State &state) const {
     assert(is_estimate_cached(state));
     return heuristic_cache[state].h;
 }

@@ -10,7 +10,7 @@ class LandmarkCutLandmarks;
 }
 
 namespace operator_counting {
-class LMCutConstraints : public TaskSpecificConstraintGenerator {
+class LMCutConstraints : public ConstraintGenerator {
     std::unique_ptr<lm_cut_heuristic::LandmarkCutLandmarks> landmark_generator;
 public:
     explicit LMCutConstraints(const std::shared_ptr<AbstractTask> &task);

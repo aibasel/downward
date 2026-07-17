@@ -5,10 +5,10 @@
 
 #include <unordered_map>
 
-class TaskSpecificEvaluator;
+class Evaluator;
 
 using EvaluationResults =
-    std::unordered_map<TaskSpecificEvaluator *, EvaluationResult>;
+    std::unordered_map<Evaluator *, EvaluationResult>;
 
 /*
   Store evaluation results for evaluators.
@@ -17,12 +17,12 @@ class EvaluatorCache {
     EvaluationResults eval_results;
 
 public:
-    EvaluationResult &operator[](TaskSpecificEvaluator *eval);
+    EvaluationResult &operator[](Evaluator *eval);
 
     template<class Callback>
     void for_each_evaluator_result(const Callback &callback) const {
         for (const auto &element : eval_results) {
-            const TaskSpecificEvaluator *eval = element.first;
+            const Evaluator *eval = element.first;
             const EvaluationResult &result = element.second;
             callback(eval, result);
         }

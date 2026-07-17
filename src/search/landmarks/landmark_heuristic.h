@@ -17,7 +17,7 @@ class SuccessorGenerator;
 namespace landmarks {
 class LandmarkStatusManager;
 
-class LandmarkHeuristic : public TaskSpecificHeuristic {
+class LandmarkHeuristic : public Heuristic {
     bool initial_landmark_graph_has_cycle_of_natural_orderings;
 
 protected:
@@ -32,10 +32,10 @@ protected:
         successor_generator;
 
     void initialize(
-        const std::shared_ptr<TaskSpecificLandmarkFactory> &landmark_factory,
+        const std::shared_ptr<LandmarkFactory> &landmark_factory,
         bool prog_goal, bool prog_gn, bool prog_r);
     void compute_landmark_graph(
-        const std::shared_ptr<TaskSpecificLandmarkFactory> &landmark_factory);
+        const std::shared_ptr<LandmarkFactory> &landmark_factory);
 
     virtual int get_heuristic_value(const State &ancestor_state) = 0;
 
@@ -52,7 +52,7 @@ public:
         utils::Verbosity verbosity);
 
     virtual void get_path_dependent_evaluators(
-        std::set<TaskSpecificEvaluator *> &evals) override {
+        std::set<Evaluator *> &evals) override {
         evals.insert(this);
     }
 

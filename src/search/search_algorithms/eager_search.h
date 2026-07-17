@@ -9,8 +9,8 @@
 #include <optional>
 #include <vector>
 
-class TaskSpecificEvaluator;
-class TaskSpecificPruningMethod;
+class Evaluator;
+class PruningMethod;
 class OpenListFactory;
 
 namespace plugins {
@@ -18,18 +18,18 @@ class Feature;
 }
 
 namespace eager_search {
-class EagerSearch : public TaskSpecificSearchAlgorithm {
+class EagerSearch : public SearchAlgorithm {
     const bool reopen_closed_nodes;
 
     std::unique_ptr<StateOpenList> open_list;
-    std::shared_ptr<TaskSpecificEvaluator> f_evaluator;
+    std::shared_ptr<Evaluator> f_evaluator;
 
-    std::vector<TaskSpecificEvaluator *> path_dependent_evaluators;
-    std::vector<std::shared_ptr<TaskSpecificEvaluator>>
+    std::vector<Evaluator *> path_dependent_evaluators;
+    std::vector<std::shared_ptr<Evaluator>>
         preferred_operator_evaluators;
-    std::shared_ptr<TaskSpecificEvaluator> lazy_evaluator;
+    std::shared_ptr<Evaluator> lazy_evaluator;
 
-    std::shared_ptr<TaskSpecificPruningMethod> pruning_method;
+    std::shared_ptr<PruningMethod> pruning_method;
 
     void start_f_value_statistics(EvaluationContext &eval_context);
     void update_f_value_statistics(EvaluationContext &eval_context);
@@ -50,10 +50,10 @@ public:
     EagerSearch(
         const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<OpenListFactory> &open, bool reopen_closed,
-        const std::shared_ptr<TaskSpecificEvaluator> &f_eval,
-        const std::vector<std::shared_ptr<TaskSpecificEvaluator>> &preferred,
-        const std::shared_ptr<TaskSpecificPruningMethod> &pruning,
-        const std::shared_ptr<TaskSpecificEvaluator> &lazy_evaluator,
+        const std::shared_ptr<Evaluator> &f_eval,
+        const std::vector<std::shared_ptr<Evaluator>> &preferred,
+        const std::shared_ptr<PruningMethod> &pruning,
+        const std::shared_ptr<Evaluator> &lazy_evaluator,
         OperatorCost cost_type, int bound, double max_time,
         const std::string &description, utils::Verbosity verbosity);
 

@@ -10,7 +10,7 @@ class RandomNumberGenerator;
 }
 
 namespace merge_and_shrink {
-class MergeTreeFactoryLinear : public TaskSpecificMergeTreeFactory {
+class MergeTreeFactoryLinear : public MergeTreeFactory {
     variable_order_finder::VariableOrderType variable_order_type;
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 protected:

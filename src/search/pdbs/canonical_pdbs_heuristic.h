@@ -12,7 +12,7 @@ class Feature;
 
 namespace pdbs {
 // Implements the canonical heuristic function.
-class CanonicalPDBsHeuristic : public TaskSpecificHeuristic {
+class CanonicalPDBsHeuristic : public Heuristic {
     CanonicalPDBs canonical_pdbs;
 
 protected:
@@ -21,7 +21,7 @@ protected:
 public:
     CanonicalPDBsHeuristic(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<TaskSpecificPatternCollectionGenerator> &patterns,
+        const std::shared_ptr<PatternCollectionGenerator> &patterns,
         double max_time_dominance_pruning, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 };

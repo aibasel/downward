@@ -118,7 +118,7 @@ PatternCollectionGeneratorHillclimbing::PatternCollectionGeneratorHillclimbing(
     const shared_ptr<AbstractTask> &task, int pdb_max_size,
     int collection_max_size, int num_samples, int min_improvement,
     double max_time, int random_seed, utils::Verbosity verbosity)
-    : TaskSpecificPatternCollectionGenerator(task, verbosity),
+    : PatternCollectionGenerator(task, verbosity),
       pdb_max_size(pdb_max_size),
       collection_max_size(collection_max_size),
       num_samples(num_samples),
@@ -600,7 +600,7 @@ public:
     create_component(const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
             PatternCollectionGeneratorHillclimbing,
-            TaskSpecificPatternCollectionGenerator>(
+            PatternCollectionGenerator>(
             get_hillclimbing_arguments_from_options(opts),
             get_generator_arguments_from_options(opts));
     }
@@ -653,12 +653,12 @@ public:
         shared_ptr<TaskIndependentPatternCollectionGenerator> pgh =
             components::make_auto_task_independent_component<
                 PatternCollectionGeneratorHillclimbing,
-                TaskSpecificPatternCollectionGenerator>(
+                PatternCollectionGenerator>(
                 get_hillclimbing_arguments_from_options(opts),
                 get_generator_arguments_from_options(opts));
 
         return components::make_auto_task_independent_component<
-            CanonicalPDBsHeuristic, TaskSpecificEvaluator>(
+            CanonicalPDBsHeuristic, Evaluator>(
             pgh, opts.get<double>("max_time_dominance_pruning"),
             get_heuristic_arguments_from_options(opts));
     }

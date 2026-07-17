@@ -21,7 +21,7 @@ PatternCollectionGeneratorMultiple::PatternCollectionGeneratorMultiple(
     double total_max_time, double stagnation_limit,
     double blacklist_trigger_percentage, bool enable_blacklist_on_stagnation,
     int random_seed, utils::Verbosity verbosity)
-    : TaskSpecificPatternCollectionGenerator(task, verbosity),
+    : PatternCollectionGenerator(task, verbosity),
       max_pdb_size(max_pdb_size),
       pattern_generation_max_time(pattern_generation_max_time),
       total_max_time(total_max_time),

@@ -37,7 +37,7 @@ enum SearchStatus {
     SOLVED
 };
 
-class TaskSpecificSearchAlgorithm : public components::TaskSpecificComponent {
+class SearchAlgorithm : public components::TaskSpecificComponent {
     std::string description;
     SearchStatus status;
     bool solution_found;
@@ -63,7 +63,7 @@ protected:
     bool check_goal_and_set_plan(const State &state);
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
-    TaskSpecificSearchAlgorithm(
+    SearchAlgorithm(
         const std::shared_ptr<AbstractTask> &task, OperatorCost cost_type,
         int bound, double max_time, const std::string &description,
         utils::Verbosity verbosity);
@@ -91,7 +91,7 @@ public:
 };
 
 using TaskIndependentSearchAlgorithm =
-    components::TaskIndependentComponent<TaskSpecificSearchAlgorithm>;
+    components::TaskIndependentComponent<SearchAlgorithm>;
 
 /*
   Print evaluator values of all evaluators evaluated in the evaluation context.
@@ -101,7 +101,7 @@ extern void print_initial_evaluator_values(
 
 extern void collect_preferred_operators(
     EvaluationContext &eval_context,
-    TaskSpecificEvaluator *preferred_operator_evaluator,
+    Evaluator *preferred_operator_evaluator,
     ordered_set::OrderedSet<OperatorID> &preferred_operators);
 
 extern void add_search_pruning_options_to_feature(plugins::Feature &feature);

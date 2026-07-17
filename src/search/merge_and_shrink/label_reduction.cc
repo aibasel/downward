@@ -26,7 +26,7 @@ using namespace std;
 using utils::ExitCode;
 
 namespace merge_and_shrink {
-TaskSpecificLabelReduction::TaskSpecificLabelReduction(
+LabelReduction::LabelReduction(
     const shared_ptr<AbstractTask> &task, bool before_shrinking,
     bool before_merging, LabelReductionMethod method,
     LabelReductionSystemOrder system_order, int random_seed)
@@ -41,11 +41,11 @@ TaskSpecificLabelReduction::TaskSpecificLabelReduction(
         "Please turn on at least one of the options \"before_shrinking\" or \"before_merging\"!");
 }
 
-bool TaskSpecificLabelReduction::initialized() const {
+bool LabelReduction::initialized() const {
     return !transition_system_order.empty();
 }
 
-void TaskSpecificLabelReduction::initialize(const TaskProxy &task_proxy) {
+void LabelReduction::initialize(const TaskProxy &task_proxy) {
     assert(!initialized());
 
     // Compute the transition system order.
@@ -67,7 +67,7 @@ void TaskSpecificLabelReduction::initialize(const TaskProxy &task_proxy) {
     }
 }
 
-void TaskSpecificLabelReduction::compute_label_mapping(
+void LabelReduction::compute_label_mapping(
     const equivalence_relation::EquivalenceRelation &relation,
     const FactoredTransitionSystem &fts,
     vector<pair<int, vector<int>>> &label_mapping, utils::LogProxy &log) const {
@@ -109,7 +109,7 @@ void TaskSpecificLabelReduction::compute_label_mapping(
 }
 
 equivalence_relation::EquivalenceRelation
-TaskSpecificLabelReduction::compute_combinable_equivalence_relation(
+LabelReduction::compute_combinable_equivalence_relation(
     int ts_index, const FactoredTransitionSystem &fts) const {
     /*
       Returns an equivalence relation over labels s.t. l ~ l'
@@ -138,7 +138,7 @@ TaskSpecificLabelReduction::compute_combinable_equivalence_relation(
     return relation;
 }
 
-bool TaskSpecificLabelReduction::reduce(
+bool LabelReduction::reduce(
     const pair<int, int> &next_merge, FactoredTransitionSystem &fts,
     utils::LogProxy &log) const {
     assert(initialized());
@@ -255,7 +255,7 @@ bool TaskSpecificLabelReduction::reduce(
     return reduced;
 }
 
-void TaskSpecificLabelReduction::dump_options(utils::LogProxy &log) const {
+void LabelReduction::dump_options(utils::LogProxy &log) const {
     if (log.is_at_least_normal()) {
         log << "Label reduction options:" << endl;
         log << "Before merging: "
@@ -343,7 +343,7 @@ public:
     virtual shared_ptr<TaskIndependentLabelReduction> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            TaskSpecificLabelReduction, TaskSpecificLabelReduction>(
+            LabelReduction, LabelReduction>(
             opts.get<bool>("before_shrinking"),
             opts.get<bool>("before_merging"),
             opts.get<LabelReductionMethod>("method"),

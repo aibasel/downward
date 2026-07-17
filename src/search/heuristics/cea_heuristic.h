@@ -17,7 +17,7 @@ struct LocalProblem;
 struct LocalProblemNode;
 struct LocalTransition;
 
-class ContextEnhancedAdditiveHeuristic : public TaskSpecificHeuristic {
+class ContextEnhancedAdditiveHeuristic : public Heuristic {
     std::vector<std::unique_ptr<domain_transition_graph::DomainTransitionGraph>>
         transition_graphs;
     std::vector<LocalProblem *> local_problems;

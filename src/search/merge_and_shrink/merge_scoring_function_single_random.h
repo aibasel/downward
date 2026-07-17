@@ -11,7 +11,7 @@ class RandomNumberGenerator;
 
 namespace merge_and_shrink {
 class MergeScoringFunctionSingleRandom
-    : public TaskSpecificMergeScoringFunction {
+    : public MergeScoringFunction {
     int random_seed; // only for dump options
     std::shared_ptr<utils::RandomNumberGenerator> rng;
 

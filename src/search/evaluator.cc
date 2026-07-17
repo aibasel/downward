@@ -8,7 +8,7 @@
 
 using namespace std;
 
-TaskSpecificEvaluator::TaskSpecificEvaluator(
+Evaluator::Evaluator(
     const shared_ptr<AbstractTask> &task, bool use_for_reporting_minima,
     bool use_for_boosting, bool use_for_counting_evaluations,
     const string &description, utils::Verbosity verbosity)
@@ -20,11 +20,11 @@ TaskSpecificEvaluator::TaskSpecificEvaluator(
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 
-bool TaskSpecificEvaluator::dead_ends_are_reliable() const {
+bool Evaluator::dead_ends_are_reliable() const {
     return true;
 }
 
-void TaskSpecificEvaluator::report_value_for_initial_state(
+void Evaluator::report_value_for_initial_state(
     const EvaluationResult &result) const {
     if (log.is_at_least_normal()) {
         assert(use_for_reporting_minima);
@@ -37,7 +37,7 @@ void TaskSpecificEvaluator::report_value_for_initial_state(
     }
 }
 
-void TaskSpecificEvaluator::report_new_minimum_value(
+void Evaluator::report_new_minimum_value(
     const EvaluationResult &result) const {
     if (log.is_at_least_normal()) {
         assert(use_for_reporting_minima);
@@ -46,31 +46,31 @@ void TaskSpecificEvaluator::report_new_minimum_value(
     }
 }
 
-const string &TaskSpecificEvaluator::get_description() const {
+const string &Evaluator::get_description() const {
     return description;
 }
 
-bool TaskSpecificEvaluator::is_used_for_reporting_minima() const {
+bool Evaluator::is_used_for_reporting_minima() const {
     return use_for_reporting_minima;
 }
 
-bool TaskSpecificEvaluator::is_used_for_boosting() const {
+bool Evaluator::is_used_for_boosting() const {
     return use_for_boosting;
 }
 
-bool TaskSpecificEvaluator::is_used_for_counting_evaluations() const {
+bool Evaluator::is_used_for_counting_evaluations() const {
     return use_for_counting_evaluations;
 }
 
-bool TaskSpecificEvaluator::does_cache_estimates() const {
+bool Evaluator::does_cache_estimates() const {
     return false;
 }
 
-bool TaskSpecificEvaluator::is_estimate_cached(const State &) const {
+bool Evaluator::is_estimate_cached(const State &) const {
     return false;
 }
 
-int TaskSpecificEvaluator::get_cached_estimate(const State &) const {
+int Evaluator::get_cached_estimate(const State &) const {
     ABORT("Called get_cached_estimate when estimate is not cached.");
 }
 

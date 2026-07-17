@@ -11,12 +11,12 @@
 using namespace std;
 
 namespace merge_and_shrink {
-TaskSpecificShrinkStrategy::TaskSpecificShrinkStrategy(
+ShrinkStrategy::ShrinkStrategy(
     const shared_ptr<AbstractTask> &task)
     : components::TaskSpecificComponent(task) {
 }
 
-void TaskSpecificShrinkStrategy::dump_options(utils::LogProxy &log) const {
+void ShrinkStrategy::dump_options(utils::LogProxy &log) const {
     if (log.is_at_least_normal()) {
         log << "Shrink strategy options: " << endl;
         log << "Type: " << name() << endl;
@@ -24,7 +24,7 @@ void TaskSpecificShrinkStrategy::dump_options(utils::LogProxy &log) const {
     }
 }
 
-string TaskSpecificShrinkStrategy::get_name() const {
+string ShrinkStrategy::get_name() const {
     return name();
 }
 

@@ -12,7 +12,7 @@
 using namespace std;
 
 namespace merge_and_shrink {
-TaskSpecificMergeTreeFactory::TaskSpecificMergeTreeFactory(
+MergeTreeFactory::MergeTreeFactory(
     const shared_ptr<AbstractTask> &task, int random_seed,
     UpdateOption update_option)
     : components::TaskSpecificComponent(task),
@@ -20,7 +20,7 @@ TaskSpecificMergeTreeFactory::TaskSpecificMergeTreeFactory(
       update_option(update_option) {
 }
 
-void TaskSpecificMergeTreeFactory::dump_options(utils::LogProxy &log) const {
+void MergeTreeFactory::dump_options(utils::LogProxy &log) const {
     log << "Merge tree options: " << endl;
     log << "Type: " << name() << endl;
     log << "Update option: ";
@@ -39,7 +39,7 @@ void TaskSpecificMergeTreeFactory::dump_options(utils::LogProxy &log) const {
     dump_tree_specific_options(log);
 }
 
-unique_ptr<MergeTree> TaskSpecificMergeTreeFactory::compute_merge_tree(
+unique_ptr<MergeTree> MergeTreeFactory::compute_merge_tree(
     const TaskProxy &, const FactoredTransitionSystem &, const vector<int> &) {
     cerr << "This merge tree does not support being computed on a subset "
             "of indices for a given factored transition system!"

@@ -22,14 +22,14 @@ using utils::ExitCode;
 namespace merge_and_shrink {
 MergeAndShrinkHeuristic::MergeAndShrinkHeuristic(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<TaskSpecificMergeStrategyFactory> &merge_strategy,
-    const shared_ptr<TaskSpecificShrinkStrategy> &shrink_strategy,
-    const shared_ptr<TaskSpecificLabelReduction> &label_reduction,
+    const shared_ptr<MergeStrategyFactory> &merge_strategy,
+    const shared_ptr<ShrinkStrategy> &shrink_strategy,
+    const shared_ptr<LabelReduction> &label_reduction,
     bool prune_unreachable_states, bool prune_irrelevant_states, int max_states,
     int max_states_before_merge, int threshold_before_merge,
     double main_loop_max_time, bool cache_estimates, const string &description,
     utils::Verbosity verbosity)
-    : TaskSpecificHeuristic(task, cache_estimates, description, verbosity) {
+    : Heuristic(task, cache_estimates, description, verbosity) {
     log << "Initializing merge-and-shrink heuristic..." << endl;
     MergeAndShrinkAlgorithm algorithm(
         merge_strategy, shrink_strategy, label_reduction,
@@ -247,7 +247,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            MergeAndShrinkHeuristic, TaskSpecificEvaluator>(
+            MergeAndShrinkHeuristic, Evaluator>(
             get_merge_and_shrink_algorithm_arguments_from_options(opts),
             get_heuristic_arguments_from_options(opts));
     }

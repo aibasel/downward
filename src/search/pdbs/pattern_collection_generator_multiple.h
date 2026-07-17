@@ -34,7 +34,7 @@ namespace pdbs {
   enable said blacklisting when stagnating.
 */
 class PatternCollectionGeneratorMultiple
-    : public TaskSpecificPatternCollectionGenerator {
+    : public PatternCollectionGenerator {
     const int max_pdb_size;
     const double pattern_generation_max_time;
     const double total_max_time;

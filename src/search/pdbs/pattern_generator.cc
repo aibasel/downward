@@ -7,13 +7,13 @@
 using namespace std;
 
 namespace pdbs {
-TaskSpecificPatternCollectionGenerator::TaskSpecificPatternCollectionGenerator(
+PatternCollectionGenerator::PatternCollectionGenerator(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
     : components::TaskSpecificComponent(task),
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 
-PatternCollectionInformation TaskSpecificPatternCollectionGenerator::generate(
+PatternCollectionInformation PatternCollectionGenerator::generate(
     const shared_ptr<AbstractTask> &task) {
     if (log.is_at_least_normal()) {
         log << "Generating patterns using: " << name() << endl;
@@ -24,13 +24,13 @@ PatternCollectionInformation TaskSpecificPatternCollectionGenerator::generate(
     return pci;
 }
 
-TaskSpecificPatternGenerator::TaskSpecificPatternGenerator(
+PatternGenerator::PatternGenerator(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
     : components::TaskSpecificComponent(task),
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 
-PatternInformation TaskSpecificPatternGenerator::generate(
+PatternInformation PatternGenerator::generate(
     const shared_ptr<AbstractTask> &task) {
     if (log.is_at_least_normal()) {
         log << "Generating pattern using: " << name() << endl;

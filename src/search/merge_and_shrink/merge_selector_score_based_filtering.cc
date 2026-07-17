@@ -12,9 +12,9 @@ using namespace std;
 namespace merge_and_shrink {
 MergeSelectorScoreBasedFiltering::MergeSelectorScoreBasedFiltering(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<TaskSpecificMergeScoringFunction>>
+    const vector<shared_ptr<MergeScoringFunction>>
         &scoring_functions)
-    : TaskSpecificMergeSelector(task),
+    : MergeSelector(task),
       merge_scoring_functions(scoring_functions) {
 }
 
@@ -41,7 +41,7 @@ static vector<pair<int, int>> get_remaining_candidates(
 pair<int, int> MergeSelectorScoreBasedFiltering::select_merge_from_candidates(
     const FactoredTransitionSystem &fts,
     vector<pair<int, int>> &&merge_candidates) const {
-    for (const shared_ptr<TaskSpecificMergeScoringFunction> &scoring_function :
+    for (const shared_ptr<MergeScoringFunction> &scoring_function :
          merge_scoring_functions) {
         vector<double> scores =
             scoring_function->compute_scores(fts, merge_candidates);
@@ -63,7 +63,7 @@ pair<int, int> MergeSelectorScoreBasedFiltering::select_merge_from_candidates(
 }
 
 void MergeSelectorScoreBasedFiltering::initialize(const TaskProxy &task_proxy) {
-    for (shared_ptr<TaskSpecificMergeScoringFunction> &scoring_function :
+    for (shared_ptr<MergeScoringFunction> &scoring_function :
          merge_scoring_functions) {
         scoring_function->initialize(task_proxy);
     }
@@ -76,7 +76,7 @@ string MergeSelectorScoreBasedFiltering::name() const {
 void MergeSelectorScoreBasedFiltering::dump_selector_specific_options(
     utils::LogProxy &log) const {
     if (log.is_at_least_normal()) {
-        for (const shared_ptr<TaskSpecificMergeScoringFunction>
+        for (const shared_ptr<MergeScoringFunction>
                  &scoring_function : merge_scoring_functions) {
             scoring_function->dump_options(log);
         }
@@ -84,7 +84,7 @@ void MergeSelectorScoreBasedFiltering::dump_selector_specific_options(
 }
 
 bool MergeSelectorScoreBasedFiltering::requires_init_distances() const {
-    for (const shared_ptr<TaskSpecificMergeScoringFunction> &scoring_function :
+    for (const shared_ptr<MergeScoringFunction> &scoring_function :
          merge_scoring_functions) {
         if (scoring_function->requires_init_distances()) {
             return true;
@@ -94,7 +94,7 @@ bool MergeSelectorScoreBasedFiltering::requires_init_distances() const {
 }
 
 bool MergeSelectorScoreBasedFiltering::requires_goal_distances() const {
-    for (const shared_ptr<TaskSpecificMergeScoringFunction> &scoring_function :
+    for (const shared_ptr<MergeScoringFunction> &scoring_function :
          merge_scoring_functions) {
         if (scoring_function->requires_goal_distances()) {
             return true;
@@ -122,7 +122,7 @@ public:
     virtual shared_ptr<TaskIndependentMergeSelector> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            MergeSelectorScoreBasedFiltering, TaskSpecificMergeSelector>(
+            MergeSelectorScoreBasedFiltering, MergeSelector>(
             opts.get_list<shared_ptr<TaskIndependentMergeScoringFunction>>(
                 "scoring_functions"));
     }

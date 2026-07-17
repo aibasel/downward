@@ -12,7 +12,7 @@ class PotentialFunction;
 /*
   Maximize over multiple potential functions.
 */
-class PotentialMaxHeuristic : public TaskSpecificHeuristic {
+class PotentialMaxHeuristic : public Heuristic {
     std::vector<std::unique_ptr<PotentialFunction>> functions;
 
 protected:

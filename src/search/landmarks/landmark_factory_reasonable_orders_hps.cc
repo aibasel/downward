@@ -14,9 +14,9 @@ using namespace std;
 namespace landmarks {
 LandmarkFactoryReasonableOrdersHPS::LandmarkFactoryReasonableOrdersHPS(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<TaskSpecificLandmarkFactory> &lm_factory,
+    const shared_ptr<LandmarkFactory> &lm_factory,
     utils::Verbosity verbosity)
-    : TaskSpecificLandmarkFactory(task, verbosity),
+    : LandmarkFactory(task, verbosity),
       landmark_factory(lm_factory) {
 }
 
@@ -418,7 +418,7 @@ public:
     virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            LandmarkFactoryReasonableOrdersHPS, TaskSpecificLandmarkFactory>(
+            LandmarkFactoryReasonableOrdersHPS, LandmarkFactory>(
             opts.get<shared_ptr<TaskIndependentLandmarkFactory>>("lm_factory"),
             get_landmark_factory_arguments_from_options(opts));
     }

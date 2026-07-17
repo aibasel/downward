@@ -8,7 +8,7 @@ class RandomNumberGenerator;
 }
 
 namespace pdbs {
-class PatternGeneratorRandom : public TaskSpecificPatternGenerator {
+class PatternGeneratorRandom : public PatternGenerator {
     const int max_pdb_size;
     const double max_time;
     const bool bidirectional;

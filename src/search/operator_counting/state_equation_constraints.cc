@@ -13,7 +13,7 @@ using namespace std;
 namespace operator_counting {
 StateEquationConstraints::StateEquationConstraints(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
-    : TaskSpecificConstraintGenerator(task),
+    : ConstraintGenerator(task),
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 
@@ -164,7 +164,7 @@ public:
     virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            StateEquationConstraints, TaskSpecificConstraintGenerator>(
+            StateEquationConstraints, ConstraintGenerator>(
             utils::get_log_arguments_from_options(opts));
     }
 };

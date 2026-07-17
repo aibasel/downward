@@ -10,9 +10,9 @@ using namespace std;
 namespace merge_and_shrink {
 MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<TaskSpecificMergeSelector> &merge_selector,
+    const shared_ptr<MergeSelector> &merge_selector,
     utils::Verbosity verbosity)
-    : TaskSpecificMergeStrategyFactory(task, verbosity),
+    : MergeStrategyFactory(task, verbosity),
       merge_selector(merge_selector) {
 }
 
@@ -75,7 +75,7 @@ public:
     virtual shared_ptr<TaskIndependentMergeStrategyFactory> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            MergeStrategyFactoryStateless, TaskSpecificMergeStrategyFactory>(
+            MergeStrategyFactoryStateless, MergeStrategyFactory>(
             opts.get<shared_ptr<TaskIndependentMergeSelector>>(
                 "merge_selector"),
             get_merge_strategy_arguments_from_options(opts));

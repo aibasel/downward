@@ -11,7 +11,7 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionGoalRelevance::MergeScoringFunctionGoalRelevance(
     const shared_ptr<AbstractTask> &task)
-    : TaskSpecificMergeScoringFunction(task) {
+    : MergeScoringFunction(task) {
 }
 
 vector<double> MergeScoringFunctionGoalRelevance::compute_scores(
@@ -61,7 +61,7 @@ public:
         const plugins::Options &) const override {
         return components::make_auto_task_independent_component<
             MergeScoringFunctionGoalRelevance,
-            TaskSpecificMergeScoringFunction>();
+            MergeScoringFunction>();
     }
 };
 

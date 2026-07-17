@@ -4,18 +4,18 @@
 #include "merge_strategy_factory.h"
 
 namespace merge_and_shrink {
-class TaskSpecificMergeTreeFactory;
+class MergeTreeFactory;
 
 class MergeStrategyFactoryPrecomputed
-    : public TaskSpecificMergeStrategyFactory {
-    std::shared_ptr<TaskSpecificMergeTreeFactory> merge_tree_factory;
+    : public MergeStrategyFactory {
+    std::shared_ptr<MergeTreeFactory> merge_tree_factory;
 protected:
     virtual std::string name() const override;
     virtual void dump_strategy_specific_options() const override;
 public:
     MergeStrategyFactoryPrecomputed(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<TaskSpecificMergeTreeFactory> &merge_tree,
+        const std::shared_ptr<MergeTreeFactory> &merge_tree,
         utils::Verbosity verbosity);
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,

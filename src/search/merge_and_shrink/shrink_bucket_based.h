@@ -35,7 +35,7 @@ namespace merge_and_shrink {
    buckets are abstracted by combining all states in each bucket, and
    (up to) one bucket "in the middle" is partially abstracted.
 */
-class ShrinkBucketBased : public TaskSpecificShrinkStrategy {
+class ShrinkBucketBased : public ShrinkStrategy {
 protected:
     using Bucket = std::vector<int>;
     std::shared_ptr<utils::RandomNumberGenerator> rng;

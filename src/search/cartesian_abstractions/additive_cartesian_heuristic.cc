@@ -19,7 +19,7 @@ using namespace std;
 namespace cartesian_abstractions {
 static vector<CartesianHeuristicFunction> generate_heuristic_functions(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<TaskSpecificSubtaskGenerator>> &subtask_generators,
+    const vector<shared_ptr<SubtaskGenerator>> &subtask_generators,
     int max_states, int max_transitions, double max_time, PickSplit pick,
     bool use_general_costs, int random_seed, utils::LogProxy &log) {
     if (log.is_at_least_normal()) {
@@ -34,11 +34,11 @@ static vector<CartesianHeuristicFunction> generate_heuristic_functions(
 
 AdditiveCartesianHeuristic::AdditiveCartesianHeuristic(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<TaskSpecificSubtaskGenerator>> &subtasks,
+    const vector<shared_ptr<SubtaskGenerator>> &subtasks,
     int max_states, int max_transitions, double max_time, PickSplit pick,
     bool use_general_costs, int random_seed, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : TaskSpecificHeuristic(task, cache_estimates, description, verbosity),
+    : Heuristic(task, cache_estimates, description, verbosity),
       heuristic_functions(generate_heuristic_functions(
           task, subtasks, max_states, max_transitions, max_time, pick,
           use_general_costs, random_seed, log)) {
@@ -127,7 +127,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            AdditiveCartesianHeuristic, TaskSpecificEvaluator>(
+            AdditiveCartesianHeuristic, Evaluator>(
             opts.get_list<shared_ptr<TaskIndependentSubtaskGenerator>>(
                 "subtasks"),
             opts.get<int>("max_states"), opts.get<int>("max_transitions"),

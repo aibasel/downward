@@ -2,6 +2,6 @@
 
 using namespace std;
 
-EvaluationResult &EvaluatorCache::operator[](TaskSpecificEvaluator *eval) {
+EvaluationResult &EvaluatorCache::operator[](Evaluator *eval) {
     return eval_results[eval];
 }

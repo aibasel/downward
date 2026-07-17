@@ -43,7 +43,7 @@ EvaluationContext::EvaluationContext(
 }
 
 const EvaluationResult &EvaluationContext::get_result(
-    TaskSpecificEvaluator *evaluator) {
+    Evaluator *evaluator) {
     EvaluationResult &result = cache[evaluator];
     if (result.is_uninitialized()) {
         result = evaluator->compute_result(*this);
@@ -74,23 +74,23 @@ bool EvaluationContext::is_preferred() const {
 }
 
 bool EvaluationContext::is_evaluator_value_infinite(
-    TaskSpecificEvaluator *eval) {
+    Evaluator *eval) {
     return get_result(eval).is_infinite();
 }
 
-int EvaluationContext::get_evaluator_value(TaskSpecificEvaluator *eval) {
+int EvaluationContext::get_evaluator_value(Evaluator *eval) {
     int h = get_result(eval).get_evaluator_value();
     assert(h != EvaluationResult::INFTY);
     return h;
 }
 
 int EvaluationContext::get_evaluator_value_or_infinity(
-    TaskSpecificEvaluator *eval) {
+    Evaluator *eval) {
     return get_result(eval).get_evaluator_value();
 }
 
 const vector<OperatorID> &EvaluationContext::get_preferred_operators(
-    TaskSpecificEvaluator *eval) {
+    Evaluator *eval) {
     return get_result(eval).get_preferred_operators();
 }
 

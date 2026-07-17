@@ -15,7 +15,7 @@ PatternCollectionGeneratorDisjointCegar::
         const shared_ptr<AbstractTask> &task, int max_pdb_size,
         int max_collection_size, double max_time, bool use_wildcard_plans,
         int random_seed, utils::Verbosity verbosity)
-    : TaskSpecificPatternCollectionGenerator(task, verbosity),
+    : PatternCollectionGenerator(task, verbosity),
       max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
       max_time(max_time),
@@ -83,7 +83,7 @@ public:
     create_component(const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
             PatternCollectionGeneratorDisjointCegar,
-            TaskSpecificPatternCollectionGenerator>(
+            PatternCollectionGenerator>(
             opts.get<int>("max_pdb_size"), opts.get<int>("max_collection_size"),
             opts.get<double>("max_time"),
             get_cegar_wildcard_arguments_from_options(opts),

@@ -20,11 +20,11 @@ namespace lazy_search {
 LazySearch::LazySearch(
     const shared_ptr<AbstractTask> &task,
     const shared_ptr<OpenListFactory> &open, bool reopen_closed,
-    const vector<shared_ptr<TaskSpecificEvaluator>> &preferred,
+    const vector<shared_ptr<Evaluator>> &preferred,
     bool randomize_successors, bool preferred_successors_first, int random_seed,
     OperatorCost cost_type, int bound, double max_time,
     const string &description, utils::Verbosity verbosity)
-    : TaskSpecificSearchAlgorithm(
+    : SearchAlgorithm(
           task, cost_type, bound, max_time, description, verbosity),
       open_list(open->create_edge_open_list()),
       reopen_closed_nodes(reopen_closed),
@@ -49,19 +49,19 @@ void LazySearch::initialize() {
         << endl;
 
     assert(open_list);
-    set<TaskSpecificEvaluator *> evals;
+    set<Evaluator *> evals;
     open_list->get_path_dependent_evaluators(evals);
 
     // Add evaluators that are used for preferred operators (in case they are
     // not also used in the open list).
-    for (const shared_ptr<TaskSpecificEvaluator> &evaluator :
+    for (const shared_ptr<Evaluator> &evaluator :
          preferred_operator_evaluators) {
         evaluator->get_path_dependent_evaluators(evals);
     }
 
     path_dependent_evaluators.assign(evals.begin(), evals.end());
     State initial_state = state_registry.get_initial_state();
-    for (TaskSpecificEvaluator *evaluator : path_dependent_evaluators) {
+    for (Evaluator *evaluator : path_dependent_evaluators) {
         evaluator->notify_initial_state(initial_state);
     }
 }
@@ -92,7 +92,7 @@ vector<OperatorID> LazySearch::get_successor_operators(
 
 void LazySearch::generate_successors() {
     ordered_set::OrderedSet<OperatorID> preferred_operators;
-    for (const shared_ptr<TaskSpecificEvaluator> &preferred_operator_evaluator :
+    for (const shared_ptr<Evaluator> &preferred_operator_evaluator :
          preferred_operator_evaluators) {
         collect_preferred_operators(
             current_eval_context, preferred_operator_evaluator.get(),
@@ -180,7 +180,7 @@ SearchStatus LazySearch::step() {
             if (!path_dependent_evaluators.empty()) {
                 State parent_state =
                     state_registry.lookup_state(current_predecessor_id);
-                for (TaskSpecificEvaluator *evaluator :
+                for (Evaluator *evaluator :
                      path_dependent_evaluators)
                     evaluator->notify_state_transition(
                         parent_state, current_operator_id, current_state);

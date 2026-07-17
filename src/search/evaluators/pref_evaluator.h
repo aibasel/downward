@@ -7,7 +7,7 @@
 #include <vector>
 
 namespace pref_evaluator {
-class PrefEvaluator : public TaskSpecificEvaluator {
+class PrefEvaluator : public Evaluator {
 public:
     PrefEvaluator(
         const std::shared_ptr<AbstractTask> &task,
@@ -16,7 +16,7 @@ public:
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
     virtual void get_path_dependent_evaluators(
-        std::set<TaskSpecificEvaluator *> &) override {
+        std::set<Evaluator *> &) override {
     }
 };
 }

@@ -9,10 +9,10 @@
 #include <vector>
 
 namespace operator_counting {
-class TaskSpecificConstraintGenerator;
+class ConstraintGenerator;
 
-class OperatorCountingHeuristic : public TaskSpecificHeuristic {
-    std::vector<std::shared_ptr<TaskSpecificConstraintGenerator>>
+class OperatorCountingHeuristic : public Heuristic {
+    std::vector<std::shared_ptr<ConstraintGenerator>>
         constraint_generators;
     lp::LPSolver lp_solver;
 protected:
@@ -20,7 +20,7 @@ protected:
 public:
     OperatorCountingHeuristic(
         const std::shared_ptr<AbstractTask> &task,
-        const std::vector<std::shared_ptr<TaskSpecificConstraintGenerator>>
+        const std::vector<std::shared_ptr<ConstraintGenerator>>
             &constraint_generators,
         bool use_integer_operator_counts, lp::LPSolverType lpsolver,
         bool cache_estimates, const std::string &description,

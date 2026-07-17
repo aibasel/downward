@@ -15,7 +15,7 @@ namespace pdbs {
 PatternCollectionGeneratorManual::PatternCollectionGeneratorManual(
     const shared_ptr<AbstractTask> &task, const vector<Pattern> &patterns,
     utils::Verbosity verbosity)
-    : TaskSpecificPatternCollectionGenerator(task, verbosity),
+    : PatternCollectionGenerator(task, verbosity),
       patterns(make_shared<PatternCollection>(patterns)) {
 }
 
@@ -49,7 +49,7 @@ public:
     create_component(const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
             PatternCollectionGeneratorManual,
-            TaskSpecificPatternCollectionGenerator>(
+            PatternCollectionGenerator>(
             opts.get_list<Pattern>("patterns"),
             get_generator_arguments_from_options(opts));
     }

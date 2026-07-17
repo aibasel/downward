@@ -92,7 +92,7 @@ struct Signature {
 
 ShrinkBisimulation::ShrinkBisimulation(
     const shared_ptr<AbstractTask> &task, bool greedy, AtLimit at_limit)
-    : TaskSpecificShrinkStrategy(task), greedy(greedy), at_limit(at_limit) {
+    : ShrinkStrategy(task), greedy(greedy), at_limit(at_limit) {
 }
 
 int ShrinkBisimulation::initialize_groups(
@@ -418,7 +418,7 @@ public:
     virtual shared_ptr<TaskIndependentShrinkStrategy> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            ShrinkBisimulation, TaskSpecificShrinkStrategy>(
+            ShrinkBisimulation, ShrinkStrategy>(
             opts.get<bool>("greedy"), opts.get<AtLimit>("at_limit"));
     }
 };

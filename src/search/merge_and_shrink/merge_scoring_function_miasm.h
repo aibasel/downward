@@ -9,10 +9,10 @@
 #include <optional>
 
 namespace merge_and_shrink {
-class TaskSpecificShrinkStrategy;
-class MergeScoringFunctionMIASM : public TaskSpecificMergeScoringFunction {
+class ShrinkStrategy;
+class MergeScoringFunctionMIASM : public MergeScoringFunction {
     const bool use_caching;
-    std::shared_ptr<TaskSpecificShrinkStrategy> shrink_strategy;
+    std::shared_ptr<ShrinkStrategy> shrink_strategy;
     int max_states;
     int max_states_before_merge;
     int shrink_threshold_before_merge;
@@ -26,7 +26,7 @@ class MergeScoringFunctionMIASM : public TaskSpecificMergeScoringFunction {
 public:
     MergeScoringFunctionMIASM(
         const std::shared_ptr<AbstractTask> &task,
-        std::shared_ptr<TaskSpecificShrinkStrategy> shrink_strategy,
+        std::shared_ptr<ShrinkStrategy> shrink_strategy,
         int max_states, int max_states_before_merge, int threshold_before_merge,
         bool use_caching);
     virtual std::vector<double> compute_scores(

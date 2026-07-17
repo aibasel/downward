@@ -10,7 +10,7 @@
 #include <vector>
 
 namespace iterated_search {
-class IteratedSearch : public TaskSpecificSearchAlgorithm {
+class IteratedSearch : public SearchAlgorithm {
     using TIComponent = components::TaskIndependentComponentBase;
     using TSComponent = components::TaskSpecificComponent;
 
@@ -29,8 +29,8 @@ class IteratedSearch : public TaskSpecificSearchAlgorithm {
     std::vector<std::shared_ptr<TSComponent>> retained_components;
 
     void update_retention_set();
-    std::shared_ptr<TaskSpecificSearchAlgorithm> bind_search(int search_index);
-    std::shared_ptr<TaskSpecificSearchAlgorithm> bind_current_search();
+    std::shared_ptr<SearchAlgorithm> bind_search(int search_index);
+    std::shared_ptr<SearchAlgorithm> bind_current_search();
     SearchStatus step_return_value();
 
     virtual SearchStatus step() override;

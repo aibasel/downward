@@ -21,7 +21,7 @@ MergeTreeFactoryLinear::MergeTreeFactoryLinear(
     const shared_ptr<AbstractTask> &task,
     variable_order_finder::VariableOrderType variable_order, int random_seed,
     UpdateOption update_option)
-    : TaskSpecificMergeTreeFactory(task, random_seed, update_option),
+    : MergeTreeFactory(task, random_seed, update_option),
       variable_order_type(variable_order) {
 }
 
@@ -139,7 +139,7 @@ public:
     virtual shared_ptr<TaskIndependentMergeTreeFactory> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            MergeTreeFactoryLinear, TaskSpecificMergeTreeFactory>(
+            MergeTreeFactoryLinear, MergeTreeFactory>(
             opts.get<variable_order_finder::VariableOrderType>(
                 "variable_order"),
             get_merge_tree_arguments_from_options(opts));

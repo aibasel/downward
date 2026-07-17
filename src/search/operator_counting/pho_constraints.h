@@ -9,12 +9,12 @@
 #include <memory>
 
 namespace pdbs {
-class TaskSpecificPatternCollectionGenerator;
+class PatternCollectionGenerator;
 }
 
 namespace operator_counting {
-class PhOConstraints : public TaskSpecificConstraintGenerator {
-    std::shared_ptr<pdbs::TaskSpecificPatternCollectionGenerator>
+class PhOConstraints : public ConstraintGenerator {
+    std::shared_ptr<pdbs::PatternCollectionGenerator>
         pattern_generator;
 
     int constraint_offset;
@@ -22,7 +22,7 @@ class PhOConstraints : public TaskSpecificConstraintGenerator {
 public:
     PhOConstraints(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<pdbs::TaskSpecificPatternCollectionGenerator>
+        const std::shared_ptr<pdbs::PatternCollectionGenerator>
             &patterns);
 
     virtual void initialize_constraints(

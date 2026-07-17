@@ -9,7 +9,7 @@ using namespace std;
 namespace pdbs {
 static ZeroOnePDBs get_zero_one_pdbs_from_generator(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<TaskSpecificPatternCollectionGenerator>
+    const shared_ptr<PatternCollectionGenerator>
         &pattern_generator) {
     PatternCollectionInformation pattern_collection_info =
         pattern_generator->generate(task);
@@ -21,9 +21,9 @@ static ZeroOnePDBs get_zero_one_pdbs_from_generator(
 
 ZeroOnePDBsHeuristic::ZeroOnePDBsHeuristic(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<TaskSpecificPatternCollectionGenerator> &patterns,
+    const shared_ptr<PatternCollectionGenerator> &patterns,
     bool cache_estimates, const string &description, utils::Verbosity verbosity)
-    : TaskSpecificHeuristic(task, cache_estimates, description, verbosity),
+    : Heuristic(task, cache_estimates, description, verbosity),
       zero_one_pdbs(get_zero_one_pdbs_from_generator(task, patterns)) {
 }
 
@@ -69,7 +69,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            ZeroOnePDBsHeuristic, TaskSpecificEvaluator>(
+            ZeroOnePDBsHeuristic, Evaluator>(
             opts.get<shared_ptr<TaskIndependentPatternCollectionGenerator>>(
                 "patterns"),
             get_heuristic_arguments_from_options(opts));

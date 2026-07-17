@@ -5,12 +5,12 @@
 using namespace std;
 
 namespace operator_counting {
-TaskSpecificConstraintGenerator::TaskSpecificConstraintGenerator(
+ConstraintGenerator::ConstraintGenerator(
     const shared_ptr<AbstractTask> &task)
     : components::TaskSpecificComponent(task) {
 }
 
-void TaskSpecificConstraintGenerator::initialize_constraints(
+void ConstraintGenerator::initialize_constraints(
     const shared_ptr<AbstractTask> &, lp::LinearProgram &) {
 }
 

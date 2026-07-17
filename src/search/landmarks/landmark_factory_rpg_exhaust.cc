@@ -110,7 +110,7 @@ public:
     virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            LandmarkFactoryRpgExhaust, TaskSpecificLandmarkFactory>(
+            LandmarkFactoryRpgExhaust, LandmarkFactory>(
             opts.get<bool>("use_unary_relaxation"),
             get_landmark_factory_arguments_from_options(opts));
     }

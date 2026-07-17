@@ -16,7 +16,7 @@ namespace landmarks {
 LandmarkHeuristic::LandmarkHeuristic(
     const shared_ptr<AbstractTask> &task, bool use_preferred_operators,
     bool cache_estimates, const string &description, utils::Verbosity verbosity)
-    : TaskSpecificHeuristic(task, cache_estimates, description, verbosity),
+    : Heuristic(task, cache_estimates, description, verbosity),
       initial_landmark_graph_has_cycle_of_natural_orderings(false),
       use_preferred_operators(use_preferred_operators),
       successor_generator(nullptr) {
@@ -61,7 +61,7 @@ static bool landmark_graph_has_cycle_of_natural_orderings(
 }
 
 void LandmarkHeuristic::initialize(
-    const shared_ptr<TaskSpecificLandmarkFactory> &landmark_factory,
+    const shared_ptr<LandmarkFactory> &landmark_factory,
     bool prog_goal, bool prog_gn, bool prog_r) {
     /*
       Actually, we should test if this is the root task or a task that *only*
@@ -103,7 +103,7 @@ void LandmarkHeuristic::initialize(
 }
 
 void LandmarkHeuristic::compute_landmark_graph(
-    const shared_ptr<TaskSpecificLandmarkFactory> &landmark_factory) {
+    const shared_ptr<LandmarkFactory> &landmark_factory) {
     utils::Timer landmark_graph_timer;
     if (log.is_at_least_normal()) {
         log << "Generating landmark graph..." << endl;

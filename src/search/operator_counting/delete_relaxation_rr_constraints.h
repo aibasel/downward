@@ -26,7 +26,7 @@ enum class AcyclicityType {
     NONE
 };
 
-class DeleteRelaxationRRConstraints : public TaskSpecificConstraintGenerator {
+class DeleteRelaxationRRConstraints : public ConstraintGenerator {
     struct LPVariableIDs {
         /*
           The variables f_p in the paper represent if a fact p is reached by the

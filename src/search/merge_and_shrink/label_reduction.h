@@ -51,7 +51,7 @@ enum class LabelReductionSystemOrder {
     RANDOM
 };
 
-class TaskSpecificLabelReduction : public components::TaskSpecificComponent {
+class LabelReduction : public components::TaskSpecificComponent {
     // Options for label reduction
     std::vector<int> transition_system_order;
     bool lr_before_shrinking;
@@ -72,7 +72,7 @@ class TaskSpecificLabelReduction : public components::TaskSpecificComponent {
     compute_combinable_equivalence_relation(
         int ts_index, const FactoredTransitionSystem &fts) const;
 public:
-    TaskSpecificLabelReduction(
+    LabelReduction(
         const std::shared_ptr<AbstractTask> &task, bool before_shrinking,
         bool before_merging, LabelReductionMethod method,
         LabelReductionSystemOrder system_order, int random_seed);
@@ -90,7 +90,7 @@ public:
 };
 
 using TaskIndependentLabelReduction =
-    components::TaskIndependentComponent<TaskSpecificLabelReduction>;
+    components::TaskIndependentComponent<LabelReduction>;
 }
 
 #endif

@@ -4,7 +4,7 @@
 #include "merge_strategy_factory.h"
 
 namespace merge_and_shrink {
-class TaskSpecificMergeSelector;
+class MergeSelector;
 
 enum class OrderOfSCCs {
     TOPOLOGICAL,
@@ -13,9 +13,9 @@ enum class OrderOfSCCs {
     INCREASING
 };
 
-class MergeStrategyFactorySCCs : public TaskSpecificMergeStrategyFactory {
+class MergeStrategyFactorySCCs : public MergeStrategyFactory {
     OrderOfSCCs order_of_sccs;
-    std::shared_ptr<TaskSpecificMergeSelector> merge_selector;
+    std::shared_ptr<MergeSelector> merge_selector;
 protected:
     virtual std::string name() const override;
     virtual void dump_strategy_specific_options() const override;
@@ -23,7 +23,7 @@ public:
     MergeStrategyFactorySCCs(
         const std::shared_ptr<AbstractTask> &task,
         const OrderOfSCCs &order_of_sccs,
-        const std::shared_ptr<TaskSpecificMergeSelector> &merge_selector,
+        const std::shared_ptr<MergeSelector> &merge_selector,
         utils::Verbosity verbosity);
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
         const TaskProxy &task_proxy,

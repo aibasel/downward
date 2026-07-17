@@ -12,7 +12,7 @@ using namespace std;
 
 namespace operator_counting {
 LMCutConstraints::LMCutConstraints(const shared_ptr<AbstractTask> &task)
-    : TaskSpecificConstraintGenerator(task) {
+    : ConstraintGenerator(task) {
 }
 
 void LMCutConstraints::initialize_constraints(
@@ -77,7 +77,7 @@ public:
     virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &) const override {
         return components::make_auto_task_independent_component<
-            LMCutConstraints, TaskSpecificConstraintGenerator>();
+            LMCutConstraints, ConstraintGenerator>();
     }
 };
 

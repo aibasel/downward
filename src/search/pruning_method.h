@@ -22,7 +22,7 @@ class Options;
 class Feature;
 }
 
-class TaskSpecificPruningMethod : public components::TaskSpecificComponent {
+class PruningMethod : public components::TaskSpecificComponent {
     utils::Timer timer;
     friend class limited_pruning::LimitedPruning;
 
@@ -33,14 +33,14 @@ protected:
     long num_successors_before_pruning;
     long num_successors_after_pruning;
 public:
-    TaskSpecificPruningMethod(
+    PruningMethod(
         const std::shared_ptr<AbstractTask> &task, utils::Verbosity verbosity);
     virtual void initialize(const std::shared_ptr<AbstractTask> &task);
     void prune_operators(const State &state, std::vector<OperatorID> &op_ids);
     virtual void print_statistics() const;
 };
 using TaskIndependentPruningMethod =
-    components::TaskIndependentComponent<TaskSpecificPruningMethod>;
+    components::TaskIndependentComponent<PruningMethod>;
 
 extern void add_pruning_options_to_feature(plugins::Feature &feature);
 extern std::tuple<utils::Verbosity> get_pruning_arguments_from_options(

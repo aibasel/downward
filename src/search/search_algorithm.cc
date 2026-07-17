@@ -36,7 +36,7 @@ static successor_generator::SuccessorGenerator &get_successor_generator(
     return successor_generator;
 }
 
-TaskSpecificSearchAlgorithm::TaskSpecificSearchAlgorithm(
+SearchAlgorithm::SearchAlgorithm(
     const shared_ptr<AbstractTask> &task, OperatorCost cost_type, int bound,
     double max_time, const string &description, utils::Verbosity verbosity)
     : components::TaskSpecificComponent(task),
@@ -59,25 +59,25 @@ TaskSpecificSearchAlgorithm::TaskSpecificSearchAlgorithm(
     task_properties::print_variable_statistics(task_proxy);
 }
 
-bool TaskSpecificSearchAlgorithm::found_solution() const {
+bool SearchAlgorithm::found_solution() const {
     return solution_found;
 }
 
-SearchStatus TaskSpecificSearchAlgorithm::get_status() const {
+SearchStatus SearchAlgorithm::get_status() const {
     return status;
 }
 
-const Plan &TaskSpecificSearchAlgorithm::get_plan() const {
+const Plan &SearchAlgorithm::get_plan() const {
     assert(solution_found);
     return plan;
 }
 
-void TaskSpecificSearchAlgorithm::set_plan(const Plan &p) {
+void SearchAlgorithm::set_plan(const Plan &p) {
     solution_found = true;
     plan = p;
 }
 
-void TaskSpecificSearchAlgorithm::search() {
+void SearchAlgorithm::search() {
     initialize();
     utils::CountdownTimer timer(max_time);
     while (status == IN_PROGRESS) {
@@ -92,7 +92,7 @@ void TaskSpecificSearchAlgorithm::search() {
     log << "Actual search time: " << timer.get_elapsed_time() << endl;
 }
 
-bool TaskSpecificSearchAlgorithm::check_goal_and_set_plan(const State &state) {
+bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
         log << "Solution found!" << endl;
         Plan plan;
@@ -103,20 +103,20 @@ bool TaskSpecificSearchAlgorithm::check_goal_and_set_plan(const State &state) {
     return false;
 }
 
-void TaskSpecificSearchAlgorithm::save_plan_if_necessary() {
+void SearchAlgorithm::save_plan_if_necessary() {
     if (found_solution()) {
         plan_manager.save_plan(get_plan(), task_proxy);
     }
 }
 
-int TaskSpecificSearchAlgorithm::get_adjusted_cost(
+int SearchAlgorithm::get_adjusted_cost(
     const OperatorProxy &op) const {
     return get_adjusted_action_cost(op, cost_type, is_unit_cost);
 }
 
 void print_initial_evaluator_values(const EvaluationContext &eval_context) {
     eval_context.get_cache().for_each_evaluator_result(
-        [](const TaskSpecificEvaluator *eval, const EvaluationResult &result) {
+        [](const Evaluator *eval, const EvaluationResult &result) {
             if (eval->is_used_for_reporting_minima()) {
                 eval->report_value_for_initial_state(result);
             }
@@ -216,7 +216,7 @@ public:
 
 void collect_preferred_operators(
     EvaluationContext &eval_context,
-    TaskSpecificEvaluator *preferred_operator_evaluator,
+    Evaluator *preferred_operator_evaluator,
     ordered_set::OrderedSet<OperatorID> &preferred_operators) {
     if (!eval_context.is_evaluator_value_infinite(
             preferred_operator_evaluator)) {

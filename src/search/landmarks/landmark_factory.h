@@ -17,7 +17,7 @@ class Feature;
 }
 
 namespace landmarks {
-class TaskSpecificLandmarkFactory : public components::TaskSpecificComponent {
+class LandmarkFactory : public components::TaskSpecificComponent {
     AbstractTask *landmark_graph_task;
     std::vector<std::vector<std::vector<int>>> operators_providing_effect;
 
@@ -40,7 +40,7 @@ protected:
     std::shared_ptr<LandmarkGraph> landmark_graph;
     bool achievers_calculated = false;
 
-    TaskSpecificLandmarkFactory(
+    LandmarkFactory(
         const std::shared_ptr<AbstractTask> &task, utils::Verbosity verbosity);
 
     void add_or_replace_ordering_if_stronger(
@@ -54,7 +54,7 @@ protected:
     }
 
 public:
-    TaskSpecificLandmarkFactory(const TaskSpecificLandmarkFactory &) = delete;
+    LandmarkFactory(const LandmarkFactory &) = delete;
 
     std::shared_ptr<LandmarkGraph> compute_landmark_graph(
         const std::shared_ptr<AbstractTask> &task);
@@ -66,7 +66,7 @@ public:
     }
 };
 using TaskIndependentLandmarkFactory =
-    components::TaskIndependentComponent<TaskSpecificLandmarkFactory>;
+    components::TaskIndependentComponent<LandmarkFactory>;
 
 extern void add_landmark_factory_options_to_feature(plugins::Feature &feature);
 extern std::tuple<utils::Verbosity> get_landmark_factory_arguments_from_options(

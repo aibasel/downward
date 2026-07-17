@@ -93,13 +93,13 @@ static Facts filter_and_order_facts(
     return facts;
 }
 
-TaskSpecificSubtaskGenerator::TaskSpecificSubtaskGenerator(
+SubtaskGenerator::SubtaskGenerator(
     const shared_ptr<AbstractTask> &task)
     : components::TaskSpecificComponent(task) {
 }
 
 TaskDuplicator::TaskDuplicator(const shared_ptr<AbstractTask> &task, int copies)
-    : TaskSpecificSubtaskGenerator(task), num_copies(copies) {
+    : SubtaskGenerator(task), num_copies(copies) {
 }
 
 SharedTasks TaskDuplicator::get_subtasks(
@@ -114,7 +114,7 @@ SharedTasks TaskDuplicator::get_subtasks(
 
 GoalDecomposition::GoalDecomposition(
     const shared_ptr<AbstractTask> &task, FactOrder order, int random_seed)
-    : TaskSpecificSubtaskGenerator(task),
+    : SubtaskGenerator(task),
       fact_order(order),
       rng(utils::get_rng(random_seed)) {
 }
@@ -136,7 +136,7 @@ SharedTasks GoalDecomposition::get_subtasks(
 LandmarkDecomposition::LandmarkDecomposition(
     const shared_ptr<AbstractTask> &task, FactOrder order, int random_seed,
     bool combine_facts)
-    : TaskSpecificSubtaskGenerator(task),
+    : SubtaskGenerator(task),
       fact_order(order),
       combine_facts(combine_facts),
       rng(utils::get_rng(random_seed)) {
@@ -205,7 +205,7 @@ public:
     virtual shared_ptr<TaskIndependentSubtaskGenerator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            TaskDuplicator, TaskSpecificSubtaskGenerator>(
+            TaskDuplicator, SubtaskGenerator>(
             opts.get<int>("copies"));
     }
 };
@@ -225,7 +225,7 @@ public:
     virtual shared_ptr<TaskIndependentSubtaskGenerator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            GoalDecomposition, TaskSpecificSubtaskGenerator>(
+            GoalDecomposition, SubtaskGenerator>(
             get_fact_order_arguments_from_options(opts));
     }
 };
@@ -248,7 +248,7 @@ public:
     virtual shared_ptr<TaskIndependentSubtaskGenerator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            LandmarkDecomposition, TaskSpecificSubtaskGenerator>(
+            LandmarkDecomposition, SubtaskGenerator>(
             get_fact_order_arguments_from_options(opts),
             opts.get<bool>("combine_facts"));
     }

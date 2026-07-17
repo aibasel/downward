@@ -6,8 +6,8 @@
 #include <vector>
 
 namespace landmarks {
-class LandmarkFactoryMerged : public TaskSpecificLandmarkFactory {
-    std::vector<std::shared_ptr<TaskSpecificLandmarkFactory>>
+class LandmarkFactoryMerged : public LandmarkFactory {
+    std::vector<std::shared_ptr<LandmarkFactory>>
         landmark_factories;
 
     std::vector<std::shared_ptr<LandmarkGraph>>
@@ -28,7 +28,7 @@ class LandmarkFactoryMerged : public TaskSpecificLandmarkFactory {
 public:
     LandmarkFactoryMerged(
         const std::shared_ptr<AbstractTask> &task,
-        const std::vector<std::shared_ptr<TaskSpecificLandmarkFactory>>
+        const std::vector<std::shared_ptr<LandmarkFactory>>
             &lm_factories,
         utils::Verbosity verbosity);
 

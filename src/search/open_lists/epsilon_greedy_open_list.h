@@ -42,14 +42,14 @@
 
 namespace epsilon_greedy_open_list {
 class EpsilonGreedyOpenListFactory : public OpenListFactory {
-    std::shared_ptr<TaskSpecificEvaluator> eval;
+    std::shared_ptr<Evaluator> eval;
     double epsilon;
     int random_seed;
     bool pref_only;
 public:
     EpsilonGreedyOpenListFactory(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<TaskSpecificEvaluator> &eval, double epsilon,
+        const std::shared_ptr<Evaluator> &eval, double epsilon,
         int random_seed, bool pref_only);
 
     virtual std::unique_ptr<StateOpenList> create_state_open_list() override;

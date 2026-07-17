@@ -14,7 +14,7 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionSingleRandom::MergeScoringFunctionSingleRandom(
     const shared_ptr<AbstractTask> &task, int random_seed)
-    : TaskSpecificMergeScoringFunction(task),
+    : MergeScoringFunction(task),
       random_seed(random_seed),
       rng(utils::get_rng(random_seed)) {
 }
@@ -62,7 +62,7 @@ public:
     virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            MergeScoringFunctionSingleRandom, TaskSpecificMergeScoringFunction>(
+            MergeScoringFunctionSingleRandom, MergeScoringFunction>(
             utils::get_rng_arguments_from_options(opts));
     }
 };

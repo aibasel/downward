@@ -161,7 +161,7 @@ class TaskIndependentDiversePotentialHeuristics
     string description;
     utils::Verbosity verbosity;
 protected:
-    virtual shared_ptr<TaskSpecificEvaluator> create_task_specific_component(
+    virtual shared_ptr<Evaluator> create_task_specific_component(
         const shared_ptr<AbstractTask> &task) const override {
         DiversePotentialHeuristics diverse_potential_heuristics(
             task, num_samples, max_num_heuristics, max_potential, lpsolver,

@@ -28,7 +28,7 @@ PatternCollectionGeneratorGenetic::PatternCollectionGeneratorGenetic(
     const shared_ptr<AbstractTask> &task, int pdb_max_size, int num_collections,
     int num_episodes, double mutation_probability, bool disjoint,
     int random_seed, utils::Verbosity verbosity)
-    : TaskSpecificPatternCollectionGenerator(task, verbosity),
+    : PatternCollectionGenerator(task, verbosity),
       pdb_max_size(pdb_max_size),
       num_collections(num_collections),
       num_episodes(num_episodes),
@@ -391,7 +391,7 @@ public:
     create_component(const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
             PatternCollectionGeneratorGenetic,
-            TaskSpecificPatternCollectionGenerator>(
+            PatternCollectionGenerator>(
             opts.get<int>("pdb_max_size"), opts.get<int>("num_collections"),
             opts.get<int>("num_episodes"),
             opts.get<double>("mutation_probability"),

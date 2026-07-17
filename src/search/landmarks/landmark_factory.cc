@@ -16,14 +16,14 @@
 using namespace std;
 
 namespace landmarks {
-TaskSpecificLandmarkFactory::TaskSpecificLandmarkFactory(
+LandmarkFactory::LandmarkFactory(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
     : components::TaskSpecificComponent(task),
       log(get_log_for_verbosity(verbosity)),
       landmark_graph(nullptr) {
 }
 
-void TaskSpecificLandmarkFactory::resize_operators_providing_effect(
+void LandmarkFactory::resize_operators_providing_effect(
     const TaskProxy &task_proxy) {
     VariablesProxy variables = task_proxy.get_variables();
     operators_providing_effect.resize(variables.size());
@@ -32,7 +32,7 @@ void TaskSpecificLandmarkFactory::resize_operators_providing_effect(
     }
 }
 
-void TaskSpecificLandmarkFactory::add_operator_or_axiom_providing_effects(
+void LandmarkFactory::add_operator_or_axiom_providing_effects(
     const OperatorProxy &op_or_axiom) {
     EffectsProxy effects = op_or_axiom.get_effects();
     for (EffectProxy effect : effects) {
@@ -44,7 +44,7 @@ void TaskSpecificLandmarkFactory::add_operator_or_axiom_providing_effects(
 
 /* Build datastructures for efficient landmark computation: Map propositions to
    the operators and axioms that achieve them. */
-void TaskSpecificLandmarkFactory::compute_operators_providing_effect(
+void LandmarkFactory::compute_operators_providing_effect(
     const TaskProxy &task_proxy) {
     resize_operators_providing_effect(task_proxy);
     for (const OperatorProxy &op : task_proxy.get_operators()) {
@@ -79,7 +79,7 @@ static void remove_ordering(LandmarkNode &from, LandmarkNode &to) {
     to.parents.erase(&from);
 }
 
-void TaskSpecificLandmarkFactory::add_ordering(
+void LandmarkFactory::add_ordering(
     LandmarkNode &from, LandmarkNode &to, OrderingType type) const {
     assert(!from.children.contains(&to));
     assert(!to.parents.contains(&from));
@@ -92,7 +92,7 @@ void TaskSpecificLandmarkFactory::add_ordering(
 
 /* Adds an ordering in the landmark graph. If an ordering between the same
    landmarks is already present, the stronger ordering type wins. */
-void TaskSpecificLandmarkFactory::add_or_replace_ordering_if_stronger(
+void LandmarkFactory::add_or_replace_ordering_if_stronger(
     LandmarkNode &from, LandmarkNode &to, OrderingType type) const {
     if (weaker_ordering_exists(from, to, type)) {
         remove_ordering(from, to);
@@ -104,7 +104,7 @@ void TaskSpecificLandmarkFactory::add_or_replace_ordering_if_stronger(
     assert(to.parents.contains(&from));
 }
 
-void TaskSpecificLandmarkFactory::discard_all_orderings() const {
+void LandmarkFactory::discard_all_orderings() const {
     if (log.is_at_least_normal()) {
         log << "Removing all orderings." << endl;
     }
@@ -114,7 +114,7 @@ void TaskSpecificLandmarkFactory::discard_all_orderings() const {
     }
 }
 
-void TaskSpecificLandmarkFactory::log_landmark_graph_info(
+void LandmarkFactory::log_landmark_graph_info(
     const TaskProxy &task_proxy,
     const utils::Timer &landmark_generation_timer) const {
     if (log.is_at_least_normal()) {
@@ -162,7 +162,7 @@ void TaskSpecificLandmarkFactory::log_landmark_graph_info(
 
   issue1208: update comment above after removing the task transformation code.
 */
-shared_ptr<LandmarkGraph> TaskSpecificLandmarkFactory::compute_landmark_graph(
+shared_ptr<LandmarkGraph> LandmarkFactory::compute_landmark_graph(
     const shared_ptr<AbstractTask> &task) {
     if (landmark_graph) {
         if (landmark_graph_task != task.get()) {

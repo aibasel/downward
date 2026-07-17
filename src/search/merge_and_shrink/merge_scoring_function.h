@@ -14,7 +14,7 @@ class LogProxy;
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
-class TaskSpecificMergeScoringFunction
+class MergeScoringFunction
     : public components::TaskSpecificComponent {
     virtual std::string name() const = 0;
     virtual void dump_function_specific_options(utils::LogProxy &) const {
@@ -22,7 +22,7 @@ class TaskSpecificMergeScoringFunction
 protected:
     bool initialized;
 public:
-    explicit TaskSpecificMergeScoringFunction(
+    explicit MergeScoringFunction(
         const std::shared_ptr<AbstractTask> &task);
     virtual std::vector<double> compute_scores(
         const FactoredTransitionSystem &fts,
@@ -39,7 +39,7 @@ public:
 };
 
 using TaskIndependentMergeScoringFunction =
-    components::TaskIndependentComponent<TaskSpecificMergeScoringFunction>;
+    components::TaskIndependentComponent<MergeScoringFunction>;
 }
 
 #endif

@@ -11,7 +11,7 @@ namespace pref_evaluator {
 PrefEvaluator::PrefEvaluator(
     const shared_ptr<AbstractTask> &task, const string &description,
     utils::Verbosity verbosity)
-    : TaskSpecificEvaluator(task, false, false, false, description, verbosity) {
+    : Evaluator(task, false, false, false, description, verbosity) {
 }
 
 EvaluationResult PrefEvaluator::compute_result(
@@ -38,7 +38,7 @@ public:
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            PrefEvaluator, TaskSpecificEvaluator>(
+            PrefEvaluator, Evaluator>(
             get_evaluator_arguments_from_options(opts));
     }
 };

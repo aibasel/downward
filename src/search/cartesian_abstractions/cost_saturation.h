@@ -16,7 +16,7 @@ class LogProxy;
 
 namespace cartesian_abstractions {
 class CartesianHeuristicFunction;
-class TaskSpecificSubtaskGenerator;
+class SubtaskGenerator;
 
 /*
   Get subtasks from SubtaskGenerators, reduce their costs by wrapping
@@ -26,7 +26,7 @@ class TaskSpecificSubtaskGenerator;
   CartesianHeuristicFunctions into AdditiveCartesianHeuristic.
 */
 class CostSaturation {
-    const std::vector<std::shared_ptr<TaskSpecificSubtaskGenerator>>
+    const std::vector<std::shared_ptr<SubtaskGenerator>>
         subtask_generators;
     const int max_states;
     const int max_non_looping_transitions;
@@ -55,7 +55,7 @@ class CostSaturation {
 
 public:
     CostSaturation(
-        const std::vector<std::shared_ptr<TaskSpecificSubtaskGenerator>>
+        const std::vector<std::shared_ptr<SubtaskGenerator>>
             &subtask_generators,
         int max_states, int max_non_looping_transitions, double max_time,
         PickSplit pick_split, bool use_general_costs,

@@ -54,7 +54,7 @@ public:
         options_copy.set("preferred", preferred_list);
 
         return components::make_auto_task_independent_component<
-            eager_search::EagerSearch, TaskSpecificSearchAlgorithm>(
+            eager_search::EagerSearch, SearchAlgorithm>(
             options_copy.get<shared_ptr<TaskIndependentOpenListFactory>>(
                 "open"),
             options_copy.get<bool>("reopen_closed"),

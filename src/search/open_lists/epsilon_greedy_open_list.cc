@@ -33,7 +33,7 @@ class EpsilonGreedyOpenList : public OpenList<Entry> {
     };
 
     vector<HeapNode> heap;
-    shared_ptr<TaskSpecificEvaluator> evaluator;
+    shared_ptr<Evaluator> evaluator;
 
     double epsilon;
     int size;
@@ -45,7 +45,7 @@ protected:
 
 public:
     EpsilonGreedyOpenList(
-        const shared_ptr<TaskSpecificEvaluator> &eval, double epsilon,
+        const shared_ptr<Evaluator> &eval, double epsilon,
         int random_seed, bool pref_only);
 
     virtual Entry remove_min() override;
@@ -53,7 +53,7 @@ public:
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
     virtual void get_path_dependent_evaluators(
-        set<TaskSpecificEvaluator *> &evals) override;
+        set<Evaluator *> &evals) override;
     virtual bool empty() const override;
     virtual void clear() override;
 };
@@ -82,7 +82,7 @@ void EpsilonGreedyOpenList<Entry>::do_insertion(
 
 template<class Entry>
 EpsilonGreedyOpenList<Entry>::EpsilonGreedyOpenList(
-    const shared_ptr<TaskSpecificEvaluator> &eval, double epsilon,
+    const shared_ptr<Evaluator> &eval, double epsilon,
     int random_seed, bool pref_only)
     : OpenList<Entry>(pref_only),
       rng(utils::get_rng(random_seed)),
@@ -121,7 +121,7 @@ bool EpsilonGreedyOpenList<Entry>::is_reliable_dead_end(
 
 template<class Entry>
 void EpsilonGreedyOpenList<Entry>::get_path_dependent_evaluators(
-    set<TaskSpecificEvaluator *> &evals) {
+    set<Evaluator *> &evals) {
     evaluator->get_path_dependent_evaluators(evals);
 }
 
@@ -139,7 +139,7 @@ void EpsilonGreedyOpenList<Entry>::clear() {
 
 EpsilonGreedyOpenListFactory::EpsilonGreedyOpenListFactory(
     const shared_ptr<AbstractTask> &task,
-    const shared_ptr<TaskSpecificEvaluator> &eval, double epsilon,
+    const shared_ptr<Evaluator> &eval, double epsilon,
     int random_seed, bool pref_only)
     : OpenListFactory(task),
       eval(eval),

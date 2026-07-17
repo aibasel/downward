@@ -189,7 +189,7 @@ int DeleteRelaxationRRConstraints::LPVariableIDs::id_of_t(FactPair f) const {
 DeleteRelaxationRRConstraints::DeleteRelaxationRRConstraints(
     const shared_ptr<AbstractTask> &task, AcyclicityType acyclicity_type,
     bool use_integer_vars)
-    : TaskSpecificConstraintGenerator(task),
+    : ConstraintGenerator(task),
       acyclicity_type(acyclicity_type),
       use_integer_vars(use_integer_vars) {
 }
@@ -621,7 +621,7 @@ public:
     virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            DeleteRelaxationRRConstraints, TaskSpecificConstraintGenerator>(
+            DeleteRelaxationRRConstraints, ConstraintGenerator>(
             opts.get<AcyclicityType>("acyclicity_type"),
             opts.get<bool>("use_integer_vars"));
     }

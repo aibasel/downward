@@ -16,7 +16,7 @@ namespace operator_counting {
 using LPConstraints = named_vector::NamedVector<lp::LPConstraint>;
 using LPVariables = named_vector::NamedVector<lp::LPVariable>;
 
-class DeleteRelaxationIFConstraints : public TaskSpecificConstraintGenerator {
+class DeleteRelaxationIFConstraints : public ConstraintGenerator {
     bool use_time_vars;
     bool use_integer_vars;
 

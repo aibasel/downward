@@ -11,7 +11,7 @@ PotentialHeuristic::PotentialHeuristic(
     const shared_ptr<AbstractTask> &task,
     unique_ptr<PotentialFunction> function, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : TaskSpecificHeuristic(task, cache_estimates, description, verbosity),
+    : Heuristic(task, cache_estimates, description, verbosity),
       function(move(function)) {
 }
 

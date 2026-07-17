@@ -22,7 +22,7 @@ namespace merge_and_shrink {
 */
 static unique_ptr<TransitionSystem> copy_and_shrink_ts(
     const TransitionSystem &ts, const Distances &distances,
-    const TaskSpecificShrinkStrategy &shrink_strategy, int new_size,
+    const ShrinkStrategy &shrink_strategy, int new_size,
     utils::LogProxy &log) {
     /*
       TODO: think about factoring out common logic of this function and the
@@ -54,7 +54,7 @@ static unique_ptr<TransitionSystem> copy_and_shrink_ts(
 
 unique_ptr<TransitionSystem> shrink_before_merge_externally(
     const FactoredTransitionSystem &fts, int index1, int index2,
-    const TaskSpecificShrinkStrategy &shrink_strategy, int max_states,
+    const ShrinkStrategy &shrink_strategy, int max_states,
     int max_states_before_merge, int shrink_threshold_before_merge,
     utils::LogProxy &log) {
     const TransitionSystem &original_ts1 = fts.get_transition_system(index1);

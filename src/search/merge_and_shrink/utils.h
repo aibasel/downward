@@ -12,7 +12,7 @@ class LogProxy;
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
-class TaskSpecificShrinkStrategy;
+class ShrinkStrategy;
 class TransitionSystem;
 
 /*
@@ -47,7 +47,7 @@ extern std::pair<int, int> compute_shrink_sizes(
 extern bool shrink_before_merge_step(
     FactoredTransitionSystem &fts, int index1, int index2, int max_states,
     int max_states_before_merge, int shrink_threshold_before_merge,
-    const TaskSpecificShrinkStrategy &shrink_strategy, utils::LogProxy &log);
+    const ShrinkStrategy &shrink_strategy, utils::LogProxy &log);
 
 /*
   Prune unreachable and/or irrelevant states of the factor at index. This

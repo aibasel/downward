@@ -8,11 +8,11 @@ using namespace std;
 namespace stubborn_sets {
 StubbornSets::StubbornSets(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
-    : TaskSpecificPruningMethod(task, verbosity), num_operators(-1) {
+    : PruningMethod(task, verbosity), num_operators(-1) {
 }
 
 void StubbornSets::initialize(const shared_ptr<AbstractTask> &task) {
-    TaskSpecificPruningMethod::initialize(task);
+    PruningMethod::initialize(task);
     TaskProxy task_proxy(*task);
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);

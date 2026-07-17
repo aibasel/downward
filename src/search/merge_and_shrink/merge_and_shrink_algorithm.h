@@ -27,9 +27,9 @@ class FactoredTransitionSystem;
 class MergeAndShrinkAlgorithm {
     // TODO: when the option parser supports it, the following should become
     // unique pointers.
-    std::shared_ptr<TaskSpecificMergeStrategyFactory> merge_strategy_factory;
-    std::shared_ptr<TaskSpecificShrinkStrategy> shrink_strategy;
-    std::shared_ptr<TaskSpecificLabelReduction> label_reduction;
+    std::shared_ptr<MergeStrategyFactory> merge_strategy_factory;
+    std::shared_ptr<ShrinkStrategy> shrink_strategy;
+    std::shared_ptr<LabelReduction> label_reduction;
 
     // Options for shrinking
     // Hard limit: the maximum size of a transition system at any point.
@@ -57,9 +57,9 @@ class MergeAndShrinkAlgorithm {
     void main_loop(FactoredTransitionSystem &fts, const TaskProxy &task_proxy);
 public:
     MergeAndShrinkAlgorithm(
-        const std::shared_ptr<TaskSpecificMergeStrategyFactory> &merge_strategy,
-        const std::shared_ptr<TaskSpecificShrinkStrategy> &shrink_strategy,
-        const std::shared_ptr<TaskSpecificLabelReduction> &label_reduction,
+        const std::shared_ptr<MergeStrategyFactory> &merge_strategy,
+        const std::shared_ptr<ShrinkStrategy> &shrink_strategy,
+        const std::shared_ptr<LabelReduction> &label_reduction,
         bool prune_unreachable_states, bool prune_irrelevant_states,
         int max_states, int max_states_before_merge, int threshold_before_merge,
         double main_loop_max_time, utils::Verbosity verbosity);

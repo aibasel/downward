@@ -18,9 +18,9 @@ using namespace std;
 namespace merge_and_shrink {
 MergeScoringFunctionMIASM::MergeScoringFunctionMIASM(
     const shared_ptr<AbstractTask> &task,
-    shared_ptr<TaskSpecificShrinkStrategy> shrink_strategy, int max_states,
+    shared_ptr<ShrinkStrategy> shrink_strategy, int max_states,
     int max_states_before_merge, int threshold_before_merge, bool use_caching)
-    : TaskSpecificMergeScoringFunction(task),
+    : MergeScoringFunction(task),
       use_caching(use_caching),
       shrink_strategy(move(shrink_strategy)),
       max_states(max_states),
@@ -181,7 +181,7 @@ public:
     virtual shared_ptr<TaskIndependentMergeScoringFunction> create_component(
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            MergeScoringFunctionMIASM, TaskSpecificMergeScoringFunction>(
+            MergeScoringFunctionMIASM, MergeScoringFunction>(
             opts.get<shared_ptr<TaskIndependentShrinkStrategy>>(
                 "shrink_strategy"),
             get_transition_system_size_limit_arguments_from_options(opts),

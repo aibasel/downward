@@ -21,7 +21,7 @@ class TieBreakingOpenList : public OpenList<Entry> {
     map<const vector<int>, Bucket> buckets;
     int size;
 
-    vector<shared_ptr<TaskSpecificEvaluator>> evaluators;
+    vector<shared_ptr<Evaluator>> evaluators;
     /*
       If allow_unsafe_pruning is true, we ignore (don't insert) states
       which the first evaluator considers a dead end, even if it is
@@ -37,14 +37,14 @@ protected:
 
 public:
     TieBreakingOpenList(
-        const vector<shared_ptr<TaskSpecificEvaluator>> &evals,
+        const vector<shared_ptr<Evaluator>> &evals,
         bool unsafe_pruning, bool pref_only);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
     virtual void get_path_dependent_evaluators(
-        set<TaskSpecificEvaluator *> &evals) override;
+        set<Evaluator *> &evals) override;
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
@@ -52,7 +52,7 @@ public:
 
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(
-    const vector<shared_ptr<TaskSpecificEvaluator>> &evals, bool unsafe_pruning,
+    const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
     bool pref_only)
     : OpenList<Entry>(pref_only),
       size(0),
@@ -65,7 +65,7 @@ void TieBreakingOpenList<Entry>::do_insertion(
     EvaluationContext &eval_context, const Entry &entry) {
     vector<int> key;
     key.reserve(evaluators.size());
-    for (const shared_ptr<TaskSpecificEvaluator> &evaluator : evaluators)
+    for (const shared_ptr<Evaluator> &evaluator : evaluators)
         key.push_back(
             eval_context.get_evaluator_value_or_infinity(evaluator.get()));
 
@@ -106,8 +106,8 @@ int TieBreakingOpenList<Entry>::dimension() const {
 
 template<class Entry>
 void TieBreakingOpenList<Entry>::get_path_dependent_evaluators(
-    set<TaskSpecificEvaluator *> &evals) {
-    for (const shared_ptr<TaskSpecificEvaluator> &evaluator : evaluators)
+    set<Evaluator *> &evals) {
+    for (const shared_ptr<Evaluator> &evaluator : evaluators)
         evaluator->get_path_dependent_evaluators(evals);
 }
 
@@ -124,7 +124,7 @@ bool TieBreakingOpenList<Entry>::is_dead_end(
         eval_context.is_evaluator_value_infinite(evaluators[0].get()))
         return true;
     // Otherwise, return true if all heuristics agree this is a dead-end.
-    for (const shared_ptr<TaskSpecificEvaluator> &evaluator : evaluators)
+    for (const shared_ptr<Evaluator> &evaluator : evaluators)
         if (!eval_context.is_evaluator_value_infinite(evaluator.get()))
             return false;
     return true;
@@ -133,7 +133,7 @@ bool TieBreakingOpenList<Entry>::is_dead_end(
 template<class Entry>
 bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
-    for (const shared_ptr<TaskSpecificEvaluator> &evaluator : evaluators)
+    for (const shared_ptr<Evaluator> &evaluator : evaluators)
         if (eval_context.is_evaluator_value_infinite(evaluator.get()) &&
             evaluator->dead_ends_are_reliable())
             return true;
@@ -142,7 +142,7 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
 
 TieBreakingOpenListFactory::TieBreakingOpenListFactory(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<TaskSpecificEvaluator>> &evals, bool unsafe_pruning,
+    const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
     bool pref_only)
     : OpenListFactory(task),
       evals(evals),

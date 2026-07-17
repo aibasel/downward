@@ -8,7 +8,7 @@
 
 using namespace std;
 
-TaskSpecificPruningMethod::TaskSpecificPruningMethod(
+PruningMethod::PruningMethod(
     const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
     : components::TaskSpecificComponent(task),
       timer(false),
@@ -16,7 +16,7 @@ TaskSpecificPruningMethod::TaskSpecificPruningMethod(
       task(nullptr) {
 }
 
-void TaskSpecificPruningMethod::initialize(
+void PruningMethod::initialize(
     const shared_ptr<AbstractTask> &task_) {
     assert(!task);
     task = task_;
@@ -24,7 +24,7 @@ void TaskSpecificPruningMethod::initialize(
     num_successors_after_pruning = 0;
 }
 
-void TaskSpecificPruningMethod::prune_operators(
+void PruningMethod::prune_operators(
     const State &state, vector<OperatorID> &op_ids) {
     assert(!task_properties::is_goal_state(TaskProxy(*task), state));
     /*
@@ -44,7 +44,7 @@ void TaskSpecificPruningMethod::prune_operators(
     }
 }
 
-void TaskSpecificPruningMethod::print_statistics() const {
+void PruningMethod::print_statistics() const {
     if (log.is_at_least_normal()) {
         log << "total successors before pruning: "
             << num_successors_before_pruning << endl
