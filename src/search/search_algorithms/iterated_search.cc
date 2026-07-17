@@ -14,13 +14,13 @@ using namespace std;
 namespace iterated_search {
 IteratedSearch::IteratedSearch(
     const shared_ptr<AbstractTask> &task,
-    const vector<shared_ptr<TaskIndependentSearchAlgorithm>> &search_algorithms,
+    const vector<shared_ptr<TaskIndependentSearchAlgorithm>> &algorithm_configs,
     bool pass_bound, bool repeat_last, bool continue_on_fail,
     bool continue_on_solve, OperatorCost cost_type, int bound, double max_time,
     const string &description, utils::Verbosity verbosity)
     : SearchAlgorithm(
           task, cost_type, bound, max_time, description, verbosity),
-      task_independent_searches(search_algorithms),
+      task_independent_searches(algorithm_configs),
       pass_bound(pass_bound),
       repeat_last_phase(repeat_last),
       continue_on_fail(continue_on_fail),
@@ -29,7 +29,7 @@ IteratedSearch::IteratedSearch(
       last_phase_found_solution(false),
       best_bound(bound),
       iterated_found_solution(false) {
-    utils::verify_list_not_empty(search_algorithms, "search_algorithms");
+    utils::verify_list_not_empty(algorithm_configs, "algorithm_configs");
 }
 
 void IteratedSearch::update_retention_set() {
@@ -206,7 +206,7 @@ void IteratedSearch::save_plan_if_necessary() {
 
 class TaskIndependentIteratedSearch
     : public components::TaskIndependentComponent<SearchAlgorithm> {
-    vector<shared_ptr<TaskIndependentSearchAlgorithm>> search_algorithms;
+    vector<shared_ptr<TaskIndependentSearchAlgorithm>> algorithm_configs;
     bool pass_bound;
     bool repeat_last_phase;
     bool continue_on_fail;
@@ -220,7 +220,7 @@ protected:
     virtual shared_ptr<SearchAlgorithm>
     create_task_specific_component(const shared_ptr<AbstractTask> &task) const {
         return make_shared<IteratedSearch>(
-            task, search_algorithms, pass_bound, repeat_last_phase,
+            task, algorithm_configs, pass_bound, repeat_last_phase,
             continue_on_fail, continue_on_solve, cost_type, bound, max_time,
             description, verbosity);
     }
@@ -228,11 +228,11 @@ protected:
 public:
     TaskIndependentIteratedSearch(
         const vector<shared_ptr<TaskIndependentSearchAlgorithm>>
-            &search_algorithms,
+            &algorithm_configs,
         bool pass_bound, bool repeat_last, bool continue_on_fail,
         bool continue_on_solve, OperatorCost cost_type, int bound,
         double max_time, const string &description, utils::Verbosity verbosity)
-        : search_algorithms(search_algorithms),
+        : algorithm_configs(algorithm_configs),
           pass_bound(pass_bound),
           repeat_last_phase(repeat_last),
           continue_on_fail(continue_on_fail),
@@ -253,7 +253,7 @@ public:
         document_synopsis("");
 
         add_list_option<shared_ptr<TaskIndependentSearchAlgorithm>>(
-            "search_algorithms", "list of search algorithms for each phase",
+            "algorithm_configs", "list of search algorithms for each phase",
             "");
         add_option<bool>(
             "pass_bound",
@@ -298,7 +298,7 @@ public:
         return components::make_shared_from_arg_tuples<
             TaskIndependentIteratedSearch>(
             opts.get_list<shared_ptr<TaskIndependentSearchAlgorithm>>(
-                "search_algorithms"),
+                "algorithm_configs"),
             opts.get<bool>("pass_bound"), opts.get<bool>("repeat_last"),
             opts.get<bool>("continue_on_fail"),
             opts.get<bool>("continue_on_solve"),
