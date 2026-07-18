@@ -5,10 +5,6 @@
 
 #include <memory>
 
-namespace plugins {
-class Options;
-}
-
 namespace weighted_evaluator {
 class WeightedEvaluator : public Evaluator {
     std::shared_ptr<Evaluator> evaluator;
@@ -16,6 +12,7 @@ class WeightedEvaluator : public Evaluator {
 
 public:
     WeightedEvaluator(
+        const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<Evaluator> &eval, int weight,
         const std::string &description, utils::Verbosity verbosity);
 

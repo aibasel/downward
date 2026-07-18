@@ -3,15 +3,9 @@
 
 #include "../heuristic.h"
 
-#include <algorithm>
-#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-
-namespace plugins {
-class Options;
-}
 
 namespace hm_heuristic {
 /*
@@ -63,9 +57,8 @@ protected:
 
 public:
     HMHeuristic(
-        int m, const std::shared_ptr<AbstractTask> &transform,
-        bool cache_estimates, const std::string &description,
-        utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &task, int m, bool cache_estimates,
+        const std::string &description, utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;
 };

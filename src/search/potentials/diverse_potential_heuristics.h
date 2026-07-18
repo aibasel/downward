@@ -6,12 +6,7 @@
 #include "../utils/logging.h"
 
 #include <memory>
-#include <unordered_map>
 #include <vector>
-
-namespace plugins {
-class Options;
-}
 
 namespace utils {
 class RandomNumberGenerator;
@@ -55,11 +50,9 @@ class DiversePotentialHeuristics {
 
 public:
     DiversePotentialHeuristics(
-        int num_samples, int max_num_heuristics, double max_potential,
-        lp::LPSolverType lpsolver,
-        const std::shared_ptr<AbstractTask> &transform, int random_seed,
-        utils::Verbosity verbosity);
-    ~DiversePotentialHeuristics() = default;
+        const std::shared_ptr<AbstractTask> &task, int num_samples,
+        int max_num_heuristics, double max_potential, lp::LPSolverType lpsolver,
+        int random_seed, utils::Verbosity verbosity);
 
     // Sample states, then cover them.
     std::vector<std::unique_ptr<PotentialFunction>> find_functions();

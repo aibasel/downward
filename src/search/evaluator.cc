@@ -9,10 +9,11 @@
 using namespace std;
 
 Evaluator::Evaluator(
-    bool use_for_reporting_minima, bool use_for_boosting,
-    bool use_for_counting_evaluations, const string &description,
-    utils::Verbosity verbosity)
-    : description(description),
+    const shared_ptr<AbstractTask> &task, bool use_for_reporting_minima,
+    bool use_for_boosting, bool use_for_counting_evaluations,
+    const string &description, utils::Verbosity verbosity)
+    : components::TaskSpecificComponent(task),
+      description(description),
       use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
@@ -87,10 +88,11 @@ tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
         utils::get_log_arguments_from_options(opts));
 }
 
-static class EvaluatorCategoryPlugin
-    : public plugins::TypedCategoryPlugin<Evaluator> {
+static class TaskIndependentEvaluatorCategoryPlugin
+    : public plugins::TypedCategoryPlugin<TaskIndependentEvaluator> {
 public:
-    EvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {
+    TaskIndependentEvaluatorCategoryPlugin()
+        : TypedCategoryPlugin("Evaluator") {
         document_synopsis(
             "An evaluator specification is either a newly created evaluator "
             "instance or an evaluator that has been [defined previously ../search-plugin-syntax.md#variables_as_parameters]. "

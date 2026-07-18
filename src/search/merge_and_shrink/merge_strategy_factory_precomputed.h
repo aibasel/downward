@@ -13,6 +13,7 @@ protected:
     virtual void dump_strategy_specific_options() const override;
 public:
     MergeStrategyFactoryPrecomputed(
+        const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<MergeTreeFactory> &merge_tree,
         utils::Verbosity verbosity);
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(

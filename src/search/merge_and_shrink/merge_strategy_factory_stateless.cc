@@ -9,8 +9,9 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyFactoryStateless::MergeStrategyFactoryStateless(
+    const shared_ptr<AbstractTask> &task,
     const shared_ptr<MergeSelector> &merge_selector, utils::Verbosity verbosity)
-    : MergeStrategyFactory(verbosity), merge_selector(merge_selector) {
+    : MergeStrategyFactory(task, verbosity), merge_selector(merge_selector) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactoryStateless::compute_merge_strategy(
@@ -38,8 +39,7 @@ bool MergeStrategyFactoryStateless::requires_goal_distances() const {
 }
 
 class MergeStrategyFactoryStatelessFeature
-    : public plugins::TypedFeature<
-          MergeStrategyFactory, MergeStrategyFactoryStateless> {
+    : public plugins::TypedFeature<TaskIndependentMergeStrategyFactory> {
 public:
     MergeStrategyFactoryStatelessFeature() : TypedFeature("merge_stateless") {
         document_title("Stateless merge strategy");
@@ -48,7 +48,7 @@ public:
             "merge only depending on the current state of the factored transition "
             "system, not requiring any additional information.");
 
-        add_option<shared_ptr<MergeSelector>>(
+        add_option<shared_ptr<TaskIndependentMergeSelector>>(
             "merge_selector", "The merge selector to be used.");
         add_merge_strategy_options_to_feature(*this);
 
@@ -70,11 +70,12 @@ public:
             "\n}}}");
     }
 
-    virtual shared_ptr<MergeStrategyFactoryStateless> create_component(
+    virtual shared_ptr<TaskIndependentMergeStrategyFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            MergeStrategyFactoryStateless>(
-            opts.get<shared_ptr<MergeSelector>>("merge_selector"),
+        return components::make_auto_task_independent_component<
+            MergeStrategyFactoryStateless, MergeStrategyFactory>(
+            opts.get<shared_ptr<TaskIndependentMergeSelector>>(
+                "merge_selector"),
             get_merge_strategy_arguments_from_options(opts));
     }
 };

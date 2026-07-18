@@ -21,11 +21,11 @@ protected:
     virtual int compute_heuristic(const State &ancestor_state) override;
 
 public:
-    explicit AdditiveCartesianHeuristic(
+    AdditiveCartesianHeuristic(
+        const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<SubtaskGenerator>> &subtasks,
         int max_states, int max_transitions, double max_time, PickSplit pick,
-        bool use_general_costs, int random_seed,
-        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+        bool use_general_costs, int random_seed, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 };
 }

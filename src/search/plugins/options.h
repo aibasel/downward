@@ -71,7 +71,7 @@ class Options {
     std::unordered_map<std::string, Any> storage;
     std::string unparsed_config;
 public:
-    explicit Options();
+    Options() = default;
     /*
       TODO: we only need the copy constructor for cases where we need to modify
       the options after parsing (see merge_and_shrink_heuristic.cc for an

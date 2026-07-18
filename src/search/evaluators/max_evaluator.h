@@ -5,10 +5,6 @@
 
 #include <vector>
 
-namespace plugins {
-class Options;
-}
-
 namespace max_evaluator {
 class MaxEvaluator : public combining_evaluator::CombiningEvaluator {
 protected:
@@ -16,6 +12,7 @@ protected:
 
 public:
     MaxEvaluator(
+        const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<Evaluator>> &evals,
         const std::string &description, utils::Verbosity verbosity);
 };

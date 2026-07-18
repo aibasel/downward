@@ -12,9 +12,10 @@ using namespace std;
 namespace pdbs {
 PatternCollectionGeneratorDisjointCegar::
     PatternCollectionGeneratorDisjointCegar(
-        int max_pdb_size, int max_collection_size, double max_time,
-        bool use_wildcard_plans, int random_seed, utils::Verbosity verbosity)
-    : PatternCollectionGenerator(verbosity),
+        const shared_ptr<AbstractTask> &task, int max_pdb_size,
+        int max_collection_size, double max_time, bool use_wildcard_plans,
+        int random_seed, utils::Verbosity verbosity)
+    : PatternCollectionGenerator(task, verbosity),
       max_pdb_size(max_pdb_size),
       max_collection_size(max_collection_size),
       max_time(max_time),
@@ -39,8 +40,7 @@ PatternCollectionGeneratorDisjointCegar::compute_patterns(
 }
 
 class PatternCollectionGeneratorDisjointCegarFeature
-    : public plugins::TypedFeature<
-          PatternCollectionGenerator, PatternCollectionGeneratorDisjointCegar> {
+    : public plugins::TypedFeature<TaskIndependentPatternCollectionGenerator> {
 public:
     PatternCollectionGeneratorDisjointCegarFeature()
         : TypedFeature("disjoint_cegar") {
@@ -79,10 +79,11 @@ public:
         add_cegar_implementation_notes_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorDisjointCegar>
+    virtual shared_ptr<TaskIndependentPatternCollectionGenerator>
     create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<
-            PatternCollectionGeneratorDisjointCegar>(
+        return components::make_auto_task_independent_component<
+            PatternCollectionGeneratorDisjointCegar,
+            PatternCollectionGenerator>(
             opts.get<int>("max_pdb_size"), opts.get<int>("max_collection_size"),
             opts.get<double>("max_time"),
             get_cegar_wildcard_arguments_from_options(opts),

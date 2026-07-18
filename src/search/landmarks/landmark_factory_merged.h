@@ -26,6 +26,7 @@ class LandmarkFactoryMerged : public LandmarkFactory {
     LandmarkNode *get_matching_landmark(const Landmark &landmark) const;
 public:
     LandmarkFactoryMerged(
+        const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<LandmarkFactory>> &lm_factories,
         utils::Verbosity verbosity);
 

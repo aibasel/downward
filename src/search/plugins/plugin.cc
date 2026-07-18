@@ -1,5 +1,7 @@
 #include "plugin.h"
 
+#include "raw_registry.h"
+
 #include "../utils/strings.h"
 
 using namespace std;

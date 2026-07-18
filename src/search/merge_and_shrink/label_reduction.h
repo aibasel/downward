@@ -1,6 +1,8 @@
 #ifndef MERGE_AND_SHRINK_LABEL_REDUCTION_H
 #define MERGE_AND_SHRINK_LABEL_REDUCTION_H
 
+#include "../component.h"
+
 #include <memory>
 #include <vector>
 
@@ -8,10 +10,6 @@ class TaskProxy;
 
 namespace equivalence_relation {
 class EquivalenceRelation;
-}
-
-namespace plugins {
-class Options;
 }
 
 namespace utils {
@@ -53,7 +51,7 @@ enum class LabelReductionSystemOrder {
     RANDOM
 };
 
-class LabelReduction {
+class LabelReduction : public components::TaskSpecificComponent {
     // Options for label reduction
     std::vector<int> transition_system_order;
     bool lr_before_shrinking;
@@ -75,7 +73,8 @@ class LabelReduction {
         int ts_index, const FactoredTransitionSystem &fts) const;
 public:
     LabelReduction(
-        bool before_shrinking, bool before_merging, LabelReductionMethod method,
+        const std::shared_ptr<AbstractTask> &task, bool before_shrinking,
+        bool before_merging, LabelReductionMethod method,
         LabelReductionSystemOrder system_order, int random_seed);
     void initialize(const TaskProxy &task_proxy);
     bool reduce(
@@ -89,6 +88,9 @@ public:
         return lr_before_merging;
     }
 };
+
+using TaskIndependentLabelReduction =
+    components::TaskIndependentComponent<LabelReduction>;
 }
 
 #endif

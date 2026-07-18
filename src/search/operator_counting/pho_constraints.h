@@ -8,10 +8,6 @@
 
 #include <memory>
 
-namespace plugins {
-class Options;
-}
-
 namespace pdbs {
 class PatternCollectionGenerator;
 }
@@ -23,7 +19,8 @@ class PhOConstraints : public ConstraintGenerator {
     int constraint_offset;
     std::shared_ptr<pdbs::PDBCollection> pdbs;
 public:
-    explicit PhOConstraints(
+    PhOConstraints(
+        const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<pdbs::PatternCollectionGenerator> &patterns);
 
     virtual void initialize_constraints(

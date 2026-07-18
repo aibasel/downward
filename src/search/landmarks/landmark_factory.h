@@ -3,6 +3,8 @@
 
 #include "landmark_graph.h"
 
+#include "../component.h"
+
 #include "../utils/logging.h"
 
 #include <vector>
@@ -15,7 +17,7 @@ class Feature;
 }
 
 namespace landmarks {
-class LandmarkFactory {
+class LandmarkFactory : public components::TaskSpecificComponent {
     AbstractTask *landmark_graph_task;
     std::vector<std::vector<std::vector<int>>> operators_providing_effect;
 
@@ -38,7 +40,8 @@ protected:
     std::shared_ptr<LandmarkGraph> landmark_graph;
     bool achievers_calculated = false;
 
-    explicit LandmarkFactory(utils::Verbosity verbosity);
+    LandmarkFactory(
+        const std::shared_ptr<AbstractTask> &task, utils::Verbosity verbosity);
 
     void add_or_replace_ordering_if_stronger(
         LandmarkNode &from, LandmarkNode &to, OrderingType type) const;
@@ -51,7 +54,6 @@ protected:
     }
 
 public:
-    virtual ~LandmarkFactory() = default;
     LandmarkFactory(const LandmarkFactory &) = delete;
 
     std::shared_ptr<LandmarkGraph> compute_landmark_graph(
@@ -63,6 +65,8 @@ public:
         return achievers_calculated;
     }
 };
+using TaskIndependentLandmarkFactory =
+    components::TaskIndependentComponent<LandmarkFactory>;
 
 extern void add_landmark_factory_options_to_feature(plugins::Feature &feature);
 extern std::tuple<utils::Verbosity> get_landmark_factory_arguments_from_options(

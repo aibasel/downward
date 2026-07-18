@@ -6,10 +6,6 @@
 #include <memory>
 #include <vector>
 
-namespace plugins {
-class Options;
-}
-
 namespace merge_and_shrink {
 class MergeScoringFunction;
 class MergeSelectorScoreBasedFiltering : public MergeSelector {
@@ -19,7 +15,8 @@ protected:
     virtual void dump_selector_specific_options(
         utils::LogProxy &log) const override;
 public:
-    explicit MergeSelectorScoreBasedFiltering(
+    MergeSelectorScoreBasedFiltering(
+        const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<MergeScoringFunction>>
             &scoring_functions);
     virtual std::pair<int, int> select_merge_from_candidates(

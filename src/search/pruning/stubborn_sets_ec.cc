@@ -101,8 +101,9 @@ static void get_conflicting_vars(
     }
 }
 
-StubbornSetsEC::StubbornSetsEC(utils::Verbosity verbosity)
-    : StubbornSetsActionCentric(verbosity) {
+StubbornSetsEC::StubbornSetsEC(
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
+    : StubbornSetsActionCentric(task, verbosity) {
 }
 
 void StubbornSetsEC::initialize(const shared_ptr<AbstractTask> &task) {
@@ -330,7 +331,7 @@ void StubbornSetsEC::handle_stubborn_operator(const State &state, int op_no) {
 }
 
 class StubbornSetsECFeature
-    : public plugins::TypedFeature<PruningMethod, StubbornSetsEC> {
+    : public plugins::TypedFeature<TaskIndependentPruningMethod> {
 public:
     StubbornSetsECFeature() : TypedFeature("stubborn_sets_ec") {
         document_title("StubbornSetsEC");
@@ -353,9 +354,10 @@ public:
         add_pruning_options_to_feature(*this);
     }
 
-    virtual shared_ptr<StubbornSetsEC> create_component(
+    virtual shared_ptr<TaskIndependentPruningMethod> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<StubbornSetsEC>(
+        return components::make_auto_task_independent_component<
+            StubbornSetsEC, PruningMethod>(
             get_pruning_arguments_from_options(opts));
     }
 };

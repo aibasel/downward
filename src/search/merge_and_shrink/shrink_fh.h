@@ -5,10 +5,6 @@
 
 #include <vector>
 
-namespace plugins {
-class Options;
-}
-
 namespace merge_and_shrink {
 /*
   NOTE: In case where we must merge across buckets (i.e. when
@@ -46,7 +42,9 @@ protected:
         const TransitionSystem &ts, const Distances &distances) const override;
 
 public:
-    ShrinkFH(HighLow shrink_f, HighLow shrink_h, int random_seed);
+    ShrinkFH(
+        const std::shared_ptr<AbstractTask> &task, HighLow shrink_f,
+        HighLow shrink_h, int random_seed);
 
     virtual bool requires_init_distances() const override {
         return true;

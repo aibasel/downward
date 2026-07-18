@@ -21,6 +21,7 @@ protected:
     virtual void dump_strategy_specific_options() const override;
 public:
     MergeStrategyFactorySCCs(
+        const std::shared_ptr<AbstractTask> &task,
         const OrderOfSCCs &order_of_sccs,
         const std::shared_ptr<MergeSelector> &merge_selector,
         utils::Verbosity verbosity);

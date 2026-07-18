@@ -8,10 +8,6 @@
 #include <memory>
 #include <vector>
 
-namespace plugins {
-class Options;
-}
-
 namespace potentials {
 class PotentialFunction;
 
@@ -58,8 +54,8 @@ class PotentialOptimizer {
 
 public:
     PotentialOptimizer(
-        const std::shared_ptr<AbstractTask> &transform,
-        lp::LPSolverType lpsolver, double max_potential);
+        const std::shared_ptr<AbstractTask> &task, lp::LPSolverType lpsolver,
+        double max_potential);
     ~PotentialOptimizer() = default;
 
     std::shared_ptr<AbstractTask> get_task() const;

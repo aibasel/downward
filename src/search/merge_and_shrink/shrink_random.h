@@ -13,7 +13,7 @@ protected:
     void dump_strategy_specific_options(utils::LogProxy &) const override {
     }
 public:
-    explicit ShrinkRandom(int random_seed);
+    ShrinkRandom(const std::shared_ptr<AbstractTask> &task, int random_seed);
 
     virtual bool requires_init_distances() const override {
         return false;

@@ -3,6 +3,8 @@
 
 #include "types.h"
 
+#include "../component.h"
+
 #include <string>
 #include <vector>
 
@@ -14,13 +16,12 @@ namespace merge_and_shrink {
 class Distances;
 class TransitionSystem;
 
-class ShrinkStrategy {
+class ShrinkStrategy : public components::TaskSpecificComponent {
 protected:
     virtual std::string name() const = 0;
     virtual void dump_strategy_specific_options(utils::LogProxy &log) const = 0;
 public:
-    ShrinkStrategy() = default;
-    virtual ~ShrinkStrategy() = default;
+    explicit ShrinkStrategy(const std::shared_ptr<AbstractTask> &task);
 
     /*
       Compute a state equivalence relation over the states of the given
@@ -45,6 +46,9 @@ public:
     void dump_options(utils::LogProxy &log) const;
     std::string get_name() const;
 };
+
+using TaskIndependentShrinkStrategy =
+    components::TaskIndependentComponent<ShrinkStrategy>;
 }
 
 #endif

@@ -3,9 +3,6 @@
 using namespace std;
 
 namespace plugins {
-Options::Options() {
-}
-
 bool Options::contains(const string &key) const {
     return storage.find(key) != storage.end();
 }

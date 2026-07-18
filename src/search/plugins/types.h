@@ -57,7 +57,7 @@ class BasicType : public Type {
     std::type_index type;
     std::string class_name;
 public:
-    explicit BasicType(std::type_index type, const std::string &class_name);
+    BasicType(std::type_index type, const std::string &class_name);
     virtual bool operator==(const Type &other) const override;
     virtual bool is_basic_type() const override;
     virtual const std::type_index &get_basic_type_index() const override;

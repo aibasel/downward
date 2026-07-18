@@ -1,9 +1,11 @@
 #ifndef SEARCH_ALGORITHM_H
 #define SEARCH_ALGORITHM_H
 
+#include "component.h"
 #include "operator_cost.h"
 #include "operator_id.h"
 #include "plan_manager.h"
+#include "pruning_method.h"
 #include "search_progress.h"
 #include "search_space.h"
 #include "search_statistics.h"
@@ -35,18 +37,12 @@ enum SearchStatus {
     SOLVED
 };
 
-class SearchAlgorithm {
+class SearchAlgorithm : public components::TaskSpecificComponent {
     std::string description;
     SearchStatus status;
     bool solution_found;
     Plan plan;
 protected:
-    // Hold a reference to the task implementation and pass it to objects that
-    // need it.
-    const std::shared_ptr<AbstractTask> task;
-    // Use task_proxy to access task information.
-    TaskProxy task_proxy;
-
     mutable utils::LogProxy log;
     PlanManager plan_manager;
     StateRegistry state_registry;
@@ -68,13 +64,9 @@ protected:
     int get_adjusted_cost(const OperatorProxy &op) const;
 public:
     SearchAlgorithm(
-        OperatorCost cost_type, int bound, double max_time,
-        const std::string &description, utils::Verbosity verbosity);
-    explicit SearchAlgorithm(
-        const plugins::Options
-            &opts); // TODO options object is needed for iterated search, the
-                    // prototype for issue559 resolves this
-    virtual ~SearchAlgorithm();
+        const std::shared_ptr<AbstractTask> &task, OperatorCost cost_type,
+        int bound, double max_time, const std::string &description,
+        utils::Verbosity verbosity);
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
     bool found_solution() const;
@@ -98,6 +90,9 @@ public:
     }
 };
 
+using TaskIndependentSearchAlgorithm =
+    components::TaskIndependentComponent<SearchAlgorithm>;
+
 /*
   Print evaluator values of all evaluators evaluated in the evaluation context.
 */
@@ -108,10 +103,8 @@ extern void collect_preferred_operators(
     EvaluationContext &eval_context, Evaluator *preferred_operator_evaluator,
     ordered_set::OrderedSet<OperatorID> &preferred_operators);
 
-class PruningMethod;
-
 extern void add_search_pruning_options_to_feature(plugins::Feature &feature);
-extern std::tuple<std::shared_ptr<PruningMethod>>
+extern std::tuple<std::shared_ptr<TaskIndependentPruningMethod>>
 get_search_pruning_arguments_from_options(const plugins::Options &opts);
 extern void add_search_algorithm_options_to_feature(
     plugins::Feature &feature, const std::string &description);

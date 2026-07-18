@@ -112,8 +112,8 @@ protected:
     Proposition *get_proposition(const FactProxy &fact);
 public:
     RelaxationHeuristic(
-        tasks::AxiomHandlingType axioms,
-        const std::shared_ptr<AbstractTask> &transform, bool cache_estimates,
+        const std::shared_ptr<AbstractTask> &task,
+        tasks::AxiomHandlingType axioms, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;
@@ -121,9 +121,7 @@ public:
 
 extern void add_relaxation_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<
-    tasks::AxiomHandlingType, std::shared_ptr<AbstractTask>, bool, std::string,
-    utils::Verbosity>
+extern std::tuple<tasks::AxiomHandlingType, bool, std::string, utils::Verbosity>
 get_relaxation_heuristic_arguments_from_options(const plugins::Options &opts);
 }
 #endif

@@ -51,6 +51,7 @@ protected:
 
 public:
     LazySearch(
+        const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<OpenListFactory> &open, bool reopen_closed,
         const std::vector<std::shared_ptr<Evaluator>> &evaluators,
         bool randomize_successors, bool preferred_successors_first,

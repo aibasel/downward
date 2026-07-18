@@ -1,6 +1,7 @@
 #ifndef SEARCH_ALGORITHMS_EAGER_SEARCH_H
 #define SEARCH_ALGORITHMS_EAGER_SEARCH_H
 
+#include "../evaluator.h"
 #include "../open_list.h"
 #include "../search_algorithm.h"
 
@@ -45,7 +46,8 @@ protected:
     virtual SearchStatus step() override;
 
 public:
-    explicit EagerSearch(
+    EagerSearch(
+        const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<OpenListFactory> &open, bool reopen_closed,
         const std::shared_ptr<Evaluator> &f_eval,
         const std::vector<std::shared_ptr<Evaluator>> &preferred,
@@ -62,8 +64,9 @@ public:
 extern void add_eager_search_options_to_feature(
     plugins::Feature &feature, const std::string &description);
 extern std::tuple<
-    std::shared_ptr<PruningMethod>, std::shared_ptr<Evaluator>, OperatorCost,
-    int, double, std::string, utils::Verbosity>
+    std::shared_ptr<TaskIndependentPruningMethod>,
+    std::shared_ptr<TaskIndependentEvaluator>, OperatorCost, int, double,
+    std::string, utils::Verbosity>
 get_eager_search_arguments_from_options(const plugins::Options &opts);
 }
 

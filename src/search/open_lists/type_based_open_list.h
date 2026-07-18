@@ -28,6 +28,7 @@ class TypeBasedOpenListFactory : public OpenListFactory {
     int random_seed;
 public:
     TypeBasedOpenListFactory(
+        const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<Evaluator>> &evaluators,
         int random_seed);
 

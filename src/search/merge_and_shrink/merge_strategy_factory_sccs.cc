@@ -32,9 +32,9 @@ static bool compare_sccs_decreasing(
 }
 
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(
-    const OrderOfSCCs &order_of_sccs,
+    const shared_ptr<AbstractTask> &task, const OrderOfSCCs &order_of_sccs,
     const shared_ptr<MergeSelector> &merge_selector, utils::Verbosity verbosity)
-    : MergeStrategyFactory(verbosity),
+    : MergeStrategyFactory(task, verbosity),
       order_of_sccs(order_of_sccs),
       merge_selector(merge_selector) {
 }
@@ -137,8 +137,7 @@ string MergeStrategyFactorySCCs::name() const {
 }
 
 class MergeStrategyFactorySCCsFeature
-    : public plugins::TypedFeature<
-          MergeStrategyFactory, MergeStrategyFactorySCCs> {
+    : public plugins::TypedFeature<TaskIndependentMergeStrategyFactory> {
 public:
     MergeStrategyFactorySCCsFeature() : TypedFeature("merge_sccs") {
         document_title("Merge strategy SCCs");
@@ -162,16 +161,18 @@ public:
 
         add_option<OrderOfSCCs>(
             "order_of_sccs", "how the SCCs should be ordered", "topological");
-        add_option<shared_ptr<MergeSelector>>(
+        add_option<shared_ptr<TaskIndependentMergeSelector>>(
             "merge_selector", "the fallback merge strategy to use");
         add_merge_strategy_options_to_feature(*this);
     }
 
-    virtual shared_ptr<MergeStrategyFactorySCCs> create_component(
+    virtual shared_ptr<TaskIndependentMergeStrategyFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<MergeStrategyFactorySCCs>(
+        return components::make_auto_task_independent_component<
+            MergeStrategyFactorySCCs, MergeStrategyFactory>(
             opts.get<OrderOfSCCs>("order_of_sccs"),
-            opts.get<shared_ptr<MergeSelector>>("merge_selector"),
+            opts.get<shared_ptr<TaskIndependentMergeSelector>>(
+                "merge_selector"),
             get_merge_strategy_arguments_from_options(opts));
     }
 };

@@ -19,7 +19,6 @@ protected:
     const std::shared_ptr<AbstractTask> parent;
 public:
     explicit DelegatingTask(const std::shared_ptr<AbstractTask> &parent);
-    virtual ~DelegatingTask() override = default;
 
     virtual int get_num_variables() const override;
     virtual std::string get_variable_name(int var) const override;
