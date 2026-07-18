@@ -52,7 +52,8 @@ public:
             "Multiplies the value of the evaluator with the given weight.");
 
         add_option<shared_ptr<TaskIndependentEvaluator>>("eval", "evaluator");
-        add_option<int>("weight", "weight");
+        add_option<int>(
+            "weight", "weight", "1", plugins::Bounds("0", "infinity"));
         add_evaluator_options_to_feature(*this, "weight");
     }
 
