@@ -38,7 +38,16 @@ void PhOConstraints::initialize_constraints(
         lp.get_constraints();
     constraint_offset = constraints.size();
     for (const shared_ptr<pdbs::PatternDatabase> &pdb : *pdbs) {
-        constraints.emplace_back(0, lp.get_infinity());
+        /*
+                    OLD INTERFACE CODE 
+            constraints.emplace_back(0, lp.get_infinity());
+                    NEW INTERFACE CODE
+            constraints.emplace_back(lp::Sense::GE, 0);
+
+            This creates a constraint of the form  0 <= ax <= infinity, which is equivalent to ax >= 0.
+            TODO: double check.
+        */
+        constraints.emplace_back(lp::Sense::GE, 0);
         lp::LPConstraint &constraint = constraints.back();
         for (OperatorProxy op : task_proxy.get_operators()) {
             if (pdbs::is_operator_relevant(pdb->get_pattern(), op)) {
@@ -58,7 +67,16 @@ bool PhOConstraints::update_constraints(
         if (h == numeric_limits<int>::max()) {
             return true;
         }
-        lp_solver.set_constraint_lower_bound(constraint_id, h);
+        /*
+                    OLD INTERFACE CODE
+            lp_solver.set_constraint_lower_bound(constraint_id, h);
+                    NEW INTERFACE CODE  
+            lp_solver.set_constraint_rhs(constraint_id, h);
+
+            All created constraints have sense >= (lp::Sense::GE), so setting the rhs to h is equivalent to setting the lower bound to h.
+            TODO: double check.
+        */
+        lp_solver.set_constraint_rhs(constraint_id, h);
     }
     return false;
 }
