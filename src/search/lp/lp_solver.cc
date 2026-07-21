@@ -13,11 +13,14 @@ using namespace std;
 
 namespace lp {
 
-std::ostream& operator<<(std::ostream& os, Sense s) {
+std::ostream &operator<<(std::ostream &os, Sense s) {
     switch (s) {
-        case Sense::GE: return os << ">=";
-        case Sense::LE: return os << "<=";
-        case Sense::EQ: return os << "==";
+    case Sense::GE:
+        return os << ">=";
+    case Sense::LE:
+        return os << "<=";
+    case Sense::EQ:
+        return os << "==";
     }
     return os;
 }

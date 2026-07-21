@@ -18,7 +18,6 @@ static int get_obj_sense(LPObjectiveSense sense) {
 
 static LPRowSetReal constraints_to_row_set(
     const named_vector::NamedVector<LPConstraint> &constraints) {
-
     int num_rows = constraints.size();
     int num_nonzeros = 0;
     for (const LPConstraint &constraint : constraints) {
@@ -37,21 +36,22 @@ static LPRowSetReal constraints_to_row_set(
         const lp::Sense s = constraint.get_sense();
         double lhs, rhs;
         switch (s) {
-            case lp::Sense::LE:
-                lhs = -soplex::infinity;
-                rhs = b;
-                break;
-            case lp::Sense::GE:
-                lhs = b;
-                rhs = soplex::infinity;
-                break;
-            case lp::Sense::EQ:
-                lhs = b;
-                rhs = b;
-                break;
-            default:
-                cerr << "Invalid constraint sense code: " << static_cast<int>(s) << endl;
-                utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        case lp::Sense::LE:
+            lhs = -soplex::infinity;
+            rhs = b;
+            break;
+        case lp::Sense::GE:
+            lhs = b;
+            rhs = soplex::infinity;
+            break;
+        case lp::Sense::EQ:
+            lhs = b;
+            rhs = b;
+            break;
+        default:
+            cerr << "Invalid constraint sense code: " << static_cast<int>(s)
+                 << endl;
+            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
         }
         rows.add(lhs, entries, rhs);
     }
@@ -261,17 +261,16 @@ void SoPlexSolverInterface::print_statistics() const {
 void SoPlexSolverInterface::set_constraint_rhs(int index, double b) {
     const lp::Sense sense = constraint_senses[index];
 
-    if(sense == lp::Sense::GE) {
+    if (sense == lp::Sense::GE) {
         soplex.changeLhsReal(index, b);
-    }
-    else if(sense == lp::Sense::LE) {
+    } else if (sense == lp::Sense::LE) {
         soplex.changeRhsReal(index, b);
-    }
-    else if(sense == lp::Sense::EQ) {
+    } else if (sense == lp::Sense::EQ) {
         soplex.changeLhsReal(index, b);
         soplex.changeRhsReal(index, b);
     } else {
-        cerr << "Invalid constraint sense code: " << static_cast<int>(sense) << endl;
+        cerr << "Invalid constraint sense code: " << static_cast<int>(sense)
+             << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 }
@@ -281,7 +280,7 @@ void SoPlexSolverInterface::set_constraint_sense(int index, lp::Sense sense) {
     const double rhs = soplex.rhsReal(index);
 
     const bool lhs_is_neginf = (lhs == -infinity);
-    const bool rhs_is_posinf = (rhs ==  infinity);
+    const bool rhs_is_posinf = (rhs == infinity);
 
     double b;
     if (lhs_is_neginf && !rhs_is_posinf) {
@@ -297,21 +296,22 @@ void SoPlexSolverInterface::set_constraint_sense(int index, lp::Sense sense) {
     }
 
     switch (sense) {
-        case lp::Sense::LE:
-            soplex.changeLhsReal(index, -infinity);
-            soplex.changeRhsReal(index,  b);
-            break;
-        case lp::Sense::GE:
-            soplex.changeLhsReal(index,  b);
-            soplex.changeRhsReal(index,  infinity);
-            break;
-        case lp::Sense::EQ:
-            soplex.changeLhsReal(index,  b);
-            soplex.changeRhsReal(index,  b);
-            break;
-        default:
-            cerr << "Invalid constraint sense code: " << static_cast<int>(sense) << endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    case lp::Sense::LE:
+        soplex.changeLhsReal(index, -infinity);
+        soplex.changeRhsReal(index, b);
+        break;
+    case lp::Sense::GE:
+        soplex.changeLhsReal(index, b);
+        soplex.changeRhsReal(index, infinity);
+        break;
+    case lp::Sense::EQ:
+        soplex.changeLhsReal(index, b);
+        soplex.changeRhsReal(index, b);
+        break;
+    default:
+        cerr << "Invalid constraint sense code: " << static_cast<int>(sense)
+             << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 
     constraint_senses[index] = sense;

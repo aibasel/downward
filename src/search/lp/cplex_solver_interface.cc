@@ -75,8 +75,7 @@ static int model_sense_to_cplex_sense(LPObjectiveSense sense) {
     }
 }
 
-static char constraint_sense_to_cplex_sense(
-    lp::Sense constraint_sense) {
+static char constraint_sense_to_cplex_sense(lp::Sense constraint_sense) {
     switch (constraint_sense) {
     case lp::Sense::LE:
         return 'L';
@@ -229,7 +228,7 @@ CplexSolverInterface::CplexSolverInterface()
     : env(nullptr),
       problem(nullptr),
       is_mip(false),
-      num_permanent_constraints(0){
+      num_permanent_constraints(0) {
     int status = 0;
     env = CPXopenCPLEX(&status);
     if (status) {
@@ -262,7 +261,8 @@ void CplexSolverInterface::load_problem(const LinearProgram &lp) {
             return v.is_integer;
         });
 
-    const named_vector::NamedVector<LPConstraint> &constraints = lp.get_constraints();
+    const named_vector::NamedVector<LPConstraint> &constraints =
+        lp.get_constraints();
     num_permanent_constraints = constraints.size();
     matrix.assign_column_by_column(constraints, variables.size());
     columns.assign(variables);
@@ -340,7 +340,8 @@ void CplexSolverInterface::set_objective_coefficient(
     CPX_CALL(CPXchgobj, env, problem, 1, &index, &coefficient);
 }
 
-void CplexSolverInterface::set_constraint_rhs(int index, double right_hand_side) {
+void CplexSolverInterface::set_constraint_rhs(
+    int index, double right_hand_side) {
     CPX_CALL(CPXchgrhs, env, problem, 1, &index, &right_hand_side);
 }
 

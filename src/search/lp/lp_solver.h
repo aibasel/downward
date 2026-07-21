@@ -32,13 +32,12 @@ std::tuple<LPSolverType> get_lp_solver_arguments_from_options(
 class LinearProgram;
 
 enum class Sense {
-  GE, // ax >= b
-  LE, // ax <= b
-  EQ  // ax = b
+    GE, // ax >= b
+    LE, // ax <= b
+    EQ // ax = b
 };
 
-std::ostream& operator<<(std::ostream& os, Sense s);
-
+std::ostream &operator<<(std::ostream &os, Sense s);
 
 class LPConstraint {
     std::vector<int> variables;

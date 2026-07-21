@@ -437,7 +437,7 @@ void DeleteRelaxationRRConstraints::create_constraints_ve(
         pair<FactPair, FactPair> reverse_edge =
             make_pair(edge.second, edge.first);
         if (lp_var_ids.has_e(reverse_edge)) {
-            lp::LPConstraint constraint(lp::Sense::LE, 1); 
+            lp::LPConstraint constraint(lp::Sense::LE, 1);
             constraint.insert(lp_var_ids.id_of_e(edge), 1);
             constraint.insert(lp_var_ids.id_of_e(reverse_edge), 1);
             constraints.push_back(move(constraint));
@@ -455,7 +455,7 @@ void DeleteRelaxationRRConstraints::create_constraints_ve(
       not have both p_i ordered before p_j, and p_j ordered before p_k.
     */
     for (auto [pi, pj, pk] : ve_graph.get_delta()) {
-        lp::LPConstraint constraint(lp::Sense::LE, 1); 
+        lp::LPConstraint constraint(lp::Sense::LE, 1);
         constraint.insert(lp_var_ids.id_of_e(make_pair(pi, pj)), 1);
         constraint.insert(lp_var_ids.id_of_e(make_pair(pj, pk)), 1);
         constraint.insert(lp_var_ids.id_of_e(make_pair(pi, pk)), -1);

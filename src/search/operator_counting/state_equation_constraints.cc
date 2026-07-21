@@ -111,7 +111,8 @@ bool StateEquationConstraints::update_constraints(
                 if (goal_state[var] == value) {
                     ++lower_bound;
                 }
-                lp_solver.set_constraint_rhs(prop.constraint_index, lower_bound);
+                lp_solver.set_constraint_rhs(
+                    prop.constraint_index, lower_bound);
             }
         }
     }

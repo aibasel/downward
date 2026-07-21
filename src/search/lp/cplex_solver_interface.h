@@ -135,7 +135,7 @@ class CplexSolverInterface : public SolverInterface {
         std::vector<char> sense;
     public:
         void assign(const named_vector::NamedVector<LPConstraint> &constraints);
-        
+
         double *get_rhs() {
             return to_cplex_array(rhs);
         }
