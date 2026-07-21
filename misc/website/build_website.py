@@ -11,6 +11,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT_DIR = SCRIPT_DIR.parents[1]
 BUILD_DIR = SCRIPT_DIR/"build"
 GENERATED_DOC_DIR = BUILD_DIR/"docs"/"documentation"/"search"
+GENERATED_TRANSLATE_DOC_DIR = BUILD_DIR/"docs"/"documentation"
 
 if __name__ == '__main__':
     try:
@@ -37,10 +38,13 @@ if __name__ == '__main__':
     subprocess.run(
         [REPO_ROOT_DIR/"misc"/"autodoc"/"generate-docs.py", "--outdir",
          GENERATED_DOC_DIR])
+    print("Done creating documentation of search plugins")
+
+    print("Start creating documentation of translator")
     subprocess.run(
         [REPO_ROOT_DIR/"misc"/"autodoc"/"generate-translate-docs.py", "--outdir",
-         GENERATED_DOC_DIR])
-    print("Done creating documentation of search plugins")
+         GENERATED_TRANSLATE_DOC_DIR])
+    print("Done creating documentation of translator")
 
     print("\n\n", "Done. Run 'mkdocs serve' from the build directory "
           "to see the website in the browser at http://localhost:8001/:\n",
