@@ -29,7 +29,7 @@ public:
       it only returns true if all subevaluators are safe.
 
       Note that we could get more fine-grained information when
-      considering reliability for a given evaluated state. For
+      considering safety for a given evaluated state. For
       example, if we use h1 (unsafe) and h2 (safe) and have a
       state where h1 is finite and h2 is infinite, then we can
       *safely* mark the state as a dead end. There is currently no
