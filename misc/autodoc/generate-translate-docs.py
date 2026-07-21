@@ -20,6 +20,8 @@ Fast Downward's PDDL to SAS^+ translator can be called through Fast Downward's d
 ./fast-downward.py --translate [domain] problem [--translate-options OPTIONS]
 ```
 
+## Options
+
 """
 
 def parse_args():
@@ -38,19 +40,47 @@ def import_argparser_from_translator():
     return options.get_arg_parser()
 
 
+def action_to_markdown(parser: argparse.ArgumentParser, action: argparse.Action):
+    if action.option_strings:
+        names = []
+        for opt in action.option_strings:
+            if action.choices is not None:
+                choice_str = ",".join(map(str, action.choices))
+                names.append(f"`{opt} {{{choice_str}}}`")
+            elif action.metavar is not None:
+                names.append(f"`{opt} {action.metavar}`")
+            elif action.nargs != 0:
+                metavar = action.dest.upper()
+                names.append(f"`{opt} {metavar}`")
+            else:
+                names.append(f"`{opt}`")
+        name = ", ".join(names)
+    else:
+        name = f"`{action.dest}`"
+        # Expand %(default)s, %(choices)s, etc.
+
+    help_text = action.help or ""
+    if help_text is not argparse.SUPPRESS:
+        params = {
+            "default": action.default,
+            "prog": parser.prog,
+            "type": action.type,
+            "choices": action.choices,
+            "metavar": action.metavar,
+            "dest": action.dest,
+        }
+        try:
+            help_text = help_text % params
+        except Exception:
+            pass
+
+    return f"### {name}\n{help_text}\n"
+
+
 def parser_to_markdown(parser: argparse.ArgumentParser):
     lines = [INTRO_TEXT]
-    lines.append("## Options")
-    lines.append("")
-
     for action in parser._actions:
-        if action.option_strings:
-            name = ", ".join(f"`{s}`" for s in action.option_strings)
-        else:
-            name = f"`{action.dest}`"
-        lines.append(f"### {name}")
-        lines.append(action.help)
-        lines.append("")
+        lines.append(action_to_markdown(parser, action))
     return "\n".join(lines)
 
 
