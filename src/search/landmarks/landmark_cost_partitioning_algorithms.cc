@@ -195,7 +195,6 @@ lp::LinearProgram OptimalCostPartitioningAlgorithm::build_initial_lp() {
         lp_constraints[op_id].set_right_hand_side(operator_costs[op_id]);
     }
 
-
     /* Coefficients of constraints will be updated and recreated in each state.
        We ignore them for the initial LP. */
     return lp::LinearProgram(

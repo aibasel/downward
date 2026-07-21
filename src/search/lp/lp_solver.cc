@@ -6,12 +6,6 @@
 #ifdef HAS_SOPLEX
 #include "soplex_solver_interface.h"
 #endif
-#ifdef HAS_GUROBI
-#include "gurobi_solver_interface.h"
-#endif
-#ifdef HAS_HIGHS
-#include "highs_solver_interface.h"
-#endif
 
 #include "../plugins/plugin.h"
 
@@ -27,7 +21,6 @@ std::ostream& operator<<(std::ostream& os, Sense s) {
     }
     return os;
 }
-
 
 void add_lp_solver_option_to_feature(plugins::Feature &feature) {
     feature.add_option<LPSolverType>(
@@ -64,7 +57,6 @@ void LPConstraint::insert(int index, double coefficient) {
     coefficients.push_back(coefficient);
 }
 
-// TODO: double check that this preserves the semantics of the old implementation.
 ostream &LPConstraint::dump(
     ostream &stream, const LinearProgram *program) const {
     for (size_t i = 0; i < variables.size(); ++i) {
@@ -142,20 +134,6 @@ LPSolver::LPSolver(LPSolverType solver_type) {
         pimpl = make_unique<SoPlexSolverInterface>();
 #else
         missing_solver = "SoPlex";
-#endif
-        break;
-    case LPSolverType::GUROBI:
-#ifdef HAS_GUROBI
-        pimpl = make_unique<GurobiSolverInterface>();
-#else
-        missing_solver = "Gurobi";
-#endif
-        break;
-    case LPSolverType::HIGHS:
-#ifdef HAS_HIGHS
-        pimpl = make_unique<HiGHSSolverInterface>();
-#else
-        missing_solver = "HiGHS";
 #endif
         break;
 
@@ -267,7 +245,5 @@ void LPSolver::print_statistics() const {
 
 static plugins::TypedEnumPlugin<LPSolverType> _enum_plugin(
     {{"cplex", "commercial solver by IBM"},
-     {"soplex", "open source solver by ZIB"},
-     {"highs", "open source solver by the HiGHS team"},
-     {"gurobi", "commercial solver by Gurobi"}});
+     {"soplex", "open source solver by ZIB"}});
 }

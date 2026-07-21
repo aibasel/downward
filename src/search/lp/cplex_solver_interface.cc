@@ -94,7 +94,6 @@ static char constraint_sense_to_cplex_sense(
     }
 }
 
-
 void CplexSolverInterface::CplexMatrix::assign_column_by_column(
     const named_vector::NamedVector<LPConstraint> &constraints, int num_cols) {
     coefficients.clear();
@@ -217,7 +216,7 @@ void CplexSolverInterface::CplexRowsInfo::assign(
     for (int row_index = 0; row_index < num_rows; ++row_index) {
         const LPConstraint &constraint = constraints[row_index];
         double rhs_value = constraint.get_right_hand_side();
-        lp::Sense constraint_sense = constraint.get_sense(); 
+        lp::Sense constraint_sense = constraint.get_sense();
         char cplex_sense = constraint_sense_to_cplex_sense(constraint_sense);
         sense[row_index] = cplex_sense;
         rhs[row_index] = rhs_value;
@@ -264,7 +263,7 @@ void CplexSolverInterface::load_problem(const LinearProgram &lp) {
         });
 
     const named_vector::NamedVector<LPConstraint> &constraints = lp.get_constraints();
-    num_permanent_constraints = constraints.size();    
+    num_permanent_constraints = constraints.size();
     matrix.assign_column_by_column(constraints, variables.size());
     columns.assign(variables);
     rows.assign(constraints);

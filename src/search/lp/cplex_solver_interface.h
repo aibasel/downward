@@ -113,8 +113,7 @@ class CplexSolverInterface : public SolverInterface {
         // Objective value of each column (variable)
         std::vector<double> objective;
     public:
-        void assign(
-            const named_vector::NamedVector<LPVariable> &variables);
+        void assign(const named_vector::NamedVector<LPVariable> &variables);
         double *get_lb() {
             return to_cplex_array(lb);
         }

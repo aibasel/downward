@@ -58,15 +58,6 @@ void StateEquationConstraints::add_constraints(
     named_vector::NamedVector<lp::LPConstraint> &constraints, double infinity) {
     for (vector<Proposition> &var_propositions : propositions) {
         for (Proposition &prop : var_propositions) {
-            /*
-                        OLD INTERFACE CODE
-                lp::LPConstraint constraint(-infinity, infinity);
-                        NEW INTERFACE CODE
-                lp::LPConstraint constraint(lp::Sense::GE, -infinity);
-
-                StateEquationConstraints::update_constraints updates the lower bound of the constraint, making it effectively a constraint of the form ax >= b. 
-                TODO: double check
-            */
             lp::LPConstraint constraint(lp::Sense::GE, -infinity);
             add_indices_to_constraint(constraint, prop.always_produced_by, 1.0);
             add_indices_to_constraint(
@@ -120,15 +111,6 @@ bool StateEquationConstraints::update_constraints(
                 if (goal_state[var] == value) {
                     ++lower_bound;
                 }
-                /*
-                            OLD INTERFACE CODE 
-                    lp_solver.set_constraint_lower_bound(prop.constraint_index, lower_bound);
-                            NEW INTERFACE CODE 
-                    lp_solver.set_constraint_rhs(prop.constraint_index, lower_bound);
-                    
-                    All created constraints have sense >= (lp::Sense::GE), so setting the rhs to lower_bound is equivalent to setting the lower bound to lower_bound.
-                    TODO: double check.
-                */
                 lp_solver.set_constraint_rhs(prop.constraint_index, lower_bound);
             }
         }

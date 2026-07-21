@@ -125,18 +125,7 @@ void DeleteRelaxationIFConstraints::create_constraints(
         constraint_ids[var_id].resize(var.get_domain_size());
         for (int value = 0; value < var.get_domain_size(); ++value) {
             constraint_ids[var_id][value] = constraints.size();
-            
-            /*
-                        OLD INTERFACE CODE
-                constraints.emplace_back(0, infinity);
-                        NEW INTERFACE CODE
-                constraints.emplace_back(lp::Sense::GE, 0);
-
-                This creates a constraint of the form  0 <= ax <= infinity, which is equivalent to ax >= 0.\
-                TODO: double check.
-            */
             constraints.emplace_back(lp::Sense::GE, 0);
-
 
             /* We add "- R_f" here, collect the achiever below and adapt
                the lower bound in each iteration, i.e., in
@@ -160,17 +149,7 @@ void DeleteRelaxationIFConstraints::create_constraints(
     for (OperatorProxy op : ops) {
         for (EffectProxy eff : op.get_effects()) {
             FactPair f = eff.get_fact().get_pair();
-            /*
-                        OLD INTERFACE CODE
-                lp::LPConstraint constraint(0, infinity);
-                        NEW INTERFACE CODE
-                lp::LPConstraint constraint(lp::Sense::GE, 0);
-
-                This creates a constraint of the form  0 <= ax <= infinity, which is equivalent to ax >= 0.
-                TODO: double check.
-            */
             lp::LPConstraint constraint(lp::Sense::GE, 0);
-
             constraint.insert(get_var_op_used(op), 1);
             constraint.insert(get_var_first_achiever(op, f), -1);
             constraints.push_back(constraint);
@@ -183,15 +162,6 @@ void DeleteRelaxationIFConstraints::create_constraints(
     */
     for (OperatorProxy op : ops) {
         for (FactProxy f : op.get_preconditions()) {
-            /*
-                        OLD INTERFACE CODE
-                lp::LPConstraint constraint(0, infinity);
-                        NEW INTERFACE CODE
-                lp::LPConstraint constraint(lp::Sense::GE, 0);
-
-                This creates a constraint of the form  0 <= ax <= infinity, which is equivalent to ax >= 0.
-                TODO: double check.
-            */
             lp::LPConstraint constraint(lp::Sense::GE, 0);
             constraint.insert(get_var_fact_reached(f.get_pair()), 1);
             constraint.insert(get_var_op_used(op), -1);
@@ -206,15 +176,6 @@ void DeleteRelaxationIFConstraints::create_constraints(
         */
         for (OperatorProxy op : ops) {
             for (FactProxy f : op.get_preconditions()) {
-                /*
-                            OLD INTERFACE CODE
-                    lp::LPConstraint constraint(0, infinity);
-                            NEW INTERFACE CODE
-                    lp::LPConstraint constraint(lp::Sense::GE, 0);
-    
-                    This creates a constraint of the form  0 <= ax <= infinity, which is equivalent to ax >= 0.
-                    TODO: double check.
-                */
                 lp::LPConstraint constraint(lp::Sense::GE, 0);
                 constraint.insert(get_var_op_time(op), 1);
                 constraint.insert(get_var_fact_time(f.get_pair()), -1);
@@ -234,15 +195,6 @@ void DeleteRelaxationIFConstraints::create_constraints(
         for (OperatorProxy op : ops) {
             for (EffectProxy eff : op.get_effects()) {
                 FactPair f = eff.get_fact().get_pair();
-                /*
-                            OLD INTERFACE CODE
-                    lp::LPConstraint constraint(1 - M, infinity);
-                            NEW INTERFACE CODE
-                    lp::LPConstraint constraint(lp::Sense::GE, 1 - M); 
-
-                    This creates a constraint of the form  1 - M <= ax <= infinity, which is equivalent to ax >= 1 - M.
-                    TODO: double check.
-                */
                 lp::LPConstraint constraint(lp::Sense::GE, 1 - M);
                 constraint.insert(get_var_fact_time(f), 1);
                 constraint.insert(get_var_op_time(op), -1);
@@ -257,15 +209,6 @@ void DeleteRelaxationIFConstraints::create_constraints(
           U_o <= C_o for each operator o.
     */
     for (OperatorProxy op : ops) {
-        /*
-                    OLD INTERFACE CODE
-            lp::LPConstraint constraint(0, infinity);
-                    NEW INTERFACE CODE
-            lp::LPConstraint constraint(lp::Sense::GE, 0);
-
-            This creates a constraint of the form  0 <= ax <= infinity, which is equivalent to ax >= 0.
-            TODO: double check.
-        */
         lp::LPConstraint constraint(lp::Sense::GE, 0);
         constraint.insert(op.get_id(), 1);
         constraint.insert(get_var_op_used(op), -1);
@@ -284,29 +227,11 @@ bool DeleteRelaxationIFConstraints::update_constraints(
     const State &state, lp::LPSolver &lp_solver) {
     // Unset old bounds.
     for (FactPair f : last_state) {
-        /*
-                    OLD INTERFACE CODE
-            lp_solver.set_constraint_lower_bound(get_constraint_id(f), 0);
-                    NEW INTERFACE CODE
-            lp_solver.set_constraint_rhs(get_constraint_id(f), 0);
-
-            All created constraints have sense >= (lp::Sense::GE), so setting the rhs to 0 is equivalent to setting the lower bound to 0.
-            TODO: double check.
-        */
         lp_solver.set_constraint_rhs(get_constraint_id(f), 0);
     }
     last_state.clear();
     // Set new bounds.
     for (FactProxy f : state) {
-        /*
-                OLD INTERFACE CODE
-            lp_solver.set_constraint_lower_bound(get_constraint_id(f.get_pair()), -1);
-                NEW INTERFACE CODE 
-            lp_solver.set_constraint_rhs(get_constraint_id(f.get_pair()), -1);
-
-            All created constraints have sense >= (lp::Sense::GE), so setting the rhs to -1 is equivalent to setting the lower bound to -1.
-            TODO: double check.
-        */
         lp_solver.set_constraint_rhs(get_constraint_id(f.get_pair()), -1);
         last_state.push_back(f.get_pair());
     }
