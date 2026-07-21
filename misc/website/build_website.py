@@ -34,8 +34,11 @@ if __name__ == '__main__':
     rmtree(GENERATED_DOC_DIR, ignore_errors=True)
 
     print("Start creating documentation of search plugins")
-    out = subprocess.run(
+    subprocess.run(
         [REPO_ROOT_DIR/"misc"/"autodoc"/"generate-docs.py", "--outdir",
+         GENERATED_DOC_DIR])
+    subprocess.run(
+        [REPO_ROOT_DIR/"misc"/"autodoc"/"generate-translate-docs.py", "--outdir",
          GENERATED_DOC_DIR])
     print("Done creating documentation of search plugins")
 
