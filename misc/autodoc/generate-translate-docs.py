@@ -12,7 +12,7 @@ BUILD = "release"
 FILENAME = "translator-usage.md"
 
 INTRO_TEXT = """
-# Translator
+# Translator Usage
 
 Fast Downward's PDDL to SAS^+ translator can be called through Fast Downward's driver script
 

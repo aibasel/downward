@@ -1,4 +1,4 @@
-# Usage
+# Planner Usage
 
 Fast Downward is a domain-independent classical planning system that consists of two main components:
 
@@ -26,7 +26,7 @@ Note:
 
 -   Giving the domain file as input is optional. 
     In case no domain file is specified, the component will search for a file called `domain.pddl` located in the same directory as the task file. 
--   Translator component options can be specified after the input files following the `--translator-options` flag.
+-   Translator component options can be specified after the input files following the `--translator-options` flag. See [translator usage](translator-usage.md) for details.
 
 ## Search component
 To run a search on a PDDL input task run the following:
