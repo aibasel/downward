@@ -57,8 +57,8 @@ def action_to_markdown(parser: argparse.ArgumentParser, action: argparse.Action)
         name = ", ".join(names)
     else:
         name = f"`{action.dest}`"
-        # Expand %(default)s, %(choices)s, etc.
 
+    # Expand %(default)s, %(choices)s, etc.
     help_text = action.help or ""
     if help_text is not argparse.SUPPRESS:
         params = {
