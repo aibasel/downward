@@ -5,6 +5,7 @@
 #include "landmark_status_manager.h"
 #include "util.h"
 
+#include "../evaluators/default_value_axioms_evaluator.h"
 #include "../plugins/plugin.h"
 #include "../task_utils/successor_generator.h"
 #include "../task_utils/task_properties.h"
@@ -34,11 +35,8 @@ LandmarkSumHeuristic::LandmarkSumHeuristic(
     const shared_ptr<AbstractTask> &task,
     const shared_ptr<LandmarkFactory> &lm_factory, bool pref, bool prog_goal,
     bool prog_gn, bool prog_r, bool cache_estimates, const string &description,
-    utils::Verbosity verbosity, tasks::AxiomHandlingType axioms)
-    : LandmarkHeuristic(
-          // issue1208 move this transformation to task-independent level?
-          tasks::get_default_value_axioms_task_if_needed(task, axioms), pref,
-          cache_estimates, description, verbosity),
+    utils::Verbosity verbosity)
+    : LandmarkHeuristic(task, pref, cache_estimates, description, verbosity),
       dead_ends_reliable(are_dead_ends_reliable(lm_factory, task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark sum heuristic..." << endl;
@@ -194,10 +192,12 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<
-            LandmarkSumHeuristic, Evaluator>(
-            get_landmark_heuristic_arguments_from_options(opts),
-            tasks::get_axioms_arguments_from_options(opts));
+        shared_ptr<TaskIndependentEvaluator> eval =
+            components::make_auto_task_independent_component<
+                LandmarkSumHeuristic, Evaluator>(
+                get_landmark_heuristic_arguments_from_options(opts));
+        return default_value_axioms_evaluator::wrap_in_default_axiom_evaluator(
+            eval, opts);
     }
 };
 

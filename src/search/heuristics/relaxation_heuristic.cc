@@ -48,12 +48,9 @@ get_relaxation_heuristic_arguments_from_options(const plugins::Options &opts) {
 
 // construction and destruction
 RelaxationHeuristic::RelaxationHeuristic(
-    const shared_ptr<AbstractTask> &task, tasks::AxiomHandlingType axioms,
-    bool cache_estimates, const string &description, utils::Verbosity verbosity)
-    : Heuristic(
-          // issue1208 move this transformation to task-independent level?
-          tasks::get_default_value_axioms_task_if_needed(task, axioms),
-          cache_estimates, description, verbosity) {
+    const shared_ptr<AbstractTask> &task, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
+    : Heuristic(task, cache_estimates, description, verbosity) {
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));
 

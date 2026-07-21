@@ -1,5 +1,6 @@
 #include "max_heuristic.h"
 
+#include "../evaluators/default_value_axioms_evaluator.h"
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
 
@@ -23,10 +24,9 @@ namespace max_heuristic {
 
 // construction and destruction
 HSPMaxHeuristic::HSPMaxHeuristic(
-    const shared_ptr<AbstractTask> &task, tasks::AxiomHandlingType axioms,
-    bool cache_estimates, const string &description, utils::Verbosity verbosity)
-    : RelaxationHeuristic(
-          task, axioms, cache_estimates, description, verbosity) {
+    const shared_ptr<AbstractTask> &task, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
+    : RelaxationHeuristic(task, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing HSP max heuristic..." << endl;
     }
@@ -122,10 +122,12 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<
-            HSPMaxHeuristic, Evaluator>(
-            relaxation_heuristic::
-                get_relaxation_heuristic_arguments_from_options(opts));
+        shared_ptr<TaskIndependentEvaluator> eval =
+            components::make_auto_task_independent_component<
+                HSPMaxHeuristic, Evaluator>(
+                get_heuristic_arguments_from_options(opts));
+        return default_value_axioms_evaluator::wrap_in_default_axiom_evaluator(
+            eval, opts);
     }
 };
 

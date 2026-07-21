@@ -1,5 +1,6 @@
 #include "ff_heuristic.h"
 
+#include "../evaluators/default_value_axioms_evaluator.h"
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
@@ -11,9 +12,9 @@ using namespace std;
 namespace ff_heuristic {
 // construction and destruction
 FFHeuristic::FFHeuristic(
-    const shared_ptr<AbstractTask> &task, tasks::AxiomHandlingType axioms,
-    bool cache_estimates, const string &description, utils::Verbosity verbosity)
-    : AdditiveHeuristic(task, axioms, cache_estimates, description, verbosity),
+    const shared_ptr<AbstractTask> &task, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
+    : AdditiveHeuristic(task, cache_estimates, description, verbosity),
       relaxed_plan(task_proxy.get_operators().size(), false) {
     if (log.is_at_least_normal()) {
         log << "Initializing FF heuristic..." << endl;
@@ -90,10 +91,12 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<
-            FFHeuristic, Evaluator>(
-            relaxation_heuristic::
-                get_relaxation_heuristic_arguments_from_options(opts));
+        shared_ptr<TaskIndependentEvaluator> eval =
+            components::make_auto_task_independent_component<
+                FFHeuristic, Evaluator>(
+                get_heuristic_arguments_from_options(opts));
+        return default_value_axioms_evaluator::wrap_in_default_axiom_evaluator(
+            eval, opts);
     }
 };
 

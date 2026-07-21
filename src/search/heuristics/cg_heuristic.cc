@@ -3,6 +3,7 @@
 #include "cg_cache.h"
 #include "domain_transition_graph.h"
 
+#include "../evaluators/default_value_axioms_evaluator.h"
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
@@ -18,12 +19,8 @@ using namespace domain_transition_graph;
 namespace cg_heuristic {
 CGHeuristic::CGHeuristic(
     const shared_ptr<AbstractTask> &task, int max_cache_size,
-    tasks::AxiomHandlingType axioms, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
-    : Heuristic(
-          // issue1208 move this transformation to task-independent level?
-          tasks::get_default_value_axioms_task_if_needed(task, axioms),
-          cache_estimates, description, verbosity),
+    bool cache_estimates, const string &description, utils::Verbosity verbosity)
+    : Heuristic(task, cache_estimates, description, verbosity),
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
@@ -311,11 +308,13 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<
-            CGHeuristic, Evaluator>(
-            opts.get<int>("max_cache_size"),
-            tasks::get_axioms_arguments_from_options(opts),
-            get_heuristic_arguments_from_options(opts));
+        shared_ptr<TaskIndependentEvaluator> eval =
+            components::make_auto_task_independent_component<
+                CGHeuristic, Evaluator>(
+                opts.get<int>("max_cache_size"),
+                get_heuristic_arguments_from_options(opts));
+        return default_value_axioms_evaluator::wrap_in_default_axiom_evaluator(
+            eval, opts);
     }
 };
 
