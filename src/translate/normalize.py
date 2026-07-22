@@ -226,6 +226,36 @@ def build_DNF(task):
         if proxy.condition.has_disjunction():
             proxy.set(recurse(proxy.condition).simplified())
 
+# [2 Alternative] Decompose disjunctive formulas using derived predicates.
+# Replace each disjunctive subformula with a derived predicate and add a
+# corresponding axiom defining that predicate. The transformation proceeds
+# bottom-up so nested disjunctions are eliminated first.
+def substitute_conditions_with_axioms(task):
+    def recurse(condition, type_map):
+        if isinstance(condition, (pddl.Literal, pddl.Truth, pddl.Falsity)):
+            return condition
+        elif isinstance(condition, (pddl.Conjunction, pddl.ExistentialCondition)):
+            new_parts = [recurse(part, type_map) for part in condition.parts]
+            condition = condition.change_parts(new_parts)
+            return condition
+        parameters = sorted(condition.free_variables())
+        typed_parameters = tuple(pddl.TypedObject(v, type_map[v]) for v in parameters)
+        key = (condition, typed_parameters)
+        axiom = new_axioms_by_condition.get(key)
+        if not axiom:
+            new_parts = [recurse(part, type_map) for part in condition.parts]
+            condition = condition.change_parts(new_parts)
+            axiom = task.add_axiom(list(typed_parameters), condition)
+            new_axioms_by_condition[key] = axiom
+        return pddl.Atom(axiom.name, parameters)
+
+    new_axioms_by_condition = {}
+
+    for proxy in tuple(all_conditions(task)):
+        # Cannot use generator because we add new axioms on the fly.
+        type_map = proxy.get_type_map()
+        proxy.set(recurse(proxy.condition, type_map))
+
 # [3] Split conditions at the outermost disjunction.
 def split_disjunctions(task):
     for proxy in tuple(all_conditions(task)):
@@ -340,10 +370,16 @@ def substitute_complicated_goal(task):
 # Combine Steps [1], [2], [3], [4], [5] and do some additional verification
 # that the task makes sense.
 
-def normalize(task):
+
+def normalize(task, condition_strategy):
     remove_universal_quantifiers(task)
-    substitute_complicated_goal(task)
-    build_DNF(task)
+    if condition_strategy == "dnf":
+        substitute_complicated_goal(task)
+        build_DNF(task)
+    elif condition_strategy == "axiom_based":
+        substitute_conditions_with_axioms(task)
+    else:
+        raise ValueError("Unknown condition normalization strategy: %s" % condition_strategy)
     split_disjunctions(task)
     move_existential_quantifiers(task)
     eliminate_existential_quantifiers_from_axioms(task)
@@ -427,9 +463,9 @@ def condition_to_rule_body(parameters: Sequence[pddl.TypedObject],
 
 if __name__ == "__main__":
     from translate import pddl_parser
-    from translate.options import set_options
+    from translate.options import get_options, set_options
 
     set_options() # use command line options
     task = pddl_parser.open()
-    normalize(task)
+    normalize(task, get_options().condition_normalization_strategy)
     task.dump()
