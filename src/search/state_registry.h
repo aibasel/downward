@@ -110,67 +110,10 @@ class IntPacker;
 }
 
 using PackedStateBin = int_packer::IntPacker::Bin;
-
 class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
-    struct StateIDSemanticHash {
-        const segmented_vector::SegmentedArrayVector<PackedStateBin>
-            &state_data_pool;
-        int state_size;
-        StateIDSemanticHash(
-            const segmented_vector::SegmentedArrayVector<PackedStateBin>
-                &state_data_pool,
-            int state_size)
-            : state_data_pool(state_data_pool), state_size(state_size) {
-        }
-
-        int_hash_set::HashType operator()(int id) const {
-            const PackedStateBin *data = state_data_pool[id];
-            utils::HashState hash_state;
-            for (int i = 0; i < state_size; ++i) {
-                hash_state.feed(data[i]);
-            }
-            return hash_state.get_hash32();
-        }
-    };
-
-    struct StateIDSemanticEqual {
-        const segmented_vector::SegmentedArrayVector<PackedStateBin>
-            &state_data_pool;
-        int state_size;
-        StateIDSemanticEqual(
-            const segmented_vector::SegmentedArrayVector<PackedStateBin>
-                &state_data_pool,
-            int state_size)
-            : state_data_pool(state_data_pool), state_size(state_size) {
-        }
-
-        bool operator()(int lhs, int rhs) const {
-            const PackedStateBin *lhs_data = state_data_pool[lhs];
-            const PackedStateBin *rhs_data = state_data_pool[rhs];
-            return std::equal(lhs_data, lhs_data + state_size, rhs_data);
-        }
-    };
-
-    /*
-      Hash set of StateIDs used to detect states that are already registered in
-      this registry and find their IDs. States are compared/hashed semantically,
-      i.e. the actual state data is compared, not the memory location.
-    */
-    using StateIDSet =
-        int_hash_set::IntHashSet<StateIDSemanticHash, StateIDSemanticEqual>;
-
+protected:
     TaskProxy task_proxy;
-    const int_packer::IntPacker &state_packer;
-    AxiomEvaluator &axiom_evaluator;
     const int num_variables;
-
-    segmented_vector::SegmentedArrayVector<PackedStateBin> state_data_pool;
-    StateIDSet registered_states;
-
-    std::unique_ptr<State> cached_initial_state;
-
-    StateID insert_id_or_pop_state();
-    int get_bins_per_state() const;
 public:
     explicit StateRegistry(const TaskProxy &task_proxy);
 
@@ -182,49 +125,44 @@ public:
         return num_variables;
     }
 
-    const int_packer::IntPacker &get_state_packer() const {
-        return state_packer;
-    }
+    virtual const int_packer::IntPacker &get_state_packer() const = 0;
 
     /*
       Returns the state that was registered at the given ID. The ID must refer
       to a state in this registry. Do not mix IDs from from different
       registries.
     */
-    State lookup_state(StateID id) const;
+    virtual State lookup_state(StateID id) const = 0;
 
     /*
       Like lookup_state above, but creates a state with unpacked data,
       moved in via state_values. It is the caller's responsibility that
       the unpacked data matches the state's data.
     */
-    State lookup_state(StateID id, std::vector<int> &&state_values) const;
+    virtual State lookup_state(
+        StateID id, std::vector<int> &&state_values) const = 0;
 
     /*
       Returns a reference to the initial state and registers it if this was not
       done before. The result is cached internally so subsequent calls are
       cheap.
     */
-    const State &get_initial_state();
+    virtual const State &get_initial_state() = 0;
 
     /*
       Returns the state that results from applying op to predecessor and
       registers it if this was not done before. This is an expensive operation
       as it includes duplicate checking.
     */
-    State get_successor_state(
-        const State &predecessor, const OperatorProxy &op);
+    virtual State get_successor_state(
+        const State &predecessor, const OperatorProxy &op) = 0;
 
     /*
       Returns the number of states registered so far.
     */
-    size_t size() const {
-        return registered_states.size();
-    }
+    virtual size_t size() const = 0;
 
-    int get_state_size_in_bytes() const;
-
-    void print_statistics(utils::LogProxy &log) const;
+    virtual void print_statistics(utils::LogProxy &log) const = 0;
 
     class const_iterator {
         using iterator_category = std::forward_iterator_tag;
@@ -278,6 +216,134 @@ public:
 
     const_iterator end() const {
         return const_iterator(*this, size());
+    }
+};
+
+class ExplicitStateRegistry : public StateRegistry {
+    struct StateIDSemanticHash {
+        const segmented_vector::SegmentedArrayVector<PackedStateBin>
+            &state_data_pool;
+        int state_size;
+        StateIDSemanticHash(
+            const segmented_vector::SegmentedArrayVector<PackedStateBin>
+                &state_data_pool,
+            int state_size)
+            : state_data_pool(state_data_pool), state_size(state_size) {
+        }
+
+        int_hash_set::HashType operator()(int id) const {
+            const PackedStateBin *data = state_data_pool[id];
+            utils::HashState hash_state;
+            for (int i = 0; i < state_size; ++i) {
+                hash_state.feed(data[i]);
+            }
+            return hash_state.get_hash32();
+        }
+    };
+
+    struct StateIDSemanticEqual {
+        const segmented_vector::SegmentedArrayVector<PackedStateBin>
+            &state_data_pool;
+        int state_size;
+        StateIDSemanticEqual(
+            const segmented_vector::SegmentedArrayVector<PackedStateBin>
+                &state_data_pool,
+            int state_size)
+            : state_data_pool(state_data_pool), state_size(state_size) {
+        }
+
+        bool operator()(int lhs, int rhs) const {
+            const PackedStateBin *lhs_data = state_data_pool[lhs];
+            const PackedStateBin *rhs_data = state_data_pool[rhs];
+            return std::equal(lhs_data, lhs_data + state_size, rhs_data);
+        }
+    };
+
+    /*
+      Hash set of StateIDs used to detect states that are already registered in
+      this registry and find their IDs. States are compared/hashed semantically,
+      i.e. the actual state data is compared, not the memory location.
+    */
+    using StateIDSet =
+        int_hash_set::IntHashSet<StateIDSemanticHash, StateIDSemanticEqual>;
+
+    const int_packer::IntPacker &state_packer;
+    AxiomEvaluator &axiom_evaluator;
+
+    segmented_vector::SegmentedArrayVector<PackedStateBin> state_data_pool;
+    StateIDSet registered_states;
+
+    std::unique_ptr<State> cached_initial_state;
+
+    StateID insert_id_or_pop_state();
+    int get_bins_per_state() const;
+public:
+    explicit ExplicitStateRegistry(const TaskProxy &task_proxy);
+
+    const int_packer::IntPacker &get_state_packer() const override {
+        return state_packer;
+    }
+    State lookup_state(StateID id) const override;
+    State lookup_state(
+        StateID id, std::vector<int> &&state_values) const override;
+    const State &get_initial_state() override;
+    State get_successor_state(
+        const State &predecessor, const OperatorProxy &op) override;
+    size_t size() const override {
+        return registered_states.size();
+    }
+    void print_statistics(utils::LogProxy &log) const override;
+};
+
+class DelegatingStateRegistry : public StateRegistry {
+    /*
+      Task-transforming components that transform the task in a way that
+      states remain valid, can use a DelegatingStateRegistry to register
+      and lookup states without storing the state data themselves.
+    */
+    const std::shared_ptr<AbstractTask> &task;
+    StateRegistry &nested;
+    std::unique_ptr<State> cached_initial_state;
+    State repackage_state(const State &state) const {
+        return State(*task, *this, state.get_id(), state.get_buffer());
+    }
+public:
+    /*
+      The caller must ensure that the states stored in `nested` are compatible
+      with the states of `task`.
+    */
+    DelegatingStateRegistry(
+        const std::shared_ptr<AbstractTask> &task, StateRegistry &nested)
+        : StateRegistry(TaskProxy(*task)), task(task), nested(nested) {
+    }
+
+    const int_packer::IntPacker &get_state_packer() const override {
+        return nested.get_state_packer();
+    }
+    State lookup_state(StateID id) const override {
+        return repackage_state(nested.lookup_state(id));
+    }
+    State lookup_state(
+        StateID id, std::vector<int> &&state_values) const override {
+        return repackage_state(nested.lookup_state(id, move(state_values)));
+    }
+    const State &get_initial_state() override {
+        if (!cached_initial_state) {
+            State init = nested.get_initial_state();
+            cached_initial_state = std::make_unique<State>(
+                *task, *this, init.get_id(), init.get_buffer());
+        }
+        return *cached_initial_state;
+    }
+    State get_successor_state(
+        const State &predecessor, const OperatorProxy &op) override {
+        return repackage_state(nested.get_successor_state(predecessor, op));
+    }
+    size_t size() const override {
+        return nested.size();
+    }
+    void print_statistics(utils::LogProxy &log) const override {
+        nested.print_statistics(log);
     }
 };
 
