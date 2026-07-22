@@ -92,7 +92,7 @@ TaskIndependentDefaultValueAxiomsEvaluator::
         shared_ptr<TaskIndependentEvaluator> nested,
         tasks::AxiomHandlingType axioms, bool use_for_reporting_minima,
         bool use_for_boosting, bool use_for_counting_evaluations,
-        const std::string &description, utils::Verbosity verbosity)
+        const string &description, utils::Verbosity verbosity)
     : nested(move(nested)),
       axioms(axioms),
       use_for_reporting_minima(use_for_reporting_minima),
