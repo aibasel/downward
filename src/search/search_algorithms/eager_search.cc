@@ -318,7 +318,7 @@ void EagerSearch::dump_search_space() const {
 }
 
 bool EagerSearch::is_complete_within_bound() const {
-    return open_list->is_complete() && pruning_method->is_safe();
+    return open_list->is_safe() && pruning_method->is_safe();
 }
 
 void EagerSearch::start_f_value_statistics(EvaluationContext &eval_context) {

@@ -236,6 +236,6 @@ void LazySearch::print_statistics() const {
 }
 
 bool LazySearch::is_complete_within_bound() const {
-    return open_list->is_complete();
+    return open_list->is_safe();
 }
 }

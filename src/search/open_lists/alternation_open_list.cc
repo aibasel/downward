@@ -38,7 +38,7 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-    virtual bool is_complete() const override;
+    virtual bool is_safe() const override;
 };
 
 template<class Entry>
@@ -127,11 +127,11 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
 }
 
 template<class Entry>
-bool AlternationOpenList<Entry>::is_complete() const {
-    auto is_sublist_complete = [](const auto &sublist) {
-        return sublist->is_complete();
+bool AlternationOpenList<Entry>::is_safe() const {
+    auto is_sublist_safe = [](const auto &sublist) {
+        return sublist->is_safe();
     };
-    return ranges::any_of(open_lists, is_sublist_complete);
+    return ranges::any_of(open_lists, is_sublist_safe);
 }
 
 AlternationOpenListFactory::AlternationOpenListFactory(

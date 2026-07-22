@@ -43,7 +43,7 @@ public:
         EvaluationContext &eval_context) const override;
     virtual void get_path_dependent_evaluators(
         set<Evaluator *> &evals) override;
-    virtual bool is_complete() const override;
+    virtual bool is_safe() const override;
 };
 
 template<class Entry>
@@ -136,7 +136,7 @@ void TypeBasedOpenList<Entry>::get_path_dependent_evaluators(
 }
 
 template<class Entry>
-bool TypeBasedOpenList<Entry>::is_complete() const {
+bool TypeBasedOpenList<Entry>::is_safe() const {
     auto is_evaluator_safe = [](const auto &evaluator) {
         return evaluator->is_safe();
     };

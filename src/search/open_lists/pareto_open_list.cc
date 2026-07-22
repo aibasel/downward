@@ -54,7 +54,7 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
-    virtual bool is_complete() const override;
+    virtual bool is_safe() const override;
 };
 
 template<class Entry>
@@ -222,7 +222,7 @@ bool ParetoOpenList<Entry>::is_reliable_dead_end(
 }
 
 template<class Entry>
-bool ParetoOpenList<Entry>::is_complete() const {
+bool ParetoOpenList<Entry>::is_safe() const {
     if (this->only_contains_preferred_entries()) {
         return false;
     }
