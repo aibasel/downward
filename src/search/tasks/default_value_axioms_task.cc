@@ -390,16 +390,6 @@ int DefaultValueAxiomsTask::get_num_axioms() const {
     return parent->get_num_axioms() + default_value_axioms.size();
 }
 
-shared_ptr<AbstractTask> get_default_value_axioms_task_if_needed(
-    const shared_ptr<AbstractTask> &task, AxiomHandlingType axioms) {
-    TaskProxy proxy(*task);
-    if (task_properties::has_axioms(proxy)) {
-        return make_shared<tasks::DefaultValueAxiomsTask>(
-            DefaultValueAxiomsTask(task, axioms));
-    }
-    return task;
-}
-
 void add_axioms_option_to_feature(plugins::Feature &feature) {
     feature.add_option<AxiomHandlingType>(
         "axioms",
