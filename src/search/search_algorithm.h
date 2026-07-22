@@ -73,8 +73,8 @@ public:
     virtual void print_statistics() const = 0;
     virtual void save_plan_if_necessary();
     /*
-      is_complete_within_bound returns true if the search algorithm finds
-      a plan within the bound if a plan exists.
+      is_complete_within_bound returns true only if the search algorithm finds
+      a plan within the bound if such a plan exists.
     */
     virtual bool is_complete_within_bound() const = 0;
     bool found_solution() const;
