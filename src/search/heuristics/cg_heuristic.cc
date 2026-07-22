@@ -26,6 +26,14 @@ CGHeuristic::CGHeuristic(
     if (log.is_at_least_normal()) {
         log << "Initializing causal graph heuristic..." << endl;
     }
+    if (task_properties::has_axioms(task_proxy) &&
+        !dynamic_cast<const tasks::DefaultValueAxiomsTask *>(task.get())) {
+        cerr << "The causal graph heuristic currently only supports axioms by "
+                "wrapping the task in a DefaultValueAxiomsTask. This is done "
+                "automatically when using the class from the command line."
+             << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+    }
 
     if (max_cache_size > 0)
         cache = make_unique<CGCache>(task_proxy, max_cache_size, log);

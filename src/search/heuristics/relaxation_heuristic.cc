@@ -51,6 +51,14 @@ RelaxationHeuristic::RelaxationHeuristic(
     const shared_ptr<AbstractTask> &task, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
     : Heuristic(task, cache_estimates, description, verbosity) {
+    if (task_properties::has_axioms(task_proxy) &&
+        !dynamic_cast<const tasks::DefaultValueAxiomsTask *>(task.get())) {
+        cerr << "Relaxation heuristics currently only supports axioms by "
+                "wrapping the task in a DefaultValueAxiomsTask. This is done "
+                "automatically when using the class from the command line."
+             << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+    }
     // Build propositions.
     propositions.resize(task_properties::get_num_facts(task_proxy));
 

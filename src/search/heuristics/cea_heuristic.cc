@@ -419,6 +419,15 @@ ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
     if (log.is_at_least_normal()) {
         log << "Initializing context-enhanced additive heuristic..." << endl;
     }
+    if (task_properties::has_axioms(task_proxy) &&
+        !dynamic_cast<const tasks::DefaultValueAxiomsTask *>(task.get())) {
+        cerr << "The context-enhanced additive heuristic currently only "
+                "supports axioms by wrapping the task in a "
+                "DefaultValueAxiomsTask. This is done automatically when using "
+                "the class from the command line."
+             << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+    }
 
     DTGFactory factory(task_proxy, true, [](int, int) { return false; });
     transition_graphs = factory.build_dtgs();

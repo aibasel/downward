@@ -41,6 +41,14 @@ LandmarkSumHeuristic::LandmarkSumHeuristic(
     if (log.is_at_least_normal()) {
         log << "Initializing landmark sum heuristic..." << endl;
     }
+    if (task_properties::has_axioms(task_proxy) &&
+        !dynamic_cast<const tasks::DefaultValueAxiomsTask *>(task.get())) {
+        cerr << "The landmark sum heuristic currently only supports axioms by "
+                "wrapping the task in a DefaultValueAxiomsTask. This is done "
+                "automatically when using the class from the command line."
+             << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+    }
     initialize(lm_factory, prog_goal, prog_gn, prog_r);
     compute_landmark_costs();
 }
