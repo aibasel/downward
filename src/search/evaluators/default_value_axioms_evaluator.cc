@@ -20,6 +20,20 @@ DefaultValueAxiomsEvaluator::DefaultValueAxiomsEvaluator(
       nested(nested) {
 }
 
+State DefaultValueAxiomsEvaluator::repackage_state(const State &state) const {
+    const StateRegistry *existing_state_registry = state.get_registry();
+    if (!state_registry) {
+        // issue1208: avoid const cast?
+        state_registry = make_unique<DelegatingStateRegistry>(
+            task, const_cast<StateRegistry &>(*existing_state_registry));
+    } else {
+        // issue1208: verify that state_registry.nested ==
+        // existing_state_registry? or use a map from registries to delegating
+        // registries?
+    }
+    return state_registry->repackage_state(state);
+}
+
 bool DefaultValueAxiomsEvaluator::dead_ends_are_reliable() const {
     return nested->dead_ends_are_reliable();
 }
@@ -31,26 +45,23 @@ void DefaultValueAxiomsEvaluator::get_path_dependent_evaluators(
 
 void DefaultValueAxiomsEvaluator::notify_initial_state(
     const State &initial_state) {
-    /*
-      TODO issue1208: Once we remove the task transformation code from
-      heuristics, we might have to transform the task here. While the state data
-      doesn't change, the State class currently references the task it belongs
-      to, and `nested` uses a different task.
-    */
-    nested->notify_initial_state(initial_state);
+    nested->notify_initial_state(repackage_state(initial_state));
 }
 
 void DefaultValueAxiomsEvaluator::notify_state_transition(
     const State &parent_state, OperatorID op_id, const State &state) {
-    // TODO issue1208: see above
-    nested->notify_state_transition(parent_state, op_id, state);
+    nested->notify_state_transition(
+        repackage_state(parent_state), op_id, repackage_state(state));
 }
 
 EvaluationResult DefaultValueAxiomsEvaluator::compute_result(
     EvaluationContext &eval_context) {
-    // TODO issue1208: see above (in particular, eval_context is specific to a
-    // state)
-    return nested->compute_result(eval_context);
+    State translated_state = repackage_state(eval_context.get_state());
+    EvaluationContext translated_context(eval_context, translated_state);
+    EvaluationResult result = nested->compute_result(translated_context);
+    return result;
+    // TODO do we need something like this?
+    //return eval_context.add_to_cache(nested.get(), move(result));
 }
 
 bool DefaultValueAxiomsEvaluator::does_cache_estimates() const {
@@ -58,13 +69,11 @@ bool DefaultValueAxiomsEvaluator::does_cache_estimates() const {
 }
 
 bool DefaultValueAxiomsEvaluator::is_estimate_cached(const State &state) const {
-    // TODO issue1208: see above
-    return nested->is_estimate_cached(state);
+    return nested->is_estimate_cached(repackage_state(state));
 }
 
 int DefaultValueAxiomsEvaluator::get_cached_estimate(const State &state) const {
-    // TODO issue1208: see above
-    return nested->get_cached_estimate(state);
+    return nested->get_cached_estimate(repackage_state(state));
 }
 
 shared_ptr<Evaluator>

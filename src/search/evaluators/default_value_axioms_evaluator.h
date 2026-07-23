@@ -3,6 +3,7 @@
 
 #include "../component.h"
 #include "../evaluator.h"
+#include "../state_registry.h"
 
 #include "../tasks/default_value_axioms_task.h"
 
@@ -11,6 +12,8 @@
 namespace default_value_axioms_evaluator {
 class DefaultValueAxiomsEvaluator : public Evaluator {
     std::shared_ptr<Evaluator> nested;
+    mutable std::unique_ptr<DelegatingStateRegistry> state_registry;
+    State repackage_state(const State &state) const;
 public:
     DefaultValueAxiomsEvaluator(
         const std::shared_ptr<AbstractTask> &task,

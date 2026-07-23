@@ -28,6 +28,13 @@ EvaluationContext::EvaluationContext(
 }
 
 EvaluationContext::EvaluationContext(
+    const EvaluationContext &other, const State &state)
+    : EvaluationContext(
+          other.cache, state, other.g_value, other.preferred, other.statistics,
+          other.calculate_preferred) {
+}
+
+EvaluationContext::EvaluationContext(
     const State &state, int g_value, bool is_preferred,
     SearchStatistics *statistics, bool calculate_preferred)
     : EvaluationContext(

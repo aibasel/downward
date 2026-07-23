@@ -135,14 +135,6 @@ public:
     virtual State lookup_state(StateID id) const = 0;
 
     /*
-      Like lookup_state above, but creates a state with unpacked data,
-      moved in via state_values. It is the caller's responsibility that
-      the unpacked data matches the state's data.
-    */
-    virtual State lookup_state(
-        StateID id, std::vector<int> &&state_values) const = 0;
-
-    /*
       Returns a reference to the initial state and registers it if this was not
       done before. The result is cached internally so subsequent calls are
       cheap.
@@ -277,6 +269,13 @@ class ExplicitStateRegistry : public StateRegistry {
 
     StateID insert_id_or_pop_state();
     int get_bins_per_state() const;
+
+    /*
+      Like lookup_state(id), but creates a state with unpacked data,
+      moved in via state_values. It is the caller's responsibility that
+      the unpacked data matches the state's data.
+    */
+    State lookup_state(StateID id, std::vector<int> &&state_values) const;
 public:
     explicit ExplicitStateRegistry(const TaskProxy &task_proxy);
 
@@ -284,8 +283,6 @@ public:
         return state_packer;
     }
     State lookup_state(StateID id) const override;
-    State lookup_state(
-        StateID id, std::vector<int> &&state_values) const override;
     const State &get_initial_state() override;
     State get_successor_state(
         const State &predecessor, const OperatorProxy &op) override;
@@ -304,9 +301,6 @@ class DelegatingStateRegistry : public StateRegistry {
     const std::shared_ptr<AbstractTask> &task;
     StateRegistry &nested;
     std::unique_ptr<State> cached_initial_state;
-    State repackage_state(const State &state) const {
-        return State(*task, *this, state.get_id(), state.get_buffer());
-    }
 public:
     /*
       The caller must ensure that the states stored in `nested` are compatible
@@ -317,15 +311,14 @@ public:
         : StateRegistry(TaskProxy(*task)), task(task), nested(nested) {
     }
 
+    State repackage_state(const State &state) const {
+        return State(*task, *this, state.get_id(), state.get_buffer());
+    }
     const int_packer::IntPacker &get_state_packer() const override {
         return nested.get_state_packer();
     }
     State lookup_state(StateID id) const override {
         return repackage_state(nested.lookup_state(id));
-    }
-    State lookup_state(
-        StateID id, std::vector<int> &&state_values) const override {
-        return repackage_state(nested.lookup_state(id, move(state_values)));
     }
     const State &get_initial_state() override {
         if (!cached_initial_state) {
