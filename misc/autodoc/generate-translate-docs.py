@@ -19,6 +19,18 @@ HEADER_TEXT = """
 FOOTER_TEXT = """
 # Examples
 
+### Translate with disabled invariant synthesis and find a plan with A* + LM-Cut:
+```
+fast-downward.py domain.pddl problem.pddl --search "astar(lmcut())" --translate-options --invariant-generation-max-candidates 0
+```
+Note that the order of the arguments matters.
+
+
+### Print the help message of the translator
+```
+fast-downward.py -- --translate-options --help
+```
+The singular `--` is used to skip passing a domain and problem file to the driver.
 """
 
 
