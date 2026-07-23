@@ -31,9 +31,9 @@ def get_arg_parser():
     # process (issue1217).
     argparser = argparse.ArgumentParser(prog=infer_prog())
     argparser.add_argument(
-        "domain", help="path to domain pddl file")
+        "domain", metavar="DOMAIN", help="path to domain pddl file")
     argparser.add_argument(
-        "task", help="path to task pddl file")
+        "task", metavar="TASK", help="path to task pddl file")
     argparser.add_argument(
         "--relaxed", dest="generate_relaxed_task", action="store_true",
         help="output relaxed task (no delete effects)")
