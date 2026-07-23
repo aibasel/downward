@@ -34,7 +34,6 @@ The singular `--` is used to skip passing a domain and problem file to the drive
 """
 
 
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--outdir", default=f"{REPO_ROOT_DIR}/docs")
