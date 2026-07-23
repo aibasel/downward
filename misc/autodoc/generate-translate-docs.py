@@ -9,20 +9,19 @@ import sys
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT_DIR = SCRIPT_DIR.parents[1]
 BUILD = "release"
-FILENAME = "translator-usage.md"
+FILENAME = "translator-options.md"
 
-INTRO_TEXT = """
-# Translator Usage
-
-Fast Downward's PDDL to SAS^+ translator can be called through Fast Downward's driver script
-
-```
-./fast-downward.py --translate [domain] problem [--translate-options OPTIONS]
-```
-
-## Options
+HEADER_TEXT = """
+# Translator Options
 
 """
+
+FOOTER_TEXT = """
+# Examples
+
+"""
+
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -41,22 +40,19 @@ def import_argparser_from_translator():
 
 
 def action_to_markdown(parser: argparse.ArgumentParser, action: argparse.Action):
-    if action.option_strings:
-        names = []
-        for opt in action.option_strings:
-            if action.choices is not None:
-                choice_str = ",".join(map(str, action.choices))
-                names.append(f"`{opt} {{{choice_str}}}`")
-            elif action.metavar is not None:
-                names.append(f"`{opt} {action.metavar}`")
-            elif action.nargs != 0:
-                metavar = action.dest.upper()
-                names.append(f"`{opt} {metavar}`")
-            else:
-                names.append(f"`{opt}`")
-        name = ", ".join(names)
-    else:
-        name = f"`{action.dest}`"
+    names = []
+    for opt in action.option_strings:
+        if action.choices is not None:
+            choice_str = ",".join(map(str, action.choices))
+            names.append(f"`{opt} {{{choice_str}}}`")
+        elif action.metavar is not None:
+            names.append(f"`{opt} {action.metavar}`")
+        elif action.nargs != 0:
+            metavar = action.dest.upper()
+            names.append(f"`{opt} {metavar}`")
+        else:
+            names.append(f"`{opt}`")
+    name = ", ".join(names)
 
     # Expand %(default)s, %(choices)s, etc.
     help_text = action.help or ""
@@ -78,9 +74,11 @@ def action_to_markdown(parser: argparse.ArgumentParser, action: argparse.Action)
 
 
 def parser_to_markdown(parser: argparse.ArgumentParser):
-    lines = [INTRO_TEXT]
+    lines = [HEADER_TEXT]
     for action in parser._actions:
-        lines.append(action_to_markdown(parser, action))
+        if action.option_strings:
+            lines.append(action_to_markdown(parser, action))
+    lines += [FOOTER_TEXT]
     return "\n".join(lines)
 
 
