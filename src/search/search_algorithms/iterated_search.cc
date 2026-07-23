@@ -27,7 +27,8 @@ IteratedSearch::IteratedSearch(
       phase(0),
       last_phase_found_solution(false),
       best_bound(bound),
-      iterated_found_solution(false) {
+      iterated_found_solution(false),
+      best_status(SearchStatus::FAILED) {
     utils::verify_list_not_empty(algorithm_configs, "algorithm_configs");
 }
 
@@ -112,10 +113,41 @@ shared_ptr<SearchAlgorithm> IteratedSearch::bind_current_search() {
     return bind_search(phase);
 }
 
+void IteratedSearch::update_best_status(
+    const shared_ptr<SearchAlgorithm> &task_specific_search) {
+    if (best_status == SearchStatus::SOLVED ||
+        best_status == SearchStatus::UNSOLVABLE) {
+        return;
+    }
+    SearchStatus current_search_status =
+        task_specific_search->get_finished_search_status();
+    assert(current_search_status != SearchStatus::IN_PROGRESS);
+
+    switch (current_search_status) {
+    case SearchStatus::SOLVED:
+    case SearchStatus::UNSOLVABLE:
+        best_status = current_search_status;
+        break;
+
+    case SearchStatus::UNSOLVABLE_WITHIN_BOUND:
+        // We ignore inner bounds if the search did not check up to the outer
+        // bound.
+        if (task_specific_search->get_bound() >= bound) {
+            best_status = current_search_status;
+        }
+        break;
+
+    case SearchStatus::FAILED:
+    case SearchStatus::TIMEOUT:
+    case SearchStatus::IN_PROGRESS:
+        break;
+    }
+}
+
 SearchStatus IteratedSearch::step() {
     shared_ptr<SearchAlgorithm> task_specific_search = bind_current_search();
     if (!task_specific_search) {
-        return get_finished_search_status();
+        return best_status;
     }
     if (pass_bound && best_bound < task_specific_search->get_bound()) {
         task_specific_search->set_bound(best_bound);
@@ -123,6 +155,8 @@ SearchStatus IteratedSearch::step() {
     ++phase;
 
     task_specific_search->search();
+
+    update_best_status(task_specific_search);
 
     Plan found_plan;
     int plan_cost = 0;
@@ -200,31 +234,9 @@ void IteratedSearch::save_plan_if_necessary() {
 }
 
 bool IteratedSearch::is_complete_within_bound() const {
-    /*
-      TODO
-      - return true if the first search algorithm is complete and its bound is
-        greater or equal to that of IteratedSearch, i.e. if it is complete
-        within the bound of IteratedSearch
-      - otherwise (the first search algorithm is not complete within
-        IteratedSearch's bound), return false if continue_on_fail == false
-      - otherwise (continue_on_fail == true and first search algorithm is not
-        complete within IteratedSearch's bound), return true if at least one
-        (other) search algorithm is complete within IteratedSearch's bound
-      - otherwise (continue_on_fail == true and all search algorithms are not
-        complete within IteratedSearch's bound), return false
-
-      Before we solve the component interaction problem (issue559), we cannot
-      access the necessary information from within a constant function.
-
-      Once we can implement this function we also want to change IteratedSearch
-      such it automatically stops once a complete search finds no solution.
-      In that case the continue_on_fail option would not really be useful
-      anymore and should be removed. (Result of discussion between Claudia,
-      Malte, and Gabi.)
-    */
-    log << "Warning: the completeness check for IteratedSearch is not yet implemented."
-        << endl;
-    return false;
+    return best_status == SearchStatus::UNSOLVABLE_WITHIN_BOUND ||
+           best_status == SearchStatus::UNSOLVABLE ||
+           best_status == SearchStatus::SOLVED;
 }
 
 class TaskIndependentIteratedSearch
