@@ -115,8 +115,6 @@ public:
         const std::shared_ptr<AbstractTask> &task,
         tasks::AxiomHandlingType axioms, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
-
-    virtual bool is_safe() const override;
 };
 
 extern void add_relaxation_heuristic_options_to_feature(
