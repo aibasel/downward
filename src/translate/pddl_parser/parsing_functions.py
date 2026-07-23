@@ -619,16 +619,16 @@ def parse_init(context, alist, predicate_dict, term_names):
     return initial
 
 
-def parse_task(domain_pddl, task_pddl):
+def parse_task(domain_pddl, problem_pddl):
     context = Context()
     if not isinstance(domain_pddl, list):
         context.error("Invalid definition of a PDDL domain.")
     domain_name, domain_requirements, types, type_dict, constants, predicates, \
         predicate_dict, functions, actions, axioms = parse_domain_pddl(context, domain_pddl)
-    if not isinstance(task_pddl, list):
-        context.error("Invalid definition of a PDDL task.")
+    if not isinstance(problem_pddl, list):
+        context.error("Invalid definition of a PDDL problem.")
     task_name, task_domain_name, task_requirements, objects, init, goal, \
-        use_metric = parse_task_pddl(context, task_pddl, type_dict,
+        use_metric = parse_problem_pddl(context, problem_pddl, type_dict,
                                      predicate_dict, {c.name for c in constants})
 
     if domain_name != task_domain_name:
@@ -738,9 +738,9 @@ def parse_domain_pddl(context, domain_pddl):
         yield the_axioms
 
 
-def parse_task_pddl(context, task_pddl, type_dict, predicate_dict, constant_names):
-    iterator = iter(task_pddl)
-    with context.layer("Parsing task"):
+def parse_problem_pddl(context, problem_pddl, type_dict, predicate_dict, constant_names):
+    iterator = iter(problem_pddl)
+    with context.layer("Parsing problem"):
         try:
             define_tag = next(iterator)
             if define_tag != "define":
