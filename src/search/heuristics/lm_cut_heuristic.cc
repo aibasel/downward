@@ -15,9 +15,10 @@ using namespace std;
 namespace lm_cut_heuristic {
 LandmarkCutHeuristic::LandmarkCutHeuristic(
     const shared_ptr<AbstractTask> &task, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
+    const string &description, utils::Verbosity verbosity,
+    bool use_goal_zone_detection, bool use_border_detection)
     : Heuristic(task, cache_estimates, description, verbosity),
-      landmark_generator(make_unique<LandmarkCutLandmarks>(task_proxy)) {
+      landmark_generator(make_unique<LandmarkCutLandmarks>(task_proxy, use_goal_zone_detection, use_border_detection)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cut heuristic..." << endl;
     }
@@ -41,6 +42,16 @@ public:
     LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
 
+        add_option<bool>(
+            "goal_zone_detection",
+            "TODO",
+            "false");
+
+        add_option<bool>(
+            "border_detection",
+            "TODO",
+            "false");
+
         add_heuristic_options_to_feature(*this, "lmcut");
 
         document_language_support("action costs", "supported");
@@ -57,7 +68,9 @@ public:
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
             LandmarkCutHeuristic, Evaluator>(
-            get_heuristic_arguments_from_options(opts));
+            get_heuristic_arguments_from_options(opts),
+            opts.get<bool>("goal_zone_detection"),
+            opts.get<bool>("border_detection"));
     }
 };
 

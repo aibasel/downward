@@ -10,7 +10,13 @@ using namespace std;
 
 namespace lm_cut_heuristic {
 // construction and destruction
-LandmarkCutLandmarks::LandmarkCutLandmarks(const TaskProxy &task_proxy) {
+LandmarkCutLandmarks::LandmarkCutLandmarks(
+    const TaskProxy &task_proxy,
+    bool use_goal_zone_detection,
+    bool use_border_detection)
+    : use_goal_zone_detection(use_goal_zone_detection),
+      use_border_detection(use_border_detection) {
+
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);
 
@@ -227,6 +233,30 @@ void LandmarkCutLandmarks::second_exploration(
     }
 }
 
+static inline bool is_border(RelaxedProposition *p) {
+    for (RelaxedOperator *op : p->effect_of)
+        if (op->cost == 0)
+            return false;
+    return true;
+}
+
+void LandmarkCutLandmarks::tie_break_supporter(RelaxedOperator *op) {
+    for (auto *pre : op->preconditions) {
+        if (use_border_detection
+            && pre->h_max_cost == op->h_max_supporter_cost
+            && is_border(pre)) {
+            op->h_max_supporter = pre;
+            break;
+        }
+        if (use_goal_zone_detection
+            && pre->h_max_cost == op->h_max_supporter_cost
+            && pre->status == GOAL_ZONE) {
+            op->h_max_supporter = pre;
+            break;
+        }
+    }
+}
+
 void LandmarkCutLandmarks::mark_goal_plateau(RelaxedProposition *subgoal) {
     // NOTE: subgoal can be null if we got here via recursion through
     // a zero-cost action that is relaxed unreachable. (This can only
@@ -235,8 +265,10 @@ void LandmarkCutLandmarks::mark_goal_plateau(RelaxedProposition *subgoal) {
     if (subgoal && subgoal->status != GOAL_ZONE) {
         subgoal->status = GOAL_ZONE;
         for (RelaxedOperator *achiever : subgoal->effect_of)
-            if (achiever->cost == 0)
+            if (achiever->cost == 0) {
+                tie_break_supporter(achiever);
                 mark_goal_plateau(achiever->h_max_supporter);
+            }
     }
 }
 
