@@ -110,6 +110,7 @@ bool LandmarkSumHeuristic::is_safe() const {
       TODO Find out whether we can return true if the LandmarkFactory supports
       conditional effects. If it is safe in this case, update this function
       and the documentation below.
+      TODO issue1201 Should above be a follow-up issue?
     */
     return !(
         task_properties::has_axioms(task_proxy) ||

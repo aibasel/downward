@@ -84,6 +84,7 @@ bool LandmarkCostPartitioningHeuristic::is_safe() const {
       TODO Find out whether we can return true if the LandmarkFactory supports
       conditional effects. If it is safe in this case, update this function
       and the documentation below.
+      TODO issue1201 Should above be a follow-up issue?
     */
     return !(
         task_properties::has_axioms(task_proxy) ||
@@ -165,7 +166,7 @@ public:
             "not supported");
         document_language_support("axioms", "not allowed");
 
-        document_property("admissible", "yes");
+        document_property("admissible", "TODO issue1201");
         document_property(
             "consistent", "no; see document note about consistency");
         document_property(
