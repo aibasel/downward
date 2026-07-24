@@ -696,7 +696,7 @@ def main():
             domain_filename=get_options().domain, problem_filename=get_options().problem)
 
     with timers.timing(f"Normalizing task with strategy {get_options().condition_normalization_strategy}"):
-        normalize.normalize(task, get_options().condition_normalization_strategy)
+        normalize.normalize(task)
 
     if get_options().generate_relaxed_task:
         # Remove delete effects.
