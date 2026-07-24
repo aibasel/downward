@@ -349,10 +349,10 @@ create_fast_downward_library(
 )
 
 create_fast_downward_library(
-    NAME simple_task_transforming_evaluator
+    NAME state_forwarding_evaluator
     HELP "Evaluator that uses a transformed task with the same set of states"
     SOURCES
-        evaluators/simple_task_transforming_evaluator
+        evaluators/state_forwarding_evaluator
 )
 
 create_fast_downward_library(
@@ -362,7 +362,7 @@ create_fast_downward_library(
         evaluators/axiom_handling_evaluator
     DEPENDS
         default_value_axioms_task
-        simple_task_transforming_evaluator
+        state_forwarding_evaluator
         task_properties
 )
 
@@ -373,7 +373,7 @@ create_fast_downward_library(
         evaluators/modify_costs_evaluator
     DEPENDS
         core_tasks
-        simple_task_transforming_evaluator
+        state_forwarding_evaluator
         task_properties
 )
 

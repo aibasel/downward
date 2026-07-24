@@ -1,6 +1,6 @@
 #include "modify_costs_evaluator.h"
 
-#include "simple_task_transforming_evaluator.h"
+#include "state_forwarding_evaluator.h"
 
 #include "../evaluation_context.h"
 
@@ -21,8 +21,8 @@ TaskIndependentModifyCostsEvaluator::create_task_specific_component(
         shared_ptr<AbstractTask> cost_adapted_task =
             make_shared<tasks::CostAdaptedTask>(task, cost_type);
         shared_ptr<Evaluator> eval = nested->bind_task(cost_adapted_task);
-        return make_shared<simple_task_transforming_evaluator::
-                               SimpleTaskTransformingEvaluator>(
+        return make_shared<
+            state_forwarding_evaluator::StateForwardingEvaluator>(
             task, cost_adapted_task, eval, description, verbosity);
     }
 }

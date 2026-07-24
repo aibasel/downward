@@ -1,11 +1,11 @@
-#include "simple_task_transforming_evaluator.h"
+#include "state_forwarding_evaluator.h"
 
 #include "../evaluation_context.h"
 
 using namespace std;
 
-namespace simple_task_transforming_evaluator {
-SimpleTaskTransformingEvaluator::SimpleTaskTransformingEvaluator(
+namespace state_forwarding_evaluator {
+StateForwardingEvaluator::StateForwardingEvaluator(
     const shared_ptr<AbstractTask> &task,
     const shared_ptr<AbstractTask> &transformed_task,
     const shared_ptr<Evaluator> &nested, const string &description,
@@ -18,7 +18,7 @@ SimpleTaskTransformingEvaluator::SimpleTaskTransformingEvaluator(
     path_dependent_evaluators.assign(evals.begin(), evals.end());
 }
 
-State SimpleTaskTransformingEvaluator::convert_state(const State &state) const {
+State StateForwardingEvaluator::convert_state(const State &state) const {
     const StateRegistry *existing_state_registry = state.get_registry();
     assert(existing_state_registry);
     if (!state_registry) {
@@ -45,11 +45,11 @@ State SimpleTaskTransformingEvaluator::convert_state(const State &state) const {
     return state_registry->convert_state(state);
 }
 
-bool SimpleTaskTransformingEvaluator::dead_ends_are_reliable() const {
+bool StateForwardingEvaluator::dead_ends_are_reliable() const {
     return nested->dead_ends_are_reliable();
 }
 
-void SimpleTaskTransformingEvaluator::get_path_dependent_evaluators(
+void StateForwardingEvaluator::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {
     if (!path_dependent_evaluators.empty()) {
         /*
@@ -64,7 +64,7 @@ void SimpleTaskTransformingEvaluator::get_path_dependent_evaluators(
     }
 }
 
-void SimpleTaskTransformingEvaluator::notify_initial_state(
+void StateForwardingEvaluator::notify_initial_state(
     const State &initial_state) {
     if (!path_dependent_evaluators.empty()) {
         State converted_initial_state = convert_state(initial_state);
@@ -74,7 +74,7 @@ void SimpleTaskTransformingEvaluator::notify_initial_state(
     }
 }
 
-void SimpleTaskTransformingEvaluator::notify_state_transition(
+void StateForwardingEvaluator::notify_state_transition(
     const State &parent_state, OperatorID op_id, const State &state) {
     if (!path_dependent_evaluators.empty()) {
         State converted_parent_state = convert_state(parent_state);
@@ -86,7 +86,7 @@ void SimpleTaskTransformingEvaluator::notify_state_transition(
     }
 }
 
-EvaluationResult SimpleTaskTransformingEvaluator::compute_result(
+EvaluationResult StateForwardingEvaluator::compute_result(
     EvaluationContext &eval_context) {
     State translated_state = convert_state(eval_context.get_state());
     EvaluationContext translated_context(eval_context, translated_state);
@@ -98,17 +98,15 @@ EvaluationResult SimpleTaskTransformingEvaluator::compute_result(
     return nested->compute_result(translated_context);
 }
 
-bool SimpleTaskTransformingEvaluator::does_cache_estimates() const {
+bool StateForwardingEvaluator::does_cache_estimates() const {
     return nested->does_cache_estimates();
 }
 
-bool SimpleTaskTransformingEvaluator::is_estimate_cached(
-    const State &state) const {
+bool StateForwardingEvaluator::is_estimate_cached(const State &state) const {
     return nested->is_estimate_cached(convert_state(state));
 }
 
-int SimpleTaskTransformingEvaluator::get_cached_estimate(
-    const State &state) const {
+int StateForwardingEvaluator::get_cached_estimate(const State &state) const {
     return nested->get_cached_estimate(convert_state(state));
 }
 }

@@ -1,6 +1,6 @@
 #include "axiom_handling_evaluator.h"
 
-#include "simple_task_transforming_evaluator.h"
+#include "state_forwarding_evaluator.h"
 
 #include "../evaluation_context.h"
 
@@ -17,8 +17,8 @@ TaskIndependentAxiomHandlingEvaluator::create_task_specific_component(
         shared_ptr<AbstractTask> axioms_task =
             make_shared<tasks::DefaultValueAxiomsTask>(task, axioms);
         shared_ptr<Evaluator> eval = nested->bind_task(axioms_task);
-        return make_shared<simple_task_transforming_evaluator::
-                               SimpleTaskTransformingEvaluator>(
+        return make_shared<
+            state_forwarding_evaluator::StateForwardingEvaluator>(
             task, axioms_task, eval, description, verbosity);
     } else {
         /*

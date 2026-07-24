@@ -1,12 +1,12 @@
-#ifndef EVALUATORS_SIMPLE_TASK_TRANSFORMING_EVALUATOR_H
-#define EVALUATORS_SIMPLE_TASK_TRANSFORMING_EVALUATOR_H
+#ifndef EVALUATORS_STATE_FORWARDING_EVALUATOR_H
+#define EVALUATORS_STATE_FORWARDING_EVALUATOR_H
 
 #include "../evaluator.h"
 #include "../state_registry.h"
 
 #include <memory.h>
 
-namespace simple_task_transforming_evaluator {
+namespace state_forwarding_evaluator {
 /*
   This evaluator evaluates a nested evaluator on a transformed version of its
   own task. The assumption is that the nested evaluator uses a task that has
@@ -17,14 +17,14 @@ namespace simple_task_transforming_evaluator {
   passed on to the nested evaluator as states of the nested task, so the nested
   evaluator does not have to know about the task transformation.
 */
-class SimpleTaskTransformingEvaluator : public Evaluator {
+class StateForwardingEvaluator : public Evaluator {
     const std::shared_ptr<AbstractTask> transformed_task;
     std::shared_ptr<Evaluator> nested;
     mutable std::unique_ptr<DelegatingStateRegistry> state_registry;
     std::vector<Evaluator *> path_dependent_evaluators;
     State convert_state(const State &state) const;
 public:
-    SimpleTaskTransformingEvaluator(
+    StateForwardingEvaluator(
         const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<AbstractTask> &transformed_task,
         const std::shared_ptr<Evaluator> &nested,

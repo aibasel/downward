@@ -9,10 +9,8 @@
 using namespace std;
 
 StateRegistry::StateRegistry(const TaskProxy &task_proxy)
-    : task_proxy(task_proxy),
-      num_variables(task_proxy.get_variables().size()) {
+    : task_proxy(task_proxy), num_variables(task_proxy.get_variables().size()) {
 }
-
 
 ExplicitStateRegistry::ExplicitStateRegistry(const TaskProxy &task_proxy)
     : StateRegistry(task_proxy),
@@ -140,9 +138,8 @@ void ExplicitStateRegistry::print_statistics(utils::LogProxy &log) const {
     registered_states.print_statistics(log);
 }
 
-
 DelegatingStateRegistry::DelegatingStateRegistry(
-    const std::shared_ptr<AbstractTask> &task, StateRegistry &nested)
+    const shared_ptr<AbstractTask> &task, StateRegistry &nested)
     : StateRegistry(TaskProxy(*task)), task(task), nested(nested) {
 }
 
