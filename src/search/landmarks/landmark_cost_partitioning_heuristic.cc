@@ -63,13 +63,12 @@ void LandmarkCostPartitioningHeuristic::set_cost_partitioning_algorithm(
     }
 }
 
-int LandmarkCostPartitioningHeuristic::get_heuristic_value(
-    const State &ancestor_state) {
+int LandmarkCostPartitioningHeuristic::get_heuristic_value(const State &state) {
     constexpr double epsilon = 0.01;
 
     double h_val =
         cost_partitioning_algorithm->get_cost_partitioned_heuristic_value(
-            *landmark_status_manager, ancestor_state);
+            *landmark_status_manager, state);
     if (h_val == numeric_limits<double>::max()) {
         return DEAD_END;
     } else {

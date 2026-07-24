@@ -31,8 +31,7 @@ bool HMHeuristic::dead_ends_are_reliable() const {
     return !task_properties::has_axioms(task_proxy) && !has_cond_effects;
 }
 
-int HMHeuristic::compute_heuristic(const State &ancestor_state) {
-    State state = convert_ancestor_state(ancestor_state);
+int HMHeuristic::compute_heuristic(const State &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
         return 0;
     } else {

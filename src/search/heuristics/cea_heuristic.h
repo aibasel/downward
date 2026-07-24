@@ -51,7 +51,7 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
     // Clears "reached_by" of visited nodes as a side effect to avoid
     // recursing to the same node again.
 protected:
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 public:
     ContextEnhancedAdditiveHeuristic(
         const std::shared_ptr<AbstractTask> &task, bool cache_estimates,

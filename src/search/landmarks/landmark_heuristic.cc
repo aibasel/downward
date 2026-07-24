@@ -162,7 +162,7 @@ void LandmarkHeuristic::generate_preferred_operators(
     }
 }
 
-int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
+int LandmarkHeuristic::compute_heuristic(const State &state) {
     /*
       The path-dependent landmark heuristics are somewhat ill-defined for states
       not reachable from the initial state of a planning task. We therefore
@@ -187,11 +187,10 @@ int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
     if (initial_landmark_graph_has_cycle_of_natural_orderings) {
         return DEAD_END;
     }
-    int h = get_heuristic_value(ancestor_state);
+    int h = get_heuristic_value(state);
     if (use_preferred_operators) {
         ConstBitsetView future =
-            landmark_status_manager->get_future_landmarks(ancestor_state);
-        State state = convert_ancestor_state(ancestor_state);
+            landmark_status_manager->get_future_landmarks(state);
         generate_preferred_operators(state, future);
     }
     return h;

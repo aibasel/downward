@@ -37,14 +37,14 @@ protected:
     void compute_landmark_graph(
         const std::shared_ptr<LandmarkFactory> &landmark_factory);
 
-    virtual int get_heuristic_value(const State &ancestor_state) = 0;
+    virtual int get_heuristic_value(const State &state) = 0;
 
     bool operator_is_preferred(
         const OperatorProxy &op, const State &state, ConstBitsetView &future);
     void compute_landmarks_achieved_by_atom();
     void generate_preferred_operators(
         const State &state, ConstBitsetView &future);
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 public:
     LandmarkHeuristic(
         const std::shared_ptr<AbstractTask> &task, bool use_preferred_operators,

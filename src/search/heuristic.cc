@@ -27,10 +27,6 @@ void Heuristic::set_preferred(const OperatorProxy &op) {
         op.get_ancestor_operator_id(tasks::g_root_task.get()));
 }
 
-State Heuristic::convert_ancestor_state(const State &ancestor_state) const {
-    return task_proxy.convert_ancestor_state(ancestor_state);
-}
-
 void add_heuristic_options_to_feature(
     plugins::Feature &feature, const string &description) {
     feature.add_option<bool>(

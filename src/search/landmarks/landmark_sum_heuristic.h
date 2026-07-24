@@ -20,7 +20,7 @@ class LandmarkSumHeuristic : public LandmarkHeuristic {
         const std::unordered_set<int> &achievers) const;
     void compute_landmark_costs();
 
-    int get_heuristic_value(const State &ancestor_state) override;
+    int get_heuristic_value(const State &state) override;
 public:
     LandmarkSumHeuristic(
         const std::shared_ptr<AbstractTask> &task,

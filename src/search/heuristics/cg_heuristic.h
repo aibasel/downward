@@ -38,7 +38,7 @@ class CGHeuristic : public Heuristic {
         const State &state, domain_transition_graph::DomainTransitionGraph *dtg,
         int to);
 protected:
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 public:
     CGHeuristic(
         const std::shared_ptr<AbstractTask> &task, int max_cache_size,

@@ -41,8 +41,7 @@ OperatorCountingHeuristic::OperatorCountingHeuristic(
     lp_solver.load_problem(lp);
 }
 
-int OperatorCountingHeuristic::compute_heuristic(const State &ancestor_state) {
-    State state = convert_ancestor_state(ancestor_state);
+int OperatorCountingHeuristic::compute_heuristic(const State &state) {
     assert(!lp_solver.has_temporary_constraints());
     for (const auto &generator : constraint_generators) {
         bool dead_end = generator->update_constraints(state, lp_solver);

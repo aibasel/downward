@@ -11,7 +11,7 @@ class LandmarkCutLandmarks;
 class LandmarkCutHeuristic : public Heuristic {
     std::unique_ptr<LandmarkCutLandmarks> landmark_generator;
 
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 public:
     LandmarkCutHeuristic(
         const std::shared_ptr<AbstractTask> &task, bool cache_estimates,

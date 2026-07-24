@@ -86,12 +86,12 @@ void LandmarkSumHeuristic::compute_landmark_costs() {
     }
 }
 
-int LandmarkSumHeuristic::get_heuristic_value(const State &ancestor_state) {
+int LandmarkSumHeuristic::get_heuristic_value(const State &state) {
     int h = 0;
     ConstBitsetView past =
-        landmark_status_manager->get_past_landmarks(ancestor_state);
+        landmark_status_manager->get_past_landmarks(state);
     ConstBitsetView future =
-        landmark_status_manager->get_future_landmarks(ancestor_state);
+        landmark_status_manager->get_future_landmarks(state);
     for (int id = 0; id < landmark_graph->get_num_landmarks(); ++id) {
         if (future.test(id)) {
             const int min_achiever_cost = past.test(id)

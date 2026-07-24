@@ -83,9 +83,7 @@ void HSPMaxHeuristic::relaxed_exploration() {
     }
 }
 
-int HSPMaxHeuristic::compute_heuristic(const State &ancestor_state) {
-    State state = convert_ancestor_state(ancestor_state);
-
+int HSPMaxHeuristic::compute_heuristic(const State &state) {
     setup_exploration_queue();
     setup_exploration_queue_state(state);
     relaxed_exploration();

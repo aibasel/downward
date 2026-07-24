@@ -28,8 +28,7 @@ public:
     virtual ~CostPartitioningAlgorithm() = default;
 
     virtual double get_cost_partitioned_heuristic_value(
-        const LandmarkStatusManager &lm_status_manager,
-        const State &ancestor_state) = 0;
+        const LandmarkStatusManager &lm_status_manager, const State &state) = 0;
 };
 
 class UniformCostPartitioningAlgorithm : public CostPartitioningAlgorithm {
@@ -63,7 +62,7 @@ public:
 
     virtual double get_cost_partitioned_heuristic_value(
         const LandmarkStatusManager &landmark_status_manager,
-        const State &ancestor_state) override;
+        const State &state) override;
 };
 
 class OptimalCostPartitioningAlgorithm : public CostPartitioningAlgorithm {
@@ -90,7 +89,7 @@ public:
 
     virtual double get_cost_partitioned_heuristic_value(
         const LandmarkStatusManager &landmark_status_manager,
-        const State &ancestor_state) override;
+        const State &state) override;
 };
 }
 

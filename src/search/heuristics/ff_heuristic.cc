@@ -50,8 +50,7 @@ void FFHeuristic::mark_preferred_operators_and_relaxed_plan(
     }
 }
 
-int FFHeuristic::compute_heuristic(const State &ancestor_state) {
-    State state = convert_ancestor_state(ancestor_state);
+int FFHeuristic::compute_heuristic(const State &state) {
     int h_add = compute_add_and_ff(state);
     if (h_add == DEAD_END)
         return h_add;

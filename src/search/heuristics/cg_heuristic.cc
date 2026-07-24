@@ -54,8 +54,7 @@ bool CGHeuristic::dead_ends_are_reliable() const {
     return false;
 }
 
-int CGHeuristic::compute_heuristic(const State &ancestor_state) {
-    State state = convert_ancestor_state(ancestor_state);
+int CGHeuristic::compute_heuristic(const State &state) {
     setup_domain_transition_graphs();
 
     int heuristic = 0;

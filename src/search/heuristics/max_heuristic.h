@@ -31,7 +31,7 @@ class HSPMaxHeuristic : public relaxation_heuristic::RelaxationHeuristic {
         assert(prop->cost != -1 && prop->cost <= cost);
     }
 protected:
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 public:
     HSPMaxHeuristic(
         const std::shared_ptr<AbstractTask> &task, bool cache_estimates,

@@ -57,7 +57,7 @@ protected:
         NO_VALUE = -2
     };
 
-    virtual int compute_heuristic(const State &ancestor_state) = 0;
+    virtual int compute_heuristic(const State &state) = 0;
 
     /*
       Usage note: Marking the same operator as preferred multiple times
@@ -65,8 +65,6 @@ protected:
       operators for this heuristic.
     */
     void set_preferred(const OperatorProxy &op);
-
-    State convert_ancestor_state(const State &ancestor_state) const;
 
 public:
     Heuristic(
