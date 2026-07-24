@@ -30,7 +30,7 @@ class IncrementalCanonicalPDBs {
 public:
     IncrementalCanonicalPDBs(
         const TaskProxy &task_proxy,
-        const PatternCollection &intitial_patterns);
+        const PatternCollection &initial_patterns);
     virtual ~IncrementalCanonicalPDBs() = default;
 
     // Adds a new PDB to the collection and recomputes pattern_cliques.
