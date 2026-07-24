@@ -85,11 +85,9 @@ bool LandmarkCostPartitioningHeuristic::is_safe() const {
       conditional effects. If it is safe in this case, update this function
       and the documentation below.
     */
-    if (task_properties::has_axioms(task_proxy) ||
-        task_properties::has_conditional_effects(task_proxy)) {
-        return false;
-    }
-    return true;
+    return !(
+        task_properties::has_axioms(task_proxy) ||
+        task_properties::has_conditional_effects(task_proxy));
 }
 
 class LandmarkCostPartitioningHeuristicFeature
