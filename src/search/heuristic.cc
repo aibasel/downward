@@ -23,8 +23,7 @@ Heuristic::Heuristic(
 }
 
 void Heuristic::set_preferred(const OperatorProxy &op) {
-    preferred_operators.insert(
-        op.get_ancestor_operator_id(tasks::g_root_task.get()));
+    preferred_operators.insert(OperatorID(op.get_id()));
 }
 
 void add_heuristic_options_to_feature(

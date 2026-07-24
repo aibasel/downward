@@ -479,17 +479,6 @@ public:
     int get_id() const {
         return index;
     }
-
-    /*
-      Eventually, this method should perhaps not be part of OperatorProxy but
-      live in a class that handles the task transformation and known about both
-      the original and the transformed task.
-    */
-    OperatorID get_ancestor_operator_id(
-        const AbstractTask *ancestor_task) const {
-        assert(!is_an_axiom);
-        return OperatorID(task->convert_operator_index(index, ancestor_task));
-    }
 };
 
 class OperatorsProxy {
