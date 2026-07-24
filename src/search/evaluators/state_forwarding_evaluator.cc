@@ -19,30 +19,43 @@ StateForwardingEvaluator::StateForwardingEvaluator(
 }
 
 State StateForwardingEvaluator::convert_state(const State &state) const {
+    /*
+      issue1227:
+        * avoid dispatching over incoming registries
+          -> currently using a heuristic in multiple contexts can lead to states
+             coming from different registries. For example
+             let(hcg,eval_modify_costs(cg(),cost_type=plusone),
+                 iterated([eager_greedy([hcg]), eager_greedy([hcg])]))
+        * avoid const cast?
+          -> currently needed because we only get the registry from states
+             passed to this evaluator instead of knowing the registry in the
+             constructor already. We only get a const registry pointer from
+             the state but need it to be mutable in the delegating registry.
+        * avoid mutable state_registry?
+          -> currently this is used for the delayed initialization which can
+             happen inside const methods.
+        * avoid delayed initialization alltogether
+          Both of the above problems would go away if we could create the
+          registry in the constructor.
+    */
     const StateRegistry *existing_state_registry = state.get_registry();
+    DelegatingStateRegistry *delegating_registry;
     assert(existing_state_registry);
-    if (!state_registry) {
-        /*
-          issue1227:
-            * avoid const cast?
-              -> currently needed because we only get the registry from states
-                 passed to this evaluator instead of knowing the registry in the
-                 constructor already. We only get a const registry pointer from
-                 the state but need it to be mutable in the delegating registry.
-            * avoid mutable state_registry?
-              -> currently this is used for the delayed initialization which can
-                 happen inside const methods.
-            * avoid delayed initialization alltogether
-              Both of the above problems would go away if we could create the
-              registry in the constructor.
-        */
-        state_registry = make_unique<DelegatingStateRegistry>(
-            transformed_task,
-            const_cast<StateRegistry &>(*existing_state_registry));
+    if (existing_state_registry == last_state_registry_key) {
+        delegating_registry = last_state_registry;
     } else {
-        state_registry->assert_nested_is(*existing_state_registry);
+        if (!state_registries.contains(existing_state_registry)) {
+            state_registries.emplace(
+                existing_state_registry,
+                make_unique<DelegatingStateRegistry>(
+                    transformed_task,
+                    const_cast<StateRegistry &>(*existing_state_registry)));
+        }
+        delegating_registry = state_registries.at(existing_state_registry).get();
+        last_state_registry_key = existing_state_registry;
+        last_state_registry = delegating_registry;
     }
-    return state_registry->convert_state(state);
+    return delegating_registry->convert_state(state);
 }
 
 bool StateForwardingEvaluator::dead_ends_are_reliable() const {

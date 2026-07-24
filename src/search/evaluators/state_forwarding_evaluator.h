@@ -5,6 +5,7 @@
 #include "../state_registry.h"
 
 #include <memory.h>
+#include <unordered_map>
 
 namespace state_forwarding_evaluator {
 /*
@@ -20,7 +21,11 @@ namespace state_forwarding_evaluator {
 class StateForwardingEvaluator : public Evaluator {
     const std::shared_ptr<AbstractTask> transformed_task;
     std::shared_ptr<Evaluator> nested;
-    mutable std::unique_ptr<DelegatingStateRegistry> state_registry;
+    mutable std::unordered_map<
+        const StateRegistry *, std::unique_ptr<DelegatingStateRegistry>>
+        state_registries;
+    mutable const StateRegistry *last_state_registry_key;
+    mutable DelegatingStateRegistry *last_state_registry;
     std::vector<Evaluator *> path_dependent_evaluators;
     State convert_state(const State &state) const;
 public:
