@@ -1,5 +1,5 @@
-#ifndef EVALUATORS_DEFAULT_VALUE_AXIOMS_EVALUATOR_H
-#define EVALUATORS_DEFAULT_VALUE_AXIOMS_EVALUATOR_H
+#ifndef EVALUATORS_AXIOM_HANDLING_EVALUATOR_H
+#define EVALUATORS_AXIOM_HANDLING_EVALUATOR_H
 
 #include "../component.h"
 #include "../evaluator.h"
@@ -9,13 +9,13 @@
 
 #include <memory.h>
 
-namespace default_value_axioms_evaluator {
-class DefaultValueAxiomsEvaluator : public Evaluator {
+namespace axiom_handling_evaluator {
+class AxiomHandlingEvaluator : public Evaluator {
     std::shared_ptr<Evaluator> nested;
     mutable std::unique_ptr<DelegatingStateRegistry> state_registry;
-    State repackage_state(const State &state) const;
+    State convert_state(const State &state) const;
 public:
-    DefaultValueAxiomsEvaluator(
+    AxiomHandlingEvaluator(
         const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<Evaluator> &nested, bool use_for_reporting_minima,
         bool use_for_boosting, bool use_for_counting_evaluations,
@@ -35,7 +35,7 @@ public:
     virtual int get_cached_estimate(const State &state) const override;
 };
 
-class TaskIndependentDefaultValueAxiomsEvaluator
+class TaskIndependentAxiomHandlingEvaluator
     : public TaskIndependentEvaluator {
     std::shared_ptr<TaskIndependentEvaluator> nested;
     tasks::AxiomHandlingType axioms;
@@ -48,14 +48,14 @@ class TaskIndependentDefaultValueAxiomsEvaluator
     virtual std::shared_ptr<Evaluator> create_task_specific_component(
         const std::shared_ptr<AbstractTask> &task) const override;
 public:
-    TaskIndependentDefaultValueAxiomsEvaluator(
+    TaskIndependentAxiomHandlingEvaluator(
         std::shared_ptr<TaskIndependentEvaluator> nested,
         tasks::AxiomHandlingType axioms, bool use_for_reporting_minima,
         bool use_for_boosting, bool use_for_counting_evaluations,
         const std::string &description, utils::Verbosity verbosity);
 };
 
-std::shared_ptr<TaskIndependentEvaluator> wrap_in_default_axiom_evaluator(
+std::shared_ptr<TaskIndependentEvaluator> wrap_in_axiom_handling_evaluator(
     const std::shared_ptr<TaskIndependentEvaluator> &eval,
     const plugins::Options &opts);
 }

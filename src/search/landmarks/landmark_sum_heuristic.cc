@@ -43,11 +43,9 @@ LandmarkSumHeuristic::LandmarkSumHeuristic(
     }
     if (task_properties::has_axioms(task_proxy) &&
         !dynamic_cast<const tasks::DefaultValueAxiomsTask *>(task.get())) {
-        cerr << "The landmark sum heuristic currently only supports axioms by "
-                "wrapping the task in a DefaultValueAxiomsTask. This is done "
-                "automatically when using the class from the command line."
-             << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
+        ABORT("The landmark sum heuristic currently only supports axioms by "
+              "wrapping the task in a DefaultValueAxiomsTask. This is done "
+              "automatically when using the class from the command line.");
     }
     initialize(lm_factory, prog_goal, prog_gn, prog_r);
     compute_landmark_costs();
@@ -204,7 +202,7 @@ public:
             components::make_auto_task_independent_component<
                 LandmarkSumHeuristic, Evaluator>(
                 get_landmark_heuristic_arguments_from_options(opts));
-        return default_value_axioms_evaluator::wrap_in_default_axiom_evaluator(
+        return axiom_handling_evaluator::wrap_in_axiom_handling_evaluator(
             eval, opts);
     }
 };

@@ -11,7 +11,7 @@
 #include "algorithms/subscriber.h"
 #include "utils/hash.h"
 
-#include <set>
+#include <optional>
 
 /*
   Overview of classes relevant to storing and working with registered states.
@@ -110,6 +110,7 @@ class IntPacker;
 }
 
 using PackedStateBin = int_packer::IntPacker::Bin;
+
 class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
 protected:
     TaskProxy task_proxy;
@@ -125,6 +126,13 @@ public:
         return num_variables;
     }
 
+    /*
+      issue1227: The following method should not exist in the base class.
+      The reason it currently exists is that State::unpack() has to know how to
+      interpret packed state data. Maybe this interpretation could be moved into
+      the registry as a callback but this might be expensive, especially with a
+      virtual method call.
+    */
     virtual const int_packer::IntPacker &get_state_packer() const = 0;
 
     /*
@@ -139,7 +147,7 @@ public:
       done before. The result is cached internally so subsequent calls are
       cheap.
     */
-    virtual const State &get_initial_state() = 0;
+    virtual State get_initial_state() = 0;
 
     /*
       Returns the state that results from applying op to predecessor and
@@ -265,7 +273,7 @@ class ExplicitStateRegistry : public StateRegistry {
     segmented_vector::SegmentedArrayVector<PackedStateBin> state_data_pool;
     StateIDSet registered_states;
 
-    std::unique_ptr<State> cached_initial_state;
+    std::optional<State> cached_initial_state;
 
     StateID insert_id_or_pop_state();
     int get_bins_per_state() const;
@@ -279,17 +287,13 @@ class ExplicitStateRegistry : public StateRegistry {
 public:
     explicit ExplicitStateRegistry(const TaskProxy &task_proxy);
 
-    const int_packer::IntPacker &get_state_packer() const override {
-        return state_packer;
-    }
-    State lookup_state(StateID id) const override;
-    const State &get_initial_state() override;
-    State get_successor_state(
+    virtual const int_packer::IntPacker &get_state_packer() const override;
+    virtual State lookup_state(StateID id) const override;
+    virtual State get_initial_state() override;
+    virtual State get_successor_state(
         const State &predecessor, const OperatorProxy &op) override;
-    size_t size() const override {
-        return registered_states.size();
-    }
-    void print_statistics(utils::LogProxy &log) const override;
+    virtual size_t size() const override;
+    virtual void print_statistics(utils::LogProxy &log) const override;
 };
 
 class DelegatingStateRegistry : public StateRegistry {
@@ -300,44 +304,29 @@ class DelegatingStateRegistry : public StateRegistry {
     */
     const std::shared_ptr<AbstractTask> &task;
     StateRegistry &nested;
-    std::unique_ptr<State> cached_initial_state;
+    State repackage_state(const State &state) const {
+        return State(*task, *this, state.get_id(), state.get_buffer());
+    }
 public:
     /*
       The caller must ensure that the states stored in `nested` are compatible
       with the states of `task`.
     */
     DelegatingStateRegistry(
-        const std::shared_ptr<AbstractTask> &task, StateRegistry &nested)
-        : StateRegistry(TaskProxy(*task)), task(task), nested(nested) {
+        const std::shared_ptr<AbstractTask> &task, StateRegistry &nested);
+
+    State convert_state(const State &state) const {
+        return repackage_state(state);
     }
 
-    State repackage_state(const State &state) const {
-        return State(*task, *this, state.get_id(), state.get_buffer());
-    }
-    const int_packer::IntPacker &get_state_packer() const override {
-        return nested.get_state_packer();
-    }
-    State lookup_state(StateID id) const override {
-        return repackage_state(nested.lookup_state(id));
-    }
-    const State &get_initial_state() override {
-        if (!cached_initial_state) {
-            State init = nested.get_initial_state();
-            cached_initial_state = std::make_unique<State>(
-                *task, *this, init.get_id(), init.get_buffer());
-        }
-        return *cached_initial_state;
-    }
-    State get_successor_state(
-        const State &predecessor, const OperatorProxy &op) override {
-        return repackage_state(nested.get_successor_state(predecessor, op));
-    }
-    size_t size() const override {
-        return nested.size();
-    }
-    void print_statistics(utils::LogProxy &log) const override {
-        nested.print_statistics(log);
-    }
+    void assert_nested_is(const StateRegistry &nested);
+    virtual const int_packer::IntPacker &get_state_packer() const override;
+    virtual State lookup_state(StateID id) const override;
+    virtual State get_initial_state() override;
+    virtual State get_successor_state(
+        const State &predecessor, const OperatorProxy &op) override;
+    virtual size_t size() const override;
+    virtual void print_statistics(utils::LogProxy &log) const override;
 };
 
 #endif

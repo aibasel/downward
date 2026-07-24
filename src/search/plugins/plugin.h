@@ -137,10 +137,11 @@ class CategoryPlugin {
     /*
       TODO: Currently, we do not support variable binding of all categories, so
       variables can only be used for categories explicitly marked. This might
-      change once we remove the old task transformation code (issue1208). If all
-      feature types can be bound to variables, we can probably get rid of this
-      flag and related code in CategoryPlugin, TypedCategoryPlugin, RawRegistry,
-      Registry, Parser, ...
+      change once we remove the old task transformation code (see point about
+      making search algorithms reusable in issue559). If all feature types can
+      be bound to variables, we can probably get rid of this flag and related
+      code in CategoryPlugin, TypedCategoryPlugin, RawRegistry, Registry,
+      Parser, ...
     */
     bool can_be_bound_to_variable;
 public:

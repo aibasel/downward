@@ -30,8 +30,8 @@ EvaluationContext::EvaluationContext(
 EvaluationContext::EvaluationContext(
     const EvaluationContext &other, const State &state)
     : EvaluationContext(
-          other.cache, state, other.g_value, other.preferred, other.statistics,
-          other.calculate_preferred) {
+          EvaluatorCache(), state, other.g_value, other.preferred,
+          other.statistics, other.calculate_preferred) {
 }
 
 EvaluationContext::EvaluationContext(

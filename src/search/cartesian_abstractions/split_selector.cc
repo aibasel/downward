@@ -18,12 +18,6 @@ SplitSelector::SplitSelector(
     const shared_ptr<AbstractTask> &task, PickSplit pick)
     : task(task), task_proxy(*task), pick(pick) {
     if (pick == PickSplit::MIN_HADD || pick == PickSplit::MAX_HADD) {
-        /*
-          issue1208: normally hadd would be wrapped inside a task transformation
-          for axioms. This is not necessary here, as the heuristic using this
-          class does not support axioms anyway. If that ever changes, this part
-          would have to be adapted as well.
-        */
         additive_heuristic = make_unique<additive_heuristic::AdditiveHeuristic>(
             task, false, "h^add within CEGAR abstractions",
             utils::Verbosity::SILENT);

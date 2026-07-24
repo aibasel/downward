@@ -170,7 +170,7 @@ public:
             components::make_auto_task_independent_component<
                 AdditiveHeuristic, Evaluator>(
                 get_heuristic_arguments_from_options(opts));
-        return default_value_axioms_evaluator::wrap_in_default_axiom_evaluator(
+        return axiom_handling_evaluator::wrap_in_axiom_handling_evaluator(
             eval, opts);
     }
 };

@@ -34,12 +34,6 @@ class SortFactsByIncreasingHaddValues {
 public:
     explicit SortFactsByIncreasingHaddValues(
         const shared_ptr<AbstractTask> &task)
-        /*
-          issue1208: normally hadd would be wrapped inside a task transformation
-          for axioms. This is not necessary here, as the heuristic using this
-          class does not support axioms anyway. If that ever changes, this part
-          would have to be adapted as well.
-        */
         : hadd(make_unique<additive_heuristic::AdditiveHeuristic>(
               task, false, "h^add within CEGAR abstractions",
               utils::Verbosity::SILENT)) {
