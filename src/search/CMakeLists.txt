@@ -349,14 +349,21 @@ create_fast_downward_library(
 )
 
 create_fast_downward_library(
+    NAME simple_task_transforming_evaluator
+    HELP "Evaluator that uses a transformed task with the same set of states"
+    SOURCES
+        evaluators/simple_task_transforming_evaluator
+)
+
+create_fast_downward_library(
     NAME axiom_handling_evaluator
     HELP "Evaluator modifying axioms to handle negative values"
     SOURCES
         evaluators/axiom_handling_evaluator
     DEPENDS
-        core_tasks
-        task_properties
         default_value_axioms_task
+        simple_task_transforming_evaluator
+        task_properties
 )
 
 create_fast_downward_library(
@@ -366,6 +373,7 @@ create_fast_downward_library(
         evaluators/modify_costs_evaluator
     DEPENDS
         core_tasks
+        simple_task_transforming_evaluator
         task_properties
 )
 
