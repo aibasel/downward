@@ -627,17 +627,17 @@ def parse_task(domain_pddl, problem_pddl):
         predicate_dict, functions, actions, axioms = parse_domain_pddl(context, domain_pddl)
     if not isinstance(problem_pddl, list):
         context.error("Invalid definition of a PDDL problem.")
-    task_name, task_domain_name, task_requirements, objects, init, goal, \
+    problem_name, problem_domain_name, problem_requirements, objects, init, goal, \
         use_metric = parse_problem_pddl(context, problem_pddl, type_dict,
                                      predicate_dict, {c.name for c in constants})
 
-    if domain_name != task_domain_name:
+    if domain_name != problem_domain_name:
         context.error(f"The domain name specified by the task "
-                      f"({task_domain_name}) does not match the name specified "
+                      f"({problem_domain_name}) does not match the name specified "
                       f"by the domain file ({domain_name}).")
     requirements = pddl.Requirements(sorted(set(
         domain_requirements.requirements +
-        task_requirements.requirements)))
+        problem_requirements.requirements)))
     objects = constants + objects
 
     check_for_duplicates(context, [o.name for o in objects], "object")
@@ -646,7 +646,7 @@ def parse_task(domain_pddl, problem_pddl):
     init += [pddl.Atom("=", (obj.name, obj.name)) for obj in objects]
 
     return pddl.Task(
-        domain_name, task_name, requirements, types, objects,
+        domain_name, problem_name, requirements, types, objects,
         predicates, functions, init, goal, actions, axioms, use_metric)
 
 
