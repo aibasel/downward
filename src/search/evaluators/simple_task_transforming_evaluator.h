@@ -21,6 +21,7 @@ class SimpleTaskTransformingEvaluator : public Evaluator {
     const std::shared_ptr<AbstractTask> transformed_task;
     std::shared_ptr<Evaluator> nested;
     mutable std::unique_ptr<DelegatingStateRegistry> state_registry;
+    std::vector<Evaluator *> path_dependent_evaluators;
     State convert_state(const State &state) const;
 public:
     SimpleTaskTransformingEvaluator(

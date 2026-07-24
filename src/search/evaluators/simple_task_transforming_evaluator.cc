@@ -13,6 +13,9 @@ SimpleTaskTransformingEvaluator::SimpleTaskTransformingEvaluator(
     : Evaluator(task, false, false, false, description, verbosity),
       transformed_task(transformed_task),
       nested(nested) {
+    set<Evaluator *> evals;
+    nested->get_path_dependent_evaluators(evals);
+    path_dependent_evaluators.assign(evals.begin(), evals.end());
 }
 
 State SimpleTaskTransformingEvaluator::convert_state(const State &state) const {
@@ -48,18 +51,39 @@ bool SimpleTaskTransformingEvaluator::dead_ends_are_reliable() const {
 
 void SimpleTaskTransformingEvaluator::get_path_dependent_evaluators(
     set<Evaluator *> &evals) {
-    nested->get_path_dependent_evaluators(evals);
+    if (!path_dependent_evaluators.empty()) {
+        /*
+          Note that we do *not* add path_dependent_evaluators to this list
+          because they use a differnent task. Letting some code from the outside
+          the scope of this task transformation notify them directly would
+          bypass the task transformation and thus notify the nested evaluators
+          with states from incorrect tasks. Instead, this evaluator adds itself
+          and then forwards any events with the transformed task.
+        */
+        evals.insert(this);
+    }
 }
 
 void SimpleTaskTransformingEvaluator::notify_initial_state(
     const State &initial_state) {
-    nested->notify_initial_state(convert_state(initial_state));
+    if (!path_dependent_evaluators.empty()) {
+        State converted_initial_state = convert_state(initial_state);
+        for (Evaluator *eval : path_dependent_evaluators) {
+            eval->notify_initial_state(converted_initial_state);
+        }
+    }
 }
 
 void SimpleTaskTransformingEvaluator::notify_state_transition(
     const State &parent_state, OperatorID op_id, const State &state) {
-    nested->notify_state_transition(
-        convert_state(parent_state), op_id, convert_state(state));
+    if (!path_dependent_evaluators.empty()) {
+        State converted_parent_state = convert_state(parent_state);
+        State converted_state = convert_state(state);
+        for (Evaluator *eval : path_dependent_evaluators) {
+            eval->notify_state_transition(
+                converted_parent_state, op_id, converted_state);
+        }
+    }
 }
 
 EvaluationResult SimpleTaskTransformingEvaluator::compute_result(

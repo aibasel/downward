@@ -198,11 +198,14 @@ int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 void LandmarkHeuristic::notify_initial_state(const State &initial_state) {
+    assert(initial_state.get_task() == TaskProxy(*task));
     landmark_status_manager->progress_initial_state(initial_state);
 }
 
 void LandmarkHeuristic::notify_state_transition(
     const State &parent_state, OperatorID op_id, const State &state) {
+    assert(parent_state.get_task() == TaskProxy(*task));
+    assert(state.get_task() == TaskProxy(*task));
     landmark_status_manager->progress(parent_state, op_id, state);
     if (cache_evaluator_values) {
         /* TODO:  It may be more efficient to check that the past landmark
