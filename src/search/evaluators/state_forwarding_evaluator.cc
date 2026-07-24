@@ -51,7 +51,8 @@ State StateForwardingEvaluator::convert_state(const State &state) const {
                     transformed_task,
                     const_cast<StateRegistry &>(*existing_state_registry)));
         }
-        delegating_registry = state_registries.at(existing_state_registry).get();
+        delegating_registry =
+            state_registries.at(existing_state_registry).get();
         last_state_registry_key = existing_state_registry;
         last_state_registry = delegating_registry;
     }
