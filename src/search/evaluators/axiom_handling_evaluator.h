@@ -17,8 +17,7 @@ class AxiomHandlingEvaluator : public Evaluator {
 public:
     AxiomHandlingEvaluator(
         const std::shared_ptr<AbstractTask> &task,
-        const std::shared_ptr<Evaluator> &nested, bool use_for_reporting_minima,
-        bool use_for_boosting, bool use_for_counting_evaluations,
+        const std::shared_ptr<Evaluator> &nested,
         const std::string &description, utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;
@@ -35,13 +34,9 @@ public:
     virtual int get_cached_estimate(const State &state) const override;
 };
 
-class TaskIndependentAxiomHandlingEvaluator
-    : public TaskIndependentEvaluator {
+class TaskIndependentAxiomHandlingEvaluator : public TaskIndependentEvaluator {
     std::shared_ptr<TaskIndependentEvaluator> nested;
     tasks::AxiomHandlingType axioms;
-    bool use_for_reporting_minima;
-    bool use_for_boosting;
-    bool use_for_counting_evaluations;
     const std::string description;
     utils::Verbosity verbosity;
 
@@ -50,9 +45,8 @@ class TaskIndependentAxiomHandlingEvaluator
 public:
     TaskIndependentAxiomHandlingEvaluator(
         std::shared_ptr<TaskIndependentEvaluator> nested,
-        tasks::AxiomHandlingType axioms, bool use_for_reporting_minima,
-        bool use_for_boosting, bool use_for_counting_evaluations,
-        const std::string &description, utils::Verbosity verbosity);
+        tasks::AxiomHandlingType axioms, const std::string &description,
+        utils::Verbosity verbosity);
 };
 
 std::shared_ptr<TaskIndependentEvaluator> wrap_in_axiom_handling_evaluator(

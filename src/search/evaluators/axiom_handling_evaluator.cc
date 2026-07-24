@@ -9,12 +9,8 @@ using namespace std;
 namespace axiom_handling_evaluator {
 AxiomHandlingEvaluator::AxiomHandlingEvaluator(
     const shared_ptr<AbstractTask> &task, const shared_ptr<Evaluator> &nested,
-    bool use_for_reporting_minima, bool use_for_boosting,
-    bool use_for_counting_evaluations, const string &description,
-    utils::Verbosity verbosity)
-    : Evaluator(
-          task, use_for_reporting_minima, use_for_boosting,
-          use_for_counting_evaluations, description, verbosity),
+    const string &description, utils::Verbosity verbosity)
+    : Evaluator(task, false, false, false, description, verbosity),
       nested(nested) {
 }
 
@@ -96,8 +92,7 @@ TaskIndependentAxiomHandlingEvaluator::create_task_specific_component(
             make_shared<tasks::DefaultValueAxiomsTask>(task, axioms);
         shared_ptr<Evaluator> eval = nested->bind_task(axioms_task);
         return make_shared<AxiomHandlingEvaluator>(
-            task, eval, use_for_reporting_minima, use_for_boosting,
-            use_for_counting_evaluations, description, verbosity);
+            task, eval, description, verbosity);
     } else {
         /*
           If the task has no axioms, there is no need to wrap the evaluator
@@ -109,14 +104,10 @@ TaskIndependentAxiomHandlingEvaluator::create_task_specific_component(
 
 TaskIndependentAxiomHandlingEvaluator::TaskIndependentAxiomHandlingEvaluator(
     shared_ptr<TaskIndependentEvaluator> nested,
-    tasks::AxiomHandlingType axioms, bool use_for_reporting_minima,
-    bool use_for_boosting, bool use_for_counting_evaluations,
-    const string &description, utils::Verbosity verbosity)
+    tasks::AxiomHandlingType axioms, const string &description,
+    utils::Verbosity verbosity)
     : nested(move(nested)),
       axioms(axioms),
-      use_for_reporting_minima(use_for_reporting_minima),
-      use_for_boosting(use_for_boosting),
-      use_for_counting_evaluations(use_for_counting_evaluations),
       description(description),
       verbosity(verbosity) {
 }
@@ -126,7 +117,7 @@ shared_ptr<TaskIndependentEvaluator> wrap_in_axiom_handling_evaluator(
     const plugins::Options &opts) {
     return components::make_shared_from_arg_tuples<
         axiom_handling_evaluator::TaskIndependentAxiomHandlingEvaluator>(
-        eval, tasks::get_axioms_arguments_from_options(opts), true, true, true,
+        eval, tasks::get_axioms_arguments_from_options(opts),
         get_evaluator_arguments_from_options(opts));
 }
 
