@@ -4,12 +4,15 @@
 #include "../component.h"
 #include "../evaluator.h"
 #include "../operator_cost.h"
+#include "../state_registry.h"
 
 #include <memory.h>
 
 namespace cost_adapted_evaluator {
 class ModifyCostsEvaluator : public Evaluator {
     std::shared_ptr<Evaluator> nested;
+    mutable std::unique_ptr<DelegatingStateRegistry> state_registry;
+    State convert_state(const State &state) const;
 public:
     ModifyCostsEvaluator(
         const std::shared_ptr<AbstractTask> &task,
@@ -33,13 +36,16 @@ public:
 class TaskIndependentModifyCostsEvaluator : public TaskIndependentEvaluator {
     std::shared_ptr<TaskIndependentEvaluator> nested;
     OperatorCost cost_type;
+    const std::string description;
+    utils::Verbosity verbosity;
 
     virtual std::shared_ptr<Evaluator> create_task_specific_component(
         const std::shared_ptr<AbstractTask> &task) const override;
 public:
     TaskIndependentModifyCostsEvaluator(
         std::shared_ptr<TaskIndependentEvaluator> nested,
-        OperatorCost cost_type);
+        OperatorCost cost_type, const std::string &description,
+        utils::Verbosity verbosity);
 };
 }
 
