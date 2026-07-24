@@ -1,6 +1,6 @@
 #include "additive_heuristic.h"
 
-#include "../evaluators/default_value_axioms_evaluator.h"
+#include "../evaluators/axiom_handling_evaluator.h"
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"

@@ -349,13 +349,14 @@ create_fast_downward_library(
 )
 
 create_fast_downward_library(
-    NAME default_value_axioms_evaluator
+    NAME axiom_handling_evaluator
     HELP "Evaluator modifying axioms to handle negative values"
     SOURCES
-        evaluators/default_value_axioms_evaluator
+        evaluators/axiom_handling_evaluator
     DEPENDS
         core_tasks
         task_properties
+        default_value_axioms_task
 )
 
 create_fast_downward_library(
