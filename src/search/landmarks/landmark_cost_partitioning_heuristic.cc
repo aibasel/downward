@@ -78,6 +78,17 @@ int LandmarkCostPartitioningHeuristic::get_heuristic_value(
 }
 
 bool LandmarkCostPartitioningHeuristic::is_safe() const {
+    /*
+      We are conservative here and return false for tasks with conditional
+      effects even if the LandmarkFactory supports them.
+      TODO Find out whether we can return true if the LandmarkFactory supports
+      conditional effects. If it is safe in this case, update this function
+      and the documentation below.
+    */
+    if (task_properties::has_axioms(task_proxy) ||
+        task_properties::has_conditional_effects(task_proxy)) {
+        return false;
+    }
     return true;
 }
 
@@ -159,7 +170,11 @@ public:
         document_property("admissible", "yes");
         document_property(
             "consistent", "no; see document note about consistency");
-        document_property("safe", "yes");
+        document_property(
+            "safe",
+            "yes except on tasks with conditional effects or axioms (it might"
+            "be safe with conditional effects if the LandmarkFactory supports"
+            "them but we are not sure)");
     }
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
