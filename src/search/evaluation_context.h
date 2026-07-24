@@ -65,6 +65,19 @@ public:
         const EvaluationContext &other, int g_value, bool is_preferred,
         SearchStatistics *statistics, bool calculate_preferred = false);
     /*
+      Create new heuristic cache for caching heuristic values but copy other
+      information from the other evaluation context. This is only supposed to
+      be used by task-transforming evaluators that want to call nested
+      evaluators with a converted state, while still using the original
+      statistics. Starting from an empty cache is correct in this case:
+      all nested evaluators will use the transformed task or further
+      transformations of it while all other evaluators used outside of the
+      transforming evaluator do not have access to the transformed task. This
+      implies that cached values used in the scope of the transforming evaluator
+      are disjoint from any cached values used outside of this scope.
+     */
+    EvaluationContext(const EvaluationContext &other, const State &state);
+    /*
       Create new heuristic cache for caching heuristic values. Used for example
       by eager search.
     */

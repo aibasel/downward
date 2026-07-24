@@ -1,5 +1,6 @@
 #include "additive_heuristic.h"
 
+#include "../evaluators/axiom_handling_evaluator.h"
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
@@ -13,10 +14,9 @@ namespace additive_heuristic {
 const int AdditiveHeuristic::MAX_COST_VALUE;
 
 AdditiveHeuristic::AdditiveHeuristic(
-    const shared_ptr<AbstractTask> &task, tasks::AxiomHandlingType axioms,
-    bool cache_estimates, const string &description, utils::Verbosity verbosity)
-    : RelaxationHeuristic(
-          task, axioms, cache_estimates, description, verbosity),
+    const shared_ptr<AbstractTask> &task, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
+    : RelaxationHeuristic(task, cache_estimates, description, verbosity),
       did_write_overflow_warning(false) {
     if (log.is_at_least_normal()) {
         log << "Initializing additive heuristic..." << endl;
@@ -166,10 +166,12 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<
-            AdditiveHeuristic, Evaluator>(
-            relaxation_heuristic::
-                get_relaxation_heuristic_arguments_from_options(opts));
+        shared_ptr<TaskIndependentEvaluator> eval =
+            components::make_auto_task_independent_component<
+                AdditiveHeuristic, Evaluator>(
+                get_heuristic_arguments_from_options(opts));
+        return axiom_handling_evaluator::wrap_in_axiom_handling_evaluator(
+            eval, opts);
     }
 };
 

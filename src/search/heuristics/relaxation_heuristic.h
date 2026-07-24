@@ -112,8 +112,7 @@ protected:
     Proposition *get_proposition(const FactProxy &fact);
 public:
     RelaxationHeuristic(
-        const std::shared_ptr<AbstractTask> &task,
-        tasks::AxiomHandlingType axioms, bool cache_estimates,
+        const std::shared_ptr<AbstractTask> &task, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 
     virtual bool dead_ends_are_reliable() const override;

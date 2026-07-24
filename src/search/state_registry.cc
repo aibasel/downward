@@ -9,17 +9,20 @@
 using namespace std;
 
 StateRegistry::StateRegistry(const TaskProxy &task_proxy)
-    : task_proxy(task_proxy),
+    : task_proxy(task_proxy), num_variables(task_proxy.get_variables().size()) {
+}
+
+ExplicitStateRegistry::ExplicitStateRegistry(const TaskProxy &task_proxy)
+    : StateRegistry(task_proxy),
       state_packer(task_properties::g_state_packers[task_proxy]),
       axiom_evaluator(g_axiom_evaluators[task_proxy]),
-      num_variables(task_proxy.get_variables().size()),
       state_data_pool(get_bins_per_state()),
       registered_states(
           StateIDSemanticHash(state_data_pool, get_bins_per_state()),
           StateIDSemanticEqual(state_data_pool, get_bins_per_state())) {
 }
 
-StateID StateRegistry::insert_id_or_pop_state() {
+StateID ExplicitStateRegistry::insert_id_or_pop_state() {
     /*
       Attempt to insert a StateID for the last state of state_data_pool
       if none is present yet. If this fails (another entry for this state
@@ -37,18 +40,22 @@ StateID StateRegistry::insert_id_or_pop_state() {
     return StateID(result.first);
 }
 
-State StateRegistry::lookup_state(StateID id) const {
+const int_packer::IntPacker &ExplicitStateRegistry::get_state_packer() const {
+    return state_packer;
+}
+
+State ExplicitStateRegistry::lookup_state(StateID id) const {
     const PackedStateBin *buffer = state_data_pool[id.value];
     return task_proxy.create_state(*this, id, buffer);
 }
 
-State StateRegistry::lookup_state(
+State ExplicitStateRegistry::lookup_state(
     StateID id, vector<int> &&state_values) const {
     const PackedStateBin *buffer = state_data_pool[id.value];
     return task_proxy.create_state(*this, id, buffer, move(state_values));
 }
 
-const State &StateRegistry::get_initial_state() {
+State ExplicitStateRegistry::get_initial_state() {
     if (!cached_initial_state) {
         int num_bins = get_bins_per_state();
         unique_ptr<PackedStateBin[]> buffer(new PackedStateBin[num_bins]);
@@ -61,7 +68,7 @@ const State &StateRegistry::get_initial_state() {
         }
         state_data_pool.push_back(buffer.get());
         StateID id = insert_id_or_pop_state();
-        cached_initial_state = make_unique<State>(lookup_state(id));
+        cached_initial_state.emplace(lookup_state(id));
     }
     return *cached_initial_state;
 }
@@ -70,7 +77,7 @@ const State &StateRegistry::get_initial_state() {
 // application)
 //      out of the StateRegistry. This could for example be done by global
 //      functions operating on state buffers (PackedStateBin *).
-State StateRegistry::get_successor_state(
+State ExplicitStateRegistry::get_successor_state(
     const State &predecessor, const OperatorProxy &op) {
     assert(!op.is_axiom());
     /*
@@ -118,15 +125,50 @@ State StateRegistry::get_successor_state(
     }
 }
 
-int StateRegistry::get_bins_per_state() const {
+int ExplicitStateRegistry::get_bins_per_state() const {
     return state_packer.get_num_bins();
 }
 
-int StateRegistry::get_state_size_in_bytes() const {
-    return get_bins_per_state() * sizeof(PackedStateBin);
+size_t ExplicitStateRegistry::size() const {
+    return registered_states.size();
 }
 
-void StateRegistry::print_statistics(utils::LogProxy &log) const {
+void ExplicitStateRegistry::print_statistics(utils::LogProxy &log) const {
     log << "Number of registered states: " << size() << endl;
     registered_states.print_statistics(log);
+}
+
+DelegatingStateRegistry::DelegatingStateRegistry(
+    const shared_ptr<AbstractTask> &task, StateRegistry &nested)
+    : StateRegistry(TaskProxy(*task)), task(task), nested(nested) {
+}
+
+void DelegatingStateRegistry::assert_nested_is(const StateRegistry &nested) {
+    assert(&nested == &this->nested);
+    utils::unused_variable(nested);
+}
+
+const int_packer::IntPacker &DelegatingStateRegistry::get_state_packer() const {
+    return nested.get_state_packer();
+}
+
+State DelegatingStateRegistry::lookup_state(StateID id) const {
+    return repackage_state(nested.lookup_state(id));
+}
+
+State DelegatingStateRegistry::get_initial_state() {
+    return repackage_state(nested.get_initial_state());
+}
+
+State DelegatingStateRegistry::get_successor_state(
+    const State &predecessor, const OperatorProxy &op) {
+    return repackage_state(nested.get_successor_state(predecessor, op));
+}
+
+size_t DelegatingStateRegistry::size() const {
+    return nested.size();
+}
+
+void DelegatingStateRegistry::print_statistics(utils::LogProxy &log) const {
+    nested.print_statistics(log);
 }

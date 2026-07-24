@@ -2,6 +2,7 @@
 
 #include "domain_transition_graph.h"
 
+#include "../evaluators/axiom_handling_evaluator.h"
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
@@ -411,15 +412,21 @@ int ContextEnhancedAdditiveHeuristic::compute_heuristic(
 }
 
 ContextEnhancedAdditiveHeuristic::ContextEnhancedAdditiveHeuristic(
-    const shared_ptr<AbstractTask> &task, tasks::AxiomHandlingType axioms,
-    bool cache_estimates, const string &description, utils::Verbosity verbosity)
-    : Heuristic(
-          // issue1208 move this transformation to task-independent level?
-          tasks::get_default_value_axioms_task_if_needed(task, axioms),
-          cache_estimates, description, verbosity),
+    const shared_ptr<AbstractTask> &task, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
+    : Heuristic(task, cache_estimates, description, verbosity),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing context-enhanced additive heuristic..." << endl;
+    }
+    if (task_properties::has_axioms(task_proxy) &&
+        !dynamic_cast<const tasks::DefaultValueAxiomsTask *>(task.get())) {
+        cerr << "The context-enhanced additive heuristic currently only "
+                "supports axioms by wrapping the task in a "
+                "DefaultValueAxiomsTask. This is done automatically when using "
+                "the class from the command line."
+             << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
     }
 
     DTGFactory factory(task_proxy, true, [](int, int) { return false; });
@@ -471,10 +478,12 @@ public:
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return components::make_auto_task_independent_component<
-            ContextEnhancedAdditiveHeuristic, Evaluator>(
-            tasks::get_axioms_arguments_from_options(opts),
-            get_heuristic_arguments_from_options(opts));
+        shared_ptr<TaskIndependentEvaluator> eval =
+            components::make_auto_task_independent_component<
+                ContextEnhancedAdditiveHeuristic, Evaluator>(
+                get_heuristic_arguments_from_options(opts));
+        return axiom_handling_evaluator::wrap_in_axiom_handling_evaluator(
+            eval, opts);
     }
 };
 
