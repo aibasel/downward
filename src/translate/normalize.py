@@ -4,6 +4,8 @@ import copy
 from typing import Sequence
 
 from translate import pddl
+from translate.options import get_options
+
 
 class ConditionProxy:
     def clone_owner(self):
@@ -370,16 +372,14 @@ def substitute_complicated_goal(task):
 # Combine Steps [1], [2], [3], [4], [5] and do some additional verification
 # that the task makes sense.
 
-
-def normalize(task, condition_strategy):
+def normalize(task):
     remove_universal_quantifiers(task)
-    if condition_strategy == "dnf":
-        substitute_complicated_goal(task)
-        build_DNF(task)
-    elif condition_strategy == "axiom_based":
-        substitute_conditions_with_axioms(task)
-    else:
-        raise ValueError("Unknown condition normalization strategy: %s" % condition_strategy)
+    match get_options().condition_normalization_strategy:
+        case "dnf":
+            substitute_complicated_goal(task)
+            build_DNF(task)
+        case "axiom_based":
+            substitute_conditions_with_axioms(task)
     split_disjunctions(task)
     move_existential_quantifiers(task)
     eliminate_existential_quantifiers_from_axioms(task)
@@ -463,9 +463,9 @@ def condition_to_rule_body(parameters: Sequence[pddl.TypedObject],
 
 if __name__ == "__main__":
     from translate import pddl_parser
-    from translate.options import get_options, set_options
+    from translate.options import set_options
 
     set_options() # use command line options
     task = pddl_parser.open()
-    normalize(task, get_options().condition_normalization_strategy)
+    normalize(task)
     task.dump()
