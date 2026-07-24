@@ -122,6 +122,8 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const = 0;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const = 0;
+    // is_safe returns true only if the open list never prunes a solvable state.
+    virtual bool is_safe() const = 0;
 };
 
 using StateOpenListEntry = StateID;

@@ -27,7 +27,8 @@ IteratedSearch::IteratedSearch(
       phase(0),
       last_phase_found_solution(false),
       best_bound(bound),
-      iterated_found_solution(false) {
+      iterated_found_solution(false),
+      best_status(SearchStatus::FAILED) {
     utils::verify_list_not_empty(algorithm_configs, "algorithm_configs");
 }
 
@@ -112,10 +113,41 @@ shared_ptr<SearchAlgorithm> IteratedSearch::bind_current_search() {
     return bind_search(phase);
 }
 
+void IteratedSearch::update_best_status(
+    const shared_ptr<SearchAlgorithm> &task_specific_search) {
+    if (best_status == SearchStatus::SOLVED ||
+        best_status == SearchStatus::UNSOLVABLE) {
+        return;
+    }
+    SearchStatus current_search_status =
+        task_specific_search->get_finished_search_status();
+    assert(current_search_status != SearchStatus::IN_PROGRESS);
+
+    switch (current_search_status) {
+    case SearchStatus::SOLVED:
+    case SearchStatus::UNSOLVABLE:
+        best_status = current_search_status;
+        break;
+
+    case SearchStatus::UNSOLVABLE_WITHIN_BOUND:
+        // We ignore inner bounds if the search did not check up to the outer
+        // bound.
+        if (task_specific_search->get_bound() >= bound) {
+            best_status = current_search_status;
+        }
+        break;
+
+    case SearchStatus::FAILED:
+    case SearchStatus::TIMEOUT:
+    case SearchStatus::IN_PROGRESS:
+        break;
+    }
+}
+
 SearchStatus IteratedSearch::step() {
     shared_ptr<SearchAlgorithm> task_specific_search = bind_current_search();
     if (!task_specific_search) {
-        return found_solution() ? SOLVED : FAILED;
+        return best_status;
     }
     if (pass_bound && best_bound < task_specific_search->get_bound()) {
         task_specific_search->set_bound(best_bound);
@@ -123,6 +155,8 @@ SearchStatus IteratedSearch::step() {
     ++phase;
 
     task_specific_search->search();
+
+    update_best_status(task_specific_search);
 
     Plan found_plan;
     int plan_cost = 0;
@@ -184,7 +218,7 @@ SearchStatus IteratedSearch::step_return_value() {
             return IN_PROGRESS;
         } else {
             log << "No solution found - stop searching" << endl;
-            return iterated_found_solution ? SOLVED : FAILED;
+            return get_finished_search_status();
         }
     }
 }
@@ -197,6 +231,12 @@ void IteratedSearch::print_statistics() const {
 void IteratedSearch::save_plan_if_necessary() {
     // We don't need to save here, as we automatically save after
     // each successful search iteration.
+}
+
+bool IteratedSearch::is_complete_within_bound() const {
+    return best_status == SearchStatus::UNSOLVABLE_WITHIN_BOUND ||
+           best_status == SearchStatus::UNSOLVABLE ||
+           best_status == SearchStatus::SOLVED;
 }
 
 class TaskIndependentIteratedSearch

@@ -109,10 +109,6 @@ RelaxationHeuristic::RelaxationHeuristic(
     }
 }
 
-bool RelaxationHeuristic::dead_ends_are_reliable() const {
-    return !task_properties::has_axioms(task_proxy);
-}
-
 PropID RelaxationHeuristic::get_prop_id(int var, int value) const {
     return proposition_offsets[var] + value;
 }

@@ -26,6 +26,9 @@ class IteratedSearch : public SearchAlgorithm {
 
     std::vector<std::shared_ptr<TSComponent>> retained_components;
 
+    SearchStatus best_status;
+    void update_best_status(
+        const std::shared_ptr<SearchAlgorithm> &task_specific_search);
     void update_retention_set();
     std::shared_ptr<SearchAlgorithm> bind_search(int search_index);
     std::shared_ptr<SearchAlgorithm> bind_current_search();
@@ -45,6 +48,7 @@ public:
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
+    virtual bool is_complete_within_bound() const override;
 };
 }
 

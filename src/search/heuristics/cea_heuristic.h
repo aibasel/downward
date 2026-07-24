@@ -59,7 +59,7 @@ public:
         const std::string &description, utils::Verbosity verbosity);
 
     virtual ~ContextEnhancedAdditiveHeuristic() override;
-    virtual bool dead_ends_are_reliable() const override;
+    virtual bool is_safe() const override;
 };
 }
 

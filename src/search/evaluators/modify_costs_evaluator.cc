@@ -10,8 +10,8 @@
 using namespace std;
 
 namespace cost_adapted_evaluator {
-bool ModifyCostsEvaluator::dead_ends_are_reliable() const {
-    return nested->dead_ends_are_reliable();
+bool ModifyCostsEvaluator::is_safe() const {
+    return nested->is_safe();
 }
 
 void ModifyCostsEvaluator::get_path_dependent_evaluators(

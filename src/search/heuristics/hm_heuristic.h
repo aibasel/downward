@@ -60,7 +60,7 @@ public:
         const std::shared_ptr<AbstractTask> &task, int m, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 
-    virtual bool dead_ends_are_reliable() const override;
+    virtual bool is_safe() const override;
 };
 }
 

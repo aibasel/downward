@@ -19,6 +19,8 @@ const char *get_exit_code_message_reentrant(ExitCode exitcode) {
         return "Task is provably unsolvable.";
     case ExitCode::SEARCH_UNSOLVED_INCOMPLETE:
         return "Search stopped without finding a solution.";
+    case ExitCode::SEARCH_UNSOLVABLE_WITHIN_BOUND:
+        return "Task is provably unsolvable within the given bound.";
     case ExitCode::SEARCH_OUT_OF_MEMORY:
         return "Memory limit has been reached.";
     case ExitCode::SEARCH_OUT_OF_TIME:
@@ -33,6 +35,7 @@ bool is_exit_code_error_reentrant(ExitCode exitcode) {
     case ExitCode::SUCCESS:
     case ExitCode::SEARCH_UNSOLVABLE:
     case ExitCode::SEARCH_UNSOLVED_INCOMPLETE:
+    case ExitCode::SEARCH_UNSOLVABLE_WITHIN_BOUND:
     case ExitCode::SEARCH_OUT_OF_MEMORY:
     case ExitCode::SEARCH_OUT_OF_TIME:
         return false;
