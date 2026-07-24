@@ -20,15 +20,23 @@ using namespace std;
 using utils::ExitCode;
 
 namespace landmarks {
-LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(
-    const shared_ptr<AbstractTask> &task, bool disjunctive_landmarks,
-    bool use_orders, utils::Verbosity verbosity)
-    : LandmarkFactoryRelaxation(task, verbosity),
-      disjunctive_landmarks(disjunctive_landmarks),
-      use_orders(use_orders) {
+
+static unordered_map<int, int> build_conditions_map(
+    const ConditionsProxy &conditions) {
+    unordered_map<int, int> condition_map;
+    for (FactProxy condition : conditions) {
+        condition_map[condition.get_variable().get_id()] =
+            condition.get_value();
+    }
+    return condition_map;
 }
 
-void LandmarkFactoryRpgSasp::resize_dtg_data_structures(
+DomainTransitionGraph::DomainTransitionGraph(const TaskProxy &task_proxy) {
+    resize_dtg_data_structures(task_proxy);
+    build_dtg_successors(task_proxy);
+}
+
+void DomainTransitionGraph::resize_dtg_data_structures(
     const TaskProxy &task_proxy) {
     VariablesProxy variables = task_proxy.get_variables();
     dtg_successors.resize(variables.size());
@@ -37,7 +45,20 @@ void LandmarkFactoryRpgSasp::resize_dtg_data_structures(
     }
 }
 
-void LandmarkFactoryRpgSasp::compute_dtg_successors(
+void DomainTransitionGraph::build_dtg_successors(const TaskProxy &task_proxy) {
+    assert(dtg_successors.size() == task_proxy.get_variables().size());
+    for (OperatorProxy op : task_proxy.get_operators()) {
+        unordered_map<int, int> preconditions =
+            build_conditions_map(op.get_preconditions());
+        for (EffectProxy effect : op.get_effects()) {
+            unordered_map<int, int> effect_conditions =
+                build_conditions_map(effect.get_conditions());
+            compute_dtg_successors(effect, preconditions, effect_conditions);
+        }
+    }
+}
+
+void DomainTransitionGraph::compute_dtg_successors(
     const EffectProxy &effect, const unordered_map<int, int> &preconditions,
     const unordered_map<int, int> &effect_conditions) {
     /* If the operator can change the value of `var` from `pre` to
@@ -61,33 +82,24 @@ void LandmarkFactoryRpgSasp::compute_dtg_successors(
     }
 }
 
-static unordered_map<int, int> build_conditions_map(
-    const ConditionsProxy &conditions) {
-    unordered_map<int, int> condition_map;
-    for (FactProxy condition : conditions) {
-        condition_map[condition.get_variable().get_id()] =
-            condition.get_value();
-    }
-    return condition_map;
-}
-
-void LandmarkFactoryRpgSasp::build_dtg_successors(const TaskProxy &task_proxy) {
-    resize_dtg_data_structures(task_proxy);
-    for (OperatorProxy op : task_proxy.get_operators()) {
-        unordered_map<int, int> preconditions =
-            build_conditions_map(op.get_preconditions());
-        for (EffectProxy effect : op.get_effects()) {
-            unordered_map<int, int> effect_conditions =
-                build_conditions_map(effect.get_conditions());
-            compute_dtg_successors(effect, preconditions, effect_conditions);
-        }
-    }
-}
-
-void LandmarkFactoryRpgSasp::add_dtg_successor(int var_id, int pre, int post) {
+void DomainTransitionGraph::add_dtg_successor(int var_id, int pre, int post) {
     if (pre != post) {
         dtg_successors[var_id][pre].insert(post);
     }
+}
+
+vector<unordered_set<int>> DomainTransitionGraph::get_dtg_successors(
+    int var_id) const {
+    assert(utils::in_bounds(var_id, dtg_successors));
+    return dtg_successors[var_id];
+}
+
+LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(
+    const shared_ptr<AbstractTask> &task, bool disjunctive_landmarks,
+    bool use_orders, utils::Verbosity verbosity)
+    : LandmarkFactoryRelaxation(task, verbosity),
+      disjunctive_landmarks(disjunctive_landmarks),
+      use_orders(use_orders) {
 }
 
 // Returns the set of variables occurring in the precondition.
@@ -536,7 +548,8 @@ void LandmarkFactoryRpgSasp::generate_disjunctive_precondition_landmarks(
 }
 
 void LandmarkFactoryRpgSasp::generate_backchaining_landmarks(
-    const TaskProxy &task_proxy, Exploration &exploration) {
+    const TaskProxy &task_proxy, const DomainTransitionGraph &dtg,
+    Exploration &exploration) {
     State initial_state = task_proxy.get_initial_state();
     while (!open_landmarks.empty()) {
         LandmarkNode *node = open_landmarks.front();
@@ -551,7 +564,7 @@ void LandmarkFactoryRpgSasp::generate_backchaining_landmarks(
             exploration.compute_relaxed_reachability(landmark.atoms, false);
         generate_shared_precondition_landmarks(
             task_proxy, landmark, node, reached);
-        approximate_lookahead_orderings(task_proxy, reached, node);
+        approximate_lookahead_orderings(task_proxy, dtg, reached, node);
         generate_disjunctive_precondition_landmarks(
             task_proxy, initial_state, landmark, node, reached);
     }
@@ -563,10 +576,11 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
     if (log.is_at_least_normal()) {
         log << "Generating landmarks using the RPG/SAS+ approach" << endl;
     }
-    build_dtg_successors(task_proxy);
+
+    DomainTransitionGraph dtg(task_proxy);
     build_disjunction_classes(task_proxy);
     generate_goal_landmarks(task_proxy);
-    generate_backchaining_landmarks(task_proxy, exploration);
+    generate_backchaining_landmarks(task_proxy, dtg, exploration);
     if (use_orders) {
         add_landmark_forward_orderings();
     }
@@ -639,8 +653,8 @@ static vector<int> get_critical_dtg_predecessors(
 
 // Extract orderings from the relaxed planning and domain transition graph.
 void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
-    const TaskProxy &task_proxy, const vector<vector<bool>> &reached,
-    LandmarkNode *node) {
+    const TaskProxy &task_proxy, const DomainTransitionGraph &dtg,
+    const vector<vector<bool>> &reached, LandmarkNode *node) {
     const VariablesProxy &variables = task_proxy.get_variables();
     const Landmark &landmark = node->get_landmark();
     forward_orderings[node] = compute_atoms_unreachable_without_landmark(
@@ -655,7 +669,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
         task_proxy.get_initial_state()[landmark_atom.var].get_pair();
     vector<int> critical_predecessors = get_critical_dtg_predecessors(
         init_atom.value, landmark_atom.value, reached[landmark_atom.var],
-        dtg_successors[landmark_atom.var]);
+        dtg.get_dtg_successors(landmark_atom.var));
     for (int value : critical_predecessors) {
         add_atomic_landmark_and_ordering(
             FactPair(landmark_atom.var, value), *node, OrderingType::NATURAL);
