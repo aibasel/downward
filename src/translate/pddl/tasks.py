@@ -11,7 +11,7 @@ from translate.pddl.pddl_types import Type, TypedObject
 from translate.pddl.predicates import Predicate
 
 class Task:
-    def __init__(self, domain_name: str, task_name: str,
+    def __init__(self, domain_name: str, problem_name: str,
                  requirements: "Requirements",
                  types: List[Type], objects: List[TypedObject], predicates:
                  List[Predicate], functions: List[Function],
@@ -19,7 +19,7 @@ class Task:
                  actions: List[Action], axioms: List[Axiom],
                  use_metric: bool) -> None:
         self.domain_name = domain_name
-        self.task_name = task_name
+        self.problem_name = problem_name
         self.requirements = requirements
         self.types = types
         self.objects = objects
@@ -41,8 +41,9 @@ class Task:
         return axiom
 
     def dump(self):
-        print("Problem %s: %s [%s]" % (
-            self.domain_name, self.task_name, self.requirements))
+        print("Domain:", self.domain_name)
+        print("Problem:", self.problem_name)
+        print("Requirements:", self.requirements)
         print("Types:")
         for type in self.types:
             print("  %s" % type)
