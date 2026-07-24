@@ -31,67 +31,72 @@ static unordered_map<int, int> build_conditions_map(
     return condition_map;
 }
 
-DomainTransitionGraph::DomainTransitionGraph(const TaskProxy &task_proxy) {
-    resize_dtg_data_structures(task_proxy);
-    build_dtg_successors(task_proxy);
+DomainTransitionGraphCollection::DomainTransitionGraphCollection(
+    const TaskProxy &task_proxy) {
+    initialize_data(task_proxy);
+    build_domain_transition_graphs(task_proxy);
 }
 
-void DomainTransitionGraph::resize_dtg_data_structures(
+void DomainTransitionGraphCollection::initialize_data(
     const TaskProxy &task_proxy) {
     VariablesProxy variables = task_proxy.get_variables();
-    dtg_successors.resize(variables.size());
+    graphs.resize(variables.size());
     for (VariableProxy var : variables) {
-        dtg_successors[var.get_id()].resize(var.get_domain_size());
+        graphs[var.get_id()].resize(var.get_domain_size());
     }
 }
 
-void DomainTransitionGraph::build_dtg_successors(const TaskProxy &task_proxy) {
-    assert(dtg_successors.size() == task_proxy.get_variables().size());
+void DomainTransitionGraphCollection::build_domain_transition_graphs(
+    const TaskProxy &task_proxy) {
+    assert(graphs.size() == task_proxy.get_variables().size());
     for (OperatorProxy op : task_proxy.get_operators()) {
         unordered_map<int, int> preconditions =
             build_conditions_map(op.get_preconditions());
         for (EffectProxy effect : op.get_effects()) {
             unordered_map<int, int> effect_conditions =
                 build_conditions_map(effect.get_conditions());
-            compute_dtg_successors(effect, preconditions, effect_conditions);
+            compute_successors(effect, preconditions, effect_conditions);
         }
     }
 }
 
-void DomainTransitionGraph::compute_dtg_successors(
+void DomainTransitionGraphCollection::compute_successors(
     const EffectProxy &effect, const unordered_map<int, int> &preconditions,
     const unordered_map<int, int> &effect_conditions) {
     /* If the operator can change the value of `var` from `pre` to
-       `post`, we insert `post` into `dtg_successors[var][pre]`. */
+       `post`, we insert `post` into `graphs[var][pre]`. */
     auto [var, post] = effect.get_fact().get_pair();
     if (preconditions.contains(var)) {
+        // stubborn_sets utils::get_value_or_default instead of contains()
+        // but does not allow conditional effects
         int pre = preconditions.at(var);
         if (effect_conditions.contains(var) &&
             effect_conditions.at(var) != pre) {
             // The precondition conflicts with the effect condition.
             return;
         }
-        add_dtg_successor(var, pre, post);
+        add_successor(var, pre, post);
     } else if (effect_conditions.contains(var)) {
-        add_dtg_successor(var, effect_conditions.at(var), post);
+        add_successor(var, effect_conditions.at(var), post);
     } else {
         int domain_size = effect.get_fact().get_variable().get_domain_size();
         for (int pre = 0; pre < domain_size; ++pre) {
-            add_dtg_successor(var, pre, post);
+            add_successor(var, pre, post);
         }
     }
 }
 
-void DomainTransitionGraph::add_dtg_successor(int var_id, int pre, int post) {
+void DomainTransitionGraphCollection::add_successor(
+    int var_id, int pre, int post) {
     if (pre != post) {
-        dtg_successors[var_id][pre].insert(post);
+        graphs[var_id][pre].insert(post);
     }
 }
 
-vector<unordered_set<int>> DomainTransitionGraph::get_dtg_successors(
-    int var_id) const {
-    assert(utils::in_bounds(var_id, dtg_successors));
-    return dtg_successors[var_id];
+DomainTransitionGraph
+DomainTransitionGraphCollection::get_domain_transition_graph(int var_id) const {
+    assert(utils::in_bounds(var_id, graphs));
+    return graphs[var_id];
 }
 
 LandmarkFactoryRpgSasp::LandmarkFactoryRpgSasp(
@@ -548,7 +553,7 @@ void LandmarkFactoryRpgSasp::generate_disjunctive_precondition_landmarks(
 }
 
 void LandmarkFactoryRpgSasp::generate_backchaining_landmarks(
-    const TaskProxy &task_proxy, const DomainTransitionGraph &dtg,
+    const TaskProxy &task_proxy, const DomainTransitionGraphCollection &dtgs,
     Exploration &exploration) {
     State initial_state = task_proxy.get_initial_state();
     while (!open_landmarks.empty()) {
@@ -564,7 +569,7 @@ void LandmarkFactoryRpgSasp::generate_backchaining_landmarks(
             exploration.compute_relaxed_reachability(landmark.atoms, false);
         generate_shared_precondition_landmarks(
             task_proxy, landmark, node, reached);
-        approximate_lookahead_orderings(task_proxy, dtg, reached, node);
+        approximate_lookahead_orderings(task_proxy, dtgs, reached, node);
         generate_disjunctive_precondition_landmarks(
             task_proxy, initial_state, landmark, node, reached);
     }
@@ -577,7 +582,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
         log << "Generating landmarks using the RPG/SAS+ approach" << endl;
     }
 
-    DomainTransitionGraph dtg(task_proxy);
+    DomainTransitionGraphCollection dtg(task_proxy);
     build_disjunction_classes(task_proxy);
     generate_goal_landmarks(task_proxy);
     generate_backchaining_landmarks(task_proxy, dtg, exploration);
@@ -598,7 +603,7 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
 */
 static bool value_critical_to_reach_landmark(
     int init_value, int landmark_value, int excluded_value,
-    const vector<bool> &reached, const vector<unordered_set<int>> &successors) {
+    const vector<bool> &reached, const DomainTransitionGraph &successors) {
     assert(landmark_value != init_value);
     assert(landmark_value != excluded_value);
     assert(!reached[landmark_value]);
@@ -636,7 +641,7 @@ static bool value_critical_to_reach_landmark(
 
 static vector<int> get_critical_dtg_predecessors(
     int init_value, int landmark_value, const vector<bool> &reached,
-    const vector<unordered_set<int>> &successors) {
+    const DomainTransitionGraph &successors) {
     assert(!reached[landmark_value]);
     int domain_size = static_cast<int>(reached.size());
     vector<int> critical;
@@ -653,7 +658,7 @@ static vector<int> get_critical_dtg_predecessors(
 
 // Extract orderings from the relaxed planning and domain transition graph.
 void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
-    const TaskProxy &task_proxy, const DomainTransitionGraph &dtg,
+    const TaskProxy &task_proxy, const DomainTransitionGraphCollection &dtgs,
     const vector<vector<bool>> &reached, LandmarkNode *node) {
     const VariablesProxy &variables = task_proxy.get_variables();
     const Landmark &landmark = node->get_landmark();
@@ -669,7 +674,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
         task_proxy.get_initial_state()[landmark_atom.var].get_pair();
     vector<int> critical_predecessors = get_critical_dtg_predecessors(
         init_atom.value, landmark_atom.value, reached[landmark_atom.var],
-        dtg.get_dtg_successors(landmark_atom.var));
+        dtgs.get_domain_transition_graph(landmark_atom.var));
     for (int value : critical_predecessors) {
         add_atomic_landmark_and_ordering(
             FactPair(landmark_atom.var, value), *node, OrderingType::NATURAL);
