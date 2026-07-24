@@ -662,6 +662,9 @@ public:
     }
     ~TaskProxy() = default;
 
+    // Compare tasks based on identity (not structural equivalence).
+    bool operator==(const TaskProxy &) const = default;
+
     TaskID get_id() const {
         return TaskID(task);
     }
