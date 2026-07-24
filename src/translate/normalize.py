@@ -374,12 +374,12 @@ def substitute_complicated_goal(task):
 
 def normalize(task):
     remove_universal_quantifiers(task)
-    match get_options().condition_normalization_strategy:
-        case "dnf":
-            substitute_complicated_goal(task)
-            build_DNF(task)
-        case "axiom_based":
-            substitute_conditions_with_axioms(task)
+    condition_strategy = get_options().condition_normalization_strategy
+    if condition_strategy == "dnf":
+        substitute_complicated_goal(task)
+        build_DNF(task)
+    elif condition_strategy == "axiom_based":
+        substitute_conditions_with_axioms(task)
     split_disjunctions(task)
     move_existential_quantifiers(task)
     eliminate_existential_quantifiers_from_axioms(task)
