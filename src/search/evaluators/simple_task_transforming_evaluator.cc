@@ -6,9 +6,12 @@ using namespace std;
 
 namespace simple_task_transforming_evaluator {
 SimpleTaskTransformingEvaluator::SimpleTaskTransformingEvaluator(
-    const shared_ptr<AbstractTask> &task, const shared_ptr<Evaluator> &nested,
-    const string &description, utils::Verbosity verbosity)
+    const shared_ptr<AbstractTask> &task,
+    const shared_ptr<AbstractTask> &transformed_task,
+    const shared_ptr<Evaluator> &nested, const string &description,
+    utils::Verbosity verbosity)
     : Evaluator(task, false, false, false, description, verbosity),
+      transformed_task(transformed_task),
       nested(nested) {
 }
 
@@ -31,7 +34,8 @@ State SimpleTaskTransformingEvaluator::convert_state(const State &state) const {
               registry in the constructor.
         */
         state_registry = make_unique<DelegatingStateRegistry>(
-            task, const_cast<StateRegistry &>(*existing_state_registry));
+            transformed_task,
+            const_cast<StateRegistry &>(*existing_state_registry));
     } else {
         state_registry->assert_nested_is(*existing_state_registry);
     }

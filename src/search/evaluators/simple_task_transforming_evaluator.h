@@ -18,12 +18,14 @@ namespace simple_task_transforming_evaluator {
   evaluator does not have to know about the task transformation.
 */
 class SimpleTaskTransformingEvaluator : public Evaluator {
+    const std::shared_ptr<AbstractTask> transformed_task;
     std::shared_ptr<Evaluator> nested;
     mutable std::unique_ptr<DelegatingStateRegistry> state_registry;
     State convert_state(const State &state) const;
 public:
     SimpleTaskTransformingEvaluator(
         const std::shared_ptr<AbstractTask> &task,
+        const std::shared_ptr<AbstractTask> &transformed_task,
         const std::shared_ptr<Evaluator> &nested,
         const std::string &description, utils::Verbosity verbosity);
 

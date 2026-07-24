@@ -19,7 +19,7 @@ TaskIndependentAxiomHandlingEvaluator::create_task_specific_component(
         shared_ptr<Evaluator> eval = nested->bind_task(axioms_task);
         return make_shared<simple_task_transforming_evaluator::
                                SimpleTaskTransformingEvaluator>(
-            task, eval, description, verbosity);
+            task, axioms_task, eval, description, verbosity);
     } else {
         /*
           If the task has no axioms, there is no need to wrap the evaluator

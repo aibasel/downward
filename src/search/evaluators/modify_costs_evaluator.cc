@@ -23,7 +23,7 @@ TaskIndependentModifyCostsEvaluator::create_task_specific_component(
         shared_ptr<Evaluator> eval = nested->bind_task(cost_adapted_task);
         return make_shared<simple_task_transforming_evaluator::
                                SimpleTaskTransformingEvaluator>(
-            task, eval, description, verbosity);
+            task, cost_adapted_task, eval, description, verbosity);
     }
 }
 
