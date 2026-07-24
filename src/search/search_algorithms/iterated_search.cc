@@ -213,7 +213,8 @@ SearchStatus IteratedSearch::step_return_value() {
         return SearchStatus::UNSOLVABLE;
     }
     if (best_status == SearchStatus::UNSOLVABLE_WITHIN_BOUND) {
-        log << "No plan with cost " << bound - 1 << " or less exists - stop searching" << endl;
+        log << "No plan with cost " << bound - 1
+            << " or less exists - stop searching" << endl;
         return SearchStatus::UNSOLVABLE_WITHIN_BOUND;
     }
     log << "No solution found - keep searching" << endl;
