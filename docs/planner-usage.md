@@ -1,4 +1,4 @@
-# Usage
+# Planner Usage
 
 Fast Downward is a domain-independent classical planning system that consists of two main components:
 
@@ -20,18 +20,18 @@ participated in IPC 2011, please also check the page on
 ## Translation component
 To translate a PDDL input task into a SAS+ task without performing a search run the following:
 
-    ./fast-downward.py --translate [<domain.pddl>] <task.pddl>
+    ./fast-downward.py --translate [<domain.pddl>] <problem.pddl>
 
 Note:
 
 -   Giving the domain file as input is optional. 
-    In case no domain file is specified, the component will search for a file called `domain.pddl` located in the same directory as the task file. 
--   Translator component options can be specified after the input files following the `--translator-options` flag.
+    In case no domain file is specified for the task, the component will search for a file called `domain.pddl` located in the same directory as the problem file.
+-   Translator component options can be specified after the input files following the `--translator-options` flag. See [translator options](translator-options.md) for details.
 
 ## Search component
 To run a search on a PDDL input task run the following:
 
-    ./fast-downward.py [<domain.pddl>] <task.pddl> \
+    ./fast-downward.py [<domain.pddl>] <problem.pddl> \
     --search "<some-search-algorithm>(<algorithm-parameters>)"
 
 Note:
@@ -39,7 +39,7 @@ Note:
 -   The PDDL task is translated into a SAS+ task internally without the need to explicitly call the `translate` component.
     Instead of a PDDL task a SAS+ translator output file could be given as input. In this case the translation step is omitted.
 -   Giving the domain file as input is optional. 
-    In case no domain file is specified, the component will search for a file called `domain.pddl` located in the same directory as the task file. 
+    In case no domain file is specified for the task, the component will search for a file called `domain.pddl` located in the same directory as the problem file.
 -   `<some-search-algorithm>` can be any of the [search algorithms](search/SearchAlgorithm.md) with corresponding `<algorithm-parameters>` as input.
 -   Search component options can be specified anywhere after the input files. 
     Search component options following translator component options need to first be escaped with the `--search-options` flag.
@@ -49,11 +49,11 @@ Note:
 The following example is a recommended search algorithm configuration:
 [A* algorithm](search/SearchAlgorithm/#a_search_eager) with the [LM-cut heuristic](search/Evaluator/#landmark-cut_heuristic), which can be run as follows:
 
-    ./fast-downward.py [<domain.pddl>] <task.pddl> --search "astar(lmcut())"
+    ./fast-downward.py [<domain.pddl>] <problem.pddl> --search "astar(lmcut())"
 
 As this is a common search configuration an alias (`seq-opt-lmcut`) exists that results in the same execution and can be used as follows:
 
-    ./fast-downward.py --alias seq-opt-lmcut [<domain.pddl>] <task.pddl>
+    ./fast-downward.py --alias seq-opt-lmcut [<domain.pddl>] <problem.pddl>
 
 ### Aliases
 
@@ -65,7 +65,7 @@ To find out which actual search options the aliases corresponds to, check the so
 
 For example to run the "LAMA 2011 configuration" of the planner, call:
 
-    ./fast-downward.py --alias seq-sat-lama-2011 [<domain.pddl>] <task.pddl> 
+    ./fast-downward.py --alias seq-sat-lama-2011 [<domain.pddl>] <problem.pddl>
 
 Note:
 
@@ -79,19 +79,19 @@ The search options are built with flexibility in mind, not ease of
 use. It is very easy to use option settings that look plausible, yet
 introduce significant inefficiencies. For example, an invocation like
 
-    ./fast-downward.py [<domain.pddl>] <task.pddl> \
+    ./fast-downward.py [<domain.pddl>] <problem.pddl> \
     --search "lazy_greedy([ff()], preferred=[ff()])"
 
 looks plausible, yet is hugely inefficient since it will compute the FF
 heuristic twice per state. To circumvent this a [`let`-expression](search-plugin-syntax.md#variables_as_parameters) could be used:
 
-    ./fast-downward.py [<domain.pddl>] <task.pddl> \
+    ./fast-downward.py [<domain.pddl>] <problem.pddl> \
     --search "let(hff, ff(), lazy_greedy([hff], preferred=[hff]))"
 
 ## Validating plans
 To validate a plan found by some search algorithm using [VAL](https://github.com/KCL-Planning/VAL) run the following:
 
-    ./fast-downward.py --validate [<domain.pddl>] <task.pddl> \
+    ./fast-downward.py --validate [<domain.pddl>] <problem.pddl> \
     --search "<some-search-algorithm>(<algorithm-parameters>)"
 
 Note:

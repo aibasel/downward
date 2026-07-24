@@ -22,8 +22,8 @@ def parse_pddl_file(type, filename):
                          (type, filename, e))
 
 
-def open(domain_filename=None, task_filename=None):
-    if domain_filename is None or task_filename is None:
+def open(domain_filename=None, problem_filename=None):
+    if domain_filename is None or problem_filename is None:
         # Importing options triggers parsing the problem and domain file names
         # as arguments from the command line. We don't import unconditionally
         # at the head of this file because open is exposed in __init__.py
@@ -31,9 +31,9 @@ def open(domain_filename=None, task_filename=None):
         # external code would then trigger this arg parse.
         from translate.options import get_options
         domain_filename = domain_filename or get_options().domain
-        task_filename = task_filename or get_options().task
+        problem_filename = problem_filename or get_options().problem
 
     domain_pddl = parse_pddl_file("domain", domain_filename)
-    task_pddl = parse_pddl_file("task", task_filename)
+    problem_pddl = parse_pddl_file("problem", problem_filename)
 
-    return parsing_functions.parse_task(domain_pddl, task_pddl)
+    return parsing_functions.parse_task(domain_pddl, problem_pddl)
