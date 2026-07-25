@@ -1,5 +1,5 @@
-#ifndef TASKS_ROOT_TASK_H
-#define TASKS_ROOT_TASK_H
+#ifndef TASKS_EXPLICIT_TASK_H
+#define TASKS_EXPLICIT_TASK_H
 
 #include "../abstract_task.h"
 

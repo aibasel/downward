@@ -877,7 +877,7 @@ void ExplicitTask::convert_ancestor_state_values(
     }
 }
 
-std::shared_ptr<AbstractTask> read_task(istream &in) {
+shared_ptr<AbstractTask> read_task(istream &in) {
     utils::TaskLexer lexer(in);
     // TODO: construct lexer in TaskParser
     TaskParser parser(move(lexer));
