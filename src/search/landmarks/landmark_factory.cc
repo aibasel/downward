@@ -1,6 +1,5 @@
 #include "landmark_factory.h"
 
-#include "landmark.h"
 #include "landmark_graph.h"
 #include "util.h"
 
@@ -10,7 +9,6 @@
 #include "../utils/logging.h"
 #include "../utils/timer.h"
 
-#include <fstream>
 #include <memory>
 
 using namespace std;

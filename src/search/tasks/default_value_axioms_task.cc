@@ -3,10 +3,8 @@
 #include "../task_proxy.h"
 
 #include "../algorithms/sccs.h"
-#include "../task_utils/task_properties.h"
 
 #include <deque>
-#include <iostream>
 #include <memory>
 #include <set>
 

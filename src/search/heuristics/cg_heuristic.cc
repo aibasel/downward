@@ -8,7 +8,6 @@
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 
-#include <algorithm>
 #include <cassert>
 #include <limits>
 #include <vector>

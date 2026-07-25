@@ -6,7 +6,6 @@
 #include "../heuristic.h"
 
 #include "../algorithms/priority_queues.h"
-#include "../tasks/default_value_axioms_task.h"
 
 #include <vector>
 

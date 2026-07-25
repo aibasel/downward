@@ -1,6 +1,5 @@
 #include "state_registry.h"
 
-#include "per_state_information.h"
 #include "task_proxy.h"
 
 #include "task_utils/task_properties.h"

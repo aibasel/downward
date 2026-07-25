@@ -14,8 +14,6 @@
 
 #include "utils/logging.h"
 
-#include <vector>
-
 namespace plugins {
 class Options;
 class Feature;

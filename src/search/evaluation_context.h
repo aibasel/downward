@@ -6,8 +6,6 @@
 #include "operator_id.h"
 #include "task_proxy.h"
 
-#include <unordered_map>
-
 class Evaluator;
 class SearchStatistics;
 

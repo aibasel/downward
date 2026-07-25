@@ -4,7 +4,6 @@
 #include "relaxation_heuristic.h"
 
 #include "../algorithms/priority_queues.h"
-#include "../utils/collections.h"
 
 #include <cassert>
 
