@@ -27,6 +27,7 @@ PDBHeuristic::PDBHeuristic(
 }
 
 int PDBHeuristic::compute_heuristic(const State &state) {
+    state.unpack();
     int h = pdb->get_value(state.get_unpacked_values());
     if (h == numeric_limits<int>::max())
         return DEAD_END;
