@@ -5,7 +5,6 @@
 
 #include "../heuristic.h"
 
-#include "../tasks/default_value_axioms_task.h"
 #include "../utils/hash.h"
 
 class ConstBitsetView;

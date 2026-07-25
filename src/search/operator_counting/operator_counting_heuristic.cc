@@ -5,7 +5,6 @@
 #include "../plugins/plugin.h"
 #include "../utils/component_errors.h"
 #include "../utils/markup.h"
-#include "../utils/strings.h"
 
 #include <cmath>
 

@@ -2,8 +2,6 @@
 
 #include "potential_function.h"
 
-#include "../plugins/plugin.h"
-
 using namespace std;
 
 namespace potentials {

@@ -6,7 +6,6 @@
 
 #include "../lp/lp_solver.h"
 
-#include <unordered_set>
 #include <vector>
 
 class ConstBitsetView;

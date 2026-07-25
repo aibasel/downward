@@ -4,10 +4,6 @@
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 
-#include <cstddef>
-#include <limits>
-#include <utility>
-
 using namespace std;
 
 namespace blind_search_heuristic {
