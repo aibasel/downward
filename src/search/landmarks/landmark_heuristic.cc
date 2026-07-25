@@ -6,8 +6,6 @@
 
 #include "../plugins/plugin.h"
 #include "../task_utils/successor_generator.h"
-#include "../tasks/cost_adapted_task.h"
-#include "../tasks/root_task.h"
 #include "../utils/markup.h"
 
 using namespace std;

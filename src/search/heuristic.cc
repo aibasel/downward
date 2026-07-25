@@ -5,12 +5,9 @@
 
 #include "plugins/plugin.h"
 #include "task_utils/task_properties.h"
-#include "tasks/cost_adapted_task.h"
-#include "tasks/root_task.h"
 
 #include <cassert>
 #include <cstdlib>
-#include <limits>
 
 using namespace std;
 Heuristic::Heuristic(
@@ -46,7 +43,7 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     assert(preferred_operators.empty());
 
     const State &state = eval_context.get_state();
-    assert(state.get_task() == TaskProxy(*task));
+    assert(state.get_task() == task_proxy);
     bool calculate_preferred = eval_context.get_calculate_preferred();
 
     int heuristic = NO_VALUE;
@@ -78,12 +75,10 @@ EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
     }
 
 #ifndef NDEBUG
-    TaskProxy global_task_proxy = state.get_task();
-    OperatorsProxy global_operators = global_task_proxy.get_operators();
+    OperatorsProxy operators = task_proxy.get_operators();
     if (heuristic != EvaluationResult::INFTY) {
         for (OperatorID op_id : preferred_operators)
-            assert(
-                task_properties::is_applicable(global_operators[op_id], state));
+            assert(task_properties::is_applicable(operators[op_id], state));
     }
 #endif
 

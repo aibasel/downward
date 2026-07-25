@@ -4,7 +4,6 @@
 #include "../abstract_task.h"
 
 namespace tasks {
-extern std::shared_ptr<AbstractTask> g_root_task;
-extern void read_root_task(std::istream &in);
+extern std::shared_ptr<AbstractTask> read_task(std::istream &in);
 }
 #endif
