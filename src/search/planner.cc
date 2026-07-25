@@ -3,7 +3,7 @@
 #include "search_algorithm.h"
 
 #include "task_utils/task_properties.h"
-#include "tasks/root_task.h"
+#include "tasks/explicit_task.h"
 #include "utils/logging.h"
 #include "utils/system.h"
 #include "utils/timer.h"
