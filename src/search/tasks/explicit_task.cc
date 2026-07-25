@@ -812,7 +812,8 @@ int ExplicitTask::get_num_operators() const {
     return operators.size();
 }
 
-int ExplicitTask::get_num_operator_preconditions(int index, bool is_axiom) const {
+int ExplicitTask::get_num_operator_preconditions(
+    int index, bool is_axiom) const {
     return get_operator_or_axiom(index, is_axiom).preconditions.size();
 }
 

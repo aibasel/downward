@@ -88,8 +88,7 @@ void LandmarkSumHeuristic::compute_landmark_costs() {
 
 int LandmarkSumHeuristic::get_heuristic_value(const State &state) {
     int h = 0;
-    ConstBitsetView past =
-        landmark_status_manager->get_past_landmarks(state);
+    ConstBitsetView past = landmark_status_manager->get_past_landmarks(state);
     ConstBitsetView future =
         landmark_status_manager->get_future_landmarks(state);
     for (int id = 0; id < landmark_graph->get_num_landmarks(); ++id) {
