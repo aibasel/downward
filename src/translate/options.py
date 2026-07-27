@@ -90,7 +90,7 @@ def get_arg_parser():
         "--condition-normalization-strategy", default="dnf", choices=["dnf", "derived_predicates"],
         help="Strategy for normalizing PDDL conditions. 'dnf' converts conditions to disjunctive "
         "normal form, which may causeexponential blow-up for complex conditions. "
-        "'derived_predicates'replaces complex subformulas with derived predicates and introduces "
+        "'derived_predicates' replaces complex subformulas with derived predicates and introduces "
         "axioms defining them, avoiding the blow-up at the cost of additional derived predicates "
         "and axioms.")
     return argparser
