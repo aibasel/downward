@@ -30,8 +30,8 @@ public:
         utils::Verbosity verbosity);
 
     /*
-      Returns true only if the evaluator reports dead ends reliably,
-      i.e., if its infinite estimates can be trusted.
+      Returns true only if all states with infinite evaluator value
+      are unsolvable.
 
       The default implementation returns true.
     */
