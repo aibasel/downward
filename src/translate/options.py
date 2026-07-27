@@ -33,7 +33,7 @@ def get_arg_parser():
     argparser.add_argument(
         "domain", metavar="DOMAIN", help="path to domain pddl file")
     argparser.add_argument(
-        "problem", metavar="PROBLEM", help="path to problem pddl file")
+        "task", metavar="TASK", help="path to task pddl file")
     argparser.add_argument(
         "--relaxed", dest="generate_relaxed_task", action="store_true",
         help="output relaxed task (no delete effects)")
