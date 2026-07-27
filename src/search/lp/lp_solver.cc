@@ -13,7 +13,7 @@ using namespace std;
 
 namespace lp {
 
-std::ostream &operator<<(std::ostream &os, Sense s) {
+ostream &operator<<(ostream &os, Sense s) {
     switch (s) {
     case Sense::GE:
         return os << ">=";
