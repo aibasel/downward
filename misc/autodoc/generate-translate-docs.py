@@ -53,6 +53,7 @@ def import_argparser_from_translator():
 def action_to_markdown(parser: argparse.ArgumentParser, action: argparse.Action):
     names = []
     for opt in action.option_strings:
+        toc_entry = opt
         if action.choices is not None:
             choice_str = ",".join(map(str, action.choices))
             names.append(f"`{opt} {{{choice_str}}}`")
@@ -81,7 +82,7 @@ def action_to_markdown(parser: argparse.ArgumentParser, action: argparse.Action)
         except Exception:
             pass
 
-    return f"### {name}\n{help_text}\n"
+    return f"### {name} {{: data-toc-label=\"{toc_entry}\"}}\n{help_text}\n"
 
 
 def parser_to_markdown(parser: argparse.ArgumentParser):
