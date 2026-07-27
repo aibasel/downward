@@ -131,6 +131,10 @@ bool AlternationOpenList<Entry>::is_safe() const {
     auto is_sublist_safe = [](const auto &sublist) {
         return sublist->is_safe();
     };
+    /*
+      Since each state inserted into an AlternationOpenList is inserted into
+      each sub-list, one safe sub-list is sufficient.
+    */
     return ranges::any_of(open_lists, is_sublist_safe);
 }
 
