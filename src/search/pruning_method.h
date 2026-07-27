@@ -39,8 +39,8 @@ public:
     void prune_operators(const State &state, std::vector<OperatorID> &op_ids);
     virtual void print_statistics() const;
 
-    // is_safe returns true only if for each solvable non-goal state at least
-    // one action is kept that starts a plan from that state.
+    /* Returns true only if for each solvable non-goal state at least
+       one action is kept that starts a plan from that state. */
     virtual bool is_safe() const = 0;
 };
 using TaskIndependentPruningMethod =

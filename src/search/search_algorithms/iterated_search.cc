@@ -128,15 +128,13 @@ void IteratedSearch::update_best_status(
     case SearchStatus::UNSOLVABLE:
         best_status = current_search_status;
         break;
-
     case SearchStatus::UNSOLVABLE_WITHIN_BOUND:
-        // We ignore inner bounds if the search did not check up to the outer
-        // bound.
+        /* We ignore inner bounds if the search did not check up to the outer
+           bound. */
         if (task_specific_search->get_bound() >= bound) {
             best_status = current_search_status;
         }
         break;
-
     case SearchStatus::FAILED:
     case SearchStatus::TIMEOUT:
     case SearchStatus::IN_PROGRESS:

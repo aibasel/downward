@@ -30,7 +30,7 @@ public:
         utils::Verbosity verbosity);
 
     /*
-      is_safe returns true only if the evaluator reports dead ends reliably,
+      Returns true only if the evaluator reports dead ends reliably,
       i.e., if its infinite estimates can be trusted.
 
       The default implementation returns true.
