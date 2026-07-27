@@ -177,8 +177,16 @@ def remove_universal_quantifiers(task):
             type_map = proxy.get_type_map()
             proxy.set(recurse(proxy.condition))
 
+# [2] Normalize conditions according to the selected strategy.
+def normalize_conditions(task):
+    condition_strategy = get_options().condition_normalization_strategy
+    if condition_strategy == "dnf":
+        substitute_complicated_goal(task)
+        build_DNF(task)
+    elif condition_strategy == "derived_predicates":
+        eliminate_disjunctive_conditions(task)
 
-# [2] Pull disjunctions to the root of the condition.
+# [2 Option 1] Pull disjunctions to the root of the condition.
 #
 # After removing universal quantifiers, the (k-ary generalization of the)
 # following rules suffice for doing that:
@@ -228,11 +236,11 @@ def build_DNF(task):
         if proxy.condition.has_disjunction():
             proxy.set(recurse(proxy.condition).simplified())
 
-# [2 Alternative] Decompose disjunctive formulas using derived predicates.
-# Replace each disjunctive subformula with a derived predicate and add a
+# [2 Option 2] Decompose disjunctive formulas using derived predicates.
+# Replace each disjunctive (sub)formula with a derived predicate and add a
 # corresponding axiom defining that predicate. The transformation proceeds
 # bottom-up so nested disjunctions are eliminated first.
-def substitute_conditions_with_axioms(task):
+def eliminate_disjunctive_conditions(task):
     def recurse(condition, type_map):
         if isinstance(condition, (pddl.Literal, pddl.Truth, pddl.Falsity)):
             return condition
@@ -309,6 +317,11 @@ def move_existential_quantifiers(task):
         if proxy.condition.has_existential_part():
             proxy.set(recurse(proxy.condition).simplified())
 
+# [5] Eliminate existential quantifiers from conditions.
+def eliminate_existential_quantifiers(task):
+    eliminate_existential_quantifiers_from_axioms(task)
+    eliminate_existential_quantifiers_from_preconditions(task)
+    eliminate_existential_quantifiers_from_conditional_effects(task)
 
 # [5a] Drop existential quantifiers from axioms, turning them
 #      into parameters.
@@ -374,17 +387,10 @@ def substitute_complicated_goal(task):
 
 def normalize(task):
     remove_universal_quantifiers(task)
-    condition_strategy = get_options().condition_normalization_strategy
-    if condition_strategy == "dnf":
-        substitute_complicated_goal(task)
-        build_DNF(task)
-    elif condition_strategy == "axiom_based":
-        substitute_conditions_with_axioms(task)
+    normalize_conditions(task)
     split_disjunctions(task)
     move_existential_quantifiers(task)
-    eliminate_existential_quantifiers_from_axioms(task)
-    eliminate_existential_quantifiers_from_preconditions(task)
-    eliminate_existential_quantifiers_from_conditional_effects(task)
+    eliminate_existential_quantifiers(task)
 
     verify_axiom_predicates(task)
 
