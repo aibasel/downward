@@ -595,15 +595,14 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
 }
 
 /*
-  Tests whether in the domain transition graph represented by `successors`,
-  there is a path from `init_value` to `goal_value`, without passing through
-  `excluded_value` or any unreachable value according to the relaxed planning
-  graph. If this is not possible, that means `excluded_value` is crucial to
-  achieve `goal_value`.
+  Tests whether in the domain transition graph `dtg`, there is a path from
+  `init_value` to `goal_value`, without passing through `excluded_value` or any
+  unreachable value according to the relaxed planning graph. If this is not
+  possible, that means `excluded_value` is crucial to achieve `goal_value`.
 */
 static bool value_critical_to_reach_landmark(
     int init_value, int landmark_value, int excluded_value,
-    const vector<bool> &reached, const DomainTransitionGraph &successors) {
+    const vector<bool> &reached, const DomainTransitionGraph &dtg) {
     assert(landmark_value != init_value);
     assert(landmark_value != excluded_value);
     assert(!reached[landmark_value]);
@@ -617,7 +616,7 @@ static bool value_critical_to_reach_landmark(
     while (!open.empty()) {
         int value = open.front();
         open.pop_front();
-        for (int succ : successors[value]) {
+        for (int succ : dtg[value]) {
             if (succ == landmark_value) {
                 return false;
             }
@@ -641,7 +640,7 @@ static bool value_critical_to_reach_landmark(
 
 static vector<int> get_critical_dtg_predecessors(
     int init_value, int landmark_value, const vector<bool> &reached,
-    const DomainTransitionGraph &successors) {
+    const DomainTransitionGraph &dtg) {
     assert(!reached[landmark_value]);
     int domain_size = static_cast<int>(reached.size());
     vector<int> critical;
@@ -649,7 +648,7 @@ static vector<int> get_critical_dtg_predecessors(
     for (int value = 0; value < domain_size; ++value) {
         if (reached[value] &&
             value_critical_to_reach_landmark(
-                init_value, landmark_value, value, reached, successors)) {
+                init_value, landmark_value, value, reached, dtg)) {
             critical.push_back(value);
         }
     }
@@ -707,11 +706,11 @@ bool LandmarkFactoryRpgSasp::atom_and_landmark_achievable_together(
 }
 
 /*
-  The landmark of `node` is ordered before any atom that cannot be reached
-  before the landmark of `node` according to relaxed planning graph (as captured
-  in `reached`). These orderings are saved in `forward_orderings` and added to
-  the landmark graph in `add_landmark_forward_orderings` when it is known which
-  atoms are actually landmarks.
+  All atoms `atom` that cannot be reached before `landmark` according to relaxed
+  planning graph (as captured in `reached`) are ordered naturally after
+  `landmark`. These orderings are saved in `forward_orderings` and added to the
+  landmark graph in `add_landmark_forward_orderings`, but only if `atom`
+  actually turns out to be a landmark as well.
 */
 utils::HashSet<FactPair>
 LandmarkFactoryRpgSasp::compute_atoms_unreachable_without_landmark(

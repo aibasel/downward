@@ -12,19 +12,19 @@
 namespace landmarks {
 
 using DomainTransitionGraph = std::vector<std::unordered_set<int>>;
-
 class DomainTransitionGraphCollection {
     /*
-      NOTE: Similar code exists in M&S atomic abstractions (fts_factory.cc),
-      in Stubborn sets (stubborn_sets_ec.cc). There is also a class
-      /heuristics/domain_transition_graph that is used for cg_heuristics,
-      cea_heuristics, and possibly others. We need a more general mechanism for
-      creating data structures of this kind.
-      NOTE: the class name could be changed...
+      NOTE: Similar code exists in M&S atomic abstractions
+      (merge_and_shrink/fts_factory.cc) and for stubborn sets
+      (pruning/stubborn_sets_ec.cc). There is also a class
+      `DomainTransitionGraph` (heuristics/domain_transition_graph.{h|cc}) that
+      is used for causal graph heuristics and context-enhanced additive
+      heuristics. We need a more general mechanism for creating data structures
+      of this kind.
     */
-private:
-    /* The entry `graphs[var][val]` contains all successor values of the
-    atom var->val in the domain transition graph (aka atomic projection). */
+    // TODO: Are we happy with the class name?
+
+    // Domain transition graphs are stored as one adjacency list per value.
     std::vector<DomainTransitionGraph> graphs;
     void initialize_data(const TaskProxy &task_proxy);
     void build_domain_transition_graphs(const TaskProxy &task_proxy);
