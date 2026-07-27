@@ -78,17 +78,9 @@ int LandmarkCostPartitioningHeuristic::get_heuristic_value(
 }
 
 bool LandmarkCostPartitioningHeuristic::is_safe() const {
-    /*
-      We are conservative here and return false for tasks with conditional
-      effects even if the LandmarkFactory supports them.
-      TODO Find out whether we can return true if the LandmarkFactory supports
-      conditional effects. If it is safe in this case, update this function
-      and the documentation below.
-      TODO issue1201 Should above be a follow-up issue?
-    */
-    return !(
-        task_properties::has_axioms(task_proxy) ||
-        task_properties::has_conditional_effects(task_proxy));
+    /* Since check_unsupported_features prevents instantiating this heuristic
+       on tasks where it could be unsafe, we can return true here. */
+    return true;
 }
 
 class LandmarkCostPartitioningHeuristicFeature
@@ -166,14 +158,10 @@ public:
             "not supported");
         document_language_support("axioms", "not allowed");
 
-        document_property("admissible", "TODO issue1201");
+        document_property("admissible", "yes");
         document_property(
             "consistent", "no; see document note about consistency");
-        document_property(
-            "safe",
-            "yes except on tasks with conditional effects or axioms (it might"
-            "be safe with conditional effects if the LandmarkFactory supports"
-            "them but we are not sure)");
+        document_property("safe", "yes");
     }
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(

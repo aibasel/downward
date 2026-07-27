@@ -15,7 +15,7 @@
 using namespace std;
 
 namespace landmarks {
-static bool are_dead_ends_reliable(
+static bool compute_safe(
     const shared_ptr<LandmarkFactory> &lm_factory,
     const TaskProxy &task_proxy) {
     if (task_properties::has_axioms(task_proxy)) {
@@ -39,7 +39,7 @@ LandmarkSumHeuristic::LandmarkSumHeuristic(
           // issue1208 move this transformation to task-independent level?
           tasks::get_default_value_axioms_task_if_needed(task, axioms), pref,
           cache_estimates, description, verbosity),
-      dead_ends_reliable(are_dead_ends_reliable(lm_factory, task_proxy)) {
+      safe(compute_safe(lm_factory, task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark sum heuristic..." << endl;
     }
@@ -104,17 +104,7 @@ int LandmarkSumHeuristic::get_heuristic_value(const State &ancestor_state) {
 }
 
 bool LandmarkSumHeuristic::is_safe() const {
-    /*
-      We are conservative here and return false for tasks with conditional
-      effects even if the LandmarkFactory supports them.
-      TODO Find out whether we can return true if the LandmarkFactory supports
-      conditional effects. If it is safe in this case, update this function
-      and the documentation below.
-      TODO issue1201 Should above be a follow-up issue?
-    */
-    return !(
-        task_properties::has_axioms(task_proxy) ||
-        task_properties::has_conditional_effects(task_proxy));
+    return safe;
 }
 
 class LandmarkSumHeuristicFeature
@@ -199,9 +189,8 @@ public:
         document_property("consistent", "no");
         document_property(
             "safe",
-            "yes except on tasks with conditional effects or axioms (it might"
-            "be safe with conditional effects if the LandmarkFactory supports"
-            "them but we are not sure)");
+            "yes except on tasks with axioms and on tasks with conditional"
+            "effects when using a LandmarkFactory not supporting them");
     }
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(

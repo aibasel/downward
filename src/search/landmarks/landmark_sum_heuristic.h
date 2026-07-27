@@ -5,7 +5,7 @@
 
 namespace landmarks {
 class LandmarkSumHeuristic : public LandmarkHeuristic {
-    const bool dead_ends_reliable;
+    const bool safe;
 
     /*
       We compute landmark achiever costs under the assumption that landmark
