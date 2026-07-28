@@ -1,35 +1,21 @@
-#ifndef LP_SOPLEX_SOLVER_INTERFACE_H
-#define LP_SOPLEX_SOLVER_INTERFACE_H
 
+#ifndef LP_HIGHS_SOLVER_INTERFACE_H
+#define LP_HIGHS_SOLVER_INTERFACE_H
+
+#include "Highs.h"
+#include "lp_solver.h"
 #include "solver_interface.h"
 
-#ifdef __GNUG__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
-#if (__GNUG__ >= 11) || (__clang_major__ >= 12)
-#pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
-#endif
-#if __GNUG__ >= 12
-#pragma GCC diagnostic ignored "-Wuse-after-free"
-#endif
-#endif
 
-#include <soplex.h>
-
-#ifdef __GNUG__
-#pragma GCC diagnostic pop
-#endif
 
 namespace lp {
-class SoPlexSolverInterface : public SolverInterface {
-    // The reference to the solver is mutable because objValueReal is not const.
-    mutable soplex::SoPlex soplex;
+class HiGHSSolverInterface : public SolverInterface {
+    mutable Highs highs_;
     int num_permanent_constraints;
     int num_temporary_constraints;
-    std::vector<lp::Sense> constraint_senses;
+    vector<lp::Sense> constraint_senses;
 public:
-    SoPlexSolverInterface();
+    HiGHSSolverInterface();
 
     virtual void load_problem(const LinearProgram &lp) override;
     virtual void add_temporary_constraints(

@@ -1,35 +1,21 @@
-#ifndef LP_SOPLEX_SOLVER_INTERFACE_H
-#define LP_SOPLEX_SOLVER_INTERFACE_H
+#ifndef LP_GUROBI_SOLVER_INTERFACE_H
+#define LP_GUROBI_SOLVER_INTERFACE_H
 
 #include "solver_interface.h"
 
-#ifdef __GNUG__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
-#if (__GNUG__ >= 11) || (__clang_major__ >= 12)
-#pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
-#endif
-#if __GNUG__ >= 12
-#pragma GCC diagnostic ignored "-Wuse-after-free"
-#endif
-#endif
-
-#include <soplex.h>
-
-#ifdef __GNUG__
-#pragma GCC diagnostic pop
-#endif
+#include <gurobi_c.h>
 
 namespace lp {
-class SoPlexSolverInterface : public SolverInterface {
-    // The reference to the solver is mutable because objValueReal is not const.
-    mutable soplex::SoPlex soplex;
+class GurobiSolverInterface : public SolverInterface {
+    GRBenv *env;
+    GRBmodel *model;
     int num_permanent_constraints;
     int num_temporary_constraints;
-    std::vector<lp::Sense> constraint_senses;
+    bool model_dirty;
+
 public:
-    SoPlexSolverInterface();
+    GurobiSolverInterface();
+    virtual ~GurobiSolverInterface() override;
 
     virtual void load_problem(const LinearProgram &lp) override;
     virtual void add_temporary_constraints(
@@ -39,8 +25,7 @@ public:
 
     virtual void set_objective_coefficients(
         const std::vector<double> &coefficients) override;
-    virtual void set_objective_coefficient(
-        int index, double coefficient) override;
+    virtual void set_objective_coefficient(int index, double coefficient) override;
     virtual void set_constraint_rhs(int index, double right_hand_side) override;
     virtual void set_constraint_sense(int index, lp::Sense sense) override;
     virtual void set_variable_lower_bound(int index, double bound) override;
