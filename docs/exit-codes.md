@@ -24,9 +24,10 @@ termination which prevents the execution of further components.
 
 | **Code** | **Name** | **Meaning** |
 | -------- | -------- | ----------- |
-| 10 | TRANSLATE_UNSOLVABLE | Translator proved task to be unsolvable. Currently not used |
-| 11 | SEARCH_UNSOLVABLE | Task is provably unsolvable with current bound. Currently only used by hillclimbing search. See also [issue377](http://issues.fast-downward.org/issue377). |
+| 10 | TRANSLATE_UNSOLVABLE | Translator proved task to be unsolvable. Currently not used. |
+| 11 | SEARCH_UNSOLVABLE | Task is provably unsolvable. |
 | 12 | SEARCH_UNSOLVED_INCOMPLETE | Search ended without finding a solution. |
+| 13 | SEARCH_UNSOLVABLE_WITHIN_BOUND | Task is provably unsolvable with current bound. |
 
 The third block (20-29) represents expected failures which prevent the
 execution of further components.

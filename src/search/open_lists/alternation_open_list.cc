@@ -8,6 +8,7 @@
 
 #include <cassert>
 #include <memory>
+#include <ranges>
 #include <vector>
 
 using namespace std;
@@ -37,6 +38,7 @@ public:
     virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
+    virtual bool is_safe() const override;
 };
 
 template<class Entry>
@@ -122,6 +124,18 @@ bool AlternationOpenList<Entry>::is_reliable_dead_end(
         if (sublist->is_reliable_dead_end(eval_context))
             return true;
     return false;
+}
+
+template<class Entry>
+bool AlternationOpenList<Entry>::is_safe() const {
+    auto is_sublist_safe = [](const auto &sublist) {
+        return sublist->is_safe();
+    };
+    /*
+      Since each state inserted into an AlternationOpenList is inserted into
+      each sub-list, one safe sub-list is sufficient.
+    */
+    return ranges::any_of(open_lists, is_sublist_safe);
 }
 
 AlternationOpenListFactory::AlternationOpenListFactory(
