@@ -15,8 +15,8 @@ namespace iterated_search {
 IteratedSearch::IteratedSearch(
     const shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<TaskIndependentSearchAlgorithm>> &algorithm_configs,
-    bool pass_bound, bool repeat_last,
-    bool continue_on_solve, OperatorCost cost_type, int bound, double max_time,
+    bool pass_bound, bool repeat_last, bool continue_on_solve,
+    OperatorCost cost_type, int bound, double max_time,
     const string &description, utils::Verbosity verbosity)
     : SearchAlgorithm(task, cost_type, bound, max_time, description, verbosity),
       task_independent_searches(algorithm_configs),
@@ -253,17 +253,17 @@ protected:
         const shared_ptr<AbstractTask> &task) const {
         return make_shared<IteratedSearch>(
             task, algorithm_configs, pass_bound, repeat_last_phase,
-            continue_on_solve, cost_type, bound, max_time,
-            description, verbosity);
+            continue_on_solve, cost_type, bound, max_time, description,
+            verbosity);
     }
 
 public:
     TaskIndependentIteratedSearch(
         const vector<shared_ptr<TaskIndependentSearchAlgorithm>>
             &algorithm_configs,
-        bool pass_bound, bool repeat_last,
-        bool continue_on_solve, OperatorCost cost_type, int bound,
-        double max_time, const string &description, utils::Verbosity verbosity)
+        bool pass_bound, bool repeat_last, bool continue_on_solve,
+        OperatorCost cost_type, int bound, double max_time,
+        const string &description, utils::Verbosity verbosity)
         : algorithm_configs(algorithm_configs),
           pass_bound(pass_bound),
           repeat_last_phase(repeat_last),

@@ -40,10 +40,9 @@ public:
         const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<TaskIndependentSearchAlgorithm>>
             &algorithm_configs,
-        bool pass_bound, bool repeat_last,
-        bool continue_on_solve, OperatorCost cost_type, int bound,
-        double max_time, const std::string &description,
-        utils::Verbosity verbosity);
+        bool pass_bound, bool repeat_last, bool continue_on_solve,
+        OperatorCost cost_type, int bound, double max_time,
+        const std::string &description, utils::Verbosity verbosity);
 
     virtual void save_plan_if_necessary() override;
     virtual void print_statistics() const override;
