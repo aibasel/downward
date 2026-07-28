@@ -74,32 +74,19 @@ void add_constraint(
     int *index_data =
         num_nonzero > 0 ? const_cast<int *>(indices.data()) : nullptr;
     double *coefficient_data =
-        num_nonzero > 0
-            ? const_cast<double *>(coefficients.data())
-            : nullptr;
+        num_nonzero > 0 ? const_cast<double *>(coefficients.data()) : nullptr;
 
     GRB_CALL(
-        env,
-        GRBaddconstr,
-        model,
-        num_nonzero,
-        index_data,
-        coefficient_data,
+        env, GRBaddconstr, model, num_nonzero, index_data, coefficient_data,
         constraint_sense_to_gurobi(constraint.get_sense()),
-        constraint.get_right_hand_side(),
-        nullptr);
+        constraint.get_right_hand_side(), nullptr);
 }
 
 int get_model_status(GRBenv *env, GRBmodel *model) {
     assert(model);
 
     int status;
-    GRB_CALL(
-        env,
-        GRBgetintattr,
-        model,
-        GRB_INT_ATTR_STATUS,
-        &status);
+    GRB_CALL(env, GRBgetintattr, model, GRB_INT_ATTR_STATUS, &status);
     return status;
 }
 
@@ -116,30 +103,10 @@ GurobiSolverInterface::GurobiSolverInterface()
         handle_gurobi_error(env, status);
     }
 
-    GRB_CALL(
-        env,
-        GRBsetintparam,
-        env,
-        GRB_INT_PAR_OUTPUTFLAG,
-        0);
-    GRB_CALL(
-        env,
-        GRBsetintparam,
-        env,
-        GRB_INT_PAR_LOGTOCONSOLE,
-        0);
-    GRB_CALL(
-        env,
-        GRBsetintparam,
-        env,
-        GRB_INT_PAR_THREADS,
-        1);
-    GRB_CALL(
-        env,
-        GRBsetintparam,
-        env,
-        GRB_INT_PAR_METHOD,
-        GRB_METHOD_DUAL);
+    GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_OUTPUTFLAG, 0);
+    GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_LOGTOCONSOLE, 0);
+    GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_THREADS, 1);
+    GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_METHOD, GRB_METHOD_DUAL);
 }
 
 GurobiSolverInterface::~GurobiSolverInterface() {
@@ -171,8 +138,7 @@ void GurobiSolverInterface::load_problem(const LinearProgram &lp) {
     variable_types.reserve(num_variables);
 
     for (const LPVariable &variable : variables) {
-        objective_coefficients.push_back(
-            variable.objective_coefficient);
+        objective_coefficients.push_back(variable.objective_coefficient);
         lower_bounds.push_back(variable.lower_bound);
         upper_bounds.push_back(variable.upper_bound);
         variable_types.push_back(
@@ -189,29 +155,17 @@ void GurobiSolverInterface::load_problem(const LinearProgram &lp) {
         num_variables > 0 ? variable_types.data() : nullptr;
 
     GRB_CALL(
-        env,
-        GRBnewmodel,
-        env,
-        &model,
-        "downward",
-        num_variables,
-        objective_data,
-        lower_bound_data,
-        upper_bound_data,
-        variable_type_data,
+        env, GRBnewmodel, env, &model, "downward", num_variables,
+        objective_data, lower_bound_data, upper_bound_data, variable_type_data,
         nullptr);
 
     GRB_CALL(
-        env,
-        GRBsetintattr,
-        model,
-        GRB_INT_ATTR_MODELSENSE,
+        env, GRBsetintattr, model, GRB_INT_ATTR_MODELSENSE,
         objective_sense_to_gurobi(lp.get_sense()));
 
     const auto &constraints = lp.get_constraints();
 
-    num_permanent_constraints =
-        static_cast<int>(constraints.size());
+    num_permanent_constraints = static_cast<int>(constraints.size());
     num_temporary_constraints = 0;
 
     for (const LPConstraint &constraint : constraints) {
@@ -230,8 +184,7 @@ void GurobiSolverInterface::add_temporary_constraints(
         add_constraint(env, model, constraint);
     }
 
-    num_temporary_constraints +=
-        static_cast<int>(constraints.size());
+    num_temporary_constraints += static_cast<int>(constraints.size());
     model_dirty = true;
 }
 
@@ -248,17 +201,10 @@ void GurobiSolverInterface::clear_temporary_constraints() {
     }
 
     vector<int> indices(num_temporary_constraints);
-    iota(
-        indices.begin(),
-        indices.end(),
-        num_permanent_constraints);
+    iota(indices.begin(), indices.end(), num_permanent_constraints);
 
     GRB_CALL(
-        env,
-        GRBdelconstrs,
-        model,
-        num_temporary_constraints,
-        indices.data());
+        env, GRBdelconstrs, model, num_temporary_constraints, indices.data());
 
     GRB_CALL(env, GRBupdatemodel, model);
 
@@ -273,20 +219,14 @@ double GurobiSolverInterface::get_infinity() const {
 void GurobiSolverInterface::set_objective_coefficients(
     const vector<double> &coefficients) {
     assert(model);
-    assert(
-        coefficients.size() ==
-        static_cast<size_t>(get_num_variables()));
+    assert(coefficients.size() == static_cast<size_t>(get_num_variables()));
 
     if (coefficients.empty()) {
         return;
     }
 
     GRB_CALL(
-        env,
-        GRBsetdblattrarray,
-        model,
-        GRB_DBL_ATTR_OBJ,
-        0,
+        env, GRBsetdblattrarray, model, GRB_DBL_ATTR_OBJ, 0,
         static_cast<int>(coefficients.size()),
         const_cast<double *>(coefficients.data()));
 
@@ -299,12 +239,7 @@ void GurobiSolverInterface::set_objective_coefficient(
     assert(index >= 0 && index < get_num_variables());
 
     GRB_CALL(
-        env,
-        GRBsetdblattrelement,
-        model,
-        GRB_DBL_ATTR_OBJ,
-        index,
-        coefficient);
+        env, GRBsetdblattrelement, model, GRB_DBL_ATTR_OBJ, index, coefficient);
 
     model_dirty = true;
 }
@@ -320,18 +255,13 @@ void GurobiSolverInterface::set_constraint_rhs(
     }
 
     GRB_CALL(
-        env,
-        GRBsetdblattrelement,
-        model,
-        GRB_DBL_ATTR_RHS,
-        index,
+        env, GRBsetdblattrelement, model, GRB_DBL_ATTR_RHS, index,
         right_hand_side);
 
     model_dirty = true;
 }
 
-void GurobiSolverInterface::set_constraint_sense(
-    int index, Sense sense) {
+void GurobiSolverInterface::set_constraint_sense(int index, Sense sense) {
     assert(model);
     assert(index >= 0 && index < get_num_constraints());
 
@@ -341,44 +271,26 @@ void GurobiSolverInterface::set_constraint_sense(
     }
 
     GRB_CALL(
-        env,
-        GRBsetcharattrelement,
-        model,
-        GRB_CHAR_ATTR_SENSE,
-        index,
+        env, GRBsetcharattrelement, model, GRB_CHAR_ATTR_SENSE, index,
         constraint_sense_to_gurobi(sense));
 
     model_dirty = true;
 }
 
-void GurobiSolverInterface::set_variable_lower_bound(
-    int index, double bound) {
+void GurobiSolverInterface::set_variable_lower_bound(int index, double bound) {
     assert(model);
     assert(index >= 0 && index < get_num_variables());
 
-    GRB_CALL(
-        env,
-        GRBsetdblattrelement,
-        model,
-        GRB_DBL_ATTR_LB,
-        index,
-        bound);
+    GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_LB, index, bound);
 
     model_dirty = true;
 }
 
-void GurobiSolverInterface::set_variable_upper_bound(
-    int index, double bound) {
+void GurobiSolverInterface::set_variable_upper_bound(int index, double bound) {
     assert(model);
     assert(index >= 0 && index < get_num_variables());
 
-    GRB_CALL(
-        env,
-        GRBsetdblattrelement,
-        model,
-        GRB_DBL_ATTR_UB,
-        index,
-        bound);
+    GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_UB, index, bound);
 
     model_dirty = true;
 }
@@ -386,21 +298,11 @@ void GurobiSolverInterface::set_variable_upper_bound(
 void GurobiSolverInterface::set_mip_gap(double gap) {
     assert(gap >= 0.0);
 
-    GRB_CALL(
-        env,
-        GRBsetdblparam,
-        env,
-        GRB_DBL_PAR_MIPGAP,
-        gap);
+    GRB_CALL(env, GRBsetdblparam, env, GRB_DBL_PAR_MIPGAP, gap);
 
     if (model) {
         GRBenv *model_env = GRBgetenv(model);
-        GRB_CALL(
-            model_env,
-            GRBsetdblparam,
-            model_env,
-            GRB_DBL_PAR_MIPGAP,
-            gap);
+        GRB_CALL(model_env, GRBsetdblparam, model_env, GRB_DBL_PAR_MIPGAP, gap);
     }
 }
 
@@ -415,8 +317,7 @@ void GurobiSolverInterface::solve() {
     GRB_CALL(env, GRBoptimize, model);
 }
 
-void GurobiSolverInterface::write_lp(
-    const string &filename) const {
+void GurobiSolverInterface::write_lp(const string &filename) const {
     assert(model);
 
     if (model_dirty) {
@@ -432,16 +333,10 @@ void GurobiSolverInterface::print_failure_analysis() const {
     int status = get_model_status(env, model);
 
     int solution_count;
-    GRB_CALL(
-        env,
-        GRBgetintattr,
-        model,
-        GRB_INT_ATTR_SOLCOUNT,
-        &solution_count);
+    GRB_CALL(env, GRBgetintattr, model, GRB_INT_ATTR_SOLCOUNT, &solution_count);
 
-    cerr << "Gurobi optimization failed with status "
-         << status << " and " << solution_count
-         << " stored solution(s)." << endl;
+    cerr << "Gurobi optimization failed with status " << status << " and "
+         << solution_count << " stored solution(s)." << endl;
 
     switch (status) {
     case GRB_INFEASIBLE:
@@ -490,12 +385,7 @@ double GurobiSolverInterface::get_objective_value() const {
     assert(has_optimal_solution());
 
     double objective_value;
-    GRB_CALL(
-        env,
-        GRBgetdblattr,
-        model,
-        GRB_DBL_ATTR_OBJVAL,
-        &objective_value);
+    GRB_CALL(env, GRBgetdblattr, model, GRB_DBL_ATTR_OBJVAL, &objective_value);
 
     return objective_value;
 }
@@ -509,12 +399,7 @@ vector<double> GurobiSolverInterface::extract_solution() const {
 
     if (num_variables > 0) {
         GRB_CALL(
-            env,
-            GRBgetdblattrarray,
-            model,
-            GRB_DBL_ATTR_X,
-            0,
-            num_variables,
+            env, GRBgetdblattrarray, model, GRB_DBL_ATTR_X, 0, num_variables,
             solution.data());
     }
 
@@ -525,12 +410,7 @@ int GurobiSolverInterface::get_num_variables() const {
     assert(model);
 
     int num_variables;
-    GRB_CALL(
-        env,
-        GRBgetintattr,
-        model,
-        GRB_INT_ATTR_NUMVARS,
-        &num_variables);
+    GRB_CALL(env, GRBgetintattr, model, GRB_INT_ATTR_NUMVARS, &num_variables);
 
     return num_variables;
 }
@@ -547,12 +427,7 @@ void GurobiSolverInterface::print_statistics() const {
     assert(model);
 
     double runtime;
-    GRB_CALL(
-        env,
-        GRBgetdblattr,
-        model,
-        GRB_DBL_ATTR_RUNTIME,
-        &runtime);
+    GRB_CALL(env, GRBgetdblattr, model, GRB_DBL_ATTR_RUNTIME, &runtime);
 
     cout << "Gurobi runtime: " << runtime << "s" << endl;
 }
