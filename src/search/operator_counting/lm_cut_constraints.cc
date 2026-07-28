@@ -18,7 +18,7 @@ LMCutConstraints::LMCutConstraints(const shared_ptr<AbstractTask> &task)
 void LMCutConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &) {
     TaskProxy task_proxy(*task);
-    
+
     // TODO: Expose the tie-breaking options (goal zone and border detection)
     landmark_generator = make_unique<lm_cut_heuristic::LandmarkCutLandmarks>(
         task_proxy, false, false);
