@@ -56,8 +56,8 @@ struct RelaxedProposition {
 };
 
 class LandmarkCutLandmarks {
-    bool use_border_detection;
     bool use_goal_zone_detection;
+    bool use_border_detection;
 
     std::vector<RelaxedOperator> relaxed_operators;
     std::vector<std::vector<RelaxedProposition>> propositions;
@@ -97,7 +97,9 @@ public:
     using CostCallback = std::function<void(int)>;
     using LandmarkCallback = std::function<void(const Landmark &, int)>;
 
-    LandmarkCutLandmarks(const TaskProxy &task_proxy, bool use_border_detection, bool use_goal_zone_detection);
+    LandmarkCutLandmarks(
+        const TaskProxy &task_proxy, bool use_goal_zone_detection,
+        bool use_border_detection);
 
     /*
       Compute LM-cut landmarks for the given state.

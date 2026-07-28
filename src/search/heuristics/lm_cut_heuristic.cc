@@ -18,7 +18,8 @@ LandmarkCutHeuristic::LandmarkCutHeuristic(
     const string &description, utils::Verbosity verbosity,
     bool use_goal_zone_detection, bool use_border_detection)
     : Heuristic(task, cache_estimates, description, verbosity),
-      landmark_generator(make_unique<LandmarkCutLandmarks>(task_proxy, use_goal_zone_detection, use_border_detection)) {
+      landmark_generator(make_unique<LandmarkCutLandmarks>(
+          task_proxy, use_goal_zone_detection, use_border_detection)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark cut heuristic..." << endl;
     }
@@ -44,12 +45,16 @@ public:
 
         add_option<bool>(
             "goal_zone_detection",
-            "TODO",
+            "when choosing the h^max supporter of a zero-cost operator while "
+            "marking the goal zone, break ties in favor of a precondition "
+            "that already belongs to the goal zone.",
             "false");
 
         add_option<bool>(
             "border_detection",
-            "TODO",
+            "when choosing the h^max supporter of a zero-cost operator while "
+            "marking the goal zone, break ties in favor of a precondition "
+            "on the border of the goal zone.",
             "false");
 
         add_heuristic_options_to_feature(*this, "lmcut");

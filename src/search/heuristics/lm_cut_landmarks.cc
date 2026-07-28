@@ -11,12 +11,10 @@ using namespace std;
 namespace lm_cut_heuristic {
 // construction and destruction
 LandmarkCutLandmarks::LandmarkCutLandmarks(
-    const TaskProxy &task_proxy,
-    bool use_goal_zone_detection,
+    const TaskProxy &task_proxy, bool use_goal_zone_detection,
     bool use_border_detection)
     : use_goal_zone_detection(use_goal_zone_detection),
       use_border_detection(use_border_detection) {
-
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);
 
@@ -233,24 +231,29 @@ void LandmarkCutLandmarks::second_exploration(
     }
 }
 
-static inline bool is_border(RelaxedProposition *p) {
-    for (RelaxedOperator *op : p->effect_of)
-        if (op->cost == 0)
+/*
+  A proposition is on the border of the goal zone if it can not be achieved by
+  operators with zero cost.
+*/
+static bool is_border(const RelaxedProposition *prop) {
+    for (const RelaxedOperator *op : prop->effect_of) {
+        if (op->cost == 0) {
             return false;
+        }
+    }
     return true;
 }
 
 void LandmarkCutLandmarks::tie_break_supporter(RelaxedOperator *op) {
-    for (auto *pre : op->preconditions) {
-        if (use_border_detection
-            && pre->h_max_cost == op->h_max_supporter_cost
-            && is_border(pre)) {
+    for (RelaxedProposition *pre : op->preconditions) {
+        if (pre->h_max_cost != op->h_max_supporter_cost) {
+            continue;
+        }
+        if (use_border_detection && is_border(pre)) {
             op->h_max_supporter = pre;
             break;
         }
-        if (use_goal_zone_detection
-            && pre->h_max_cost == op->h_max_supporter_cost
-            && pre->status == GOAL_ZONE) {
+        if (use_goal_zone_detection && pre->status == GOAL_ZONE) {
             op->h_max_supporter = pre;
             break;
         }
