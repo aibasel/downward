@@ -57,6 +57,7 @@ protected:
     OperatorCost cost_type;
     bool is_unit_cost;
     double max_time;
+    bool bound_was_used;
 
     virtual void initialize() {
     }
@@ -90,9 +91,6 @@ public:
     }
     int get_bound() {
         return bound;
-    }
-    bool is_unbounded() const {
-        return bound == std::numeric_limits<int>::max();
     }
     PlanManager &get_plan_manager() {
         return plan_manager;

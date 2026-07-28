@@ -196,8 +196,10 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
         int d = parent_node.get_g() - current_phase_start_g +
                 get_adjusted_cost(last_op);
 
-        if (parent_node.get_real_g() + last_op.get_cost() >= bound)
+        if (parent_node.get_real_g() + last_op.get_cost() >= bound) {
+            bound_was_used = true;
             continue;
+        }
 
         State state = state_registry.get_successor_state(parent_state, last_op);
         statistics.inc_generated();

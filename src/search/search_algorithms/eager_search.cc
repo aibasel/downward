@@ -223,8 +223,10 @@ void EagerSearch::generate_successors(const SearchNode &node) {
 
     for (OperatorID op_id : applicable_operators) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
-        if ((node.get_real_g() + op.get_cost()) >= bound)
+        if ((node.get_real_g() + op.get_cost()) >= bound) {
+            bound_was_used = true;
             continue;
+        }
 
         State succ_state = state_registry.get_successor_state(state, op);
         statistics.inc_generated();
