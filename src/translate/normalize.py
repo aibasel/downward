@@ -181,15 +181,32 @@ def eliminate_universal_quantifiers(task):
             type_map = proxy.get_type_map()
             proxy.set(recurse(proxy.condition))
 
-# [2] Normalize conditions according to the selected strategy.
-def eliminate_disjunctive_conditions(task):
+# [2] Simplifies conditions according to the selected strategy.
+# After the simplification only conjuncitons
+# and existential conditions remain (+ truth values, literals).
+def simplyfy_conditions(task):
     condition_strategy = get_options().condition_normalization_strategy
     if condition_strategy == "dnf":
         substitute_complicated_goal(task)
         build_DNF(task)
         split_disjunctions(task, all_conditions)
     elif condition_strategy == "axiom_based":
-        substitute_disjunctions_with_derived_predicates(task)
+        substitute_complicated_conditions(task)
+        # Disjunctions can now only occur in axiom bodies
+        split_disjunctions(task, axiom_conditions)
+
+def substitute_complicated_goal(task):
+    goal = task.goal
+    if isinstance(goal, pddl.Literal):
+        return
+    elif isinstance(goal, pddl.Conjunction):
+        for item in goal.parts:
+            if not isinstance(item, pddl.Literal):
+                break
+        else:
+            return
+    new_axiom = task.add_axiom([], goal)
+    task.goal = pddl.Atom(new_axiom.name, new_axiom.parameters)
 
 # Split disjunctions in the task into separate conditions.
 def split_disjunctions(task, condition_generator):
@@ -252,18 +269,19 @@ def build_DNF(task):
         if proxy.condition.has_disjunction():
             proxy.set(recurse(proxy.condition).simplified())
 
-# [2 Option 2] Decompose disjunctive formulas using derived predicates.
-# Replace each disjunctive (sub)formula with a derived predicate and add a
-# corresponding axiom defining that predicate. The transformation proceeds
-# bottom-up so nested disjunctions are eliminated first.
-def substitute_disjunctions_with_derived_predicates(task):
+# [2 Option 2] Decompose disjunctive and existential formulas using derived
+# predicates. Replace each disjunctive (sub)formula with a derived predicate
+# and add a corresponding axiom defining that predicate. The transformation
+# proceeds bottom-up so nested disjunctions are eliminated first.
+def substitute_complicated_conditions(task):
     def recurse(condition, type_map):
         if isinstance(condition, (pddl.Literal, pddl.Truth, pddl.Falsity)):
             return condition
-        elif isinstance(condition, (pddl.Conjunction, pddl.ExistentialCondition)):
+        elif isinstance(condition, pddl.Conjunction):
             new_parts = [recurse(part, type_map) for part in condition.parts]
             condition = condition.change_parts(new_parts)
             return condition
+        assert isinstance(condition, (pddl.Disjunction, pddl.ExistentialCondition))
         parameters = sorted(condition.free_variables())
         typed_parameters = tuple(pddl.TypedObject(v, type_map[v]) for v in parameters)
         key = (condition, typed_parameters)
@@ -281,9 +299,6 @@ def substitute_disjunctions_with_derived_predicates(task):
         # Cannot use generator because we add new axioms on the fly.
         type_map = proxy.get_type_map()
         proxy.set(recurse(proxy.condition, type_map))
-
-    # Disjunctions can now only occur in axiom bodies
-    split_disjunctions(task, axiom_conditions)
 
 # [3] Eliminate existential quantifiers from conditions.
 def eliminate_existential_quantifiers(task):
@@ -378,25 +393,12 @@ def eliminate_existential_quantifiers_from_conditional_effects(task):
                 effect.parameters.extend(condition.parameters)
                 effect.condition = condition.parts[0]
 
-def substitute_complicated_goal(task):
-    goal = task.goal
-    if isinstance(goal, pddl.Literal):
-        return
-    elif isinstance(goal, pddl.Conjunction):
-        for item in goal.parts:
-            if not isinstance(item, pddl.Literal):
-                break
-        else:
-            return
-    new_axiom = task.add_axiom([], goal)
-    task.goal = pddl.Atom(new_axiom.name, new_axiom.parameters)
-
 # Combine Steps [1], [2], [3] and do some additional verification
 # that the task makes sense.
 
 def normalize(task):
     eliminate_universal_quantifiers(task)
-    eliminate_disjunctive_conditions(task)
+    simplyfy_conditions(task)
     eliminate_existential_quantifiers(task)
 
     verify_axiom_predicates(task)
