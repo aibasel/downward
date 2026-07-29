@@ -87,13 +87,23 @@ def get_arg_parser():
         "many variables into the same layer as possible, while 'max' puts each variable "
         "into its own layer unless it is part of a cycle.")
     argparser.add_argument(
-        "--condition-normalization-strategy", default="dnf",
-        choices=["dnf", "axiom_based"],
-        help="Strategy for normalizing PDDL conditions. The 'dnf' strategy "
-        "uses disjunctive normal form, which may cause exponential blow-up "
-        "for complicated conditions. The 'axiom_based' strategy uses axioms "
-        "to represent complicated conditions, avoiding blow-up but increasing "
-        "the number of axioms.")
+        "--condition-normalization-strategy",
+        default="dnf",
+        choices=[
+            "dnf",
+            "axiomatize_disjunctions",
+            "axiomatize_disjunctions_existentials",
+        ],
+        help="Strategy for normalizing PDDL conditions. Strategy 'dnf' converts "
+        "conditions to disjunctive normal form, which may cause exponential "
+        "blow-up for complex formulas but introduces few derived predicates. "
+        "Strategy 'axiomatize_disjunctions' replaces every disjunction by a derived "
+        "predicate, avoiding the DNF blow-up while preserving existential "
+        "quantifiers. Strategy 'axiomatize_disjunctions_existentials' additionally replaces "
+        "existential quantifiers in action conditions and goals with derived "
+        "predicates. This typically introduces more derived predicates but "
+        "avoids creating multiple operator instances."
+    )
     return argparser
 
 

@@ -139,14 +139,17 @@ def axiom_conditions(task):
     for axiom in task.axioms:
         yield AxiomConditionProxy(axiom)
 
-def all_conditions(task):
-    for action in task.actions:
-        yield PreconditionProxy(action)
-        for effect in action.effects:
-            yield EffectConditionProxy(action, effect)
-    for axiom in task.axioms:
-        yield AxiomConditionProxy(axiom)
-    yield GoalConditionProxy(task)
+def all_conditions(task, actions=True, axioms=True, goal=True):
+    if actions:
+        for action in task.actions:
+            yield PreconditionProxy(action)
+            for effect in action.effects:
+                yield EffectConditionProxy(action, effect)
+    if axioms:
+        for axiom in task.axioms:
+            yield AxiomConditionProxy(axiom)
+    if goal:
+        yield GoalConditionProxy(task)
 
 # [1] Eliminate universal quantifications from conditions.
 #
@@ -184,16 +187,24 @@ def eliminate_universal_quantifiers(task):
 # [2] Simplifies conditions according to the selected strategy.
 # After the simplification only conjuncitons
 # and existential conditions remain (+ truth values, literals).
-def simplyfy_conditions(task):
+def simplify_conditions(task):
     condition_strategy = get_options().condition_normalization_strategy
-    if condition_strategy == "dnf":
+
+    if condition_strategy in ("dnf", "axiomatize_disjunctions"):
         substitute_complicated_goal(task)
+
+    if condition_strategy == "dnf":
         build_DNF(task)
         split_disjunctions(task, all_conditions)
-    elif condition_strategy == "axiom_based":
-        substitute_complicated_conditions(task)
-        # Disjunctions can now only occur in axiom bodies
+    elif condition_strategy == "axiomatize_disjunctions":
+        substitute_complicated_conditions(task, condition_strategy)
         split_disjunctions(task, axiom_conditions)
+    elif condition_strategy == "axiomatize_disjunctions_existentials":
+        substitute_complicated_conditions(task, condition_strategy)
+        split_disjunctions(task, axiom_conditions)
+    else:
+        raise SystemExit("Unknown condition normalization strategy: "
+        "%s" % condition_strategy)
 
 def substitute_complicated_goal(task):
     goal = task.goal
@@ -273,21 +284,21 @@ def build_DNF(task):
 # predicates. Replace each disjunctive (sub)formula with a derived predicate
 # and add a corresponding axiom defining that predicate. The transformation
 # proceeds bottom-up so nested disjunctions are eliminated first.
-def substitute_complicated_conditions(task):
-    def recurse(condition, type_map):
+def substitute_complicated_conditions(task, condition_strategy):
+    def recurse(condition, type_map, replace_types):
         if isinstance(condition, (pddl.Literal, pddl.Truth, pddl.Falsity)):
             return condition
-        elif isinstance(condition, pddl.Conjunction):
-            new_parts = [recurse(part, type_map) for part in condition.parts]
+        elif not isinstance(condition, replace_types):
+            new_parts = [recurse(part, type_map, replace_types) for part in condition.parts]
             condition = condition.change_parts(new_parts)
             return condition
-        assert isinstance(condition, (pddl.Disjunction, pddl.ExistentialCondition))
+        assert isinstance(condition, replace_types)
         parameters = sorted(condition.free_variables())
         typed_parameters = tuple(pddl.TypedObject(v, type_map[v]) for v in parameters)
         key = (condition, typed_parameters)
         axiom = new_axioms_by_condition.get(key)
         if not axiom:
-            new_parts = [recurse(part, type_map) for part in condition.parts]
+            new_parts = [recurse(part, type_map, replace_types) for part in condition.parts]
             condition = condition.change_parts(new_parts)
             axiom = task.add_axiom(list(typed_parameters), condition)
             new_axioms_by_condition[key] = axiom
@@ -295,10 +306,19 @@ def substitute_complicated_conditions(task):
 
     new_axioms_by_condition = {}
 
-    for proxy in tuple(all_conditions(task)):
-        # Cannot use generator because we add new axioms on the fly.
-        type_map = proxy.get_type_map()
-        proxy.set(recurse(proxy.condition, type_map))
+    if condition_strategy == "axiomatize_disjunctions":
+        for proxy in tuple(all_conditions(task)):
+            type_map = proxy.get_type_map()
+            proxy.set(recurse(proxy.condition, type_map, (pddl.Disjunction)))
+    else:
+        assert condition_strategy == "axiomatize_disjunctions_existentials"
+        for proxy in tuple(all_conditions(task, actions=False, axioms=True, goal=False)):
+            type_map = proxy.get_type_map()
+            proxy.set(recurse(proxy.condition, type_map, (pddl.Disjunction)))
+
+        for proxy in tuple(all_conditions(task, actions=True, axioms=False, goal=True)):
+            type_map = proxy.get_type_map()
+            proxy.set(recurse(proxy.condition, type_map, (pddl.Disjunction, pddl.ExistentialCondition)))
 
 # [3] Eliminate existential quantifiers from conditions.
 def eliminate_existential_quantifiers(task):
@@ -398,7 +418,7 @@ def eliminate_existential_quantifiers_from_conditional_effects(task):
 
 def normalize(task):
     eliminate_universal_quantifiers(task)
-    simplyfy_conditions(task)
+    simplify_conditions(task)
     eliminate_existential_quantifiers(task)
 
     verify_axiom_predicates(task)
