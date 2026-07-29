@@ -100,8 +100,7 @@ void StateForwardingEvaluator::notify_state_transition(
     }
 }
 
-EvaluationResult StateForwardingEvaluator::compute_result(
-    EvaluatorCall &call) {
+EvaluationResult StateForwardingEvaluator::compute_result(EvaluatorCall &call) {
     State translated_state = convert_state(call.get_state());
     EvaluatorCall subcall = call.get_subcall(translated_state);
     /*

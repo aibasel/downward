@@ -1,7 +1,7 @@
 #include "g_evaluator.h"
 
-#include "../evaluator_call.h"
 #include "../evaluation_result.h"
+#include "../evaluator_call.h"
 
 #include "../plugins/plugin.h"
 
