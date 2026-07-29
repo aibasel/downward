@@ -106,7 +106,6 @@ GurobiSolverInterface::GurobiSolverInterface()
     GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_OUTPUTFLAG, 0);
     GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_LOGTOCONSOLE, 0);
     GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_THREADS, 1);
-    GRB_CALL(env, GRBsetintparam, env, GRB_INT_PAR_METHOD, GRB_METHOD_DUAL);
 }
 
 GurobiSolverInterface::~GurobiSolverInterface() {
