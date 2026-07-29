@@ -1,7 +1,7 @@
 #include "heuristic.h"
 
-#include "evaluation_context.h"
 #include "evaluation_result.h"
+#include "evaluator_call.h"
 
 #include "plugins/plugin.h"
 #include "task_utils/task_properties.h"
@@ -37,14 +37,14 @@ tuple<bool, string, utils::Verbosity> get_heuristic_arguments_from_options(
         get_evaluator_arguments_from_options(opts));
 }
 
-EvaluationResult Heuristic::compute_result(EvaluationContext &eval_context) {
+EvaluationResult Heuristic::compute_result(EvaluatorCall &call) {
     EvaluationResult result;
 
     assert(preferred_operators.empty());
 
-    const State &state = eval_context.get_state();
+    const State &state = call.get_state();
     assert(state.get_task() == task_proxy);
-    bool calculate_preferred = eval_context.get_calculate_preferred();
+    bool calculate_preferred = call.get_calculate_preferred();
 
     int heuristic = NO_VALUE;
 

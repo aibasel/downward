@@ -100,6 +100,8 @@ public:
 
     const EvaluationResult &get_result(Evaluator *eval);
     const EvaluatorCache &get_cache() const;
+    EvaluatorCache &get_cache();
+    SearchStatistics *get_statistics();
     const State &get_state() const;
     int get_g_value() const;
     bool is_preferred() const;

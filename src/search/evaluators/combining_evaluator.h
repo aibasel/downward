@@ -38,8 +38,7 @@ public:
     */
 
     virtual bool dead_ends_are_reliable() const override;
-    virtual EvaluationResult compute_result(
-        EvaluationContext &eval_context) override;
+    virtual EvaluationResult compute_result(EvaluatorCall &call) override;
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) override;

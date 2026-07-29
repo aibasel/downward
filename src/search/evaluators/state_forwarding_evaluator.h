@@ -42,8 +42,7 @@ public:
     virtual void notify_state_transition(
         const State &parent_state, OperatorID op_id,
         const State &state) override;
-    virtual EvaluationResult compute_result(
-        EvaluationContext &eval_context) override;
+    virtual EvaluationResult compute_result(EvaluatorCall &call) override;
     virtual bool does_cache_estimates() const override;
     virtual bool is_estimate_cached(const State &state) const override;
     virtual int get_cached_estimate(const State &state) const override;

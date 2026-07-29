@@ -97,6 +97,7 @@ create_fast_downward_library(
         evaluation_context
         evaluation_result
         evaluator
+        evaluator_call
         evaluator_cache
         heuristic
         open_list

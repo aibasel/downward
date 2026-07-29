@@ -12,7 +12,7 @@ ConstEvaluator::ConstEvaluator(
       value(value) {
 }
 
-EvaluationResult ConstEvaluator::compute_result(EvaluationContext &) {
+EvaluationResult ConstEvaluator::compute_result(EvaluatorCall &) {
     EvaluationResult result;
     result.set_evaluator_value(value);
     return result;

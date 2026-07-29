@@ -75,8 +75,7 @@ public:
         std::set<Evaluator *> & /*evals*/) override {
     }
 
-    virtual EvaluationResult compute_result(
-        EvaluationContext &eval_context) override;
+    virtual EvaluationResult compute_result(EvaluatorCall &call) override;
 
     virtual bool does_cache_estimates() const override;
     virtual bool is_estimate_cached(const State &state) const override;

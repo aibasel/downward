@@ -1,6 +1,6 @@
 #include "state_forwarding_evaluator.h"
 
-#include "../evaluation_context.h"
+#include "../evaluator_call.h"
 
 using namespace std;
 
@@ -101,15 +101,13 @@ void StateForwardingEvaluator::notify_state_transition(
 }
 
 EvaluationResult StateForwardingEvaluator::compute_result(
-    EvaluationContext &eval_context) {
-    State translated_state = convert_state(eval_context.get_state());
-    EvaluationContext translated_context(eval_context, translated_state);
+    EvaluatorCall &call) {
+    State translated_state = convert_state(call.get_state());
+    EvaluatorCall subcall = call.get_subcall(translated_state);
     /*
-      Note that we do not need to update the cache inside eval_context.
-      the call below can only set and access evaluators that use the transformed
-      task and users of eval_context cannot know such evaluators.
+      TODO issue1208: this copies the result. Does this make sense?
     */
-    return nested->compute_result(translated_context);
+    return subcall[nested.get()];
 }
 
 bool StateForwardingEvaluator::does_cache_estimates() const {
