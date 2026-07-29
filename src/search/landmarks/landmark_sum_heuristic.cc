@@ -16,7 +16,7 @@
 using namespace std;
 
 namespace landmarks {
-static bool are_dead_ends_reliable(
+static bool compute_safe(
     const shared_ptr<LandmarkFactory> &lm_factory,
     const TaskProxy &task_proxy) {
     if (task_properties::has_axioms(task_proxy)) {
@@ -37,7 +37,7 @@ LandmarkSumHeuristic::LandmarkSumHeuristic(
     bool prog_gn, bool prog_r, bool cache_estimates, const string &description,
     utils::Verbosity verbosity)
     : LandmarkHeuristic(task, pref, cache_estimates, description, verbosity),
-      dead_ends_reliable(are_dead_ends_reliable(lm_factory, task_proxy)) {
+      safe(compute_safe(lm_factory, task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark sum heuristic..." << endl;
     }
@@ -106,8 +106,8 @@ int LandmarkSumHeuristic::get_heuristic_value(const State &state) {
     return h;
 }
 
-bool LandmarkSumHeuristic::dead_ends_are_reliable() const {
-    return dead_ends_reliable;
+bool LandmarkSumHeuristic::is_safe() const {
+    return safe;
 }
 
 class LandmarkSumHeuristicFeature
@@ -191,8 +191,9 @@ public:
         document_property("admissible", "no");
         document_property("consistent", "no");
         document_property(
-            "safe", "yes except on tasks with conditional effects when "
-                    "using a LandmarkFactory not supporting them");
+            "safe",
+            "yes except on tasks with axioms and on tasks with conditional"
+            "effects when using a LandmarkFactory not supporting them");
     }
 
     virtual shared_ptr<TaskIndependentEvaluator> create_component(

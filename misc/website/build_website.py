@@ -10,7 +10,8 @@ import sys
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT_DIR = SCRIPT_DIR.parents[1]
 BUILD_DIR = SCRIPT_DIR/"build"
-GENERATED_DOC_DIR = BUILD_DIR/"docs"/"documentation"/"search"
+GENERATED_DOC_DIR = BUILD_DIR/"docs"/"documentation"
+GENERATED_SEARCH_DOC_DIR = GENERATED_DOC_DIR/"search"
 
 if __name__ == '__main__':
     try:
@@ -31,13 +32,19 @@ if __name__ == '__main__':
     # we remove the search directory from the documentation (in case it is
     # there) because we will re-generate its content in the next step from the
     # actual code (binary).
-    rmtree(GENERATED_DOC_DIR, ignore_errors=True)
+    rmtree(GENERATED_SEARCH_DOC_DIR, ignore_errors=True)
 
     print("Start creating documentation of search plugins")
-    out = subprocess.run(
+    subprocess.run(
         [REPO_ROOT_DIR/"misc"/"autodoc"/"generate-docs.py", "--outdir",
-         GENERATED_DOC_DIR])
+         GENERATED_SEARCH_DOC_DIR])
     print("Done creating documentation of search plugins")
+
+    print("Start creating documentation of translator")
+    subprocess.run(
+        [REPO_ROOT_DIR/"misc"/"autodoc"/"generate-translate-docs.py", "--outdir",
+         GENERATED_DOC_DIR])
+    print("Done creating documentation of translator")
 
     print("\n\n", "Done. Run 'mkdocs serve' from the build directory "
           "to see the website in the browser at http://localhost:8001/:\n",

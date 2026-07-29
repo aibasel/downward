@@ -17,6 +17,7 @@ public:
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &) override {
     }
+    virtual bool is_safe() const override;
 };
 }
 

@@ -114,8 +114,6 @@ public:
     RelaxationHeuristic(
         const std::shared_ptr<AbstractTask> &task, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
-
-    virtual bool dead_ends_are_reliable() const override;
 };
 
 extern void add_relaxation_heuristic_options_to_feature(

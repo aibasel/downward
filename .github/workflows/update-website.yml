@@ -39,6 +39,7 @@ jobs:
           cd misc/autodoc
           python3 -m pip install -r requirements.txt
           python3 generate-docs.py
+          python3 generate-translate-docs.py
           cd ../../..
 
       - name: Move website material to website repo

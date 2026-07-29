@@ -444,8 +444,8 @@ conditions (0) and affects var6 (6). It requires that the old value of
 the variable is 1, so it is only applicable if the robot is in rooma. It
 establishes the value 0, so that the robot will be in roomb afterwards.
 This domain does not use explicit action_costs (as encoded in the `metric`
-section), so the final line is `0`. (The search code will treat problems with
-no explicit action costs as unit-cost problems though, so the action will be
+section), so the final line is `0`. (The search code will treat tasks with
+no explicit action costs as unit-cost tasks though, so the action will be
 handled as if its cost were 1.)
 
 The two pick-up operators are similar, so we only explain the last one.
@@ -554,7 +554,7 @@ generated for domains that contain derived predicates, but they can also
 be generated for PDDL tasks without derived predicates if they use
 non-STRIPS features such as universally quantified conditions, as some
 of these are compiled away with the help of axioms. As an example, here
-is an axiom rules from a Miconic-FullADL task:
+is an axiom rule from a Miconic-FullADL task:
 
 *Sample axiom section (Miconic-FullADL domain):*
 

@@ -30,12 +30,12 @@ public:
         utils::Verbosity verbosity);
 
     /*
-      dead_ends_are_reliable should return true if the evaluator is
-      "safe", i.e., infinite estimates can be trusted.
+      Returns true only if all states with infinite evaluator value
+      are unsolvable.
 
       The default implementation returns true.
     */
-    virtual bool dead_ends_are_reliable() const;
+    virtual bool is_safe() const;
 
     /*
       get_path_dependent_evaluators should insert all path-dependent

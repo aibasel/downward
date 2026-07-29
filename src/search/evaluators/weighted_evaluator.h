@@ -16,7 +16,7 @@ public:
         const std::shared_ptr<Evaluator> &eval, int weight,
         const std::string &description, utils::Verbosity verbosity);
 
-    virtual bool dead_ends_are_reliable() const override;
+    virtual bool is_safe() const override;
     virtual EvaluationResult compute_result(EvaluatorCall &call) override;
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) override;

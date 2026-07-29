@@ -451,7 +451,7 @@ ContextEnhancedAdditiveHeuristic::~ContextEnhancedAdditiveHeuristic() {
         delete problem;
 }
 
-bool ContextEnhancedAdditiveHeuristic::dead_ends_are_reliable() const {
+bool ContextEnhancedAdditiveHeuristic::is_safe() const {
     return false;
 }
 

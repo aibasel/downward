@@ -10,10 +10,10 @@ using namespace std;
 
 namespace pdbs {
 IncrementalCanonicalPDBs::IncrementalCanonicalPDBs(
-    const TaskProxy &task_proxy, const PatternCollection &intitial_patterns)
+    const TaskProxy &task_proxy, const PatternCollection &initial_patterns)
     : task_proxy(task_proxy),
       patterns(make_shared<PatternCollection>(
-          intitial_patterns.begin(), intitial_patterns.end())),
+          initial_patterns.begin(), initial_patterns.end())),
       pattern_databases(make_shared<PDBCollection>()),
       pattern_cliques(nullptr),
       size(0) {

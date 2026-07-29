@@ -59,8 +59,8 @@ State StateForwardingEvaluator::convert_state(const State &state) const {
     return delegating_registry->convert_state(state);
 }
 
-bool StateForwardingEvaluator::dead_ends_are_reliable() const {
-    return nested->dead_ends_are_reliable();
+bool StateForwardingEvaluator::is_safe() const {
+    return nested->is_safe();
 }
 
 void StateForwardingEvaluator::get_path_dependent_evaluators(

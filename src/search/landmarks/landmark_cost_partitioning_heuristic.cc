@@ -76,7 +76,9 @@ int LandmarkCostPartitioningHeuristic::get_heuristic_value(const State &state) {
     }
 }
 
-bool LandmarkCostPartitioningHeuristic::dead_ends_are_reliable() const {
+bool LandmarkCostPartitioningHeuristic::is_safe() const {
+    /* Since check_unsupported_features prevents instantiating this heuristic
+       on tasks where it could be unsafe, we can return true here. */
     return true;
 }
 

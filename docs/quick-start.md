@@ -35,7 +35,7 @@ You can run the planner as follows:
 
 Assume you want to solve a planning task (e.g. from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks)) using A* search with the LM-cut heuristic. To do so you can run the following:
 
-    ./fast-downward.sif <domain.pddl> <task.pddl> --search "astar(lmcut())"
+    ./fast-downward.sif <domain.pddl> <problem.pddl> --search "astar(lmcut())"
 
 See more planner options at [planner usage](planner-usage.md).
 
@@ -58,16 +58,16 @@ Note:
 Assume you want to solve a planning task (e.g. from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks)) using A* search with the LM-cut heuristic. To do so you can run the following:
 
     sudo docker run --rm -v <path-to-benchmarks>:/benchmarks aibasel/downward \
-    /benchmarks/<domain.pddl> /benchmarks/<task.pddl> \
+    /benchmarks/<domain.pddl> /benchmarks/<problem.pddl> \
     --search "astar(lmcut())"
 
-Here `<path-to-benchmarks>` refers to your local directory containing your domain and task file.
+Here `<path-to-benchmarks>` refers to your local directory containing your domain and problem file.
 
 Note:
 
 -   The Docker flag `-v` mounts the local directory `<path-to-benchmarks>` of your host 
     machine under the container directory `/benchmarks`, which is the
-    place where the containerised planner looks for the problem.
+    place where the containerised planner looks for the domain and problem file.
 -   `<path-to-benchmarks>` must be an absolute path; relative paths are only supported as of Docker Engine version 23.
 
 See more planner options at [planner usage](planner-usage.md).
@@ -128,7 +128,7 @@ vagrant ssh
 
 # Run the planner.
 downward/fast-downward.py \
-/vagrant/benchmarks/<domain.pddl> /vagrant/benchmarks/<task.pddl> \
+/vagrant/benchmarks/<domain.pddl> /vagrant/benchmarks/<problem.pddl> \
 --search "astar(lmcut())"
 
 # Log out from the VM.
@@ -138,7 +138,7 @@ logout
 vagrant halt
 ```
 
-Here `<path-to-benchmarks>` refers to your local directory containing your domain and task file.
+Here `<path-to-benchmarks>` refers to your local directory containing your domain and problem file.
 
 See more planner options at [planner usage](planner-usage.md).
 
@@ -168,7 +168,7 @@ You can run the planner as follows:
 
 Assume you want to solve a planning task (e.g. from the [Fast Downward benchmarks](https://github.com/aibasel/downward-benchmarks)) using A* search with the LM-cut heuristic. To do so you can run the following:
 
-    ./fast-downward.py <domain.pddl> <task.pddl> --search "astar(lmcut())"
+    ./fast-downward.py <domain.pddl> <problem.pddl> --search "astar(lmcut())"
 
 See more planner options at [planner usage](planner-usage.md).
 
