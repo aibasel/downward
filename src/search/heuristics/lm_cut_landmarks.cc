@@ -234,11 +234,7 @@ void LandmarkCutLandmarks::second_exploration(
     }
 }
 
-/*
-  A proposition is on the border of the goal zone if it can not be achieved by
-  operators with zero cost.
-*/
-static bool is_border(const RelaxedProposition *prop) {
+static bool has_no_zero_cost_achiever(const RelaxedProposition *prop) {
     for (const RelaxedOperator *op : prop->effect_of) {
         if (op->cost == 0) {
             return false;
@@ -255,7 +251,7 @@ void LandmarkCutLandmarks::tie_break_supporter(RelaxedOperator *op) {
         if (pre->h_max_cost != op->h_max_supporter_cost) {
             continue;
         }
-        if (use_border_detection && is_border(pre)) {
+        if (use_border_detection && has_no_zero_cost_achiever(pre)) {
             op->h_max_supporter = pre;
             break;
         }

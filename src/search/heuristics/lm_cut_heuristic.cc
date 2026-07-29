@@ -14,9 +14,9 @@ using namespace std;
 
 namespace lm_cut_heuristic {
 LandmarkCutHeuristic::LandmarkCutHeuristic(
-    const shared_ptr<AbstractTask> &task, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity,
-    bool use_goal_zone_detection, bool use_border_detection)
+    const shared_ptr<AbstractTask> &task, bool use_goal_zone_detection,
+    bool use_border_detection, bool cache_estimates, const string &description,
+    utils::Verbosity verbosity)
     : Heuristic(task, cache_estimates, description, verbosity),
       landmark_generator(make_unique<LandmarkCutLandmarks>(
           task_proxy, use_goal_zone_detection, use_border_detection)) {
@@ -60,8 +60,8 @@ public:
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
             LandmarkCutHeuristic, Evaluator>(
-            get_heuristic_arguments_from_options(opts),
-            get_landmark_cut_landmarks_arguments_from_options(opts));
+            get_landmark_cut_landmarks_arguments_from_options(opts),
+            get_heuristic_arguments_from_options(opts));
     }
 };
 
