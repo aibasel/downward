@@ -35,8 +35,8 @@ SYNTAX_EXPRESSION = "POSITIVE_NUMBER or (FUNCTION VARIABLES*)"
 SYNTAX_ASSIGNMENT = "({=,increase} EXPRESSION EXPRESSION)"
 
 SYNTAX_DOMAIN_DOMAIN_NAME = "(domain NAME)"
-SYNTAX_TASK_PROBLEM_NAME = "(problem NAME)"
-SYNTAX_TASK_DOMAIN_NAME = "(:domain NAME)"
+SYNTAX_PROBLEM_PROBLEM_NAME = "(problem NAME)"
+SYNTAX_PROBLEM_DOMAIN_NAME = "(:domain NAME)"
 SYNTAX_METRIC = "(:metric minimize (total-cost))"
 
 CONDITION_TAG_TO_SYNTAX = {
@@ -619,25 +619,25 @@ def parse_init(context, alist, predicate_dict, term_names):
     return initial
 
 
-def parse_task(domain_pddl, task_pddl):
+def parse_task(domain_pddl, problem_pddl):
     context = Context()
     if not isinstance(domain_pddl, list):
         context.error("Invalid definition of a PDDL domain.")
     domain_name, domain_requirements, types, type_dict, constants, predicates, \
         predicate_dict, functions, actions, axioms = parse_domain_pddl(context, domain_pddl)
-    if not isinstance(task_pddl, list):
-        context.error("Invalid definition of a PDDL task.")
-    task_name, task_domain_name, task_requirements, objects, init, goal, \
-        use_metric = parse_task_pddl(context, task_pddl, type_dict,
-                                     predicate_dict, {c.name for c in constants})
+    if not isinstance(problem_pddl, list):
+        context.error("Invalid definition of a PDDL problem.")
+    problem_name, problem_domain_name, problem_requirements, objects, init, goal, \
+        use_metric = parse_problem_pddl(context, problem_pddl, type_dict,
+                                        predicate_dict, {c.name for c in constants})
 
-    if domain_name != task_domain_name:
-        context.error(f"The domain name specified by the task "
-                      f"({task_domain_name}) does not match the name specified "
+    if domain_name != problem_domain_name:
+        context.error(f"The domain name specified by the problem file "
+                      f"({problem_domain_name}) does not match the name specified "
                       f"by the domain file ({domain_name}).")
     requirements = pddl.Requirements(sorted(set(
         domain_requirements.requirements +
-        task_requirements.requirements)))
+        problem_requirements.requirements)))
     objects = constants + objects
 
     check_for_duplicates(context, [o.name for o in objects], "object")
@@ -646,7 +646,7 @@ def parse_task(domain_pddl, task_pddl):
     init += [pddl.Atom("=", (obj.name, obj.name)) for obj in objects]
 
     return pddl.Task(
-        domain_name, task_name, requirements, types, objects,
+        domain_name, problem_name, requirements, types, objects,
         predicates, functions, init, goal, actions, axioms, use_metric)
 
 
@@ -738,28 +738,28 @@ def parse_domain_pddl(context, domain_pddl):
         yield the_axioms
 
 
-def parse_task_pddl(context, task_pddl, type_dict, predicate_dict, constant_names):
-    iterator = iter(task_pddl)
-    with context.layer("Parsing task"):
+def parse_problem_pddl(context, problem_pddl, type_dict, predicate_dict, constant_names):
+    iterator = iter(problem_pddl)
+    with context.layer("Parsing problem"):
         try:
             define_tag = next(iterator)
             if define_tag != "define":
-                context.error("Task definition expected to start with '(define ")
+                context.error("Problem definition expected to start with '(define ")
 
             with context.layer("Parsing problem name"):
                 problem_line = next(iterator)
-                check_named_block(context, problem_line, ["problem"], syntax=SYNTAX_TASK_PROBLEM_NAME)
+                check_named_block(context, problem_line, ["problem"], syntax=SYNTAX_PROBLEM_PROBLEM_NAME)
                 if len(problem_line) != 2 or not isinstance(problem_line[1], str):
                     context.error("The definition of the problem name expects exactly one word after 'problem'.",
-                                  problem_line[1:], syntax=SYNTAX_TASK_PROBLEM_NAME)
+                                  problem_line[1:], syntax=SYNTAX_PROBLEM_PROBLEM_NAME)
                 yield problem_line[1]
 
             with context.layer("Parsing domain name"):
                 domain_line = next(iterator)
-                check_named_block(context, domain_line, [":domain"], syntax=SYNTAX_TASK_DOMAIN_NAME)
+                check_named_block(context, domain_line, [":domain"], syntax=SYNTAX_PROBLEM_DOMAIN_NAME)
                 if len(domain_line) != 2 or not isinstance(domain_line[1], str):
                     context.error("The definition of the domain name expects exactly one word after ':domain'.",
-                                  domain_line[1:], syntax=SYNTAX_TASK_DOMAIN_NAME)
+                                  domain_line[1:], syntax=SYNTAX_PROBLEM_DOMAIN_NAME)
                 yield domain_line[1]
 
             requirements_opt = next(iterator)

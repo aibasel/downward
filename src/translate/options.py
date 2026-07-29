@@ -31,9 +31,9 @@ def get_arg_parser():
     # process (issue1217).
     argparser = argparse.ArgumentParser(prog=infer_prog())
     argparser.add_argument(
-        "domain", help="path to domain pddl file")
+        "domain", metavar="DOMAIN", help="path to domain PDDL file")
     argparser.add_argument(
-        "task", help="path to task pddl file")
+        "problem", metavar="PROBLEM", help="path to problem PDDL file")
     argparser.add_argument(
         "--relaxed", dest="generate_relaxed_task", action="store_true",
         help="output relaxed task (no delete effects)")
@@ -96,7 +96,7 @@ def parse_args(args=None):
 def get_options():
     if options is None:
         msg = ("No options provided (via options.set_options(...)). For example"
-               " 'options.set_options([<domain file>, <problem_file>])'.")
+               " 'options.set_options([<domain_file>, <problem_file>])'.")
         raise RuntimeError(msg)
     return options
 
