@@ -378,14 +378,14 @@ void add_landmark_cut_landmarks_options_to_feature(plugins::Feature &feature) {
         "When choosing the h^max supporter of a zero-cost operator while "
         "marking the goal zone, break ties in favor of a precondition "
         "that already belongs to the goal zone.",
-        "false");
+        "true");
     feature.add_option<bool>(
         "border_detection",
         "When choosing the h^max supporter of a zero-cost operator while "
         "marking the goal zone, break ties in favor of a precondition "
         "on the border of the goal zone (a proposition reachable only "
         "through operators with positive cost).",
-        "false");
+        "true");
 }
 
 tuple<bool, bool> get_landmark_cut_landmarks_arguments_from_options(
