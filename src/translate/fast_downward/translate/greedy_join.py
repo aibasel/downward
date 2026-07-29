@@ -1,7 +1,7 @@
 import sys
 
-from translate import pddl
-from translate import pddl_to_prolog
+from fast_downward.translate import pddl
+from fast_downward.translate import pddl_to_prolog
 
 class OccurrencesTracker:
     """Keeps track of the number of times each variable appears

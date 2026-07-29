@@ -5,8 +5,8 @@ from functools import reduce
 import itertools
 import sys
 
-from translate import pddl
-from translate import timers
+from fast_downward.translate import pddl
+from fast_downward.translate import timers
 
 def convert_rules(prog):
     RULE_TYPES = {
@@ -326,10 +326,10 @@ def compute_model(prog):
     return queue.queue
 
 if __name__ == "__main__":
-    from translate import normalize
-    from translate import pddl_parser
-    from translate import pddl_to_prolog
-    from translate.options import set_options
+    from fast_downward.translate import normalize
+    from fast_downward.translate import pddl_parser
+    from fast_downward.translate import pddl_to_prolog
+    from fast_downward.translate.options import set_options
 
     set_options() # use command line options
     print("Parsing...")

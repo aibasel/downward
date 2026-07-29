@@ -1,6 +1,6 @@
-from translate.pddl_parser import lisp_parser
-from translate.pddl_parser import parse_error
-from translate.pddl_parser import parsing_functions
+from fast_downward.translate.pddl_parser import lisp_parser
+from fast_downward.translate.pddl_parser import parse_error
+from fast_downward.translate.pddl_parser import parsing_functions
 
 file_open = open
 
@@ -29,7 +29,7 @@ def open(domain_filename=None, problem_filename=None):
         # at the head of this file because open is exposed in __init__.py
         # and as a result importing anything of the pddl_parser package in
         # external code would then trigger this arg parse.
-        from translate.options import get_options
+        from fast_downward.translate.options import get_options
         domain_filename = domain_filename or get_options().domain
         problem_filename = problem_filename or get_options().problem
 

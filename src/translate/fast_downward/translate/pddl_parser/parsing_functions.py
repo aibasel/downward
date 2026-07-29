@@ -1,11 +1,11 @@
 import contextlib
 import sys
 
-from translate import graph
-from translate import pddl
-from translate.options import get_options
-from translate.pddl_parser.warning import print_warning
-from translate.pddl_parser.parse_error import ParseError
+from fast_downward.translate import graph
+from fast_downward.translate import pddl
+from fast_downward.translate.options import get_options
+from fast_downward.translate.pddl_parser.warning import print_warning
+from fast_downward.translate.pddl_parser.parse_error import ParseError
 
 TYPED_LIST_SEPARATOR = "-"
 

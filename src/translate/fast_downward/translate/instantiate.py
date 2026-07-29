@@ -4,10 +4,10 @@
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from translate import build_model
-from translate import pddl_to_prolog
-from translate import pddl
-from translate import timers
+from fast_downward.translate import build_model
+from fast_downward.translate import pddl_to_prolog
+from fast_downward.translate import pddl
+from fast_downward.translate import timers
 
 def get_fluent_facts(task, model):
     fluent_predicates = set()
@@ -120,8 +120,8 @@ def explore(task):
 
 
 if __name__ == "__main__":
-    from translate import pddl_parser
-    from translate.options import set_options
+    from fast_downward.translate import pddl_parser
+    from fast_downward.translate.options import set_options
 
     set_options() # use command line options
     task = pddl_parser.open()

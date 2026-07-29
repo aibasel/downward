@@ -3,7 +3,7 @@
 import copy
 from typing import Sequence
 
-from translate import pddl
+from fast_downward.translate import pddl
 
 class ConditionProxy:
     def clone_owner(self):
@@ -426,8 +426,8 @@ def condition_to_rule_body(parameters: Sequence[pddl.TypedObject],
     return result
 
 if __name__ == "__main__":
-    from translate import pddl_parser
-    from translate.options import set_options
+    from fast_downward.translate import pddl_parser
+    from fast_downward.translate.options import set_options
 
     set_options() # use command line options
     task = pddl_parser.open()

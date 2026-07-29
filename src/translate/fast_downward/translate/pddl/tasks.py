@@ -1,14 +1,14 @@
 from typing import List, Union
 
-from translate.pddl import axioms
-from translate.pddl import predicates
-from translate.pddl.actions import Action
-from translate.pddl.axioms import Axiom
-from translate.pddl.conditions import Atom, Condition
-from translate.pddl.f_expression import Assign
-from translate.pddl.functions import Function
-from translate.pddl.pddl_types import Type, TypedObject
-from translate.pddl.predicates import Predicate
+from fast_downward.translate.pddl import axioms
+from fast_downward.translate.pddl import predicates
+from fast_downward.translate.pddl.actions import Action
+from fast_downward.translate.pddl.axioms import Axiom
+from fast_downward.translate.pddl.conditions import Atom, Condition
+from fast_downward.translate.pddl.f_expression import Assign
+from fast_downward.translate.pddl.functions import Function
+from fast_downward.translate.pddl.pddl_types import Type, TypedObject
+from fast_downward.translate.pddl.predicates import Predicate
 
 class Task:
     def __init__(self, domain_name: str, problem_name: str,

@@ -1,7 +1,7 @@
-from translate import invariant_finder
-from translate import pddl
-from translate import timers
-from translate.options import get_options
+from fast_downward.translate import invariant_finder
+from fast_downward.translate import pddl
+from fast_downward.translate import timers
+from fast_downward.translate.options import get_options
 from typing import Dict, List, Set, Tuple
 
 

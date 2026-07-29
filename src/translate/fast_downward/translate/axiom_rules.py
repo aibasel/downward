@@ -1,7 +1,7 @@
-from translate import pddl
-from translate import sccs
-from translate import timers
-from translate.pddl_parser.parse_error import ParseError
+from fast_downward.translate import pddl
+from fast_downward.translate import sccs
+from fast_downward.translate import timers
+from fast_downward.translate.pddl_parser.parse_error import ParseError
 
 from collections import defaultdict
 from itertools import chain
