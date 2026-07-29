@@ -46,7 +46,7 @@ def build_translator():
 
 def import_argparser_from_translator():
     sys.path.insert(0, str(REPO_ROOT_DIR / "builds" / BUILD / "bin"))
-    from translate import options
+    from fast_downward.translate import options
     return options.get_arg_parser()
 
 
