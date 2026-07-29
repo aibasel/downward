@@ -117,7 +117,10 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                 continue
 
             yield exitcode
-            if exitcode == returncodes.SEARCH_UNSOLVABLE:
+            if (exitcode == returncodes.SEARCH_UNSOLVABLE or
+                exitcode == returncodes.SEARCH_UNSOLVABLE_WITHIN_BOUND):
+                # SEARCH_UNSOLVABLE and SEARCH_UNSOLVABLE_WITHIN_BOUND are
+                # equivalent because the bound never increases.
                 return
 
             if exitcode == returncodes.SUCCESS:
@@ -137,7 +140,10 @@ def run_sat(configs, executable, sas_file, plan_manager, final_config,
                         return
 
                     yield exitcode
-                    if exitcode == returncodes.SEARCH_UNSOLVABLE:
+                    if (exitcode == returncodes.SEARCH_UNSOLVABLE or
+                        exitcode == returncodes.SEARCH_UNSOLVABLE_WITHIN_BOUND):
+                        # SEARCH_UNSOLVABLE and SEARCH_UNSOLVABLE_WITHIN_BOUND
+                        # are equivalent because the bound never increases.
                         return
                 if final_config_builder:
                     print("Build final config.")
@@ -168,6 +174,9 @@ def run_opt(configs, executable, sas_file, plan_manager, timeout, memory):
         exitcode = run_search(executable, args, sas_file, plan_manager,
                               run_time, memory)
         yield exitcode
+
+        assert exitcode != returncodes.SEARCH_UNSOLVABLE_WITHIN_BOUND
+        # Portfolios for optimal planning should not be used with bounds.
 
         if exitcode in [returncodes.SUCCESS, returncodes.SEARCH_UNSOLVABLE]:
             break

@@ -63,6 +63,7 @@ def generate_portfolio_exitcode(exitcodes):
     There are multiple types of unexpected exit codes -> SEARCH_CRITICAL_ERROR.
     [..., SUCCESS, ...] -> SUCCESS
     [..., SEARCH_UNSOLVABLE, ...] -> SEARCH_UNSOLVABLE
+    [..., SEARCH_UNSOLVABLE_WITHIN_BOUND, ...] -> SEARCH_UNSOLVABLE_WITHIN_BOUND
     [..., SEARCH_UNSOLVED_INCOMPLETE, ...] -> SEARCH_UNSOLVED_INCOMPLETE
     [..., SEARCH_OUT_OF_MEMORY, ..., SEARCH_OUT_OF_TIME, ...] -> SEARCH_OUT_OF_MEMORY_AND_TIME
     [..., SEARCH_OUT_OF_TIME, ...] -> SEARCH_OUT_OF_TIME
@@ -92,7 +93,8 @@ def generate_portfolio_exitcode(exitcodes):
             return (SUCCESS, True)
 
     # A config proved unsolvability or did not find a plan.
-    for code in [SEARCH_UNSOLVABLE, SEARCH_UNSOLVED_INCOMPLETE]:
+    for code in [SEARCH_UNSOLVABLE, SEARCH_UNSOLVABLE_WITHIN_BOUND,
+                 SEARCH_UNSOLVED_INCOMPLETE]:
         if code in exitcodes:
             return (code, False)
 
