@@ -7,6 +7,7 @@
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 #include <iostream>
 
@@ -42,6 +43,18 @@ class LandmarkCutHeuristicFeature
 public:
     LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
+        document_synopsis(
+            "This heuristic implements tie-breaking strategies for the "
+            "precondition choice function (options {{{goal_zone_detection}}} "
+            "and {{{border_detection}}}) described in the following paper:" +
+            utils::format_conference_reference(
+                {"Pascal Lauer", "Maximilian Fickert"},
+                "Beating LM-cut with LM-cut: Quick Cutting and Practical Tie "
+                "Breaking for the Precondition Choice Function",
+                "https://fai.cs.uni-saarland.de/lauer/papers/hsdip2020.pdf",
+                "Proceedings of the 12th Workshop on Heuristic Search for "
+                "Domain-Independent Planning (HSDIP 2020)",
+                "9-15", "", "2020"));
 
         add_landmark_cut_landmarks_options_to_feature(*this);
         add_heuristic_options_to_feature(*this, "lmcut");
