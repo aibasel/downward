@@ -1,9 +1,11 @@
 #include "lm_cut_landmarks.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 
 #include <algorithm>
 #include <limits>
+#include <tuple>
 #include <utility>
 
 using namespace std;
@@ -14,7 +16,8 @@ LandmarkCutLandmarks::LandmarkCutLandmarks(
     const TaskProxy &task_proxy, bool use_goal_zone_detection,
     bool use_border_detection)
     : use_goal_zone_detection(use_goal_zone_detection),
-      use_border_detection(use_border_detection) {
+      use_border_detection(use_border_detection),
+      dont_tie_break(!use_border_detection && !use_goal_zone_detection) {
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);
 
@@ -245,6 +248,9 @@ static bool is_border(const RelaxedProposition *prop) {
 }
 
 void LandmarkCutLandmarks::tie_break_supporter(RelaxedOperator *op) {
+    if (dont_tie_break) {
+        return;
+    }
     for (RelaxedProposition *pre : op->preconditions) {
         if (pre->h_max_cost != op->h_max_supporter_cost) {
             continue;
@@ -364,5 +370,28 @@ bool LandmarkCutLandmarks::compute_landmarks(
         artificial_precondition.status = REACHED;
     }
     return false;
+}
+
+void add_landmark_cut_landmarks_options_to_feature(plugins::Feature &feature) {
+    feature.add_option<bool>(
+        "goal_zone_detection",
+        "When choosing the h^max supporter of a zero-cost operator while "
+        "marking the goal zone, break ties in favor of a precondition "
+        "that already belongs to the goal zone.",
+        "false");
+    feature.add_option<bool>(
+        "border_detection",
+        "When choosing the h^max supporter of a zero-cost operator while "
+        "marking the goal zone, break ties in favor of a precondition "
+        "on the border of the goal zone (a proposition reachable only "
+        "through operators with positive cost).",
+        "false");
+}
+
+tuple<bool, bool> get_landmark_cut_landmarks_arguments_from_options(
+    const plugins::Options &opts) {
+    return make_tuple(
+        opts.get<bool>("goal_zone_detection"),
+        opts.get<bool>("border_detection"));
 }
 }

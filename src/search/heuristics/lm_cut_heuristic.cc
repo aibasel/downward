@@ -43,20 +43,7 @@ public:
     LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
 
-        add_option<bool>(
-            "goal_zone_detection",
-            "when choosing the h^max supporter of a zero-cost operator while "
-            "marking the goal zone, break ties in favor of a precondition "
-            "that already belongs to the goal zone.",
-            "false");
-
-        add_option<bool>(
-            "border_detection",
-            "when choosing the h^max supporter of a zero-cost operator while "
-            "marking the goal zone, break ties in favor of a precondition "
-            "on the border of the goal zone.",
-            "false");
-
+        add_landmark_cut_landmarks_options_to_feature(*this);
         add_heuristic_options_to_feature(*this, "lmcut");
 
         document_language_support("action costs", "supported");
@@ -74,8 +61,7 @@ public:
         return components::make_auto_task_independent_component<
             LandmarkCutHeuristic, Evaluator>(
             get_heuristic_arguments_from_options(opts),
-            opts.get<bool>("goal_zone_detection"),
-            opts.get<bool>("border_detection"));
+            get_landmark_cut_landmarks_arguments_from_options(opts));
     }
 };
 
