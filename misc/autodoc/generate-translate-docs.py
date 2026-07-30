@@ -106,14 +106,32 @@ def build_docs(path: Path):
 def build_translator_package_docs(path: Path):
     parser = import_argparser_from_translator()
     parser.color = False
-    parser.formatter_class = lambda prog: argparse.HelpFormatter("python -m fast_downward.translate", width=100)
+    parser.formatter_class = lambda prog: argparse.HelpFormatter("python -m fast_downward.translate",
+                                                                 width=80)
     text = path.read_text()
     if "## Usage" in text:
         sys.exit(f"{path} already contains usage information.")
     lines = [text]
     lines.append("## Usage")
-    usage = parser.format_help().removeprefix("usage: ").strip()
-    lines.append(f"```\n{usage}\n```")
+    usage = parser.format_help().splitlines()
+
+    prefix = "usage: "
+    lines.append("```")
+    for i, line in enumerate(usage):
+        if line.strip() == "":
+            lines.append("```")
+            # we split the code block for the call and the argument
+            # documentation because the one for the call requires horizontal
+            # scrolling and we don't want the scrollbar only at the end of the
+            # page.
+
+            lines.append("```")
+            lines.extend(usage[i+1:])
+            lines.append("```")
+            break
+        assert (line.startswith(prefix) or
+                line.startswith(" " * len(prefix)))
+        lines.append(line[len(prefix):])
     path.write_text("\n".join(lines))
 
 
