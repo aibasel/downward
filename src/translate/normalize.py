@@ -135,10 +135,6 @@ def get_axiom_predicate(axiom):
 def get_pne_definition_predicate(pne: pddl.PrimitiveNumericExpression):
     return pddl.Atom(f"@def-{pne.symbol}", pne.args)
 
-def axiom_conditions(task):
-    for axiom in task.axioms:
-        yield AxiomConditionProxy(axiom)
-
 def all_conditions(task, actions=True, axioms=True, goal=True):
     if actions:
         for action in task.actions:
@@ -195,16 +191,12 @@ def simplify_conditions(task):
 
     if condition_strategy == "dnf":
         build_DNF(task)
-        split_disjunctions(task, all_conditions)
-    elif condition_strategy == "axiomatize_disjunctions":
+    elif condition_strategy in ("axiomatize_disjunctions", "axiomatize_disjunctions_existentials"):
         substitute_complicated_conditions(task, condition_strategy)
-        split_disjunctions(task, axiom_conditions)
-    elif condition_strategy == "axiomatize_disjunctions_existentials":
-        substitute_complicated_conditions(task, condition_strategy)
-        split_disjunctions(task, axiom_conditions)
     else:
-        raise SystemExit("Unknown condition normalization strategy: "
-        "%s" % condition_strategy)
+        raise SystemExit("error: unknown condition normalization strategy: %s" % condition_strategy)
+
+    split_disjunctions(task)
 
 def substitute_complicated_goal(task):
     goal = task.goal
@@ -220,8 +212,8 @@ def substitute_complicated_goal(task):
     task.goal = pddl.Atom(new_axiom.name, new_axiom.parameters)
 
 # Split disjunctions in the task into separate conditions.
-def split_disjunctions(task, condition_generator):
-    for proxy in tuple(condition_generator(task)):
+def split_disjunctions(task):
+    for proxy in tuple(all_conditions(task)):
         # Cannot use generator directly because we add/delete entries.
         if isinstance(proxy.condition, pddl.Disjunction):
             for part in proxy.condition.parts:
