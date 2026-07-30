@@ -43,12 +43,12 @@ SearchAlgorithm::SearchAlgorithm(
       description(description),
       status(IN_PROGRESS),
       solution_found(false),
+      bound(bound),
       log(utils::get_log_for_verbosity(verbosity)),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
       search_space(state_registry, log),
       statistics(log),
-      bound(bound),
       cost_type(cost_type),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(max_time),
@@ -107,6 +107,20 @@ void SearchAlgorithm::search() {
     }
     // TODO: Revise when and which search times are logged.
     log << "Actual search time: " << timer.get_elapsed_time() << endl;
+}
+
+void SearchAlgorithm::shrink_bound(int b) {
+    if (b < bound) {
+        bound = b;
+    }
+}
+
+bool SearchAlgorithm::is_greater_or_equal_to_bound(int g) {
+     if (g >= bound){
+         bound_was_used = true;
+         return true;
+     }
+     return false;
 }
 
 bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {

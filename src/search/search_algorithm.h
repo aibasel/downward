@@ -45,6 +45,7 @@ class SearchAlgorithm : public components::TaskSpecificComponent {
     SearchStatus status;
     bool solution_found;
     Plan plan;
+    int bound;
 protected:
     mutable utils::LogProxy log;
     PlanManager plan_manager;
@@ -53,7 +54,6 @@ protected:
     SearchSpace search_space;
     SearchProgress search_progress;
     SearchStatistics statistics;
-    int bound;
     OperatorCost cost_type;
     bool is_unit_cost;
     double max_time;
@@ -86,10 +86,15 @@ public:
     const SearchStatistics &get_statistics() const {
         return statistics;
     }
-    void set_bound(int b) {
-        bound = b;
+    // Set the bound to the minimum of bound and b.
+    void shrink_bound(int b);
+    // Sets bound_was_used to true if this check returns true.
+    bool is_greater_or_equal_to_bound(int g);
+    std::string get_bound_string() {
+        return std::to_string(bound);
     }
-    int get_bound() {
+    int get_final_bound() {
+        assert(status != SearchStatus::IN_PROGRESS);
         return bound;
     }
     PlanManager &get_plan_manager() {

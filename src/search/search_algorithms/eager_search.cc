@@ -44,7 +44,7 @@ EagerSearch::EagerSearch(
 void EagerSearch::initialize() {
     log << "Conducting best first search"
         << (reopen_closed_nodes ? " with" : " without")
-        << " reopening closed nodes, (real) bound = " << bound << endl;
+        << " reopening closed nodes, (real) bound = " << get_bound_string() << endl;
     assert(open_list);
 
     set<Evaluator *> evals;
@@ -223,8 +223,7 @@ void EagerSearch::generate_successors(const SearchNode &node) {
 
     for (OperatorID op_id : applicable_operators) {
         OperatorProxy op = task_proxy.get_operators()[op_id];
-        if ((node.get_real_g() + op.get_cost()) >= bound) {
-            bound_was_used = true;
+        if (is_greater_or_equal_to_bound(node.get_real_g() + op.get_cost())) {
             continue;
         }
 

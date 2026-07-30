@@ -44,7 +44,7 @@ LazySearch::LazySearch(
 }
 
 void LazySearch::initialize() {
-    log << "Conducting lazy best first search, (real) bound = " << bound
+    log << "Conducting lazy best first search, (real) bound = " << get_bound_string()
         << endl;
 
     assert(open_list);
@@ -111,8 +111,7 @@ void LazySearch::generate_successors() {
         int new_g = current_g + get_adjusted_cost(op);
         int new_real_g = current_real_g + op.get_cost();
         bool is_preferred = preferred_operators.contains(op_id);
-        if (new_real_g >= bound) {
-            bound_was_used = true;
+        if (is_greater_or_equal_to_bound(new_real_g)) {
             continue;
         }
         EvaluationContext new_eval_context(
