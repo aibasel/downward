@@ -44,8 +44,8 @@ LazySearch::LazySearch(
 }
 
 void LazySearch::initialize() {
-    log << "Conducting lazy best first search, (real) bound = " << get_bound_string()
-        << endl;
+    log << "Conducting lazy best first search, (real) bound = "
+        << get_bound_string() << endl;
 
     assert(open_list);
     set<Evaluator *> evals;

@@ -116,11 +116,11 @@ void SearchAlgorithm::shrink_bound(int b) {
 }
 
 bool SearchAlgorithm::is_greater_or_equal_to_bound(int g) {
-     if (g >= bound){
-         bound_was_used = true;
-         return true;
-     }
-     return false;
+    if (g >= bound) {
+        bound_was_used = true;
+        return true;
+    }
+    return false;
 }
 
 bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {
