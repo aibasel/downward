@@ -57,16 +57,23 @@ def exit_with_driver_unsupported_error(msg):
 
 
 def generate_portfolio_exitcode(exitcodes):
-    """A portfolio's exitcode is determined as follows:
+    """A portfolio's exitcode is determined by applying the following rules in that order:
 
-    There is exactly one type of unexpected exit code -> use it.
-    There are multiple types of unexpected exit codes -> SEARCH_CRITICAL_ERROR.
-    [..., SUCCESS, ...] -> SUCCESS
-    [..., SEARCH_UNSOLVABLE, ...] -> SEARCH_UNSOLVABLE
-    [..., SEARCH_UNSOLVED_INCOMPLETE, ...] -> SEARCH_UNSOLVED_INCOMPLETE
-    [..., SEARCH_OUT_OF_MEMORY, ..., SEARCH_OUT_OF_TIME, ...] -> SEARCH_OUT_OF_MEMORY_AND_TIME
-    [..., SEARCH_OUT_OF_TIME, ...] -> SEARCH_OUT_OF_TIME
-    [..., SEARCH_OUT_OF_MEMORY, ...] -> SEARCH_OUT_OF_MEMORY
+       There is exactly one type of unexpected exit code -> use it.
+       There are multiple types of unexpected exit codes -> SEARCH_CRITICAL_ERROR.
+
+       SUCCESS, SEARCH_OUT_OF_MEMORY, and SEARCH_OUT_OF_TIME in exitcodes -> SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY_AND_TIME
+       SUCCESS and SEARCH_OUT_OF_MEMORY in exitcodes -> SEARCH_PLAN_FOUND_AND_OUT_OF_MEMORY
+       SUCCESS and SEARCH_OUT_OF_TIME in exitcodes -> SEARCH_PLAN_FOUND_AND_OUT_OF_TIME
+       SUCCESS in exitcodes -> SUCCESS
+
+       SEARCH_UNSOLVABLE in exitcodes -> SEARCH_UNSOLVABLE
+       SEARCH_UNSOLVABLE_WITHIN_BOUND in exitcodes -> SEARCH_UNSOLVABLE_WITHIN_BOUND
+       SEARCH_UNSOLVED_INCOMPLETE in exitcodes -> SEARCH_UNSOLVED_INCOMPLETE
+
+       SEARCH_OUT_OF_MEMORY and SEARCH_OUT_OF_TIME in exitcodes -> SEARCH_OUT_OF_MEMORY_AND_TIME
+       SEARCH_OUT_OF_TIME in exitcodes -> SEARCH_OUT_OF_TIME
+       SEARCH_OUT_OF_MEMORY in exitcodes -> SEARCH_OUT_OF_MEMORY
     """
     print("Exit codes: {}".format(exitcodes))
     exitcodes = set(exitcodes)
@@ -92,7 +99,8 @@ def generate_portfolio_exitcode(exitcodes):
             return (SUCCESS, True)
 
     # A config proved unsolvability or did not find a plan.
-    for code in [SEARCH_UNSOLVABLE, SEARCH_UNSOLVED_INCOMPLETE]:
+    for code in [SEARCH_UNSOLVABLE, SEARCH_UNSOLVABLE_WITHIN_BOUND,
+                 SEARCH_UNSOLVED_INCOMPLETE]:
         if code in exitcodes:
             return (code, False)
 
