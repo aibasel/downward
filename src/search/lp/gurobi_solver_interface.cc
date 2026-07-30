@@ -97,7 +97,7 @@ GurobiSolverInterface::GurobiSolverInterface()
       model(nullptr),
       num_permanent_constraints(0),
       num_temporary_constraints(0),
-      model_dirty(false) {
+      has_pending_constraint_additions(false) {
     int status = GRBloadenv(&env, "");
     if (status) {
         handle_gurobi_error(env, status);
@@ -171,8 +171,7 @@ void GurobiSolverInterface::load_problem(const LinearProgram &lp) {
         add_constraint(env, model, constraint);
     }
 
-    GRB_CALL(env, GRBupdatemodel, model);
-    model_dirty = false;
+    has_pending_constraint_additions = constraints.size() > 0;
 }
 
 void GurobiSolverInterface::add_temporary_constraints(
@@ -184,7 +183,9 @@ void GurobiSolverInterface::add_temporary_constraints(
     }
 
     num_temporary_constraints += static_cast<int>(constraints.size());
-    model_dirty = true;
+    if (constraints.size() > 0) {
+        has_pending_constraint_additions = true;
+    }
 }
 
 void GurobiSolverInterface::clear_temporary_constraints() {
@@ -194,9 +195,9 @@ void GurobiSolverInterface::clear_temporary_constraints() {
         return;
     }
 
-    if (model_dirty) {
+    if (has_pending_constraint_additions) {
         GRB_CALL(env, GRBupdatemodel, model);
-        model_dirty = false;
+        has_pending_constraint_additions = false;
     }
 
     vector<int> indices(num_temporary_constraints);
@@ -205,10 +206,8 @@ void GurobiSolverInterface::clear_temporary_constraints() {
     GRB_CALL(
         env, GRBdelconstrs, model, num_temporary_constraints, indices.data());
 
-    GRB_CALL(env, GRBupdatemodel, model);
-
     num_temporary_constraints = 0;
-    model_dirty = false;
+    has_pending_constraint_additions = false;
 }
 
 double GurobiSolverInterface::get_infinity() const {
@@ -228,8 +227,6 @@ void GurobiSolverInterface::set_objective_coefficients(
         env, GRBsetdblattrarray, model, GRB_DBL_ATTR_OBJ, 0,
         static_cast<int>(coefficients.size()),
         const_cast<double *>(coefficients.data()));
-
-    model_dirty = true;
 }
 
 void GurobiSolverInterface::set_objective_coefficient(
@@ -239,8 +236,6 @@ void GurobiSolverInterface::set_objective_coefficient(
 
     GRB_CALL(
         env, GRBsetdblattrelement, model, GRB_DBL_ATTR_OBJ, index, coefficient);
-
-    model_dirty = true;
 }
 
 void GurobiSolverInterface::set_constraint_rhs(
@@ -248,32 +243,28 @@ void GurobiSolverInterface::set_constraint_rhs(
     assert(model);
     assert(index >= 0 && index < get_num_constraints());
 
-    if (model_dirty) {
+    if (has_pending_constraint_additions) {
         GRB_CALL(env, GRBupdatemodel, model);
-        model_dirty = false;
+        has_pending_constraint_additions = false;
     }
 
     GRB_CALL(
         env, GRBsetdblattrelement, model, GRB_DBL_ATTR_RHS, index,
         right_hand_side);
-
-    model_dirty = true;
 }
 
 void GurobiSolverInterface::set_constraint_sense(int index, Sense sense) {
     assert(model);
     assert(index >= 0 && index < get_num_constraints());
 
-    if (model_dirty) {
+    if (has_pending_constraint_additions) {
         GRB_CALL(env, GRBupdatemodel, model);
-        model_dirty = false;
+        has_pending_constraint_additions = false;
     }
 
     GRB_CALL(
         env, GRBsetcharattrelement, model, GRB_CHAR_ATTR_SENSE, index,
         constraint_sense_to_gurobi(sense));
-
-    model_dirty = true;
 }
 
 void GurobiSolverInterface::set_variable_lower_bound(int index, double bound) {
@@ -281,8 +272,6 @@ void GurobiSolverInterface::set_variable_lower_bound(int index, double bound) {
     assert(index >= 0 && index < get_num_variables());
 
     GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_LB, index, bound);
-
-    model_dirty = true;
 }
 
 void GurobiSolverInterface::set_variable_upper_bound(int index, double bound) {
@@ -290,8 +279,6 @@ void GurobiSolverInterface::set_variable_upper_bound(int index, double bound) {
     assert(index >= 0 && index < get_num_variables());
 
     GRB_CALL(env, GRBsetdblattrelement, model, GRB_DBL_ATTR_UB, index, bound);
-
-    model_dirty = true;
 }
 
 void GurobiSolverInterface::set_mip_gap(double gap) {
@@ -308,22 +295,15 @@ void GurobiSolverInterface::set_mip_gap(double gap) {
 void GurobiSolverInterface::solve() {
     assert(model);
 
-    if (model_dirty) {
-        GRB_CALL(env, GRBupdatemodel, model);
-        model_dirty = false;
-    }
-
     GRB_CALL(env, GRBoptimize, model);
+    has_pending_constraint_additions = false;
 }
 
 void GurobiSolverInterface::write_lp(const string &filename) const {
     assert(model);
 
-    if (model_dirty) {
-        GRB_CALL(env, GRBupdatemodel, model);
-    }
-
     GRB_CALL(env, GRBwrite, model, filename.c_str());
+    has_pending_constraint_additions = false;
 }
 
 void GurobiSolverInterface::print_failure_analysis() const {
