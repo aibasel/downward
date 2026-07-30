@@ -36,7 +36,7 @@ class DomainTransitionGraphCollection {
 
 public:
     DomainTransitionGraphCollection(const TaskProxy &task_proxy);
-    DomainTransitionGraph get_domain_transition_graph(int var_id) const;
+    const DomainTransitionGraph &get_domain_transition_graph(int var_id) const;
 };
 
 class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {

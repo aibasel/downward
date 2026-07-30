@@ -93,7 +93,7 @@ void DomainTransitionGraphCollection::add_successor(
     }
 }
 
-DomainTransitionGraph
+const DomainTransitionGraph &
 DomainTransitionGraphCollection::get_domain_transition_graph(int var_id) const {
     assert(utils::in_bounds(var_id, graphs));
     return graphs[var_id];
