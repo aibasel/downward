@@ -19,7 +19,7 @@ license = "GPL-3.0-only"
 [project.urls]
 Homepage = "https://www.fast-downward.org"
 Issues = "https://issues.fast-downward.org"
-Source Code = "https://github.com/aibasel/downward"
+Repository = "https://github.com/aibasel/downward"
 
 [tool.setuptools.dynamic]
 version = {file = "VERSION"}
