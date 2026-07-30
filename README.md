@@ -2,7 +2,7 @@
 
 Fast Downward is a domain-independent classical planning system.
 
-Copyright 2003-2025 Fast Downward contributors (see below).
+Copyright 2003-2026 Fast Downward contributors (see below).
 
 For further information:
 - Fast Downward website: <https://www.fast-downward.org>
@@ -60,19 +60,19 @@ Currently, this list is sorted by the last year the person has been
 active, and in case of ties, by the earliest year the person started
 contributing, and finally by last name.
 
+- 2003-2026 Malte Helmert
+- 2008-2016, 2018-2026 Gabriele Roeger
+- 2012-2026 Florian Pommerening
+- 2021-2026 Clemens Büchner
 - 2022-2026 Remo Christen
 - 2022-2026 Simon Dold
+- 2023-2026 Claudia S. Grundke
+- 2024–2026 Tanja Schindler
 - 2025-2026 Esther Mugdan
-- 2003-2025 Malte Helmert
-- 2008-2016, 2018-2025 Gabriele Roeger
 - 2009, 2025 Christian Muise
 - 2010-2025 Jendrik Seipp
 - 2010-2011, 2013-2025 Silvan Sievers
-- 2012-2025 Florian Pommerening
 - 2013, 2015-2025 Salomé Eriksson
-- 2021-2025 Clemens Büchner
-- 2023-2025 Claudia S. Grundke
-- 2024–2025 Tanja Schindler
 - 2024-2025 David Speck
 - 2025 Travis Rivera Petit
 - 2018-2024 Patrick Ferber
