@@ -22,7 +22,6 @@ class DomainTransitionGraphCollection {
       heuristics. We need a more general mechanism for creating data structures
       of this kind.
     */
-    // TODO: Are we happy with the class name?
 
     // Domain transition graphs are stored as one adjacency list per value.
     std::vector<DomainTransitionGraph> graphs;

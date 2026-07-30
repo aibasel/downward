@@ -9,6 +9,7 @@
 #include "../task_proxy.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/collections.h"
 #include "../utils/logging.h"
 #include "../utils/system.h"
 
@@ -66,18 +67,16 @@ void DomainTransitionGraphCollection::compute_successors(
     /* If the operator can change the value of `var` from `pre` to
        `post`, we insert `post` into `graphs[var][pre]`. */
     auto [var, post] = effect.get_fact().get_pair();
-    if (preconditions.contains(var)) {
-        // stubborn_sets utils::get_value_or_default instead of contains()
-        // but does not allow conditional effects
-        int pre = preconditions.at(var);
-        if (effect_conditions.contains(var) &&
-            effect_conditions.at(var) != pre) {
+    int pre = utils::get_value_or_default(preconditions, var, -1);
+    int eff_cond = utils::get_value_or_default(effect_conditions, var, -1);
+    if (pre != -1) {
+        if (eff_cond != -1 && eff_cond != pre) {
             // The precondition conflicts with the effect condition.
             return;
         }
         add_successor(var, pre, post);
-    } else if (effect_conditions.contains(var)) {
-        add_successor(var, effect_conditions.at(var), post);
+    } else if (eff_cond != -1) {
+        add_successor(var, eff_cond, post);
     } else {
         int domain_size = effect.get_fact().get_variable().get_domain_size();
         for (int pre = 0; pre < domain_size; ++pre) {
