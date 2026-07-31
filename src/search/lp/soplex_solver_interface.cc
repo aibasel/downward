@@ -4,6 +4,8 @@
 
 #include "../utils/system.h"
 
+#include <string>
+
 using namespace std;
 using namespace soplex;
 
@@ -26,16 +28,35 @@ static LPRowSetReal constraints_to_row_set(
 
     LPRowSetReal rows(num_rows, num_nonzeros);
     for (const LPConstraint &constraint : constraints) {
-        const vector<int> variables = constraint.get_variables();
-        const vector<double> coefficients = constraint.get_coefficients();
+        const vector<int> &variables = constraint.get_variables();
+        const vector<double> &coefficients = constraint.get_coefficients();
         int num_entries = coefficients.size();
         soplex::DSVectorReal entries(num_entries);
         for (int i = 0; i < num_entries; ++i) {
             entries.add(variables[i], coefficients[i]);
         }
-        rows.add(
-            constraint.get_lower_bound(), entries,
-            constraint.get_upper_bound());
+        double b = constraint.get_right_hand_side();
+        LPConstraintSense sense = constraint.get_sense();
+        double lhs, rhs;
+        switch (sense) {
+        case LPConstraintSense::LESS_EQUAL:
+            lhs = -soplex::infinity;
+            rhs = b;
+            break;
+        case LPConstraintSense::GREATER_EQUAL:
+            lhs = b;
+            rhs = soplex::infinity;
+            break;
+        case LPConstraintSense::EQUAL:
+            lhs = b;
+            rhs = b;
+            break;
+        default:
+            ABORT(
+                "Invalid constraint sense code: " +
+                to_string(static_cast<int>(sense)));
+        }
+        rows.add(lhs, entries, rhs);
     }
     return rows;
 }
@@ -71,12 +92,21 @@ void SoPlexSolverInterface::load_problem(const LinearProgram &lp) {
     soplex.addRowsReal(constraints_to_row_set(lp.get_constraints()));
     num_permanent_constraints = lp.get_constraints().size();
     num_temporary_constraints = 0;
+    constraint_senses.clear();
+    for (const LPConstraint &constraint : lp.get_constraints()) {
+        constraint_senses.push_back(constraint.get_sense());
+    }
 }
 
 void SoPlexSolverInterface::add_temporary_constraints(
     const named_vector::NamedVector<LPConstraint> &constraints) {
     soplex.addRowsReal(constraints_to_row_set(constraints));
-    num_temporary_constraints = constraints.size();
+    int num_constraints = constraints.size();
+    num_temporary_constraints += num_constraints;
+    for (int i = 0; i < num_constraints; ++i) {
+        const LPConstraint &c = constraints[i];
+        constraint_senses.push_back(c.get_sense());
+    }
 }
 
 void SoPlexSolverInterface::clear_temporary_constraints() {
@@ -84,6 +114,7 @@ void SoPlexSolverInterface::clear_temporary_constraints() {
         int first = num_permanent_constraints;
         int last = first + num_temporary_constraints - 1;
         soplex.removeRowRangeReal(first, last, nullptr);
+        constraint_senses.resize(num_permanent_constraints);
         num_temporary_constraints = 0;
     }
 }
@@ -103,16 +134,6 @@ void SoPlexSolverInterface::set_objective_coefficients(
 void SoPlexSolverInterface::set_objective_coefficient(
     int index, double coefficient) {
     soplex.changeObjReal(index, coefficient);
-}
-
-void SoPlexSolverInterface::set_constraint_lower_bound(
-    int index, double bound) {
-    soplex.changeLhsReal(index, bound);
-}
-
-void SoPlexSolverInterface::set_constraint_upper_bound(
-    int index, double bound) {
-    soplex.changeRhsReal(index, bound);
 }
 
 void SoPlexSolverInterface::set_variable_lower_bound(int index, double bound) {
@@ -239,5 +260,71 @@ bool SoPlexSolverInterface::has_temporary_constraints() const {
 
 void SoPlexSolverInterface::print_statistics() const {
     soplex.printStatistics(cout);
+}
+
+void SoPlexSolverInterface::set_constraint_rhs(int index, double b) {
+    const LPConstraintSense sense = constraint_senses[index];
+
+    switch (sense) {
+    case LPConstraintSense::GREATER_EQUAL:
+        soplex.changeLhsReal(index, b);
+        break;
+
+    case LPConstraintSense::LESS_EQUAL:
+        soplex.changeRhsReal(index, b);
+        break;
+
+    case LPConstraintSense::EQUAL:
+        soplex.changeLhsReal(index, b);
+        soplex.changeRhsReal(index, b);
+        break;
+
+    default:
+        ABORT(
+            "Invalid constraint sense code: " +
+            to_string(static_cast<int>(sense)));
+    }
+}
+
+void SoPlexSolverInterface::set_constraint_sense(
+    int index, LPConstraintSense sense) {
+    double lhs = soplex.lhsReal(index);
+    double rhs = soplex.rhsReal(index);
+
+    bool lhs_is_finite = (-infinity < lhs);
+    bool rhs_is_finite = (rhs < infinity);
+
+    double b;
+    if (!lhs_is_finite && rhs_is_finite) {
+        b = rhs;
+    } else if (lhs_is_finite && !rhs_is_finite) {
+        b = lhs;
+    } else if (lhs_is_finite && rhs_is_finite && lhs == rhs) {
+        b = rhs;
+    } else {
+        cerr << "Invalid constraint." << endl;
+        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+    }
+
+    switch (sense) {
+    case LPConstraintSense::LESS_EQUAL:
+        soplex.changeLhsReal(index, -infinity);
+        soplex.changeRhsReal(index, b);
+        break;
+    case LPConstraintSense::GREATER_EQUAL:
+        soplex.changeLhsReal(index, b);
+        soplex.changeRhsReal(index, infinity);
+        break;
+    case LPConstraintSense::EQUAL:
+        soplex.changeLhsReal(index, b);
+        soplex.changeRhsReal(index, b);
+        break;
+    default:
+        ABORT(
+            "Invalid constraint sense code: " +
+            to_string(static_cast<int>(sense)));
+    }
+
+    constraint_senses[index] = sense;
 }
 }

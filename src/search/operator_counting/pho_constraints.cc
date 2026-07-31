@@ -39,7 +39,7 @@ void PhOConstraints::initialize_constraints(
         lp.get_constraints();
     constraint_offset = constraints.size();
     for (const shared_ptr<pdbs::PatternDatabase> &pdb : *pdbs) {
-        constraints.emplace_back(0, lp.get_infinity());
+        constraints.emplace_back(lp::LPConstraintSense::GREATER_EQUAL, 0);
         lp::LPConstraint &constraint = constraints.back();
         for (OperatorProxy op : task_proxy.get_operators()) {
             if (pdbs::is_operator_relevant(pdb->get_pattern(), op)) {
@@ -59,7 +59,7 @@ bool PhOConstraints::update_constraints(
         if (h == numeric_limits<int>::max()) {
             return true;
         }
-        lp_solver.set_constraint_lower_bound(constraint_id, h);
+        lp_solver.set_constraint_rhs(constraint_id, h);
     }
     return false;
 }

@@ -59,7 +59,8 @@ void StateEquationConstraints::add_constraints(
     named_vector::NamedVector<lp::LPConstraint> &constraints, double infinity) {
     for (vector<Proposition> &var_propositions : propositions) {
         for (Proposition &prop : var_propositions) {
-            lp::LPConstraint constraint(-infinity, infinity);
+            lp::LPConstraint constraint(
+                lp::LPConstraintSense::GREATER_EQUAL, -infinity);
             add_indices_to_constraint(constraint, prop.always_produced_by, 1.0);
             add_indices_to_constraint(
                 constraint, prop.sometimes_produced_by, 1.0);
@@ -112,7 +113,7 @@ bool StateEquationConstraints::update_constraints(
                 if (goal_state[var] == value) {
                     ++lower_bound;
                 }
-                lp_solver.set_constraint_lower_bound(
+                lp_solver.set_constraint_rhs(
                     prop.constraint_index, lower_bound);
             }
         }
