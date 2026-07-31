@@ -347,7 +347,8 @@ void DeleteRelaxationRRConstraints::create_constraints(
                 pair<FactPair, FactPair> key = make_pair(pre, eff);
                 if (!constraint3_ids.contains(key)) {
                     constraint3_ids[key] = constraints.size();
-                    lp::LPConstraint constraint(lp::LPConstraintSense::GREATER_EQUAL, 0);
+                    lp::LPConstraint constraint(
+                        lp::LPConstraintSense::GREATER_EQUAL, 0);
                     constraint.insert(lp_var_ids.id_of_fp(pre), 1);
                     constraints.push_back(move(constraint));
                 }
@@ -387,7 +388,8 @@ void DeleteRelaxationRRConstraints::create_constraints(
     for (OperatorProxy op : ops) {
         for (EffectProxy eff_proxy : op.get_effects()) {
             FactPair eff = eff_proxy.get_fact().get_pair();
-            lp::LPConstraint constraint(lp::LPConstraintSense::GREATER_EQUAL, 0);
+            lp::LPConstraint constraint(
+                lp::LPConstraintSense::GREATER_EQUAL, 0);
             constraint.insert(lp_var_ids.id_of_fpa(eff, op), -1);
             constraint.insert(op.get_id(), 1);
             constraints.push_back(move(constraint));
@@ -415,7 +417,8 @@ void DeleteRelaxationRRConstraints::create_constraints_ve(
             FactPair pre = pre_proxy.get_pair();
             for (EffectProxy eff_proxy : op.get_effects()) {
                 FactPair eff = eff_proxy.get_fact().get_pair();
-                lp::LPConstraint constraint(lp::LPConstraintSense::GREATER_EQUAL, 0);
+                lp::LPConstraint constraint(
+                    lp::LPConstraintSense::GREATER_EQUAL, 0);
                 constraint.insert(lp_var_ids.id_of_e(make_pair(pre, eff)), 1);
                 constraint.insert(lp_var_ids.id_of_fpa(eff, op), -1);
                 constraints.push_back(move(constraint));
@@ -493,7 +496,8 @@ void DeleteRelaxationRRConstraints::create_constraints_tl(
                     // Prevail conditions are compiled away in the paper.
                     continue;
                 }
-                lp::LPConstraint constraint(lp::LPConstraintSense::LESS_EQUAL, num_facts - 1);
+                lp::LPConstraint constraint(
+                    lp::LPConstraintSense::LESS_EQUAL, num_facts - 1);
                 constraint.insert(lp_var_ids.id_of_t(pre), 1);
                 constraint.insert(lp_var_ids.id_of_t(eff), -1);
                 constraint.insert(lp_var_ids.id_of_fpa(eff, op), num_facts);

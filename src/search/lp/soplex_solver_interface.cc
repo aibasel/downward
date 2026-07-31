@@ -280,7 +280,8 @@ void SoPlexSolverInterface::set_constraint_rhs(int index, double b) {
     }
 }
 
-void SoPlexSolverInterface::set_constraint_sense(int index, LPConstraintSense sense) {
+void SoPlexSolverInterface::set_constraint_sense(
+    int index, LPConstraintSense sense) {
     const double lhs = soplex.lhsReal(index);
     const double rhs = soplex.rhsReal(index);
 

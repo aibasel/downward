@@ -149,7 +149,8 @@ void DeleteRelaxationIFConstraints::create_constraints(
     for (OperatorProxy op : ops) {
         for (EffectProxy eff : op.get_effects()) {
             FactPair f = eff.get_fact().get_pair();
-            lp::LPConstraint constraint(lp::LPConstraintSense::GREATER_EQUAL, 0);
+            lp::LPConstraint constraint(
+                lp::LPConstraintSense::GREATER_EQUAL, 0);
             constraint.insert(get_var_op_used(op), 1);
             constraint.insert(get_var_first_achiever(op, f), -1);
             constraints.push_back(constraint);
@@ -162,7 +163,8 @@ void DeleteRelaxationIFConstraints::create_constraints(
     */
     for (OperatorProxy op : ops) {
         for (FactProxy f : op.get_preconditions()) {
-            lp::LPConstraint constraint(lp::LPConstraintSense::GREATER_EQUAL, 0);
+            lp::LPConstraint constraint(
+                lp::LPConstraintSense::GREATER_EQUAL, 0);
             constraint.insert(get_var_fact_reached(f.get_pair()), 1);
             constraint.insert(get_var_op_used(op), -1);
             constraints.push_back(constraint);
@@ -176,7 +178,8 @@ void DeleteRelaxationIFConstraints::create_constraints(
         */
         for (OperatorProxy op : ops) {
             for (FactProxy f : op.get_preconditions()) {
-                lp::LPConstraint constraint(lp::LPConstraintSense::GREATER_EQUAL, 0);
+                lp::LPConstraint constraint(
+                    lp::LPConstraintSense::GREATER_EQUAL, 0);
                 constraint.insert(get_var_op_time(op), 1);
                 constraint.insert(get_var_fact_time(f.get_pair()), -1);
                 constraints.push_back(constraint);
@@ -195,7 +198,8 @@ void DeleteRelaxationIFConstraints::create_constraints(
         for (OperatorProxy op : ops) {
             for (EffectProxy eff : op.get_effects()) {
                 FactPair f = eff.get_fact().get_pair();
-                lp::LPConstraint constraint(lp::LPConstraintSense::GREATER_EQUAL, 1 - M);
+                lp::LPConstraint constraint(
+                    lp::LPConstraintSense::GREATER_EQUAL, 1 - M);
                 constraint.insert(get_var_fact_time(f), 1);
                 constraint.insert(get_var_op_time(op), -1);
                 constraint.insert(get_var_first_achiever(op, f), -M);

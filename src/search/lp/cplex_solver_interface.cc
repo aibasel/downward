@@ -75,7 +75,8 @@ static int objective_sense_to_cplex_sense(LPObjectiveSense sense) {
     }
 }
 
-static char constraint_sense_to_cplex_sense(LPConstraintSense constraint_sense) {
+static char constraint_sense_to_cplex_sense(
+    LPConstraintSense constraint_sense) {
     switch (constraint_sense) {
     case LPConstraintSense::LESS_EQUAL:
         return 'L';
@@ -87,7 +88,8 @@ static char constraint_sense_to_cplex_sense(LPConstraintSense constraint_sense) 
         return 'E';
         break;
     default:
-        ABORT("Unsupported constraint sense: " + 
+        ABORT(
+            "Unsupported constraint sense: " +
             static_cast<int>(constraint_sense));
     }
 }
@@ -341,7 +343,8 @@ void CplexSolverInterface::set_constraint_rhs(
     CPX_CALL(CPXchgrhs, env, problem, 1, &index, &right_hand_side);
 }
 
-void CplexSolverInterface::set_constraint_sense(int index, LPConstraintSense sense) {
+void CplexSolverInterface::set_constraint_sense(
+    int index, LPConstraintSense sense) {
     char cplex_sense = constraint_sense_to_cplex_sense(sense);
     CPX_CALL(CPXchgsense, env, problem, 1, &index, &cplex_sense);
 }

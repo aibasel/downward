@@ -118,7 +118,8 @@ void PotentialOptimizer::construct_lp() {
         for (FactProxy pre : op.get_preconditions()) {
             var_to_precondition[pre.get_variable().get_id()] = pre.get_value();
         }
-        lp::LPConstraint constraint(lp::LPConstraintSense::LESS_EQUAL, op.get_cost());
+        lp::LPConstraint constraint(
+            lp::LPConstraintSense::LESS_EQUAL, op.get_cost());
         vector<pair<int, int>> coefficients;
         for (EffectProxy effect : op.get_effects()) {
             VariableProxy var = effect.get_fact().get_variable();
