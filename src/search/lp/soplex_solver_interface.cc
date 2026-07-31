@@ -49,9 +49,7 @@ static LPRowSetReal constraints_to_row_set(
             rhs = b;
             break;
         default:
-            cerr << "Invalid constraint sense code: " << static_cast<int>(s)
-                 << endl;
-            utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+            ABORT("Invalid constraint sense code: " + static_cast<int>(s));
         }
         rows.add(lhs, entries, rhs);
     }
