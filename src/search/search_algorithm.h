@@ -66,6 +66,8 @@ protected:
     void set_plan(const Plan &plan);
     bool check_goal_and_set_plan(const State &state);
     int get_adjusted_cost(const OperatorProxy &op) const;
+    // Sets bound_was_used to true if this check returns true.
+    bool is_greater_or_equal_to_bound(int g);
 public:
     SearchAlgorithm(
         const std::shared_ptr<AbstractTask> &task, OperatorCost cost_type,
@@ -88,8 +90,6 @@ public:
     }
     // Set the bound to the minimum of bound and b.
     void shrink_bound(int b);
-    // Sets bound_was_used to true if this check returns true.
-    bool is_greater_or_equal_to_bound(int g);
     std::string get_bound_string() {
         return std::to_string(bound);
     }
