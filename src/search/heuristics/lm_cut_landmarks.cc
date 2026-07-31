@@ -243,7 +243,7 @@ static bool has_no_zero_cost_achiever(const RelaxedProposition *prop) {
     return true;
 }
 
-void LandmarkCutLandmarks::tie_break_supporter(RelaxedOperator *op) {
+void LandmarkCutLandmarks::break_supporter_ties(RelaxedOperator *op) {
     if (dont_tie_break) {
         return;
     }
@@ -276,7 +276,7 @@ void LandmarkCutLandmarks::mark_goal_plateau(RelaxedProposition *subgoal) {
         subgoal->status = GOAL_ZONE;
         for (RelaxedOperator *achiever : subgoal->effect_of)
             if (achiever->cost == 0) {
-                tie_break_supporter(achiever);
+                break_supporter_ties(achiever);
                 mark_goal_plateau(achiever->h_max_supporter);
             }
     }

@@ -96,7 +96,7 @@ class LandmarkCutLandmarks {
         }
     }
 
-    void tie_break_supporter(RelaxedOperator *op);
+    void break_supporter_ties(RelaxedOperator *op);
     void mark_goal_plateau(RelaxedProposition *subgoal);
     void validate_h_max() const;
 public:
