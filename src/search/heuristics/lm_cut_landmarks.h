@@ -8,7 +8,13 @@
 #include <cassert>
 #include <functional>
 #include <memory>
+#include <tuple>
 #include <vector>
+
+namespace plugins {
+class Feature;
+class Options;
+}
 
 namespace lm_cut_heuristic {
 // TODO: Fix duplication with the other relaxation heuristics.
@@ -56,6 +62,10 @@ struct RelaxedProposition {
 };
 
 class LandmarkCutLandmarks {
+    bool use_goal_zone_detection;
+    bool use_border_detection;
+    bool dont_tie_break;
+
     std::vector<RelaxedOperator> relaxed_operators;
     std::vector<std::vector<RelaxedProposition>> propositions;
     RelaxedProposition artificial_precondition;
@@ -86,6 +96,7 @@ class LandmarkCutLandmarks {
         }
     }
 
+    void break_supporter_ties(RelaxedOperator *op);
     void mark_goal_plateau(RelaxedProposition *subgoal);
     void validate_h_max() const;
 public:
@@ -93,7 +104,9 @@ public:
     using CostCallback = std::function<void(int)>;
     using LandmarkCallback = std::function<void(const Landmark &, int)>;
 
-    LandmarkCutLandmarks(const TaskProxy &task_proxy);
+    LandmarkCutLandmarks(
+        const TaskProxy &task_proxy, bool use_goal_zone_detection,
+        bool use_border_detection);
 
     /*
       Compute LM-cut landmarks for the given state.
@@ -120,6 +133,11 @@ inline void RelaxedOperator::update_h_max_supporter() {
             h_max_supporter = preconditions[i];
     h_max_supporter_cost = h_max_supporter->h_max_cost;
 }
+
+extern void add_landmark_cut_landmarks_options_to_feature(
+    plugins::Feature &feature);
+extern std::tuple<bool, bool> get_landmark_cut_landmarks_arguments_from_options(
+    const plugins::Options &opts);
 }
 
 #endif
