@@ -97,7 +97,8 @@ void SoPlexSolverInterface::add_temporary_constraints(
     const named_vector::NamedVector<LPConstraint> &constraints) {
     soplex.addRowsReal(constraints_to_row_set(constraints));
     num_temporary_constraints += constraints.size();
-    for (int i = 0; i < (int)constraints.size(); ++i) {
+    int num_constraints = constraints.size();
+    for (int i = 0; i < num_constraints; ++i) {
         const auto &c = constraints[i];
         constraint_senses.push_back(c.get_sense());
     }
