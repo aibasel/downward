@@ -86,6 +86,24 @@ def get_arg_parser():
         help="How to assign layers to derived variables. 'min' attempts to put as "
         "many variables into the same layer as possible, while 'max' puts each variable "
         "into its own layer unless it is part of a cycle.")
+    argparser.add_argument(
+        "--condition-normalization-strategy",
+        default="dnf",
+        choices=[
+            "dnf",
+            "axiomatize_disjunctions",
+            "axiomatize_disjunctions_existentials",
+        ],
+        help="Strategy for normalizing PDDL conditions. Strategy 'dnf' converts "
+        "conditions to disjunctive normal form, which may cause exponential "
+        "blow-up for complex formulas but introduces few derived predicates. "
+        "Strategy 'axiomatize_disjunctions' replaces every disjunction by a derived "
+        "predicate, avoiding the DNF blow-up while preserving existential "
+        "quantifiers. Strategy 'axiomatize_disjunctions_existentials' additionally replaces "
+        "existential quantifiers in action conditions and goals with derived "
+        "predicates. This typically introduces more derived predicates but "
+        "avoids creating multiple operator instances."
+    )
     return argparser
 
 
