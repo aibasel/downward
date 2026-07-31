@@ -266,7 +266,12 @@ void LandmarkCutLandmarks::mark_goal_plateau(RelaxedProposition *subgoal) {
     // NOTE: subgoal can be null if we got here via recursion through
     // a zero-cost action that is relaxed unreachable. (This can only
     // happen in domains which have zero-cost actions to start with.)
-    // For example, this happens in pegsol-strips #01.
+/*
+  NOTE: subgoal can be null if we got here via recursion through
+  a zero-cost action that is relaxed unreachable. (This can only
+  happen in domains which have zero-cost actions to start with.)
+  For example, this happens in pegsol-strips #01.
+*/
     if (subgoal && subgoal->status != GOAL_ZONE) {
         subgoal->status = GOAL_ZONE;
         for (RelaxedOperator *achiever : subgoal->effect_of)
