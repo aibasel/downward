@@ -38,7 +38,7 @@ jobs:
 
       GUROBI_URL: ${{ secrets.GUROBI1302_LINUX_URL }}
       GUROBI_HOME: /home/runner/lib/gurobi1302/linux64
-      GUROBI_LIB: /home/runner/lib/gurobi1302/linux64/lib/libgurobi130.so
+      GUROBI_LIB: /home/runner/lib/gurobi1302/linux64/lib
       LD_LIBRARY_PATH: /home/runner/lib/gurobi1302/linux64/lib
 
       soplex_DIR: /home/runner/lib/soplex-7.1.0

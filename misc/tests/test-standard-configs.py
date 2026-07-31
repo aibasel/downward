@@ -78,5 +78,3 @@ def test_configs_soplex(config, debug):
 
 def teardown_module(module):
     cleanup()
-
-
