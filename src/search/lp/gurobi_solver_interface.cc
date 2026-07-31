@@ -50,13 +50,13 @@ int objective_sense_to_gurobi(LPObjectiveSense sense) {
     ABORT("Unknown LP objective sense.");
 }
 
-char constraint_sense_to_gurobi(Sense sense) {
+char constraint_sense_to_gurobi(LPConstraintSense sense) {
     switch (sense) {
-    case Sense::GE:
+    case LPConstraintSense::GREATER_EQUAL:
         return GRB_GREATER_EQUAL;
-    case Sense::LE:
+    case LPConstraintSense::LESS_EQUAL:
         return GRB_LESS_EQUAL;
-    case Sense::EQ:
+    case LPConstraintSense::EQUAL:
         return GRB_EQUAL;
     }
 
@@ -253,7 +253,7 @@ void GurobiSolverInterface::set_constraint_rhs(
         right_hand_side);
 }
 
-void GurobiSolverInterface::set_constraint_sense(int index, Sense sense) {
+void GurobiSolverInterface::set_constraint_sense(int index, LPConstraintSense sense) {
     assert(model);
     assert(index >= 0 && index < get_num_constraints());
 
