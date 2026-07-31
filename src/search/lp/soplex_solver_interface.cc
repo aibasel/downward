@@ -99,7 +99,7 @@ void SoPlexSolverInterface::add_temporary_constraints(
     num_temporary_constraints += constraints.size();
     int num_constraints = constraints.size();
     for (int i = 0; i < num_constraints; ++i) {
-        const auto &c = constraints[i];
+        const LPConstraint &c = constraints[i];
         constraint_senses.push_back(c.get_sense());
     }
 }
