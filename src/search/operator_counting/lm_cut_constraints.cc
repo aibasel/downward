@@ -25,7 +25,7 @@ bool LMCutConstraints::update_constraints(
 
     bool dead_end = landmark_generator->compute_landmarks(
         state, nullptr, [&](const vector<int> &op_ids, int /*cost*/) {
-            constraints.emplace_back(lp::Sense::GE, 1.0);
+            constraints.emplace_back(lp::LPConstraintSense::GREATER_EQUAL, 1.0);
             lp::LPConstraint &landmark_constraint = constraints.back();
             for (int op_id : op_ids) {
                 landmark_constraint.insert(op_id, 1.0);

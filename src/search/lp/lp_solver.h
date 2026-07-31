@@ -31,21 +31,21 @@ std::tuple<LPSolverType> get_lp_solver_arguments_from_options(
 
 class LinearProgram;
 
-enum class Sense {
-    GE, // ax >= b
-    LE, // ax <= b
-    EQ // ax = b
+enum class LPConstraintSense {
+    GREATER_EQUAL, // ax >= b
+    LESS_EQUAL, // ax <= b
+    EQUAL // ax = b
 };
 
-std::ostream &operator<<(std::ostream &os, Sense s);
+std::ostream &operator<<(std::ostream &os, LPConstraintSense s);
 
 class LPConstraint {
     std::vector<int> variables;
     std::vector<double> coefficients;
-    Sense sense;
+    LPConstraintSense sense;
     double right_hand_side;
 public:
-    LPConstraint(Sense sense, double right_hand_side);
+    LPConstraint(LPConstraintSense sense, double right_hand_side);
 
     const std::vector<int> &get_variables() const {
         return variables;
@@ -58,7 +58,7 @@ public:
         return right_hand_side;
     }
 
-    Sense get_sense() const {
+    LPConstraintSense get_sense() const {
         return sense;
     }
 
@@ -66,7 +66,7 @@ public:
         right_hand_side = rhs;
     }
 
-    void set_sense(Sense s) {
+    void set_sense(LPConstraintSense s) {
         sense = s;
     }
 
@@ -140,7 +140,7 @@ public:
     void set_objective_coefficients(const std::vector<double> &coefficients);
     void set_objective_coefficient(int index, double coefficient);
     void set_constraint_rhs(int index, double right_hand_side);
-    void set_constraint_sense(int index, Sense sense);
+    void set_constraint_sense(int index, LPConstraintSense sense);
     void set_variable_lower_bound(int index, double bound);
     void set_variable_upper_bound(int index, double bound);
 

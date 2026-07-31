@@ -308,7 +308,7 @@ void DeleteRelaxationRRConstraints::create_constraints(
         constraint_offsets.push_back(constraints.size());
         for (int value_p = 0; value_p < var_p.get_domain_size(); ++value_p) {
             FactPair fact_p(var_id_p, value_p);
-            lp::LPConstraint constraint(lp::Sense::EQ, 0);
+            lp::LPConstraint constraint(lp::LPConstraintSense::EQUAL, 0);
             constraint.insert(lp_var_ids.id_of_fp(fact_p), 1);
             constraints.push_back(move(constraint));
         }
@@ -347,7 +347,7 @@ void DeleteRelaxationRRConstraints::create_constraints(
                 pair<FactPair, FactPair> key = make_pair(pre, eff);
                 if (!constraint3_ids.contains(key)) {
                     constraint3_ids[key] = constraints.size();
-                    lp::LPConstraint constraint(lp::Sense::GE, 0);
+                    lp::LPConstraint constraint(lp::LPConstraintSense::GREATER_EQUAL, 0);
                     constraint.insert(lp_var_ids.id_of_fp(pre), 1);
                     constraints.push_back(move(constraint));
                 }
@@ -387,7 +387,7 @@ void DeleteRelaxationRRConstraints::create_constraints(
     for (OperatorProxy op : ops) {
         for (EffectProxy eff_proxy : op.get_effects()) {
             FactPair eff = eff_proxy.get_fact().get_pair();
-            lp::LPConstraint constraint(lp::Sense::GE, 0);
+            lp::LPConstraint constraint(lp::LPConstraintSense::GREATER_EQUAL, 0);
             constraint.insert(lp_var_ids.id_of_fpa(eff, op), -1);
             constraint.insert(op.get_id(), 1);
             constraints.push_back(move(constraint));
@@ -415,7 +415,7 @@ void DeleteRelaxationRRConstraints::create_constraints_ve(
             FactPair pre = pre_proxy.get_pair();
             for (EffectProxy eff_proxy : op.get_effects()) {
                 FactPair eff = eff_proxy.get_fact().get_pair();
-                lp::LPConstraint constraint(lp::Sense::GE, 0);
+                lp::LPConstraint constraint(lp::LPConstraintSense::GREATER_EQUAL, 0);
                 constraint.insert(lp_var_ids.id_of_e(make_pair(pre, eff)), 1);
                 constraint.insert(lp_var_ids.id_of_fpa(eff, op), -1);
                 constraints.push_back(move(constraint));
@@ -437,7 +437,7 @@ void DeleteRelaxationRRConstraints::create_constraints_ve(
         pair<FactPair, FactPair> reverse_edge =
             make_pair(edge.second, edge.first);
         if (lp_var_ids.has_e(reverse_edge)) {
-            lp::LPConstraint constraint(lp::Sense::LE, 1);
+            lp::LPConstraint constraint(lp::LPConstraintSense::LESS_EQUAL, 1);
             constraint.insert(lp_var_ids.id_of_e(edge), 1);
             constraint.insert(lp_var_ids.id_of_e(reverse_edge), 1);
             constraints.push_back(move(constraint));
@@ -455,7 +455,7 @@ void DeleteRelaxationRRConstraints::create_constraints_ve(
       not have both p_i ordered before p_j, and p_j ordered before p_k.
     */
     for (auto [pi, pj, pk] : ve_graph.get_delta()) {
-        lp::LPConstraint constraint(lp::Sense::LE, 1);
+        lp::LPConstraint constraint(lp::LPConstraintSense::LESS_EQUAL, 1);
         constraint.insert(lp_var_ids.id_of_e(make_pair(pi, pj)), 1);
         constraint.insert(lp_var_ids.id_of_e(make_pair(pj, pk)), 1);
         constraint.insert(lp_var_ids.id_of_e(make_pair(pi, pk)), -1);
@@ -493,7 +493,7 @@ void DeleteRelaxationRRConstraints::create_constraints_tl(
                     // Prevail conditions are compiled away in the paper.
                     continue;
                 }
-                lp::LPConstraint constraint(lp::Sense::LE, num_facts - 1);
+                lp::LPConstraint constraint(lp::LPConstraintSense::LESS_EQUAL, num_facts - 1);
                 constraint.insert(lp_var_ids.id_of_t(pre), 1);
                 constraint.insert(lp_var_ids.id_of_t(eff), -1);
                 constraint.insert(lp_var_ids.id_of_fpa(eff, op), num_facts);
@@ -538,14 +538,12 @@ bool DeleteRelaxationRRConstraints::update_constraints(
     int con_id;
     for (FactPair f : last_state) {
         con_id = get_constraint_id(f);
-        lp_solver.set_constraint_sense(con_id, lp::Sense::EQ);
         lp_solver.set_constraint_rhs(con_id, 0);
     }
     last_state.clear();
     // Set new bounds.
     for (FactProxy f : state) {
         con_id = get_constraint_id(f.get_pair());
-        lp_solver.set_constraint_sense(con_id, lp::Sense::EQ);
         lp_solver.set_constraint_rhs(con_id, 1);
         last_state.push_back(f.get_pair());
     }

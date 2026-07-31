@@ -38,7 +38,7 @@ void PhOConstraints::initialize_constraints(
         lp.get_constraints();
     constraint_offset = constraints.size();
     for (const shared_ptr<pdbs::PatternDatabase> &pdb : *pdbs) {
-        constraints.emplace_back(lp::Sense::GE, 0);
+        constraints.emplace_back(lp::LPConstraintSense::GREATER_EQUAL, 0);
         lp::LPConstraint &constraint = constraints.back();
         for (OperatorProxy op : task_proxy.get_operators()) {
             if (pdbs::is_operator_relevant(pdb->get_pattern(), op)) {

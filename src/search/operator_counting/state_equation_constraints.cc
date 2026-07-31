@@ -58,7 +58,7 @@ void StateEquationConstraints::add_constraints(
     named_vector::NamedVector<lp::LPConstraint> &constraints, double infinity) {
     for (vector<Proposition> &var_propositions : propositions) {
         for (Proposition &prop : var_propositions) {
-            lp::LPConstraint constraint(lp::Sense::GE, -infinity);
+            lp::LPConstraint constraint(lp::LPConstraintSense::GREATER_EQUAL, -infinity);
             add_indices_to_constraint(constraint, prop.always_produced_by, 1.0);
             add_indices_to_constraint(
                 constraint, prop.sometimes_produced_by, 1.0);

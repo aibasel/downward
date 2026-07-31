@@ -67,7 +67,7 @@ static void freeProblem(CPXENVptr env, CPXLPptr *problem) {
     CPX_CALL(CPXfreeprob, env, problem);
 }
 
-static int model_sense_to_cplex_sense(LPObjectiveSense sense) {
+static int objective_sense_to_cplex_sense(LPObjectiveSense sense) {
     if (sense == LPObjectiveSense::MINIMIZE) {
         return CPX_MIN;
     } else {
@@ -75,15 +75,15 @@ static int model_sense_to_cplex_sense(LPObjectiveSense sense) {
     }
 }
 
-static char constraint_sense_to_cplex_sense(lp::Sense constraint_sense) {
+static char constraint_sense_to_cplex_sense(LPConstraintSense constraint_sense) {
     switch (constraint_sense) {
-    case lp::Sense::LE:
+    case LPConstraintSense::LESS_EQUAL:
         return 'L';
         break;
-    case lp::Sense::GE:
+    case LPConstraintSense::GREATER_EQUAL:
         return 'G';
         break;
-    case lp::Sense::EQ:
+    case LPConstraintSense::EQUAL:
         return 'E';
         break;
     default:
@@ -207,17 +207,14 @@ void CplexSolverInterface::CplexRowsInfo::assign(
     rhs.clear();
     sense.clear();
     int num_rows = constraints.size();
-    if (num_rows > 0) {
-        sense.resize(num_rows);
-        rhs.resize(num_rows);
-    }
+    sense.resize(num_rows);
+    rhs.resize(num_rows);
     for (int row_index = 0; row_index < num_rows; ++row_index) {
         const LPConstraint &constraint = constraints[row_index];
-        double rhs_value = constraint.get_right_hand_side();
-        lp::Sense constraint_sense = constraint.get_sense();
+        LPConstraintSense constraint_sense = constraint.get_sense();
         char cplex_sense = constraint_sense_to_cplex_sense(constraint_sense);
         sense[row_index] = cplex_sense;
-        rhs[row_index] = rhs_value;
+        rhs[row_index] = constraint.get_right_hand_side();
     }
     assert(static_cast<int>(rhs.size()) == constraints.size());
     assert(static_cast<int>(sense.size()) == constraints.size());
@@ -268,7 +265,7 @@ void CplexSolverInterface::load_problem(const LinearProgram &lp) {
     rows.assign(constraints);
     CPX_CALL(
         CPXcopylp, env, problem, variables.size(), constraints.size(),
-        model_sense_to_cplex_sense(lp.get_sense()), columns.get_objective(),
+        objective_sense_to_cplex_sense(lp.get_sense()), columns.get_objective(),
         rows.get_rhs(), rows.get_sense(), matrix.get_starts(),
         matrix.get_counts(), matrix.get_indices(), matrix.get_coefficients(),
         columns.get_lb(), columns.get_ub(), nullptr);
@@ -344,7 +341,7 @@ void CplexSolverInterface::set_constraint_rhs(
     CPX_CALL(CPXchgrhs, env, problem, 1, &index, &right_hand_side);
 }
 
-void CplexSolverInterface::set_constraint_sense(int index, lp::Sense sense) {
+void CplexSolverInterface::set_constraint_sense(int index, LPConstraintSense sense) {
     char cplex_sense = constraint_sense_to_cplex_sense(sense);
     CPX_CALL(CPXchgsense, env, problem, 1, &index, &cplex_sense);
 }

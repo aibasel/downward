@@ -13,13 +13,13 @@ using namespace std;
 
 namespace lp {
 
-ostream &operator<<(ostream &os, Sense s) {
+ostream &operator<<(ostream &os, LPConstraintSense s) {
     switch (s) {
-    case Sense::GE:
+    case LPConstraintSense::GREATER_EQUAL:
         return os << ">=";
-    case Sense::LE:
+    case LPConstraintSense::LESS_EQUAL:
         return os << "<=";
-    case Sense::EQ:
+    case LPConstraintSense::EQUAL:
         return os << "==";
     }
     return os;
@@ -42,7 +42,7 @@ tuple<LPSolverType> get_lp_solver_arguments_from_options(
     return make_tuple(opts.get<LPSolverType>("lpsolver"));
 }
 
-LPConstraint::LPConstraint(Sense sense, double right_hand_side)
+LPConstraint::LPConstraint(LPConstraintSense sense, double right_hand_side)
     : sense(sense), right_hand_side(right_hand_side) {
 }
 
@@ -75,7 +75,16 @@ ostream &LPConstraint::dump(
         }
         stream << coefficients[i] << " * " << variable_name;
     }
-    stream << get_sense() << get_right_hand_side();
+    const double rhs = get_right_hand_side();
+    stream << get_sense();
+    if (rhs == program->get_infinity()) {
+        stream << "infinity";
+    } else if (rhs == -program->get_infinity()) {
+        stream << "-infinity";
+    } else {
+        stream << rhs;
+    }
+
     return stream;
 }
 
@@ -139,7 +148,6 @@ LPSolver::LPSolver(LPSolverType solver_type) {
         missing_solver = "SoPlex";
 #endif
         break;
-
     default:
         ABORT("Unknown LP solver type.");
     }
@@ -182,7 +190,7 @@ void LPSolver::set_constraint_rhs(int index, double right_hand_side) {
     pimpl->set_constraint_rhs(index, right_hand_side);
 }
 
-void LPSolver::set_constraint_sense(int index, Sense sense) {
+void LPSolver::set_constraint_sense(int index, LPConstraintSense sense) {
     pimpl->set_constraint_sense(index, sense);
 }
 

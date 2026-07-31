@@ -23,6 +23,7 @@ static LPRowSetReal constraints_to_row_set(
     for (const LPConstraint &constraint : constraints) {
         num_nonzeros += constraint.get_coefficients().size();
     }
+
     LPRowSetReal rows(num_rows, num_nonzeros);
     for (const LPConstraint &constraint : constraints) {
         const vector<int> variables = constraint.get_variables();
@@ -32,24 +33,24 @@ static LPRowSetReal constraints_to_row_set(
         for (int i = 0; i < num_entries; ++i) {
             entries.add(variables[i], coefficients[i]);
         }
-        const double rhs = constraint.get_right_hand_side();
-        const lp::Sense sense = constraint.get_sense();
+        const double lp_rhs = constraint.get_right_hand_side();
+        const LPConstraintSense sense = constraint.get_sense();
         double lhs, rhs;
-        switch (s) {
-        case lp::Sense::LE:
+        switch (sense) {
+        case LPConstraintSense::LESS_EQUAL:
             lhs = -soplex::infinity;
-            rhs = b;
+            rhs = lp_rhs;
             break;
-        case lp::Sense::GE:
-            lhs = b;
+        case LPConstraintSense::GREATER_EQUAL:
+            lhs = lp_rhs;
             rhs = soplex::infinity;
             break;
-        case lp::Sense::EQ:
-            lhs = b;
-            rhs = b;
+        case LPConstraintSense::EQUAL:
+            lhs = lp_rhs;
+            rhs = lp_rhs;
             break;
         default:
-            ABORT("Invalid constraint sense code: " + static_cast<int>(s));
+            ABORT("Invalid constraint sense code: " + static_cast<int>(sense));
         }
         rows.add(lhs, entries, rhs);
     }
@@ -258,23 +259,28 @@ void SoPlexSolverInterface::print_statistics() const {
 }
 
 void SoPlexSolverInterface::set_constraint_rhs(int index, double b) {
-    const lp::Sense sense = constraint_senses[index];
+    const LPConstraintSense sense = constraint_senses[index];
 
-    if (sense == lp::Sense::GE) {
+    switch (sense) {
+    case LPConstraintSense::GREATER_EQUAL:
         soplex.changeLhsReal(index, b);
-    } else if (sense == lp::Sense::LE) {
+        break;
+
+    case LPConstraintSense::LESS_EQUAL:
         soplex.changeRhsReal(index, b);
-    } else if (sense == lp::Sense::EQ) {
+        break;
+
+    case LPConstraintSense::EQUAL:
         soplex.changeLhsReal(index, b);
         soplex.changeRhsReal(index, b);
-    } else {
-        cerr << "Invalid constraint sense code: " << static_cast<int>(sense)
-             << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        break;
+
+    default:
+        ABORT("Invalid constraint sense code: " + static_cast<int>(sense));
     }
 }
 
-void SoPlexSolverInterface::set_constraint_sense(int index, lp::Sense sense) {
+void SoPlexSolverInterface::set_constraint_sense(int index, LPConstraintSense sense) {
     const double lhs = soplex.lhsReal(index);
     const double rhs = soplex.rhsReal(index);
 
@@ -289,28 +295,26 @@ void SoPlexSolverInterface::set_constraint_sense(int index, lp::Sense sense) {
     } else if (!lhs_is_neginf && !rhs_is_posinf && lhs == rhs) {
         b = rhs;
     } else {
-        b = rhs; // keep compiler happy
+        utils::unused_variable(b);
         cerr << "Invalid constraint." << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 
     switch (sense) {
-    case lp::Sense::LE:
+    case LPConstraintSense::LESS_EQUAL:
         soplex.changeLhsReal(index, -infinity);
         soplex.changeRhsReal(index, b);
         break;
-    case lp::Sense::GE:
+    case LPConstraintSense::GREATER_EQUAL:
         soplex.changeLhsReal(index, b);
         soplex.changeRhsReal(index, infinity);
         break;
-    case lp::Sense::EQ:
+    case LPConstraintSense::EQUAL:
         soplex.changeLhsReal(index, b);
         soplex.changeRhsReal(index, b);
         break;
     default:
-        cerr << "Invalid constraint sense code: " << static_cast<int>(sense)
-             << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        ABORT("Invalid constraint sense code: " + static_cast<int>(sense));
     }
 
     constraint_senses[index] = sense;
