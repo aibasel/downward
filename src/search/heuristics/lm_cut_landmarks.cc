@@ -286,7 +286,11 @@ void LandmarkCutLandmarks::validate_h_max() const {
 #ifndef NDEBUG
     // Using conditional compilation to avoid complaints about unused
     // variables when using NDEBUG. This whole code does nothing useful
-    // when assertions are switched off anyway.
+/*
+  Using conditional compilation to avoid complaints about unused
+  variables when using NDEBUG. This whole code does nothing useful
+  when assertions are switched off anyway.
+*/
     for (const RelaxedOperator &op : relaxed_operators) {
         if (op.unsatisfied_preconditions) {
             bool reachable = true;
