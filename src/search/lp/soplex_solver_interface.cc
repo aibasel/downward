@@ -32,8 +32,8 @@ static LPRowSetReal constraints_to_row_set(
         for (int i = 0; i < num_entries; ++i) {
             entries.add(variables[i], coefficients[i]);
         }
-        const double b = constraint.get_right_hand_side();
-        const lp::Sense s = constraint.get_sense();
+        const double rhs = constraint.get_right_hand_side();
+        const lp::Sense sense = constraint.get_sense();
         double lhs, rhs;
         switch (s) {
         case lp::Sense::LE:
