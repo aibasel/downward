@@ -92,8 +92,8 @@ void DomainTransitionGraphCollection::add_successor(
     }
 }
 
-const DomainTransitionGraph &
-DomainTransitionGraphCollection::get_domain_transition_graph(int var_id) const {
+const DomainTransitionGraph &DomainTransitionGraphCollection::get_graph(
+    int var_id) const {
     assert(utils::in_bounds(var_id, graphs));
     return graphs[var_id];
 }
@@ -552,7 +552,8 @@ void LandmarkFactoryRpgSasp::generate_disjunctive_precondition_landmarks(
 }
 
 void LandmarkFactoryRpgSasp::generate_backchaining_landmarks(
-    const TaskProxy &task_proxy, const DomainTransitionGraphCollection &dtgs,
+    const TaskProxy &task_proxy,
+    const DomainTransitionGraphCollection &domain_transition_graphs,
     Exploration &exploration) {
     State initial_state = task_proxy.get_initial_state();
     while (!open_landmarks.empty()) {
@@ -568,7 +569,8 @@ void LandmarkFactoryRpgSasp::generate_backchaining_landmarks(
             exploration.compute_relaxed_reachability(landmark.atoms, false);
         generate_shared_precondition_landmarks(
             task_proxy, landmark, node, reached);
-        approximate_lookahead_orderings(task_proxy, dtgs, reached, node);
+        approximate_lookahead_orderings(
+            task_proxy, domain_transition_graphs, reached, node);
         generate_disjunctive_precondition_landmarks(
             task_proxy, initial_state, landmark, node, reached);
     }
@@ -581,10 +583,11 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
         log << "Generating landmarks using the RPG/SAS+ approach" << endl;
     }
 
-    DomainTransitionGraphCollection dtg(task_proxy);
+    DomainTransitionGraphCollection domain_transition_graphs(task_proxy);
     build_disjunction_classes(task_proxy);
     generate_goal_landmarks(task_proxy);
-    generate_backchaining_landmarks(task_proxy, dtg, exploration);
+    generate_backchaining_landmarks(
+        task_proxy, domain_transition_graphs, exploration);
     if (use_orders) {
         add_landmark_forward_orderings();
     }
@@ -594,14 +597,15 @@ void LandmarkFactoryRpgSasp::generate_relaxed_landmarks(
 }
 
 /*
-  Tests whether in the domain transition graph `dtg`, there is a path from
-  `init_value` to `goal_value`, without passing through `excluded_value` or any
-  unreachable value according to the relaxed planning graph. If this is not
-  possible, that means `excluded_value` is crucial to achieve `goal_value`.
+  Tests whether in the `domain_transition_graph`, there is a path from
+  `init_value` to `landmark_value`, without passing through `excluded_value` or
+  any unreachable value according to the relaxed planning graph. If this is not
+  possible, that means `excluded_value` is crucial to achieve `landmark_value`.
 */
 static bool value_critical_to_reach_landmark(
     int init_value, int landmark_value, int excluded_value,
-    const vector<bool> &reached, const DomainTransitionGraph &dtg) {
+    const vector<bool> &reached,
+    const DomainTransitionGraph &domain_transition_graph) {
     assert(landmark_value != init_value);
     assert(landmark_value != excluded_value);
     assert(!reached[landmark_value]);
@@ -615,7 +619,7 @@ static bool value_critical_to_reach_landmark(
     while (!open.empty()) {
         int value = open.front();
         open.pop_front();
-        for (int succ : dtg[value]) {
+        for (int succ : domain_transition_graph[value]) {
             if (succ == landmark_value) {
                 return false;
             }
@@ -637,26 +641,27 @@ static bool value_critical_to_reach_landmark(
     return true;
 }
 
-static vector<int> get_critical_dtg_predecessors(
+static vector<int> get_critical_predecessor_values(
     int init_value, int landmark_value, const vector<bool> &reached,
-    const DomainTransitionGraph &dtg) {
+    const DomainTransitionGraph &domain_transition_graph) {
     assert(!reached[landmark_value]);
     int domain_size = static_cast<int>(reached.size());
     vector<int> critical;
     critical.reserve(domain_size);
     for (int value = 0; value < domain_size; ++value) {
-        if (reached[value] &&
-            value_critical_to_reach_landmark(
-                init_value, landmark_value, value, reached, dtg)) {
+        if (reached[value] && value_critical_to_reach_landmark(
+                                  init_value, landmark_value, value, reached,
+                                  domain_transition_graph)) {
             critical.push_back(value);
         }
     }
     return critical;
 }
 
-// Extract orderings from the relaxed planning and domain transition graph.
+// Extract orderings from the relaxed planning and domain transition graphs.
 void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
-    const TaskProxy &task_proxy, const DomainTransitionGraphCollection &dtgs,
+    const TaskProxy &task_proxy,
+    const DomainTransitionGraphCollection &domain_transition_graphs,
     const vector<vector<bool>> &reached, LandmarkNode *node) {
     const VariablesProxy &variables = task_proxy.get_variables();
     const Landmark &landmark = node->get_landmark();
@@ -670,9 +675,9 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
     const FactPair landmark_atom = landmark.atoms[0];
     const FactPair init_atom =
         task_proxy.get_initial_state()[landmark_atom.var].get_pair();
-    vector<int> critical_predecessors = get_critical_dtg_predecessors(
+    vector<int> critical_predecessors = get_critical_predecessor_values(
         init_atom.value, landmark_atom.value, reached[landmark_atom.var],
-        dtgs.get_domain_transition_graph(landmark_atom.var));
+        domain_transition_graphs.get_graph(landmark_atom.var));
     for (int value : critical_predecessors) {
         add_atomic_landmark_and_ordering(
             FactPair(landmark_atom.var, value), *node, OrderingType::NATURAL);

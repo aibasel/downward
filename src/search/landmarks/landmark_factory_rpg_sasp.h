@@ -35,7 +35,7 @@ class DomainTransitionGraphCollection {
 
 public:
     DomainTransitionGraphCollection(const TaskProxy &task_proxy);
-    const DomainTransitionGraph &get_domain_transition_graph(int var_id) const;
+    const DomainTransitionGraph &get_graph(int var_id) const;
 };
 
 class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
@@ -78,7 +78,8 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
         const std::vector<std::vector<bool>> &reached);
     void generate_backchaining_landmarks(
         const TaskProxy &task_proxy,
-        const DomainTransitionGraphCollection &dtgs, Exploration &exploration);
+        const DomainTransitionGraphCollection &domain_transition_graphs,
+        Exploration &exploration);
     virtual void generate_relaxed_landmarks(
         const std::shared_ptr<AbstractTask> &task,
         Exploration &exploration) override;
@@ -95,7 +96,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
         OrderingType type);
     void approximate_lookahead_orderings(
         const TaskProxy &task_proxy,
-        const DomainTransitionGraphCollection &dtgs,
+        const DomainTransitionGraphCollection &domain_transition_graphs,
         const std::vector<std::vector<bool>> &reached, LandmarkNode *node);
 
     void build_disjunction_classes(const TaskProxy &task_proxy);
