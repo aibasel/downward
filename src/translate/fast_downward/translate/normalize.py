@@ -4,6 +4,8 @@ import copy
 from typing import Sequence
 
 from fast_downward.translate import pddl
+from fast_downward.translate.options import get_options
+
 
 class ConditionProxy:
     def clone_owner(self):
@@ -133,16 +135,19 @@ def get_axiom_predicate(axiom):
 def get_pne_definition_predicate(pne: pddl.PrimitiveNumericExpression):
     return pddl.Atom(f"@def-{pne.symbol}", pne.args)
 
-def all_conditions(task):
-    for action in task.actions:
-        yield PreconditionProxy(action)
-        for effect in action.effects:
-            yield EffectConditionProxy(action, effect)
-    for axiom in task.axioms:
-        yield AxiomConditionProxy(axiom)
-    yield GoalConditionProxy(task)
+def all_conditions(task, actions=True, axioms=True, goal=True):
+    if actions:
+        for action in task.actions:
+            yield PreconditionProxy(action)
+            for effect in action.effects:
+                yield EffectConditionProxy(action, effect)
+    if axioms:
+        for axiom in task.axioms:
+            yield AxiomConditionProxy(axiom)
+    if goal:
+        yield GoalConditionProxy(task)
 
-# [1] Remove universal quantifications from conditions.
+# [1] Eliminate universal quantifications from conditions.
 #
 # Replace, in a top-down fashion, <forall(vars, phi)> by <not(not-all-phi)>,
 # where <not-all-phi> is a new axiom.
@@ -151,7 +156,7 @@ def all_conditions(task):
 # translated to NNF. The parameters of the new axioms are exactly the free
 # variables of <forall(vars, phi)>.
 
-def remove_universal_quantifiers(task):
+def eliminate_universal_quantifiers(task):
     def recurse(condition):
         # Uses new_axioms_by_condition and type_map from surrounding scope.
         if isinstance(condition, pddl.UniversalCondition):
@@ -175,8 +180,50 @@ def remove_universal_quantifiers(task):
             type_map = proxy.get_type_map()
             proxy.set(recurse(proxy.condition))
 
+# [2] Simplifies conditions according to the selected strategy.
+# After the simplification only conjuncitons
+# and existential conditions remain (+ truth values, literals).
+def simplify_conditions(task):
+    condition_strategy = get_options().condition_normalization_strategy
 
-# [2] Pull disjunctions to the root of the condition.
+    if condition_strategy == "dnf":
+        substitute_complicated_goal(task)
+        build_DNF(task)
+    elif condition_strategy == "axiomatize_disjunctions":
+        substitute_complicated_goal(task)
+        substitute_complicated_conditions(task, replace_existentials=False)
+    elif condition_strategy == "axiomatize_disjunctions_existentials":
+        substitute_complicated_conditions(task, replace_existentials=True)
+    else:
+        raise SystemExit("error: unknown condition normalization strategy: %s" % condition_strategy)
+
+    split_disjunctions(task)
+
+def substitute_complicated_goal(task):
+    goal = task.goal
+    if isinstance(goal, pddl.Literal):
+        return
+    elif isinstance(goal, pddl.Conjunction):
+        for item in goal.parts:
+            if not isinstance(item, pddl.Literal):
+                break
+        else:
+            return
+    new_axiom = task.add_axiom([], goal)
+    task.goal = pddl.Atom(new_axiom.name, new_axiom.parameters)
+
+# Split disjunctions in the task into separate conditions.
+def split_disjunctions(task):
+    for proxy in tuple(all_conditions(task)):
+        # Cannot use generator directly because we add/delete entries.
+        if isinstance(proxy.condition, pddl.Disjunction):
+            for part in proxy.condition.parts:
+                new_proxy = proxy.clone_owner()
+                new_proxy.set(part)
+                new_proxy.register_owner(task)
+            proxy.delete_owner(task)
+
+# [2 Option 1] Pull disjunctions to the root of the condition.
 #
 # After removing universal quantifiers, the (k-ary generalization of the)
 # following rules suffice for doing that:
@@ -226,18 +273,54 @@ def build_DNF(task):
         if proxy.condition.has_disjunction():
             proxy.set(recurse(proxy.condition).simplified())
 
-# [3] Split conditions at the outermost disjunction.
-def split_disjunctions(task):
-    for proxy in tuple(all_conditions(task)):
-        # Cannot use generator directly because we add/delete entries.
-        if isinstance(proxy.condition, pddl.Disjunction):
-            for part in proxy.condition.parts:
-                new_proxy = proxy.clone_owner()
-                new_proxy.set(part)
-                new_proxy.register_owner(task)
-            proxy.delete_owner(task)
+# [2 Option 2] Decompose disjunctive and optinally existential formulas using
+# derived predicates. Replace the (sub)formula with a derived predicate
+# and add a corresponding axiom defining that predicate. The transformation
+# proceeds bottom-up so nested (sub)formula are eliminated first.
+def substitute_complicated_conditions(task, replace_existentials):
+    def recurse(condition, type_map, replace_types):
+        if isinstance(condition, (pddl.Literal, pddl.Truth, pddl.Falsity)):
+            return condition
+        elif not isinstance(condition, replace_types):
+            new_parts = [recurse(part, type_map, replace_types) for part in condition.parts]
+            condition = condition.change_parts(new_parts)
+            return condition
+        assert isinstance(condition, replace_types)
+        parameters = sorted(condition.free_variables())
+        typed_parameters = tuple(pddl.TypedObject(v, type_map[v]) for v in parameters)
+        key = (condition, typed_parameters)
+        axiom = new_axioms_by_condition.get(key)
+        if not axiom:
+            new_parts = [recurse(part, type_map, replace_types) for part in condition.parts]
+            condition = condition.change_parts(new_parts)
+            axiom = task.add_axiom(list(typed_parameters), condition)
+            new_axioms_by_condition[key] = axiom
+        return pddl.Atom(axiom.name, parameters)
 
-# [4] Pull existential quantifiers out of conjunctions and group them.
+    new_axioms_by_condition = {}
+
+    if replace_existentials:
+        for proxy in tuple(all_conditions(task, actions=False, axioms=True, goal=False)):
+            type_map = proxy.get_type_map()
+            proxy.set(recurse(proxy.condition, type_map, (pddl.Disjunction)))
+
+        for proxy in tuple(all_conditions(task, actions=True, axioms=False, goal=True)):
+            type_map = proxy.get_type_map()
+            proxy.set(recurse(proxy.condition, type_map, (pddl.Disjunction, pddl.ExistentialCondition)))
+    else:
+        for proxy in tuple(all_conditions(task)):
+            type_map = proxy.get_type_map()
+            proxy.set(recurse(proxy.condition, type_map, (pddl.Disjunction)))
+
+
+# [3] Eliminate existential quantifiers from conditions.
+def eliminate_existential_quantifiers(task):
+    move_existential_quantifiers(task)
+    eliminate_existential_quantifiers_from_axioms(task)
+    eliminate_existential_quantifiers_from_preconditions(task)
+    eliminate_existential_quantifiers_from_conditional_effects(task)
+
+# [3a] Pull existential quantifiers out of conjunctions and group them.
 #
 # After removing universal quantifiers and creating the disjunctive form,
 # only the following (representatives of) rules are needed:
@@ -277,8 +360,7 @@ def move_existential_quantifiers(task):
         if proxy.condition.has_existential_part():
             proxy.set(recurse(proxy.condition).simplified())
 
-
-# [5a] Drop existential quantifiers from axioms, turning them
+# [3b] Drop existential quantifiers from axioms, turning them
 #      into parameters.
 
 def eliminate_existential_quantifiers_from_axioms(task):
@@ -296,7 +378,7 @@ def eliminate_existential_quantifiers_from_axioms(task):
             axiom.condition = precond.parts[0]
 
 
-# [5b] Drop existential quantifiers from action preconditions,
+# [3c] Drop existential quantifiers from action preconditions,
 #      turning them into action parameters (that don't form part of the
 #      name of the action).
 
@@ -311,7 +393,7 @@ def eliminate_existential_quantifiers_from_preconditions(task):
             action.parameters.extend(precond.parameters)
             action.precondition = precond.parts[0]
 
-# [5c] Eliminate existential quantifiers from effect conditions
+# [3d] Eliminate existential quantifiers from effect conditions
 #
 # For effect conditions, we replace "when exists(x, phi) then e" with
 # "forall(x): when phi then e.
@@ -324,31 +406,13 @@ def eliminate_existential_quantifiers_from_conditional_effects(task):
                 effect.parameters.extend(condition.parameters)
                 effect.condition = condition.parts[0]
 
-def substitute_complicated_goal(task):
-    goal = task.goal
-    if isinstance(goal, pddl.Literal):
-        return
-    elif isinstance(goal, pddl.Conjunction):
-        for item in goal.parts:
-            if not isinstance(item, pddl.Literal):
-                break
-        else:
-            return
-    new_axiom = task.add_axiom([], goal)
-    task.goal = pddl.Atom(new_axiom.name, new_axiom.parameters)
-
-# Combine Steps [1], [2], [3], [4], [5] and do some additional verification
+# Combine Steps [1], [2], [3] and do some additional verification
 # that the task makes sense.
 
 def normalize(task):
-    remove_universal_quantifiers(task)
-    substitute_complicated_goal(task)
-    build_DNF(task)
-    split_disjunctions(task)
-    move_existential_quantifiers(task)
-    eliminate_existential_quantifiers_from_axioms(task)
-    eliminate_existential_quantifiers_from_preconditions(task)
-    eliminate_existential_quantifiers_from_conditional_effects(task)
+    eliminate_universal_quantifiers(task)
+    simplify_conditions(task)
+    eliminate_existential_quantifiers(task)
 
     verify_axiom_predicates(task)
 
@@ -375,7 +439,7 @@ def verify_axiom_predicates(task):
                     (effect.literal.predicate, action.name))
 
 
-# [6] Build rules for exploration component.
+# Build rules for exploration component.
 def build_exploration_rules(task):
     result = []
     for proxy in all_conditions(task):

@@ -1,16 +1,23 @@
 #include "lm_cut_landmarks.h"
 
+#include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 
 #include <algorithm>
 #include <limits>
+#include <tuple>
 #include <utility>
 
 using namespace std;
 
 namespace lm_cut_heuristic {
 // construction and destruction
-LandmarkCutLandmarks::LandmarkCutLandmarks(const TaskProxy &task_proxy) {
+LandmarkCutLandmarks::LandmarkCutLandmarks(
+    const TaskProxy &task_proxy, bool use_goal_zone_detection,
+    bool use_border_detection)
+    : use_goal_zone_detection(use_goal_zone_detection),
+      use_border_detection(use_border_detection),
+      dont_tie_break(!use_border_detection && !use_goal_zone_detection) {
     task_properties::verify_no_axioms(task_proxy);
     task_properties::verify_no_conditional_effects(task_proxy);
 
@@ -227,24 +234,58 @@ void LandmarkCutLandmarks::second_exploration(
     }
 }
 
+static bool has_no_zero_cost_achiever(const RelaxedProposition *prop) {
+    for (const RelaxedOperator *op : prop->effect_of) {
+        if (op->cost == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void LandmarkCutLandmarks::break_supporter_ties(RelaxedOperator *op) {
+    if (dont_tie_break) {
+        return;
+    }
+    for (RelaxedProposition *pre : op->preconditions) {
+        if (pre->h_max_cost != op->h_max_supporter_cost) {
+            continue;
+        }
+        if (use_border_detection && has_no_zero_cost_achiever(pre)) {
+            op->h_max_supporter = pre;
+            break;
+        }
+        if (use_goal_zone_detection && pre->status == GOAL_ZONE) {
+            op->h_max_supporter = pre;
+            break;
+        }
+    }
+}
+
 void LandmarkCutLandmarks::mark_goal_plateau(RelaxedProposition *subgoal) {
-    // NOTE: subgoal can be null if we got here via recursion through
-    // a zero-cost action that is relaxed unreachable. (This can only
-    // happen in domains which have zero-cost actions to start with.)
-    // For example, this happens in pegsol-strips #01.
+    /*
+      NOTE: subgoal can be null if we got here via recursion through
+      a zero-cost action that is relaxed unreachable. (This can only
+      happen in domains which have zero-cost actions to start with.)
+      For example, this happens in pegsol-strips #01.
+    */
     if (subgoal && subgoal->status != GOAL_ZONE) {
         subgoal->status = GOAL_ZONE;
         for (RelaxedOperator *achiever : subgoal->effect_of)
-            if (achiever->cost == 0)
+            if (achiever->cost == 0) {
+                break_supporter_ties(achiever);
                 mark_goal_plateau(achiever->h_max_supporter);
+            }
     }
 }
 
 void LandmarkCutLandmarks::validate_h_max() const {
 #ifndef NDEBUG
-    // Using conditional compilation to avoid complaints about unused
-    // variables when using NDEBUG. This whole code does nothing useful
-    // when assertions are switched off anyway.
+    /*
+      Using conditional compilation to avoid complaints about unused
+      variables when using NDEBUG. This whole code does nothing useful
+      when assertions are switched off anyway.
+    */
     for (const RelaxedOperator &op : relaxed_operators) {
         if (op.unsatisfied_preconditions) {
             bool reachable = true;
@@ -275,10 +316,12 @@ bool LandmarkCutLandmarks::compute_landmarks(
     for (RelaxedOperator &op : relaxed_operators) {
         op.cost = op.base_cost;
     }
-    // The following three variables could be declared inside the loop
-    // ("second_exploration_queue" even inside second_exploration),
-    // but having them here saves reallocations and hence provides a
-    // measurable speed boost.
+    /*
+      The following three variables could be declared inside the loop
+      ("second_exploration_queue" even inside second_exploration),
+      but having them here saves reallocations and hence provides a
+      measurable speed boost.
+    */
     vector<RelaxedOperator *> cut;
     Landmark landmark;
     vector<RelaxedProposition *> second_exploration_queue;
@@ -329,5 +372,28 @@ bool LandmarkCutLandmarks::compute_landmarks(
         artificial_precondition.status = REACHED;
     }
     return false;
+}
+
+void add_landmark_cut_landmarks_options_to_feature(plugins::Feature &feature) {
+    feature.add_option<bool>(
+        "goal_zone_detection",
+        "When choosing the h^max supporter of a zero-cost operator while "
+        "marking the goal zone, break ties in favor of a precondition "
+        "that already belongs to the goal zone.",
+        "true");
+    feature.add_option<bool>(
+        "border_detection",
+        "When choosing the h^max supporter of a zero-cost operator while "
+        "marking the goal zone, break ties in favor of a precondition "
+        "on the border of the goal zone (a proposition reachable only "
+        "through operators with positive cost).",
+        "true");
+}
+
+tuple<bool, bool> get_landmark_cut_landmarks_arguments_from_options(
+    const plugins::Options &opts) {
+    return make_tuple(
+        opts.get<bool>("goal_zone_detection"),
+        opts.get<bool>("border_detection"));
 }
 }
