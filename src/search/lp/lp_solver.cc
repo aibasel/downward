@@ -75,8 +75,8 @@ ostream &LPConstraint::dump(
         }
         stream << coefficients[i] << " * " << variable_name;
     }
-    const double rhs = get_right_hand_side();
     stream << get_sense();
+    double rhs = get_right_hand_side();
     if (rhs == program->get_infinity()) {
         stream << "infinity";
     } else if (rhs == -program->get_infinity()) {

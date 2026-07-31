@@ -214,8 +214,7 @@ void CplexSolverInterface::CplexRowsInfo::assign(
     for (int row_index = 0; row_index < num_rows; ++row_index) {
         const LPConstraint &constraint = constraints[row_index];
         LPConstraintSense constraint_sense = constraint.get_sense();
-        char cplex_sense = constraint_sense_to_cplex_sense(constraint_sense);
-        sense[row_index] = cplex_sense;
+        sense[row_index] = constraint_sense_to_cplex_sense(constraint_sense);
         rhs[row_index] = constraint.get_right_hand_side();
     }
     assert(static_cast<int>(rhs.size()) == constraints.size());

@@ -210,7 +210,7 @@ public:
         int index, double coefficient) override;
     virtual void set_constraint_rhs(int index, double right_hand_side) override;
     virtual void set_constraint_sense(
-        int index, lp::LPConstraintSense sense) override;
+        int index, LPConstraintSense sense) override;
     virtual void set_variable_lower_bound(int index, double bound) override;
     virtual void set_variable_upper_bound(int index, double bound) override;
     virtual void set_mip_gap(double gap) override;
