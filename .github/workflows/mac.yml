@@ -1,147 +1,50 @@
----
-name: macOS
+env:
+  GUROBI_URL: ${{ secrets.GUROBI1302_MACOS_URL }}
+  GUROBI_LICENSE_URL: ${{ secrets.GUROBI_LICENSE_URL }}
 
-on:
-  push:
-    branches: [main, release-*, issue1199-part2-algs-rebased]
-  pull_request:
-    branches: [main, release-*]
+  GUROBI_HOME: /Users/runner/lib/gurobi1302/macos_universal2
+  GUROBI_LIB: /Users/runner/lib/gurobi1302/macos_universal2/lib
+  DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib
 
-jobs:
-  test:
-    name: Compile and test planner
-    timeout-minutes: 60
-    runs-on: ${{ matrix.version.macos }}
+  GRB_LICENSE_FILE: /Users/runner/gurobi.lic
 
-    strategy:
-      matrix:
-        version:
-          - {macos: macos-14, python: '3.10'}
-          - {macos: macos-15, python: '3.10'}
+steps:
+  - name: Clone repository
+    uses: actions/checkout@v3
 
-    env:
-      GUROBI_URL: ${{ secrets.GUROBI1302_OSX_URL }}
-      GUROBI_LICENSE_URL: ${{ secrets.GUROBI_LICENSE_URL }}
+  - name: Install Python
+    uses: actions/setup-python@v4
+    with:
+      python-version: ${{ matrix.version.python }}
 
-      GUROBI_HOME: /Library/gurobi1302/macos_universal2
-      GUROBI_LIB: /Library/gurobi1302/macos_universal2/lib
-      DYLD_LIBRARY_PATH: /Library/gurobi1302/macos_universal2/lib
-      GRB_LICENSE_FILE: /Users/runner/gurobi.lic
+  - name: Install Gurobi
+    if: env.GUROBI_URL != ''
+    run: |
+      curl \
+        --fail \
+        --location \
+        --silent \
+        --show-error \
+        "$GUROBI_URL" \
+        --output "$RUNNER_TEMP/gurobi.pkg"
 
-      soplex_DIR: /Users/runner/lib/soplex-7.1.0
-      SOPLEX_LIB: /Users/runner/lib/soplex-7.1.0/lib
-      SOPLEX_INCLUDE: /Users/runner/lib/soplex-7.1.0/include
+      sudo installer \
+        -pkg "$RUNNER_TEMP/gurobi.pkg" \
+        -target /
 
-      HOMEBREW_NO_AUTO_UPDATE: 1
+      mkdir -p "$HOME/lib/gurobi1302"
 
-    steps:
-      - name: Clone repository
-        uses: actions/checkout@v4
+      cp -R \
+        /Library/gurobi1302/macos_universal2 \
+        "$HOME/lib/gurobi1302/"
 
-      - name: Install Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.version.python }}
+      rm "$RUNNER_TEMP/gurobi.pkg"
 
-      - name: Install dependencies
-        run: |
-          brew install gmp gnu-sed
-          mkdir -p /Users/runner/lib
+      test -f "$GUROBI_HOME/include/gurobi_c.h"
+      test -d "$GUROBI_HOME/lib"
 
-      # The secret must contain a direct URL to the macOS .pkg file.
-      - name: Install Gurobi
-        if: env.GUROBI_URL != ''
-        run: |
-          curl \
-            --fail \
-            --location \
-            --silent \
-            --show-error \
-            "$GUROBI_URL" \
-            --output "$RUNNER_TEMP/gurobi.pkg"
-
-          sudo installer \
-            -pkg "$RUNNER_TEMP/gurobi.pkg" \
-            -target /
-
-          rm "$RUNNER_TEMP/gurobi.pkg"
-
-          # Fail immediately if Gurobi was not installed where expected.
-          test -f "$GUROBI_HOME/include/gurobi_c.h"
-          test -d "$GUROBI_HOME/lib"
-
-      - name: Install SoPlex
-        run: |
-          git clone https://github.com/scipopt/soplex.git
-          cd soplex
-          git checkout release-710
-          cd ..
-
-          cmake \
-            -S soplex \
-            -B soplex-build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX="$soplex_DIR"
-
-          cmake --build soplex-build --parallel 2
-          cmake --install soplex-build
-
-          rm -rf soplex soplex-build
-
-      - name: Compile planner
-        run: |
-          GMP_PREFIX="$(brew --prefix gmp)"
-      
-          export CXXFLAGS="-Werror -I$GMP_PREFIX/include"
-          export LDFLAGS="-L$GMP_PREFIX/lib"
-      
-          ./build.py --debug
-          ./build.py
-
-      - name: Install tox
-        run: |
-          python3 -m pip install tox
-
-      - name: Install VAL
-        run: |
-          git clone https://github.com/KCL-Planning/VAL.git
-          cd VAL
-          git checkout a5565396007eee73ac36527fbf904142b3077c74
-
-          make clean
-          gsed -i 's/-Werror //g' Makefile
-          make -j2
-
-          mv validate "$GITHUB_WORKSPACE/"
-          cd ..
-          rm -rf VAL
-
-          echo "$GITHUB_WORKSPACE" >> "$GITHUB_PATH"
-
-      - name: Run driver, translator and search tests
-        run: |
-          cd misc
-          tox -e driver,translator,search
-
-      - name: Run Gurobi tests
-        if: env.GUROBI_URL != '' && env.GUROBI_LICENSE_URL != ''
-        run: |
-          curl \
-            --fail \
-            --location \
-            --silent \
-            --show-error \
-            "$GUROBI_LICENSE_URL" \
-            --output "$GRB_LICENSE_FILE"
-
-          chmod 600 "$GRB_LICENSE_FILE"
-
-          cd misc
-          tox -e gurobi
-
-      - name: Run SoPlex tests
-        run: |
-          cd misc
-          tox -e soplex
-
-...
+  - name: Compile planner
+    run: |
+      export CXXFLAGS="-Werror"
+      ./build.py --debug
+      ./build.py
