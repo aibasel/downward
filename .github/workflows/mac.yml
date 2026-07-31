@@ -1,50 +1,60 @@
-env:
-  GUROBI_URL: ${{ secrets.GUROBI1302_MACOS_URL }}
-  GUROBI_LICENSE_URL: ${{ secrets.GUROBI_LICENSE_URL }}
+---
+name: macOS
 
-  GUROBI_HOME: /Users/runner/lib/gurobi1302/macos_universal2
-  GUROBI_LIB: /Users/runner/lib/gurobi1302/macos_universal2/lib
-  DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib
+on:
+  push:
+    branches: [main, release-*, issue1199-part2-algs-rebased]
+  pull_request:
+    branches: [main, release-*]
 
-  GRB_LICENSE_FILE: /Users/runner/gurobi.lic
+jobs:
+  compile:
+    name: Compile planner
+    timeout-minutes: 60
+    runs-on: macos-14
 
-steps:
-  - name: Clone repository
-    uses: actions/checkout@v3
+    env:
+      GUROBI_URL: ${{ secrets.GUROBI1302_MACOS_URL }}
+      GUROBI_HOME: /Users/runner/lib/gurobi1302/macos_universal2
+      DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib
 
-  - name: Install Python
-    uses: actions/setup-python@v4
-    with:
-      python-version: ${{ matrix.version.python }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
 
-  - name: Install Gurobi
-    if: env.GUROBI_URL != ''
-    run: |
-      curl \
-        --fail \
-        --location \
-        --silent \
-        --show-error \
-        "$GUROBI_URL" \
-        --output "$RUNNER_TEMP/gurobi.pkg"
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-      sudo installer \
-        -pkg "$RUNNER_TEMP/gurobi.pkg" \
-        -target /
+      - name: Install Gurobi
+        if: env.GUROBI_URL != ''
+        run: |
+          curl \
+            --fail \
+            --location \
+            --silent \
+            --show-error \
+            "$GUROBI_URL" \
+            --output "$RUNNER_TEMP/gurobi.pkg"
 
-      mkdir -p "$HOME/lib/gurobi1302"
+          sudo installer \
+            -pkg "$RUNNER_TEMP/gurobi.pkg" \
+            -target /
 
-      cp -R \
-        /Library/gurobi1302/macos_universal2 \
-        "$HOME/lib/gurobi1302/"
+          mkdir -p "$HOME/lib/gurobi1302"
 
-      rm "$RUNNER_TEMP/gurobi.pkg"
+          cp -R \
+            /Library/gurobi1302/macos_universal2 \
+            "$HOME/lib/gurobi1302/"
 
-      test -f "$GUROBI_HOME/include/gurobi_c.h"
-      test -d "$GUROBI_HOME/lib"
+          rm "$RUNNER_TEMP/gurobi.pkg"
 
-  - name: Compile planner
-    run: |
-      export CXXFLAGS="-Werror"
-      ./build.py --debug
-      ./build.py
+          test -f "$GUROBI_HOME/include/gurobi_c.h"
+          test -d "$GUROBI_HOME/lib"
+
+      - name: Compile planner
+        run: |
+          export CXXFLAGS="-Werror"
+          ./build.py --debug
+          ./build.py
