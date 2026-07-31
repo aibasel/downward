@@ -52,7 +52,7 @@ SearchAlgorithm::SearchAlgorithm(
       cost_type(cost_type),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
       max_time(max_time),
-      bound_was_used(false) {
+      bound_was_relevant(false) {
     if (bound < 0) {
         cerr << "error: negative cost bound " << bound << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
@@ -71,7 +71,7 @@ SearchStatus SearchAlgorithm::get_status() const {
 SearchStatus SearchAlgorithm::get_finished_search_status() const {
     if (found_solution()) {
         return SOLVED;
-    } else if (bound_was_used && is_complete_within_bound()) {
+    } else if (bound_was_relevant && is_complete_within_bound()) {
         log << "Search terminated -- no plan with cost " << bound - 1
             << " or less exists!" << endl;
         return UNSOLVABLE_WITHIN_BOUND;
@@ -117,7 +117,7 @@ void SearchAlgorithm::shrink_bound(int b) {
 
 bool SearchAlgorithm::is_greater_or_equal_to_bound(int g) {
     if (g >= bound) {
-        bound_was_used = true;
+        bound_was_relevant = true;
         return true;
     }
     return false;
