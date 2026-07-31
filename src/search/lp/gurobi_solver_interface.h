@@ -11,7 +11,6 @@ class GurobiSolverInterface : public SolverInterface {
     GRBmodel *model;
     int num_permanent_constraints;
     int num_temporary_constraints;
-    // Indexed attribute changes require pending constraints to be integrated.
     mutable bool has_pending_constraint_additions;
 
 public:

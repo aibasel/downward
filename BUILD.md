@@ -16,9 +16,9 @@ During the installation of Visual Studio, the C++ compiler is not installed by d
 
 ### Optional: Linear-Programming Solvers
 
-Some planner configurations depend on an LP or MIP solver. We support CPLEX (commercial, [free academic license](http://ibm.com/academic)) and SoPlex (Apache License, no MIP support). You can install one or both solvers without causing conflicts.
+Some planner configurations depend on an LP or MIP solver. We support CPLEX (commercial, [free academic license](http://ibm.com/academic)), Gurobi (commercial, [free academic license](https://www.gurobi.com/academics#licenses)), and SoPlex (Apache License, no MIP support). You can install one or both solvers without causing conflicts.
 
-Once LP solvers are installed and the environment variables `cplex_DIR` and/or `soplex_DIR` are set up correctly, Fast Downward automatically includes each solver detected on the system in the build.
+Once LP solvers are installed and the appropriate environment variables are set up correctly, Fast Downward automatically includes each solver detected on the system in the build.
 
 #### Installing CPLEX
 
@@ -32,6 +32,20 @@ export cplex_DIR=/opt/ibm/ILOG/CPLEX_Studio2211/cplex
 ```
 Note that on Windows, setting up the environment variable might require using `/` instead of the more Windows-common `\`.
 
+#### Installing Gurobi on Ubuntu
+
+We currently only support Gurobi 13.0.x. After downloading from the website and obtaining a license, you should have a directory called `gurobi130x`, where `x` depends on your patch. Set the following environment variables for Ubuntu and OSX. Instructions for Windows will follow soon.
+- `GUROBI_HOME` to the folder where the binaries and headers are located. 
+- `GRB_LICENSE_FILE` to the path where the Gurobi license file is located.
+- `LD_LIBRARY_PATH` to where the Gurobi precompiled libraries are located.
+
+For example, on Ubuntu, assuming that Gurobi 13.0.2 was installed under `/opt` and the license is at `/home/myuser`:
+
+```bash
+export GUROBI_HOME="/opt/gurobi1302/linux64"
+export LD_LIBRARY_PATH="${GUROBI_HOME}/lib:$LD_LIBRARY_PATH"
+export GRB_LICENSE_FILE="/home/myuser/gurobi.lic"
+```
 
 #### Installing SoPlex on Linux/macOS
 
