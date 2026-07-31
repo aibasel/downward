@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cstring>
 #include <numeric>
+#include <string>
 
 using namespace std;
 
@@ -90,7 +91,7 @@ static char constraint_sense_to_cplex_sense(
     default:
         ABORT(
             "Unsupported constraint sense: " +
-            static_cast<int>(constraint_sense));
+            to_string(static_cast<int>(constraint_sense)));
     }
 }
 
