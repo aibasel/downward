@@ -87,9 +87,8 @@ static char constraint_sense_to_cplex_sense(lp::Sense constraint_sense) {
         return 'E';
         break;
     default:
-        cerr << "Unsupported constraint sense: "
-             << static_cast<int>(constraint_sense) << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
+        ABORT("Unsupported constraint sense: " + 
+            static_cast<int>(constraint_sense));
     }
 }
 
