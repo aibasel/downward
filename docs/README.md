@@ -2,8 +2,11 @@
 
   -  [Planner usage](planner-usage.md) explains ways of invoking the
      planner. For setting up Fast Downward see [Getting started](quick-start.md).
+  -  [Translator options](translator-options.md) documents the different
+     options of the translator component.
   -  [Search plugins](search/index.md) documents the different ingredients for the
-     search configuration, such as [search algorithms](search/SearchAlgorithm.md) and [heuristics](search/Evaluator.md).
+     search configuration, such as [search algorithms](search/SearchAlgorithm.md)
+     and [heuristics](search/Evaluator.md).
   -  [Syntax for search plugins](search-plugin-syntax.md) defines the syntax for configuring the search
      plugins.
   -  [Exit Codes](exit-codes.md) describes the exit codes as returned by the
