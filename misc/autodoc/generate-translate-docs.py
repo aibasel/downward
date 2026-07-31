@@ -40,7 +40,7 @@ def parse_args():
     parser.add_argument('--translator-package-documentation',
                         action='store_true',
                         help="extend outdir/README.md with translator "
-                             "package documentation for Pypi")
+                             "package documentation for PyPI")
     return parser.parse_args()
 
 
