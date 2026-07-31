@@ -324,7 +324,12 @@ bool LandmarkCutLandmarks::compute_landmarks(
     // The following three variables could be declared inside the loop
     // ("second_exploration_queue" even inside second_exploration),
     // but having them here saves reallocations and hence provides a
-    // measurable speed boost.
+/*
+  The following three variables could be declared inside the loop
+  ("second_exploration_queue" even inside second_exploration),
+  but having them here saves reallocations and hence provides a
+  measurable speed boost.
+*/
     vector<RelaxedOperator *> cut;
     Landmark landmark;
     vector<RelaxedProposition *> second_exploration_queue;
