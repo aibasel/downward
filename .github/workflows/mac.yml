@@ -90,7 +90,11 @@ jobs:
 
       - name: Compile planner
         run: |
-          export CXXFLAGS="-Werror"
+          GMP_PREFIX="$(brew --prefix gmp)"
+      
+          export CXXFLAGS="-Werror -I$GMP_PREFIX/include"
+          export LDFLAGS="-L$GMP_PREFIX/lib"
+      
           ./build.py --debug
           ./build.py
 
