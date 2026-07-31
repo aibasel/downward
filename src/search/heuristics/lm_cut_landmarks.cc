@@ -263,15 +263,12 @@ void LandmarkCutLandmarks::break_supporter_ties(RelaxedOperator *op) {
 }
 
 void LandmarkCutLandmarks::mark_goal_plateau(RelaxedProposition *subgoal) {
-    // NOTE: subgoal can be null if we got here via recursion through
-    // a zero-cost action that is relaxed unreachable. (This can only
-    // happen in domains which have zero-cost actions to start with.)
-/*
-  NOTE: subgoal can be null if we got here via recursion through
-  a zero-cost action that is relaxed unreachable. (This can only
-  happen in domains which have zero-cost actions to start with.)
-  For example, this happens in pegsol-strips #01.
-*/
+    /*
+      NOTE: subgoal can be null if we got here via recursion through
+      a zero-cost action that is relaxed unreachable. (This can only
+      happen in domains which have zero-cost actions to start with.)
+      For example, this happens in pegsol-strips #01.
+    */
     if (subgoal && subgoal->status != GOAL_ZONE) {
         subgoal->status = GOAL_ZONE;
         for (RelaxedOperator *achiever : subgoal->effect_of)
@@ -284,13 +281,11 @@ void LandmarkCutLandmarks::mark_goal_plateau(RelaxedProposition *subgoal) {
 
 void LandmarkCutLandmarks::validate_h_max() const {
 #ifndef NDEBUG
-    // Using conditional compilation to avoid complaints about unused
-    // variables when using NDEBUG. This whole code does nothing useful
-/*
-  Using conditional compilation to avoid complaints about unused
-  variables when using NDEBUG. This whole code does nothing useful
-  when assertions are switched off anyway.
-*/
+    /*
+      Using conditional compilation to avoid complaints about unused
+      variables when using NDEBUG. This whole code does nothing useful
+      when assertions are switched off anyway.
+    */
     for (const RelaxedOperator &op : relaxed_operators) {
         if (op.unsatisfied_preconditions) {
             bool reachable = true;
@@ -321,15 +316,12 @@ bool LandmarkCutLandmarks::compute_landmarks(
     for (RelaxedOperator &op : relaxed_operators) {
         op.cost = op.base_cost;
     }
-    // The following three variables could be declared inside the loop
-    // ("second_exploration_queue" even inside second_exploration),
-    // but having them here saves reallocations and hence provides a
-/*
-  The following three variables could be declared inside the loop
-  ("second_exploration_queue" even inside second_exploration),
-  but having them here saves reallocations and hence provides a
-  measurable speed boost.
-*/
+    /*
+      The following three variables could be declared inside the loop
+      ("second_exploration_queue" even inside second_exploration),
+      but having them here saves reallocations and hence provides a
+      measurable speed boost.
+    */
     vector<RelaxedOperator *> cut;
     Landmark landmark;
     vector<RelaxedProposition *> second_exploration_queue;
