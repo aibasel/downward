@@ -3,6 +3,7 @@
 #include "lp_solver.h"
 
 #include "../utils/system.h"
+
 #include <string>
 
 using namespace std;
@@ -51,7 +52,9 @@ static LPRowSetReal constraints_to_row_set(
             rhs = b;
             break;
         default:
-            ABORT("Invalid constraint sense code: " + to_string(static_cast<int>(sense)));
+            ABORT(
+                "Invalid constraint sense code: " +
+                to_string(static_cast<int>(sense)));
         }
         rows.add(lhs, entries, rhs);
     }
@@ -277,7 +280,9 @@ void SoPlexSolverInterface::set_constraint_rhs(int index, double b) {
         break;
 
     default:
-        ABORT("Invalid constraint sense code: " + to_string(static_cast<int>(sense)));
+        ABORT(
+            "Invalid constraint sense code: " +
+            to_string(static_cast<int>(sense)));
     }
 }
 
@@ -315,7 +320,9 @@ void SoPlexSolverInterface::set_constraint_sense(
         soplex.changeRhsReal(index, b);
         break;
     default:
-        ABORT("Invalid constraint sense code: " + to_string(static_cast<int>(sense)));
+        ABORT(
+            "Invalid constraint sense code: " +
+            to_string(static_cast<int>(sense)));
     }
 
     constraint_senses[index] = sense;

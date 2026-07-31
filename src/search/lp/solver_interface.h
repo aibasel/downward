@@ -28,8 +28,7 @@ public:
         const std::vector<double> &coefficients) = 0;
     virtual void set_objective_coefficient(int index, double coefficient) = 0;
     virtual void set_constraint_rhs(int index, double right_hand_side) = 0;
-    virtual void set_constraint_sense(
-        int index, LPConstraintSense sense) = 0;
+    virtual void set_constraint_sense(int index, LPConstraintSense sense) = 0;
     virtual void set_variable_lower_bound(int index, double bound) = 0;
     virtual void set_variable_upper_bound(int index, double bound) = 0;
 
