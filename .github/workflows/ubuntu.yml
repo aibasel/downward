@@ -3,7 +3,7 @@ name: Ubuntu
 
 on:
   push:
-    branches: [main, release-*]
+    branches: [main, release-*, issue1199-part2-algs]
   pull_request:
     branches: [main, release-*]
 
@@ -31,9 +31,16 @@ jobs:
     env:
       CC: ${{ matrix.version.cc }}
       CXX: ${{ matrix.version.cxx }}
+
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
       cplex_DIR: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex
       CPLEX_LIB: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/libcplex2211.so
+
+      GUROBI_URL: ${{ secrets.GUROBI1302_LINUX_URL }}
+      GUROBI_HOME: /home/runner/lib/gurobi1302/linux64
+      GUROBI_LIB: /home/runner/lib/gurobi1302/linux64/lib/libgurobi130.so
+      LD_LIBRARY_PATH: /home/runner/lib/gurobi1302/linux64/lib
+
       soplex_DIR: /home/runner/lib/soplex-7.1.0
       SOPLEX_LIB: /home/runner/lib/soplex-7.1.0/lib/
       SOPLEX_INCLUDE: /home/runner/lib/soplex-7.1.0/include/
@@ -70,6 +77,15 @@ jobs:
           ./cplex_installer -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR="$(dirname "${cplex_DIR}")" -i silent
           rm cplex_installer
 
+      # Only install Gurobi if its URL/secret is set.
+      - name: Install Gurobi
+        if: ${{ env.GUROBI_URL != 0 }}
+        run: |
+          # We redirect output of wget to hide the secret URL.
+          wget -O gurobi.tar.gz $GUROBI_URL &> /dev/null
+          tar xfz gurobi.tar.gz -C /home/runner/lib
+          rm gurobi.tar.gz
+
       # Always install SoPlex
       - name: Install SoPlex
         run: |
@@ -98,6 +114,9 @@ jobs:
           if [[ ! -z "${CPLEX_URL}" ]]; then
             files_to_archive="${files_to_archive} ${CPLEX_LIB}"
           fi
+          if [[ ! -z "${GUROBI_URL}" ]]; then
+            files_to_archive="${files_to_archive} ${GUROBI_LIB}"
+          fi
           tar cfz archive.tar.gz -C "/home/runner" $(realpath --relative-to="/home/runner" $files_to_archive)
 
       - name: Upload archive
@@ -120,6 +139,10 @@ jobs:
           - {ubuntu: ubuntu-24.04, python: '3.10'}
     env:
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
+      GUROBI_URL: ${{ secrets.GUROBI1302_LINUX_URL }}
+      GUROBI_LICENSE_URL: ${{ secrets.GUROBI_LICENSE_URL }}
+      GRB_LICENSE_FILE: /home/runner/gurobi.lic
+      LD_LIBRARY_PATH: /home/runner/lib/gurobi1302/linux64/lib
     steps:
       - name: Download archive
         uses: actions/download-artifact@v4.1.8
@@ -171,6 +194,15 @@ jobs:
         run: |
           cd misc/
           tox -e cplex
+
+      - name: Run Gurobi tests
+        if: ${{ env.GUROBI_URL != 0 }}
+        run: |
+          # We redirect output of wget to hide the secret URL.
+          wget -O "$GRB_LICENSE_FILE" $GUROBI_LICENSE_URL &> /dev/null
+          chmod 600 "$GRB_LICENSE_FILE"
+          cd misc/
+          tox -e gurobi
 
       - name: Run SoPlex tests
         run: |
