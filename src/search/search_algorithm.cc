@@ -115,14 +115,6 @@ void SearchAlgorithm::shrink_bound(int b) {
     }
 }
 
-bool SearchAlgorithm::is_greater_or_equal_to_bound(int g) {
-    if (g >= bound) {
-        bound_was_relevant = true;
-        return true;
-    }
-    return false;
-}
-
 bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {
     if (task_properties::is_goal_state(task_proxy, state)) {
         log << "Solution found!" << endl;

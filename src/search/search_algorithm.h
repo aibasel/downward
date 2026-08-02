@@ -67,7 +67,13 @@ protected:
     bool check_goal_and_set_plan(const State &state);
     int get_adjusted_cost(const OperatorProxy &op) const;
     // Sideeffect: Set bound_was_relevant to true if this check returns true.
-    bool is_greater_or_equal_to_bound(int g);
+    bool is_greater_or_equal_to_bound(int g) {
+        if (g >= bound) {
+            bound_was_relevant = true;
+            return true;
+        }
+        return false;
+    }
 public:
     SearchAlgorithm(
         const std::shared_ptr<AbstractTask> &task, OperatorCost cost_type,
