@@ -1,7 +1,8 @@
 #!/bin/bash
 
 
-TESTDIR=translator-package-test
+SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+TESTDIR=$SCRIPTDIR/translator-package-test
 ENVDIR=.env
 mkdir $TESTDIR
 cd $TESTDIR

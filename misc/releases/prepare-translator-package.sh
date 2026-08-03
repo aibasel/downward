@@ -30,7 +30,7 @@ mkdir $PACKAGEDIR/
 cp -r $SCRIPTDIR/../../src/translate/* $PACKAGEDIR/
 cp -r $SCRIPTDIR/../../LICENSE.md $PACKAGEDIR/
 echo $VERSION > $PACKAGEDIR/VERSION
-python3 ../autodoc/generate-translate-docs.py --outdir $PACKAGEDIR/ --translator-package-documentation
+python3 $SCRIPTDIR/../autodoc/generate-translate-docs.py --outdir $PACKAGEDIR/ --translator-package-documentation
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 COMMIT=$(git rev-parse --short=12 HEAD)
 
@@ -41,7 +41,7 @@ cat >> $PACKAGEDIR/README.md <<EOF
 EOF
 
 # Build the package.
-ENVDIR=env-translate-$VERSION
+ENVDIR=$SCRIPTDIR/env-translate-$VERSION
 python3 -m venv $ENVDIR
 source $ENVDIR/bin/activate
 python3 -m pip install --upgrade build twine
@@ -63,9 +63,11 @@ echo "##  "
 echo "##  STEP 2: Test it on Test-PyPI..."
 echo "##  twine upload --repository testpypi dist/*  # uploads the package to Test-PyPI"
 echo "##  Try the package on Test-PyPI to verify that everything works as intended. You"
-echo "##  can use script test-latest-test-PyPI-translator.sh for this."
+echo "##  can use script $SCRIPTDIR/test-latest-test-PyPI-translator.sh for this."
 echo "##  "
 echo "##  STEP 3: Actual upload to PyPI"
 echo "##  twine upload dist/*  # uploads the package to PyPI"
 echo "##  "
-echo "##  Afterwards you can delete directory $PACKAGEDIR."
+echo "##  Afterwards you can deactivate the virtual environment and delete directories"
+echo "##  $PACKAGEDIR and"
+echo "##  $ENVDIR."
