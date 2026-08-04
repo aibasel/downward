@@ -73,6 +73,15 @@ class Condition:
             result |= part.free_variables()
         return result
 
+    def pos_and_neg_predicates(self):
+        pos, neg = set(), set()
+        self._collect_predicates(pos, neg)
+        return (pos, neg)
+
+    def _collect_predicates(self, pos, neg):
+        for p in self.parts:
+            p._collect_predicates(pos, neg)
+
     def has_disjunction(self):
         for part in self.parts:
             if part.has_disjunction():
@@ -335,6 +344,9 @@ class Literal(Condition):
 class Atom(Literal):
     negated = False
 
+    def _collect_predicates(self, pos, neg):
+        pos.add(self.predicate)
+
     def to_untyped_strips(self):
         return [self]
 
@@ -355,6 +367,9 @@ class Atom(Literal):
 
 class NegatedAtom(Literal):
     negated = True
+
+    def _collect_predicates(self, pos, neg):
+        neg.add(self.predicate)
 
     def _relaxed(self, parts):
         return Truth()

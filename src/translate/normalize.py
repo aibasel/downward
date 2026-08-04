@@ -1,10 +1,12 @@
 #! /usr/bin/env python3
 
 import copy
+from collections import defaultdict
 from typing import Sequence
 
 from translate import pddl
 from translate.options import get_options
+from translate.sccs import get_sccs_adjacency_dict
 
 
 class ConditionProxy:
@@ -155,11 +157,24 @@ def all_conditions(task, actions=True, axioms=True, goal=True):
 # <not-all-phi> is defined as <not(forall(vars,phi))>, which is of course
 # translated to NNF. The parameters of the new axioms are exactly the free
 # variables of <forall(vars, phi)>.
-
+# TODO Update documentation.
 def eliminate_universal_quantifiers(task):
-    def recurse(condition):
+    def recurse(condition, axiom_head_scc=[]):
         # Uses new_axioms_by_condition and type_map from surrounding scope.
         if isinstance(condition, pddl.UniversalCondition):
+            pos_preds, neg_preds = condition.pos_and_neg_predicates()
+            contained_scc_dependencies = pos_preds.intersection(axiom_head_scc)
+            # TODO Do we actually need the content of contained_scc_dependencies,
+            # or could we just make it a bool determining if the intersection
+            # is empty?
+            if contained_scc_dependencies:
+                # If axiom body alias conditions mentions head (recursively)
+                # then cannot eliminate universal part via double negation and
+                # new axiom because would make axioms unstratifiable by
+                # introducing cyclic dependency through negation
+                # TODO Unroll universal quantifier
+                print("TODO")
+
             axiom_condition = condition.negate()
             parameters = sorted(axiom_condition.free_variables())
             typed_parameters = tuple(pddl.TypedObject(v, type_map[v]) for v in parameters)
@@ -173,12 +188,63 @@ def eliminate_universal_quantifiers(task):
             new_parts = [recurse(part) for part in condition.parts]
             return condition.change_parts(new_parts)
 
+    # Remove universal quantifiers in actions and goal.
     new_axioms_by_condition = {}
-    for proxy in tuple(all_conditions(task)):
+    for proxy in tuple(all_conditions(task, actions=True, axioms=False,
+                                      goal=True)):
         # Cannot use generator because we add new axioms on the fly.
         if proxy.condition.has_universal_part():
             type_map = proxy.get_type_map()
             proxy.set(recurse(proxy.condition))
+
+    # If an axiom mentions its head predicate, possibly recursively, in its
+    # body under the scope of a universal quantifier, we need to eliminate its
+    # universal quantifiers differently than for actions and the goal. To
+    # determine this, we use the dependency graph of the derived predicates and
+    # its strongly-connected components.
+
+    # Determine positive dependency graph of derived predicates.
+    adjacency_dict = defaultdict(set)
+    for ax in task.axioms:
+        pos_preds, neg_preds = ax.condition.pos_and_neg_predicates()
+        # For each derived predicate p we only need to find its positive
+        # dependencies because negative ones can only come from predicates
+        # in lower strata which cannot depend on the predicate p.
+        adjacency_dict[ax.name].update(pos_preds)
+
+    # Remove non-derived predicates from the adjacency lists.
+    derived_predicates = set(adjacency_dict)
+    for pred in adjacency_dict:
+        adjacency_dict[pred] &= derived_predicates
+
+    # Determine the strongly-connected components of the derived predicates'
+    # dependency graph.
+    scc_blocks = get_sccs_adjacency_dict(adjacency_dict)
+    sccs = {pred : block for block in scc_blocks for pred in block}
+
+    # Remove universal quantifiers in axioms.
+    for proxy in tuple(all_conditions(task, actions=False, axioms=True,
+                                      goal=False)):
+        # Cannot use generator because we add new axioms on the fly.
+        if proxy.condition.has_universal_part():
+            head_predicate = proxy.owner.name
+            mentions_head_directly = head_predicate in adjacency_dict[head_predicate]
+            mentions_head_recursively = len(sccs[head_predicate]) > 1
+
+            type_map = proxy.get_type_map()
+
+            if mentions_head_directly or mentions_head_recursively:
+                # TODO Do we actually need this check here, or can we just
+                # leave it to recurse by checking whether axiom_head_scc is
+                # empty?
+                proxy.set(recurse(proxy.condition,
+                                  axiom_head_scc=sccs[head_predicate]))
+            else:
+                proxy.set(recurse(proxy.condition))
+
+
+
+
 
 # [2] Simplifies conditions according to the selected strategy.
 # After the simplification only conjuncitons
