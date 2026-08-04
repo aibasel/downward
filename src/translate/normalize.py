@@ -2,6 +2,7 @@
 
 import copy
 from collections import defaultdict
+from itertools import product
 from typing import Sequence
 
 from translate import pddl
@@ -164,16 +165,21 @@ def eliminate_universal_quantifiers(task):
         if isinstance(condition, pddl.UniversalCondition):
             pos_preds, neg_preds = condition.pos_and_neg_predicates()
             contained_scc_dependencies = pos_preds.intersection(axiom_head_scc)
-            # TODO Do we actually need the content of contained_scc_dependencies,
-            # or could we just make it a bool determining if the intersection
-            # is empty?
             if contained_scc_dependencies:
-                # If axiom body alias conditions mentions head (recursively)
+                # If axiom body alias condition mentions head (recursively)
                 # then cannot eliminate universal part via double negation and
                 # new axiom because would make axioms unstratifiable by
                 # introducing cyclic dependency through negation
-                # TODO Unroll universal quantifier
-                print("TODO")
+                conjunct_template = recurse(condition.parts[0], contained_scc_dependencies)
+                # TODO For each object-tuple of correct types instantiate
+                # template and add to conjuncts.
+                # First attempt with types ignored
+                parameter_names = [par.name for par in condition.parameters]
+                conjuncts = []
+                for obj_tuple in product((obj.name for obj in task.objects), repeat=len(condition.parameters)):
+                    renamings = dict(zip(parameter_names, obj_tuple))
+                    conjuncts.append(conjunct_template.rename_variables(renamings))
+                return pddl.Conjunction(conjuncts)
 
             axiom_condition = condition.negate()
             parameters = sorted(axiom_condition.free_variables())
