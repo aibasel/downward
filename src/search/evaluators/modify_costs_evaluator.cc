@@ -76,7 +76,7 @@ public:
         document_title("Cost-modifying evaluator");
         document_subcategory("evaluators_basic");
         document_synopsis(
-            "Evaluates the nested evaluator on a task with a modified cost"
+            "Evaluates the nested evaluator on a task with a modified cost "
             "function");
 
         add_option<shared_ptr<TaskIndependentEvaluator>>(
