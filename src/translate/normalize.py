@@ -173,25 +173,44 @@ def eliminate_universal_quantifiers(task):
             pos_preds, neg_preds = condition.pos_and_neg_predicates()
             head_dependencies = pos_preds.intersection(axiom_head_dependencies)
             if head_dependencies:
-                # If the condition is part of an axiom body and mentions the
+                # If condition is part of an axiom body and mentions the
                 # axiom's head predicate, possibly recursively, then we cannot
                 # eliminate universal quantifiers via double negation and a new
                 # axiom. This would make the axioms unstratifiable by
                 # introducing a cyclic dependency through negation. Instead
-                # replace the universally quantifier part with conjunction
-                # where in each conjunct the quantified variables are
-                # instantiated with objects (of fitting types).
+                # replace the universally quantified part with a conjunction
+                # where in each conjunct the originally quantified variables
+                # are instantiated with objects (of fitting types).
                 conjunct_template = recurse(condition.parts[0], head_dependencies)
-                # TODO For each object-tuple of correct types instantiate
-                # template and add to conjuncts.
-                # First attempt with types ignored
+
+                subtypes = defaultdict(set)
+                for t in task.types:
+                    if t.basetype_name:
+                        subtypes[t.basetype_name].add(t.name)
+                # TODO Is there a better way of saturating subtypes than the following?
+                stabilized = False
+                while not stabilized:
+                    stabilized = True
+                    for t in (t.name for t in task.types):
+                        updated_subtypes = subtypes[t].union(*(subtypes[sub_t] for sub_t in subtypes[t]))
+                        if updated_subtypes - subtypes[t] != set():
+                            stabilized = False
+                            subtypes[t] = updated_subtypes
+
+                objects_for_renaming = {}
+                for par in condition.parameters:
+                    fitting_types = {par.type_name} | subtypes[par.type_name]
+                    objects_for_renaming[par.name] = {obj.name for obj in task.objects if obj.type_name in fitting_types}
+
                 parameter_names = [par.name for par in condition.parameters]
                 conjuncts = []
-                for obj_tuple in product((obj.name for obj in task.objects), repeat=len(condition.parameters)):
+                for obj_tuple in product(*(objects_for_renaming.values())):
                     renamings = dict(zip(parameter_names, obj_tuple))
                     conjuncts.append(conjunct_template.rename_variables(renamings))
                 return pddl.Conjunction(conjuncts)
 
+            # Normal elimination replacing the universally quantified part via
+            # double negation and a new axiom
             axiom_condition = condition.negate()
             parameters = sorted(axiom_condition.free_variables())
             typed_parameters = tuple(pddl.TypedObject(v, type_map[v]) for v in parameters)
