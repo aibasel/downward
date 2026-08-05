@@ -586,7 +586,7 @@ public:
             "have an achiever, and the preconditions all achievers are either "
             "true in the current state or have achievers themselves. In this "
             "version, cycles in the achiever relation can occur. Such cycles "
-            "can be excluded with additional auxilliary varibles and "
+            "can be excluded with additional auxiliary variables and "
             "constraints.",
             "vertex_elimination");
         add_option<bool>(
