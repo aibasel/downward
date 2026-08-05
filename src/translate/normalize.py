@@ -237,7 +237,7 @@ def eliminate_universal_quantifiers(task):
             adjacency_dict[name] &= derived
 
         scc_blocks = get_sccs_adjacency_dict(adjacency_dict)
-        sccs = {pred : block for block in scc_blocks for pred in block}
+        sccs = {pred: block for block in scc_blocks for pred in block}
         return sccs
 
     new_axioms_by_condition = {}
@@ -260,10 +260,6 @@ def eliminate_universal_quantifiers(task):
             head_predicate = proxy.owner.name
             proxy.set(recurse(proxy.condition,
                               axiom_head_dependencies=sccs[head_predicate]))
-
-
-
-
 
 # [2] Simplifies conditions according to the selected strategy.
 # After the simplification only conjuncitons
