@@ -45,6 +45,7 @@ class SearchAlgorithm : public components::TaskSpecificComponent {
     SearchStatus status;
     bool solution_found;
     Plan plan;
+    int bound;
 protected:
     mutable utils::LogProxy log;
     PlanManager plan_manager;
@@ -53,10 +54,10 @@ protected:
     SearchSpace search_space;
     SearchProgress search_progress;
     SearchStatistics statistics;
-    int bound;
     OperatorCost cost_type;
     bool is_unit_cost;
     double max_time;
+    bool bound_was_relevant;
 
     virtual void initialize() {
     }
@@ -65,6 +66,14 @@ protected:
     void set_plan(const Plan &plan);
     bool check_goal_and_set_plan(const State &state);
     int get_adjusted_cost(const OperatorProxy &op) const;
+    // Sideeffect: Set bound_was_relevant to true if this check returns true.
+    bool is_greater_or_equal_to_bound(int g) {
+        if (g >= bound) {
+            bound_was_relevant = true;
+            return true;
+        }
+        return false;
+    }
 public:
     SearchAlgorithm(
         const std::shared_ptr<AbstractTask> &task, OperatorCost cost_type,
@@ -85,14 +94,14 @@ public:
     const SearchStatistics &get_statistics() const {
         return statistics;
     }
-    void set_bound(int b) {
-        bound = b;
+    // Set the bound to the minimum of bound and b.
+    void shrink_bound(int b);
+    std::string get_bound_string() {
+        return std::to_string(bound);
     }
-    int get_bound() {
+    int get_final_bound() {
+        assert(status != SearchStatus::IN_PROGRESS);
         return bound;
-    }
-    bool is_unbounded() const {
-        return bound == std::numeric_limits<int>::max();
     }
     PlanManager &get_plan_manager() {
         return plan_manager;

@@ -43,15 +43,16 @@ SearchAlgorithm::SearchAlgorithm(
       description(description),
       status(IN_PROGRESS),
       solution_found(false),
+      bound(bound),
       log(utils::get_log_for_verbosity(verbosity)),
       state_registry(task_proxy),
       successor_generator(get_successor_generator(task_proxy, log)),
       search_space(state_registry, log),
       statistics(log),
-      bound(bound),
       cost_type(cost_type),
       is_unit_cost(task_properties::is_unit_cost(task_proxy)),
-      max_time(max_time) {
+      max_time(max_time),
+      bound_was_relevant(false) {
     if (bound < 0) {
         cerr << "error: negative cost bound " << bound << endl;
         utils::exit_with(ExitCode::SEARCH_INPUT_ERROR);
@@ -70,13 +71,13 @@ SearchStatus SearchAlgorithm::get_status() const {
 SearchStatus SearchAlgorithm::get_finished_search_status() const {
     if (found_solution()) {
         return SOLVED;
-    } else if (is_unbounded() && is_complete_within_bound()) {
-        log << "Search terminated -- no plan exists!" << endl;
-        return UNSOLVABLE;
-    } else if (is_complete_within_bound()) {
+    } else if (bound_was_relevant && is_complete_within_bound()) {
         log << "Search terminated -- no plan with cost " << bound - 1
             << " or less exists!" << endl;
         return UNSOLVABLE_WITHIN_BOUND;
+    } else if (is_complete_within_bound()) {
+        log << "Search terminated -- no plan exists!" << endl;
+        return UNSOLVABLE;
     } else {
         log << "Search terminated without finding a plan!" << endl;
         return FAILED;
@@ -106,6 +107,12 @@ void SearchAlgorithm::search() {
     }
     // TODO: Revise when and which search times are logged.
     log << "Actual search time: " << timer.get_elapsed_time() << endl;
+}
+
+void SearchAlgorithm::shrink_bound(int b) {
+    if (b < bound) {
+        bound = b;
+    }
 }
 
 bool SearchAlgorithm::check_goal_and_set_plan(const State &state) {

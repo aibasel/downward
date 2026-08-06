@@ -91,8 +91,8 @@ void EnforcedHillClimbingSearch::reach_state(
 
 void EnforcedHillClimbingSearch::initialize() {
     assert(evaluator);
-    log << "Conducting enforced hill-climbing search, (real) bound = " << bound
-        << endl;
+    log << "Conducting enforced hill-climbing search, (real) bound = "
+        << get_bound_string() << endl;
     if (use_preferred) {
         log << "Using preferred operators for "
             << (preferred_usage == PreferredUsage::RANK_PREFERRED_FIRST
@@ -196,8 +196,10 @@ SearchStatus EnforcedHillClimbingSearch::ehc() {
         int d = parent_node.get_g() - current_phase_start_g +
                 get_adjusted_cost(last_op);
 
-        if (parent_node.get_real_g() + last_op.get_cost() >= bound)
+        if (is_greater_or_equal_to_bound(
+                parent_node.get_real_g() + last_op.get_cost())) {
             continue;
+        }
 
         State state = state_registry.get_successor_state(parent_state, last_op);
         statistics.inc_generated();
