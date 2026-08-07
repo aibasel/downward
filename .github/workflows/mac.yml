@@ -21,9 +21,9 @@ jobs:
       GUROBI_URL: ${{ secrets.GUROBI1302_OSX_URL }}
       GUROBI_HOME: /Users/runner/lib/gurobi1302/macos_universal2
       DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib
-      soplex_DIR: /Users/runner/lib/soplex-7.1.0
-      SOPLEX_LIB: /Users/runner/lib/soplex-7.1.0/lib/
-      SOPLEX_INCLUDE: /Users/runner/lib/soplex-7.1.0/include/
+      soplex_DIR: /Users/runner/lib/soplex-7.1.6
+      SOPLEX_LIB: /Users/runner/lib/soplex-7.1.6/lib/
+      SOPLEX_INCLUDE: /Users/runner/lib/soplex-7.1.6/include/
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -52,7 +52,7 @@ jobs:
         run: |
           git clone https://github.com/scipopt/soplex.git
           cd soplex
-          git checkout release-710
+          git checkout release-716
           cd ..
           cmake -S soplex -B build
           cmake --build build
