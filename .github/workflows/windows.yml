@@ -3,7 +3,7 @@ name: Windows
 
 on:
   push:
-    branches: [main, release-*]
+    branches: [main, release-*, issue1199-part2-algs-rebased]
   pull_request:
     branches: [main, release-*]
 
