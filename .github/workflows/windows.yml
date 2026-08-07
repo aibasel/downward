@@ -157,9 +157,10 @@ jobs:
 
       - name: Compile planner
         shell: cmd
+        # We set SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING because SoPlex 7.1.6 uses some deprecated Microsoft C++ extensions.
         run: |
           call "${{ matrix.platform.vc }}" %ARCH%
-          set CXXFLAGS=/WX
+          set CXXFLAGS=/WX /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
           python build.py release
           python build.py debug
 
