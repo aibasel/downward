@@ -3,16 +3,16 @@
 set -euo pipefail
 
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
-TESTDIR=$SCRIPTDIR/translator-package-test
+TESTDIR="$SCRIPTDIR/translator-package-test"
 ENVDIR=.env
-mkdir $TESTDIR
-cd $TESTDIR
-python3 -m venv $ENVDIR
-source $ENVDIR/bin/activate
+mkdir "$TESTDIR"
+cd "$TESTDIR"
+python3 -m venv "$ENVDIR"
+source "$ENVDIR/bin/activate"
 echo "Installing fast-downward.translate..."
 echo
 pip install -i https://test.pypi.org/simple/ fast-downward.translate
-VERSION=$(pip3 show fast-downward.translate | awk '/^Version:/{print $2}')
+VERSION="$(pip3 show fast-downward.translate | awk '/^Version:/{print $2}')"
 
 echo
 echo "Testing usage as a module..."
@@ -37,6 +37,6 @@ fi
 
 deactivate
 cd ..
-rm -rf $TESTDIR
+rm -rf "$TESTDIR"
 echo ""
 echo "Done testing fast-downward.translate version $VERSION. Please check the output for problems."
