@@ -10,6 +10,7 @@ For further information:
 - Fast Downward mailing list: <https://groups.google.com/forum/#!forum/fast-downward>
 - Fast Downward main repository: <https://github.com/aibasel/downward>
 
+
 ## Scientific experiments
 
 We recommend to use the [latest
@@ -19,6 +20,7 @@ Lab](https://lab.readthedocs.io/en/stable/) Python package helps
 running Fast Downward experiments. Our separate [benchmark
 repository](https://github.com/aibasel/downward-benchmarks) contains a
 collection of planning tasks.
+
 
 ## Supported software versions
 
@@ -45,6 +47,7 @@ We test LP support with CPLEX 22.1.1 and SoPlex 7.1.1. On Ubuntu we
 test both CPLEX and SoPlex. On Windows we currently only test CPLEX,
 and on macOS we do not test LP solvers (yet).
 
+
 ## Build instructions
 
 See [BUILD.md](BUILD.md).
@@ -61,20 +64,22 @@ active, and in case of ties, by the earliest year the person started
 contributing, and finally by last name.
 
 - 2003-2026 Malte Helmert
-- 2008-2016, 2018-2026 Gabriele Roeger
+- 2008-2016, 2018-2026 Gabriele Röger
 - 2012-2026 Florian Pommerening
 - 2021-2026 Clemens Büchner
 - 2022-2026 Remo Christen
 - 2022-2026 Simon Dold
 - 2023-2026 Claudia S. Grundke
-- 2024–2026 Tanja Schindler
+- 2024-2026 Tanja Schindler
+- 2024-2026 David Speck
 - 2025-2026 Esther Mugdan
+- 2025-2026 Travis Rivera Petit
+- 2026 Gustavo Delazeri
+- 2026 Pascal Lauer
 - 2009, 2025 Christian Muise
 - 2010-2025 Jendrik Seipp
 - 2010-2011, 2013-2025 Silvan Sievers
 - 2013, 2015-2025 Salomé Eriksson
-- 2024-2025 David Speck
-- 2025 Travis Rivera Petit
 - 2018-2024 Patrick Ferber
 - 2024 Martín Pozo
 - 2015, 2021-2023 Thomas Keller
