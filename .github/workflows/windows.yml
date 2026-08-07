@@ -15,6 +15,9 @@ env:
   cplex_DIR: D:\a\cplex
 
   CPLEX_URL: "${{ secrets.CPLEX2211_WINDOWS_URL }}"
+  GUROBI_URL: "${{ secrets.GUROBI1302_WINDOWS_URL }}"
+  GUROBI_LICENSE_URL: "${{ secrets.GUROBI_LICENSE_URL }}"
+  GUROBI_HOME: C:\gurobi1302\win64
   ZLIB_URL: "https://www.zlib.net/zlib132.zip"
 
 
@@ -45,6 +48,53 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Install Gurobi
+        if: ${{ env.GUROBI_URL != 0 }}
+        run: |
+          $installer = Join-Path $ENV:RUNNER_TEMP "gurobi.msi"
+          curl.exe --fail --location --silent --show-error --output "$installer" "$ENV:GUROBI_URL"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to download Gurobi."
+          }
+
+          $arguments = "/i `"$installer`" /quiet /norestart"
+          $process = Start-Process -FilePath msiexec.exe -ArgumentList $arguments -Wait -PassThru
+          if ($process.ExitCode -notin @(0, 3010)) {
+            throw "Gurobi installation failed with exit code $($process.ExitCode)."
+          }
+          Remove-Item "$installer"
+
+          $required_files = @(
+            "$ENV:GUROBI_HOME\include\gurobi_c.h",
+            "$ENV:GUROBI_HOME\lib\gurobi130.lib",
+            "$ENV:GUROBI_HOME\bin\gurobi130.dll",
+            "$ENV:GUROBI_HOME\bin\gurobi_cl.exe"
+          )
+          foreach ($file in $required_files) {
+            if (-not (Test-Path "$file")) {
+              throw "Required Gurobi file not found: $file"
+            }
+          }
+
+          Add-Content -Path $ENV:GITHUB_PATH -Value "$ENV:GUROBI_HOME\bin"
+
+      - name: Check Gurobi license
+        if: ${{ env.GUROBI_URL != 0 }}
+        run: |
+          $license_file = Join-Path $ENV:USERPROFILE "gurobi.lic"
+          curl.exe --fail --location --silent --show-error --output "$license_file" "$ENV:GUROBI_LICENSE_URL"
+          if ($LASTEXITCODE -ne 0) {
+            throw "Failed to download the Gurobi license."
+          }
+          Add-Content -Path $ENV:GITHUB_ENV -Value "GRB_LICENSE_FILE=$license_file"
+          $ENV:GRB_LICENSE_FILE = $license_file
+
+          & "$ENV:GUROBI_HOME\bin\gurobi_cl.exe" --license *> $null
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "Gurobi license is invalid or expired. Please contact gustavo.delazeri@unibas.ch"
+            exit 1
+          }
+          Write-Host "Gurobi license check passed."
 
       - name: Install zlib
         if: ${{ env.CPLEX_URL != 0 }}
@@ -121,5 +171,13 @@ jobs:
           call "${{ matrix.platform.vc }}" %ARCH%
           cd misc/
           tox -e cplex
+
+      - name: Run Gurobi tests
+        shell: cmd
+        if: ${{ env.GUROBI_URL != 0 }}
+        run: |
+          call "${{ matrix.platform.vc }}" %ARCH%
+          cd misc/
+          tox -e gurobi
 
 ...
