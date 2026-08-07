@@ -37,6 +37,10 @@ The singular `--` is used to skip passing a domain and problem file to the drive
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--outdir", default=f"{REPO_ROOT_DIR}/docs")
+    parser.add_argument('--translator-package-documentation',
+                        action='store_true',
+                        help="extend outdir/README.md with translator "
+                             "package documentation for PyPI")
     return parser.parse_args()
 
 
@@ -46,7 +50,7 @@ def build_translator():
 
 def import_argparser_from_translator():
     sys.path.insert(0, str(REPO_ROOT_DIR / "builds" / BUILD / "bin"))
-    from translate import options
+    from fast_downward.translate import options
     return options.get_arg_parser()
 
 
@@ -99,6 +103,37 @@ def build_docs(path: Path):
     path.write_text(parser_to_markdown(parser))
 
 
+def build_translator_package_docs(path: Path):
+    parser = import_argparser_from_translator()
+    parser.color = False
+    parser.formatter_class = lambda prog: argparse.HelpFormatter("python -m fast_downward.translate",
+                                                                 width=80)
+    text = path.read_text()
+    if "## Usage" in text:
+        sys.exit(f"{path} already contains usage information.")
+    lines = [text]
+    lines.append("## Usage")
+    usage = parser.format_help().splitlines()
+
+    prefix = "usage: "
+    lines.append("```")
+    for i, line in enumerate(usage):
+        if line.strip() == "":
+            lines.append("```")
+            # We split the code block for the call and the argument
+            # documentation because the one for the call requires horizontal
+            # scrolling and we don't want the scrollbar only at the end of the
+            # page.
+            lines.append("```")
+            lines.extend(usage[i+1:])
+            lines.append("```")
+            break
+        assert (line.startswith(prefix) or
+                line.startswith(" " * len(prefix)))
+        lines.append(line[len(prefix):])
+    path.write_text("\n".join(lines))
+
+
 if __name__ == '__main__':
     args = parse_args()
     logging.info("building translator...")
@@ -106,7 +141,13 @@ if __name__ == '__main__':
     logging.info("building documentation...")
     outdir = SCRIPT_DIR / args.outdir
     outdir.mkdir(parents=True, exist_ok=True)
-    outpath = outdir / FILENAME
-    if outpath.exists():
-        sys.exit(f"{outpath} already exists.")
-    build_docs(outpath)
+    if args.translator_package_documentation:
+        outpath = outdir / "README.md"
+        if not outpath.exists():
+            sys.exit(f"{outpath} does not exist.")
+        build_translator_package_docs(outpath)
+    else:
+        outpath = outdir / FILENAME
+        if outpath.exists():
+            sys.exit(f"{outpath} already exists.")
+        build_docs(outpath)

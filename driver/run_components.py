@@ -20,7 +20,7 @@ elif os.name == "nt":
 else:
     returncodes.exit_with_driver_unsupported_error("Unsupported OS: " + os.name)
 
-REL_TRANSLATE_PATH = Path("translate")
+REL_TRANSLATE_PATH = Path("fast_downward")
 REL_SEARCH_PATH = Path(f"downward{BINARY_EXT}")
 # Older versions of VAL use lower case, newer versions upper case. We prefer the
 # older version because this is what our build instructions recommend.
@@ -75,7 +75,7 @@ def run_translate(args):
     translate = get_executable(args.build, REL_TRANSLATE_PATH)
 
     assert sys.executable, "Path to interpreter could not be found"
-    cmd = [sys.executable] + ["-m", "translate"] + args.translate_inputs + args.translate_options
+    cmd = [sys.executable] + ["-m", "fast_downward.translate"] + args.translate_inputs + args.translate_options
 
     stderr, returncode = call.get_error_output_and_returncode(
         "translator",
