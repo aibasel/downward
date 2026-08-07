@@ -19,6 +19,8 @@ jobs:
     runs-on: ${{ matrix.version.macos }}
     env:
       GUROBI_URL: ${{ secrets.GUROBI1302_OSX_URL }}
+      GUROBI_LICENSE_URL: ${{ secrets.GUROBI_LICENSE_URL }}
+      GRB_LICENSE_FILE: /Users/runner/gurobi.lic
       GUROBI_HOME: /Users/runner/lib/gurobi1302/macos_universal2
       DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib
       soplex_DIR: /Users/runner/lib/soplex-7.1.6
@@ -47,6 +49,16 @@ jobs:
           rm "$RUNNER_TEMP/gurobi.pkg"
           test -f "$GUROBI_HOME/include/gurobi_c.h"
           test -d "$GUROBI_HOME/lib"
+
+      - name: Check Gurobi license
+        if: ${{ env.GUROBI_URL != 0 }}
+        run: |
+          wget -O "$GRB_LICENSE_FILE" "$GUROBI_LICENSE_URL" &> /dev/null
+          chmod 600 "$GRB_LICENSE_FILE"
+          if ! "$GUROBI_HOME/bin/gurobi_cl" --license; then
+            echo "Gurobi license is invalid or expired. Please contact gustavo.delazeri@unibas.ch"
+            exit 1
+          fi
 
       - name: Install SoPlex
         run: |

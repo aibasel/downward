@@ -37,6 +37,8 @@ jobs:
       CPLEX_LIB: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/libcplex2211.so
 
       GUROBI_URL: ${{ secrets.GUROBI1302_LINUX_URL }}
+      GUROBI_LICENSE_URL: ${{ secrets.GUROBI_LICENSE_URL }}
+      GRB_LICENSE_FILE: /home/runner/gurobi.lic
       GUROBI_HOME: /home/runner/lib/gurobi1302/linux64
       GUROBI_LIB: /home/runner/lib/gurobi1302/linux64/lib
       LD_LIBRARY_PATH: /home/runner/lib/gurobi1302/linux64/lib
@@ -85,6 +87,17 @@ jobs:
           wget -O gurobi.tar.gz $GUROBI_URL &> /dev/null
           tar xfz gurobi.tar.gz -C /home/runner/lib
           rm gurobi.tar.gz
+
+      - name: Check Gurobi license
+        if: ${{ env.GUROBI_URL != 0 }}
+        run: |
+          # We redirect output of wget to hide the secret URL.
+          wget -O "$GRB_LICENSE_FILE" "$GUROBI_LICENSE_URL" &> /dev/null
+          chmod 600 "$GRB_LICENSE_FILE"
+          if ! "$GUROBI_HOME/bin/gurobi_cl" --license; then
+            echo "Gurobi license is invalid or expired. Please contact gustavo.delazeri@unibas.ch"
+            exit 1
+          fi
 
       # Always install SoPlex
       - name: Install SoPlex
