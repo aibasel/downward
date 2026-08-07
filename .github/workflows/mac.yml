@@ -11,13 +11,19 @@ jobs:
   compile:
     name: Compile planner
     timeout-minutes: 60
-    runs-on: macos-14
-
+    strategy:
+      matrix:
+        version:
+          - {macos: macos-14, python: '3.10', run_tox_tests: true}
+          - {macos: macos-15, python: '3.10', run_tox_tests: true}
+    runs-on: ${{ matrix.version.macos }}
     env:
       GUROBI_URL: ${{ secrets.GUROBI1302_OSX_URL }}
       GUROBI_HOME: /Users/runner/lib/gurobi1302/macos_universal2
       DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib
-
+      soplex_DIR: /Users/runner/lib/soplex-7.1.0
+      SOPLEX_LIB: /Users/runner/lib/soplex-7.1.0/lib/
+      SOPLEX_INCLUDE: /Users/runner/lib/soplex-7.1.0/include/
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -25,36 +31,128 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: ${{ matrix.version.python }}
+
+      - name: Install dependencies
+        run: |
+          brew install coreutils gmp
 
       - name: Install Gurobi
-        if: env.GUROBI_URL != ''
+        if: ${{ env.GUROBI_URL != 0 }}
         run: |
-          curl \
-            --fail \
-            --location \
-            --silent \
-            --show-error \
-            "$GUROBI_URL" \
-            --output "$RUNNER_TEMP/gurobi.pkg"
-
-          sudo installer \
-            -pkg "$RUNNER_TEMP/gurobi.pkg" \
-            -target /
-
+          wget -O "$RUNNER_TEMP/gurobi.pkg" "$GUROBI_URL" &> /dev/null
+          sudo installer -pkg "$RUNNER_TEMP/gurobi.pkg" -target /
           mkdir -p "$HOME/lib/gurobi1302"
-
-          cp -R \
-            /Library/gurobi1302/macos_universal2 \
-            "$HOME/lib/gurobi1302/"
-
+          cp -R /Library/gurobi1302/macos_universal2 "$HOME/lib/gurobi1302/"
           rm "$RUNNER_TEMP/gurobi.pkg"
-
           test -f "$GUROBI_HOME/include/gurobi_c.h"
           test -d "$GUROBI_HOME/lib"
+
+      - name: Install SoPlex
+        run: |
+          git clone https://github.com/scipopt/soplex.git
+          cd soplex
+          git checkout release-710
+          cd ..
+          cmake -S soplex -B build
+          cmake --build build
+          cmake --install build --prefix "${soplex_DIR}"
+          rm -rf soplex build
 
       - name: Compile planner
         run: |
           export CXXFLAGS="-Werror"
           ./build.py --debug
           ./build.py
+
+      - name: Archive required files
+        if: ${{ matrix.version.run_tox_tests }}
+        run: |
+          files_to_archive="fast-downward.py driver misc src builds/debug/bin/ \
+                            builds/release/bin/ ${SOPLEX_LIB} ${SOPLEX_INCLUDE}"
+          if [[ -n "${GUROBI_URL}" ]]; then
+            files_to_archive="${files_to_archive} ${GUROBI_HOME}/lib"
+          fi
+          tar czf archive.tar.gz -C "$HOME" $(grealpath --relative-to="$HOME" $files_to_archive)
+
+      - name: Upload archive
+        if: ${{ matrix.version.run_tox_tests }}
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: compiled-planner-${{ matrix.version.macos }}
+          path: archive.tar.gz
+          retention-days: 1
+
+  run_tox_tests:
+    name: Test planner
+    needs: compile # TODO: this only depends on the compile step with the gcc version we test
+    strategy:
+      matrix:
+        version:
+          - {macos: macos-14, python: '3.10'}
+          - {macos: macos-15, python: '3.10'}
+    runs-on: ${{ matrix.version.macos }}
+    env:
+      GUROBI_URL: ${{ secrets.GUROBI1302_OSX_URL }}
+      GUROBI_LICENSE_URL: ${{ secrets.GUROBI_LICENSE_URL }}
+      GRB_LICENSE_FILE: /Users/runner/gurobi.lic
+      DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib
+    steps:
+      - name: Download archive
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: compiled-planner-${{ matrix.version.macos }}
+
+      - name: Delete artifact (ignore if not found)
+        uses: geekyeggo/delete-artifact@v2
+        continue-on-error: true
+        with:
+          name: compiled-planner-${{ matrix.version.macos }}
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.version.python }}
+
+      - name: Install dependencies
+        run: |
+          pip3 install tox
+          brew install gmp
+
+      - name: Install VAL
+        run: |
+          git clone https://github.com/KCL-Planning/VAL.git
+          cd VAL
+          git checkout a5565396007eee73ac36527fbf904142b3077c74
+          make clean  # Remove old build artifacts and binaries.
+          sed -i '' 's/-Werror //g' Makefile  # Ignore warnings.
+          make -j2
+          mv validate ../
+          cd ../
+          rm -rf VAL
+          echo "$PWD" >> "$GITHUB_PATH" # Add VAL to path of subsequent steps.
+
+      - name: Extract archive
+        # We need to make sure that library paths are the same as
+        # during compilation.
+        run: |
+          tar xfz archive.tar.gz -C "$HOME"
+
+      - name: Run driver, translator and search tests
+        run: |
+          cd misc/
+          tox -e driver,translator,search,parameters,generate-docs
+
+      - name: Run Gurobi tests
+        if: ${{ env.GUROBI_URL != 0 }}
+        run: |
+          # We redirect output of wget to hide the secret URL.
+          wget -O "$GRB_LICENSE_FILE" "$GUROBI_LICENSE_URL" &> /dev/null
+          chmod 600 "$GRB_LICENSE_FILE"
+          cd misc/
+          tox -e gurobi
+
+      - name: Run SoPlex tests
+        run: |
+          cd misc/
+          tox -e soplex
