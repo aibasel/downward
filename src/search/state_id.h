@@ -8,6 +8,7 @@
 
 class StateID {
     friend class StateRegistry;
+    friend class ExplicitStateRegistry;
     friend std::ostream &operator<<(std::ostream &os, StateID id);
     template<typename>
     friend class PerStateInformation;

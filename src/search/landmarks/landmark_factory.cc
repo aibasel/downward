@@ -1,6 +1,5 @@
 #include "landmark_factory.h"
 
-#include "landmark.h"
 #include "landmark_graph.h"
 #include "util.h"
 
@@ -10,7 +9,6 @@
 #include "../utils/logging.h"
 #include "../utils/timer.h"
 
-#include <fstream>
 #include <memory>
 
 using namespace std;
@@ -160,7 +158,7 @@ void LandmarkFactory::log_landmark_graph_info(
   TaskProxy used by the Exploration object is the same as the TaskProxy object
   passed to this function.
 
-  issue1208: update comment above after removing the task transformation code.
+  issue1209: update comment above after removing the factory-factory pattern.
 */
 shared_ptr<LandmarkGraph> LandmarkFactory::compute_landmark_graph(
     const shared_ptr<AbstractTask> &task) {

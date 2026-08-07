@@ -24,12 +24,11 @@ class LandmarkStatusManager {
 
     void progress_landmarks(
         ConstBitsetView &parent_past, ConstBitsetView &parent_future,
-        const State &parent_ancestor_state, BitsetView &past,
-        BitsetView &future, const State &ancestor_state);
-    void progress_goals(const State &ancestor_state, BitsetView &future);
+        const State &parent_state, BitsetView &past, BitsetView &future,
+        const State &state);
+    void progress_goals(const State &state, BitsetView &future);
     void progress_greedy_necessary_orderings(
-        const State &ancestor_state, const BitsetView &past,
-        BitsetView &future);
+        const State &state, const BitsetView &past, BitsetView &future);
     void progress_reasonable_orderings(
         const BitsetView &past, BitsetView &future);
 public:
@@ -45,8 +44,7 @@ public:
 
     void progress_initial_state(const State &initial_state);
     void progress(
-        const State &parent_ancestor_state, OperatorID op_id,
-        const State &ancestor_state);
+        const State &parent_state, OperatorID op_id, const State &state);
 };
 }
 

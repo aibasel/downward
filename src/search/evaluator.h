@@ -8,7 +8,7 @@
 
 #include <set>
 
-class EvaluationContext;
+class EvaluatorCall;
 class State;
 
 namespace plugins {
@@ -50,12 +50,17 @@ public:
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> &evals) = 0;
 
-    virtual void notify_initial_state(const State & /*initial_state*/) {
+    virtual void notify_initial_state(const State &initial_state) {
+        assert(initial_state.get_task() == TaskProxy(*task));
+        utils::unused_variable(initial_state);
     }
 
     virtual void notify_state_transition(
-        const State & /*parent_state*/, OperatorID /*op_id*/,
-        const State & /*state*/) {
+        const State &parent_state, OperatorID /*op_id*/, const State &state) {
+        assert(parent_state.get_task() == TaskProxy(*task));
+        assert(state.get_task() == TaskProxy(*task));
+        utils::unused_variable(parent_state);
+        utils::unused_variable(state);
     }
 
     /*
@@ -78,8 +83,7 @@ public:
       EvaluationContext. We need to think of a clean way to achieve
       this.
     */
-    virtual EvaluationResult compute_result(
-        EvaluationContext &eval_context) = 0;
+    virtual EvaluationResult compute_result(EvaluatorCall &call) = 0;
 
     void report_value_for_initial_state(const EvaluationResult &result) const;
     void report_new_minimum_value(const EvaluationResult &result) const;

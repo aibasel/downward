@@ -1,7 +1,7 @@
 #include "combining_evaluator.h"
 
-#include "../evaluation_context.h"
 #include "../evaluation_result.h"
+#include "../evaluator_call.h"
 
 #include "../plugins/plugin.h"
 #include "../utils/component_errors.h"
@@ -26,8 +26,7 @@ bool CombiningEvaluator::is_safe() const {
     return all_subevaluators_are_safe;
 }
 
-EvaluationResult CombiningEvaluator::compute_result(
-    EvaluationContext &eval_context) {
+EvaluationResult CombiningEvaluator::compute_result(EvaluatorCall &call) {
     // This marks no preferred operators.
     EvaluationResult result;
     vector<int> values;
@@ -35,8 +34,7 @@ EvaluationResult CombiningEvaluator::compute_result(
 
     // Collect component values. Return infinity if any is infinite.
     for (const shared_ptr<Evaluator> &subevaluator : subevaluators) {
-        int value =
-            eval_context.get_evaluator_value_or_infinity(subevaluator.get());
+        int value = call[subevaluator.get()].get_evaluator_value();
         if (value == EvaluationResult::INFTY) {
             result.set_evaluator_value(value);
             return result;

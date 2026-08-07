@@ -3,7 +3,7 @@
 #include "search_algorithm.h"
 
 #include "task_utils/task_properties.h"
-#include "tasks/root_task.h"
+#include "tasks/explicit_task.h"
 #include "utils/logging.h"
 #include "utils/system.h"
 #include "utils/timer.h"
@@ -36,13 +36,7 @@ int main(int argc, const char **argv) {
         if (static_cast<string>(argv[1]) != "--help") {
             utils::g_log << get_revision_info() << endl;
             utils::g_log << "reading input..." << endl;
-            tasks::read_root_task(cin);
-            task = tasks::g_root_task;
-            /*
-              TODO once we get rid of g_root_task, the two lines above should
-              be replaced by something like
-                  task = tasks::read_task(cin)
-            */
+            task = tasks::read_task(cin);
             utils::g_log << "done reading input!" << endl;
             TaskProxy task_proxy(*task);
             unit_cost = task_properties::is_unit_cost(task_proxy);
