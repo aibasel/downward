@@ -6,15 +6,10 @@
 set -euo pipefail
 
 if [ $# -ne 1 ]; then
-    echo "Usage: ./prepare-translator-package.sh 19.06"
+    echo "Usage: ./prepare-translator-package.sh 26.6"
     exit 1
 fi
 VERSION=$1
-
-#if [[ ! "$VERSION" =~ ^[1-9][0-9]\.[0-9][0-9]$ ]]; then
-#    echo "Unrecognized version number '$VERSION'. Expected the format YY.MM (e.g. 19.06)."
-#    exit 1
-#fi
 
 # Verify that the repository is clean.
 if [[ -n $(git status --porcelain) ]]; then
