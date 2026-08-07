@@ -9,6 +9,7 @@
 #include "../tasks/cost_adapted_task.h"
 #include "../tasks/root_task.h"
 #include "../utils/markup.h"
+#include "../utils/timer.h"
 
 using namespace std;
 
