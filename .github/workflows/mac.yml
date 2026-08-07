@@ -14,8 +14,8 @@ jobs:
     strategy:
       matrix:
         version:
-          - {macos: macos-14, python: '3.10', run_tox_tests: true}
           - {macos: macos-15, python: '3.10', run_tox_tests: true}
+          - {macos: macos-26, python: '3.10', run_tox_tests: true}
     runs-on: ${{ matrix.version.macos }}
     env:
       GUROBI_URL: ${{ secrets.GUROBI1302_OSX_URL }}
@@ -91,13 +91,14 @@ jobs:
     strategy:
       matrix:
         version:
-          - {macos: macos-14, python: '3.10'}
           - {macos: macos-15, python: '3.10'}
+          - {macos: macos-26, python: '3.10'}
     runs-on: ${{ matrix.version.macos }}
     env:
       GUROBI_URL: ${{ secrets.GUROBI1302_OSX_URL }}
       GUROBI_LICENSE_URL: ${{ secrets.GUROBI_LICENSE_URL }}
       GRB_LICENSE_FILE: /Users/runner/gurobi.lic
+      GUROBI_HOME: /Users/runner/lib/gurobi1302/macos_universal2
       DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib
     steps:
       - name: Download archive
@@ -139,6 +140,15 @@ jobs:
         # during compilation.
         run: |
           tar xfz archive.tar.gz -C "$HOME"
+
+        # Fast Downward's binary records Gurobi's installation path under /Library/gurobi1302/macos_universal2
+        # This step copies the archived Gurobi to the right place
+      - name: Restore Gurobi library path
+        if: ${{ env.GUROBI_URL != 0 }}
+        run: |
+          sudo mkdir -p /Library/gurobi1302
+          sudo cp -R "$GUROBI_HOME" /Library/gurobi1302/
+          test -f /Library/gurobi1302/macos_universal2/lib/libgurobi130.dylib
 
       - name: Run driver, translator and search tests
         run: |
