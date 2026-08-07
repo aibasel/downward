@@ -3,7 +3,7 @@ name: Ubuntu
 
 on:
   push:
-    branches: [main, release-*, issue1199-part2-algs-rebased]
+    branches: [main, release-*]
   pull_request:
     branches: [main, release-*]
 
