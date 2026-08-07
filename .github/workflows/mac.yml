@@ -22,13 +22,13 @@ jobs:
       GUROBI_LICENSE_URL: ${{ secrets.GUROBI_LICENSE_URL }}
       GRB_LICENSE_FILE: /Users/runner/gurobi.lic
       GUROBI_HOME: /Users/runner/lib/gurobi1302/macos_universal2
-      DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib:/Applications/CPLEX_Studio2220/cplex/bin/arm64_osx
+      DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib:/Applications/CPLEX_Studio222/cplex/bin/arm64_osx
       soplex_DIR: /Users/runner/lib/soplex-7.1.6
       SOPLEX_LIB: /Users/runner/lib/soplex-7.1.6/lib/
       SOPLEX_INCLUDE: /Users/runner/lib/soplex-7.1.6/include/
       CPLEX_URL: ${{ secrets.CPLEX2220_OSX_URL }}
-      cplex_DIR: /Applications/CPLEX_Studio2220/cplex
-      CPLEX_LIB: /Applications/CPLEX_Studio2220/cplex/bin/arm64_osx/libcplex2220.dylib
+      cplex_DIR: /Applications/CPLEX_Studio222/cplex
+      CPLEX_LIB: /Applications/CPLEX_Studio222/cplex/bin/arm64_osx/libcplex2220.dylib
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -128,9 +128,9 @@ jobs:
       GUROBI_LICENSE_URL: ${{ secrets.GUROBI_LICENSE_URL }}
       GRB_LICENSE_FILE: /Users/runner/gurobi.lic
       GUROBI_HOME: /Users/runner/lib/gurobi1302/macos_universal2
-      DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib:/Applications/CPLEX_Studio2220/cplex/bin/arm64_osx
+      DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib:/Applications/CPLEX_Studio222/cplex/bin/arm64_osx
       CPLEX_URL: ${{ secrets.CPLEX2220_OSX_URL }}
-      CPLEX_LIB: /Applications/CPLEX_Studio2220/cplex/bin/arm64_osx/libcplex2220.dylib
+      CPLEX_LIB: /Applications/CPLEX_Studio222/cplex/bin/arm64_osx/libcplex2220.dylib
       CPLEX_ARCHIVE_LIB: /Users/runner/lib/cplex2220/libcplex2220.dylib
     steps:
       - name: Download archive
