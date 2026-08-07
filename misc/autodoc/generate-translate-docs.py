@@ -120,11 +120,10 @@ def build_translator_package_docs(path: Path):
     for i, line in enumerate(usage):
         if line.strip() == "":
             lines.append("```")
-            # we split the code block for the call and the argument
+            # We split the code block for the call and the argument
             # documentation because the one for the call requires horizontal
             # scrolling and we don't want the scrollbar only at the end of the
             # page.
-
             lines.append("```")
             lines.extend(usage[i+1:])
             lines.append("```")
