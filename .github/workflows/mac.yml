@@ -61,7 +61,9 @@ jobs:
 
       - name: Compile planner
         run: |
-          export CXXFLAGS="-Werror"
+          gmp_prefix="$(brew --prefix gmp)"
+          export CXXFLAGS="-Werror -I${gmp_prefix}/include"
+          export LDFLAGS="-L${gmp_prefix}/lib"
           ./build.py --debug
           ./build.py
 
