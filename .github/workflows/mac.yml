@@ -55,10 +55,11 @@ jobs:
         run: |
           wget -O "$GRB_LICENSE_FILE" "$GUROBI_LICENSE_URL" &> /dev/null
           chmod 600 "$GRB_LICENSE_FILE"
-          if ! "$GUROBI_HOME/bin/gurobi_cl" --license; then
+          if ! "$GUROBI_HOME/bin/gurobi_cl" --license &> /dev/null; then
             echo "Gurobi license is invalid or expired. Please contact gustavo.delazeri@unibas.ch"
             exit 1
           fi
+          echo "Gurobi license check passed."
 
       - name: Install SoPlex
         run: |
