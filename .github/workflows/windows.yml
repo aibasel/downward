@@ -19,6 +19,7 @@ env:
   GUROBI_LICENSE_URL: "${{ secrets.GUROBI_LICENSE_URL }}"
   GUROBI_HOME: C:\gurobi1302\win64
   soplex_DIR: D:\a\soplex-7.1.6
+  soplex_DEBUG_DIR: D:\a\soplex-7.1.6-debug
   ZLIB_URL: "https://www.zlib.net/zlib132.zip"
 
 
@@ -145,12 +146,20 @@ jobs:
         run: |
           call "${{ matrix.platform.vc }}" %ARCH%
           git clone --branch release-716 --depth 1 https://github.com/scipopt/soplex.git || exit /b 1
-          cmake -S soplex -B soplex-build -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DBOOST=off -DGMP=off -DZLIB=off || exit /b 1
-          cmake --build soplex-build || exit /b 1
-          cmake --install soplex-build --prefix "%soplex_DIR%" || exit /b 1
+          cmake -S soplex -B soplex-build-release -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DBOOST=off -DGMP=off -DZLIB=off || exit /b 1
+          cmake --build soplex-build-release || exit /b 1
+          cmake --install soplex-build-release --prefix "%soplex_DIR%" || exit /b 1
+
+          cmake -S soplex -B soplex-build-debug -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Debug -DBOOST=off -DGMP=off -DZLIB=off || exit /b 1
+          cmake --build soplex-build-debug || exit /b 1
+          cmake --install soplex-build-debug --prefix "%soplex_DEBUG_DIR%" || exit /b 1
 
           if not exist "%soplex_DIR%\include\soplex.h" (
-            echo ERROR: SoPlex headers were not installed.
+            echo ERROR: SoPlex release headers were not installed.
+            exit /b 1
+          )
+          if not exist "%soplex_DEBUG_DIR%\include\soplex.h" (
+            echo ERROR: SoPlex debug headers were not installed.
             exit /b 1
           )
           echo %soplex_DIR%\bin>>"%GITHUB_PATH%"
@@ -162,6 +171,7 @@ jobs:
           call "${{ matrix.platform.vc }}" %ARCH%
           set CXXFLAGS=/WX /D_SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
           python build.py release
+          set soplex_DIR=%soplex_DEBUG_DIR%
           python build.py debug
 
       - name: Install tox
