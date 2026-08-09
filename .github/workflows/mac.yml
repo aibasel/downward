@@ -128,9 +128,8 @@ jobs:
       GUROBI_LICENSE_URL: ${{ secrets.GUROBI_LICENSE_URL }}
       GRB_LICENSE_FILE: /Users/runner/gurobi.lic
       GUROBI_HOME: /Users/runner/lib/gurobi1302/macos_universal2
-      DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib:/Applications/CPLEX_Studio222/cplex/bin/arm64_osx
+      DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib:/Users/runner/lib/cplex2220
       CPLEX_URL: ${{ secrets.CPLEX2220_OSX_URL }}
-      CPLEX_LIB: /Applications/CPLEX_Studio222/cplex/bin/arm64_osx/libcplex2220.dylib
       CPLEX_ARCHIVE_LIB: /Users/runner/lib/cplex2220/libcplex2220.dylib
     steps:
       - name: Download archive
@@ -173,12 +172,10 @@ jobs:
         run: |
           tar xfz archive.tar.gz -C "$HOME"
 
-      - name: Restore CPLEX library path
+      - name: Check CPLEX library
         if: ${{ env.CPLEX_URL != 0 }}
         run: |
-          sudo mkdir -p "$(dirname "$CPLEX_LIB")"
-          sudo cp "$CPLEX_ARCHIVE_LIB" "$CPLEX_LIB"
-          test -f "$CPLEX_LIB"
+          test -r "$CPLEX_ARCHIVE_LIB"
 
         # Fast Downward's binary records Gurobi's installation path under /Library/gurobi1302/macos_universal2
         # This step copies the archived Gurobi to the right place
