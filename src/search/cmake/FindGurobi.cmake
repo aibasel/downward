@@ -22,7 +22,7 @@ find_library(GUROBI_LIBRARY
     NAMES
         gurobi130   # Gurobi 13.0
     HINTS ${HINT_PATHS}
-    PATH_SUFFIXES lib 
+    PATH_SUFFIXES lib
 )
 
 # Check if everything was found and set Gurobi_FOUND.

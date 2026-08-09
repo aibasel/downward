@@ -16,7 +16,7 @@ During the installation of Visual Studio, the C++ compiler is not installed by d
 
 ### Optional: Linear-Programming Solvers
 
-Some planner configurations depend on an LP or MIP solver. We support CPLEX (commercial, [free academic license](http://ibm.com/academic)), Gurobi (commercial, [free academic license](https://www.gurobi.com/academics#licenses)), and SoPlex (Apache License, no MIP support). You can install one or both solvers without causing conflicts.
+Some planner configurations depend on an LP or MIP solver. We support CPLEX (commercial, [free academic license](http://ibm.com/academic)), Gurobi (commercial, [free academic license](https://www.gurobi.com/academics#licenses)), and SoPlex (Apache License, no MIP support). You can install one or more solvers without causing conflicts.
 
 Once LP solvers are installed and the appropriate environment variables are set up correctly, Fast Downward automatically includes each solver detected on the system in the build.
 
@@ -32,19 +32,20 @@ export cplex_DIR=/opt/ibm/ILOG/CPLEX_Studio2211/cplex
 ```
 Note that on Windows, setting up the environment variable might require using `/` instead of the more Windows-common `\`.
 
-#### Installing Gurobi on Ubuntu
+#### Installing Gurobi
 
-We currently only support Gurobi 13.0.x. After downloading from the website and obtaining a license, you should have a directory called `gurobi130x`, where `x` depends on your patch. Set the following environment variables for Ubuntu and OSX. Instructions for Windows will follow soon.
-- `GUROBI_HOME` to the folder where the binaries and headers are located. 
-- `GRB_LICENSE_FILE` to the path where the Gurobi license file is located.
-- `LD_LIBRARY_PATH` to where the Gurobi precompiled libraries are located.
+We currently support Gurobi 13.0.x. Download and install the appropriate Gurobi package for your operating system and obtain a license.
 
-For example, on Ubuntu, assuming that Gurobi 13.0.2 was installed under `/opt` and the license is at `/home/myuser`:
+Set `GUROBI_HOME` to the directory containing Gurobi's `include`, `lib`, and `bin` directories. Set `GRB_LICENSE_FILE` to the location of your Gurobi license file. For example, `GUROBI_HOME` could be `/opt/gurobi130x/linux64` on Ubuntu, `/Library/gurobi130x/macos_universal2` on macOS, or `C:\gurobi130x\win64` on Windows.
 
-```bash
-export GUROBI_HOME="/opt/gurobi1302/linux64"
-export LD_LIBRARY_PATH="${GUROBI_HOME}/lib:$LD_LIBRARY_PATH"
-export GRB_LICENSE_FILE="/home/myuser/gurobi.lic"
+On Ubuntu, add Gurobi's `lib` directory to `LD_LIBRARY_PATH`. On macOS, add it to `DYLD_LIBRARY_PATH`. On Windows, add Gurobi's `bin` directory to `PATH` so that `gurobi130.dll` can be found when running Fast Downward.
+
+For example, assuming that Gurobi 13.0.2 was installed in its default location and the license is stored in the user's home directory, run the following commands in PowerShell:
+
+```powershell
+$env:GUROBI_HOME = "C:\gurobi1302\win64"
+$env:GRB_LICENSE_FILE = "$env:USERPROFILE\gurobi.lic"
+$env:PATH = "$env:GUROBI_HOME\bin;$env:PATH"
 ```
 
 #### Installing SoPlex on Linux/macOS
