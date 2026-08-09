@@ -253,7 +253,8 @@ void GurobiSolverInterface::set_constraint_rhs(
         right_hand_side);
 }
 
-void GurobiSolverInterface::set_constraint_sense(int index, LPConstraintSense sense) {
+void GurobiSolverInterface::set_constraint_sense(
+    int index, LPConstraintSense sense) {
     assert(model);
     assert(index >= 0 && index < get_num_constraints());
 

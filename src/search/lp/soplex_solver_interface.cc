@@ -6,7 +6,8 @@
 
 #include <string>
 
-// Windows headers define ERROR as a macro, which conflicts with SoPlex's enum SPxSolverBase::Status defined in spxsolver.h
+// Windows headers define ERROR as a macro, which conflicts with SoPlex's enum
+// SPxSolverBase::Status defined in spxsolver.h
 #ifdef ERROR
 #undef ERROR
 #endif
