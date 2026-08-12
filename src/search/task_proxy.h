@@ -17,22 +17,9 @@
 #include <string>
 #include <vector>
 
-class AxiomsProxy;
-class ConditionsProxy;
-class EffectProxy;
-class EffectConditionsProxy;
-class EffectsProxy;
-class FactProxy;
-class FactsProxy;
-class GoalsProxy;
-class OperatorProxy;
-class OperatorsProxy;
-class PreconditionsProxy;
-class State;
 class StateRegistry;
 class TaskProxy;
 class VariableProxy;
-class VariablesProxy;
 
 namespace causal_graph {
 class CausalGraph;
@@ -556,8 +543,6 @@ public:
     }
 };
 
-bool does_fire(const EffectProxy &effect, const State &state);
-
 class State {
     /*
       TODO: We want to try out two things:
@@ -639,6 +624,8 @@ public:
     */
     State get_unregistered_successor(const OperatorProxy &op) const;
 };
+
+bool does_fire(const EffectProxy &effect, const State &state);
 
 namespace utils {
 inline void feed(HashState &hash_state, const State &state) {
