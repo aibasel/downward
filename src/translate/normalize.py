@@ -183,23 +183,12 @@ def eliminate_universal_quantifiers(task):
                 # are instantiated with objects (of fitting types).
                 conjunct_template = recurse(condition.parts[0], head_dependencies)
 
-                subtypes = defaultdict(set)
-                for t in task.types:
-                    if t.basetype_name:
-                        subtypes[t.basetype_name].add(t.name)
-                # TODO Is there a better way of saturating subtypes than the following?
-                stabilized = False
-                while not stabilized:
-                    stabilized = True
-                    for t in (t.name for t in task.types):
-                        updated_subtypes = subtypes[t].union(*(subtypes[sub_t] for sub_t in subtypes[t]))
-                        if updated_subtypes - subtypes[t] != set():
-                            stabilized = False
-                            subtypes[t] = updated_subtypes
-
+                subtype_names = defaultdict(set)
                 objects_for_renaming = {}
                 for par in condition.parameters:
-                    fitting_types = {par.type_name} | subtypes[par.type_name]
+                    if not subtype_names[par.type_name]:
+                        subtype_names[par.type_name] = {t.name for t in task.types if par.type_name in t.supertype_names}
+                    fitting_types = {par.type_name} | subtype_names[par.type_name]
                     objects_for_renaming[par.name] = {obj.name for obj in task.objects if obj.type_name in fitting_types}
 
                 parameter_names = [par.name for par in condition.parameters]
