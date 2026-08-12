@@ -543,7 +543,6 @@ public:
     }
 };
 
-
 class State {
     /*
       TODO: We want to try out two things:
