@@ -73,7 +73,7 @@ public:
             "An operator-counting heuristic computes a linear program (LP) in each "
             "state. The LP has one variable Count_o for each operator o that "
             "represents how often the operator is used in a plan. Operator-"
-            "counting constraints are linear constraints over these varaibles that "
+            "counting constraints are linear constraints over these variables that "
             "are guaranteed to have a solution with Count_o = occurrences(o, pi) "
             "for every plan pi. Minimizing the total cost of operators subject to "
             "some operator-counting constraints is an admissible heuristic. "

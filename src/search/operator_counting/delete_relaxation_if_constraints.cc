@@ -259,7 +259,7 @@ public:
             "For details, see" +
             utils::format_journal_reference(
                 {"Tatsuya Imai", "Alex Fukunaga"},
-                "On a practical, integer-linear programming model for delete-free"
+                "On a practical, integer-linear programming model for delete-free "
                 "tasks and its use as a heuristic for cost-optimal planning",
                 "https://www.jair.org/index.php/jair/article/download/10972/26119/",
                 "Journal of Artificial Intelligence Research", "54", "631-677",

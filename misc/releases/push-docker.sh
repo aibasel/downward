@@ -3,13 +3,13 @@
 set -euo pipefail
 
 if [ $# -ne 1 ]; then
-    echo "Usage: ./push-docker.sh 19.06"
+    echo "Usage: ./push-docker.sh 26.6"
     exit 1
 fi
 
 MAJOR=$1
-if [[ ! "$MAJOR" =~ ^[1-9][0-9]\.[0-9][0-9]$ ]]; then
-    echo "Unrecognized version number '$MAJOR'. Expected the format YY.MM (e.g. 19.06)."
+if [[ ! "$MAJOR" =~ ^[1-9][0-9]\.[1-9][0-9]?$ ]]; then
+    echo "Unrecognized version number '$MAJOR'. Expected the format YY.M (e.g. 26.6)."
     exit 1
 fi
 SCRIPTDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
