@@ -53,12 +53,21 @@ class Condition:
         return self._postorder_visit("_untyped")
 
     def uniquify_variables(self, type_map, renamings={}):
-        # Cannot used _postorder_visit because this requires preorder
+        # Cannot use _postorder_visit because this requires preorder
         # for quantified effects.
         if not self.parts:
             return self
         else:
             return self.__class__([part.uniquify_variables(type_map, renamings)
+                                   for part in self.parts])
+
+    def rename_variables(self, renamings):
+        # Cannot use _postorder_visit because this requires preorder
+        # for quantified effects.
+        if not self.parts:
+            return self
+        else:
+            return self.__class__([part.rename_variables(renamings)
                                    for part in self.parts])
 
     def to_untyped_strips(self):
@@ -240,6 +249,13 @@ class QuantifiedCondition(Condition):
                           for par in self.parameters]
         new_parts = (self.parts[0].uniquify_variables(type_map, renamings),)
         return self.__class__(new_parameters, new_parts)
+
+    def rename_variables(self, renamings):
+        # Assumes that uniquify_variables was called beforehand. Without
+        # uniquified variables we would need to remove entries from renamings
+        # for variables shadowed by self.parameters.
+        new_parts = (self.parts[0].rename_variables(renamings),)
+        return self.__class__(self.parameters, new_parts)
 
     def free_variables(self):
         result = Condition.free_variables(self)

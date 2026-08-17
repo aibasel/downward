@@ -196,7 +196,7 @@ def eliminate_universal_quantifiers(task):
                 for obj_tuple in product(*(objects_for_renaming.values())):
                     renamings = dict(zip(parameter_names, obj_tuple))
                     conjuncts.append(conjunct_template.rename_variables(renamings))
-                return pddl.Conjunction(conjuncts)
+                return pddl.Conjunction(conjuncts).simplified()
 
             # Normal elimination replacing the universally quantified part via
             # double negation and a new axiom
