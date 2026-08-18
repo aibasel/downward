@@ -18,9 +18,10 @@ def _get_type_predicate_name(type_name):
 
 
 class Type:
-    def __init__(self, name, basetype_name=None):
+    def __init__(self, name, basetype_name=None, supertype_names=None):
         self.name = name
         self.basetype_name = basetype_name
+        self.supertype_names = supertype_names
 
     def __str__(self):
         return self.name

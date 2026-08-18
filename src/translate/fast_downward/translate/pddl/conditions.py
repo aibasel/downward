@@ -53,12 +53,21 @@ class Condition:
         return self._postorder_visit("_untyped")
 
     def uniquify_variables(self, type_map, renamings={}):
-        # Cannot used _postorder_visit because this requires preorder
+        # Cannot use _postorder_visit because this requires preorder
         # for quantified effects.
         if not self.parts:
             return self
         else:
             return self.__class__([part.uniquify_variables(type_map, renamings)
+                                   for part in self.parts])
+
+    def rename_variables(self, renamings):
+        # Cannot use _postorder_visit because this requires preorder
+        # for quantified effects.
+        if not self.parts:
+            return self
+        else:
+            return self.__class__([part.rename_variables(renamings)
                                    for part in self.parts])
 
     def to_untyped_strips(self):
@@ -72,6 +81,15 @@ class Condition:
         for part in self.parts:
             result |= part.free_variables()
         return result
+
+    def pos_and_neg_predicates(self):
+        pos, neg = set(), set()
+        self._collect_predicates(pos, neg)
+        return (pos, neg)
+
+    def _collect_predicates(self, pos, neg):
+        for p in self.parts:
+            p._collect_predicates(pos, neg)
 
     def has_disjunction(self):
         for part in self.parts:
@@ -232,6 +250,13 @@ class QuantifiedCondition(Condition):
         new_parts = (self.parts[0].uniquify_variables(type_map, renamings),)
         return self.__class__(new_parameters, new_parts)
 
+    def rename_variables(self, renamings):
+        # Assumes that uniquify_variables was called beforehand. Without
+        # uniquified variables we would need to remove entries from renamings
+        # for variables shadowed by self.parameters.
+        new_parts = (self.parts[0].rename_variables(renamings),)
+        return self.__class__(self.parameters, new_parts)
+
     def free_variables(self):
         result = Condition.free_variables(self)
         for par in self.parameters:
@@ -335,6 +360,9 @@ class Literal(Condition):
 class Atom(Literal):
     negated = False
 
+    def _collect_predicates(self, pos, neg):
+        pos.add(self.predicate)
+
     def to_untyped_strips(self):
         return [self]
 
@@ -355,6 +383,9 @@ class Atom(Literal):
 
 class NegatedAtom(Literal):
     negated = True
+
+    def _collect_predicates(self, pos, neg):
+        neg.add(self.predicate)
 
     def _relaxed(self, parts):
         return Truth()
