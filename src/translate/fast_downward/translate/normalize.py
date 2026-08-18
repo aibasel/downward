@@ -186,24 +186,32 @@ def eliminate_universal_quantifiers(task):
 
                 objects_for_renaming = {}
                 for par in condition.parameters:
-                    if not par.type_name in subtype_names:
-                        subtype_names[par.type_name] = {par.type_name} | {t.name for t in task.types if par.type_name in t.supertype_names}
-                    objects_for_renaming[par.name] = {obj.name for obj in task.objects if obj.type_name in subtype_names[par.type_name]}
+                    if par.type_name not in subtype_names:
+                        subtype_names[par.type_name] = {par.type_name} | {
+                                t.name for t in task.types if
+                                par.type_name in t.supertype_names}
+                    objects_for_renaming[par.name] = {obj.name for
+                                                      obj in task.objects if
+                                                      obj.type_name in
+                                                      subtype_names[par.type_name]}
 
                 parameter_names = [par.name for par in condition.parameters]
                 conjuncts = []
                 # TODO Adjust after changing objects_for_renaming
                 for obj_tuple in product(*(objects_for_renaming.values())):
                     instantiations = dict(zip(parameter_names, obj_tuple))
-                    conjuncts.append(quantified_part.rename_variables(instantiations))
+                    conjuncts.append(
+                            quantified_part.rename_variables(instantiations))
                 return pddl.Conjunction(conjuncts).simplified()
 
             # Normal elimination replacing the universally quantified part via
             # double negation and a new axiom
             axiom_condition = condition.negate()
             parameters = sorted(axiom_condition.free_variables())
-            typed_parameters = tuple(pddl.TypedObject(v, type_map[v]) for v in parameters)
-            axiom = new_axioms_by_condition.get((axiom_condition, typed_parameters))
+            typed_parameters = tuple(
+                    pddl.TypedObject(v, type_map[v]) for v in parameters)
+            axiom = new_axioms_by_condition.get(
+                    (axiom_condition, typed_parameters))
             if not axiom:
                 condition = recurse(axiom_condition)
                 axiom = task.add_axiom(list(typed_parameters), condition)
