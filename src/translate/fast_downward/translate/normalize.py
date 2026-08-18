@@ -168,12 +168,13 @@ def all_conditions(task, actions=True, axioms=True, goal=True):
 # There is one such conjunct for each possible combination of objects.
 def eliminate_universal_quantifiers(task):
     def recurse(condition, axiom_head_dependencies=[]):
-        # Uses new_axioms_by_condition and type_map from surrounding scope.
-        # TODO Update what is used from surrounding scope
+        # Uses new_axioms_by_condition, objects_by_type, and type_map from
+        # surrounding scope.
         if isinstance(condition, pddl.UniversalCondition):
             pos_preds, neg_preds = condition.pos_and_neg_predicates()
-            head_dependencies = pos_preds.intersection(axiom_head_dependencies)
-            if head_dependencies:
+            head_dependencies_in_condition = pos_preds.intersection(
+                    axiom_head_dependencies)
+            if head_dependencies_in_condition:
                 # If condition is part of an axiom body and mentions the
                 # axiom's head predicate, possibly recursively, then we cannot
                 # eliminate universal quantifiers normally via double negation
@@ -182,23 +183,26 @@ def eliminate_universal_quantifiers(task):
                 # replace the universally quantified part with a conjunction
                 # where in each conjunct the originally quantified variables
                 # are instantiated with objects (of fitting types).
-                quantified_part = recurse(condition.parts[0], head_dependencies)
+                quantified_part = recurse(condition.parts[0],
+                                          head_dependencies_in_condition)
 
-                objects_for_renaming = {}
                 for par in condition.parameters:
-                    if par.type_name not in subtype_names:
-                        subtype_names[par.type_name] = {par.type_name} | {
-                                t.name for t in task.types if
-                                par.type_name in t.supertype_names}
-                    objects_for_renaming[par.name] = {obj.name for
-                                                      obj in task.objects if
+                    if par.type_name in objects_by_type:
+                        continue
+                    subtype_names = {par.type_name} | {t.name for t in
+                                                       task.types if
+                                                       par.type_name in
+                                                       t.supertype_names}
+                    objects_by_type[par.type_name] = {obj.name for obj in
+                                                      task.objects if
                                                       obj.type_name in
-                                                      subtype_names[par.type_name]}
+                                                      subtype_names}
 
                 parameter_names = [par.name for par in condition.parameters]
+                objects_for_instantations = (objects_by_type[par.type_name] for
+                                             par in condition.parameters)
                 conjuncts = []
-                # TODO Adjust after changing objects_for_renaming
-                for obj_tuple in product(*(objects_for_renaming.values())):
+                for obj_tuple in product(*objects_for_instantations):
                     instantiations = dict(zip(parameter_names, obj_tuple))
                     conjuncts.append(
                             quantified_part.rename_variables(instantiations))
@@ -238,9 +242,7 @@ def eliminate_universal_quantifiers(task):
         return sccs
 
     new_axioms_by_condition = {}
-    subtype_names = {}
-    # TODO Add objects_for_renaming but adjust as folllows: dict where keys are
-    # types and items are sets of objecst of fitting types
+    objects_by_type = {}
 
     # Remove universal quantifiers in actions and goal.
     for proxy in tuple(all_conditions(task, actions=True, axioms=False,
