@@ -11,7 +11,7 @@ after the corresponding tracker issues.
 
 ## Fast Downward 26.6
 
-Released on September 3, 2026.
+Released on September 10, 2026.
 
 Highlights:
 
