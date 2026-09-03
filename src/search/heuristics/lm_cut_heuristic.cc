@@ -44,9 +44,19 @@ public:
     LandmarkCutHeuristicFeature() : TypedFeature("lmcut") {
         document_title("Landmark-cut heuristic");
         document_synopsis(
-            "This heuristic implements tie-breaking strategies for the "
-            "precondition choice function (options {{{goal_zone_detection}}} "
-            "and {{{border_detection}}}) described in the following paper:" +
+            "This heuristic was introduced in the following paper:" +
+            utils::format_conference_reference(
+                {"Malte Helmert", "Carmel Domshlak"},
+                "Landmarks, Critical Paths and Abstractions: What's the "
+                "Difference Anyway?",
+                "https://ai.dmi.unibas.ch/papers/helmert-domshlak-icaps2009.pdf",
+                "Proceedings of the 19th International Conference on Automated "
+                "Planning and Scheduling (ICAPS 2009)",
+                "162-169", "", "2009") +
+            "\n" +
+            "The tie-breaking strategies for the precondition choice function "
+            "(options {{{goal_zone_detection}}} and {{{border_detection}}}) "
+            "are described in the following paper:" +
             utils::format_conference_reference(
                 {"Pascal Lauer", "Maximilian Fickert"},
                 "Beating LM-cut with LM-cut: Quick Cutting and Practical Tie "
