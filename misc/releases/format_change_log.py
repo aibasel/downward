@@ -27,12 +27,24 @@ def warn(msg):
     print("WARNING", msg, file=sys.stderr)
 
 
+def log_skipped(entry):
+    print("SKIPPED", entry, file=sys.stderr)
+
+
 def keep_line(line):
     if line == "---------":
         return False
     if line.startswith("Co-authored-by: "):
         return False
     return True
+
+
+def keep_entry(entry):
+    if entry and entry[0].startswith("- [trivial]"):
+        log_skipped(entry)
+        return False
+    else:
+        return True
 
 
 def check_line_length(line):
@@ -96,23 +108,35 @@ def main(**kwargs):
     command = get_git_command(since)
     log = get_command_output_lines(command)
     for entry in split_into_entries(log):
-        for line in entry:
-            print(line)
-        print()
+        if keep_entry(entry):
+            for line in entry:
+                print(line)
+            print()
 
 
 if __name__ == "__main__":
-    # TODO: Document this on the release workflow page, replacing the
-    # following documentation.
+    """Filter and format the change log entries for a release from the
+    commit history.
 
-    # TODO: Also filter out (but print so that people can check)
-    # [trivial] entries?
-    """recommended way to use this:
+    Usage:
+    ./format_change_log.py START_DATE
 
-    SINCE=2024-10-01
+    Major functionality:
+    - Skip "---------" and "Co-authored-by:" lines that often result from
+      github's merge process.
+    - Skip change log entries beginning with "[trivial]".
+    - Warn about overly long lines. These should then be edited manually.
+
+    The formatted entries are printed to stdout and warnings to
+    stderr, so redirection is needed to separate them. It is important
+    to check the warnings.
+
+    Recommended usage example:
+
+    SINCE=2024-10-11
     ./format_change_log.py $SINCE > format_change_log.out 2> format_change_log.err
     # Check stderr for suspicious entries:
-    sort format_change_log.err
-    # Now use format_change_log.out, wrapping "line too long" entries manually.
+    sort format_change_log.err | less
+    # Edit format_change_log.out manually to deal with "line too long" warnings.
     """
     main()
