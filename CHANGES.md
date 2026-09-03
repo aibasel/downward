@@ -76,10 +76,6 @@ Highlights:
   implements an idea by Lauer and Fickert (HSDIP workshop at ICAPS
   2020). See issue1228 for details.
 
-- We fixed a bug in the `merge_and_shrink` evaluator, which caused the
-  wrong option values to be used in many cases. See issue1173 for
-  details.
-
 - For developers: the translator is now a Python package
   `fast_downward.translate`. The code now is
   in the directory `src/translate/fast_downward/translate` (previously
@@ -452,14 +448,6 @@ Details:
 
 - [issue1175] Fix Vagrantfile template after vagrant API change.
 
-- [issue1173] Fix parameter order for MergeAndShrinkAlgorithm.
-
-    We passed the options for the merge_and_shrink evaluator into
-    the constructor of an internal class in the wrong order, leading to
-    wrong behaviour. For example, the boolean option prune_unreachable_states
-    was interpreted as max_states, so that max_states was set to 0
-    or 1 based on the boolean flag. This is now fixed.
-
 - [issue1170] SCC merge strategy: remove option to use a merge tree.
 
     Conceptually, it doesn't make too much sense to use a precomputed merge strategy for a subset of factors, and the option was never used in a paper. We remove it to simplify the code and facilitate the integration of other options.
@@ -468,6 +456,21 @@ Details:
 
     We no longer assume that landmarks do not overlap outside of the landmark
     factories. Semantics of the code do not change and runtimes stay similar.
+
+## Fast Downward 24.06.1
+
+Released on February 7, 2025.
+
+This is a bugfix release fixing a serious bug in Fast Downward 24.06:
+
+- The options for the `merge_and_shrink` evaluator were considered in the
+  wrong order. For example, the boolean option `prune_unreachable_states`
+  was interpreted as `max_states`, so that `max_states` was set to 0
+  or 1 based on the boolean flag. This is now fixed.
+
+  If you ran any experiments with merge-and-shrink heuristics with Fast
+  Downward 24.06, please re-run them. Earlier releases are not affected.
+  <https://issues.fast-downward.org/issue1173>
 
 ## Fast Downward 24.06
 
