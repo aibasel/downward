@@ -64,6 +64,12 @@ def test_configs_cplex(config, debug):
     run_plan_script(SAS_FILE, config, debug)
 
 
+@pytest.mark.parametrize("config", sorted(configs.configs_optimal_lp(lp_solver="gurobi").values()))
+@pytest.mark.parametrize("debug", [False, True])
+def test_configs_gurobi(config, debug):
+    run_plan_script(SAS_FILE, config, debug)
+
+
 @pytest.mark.parametrize("config", sorted(configs.configs_optimal_lp(lp_solver="soplex").values()))
 @pytest.mark.parametrize("debug", [False, True])
 def test_configs_soplex(config, debug):

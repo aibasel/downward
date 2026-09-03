@@ -8,15 +8,27 @@ on:
     branches: [main, release-*]
 
 jobs:
-  test:
-    name: Compile and test planner
+  compile:
+    name: Compile planner
     timeout-minutes: 60
-    runs-on: ${{ matrix.version.macos }}
     strategy:
       matrix:
         version:
-          - {macos: macos-14, python: '3.14'}
-          - {macos: macos-15, python: '3.14'}
+          - {macos: macos-15, python: '3.10', run_tox_tests: true}
+          - {macos: macos-26, python: '3.10', run_tox_tests: true}
+    runs-on: ${{ matrix.version.macos }}
+    env:
+      GUROBI_URL: ${{ secrets.GUROBI1302_OSX_URL }}
+      GUROBI_LICENSE_URL: ${{ secrets.GUROBI_LICENSE_URL }}
+      GRB_LICENSE_FILE: /Users/runner/gurobi.lic
+      GUROBI_HOME: /Users/runner/lib/gurobi1302/macos_universal2
+      DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib:/Applications/CPLEX_Studio222/cplex/bin/arm64_osx
+      soplex_DIR: /Users/runner/lib/soplex-7.1.6
+      SOPLEX_LIB: /Users/runner/lib/soplex-7.1.6/lib/
+      SOPLEX_INCLUDE: /Users/runner/lib/soplex-7.1.6/include/
+      CPLEX_URL: ${{ secrets.CPLEX2220_OSX_URL }}
+      cplex_DIR: /Applications/CPLEX_Studio222/cplex
+      CPLEX_LIB: /Applications/CPLEX_Studio222/cplex/bin/arm64_osx/libcplex2220.dylib
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -26,33 +38,181 @@ jobs:
         with:
           python-version: ${{ matrix.version.python }}
 
+      - name: Install dependencies
+        run: |
+          brew install coreutils gmp
+
+      - name: Install Gurobi
+        if: ${{ env.GUROBI_URL != 0 }}
+        run: |
+          wget -O "$RUNNER_TEMP/gurobi.pkg" "$GUROBI_URL" &> /dev/null
+          sudo installer -pkg "$RUNNER_TEMP/gurobi.pkg" -target /
+          mkdir -p "$HOME/lib/gurobi1302"
+          cp -R /Library/gurobi1302/macos_universal2 "$HOME/lib/gurobi1302/"
+          rm "$RUNNER_TEMP/gurobi.pkg"
+          test -f "$GUROBI_HOME/include/gurobi_c.h"
+          test -d "$GUROBI_HOME/lib"
+
+      - name: Check Gurobi license
+        if: ${{ env.GUROBI_URL != 0 }}
+        run: |
+          wget -O "$GRB_LICENSE_FILE" "$GUROBI_LICENSE_URL" &> /dev/null
+          chmod 600 "$GRB_LICENSE_FILE"
+          if ! "$GUROBI_HOME/bin/gurobi_cl" --license &> /dev/null; then
+            echo "Gurobi license is invalid or expired. Please contact gustavo.delazeri@unibas.ch"
+            exit 1
+          fi
+          echo "Gurobi license check passed."
+
+      - name: Install SoPlex
+        run: |
+          git clone https://github.com/scipopt/soplex.git
+          cd soplex
+          git checkout release-716
+          cd ..
+          cmake -S soplex -B build
+          cmake --build build
+          cmake --install build --prefix "${soplex_DIR}"
+          rm -rf soplex build
+
+      - name: Install CPLEX
+        if: ${{ env.CPLEX_URL != 0 }}
+        run: |
+          wget -O "$RUNNER_TEMP/cplex.pkg" "$CPLEX_URL" &> /dev/null
+          sudo installer -pkg "$RUNNER_TEMP/cplex.pkg" -target /
+          rm "$RUNNER_TEMP/cplex.pkg"
+          test -f "${cplex_DIR}/include/ilcplex/cplex.h"
+          test -f "$CPLEX_LIB"
+
       - name: Compile planner
         run: |
-          export CXXFLAGS="-Werror" # Treat compilation warnings as errors.
-          ./build.py
+          gmp_prefix="$(brew --prefix gmp)"
+          export CXXFLAGS="-Werror -I${gmp_prefix}/include"
+          export LDFLAGS="-L${gmp_prefix}/lib"
           ./build.py --debug
+          ./build.py
 
-      - name: Install tox
+      - name: Archive required files
+        if: ${{ matrix.version.run_tox_tests }}
+        run: |
+          files_to_archive="fast-downward.py driver misc src builds/debug/bin/ builds/release/bin/ ${SOPLEX_LIB} ${SOPLEX_INCLUDE}"
+          if [[ -n "${GUROBI_URL}" ]]; then
+            files_to_archive="${files_to_archive} ${GUROBI_HOME}/lib"
+          fi
+          if [[ -n "${CPLEX_URL}" ]]; then
+            mkdir -p "$HOME/lib/cplex2220"
+            cp "$CPLEX_LIB" "$HOME/lib/cplex2220/"
+            files_to_archive="${files_to_archive} $HOME/lib/cplex2220/libcplex2220.dylib"
+          fi
+          tar czf archive.tar.gz -C "$HOME" $(grealpath --relative-to="$HOME" $files_to_archive)
+
+      - name: Upload archive
+        if: ${{ matrix.version.run_tox_tests }}
+        uses: actions/upload-artifact@v4.4.0
+        with:
+          name: compiled-planner-${{ matrix.version.macos }}
+          path: archive.tar.gz
+          retention-days: 1
+
+  run_tox_tests:
+    name: Test planner
+    needs: compile # TODO: this only depends on the compile step with the gcc version we test
+    strategy:
+      matrix:
+        version:
+          - {macos: macos-15, python: '3.10'}
+          - {macos: macos-26, python: '3.10'}
+    runs-on: ${{ matrix.version.macos }}
+    env:
+      GUROBI_URL: ${{ secrets.GUROBI1302_OSX_URL }}
+      GUROBI_LICENSE_URL: ${{ secrets.GUROBI_LICENSE_URL }}
+      GRB_LICENSE_FILE: /Users/runner/gurobi.lic
+      GUROBI_HOME: /Users/runner/lib/gurobi1302/macos_universal2
+      DYLD_LIBRARY_PATH: /Users/runner/lib/gurobi1302/macos_universal2/lib:/Applications/CPLEX_Studio222/cplex/bin/arm64_osx
+      CPLEX_URL: ${{ secrets.CPLEX2220_OSX_URL }}
+      CPLEX_LIB: /Applications/CPLEX_Studio222/cplex/bin/arm64_osx/libcplex2220.dylib
+      CPLEX_ARCHIVE_LIB: /Users/runner/lib/cplex2220/libcplex2220.dylib
+    steps:
+      - name: Download archive
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: compiled-planner-${{ matrix.version.macos }}
+
+      - name: Delete artifact (ignore if not found)
+        uses: geekyeggo/delete-artifact@v2
+        continue-on-error: true
+        with:
+          name: compiled-planner-${{ matrix.version.macos }}
+
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.version.python }}
+
+      - name: Install dependencies
         run: |
           pip3 install tox
+          brew install gmp
 
       - name: Install VAL
         run: |
-          brew install gnu-sed
           git clone https://github.com/KCL-Planning/VAL.git
           cd VAL
           git checkout a5565396007eee73ac36527fbf904142b3077c74
           make clean  # Remove old build artifacts and binaries.
-          gsed -i 's/-Werror //g' Makefile  # Ignore warnings.
+          sed -i '' 's/-Werror //g' Makefile  # Ignore warnings.
           make -j2
           mv validate ../
           cd ../
           rm -rf VAL
+          echo "$PWD" >> "$GITHUB_PATH" # Add VAL to path of subsequent steps.
+
+      - name: Extract archive
+        # We need to make sure that library paths are the same as
+        # during compilation.
+        run: |
+          tar xfz archive.tar.gz -C "$HOME"
+
+        # Fast Downward's binary records Gurobi's installation path under /Library/gurobi1302/macos_universal2
+        # This step copies the archived Gurobi to the right place
+
+      - name: Restore Gurobi library path
+        if: ${{ env.GUROBI_URL != 0 }}
+        run: |
+          sudo mkdir -p /Library/gurobi1302
+          sudo cp -R "$GUROBI_HOME" /Library/gurobi1302/
+          test -f /Library/gurobi1302/macos_universal2/lib/libgurobi130.dylib
+
+        # Ditto for cplex
+      - name: Restore CPLEX library path
+        if: ${{ env.CPLEX_URL != 0 }}
+        run: |
+          sudo mkdir -p "$(dirname "$CPLEX_LIB")"
+          sudo cp "$CPLEX_ARCHIVE_LIB" "$CPLEX_LIB"
+          sudo chmod 755 "$CPLEX_LIB"
+          test -r "$CPLEX_LIB"
 
       - name: Run driver, translator and search tests
         run: |
-          export PATH="$(pwd):$PATH" # Add VAL to path.
-          cd misc
-          tox -e driver,translator,search
+          cd misc/
+          tox -e driver,translator,search,parameters,generate-docs
 
-...
+      - name: Run CPLEX tests
+        if: ${{ env.CPLEX_URL != 0 }}
+        run: |
+          cd misc/
+          tox -e cplex
+
+      - name: Run Gurobi tests
+        if: ${{ env.GUROBI_URL != 0 }}
+        run: |
+          # We redirect output of wget to hide the secret URL.
+          wget -O "$GRB_LICENSE_FILE" "$GUROBI_LICENSE_URL" &> /dev/null
+          chmod 600 "$GRB_LICENSE_FILE"
+          cd misc/
+          tox -e gurobi
+
+      - name: Run SoPlex tests
+        run: |
+          cd misc/
+          tox -e soplex
