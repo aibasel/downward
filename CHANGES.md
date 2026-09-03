@@ -9,6 +9,466 @@ For more details, check the repository history
 (<https://issues.fast-downward.org>). Repository branches are named
 after the corresponding tracker issues.
 
+## Fast Downward 26.6
+
+Released on September 3, 2026.
+
+Highlights:
+
+- The version number no longer uses leading zeros (26.6 instead of
+  26.06). Our previous convention followed Ubuntu. Our new one follows
+  PyPI, which strips leading zeros. This change is in preparation of a
+  future release on PyPI.
+
+- The translator is now available as the standalone package
+  `fast-downward.translate` on PyPI. The version number matches the
+  corresponding Fast Downward release. For example, install this
+  version with `pip install fast-downward.translate==26.6`. You can
+  also invoke the translator directly from source, circumventing the
+  `fast-downward.py` script, by running `python3 -m
+  fast_downward.translate` from directory `src/translate`. See
+  issue1235 and issue1185 for details.
+
+- The planner now has better knowledge of which of its configurations
+  are complete and therefore returns the exit code `SEARCH_UNSOLVABLE`
+  in more cases where it previously returned
+  `SEARCH_UNSOLVED_INCOMPLETE`. There is also a new exit code
+  `SEARCH_UNSOLVABLE_WITHIN_BOUND` for cases where the user passed a
+  bound to the search algorithm. See issue1201 for details.
+
+- PDDL error detection and handling are much improved. See issue220
+  for details.
+
+- The search component now performs more checks on the validity of its
+  input file (`output.sas` by default). This is only relevant for
+  users that used the search component directly on tasks that were not
+  produced by Fast Downward's translator. See issue1146 for details.
+
+- There is a new translator option
+  `--condition-normalization-strategy` for different ways of handling
+  complex condititions (preconditions, goals, effect conditions, axiom
+  bodies). The old behaviour is the default. See issue1222 for
+  details.
+
+- There is a new translator option `--keep-no-ops` that can be used to
+  preserve operators without effects, which are pruned by default. See
+  issue1184 for details. As of this writing, there is a bug related to
+  enabling this option, which can be worked around by also enabling
+  `--keep-unimportant-variables`. See issue1241 for details.
+
+- Evaluators (including heuristics) no longer have a `transform`
+  argument to modify action costs. Instead, the evaluator
+  `eval_modify_costs` can be used to invoke another evaluator with
+  modified costs. Configurations such as `h(...,
+  transform=adapt_costs(cost_type=X))` must be rewritten as
+  `eval_modify_costs(h(...), cost_type=X)`. See issue559 for details.
+
+- The landmark factories `lm_exhaust` and `lm_rhw` no longer have the
+  option `only_causal_landmarks`. For `lm_exhaust`, there is a new
+  option `use_unary_relaxation`, which has a similar effect to the
+  removed option, but a cleaner and more efficient implementation. See
+  issue1074 for details.
+
+- The `lmcut` heuristic has two new options to control the cut
+  generation. The default setting
+  `lmcut(goal_zone_detection=true,border_detection=true)` often leads
+  to an improved heuristic compared to the old behaviour. This
+  implements an idea by Lauer and Fickert (HSDIP workshop at ICAPS
+  2020). See issue1228 for details.
+
+- We fixed a bug in the `merge_and_shrink` evaluator, which caused the
+  wrong option values to be used in many cases. See issue1173 for
+  details.
+
+- For developers: the translator is now a Python package
+  `fast_downward.translate`. The code now is
+  in the directory `src/translate/fast_downward/translate` (previously
+  `src/translate`). See issue1235 and issue1185 for details.
+
+- For developers: we have solved (although as a work-in-progress) the
+  "component interaction problem", which has been a major open issue
+  for more than 11 years. Components such as heuristics and search
+  algorithms now have two forms: a task-independent form and a
+  task-specific form. See issue559 for details. You can read more
+  about the design in the blog:
+  <https://www.fast-downward.org/latest/for-developers/blog/component-interaction/>
+
+Details:
+
+- [issue1235] Make translator available on PyPI.
+
+    Added the necessary scripts and infrastructure to upload the
+    translator as a standalone package to PyPI.
+
+    The plan is to make a translator release every time we make a regular
+    Fast Downward release. The process is documented in our release docs.
+
+    The translator used to be a module called `translate`, and the code
+    lived in `src/translate`.
+
+    It is now a module called `fast_downward/translate`, and the code
+    lives in `src/translate/fast_downward/translate`.
+
+    We changed the module name to support uploading the translator as a
+    stand-alone package on PyPI with a reasonable name, and for the
+    overall directory structure we also considered future plans with other
+    Python code living alongside the translator. See the issue for more
+    discussion.
+
+    Inside the translator code, while the diff looks huge, the only real
+    changes are replacing all occurrences of `from translate import XYZ`
+    with `from fast_downward.translate import XYZ`.
+
+- [issue1231] add early stopping to iterated search. (#302)
+
+    Instead of having the user pass a `continue_on_fail` flag for the
+    iterated search, we use the completeness checks to detect whether or not
+    continuing the search makes sense, otherwise we stop early.
+
+    Existing configs that call the iterated search with
+    `continue_on_fail=<whatever>` should remove this part as the keyword
+    argument `continue_on_fail` is no longer known to the iterated search.
+
+- [issue1224] Switch two-sided to one-sided constraints in the LP interface.
+
+    Constraints in the LP interface are now one-sided constraints, i.e. expr <= RHS,
+    instead of two-sided constraints, i.e. LB <= expr <= UB. This generally improves
+    the performance of CPLEX configurations and has a negative impact on the Rankooh
+    and Rintanen implementation of delete-relaxation constraints for SoPlex.
+
+    Developers: you should represent two-sided constraints (LB <= expr <= UB) into a
+    pair of one-sided constraints (expr <= UB, expr >= LB).
+
+- [issue1229] Isolate domain transition graph in RHW landmark factory.
+
+    This is a pure refactoring without noteworthy impact on planner performance.
+
+- [issue1222] Add translator options to decompose complex conditions.
+
+    Complex conditions can be handled in the following three different ways using the new translator option `--condition-normalization-strategy`.
+
+    - `dnf` (default): Replace complex goals with a derived predicate defined by a single axiom and naively convert all conditions to DNF.
+    - `axiomatize_disjunctions`: Replace complex goals with a derived predicate defined by a single axiom and decompose all disjunctions using derived predicates.
+    - `axiomatize_disjunctions_existentials`: Decompose every disjunction and existential quantifier in action conditions and the goal, while decomposing only disjunctions in axiom bodies.
+
+    The motivation for the three options are the following.
+
+    - Option `dnf` tries to avoid axioms, as they are not supported by many planner components.
+    - Option `axiomatize_disjunctions` decomposes complex conditions and thus avoids the exponential behavior of option `dnf`. However, it may introduce (more) axioms.
+    - Option `axiomatize_disjunctions_existentials` generally introduces the largest number of axioms, but it does not produce multiple operator instances for the same original operator (as the other two options may do). This can be particularly helpful for reasoning about the plan space, for example in plan counting and enumeration.
+
+- [issue1228] alternative precondition choice functions for LM-Cut
+
+    We added two options (goal_zone_detection and border_detection) to the
+    LM-cut computation, following Lauer and Fickert (2020).
+
+    The tie-breaking strategies control how the h^max supporter of a zero-cost
+    operator is selected while creating the goal zone.
+
+    We also made some minor code-style adjustments to conform to the coding
+    conventions.
+
+- [issue1201] Handle new exit code in driver.
+
+    issue1201 added the new exit code `UNSOLVABLE_WITHIN_BOUND` that
+    requires separate handling when running a portfolio.
+
+- [issue1232] Rename translator problem file input from "task" to "problem".
+
+    We aligned the terminology in the translator code base with the
+    documentation on the website, making it more consistent.
+
+    A "task" refers to the full task with initial state, actions, axioms,
+    goal...  For the part corresponding to the PDDL problem file (objects,
+    initial state, goal), we use the term "problem".
+
+    We changed the name of the translator input and internal names
+    accordingly.
+
+- [issue1201] Check whether a configuration guarantees completeness.
+
+    We added a check determining whether the chosen configuration guarantees completeness (within the given bound) of the search. We return the exit code `SEARCH_UNSOLVABLE` in more situations where we can now guarantee completeness of the search and we added the new exit code `SEARCH_UNSOLVABLE_WITHIN_BOUND` that is returned when completeness is guaranteed only within the given bound. We also added tests for both exit codes `SEARCH_UNSOLVABLE` and `SEARCH_UNSOLVABLE_WITHIN_BOUND`.
+
+- [issue1223] Document translator options on the Fast Downward website.
+
+    We now have an (auto-generated) page with the translator options
+    on the Fast Downward website (e.g.
+    <https://www.fast-downward.org/latest/documentation/translator-options/>).
+    We also use the terms "task" and "problem" in the documentation in a
+    more consistent fashion.
+
+- [issue559] Switch to Task-Independent Components.
+
+    We redesigned how components specified on the command line are associated with
+    a specific task. Most of the changes are internal, but one user-visible change
+    is that heuristics no longer accept an optional task transformation via the
+    `transform` argument. The only supported task transformation was to evaluate
+    the heuristic under a modified cost function. This functionality is now
+    provided by the `eval_modify_costs` evaluator. Configurations such as
+      `h(..., transform=adapt_costs(cost_type=X))`
+    must be rewritten as
+      `eval_modify_costs(h(...), cost_type=X)`.
+
+    Developers: Internally, components such as heuristics and search algorithms now
+    have two forms: a task-independent form and a task-specific form.
+    Task-independent components can often use the templated helper
+    `components::make_auto_task_independent_component`. It stores constructor
+    arguments until a task is bound, recursively binds any subcomponents to that
+    task, and then constructs the task-specific component from the resulting
+    arguments.
+
+    Arguments for nested components should now take task-independent types. For
+    example, the sum evaluator now takes a list of `TaskIndependentEvaluator`s
+    instead of a list of `Evaluator`s.
+
+    You can read more about the design in the blog:
+    <https://www.fast-downward.org/latest/for-developers/blog/component-interaction/>
+
+- [issue1205] restrict weight parameter for weighted evaluator to be non-negative. (#294)
+
+- [issue1214] prevent synopsis overwriting. (#289)
+
+    Move part that would cause the overwriting of the synopsis to a note.
+
+    Add assertions to prevent overwriting in the future.
+
+- [issue1200] Add reference to documentation of AbstractTask.  (#282)
+
+- [issue1217] translator: separate argument parser construction from parsing
+
+    We now have two separate functions for creating the argument parser of the
+    translator and parsing the arguments using this parser. This used to be
+    combined in one function.
+
+    For Fast Downward itself, this change makes no difference, but it makes it
+    easier for other users of the translator to hook into the argument parsing
+    process.
+
+- [issue1193] Update clang-tidy-16 to clang-tidy-18. (#279)
+
+- [issue1198] Refactor responsibilities of RawRegistry, TypeRegistry and Registry.
+
+    Refactor the construction of the feature registry and type registry, so
+    repeated construction cannot lead to errors and functionality is moved
+    out of the RawRegistry class.
+
+- [issue1197] Handle unstratified axioms error. (#280)
+
+- [issue1195] Remove (buggy and unused) computation of CG heuristic cache statistics.
+
+- [issue1063] translator: Compute indirect subtypes more efficiently.
+
+- [issue1077] Remove the pattern collection generator "combo()".
+
+    This pattern collection generator was ad hoc, lacked a description
+    in the documentation and was never mentioned in the literature to
+    the best of our knowledge.
+
+    We recommend using the following generators instead:
+    - with cpdbs: multiple_cegar or hillclimbing
+    - with zopdbs: disjoint_cegar
+
+    See the issue tracker for more discussion.
+
+- [issue1191] Refactor interface of MergeSelector.
+
+    MergeSelector now has two variants of the method for choosing the best
+    merge candidate for a given factored transition system: one that
+    considers all merge candidates for the given factored transition
+    system, and another one that only considers the given (sub)set of merge
+    candidates.
+
+- [issue1192] Fix default value handling in MIASM scoring function.
+
+    The MIASM scoring function now handles default/missing values (-1)
+    for parameters max_states, max_states_before_merge, and
+    shrink_threshold_before_merge in the same way as the merge-and-shrink
+    heuristic does.
+
+- [issue1190] Update documentation on the Fast Downward website.
+
+    The online documentation for Fast Downward has been updated.
+    Especially the steps for getting started with Fast Downward and running
+    the planner should be clearer now.
+
+- [issue1185] Make the translator a python package.
+
+    The translator is now a python package (within Fast Downward).
+    This does not affect how Fast Downward is called, but if you want to
+    call the translator directly then use 'python3 -m translate' instead of
+    'python3 translate/main.py' (which replaced the previous 'translate.py').
+
+- [issue1146] Validate SAS file (#227)
+
+    The search component now does more checking of the validity of its input file.
+    We add a more thorough diagnostic message when invalid input is provided. We
+    restructured to explicitly split the parser, lexer and internal task
+    representation. The SAS task parsing now takes roughly 25% more time in our
+    experiments.
+
+- [issue1189] Check code style with clang-format instead of uncrustify.
+
+    Because uncrustify does currently not correctly handle modern C++ features such as concepts, we switch to the more up-to-date clang-format. This makes our style checks more opinionated and more strict. Our configuration is based on the LLVM style and defined in `.clang-format`. To reformat all source files according to the configuration you can for example run the following command in the repository root: `clang-format -i src/search/**/*.{cc,h}`.
+
+- [issue1186] Refactor the EagerSearch step function without changing the search behavior.
+
+    - Split logic from step() into get_next_node_to_expand() and expand().
+    - Move successor generation to a dedicated generate_successors() method.
+    - Add helper functions for collecting preferred operators.
+
+- [issue1188] Add a script that creates a local build of the website.
+
+    The script is located in misc/website and combines the generated
+    documentation, the documentation from docs/ and the one from
+    the separate downward-markdown repository.
+
+- [issue1184] translator: Add --keep-no-ops option
+
+    We added a new option `--keep-no-ops` to the translator, which defaults
+    to false.
+
+    To enable the option, add `--translate-options --keep-no-ops` to the end
+    of the argument list for `fast-downward.py`.
+
+    The translator component usually prunes all ground actions that have no
+    effects. When the new option is set to true, these actions are no longer
+    pruned. There is generally no good reason to use this option in regular
+    classical planning settings. It is primarily intended for users that extend
+    Fast Downward to richer planning formalisms such as FOND planning or
+    other scenarios where the planner is part of a larger pipeline.
+
+    On the extended downward-benchmark benchmark set, 1208 out of 3955
+    tasks for which we could finish translation within the resource limits
+    in our experiments produce at least one action with no effect with the
+    new flag.
+
+- [issue 1163] Print code that was used to build the code
+
+    We now print the code revision that was used to build the search code.
+    This is printed to to the log at the start of every planner run and
+    also be queried directly with `./fast-downward.py --version`.
+    As part of this change, we dropped support for builds outside of the
+    `builds` directory.
+
+- [issue992] Make landmark code more readable.
+
+    Refactor all files in `src/search/landmarks` with the main objective to
+    structure them to clarify what they do. The main changes include
+     - breaking apart long functions,
+     - renaming variables and functions, and
+     - making code consistent with our coding conventions.
+    Further changes include
+     - using more suitable data structures,
+     - improving simple procedures, and
+     - using the `ranges` library.
+
+    The general functionality remains unchanged, or at least that was our
+    intention. We verified experimentally that this appears to be the case
+    for the most commonly used landmark configurations. Performance was
+    affected positively over all, mainly because landmark generation is
+    faster with most factories. Most remarkably, the h^m landmark factory
+    solves 24 more problems, but also LAMA improves slightly in terms of
+    coverage (3-4 more problems solved).
+
+- [issue1183] Improve how RHW determines landmark preconditions.
+
+    The approximation of landmark preconditions may now yield larger, more accurate
+    sets in the presence of conditional effects. This potentially leads to more
+    landmarks found in the RHW backchaining landmark generation. The change has no
+    effect in the optimal benchmark suite and only affects four domains in the
+    satisficing benchmark suite: flashfill (~69% more landmarks), miconic-fulladl
+    (~126% more landmarks), miconic-simpleadl (~88% more landmarks), and settlers
+    (~88% more landmarks). This increase has no significant impact on the search
+    behavior of LAMA and LAMA-first.
+
+- [issue220] Improve PDDL error detection and handling
+
+    - Conditions are allowed to be empty.
+    - We print a warning if a predicate is defined in the predicates-section that
+      uses the same name as a type.
+    - Checking if the arity is correct now also happens for problem files and not
+      only for domain files.
+    - "number" cannot be defined as a (new) type in the types section because it is
+      reserved as a special type.
+    - The keyword "either" is allowed only in the predicates section because the
+      storage domain uses it. It is not supported though.
+    - We warn if duplicate action names occur.
+    - The end of a domain file is now better handled. Before, everything except
+      "metric" coming after the goal was ignored. Now nothing except the metric
+      section is allowed after the goal.
+    - An empty list before a type declaration raises a warning (not throws an error
+      because the woodworking domain contains some files where this would crash).
+    - Existence checks for predicate names and terms.
+
+- [issue1182] Use std::make_unique instead of utils::make_unique_ptr.
+
+- [issue1174] Retire autodoc for the wiki
+
+    We used autodoc to generate the documentation of the search plugins
+    for the wiki. Since the wiki has been retired, we remove this functionality
+    from the code base. The tox test now instead tests the generation of the
+    downward website (including the generation of the search plugin
+    documentation).
+
+- [issue1174] Polish markdown documentation
+
+    We improved the markdown documentation while checking that everything has been
+    carried over from the old wiki.  This includes also some updates of outdated
+    examples (e.g.  replacing references to the lmcount heuristic with the
+    corresponding new heuristics and replacing  the old --evaluator syntax with
+    let(...).
+
+- [issue1179] Avoid hardcoding bugfix releases in vagrantfile.
+
+    In the Vagrantfile, the latest bugfix release is now cloned from the corresponding branch instead of using a hardcoded tag.
+
+- [issue1174] Move version-dependent documentation into the main repository.
+
+    In an effort to retire the old wiki, we move the parts of the documentation that
+    belong to a specific code version into the main code repository. The documentation
+    of the search plugin types is now also generated in markdown (from Scorpion).
+
+- [issue1074] Change behavior of option to compute only causal landmarks.
+
+    We remove the option to consider only causal landmarks (`only_causal_landmarks`)
+    from the landmark factories `lm_exhaust` and `lm_rhw`. For `lm_exhaust` we add a
+    new boolean option `use_unary_relaxation` which yields an equivalent landmark
+    graph as a result. Its effect in the landmark computation is different, though,
+    as it no longer constitutes a post-processing to remove all non-causal
+    landmarks, but makes sure only causal landmarks are added in the first place.
+    This results in lower landmark generation time for `lm_exhaust` with this option
+    active; on average, landmark generation takes 25-30% of the time it used to.
+
+    Removing the option from `lm_rhw` affects the portfolios seq-sat-fdss-2018 and
+    seq-sat-fdss-2023, which used to have some configurations with the flag on and
+    others with the flag off. Simply removing the option (essentially turning the
+    flag off in all configurations) didn't have a negative effect as can be seen
+    here:
+    <https://ai.dmi.unibas.ch/_experiments/ai/downward/issue1074/data/issue1074-v5-sat-eval/issue1074-v5-portfolios-issue1074-base-issue1074-v5-compare.html>
+
+- [issue1081] Move error handling into constructors.
+
+    Parameters are no longer checked in the Feature of a component but in its constructor.
+
+- [issue1175] Fix Vagrantfile template after vagrant API change.
+
+- [issue1173] Fix parameter order for MergeAndShrinkAlgorithm.
+
+    We passed the options for the merge_and_shrink evaluator into
+    the constructor of an internal class in the wrong order, leading to
+    wrong behaviour. For example, the boolean option prune_unreachable_states
+    was interpreted as max_states, so that max_states was set to 0
+    or 1 based on the boolean flag. This is now fixed.
+
+- [issue1170] SCC merge strategy: remove option to use a merge tree.
+
+    Conceptually, it doesn't make too much sense to use a precomputed merge strategy for a subset of factors, and the option was never used in a paper. We remove it to simplify the code and facilitate the integration of other options.
+
+- [issue1165] Stop getting landmarks by atom outside of landmark factories.
+
+    We no longer assume that landmarks do not overlap outside of the landmark
+    factories. Semantics of the code do not change and runtimes stay similar.
+
 ## Fast Downward 24.06
 
 Released on October 10, 2024.
