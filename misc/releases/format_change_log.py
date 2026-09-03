@@ -63,7 +63,7 @@ def format_entry(lines):
         if keep_line(line):
             check_line_length(line)
             if line and not is_first:
-                line = "  " + line
+                line = "    " + line
             result.append(line)
         else:
             warn(f"filtered line: {repr(line)}")
