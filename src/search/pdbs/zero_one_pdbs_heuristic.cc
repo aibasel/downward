@@ -1,6 +1,7 @@
 #include "zero_one_pdbs_heuristic.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/markup.h"
 
 #include <limits>
 
@@ -40,6 +41,18 @@ public:
     ZeroOnePDBsHeuristicFeature() : TypedFeature("zopdbs") {
         document_subcategory("heuristics_pdb");
         document_title("Zero-One PDB");
+        document_note(
+            "Reference",
+            "Zero/one cost partitioning for pattern databases is described "
+            "in the following paper:" +
+                utils::format_conference_reference(
+                    {"Stefan Edelkamp"},
+                    "Automated Creation of Pattern Database Search Heuristics",
+                    "https://doi.org/10.1007/978-3-540-74128-2_3",
+                    "Model Checking and Artificial Intelligence, 4th "
+                    "Workshop (MoChArt 2006), Revised Selected and Invited "
+                    "Papers",
+                    "35-50", "Springer", "2007"));
         document_synopsis(
             "The zero/one pattern database heuristic is simply the sum of the "
             "heuristic values of all patterns in the pattern collection. In contrast "

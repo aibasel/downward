@@ -6,6 +6,7 @@
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 #include <algorithm>
 #include <cassert>
@@ -291,6 +292,15 @@ class CGHeuristicFeature
 public:
     CGHeuristicFeature() : TypedFeature("cg") {
         document_title("Causal graph heuristic");
+        document_synopsis(
+            "The causal graph heuristic is described in the following paper:" +
+            utils::format_conference_reference(
+                {"Malte Helmert"},
+                "A Planning Heuristic Based on Causal Graph Analysis",
+                "https://cdn.aaai.org/ICAPS/2004/ICAPS04-021.pdf",
+                "Proceedings of the 14th International Conference on Automated "
+                "Planning and Scheduling (ICAPS 2004)",
+                "161-170", "AAAI Press", "2004"));
 
         add_option<int>(
             "max_cache_size",

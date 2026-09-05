@@ -4,6 +4,7 @@
 #include "../open_list.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/markup.h"
 
 #include <cassert>
 #include <deque>
@@ -189,7 +190,17 @@ class TieBreakingOpenListFeature
 public:
     TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
         document_title("Tie-breaking open list");
-        document_synopsis("");
+        document_synopsis(
+            "Lexicographic tie-breaking between heuristics is discussed in "
+            "the following paper:" +
+            utils::format_conference_reference(
+                {"Gabriele Röger", "Malte Helmert"},
+                "The More, the Merrier: Combining Heuristic Estimators "
+                "for Satisficing Planning",
+                "https://ojs.aaai.org/index.php/ICAPS/article/download/13435/13284",
+                "Proceedings of the 20th International Conference on "
+                "Automated Planning and Scheduling (ICAPS 2010)",
+                "246-249", "AAAI Press", "2010"));
 
         add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "evals", "evaluators");

@@ -382,7 +382,7 @@ public:
             utils::format_conference_reference(
                 {"Raz Nissim", "Joerg Hoffmann", "Malte Helmert"},
                 "Computing Perfect Heuristics in Polynomial Time: On Bisimulation"
-                " and Merge-and-Shrink Abstractions in Optimal Planning.",
+                " and Merge-and-Shrink Abstraction in Optimal Planning",
                 "https://ai.dmi.unibas.ch/papers/nissim-et-al-ijcai2011.pdf",
                 "Proceedings of the Twenty-Second International Joint Conference"
                 " on Artificial Intelligence (IJCAI 2011)",
