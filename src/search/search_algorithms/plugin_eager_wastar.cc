@@ -2,6 +2,7 @@
 #include "search_common.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/markup.h"
 
 using namespace std;
 
@@ -11,7 +12,13 @@ class EagerWAstarSearchFeature
 public:
     EagerWAstarSearchFeature() : TypedFeature("eager_wastar") {
         document_title("Eager weighted A* search");
-        document_synopsis("");
+        document_synopsis(
+            "Weighted A* is described in the following paper:" +
+            utils::format_journal_reference(
+                {"Ira Pohl"},
+                "Heuristic Search Viewed as Path Finding in a Graph",
+                "https://doi.org/10.1016/0004-3702%2870%2990007-X",
+                "Artificial Intelligence", "1(3-4)", "193-204", "1970"));
 
         add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "evals", "evaluators");

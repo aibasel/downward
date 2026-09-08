@@ -4,6 +4,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/component_errors.h"
+#include "../utils/markup.h"
 #include "../utils/system.h"
 
 #include <cassert>
@@ -159,6 +160,18 @@ class AlternationOpenListFeature
 public:
     AlternationOpenListFeature() : TypedFeature("alt") {
         document_title("Alternation open list");
+        document_note(
+            "Reference",
+            "Alternating between heuristic queues is discussed in the "
+            "following paper:" +
+                utils::format_conference_reference(
+                    {"Gabriele Röger", "Malte Helmert"},
+                    "The More, the Merrier: Combining Heuristic Estimators "
+                    "for Satisficing Planning",
+                    "https://ojs.aaai.org/index.php/ICAPS/article/download/13435/13284",
+                    "Proceedings of the 20th International Conference on "
+                    "Automated Planning and Scheduling (ICAPS 2010)",
+                    "246-249", "AAAI Press", "2010"));
         document_synopsis("Alternates between several open lists.");
         add_list_option<shared_ptr<TaskIndependentOpenListFactory>>(
             "sublists", "open lists between which this one alternates");

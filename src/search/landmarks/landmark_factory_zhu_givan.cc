@@ -8,6 +8,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 #include <unordered_map>
 #include <utility>
@@ -318,8 +319,13 @@ class LandmarkFactoryZhuGivanFeature
 public:
     LandmarkFactoryZhuGivanFeature() : TypedFeature("lm_zg") {
         document_title("Zhu/Givan landmarks");
-        document_synopsis("The landmark generation method introduced by "
-                          "Zhu & Givan (ICAPS 2003 Doctoral Consortium).");
+        document_synopsis(
+            "The landmark generation method is described in the following paper:" +
+            utils::format_conference_reference(
+                {"Lin Zhu", "Robert Givan"},
+                "Landmark Extraction via Planning Graph Propagation",
+                "https://icaps03.icaps-conference.org/satellite_events/documents/dc/33/Zhu.pdf",
+                "ICAPS 2003 Doctoral Consortium", "156-160", "", "2003"));
         add_use_orders_option_to_feature(*this);
         add_landmark_factory_options_to_feature(*this);
 

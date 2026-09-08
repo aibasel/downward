@@ -8,6 +8,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 #include <vector>
 
@@ -87,6 +88,17 @@ class LandmarkFactoryRpgExhaustFeature
 public:
     LandmarkFactoryRpgExhaustFeature() : TypedFeature("lm_exhaust") {
         document_title("Exhaustive landmarks");
+        document_note(
+            "Reference",
+            "For background on delete-relaxation landmarks and the causal "
+            "landmarks computed with use_unary_relaxation=true, see:" +
+                utils::format_conference_reference(
+                    {"Emil Keyder", "Silvia Richter", "Malte Helmert"},
+                    "Sound and Complete Landmarks for And/Or Graphs",
+                    "https://ai.dmi.unibas.ch/papers/keyder-et-al-ecai2010.pdf",
+                    "Proceedings of the 19th European Conference on "
+                    "Artificial Intelligence (ECAI 2010)",
+                    "335-340", "IOS Press", "2010"));
         document_synopsis(
             "Exhaustively checks for each atom if it is a landmark."
             "This check is done using relaxed planning.");

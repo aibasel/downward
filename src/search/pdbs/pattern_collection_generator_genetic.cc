@@ -320,9 +320,9 @@ public:
                 {"Stefan Edelkamp"},
                 "Automated Creation of Pattern Database Search Heuristics",
                 "http://www.springerlink.com/content/20613345434608x1/",
-                "Proceedings of the 4th Workshop on Model Checking and Artificial"
-                " Intelligence (!MoChArt 2006)",
-                "35-50", "AAAI Press", "2007"));
+                "Model Checking and Artificial Intelligence, 4th Workshop "
+                "(MoChArt 2006), Revised Selected and Invited Papers",
+                "35-50", "Springer", "2007"));
 
         add_option<int>(
             "pdb_max_size", "maximal number of states per pattern database ",

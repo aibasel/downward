@@ -147,9 +147,9 @@ public:
                 {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
                 "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
                 "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
-                "Proceedings of the 26th International Conference on Planning and "
-                "Scheduling (ICAPS 2016)",
-                "2358-2366", "AAAI Press", "2016") +
+                "Proceedings of the 26th International Conference on Automated "
+                "Planning and Scheduling (ICAPS 2016)",
+                "294-298", "AAAI Press", "2016") +
             "In a nutshell, it computes the maximal strongly connected "
             "components (SCCs) of the causal graph, "
             "obtaining a partitioning of the task's variables. Every such "
