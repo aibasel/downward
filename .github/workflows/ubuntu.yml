@@ -22,7 +22,7 @@ jobs:
         version:
           - {ubuntu: 'ubuntu-24.04', python: '3.12', cc: gcc-14, cxx: g++-14, run_tox_tests: true}
           - {ubuntu: 'ubuntu-24.04', python: '3.12', cc: clang-20, cxx: clang++-20, run_tox_tests: false}
-          - {ubuntu: 'ubuntu-26.04', python: '3.14', cc: gcc-15, cxx: g++-14, run_tox_tests: true}
+          - {ubuntu: 'ubuntu-26.04', python: '3.14', cc: gcc-15, cxx: g++-15, run_tox_tests: true}
           - {ubuntu: 'ubuntu-26.04', python: '3.14', cc: clang-21, cxx: clang++-21, run_tox_tests: false}
     env:
       CC: ${{ matrix.version.cc }}
@@ -30,9 +30,9 @@ jobs:
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
       cplex_DIR: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex
       CPLEX_LIB: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/libcplex2211.so
-      soplex_DIR: /home/runner/lib/soplex-7.1.0
-      SOPLEX_LIB: /home/runner/lib/soplex-7.1.0/lib/
-      SOPLEX_INCLUDE: /home/runner/lib/soplex-7.1.0/include/
+      soplex_DIR: /home/runner/lib/soplex-7.1.2
+      SOPLEX_LIB: /home/runner/lib/soplex-7.1.2/lib/
+      SOPLEX_INCLUDE: /home/runner/lib/soplex-7.1.2/include/
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -71,7 +71,7 @@ jobs:
         run: |
           git clone https://github.com/scipopt/soplex.git
           cd soplex
-          git checkout release-710
+          git checkout release-712
           cd ..
           cmake -S soplex -B build
           cmake --build build
