@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 # Set up some environment variables.
 ENV CXX g++
-ENV SOPLEX_REVISION release-711
+ENV SOPLEX_REVISION release-712
 ENV soplex_DIR /opt/soplex
 
 # Install SoPlex.
