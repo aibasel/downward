@@ -46,7 +46,7 @@ Highlights:
 
 - There is a new translator option
   `--condition-normalization-strategy` for different ways of handling
-  complex condititions (preconditions, goals, effect conditions, axiom
+  complex conditions (preconditions, goals, effect conditions, axiom
   bodies). The old behaviour is the default. See issue1222 for
   details.
 
