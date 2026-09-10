@@ -20,14 +20,10 @@ jobs:
     strategy:
       matrix:
         version:
-          - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: gcc-12, cxx: g++-12, run_tox_tests: true}
-          # NOTE: Temporarily removing support for the second compiler of the
-          # older Ubuntu LTS because clang-15 does not support certain C++20
-          # features we would like to use (e.g., `ranges` and `views`
-          # libraries).
-          # - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: clang-15, cxx: clang++-15, run_tox_tests: false}
-          - {ubuntu: 'ubuntu-24.04', python: '3.10', cc: gcc-14, cxx: g++-14, run_tox_tests: true}
-          - {ubuntu: 'ubuntu-24.04', python: '3.10', cc: clang-18, cxx: clang++-18, run_tox_tests: false}
+          - {ubuntu: 'ubuntu-24.04', python: '3.12', cc: gcc-14, cxx: g++-14, run_tox_tests: true}
+          - {ubuntu: 'ubuntu-24.04', python: '3.12', cc: clang-20, cxx: clang++-20, run_tox_tests: false}
+          - {ubuntu: 'ubuntu-26.04', python: '3.14', cc: gcc-15, cxx: g++-14, run_tox_tests: true}
+          - {ubuntu: 'ubuntu-26.04', python: '3.14', cc: clang-21, cxx: clang++-21, run_tox_tests: false}
     env:
       CC: ${{ matrix.version.cc }}
       CXX: ${{ matrix.version.cxx }}
