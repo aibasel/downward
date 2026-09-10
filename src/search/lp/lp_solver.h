@@ -17,7 +17,8 @@ class Options;
 namespace lp {
 enum class LPSolverType {
     CPLEX,
-    SOPLEX
+    SOPLEX,
+    GUROBI
 };
 
 enum class LPObjectiveSense {

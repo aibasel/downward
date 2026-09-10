@@ -19,6 +19,7 @@ LIGHTWEIGHT_TYPES = ["StateID"]
 IGNORES = [
     "'cplex.h' file not found [clang-diagnostic-error]",
     "'soplex.h' file not found [clang-diagnostic-error]",
+    "'gurobi_c.h' file not found [clang-diagnostic-error]",
     "'git_revision.h' file not found [clang-diagnostic-error]",
     "local copy 'copied_key' of the variable 'key' is never modified; consider avoiding the copy [performance-unnecessary-copy-initialization]",
 ]
