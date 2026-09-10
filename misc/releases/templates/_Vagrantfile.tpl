@@ -56,7 +56,7 @@ Vagrant.configure("2") do |config|
 		export soplex_DIR="/opt/soplex"
 	EOM
     source /etc/profile.d/downward-soplex.sh
-    git clone --depth 1 --branch release-710 https://github.com/scipopt/soplex.git soplex
+    git clone --depth 1 --branch release-711 https://github.com/scipopt/soplex.git soplex
     cd soplex
     cmake -DCMAKE_INSTALL_PREFIX="$soplex_DIR" -S . -B build
     cmake --build build
