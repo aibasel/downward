@@ -20,23 +20,19 @@ jobs:
     strategy:
       matrix:
         version:
-          - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: gcc-12, cxx: g++-12, run_tox_tests: true}
-          # NOTE: Temporarily removing support for the second compiler of the
-          # older Ubuntu LTS because clang-15 does not support certain C++20
-          # features we would like to use (e.g., `ranges` and `views`
-          # libraries).
-          # - {ubuntu: 'ubuntu-22.04', python: '3.10', cc: clang-15, cxx: clang++-15, run_tox_tests: false}
-          - {ubuntu: 'ubuntu-24.04', python: '3.10', cc: gcc-14, cxx: g++-14, run_tox_tests: true}
-          - {ubuntu: 'ubuntu-24.04', python: '3.10', cc: clang-18, cxx: clang++-18, run_tox_tests: false}
+          - {ubuntu: 'ubuntu-24.04', python: '3.12', cc: gcc-14, cxx: g++-14, run_tox_tests: true}
+          - {ubuntu: 'ubuntu-24.04', python: '3.12', cc: clang-20, cxx: clang++-20, run_tox_tests: false}
+          - {ubuntu: 'ubuntu-26.04', python: '3.14', cc: gcc-15, cxx: g++-15, run_tox_tests: true}
+          - {ubuntu: 'ubuntu-26.04', python: '3.14', cc: clang-21, cxx: clang++-21, run_tox_tests: false}
     env:
       CC: ${{ matrix.version.cc }}
       CXX: ${{ matrix.version.cxx }}
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
       cplex_DIR: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex
       CPLEX_LIB: /home/runner/lib/ibm/ILOG/CPLEX_Studio2211/cplex/bin/x86-64_linux/libcplex2211.so
-      soplex_DIR: /home/runner/lib/soplex-7.1.0
-      SOPLEX_LIB: /home/runner/lib/soplex-7.1.0/lib/
-      SOPLEX_INCLUDE: /home/runner/lib/soplex-7.1.0/include/
+      soplex_DIR: /home/runner/lib/soplex-7.1.2
+      SOPLEX_LIB: /home/runner/lib/soplex-7.1.2/lib/
+      SOPLEX_INCLUDE: /home/runner/lib/soplex-7.1.2/include/
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
@@ -50,15 +46,6 @@ jobs:
         run: |
           sudo apt-get -y install zlib1g-dev libgmp3-dev ${{ matrix.version.cc }}
           mkdir /home/runner/lib
-
-      # In 22.04 g++-12 is not automatically installed when gcc-12 gets
-      # installed, so we do it separately. We do not use an unconditional
-      # install for any value of cxx because there is no separate package for
-      # clang++.
-      - name: Install CXX
-        if: startsWith(matrix.version.cxx, 'g++-')
-        run: |
-          sudo apt-get -y install ${{ matrix.version.cxx }}
 
       # Only install CPLEX if its URL/secret is set.
       - name: Install CPLEX
@@ -75,7 +62,7 @@ jobs:
         run: |
           git clone https://github.com/scipopt/soplex.git
           cd soplex
-          git checkout release-710
+          git checkout release-712
           cd ..
           cmake -S soplex -B build
           cmake --build build
@@ -116,8 +103,8 @@ jobs:
     strategy:
       matrix:
         version:
-          - {ubuntu: ubuntu-22.04, python: '3.10'}
-          - {ubuntu: ubuntu-24.04, python: '3.10'}
+          - {ubuntu: ubuntu-24.04, python: '3.12'}
+          - {ubuntu: ubuntu-26.04, python: '3.14'}
     env:
       CPLEX_URL: ${{ secrets.CPLEX2211_LINUX_URL }}
     steps:
