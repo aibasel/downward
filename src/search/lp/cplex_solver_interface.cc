@@ -209,8 +209,6 @@ void CplexSolverInterface::CplexColumnsInfo::assign(
 
 void CplexSolverInterface::CplexRowsInfo::assign(
     const named_vector::NamedVector<LPConstraint> &constraints) {
-    rhs.clear();
-    sense.clear();
     int num_rows = constraints.size();
     sense.resize(num_rows);
     rhs.resize(num_rows);
