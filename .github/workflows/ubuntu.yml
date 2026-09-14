@@ -49,6 +49,15 @@ jobs:
           sudo apt-get -y install zlib1g-dev libgmp3-dev ${{ matrix.version.cc }}
           mkdir /home/runner/lib
 
+      # On Ubuntu, g++-* is not automatically installed when gcc-* gets
+      # installed, so we do it separately. We do not use an unconditional
+      # install for any value of cxx because there is no separate package for
+      # clang++.
+      - name: Install CXX
+        if: startsWith(matrix.version.cxx, 'g++-')
+        run: |
+          sudo apt-get -y install ${{ matrix.version.cxx }}
+
       # Only install CPLEX if its URL/secret is set.
       - name: Install CPLEX
         if: ${{ env.CPLEX_URL != 0 }}
