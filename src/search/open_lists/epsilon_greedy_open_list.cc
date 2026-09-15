@@ -28,7 +28,21 @@ class EpsilonGreedyOpenList : public OpenList<Entry> {
         }
 
         bool operator>(const HeapNode &other) const {
+/*
+  g++-16 (and possibly later versions) use (a <=> b) < 0 to compare pairs.
+  This triggers a spurious zero-as-null-pointer-constant warning which we
+  ignore here.
+*/
+#ifdef __GNUG__
+#pragma GCC diagnostic push
+#if (__GNUG__ >= 15)
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#endif
+#endif
             return make_pair(h, id) > make_pair(other.h, other.id);
+#ifdef __GNUG__
+#pragma GCC diagnostic pop
+#endif
         }
     };
 
