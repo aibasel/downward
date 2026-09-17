@@ -30,7 +30,7 @@ class EpsilonGreedyOpenList : public OpenList<Entry> {
         bool operator>(const HeapNode &other) const {
 /*
   g++-16 (and possibly later versions) use (a <=> b) < 0 to compare pairs.
-  This triggers a spurious zero-as-null-pointer-constant warning which we
+  This triggers a spurious zero-as-null-pointer-constant warning, which we
   ignore here.
 */
 #ifdef __GNUG__
