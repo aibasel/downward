@@ -65,7 +65,14 @@ jobs:
           # We redirect output of wget to hide the secret URLs.
           wget -O cplex_installer $CPLEX_URL &> /dev/null
           chmod +x cplex_installer
-          ./cplex_installer -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR="$(dirname "${cplex_DIR}")" -i silent
+          # The CPLEX installer internally uses a Java VM to execute. This is
+          # dynamically loaded from libj9vm29.so and requires an executable
+          # stack. Starting with Ubuntu 26.04, stack memory is not executable by
+          # default unless the main executable requires it. Since the JVM is
+          # loaded dynamically, the stack is marked as non-executable and
+          # loading the JVM fails. The setting "glibc.rtld.execstack=2" forces
+          # an executable stack.
+          GLIBC_TUNABLES=glibc.rtld.execstack=2 ./cplex_installer -DLICENSE_ACCEPTED=TRUE -DUSER_INSTALL_DIR="$(dirname "${cplex_DIR}")" -i silent
           rm cplex_installer
 
       # Always install SoPlex
