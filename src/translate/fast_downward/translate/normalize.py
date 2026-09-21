@@ -1,10 +1,13 @@
 #! /usr/bin/env python3
 
 import copy
+from collections import defaultdict
+from itertools import product
 from typing import Sequence
 
 from fast_downward.translate import pddl
 from fast_downward.translate.options import get_options
+from fast_downward.translate.sccs import get_sccs_adjacency_dict
 
 
 class ConditionProxy:
@@ -155,15 +158,64 @@ def all_conditions(task, actions=True, axioms=True, goal=True):
 # <not-all-phi> is defined as <not(forall(vars,phi))>, which is of course
 # translated to NNF. The parameters of the new axioms are exactly the free
 # variables of <forall(vars, phi)>.
-
+#
+# If an axiom mentions its head predicate, possibly recursively, in its (body)
+# condition under the scope of a universal quantifier, the universal quantifier
+# must be eliminated differently to keep the set of axioms stratifiable.
+#
+# In this case replace <forall(vars, phi)> by a conjunction where each conjunct
+# is phi with the variables from vars replaced by objects (of fitting types).
+# There is one such conjunct for each possible combination of objects.
 def eliminate_universal_quantifiers(task):
-    def recurse(condition):
-        # Uses new_axioms_by_condition and type_map from surrounding scope.
+    def recurse(condition, axiom_head_dependencies=[]):
+        # Uses new_axioms_by_condition, objects_by_type, and type_map from
+        # surrounding scope.
         if isinstance(condition, pddl.UniversalCondition):
+            pos_preds, neg_preds = condition.pos_and_neg_predicates()
+            head_dependencies_in_condition = pos_preds.intersection(
+                    axiom_head_dependencies)
+            if head_dependencies_in_condition:
+                # If condition is part of an axiom body and mentions the
+                # axiom's head predicate, possibly recursively, then we cannot
+                # eliminate universal quantifiers normally via double negation
+                # and a new axiom. This would make the axioms unstratifiable by
+                # introducing a cyclic dependency through negation. Instead
+                # replace the universally quantified part with a conjunction
+                # where in each conjunct the originally quantified variables
+                # are instantiated with objects (of fitting types).
+                quantified_part = recurse(condition.parts[0],
+                                          head_dependencies_in_condition)
+
+                for par in condition.parameters:
+                    if par.type_name in objects_by_type:
+                        continue
+                    subtype_names = {par.type_name} | {t.name for t in
+                                                       task.types if
+                                                       par.type_name in
+                                                       t.supertype_names}
+                    objects_by_type[par.type_name] = {obj.name for obj in
+                                                      task.objects if
+                                                      obj.type_name in
+                                                      subtype_names}
+
+                parameter_names = [par.name for par in condition.parameters]
+                objects_for_instantations = (objects_by_type[par.type_name] for
+                                             par in condition.parameters)
+                conjuncts = []
+                for obj_tuple in product(*objects_for_instantations):
+                    instantiations = dict(zip(parameter_names, obj_tuple))
+                    conjuncts.append(
+                            quantified_part.rename_variables(instantiations))
+                return pddl.Conjunction(conjuncts).simplified()
+
+            # Normal elimination replacing the universally quantified part via
+            # double negation and a new axiom
             axiom_condition = condition.negate()
             parameters = sorted(axiom_condition.free_variables())
-            typed_parameters = tuple(pddl.TypedObject(v, type_map[v]) for v in parameters)
-            axiom = new_axioms_by_condition.get((axiom_condition, typed_parameters))
+            typed_parameters = tuple(
+                    pddl.TypedObject(v, type_map[v]) for v in parameters)
+            axiom = new_axioms_by_condition.get(
+                    (axiom_condition, typed_parameters))
             if not axiom:
                 condition = recurse(axiom_condition)
                 axiom = task.add_axiom(list(typed_parameters), condition)
@@ -173,12 +225,43 @@ def eliminate_universal_quantifiers(task):
             new_parts = [recurse(part) for part in condition.parts]
             return condition.change_parts(new_parts)
 
+    def stratifiability_sccs(axioms):
+        # Determine positive dependencies of derived predicates.
+        adjacency_dict = defaultdict(set)
+        for ax in axioms:
+            pos_preds, neg_preds = ax.condition.pos_and_neg_predicates()
+            adjacency_dict[ax.name].update(pos_preds)
+
+        # Remove non-derived predicates from the adjacency lists.
+        derived = set(adjacency_dict)
+        for name in adjacency_dict:
+            adjacency_dict[name] &= derived
+
+        scc_blocks = get_sccs_adjacency_dict(adjacency_dict)
+        sccs = {pred: block for block in scc_blocks for pred in block}
+        return sccs
+
     new_axioms_by_condition = {}
-    for proxy in tuple(all_conditions(task)):
+    objects_by_type = {}
+
+    # Remove universal quantifiers in actions and goal.
+    for proxy in tuple(all_conditions(task, actions=True, axioms=False,
+                                      goal=True)):
         # Cannot use generator because we add new axioms on the fly.
         if proxy.condition.has_universal_part():
             type_map = proxy.get_type_map()
             proxy.set(recurse(proxy.condition))
+
+    # Remove universal quantifiers in axioms.
+    sccs = stratifiability_sccs(task.axioms)
+    for proxy in tuple(all_conditions(task, actions=False, axioms=True,
+                                      goal=False)):
+        # Cannot use generator because we add new axioms on the fly.
+        if proxy.condition.has_universal_part():
+            type_map = proxy.get_type_map()
+            head_predicate = proxy.owner.name
+            proxy.set(recurse(proxy.condition,
+                              axiom_head_dependencies=sccs[head_predicate]))
 
 # [2] Simplifies conditions according to the selected strategy.
 # After the simplification only conjuncitons
