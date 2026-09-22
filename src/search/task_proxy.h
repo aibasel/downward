@@ -47,13 +47,12 @@ using PackedStateBin = int_packer::IntPacker::Bin;
   for accessing task information (TaskProxy, OperatorProxy, etc.) and
   task implementations (subclasses of AbstractTask). Each proxy class
   knows which AbstractTask it belongs to and uses its methods to retrieve
-  information about the task. RootTask is the AbstractTask that
-  encapsulates the unmodified original task that the planner received
-  as input.
+  information about the task.
 
-  Example code for creating a new task object and accessing its operators:
+  Example code for parsing a task from cin and accessing its operators:
 
-      TaskProxy task_proxy(*g_root_task());
+      shared_ptr<AbstractTask> task = tasks::read_task(cin);
+      TaskProxy task_proxy(*task);
       for (OperatorProxy op : task->get_operators())
           utils::g_log << op.get_name() << endl;
 
@@ -67,30 +66,22 @@ using PackedStateBin = int_packer::IntPacker::Bin;
   expensive to create. If performance is absolutely critical, the values of a
   state can be unpacked and accessed as a vector<int>.
 
-  For now, heuristics work with a TaskProxy that can represent a transformed
-  view of the original task. The search algorithms work on the unmodified root
-  task. We therefore need to do two conversions between the search and the
-  heuristics: converting states of the root task to states of the task used in
-  the heuristic computation and converting operators of the task used by the
-  heuristic to operators of the task used by the search for reporting preferred
-  operators.
-  These conversions are done by the Heuristic base class with
-  Heuristic::convert_ancestor_state() and Heuristic::set_preferred().
+  Some evaluators internally perform task transformations and evaluate a nested
+  evaluator on the transformed task. They are reponsible for two kinds of
+  transformations:
 
-      int FantasyHeuristic::compute_heuristic(const State &ancestor_state) {
-          State state = convert_ancestor_state(ancestor_state);
-          set_preferred(task->get_operators()[42]);
-          int sum = 0;
-          for (FactProxy fact : state)
-              sum += fact.get_value();
-          return sum;
-      }
+  1) Incoming states (e.g., in compute_heuristic, notify_initial_state, etc.)
+     have to be transformed to states of the transformed task. Note that even
+     if the transformed task uses the same set of states as the original task
+     this requires a modification as states know which tasks they belong to.
+  2) Operators marked as preferred by the nested evaluator are referring to the
+     transformed task and their IDs may have to be translated back.
+
+  See evaluators/modify_costs_evaluator.* and
+  evaluators/state_forwarding_evaluator.* for examples.
 
   For helper functions that work on task related objects, please see the
   task_properties.h module.
-
-  TODO(issue1208): update this after we get rid of convert_ancestor_state and
-  get_ancestor_operator_id.
 */
 
 template<typename T>
@@ -479,17 +470,6 @@ public:
     int get_id() const {
         return index;
     }
-
-    /*
-      Eventually, this method should perhaps not be part of OperatorProxy but
-      live in a class that handles the task transformation and known about both
-      the original and the transformed task.
-    */
-    OperatorID get_ancestor_operator_id(
-        const AbstractTask *ancestor_task) const {
-        assert(!is_an_axiom);
-        return OperatorID(task->convert_operator_index(index, ancestor_task));
-    }
 };
 
 class OperatorsProxy {
@@ -661,6 +641,9 @@ public:
     explicit TaskProxy(const AbstractTask &task) : task(&task) {
     }
     ~TaskProxy() = default;
+
+    // Compare tasks based on identity (not structural equivalence).
+    bool operator==(const TaskProxy &) const = default;
 
     TaskID get_id() const {
         return TaskID(task);

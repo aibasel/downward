@@ -12,7 +12,7 @@ class PatternDatabase;
 class ZeroOnePDBsHeuristic : public Heuristic {
     ZeroOnePDBs zero_one_pdbs;
 protected:
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 public:
     ZeroOnePDBsHeuristic(
         const std::shared_ptr<AbstractTask> &task,

@@ -12,7 +12,7 @@ class PatternDatabase;
 class PDBHeuristic : public Heuristic {
     std::shared_ptr<PatternDatabase> pdb;
 protected:
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 public:
     /*
       Important: It is assumed that the pattern (passed via

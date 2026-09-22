@@ -6,7 +6,6 @@
 #include "../heuristic.h"
 
 #include "../algorithms/priority_queues.h"
-#include "../tasks/default_value_axioms_task.h"
 
 #include <vector>
 
@@ -51,11 +50,10 @@ class ContextEnhancedAdditiveHeuristic : public Heuristic {
     // Clears "reached_by" of visited nodes as a side effect to avoid
     // recursing to the same node again.
 protected:
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 public:
     ContextEnhancedAdditiveHeuristic(
-        const std::shared_ptr<AbstractTask> &task,
-        tasks::AxiomHandlingType axioms, bool cache_estimates,
+        const std::shared_ptr<AbstractTask> &task, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 
     virtual ~ContextEnhancedAdditiveHeuristic() override;

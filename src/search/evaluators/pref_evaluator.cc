@@ -1,7 +1,7 @@
 #include "pref_evaluator.h"
 
-#include "../evaluation_context.h"
 #include "../evaluation_result.h"
+#include "../evaluator_call.h"
 
 #include "../plugins/plugin.h"
 
@@ -14,10 +14,9 @@ PrefEvaluator::PrefEvaluator(
     : Evaluator(task, false, false, false, description, verbosity) {
 }
 
-EvaluationResult PrefEvaluator::compute_result(
-    EvaluationContext &eval_context) {
+EvaluationResult PrefEvaluator::compute_result(EvaluatorCall &call) {
     EvaluationResult result;
-    if (eval_context.is_preferred())
+    if (call.is_preferred())
         result.set_evaluator_value(0);
     else
         result.set_evaluator_value(1);

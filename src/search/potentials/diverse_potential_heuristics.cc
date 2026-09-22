@@ -6,11 +6,8 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
-#include "../utils/rng.h"
 #include "../utils/rng_options.h"
 #include "../utils/timer.h"
-
-#include <unordered_set>
 
 using namespace std;
 

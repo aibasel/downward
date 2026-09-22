@@ -133,18 +133,17 @@ void LandmarkStatusManager::progress_initial_state(const State &initial_state) {
 }
 
 void LandmarkStatusManager::progress(
-    const State &parent_ancestor_state, OperatorID,
-    const State &ancestor_state) {
-    if (ancestor_state == parent_ancestor_state) {
+    const State &parent_state, OperatorID, const State &state) {
+    if (state == parent_state) {
         // This can happen, e.g., in Satellite-01.
         return;
     }
 
-    ConstBitsetView parent_past = get_past_landmarks(parent_ancestor_state);
-    BitsetView past = get_past_landmarks(ancestor_state);
+    ConstBitsetView parent_past = get_past_landmarks(parent_state);
+    BitsetView past = get_past_landmarks(state);
 
-    ConstBitsetView parent_future = get_future_landmarks(parent_ancestor_state);
-    BitsetView future = get_future_landmarks(ancestor_state);
+    ConstBitsetView parent_future = get_future_landmarks(parent_state);
+    BitsetView future = get_future_landmarks(state);
 
     assert(past.size() == landmark_graph.get_num_landmarks());
     assert(parent_past.size() == landmark_graph.get_num_landmarks());
@@ -152,22 +151,21 @@ void LandmarkStatusManager::progress(
     assert(parent_future.size() == landmark_graph.get_num_landmarks());
 
     progress_landmarks(
-        parent_past, parent_future, parent_ancestor_state, past, future,
-        ancestor_state);
-    progress_goals(ancestor_state, future);
-    progress_greedy_necessary_orderings(ancestor_state, past, future);
+        parent_past, parent_future, parent_state, past, future, state);
+    progress_goals(state, future);
+    progress_greedy_necessary_orderings(state, past, future);
     progress_reasonable_orderings(past, future);
 }
 
 void LandmarkStatusManager::progress_landmarks(
     ConstBitsetView &parent_past, ConstBitsetView &parent_future,
-    const State &parent_ancestor_state, BitsetView &past, BitsetView &future,
-    const State &ancestor_state) {
+    const State &parent_state, BitsetView &past, BitsetView &future,
+    const State &state) {
     for (const auto &node : landmark_graph) {
         int id = node->get_id();
         const Landmark &landmark = node->get_landmark();
         if (parent_future.test(id)) {
-            if (!landmark.is_true_in_state(ancestor_state)) {
+            if (!landmark.is_true_in_state(state)) {
                 /*
                   A landmark that is future in the parent remains future
                   if it does not hold in the current state. If it also
@@ -177,7 +175,7 @@ void LandmarkStatusManager::progress_landmarks(
                 if (!parent_past.test(id)) {
                     past.reset(id);
                 }
-            } else if (landmark.is_true_in_state(parent_ancestor_state)) {
+            } else if (landmark.is_true_in_state(parent_state)) {
                 /*
                   If the landmark held in the parent already, then it
                   was not added by this transition and should remain
@@ -191,22 +189,22 @@ void LandmarkStatusManager::progress_landmarks(
 }
 
 void LandmarkStatusManager::progress_goals(
-    const State &ancestor_state, BitsetView &future) {
+    const State &state, BitsetView &future) {
     for (auto &node : goal_landmarks) {
-        if (!node->get_landmark().is_true_in_state(ancestor_state)) {
+        if (!node->get_landmark().is_true_in_state(state)) {
             future.set(node->get_id());
         }
     }
 }
 
 void LandmarkStatusManager::progress_greedy_necessary_orderings(
-    const State &ancestor_state, const BitsetView &past, BitsetView &future) {
+    const State &state, const BitsetView &past, BitsetView &future) {
     for (auto &[tail, children] : greedy_necessary_children) {
         const Landmark &landmark = tail->get_landmark();
         assert(!children.empty());
         for (auto &child : children) {
             if (!past.test(child->get_id()) &&
-                !landmark.is_true_in_state(ancestor_state)) {
+                !landmark.is_true_in_state(state)) {
                 future.set(tail->get_id());
                 break;
             }

@@ -23,7 +23,7 @@ class MergeAndShrinkHeuristic : public Heuristic {
     void extract_nontrivial_factors(FactoredTransitionSystem &fts);
     void extract_factors(FactoredTransitionSystem &fts);
 protected:
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 public:
     MergeAndShrinkHeuristic(
         const std::shared_ptr<AbstractTask> &task,

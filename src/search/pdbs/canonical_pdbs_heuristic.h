@@ -16,7 +16,7 @@ class CanonicalPDBsHeuristic : public Heuristic {
     CanonicalPDBs canonical_pdbs;
 
 protected:
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 
 public:
     CanonicalPDBsHeuristic(

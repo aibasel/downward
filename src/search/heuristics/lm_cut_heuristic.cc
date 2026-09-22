@@ -5,7 +5,6 @@
 #include "../task_proxy.h"
 
 #include "../plugins/plugin.h"
-#include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 #include "../utils/markup.h"
 
@@ -26,8 +25,7 @@ LandmarkCutHeuristic::LandmarkCutHeuristic(
     }
 }
 
-int LandmarkCutHeuristic::compute_heuristic(const State &ancestor_state) {
-    State state = convert_ancestor_state(ancestor_state);
+int LandmarkCutHeuristic::compute_heuristic(const State &state) {
     int total_cost = 0;
     bool dead_end = landmark_generator->compute_landmarks(
         state, [&total_cost](int cut_cost) { total_cost += cut_cost; },

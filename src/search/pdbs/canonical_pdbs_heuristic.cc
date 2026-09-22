@@ -66,8 +66,7 @@ CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(
           get_canonical_pdbs(task, patterns, max_time_dominance_pruning, log)) {
 }
 
-int CanonicalPDBsHeuristic::compute_heuristic(const State &ancestor_state) {
-    State state = convert_ancestor_state(ancestor_state);
+int CanonicalPDBsHeuristic::compute_heuristic(const State &state) {
     int h = canonical_pdbs.get_value(state);
     if (h == numeric_limits<int>::max()) {
         return DEAD_END;

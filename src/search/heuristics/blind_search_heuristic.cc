@@ -4,10 +4,6 @@
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 
-#include <cstddef>
-#include <limits>
-#include <utility>
-
 using namespace std;
 
 namespace blind_search_heuristic {
@@ -21,8 +17,7 @@ BlindSearchHeuristic::BlindSearchHeuristic(
     }
 }
 
-int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
-    State state = convert_ancestor_state(ancestor_state);
+int BlindSearchHeuristic::compute_heuristic(const State &state) {
     if (task_properties::is_goal_state(task_proxy, state))
         return 0;
     else

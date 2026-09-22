@@ -6,7 +6,7 @@
 namespace goal_count_heuristic {
 class GoalCountHeuristic : public Heuristic {
 protected:
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 public:
     GoalCountHeuristic(
         const std::shared_ptr<AbstractTask> &task, bool cache_estimates,

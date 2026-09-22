@@ -3,10 +3,8 @@
 #include "../task_proxy.h"
 
 #include "../algorithms/sccs.h"
-#include "../task_utils/task_properties.h"
 
 #include <deque>
-#include <iostream>
 #include <memory>
 #include <set>
 
@@ -388,16 +386,6 @@ FactPair DefaultValueAxiomsTask::get_operator_effect(
 
 int DefaultValueAxiomsTask::get_num_axioms() const {
     return parent->get_num_axioms() + default_value_axioms.size();
-}
-
-shared_ptr<AbstractTask> get_default_value_axioms_task_if_needed(
-    const shared_ptr<AbstractTask> &task, AxiomHandlingType axioms) {
-    TaskProxy proxy(*task);
-    if (task_properties::has_axioms(proxy)) {
-        return make_shared<tasks::DefaultValueAxiomsTask>(
-            DefaultValueAxiomsTask(task, axioms));
-    }
-    return task;
 }
 
 void add_axioms_option_to_feature(plugins::Feature &feature) {

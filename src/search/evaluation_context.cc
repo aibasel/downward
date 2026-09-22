@@ -2,6 +2,7 @@
 
 #include "evaluation_result.h"
 #include "evaluator.h"
+#include "evaluator_call.h"
 #include "search_statistics.h"
 
 #include <cassert>
@@ -28,6 +29,13 @@ EvaluationContext::EvaluationContext(
 }
 
 EvaluationContext::EvaluationContext(
+    const EvaluationContext &other, const State &state)
+    : EvaluationContext(
+          EvaluatorCache(), state, other.g_value, other.preferred,
+          other.statistics, other.calculate_preferred) {
+}
+
+EvaluationContext::EvaluationContext(
     const State &state, int g_value, bool is_preferred,
     SearchStatistics *statistics, bool calculate_preferred)
     : EvaluationContext(
@@ -43,19 +51,20 @@ EvaluationContext::EvaluationContext(
 }
 
 const EvaluationResult &EvaluationContext::get_result(Evaluator *evaluator) {
-    EvaluationResult &result = cache[evaluator];
-    if (result.is_uninitialized()) {
-        result = evaluator->compute_result(*this);
-        if (statistics && evaluator->is_used_for_counting_evaluations() &&
-            result.get_count_evaluation()) {
-            statistics->inc_evaluations();
-        }
-    }
-    return result;
+    EvaluatorCall call(*this, state);
+    return call[evaluator];
 }
 
 const EvaluatorCache &EvaluationContext::get_cache() const {
     return cache;
+}
+
+EvaluatorCache &EvaluationContext::get_cache() {
+    return cache;
+}
+
+SearchStatistics *EvaluationContext::get_statistics() {
+    return statistics;
 }
 
 const State &EvaluationContext::get_state() const {
