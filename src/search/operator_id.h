@@ -27,8 +27,7 @@ class OperatorID {
     int index;
 
 public:
-    explicit OperatorID(int index)
-        : index(index) {
+    explicit OperatorID(int index) : index(index) {
     }
 
     static const OperatorID no_operator;

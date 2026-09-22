@@ -16,9 +16,7 @@ using namespace std;
 
 namespace merge_and_shrink {
 pair<int, int> compute_shrink_sizes(
-    int size1,
-    int size2,
-    int max_states_before_merge,
+    int size1, int size2, int max_states_before_merge,
     int max_states_after_merge) {
     // Bound both sizes by max allowed size before merge.
     int new_size1 = min(size1, max_states_before_merge);
@@ -62,11 +60,8 @@ pair<int, int> compute_shrink_sizes(
   Return true iff the factor was actually shrunk.
 */
 static bool shrink_factor(
-    FactoredTransitionSystem &fts,
-    int index,
-    int new_size,
-    int shrink_threshold_before_merge,
-    const ShrinkStrategy &shrink_strategy,
+    FactoredTransitionSystem &fts, int index, int new_size,
+    int shrink_threshold_before_merge, const ShrinkStrategy &shrink_strategy,
     utils::LogProxy &log) {
     /*
       TODO: think about factoring out common logic of this function and the
@@ -86,31 +81,26 @@ static bool shrink_factor(
 
         const Distances &distances = fts.get_distances(index);
         StateEquivalenceRelation equivalence_relation =
-            shrink_strategy.compute_equivalence_relation(ts, distances, new_size, log);
+            shrink_strategy.compute_equivalence_relation(
+                ts, distances, new_size, log);
         // TODO: We currently violate this; see issue250
-        //assert(equivalence_relation.size() <= target_size);
+        // assert(equivalence_relation.size() <= target_size);
         return fts.apply_abstraction(index, equivalence_relation, log);
     }
     return false;
 }
 
 bool shrink_before_merge_step(
-    FactoredTransitionSystem &fts,
-    int index1,
-    int index2,
-    int max_states,
-    int max_states_before_merge,
-    int shrink_threshold_before_merge,
-    const ShrinkStrategy &shrink_strategy,
-    utils::LogProxy &log) {
+    FactoredTransitionSystem &fts, int index1, int index2, int max_states,
+    int max_states_before_merge, int shrink_threshold_before_merge,
+    const ShrinkStrategy &shrink_strategy, utils::LogProxy &log) {
     /*
       Compute the size limit for both transition systems as imposed by
       max_states and max_states_before_merge.
     */
     pair<int, int> new_sizes = compute_shrink_sizes(
         fts.get_transition_system(index1).get_size(),
-        fts.get_transition_system(index2).get_size(),
-        max_states_before_merge,
+        fts.get_transition_system(index2).get_size(), max_states_before_merge,
         max_states);
 
     /*
@@ -121,22 +111,14 @@ bool shrink_before_merge_step(
       required.
     */
     bool shrunk1 = shrink_factor(
-        fts,
-        index1,
-        new_sizes.first,
-        shrink_threshold_before_merge,
-        shrink_strategy,
-        log);
+        fts, index1, new_sizes.first, shrink_threshold_before_merge,
+        shrink_strategy, log);
     if (shrunk1) {
         fts.statistics(index1, log);
     }
     bool shrunk2 = shrink_factor(
-        fts,
-        index2,
-        new_sizes.second,
-        shrink_threshold_before_merge,
-        shrink_strategy,
-        log);
+        fts, index2, new_sizes.second, shrink_threshold_before_merge,
+        shrink_strategy, log);
     if (shrunk2) {
         fts.statistics(index2, log);
     }
@@ -144,11 +126,8 @@ bool shrink_before_merge_step(
 }
 
 bool prune_step(
-    FactoredTransitionSystem &fts,
-    int index,
-    bool prune_unreachable_states,
-    bool prune_irrelevant_states,
-    utils::LogProxy &log) {
+    FactoredTransitionSystem &fts, int index, bool prune_unreachable_states,
+    bool prune_irrelevant_states, utils::LogProxy &log) {
     assert(prune_unreachable_states || prune_irrelevant_states);
     const TransitionSystem &ts = fts.get_transition_system(index);
     const Distances &distances = fts.get_distances(index);
@@ -184,10 +163,8 @@ bool prune_step(
             state_equivalence_relation.push_back(state_equivalence_class);
         }
     }
-    if (log.is_at_least_verbose() &&
-        (unreachable_count || irrelevant_count)) {
-        log << ts.tag()
-            << "unreachable: " << unreachable_count << " states, "
+    if (log.is_at_least_verbose() && (unreachable_count || irrelevant_count)) {
+        log << ts.tag() << "unreachable: " << unreachable_count << " states, "
             << "irrelevant: " << irrelevant_count << " states ("
             << "total dead: " << dead_count << " states)" << endl;
     }
@@ -195,10 +172,10 @@ bool prune_step(
 }
 
 vector<int> compute_abstraction_mapping(
-    int num_states,
-    const StateEquivalenceRelation &equivalence_relation) {
+    int num_states, const StateEquivalenceRelation &equivalence_relation) {
     vector<int> abstraction_mapping(num_states, PRUNED_STATE);
-    for (size_t class_no = 0; class_no < equivalence_relation.size(); ++class_no) {
+    for (size_t class_no = 0; class_no < equivalence_relation.size();
+         ++class_no) {
         const StateEquivalenceClass &state_equivalence_class =
             equivalence_relation[class_no];
         for (int state : state_equivalence_class) {

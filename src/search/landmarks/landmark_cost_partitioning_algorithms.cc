@@ -35,8 +35,7 @@ UniformCostPartitioningAlgorithm::UniformCostPartitioningAlgorithm(
 /* Compute which operator achieves how many landmarks. Along the way, mark
    action landmarks and sum up their costs. */
 double UniformCostPartitioningAlgorithm::first_pass(
-    vector<int> &landmarks_achieved_by_operator,
-    vector<bool> &action_landmarks,
+    vector<int> &landmarks_achieved_by_operator, vector<bool> &action_landmarks,
     ConstBitsetView &past, ConstBitsetView &future) {
     double action_landmarks_cost = 0;
     for (const auto &node : landmark_graph) {
@@ -57,7 +56,8 @@ double UniformCostPartitioningAlgorithm::first_pass(
                 }
             } else {
                 for (int op_id : achievers) {
-                    assert(utils::in_bounds(op_id, landmarks_achieved_by_operator));
+                    assert(utils::in_bounds(
+                        op_id, landmarks_achieved_by_operator));
                     ++landmarks_achieved_by_operator[op_id];
                 }
             }
@@ -73,8 +73,8 @@ double UniformCostPartitioningAlgorithm::first_pass(
 */
 vector<const LandmarkNode *> UniformCostPartitioningAlgorithm::second_pass(
     vector<int> &landmarks_achieved_by_operator,
-    const vector<bool> &action_landmarks,
-    ConstBitsetView &past, ConstBitsetView &future) {
+    const vector<bool> &action_landmarks, ConstBitsetView &past,
+    ConstBitsetView &future) {
     vector<const LandmarkNode *> uncovered_landmarks;
     for (const auto &node : landmark_graph) {
         int id = node->get_id();
@@ -92,7 +92,7 @@ vector<const LandmarkNode *> UniformCostPartitioningAlgorithm::second_pass(
             if (covered_by_action_landmark) {
                 for (int op_id : achievers) {
                     assert(utils::in_bounds(
-                               op_id, landmarks_achieved_by_operator));
+                        op_id, landmarks_achieved_by_operator));
                     --landmarks_achieved_by_operator[op_id];
                 }
             } else {
@@ -106,8 +106,8 @@ vector<const LandmarkNode *> UniformCostPartitioningAlgorithm::second_pass(
 // Compute the cost partitioning.
 double UniformCostPartitioningAlgorithm::third_pass(
     const vector<const LandmarkNode *> &uncovered_landmarks,
-    const vector<int> &landmarks_achieved_by_operator,
-    ConstBitsetView &past, ConstBitsetView &future) {
+    const vector<int> &landmarks_achieved_by_operator, ConstBitsetView &past,
+    ConstBitsetView &future) {
     double cost = 0;
     for (const LandmarkNode *node : uncovered_landmarks) {
         // TODO: Iterate over Landmarks instead of LandmarkNodes.
@@ -162,7 +162,6 @@ double UniformCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
     return cost_of_action_landmarks + cost_partitioning_cost;
 }
 
-
 OptimalCostPartitioningAlgorithm::OptimalCostPartitioningAlgorithm(
     const vector<int> &operator_costs, const LandmarkGraph &graph,
     lp::LPSolverType solver_type)
@@ -191,16 +190,17 @@ lp::LinearProgram OptimalCostPartitioningAlgorithm::build_initial_lp() {
       say that the operator's total cost must fall between 0 and the real
       operator cost.
     */
-    lp_constraints.resize(num_rows, lp::LPConstraint(0.0, 0.0));
+    lp_constraints.resize(
+        num_rows, lp::LPConstraint(lp::LPConstraintSense::LESS_EQUAL, 0.0));
     for (size_t op_id = 0; op_id < operator_costs.size(); ++op_id) {
-        lp_constraints[op_id].set_lower_bound(0);
-        lp_constraints[op_id].set_upper_bound(operator_costs[op_id]);
+        lp_constraints[op_id].set_right_hand_side(operator_costs[op_id]);
     }
 
     /* Coefficients of constraints will be updated and recreated in each state.
        We ignore them for the initial LP. */
-    return lp::LinearProgram(lp::LPObjectiveSense::MAXIMIZE, move(lp_variables),
-                             {}, lp_solver.get_infinity());
+    return lp::LinearProgram(
+        lp::LPObjectiveSense::MAXIMIZE, move(lp_variables), {},
+        lp_solver.get_infinity());
 }
 
 /*
@@ -260,7 +260,6 @@ bool OptimalCostPartitioningAlgorithm::define_constraint_matrix(
     }
     return false;
 }
-
 
 double OptimalCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
     const LandmarkStatusManager &landmark_status_manager,

@@ -1,8 +1,8 @@
 #include "merge_strategy_factory_precomputed.h"
 
 #include "merge_strategy_precomputed.h"
-#include "merge_tree_factory.h"
 #include "merge_tree.h"
+#include "merge_tree_factory.h"
 
 #include "../plugins/plugin.h"
 
@@ -10,13 +10,13 @@ using namespace std;
 
 namespace merge_and_shrink {
 MergeStrategyFactoryPrecomputed::MergeStrategyFactoryPrecomputed(
-    const shared_ptr<MergeTreeFactory> &merge_tree,
-    utils::Verbosity verbosity)
-    : MergeStrategyFactory(verbosity),
-      merge_tree_factory(merge_tree) {
+    const shared_ptr<AbstractTask> &task,
+    const shared_ptr<MergeTreeFactory> &merge_tree, utils::Verbosity verbosity)
+    : MergeStrategyFactory(task, verbosity), merge_tree_factory(merge_tree) {
 }
 
-unique_ptr<MergeStrategy> MergeStrategyFactoryPrecomputed::compute_merge_strategy(
+unique_ptr<MergeStrategy>
+MergeStrategyFactoryPrecomputed::compute_merge_strategy(
     const TaskProxy &task_proxy, const FactoredTransitionSystem &fts) {
     unique_ptr<MergeTree> merge_tree =
         merge_tree_factory->compute_merge_tree(task_proxy);
@@ -42,9 +42,10 @@ void MergeStrategyFactoryPrecomputed::dump_strategy_specific_options() const {
 }
 
 class MergeStrategyFactoryPrecomputedFeature
-    : public plugins::TypedFeature<MergeStrategyFactory, MergeStrategyFactoryPrecomputed> {
+    : public plugins::TypedFeature<TaskIndependentMergeStrategyFactory> {
 public:
-    MergeStrategyFactoryPrecomputedFeature() : TypedFeature("merge_precomputed") {
+    MergeStrategyFactoryPrecomputedFeature()
+        : TypedFeature("merge_precomputed") {
         document_title("Precomputed merge strategy");
         document_synopsis(
             "This merge strategy has a precomputed merge tree. Note that this "
@@ -54,9 +55,8 @@ public:
             "with this merge tree, i.e. all merges are performed exactly as given "
             "by the merge tree.");
 
-        add_option<shared_ptr<MergeTreeFactory>>(
-            "merge_tree",
-            "The precomputed merge tree.");
+        add_option<shared_ptr<TaskIndependentMergeTreeFactory>>(
+            "merge_tree", "The precomputed merge tree.");
         add_merge_strategy_options_to_feature(*this);
 
         document_note(
@@ -67,12 +67,12 @@ public:
             "merge_strategy=merge_precomputed(merge_tree=linear(<variable_order>))"
             "\n}}}");
     }
-    virtual shared_ptr<MergeStrategyFactoryPrecomputed>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<MergeStrategyFactoryPrecomputed>(
-            opts.get<shared_ptr<MergeTreeFactory>>("merge_tree"),
-            get_merge_strategy_arguments_from_options(opts)
-            );
+    virtual shared_ptr<TaskIndependentMergeStrategyFactory> create_component(
+        const plugins::Options &opts) const override {
+        return components::make_auto_task_independent_component<
+            MergeStrategyFactoryPrecomputed, MergeStrategyFactory>(
+            opts.get<shared_ptr<TaskIndependentMergeTreeFactory>>("merge_tree"),
+            get_merge_strategy_arguments_from_options(opts));
     }
 };
 

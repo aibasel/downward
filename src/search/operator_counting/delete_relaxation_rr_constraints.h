@@ -1,9 +1,10 @@
 #ifndef OPERATOR_COUNTING_DELETE_RELAXATION_RR_CONSTRAINTS_H
 #define OPERATOR_COUNTING_DELETE_RELAXATION_RR_CONSTRAINTS_H
 
-#include  "constraint_generator.h"
+#include "constraint_generator.h"
 
 #include "../task_proxy.h"
+
 #include "../utils/hash.h"
 
 #include <memory>
@@ -14,17 +15,15 @@ class LPConstraint;
 struct LPVariable;
 }
 
-namespace plugins {
-class Options;
-}
-
 namespace operator_counting {
 class VEGraph;
 using LPConstraints = named_vector::NamedVector<lp::LPConstraint>;
 using LPVariables = named_vector::NamedVector<lp::LPVariable>;
 
 enum class AcyclicityType {
-    TIME_LABELS, VERTEX_ELIMINATION, NONE
+    TIME_LABELS,
+    VERTEX_ELIMINATION,
+    NONE
 };
 
 class DeleteRelaxationRRConstraints : public ConstraintGenerator {
@@ -82,7 +81,6 @@ class DeleteRelaxationRRConstraints : public ConstraintGenerator {
        this makes it faster to unset the bounds when the state changes. */
     std::vector<FactPair> last_state;
 
-
     int get_constraint_id(FactPair f) const;
 
     LPVariableIDs create_auxiliary_variables(
@@ -103,7 +101,9 @@ class DeleteRelaxationRRConstraints : public ConstraintGenerator {
         const TaskProxy &task_proxy, const LPVariableIDs &lp_var_ids,
         lp::LinearProgram &lp);
 public:
-    explicit DeleteRelaxationRRConstraints(const plugins::Options &opts);
+    DeleteRelaxationRRConstraints(
+        const std::shared_ptr<AbstractTask> &task,
+        AcyclicityType acyclicity_type, bool use_integer_vars);
 
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task,

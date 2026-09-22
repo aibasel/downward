@@ -17,14 +17,20 @@ using namespace std;
 namespace cg_heuristic {
 const int CGCache::NOT_COMPUTED;
 
-CGCache::CGCache(const TaskProxy &task_proxy, int max_cache_size, utils::LogProxy &log)
+CGCache::CGCache(
+    const TaskProxy &task_proxy, int max_cache_size, utils::LogProxy &log)
     : task_proxy(task_proxy) {
+    /*
+      Get the causal graph first because this can trigger output
+      that we don't want to have in the middle of the output of this function.
+    */
+    const causal_graph::CausalGraph &cg = task_proxy.get_causal_graph();
+
     if (log.is_at_least_normal()) {
         log << "Initializing heuristic cache... " << flush;
     }
 
     int var_count = task_proxy.get_variables().size();
-    const causal_graph::CausalGraph &cg = task_proxy.get_causal_graph();
 
     // Compute inverted causal graph.
     depends_on.resize(var_count);
@@ -45,21 +51,22 @@ CGCache::CGCache(const TaskProxy &task_proxy, int max_cache_size, utils::LogProx
         for (size_t i = 0; i < num_affectors; ++i) {
             int affector = depends_on[var][i];
             assert(affector < var);
-            depends_on[var].insert(depends_on[var].end(),
-                                   depends_on[affector].begin(),
-                                   depends_on[affector].end());
+            depends_on[var].insert(
+                depends_on[var].end(), depends_on[affector].begin(),
+                depends_on[affector].end());
         }
         sort(depends_on[var].begin(), depends_on[var].end());
-        depends_on[var].erase(unique(depends_on[var].begin(), depends_on[var].end()),
-                              depends_on[var].end());
+        depends_on[var].erase(
+            unique(depends_on[var].begin(), depends_on[var].end()),
+            depends_on[var].end());
     }
 
     cache.resize(var_count);
     helpful_transition_cache.resize(var_count);
 
     for (int var = 0; var < var_count; ++var) {
-        int required_cache_size = compute_required_cache_size(
-            var, depends_on[var], max_cache_size);
+        int required_cache_size =
+            compute_required_cache_size(var, depends_on[var], max_cache_size);
         if (required_cache_size != -1) {
             cache[var].resize(required_cache_size, NOT_COMPUTED);
             helpful_transition_cache[var].resize(required_cache_size, nullptr);
@@ -83,8 +90,8 @@ int CGCache::compute_required_cache_size(
 
     VariablesProxy variables = task_proxy.get_variables();
     int var_domain = variables[var_id].get_domain_size();
-    if (!utils::is_product_within_limit(var_domain, var_domain - 1,
-                                        max_cache_size))
+    if (!utils::is_product_within_limit(
+            var_domain, var_domain - 1, max_cache_size))
         return -1;
 
     int required_size = var_domain * (var_domain - 1);
@@ -102,8 +109,8 @@ int CGCache::compute_required_cache_size(
         if (cache[depend_var_id].empty())
             return -1;
 
-        if (!utils::is_product_within_limit(required_size, depend_var_domain,
-                                            max_cache_size))
+        if (!utils::is_product_within_limit(
+                required_size, depend_var_domain, max_cache_size))
             return -1;
 
         required_size *= depend_var_domain;
@@ -112,8 +119,8 @@ int CGCache::compute_required_cache_size(
     return required_size;
 }
 
-int CGCache::get_index(int var, const State &state,
-                       int from_val, int to_val) const {
+int CGCache::get_index(
+    int var, const State &state, int from_val, int to_val) const {
     assert(is_cached(var));
     assert(from_val != to_val);
     int index = from_val;

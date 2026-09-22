@@ -15,15 +15,15 @@
 using namespace std;
 
 namespace landmarks {
-static bool are_dead_ends_reliable(
+static bool compute_safe(
     const shared_ptr<LandmarkFactory> &lm_factory,
     const TaskProxy &task_proxy) {
     if (task_properties::has_axioms(task_proxy)) {
         return false;
     }
 
-    if (!lm_factory->supports_conditional_effects()
-        && task_properties::has_conditional_effects(task_proxy)) {
+    if (!lm_factory->supports_conditional_effects() &&
+        task_properties::has_conditional_effects(task_proxy)) {
         return false;
     }
 
@@ -31,16 +31,15 @@ static bool are_dead_ends_reliable(
 }
 
 LandmarkSumHeuristic::LandmarkSumHeuristic(
-    const shared_ptr<LandmarkFactory> &lm_factory,
-    bool pref, bool prog_goal, bool prog_gn, bool prog_r,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity,
-    tasks::AxiomHandlingType axioms)
+    const shared_ptr<AbstractTask> &task,
+    const shared_ptr<LandmarkFactory> &lm_factory, bool pref, bool prog_goal,
+    bool prog_gn, bool prog_r, bool cache_estimates, const string &description,
+    utils::Verbosity verbosity, tasks::AxiomHandlingType axioms)
     : LandmarkHeuristic(
-          pref,
-          tasks::get_default_value_axioms_task_if_needed(transform, axioms),
+          // issue1208 move this transformation to task-independent level?
+          tasks::get_default_value_axioms_task_if_needed(task, axioms), pref,
           cache_estimates, description, verbosity),
-      dead_ends_reliable(are_dead_ends_reliable(lm_factory, task_proxy)) {
+      safe(compute_safe(lm_factory, task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing landmark sum heuristic..." << endl;
     }
@@ -73,8 +72,8 @@ void LandmarkSumHeuristic::compute_landmark_costs() {
             min_first_achiever_costs.push_back(min_operator_cost);
             min_possible_achiever_costs.push_back(min_operator_cost);
         } else {
-            int min_first_achiever_cost = get_min_cost_of_achievers(
-                node->get_landmark().first_achievers);
+            int min_first_achiever_cost =
+                get_min_cost_of_achievers(node->get_landmark().first_achievers);
             min_first_achiever_costs.push_back(min_first_achiever_cost);
             int min_possible_achiever_cost = get_min_cost_of_achievers(
                 node->get_landmark().possible_achievers);
@@ -91,9 +90,9 @@ int LandmarkSumHeuristic::get_heuristic_value(const State &ancestor_state) {
         landmark_status_manager->get_future_landmarks(ancestor_state);
     for (int id = 0; id < landmark_graph->get_num_landmarks(); ++id) {
         if (future.test(id)) {
-            const int min_achiever_cost =
-                past.test(id) ? min_possible_achiever_costs[id]
-                              : min_first_achiever_costs[id];
+            const int min_achiever_cost = past.test(id)
+                                              ? min_possible_achiever_costs[id]
+                                              : min_first_achiever_costs[id];
             if (min_achiever_cost < numeric_limits<int>::max()) {
                 h += min_achiever_cost;
             } else {
@@ -104,37 +103,15 @@ int LandmarkSumHeuristic::get_heuristic_value(const State &ancestor_state) {
     return h;
 }
 
-bool LandmarkSumHeuristic::dead_ends_are_reliable() const {
-    return dead_ends_reliable;
+bool LandmarkSumHeuristic::is_safe() const {
+    return safe;
 }
 
 class LandmarkSumHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, LandmarkSumHeuristic> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
     LandmarkSumHeuristicFeature() : TypedFeature("landmark_sum") {
         document_title("Landmark sum heuristic");
-        document_synopsis(
-            "Formerly known as the landmark heuristic or landmark count "
-            "heuristic.\n"
-            "See the papers" +
-            utils::format_conference_reference(
-                {"Silvia Richter", "Malte Helmert", "Matthias Westphal"},
-                "Landmarks Revisited",
-                "https://ai.dmi.unibas.ch/papers/richter-et-al-aaai2008.pdf",
-                "Proceedings of the 23rd AAAI Conference on Artificial "
-                "Intelligence (AAAI 2008)",
-                "975-982",
-                "AAAI Press",
-                "2008") +
-            "and" +
-            utils::format_journal_reference(
-                {"Silvia Richter", "Matthias Westphal"},
-                "The LAMA Planner: Guiding Cost-Based Anytime Planning with Landmarks",
-                "http://www.aaai.org/Papers/JAIR/Vol39/JAIR-3903.pdf",
-                "Journal of Artificial Intelligence Research",
-                "39",
-                "127-177",
-                "2010"));
         /*
           We usually have the options of base classes behind the options
           of specific implementations. In the case of landmark
@@ -148,13 +125,32 @@ public:
         tasks::add_axioms_option_to_feature(*this);
 
         document_note(
+            "History Note",
+            "Formerly known as the landmark heuristic or landmark count "
+            "heuristic.\n"
+            "See the papers" +
+                utils::format_conference_reference(
+                    {"Silvia Richter", "Malte Helmert", "Matthias Westphal"},
+                    "Landmarks Revisited",
+                    "https://ai.dmi.unibas.ch/papers/richter-et-al-aaai2008.pdf",
+                    "Proceedings of the 23rd AAAI Conference on Artificial "
+                    "Intelligence (AAAI 2008)",
+                    "975-982", "AAAI Press", "2008") +
+                "and" +
+                utils::format_journal_reference(
+                    {"Silvia Richter", "Matthias Westphal"},
+                    "The LAMA Planner: Guiding Cost-Based Anytime Planning with Landmarks",
+                    "http://www.aaai.org/Papers/JAIR/Vol39/JAIR-3903.pdf",
+                    "Journal of Artificial Intelligence Research", "39",
+                    "127-177", "2010"));
+        document_note(
             "Note on performance for satisficing planning",
             "The cost of a landmark is based on the cost of the operators that "
             "achieve it. For satisficing search this can be counterproductive "
             "since it is often better to focus on distance from goal (i.e. "
             "length of the plan) rather than cost. In experiments we achieved "
-            "the best performance using the option "
-            "'transform=adapt_costs(one)' to enforce unit costs.");
+            "the best performance wrapping this heuristic in "
+            "'eval_modify_costs(..., cost_type=one)' to enforce unit costs.");
         document_note(
             "Preferred operators",
             "Computing preferred operators is *only enabled* when setting "
@@ -193,13 +189,14 @@ public:
         document_property("consistent", "no");
         document_property(
             "safe",
-            "yes except on tasks with conditional effects when "
-            "using a LandmarkFactory not supporting them");
+            "yes except on tasks with axioms and on tasks with conditional "
+            "effects when using a LandmarkFactory not supporting them");
     }
 
-    virtual shared_ptr<LandmarkSumHeuristic> create_component(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LandmarkSumHeuristic>(
+        return components::make_auto_task_independent_component<
+            LandmarkSumHeuristic, Evaluator>(
             get_landmark_heuristic_arguments_from_options(opts),
             tasks::get_axioms_arguments_from_options(opts));
     }

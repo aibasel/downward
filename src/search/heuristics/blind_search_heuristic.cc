@@ -1,7 +1,6 @@
 #include "blind_search_heuristic.h"
 
 #include "../plugins/plugin.h"
-
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
 
@@ -13,11 +12,10 @@ using namespace std;
 
 namespace blind_search_heuristic {
 BlindSearchHeuristic::BlindSearchHeuristic(
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const shared_ptr<AbstractTask> &task, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, description, verbosity),
-      min_operator_cost(
-          task_properties::get_min_operator_cost(task_proxy)) {
+    : Heuristic(task, cache_estimates, description, verbosity),
+      min_operator_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
         log << "Initializing blind search heuristic..." << endl;
     }
@@ -32,7 +30,7 @@ int BlindSearchHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class BlindSearchHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, BlindSearchHeuristic> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
     BlindSearchHeuristicFeature() : TypedFeature("blind") {
         document_title("Blind heuristic");
@@ -52,11 +50,11 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<BlindSearchHeuristic>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<BlindSearchHeuristic>(
-            get_heuristic_arguments_from_options(opts)
-            );
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
+        const plugins::Options &opts) const override {
+        return components::make_auto_task_independent_component<
+            BlindSearchHeuristic, Evaluator>(
+            get_heuristic_arguments_from_options(opts));
     }
 };
 

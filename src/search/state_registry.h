@@ -51,8 +51,8 @@
   StateRegistry
     The StateRegistry allows to create states giving them an ID. IDs from
     different state registries must not be mixed.
-    The StateRegistry also stores the actual state data in a memory friendly way.
-    It uses the following class:
+    The StateRegistry also stores the actual state data in a memory friendly
+  way. It uses the following class:
 
   SegmentedArrayVector<PackedStateBin>
     This class is used to store the actual (packed) state data for all states
@@ -73,9 +73,9 @@
   Problem:
     A search node contains a state together with some information about how this
     state was reached and the status of the node. The state data is already
-    stored and should not be duplicated. Open lists should in theory store search
-    nodes but we want to keep the amount of data stored in the open list to a
-    minimum.
+    stored and should not be duplicated. Open lists should in theory store
+  search nodes but we want to keep the amount of data stored in the open list to
+  a minimum.
 
   Solution:
 
@@ -89,8 +89,8 @@
       through the StateID.
 
     SearchSpace
-      The SearchSpace uses PerStateInformation<SearchNodeInfo> to map StateIDs to
-      SearchNodeInfos. The open lists only have to store StateIDs which can be
+      The SearchSpace uses PerStateInformation<SearchNodeInfo> to map StateIDs
+  to SearchNodeInfos. The open lists only have to store StateIDs which can be
       used to look up a search node in the SearchSpace on demand.
 
   ---------------
@@ -102,8 +102,8 @@
     additional memory when these heuristics are used.
 
   Solution:
-    The heuristic object uses an attribute of type PerStateBitset to store for each
-    state and each landmark whether it was reached in this state.
+    The heuristic object uses an attribute of type PerStateBitset to store for
+  each state and each landmark whether it was reached in this state.
 */
 namespace int_packer {
 class IntPacker;
@@ -111,16 +111,16 @@ class IntPacker;
 
 using PackedStateBin = int_packer::IntPacker::Bin;
 
-
 class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
     struct StateIDSemanticHash {
-        const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool;
+        const segmented_vector::SegmentedArrayVector<PackedStateBin>
+            &state_data_pool;
         int state_size;
         StateIDSemanticHash(
-            const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool,
+            const segmented_vector::SegmentedArrayVector<PackedStateBin>
+                &state_data_pool,
             int state_size)
-            : state_data_pool(state_data_pool),
-              state_size(state_size) {
+            : state_data_pool(state_data_pool), state_size(state_size) {
         }
 
         int_hash_set::HashType operator()(int id) const {
@@ -134,13 +134,14 @@ class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
     };
 
     struct StateIDSemanticEqual {
-        const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool;
+        const segmented_vector::SegmentedArrayVector<PackedStateBin>
+            &state_data_pool;
         int state_size;
         StateIDSemanticEqual(
-            const segmented_vector::SegmentedArrayVector<PackedStateBin> &state_data_pool,
+            const segmented_vector::SegmentedArrayVector<PackedStateBin>
+                &state_data_pool,
             int state_size)
-            : state_data_pool(state_data_pool),
-              state_size(state_size) {
+            : state_data_pool(state_data_pool), state_size(state_size) {
         }
 
         bool operator()(int lhs, int rhs) const {
@@ -155,7 +156,8 @@ class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
       this registry and find their IDs. States are compared/hashed semantically,
       i.e. the actual state data is compared, not the memory location.
     */
-    using StateIDSet = int_hash_set::IntHashSet<StateIDSemanticHash, StateIDSemanticEqual>;
+    using StateIDSet =
+        int_hash_set::IntHashSet<StateIDSemanticHash, StateIDSemanticEqual>;
 
     TaskProxy task_proxy;
     const int_packer::IntPacker &state_packer;
@@ -186,7 +188,8 @@ public:
 
     /*
       Returns the state that was registered at the given ID. The ID must refer
-      to a state in this registry. Do not mix IDs from from different registries.
+      to a state in this registry. Do not mix IDs from from different
+      registries.
     */
     State lookup_state(StateID id) const;
 
@@ -199,7 +202,8 @@ public:
 
     /*
       Returns a reference to the initial state and registers it if this was not
-      done before. The result is cached internally so subsequent calls are cheap.
+      done before. The result is cached internally so subsequent calls are
+      cheap.
     */
     const State &get_initial_state();
 
@@ -208,7 +212,8 @@ public:
       registers it if this was not done before. This is an expensive operation
       as it includes duplicate checking.
     */
-    State get_successor_state(const State &predecessor, const OperatorProxy &op);
+    State get_successor_state(
+        const State &predecessor, const OperatorProxy &op);
 
     /*
       Returns the number of states registered so far.
@@ -243,7 +248,7 @@ public:
             : registry(registry), pos(start) {
             utils::unused_variable(this->registry);
         }
-public:
+    public:
         const_iterator &operator++() {
             ++pos.value;
             return *this;

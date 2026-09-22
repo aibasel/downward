@@ -10,14 +10,15 @@ using namespace std;
 namespace utils {
 void lstrip(string &s) {
     s.erase(s.begin(), find_if(s.begin(), s.end(), [](int ch) {
-                                   return !isspace(ch);
-                               }));
+                return !isspace(ch);
+            }));
 }
 
 void rstrip(string &s) {
-    s.erase(find_if(s.rbegin(), s.rend(), [](int ch) {
-                        return !isspace(ch);
-                    }).base(), s.end());
+    s.erase(
+        find_if(s.rbegin(), s.rend(), [](int ch) { return !isspace(ch); })
+            .base(),
+        s.end());
 }
 
 void strip(string &s) {
@@ -50,9 +51,8 @@ vector<string> split(const string &s, const string &separator, int max_splits) {
 }
 
 bool is_alpha_numeric(const string &s) {
-    auto it = find_if(s.begin(), s.end(), [](char const &c) {
-                          return !isalnum(c);
-                      });
+    auto it =
+        find_if(s.begin(), s.end(), [](char const &c) { return !isalnum(c); });
     return it == s.end();
 }
 }

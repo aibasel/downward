@@ -1,5 +1,5 @@
 import os
-import pipes
+import shlex
 import subprocess
 import sys
 
@@ -21,7 +21,7 @@ CONFIGS_NOLP.update(configs.default_configs_satisficing(core=True, extended=True
 
 
 def escape_list(l):
-    return " ".join(pipes.quote(x) for x in l)
+    return " ".join(shlex.quote(x) for x in l)
 
 
 def run_plan_script(task, config, debug):

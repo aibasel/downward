@@ -22,8 +22,8 @@ class MaxCliqueComputer {
         assert(utils::is_sorted_unique(subg));
         assert(utils::is_sorted_unique(cand));
 
-        //utils::g_log << "subg: " << subg << endl;
-        //utils::g_log << "cand: " << cand << endl;
+        // utils::g_log << "subg: " << subg << endl;
+        // utils::g_log << "cand: " << cand << endl;
         size_t max = 0;
         // We will take the first vertex if there is no better one.
         int vertex = subg[0];
@@ -32,14 +32,15 @@ class MaxCliqueComputer {
             vector<int> intersection;
             intersection.reserve(subg.size());
             // for vertex u in subg get u's adjacent vertices: graph[subg[i]];
-            set_intersection(cand.begin(), cand.end(),
-                             graph[subg[i]].begin(), graph[subg[i]].end(),
-                             back_inserter(intersection));
+            set_intersection(
+                cand.begin(), cand.end(), graph[subg[i]].begin(),
+                graph[subg[i]].end(), back_inserter(intersection));
 
             if (intersection.size() > max) {
                 max = intersection.size();
                 vertex = subg[i];
-                //utils::g_log << "success: there is a maximizing vertex." << endl;
+                // utils::g_log << "success: there is a maximizing vertex." <<
+                // endl;
             }
         }
         return vertex;
@@ -49,50 +50,50 @@ class MaxCliqueComputer {
         // utils::g_log << "subg: " << subg << endl;
         // utils::g_log << "cand: " << cand << endl;
         if (subg.empty()) {
-            //utils::g_log << "clique" << endl;
+            // utils::g_log << "clique" << endl;
             max_cliques.push_back(current_max_clique);
         } else {
             int u = get_maximizing_vertex(subg, cand);
 
             vector<int> ext_u;
             ext_u.reserve(cand.size());
-            set_difference(cand.begin(), cand.end(),
-                           graph[u].begin(), graph[u].end(),
-                           back_inserter(ext_u));
+            set_difference(
+                cand.begin(), cand.end(), graph[u].begin(), graph[u].end(),
+                back_inserter(ext_u));
 
             while (!ext_u.empty()) {
                 int q = ext_u.back();
                 ext_u.pop_back();
-                //utils::g_log << q << ",";
+                // utils::g_log << q << ",";
                 current_max_clique.push_back(q);
 
                 // subg_q = subg n gamma(q)
                 vector<int> subg_q;
                 subg_q.reserve(subg.size());
-                set_intersection(subg.begin(), subg.end(),
-                                 graph[q].begin(), graph[q].end(),
-                                 back_inserter(subg_q));
+                set_intersection(
+                    subg.begin(), subg.end(), graph[q].begin(), graph[q].end(),
+                    back_inserter(subg_q));
 
                 // cand_q = cand n gamma(q)
                 vector<int> cand_q;
                 cand_q.reserve(cand.size());
-                set_intersection(cand.begin(), cand.end(),
-                                 graph[q].begin(), graph[q].end(),
-                                 back_inserter(cand_q));
+                set_intersection(
+                    cand.begin(), cand.end(), graph[q].begin(), graph[q].end(),
+                    back_inserter(cand_q));
                 expand(subg_q, cand_q);
 
                 // remove q from cand --> cand = cand - q
                 cand.erase(lower_bound(cand.begin(), cand.end(), q));
 
-                //utils::g_log << "back" << endl;
+                // utils::g_log << "back" << endl;
                 current_max_clique.pop_back();
             }
         }
     }
 
 public:
-    MaxCliqueComputer(const vector<vector<int>> &graph_,
-                      vector<vector<int>> &max_cliques_)
+    MaxCliqueComputer(
+        const vector<vector<int>> &graph_, vector<vector<int>> &max_cliques_)
         : graph(graph_), max_cliques(max_cliques_) {
     }
 
@@ -108,10 +109,8 @@ public:
     }
 };
 
-
 void compute_max_cliques(
-    const vector<vector<int>> &graph,
-    vector<vector<int>> &max_cliques) {
+    const vector<vector<int>> &graph, vector<vector<int>> &max_cliques) {
     MaxCliqueComputer clique_computer(graph, max_cliques);
     clique_computer.compute();
 }

@@ -19,7 +19,8 @@ class LandmarkFactoryRelaxation : public LandmarkFactory {
     void calc_achievers(const TaskProxy &task_proxy, Exploration &exploration);
 
 protected:
-    explicit LandmarkFactoryRelaxation(utils::Verbosity verbosity);
+    LandmarkFactoryRelaxation(
+        const std::shared_ptr<AbstractTask> &task, utils::Verbosity verbosity);
 };
 }
 

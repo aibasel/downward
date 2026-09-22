@@ -153,7 +153,7 @@ public:
        when moving landmark graph creation there. */
     void remove_node(LandmarkNode *node);
     void remove_node_if(
-        const std::function<bool (const LandmarkNode &)> &remove_node_condition);
+        const std::function<bool(const LandmarkNode &)> &remove_node_condition);
 
     /* This is needed only by landmark graph factories and will disappear
        when moving landmark graph creation there. */

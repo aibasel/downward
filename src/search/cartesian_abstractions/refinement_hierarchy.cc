@@ -36,14 +36,11 @@ void Node::split(int var, int value, NodeID left_child, NodeID right_child) {
     assert(is_split());
 }
 
-
-
 ostream &operator<<(ostream &os, const Node &node) {
     return os << "<Node: var=" << node.var << " value=" << node.value
               << " state=" << node.state_id << " left=" << node.left_child
               << " right=" << node.right_child << ">";
 }
-
 
 RefinementHierarchy::RefinementHierarchy(const shared_ptr<AbstractTask> &task)
     : task(task) {
@@ -66,7 +63,8 @@ NodeID RefinementHierarchy::get_node_id(const State &state) const {
 }
 
 pair<NodeID, NodeID> RefinementHierarchy::split(
-    NodeID node_id, int var, const vector<int> &values, int left_state_id, int right_state_id) {
+    NodeID node_id, int var, const vector<int> &values, int left_state_id,
+    int right_state_id) {
     NodeID helper_id = node_id;
     NodeID right_child_id = add_node(right_state_id);
     for (int value : values) {

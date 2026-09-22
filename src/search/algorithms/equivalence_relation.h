@@ -15,15 +15,14 @@ using ElementListConstIter = std::list<int>::const_iterator;
 using BlockListIter = std::list<Block>::iterator;
 using BlockListConstIter = std::list<Block>::const_iterator;
 
-
 class Block {
     std::list<int> elements;
     /*
       During the refinement step of EquivalenceRelation, every existing block B
       is split along every new block X into the intersection and difference of
       B and X. The way the algorithm is set up, the difference remains in the
-      block that previously represented B. To store the intersection, a new block
-      is created and stored in B for easier access.
+      block that previously represented B. To store the intersection, a new
+      block is created and stored in B for easier access.
     */
     friend class EquivalenceRelation;
     BlockListIter it_intersection_block;
@@ -73,15 +72,19 @@ class EquivalenceRelation {
 public:
     explicit EquivalenceRelation(const std::vector<int> &elements);
 
-    BlockListConstIter begin() const {return blocks.begin();}
-    BlockListConstIter end() const {return blocks.end();}
+    BlockListConstIter begin() const {
+        return blocks.begin();
+    }
+    BlockListConstIter end() const {
+        return blocks.end();
+    }
 
     /*
-      Refining a relation with a block X is equivalent to splitting every block B
-      into two blocks (B \cap X) and (B \setminus X). After refining, two items A
-      and B are in the same block if and only if they were in the same block
-      before and they are in one block in the other relation. The amortized
-      runtime is linear in the number of elements specified in other.
+      Refining a relation with a block X is equivalent to splitting every block
+      B into two blocks (B \cap X) and (B \setminus X). After refining, two
+      items A and B are in the same block if and only if they were in the same
+      block before and they are in one block in the other relation. The
+      amortized runtime is linear in the number of elements specified in other.
     */
     void refine(const std::vector<int> &block);
 };

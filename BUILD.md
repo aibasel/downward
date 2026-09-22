@@ -38,15 +38,15 @@ Note that on Windows, setting up the environment variable might require using `/
 **Important:**  The GNU Multiple Precision library (GMP) is critical for the performance of SoPlex but the build does not complain if it is not present.
 Make sure that the build uses the library (check the output of CMake for `Found GMP`).
 
-We require at least SoPlex 7.1.0, which can be built from source as follows (adapt the paths if you install a different version or want to use a different location):
+We require at least SoPlex 7.1.2, which can be built from source as follows (adapt the paths if you install a different version or want to use a different location):
 ```bash
 sudo apt install libgmp3-dev
-wget https://github.com/scipopt/soplex/archive/refs/tags/release-710.tar.gz -O - | tar -xz
-cmake -S soplex-release-710 -B build
+wget https://github.com/scipopt/soplex/archive/refs/tags/release-712.tar.gz -O - | tar -xz
+cmake -S soplex-release-712 -B build
 cmake --build build
-export soplex_DIR=/opt/soplex-7.1.0
+export soplex_DIR=/opt/soplex-7.1.2
 cmake --install build --prefix $soplex_DIR
-rm -rf soplex-release-710 build
+rm -rf soplex-release-712 build
 ```
 
 After installation, permanently set the environment variable `soplex_DIR` to the value you used during the installation.
@@ -81,7 +81,7 @@ To build the planner, from the top-level directory run:
 ```
 
 This creates the default build `release` in the directory `builds`. For information on alternative builds (e.g. `debug`) and further options, call
-`./build.py --help`. [Our website](https://www.fast-downward.org/ForDevelopers/CMake) has details on how to set up development builds.
+`./build.py --help`. [Our website](https://www.fast-downward.org/latest/for-developers/cmake/) has details on how to set up development builds.
 
 
 ### Compiling on Windows
@@ -90,7 +90,7 @@ Windows does not interpret the shebang in Python files, so you have to call `bui
 
 Note that compiling from the terminal is only possible with the right environment. The easiest way to get such an environment is to use the `Developer PowerShell for VS 2019` or `Developer PowerShell`.
 
-Alternatively, you can [create a Visual Studio Project](https://www.fast-downward.org/ForDevelopers/CMake#Custom_Builds), open it in Visual Studio and build from there. Visual Studio creates its binary files in subdirectories of the project that our driver script currently does not recognize. If you build with Visual Studio, you have to run the individual components of the planner yourself.
+Alternatively, you can [create a Visual Studio Project](https://www.fast-downward.org/latest/for-developers/cmake/#custom_builds), open it in Visual Studio and build from there. Visual Studio creates its binary files in subdirectories of the project that our driver script currently does not recognize. If you build with Visual Studio, you have to run the individual components of the planner yourself.
 
 ## Testing the build
 

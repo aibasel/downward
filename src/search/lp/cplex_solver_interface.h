@@ -6,8 +6,8 @@
 
 #include "../algorithms/named_vector.h"
 
-#include <cstring>
 #include <cplex.h>
+#include <cstring>
 
 namespace lp {
 template<typename T>
@@ -30,24 +30,6 @@ class CplexSolverInterface : public SolverInterface {
     CPXLPptr problem;
     bool is_mip;
     int num_permanent_constraints;
-
-    /*
-      Our public interface allows using constraints of the form
-        LB <= expression <= UB
-      In cases where LB > UB, this constraint is trivially unsatisfiable.
-      CPLEX does not represent constraints like this and instead uses range
-      values, where the constraint is represented like this
-        expression - RNG = LB
-      where RNG is a variable restricted to take values from 0 to (UB - LB).
-      If LB > UB, the semantic instead is that RNG takes negative values between
-      (UB - LB) and 0. This means that in CPLEX, the constraint never is
-      trivially unsolvable. We still set the range value and the right-hand side
-      as described above but use negative range values to represent trivially
-      unsatisfiable constraints. The following two counters track how many such
-      constraints we have in the permanent and the temporary constraints.
-    */
-    int num_unsatisfiable_constraints;
-    int num_unsatisfiable_temp_constraints;
 
     /*
       Matrix data in CPLEX format for loading a new problem. Matrix entries are
@@ -87,7 +69,7 @@ class CplexSolverInterface : public SolverInterface {
           entries for column 2 (4.5 and 7.2).
          */
         std::vector<int> counts;
-public:
+    public:
         /*
           When loading a whole LP, column-by-column data better matches CPLEX's
           internal data structures, so we prefer this encoding.
@@ -104,11 +86,21 @@ public:
         void assign_row_by_row(
             const named_vector::NamedVector<LPConstraint> &constraints);
 
-        double *get_coefficients() {return to_cplex_array(coefficients);}
-        int *get_indices() {return to_cplex_array(indices);}
-        int *get_starts() {return to_cplex_array(starts);}
-        int *get_counts() {return to_cplex_array(counts);}
-        int get_num_nonzeros() {return coefficients.size();}
+        double *get_coefficients() {
+            return to_cplex_array(coefficients);
+        }
+        int *get_indices() {
+            return to_cplex_array(indices);
+        }
+        int *get_starts() {
+            return to_cplex_array(starts);
+        }
+        int *get_counts() {
+            return to_cplex_array(counts);
+        }
+        int get_num_nonzeros() {
+            return coefficients.size();
+        }
     };
 
     class CplexColumnsInfo {
@@ -120,42 +112,42 @@ public:
         std::vector<char> type;
         // Objective value of each column (variable)
         std::vector<double> objective;
-public:
+    public:
         void assign(const named_vector::NamedVector<LPVariable> &variables);
-        double *get_lb() {return to_cplex_array(lb);}
-        double *get_ub() {return to_cplex_array(ub);}
-        char *get_type() {return to_cplex_array(type);}
-        double *get_objective() {return to_cplex_array(objective);}
+        double *get_lb() {
+            return to_cplex_array(lb);
+        }
+        double *get_ub() {
+            return to_cplex_array(ub);
+        }
+        char *get_type() {
+            return to_cplex_array(type);
+        }
+        double *get_objective() {
+            return to_cplex_array(objective);
+        }
     };
 
     class CplexRowsInfo {
         // Right-hand side value of a row
         std::vector<double> rhs;
-        // Sense of a row (Greater or equal, Less or equal, Equal, or Range)
+        // Sense of a row (Greater or equal, Less or equal, or Equal)
         std::vector<char> sense;
-        /*
-          If the sense of a row is Range, then its value is restricted to the
-          interval (RHS, RHS + range_value).
-         */
-        std::vector<double> range_values;
-        /*
-          In case not all rows specify a sense, this gives the indices of the
-          rows that are ranged rows.
-         */
-        std::vector<int> range_indices;
-public:
-        void assign(const named_vector::NamedVector<LPConstraint> &constraints, int offset = 0, bool dense_range_values = true);
-        double *get_rhs() {return to_cplex_array(rhs);}
-        char *get_sense() {return to_cplex_array(sense);}
-        double *get_range_values() {return to_cplex_array(range_values);}
-        int *get_range_indices() {return to_cplex_array(range_indices);}
-        int get_num_ranged_rows() {return range_indices.size();}
+    public:
+        void assign(const named_vector::NamedVector<LPConstraint> &constraints);
+
+        double *get_rhs() {
+            return to_cplex_array(rhs);
+        }
+        char *get_sense() {
+            return to_cplex_array(sense);
+        }
     };
 
     class CplexNameData {
         std::vector<char *> names;
         std::vector<int> indices;
-public:
+    public:
         template<typename T>
         explicit CplexNameData(const named_vector::NamedVector<T> &values) {
             if (values.has_names()) {
@@ -165,7 +157,8 @@ public:
                 for (int i = 0; i < num_values; ++i) {
                     const std::string &name = values.get_name(i);
                     if (!name.empty()) {
-                        // CPLEX copies the names, so the const_cast should be fine.
+                        // CPLEX copies the names, so the const_cast should be
+                        // fine.
                         names.push_back(const_cast<char *>(name.data()));
                         indices.push_back(i);
                     }
@@ -173,7 +166,9 @@ public:
             }
         }
 
-        int size() {return names.size();}
+        int size() {
+            return names.size();
+        }
         int *get_indices() {
             if (indices.empty()) {
                 return nullptr;
@@ -200,33 +195,22 @@ public:
     CplexColumnsInfo columns;
     CplexRowsInfo rows;
     std::vector<int> objective_indices;
-
-    /*
-      We store a copy of the current constraint bounds. We need to know the
-      current bounds when changing bounds, and accessing them through the CPLEX
-      interface has a significant overhead. Storing these vectors overlaps with
-      storing CplexRowsInfo above. The difference is that CplexRowsInfo stores
-      more information and we reuse it for temporary constraints, while we want
-      to keep the following vectors always synchronized with the full LP
-      (permanent and temporary constraints).
-     */
-    std::vector<double> constraint_lower_bounds;
-    std::vector<double> constraint_upper_bounds;
-
-    bool is_trivially_unsolvable() const;
-    void change_constraint_bounds(int index, double lb, double ub);
 public:
     CplexSolverInterface();
     virtual ~CplexSolverInterface() override;
 
     virtual void load_problem(const LinearProgram &lp) override;
-    virtual void add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints) override;
+    virtual void add_temporary_constraints(
+        const named_vector::NamedVector<LPConstraint> &constraints) override;
     virtual void clear_temporary_constraints() override;
     virtual double get_infinity() const override;
-    virtual void set_objective_coefficients(const std::vector<double> &coefficients) override;
-    virtual void set_objective_coefficient(int index, double coefficient) override;
-    virtual void set_constraint_lower_bound(int index, double bound) override;
-    virtual void set_constraint_upper_bound(int index, double bound) override;
+    virtual void set_objective_coefficients(
+        const std::vector<double> &coefficients) override;
+    virtual void set_objective_coefficient(
+        int index, double coefficient) override;
+    virtual void set_constraint_rhs(int index, double right_hand_side) override;
+    virtual void set_constraint_sense(
+        int index, LPConstraintSense sense) override;
     virtual void set_variable_lower_bound(int index, double bound) override;
     virtual void set_variable_upper_bound(int index, double bound) override;
     virtual void set_mip_gap(double gap) override;

@@ -23,12 +23,10 @@ namespace max_heuristic {
 
 // construction and destruction
 HSPMaxHeuristic::HSPMaxHeuristic(
-    tasks::AxiomHandlingType axioms,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
-    const string &description, utils::Verbosity verbosity)
+    const shared_ptr<AbstractTask> &task, tasks::AxiomHandlingType axioms,
+    bool cache_estimates, const string &description, utils::Verbosity verbosity)
     : RelaxationHeuristic(
-          axioms, transform, cache_estimates, description,
-          verbosity) {
+          task, axioms, cache_estimates, description, verbosity) {
     if (log.is_at_least_normal()) {
         log << "Initializing HSP max heuristic..." << endl;
     }
@@ -75,8 +73,8 @@ void HSPMaxHeuristic::relaxed_exploration() {
         for (OpID op_id : precondition_of_pool.get_slice(
                  prop->precondition_of, prop->num_precondition_occurences)) {
             UnaryOperator *unary_op = get_operator(op_id);
-            unary_op->cost = max(unary_op->cost,
-                                 unary_op->base_cost + prop_cost);
+            unary_op->cost =
+                max(unary_op->cost, unary_op->base_cost + prop_cost);
             --unary_op->unsatisfied_preconditions;
             assert(unary_op->unsatisfied_preconditions >= 0);
             if (unary_op->unsatisfied_preconditions == 0)
@@ -104,12 +102,13 @@ int HSPMaxHeuristic::compute_heuristic(const State &ancestor_state) {
 }
 
 class HSPMaxHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, HSPMaxHeuristic> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
     HSPMaxHeuristicFeature() : TypedFeature("hmax") {
         document_title("Max heuristic");
 
-        relaxation_heuristic::add_relaxation_heuristic_options_to_feature(*this, "hmax");
+        relaxation_heuristic::add_relaxation_heuristic_options_to_feature(
+            *this, "hmax");
 
         document_language_support("action costs", "supported");
         document_language_support("conditional effects", "supported");
@@ -121,11 +120,12 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<HSPMaxHeuristic>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<HSPMaxHeuristic>(
-            relaxation_heuristic::get_relaxation_heuristic_arguments_from_options(opts)
-            );
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
+        const plugins::Options &opts) const override {
+        return components::make_auto_task_independent_component<
+            HSPMaxHeuristic, Evaluator>(
+            relaxation_heuristic::
+                get_relaxation_heuristic_arguments_from_options(opts));
     }
 };
 

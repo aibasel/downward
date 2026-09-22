@@ -11,8 +11,8 @@
 class State;
 
 namespace additive_heuristic {
-using relaxation_heuristic::PropID;
 using relaxation_heuristic::OpID;
+using relaxation_heuristic::PropID;
 
 using relaxation_heuristic::NO_OP;
 
@@ -66,10 +66,9 @@ protected:
     int compute_add_and_ff(const State &state);
 public:
     AdditiveHeuristic(
-        tasks::AxiomHandlingType axioms,
-        const std::shared_ptr<AbstractTask> &transform,
-        bool cache_estimates, const std::string &description,
-        utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &task,
+        tasks::AxiomHandlingType axioms, bool cache_estimates,
+        const std::string &description, utils::Verbosity verbosity);
 
     /*
       TODO: The two methods below are temporarily needed for the CEGAR

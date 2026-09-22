@@ -4,16 +4,14 @@
 #include "any.h"
 #include "options.h"
 #include "plugin_info.h"
-#include "raw_registry.h"
+#include "types.h"
 
 #include "../utils/component_errors.h"
-#include "../utils/strings.h"
-#include "../utils/system.h"
-#include "../utils/tuples.h"
+#include "../utils/language.h"
 
+#include <memory>
 #include <string>
 #include <typeindex>
-#include <type_traits>
 #include <vector>
 
 namespace utils {
@@ -36,24 +34,21 @@ public:
     virtual ~Feature() = default;
     Feature(const Feature &) = delete;
 
-    virtual Any construct(const Options &opts, const utils::Context &context) const = 0;
+    virtual Any construct(
+        const Options &opts, const utils::Context &context) const = 0;
 
     /* Add option with default value. Use def_val=ArgumentInfo::NO_DEFAULT for
        optional parameters without default values. */
     template<typename T>
     void add_option(
-        const std::string &key,
-        const std::string &help = "",
+        const std::string &key, const std::string &help = "",
         const std::string &default_value = "",
-        const Bounds &bounds = Bounds::unlimited(),
-        bool lazy_construction = false);
+        const Bounds &bounds = Bounds::unlimited());
 
     template<typename T>
     void add_list_option(
-        const std::string &key,
-        const std::string &help = "",
-        const std::string &default_value = "",
-        bool lazy_construction = false);
+        const std::string &key, const std::string &help = "",
+        const std::string &default_value = "");
 
     void document_subcategory(const std::string &subcategory);
     void document_title(const std::string &title);
@@ -63,7 +58,8 @@ public:
     void document_language_support(
         const std::string &feature, const std::string &note);
     void document_note(
-        const std::string &title, const std::string &note, bool long_text = false);
+        const std::string &title, const std::string &note,
+        bool long_text = false);
 
     const Type &get_type() const;
     std::string get_key() const;
@@ -76,43 +72,19 @@ public:
     const std::vector<NoteInfo> &get_notes() const;
 };
 
-
-template<typename Constructed>
-class FeatureWithDefault : public Feature {
+template<typename T>
+class TypedFeature : public Feature {
+    using TPtr = std::shared_ptr<T>;
 protected:
-    using Feature::Feature;
-    virtual std::shared_ptr<Constructed>
-    create_component(const Options &options) const {
-        return std::make_shared<Constructed>(options);
-    }
-};
-
-template<typename Constructed>
-class FeatureWithoutDefault : public Feature {
-protected:
-    using Feature::Feature;
-    virtual std::shared_ptr<Constructed>
-    create_component(const Options &) const = 0;
-};
-
-template<typename Constructed>
-using FeatureAuto = typename std::conditional<
-    std::is_constructible<Constructed, const Options &>::value,
-    FeatureWithDefault<Constructed>,
-    FeatureWithoutDefault<Constructed>>::type;
-
-template<typename Base, typename Constructed>
-class TypedFeature : public FeatureAuto<Constructed> {
-    using BasePtr = std::shared_ptr<Base>;
-    static_assert(std::is_base_of<Base, Constructed>::value,
-                  "Constructed must derive from Base");
+    virtual TPtr create_component(const Options &) const = 0;
 public:
     TypedFeature(const std::string &key)
-        : FeatureAuto<Constructed>(TypeRegistry::instance()->get_type<BasePtr>(), key) {
+        : Feature(TypeRegistry::instance()->get_type<TPtr>(), key) {
     }
 
-    Any construct(const Options &options, const utils::Context &context) const override {
-        std::shared_ptr<Base> ptr;
+    Any construct(
+        const Options &options, const utils::Context &context) const override {
+        TPtr ptr;
         try {
             ptr = this->create_component(options);
         } catch (const utils::ComponentArgumentError &e) {
@@ -121,23 +93,6 @@ public:
         return Any(ptr);
     }
 };
-
-/*
-  Expects constructor arguments of T. Consecutive arguments may be
-  grouped in a tuple. All tuples in the arguments will be flattened
-  before calling the constructor. The resulting arguments will be used
-  as arguments to make_shared.
-*/
-template<typename T, typename ... Arguments>
-std::shared_ptr<T> make_shared_from_arg_tuples(Arguments... arguments) {
-    return std::apply(
-        [](auto &&... flattened_args) {
-            return std::make_shared<T>(
-                std::forward<decltype(flattened_args)>(flattened_args) ...);
-        },
-        utils::flatten_tuple(
-            std::tuple<Arguments...>(std::forward<Arguments>(arguments) ...)));
-}
 
 class Plugin {
 public:
@@ -182,16 +137,15 @@ class CategoryPlugin {
     /*
       TODO: Currently, we do not support variable binding of all categories, so
       variables can only be used for categories explicitly marked. This might
-      change once we fix the component interaction (issue559). If all feature
-      types can be bound to variables, we can probably get rid of this flag and
-      related code in CategoryPlugin, TypedCategoryPlugin, RawRegistry,
+      change once we remove the old task transformation code (issue1208). If all
+      feature types can be bound to variables, we can probably get rid of this
+      flag and related code in CategoryPlugin, TypedCategoryPlugin, RawRegistry,
       Registry, Parser, ...
     */
     bool can_be_bound_to_variable;
 public:
     CategoryPlugin(
-        std::type_index pointer_type,
-        const std::string &class_name,
+        std::type_index pointer_type, const std::string &class_name,
         const std::string &category_name);
     virtual ~CategoryPlugin() = default;
     CategoryPlugin(const CategoryPlugin &) = delete;
@@ -210,9 +164,9 @@ template<typename T>
 class TypedCategoryPlugin : public CategoryPlugin {
 public:
     TypedCategoryPlugin(const std::string &category_name)
-        : CategoryPlugin(typeid(std::shared_ptr<T>),
-                         utils::get_type_name<std::shared_ptr<T>>(),
-                         category_name) {
+        : CategoryPlugin(
+              typeid(std::shared_ptr<T>),
+              utils::get_type_name<std::shared_ptr<T>>(), category_name) {
     }
 };
 
@@ -236,8 +190,9 @@ class EnumPlugin {
     std::string class_name;
     EnumInfo enum_info;
 public:
-    EnumPlugin(std::type_index type, const std::string &class_name,
-               std::initializer_list<std::pair<std::string, std::string>> enum_values);
+    EnumPlugin(
+        std::type_index type, const std::string &class_name,
+        std::initializer_list<std::pair<std::string, std::string>> enum_values);
 
     std::type_index get_type() const;
     std::string get_class_name() const;
@@ -247,31 +202,28 @@ public:
 template<typename T>
 class TypedEnumPlugin : public EnumPlugin {
 public:
-    TypedEnumPlugin(std::initializer_list<std::pair<std::string, std::string>> enum_values)
-        : EnumPlugin(typeid(T), utils::get_type_name<std::shared_ptr<T>>(), enum_values) {
+    TypedEnumPlugin(
+        std::initializer_list<std::pair<std::string, std::string>> enum_values)
+        : EnumPlugin(
+              typeid(T), utils::get_type_name<std::shared_ptr<T>>(),
+              enum_values) {
     }
 };
 
-
 template<typename T>
 void Feature::add_option(
-    const std::string &key,
-    const std::string &help,
-    const std::string &default_value,
-    const Bounds &bounds,
-    bool lazy_construction) {
-    arguments.emplace_back(key, help, TypeRegistry::instance()->get_type<T>(),
-                           default_value, bounds, lazy_construction);
+    const std::string &key, const std::string &help,
+    const std::string &default_value, const Bounds &bounds) {
+    arguments.emplace_back(
+        key, help, TypeRegistry::instance()->get_type<T>(), default_value,
+        bounds);
 }
 
 template<typename T>
 void Feature::add_list_option(
-    const std::string &key,
-    const std::string &help,
-    const std::string &default_value,
-    bool lazy_construction) {
-    add_option<std::vector<T>>(key, help, default_value, Bounds::unlimited(),
-                               lazy_construction);
+    const std::string &key, const std::string &help,
+    const std::string &default_value) {
+    add_option<std::vector<T>>(key, help, default_value, Bounds::unlimited());
 }
 }
 

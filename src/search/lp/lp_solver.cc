@@ -12,6 +12,19 @@
 using namespace std;
 
 namespace lp {
+
+ostream &operator<<(ostream &os, LPConstraintSense s) {
+    switch (s) {
+    case LPConstraintSense::GREATER_EQUAL:
+        return os << ">=";
+    case LPConstraintSense::LESS_EQUAL:
+        return os << "<=";
+    case LPConstraintSense::EQUAL:
+        return os << "==";
+    }
+    return os;
+}
+
 void add_lp_solver_option_to_feature(plugins::Feature &feature) {
     feature.add_option<LPSolverType>(
         "lpsolver",
@@ -29,9 +42,8 @@ tuple<LPSolverType> get_lp_solver_arguments_from_options(
     return make_tuple(opts.get<LPSolverType>("lpsolver"));
 }
 
-LPConstraint::LPConstraint(double lower_bound, double upper_bound)
-    : lower_bound(lower_bound),
-      upper_bound(upper_bound) {
+LPConstraint::LPConstraint(LPConstraintSense sense, double right_hand_side)
+    : sense(sense), right_hand_side(right_hand_side) {
 }
 
 void LPConstraint::clear() {
@@ -48,36 +60,37 @@ void LPConstraint::insert(int index, double coefficient) {
     coefficients.push_back(coefficient);
 }
 
-ostream &LPConstraint::dump(ostream &stream, const LinearProgram *program) const {
-    double infinity = numeric_limits<double>::infinity();
-    if (program) {
-        infinity = program->get_infinity();
-    }
-    if (lower_bound != -infinity) {
-        stream << lower_bound << " <= ";
-    }
+ostream &LPConstraint::dump(
+    ostream &stream, const LinearProgram *program) const {
     for (size_t i = 0; i < variables.size(); ++i) {
         if (i != 0)
             stream << " + ";
         int variable = variables[i];
         string variable_name;
-        if (program && program->get_variables().has_names() && !program->get_variables().get_name(variable).empty()) {
+        if (program && program->get_variables().has_names() &&
+            !program->get_variables().get_name(variable).empty()) {
             variable_name = program->get_variables().get_name(variable);
         } else {
             variable_name = "v" + to_string(variable);
         }
         stream << coefficients[i] << " * " << variable_name;
     }
-    if (upper_bound != infinity) {
-        stream << " <= " << upper_bound;
-    } else if (lower_bound == -infinity) {
-        stream << " <= infinity";
+    stream << get_sense();
+    double rhs = get_right_hand_side();
+    if (rhs == program->get_infinity()) {
+        stream << "infinity";
+    } else if (rhs == -program->get_infinity()) {
+        stream << "-infinity";
+    } else {
+        stream << rhs;
     }
+
     return stream;
 }
 
-LPVariable::LPVariable(double lower_bound, double upper_bound,
-                       double objective_coefficient, bool is_integer)
+LPVariable::LPVariable(
+    double lower_bound, double upper_bound, double objective_coefficient,
+    bool is_integer)
     : lower_bound(lower_bound),
       upper_bound(upper_bound),
       objective_coefficient(objective_coefficient),
@@ -100,11 +113,13 @@ LPObjectiveSense LinearProgram::get_sense() const {
     return sense;
 }
 
-const named_vector::NamedVector<LPVariable> &LinearProgram::get_variables() const {
+const named_vector::NamedVector<LPVariable> &
+LinearProgram::get_variables() const {
     return variables;
 }
 
-const named_vector::NamedVector<LPConstraint> &LinearProgram::get_constraints() const {
+const named_vector::NamedVector<LPConstraint> &
+LinearProgram::get_constraints() const {
     return constraints;
 }
 
@@ -115,7 +130,6 @@ const string &LinearProgram::get_objective_name() const {
 void LinearProgram::set_objective_name(const string &name) {
     objective_name = name;
 }
-
 
 LPSolver::LPSolver(LPSolverType solver_type) {
     string missing_solver;
@@ -139,11 +153,10 @@ LPSolver::LPSolver(LPSolverType solver_type) {
     }
     if (!pimpl) {
         cerr << "Tried to use LP solver " << missing_solver
-             << ", but the planner was compiled without support for it."
-             << endl
+             << ", but the planner was compiled without support for it." << endl
              << "See https://github.com/aibasel/downward/blob/main/BUILD.md\n"
-             << "to install " << missing_solver
-             << " and use it in the planner." << endl;
+             << "to install " << missing_solver << " and use it in the planner."
+             << endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
 }
@@ -152,7 +165,8 @@ void LPSolver::load_problem(const LinearProgram &lp) {
     pimpl->load_problem(lp);
 }
 
-void LPSolver::add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints) {
+void LPSolver::add_temporary_constraints(
+    const named_vector::NamedVector<LPConstraint> &constraints) {
     pimpl->add_temporary_constraints(constraints);
 }
 
@@ -172,12 +186,12 @@ void LPSolver::set_objective_coefficient(int index, double coefficient) {
     pimpl->set_objective_coefficient(index, coefficient);
 }
 
-void LPSolver::set_constraint_lower_bound(int index, double bound) {
-    pimpl->set_constraint_lower_bound(index, bound);
+void LPSolver::set_constraint_rhs(int index, double right_hand_side) {
+    pimpl->set_constraint_rhs(index, right_hand_side);
 }
 
-void LPSolver::set_constraint_upper_bound(int index, double bound) {
-    pimpl->set_constraint_upper_bound(index, bound);
+void LPSolver::set_constraint_sense(int index, LPConstraintSense sense) {
+    pimpl->set_constraint_sense(index, sense);
 }
 
 void LPSolver::set_variable_lower_bound(int index, double bound) {
@@ -240,8 +254,7 @@ void LPSolver::print_statistics() const {
     pimpl->print_statistics();
 }
 
-static plugins::TypedEnumPlugin<LPSolverType> _enum_plugin({
-        {"cplex", "commercial solver by IBM"},
-        {"soplex", "open source solver by ZIB"}
-    });
+static plugins::TypedEnumPlugin<LPSolverType> _enum_plugin(
+    {{"cplex", "commercial solver by IBM"},
+     {"soplex", "open source solver by ZIB"}});
 }

@@ -26,7 +26,6 @@ int MergeAndShrinkRepresentation::get_domain_size() const {
     return domain_size;
 }
 
-
 MergeAndShrinkRepresentationLeaf::MergeAndShrinkRepresentationLeaf(
     int var_id, int domain_size)
     : MergeAndShrinkRepresentation(domain_size),
@@ -81,16 +80,16 @@ void MergeAndShrinkRepresentationLeaf::dump(utils::LogProxy &log) const {
     }
 }
 
-
 MergeAndShrinkRepresentationMerge::MergeAndShrinkRepresentationMerge(
     unique_ptr<MergeAndShrinkRepresentation> left_child_,
     unique_ptr<MergeAndShrinkRepresentation> right_child_)
-    : MergeAndShrinkRepresentation(left_child_->get_domain_size() *
-                                   right_child_->get_domain_size()),
+    : MergeAndShrinkRepresentation(
+          left_child_->get_domain_size() * right_child_->get_domain_size()),
       left_child(move(left_child_)),
       right_child(move(right_child_)),
-      lookup_table(left_child->get_domain_size(),
-                   vector<int>(right_child->get_domain_size())) {
+      lookup_table(
+          left_child->get_domain_size(),
+          vector<int>(right_child->get_domain_size())) {
     int counter = 0;
     for (vector<int> &row : lookup_table) {
         for (int &entry : row) {
@@ -126,8 +125,7 @@ void MergeAndShrinkRepresentationMerge::apply_abstraction_to_lookup_table(
     domain_size = new_domain_size;
 }
 
-int MergeAndShrinkRepresentationMerge::get_value(
-    const State &state) const {
+int MergeAndShrinkRepresentationMerge::get_value(const State &state) const {
     int state1 = left_child->get_value(state);
     int state2 = right_child->get_value(state);
     if (state1 == PRUNED_STATE || state2 == PRUNED_STATE)

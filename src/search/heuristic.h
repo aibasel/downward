@@ -9,7 +9,6 @@
 #include "algorithms/ordered_set.h"
 
 #include <memory>
-#include <vector>
 
 class TaskProxy;
 
@@ -25,8 +24,7 @@ class Heuristic : public Evaluator {
         int h : 31;
         unsigned int dirty : 1;
 
-        HEntry(int h, bool dirty)
-            : h(h), dirty(dirty) {
+        HEntry(int h, bool dirty) : h(h), dirty(dirty) {
         }
     };
     static_assert(sizeof(HEntry) == 4, "HEntry has unexpected size.");
@@ -47,19 +45,17 @@ class Heuristic : public Evaluator {
 protected:
     /*
       Cache for saving h values
-      Before accessing this cache always make sure that the cache_evaluator_values
-      flag is set to true - as soon as the cache is accessed it will create
-      entries for all existing states
+      Before accessing this cache always make sure that the
+      cache_evaluator_values flag is set to true - as soon as the cache is
+      accessed it will create entries for all existing states
     */
     PerStateInformation<HEntry> heuristic_cache;
     bool cache_evaluator_values;
 
-    // Hold a reference to the task implementation and pass it to objects that need it.
-    const std::shared_ptr<AbstractTask> task;
-    // Use task_proxy to access task information.
-    TaskProxy task_proxy;
-
-    enum {DEAD_END = -1, NO_VALUE = -2};
+    enum {
+        DEAD_END = -1,
+        NO_VALUE = -2
+    };
 
     virtual int compute_heuristic(const State &ancestor_state) = 0;
 
@@ -74,10 +70,8 @@ protected:
 
 public:
     Heuristic(
-        const std::shared_ptr<AbstractTask> &transform,
-        bool cache_estimates, const std::string &description,
-        utils::Verbosity verbosity);
-    virtual ~Heuristic() override;
+        const std::shared_ptr<AbstractTask> &task, bool cache_estimates,
+        const std::string &description, utils::Verbosity verbosity);
 
     virtual void get_path_dependent_evaluators(
         std::set<Evaluator *> & /*evals*/) override {
@@ -93,7 +87,6 @@ public:
 
 extern void add_heuristic_options_to_feature(
     plugins::Feature &feature, const std::string &description);
-extern std::tuple<
-    std::shared_ptr<AbstractTask>, bool, std::string, utils::Verbosity>
+extern std::tuple<bool, std::string, utils::Verbosity>
 get_heuristic_arguments_from_options(const plugins::Options &opts);
 #endif

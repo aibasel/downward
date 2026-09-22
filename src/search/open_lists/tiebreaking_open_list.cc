@@ -32,31 +32,32 @@ class TieBreakingOpenList : public OpenList<Entry> {
     int dimension() const;
 
 protected:
-    virtual void do_insertion(EvaluationContext &eval_context,
-                              const Entry &entry) override;
+    virtual void do_insertion(
+        EvaluationContext &eval_context, const Entry &entry) override;
 
 public:
     TieBreakingOpenList(
-        const vector<shared_ptr<Evaluator>> &evals,
-        bool unsafe_pruning, bool pref_only);
+        const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
+        bool pref_only);
 
     virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
-    virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
-    virtual bool is_dead_end(
-        EvaluationContext &eval_context) const override;
+    virtual void get_path_dependent_evaluators(
+        set<Evaluator *> &evals) override;
+    virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
+    virtual bool is_safe() const override;
 };
-
 
 template<class Entry>
 TieBreakingOpenList<Entry>::TieBreakingOpenList(
-    const vector<shared_ptr<Evaluator>> &evals,
-    bool unsafe_pruning, bool pref_only)
+    const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
+    bool pref_only)
     : OpenList<Entry>(pref_only),
-      size(0), evaluators(evals),
+      size(0),
+      evaluators(evals),
       allow_unsafe_pruning(unsafe_pruning) {
 }
 
@@ -66,7 +67,8 @@ void TieBreakingOpenList<Entry>::do_insertion(
     vector<int> key;
     key.reserve(evaluators.size());
     for (const shared_ptr<Evaluator> &evaluator : evaluators)
-        key.push_back(eval_context.get_evaluator_value_or_infinity(evaluator.get()));
+        key.push_back(
+            eval_context.get_evaluator_value_or_infinity(evaluator.get()));
 
     buckets[key].push_back(entry);
     ++size;
@@ -134,40 +136,63 @@ bool TieBreakingOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
     for (const shared_ptr<Evaluator> &evaluator : evaluators)
         if (eval_context.is_evaluator_value_infinite(evaluator.get()) &&
-            evaluator->dead_ends_are_reliable())
+            evaluator->is_safe())
             return true;
     return false;
 }
 
+template<class Entry>
+bool TieBreakingOpenList<Entry>::is_safe() const {
+    if (this->only_contains_preferred_entries()) {
+        return false;
+    }
+    assert(!evaluators.empty());
+    if (evaluators[0]->is_safe()) {
+        return true;
+    }
+    // At this point we know that the first evaluator is unsafe.
+    if (allow_unsafe_pruning) {
+        return false;
+    }
+    /*
+      Even if the first evaluator is unsafe we can still ensure
+      completeness if (allow_unsafe_pruning is false and) at least
+      one other evaluator is safe.
+    */
+    auto is_safe = [](const auto &evaluator) { return evaluator->is_safe(); };
+    return ranges::any_of(evaluators, is_safe);
+}
+
 TieBreakingOpenListFactory::TieBreakingOpenListFactory(
-    const vector<shared_ptr<Evaluator>> &evals,
-    bool unsafe_pruning, bool pref_only)
-    : evals(evals),
+    const shared_ptr<AbstractTask> &task,
+    const vector<shared_ptr<Evaluator>> &evals, bool unsafe_pruning,
+    bool pref_only)
+    : OpenListFactory(task),
+      evals(evals),
       unsafe_pruning(unsafe_pruning),
       pref_only(pref_only) {
     utils::verify_list_not_empty(evals, "evals");
 }
 
-unique_ptr<StateOpenList>
-TieBreakingOpenListFactory::create_state_open_list() {
+unique_ptr<StateOpenList> TieBreakingOpenListFactory::create_state_open_list() {
     return make_unique<TieBreakingOpenList<StateOpenListEntry>>(
         evals, unsafe_pruning, pref_only);
 }
 
-unique_ptr<EdgeOpenList>
-TieBreakingOpenListFactory::create_edge_open_list() {
+unique_ptr<EdgeOpenList> TieBreakingOpenListFactory::create_edge_open_list() {
     return make_unique<TieBreakingOpenList<EdgeOpenListEntry>>(
         evals, unsafe_pruning, pref_only);
 }
 
 class TieBreakingOpenListFeature
-    : public plugins::TypedFeature<OpenListFactory, TieBreakingOpenListFactory> {
+    : public plugins::TypedFeature<TaskIndependentOpenListFactory> {
 public:
     TieBreakingOpenListFeature() : TypedFeature("tiebreaking") {
         document_title("Tie-breaking open list");
         document_synopsis("");
 
-        add_list_option<shared_ptr<Evaluator>>("evals", "evaluators");
+        add_list_option<shared_ptr<TaskIndependentEvaluator>>(
+            "evals", "evaluators");
         add_option<bool>(
             "unsafe_pruning",
             "allow unsafe pruning when the main evaluator regards a state a dead end",
@@ -175,13 +200,13 @@ public:
         add_open_list_options_to_feature(*this);
     }
 
-    virtual shared_ptr<TieBreakingOpenListFactory>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<TieBreakingOpenListFactory>(
-            opts.get_list<shared_ptr<Evaluator>>("evals"),
+    virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
+        const plugins::Options &opts) const override {
+        return components::make_auto_task_independent_component<
+            TieBreakingOpenListFactory, OpenListFactory>(
+            opts.get_list<shared_ptr<TaskIndependentEvaluator>>("evals"),
             opts.get<bool>("unsafe_pruning"),
-            get_open_list_arguments_from_options(opts)
-            );
+            get_open_list_arguments_from_options(opts));
     }
 };
 

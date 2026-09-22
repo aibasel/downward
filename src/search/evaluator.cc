@@ -8,19 +8,19 @@
 
 using namespace std;
 
-
 Evaluator::Evaluator(
-    bool use_for_reporting_minima, bool use_for_boosting,
-    bool use_for_counting_evaluations, const string &description,
-    utils::Verbosity verbosity)
-    : description(description),
+    const shared_ptr<AbstractTask> &task, bool use_for_reporting_minima,
+    bool use_for_boosting, bool use_for_counting_evaluations,
+    const string &description, utils::Verbosity verbosity)
+    : components::TaskSpecificComponent(task),
+      description(description),
       use_for_reporting_minima(use_for_reporting_minima),
       use_for_boosting(use_for_boosting),
       use_for_counting_evaluations(use_for_counting_evaluations),
       log(utils::get_log_for_verbosity(verbosity)) {
 }
 
-bool Evaluator::dead_ends_are_reliable() const {
+bool Evaluator::is_safe() const {
     return true;
 }
 
@@ -37,8 +37,7 @@ void Evaluator::report_value_for_initial_state(
     }
 }
 
-void Evaluator::report_new_minimum_value(
-    const EvaluationResult &result) const {
+void Evaluator::report_new_minimum_value(const EvaluationResult &result) const {
     if (log.is_at_least_normal()) {
         assert(use_for_reporting_minima);
         log << "New best heuristic value for " << description << ": "
@@ -77,8 +76,7 @@ int Evaluator::get_cached_estimate(const State &) const {
 void add_evaluator_options_to_feature(
     plugins::Feature &feature, const string &description) {
     feature.add_option<string>(
-        "description",
-        "description used to identify evaluator in logs",
+        "description", "description used to identify evaluator in logs",
         "\"" + description + "\"");
     utils::add_log_options_to_feature(feature);
 }
@@ -87,20 +85,19 @@ tuple<string, utils::Verbosity> get_evaluator_arguments_from_options(
     const plugins::Options &opts) {
     return tuple_cat(
         make_tuple(opts.get<string>("description")),
-        utils::get_log_arguments_from_options(opts)
-        );
+        utils::get_log_arguments_from_options(opts));
 }
 
-static class EvaluatorCategoryPlugin : public plugins::TypedCategoryPlugin<Evaluator> {
+static class TaskIndependentEvaluatorCategoryPlugin
+    : public plugins::TypedCategoryPlugin<TaskIndependentEvaluator> {
 public:
-    EvaluatorCategoryPlugin() : TypedCategoryPlugin("Evaluator") {
+    TaskIndependentEvaluatorCategoryPlugin()
+        : TypedCategoryPlugin("Evaluator") {
         document_synopsis(
             "An evaluator specification is either a newly created evaluator "
-            "instance or an evaluator that has been defined previously. "
-            "This page describes how one can specify a new evaluator instance. "
-            "For re-using evaluators, see OptionSyntax#Evaluator_Predefinitions.\n\n"
-            "If the evaluator is a heuristic, "
-            "definitions of //properties// in the descriptions below:\n\n"
+            "instance or an evaluator that has been [defined previously ../search-plugin-syntax.md#variables_as_parameters]. "
+            "This page describes how one can specify a new evaluator instance.\n\n"
+            "For evaluators that are heuristic, it is stated which of the following properties hold:\n\n"
             " * **admissible:** h(s) <= h*(s) for all states s\n"
             " * **consistent:** h(s) <= c(s, s') + h(s') for all states s "
             "connected to states s' by an action with cost c(s, s')\n"
@@ -110,5 +107,4 @@ public:
             "preferred operators ");
         allow_variable_binding();
     }
-}
-_category_plugin;
+} _category_plugin;

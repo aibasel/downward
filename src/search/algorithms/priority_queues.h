@@ -33,8 +33,10 @@ class AbstractQueue {
 public:
     typedef std::pair<int, Value> Entry;
 
-    AbstractQueue() {}
-    virtual ~AbstractQueue() {}
+    AbstractQueue() {
+    }
+    virtual ~AbstractQueue() {
+    }
 
     virtual void push(int key, const Value &value) = 0;
     virtual Entry pop() = 0;
@@ -65,7 +67,6 @@ public:
 
     virtual void add_virtual_pushes(int num_extra_pushes) = 0;
 };
-
 
 template<typename Value>
 class HeapQueue : public AbstractQueue<Value> {
@@ -130,7 +131,6 @@ public:
     virtual void add_virtual_pushes(int /*num_extra_pushes*/) {
     }
 };
-
 
 template<typename Value>
 class BucketQueue : public AbstractQueue<Value> {
@@ -239,7 +239,6 @@ public:
         num_pushes += num_extra_pushes;
     }
 };
-
 
 template<typename Value>
 class AdaptiveQueue {

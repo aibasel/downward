@@ -13,8 +13,9 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGeneratorManual::PatternCollectionGeneratorManual(
-    const vector<Pattern> &patterns, utils::Verbosity verbosity)
-    : PatternCollectionGenerator(verbosity),
+    const shared_ptr<AbstractTask> &task, const vector<Pattern> &patterns,
+    utils::Verbosity verbosity)
+    : PatternCollectionGenerator(task, verbosity),
       patterns(make_shared<PatternCollection>(patterns)) {
 }
 
@@ -32,9 +33,11 @@ PatternCollectionInformation PatternCollectionGeneratorManual::compute_patterns(
 }
 
 class PatternCollectionGeneratorManualFeature
-    : public plugins::TypedFeature<PatternCollectionGenerator, PatternCollectionGeneratorManual> {
+    : public plugins::TypedFeature<TaskIndependentPatternCollectionGenerator> {
 public:
-    PatternCollectionGeneratorManualFeature() : TypedFeature("manual_patterns") {
+    PatternCollectionGeneratorManualFeature()
+        : TypedFeature("manual_patterns") {
+        document_title("Manual patterns");
         add_list_option<Pattern>(
             "patterns",
             "list of patterns (which are lists of variable numbers of the planning "
@@ -42,12 +45,12 @@ public:
         add_generator_options_to_feature(*this);
     }
 
-    virtual shared_ptr<PatternCollectionGeneratorManual>
+    virtual shared_ptr<TaskIndependentPatternCollectionGenerator>
     create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PatternCollectionGeneratorManual>(
+        return components::make_auto_task_independent_component<
+            PatternCollectionGeneratorManual, PatternCollectionGenerator>(
             opts.get_list<Pattern>("patterns"),
-            get_generator_arguments_from_options(opts)
-            );
+            get_generator_arguments_from_options(opts));
     }
 };
 

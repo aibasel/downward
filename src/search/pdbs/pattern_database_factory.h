@@ -24,8 +24,7 @@ namespace pdbs {
   instead of its original cost.
 */
 extern std::shared_ptr<PatternDatabase> compute_pdb(
-    const TaskProxy &task_proxy,
-    const Pattern &pattern,
+    const TaskProxy &task_proxy, const Pattern &pattern,
     const std::vector<int> &operator_costs = std::vector<int>(),
     const std::shared_ptr<utils::RandomNumberGenerator> &rng = nullptr);
 
@@ -43,10 +42,10 @@ extern std::shared_ptr<PatternDatabase> compute_pdb(
   plan contains exactly one operator, thus representing a regular plan. If
   set to true, each set contains at least one operator ID.
 */
-extern std::tuple<std::shared_ptr<PatternDatabase>,
-                  std::vector<std::vector<OperatorID>>> compute_pdb_and_plan(
-    const TaskProxy &task_proxy,
-    const Pattern &pattern,
+extern std::tuple<
+    std::shared_ptr<PatternDatabase>, std::vector<std::vector<OperatorID>>>
+compute_pdb_and_plan(
+    const TaskProxy &task_proxy, const Pattern &pattern,
     const std::vector<int> &operator_costs = std::vector<int>(),
     const std::shared_ptr<utils::RandomNumberGenerator> &rng = nullptr,
     bool compute_wildcard_plan = false);

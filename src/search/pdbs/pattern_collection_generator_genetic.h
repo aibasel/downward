@@ -84,8 +84,8 @@ class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
       anything was already used (in which case we do not mark the
       remaining variables).
     */
-    bool mark_used_variables(const Pattern &pattern,
-                             std::vector<bool> &variables_used) const;
+    bool mark_used_variables(
+        const Pattern &pattern, std::vector<bool> &variables_used) const;
     void remove_irrelevant_variables(Pattern &pattern) const;
 
     /*
@@ -114,9 +114,9 @@ class PatternCollectionGeneratorGenetic : public PatternCollectionGenerator {
         const std::shared_ptr<AbstractTask> &task) override;
 public:
     PatternCollectionGeneratorGenetic(
-        int pdb_max_size, int num_collections, int num_episodes,
-        double mutation_probability, bool disjoint, int random_seed,
-        utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &task, int pdb_max_size,
+        int num_collections, int num_episodes, double mutation_probability,
+        bool disjoint, int random_seed, utils::Verbosity verbosity);
 };
 }
 

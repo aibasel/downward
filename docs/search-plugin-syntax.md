@@ -10,18 +10,18 @@ specified by keyword, the rest of the parameters must be specified by keyword
 too. Some parameters have default values and are optional. These parameters are
 documented in the form `keyword = defaultvalue`.
 
-Consider the following example:
+Consider the following example of a search plugin called `name`:
 
     name(p, qs, r, s=v1, t=Enum1)
 
--   `p` (type_p): some explanation
--   `qs` (list of type_q): some explanation
--   `r` (type_r): some explanation
--   `s` (type_s): some explanation
--   `t` (Enum): some explanation
-    -   Enum0: some explanation
-    -   Enum1: some explanation
-    -   Enum2: some explanation
+-   `p` (type_p): _some explanation_
+-   `qs` (list of type_q): _some explanation_
+-   `r` (type_r): _some explanation_
+-   `s` (type_s): _some explanation_
+-   `t` ({Enum0, Enum1, Enum2}): _some explanation_
+    -   Enum0: _some explanation_
+    -   Enum1: _some explanation_
+    -   Enum2: _some explanation_
 
 Parameters `p`, `qs` and `r` are mandatory. `qs` is a list parameter. List
 parameters have to be enclosed in square brackets. For example, let `h1`, `h2`,
@@ -30,60 +30,71 @@ a list of heuristic specifications.
 
 Parameters `s` and `t` are optional. `s` has the default value `v1` and `t` the
 default value `Enum1`. `t` is an enumeration parameter and can only take the
-values listed (here Enum0, Enum1, Enum2). These values may also be passed by
-number, e.g. here `t=Enum1` and `t=1` are equivalent.
+values listed (here Enum0, Enum1, Enum2).
 
 Some possible calls for this specification (with `X` and `Xi` having type_x):
 
--   `name(P, Q, R)`: `s` and `v` have their default values `v1` and `Enum1`
--   `name(P, [Q], R)`: equivalent to previous call
+-   `name(P, [Q], R)`: `s` and `t` have their default values `v1` and `Enum1`
 -   `name(P, [Q1, Q2], R, t=Enum2)`: `s` has its default value `v1`
--   `name(t=1, r=R, qs=[Q1, Q2], s=S1, p=P)` is equivalent to
-    `name(P, [Q1, Q2], R, S1, 1)`
+-   `name(t=Enum1, r=R, qs=[Q1, Q2], s=S1, p=P)` is equivalent to
+    `name(P, [Q1, Q2], R, S1, Enum1)`
 
-## Notes
+### Note
 
--   Parameters of type `bool` are specified by strings `true` or `false`
--   not case-sensitive
--   To get positions and keywords, use
+-   Search plugin names, parameter names and enumeration names are not case-sensitive. For example, `AsTaR(BlInd(verBosiTy=VeRBosE))`
+is equivalent to `astar(blind(verbosity=verbose))`
+
+
+-   To get positions and keywords for a search plugin, use
 
 ```
---help [Name]
+./fast-downward.py --search "" --help <name>  // e.g. with <name>=astar
 ```
 
-## Integers
+## Parameter Types
+In the following we provide information on how parameters of common types have to be specified.
+
+### Booleans
+
+Parameters of type `bool` are specified by strings `true` or `false`.
+
+### Integers
 
 Parameters of type `int` can be specified as "infinity". This means that the
 parameter will take the value `numeric_limits<int>::max()`, which is usually
 equal to 2^31 - 1. If an `int` parameter value ends with "K", "M" or "G", the
-value is multiplied by one thousand, one million or one billion, respectively.
-For example, "bound=2K" is equivalent to "bound=2000".
+value is multiplied by one thousand, one million or one billion, respectively. For example,
 
-## Strings
+    bound=2K
+
+is equivalent to 
+
+    bound=2000
+
+### Strings
 
 Parameters of type `string` can be specified in double quotes. Nested quotes
-can be escaped as `\"`, backslashes as `\\`, and newlines as `\n`. E.g.,
+can be escaped as `\"`, backslashes as `\\`, and newlines as `\n`. For example,
 
     filename="C:\\some.file"
 
-## Lists
+### Lists
 
-List arguments have to be enclosed in square brackets now. E.g.,
+List arguments have to be enclosed in square brackets now. For example,
 
-    --evaluator "hff=ff()" --evaluator "hcea=cea()" \
-    --search "lazy_greedy([hff, hcea], preferred=[hff, hcea])" \
+    lazy_greedy([h1, h2], preferred=[])
 
-## Enumerations
+### Enumerations
 
-Enumeration arguments should be specified by name, e.g.:
+Enumeration arguments should be specified by name and are not case-sensitive. For example,
 
     eager_greedy([h1,h2], cost_type=normal)
 
-To get enumeration names (and more), run
+To get enumeration names (and more) for a search plugin parameter, run the help command for the search plugin
 
-    --help [Name]   //e.g. with Name=eager_greedy
+    ./fast-downward.py --search "" --help <name>  // e.g. with <name>=eager_greedy
 
-## Variables
+## Variables as Parameters
 
 Often an object should be used for several purposes, e.g. a
 [Heuristic](search/Evaluator.md) or a [LandmarkFactory](search/LandmarkFactory.md).
@@ -95,15 +106,15 @@ but will extend the support for other feature types in the future.
 
 Variables can be defined with
 
-    let(name, definition, expression)
+    "let(var_name, definition, expression)"
 
--   `name`: a variable name that should denote the feature
+-   `var_name`: a variable name that should denote the feature
 -   `definition`: an expression defining the value of the variable
 -   `expression`: an expression defining any other feature.
-    Occurrences of `name` in this expression may refer to the feature
+    Occurrences of `var_name` in this expression may refer to the feature
     defined by `definition`.
 
-### Variable Example
+### Example
 
 Suppose I want to run GBFS with the `landmark_sum` heuristic, and then run
 another GBFS search with the `landmark_cost_partitioning` heuristic, using the
@@ -122,12 +133,12 @@ option. They are internally converted to `let`-expressions.
 
 The command lines
 
-    --evaluator name=definition --search expression
-    --landmarks name=definition --search expression
+    --evaluator "name=definition" --search "expression"
+    --landmarks "name=definition" --search "expression"
 
 are both transformed to
 
-    --search let(name, definition, expression)
+    --search "let(name, definition, expression)"
 
 ## Conditional options
 

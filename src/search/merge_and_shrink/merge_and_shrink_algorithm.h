@@ -1,6 +1,10 @@
 #ifndef MERGE_AND_SHRINK_MERGE_AND_SHRINK_ALGORITHM_H
 #define MERGE_AND_SHRINK_MERGE_AND_SHRINK_ALGORITHM_H
 
+#include "label_reduction.h"
+#include "merge_strategy_factory.h"
+#include "shrink_strategy.h"
+
 #include "../utils/logging.h"
 
 #include <memory>
@@ -19,9 +23,6 @@ class CountdownTimer;
 
 namespace merge_and_shrink {
 class FactoredTransitionSystem;
-class LabelReduction;
-class MergeStrategyFactory;
-class ShrinkStrategy;
 
 class MergeAndShrinkAlgorithm {
     // TODO: when the option parser supports it, the following should become
@@ -53,30 +54,33 @@ class MergeAndShrinkAlgorithm {
     void warn_on_unusual_options() const;
     bool ran_out_of_time(const utils::CountdownTimer &timer) const;
     void statistics(int maximum_intermediate_size) const;
-    void main_loop(
-        FactoredTransitionSystem &fts,
-        const TaskProxy &task_proxy);
-    void handle_shrink_limit_defaults();
+    void main_loop(FactoredTransitionSystem &fts, const TaskProxy &task_proxy);
 public:
     MergeAndShrinkAlgorithm(
         const std::shared_ptr<MergeStrategyFactory> &merge_strategy,
         const std::shared_ptr<ShrinkStrategy> &shrink_strategy,
         const std::shared_ptr<LabelReduction> &label_reduction,
         bool prune_unreachable_states, bool prune_irrelevant_states,
-        int max_states, int max_states_before_merge,
-        int threshold_before_merge, double main_loop_max_time,
-        utils::Verbosity verbosity);
-    FactoredTransitionSystem build_factored_transition_system(const TaskProxy &task_proxy);
+        int max_states, int max_states_before_merge, int threshold_before_merge,
+        double main_loop_max_time, utils::Verbosity verbosity);
+    FactoredTransitionSystem build_factored_transition_system(
+        const TaskProxy &task_proxy);
 };
 
-extern void add_merge_and_shrink_algorithm_options_to_feature(plugins::Feature &feature);
-std::tuple<std::shared_ptr<MergeStrategyFactory>,
-           std::shared_ptr<ShrinkStrategy>,
-           std::shared_ptr<LabelReduction>, bool, bool, int, int, int,
-           double>
+extern std::tuple<int, int, int> handle_shrink_limit_defaults(
+    int max_states, int max_states_before_merge,
+    int shrink_threshold_before_merge, utils::LogProxy &log);
+extern void add_merge_and_shrink_algorithm_options_to_feature(
+    plugins::Feature &feature);
+std::tuple<
+    std::shared_ptr<TaskIndependentMergeStrategyFactory>,
+    std::shared_ptr<TaskIndependentShrinkStrategy>,
+    std::shared_ptr<TaskIndependentLabelReduction>, bool, bool, int, int, int,
+    double>
 get_merge_and_shrink_algorithm_arguments_from_options(
     const plugins::Options &opts);
-extern void add_transition_system_size_limit_options_to_feature(plugins::Feature &feature);
+extern void add_transition_system_size_limit_options_to_feature(
+    plugins::Feature &feature);
 std::tuple<int, int, int>
 get_transition_system_size_limit_arguments_from_options(
     const plugins::Options &opts);

@@ -10,11 +10,14 @@ namespace pref_evaluator {
 class PrefEvaluator : public Evaluator {
 public:
     PrefEvaluator(
+        const std::shared_ptr<AbstractTask> &task,
         const std::string &description, utils::Verbosity verbosity);
 
     virtual EvaluationResult compute_result(
         EvaluationContext &eval_context) override;
-    virtual void get_path_dependent_evaluators(std::set<Evaluator *> &) override {}
+    virtual void get_path_dependent_evaluators(
+        std::set<Evaluator *> &) override {
+    }
 };
 }
 

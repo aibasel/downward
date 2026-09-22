@@ -2,7 +2,7 @@
 
 Fast Downward is a domain-independent classical planning system.
 
-Copyright 2003-2024 Fast Downward contributors (see below).
+Copyright 2003-2026 Fast Downward contributors (see below).
 
 For further information:
 - Fast Downward website: <https://www.fast-downward.org>
@@ -10,32 +10,43 @@ For further information:
 - Fast Downward mailing list: <https://groups.google.com/forum/#!forum/fast-downward>
 - Fast Downward main repository: <https://github.com/aibasel/downward>
 
+
 ## Scientific experiments
 
-We recommend to use the [latest release](https://github.com/aibasel/downward/releases/latest) instead of the tip of the main branch.
-The [Downward Lab](https://lab.readthedocs.io/en/stable/) Python package helps running Fast Downward experiments.
-Our separate [benchmark repository](https://github.com/aibasel/downward-benchmarks) contains a collection of planning tasks.
+We recommend to use the [latest
+release](https://github.com/aibasel/downward/releases/latest) instead
+of the tip of the main branch. The [Downward
+Lab](https://lab.readthedocs.io/en/stable/) Python package helps
+running Fast Downward experiments. Our separate [benchmark
+repository](https://github.com/aibasel/downward-benchmarks) contains a
+collection of planning tasks.
+
 
 ## Supported software versions
 
-The planner is mainly developed under Linux; and all of its features should work with no restrictions under this platform.
-The planner should compile and run correctly on macOS, but we cannot guarantee that it works as well as under Linux.
-The same comment applies for Windows, where additionally some diagnostic features (e.g., reporting peak memory usage when the planner is terminated by a signal) are not supported.
-Setting time and memory limits and running portfolios is not supported under Windows either.
+The planner is mainly developed under Linux; and all of its features
+should work with no restrictions under this platform. The planner
+should compile and run correctly on macOS, but we cannot guarantee
+that it works as well as under Linux. The same comment applies for
+Windows, where additionally some diagnostic features (e.g., reporting
+peak memory usage when the planner is terminated by a signal) are not
+supported. Setting time and memory limits and running portfolios is
+not supported under Windows either.
 
 This version of Fast Downward has been tested with the following software versions:
 
-| OS           | Python | C++ compiler                                                     | CMake |
-| ------------ | ------ | ---------------------------------------------------------------- | ----- |
-| Ubuntu 24.04 | 3.10   | GCC 14, Clang 18                                                 | 3.30  |
-| Ubuntu 22.04 | 3.10   | GCC 12                                                           | 3.30  |
-| macOS 14     | 3.10   | AppleClang 15                                                    | 3.30  |
-| macOS 13     | 3.10   | AppleClang 15                                                    | 3.30  |
-| Windows 10   | 3.8    | Visual Studio Enterprise 2019 (MSVC 19.29) and 2022 (MSVC 19.41) | 3.30  |
+| OS           | Python | C++ compiler                               | CMake |
+| ------------ | ------ | ------------------------------------------ | ----- |
+| Ubuntu 26.04 | 3.14   | GCC 15, GCC 16, Clang 21, Clang 22         | 4.2   |
+| Ubuntu 24.04 | 3.12   | GCC 14, Clang 20                           | 3.31  |
+| macOS 15     | 3.14   | AppleClang 17                              | 4.2   |
+| macOS 14     | 3.14   | AppleClang 15                              | 4.2   |
+| Windows 10   | 3.9    | Visual Studio Enterprise 2022 (MSVC 19.44) | 3.31  |
 
-We test LP support with CPLEX 22.1.1 and SoPlex 7.1.1. On Ubuntu we
+We test LP support with CPLEX 22.1.1 and SoPlex 7.1.2. On Ubuntu we
 test both CPLEX and SoPlex. On Windows we currently only test CPLEX,
 and on macOS we do not test LP solvers (yet).
+
 
 ## Build instructions
 
@@ -52,20 +63,25 @@ Currently, this list is sorted by the last year the person has been
 active, and in case of ties, by the earliest year the person started
 contributing, and finally by last name.
 
-- 2003-2024 Malte Helmert
-- 2008-2016, 2018-2024 Gabriele Roeger
-- 2010-2024 Jendrik Seipp
-- 2010-2011, 2013-2024 Silvan Sievers
-- 2012-2024 Florian Pommerening
-- 2013, 2015-2024 Salomé Eriksson
+- 2003-2026 Malte Helmert
+- 2008-2016, 2018-2026 Gabriele Röger
+- 2012-2026 Florian Pommerening
+- 2021-2026 Clemens Büchner
+- 2022-2026 Remo Christen
+- 2022-2026 Simon Dold
+- 2023-2026 Claudia S. Grundke
+- 2024-2026 Tanja Schindler
+- 2024-2026 David Speck
+- 2025-2026 Esther Mugdan
+- 2025-2026 Travis Rivera Petit
+- 2026 Gustavo Delazeri
+- 2026 Pascal Lauer
+- 2009, 2025 Christian Muise
+- 2010-2025 Jendrik Seipp
+- 2010-2011, 2013-2025 Silvan Sievers
+- 2013, 2015-2025 Salomé Eriksson
 - 2018-2024 Patrick Ferber
-- 2021-2024 Clemens Büchner
-- 2022-2024 Remo Christen
-- 2022-2024 Simon Dold
-- 2023-2024 Claudia S. Grundke
 - 2024 Martín Pozo
-- 2024 Tanja Schindler
-- 2024 David Speck
 - 2015, 2021-2023 Thomas Keller
 - 2018-2020, 2023 Augusto B. Corrêa
 - 2023 Victor Paléologue
@@ -92,7 +108,6 @@ contributing, and finally by last name.
 - 2011 Raz Nissim
 - 2010 Moritz Goebelbecker
 - 2007-2009 Matthias Westphal
-- 2009 Christian Muise
 
 
 ## History

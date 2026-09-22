@@ -34,19 +34,19 @@ class Registry {
       has the ability to construct the objects of that type.
     */
     Features features;
-public:
-    Registry(
-        FeatureTypes &&feature_types,
-        SubcategoryPlugins &&subcategory_plugins,
-        Features &&features);
 
+    Registry();
+public:
     bool has_feature(const std::string &name) const;
     std::shared_ptr<const Feature> get_feature(const std::string &name) const;
-    const SubcategoryPlugin &get_subcategory_plugin(const std::string &subcategory) const;
+    const SubcategoryPlugin &get_subcategory_plugin(
+        const std::string &subcategory) const;
 
     const FeatureTypes &get_feature_types() const;
     std::vector<const SubcategoryPlugin *> get_subcategory_plugins() const;
     std::vector<std::shared_ptr<const Feature>> get_features() const;
+
+    static const Registry *instance();
 };
 }
 

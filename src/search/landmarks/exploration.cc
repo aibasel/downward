@@ -92,10 +92,11 @@ static vector<FactPair> get_sorted_extended_preconditions(
 
     vector<FactPair> extended_preconditions(
         preconditions.size() + effect_conditions.size(), FactPair::no_fact);
-    merge(preconditions.begin(), preconditions.end(), effect_conditions.begin(),
-          effect_conditions.end(), extended_preconditions.begin());
+    merge(
+        preconditions.begin(), preconditions.end(), effect_conditions.begin(),
+        effect_conditions.end(), extended_preconditions.begin());
     assert(is_sorted(
-               extended_preconditions.begin(), extended_preconditions.end()));
+        extended_preconditions.begin(), extended_preconditions.end()));
     return extended_preconditions;
 }
 
@@ -178,8 +179,8 @@ unordered_set<int> Exploration::get_excluded_operators(
     for (OperatorProxy op : task_proxy.get_operators()) {
         for (EffectProxy effect : op.get_effects()) {
             auto [var, value] = effect.get_fact().get_pair();
-            if (effect.get_conditions().empty()
-                && propositions[var][value].excluded) {
+            if (effect.get_conditions().empty() &&
+                propositions[var][value].excluded) {
                 excluded_op_ids.insert(op.get_id());
                 break;
             }
@@ -200,8 +201,8 @@ void Exploration::initialize_operator_data(bool use_unary_relaxation) {
           `excluded_op_ids` we also exclude UnaryOperators that have an excluded
           proposition as effect (see comment for `get_excluded_operators`).
         */
-        if (op.effect->excluded
-            || excluded_op_ids.contains(op.op_or_axiom_id)) {
+        if (op.effect->excluded ||
+            excluded_op_ids.contains(op.op_or_axiom_id)) {
             // Operator will not be applied during relaxed exploration.
             op.excluded = true;
             continue;
@@ -284,8 +285,8 @@ vector<vector<bool>> Exploration::bundle_reachability_information() const {
 
 vector<vector<bool>> Exploration::compute_relaxed_reachability(
     const vector<FactPair> &excluded_props, bool use_unary_relaxation) {
-    setup_exploration_queue(task_proxy.get_initial_state(), excluded_props,
-                            use_unary_relaxation);
+    setup_exploration_queue(
+        task_proxy.get_initial_state(), excluded_props, use_unary_relaxation);
     relaxed_exploration();
     return bundle_reachability_information();
 }

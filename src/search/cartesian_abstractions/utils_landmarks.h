@@ -23,7 +23,8 @@ extern std::shared_ptr<landmarks::LandmarkGraph> get_landmark_graph(
 extern std::vector<FactPair> get_atom_landmarks(
     const landmarks::LandmarkGraph &graph);
 
-extern utils::HashMap<FactPair, landmarks::LandmarkNode *> get_atom_to_landmark_map(
+extern utils::HashMap<FactPair, landmarks::LandmarkNode *>
+get_atom_to_landmark_map(
     const std::shared_ptr<landmarks::LandmarkGraph> &graph);
 
 /*
@@ -32,8 +33,7 @@ extern utils::HashMap<FactPair, landmarks::LandmarkNode *> get_atom_to_landmark_
   atoms that have to be made true before the given node can be true for
   the first time.
 */
-extern VarToValues get_prev_landmarks(
-    const landmarks::LandmarkNode *node);
+extern VarToValues get_prev_landmarks(const landmarks::LandmarkNode *node);
 }
 
 #endif

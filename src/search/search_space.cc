@@ -53,41 +53,41 @@ void SearchNode::open_initial() {
     info.creating_operator = OperatorID::no_operator;
 }
 
-void SearchNode::update_parent(const SearchNode &parent_node,
-                               const OperatorProxy &parent_op,
-                               int adjusted_cost) {
+void SearchNode::update_parent(
+    const SearchNode &parent_node, const OperatorProxy &parent_op,
+    int adjusted_cost) {
     info.g = parent_node.info.g + adjusted_cost;
     info.real_g = parent_node.info.real_g + parent_op.get_cost();
     info.parent_state_id = parent_node.get_state().get_id();
     info.creating_operator = OperatorID(parent_op.get_id());
 }
 
-void SearchNode::open_new_node(const SearchNode &parent_node,
-                               const OperatorProxy &parent_op,
-                               int adjusted_cost) {
+void SearchNode::open_new_node(
+    const SearchNode &parent_node, const OperatorProxy &parent_op,
+    int adjusted_cost) {
     assert(info.status == SearchNodeInfo::NEW);
     info.status = SearchNodeInfo::OPEN;
     update_parent(parent_node, parent_op, adjusted_cost);
 }
 
-void SearchNode::reopen_closed_node(const SearchNode &parent_node,
-                                    const OperatorProxy &parent_op,
-                                    int adjusted_cost) {
+void SearchNode::reopen_closed_node(
+    const SearchNode &parent_node, const OperatorProxy &parent_op,
+    int adjusted_cost) {
     assert(info.status == SearchNodeInfo::CLOSED);
     info.status = SearchNodeInfo::OPEN;
     update_parent(parent_node, parent_op, adjusted_cost);
 }
 
-void SearchNode::update_open_node_parent(const SearchNode &parent_node,
-                                         const OperatorProxy &parent_op,
-                                         int adjusted_cost) {
+void SearchNode::update_open_node_parent(
+    const SearchNode &parent_node, const OperatorProxy &parent_op,
+    int adjusted_cost) {
     assert(info.status == SearchNodeInfo::OPEN);
     update_parent(parent_node, parent_op, adjusted_cost);
 }
 
-void SearchNode::update_closed_node_parent(const SearchNode &parent_node,
-                                           const OperatorProxy &parent_op,
-                                           int adjusted_cost) {
+void SearchNode::update_closed_node_parent(
+    const SearchNode &parent_node, const OperatorProxy &parent_op,
+    int adjusted_cost) {
     assert(info.status == SearchNodeInfo::CLOSED);
     update_parent(parent_node, parent_op, adjusted_cost);
 }
@@ -108,8 +108,8 @@ void SearchNode::dump(const TaskProxy &task_proxy, utils::LogProxy &log) const {
         if (info.creating_operator != OperatorID::no_operator) {
             OperatorsProxy operators = task_proxy.get_operators();
             OperatorProxy op = operators[info.creating_operator.get_index()];
-            log << " created by " << op.get_name()
-                << " from " << info.parent_state_id << endl;
+            log << " created by " << op.get_name() << " from "
+                << info.parent_state_id << endl;
         } else {
             log << " no parent" << endl;
         }
@@ -124,8 +124,8 @@ SearchNode SearchSpace::get_node(const State &state) {
     return SearchNode(state, search_node_infos[state]);
 }
 
-void SearchSpace::trace_path(const State &goal_state,
-                             vector<OperatorID> &path) const {
+void SearchSpace::trace_path(
+    const State &goal_state, vector<OperatorID> &path) const {
     State current_state = goal_state;
     assert(current_state.get_registry() == &state_registry);
     assert(path.empty());
@@ -152,9 +152,10 @@ void SearchSpace::dump(const TaskProxy &task_proxy) const {
         task_properties::dump_fdr(state);
         if (node_info.creating_operator != OperatorID::no_operator &&
             node_info.parent_state_id != StateID::no_state) {
-            OperatorProxy op = operators[node_info.creating_operator.get_index()];
-            log << " created by " << op.get_name()
-                << " from " << node_info.parent_state_id << endl;
+            OperatorProxy op =
+                operators[node_info.creating_operator.get_index()];
+            log << " created by " << op.get_name() << " from "
+                << node_info.parent_state_id << endl;
         } else {
             log << "has no parent" << endl;
         }

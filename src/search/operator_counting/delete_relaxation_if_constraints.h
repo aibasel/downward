@@ -1,7 +1,7 @@
 #ifndef OPERATOR_COUNTING_DELETE_RELAXATION_IF_CONSTRAINTS_H
 #define OPERATOR_COUNTING_DELETE_RELAXATION_IF_CONSTRAINTS_H
 
-#include  "constraint_generator.h"
+#include "constraint_generator.h"
 
 #include "../task_proxy.h"
 
@@ -10,10 +10,6 @@
 namespace lp {
 class LPConstraint;
 struct LPVariable;
-}
-
-namespace plugins {
-class Options;
 }
 
 namespace operator_counting {
@@ -63,8 +59,9 @@ class DeleteRelaxationIFConstraints : public ConstraintGenerator {
         const TaskProxy &task_proxy, LPVariables &variables);
     void create_constraints(const TaskProxy &task_proxy, lp::LinearProgram &lp);
 public:
-    explicit DeleteRelaxationIFConstraints(
-        bool use_time_vars, bool use_integer_vars);
+    DeleteRelaxationIFConstraints(
+        const std::shared_ptr<AbstractTask> &task, bool use_time_vars,
+        bool use_integer_vars);
 
     virtual void initialize_constraints(
         const std::shared_ptr<AbstractTask> &task,

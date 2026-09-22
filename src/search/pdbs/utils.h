@@ -19,10 +19,12 @@ namespace pdbs {
 class PatternCollectionInformation;
 class PatternInformation;
 
-extern int compute_pdb_size(const TaskProxy &task_proxy, const Pattern &pattern);
+extern int compute_pdb_size(
+    const TaskProxy &task_proxy, const Pattern &pattern);
 extern int compute_total_pdb_size(
     const TaskProxy &task_proxy, const PatternCollection &pattern_collection);
-extern bool is_operator_relevant(const Pattern &pattern, const OperatorProxy &op);
+extern bool is_operator_relevant(
+    const Pattern &pattern, const OperatorProxy &op);
 
 extern std::vector<FactPair> get_goals_in_random_order(
     const TaskProxy &task_proxy, utils::RandomNumberGenerator &rng);
@@ -35,12 +37,10 @@ extern std::vector<int> get_non_goal_variables(const TaskProxy &task_proxy);
   undirected graph and also successors of variables are considered neighbors.
 */
 extern std::vector<std::vector<int>> compute_cg_neighbors(
-    const std::shared_ptr<AbstractTask> &task,
-    bool bidirectional);
+    const std::shared_ptr<AbstractTask> &task, bool bidirectional);
 
 extern PatternCollectionInformation get_pattern_collection_info(
-    const TaskProxy &task_proxy,
-    const std::shared_ptr<PDBCollection> &pdbs,
+    const TaskProxy &task_proxy, const std::shared_ptr<PDBCollection> &pdbs,
     utils::LogProxy &log);
 
 /*
@@ -49,10 +49,8 @@ extern PatternCollectionInformation get_pattern_collection_info(
   prepended with the given string identifier.
 */
 extern void dump_pattern_generation_statistics(
-    const std::string &identifier,
-    utils::Duration runtime,
-    const PatternInformation &pattern_info,
-    utils::LogProxy &log);
+    const std::string &identifier, utils::Duration runtime,
+    const PatternInformation &pattern_info, utils::LogProxy &log);
 
 /*
   Compute and dump the number of patterns, the total size of the corresponding
@@ -60,10 +58,8 @@ extern void dump_pattern_generation_statistics(
   prepended with the given string identifier.
 */
 extern void dump_pattern_collection_generation_statistics(
-    const std::string &identifier,
-    utils::Duration runtime,
-    const PatternCollectionInformation &pci,
-    utils::LogProxy &log);
+    const std::string &identifier, utils::Duration runtime,
+    const PatternCollectionInformation &pci, utils::LogProxy &log);
 
 extern std::string get_rovner_et_al_reference();
 }

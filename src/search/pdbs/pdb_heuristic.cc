@@ -19,10 +19,10 @@ static shared_ptr<PatternDatabase> get_pdb_from_generator(
 }
 
 PDBHeuristic::PDBHeuristic(
-    const shared_ptr<PatternGenerator> &pattern,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    const shared_ptr<AbstractTask> &task,
+    const shared_ptr<PatternGenerator> &pattern, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, description, verbosity),
+    : Heuristic(task, cache_estimates, description, verbosity),
       pdb(get_pdb_from_generator(task, pattern)) {
 }
 
@@ -36,26 +36,22 @@ int PDBHeuristic::compute_heuristic(const State &ancestor_state) {
 
 static basic_string<char> paper_references() {
     return utils::format_conference_reference(
-        {"Stefan Edelkamp"},
-        "Planning with Pattern Databases",
-        "https://aaai.org/papers/7280-ecp-01-2001/",
-        "Proceedings of the Sixth European Conference on Planning (ECP 2001)",
-        "84-90",
-        "AAAI Press",
-        "2001") +
-           "For implementation notes, see:" + utils::format_conference_reference(
-        {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
-        "Efficient Implementation of Pattern Database Heuristics for"
-        " Classical Planning",
-        "https://ai.dmi.unibas.ch/papers/sievers-et-al-socs2012.pdf",
-        "Proceedings of the Fifth Annual Symposium on Combinatorial"
-        " Search (SoCS 2012)",
-        "105-111",
-        "AAAI Press",
-        "2012");
+               {"Stefan Edelkamp"}, "Planning with Pattern Databases",
+               "https://aaai.org/papers/7280-ecp-01-2001/",
+               "Proceedings of the Sixth European Conference on Planning (ECP 2001)",
+               "84-90", "AAAI Press", "2001") +
+           "For implementation notes, see:" +
+           utils::format_conference_reference(
+               {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
+               "Efficient Implementation of Pattern Database Heuristics for"
+               " Classical Planning",
+               "https://ai.dmi.unibas.ch/papers/sievers-et-al-socs2012.pdf",
+               "Proceedings of the Fifth Annual Symposium on Combinatorial"
+               " Search (SoCS 2012)",
+               "105-111", "AAAI Press", "2012");
 }
 class PDBHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, PDBHeuristic> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
     PDBHeuristicFeature() : TypedFeature("pdb") {
         document_subcategory("heuristics_pdb");
@@ -63,13 +59,11 @@ public:
         document_synopsis(
             "Computes goal distance in "
             "state space abstractions based on projections. "
-            "First used in domain-independent planning by:"
-            + paper_references());
+            "First used in domain-independent planning by:" +
+            paper_references());
 
-        add_option<shared_ptr<PatternGenerator>>(
-            "pattern",
-            "pattern generation method",
-            "greedy()");
+        add_option<shared_ptr<TaskIndependentPatternGenerator>>(
+            "pattern", "pattern generation method", "greedy()");
         add_heuristic_options_to_feature(*this, "pdb");
 
         document_language_support("action costs", "supported");
@@ -82,12 +76,12 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<PDBHeuristic>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<PDBHeuristic>(
-            opts.get<shared_ptr<PatternGenerator>>("pattern"),
-            get_heuristic_arguments_from_options(opts)
-            );
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
+        const plugins::Options &opts) const override {
+        return components::make_auto_task_independent_component<
+            PDBHeuristic, Evaluator>(
+            opts.get<shared_ptr<TaskIndependentPatternGenerator>>("pattern"),
+            get_heuristic_arguments_from_options(opts));
     }
 };
 

@@ -15,12 +15,10 @@ enum class OptimizeFor {
 };
 
 static unique_ptr<PotentialFunction> create_potential_function(
-    const shared_ptr<AbstractTask> &transform,
-    lp::LPSolverType lpsolver, double max_potential,
-    OptimizeFor opt_func) {
-    PotentialOptimizer optimizer(transform, lpsolver, max_potential);
-    const AbstractTask &task = *transform;
-    TaskProxy task_proxy(task);
+    const shared_ptr<AbstractTask> &task, lp::LPSolverType lpsolver,
+    double max_potential, OptimizeFor opt_func) {
+    PotentialOptimizer optimizer(task, lpsolver, max_potential);
+    TaskProxy task_proxy(*task);
     switch (opt_func) {
     case OptimizeFor::INITIAL_STATE:
         optimizer.optimize_for_state(task_proxy.get_initial_state());
@@ -34,10 +32,43 @@ static unique_ptr<PotentialFunction> create_potential_function(
     return optimizer.get_potential_function();
 }
 
-class InitialStatePotentialHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, PotentialHeuristic> {
+class TaskIndependentSinglePotentialHeuristic
+    : public TaskIndependentEvaluator {
+    lp::LPSolverType lpsolver;
+    double max_potential;
+    OptimizeFor opt_func;
+    bool cache_estimates;
+    string description;
+    utils::Verbosity verbosity;
+
 public:
-    InitialStatePotentialHeuristicFeature() : TypedFeature("initial_state_potential") {
+    TaskIndependentSinglePotentialHeuristic(
+        lp::LPSolverType lpsolver, double max_potential, OptimizeFor opt_func,
+        bool cache_estimates, const string &description,
+        utils::Verbosity verbosity)
+        : lpsolver(lpsolver),
+          max_potential(max_potential),
+          opt_func(opt_func),
+          cache_estimates(cache_estimates),
+          description(description),
+          verbosity(verbosity) {
+    }
+
+    virtual shared_ptr<Evaluator> create_task_specific_component(
+        const shared_ptr<AbstractTask> &task) const override {
+        unique_ptr<PotentialFunction> potential_function =
+            create_potential_function(task, lpsolver, max_potential, opt_func);
+        return make_shared<PotentialHeuristic>(
+            task, move(potential_function), cache_estimates, description,
+            verbosity);
+    }
+};
+
+class InitialStatePotentialHeuristicFeature
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
+public:
+    InitialStatePotentialHeuristicFeature()
+        : TypedFeature("initial_state_potential") {
         document_subcategory("heuristics_potentials");
         document_title("Potential heuristic optimized for initial state");
         document_synopsis(get_admissible_potentials_reference());
@@ -46,28 +77,24 @@ public:
             *this, "initial_state_potential");
     }
 
-    virtual shared_ptr<PotentialHeuristic>
-    create_component(const plugins::Options &opts) const override {
-        return make_shared<PotentialHeuristic>(
-            create_potential_function(
-                opts.get<shared_ptr<AbstractTask>>("transform"),
-                opts.get<lp::LPSolverType>("lpsolver"),
-                opts.get<double>("max_potential"),
-                OptimizeFor::INITIAL_STATE),
-            opts.get<shared_ptr<AbstractTask>>("transform"),
-            opts.get<bool>("cache_estimates"),
-            opts.get<string>("description"),
-            opts.get<utils::Verbosity>("verbosity")
-            );
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
+        const plugins::Options &opts) const override {
+        return make_shared<TaskIndependentSinglePotentialHeuristic>(
+            opts.get<lp::LPSolverType>("lpsolver"),
+            opts.get<double>("max_potential"), OptimizeFor::INITIAL_STATE,
+            opts.get<bool>("cache_estimates"), opts.get<string>("description"),
+            opts.get<utils::Verbosity>("verbosity"));
     }
 };
 
-static plugins::FeaturePlugin<InitialStatePotentialHeuristicFeature> _plugin_initial_state;
+static plugins::FeaturePlugin<InitialStatePotentialHeuristicFeature>
+    _plugin_initial_state;
 
 class AllStatesPotentialHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, PotentialHeuristic> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
-    AllStatesPotentialHeuristicFeature() : TypedFeature("all_states_potential") {
+    AllStatesPotentialHeuristicFeature()
+        : TypedFeature("all_states_potential") {
         document_subcategory("heuristics_potentials");
         document_title("Potential heuristic optimized for all states");
         document_synopsis(get_admissible_potentials_reference());
@@ -76,21 +103,16 @@ public:
             *this, "all_states_potential");
     }
 
-    virtual shared_ptr<PotentialHeuristic>
-    create_component(const plugins::Options &opts) const override {
-        return make_shared<PotentialHeuristic>(
-            create_potential_function(
-                opts.get<shared_ptr<AbstractTask>>("transform"),
-                opts.get<lp::LPSolverType>("lpsolver"),
-                opts.get<double>("max_potential"),
-                OptimizeFor::ALL_STATES),
-            opts.get<shared_ptr<AbstractTask>>("transform"),
-            opts.get<bool>("cache_estimates"),
-            opts.get<string>("description"),
-            opts.get<utils::Verbosity>("verbosity")
-            );
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
+        const plugins::Options &opts) const override {
+        return make_shared<TaskIndependentSinglePotentialHeuristic>(
+            opts.get<lp::LPSolverType>("lpsolver"),
+            opts.get<double>("max_potential"), OptimizeFor::ALL_STATES,
+            opts.get<bool>("cache_estimates"), opts.get<string>("description"),
+            opts.get<utils::Verbosity>("verbosity"));
     }
 };
 
-static plugins::FeaturePlugin<AllStatesPotentialHeuristicFeature> _plugin_all_states;
+static plugins::FeaturePlugin<AllStatesPotentialHeuristicFeature>
+    _plugin_all_states;
 }

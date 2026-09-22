@@ -17,7 +17,6 @@
 #include <string>
 #include <vector>
 
-
 class AxiomsProxy;
 class ConditionsProxy;
 class EffectProxy;
@@ -89,6 +88,9 @@ using PackedStateBin = int_packer::IntPacker::Bin;
 
   For helper functions that work on task related objects, please see the
   task_properties.h module.
+
+  TODO(issue1208): update this after we get rid of convert_ancestor_state and
+  get_ancestor_operator_id.
 */
 
 template<typename Container>
@@ -179,7 +181,6 @@ inline ProxyIterator<ProxyCollection> end(ProxyCollection &collection) {
     return ProxyIterator<ProxyCollection>(collection, collection.size());
 }
 
-
 class FactProxy {
     const AbstractTask *task;
     FactPair fact;
@@ -214,7 +215,6 @@ public:
         return task->are_facts_mutex(fact, other.fact);
     }
 };
-
 
 class FactsProxyIterator {
     const AbstractTask *task;
@@ -260,7 +260,6 @@ public:
     }
 };
 
-
 /*
   Proxy class for the collection of all facts of a task.
 
@@ -273,8 +272,8 @@ public:
 class FactsProxy {
     const AbstractTask *task;
 public:
-    explicit FactsProxy(const AbstractTask &task)
-        : task(&task) {}
+    explicit FactsProxy(const AbstractTask &task) : task(&task) {
+    }
 
     FactsProxyIterator begin() const {
         return FactsProxyIterator(*task, 0, 0);
@@ -285,14 +284,13 @@ public:
     }
 };
 
-
 class ConditionsProxy {
 protected:
     const AbstractTask *task;
 public:
     using ItemType = FactProxy;
-    explicit ConditionsProxy(const AbstractTask &task)
-        : task(&task) {}
+    explicit ConditionsProxy(const AbstractTask &task) : task(&task) {
+    }
     virtual ~ConditionsProxy() = default;
 
     virtual std::size_t size() const = 0;
@@ -303,13 +301,12 @@ public:
     }
 };
 
-
 class VariableProxy {
     const AbstractTask *task;
     int id;
 public:
-    VariableProxy(const AbstractTask &task, int id)
-        : task(&task), id(id) {}
+    VariableProxy(const AbstractTask &task, int id) : task(&task), id(id) {
+    }
 
     bool operator==(const VariableProxy &other) const {
         assert(task == other.task);
@@ -359,13 +356,12 @@ public:
     }
 };
 
-
 class VariablesProxy {
     const AbstractTask *task;
 public:
     using ItemType = VariableProxy;
-    explicit VariablesProxy(const AbstractTask &task)
-        : task(&task) {}
+    explicit VariablesProxy(const AbstractTask &task) : task(&task) {
+    }
 
     std::size_t size() const {
         return task->get_num_variables();
@@ -381,13 +377,13 @@ public:
     }
 };
 
-
 class PreconditionsProxy : public ConditionsProxy {
     int op_index;
     bool is_axiom;
 public:
     PreconditionsProxy(const AbstractTask &task, int op_index, bool is_axiom)
-        : ConditionsProxy(task), op_index(op_index), is_axiom(is_axiom) {}
+        : ConditionsProxy(task), op_index(op_index), is_axiom(is_axiom) {
+    }
 
     std::size_t size() const override {
         return task->get_num_operator_preconditions(op_index, is_axiom);
@@ -395,11 +391,11 @@ public:
 
     FactProxy operator[](std::size_t fact_index) const override {
         assert(fact_index < size());
-        return FactProxy(*task, task->get_operator_precondition(
-                             op_index, fact_index, is_axiom));
+        return FactProxy(
+            *task,
+            task->get_operator_precondition(op_index, fact_index, is_axiom));
     }
 };
-
 
 class EffectConditionsProxy : public ConditionsProxy {
     int op_index;
@@ -408,19 +404,24 @@ class EffectConditionsProxy : public ConditionsProxy {
 public:
     EffectConditionsProxy(
         const AbstractTask &task, int op_index, int eff_index, bool is_axiom)
-        : ConditionsProxy(task), op_index(op_index), eff_index(eff_index), is_axiom(is_axiom) {}
+        : ConditionsProxy(task),
+          op_index(op_index),
+          eff_index(eff_index),
+          is_axiom(is_axiom) {
+    }
 
     std::size_t size() const override {
-        return task->get_num_operator_effect_conditions(op_index, eff_index, is_axiom);
+        return task->get_num_operator_effect_conditions(
+            op_index, eff_index, is_axiom);
     }
 
     FactProxy operator[](std::size_t index) const override {
         assert(index < size());
-        return FactProxy(*task, task->get_operator_effect_condition(
-                             op_index, eff_index, index, is_axiom));
+        return FactProxy(
+            *task, task->get_operator_effect_condition(
+                       op_index, eff_index, index, is_axiom));
     }
 };
-
 
 class EffectProxy {
     const AbstractTask *task;
@@ -428,19 +429,23 @@ class EffectProxy {
     int eff_index;
     bool is_axiom;
 public:
-    EffectProxy(const AbstractTask &task, int op_index, int eff_index, bool is_axiom)
-        : task(&task), op_index(op_index), eff_index(eff_index), is_axiom(is_axiom) {}
+    EffectProxy(
+        const AbstractTask &task, int op_index, int eff_index, bool is_axiom)
+        : task(&task),
+          op_index(op_index),
+          eff_index(eff_index),
+          is_axiom(is_axiom) {
+    }
 
     EffectConditionsProxy get_conditions() const {
         return EffectConditionsProxy(*task, op_index, eff_index, is_axiom);
     }
 
     FactProxy get_fact() const {
-        return FactProxy(*task, task->get_operator_effect(
-                             op_index, eff_index, is_axiom));
+        return FactProxy(
+            *task, task->get_operator_effect(op_index, eff_index, is_axiom));
     }
 };
-
 
 class EffectsProxy {
     const AbstractTask *task;
@@ -449,7 +454,8 @@ class EffectsProxy {
 public:
     using ItemType = EffectProxy;
     EffectsProxy(const AbstractTask &task, int op_index, bool is_axiom)
-        : task(&task), op_index(op_index), is_axiom(is_axiom) {}
+        : task(&task), op_index(op_index), is_axiom(is_axiom) {
+    }
 
     std::size_t size() const {
         return task->get_num_operator_effects(op_index, is_axiom);
@@ -461,14 +467,14 @@ public:
     }
 };
 
-
 class OperatorProxy {
     const AbstractTask *task;
     int index;
     bool is_an_axiom;
 public:
     OperatorProxy(const AbstractTask &task, int index, bool is_axiom)
-        : task(&task), index(index), is_an_axiom(is_axiom) {}
+        : task(&task), index(index), is_an_axiom(is_axiom) {
+    }
 
     bool operator==(const OperatorProxy &other) const {
         assert(task == other.task);
@@ -508,19 +514,19 @@ public:
       live in a class that handles the task transformation and known about both
       the original and the transformed task.
     */
-    OperatorID get_ancestor_operator_id(const AbstractTask *ancestor_task) const {
+    OperatorID get_ancestor_operator_id(
+        const AbstractTask *ancestor_task) const {
         assert(!is_an_axiom);
         return OperatorID(task->convert_operator_index(index, ancestor_task));
     }
 };
 
-
 class OperatorsProxy {
     const AbstractTask *task;
 public:
     using ItemType = OperatorProxy;
-    explicit OperatorsProxy(const AbstractTask &task)
-        : task(&task) {}
+    explicit OperatorsProxy(const AbstractTask &task) : task(&task) {
+    }
 
     std::size_t size() const {
         return task->get_num_operators();
@@ -540,13 +546,12 @@ public:
     }
 };
 
-
 class AxiomsProxy {
     const AbstractTask *task;
 public:
     using ItemType = OperatorProxy;
-    explicit AxiomsProxy(const AbstractTask &task)
-        : task(&task) {}
+    explicit AxiomsProxy(const AbstractTask &task) : task(&task) {
+    }
 
     std::size_t size() const {
         return task->get_num_axioms();
@@ -562,11 +567,10 @@ public:
     }
 };
 
-
 class GoalsProxy : public ConditionsProxy {
 public:
-    explicit GoalsProxy(const AbstractTask &task)
-        : ConditionsProxy(task) {}
+    explicit GoalsProxy(const AbstractTask &task) : ConditionsProxy(task) {
+    }
 
     std::size_t size() const override {
         return task->get_num_goals();
@@ -578,9 +582,7 @@ public:
     }
 };
 
-
 bool does_fire(const EffectProxy &effect, const State &state);
-
 
 class State {
     /*
@@ -612,11 +614,13 @@ class State {
     int num_variables;
 public:
     // Construct a registered state with only packed data.
-    State(const AbstractTask &task, const StateRegistry &registry, StateID id,
-          const PackedStateBin *buffer);
+    State(
+        const AbstractTask &task, const StateRegistry &registry, StateID id,
+        const PackedStateBin *buffer);
     // Construct a registered state with packed and unpacked data.
-    State(const AbstractTask &task, const StateRegistry &registry, StateID id,
-          const PackedStateBin *buffer, std::vector<int> &&values);
+    State(
+        const AbstractTask &task, const StateRegistry &registry, StateID id,
+        const PackedStateBin *buffer, std::vector<int> &&values);
     // Construct a state with only unpacked data.
     State(const AbstractTask &task, std::vector<int> &&values);
 
@@ -661,7 +665,6 @@ public:
     State get_unregistered_successor(const OperatorProxy &op) const;
 };
 
-
 namespace utils {
 inline void feed(HashState &hash_state, const State &state) {
     /*
@@ -677,18 +680,18 @@ inline void feed(HashState &hash_state, const State &state) {
 }
 }
 
-
 class TaskProxy {
     const AbstractTask *task;
 public:
-    explicit TaskProxy(const AbstractTask &task)
-        : task(&task) {}
+    explicit TaskProxy(const AbstractTask &task) : task(&task) {
+    }
 
     TaskID get_id() const {
         return TaskID(task);
     }
 
-    void subscribe_to_task_destruction(subscriber::Subscriber<AbstractTask> *subscriber) const {
+    void subscribe_to_task_destruction(
+        subscriber::Subscriber<AbstractTask> *subscriber) const {
         task->subscribe(subscriber);
     }
 
@@ -721,8 +724,8 @@ public:
 
     // This method is meant to be called only by the state registry.
     State create_state(
-        const StateRegistry &registry, StateID id,
-        const PackedStateBin *buffer, std::vector<int> &&state_values) const {
+        const StateRegistry &registry, StateID id, const PackedStateBin *buffer,
+        std::vector<int> &&state_values) const {
         return State(*task, registry, id, buffer, std::move(state_values));
     }
 
@@ -754,7 +757,6 @@ public:
     const causal_graph::CausalGraph &get_causal_graph() const;
 };
 
-
 inline FactProxy::FactProxy(const AbstractTask &task, const FactPair &fact)
     : task(&task), fact(fact) {
     assert(fact.var >= 0 && fact.var < task.get_num_variables());
@@ -764,7 +766,6 @@ inline FactProxy::FactProxy(const AbstractTask &task, const FactPair &fact)
 inline FactProxy::FactProxy(const AbstractTask &task, int var_id, int value)
     : FactProxy(task, FactPair(var_id, value)) {
 }
-
 
 inline VariableProxy FactProxy::get_variable() const {
     return VariableProxy(*task, fact.var);
@@ -784,8 +785,7 @@ inline bool State::operator==(const State &other) const {
         std::cerr << "Comparing registered states with unregistered states "
                   << "or registered states from different registries is "
                   << "treated as an error because it is likely not "
-                  << "intentional."
-                  << std::endl;
+                  << "intentional." << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     if (registry) {
@@ -867,8 +867,7 @@ inline const PackedStateBin *State::get_buffer() const {
     */
     if (!buffer) {
         std::cerr << "Accessing the packed values of an unregistered state is "
-                  << "treated as an error."
-                  << std::endl;
+                  << "treated as an error." << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     return buffer;
@@ -878,8 +877,7 @@ inline const std::vector<int> &State::get_unpacked_values() const {
     if (!values) {
         std::cerr << "Accessing the unpacked values of a state without "
                   << "unpacking them first is treated as an error. Please "
-                  << "use State::unpack first."
-                  << std::endl;
+                  << "use State::unpack first." << std::endl;
         utils::exit_with(utils::ExitCode::SEARCH_CRITICAL_ERROR);
     }
     return *values;

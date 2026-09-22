@@ -5,10 +5,6 @@
 
 #include <vector>
 
-namespace plugins {
-class Options;
-}
-
 namespace merge_and_shrink {
 /*
   NOTE: In case where we must merge across buckets (i.e. when
@@ -23,30 +19,32 @@ namespace merge_and_shrink {
 */
 class ShrinkFH : public ShrinkBucketBased {
 public:
-    enum class HighLow {HIGH, LOW};
+    enum class HighLow {
+        HIGH,
+        LOW
+    };
 
 private:
     const HighLow f_start;
     const HighLow h_start;
 
     std::vector<Bucket> ordered_buckets_use_vector(
-        const TransitionSystem &ts,
-        const Distances &distances,
-        int max_f,
+        const TransitionSystem &ts, const Distances &distances, int max_f,
         int max_h) const;
     std::vector<Bucket> ordered_buckets_use_map(
-        const TransitionSystem &ts,
-        const Distances &distances) const;
+        const TransitionSystem &ts, const Distances &distances) const;
 protected:
     virtual std::string name() const override;
-    virtual void dump_strategy_specific_options(utils::LogProxy &log) const override;
+    virtual void dump_strategy_specific_options(
+        utils::LogProxy &log) const override;
 
     virtual std::vector<Bucket> partition_into_buckets(
-        const TransitionSystem &ts,
-        const Distances &distances) const override;
+        const TransitionSystem &ts, const Distances &distances) const override;
 
 public:
-    ShrinkFH(HighLow shrink_f, HighLow shrink_h, int random_seed);
+    ShrinkFH(
+        const std::shared_ptr<AbstractTask> &task, HighLow shrink_f,
+        HighLow shrink_h, int random_seed);
 
     virtual bool requires_init_distances() const override {
         return true;

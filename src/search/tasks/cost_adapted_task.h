@@ -5,10 +5,6 @@
 
 #include "../operator_cost.h"
 
-namespace plugins {
-class Options;
-}
-
 namespace tasks {
 /*
   Task transformation that changes operator costs. If the parent task assigns
@@ -27,8 +23,7 @@ class CostAdaptedTask : public DelegatingTask {
     const bool parent_is_unit_cost;
 public:
     CostAdaptedTask(
-        const std::shared_ptr<AbstractTask> &parent,
-        OperatorCost cost_type);
+        const std::shared_ptr<AbstractTask> &parent, OperatorCost cost_type);
     virtual ~CostAdaptedTask() override = default;
 
     virtual int get_operator_cost(int index, bool is_axiom) const override;

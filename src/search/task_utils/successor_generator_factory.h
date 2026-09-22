@@ -14,7 +14,6 @@ using GeneratorPtr = std::unique_ptr<GeneratorBase>;
 struct OperatorRange;
 class OperatorInfo;
 
-
 class SuccessorGeneratorFactory {
     using ValuesAndGenerators = std::vector<std::pair<int, GeneratorPtr>>;
 

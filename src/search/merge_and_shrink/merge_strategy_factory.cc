@@ -7,8 +7,10 @@
 using namespace std;
 
 namespace merge_and_shrink {
-MergeStrategyFactory::MergeStrategyFactory(utils::Verbosity verbosity)
-    : log(utils::get_log_for_verbosity(verbosity)) {
+MergeStrategyFactory::MergeStrategyFactory(
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
+    : components::TaskSpecificComponent(task),
+      log(utils::get_log_for_verbosity(verbosity)) {
 }
 
 void MergeStrategyFactory::dump_options() const {
@@ -28,14 +30,14 @@ tuple<utils::Verbosity> get_merge_strategy_arguments_from_options(
     return utils::get_log_arguments_from_options(opts);
 }
 
-
-static class MergeStrategyFactoryCategoryPlugin : public plugins::TypedCategoryPlugin<MergeStrategyFactory> {
+static class MergeStrategyFactoryCategoryPlugin
+    : public plugins::TypedCategoryPlugin<TaskIndependentMergeStrategyFactory> {
 public:
-    MergeStrategyFactoryCategoryPlugin() : TypedCategoryPlugin("MergeStrategy") {
+    MergeStrategyFactoryCategoryPlugin()
+        : TypedCategoryPlugin("MergeStrategy") {
         document_synopsis(
             "This page describes the various merge strategies supported "
             "by the planner.");
     }
-}
-_category_plugin;
+} _category_plugin;
 }

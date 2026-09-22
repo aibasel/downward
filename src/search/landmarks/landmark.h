@@ -24,12 +24,16 @@ enum LandmarkType {
 
 class Landmark {
 public:
-    Landmark(std::vector<FactPair> _atoms, LandmarkType type,
-             bool is_true_in_goal = false, bool is_derived = false)
-        : atoms(move(_atoms)), type(type),
-          is_true_in_goal(is_true_in_goal), is_derived(is_derived) {
-        assert((type == ATOMIC && atoms.size() == 1) ||
-               (type != ATOMIC && atoms.size() > 1));
+    Landmark(
+        std::vector<FactPair> _atoms, LandmarkType type,
+        bool is_true_in_goal = false, bool is_derived = false)
+        : atoms(move(_atoms)),
+          type(type),
+          is_true_in_goal(is_true_in_goal),
+          is_derived(is_derived) {
+        assert(
+            (type == ATOMIC && atoms.size() == 1) ||
+            (type != ATOMIC && atoms.size() > 1));
     }
 
     bool operator==(const Landmark &other) const {

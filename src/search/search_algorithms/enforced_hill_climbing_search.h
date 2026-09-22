@@ -11,10 +11,6 @@
 #include <utility>
 #include <vector>
 
-namespace plugins {
-class Options;
-}
-
 namespace enforced_hill_climbing_search {
 enum class PreferredUsage {
     PRUNE_BY_PREFERRED,
@@ -46,13 +42,10 @@ class EnforcedHillClimbingSearch : public SearchAlgorithm {
     int last_num_expanded;
 
     void insert_successor_into_open_list(
-        const EvaluationContext &eval_context,
-        int parent_g,
-        OperatorID op_id,
+        const EvaluationContext &eval_context, int parent_g, OperatorID op_id,
         bool preferred);
     void expand(EvaluationContext &eval_context);
-    void reach_state(
-        const State &parent, OperatorID op_id, const State &state);
+    void reach_state(const State &parent, OperatorID op_id, const State &state);
     SearchStatus ehc();
 
 protected:
@@ -61,13 +54,14 @@ protected:
 
 public:
     EnforcedHillClimbingSearch(
-        const std::shared_ptr<Evaluator> &h,
-        PreferredUsage preferred_usage,
+        const std::shared_ptr<AbstractTask> &task,
+        const std::shared_ptr<Evaluator> &h, PreferredUsage preferred_usage,
         const std::vector<std::shared_ptr<Evaluator>> &preferred,
         OperatorCost cost_type, int bound, double max_time,
         const std::string &description, utils::Verbosity verbosity);
 
     virtual void print_statistics() const override;
+    virtual bool is_complete_within_bound() const override;
 };
 }
 

@@ -63,7 +63,8 @@ class FactoredTransitionSystem {
     std::unique_ptr<Labels> labels;
     // Entries with nullptr have been merged.
     std::vector<std::unique_ptr<TransitionSystem>> transition_systems;
-    std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> mas_representations;
+    std::vector<std::unique_ptr<MergeAndShrinkRepresentation>>
+        mas_representations;
     std::vector<std::unique_ptr<Distances>> distances;
     const bool compute_init_distances;
     const bool compute_goal_distances;
@@ -87,18 +88,18 @@ public:
     FactoredTransitionSystem(
         std::unique_ptr<Labels> labels,
         std::vector<std::unique_ptr<TransitionSystem>> &&transition_systems,
-        std::vector<std::unique_ptr<MergeAndShrinkRepresentation>> &&mas_representations,
+        std::vector<std::unique_ptr<MergeAndShrinkRepresentation>>
+            &&mas_representations,
         std::vector<std::unique_ptr<Distances>> &&distances,
-        bool compute_init_distances,
-        bool compute_goal_distances,
+        bool compute_init_distances, bool compute_goal_distances,
         utils::LogProxy &log);
     FactoredTransitionSystem(FactoredTransitionSystem &&other);
     ~FactoredTransitionSystem();
 
     // No copying or assignment.
     FactoredTransitionSystem(const FactoredTransitionSystem &) = delete;
-    FactoredTransitionSystem &operator=(
-        const FactoredTransitionSystem &) = delete;
+    FactoredTransitionSystem &operator=(const FactoredTransitionSystem &) =
+        delete;
 
     // Merge-and-shrink transformations.
     /*
@@ -123,23 +124,21 @@ public:
       relation are pruned.
     */
     bool apply_abstraction(
-        int index,
-        const StateEquivalenceRelation &state_equivalence_relation,
+        int index, const StateEquivalenceRelation &state_equivalence_relation,
         utils::LogProxy &log);
 
     /*
       Merge the two factors at index1 and index2.
     */
-    int merge(
-        int index1,
-        int index2,
-        utils::LogProxy &log);
+    int merge(int index1, int index2, utils::LogProxy &log);
 
     /*
       Extract the factor at the given index, rendering the FTS invalid.
     */
-    std::pair<std::unique_ptr<MergeAndShrinkRepresentation>,
-              std::unique_ptr<Distances>> extract_factor(int index);
+    std::pair<
+        std::unique_ptr<MergeAndShrinkRepresentation>,
+        std::unique_ptr<Distances>>
+    extract_factor(int index);
 
     void statistics(int index, utils::LogProxy &log) const;
     void dump(int index, utils::LogProxy &log) const;

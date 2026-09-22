@@ -1,8 +1,8 @@
 #include "pattern_collection_information.h"
 
+#include "pattern_cliques.h"
 #include "pattern_database.h"
 #include "pattern_database_factory.h"
-#include "pattern_cliques.h"
 #include "validation.h"
 
 #include "../utils/logging.h"
@@ -17,8 +17,7 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionInformation::PatternCollectionInformation(
-    const TaskProxy &task_proxy,
-    const shared_ptr<PatternCollection> &patterns,
+    const TaskProxy &task_proxy, const shared_ptr<PatternCollection> &patterns,
     utils::LogProxy &log)
     : task_proxy(task_proxy),
       patterns(patterns),
@@ -65,13 +64,12 @@ void PatternCollectionInformation::create_pdbs_if_missing() {
         }
         pdbs = make_shared<PDBCollection>();
         for (const Pattern &pattern : *patterns) {
-            shared_ptr<PatternDatabase> pdb =
-                compute_pdb(task_proxy, pattern);
+            shared_ptr<PatternDatabase> pdb = compute_pdb(task_proxy, pattern);
             pdbs->push_back(pdb);
         }
         if (log.is_at_least_normal()) {
-            log << "Done computing PDBs for pattern collection: "
-                << timer << endl;
+            log << "Done computing PDBs for pattern collection: " << timer
+                << endl;
         }
     }
 }
@@ -80,7 +78,8 @@ void PatternCollectionInformation::create_pattern_cliques_if_missing() {
     if (!pattern_cliques) {
         utils::Timer timer;
         if (log.is_at_least_normal()) {
-            log << "Computing pattern cliques for pattern collection..." << endl;
+            log << "Computing pattern cliques for pattern collection..."
+                << endl;
         }
         VariableAdditivity are_additive = compute_additive_vars(task_proxy);
         pattern_cliques = compute_pattern_cliques(*patterns, are_additive);
@@ -91,7 +90,8 @@ void PatternCollectionInformation::create_pattern_cliques_if_missing() {
     }
 }
 
-void PatternCollectionInformation::set_pdbs(const shared_ptr<PDBCollection> &pdbs_) {
+void PatternCollectionInformation::set_pdbs(
+    const shared_ptr<PDBCollection> &pdbs_) {
     pdbs = pdbs_;
     assert(information_is_valid());
 }
@@ -102,7 +102,8 @@ void PatternCollectionInformation::set_pattern_cliques(
     assert(information_is_valid());
 }
 
-shared_ptr<PatternCollection> PatternCollectionInformation::get_patterns() const {
+shared_ptr<PatternCollection>
+PatternCollectionInformation::get_patterns() const {
     assert(patterns);
     return patterns;
 }
@@ -112,7 +113,8 @@ shared_ptr<PDBCollection> PatternCollectionInformation::get_pdbs() {
     return pdbs;
 }
 
-shared_ptr<vector<PatternClique>> PatternCollectionInformation::get_pattern_cliques() {
+shared_ptr<vector<PatternClique>>
+PatternCollectionInformation::get_pattern_cliques() {
     create_pattern_cliques_if_missing();
     return pattern_cliques;
 }

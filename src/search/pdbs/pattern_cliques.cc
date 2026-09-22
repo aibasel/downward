@@ -9,9 +9,9 @@
 using namespace std;
 
 namespace pdbs {
-bool are_patterns_additive(const Pattern &pattern1,
-                           const Pattern &pattern2,
-                           const VariableAdditivity &are_additive) {
+bool are_patterns_additive(
+    const Pattern &pattern1, const Pattern &pattern2,
+    const VariableAdditivity &are_additive) {
     for (int v1 : pattern1) {
         for (int v2 : pattern2) {
             if (!are_additive[v1][v2]) {
@@ -55,7 +55,8 @@ shared_ptr<vector<PatternClique>> compute_pattern_cliques(
         }
     }
 
-    shared_ptr<vector<PatternClique>> max_cliques = make_shared<vector<PatternClique>>();
+    shared_ptr<vector<PatternClique>> max_cliques =
+        make_shared<vector<PatternClique>>();
     max_cliques::compute_max_cliques(cgraph, *max_cliques);
     return max_cliques;
 }
@@ -63,8 +64,7 @@ shared_ptr<vector<PatternClique>> compute_pattern_cliques(
 vector<PatternClique> compute_pattern_cliques_with_pattern(
     const PatternCollection &patterns,
     const vector<PatternClique> &known_pattern_cliques,
-    const Pattern &new_pattern,
-    const VariableAdditivity &are_additive) {
+    const Pattern &new_pattern, const VariableAdditivity &are_additive) {
     vector<PatternClique> cliques_additive_with_pattern;
     for (const PatternClique &known_clique : known_pattern_cliques) {
         // Take all patterns which are additive to new_pattern.

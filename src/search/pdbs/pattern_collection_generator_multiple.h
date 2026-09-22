@@ -29,9 +29,9 @@ namespace pdbs {
 
   The algorithm runs until reaching a given time limit. Another parameter allows
   exiting early if no new patterns are found for a certain time ("stagnation").
-  Further parameters allow enabling blacklisting for the given pattern computation
-  method after a certain time to force some diversification or to enable said
-  blacklisting when stagnating.
+  Further parameters allow enabling blacklisting for the given pattern
+  computation method after a certain time to force some diversification or to
+  enable said blacklisting when stagnating.
 */
 class PatternCollectionGeneratorMultiple : public PatternCollectionGenerator {
     const int max_pdb_size;
@@ -62,20 +62,19 @@ class PatternCollectionGeneratorMultiple : public PatternCollectionGenerator {
     virtual std::string id() const = 0;
     virtual void initialize(const std::shared_ptr<AbstractTask> &task) = 0;
     virtual PatternInformation compute_pattern(
-        int max_pdb_size,
-        double max_time,
+        int max_pdb_size, double max_time,
         const std::shared_ptr<utils::RandomNumberGenerator> &rng,
-        const std::shared_ptr<AbstractTask> &task,
-        const FactPair &goal,
+        const std::shared_ptr<AbstractTask> &task, const FactPair &goal,
         std::unordered_set<int> &&blacklisted_variables) = 0;
     virtual std::string name() const override;
     virtual PatternCollectionInformation compute_patterns(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
     PatternCollectionGeneratorMultiple(
-        int max_pdb_size, int max_collection_size,
-        double pattern_generation_max_time, double total_max_time,
-        double stagnation_limit, double blacklist_trigger_percentage,
+        const std::shared_ptr<AbstractTask> &task, int max_pdb_size,
+        int max_collection_size, double pattern_generation_max_time,
+        double total_max_time, double stagnation_limit,
+        double blacklist_trigger_percentage,
         bool enable_blacklist_on_stagnation, int random_seed,
         utils::Verbosity verbosity);
 };
@@ -84,8 +83,8 @@ extern void add_multiple_algorithm_implementation_notes_to_feature(
     plugins::Feature &feature);
 extern void add_multiple_options_to_feature(plugins::Feature &feature);
 
-extern std::tuple<int, int, double, double, double, double, bool, int,
-                  utils::Verbosity>
+extern std::tuple<
+    int, int, double, double, double, double, bool, int, utils::Verbosity>
 get_multiple_arguments_from_options(const plugins::Options &opts);
 }
 

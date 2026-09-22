@@ -28,7 +28,8 @@ class PerTaskInformation : public subscriber::Subscriber<AbstractTask> {
       classes are concerned. It should return a unique_ptr to the newly created
       object.
     */
-    using EntryConstructor = std::function<std::unique_ptr<Entry>(const TaskProxy &)>;
+    using EntryConstructor =
+        std::function<std::unique_ptr<Entry>(const TaskProxy &)>;
     EntryConstructor entry_constructor;
     utils::HashMap<TaskID, std::unique_ptr<Entry>> entries;
 public:
@@ -38,10 +39,9 @@ public:
       parameter.
     */
     PerTaskInformation()
-        : entry_constructor(
-              [](const TaskProxy &task_proxy) {
-                  return std::make_unique<Entry>(task_proxy);
-              }) {
+        : entry_constructor([](const TaskProxy &task_proxy) {
+              return std::make_unique<Entry>(task_proxy);
+          }) {
     }
 
     explicit PerTaskInformation(EntryConstructor entry_constructor)

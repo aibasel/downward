@@ -10,6 +10,7 @@ class TieBreakingOpenListFactory : public OpenListFactory {
     bool pref_only;
 public:
     TieBreakingOpenListFactory(
+        const std::shared_ptr<AbstractTask> &task,
         const std::vector<std::shared_ptr<Evaluator>> &evals,
         bool unsafe_pruning, bool pref_only);
 

@@ -22,8 +22,8 @@ class BestFirstOpenList : public OpenList<Entry> {
     shared_ptr<Evaluator> evaluator;
 
 protected:
-    virtual void do_insertion(EvaluationContext &eval_context,
-                              const Entry &entry) override;
+    virtual void do_insertion(
+        EvaluationContext &eval_context, const Entry &entry) override;
 
 public:
     BestFirstOpenList(const shared_ptr<Evaluator> &eval, bool preferred_only);
@@ -31,19 +31,18 @@ public:
     virtual Entry remove_min() override;
     virtual bool empty() const override;
     virtual void clear() override;
-    virtual void get_path_dependent_evaluators(set<Evaluator *> &evals) override;
-    virtual bool is_dead_end(
-        EvaluationContext &eval_context) const override;
+    virtual void get_path_dependent_evaluators(
+        set<Evaluator *> &evals) override;
+    virtual bool is_dead_end(EvaluationContext &eval_context) const override;
     virtual bool is_reliable_dead_end(
         EvaluationContext &eval_context) const override;
+    virtual bool is_safe() const override;
 };
 
 template<class Entry>
 BestFirstOpenList<Entry>::BestFirstOpenList(
     const shared_ptr<Evaluator> &evaluator, bool preferred_only)
-    : OpenList<Entry>(preferred_only),
-      size(0),
-      evaluator(evaluator) {
+    : OpenList<Entry>(preferred_only), size(0), evaluator(evaluator) {
 }
 
 template<class Entry>
@@ -95,40 +94,44 @@ bool BestFirstOpenList<Entry>::is_dead_end(
 template<class Entry>
 bool BestFirstOpenList<Entry>::is_reliable_dead_end(
     EvaluationContext &eval_context) const {
-    return is_dead_end(eval_context) && evaluator->dead_ends_are_reliable();
+    return is_dead_end(eval_context) && evaluator->is_safe();
+}
+
+template<class Entry>
+bool BestFirstOpenList<Entry>::is_safe() const {
+    if (this->only_contains_preferred_entries()) {
+        return false;
+    }
+    return evaluator->is_safe();
 }
 
 BestFirstOpenListFactory::BestFirstOpenListFactory(
-    const shared_ptr<Evaluator> &eval, bool pref_only)
-    : eval(eval),
-      pref_only(pref_only) {
+    const shared_ptr<AbstractTask> &task, const shared_ptr<Evaluator> &eval,
+    bool pref_only)
+    : OpenListFactory(task), eval(eval), pref_only(pref_only) {
 }
 
-unique_ptr<StateOpenList>
-BestFirstOpenListFactory::create_state_open_list() {
-    return make_unique<BestFirstOpenList<StateOpenListEntry>>(
-        eval, pref_only);
+unique_ptr<StateOpenList> BestFirstOpenListFactory::create_state_open_list() {
+    return make_unique<BestFirstOpenList<StateOpenListEntry>>(eval, pref_only);
 }
 
-unique_ptr<EdgeOpenList>
-BestFirstOpenListFactory::create_edge_open_list() {
-    return make_unique<BestFirstOpenList<EdgeOpenListEntry>>(
-        eval, pref_only);
+unique_ptr<EdgeOpenList> BestFirstOpenListFactory::create_edge_open_list() {
+    return make_unique<BestFirstOpenList<EdgeOpenListEntry>>(eval, pref_only);
 }
 
 class BestFirstOpenListFeature
-    : public plugins::TypedFeature<OpenListFactory, BestFirstOpenListFactory> {
+    : public plugins::TypedFeature<TaskIndependentOpenListFactory> {
 public:
     BestFirstOpenListFeature() : TypedFeature("single") {
         document_title("Best-first open list");
         document_synopsis(
             "Open list that uses a single evaluator and FIFO tiebreaking.");
 
-        add_option<shared_ptr<Evaluator>>("eval", "evaluator");
+        add_option<shared_ptr<TaskIndependentEvaluator>>("eval", "evaluator");
         add_open_list_options_to_feature(*this);
 
         document_note(
-            "Implementation Notes",
+            "Implementation notes",
             "Elements with the same evaluator value are stored in double-ended "
             "queues, called \"buckets\". The open list stores a map from evaluator "
             "values to buckets. Pushing and popping from a bucket runs in constant "
@@ -136,11 +139,11 @@ public:
             "takes time O(log(n)), where n is the number of buckets.");
     }
 
-
-    virtual shared_ptr<BestFirstOpenListFactory>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<BestFirstOpenListFactory>(
-            opts.get<shared_ptr<Evaluator>>("eval"),
+    virtual shared_ptr<TaskIndependentOpenListFactory> create_component(
+        const plugins::Options &opts) const override {
+        return components::make_auto_task_independent_component<
+            BestFirstOpenListFactory, OpenListFactory>(
+            opts.get<shared_ptr<TaskIndependentEvaluator>>("eval"),
             get_open_list_arguments_from_options(opts));
     }
 };

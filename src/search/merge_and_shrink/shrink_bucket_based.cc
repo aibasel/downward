@@ -12,12 +12,14 @@
 using namespace std;
 
 namespace merge_and_shrink {
-ShrinkBucketBased::ShrinkBucketBased(int random_seed)
-    : rng(utils::get_rng(random_seed)) {
+ShrinkBucketBased::ShrinkBucketBased(
+    const shared_ptr<AbstractTask> &task, int random_seed)
+    : ShrinkStrategy(task), rng(utils::get_rng(random_seed)) {
 }
 
 StateEquivalenceRelation ShrinkBucketBased::compute_abstraction(
-    const vector<Bucket> &buckets, int target_size, utils::LogProxy &log) const {
+    const vector<Bucket> &buckets, int target_size,
+    utils::LogProxy &log) const {
     bool show_combine_buckets_warning = true;
     StateEquivalenceRelation equiv_relation;
     equiv_relation.reserve(target_size);
@@ -55,7 +57,8 @@ StateEquivalenceRelation ShrinkBucketBased::compute_abstraction(
                 }
             }
             StateEquivalenceClass &group = equiv_relation.back();
-            group.insert_after(group.before_begin(), bucket.begin(), bucket.end());
+            group.insert_after(
+                group.before_begin(), bucket.begin(), bucket.end());
         } else {
             // Complicated case: must combine until bucket budget is met.
             // First create singleton groups.
@@ -64,8 +67,9 @@ StateEquivalenceRelation ShrinkBucketBased::compute_abstraction(
                 groups[i].push_front(bucket[i]);
 
             // Then combine groups until required size is reached.
-            assert(budget_for_this_bucket >= 2 &&
-                   budget_for_this_bucket < static_cast<int>(groups.size()));
+            assert(
+                budget_for_this_bucket >= 2 &&
+                budget_for_this_bucket < static_cast<int>(groups.size()));
             while (static_cast<int>(groups.size()) > budget_for_this_bucket) {
                 auto it1 = rng->choose(groups);
                 auto it2 = it1;
@@ -89,9 +93,7 @@ StateEquivalenceRelation ShrinkBucketBased::compute_abstraction(
 }
 
 StateEquivalenceRelation ShrinkBucketBased::compute_equivalence_relation(
-    const TransitionSystem &ts,
-    const Distances &distances,
-    int target_size,
+    const TransitionSystem &ts, const Distances &distances, int target_size,
     utils::LogProxy &log) const {
     vector<Bucket> buckets = partition_into_buckets(ts, distances);
     return compute_abstraction(buckets, target_size, log);

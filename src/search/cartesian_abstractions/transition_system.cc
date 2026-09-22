@@ -20,15 +20,15 @@ static vector<vector<FactPair>> get_preconditions_by_operator(
     vector<vector<FactPair>> preconditions_by_operator;
     preconditions_by_operator.reserve(ops.size());
     for (OperatorProxy op : ops) {
-        vector<FactPair> preconditions = task_properties::get_fact_pairs(op.get_preconditions());
+        vector<FactPair> preconditions =
+            task_properties::get_fact_pairs(op.get_preconditions());
         sort(preconditions.begin(), preconditions.end());
         preconditions_by_operator.push_back(move(preconditions));
     }
     return preconditions_by_operator;
 }
 
-static vector<FactPair> get_postconditions(
-    const OperatorProxy &op) {
+static vector<FactPair> get_postconditions(const OperatorProxy &op) {
     // Use map to obtain sorted postconditions.
     map<int, int> var_to_post;
     for (FactProxy fact : op.get_preconditions()) {
@@ -72,11 +72,10 @@ static void remove_transitions_with_given_target(
     Transitions &transitions, int state_id) {
     auto new_end = remove_if(
         transitions.begin(), transitions.end(),
-        [state_id](const Transition &t) {return t.target_id == state_id;});
+        [state_id](const Transition &t) { return t.target_id == state_id; });
     assert(new_end != transitions.end());
     transitions.erase(new_end, transitions.end());
 }
-
 
 TransitionSystem::TransitionSystem(const OperatorsProxy &ops)
     : preconditions_by_operator(get_preconditions_by_operator(ops)),
@@ -220,7 +219,8 @@ void TransitionSystem::rewire_outgoing_transitions(
 }
 
 void TransitionSystem::rewire_loops(
-    const Loops &old_loops, const AbstractState &v1, const AbstractState &v2, int var) {
+    const Loops &old_loops, const AbstractState &v1, const AbstractState &v2,
+    int var) {
     /* State v has been split into v1 and v2. Now for all self-loops
        v->v we need to add one or two of the transitions v1->v1, v1->v2,
        v2->v1 and v2->v2. */
@@ -274,8 +274,8 @@ void TransitionSystem::rewire_loops(
 }
 
 void TransitionSystem::rewire(
-    const AbstractStates &states, int v_id,
-    const AbstractState &v1, const AbstractState &v2, int var) {
+    const AbstractStates &states, int v_id, const AbstractState &v1,
+    const AbstractState &v2, int var) {
     // Retrieve old transitions and make space for new transitions.
     Transitions old_incoming = move(incoming[v_id]);
     Transitions old_outgoing = move(outgoing[v_id]);
@@ -285,8 +285,12 @@ void TransitionSystem::rewire(
     int v2_id = v2.get_id();
     utils::unused_variable(v1_id);
     utils::unused_variable(v2_id);
-    assert(incoming[v1_id].empty() && outgoing[v1_id].empty() && loops[v1_id].empty());
-    assert(incoming[v2_id].empty() && outgoing[v2_id].empty() && loops[v2_id].empty());
+    assert(
+        incoming[v1_id].empty() && outgoing[v1_id].empty() &&
+        loops[v1_id].empty());
+    assert(
+        incoming[v2_id].empty() && outgoing[v2_id].empty() &&
+        loops[v2_id].empty());
 
     // Remove old transitions and add new transitions.
     rewire_incoming_transitions(old_incoming, states, v1, v2, var);
@@ -339,7 +343,8 @@ void TransitionSystem::print_statistics(utils::LogProxy &log) const {
         assert(get_num_loops() == total_loops);
         assert(get_num_non_loops() == total_outgoing_transitions);
         log << "Looping transitions: " << total_loops << endl;
-        log << "Non-looping transitions: " << total_outgoing_transitions << endl;
+        log << "Non-looping transitions: " << total_outgoing_transitions
+            << endl;
     }
 }
 }

@@ -8,8 +8,9 @@ using namespace std;
 
 namespace pdbs {
 PatternCollectionGenerator::PatternCollectionGenerator(
-    utils::Verbosity verbosity)
-    : log(utils::get_log_for_verbosity(verbosity)) {
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
+    : components::TaskSpecificComponent(task),
+      log(utils::get_log_for_verbosity(verbosity)) {
 }
 
 PatternCollectionInformation PatternCollectionGenerator::generate(
@@ -19,13 +20,14 @@ PatternCollectionInformation PatternCollectionGenerator::generate(
     }
     utils::Timer timer;
     PatternCollectionInformation pci = compute_patterns(task);
-    dump_pattern_collection_generation_statistics(
-        name(), timer(), pci, log);
+    dump_pattern_collection_generation_statistics(name(), timer(), pci, log);
     return pci;
 }
 
-PatternGenerator::PatternGenerator(utils::Verbosity verbosity)
-    : log(utils::get_log_for_verbosity(verbosity)) {
+PatternGenerator::PatternGenerator(
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
+    : components::TaskSpecificComponent(task),
+      log(utils::get_log_for_verbosity(verbosity)) {
 }
 
 PatternInformation PatternGenerator::generate(
@@ -35,11 +37,7 @@ PatternInformation PatternGenerator::generate(
     }
     utils::Timer timer;
     PatternInformation pattern_info = compute_pattern(task);
-    dump_pattern_generation_statistics(
-        name(),
-        timer.stop(),
-        pattern_info,
-        log);
+    dump_pattern_generation_statistics(name(), timer.stop(), pattern_info, log);
     return pattern_info;
 }
 
@@ -52,19 +50,23 @@ tuple<utils::Verbosity> get_generator_arguments_from_options(
     return utils::get_log_arguments_from_options(opts);
 }
 
-static class PatternCollectionGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<PatternCollectionGenerator> {
+static class PatternCollectionGeneratorCategoryPlugin
+    : public plugins::TypedCategoryPlugin<
+          TaskIndependentPatternCollectionGenerator> {
 public:
-    PatternCollectionGeneratorCategoryPlugin() : TypedCategoryPlugin("PatternCollectionGenerator") {
-        document_synopsis("Factory for pattern collections");
+    PatternCollectionGeneratorCategoryPlugin()
+        : TypedCategoryPlugin("PatternCollectionGenerator") {
+        document_synopsis(
+            "This page describes generators for collections of patterns.");
     }
-}
-_category_plugin_collection;
+} _category_plugin_collection;
 
-static class PatternGeneratorCategoryPlugin : public plugins::TypedCategoryPlugin<PatternGenerator> {
+static class PatternGeneratorCategoryPlugin
+    : public plugins::TypedCategoryPlugin<TaskIndependentPatternGenerator> {
 public:
     PatternGeneratorCategoryPlugin() : TypedCategoryPlugin("PatternGenerator") {
-        document_synopsis("Factory for single patterns");
+        document_synopsis(
+            "This page describes generators for single patterns.");
     }
-}
-_category_plugin_single;
+} _category_plugin_single;
 }

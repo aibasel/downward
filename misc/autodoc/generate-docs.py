@@ -32,12 +32,12 @@ INDEX_TEXT = """
 Fast Downward's search component consists of many different plugins of different
 plugin types such as [search algorithms](SearchAlgorithm.md) or [evaluators](Evaluator.md).
 
+The [syntax documentation](../search-plugin-syntax.md) contains more
+information on how to read their documentation.
+
 The following pages document the plugins of each type:
 
 {plugin_list}
-
-The [syntax documentation](../search-plugin-syntax.md) contains more
-information on how to read their documentation.
 
 """
 

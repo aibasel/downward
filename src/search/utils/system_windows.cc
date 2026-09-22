@@ -19,18 +19,15 @@ void out_of_memory_handler() {
 }
 
 void signal_handler(int signal_number) {
-    cout << "Peak memory: "
-         << get_peak_memory_in_kb() << " KB" << endl;
-    cout << "caught signal " << signal_number
-         << " -- exiting" << endl;
+    cout << "Peak memory: " << get_peak_memory_in_kb() << " KB" << endl;
+    cout << "caught signal " << signal_number << " -- exiting" << endl;
     raise(signal_number);
 }
 
 int get_peak_memory_in_kb() {
     PROCESS_MEMORY_COUNTERS_EX pmc;
     bool success = GetProcessMemoryInfo(
-        GetCurrentProcess(),
-        reinterpret_cast<PROCESS_MEMORY_COUNTERS *>(&pmc),
+        GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS *>(&pmc),
         sizeof(pmc));
     if (!success) {
         cerr << "warning: could not determine peak memory" << endl;
@@ -59,7 +56,8 @@ void register_event_handlers() {
 
 void report_exit_code_reentrant(ExitCode exitcode) {
     /* We call a function that uses ostreams even though this is unsafe in
-       reentrant code, because we don't know how to do it otherwise on Windows. */
+       reentrant code, because we don't know how to do it otherwise on Windows.
+     */
     report_exit_code(exitcode);
 }
 

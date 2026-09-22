@@ -13,10 +13,6 @@ namespace lp {
 class LPConstraint;
 }
 
-namespace plugins {
-class Options;
-}
-
 namespace operator_counting {
 /* A proposition is an atom of the form Var = Val. It stores the index of the
    constraint representing it in the LP */
@@ -38,12 +34,17 @@ class StateEquationConstraints : public ConstraintGenerator {
     std::vector<int> goal_state;
 
     void build_propositions(const TaskProxy &task_proxy);
-    void add_constraints(named_vector::NamedVector<lp::LPConstraint> &constraints, double infinity);
+    void add_constraints(
+        named_vector::NamedVector<lp::LPConstraint> &constraints,
+        double infinity);
 public:
-    explicit StateEquationConstraints(utils::Verbosity verbosity);
+    StateEquationConstraints(
+        const std::shared_ptr<AbstractTask> &task, utils::Verbosity verbosity);
     virtual void initialize_constraints(
-        const std::shared_ptr<AbstractTask> &task, lp::LinearProgram &lp) override;
-    virtual bool update_constraints(const State &state, lp::LPSolver &lp_solver) override;
+        const std::shared_ptr<AbstractTask> &task,
+        lp::LinearProgram &lp) override;
+    virtual bool update_constraints(
+        const State &state, lp::LPSolver &lp_solver) override;
 };
 }
 

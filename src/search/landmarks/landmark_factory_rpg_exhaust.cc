@@ -21,8 +21,9 @@ namespace landmarks {
 */
 
 LandmarkFactoryRpgExhaust::LandmarkFactoryRpgExhaust(
-    bool use_unary_relaxation, utils::Verbosity verbosity)
-    : LandmarkFactoryRelaxation(verbosity),
+    const shared_ptr<AbstractTask> &task, bool use_unary_relaxation,
+    utils::Verbosity verbosity)
+    : LandmarkFactoryRelaxation(task, verbosity),
       use_unary_relaxation(use_unary_relaxation) {
 }
 
@@ -56,8 +57,9 @@ void LandmarkFactoryRpgExhaust::generate_all_atomic_landmarks(
             const FactPair atom(var.get_id(), value);
             if (!landmark_graph->contains_atomic_landmark(atom)) {
                 Landmark landmark({atom}, ATOMIC);
-                if (!relaxed_task_solvable(task_proxy, exploration, landmark,
-                                           use_unary_relaxation)) {
+                if (!relaxed_task_solvable(
+                        task_proxy, exploration, landmark,
+                        use_unary_relaxation)) {
                     landmark_graph->add_landmark(move(landmark));
                 }
             }
@@ -81,10 +83,10 @@ bool LandmarkFactoryRpgExhaust::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryRpgExhaustFeature
-    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryRpgExhaust> {
+    : public plugins::TypedFeature<TaskIndependentLandmarkFactory> {
 public:
     LandmarkFactoryRpgExhaustFeature() : TypedFeature("lm_exhaust") {
-        document_title("Exhaustive Landmarks");
+        document_title("Exhaustive landmarks");
         document_synopsis(
             "Exhaustively checks for each atom if it is a landmark."
             "This check is done using relaxed planning.");
@@ -102,13 +104,13 @@ public:
         add_landmark_factory_options_to_feature(*this);
 
         document_language_support(
-            "conditional_effects",
-            "ignored, i.e. not supported");
+            "conditional_effects", "ignored, i.e. not supported");
     }
 
-    virtual shared_ptr<LandmarkFactoryRpgExhaust> create_component(
+    virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LandmarkFactoryRpgExhaust>(
+        return components::make_auto_task_independent_component<
+            LandmarkFactoryRpgExhaust, LandmarkFactory>(
             opts.get<bool>("use_unary_relaxation"),
             get_landmark_factory_arguments_from_options(opts));
     }

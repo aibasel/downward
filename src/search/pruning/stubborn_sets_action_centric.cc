@@ -4,8 +4,8 @@ using namespace std;
 
 namespace stubborn_sets {
 // Relies on both fact sets being sorted by variable.
-static bool contain_conflicting_fact(const vector<FactPair> &facts1,
-                                     const vector<FactPair> &facts2) {
+static bool contain_conflicting_fact(
+    const vector<FactPair> &facts1, const vector<FactPair> &facts2) {
     auto facts1_it = facts1.begin();
     auto facts2_it = facts2.begin();
     while (facts1_it != facts1.end() && facts2_it != facts2.end()) {
@@ -24,8 +24,8 @@ static bool contain_conflicting_fact(const vector<FactPair> &facts1,
 }
 
 StubbornSetsActionCentric::StubbornSetsActionCentric(
-    utils::Verbosity verbosity)
-    : StubbornSets(verbosity) {
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
+    : StubbornSets(task, verbosity) {
 }
 
 void StubbornSetsActionCentric::compute_stubborn_set(const State &state) {
@@ -43,14 +43,14 @@ void StubbornSetsActionCentric::compute_stubborn_set(const State &state) {
 
 // Relies on op_preconds and op_effects being sorted by variable.
 bool StubbornSetsActionCentric::can_disable(int op1_no, int op2_no) const {
-    return contain_conflicting_fact(sorted_op_effects[op1_no],
-                                    sorted_op_preconditions[op2_no]);
+    return contain_conflicting_fact(
+        sorted_op_effects[op1_no], sorted_op_preconditions[op2_no]);
 }
 
 // Relies on op_effect being sorted by variable.
 bool StubbornSetsActionCentric::can_conflict(int op1_no, int op2_no) const {
-    return contain_conflicting_fact(sorted_op_effects[op1_no],
-                                    sorted_op_effects[op2_no]);
+    return contain_conflicting_fact(
+        sorted_op_effects[op1_no], sorted_op_effects[op2_no]);
 }
 
 bool StubbornSetsActionCentric::enqueue_stubborn_operator(int op_no) {

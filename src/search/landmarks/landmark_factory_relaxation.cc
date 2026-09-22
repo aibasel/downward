@@ -9,8 +9,8 @@ using namespace std;
 
 namespace landmarks {
 LandmarkFactoryRelaxation::LandmarkFactoryRelaxation(
-    utils::Verbosity verbosity)
-    : LandmarkFactory(verbosity) {
+    const shared_ptr<AbstractTask> &task, utils::Verbosity verbosity)
+    : LandmarkFactory(task, verbosity) {
 }
 
 void LandmarkFactoryRelaxation::generate_landmarks(

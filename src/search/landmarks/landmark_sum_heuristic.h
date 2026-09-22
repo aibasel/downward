@@ -5,7 +5,7 @@
 
 namespace landmarks {
 class LandmarkSumHeuristic : public LandmarkHeuristic {
-    const bool dead_ends_reliable;
+    const bool safe;
 
     /*
       We compute landmark achiever costs under the assumption that landmark
@@ -23,13 +23,13 @@ class LandmarkSumHeuristic : public LandmarkHeuristic {
     int get_heuristic_value(const State &ancestor_state) override;
 public:
     LandmarkSumHeuristic(
+        const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<LandmarkFactory> &lm_factory, bool pref,
-        bool prog_goal, bool prog_gn, bool prog_r,
-        const std::shared_ptr<AbstractTask> &transform,
-        bool cache_estimates, const std::string &description,
-        utils::Verbosity verbosity, tasks::AxiomHandlingType axioms);
+        bool prog_goal, bool prog_gn, bool prog_r, bool cache_estimates,
+        const std::string &description, utils::Verbosity verbosity,
+        tasks::AxiomHandlingType axioms);
 
-    virtual bool dead_ends_are_reliable() const override;
+    virtual bool is_safe() const override;
 };
 }
 

@@ -11,7 +11,9 @@ class PatternGeneratorGreedy : public PatternGenerator {
     virtual PatternInformation compute_pattern(
         const std::shared_ptr<AbstractTask> &task) override;
 public:
-    PatternGeneratorGreedy(int max_states, utils::Verbosity verbosity);
+    PatternGeneratorGreedy(
+        const std::shared_ptr<AbstractTask> &task, int max_states,
+        utils::Verbosity verbosity);
 };
 }
 

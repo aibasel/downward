@@ -4,6 +4,7 @@
 #include "landmark_graph.h"
 
 #include "../task_proxy.h"
+
 #include "../utils/logging.h"
 
 using namespace std;
@@ -12,7 +13,8 @@ namespace landmarks {
 static bool condition_is_reachable(
     const ConditionsProxy &conditions, const vector<vector<bool>> &reached) {
     for (FactProxy condition : conditions) {
-        if (!reached[condition.get_variable().get_id()][condition.get_value()]) {
+        if (!reached[condition.get_variable().get_id()]
+                    [condition.get_value()]) {
             return false;
         }
     }
@@ -21,9 +23,9 @@ static bool condition_is_reachable(
 
 /* Check whether operator `op` can possibly make `landmark` true in a
    relaxed task (as given by the reachability information in reached). */
-bool possibly_reaches_landmark(const OperatorProxy &op,
-                               const vector<vector<bool>> &reached,
-                               const Landmark &landmark) {
+bool possibly_reaches_landmark(
+    const OperatorProxy &op, const vector<vector<bool>> &reached,
+    const Landmark &landmark) {
     assert(!reached.empty());
     if (!condition_is_reachable(op.get_preconditions(), reached)) {
         // Operator `op` is not applicable.
@@ -33,9 +35,9 @@ bool possibly_reaches_landmark(const OperatorProxy &op,
     // Check whether an effect of `op` reaches an atom in `landmark`.
     EffectsProxy effects = op.get_effects();
     return any_of(begin(effects), end(effects), [&](const EffectProxy &effect) {
-                      return landmark.contains(effect.get_fact().get_pair()) &&
-                      condition_is_reachable(effect.get_conditions(), reached);
-                  });
+        return landmark.contains(effect.get_fact().get_pair()) &&
+               condition_is_reachable(effect.get_conditions(), reached);
+    });
 }
 
 utils::HashSet<FactPair> get_intersection(
@@ -50,13 +52,13 @@ utils::HashSet<FactPair> get_intersection(
     return intersection;
 }
 
-void union_inplace(utils::HashSet<FactPair> &set1,
-                   const utils::HashSet<FactPair> &set2) {
+void union_inplace(
+    utils::HashSet<FactPair> &set1, const utils::HashSet<FactPair> &set2) {
     set1.insert(set2.begin(), set2.end());
 }
 
-OperatorProxy get_operator_or_axiom(const TaskProxy &task_proxy,
-                                    int op_or_axiom_id) {
+OperatorProxy get_operator_or_axiom(
+    const TaskProxy &task_proxy, int op_or_axiom_id) {
     if (op_or_axiom_id < 0) {
         return task_proxy.get_axioms()[-op_or_axiom_id - 1];
     } else {
@@ -78,8 +80,7 @@ int get_operator_or_axiom_id(const OperatorProxy &op) {
   at least, but without the time and memory stamps.
 */
 static void dump_node(
-    const TaskProxy &task_proxy,
-    const LandmarkNode &node,
+    const TaskProxy &task_proxy, const LandmarkNode &node,
     utils::LogProxy &log) {
     if (log.is_at_least_debug()) {
         const Landmark &landmark = node.get_landmark();
@@ -105,8 +106,8 @@ static void dump_node(
     }
 }
 
-static void dump_ordering(int from, int to, OrderingType type,
-                          const utils::LogProxy &log) {
+static void dump_ordering(
+    int from, int to, OrderingType type, const utils::LogProxy &log) {
     if (log.is_at_least_debug()) {
         cout << "      lm" << from << " -> lm" << to << " [label=";
         switch (type) {
@@ -128,8 +129,7 @@ static void dump_ordering(int from, int to, OrderingType type,
 }
 
 void dump_landmark_graph(
-    const TaskProxy &task_proxy,
-    const LandmarkGraph &graph,
+    const TaskProxy &task_proxy, const LandmarkGraph &graph,
     utils::LogProxy &log) {
     if (log.is_at_least_debug()) {
         log << "Dumping landmark graph: " << endl;

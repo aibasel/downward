@@ -1,0 +1,6 @@
+#ifndef GIT_REVISION_H
+#define GIT_REVISION_H
+
+constexpr char g_git_revision[] = "@GIT_REVISION@";
+
+#endif

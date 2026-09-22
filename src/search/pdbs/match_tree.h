@@ -1,9 +1,8 @@
 #ifndef PDBS_MATCH_TREE_H
 #define PDBS_MATCH_TREE_H
 
-#include "types.h"
-
 #include "pattern_database.h"
+#include "types.h"
 
 #include "../task_proxy.h"
 
@@ -30,10 +29,9 @@ class MatchTree {
     Projection projection;
     struct Node;
     Node *root;
-    void insert_recursive(int op_id,
-                          const std::vector<FactPair> &regression_preconditions,
-                          int pre_index,
-                          Node **edge_from_parent);
+    void insert_recursive(
+        int op_id, const std::vector<FactPair> &regression_preconditions,
+        int pre_index, Node **edge_from_parent);
     void get_applicable_operator_ids_recursive(
         Node *node, int state_index, std::vector<int> &operator_ids) const;
     void dump_recursive(Node *node, utils::LogProxy &log) const;
@@ -42,12 +40,12 @@ public:
       Initialize an empty match tree. We copy projection to ensure that the
       match tree remains in a valid state independently of projection.
     */
-    MatchTree(const TaskProxy &task_proxy,
-              const Projection &projection);
+    MatchTree(const TaskProxy &task_proxy, const Projection &projection);
     ~MatchTree();
     /* Insert an abstract operator into the match tree, creating or
        enlarging it. */
-    void insert(int op_id, const std::vector<FactPair> &regression_preconditions);
+    void insert(
+        int op_id, const std::vector<FactPair> &regression_preconditions);
 
     /*
       Extracts all IDs of applicable abstract operators for the abstract state

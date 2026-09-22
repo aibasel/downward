@@ -40,8 +40,7 @@ class VariableOrderFinder {
     void select_next(int position, int var_no);
 public:
     VariableOrderFinder(
-        const TaskProxy &task_proxy,
-        VariableOrderType variable_order_type,
+        const TaskProxy &task_proxy, VariableOrderType variable_order_type,
         const std::shared_ptr<utils::RandomNumberGenerator> &rng = nullptr);
     ~VariableOrderFinder() = default;
     bool done() const;

@@ -47,12 +47,8 @@ static CanonicalPDBs get_canonical_pdbs(
           and the pattern cliques.
         */
         prune_dominated_cliques(
-            *patterns,
-            *pdbs,
-            *pattern_cliques,
-            num_variables,
-            max_time_dominance_pruning,
-            log);
+            *patterns, *pdbs, *pattern_cliques, num_variables,
+            max_time_dominance_pruning, log);
     }
 
     dump_pattern_collection_generation_statistics(
@@ -61,14 +57,13 @@ static CanonicalPDBs get_canonical_pdbs(
 }
 
 CanonicalPDBsHeuristic::CanonicalPDBsHeuristic(
+    const shared_ptr<AbstractTask> &task,
     const shared_ptr<PatternCollectionGenerator> &patterns,
-    double max_time_dominance_pruning,
-    const shared_ptr<AbstractTask> &transform, bool cache_estimates,
+    double max_time_dominance_pruning, bool cache_estimates,
     const string &description, utils::Verbosity verbosity)
-    : Heuristic(transform, cache_estimates, description, verbosity),
+    : Heuristic(task, cache_estimates, description, verbosity),
       canonical_pdbs(
-          get_canonical_pdbs(
-              task, patterns, max_time_dominance_pruning, log)) {
+          get_canonical_pdbs(task, patterns, max_time_dominance_pruning, log)) {
 }
 
 int CanonicalPDBsHeuristic::compute_heuristic(const State &ancestor_state) {
@@ -88,8 +83,7 @@ void add_canonical_pdbs_options_to_feature(plugins::Feature &feature) {
         "turns off dominance pruning. Dominance pruning excludes patterns "
         "and additive subsets that will never contribute to the heuristic "
         "value because there are dominating subsets in the collection.",
-        "infinity",
-        plugins::Bounds("0.0", "infinity"));
+        "infinity", plugins::Bounds("0.0", "infinity"));
 }
 
 tuple<double> get_canonical_pdbs_arguments_from_options(
@@ -98,7 +92,7 @@ tuple<double> get_canonical_pdbs_arguments_from_options(
 }
 
 class CanonicalPDBsHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, CanonicalPDBsHeuristic> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
     CanonicalPDBsHeuristicFeature() : TypedFeature("cpdbs") {
         document_subcategory("heuristics_pdb");
@@ -111,10 +105,8 @@ public:
             "S in A is the sum of the heuristic values for all patterns in S "
             "for a given state.");
 
-        add_option<shared_ptr<PatternCollectionGenerator>>(
-            "patterns",
-            "pattern generation method",
-            "systematic(1)");
+        add_option<shared_ptr<TaskIndependentPatternCollectionGenerator>>(
+            "patterns", "pattern generation method", "systematic(1)");
         add_canonical_pdbs_options_to_feature(*this);
         add_heuristic_options_to_feature(*this, "cpdbs");
 
@@ -128,14 +120,14 @@ public:
         document_property("preferred operators", "no");
     }
 
-    virtual shared_ptr<CanonicalPDBsHeuristic>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<CanonicalPDBsHeuristic>(
-            opts.get<shared_ptr<PatternCollectionGenerator>>(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
+        const plugins::Options &opts) const override {
+        return components::make_auto_task_independent_component<
+            CanonicalPDBsHeuristic, Evaluator>(
+            opts.get<shared_ptr<TaskIndependentPatternCollectionGenerator>>(
                 "patterns"),
             get_canonical_pdbs_arguments_from_options(opts),
-            get_heuristic_arguments_from_options(opts)
-            );
+            get_heuristic_arguments_from_options(opts));
     }
 };
 

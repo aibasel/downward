@@ -57,7 +57,7 @@ class BasicType : public Type {
     std::type_index type;
     std::string class_name;
 public:
-    explicit BasicType(std::type_index type, const std::string &class_name);
+    BasicType(std::type_index type, const std::string &class_name);
     virtual bool operator==(const Type &other) const override;
     virtual bool is_basic_type() const override;
     virtual const std::type_index &get_basic_type_index() const override;
@@ -73,8 +73,9 @@ class FeatureType : public Type {
     bool can_be_bound_to_variable;
 
 public:
-    FeatureType(std::type_index pointer_type, const std::string &type_name,
-                const std::string &synopsis, bool supports_variable_binding);
+    FeatureType(
+        std::type_index pointer_type, const std::string &type_name,
+        const std::string &synopsis, bool supports_variable_binding);
     virtual bool operator==(const Type &other) const override;
     virtual bool is_feature_type() const override;
     virtual bool supports_variable_binding() const override;
@@ -115,7 +116,8 @@ public:
     EnumType(std::type_index type, const EnumInfo &documented_values);
     virtual bool operator==(const Type &other) const override;
     virtual bool is_enum_type() const override;
-    virtual int get_enum_index(const std::string &value, utils::Context &context) const override;
+    virtual int get_enum_index(
+        const std::string &value, utils::Context &context) const override;
     virtual const EnumInfo &get_documented_enum_values() const override;
     virtual std::string name() const override;
     virtual size_t get_hash() const override;
@@ -159,24 +161,31 @@ class TypeRegistry {
     };
 
     std::unordered_map<std::type_index, std::unique_ptr<Type>> registered_types;
-    std::unordered_map<const Type *, std::unique_ptr<ListType>,
-                       SemanticHash, SemanticEqual> registered_list_types;
+    FeatureTypes feature_types;
+    std::unordered_map<
+        const Type *, std::unique_ptr<ListType>, SemanticHash, SemanticEqual>
+        registered_list_types;
     template<typename T>
     void insert_basic_type(const std::string &name);
+    const FeatureType &create_feature_type(
+        const CategoryPlugin &plugin, std::vector<std::string> &errors);
+    const EnumType &create_enum_type(
+        const EnumPlugin &plugin, std::vector<std::string> &errors);
+
     const Type &get_nonlist_type(std::type_index type) const;
+
+    TypeRegistry();
 public:
     static BasicType NO_TYPE;
     static SymbolType SYMBOL_TYPE;
     static EmptyListType EMPTY_LIST_TYPE;
 
-    TypeRegistry();
-
-    const FeatureType &create_feature_type(const CategoryPlugin &plugin);
-    const EnumType &create_enum_type(const EnumPlugin &plugin);
     const ListType &create_list_type(const Type &element_type);
 
     template<typename T>
     const Type &get_type();
+
+    const FeatureTypes &get_feature_types() const;
 
     static TypeRegistry *instance() {
         static TypeRegistry instance_;
@@ -190,7 +199,8 @@ const Type &TypeRegistry::TypeOf<T>::value(TypeRegistry &registry) {
 }
 
 template<typename T>
-const Type &TypeRegistry::TypeOf<std::vector<T>>::value(TypeRegistry &registry) {
+const Type &
+TypeRegistry::TypeOf<std::vector<T>>::value(TypeRegistry &registry) {
     return registry.create_list_type(registry.get_type<T>());
 }
 
@@ -199,8 +209,9 @@ const Type &TypeRegistry::get_type() {
     return TypeOf<T>::value(*this);
 }
 
-extern Any convert(const Any &value, const Type &from_type, const Type &to_type,
-                   utils::Context &context);
+extern Any convert(
+    const Any &value, const Type &from_type, const Type &to_type,
+    utils::Context &context);
 }
 
 #endif

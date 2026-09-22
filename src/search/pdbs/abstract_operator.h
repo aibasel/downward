@@ -40,10 +40,8 @@ class AbstractOperator {
     int hash_effect;
 public:
     AbstractOperator(
-        int concrete_op_id,
-        int cost,
-        std::vector<FactPair> &&regression_preconditions,
-        int hash_effect);
+        int concrete_op_id, int cost,
+        std::vector<FactPair> &&regression_preconditions, int hash_effect);
 
     /*
       Returns variable value pairs which represent the preconditions of
@@ -73,9 +71,9 @@ public:
         return cost;
     }
 
-    void dump(const Pattern &pattern,
-              const VariablesProxy &variables,
-              utils::LogProxy &log) const;
+    void dump(
+        const Pattern &pattern, const VariablesProxy &variables,
+        utils::LogProxy &log) const;
 };
 }
 

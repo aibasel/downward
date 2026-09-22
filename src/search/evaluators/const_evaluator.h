@@ -3,10 +3,6 @@
 
 #include "../evaluator.h"
 
-namespace plugins {
-class Options;
-}
-
 namespace const_evaluator {
 class ConstEvaluator : public Evaluator {
     int value;
@@ -17,11 +13,12 @@ protected:
 
 public:
     ConstEvaluator(
-        int value,
-        const std::string &description,
-        utils::Verbosity verbosity);
+        const std::shared_ptr<AbstractTask> &task, int value,
+        const std::string &description, utils::Verbosity verbosity);
     virtual void get_path_dependent_evaluators(
-        std::set<Evaluator *> &) override {}
+        std::set<Evaluator *> &) override {
+    }
+    virtual bool is_safe() const override;
 };
 }
 

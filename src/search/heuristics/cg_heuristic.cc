@@ -17,15 +17,13 @@ using namespace domain_transition_graph;
 
 namespace cg_heuristic {
 CGHeuristic::CGHeuristic(
-    int max_cache_size, tasks::AxiomHandlingType axioms,
-    const shared_ptr<AbstractTask> &transform,
-    bool cache_estimates, const string &description,
-    utils::Verbosity verbosity)
-    : Heuristic(tasks::get_default_value_axioms_task_if_needed(
-                    transform, axioms),
-                cache_estimates, description, verbosity),
-      cache_hits(0),
-      cache_misses(0),
+    const shared_ptr<AbstractTask> &task, int max_cache_size,
+    tasks::AxiomHandlingType axioms, bool cache_estimates,
+    const string &description, utils::Verbosity verbosity)
+    : Heuristic(
+          // issue1208 move this transformation to task-independent level?
+          tasks::get_default_value_axioms_task_if_needed(task, axioms),
+          cache_estimates, description, verbosity),
       helpful_transition_extraction_counter(0),
       min_action_cost(task_properties::get_min_operator_cost(task_proxy)) {
     if (log.is_at_least_normal()) {
@@ -40,13 +38,14 @@ CGHeuristic::CGHeuristic(
     for (size_t i = 0; i < num_vars; ++i)
         prio_queues.push_back(make_unique<ValueNodeQueue>());
 
-    function<bool(int, int)> pruning_condition =
-        [](int dtg_var, int cond_var) {return dtg_var <= cond_var;};
+    function<bool(int, int)> pruning_condition = [](int dtg_var, int cond_var) {
+        return dtg_var <= cond_var;
+    };
     DTGFactory factory(task_proxy, false, pruning_condition);
     transition_graphs = factory.build_dtgs();
 }
 
-bool CGHeuristic::dead_ends_are_reliable() const {
+bool CGHeuristic::is_safe() const {
     return false;
 }
 
@@ -82,10 +81,9 @@ void CGHeuristic::setup_domain_transition_graphs() {
     ++helpful_transition_extraction_counter;
 }
 
-int CGHeuristic::get_transition_cost(const State &state,
-                                     DomainTransitionGraph *dtg,
-                                     int start_val,
-                                     int goal_val) {
+int CGHeuristic::get_transition_cost(
+    const State &state, DomainTransitionGraph *dtg, int start_val,
+    int goal_val) {
     if (start_val == goal_val)
         return 0;
 
@@ -95,12 +93,8 @@ int CGHeuristic::get_transition_cost(const State &state,
     bool use_the_cache = cache && cache->is_cached(var_no);
     if (use_the_cache) {
         int cached_val = cache->lookup(var_no, state, start_val, goal_val);
-        if (cached_val != CGCache::NOT_COMPUTED) {
-            ++cache_hits;
+        if (cached_val != CGCache::NOT_COMPUTED)
             return cached_val;
-        }
-    } else {
-        ++cache_misses;
     }
 
     ValueNode *start = &dtg->nodes[start_val];
@@ -118,7 +112,8 @@ int CGHeuristic::get_transition_cost(const State &state,
         }
 
         // Initialize Heap for Dijkstra's algorithm.
-        priority_queues::AdaptiveQueue<ValueNode *> &prio_queue = *prio_queues[var_no];
+        priority_queues::AdaptiveQueue<ValueNode *> &prio_queue =
+            *prio_queues[var_no];
         prio_queue.clear();
         prio_queue.push(0, start);
 
@@ -150,13 +145,15 @@ int CGHeuristic::get_transition_cost(const State &state,
 
                 // Scan labels of the transition.
                 for (ValueTransitionLabel &label : transition.labels) {
-                    OperatorProxy op = label.is_axiom ?
-                        task_proxy.get_axioms()[label.op_id] :
-                        task_proxy.get_operators()[label.op_id];
+                    OperatorProxy op =
+                        label.is_axiom
+                            ? task_proxy.get_axioms()[label.op_id]
+                            : task_proxy.get_operators()[label.op_id];
                     int new_distance = source_distance + op.get_cost();
                     for (LocalAssignment &assignment : label.precond) {
                         if (new_distance >= *target_distance_ptr)
-                            break;  // We already know this isn't an improved path.
+                            break; // We already know this isn't an improved
+                                   // path.
                         int local_var = assignment.local_var;
                         int current_val = source->children_state[local_var];
                         int global_var = dtg->local_to_global_child[local_var];
@@ -195,7 +192,8 @@ int CGHeuristic::get_transition_cost(const State &state,
                             // no helpful transitions recorded yet.
                             start->helpful_transitions[target->value] = &label;
                         } else {
-                            start->helpful_transitions[target->value] = current_helpful_transition;
+                            start->helpful_transitions[target->value] =
+                                current_helpful_transition;
                         }
 
                         prio_queue.push(new_distance, target);
@@ -223,8 +221,8 @@ int CGHeuristic::get_transition_cost(const State &state,
     return start->distances[goal_val];
 }
 
-void CGHeuristic::mark_helpful_transitions(const State &state,
-                                           DomainTransitionGraph *dtg, int to) {
+void CGHeuristic::mark_helpful_transitions(
+    const State &state, DomainTransitionGraph *dtg, int to) {
     int var_no = dtg->var;
     int from = state[var_no];
     if (from == to)
@@ -268,27 +266,28 @@ void CGHeuristic::mark_helpful_transitions(const State &state,
         cost = start_node->distances[to];
     }
 
-    OperatorProxy op = helpful->is_axiom ?
-        task_proxy.get_axioms()[helpful->op_id] :
-        task_proxy.get_operators()[helpful->op_id];
-    if (cost == op.get_cost() &&
-        !op.is_axiom() &&
+    OperatorProxy op = helpful->is_axiom
+                           ? task_proxy.get_axioms()[helpful->op_id]
+                           : task_proxy.get_operators()[helpful->op_id];
+    if (cost == op.get_cost() && !op.is_axiom() &&
         task_properties::is_applicable(op, state)) {
         // Transition immediately applicable, all preconditions true.
         set_preferred(op);
     } else {
-        // Recursively compute helpful transitions for the precondition variables.
+        // Recursively compute helpful transitions for the precondition
+        // variables.
         for (const LocalAssignment &assignment : helpful->precond) {
             int local_var = assignment.local_var;
             int global_var = dtg->local_to_global_child[local_var];
-            DomainTransitionGraph *precond_dtg = transition_graphs[global_var].get();
+            DomainTransitionGraph *precond_dtg =
+                transition_graphs[global_var].get();
             mark_helpful_transitions(state, precond_dtg, assignment.value);
         }
     }
 }
 
 class CGHeuristicFeature
-    : public plugins::TypedFeature<Evaluator, CGHeuristic> {
+    : public plugins::TypedFeature<TaskIndependentEvaluator> {
 public:
     CGHeuristicFeature() : TypedFeature("cg") {
         document_title("Causal graph heuristic");
@@ -296,8 +295,7 @@ public:
         add_option<int>(
             "max_cache_size",
             "maximum number of cached entries per variable (set to 0 to disable cache)",
-            "1000000",
-            plugins::Bounds("0", "infinity"));
+            "1000000", plugins::Bounds("0", "infinity"));
         tasks::add_axioms_option_to_feature(*this);
         add_heuristic_options_to_feature(*this, "cg");
 
@@ -311,13 +309,13 @@ public:
         document_property("preferred operators", "yes");
     }
 
-    virtual shared_ptr<CGHeuristic>
-    create_component(const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<CGHeuristic>(
+    virtual shared_ptr<TaskIndependentEvaluator> create_component(
+        const plugins::Options &opts) const override {
+        return components::make_auto_task_independent_component<
+            CGHeuristic, Evaluator>(
             opts.get<int>("max_cache_size"),
             tasks::get_axioms_arguments_from_options(opts),
-            get_heuristic_arguments_from_options(opts)
-            );
+            get_heuristic_arguments_from_options(opts));
     }
 };
 

@@ -2,11 +2,10 @@
 
 #include "landmark.h"
 #include "landmark_graph.h"
-
-#include "../utils/component_errors.h"
-#include "../plugins/plugin.h"
-
 #include "util.h"
+
+#include "../plugins/plugin.h"
+#include "../utils/component_errors.h"
 
 #include <ranges>
 
@@ -17,10 +16,10 @@ namespace landmarks {
 class LandmarkNode;
 
 LandmarkFactoryMerged::LandmarkFactoryMerged(
+    const shared_ptr<AbstractTask> &task,
     const vector<shared_ptr<LandmarkFactory>> &lm_factories,
     utils::Verbosity verbosity)
-    : LandmarkFactory(verbosity),
-      landmark_factories(lm_factories) {
+    : LandmarkFactory(task, verbosity), landmark_factories(lm_factories) {
     utils::verify_list_not_empty(lm_factories, "lm_factories");
 }
 
@@ -49,12 +48,14 @@ LandmarkNode *LandmarkFactoryMerged::get_matching_landmark(
     return nullptr;
 }
 
-vector<shared_ptr<LandmarkGraph>> LandmarkFactoryMerged::generate_landmark_graphs_of_subfactories(
+vector<shared_ptr<LandmarkGraph>>
+LandmarkFactoryMerged::generate_landmark_graphs_of_subfactories(
     const shared_ptr<AbstractTask> &task) {
     vector<shared_ptr<LandmarkGraph>> landmark_graphs;
     landmark_graphs.reserve(landmark_factories.size());
     achievers_calculated = true;
-    for (const shared_ptr<LandmarkFactory> &landmark_factory : landmark_factories) {
+    for (const shared_ptr<LandmarkFactory> &landmark_factory :
+         landmark_factories) {
         landmark_graphs.push_back(
             landmark_factory->compute_landmark_graph(task));
         achievers_calculated &= landmark_factory->achievers_are_calculated();
@@ -105,8 +106,8 @@ void LandmarkFactoryMerged::add_disjunctive_landmarks(
                   request (e.g., heuristics that consider orders might want to
                   keep all landmarks).
                 */
-                bool exists = ranges::any_of(
-                    landmark.atoms, [&](const FactPair &atom) {
+                bool exists =
+                    ranges::any_of(landmark.atoms, [&](const FactPair &atom) {
                         return landmark_graph->contains_landmark(atom);
                     });
                 if (!exists) {
@@ -148,8 +149,8 @@ void LandmarkFactoryMerged::add_landmark_orderings(
 void LandmarkFactoryMerged::generate_landmarks(
     const shared_ptr<AbstractTask> &task) {
     if (log.is_at_least_normal()) {
-        log << "Merging " << landmark_factories.size()
-            << " landmark graphs" << endl;
+        log << "Merging " << landmark_factories.size() << " landmark graphs"
+            << endl;
     }
     vector<shared_ptr<LandmarkGraph>> landmark_graphs =
         generate_landmark_graphs_of_subfactories(task);
@@ -172,14 +173,15 @@ bool LandmarkFactoryMerged::supports_conditional_effects() const {
 }
 
 class LandmarkFactoryMergedFeature
-    : public plugins::TypedFeature<LandmarkFactory, LandmarkFactoryMerged> {
+    : public plugins::TypedFeature<TaskIndependentLandmarkFactory> {
 public:
     LandmarkFactoryMergedFeature() : TypedFeature("lm_merged") {
-        document_title("Merged Landmarks");
+        document_title("Merged landmarks");
         document_synopsis(
             "Merges the landmarks and orderings from the parameter landmarks");
 
-        add_list_option<shared_ptr<LandmarkFactory>>("lm_factories");
+        add_list_option<shared_ptr<TaskIndependentLandmarkFactory>>(
+            "lm_factories");
         add_landmark_factory_options_to_feature(*this);
 
         document_note(
@@ -188,18 +190,18 @@ public:
             "orderings take precedence in the usual manner "
             "(gn > nat > reas > o_reas). ");
         document_note(
-            "Note",
-            "Does not currently support conjunctive landmarks");
+            "Note", "Does not currently support conjunctive landmarks");
 
         document_language_support(
-            "conditional_effects",
-            "supported if all components support them");
+            "conditional_effects", "supported if all components support them");
     }
 
-    virtual shared_ptr<LandmarkFactoryMerged> create_component(
+    virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
         const plugins::Options &opts) const override {
-        return plugins::make_shared_from_arg_tuples<LandmarkFactoryMerged>(
-            opts.get_list<shared_ptr<LandmarkFactory>>("lm_factories"),
+        return components::make_auto_task_independent_component<
+            LandmarkFactoryMerged, LandmarkFactory>(
+            opts.get_list<shared_ptr<TaskIndependentLandmarkFactory>>(
+                "lm_factories"),
             get_landmark_factory_arguments_from_options(opts));
     }
 };

@@ -1,15 +1,16 @@
 #include "operator_cost.h"
 
-#include "plugins/plugin.h"
 #include "task_proxy.h"
 
+#include "plugins/plugin.h"
 #include "utils/system.h"
 
 #include <cstdlib>
 
 using namespace std;
 
-static int get_adjusted_action_cost(int cost, OperatorCost cost_type, bool is_unit_cost) {
+static int get_adjusted_action_cost(
+    int cost, OperatorCost cost_type, bool is_unit_cost) {
     switch (cost_type) {
     case NORMAL:
         return cost;
@@ -25,7 +26,8 @@ static int get_adjusted_action_cost(int cost, OperatorCost cost_type, bool is_un
     }
 }
 
-int get_adjusted_action_cost(const OperatorProxy &op, OperatorCost cost_type, bool is_unit_cost) {
+int get_adjusted_action_cost(
+    const OperatorProxy &op, OperatorCost cost_type, bool is_unit_cost) {
     if (op.is_axiom())
         return 0;
     else
@@ -46,13 +48,13 @@ tuple<OperatorCost> get_cost_type_arguments_from_options(
     return make_tuple(opts.get<OperatorCost>("cost_type"));
 }
 
-static plugins::TypedEnumPlugin<OperatorCost> _enum_plugin({
-    {"normal", "all actions are accounted for with their real cost"},
-    {"one", "all actions are accounted for as unit cost"},
-    {"plusone", "all actions are accounted for as their real cost + 1 "
-     "(except if all actions have original cost 1, "
-     "in which case cost 1 is used). "
-     "This is the behaviour known for the heuristics of the LAMA planner. "
-     "This is intended to be used by the heuristics, not search algorithms, "
-     "but is supported for both."}
-});
+static plugins::TypedEnumPlugin<OperatorCost> _enum_plugin(
+    {{"normal", "all actions are accounted for with their real cost"},
+     {"one", "all actions are accounted for as unit cost"},
+     {"plusone",
+      "all actions are accounted for as their real cost + 1 "
+      "(except if all actions have original cost 1, "
+      "in which case cost 1 is used). "
+      "This is the behaviour known for the heuristics of the LAMA planner. "
+      "This is intended to be used by the heuristics, not search algorithms, "
+      "but is supported for both."}});

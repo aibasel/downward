@@ -24,8 +24,9 @@ class IntPacker {
     std::vector<VariableInfo> var_infos;
     int num_bins;
 
-    int pack_one_bin(const std::vector<int> &ranges,
-                     std::vector<std::vector<int>> &bits_to_vars);
+    int pack_one_bin(
+        const std::vector<int> &ranges,
+        std::vector<std::vector<int>> &bits_to_vars);
     void pack_bins(const std::vector<int> &ranges);
 public:
     typedef unsigned int Bin;
@@ -42,7 +43,9 @@ public:
     int get(const Bin *buffer, int var) const;
     void set(Bin *buffer, int var, int value) const;
 
-    int get_num_bins() const {return num_bins;}
+    int get_num_bins() const {
+        return num_bins;
+    }
 };
 }
 

@@ -19,9 +19,9 @@ static int get_undefined_value(VariableProxy var) {
 }
 
 PotentialOptimizer::PotentialOptimizer(
-    const shared_ptr<AbstractTask> &transform,
-    lp::LPSolverType lpsolver, double max_potential)
-    : task(transform),
+    const shared_ptr<AbstractTask> &task, lp::LPSolverType lpsolver,
+    double max_potential)
+    : task(task),
       task_proxy(*task),
       lp_solver(lpsolver),
       max_potential(max_potential),
@@ -51,8 +51,7 @@ bool PotentialOptimizer::has_optimal_solution() const {
 }
 
 void PotentialOptimizer::optimize_for_state(const State &state) {
-    optimize_for_samples({state}
-                         );
+    optimize_for_samples({state});
 }
 
 int PotentialOptimizer::get_lp_var_id(const FactProxy &fact) const {
@@ -70,7 +69,8 @@ void PotentialOptimizer::optimize_for_all_states() {
     }
     vector<double> coefficients(num_lp_vars, 0.0);
     for (FactProxy fact : task_proxy.get_variables().get_facts()) {
-        coefficients[get_lp_var_id(fact)] = 1.0 / fact.get_variable().get_domain_size();
+        coefficients[get_lp_var_id(fact)] =
+            1.0 / fact.get_variable().get_domain_size();
     }
     lp_solver.set_objective_coefficients(coefficients);
     solve_and_extract();
@@ -112,12 +112,14 @@ void PotentialOptimizer::construct_lp() {
     named_vector::NamedVector<lp::LPConstraint> lp_constraints;
     for (OperatorProxy op : task_proxy.get_operators()) {
         // Create constraint:
-        // Sum_{V in vars(eff(o))} (P_{V=pre(o)[V]} - P_{V=eff(o)[V]}) <= cost(o)
+        // Sum_{V in vars(eff(o))} (P_{V=pre(o)[V]} - P_{V=eff(o)[V]}) <=
+        // cost(o)
         unordered_map<int, int> var_to_precondition;
         for (FactProxy pre : op.get_preconditions()) {
             var_to_precondition[pre.get_variable().get_id()] = pre.get_value();
         }
-        lp::LPConstraint constraint(-infinity, op.get_cost());
+        lp::LPConstraint constraint(
+            lp::LPConstraintSense::LESS_EQUAL, op.get_cost());
         vector<pair<int, int>> coefficients;
         for (EffectProxy effect : op.get_effects()) {
             VariableProxy var = effect.get_fact().get_variable();
@@ -184,14 +186,15 @@ void PotentialOptimizer::construct_lp() {
             // Create constraint: P_{V=v} <= P_{V=u}
             // Note that we could eliminate variables P_{V=u} if V is
             // undefined in the goal.
-            lp::LPConstraint constraint(-infinity, 0);
+            lp::LPConstraint constraint(lp::LPConstraintSense::LESS_EQUAL, 0);
             constraint.insert(val_lp, 1);
             constraint.insert(undef_val_lp, -1);
             lp_constraints.push_back(constraint);
         }
     }
-    lp::LinearProgram lp(lp::LPObjectiveSense::MAXIMIZE, move(lp_variables),
-                         move(lp_constraints), infinity);
+    lp::LinearProgram lp(
+        lp::LPObjectiveSense::MAXIMIZE, move(lp_variables),
+        move(lp_constraints), infinity);
     lp_solver.load_problem(lp);
 }
 
@@ -211,7 +214,8 @@ void PotentialOptimizer::extract_lp_solution() {
     }
 }
 
-unique_ptr<PotentialFunction> PotentialOptimizer::get_potential_function() const {
+unique_ptr<PotentialFunction>
+PotentialOptimizer::get_potential_function() const {
     assert(has_optimal_solution());
     return make_unique<PotentialFunction>(fact_potentials);
 }

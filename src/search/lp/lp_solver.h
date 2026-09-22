@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 
-
 namespace plugins {
 class Feature;
 class Options;
@@ -17,11 +16,13 @@ class Options;
 
 namespace lp {
 enum class LPSolverType {
-    CPLEX, SOPLEX
+    CPLEX,
+    SOPLEX
 };
 
 enum class LPObjectiveSense {
-    MAXIMIZE, MINIMIZE
+    MAXIMIZE,
+    MINIMIZE
 };
 
 void add_lp_solver_option_to_feature(plugins::Feature &feature);
@@ -30,28 +31,52 @@ std::tuple<LPSolverType> get_lp_solver_arguments_from_options(
 
 class LinearProgram;
 
+enum class LPConstraintSense {
+    GREATER_EQUAL, // ax >= b
+    LESS_EQUAL, // ax <= b
+    EQUAL // ax = b
+};
+
+std::ostream &operator<<(std::ostream &os, LPConstraintSense s);
+
 class LPConstraint {
     std::vector<int> variables;
     std::vector<double> coefficients;
-    double lower_bound;
-    double upper_bound;
+    LPConstraintSense sense;
+    double right_hand_side;
 public:
-    LPConstraint(double lower_bound, double upper_bound);
+    LPConstraint(LPConstraintSense sense, double right_hand_side);
 
-    const std::vector<int> &get_variables() const {return variables;}
-    const std::vector<double> &get_coefficients() const {return coefficients;}
+    const std::vector<int> &get_variables() const {
+        return variables;
+    }
+    const std::vector<double> &get_coefficients() const {
+        return coefficients;
+    }
 
-    double get_lower_bound() const {return lower_bound;}
-    void set_lower_bound(double lb) {lower_bound = lb;}
-    double get_upper_bound() const {return upper_bound;}
-    void set_upper_bound(double ub) {upper_bound = ub;}
+    double get_right_hand_side() const {
+        return right_hand_side;
+    }
+
+    LPConstraintSense get_sense() const {
+        return sense;
+    }
+
+    void set_right_hand_side(double rhs) {
+        right_hand_side = rhs;
+    }
+
+    void set_sense(LPConstraintSense s) {
+        sense = s;
+    }
 
     void clear();
     bool empty() const;
     // Coefficients must be added without duplicate indices.
     void insert(int index, double coefficient);
 
-    std::ostream &dump(std::ostream &stream, const LinearProgram *program = nullptr) const;
+    std::ostream &dump(
+        std::ostream &stream, const LinearProgram *program = nullptr) const;
 };
 
 struct LPVariable {
@@ -60,10 +85,9 @@ struct LPVariable {
     double objective_coefficient;
     bool is_integer;
 
-    LPVariable(double lower_bound,
-               double upper_bound,
-               double objective_coefficient,
-               bool is_integer = false);
+    LPVariable(
+        double lower_bound, double upper_bound, double objective_coefficient,
+        bool is_integer = false);
 };
 
 class LinearProgram {
@@ -75,18 +99,22 @@ class LinearProgram {
     double infinity;
 
 public:
-    // objective_name is the name of the objective function used when writing the lp to a file.
-    LinearProgram(LPObjectiveSense sense,
-                  named_vector::NamedVector<LPVariable> &&variables,
-                  named_vector::NamedVector<LPConstraint> &&constraints,
-                  double infinity)
-        : sense(sense), variables(std::move(variables)),
-          constraints(std::move(constraints)), infinity(infinity) {
+    // objective_name is the name of the objective function used when writing
+    // the lp to a file.
+    LinearProgram(
+        LPObjectiveSense sense,
+        named_vector::NamedVector<LPVariable> &&variables,
+        named_vector::NamedVector<LPConstraint> &&constraints, double infinity)
+        : sense(sense),
+          variables(std::move(variables)),
+          constraints(std::move(constraints)),
+          infinity(infinity) {
     }
 
     /*
-      Variables and constraints can be given a custom name for debugging purposes.
-      This has an impact on performance and should not be used in production code.
+      Variables and constraints can be given a custom name for debugging
+      purposes. This has an impact on performance and should not be used in
+      production code.
      */
     named_vector::NamedVector<LPVariable> &get_variables();
     named_vector::NamedVector<LPConstraint> &get_constraints();
@@ -104,14 +132,15 @@ public:
     explicit LPSolver(LPSolverType solver_type);
 
     void load_problem(const LinearProgram &lp);
-    void add_temporary_constraints(const named_vector::NamedVector<LPConstraint> &constraints);
+    void add_temporary_constraints(
+        const named_vector::NamedVector<LPConstraint> &constraints);
     void clear_temporary_constraints();
     double get_infinity() const;
 
     void set_objective_coefficients(const std::vector<double> &coefficients);
     void set_objective_coefficient(int index, double coefficient);
-    void set_constraint_lower_bound(int index, double bound);
-    void set_constraint_upper_bound(int index, double bound);
+    void set_constraint_rhs(int index, double right_hand_side);
+    void set_constraint_sense(int index, LPConstraintSense sense);
     void set_variable_lower_bound(int index, double bound);
     void set_variable_upper_bound(int index, double bound);
 
