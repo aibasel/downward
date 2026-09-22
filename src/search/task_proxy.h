@@ -141,6 +141,14 @@ public:
         return *this;
     }
 
+    /*
+      issue997: TODO (Malte on Discord) If it turns out this fixes things, I
+      think it would be useful to add a code comment explaining that we saw in
+      experiments that not comparing the collection is runtime-critical, and
+      therefore we don't use the default comparison operator. We should then
+      also say explicitly here that comparing iterators that come from different
+      sources is illegal.
+    */
     bool operator==(const ProxyIterator &other) const {
         assert(collection == other.collection);
         return pos == other.pos;
