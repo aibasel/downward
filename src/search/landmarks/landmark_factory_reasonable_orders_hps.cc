@@ -112,7 +112,6 @@ void LandmarkFactoryReasonableOrdersHPS::insert_reasonable_orderings(
 */
 void LandmarkFactoryReasonableOrdersHPS::approximate_reasonable_orderings(
     const TaskProxy &task_proxy) {
-    State initial_state = task_proxy.get_initial_state();
     for (const auto &node : *landmark_graph) {
         const Landmark &landmark = node->get_landmark();
         if (landmark.type == DISJUNCTIVE) {
