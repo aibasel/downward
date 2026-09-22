@@ -192,7 +192,7 @@ public:
         document_property("consistent", "no");
         document_property(
             "safe",
-            "yes except on tasks with axioms and on tasks with conditional"
+            "yes except on tasks with axioms and on tasks with conditional "
             "effects when using a LandmarkFactory not supporting them");
     }
 

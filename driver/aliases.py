@@ -47,7 +47,7 @@ eager(alt([tiebreaking([sum([g(),weight(hAdd,10)]),hAdd]),
            tiebreaking([sum([g(),weight(hgc,10)]),hgc],pref_only=true)],
           boost=500),
       preferred=[hcea,hgc],reopen_closed=true,cost_type=normal)
-],repeat_last=true,continue_on_fail=true))))))"""]
+],repeat_last=true))))))"""]
 
 ALIASES["seq-sat-fd-autotune-2"] = [
     "--search",
@@ -87,7 +87,7 @@ lazy(alt([single(sum([g(),weight(hff,2)])),
           single(sum([g(),weight(hgc,2)]),pref_only=true)],
          boost=1000),
      preferred=[hcea,hgc],reopen_closed=true,cost_type=one)
-],repeat_last=true,continue_on_fail=true)))))"""]
+],repeat_last=true)))))"""]
 
 def _get_lama(pref):
     return [
@@ -101,7 +101,7 @@ def _get_lama(pref):
             lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3),
             lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2),
             lazy_wastar([hff,hlm],preferred=[hff,hlm],w=1)
-         ],repeat_last=true,continue_on_fail=true)))""",
+         ],repeat_last=true)))""",
         "--if-non-unit-cost",
         f"let(hlm1, eval_modify_costs(landmark_sum(lm_reasonable_orders_hps(lm_rhw()),pref={pref}),cost_type=one),"
         "let(hff1, eval_modify_costs(ff(),cost_type=one),"
@@ -116,7 +116,7 @@ def _get_lama(pref):
             lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=3),
             lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=2),
             lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=1)
-        ],repeat_last=true,continue_on_fail=true)))))""",
+        ],repeat_last=true)))))""",
         # Append --always to be on the safe side if we want to append
         # additional options later.
         "--always"]

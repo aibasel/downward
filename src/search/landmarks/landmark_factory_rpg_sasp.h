@@ -10,6 +10,34 @@
 #include <vector>
 
 namespace landmarks {
+
+using DomainTransitionGraph = std::vector<std::unordered_set<int>>;
+class DomainTransitionGraphCollection {
+    /*
+      NOTE: Similar code exists in M&S atomic abstractions
+      (merge_and_shrink/fts_factory.cc) and for stubborn sets
+      (pruning/stubborn_sets_ec.cc). There is also a class
+      `DomainTransitionGraph` (heuristics/domain_transition_graph.{h|cc}) that
+      is used for causal graph heuristics and context-enhanced additive
+      heuristics. We need a more general mechanism for creating data structures
+      of this kind.
+    */
+
+    // Domain transition graphs are stored as one adjacency list per value.
+    std::vector<DomainTransitionGraph> graphs;
+    void initialize_data(const TaskProxy &task_proxy);
+    void build_domain_transition_graphs(const TaskProxy &task_proxy);
+    void compute_successors(
+        const EffectProxy &effect,
+        const std::unordered_map<int, int> &preconditions,
+        const std::unordered_map<int, int> &effect_conditions);
+    void add_successor(int var_id, int pre, int post);
+
+public:
+    DomainTransitionGraphCollection(const TaskProxy &task_proxy);
+    const DomainTransitionGraph &get_graph(int var_id) const;
+};
+
 class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     const bool disjunctive_landmarks;
     const bool use_orders;
@@ -19,17 +47,6 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
     std::unordered_map<const LandmarkNode *, utils::HashSet<FactPair>>
         forward_orderings;
 
-    /* The entry `dtg_successors[var][val]` contains all successor values of the
-       atom var->val in the domain transition graph (aka atomic projection). */
-    std::vector<std::vector<std::unordered_set<int>>> dtg_successors;
-
-    void resize_dtg_data_structures(const TaskProxy &task_proxy);
-    void compute_dtg_successors(
-        const EffectProxy &effect,
-        const std::unordered_map<int, int> &preconditions,
-        const std::unordered_map<int, int> &effect_conditions);
-    void build_dtg_successors(const TaskProxy &task_proxy);
-    void add_dtg_successor(int var_id, int pre, int post);
     bool atom_and_landmark_achievable_together(
         const FactPair &atom, const Landmark &landmark) const;
     utils::HashSet<FactPair> compute_atoms_unreachable_without_landmark(
@@ -60,7 +77,9 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
         const Landmark &landmark, LandmarkNode *node,
         const std::vector<std::vector<bool>> &reached);
     void generate_backchaining_landmarks(
-        const TaskProxy &task_proxy, Exploration &exploration);
+        const TaskProxy &task_proxy,
+        const DomainTransitionGraphCollection &domain_transition_graphs,
+        Exploration &exploration);
     virtual void generate_relaxed_landmarks(
         const std::shared_ptr<AbstractTask> &task,
         Exploration &exploration) override;
@@ -77,6 +96,7 @@ class LandmarkFactoryRpgSasp : public LandmarkFactoryRelaxation {
         OrderingType type);
     void approximate_lookahead_orderings(
         const TaskProxy &task_proxy,
+        const DomainTransitionGraphCollection &domain_transition_graphs,
         const std::vector<std::vector<bool>> &reached, LandmarkNode *node);
 
     void build_disjunction_classes(const TaskProxy &task_proxy);

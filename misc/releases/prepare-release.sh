@@ -7,20 +7,20 @@
 set -euo pipefail
 
 if [ $# -ne 1 ]; then
-    echo "Usage: ./prepare-release.sh 19.06.1"
+    echo "Usage: ./prepare-release.sh 26.6.1"
     exit 1
 fi
 
 # Parse version parameter
 VERSION=$1
-if [[ ! "$VERSION" =~ ^[1-9][0-9]\.[0-9][0-9]\.[0-9]+$ ]]; then
-    echo "Unrecognized version number '$VERSION'. Expected the format YY.MM.x (e.g. 19.06.0)."
+if [[ ! "$VERSION" =~ ^([1-9][0-9])\.([1-9][0-9]?)\.([0-9]+)$ ]]; then
+    echo "Unrecognized version number '$VERSION'. Expected the format YY.M.x (e.g. 26.6.0)."
     exit 1
 fi
-YEAR=${VERSION:0:2}
-MONTH=${VERSION:3:2}
+YEAR=${BASH_REMATCH[1]}
+MONTH=${BASH_REMATCH[2]}
 MAJOR="$YEAR.$MONTH"
-MINOR=${VERSION##$MAJOR.}
+MINOR=${BASH_REMATCH[3]}
 BRANCH="release-$MAJOR"
 TAG="release-$VERSION"
 

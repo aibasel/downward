@@ -11,26 +11,29 @@
 using namespace std;
 
 namespace operator_counting {
-LMCutConstraints::LMCutConstraints(const shared_ptr<AbstractTask> &task)
-    : ConstraintGenerator(task) {
+LMCutConstraints::LMCutConstraints(
+    const shared_ptr<AbstractTask> &task, bool use_goal_zone_detection,
+    bool use_border_detection)
+    : ConstraintGenerator(task),
+      use_goal_zone_detection(use_goal_zone_detection),
+      use_border_detection(use_border_detection) {
 }
 
 void LMCutConstraints::initialize_constraints(
     const shared_ptr<AbstractTask> &task, lp::LinearProgram &) {
     TaskProxy task_proxy(*task);
-    landmark_generator =
-        make_unique<lm_cut_heuristic::LandmarkCutLandmarks>(task_proxy);
+    landmark_generator = make_unique<lm_cut_heuristic::LandmarkCutLandmarks>(
+        task_proxy, use_goal_zone_detection, use_border_detection);
 }
 
 bool LMCutConstraints::update_constraints(
     const State &state, lp::LPSolver &lp_solver) {
     assert(landmark_generator);
     named_vector::NamedVector<lp::LPConstraint> constraints;
-    double infinity = lp_solver.get_infinity();
 
     bool dead_end = landmark_generator->compute_landmarks(
         state, nullptr, [&](const vector<int> &op_ids, int /*cost*/) {
-            constraints.emplace_back(1.0, infinity);
+            constraints.emplace_back(lp::LPConstraintSense::GREATER_EQUAL, 1.0);
             lp::LPConstraint &landmark_constraint = constraints.back();
             for (int op_id : op_ids) {
                 landmark_constraint.insert(op_id, 1.0);
@@ -72,12 +75,16 @@ public:
                 "Proceedings of the Twenty-Third International Joint"
                 " Conference on Artificial Intelligence (IJCAI 2013)",
                 "2268-2274", "AAAI Press", "2013"));
+
+        lm_cut_heuristic::add_landmark_cut_landmarks_options_to_feature(*this);
     }
 
     virtual shared_ptr<TaskIndependentConstraintGenerator> create_component(
-        const plugins::Options &) const override {
+        const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
-            LMCutConstraints, ConstraintGenerator>();
+            LMCutConstraints, ConstraintGenerator>(
+            lm_cut_heuristic::get_landmark_cut_landmarks_arguments_from_options(
+                opts));
     }
 };
 
