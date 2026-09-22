@@ -229,7 +229,8 @@ void ContextEnhancedAdditiveHeuristic::set_up_local_problem(
     LocalProblemNode *start = &problem->nodes[start_value];
     start->cost = 0;
     for (size_t i = 0; i < problem->context_variables->size(); ++i)
-        start->context[i] = static_cast<short>(state[(*problem->context_variables)[i]]);
+        start->context[i] =
+            static_cast<short>(state[(*problem->context_variables)[i]]);
 
     add_to_heap(start);
 }
@@ -383,8 +384,8 @@ void ContextEnhancedAdditiveHeuristic::mark_helpful_transitions(
                 int precond_var_no = context_vars[local_var];
                 if (state[precond_var_no] == precond_value)
                     continue;
-                LocalProblem *subproblem = get_local_problem(
-                    precond_var_no, state[precond_var_no]);
+                LocalProblem *subproblem =
+                    get_local_problem(precond_var_no, state[precond_var_no]);
                 LocalProblemNode *subnode = &subproblem->nodes[precond_value];
                 mark_helpful_transitions(subproblem, subnode, state);
             }

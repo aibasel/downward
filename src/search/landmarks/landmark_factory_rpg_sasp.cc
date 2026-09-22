@@ -135,8 +135,7 @@ static void add_binary_variable_conditions(
         if (!precondition_variables.contains(var_id) &&
             effect_atom.get_variable().get_domain_size() == 2) {
             for (const FactPair &atom : landmark.atoms) {
-                if (atom.var == var_id &&
-                    initial_state[var_id] != atom.value) {
+                if (atom.var == var_id && initial_state[var_id] != atom.value) {
                     result.insert(initial_state.get_fact(var_id).get_pair());
                     break;
                 }

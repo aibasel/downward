@@ -107,8 +107,7 @@ int CGHeuristic::get_transition_cost(
         start->reached_by = nullptr;
         start->children_state.resize(dtg->local_to_global_child.size());
         for (size_t i = 0; i < dtg->local_to_global_child.size(); ++i) {
-            start->children_state[i] =
-                state[dtg->local_to_global_child[i]];
+            start->children_state[i] = state[dtg->local_to_global_child[i]];
         }
 
         // Initialize Heap for Dijkstra's algorithm.

@@ -94,17 +94,11 @@ using PackedStateBin = int_packer::IntPacker::Bin;
 */
 
 template<typename Container>
-concept proxy_iterator_enabled = requires(Container & container, std::size_t i) {
+concept proxy_iterator_enabled = requires(Container &container, std::size_t i) {
     typename Container::ItemType;
     requires std::same_as<Container, std::remove_const_t<Container>>;
-    {
-        container.size()
-    }
-    ->std::integral;
-    {
-        container[i]
-    }
-    ->std::same_as<typename Container::ItemType>;
+    { container.size() } -> std::integral;
+    { container[i] } -> std::same_as<typename Container::ItemType>;
 };
 
 /*
@@ -119,7 +113,8 @@ class ProxyIterator {
 public:
     using value_type = decltype((*collection)[0]);
     using difference_type = int; // unused but required by the iterator concept
-    using iterator_category = std::input_iterator_tag; // required for legacy iterators
+    using iterator_category =
+        std::input_iterator_tag; // required for legacy iterators
     using pointer = value_type *; // required for legacy iterators
     using reference = value_type; // required for legacy iterators
 
@@ -226,7 +221,8 @@ public:
 
     FactsProxyIterator() = default;
     FactsProxyIterator(const AbstractTask &task, int var_id, int value)
-        : task(&task), var_id(var_id), value(value) {}
+        : task(&task), var_id(var_id), value(value) {
+    }
 
     value_type operator*() const {
         return FactProxy(*task, var_id, value);
@@ -952,6 +948,5 @@ static_assert(std::ranges::range<State>);
 
 static_assert(std::input_iterator<FactsProxyIterator>);
 static_assert(std::ranges::range<FactsProxy>);
-
 
 #endif

@@ -17,8 +17,7 @@ static inline bool is_v_applicable(
     int var, int op_no, const State &state,
     vector<vector<int>> &preconditions) {
     int precondition_on_var = preconditions[op_no][var];
-    return precondition_on_var == -1 ||
-           precondition_on_var == state[var];
+    return precondition_on_var == -1 || precondition_on_var == state[var];
 }
 
 static vector<StubbornDTG> build_dtgs(TaskProxy task_proxy) {

@@ -46,7 +46,6 @@ public:
     }
 };
 
-
 static void remove_initial_state_facts(
     const TaskProxy &task_proxy, Facts &facts) {
     State initial_state = task_proxy.get_initial_state();
