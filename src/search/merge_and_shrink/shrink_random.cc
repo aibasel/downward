@@ -4,6 +4,7 @@
 #include "transition_system.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/markup.h"
 
 #include <cassert>
 #include <memory>
@@ -38,7 +39,17 @@ class ShrinkRandomFeature
 public:
     ShrinkRandomFeature() : TypedFeature("shrink_random") {
         document_title("Random");
-        document_synopsis("");
+        document_synopsis(
+            "Randomly combining abstract states is discussed as a baseline "
+            "shrinking strategy in the following paper:" +
+            utils::format_conference_reference(
+                {"Malte Helmert", "Patrik Haslum", "Jörg Hoffmann"},
+                "Flexible Abstraction Heuristics for Optimal Sequential "
+                "Planning",
+                "https://cdn.aaai.org/ICAPS/2007/ICAPS07-023.pdf",
+                "Proceedings of the 17th International Conference on "
+                "Automated Planning and Scheduling (ICAPS 2007)",
+                "176-183", "AAAI Press", "2007"));
 
         add_shrink_bucket_options_to_feature(*this);
     }

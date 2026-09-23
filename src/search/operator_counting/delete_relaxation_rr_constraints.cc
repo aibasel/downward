@@ -569,15 +569,14 @@ public:
             "h^+^. With the right settings, these constraints can be used to "
             "compute the optimal delete-relaxation heuristic h^+^ (see example "
             "below). For details, see" +
-            utils::format_journal_reference(
+            utils::format_conference_reference(
                 {"Masood Feyzbakhsh Rankooh", "Jussi Rintanen"},
                 "Efficient Computation and Informative Estimation of "
-                "h+ by Integer and Linear Programming"
-                "",
+                "h+ by Integer and Linear Programming",
                 "https://ojs.aaai.org/index.php/ICAPS/article/view/19787/19546",
                 "Proceedings of the Thirty-Second International Conference on "
-                "Automated Planning and Scheduling (ICAPS2022)",
-                "32", "71-79", "2022"));
+                "Automated Planning and Scheduling (ICAPS 2022)",
+                "71-79", "AAAI Press", "2022"));
 
         add_option<AcyclicityType>(
             "acyclicity_type",

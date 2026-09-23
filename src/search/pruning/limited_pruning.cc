@@ -2,6 +2,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 using namespace std;
 
@@ -64,6 +65,18 @@ class LimitedPruningFeature
 public:
     LimitedPruningFeature() : TypedFeature("limited_pruning") {
         document_title("Limited pruning");
+        document_note(
+            "Reference",
+            "Disabling stubborn set pruning based on the observed pruning "
+            "ratio is evaluated in the following paper:" +
+                utils::format_conference_reference(
+                    {"Gabriele Röger", "Malte Helmert", "Jendrik Seipp",
+                     "Silvan Sievers"},
+                    "An Atom-Centric Perspective on Stubborn Sets",
+                    "https://ojs.aaai.org/index.php/SOCS/article/download/18535/18326",
+                    "Proceedings of the 13th Annual Symposium on "
+                    "Combinatorial Search (SoCS 2020)",
+                    "57-65", "AAAI Press", "2020"));
         document_synopsis(
             "Limited pruning applies another pruning method and switches it off "
             "after a fixed number of expansions if the pruning ratio is below a "

@@ -237,7 +237,7 @@ void add_landmark_heuristic_options_to_feature(
         utils::format_conference_reference(
             {"Clemens Büchner", "Thomas Keller", "Salomé Eriksson",
              "Malte Helmert"},
-            "Landmarks Progression in Heuristic Search",
+            "Landmark Progression in Heuristic Search",
             "https://ai.dmi.unibas.ch/papers/buechner-et-al-icaps2023.pdf",
             "Proceedings of the Thirty-Third International Conference on "
             "Automated Planning and Scheduling (ICAPS 2023)",

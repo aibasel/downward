@@ -177,9 +177,9 @@ public:
                 "Type-Based Exploration with Multiple Search Queues for"
                 " Satisficing Planning",
                 "http://www.aaai.org/ocs/index.php/AAAI/AAAI14/paper/view/8472/8705",
-                "Proceedings of the Twenty-Eigth AAAI Conference Conference"
+                "Proceedings of the Twenty-Eighth AAAI Conference"
                 " on Artificial Intelligence (AAAI 2014)",
-                "2395-2401", "AAAI Press", "2014"));
+                "2395-2402", "AAAI Press", "2014"));
 
         add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "evaluators",

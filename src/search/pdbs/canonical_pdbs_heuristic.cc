@@ -5,6 +5,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/timer.h"
 
 #include <iostream>
@@ -97,6 +98,19 @@ public:
     CanonicalPDBsHeuristicFeature() : TypedFeature("cpdbs") {
         document_subcategory("heuristics_pdb");
         document_title("Canonical PDB");
+        document_note(
+            "Reference",
+            "The canonical pattern database heuristic is described in the "
+            "following paper:" +
+                utils::format_conference_reference(
+                    {"Patrik Haslum", "Adi Botea", "Malte Helmert",
+                     "Blai Bonet", "Sven Koenig"},
+                    "Domain-Independent Construction of Pattern Database "
+                    "Heuristics for Cost-Optimal Planning",
+                    "https://cdn.aaai.org/AAAI/2007/AAAI07-160.pdf",
+                    "Proceedings of the 22nd AAAI Conference on Artificial "
+                    "Intelligence (AAAI 2007)",
+                    "1007-1012", "AAAI Press", "2007"));
         document_synopsis(
             "The canonical pattern database heuristic is calculated as follows. "
             "For a given pattern collection C, the value of the "

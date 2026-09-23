@@ -5,6 +5,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/hash.h"
+#include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -258,6 +259,18 @@ class ParetoOpenListFeature
 public:
     ParetoOpenListFeature() : TypedFeature("pareto") {
         document_title("Pareto open list");
+        document_note(
+            "Reference",
+            "The Pareto approach is described in the following paper. Its "
+            "sampling scheme corresponds to state_uniform_selection=true:" +
+                utils::format_conference_reference(
+                    {"Gabriele Röger", "Malte Helmert"},
+                    "The More, the Merrier: Combining Heuristic Estimators "
+                    "for Satisficing Planning",
+                    "https://ojs.aaai.org/index.php/ICAPS/article/download/13435/13284",
+                    "Proceedings of the 20th International Conference on "
+                    "Automated Planning and Scheduling (ICAPS 2010)",
+                    "246-249", "AAAI Press", "2010"));
         document_synopsis(
             "Selects one of the Pareto-optimal (regarding the sub-evaluators) "
             "entries for removal.");

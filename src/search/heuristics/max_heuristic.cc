@@ -2,6 +2,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 #include <cassert>
 #include <vector>
@@ -106,6 +107,13 @@ class HSPMaxHeuristicFeature
 public:
     HSPMaxHeuristicFeature() : TypedFeature("hmax") {
         document_title("Max heuristic");
+        document_synopsis(
+            "The h^max heuristic is described in the following paper:" +
+            utils::format_journal_reference(
+                {"Blai Bonet", "Hector Geffner"},
+                "Planning as Heuristic Search",
+                "https://doi.org/10.1016/S0004-3702%2801%2900108-4",
+                "Artificial Intelligence", "129(1-2)", "5-33", "2001"));
 
         relaxation_heuristic::add_relaxation_heuristic_options_to_feature(
             *this, "hmax");

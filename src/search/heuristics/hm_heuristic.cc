@@ -3,6 +3,7 @@
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 #include <cassert>
 #include <limits>
@@ -257,6 +258,15 @@ class HMHeuristicFeature
 public:
     HMHeuristicFeature() : TypedFeature("hm") {
         document_title("h^m heuristic");
+        document_synopsis(
+            "The h^m family of heuristics is described in the following paper:" +
+            utils::format_conference_reference(
+                {"Patrik Haslum", "Hector Geffner"},
+                "Admissible Heuristics for Optimal Planning",
+                "https://cdn.aaai.org/AIPS/2000/AIPS00-015.pdf",
+                "Proceedings of the Fifth International Conference on "
+                "Artificial Intelligence Planning Systems (AIPS 2000)",
+                "140-149", "AAAI Press", "2000"));
 
         add_option<int>(
             "m", "subset size", "2", plugins::Bounds("1", "infinity"));

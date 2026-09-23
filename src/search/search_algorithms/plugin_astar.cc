@@ -2,6 +2,7 @@
 #include "search_common.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/markup.h"
 
 using namespace std;
 
@@ -11,6 +12,16 @@ class AStarSearchFeature
 public:
     AStarSearchFeature() : TypedFeature("astar") {
         document_title("A* search (eager)");
+        document_note(
+            "Reference",
+            "The A* algorithm is described in the following paper:" +
+                utils::format_journal_reference(
+                    {"Peter E. Hart", "Nils J. Nilsson", "Bertram Raphael"},
+                    "A Formal Basis for the Heuristic Determination of "
+                    "Minimum Cost Paths",
+                    "https://doi.org/10.1109/TSSC.1968.300136",
+                    "IEEE Transactions on Systems Science and Cybernetics",
+                    "4(2)", "100-107", "1968"));
         document_synopsis(
             "A* is a special case of eager best first search that uses g+h "
             "as f-function. "

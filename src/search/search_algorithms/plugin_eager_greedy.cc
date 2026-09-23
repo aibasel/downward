@@ -2,6 +2,7 @@
 #include "search_common.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/markup.h"
 
 using namespace std;
 
@@ -11,7 +12,17 @@ class EagerGreedySearchFeature
 public:
     EagerGreedySearchFeature() : TypedFeature("eager_greedy") {
         document_title("Greedy search (eager)");
-        document_synopsis("");
+        document_synopsis(
+            "Greedy best-first search and its use of preferred operators are "
+            "discussed in the following paper:" +
+            utils::format_conference_reference(
+                {"Silvia Richter", "Malte Helmert"},
+                "Preferred Operators and Deferred Evaluation in "
+                "Satisficing Planning",
+                "https://ojs.aaai.org/index.php/ICAPS/article/download/13345/13193",
+                "Proceedings of the 19th International Conference on "
+                "Automated Planning and Scheduling (ICAPS 2009)",
+                "273-280", "AAAI Press", "2009"));
 
         add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "evals", "evaluators");

@@ -6,6 +6,7 @@
 #include "../plugins/plugin.h"
 #include "../utils/component_errors.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 #include <iostream>
 
@@ -281,7 +282,16 @@ class IteratedSearchFeature
 public:
     IteratedSearchFeature() : TypedFeature("iterated") {
         document_title("Iterated search");
-        document_synopsis("");
+        document_synopsis(
+            "An application of iterated search with decreasing weighted A* "
+            "weights is described in the following article:" +
+            utils::format_journal_reference(
+                {"Silvia Richter", "Matthias Westphal"},
+                "The LAMA Planner: Guiding Cost-Based Anytime Planning "
+                "with Landmarks",
+                "https://jair.org/index.php/jair/article/download/10667/25496",
+                "Journal of Artificial Intelligence Research", "39", "127-177",
+                "2010"));
 
         add_list_option<shared_ptr<TaskIndependentSearchAlgorithm>>(
             "algorithm_configs", "list of search algorithms for each phase",
