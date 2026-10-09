@@ -19,7 +19,7 @@ public:
                 {"Silvia Richter", "Malte Helmert"},
                 "Preferred Operators and Deferred Evaluation in "
                 "Satisficing Planning",
-                "https://ojs.aaai.org/index.php/ICAPS/article/download/13345/13193",
+                "https://doi.org/10.1609/icaps.v19i1.13345",
                 "Proceedings of the 19th International Conference on "
                 "Automated Planning and Scheduling (ICAPS 2009)",
                 "273-280", "AAAI Press", "2009"));

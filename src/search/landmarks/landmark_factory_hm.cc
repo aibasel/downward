@@ -1050,7 +1050,7 @@ public:
         document_title("h^m landmarks");
         document_synopsis(
             "The landmark generation method introduced in the "
-            "following paper" +
+            "following paper:" +
             utils::format_conference_reference(
                 {"Emil Keyder", "Silvia Richter", "Malte Helmert"},
                 "Sound and Complete Landmarks for And/Or Graphs",

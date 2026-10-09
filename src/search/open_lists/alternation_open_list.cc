@@ -162,13 +162,19 @@ public:
         document_title("Alternation open list");
         document_note(
             "Reference",
-            "Alternating between heuristic queues is discussed in the "
-            "following paper:" +
+            "The idea of alternating between heuristic queues is described in "
+            "the following paper:" +
+                utils::format_journal_reference(
+                    {"Malte Helmert"}, "The Fast Downward Planning System",
+                    "https://doi.org/10.1613/jair.1705",
+                    "Journal of Artificial Intelligence Research", "26",
+                    "191-246", "2006") +
+                "It is discussed in more detail in the following paper:" +
                 utils::format_conference_reference(
                     {"Gabriele Röger", "Malte Helmert"},
                     "The More, the Merrier: Combining Heuristic Estimators "
                     "for Satisficing Planning",
-                    "https://ojs.aaai.org/index.php/ICAPS/article/download/13435/13284",
+                    "https://doi.org/10.1609/icaps.v20i1.13435",
                     "Proceedings of the 20th International Conference on "
                     "Automated Planning and Scheduling (ICAPS 2010)",
                     "246-249", "AAAI Press", "2010"));

@@ -313,7 +313,7 @@ public:
             "databases with a genetic algorithm. Pattern collections are initially "
             "created with a bin-packing algorithm. The genetic algorithm is used "
             "to optimize the pattern collections with an objective function that "
-            "estimates the mean heuristic value of the the pattern collections. "
+            "estimates the mean heuristic value of the pattern collections. "
             "Pattern collections with higher mean heuristic estimates are more "
             "likely selected for the next generation." +
             utils::format_conference_reference(

@@ -263,10 +263,14 @@ public:
             utils::format_conference_reference(
                 {"Patrik Haslum", "Hector Geffner"},
                 "Admissible Heuristics for Optimal Planning",
-                "https://cdn.aaai.org/AIPS/2000/AIPS00-015.pdf",
+                "https://www.ida.liu.se/divisions/aiics/publications/"
+                "AIPS-2000-Admissible-Heuristics-Optimal.pdf",
                 "Proceedings of the Fifth International Conference on "
                 "Artificial Intelligence Planning Systems (AIPS 2000)",
-                "140-149", "AAAI Press", "2000"));
+                "140-149", "AAAI Press", "2000") +
+            "Note that the implementation of the h^m heuristic is "
+            "preliminary and very inefficient. Please do not use it for "
+            "comparisons.");
 
         add_option<int>(
             "m", "subset size", "2", plugins::Bounds("1", "infinity"));

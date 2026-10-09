@@ -117,7 +117,17 @@ public:
             "states. To compute this score, this class thus computes the product "
             "of all pairs of transition systems, potentially copying and shrinking "
             "the transition systems before if otherwise their product would exceed "
-            "the specified size limits. A stateless merge strategy using this "
+            "the specified size limits. The MIASM merge strategy was introduced "
+            "in the following paper:" +
+            utils::format_conference_reference(
+                {"Gaojian Fan", "Martin Müller", "Robert Holte"},
+                "Non-Linear Merging Strategies for Merge-and-Shrink Based on "
+                "Variable Interactions",
+                "https://doi.org/10.1609/socs.v5i1.18330",
+                "Proceedings of the Seventh Annual Symposium on Combinatorial "
+                "Search (SoCS 2014)",
+                "53-61", "AAAI Press", "2014") +
+            "A stateless merge strategy using this "
             "scoring function is called dyn-MIASM (nowadays also called sbMIASM "
             "for score-based MIASM) and is described in the following paper:" +
             utils::format_conference_reference(

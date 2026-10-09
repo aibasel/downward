@@ -16,21 +16,30 @@ public:
         document_title("(Weighted) A* search (lazy)");
         document_note(
             "Reference",
-            "Weighted A* is described in the following paper:" +
+            "Lazy search (deferred evaluation) is described in the following "
+            "papers:" +
                 utils::format_journal_reference(
-                    {"Ira Pohl"},
-                    "Heuristic Search Viewed as Path Finding in a Graph",
-                    "https://doi.org/10.1016/0004-3702%2870%2990007-X",
-                    "Artificial Intelligence", "1(3-4)", "193-204", "1970") +
-                "Deferred evaluation is described in the following paper:" +
+                    {"Malte Helmert"}, "The Fast Downward Planning System",
+                    "https://doi.org/10.1613/jair.1705",
+                    "Journal of Artificial Intelligence Research", "26",
+                    "191-246", "2006") +
                 utils::format_conference_reference(
                     {"Silvia Richter", "Malte Helmert"},
                     "Preferred Operators and Deferred Evaluation in Satisficing "
                     "Planning",
-                    "https://ojs.aaai.org/index.php/ICAPS/article/download/13345/13193",
+                    "https://doi.org/10.1609/icaps.v19i1.13345",
                     "Proceedings of the 19th International Conference on "
                     "Automated Planning and Scheduling (ICAPS 2009)",
-                    "273-280", "AAAI Press", "2009"));
+                    "273-280", "AAAI Press", "2009") +
+                "Lazy weighted A* is used and described in the following "
+                "paper:" +
+                utils::format_journal_reference(
+                    {"Silvia Richter", "Matthias Westphal"},
+                    "The LAMA Planner: Guiding Cost-Based Anytime Planning "
+                    "with Landmarks",
+                    "https://doi.org/10.1613/jair.2972",
+                    "Journal of Artificial Intelligence Research", "39",
+                    "127-177", "2010"));
         document_synopsis(
             "Weighted A* is a special case of lazy best first search.");
 

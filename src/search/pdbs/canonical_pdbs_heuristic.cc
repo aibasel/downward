@@ -100,7 +100,7 @@ public:
         document_title("Canonical PDB");
         document_note(
             "Reference",
-            "The canonical pattern database heuristic is described in the "
+            "The canonical pattern database heuristic was introduced in the "
             "following paper:" +
                 utils::format_conference_reference(
                     {"Patrik Haslum", "Adi Botea", "Malte Helmert",
@@ -110,7 +110,26 @@ public:
                     "https://cdn.aaai.org/AAAI/2007/AAAI07-160.pdf",
                     "Proceedings of the 22nd AAAI Conference on Artificial "
                     "Intelligence (AAAI 2007)",
-                    "1007-1012", "AAAI Press", "2007"));
+                    "1007-1012", "AAAI Press", "2007") +
+                "It is discussed in the context of other cost partitioning "
+                "methods in the following paper:" +
+                utils::format_conference_reference(
+                    {"Jendrik Seipp", "Thomas Keller", "Malte Helmert"},
+                    "A Comparison of Cost Partitioning Algorithms for Optimal "
+                    "Classical Planning",
+                    "https://ai.dmi.unibas.ch/papers/seipp-et-al-icaps2017.pdf",
+                    "Proceedings of the 27th International Conference on "
+                    "Automated Planning and Scheduling (ICAPS 2017)",
+                    "259-268", "AAAI Press", "2017") +
+                "For implementation notes, see:" +
+                utils::format_conference_reference(
+                    {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
+                    "Efficient Implementation of Pattern Database Heuristics "
+                    "for Classical Planning",
+                    "https://ai.dmi.unibas.ch/papers/sievers-et-al-socs2012.pdf",
+                    "Proceedings of the Fifth Annual Symposium on "
+                    "Combinatorial Search (SoCS 2012)",
+                    "105-111", "AAAI Press", "2012"));
         document_synopsis(
             "The canonical pattern database heuristic is calculated as follows. "
             "For a given pattern collection C, the value of the "

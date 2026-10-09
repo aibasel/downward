@@ -67,16 +67,18 @@ public:
         document_title("Limited pruning");
         document_note(
             "Reference",
-            "Disabling stubborn set pruning based on the observed pruning "
-            "ratio is evaluated in the following paper:" +
+            "Disabling pruning based on the observed pruning ratio is "
+            "described in the following paper:" +
                 utils::format_conference_reference(
-                    {"Gabriele Röger", "Malte Helmert", "Jendrik Seipp",
-                     "Silvan Sievers"},
-                    "An Atom-Centric Perspective on Stubborn Sets",
-                    "https://ojs.aaai.org/index.php/SOCS/article/download/18535/18326",
-                    "Proceedings of the 13th Annual Symposium on "
-                    "Combinatorial Search (SoCS 2020)",
-                    "57-65", "AAAI Press", "2020"));
+                    {"Yusra Alkhazraji", "Michael Katz", "Robert Mattmüller",
+                     "Florian Pommerening", "Alexander Shleyfman",
+                     "Martin Wehrle"},
+                    "Metis: Arming Fast Downward with Pruning and Incremental "
+                    "Computation",
+                    "https://ai.dmi.unibas.ch/papers/alkhazraji-et-al-ipc2014.pdf",
+                    "Eighth International Planning Competition (IPC-8): "
+                    "Planner Abstracts",
+                    "88-92", "", "2014"));
         document_synopsis(
             "Limited pruning applies another pruning method and switches it off "
             "after a fixed number of expansions if the pruning ratio is below a "

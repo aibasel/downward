@@ -88,20 +88,18 @@ class LandmarkFactoryRpgExhaustFeature
 public:
     LandmarkFactoryRpgExhaustFeature() : TypedFeature("lm_exhaust") {
         document_title("Exhaustive landmarks");
-        document_note(
-            "Reference",
-            "For background on delete-relaxation landmarks and the causal "
-            "landmarks computed with use_unary_relaxation=true, see:" +
-                utils::format_conference_reference(
-                    {"Emil Keyder", "Silvia Richter", "Malte Helmert"},
-                    "Sound and Complete Landmarks for And/Or Graphs",
-                    "https://ai.dmi.unibas.ch/papers/keyder-et-al-ecai2010.pdf",
-                    "Proceedings of the 19th European Conference on "
-                    "Artificial Intelligence (ECAI 2010)",
-                    "335-340", "IOS Press", "2010"));
         document_synopsis(
-            "Exhaustively checks for each atom if it is a landmark."
-            "This check is done using relaxed planning.");
+            "Tests for every atom if the relaxed planning task where all "
+            "achievers of this atom are removed is solvable. If not, the atom "
+            "is a landmark. For the concept of delete relaxation, see the "
+            "following paper:" +
+            utils::format_journal_reference(
+                {"Jörg Hoffmann", "Bernhard Nebel"},
+                "The FF Planning System: Fast Plan Generation Through "
+                "Heuristic Search",
+                "https://doi.org/10.1613/jair.855",
+                "Journal of Artificial Intelligence Research", "14", "253-302",
+                "2001"));
 
         add_option<bool>(
             "use_unary_relaxation",

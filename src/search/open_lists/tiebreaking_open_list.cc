@@ -197,7 +197,7 @@ public:
                 {"Gabriele Röger", "Malte Helmert"},
                 "The More, the Merrier: Combining Heuristic Estimators "
                 "for Satisficing Planning",
-                "https://ojs.aaai.org/index.php/ICAPS/article/download/13435/13284",
+                "https://doi.org/10.1609/icaps.v20i1.13435",
                 "Proceedings of the 20th International Conference on "
                 "Automated Planning and Scheduling (ICAPS 2010)",
                 "246-249", "AAAI Press", "2010"));
