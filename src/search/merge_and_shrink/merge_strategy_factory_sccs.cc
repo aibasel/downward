@@ -21,22 +21,10 @@
 using namespace std;
 
 namespace merge_and_shrink {
-static bool compare_sccs_increasing(
-    const vector<int> &lhs, const vector<int> &rhs) {
-    return lhs.size() < rhs.size();
-}
-
-static bool compare_sccs_decreasing(
-    const vector<int> &lhs, const vector<int> &rhs) {
-    return lhs.size() > rhs.size();
-}
-
 MergeStrategyFactorySCCs::MergeStrategyFactorySCCs(
-    const shared_ptr<AbstractTask> &task, const OrderOfSCCs &order_of_sccs,
+    const shared_ptr<AbstractTask> &task,
     const shared_ptr<MergeSelector> &merge_selector, utils::Verbosity verbosity)
-    : MergeStrategyFactory(task, verbosity),
-      order_of_sccs(order_of_sccs),
-      merge_selector(merge_selector) {
+    : MergeStrategyFactory(task, verbosity), merge_selector(merge_selector) {
 }
 
 unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
@@ -53,23 +41,6 @@ unique_ptr<MergeStrategy> MergeStrategyFactorySCCs::compute_merge_strategy(
         cg.push_back(successors);
     }
     vector<vector<int>> sccs(sccs::compute_maximal_sccs(cg));
-
-    // Put the SCCs in the desired order.
-    switch (order_of_sccs) {
-    case OrderOfSCCs::TOPOLOGICAL:
-        // SCCs are computed in topological order.
-        break;
-    case OrderOfSCCs::REVERSE_TOPOLOGICAL:
-        // SCCs are computed in topological order.
-        reverse(sccs.begin(), sccs.end());
-        break;
-    case OrderOfSCCs::DECREASING:
-        sort(sccs.begin(), sccs.end(), compare_sccs_decreasing);
-        break;
-    case OrderOfSCCs::INCREASING:
-        sort(sccs.begin(), sccs.end(), compare_sccs_increasing);
-        break;
-    }
 
     if (log.is_at_least_normal()) {
         log << "SCCs of the causal graph:" << endl;
@@ -110,24 +81,8 @@ bool MergeStrategyFactorySCCs::requires_goal_distances() const {
 
 void MergeStrategyFactorySCCs::dump_strategy_specific_options() const {
     if (log.is_at_least_normal()) {
-        log << "Merge order of sccs: ";
-        switch (order_of_sccs) {
-        case OrderOfSCCs::TOPOLOGICAL:
-            log << "topological";
-            break;
-        case OrderOfSCCs::REVERSE_TOPOLOGICAL:
-            log << "reverse topological";
-            break;
-        case OrderOfSCCs::DECREASING:
-            log << "decreasing";
-            break;
-        case OrderOfSCCs::INCREASING:
-            log << "increasing";
-            break;
-        }
-        log << endl;
-
-        log << "Merge strategy for merging within sccs: " << endl;
+        log << "Merge strategy for merging individual SCCs/partitions: "
+            << endl;
         merge_selector->dump_options(log);
     }
 }
@@ -153,14 +108,17 @@ public:
             "In a nutshell, it computes the maximal strongly connected "
             "components (SCCs) of the causal graph, "
             "obtaining a partitioning of the task's variables. Every such "
-            "partition is then merged individually, using the specified fallback "
-            "merge strategy, considering the SCCs in a configurable order. "
-            "Afterwards, all resulting composite abstractions are merged to form "
-            "the final abstraction, again using the specified fallback merge "
-            "strategy and the configurable order of the SCCs.");
-
-        add_option<OrderOfSCCs>(
-            "order_of_sccs", "how the SCCs should be ordered", "topological");
+            "partition is then merged individually, using the score-based merge "
+            "strategy specified via the merge_selector option. Once all partitions "
+            "have been merged, the resulting product factors are merged according "
+            "to the score-based merge strategy.");
+        document_note(
+            "Note regarding how partitions are considered",
+            "Originally, SCC partitions are worked on 'one after the other' "
+            "in an order that could be specified and which defaulted to topological "
+            "order. In issue1171, this was changed to 'allowing working on any "
+            "partition', i.e., all pairs of factors in each partition form the set "
+            "of candidates scored by the score-based merge strategy.");
         add_option<shared_ptr<TaskIndependentMergeSelector>>(
             "merge_selector", "the fallback merge strategy to use");
         add_merge_strategy_options_to_feature(*this);
@@ -170,7 +128,6 @@ public:
         const plugins::Options &opts) const override {
         return components::make_auto_task_independent_component<
             MergeStrategyFactorySCCs, MergeStrategyFactory>(
-            opts.get<OrderOfSCCs>("order_of_sccs"),
             opts.get<shared_ptr<TaskIndependentMergeSelector>>(
                 "merge_selector"),
             get_merge_strategy_arguments_from_options(opts));
@@ -178,15 +135,4 @@ public:
 };
 
 static plugins::FeaturePlugin<MergeStrategyFactorySCCsFeature> _plugin;
-
-static plugins::TypedEnumPlugin<OrderOfSCCs> _enum_plugin(
-    {{"topological",
-      "according to the topological ordering of the directed graph "
-      "where each obtained SCC is a 'supervertex'"},
-     {"reverse_topological",
-      "according to the reverse topological ordering of the directed "
-      "graph where each obtained SCC is a 'supervertex'"},
-     {"decreasing", "biggest SCCs first, using 'topological' as tie-breaker"},
-     {"increasing",
-      "smallest SCCs first, using 'topological' as tie-breaker"}});
 }
