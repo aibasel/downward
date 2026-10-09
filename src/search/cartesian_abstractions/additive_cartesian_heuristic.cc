@@ -68,7 +68,7 @@ public:
             "abstraction refinement (CEGAR) for classical planning:" +
             utils::format_conference_reference(
                 {"Jendrik Seipp", "Malte Helmert"},
-                "Counterexample-guided Cartesian Abstraction Refinement",
+                "Counterexample-Guided Cartesian Abstraction Refinement",
                 "https://ai.dmi.unibas.ch/papers/seipp-helmert-icaps2013.pdf",
                 "Proceedings of the 23rd International Conference on Automated "
                 "Planning and Scheduling (ICAPS 2013)",

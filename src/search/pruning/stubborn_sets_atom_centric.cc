@@ -265,7 +265,7 @@ public:
             "this implementation focuses on atomic propositions (atoms), which "
             "often speeds up the computation on IPC benchmarks. For details, see" +
             utils::format_conference_reference(
-                {"Gabriele Roeger", "Malte Helmert", "Jendrik Seipp",
+                {"Gabriele Röger", "Malte Helmert", "Jendrik Seipp",
                  "Silvan Sievers"},
                 "An Atom-Centric Perspective on Stubborn Sets",
                 "https://ai.dmi.unibas.ch/papers/roeger-et-al-socs2020.pdf",

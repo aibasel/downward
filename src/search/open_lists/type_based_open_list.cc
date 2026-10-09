@@ -173,10 +173,10 @@ public:
             "uniformly randomly. "
             "The algorithm is based on" +
             utils::format_conference_reference(
-                {"Fan Xie", "Martin Mueller", "Robert Holte", "Tatsuya Imai"},
+                {"Fan Xie", "Martin Müller", "Robert Holte", "Tatsuya Imai"},
                 "Type-Based Exploration with Multiple Search Queues for"
                 " Satisficing Planning",
-                "http://www.aaai.org/ocs/index.php/AAAI/AAAI14/paper/view/8472/8705",
+                "https://doi.org/10.1609/aaai.v28i1.9036",
                 "Proceedings of the Twenty-Eighth AAAI Conference"
                 " on Artificial Intelligence (AAAI 2014)",
                 "2395-2402", "AAAI Press", "2014"));

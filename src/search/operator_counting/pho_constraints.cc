@@ -74,7 +74,7 @@ public:
             " constraint h(s) <= sum_{o in relevant(h)} Count_o. For details,"
             " see" +
             utils::format_conference_reference(
-                {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert"},
+                {"Florian Pommerening", "Gabriele Röger", "Malte Helmert"},
                 "Getting the Most Out of Pattern Databases for Classical Planning",
                 "http://ijcai.org/papers13/Papers/IJCAI13-347.pdf",
                 "Proceedings of the Twenty-Third International Joint"

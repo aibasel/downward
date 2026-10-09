@@ -319,7 +319,7 @@ public:
             utils::format_conference_reference(
                 {"Stefan Edelkamp"},
                 "Automated Creation of Pattern Database Search Heuristics",
-                "http://www.springerlink.com/content/20613345434608x1/",
+                "https://doi.org/10.1007/978-3-540-74128-2_3",
                 "Model Checking and Artificial Intelligence, 4th Workshop "
                 "(MoChArt 2006), Revised Selected and Invited Papers",
                 "35-50", "Springer", "2007"));

@@ -81,7 +81,7 @@ public:
                     "https://ai.dmi.unibas.ch/papers/sievers-et-al-socs2012.pdf",
                     "Proceedings of the Fifth Annual Symposium on "
                     "Combinatorial Search (SoCS 2012)",
-                    "105-111", "AAAI Press", "2012"));
+                    "49-56", "AAAI Press", "2012"));
         document_synopsis(
             "The zero/one pattern database heuristic is simply the sum of the "
             "heuristic values of all patterns in the pattern collection. In contrast "

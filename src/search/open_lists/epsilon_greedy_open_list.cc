@@ -181,7 +181,7 @@ public:
                  "Jonathan Schaeffer", "Fan Xie"},
                 "A Comparison of Knowledge-Based GBFS Enhancements and"
                 " Knowledge-Free Exploration",
-                "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7943/8066",
+                "https://doi.org/10.1609/icaps.v24i1.13681",
                 "Proceedings of the Twenty-Fourth International Conference"
                 " on Automated Planning and Scheduling (ICAPS 2014)",
                 "375-379", "AAAI Press", "2014"));

@@ -389,7 +389,7 @@ public:
             utils::format_journal_reference(
                 {"Jörg Hoffmann", "Julie Porteous", "Laura Sebastia"},
                 "Ordered Landmarks in Planning",
-                "https://jair.org/index.php/jair/article/view/10390/24882",
+                "https://doi.org/10.1613/jair.1492",
                 "Journal of Artificial Intelligence Research", "22", "215-278",
                 "2004"));
 
