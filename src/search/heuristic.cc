@@ -44,8 +44,6 @@ EvaluationResult Heuristic::compute_result(EvaluatorCall &call) {
 
     const State &state = call.get_state();
     assert(state.get_task() == task_proxy);
-    // TODO issue1236: let each heuristic decide whether to unpack the state.
-    state.unpack();
     bool calculate_preferred = call.get_calculate_preferred();
 
     int heuristic = NO_VALUE;
@@ -55,6 +53,8 @@ EvaluationResult Heuristic::compute_result(EvaluatorCall &call) {
         heuristic = heuristic_cache[state].h;
         result.set_count_evaluation(false);
     } else {
+        // TODO issue1236: let each heuristic decide whether to unpack the state.
+        state.unpack();
         heuristic = compute_heuristic(state);
         if (cache_evaluator_values) {
             heuristic_cache[state] = HEntry(heuristic, false);
