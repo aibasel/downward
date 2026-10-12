@@ -138,7 +138,22 @@ public:
         return *this;
     }
 
-    bool operator==(const ProxyIterator &other) const = default;
+    /*
+      issue997: TODO (Malte on Discord) If it turns out this fixes things, I
+      think it would be useful to add a code comment explaining that we saw in
+      experiments that not comparing the collection is runtime-critical, and
+      therefore we don't use the default comparison operator. We should then
+      also say explicitly here that comparing iterators that come from different
+      sources is illegal.
+    */
+    bool operator==(const ProxyIterator &other) const {
+        assert(collection == other.collection);
+        return pos == other.pos;
+    }
+
+    bool operator!=(const ProxyIterator &other) const {
+        return !(*this == other);
+    }
 };
 
 template<proxy_iterator_enabled ProxyCollection>
@@ -231,7 +246,14 @@ public:
         return fact;
     }
 
-    bool operator==(const FactsProxyIterator &other) const = default;
+    bool operator==(const FactsProxyIterator &other) const {
+        assert(task == other.task);
+        return var_id == other.var_id && value == other.value;
+    }
+
+    bool operator!=(const FactsProxyIterator &other) const {
+        return !(*this == other);
+    }
 };
 
 /*
@@ -884,7 +906,14 @@ public:
         return fact;
     }
 
-    bool operator==(const StateFactsIterator &other) const = default;
+    bool operator==(const StateFactsIterator &other) const {
+        assert(state == other.state);
+        return var_id == other.var_id;
+    }
+
+    bool operator!=(const StateFactsIterator &other) const {
+        return !(*this == other);
+    }
 };
 
 inline StateFactsIterator begin(const State &state) {
