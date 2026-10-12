@@ -115,8 +115,11 @@ class StateRegistry : public subscriber::SubscriberService<StateRegistry> {
 protected:
     TaskProxy task_proxy;
     const int num_variables;
+    const int_packer::IntPacker &state_packer;
+
+    StateRegistry(
+        const TaskProxy &task_proxy, const int_packer::IntPacker &state_packer);
 public:
-    explicit StateRegistry(const TaskProxy &task_proxy);
 
     const TaskProxy &get_task_proxy() const {
         return task_proxy;
@@ -131,9 +134,12 @@ public:
       The reason it currently exists is that State::unpack() has to know how to
       interpret packed state data. Maybe this interpretation could be moved into
       the registry as a callback but this might be expensive, especially with a
-      virtual method call.
+      virtual method call. The packer is stored in the base class so that
+      accessing it (which happens for every State creation) stays inline.
     */
-    virtual const int_packer::IntPacker &get_state_packer() const = 0;
+    const int_packer::IntPacker &get_state_packer() const {
+        return state_packer;
+    }
 
     /*
       Returns the state that was registered at the given ID. The ID must refer
@@ -267,7 +273,6 @@ class ExplicitStateRegistry : public StateRegistry {
     using StateIDSet =
         int_hash_set::IntHashSet<StateIDSemanticHash, StateIDSemanticEqual>;
 
-    const int_packer::IntPacker &state_packer;
     AxiomEvaluator &axiom_evaluator;
 
     segmented_vector::SegmentedArrayVector<PackedStateBin> state_data_pool;
@@ -287,7 +292,6 @@ class ExplicitStateRegistry : public StateRegistry {
 public:
     explicit ExplicitStateRegistry(const TaskProxy &task_proxy);
 
-    virtual const int_packer::IntPacker &get_state_packer() const override;
     virtual State lookup_state(StateID id) const override;
     virtual State get_initial_state() override;
     virtual State get_successor_state(
@@ -320,7 +324,6 @@ public:
     }
 
     void assert_nested_is(const StateRegistry &nested);
-    virtual const int_packer::IntPacker &get_state_packer() const override;
     virtual State lookup_state(StateID id) const override;
     virtual State get_initial_state() override;
     virtual State get_successor_state(

@@ -7,13 +7,15 @@
 
 using namespace std;
 
-StateRegistry::StateRegistry(const TaskProxy &task_proxy)
-    : task_proxy(task_proxy), num_variables(task_proxy.get_variables().size()) {
+StateRegistry::StateRegistry(
+    const TaskProxy &task_proxy, const int_packer::IntPacker &state_packer)
+    : task_proxy(task_proxy),
+      num_variables(task_proxy.get_variables().size()),
+      state_packer(state_packer) {
 }
 
 ExplicitStateRegistry::ExplicitStateRegistry(const TaskProxy &task_proxy)
-    : StateRegistry(task_proxy),
-      state_packer(task_properties::g_state_packers[task_proxy]),
+    : StateRegistry(task_proxy, task_properties::g_state_packers[task_proxy]),
       axiom_evaluator(g_axiom_evaluators[task_proxy]),
       state_data_pool(get_bins_per_state()),
       registered_states(
@@ -37,10 +39,6 @@ StateID ExplicitStateRegistry::insert_id_or_pop_state() {
     assert(
         registered_states.size() == static_cast<int>(state_data_pool.size()));
     return StateID(result.first);
-}
-
-const int_packer::IntPacker &ExplicitStateRegistry::get_state_packer() const {
-    return state_packer;
 }
 
 State ExplicitStateRegistry::lookup_state(StateID id) const {
@@ -139,16 +137,14 @@ void ExplicitStateRegistry::print_statistics(utils::LogProxy &log) const {
 
 DelegatingStateRegistry::DelegatingStateRegistry(
     const shared_ptr<AbstractTask> &task, StateRegistry &nested)
-    : StateRegistry(TaskProxy(*task)), task(task), nested(nested) {
+    : StateRegistry(TaskProxy(*task), nested.get_state_packer()),
+      task(task),
+      nested(nested) {
 }
 
 void DelegatingStateRegistry::assert_nested_is(const StateRegistry &nested) {
     assert(&nested == &this->nested);
     utils::unused_variable(nested);
-}
-
-const int_packer::IntPacker &DelegatingStateRegistry::get_state_packer() const {
-    return nested.get_state_packer();
 }
 
 State DelegatingStateRegistry::lookup_state(StateID id) const {
