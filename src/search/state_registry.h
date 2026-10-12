@@ -120,7 +120,6 @@ protected:
     StateRegistry(
         const TaskProxy &task_proxy, const int_packer::IntPacker &state_packer);
 public:
-
     const TaskProxy &get_task_proxy() const {
         return task_proxy;
     }

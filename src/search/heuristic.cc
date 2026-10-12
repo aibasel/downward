@@ -53,7 +53,8 @@ EvaluationResult Heuristic::compute_result(EvaluatorCall &call) {
         heuristic = heuristic_cache[state].h;
         result.set_count_evaluation(false);
     } else {
-        // TODO issue1236: let each heuristic decide whether to unpack the state.
+        /* TODO issue1236: let each heuristic decide whether to unpack the
+           state. */
         state.unpack();
         heuristic = compute_heuristic(state);
         if (cache_evaluator_values) {
