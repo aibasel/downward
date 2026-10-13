@@ -35,7 +35,6 @@ LandmarkNode &LandmarkGraph::get_disjunctive_landmark_node(
     const FactPair &atom) const {
     /* Note: this only works because every proposition appears in only one
        disjunctive landmark. */
-    assert(!contains_atomic_landmark(atom));
     assert(contains_disjunctive_landmark(atom));
     return *(disjunctive_landmarks_to_nodes.find(atom)->second);
 }
@@ -89,11 +88,6 @@ LandmarkNode *LandmarkGraph::add_node(Landmark &&landmark) {
 }
 
 LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark_to_add) {
-    assert(
-        landmark_to_add.type == CONJUNCTIVE ||
-        ranges::all_of(landmark_to_add.atoms, [&](const FactPair &atom) {
-            return !contains_landmark(atom);
-        }));
     /*
       TODO: Avoid having to fetch landmark after moving it. This will only be
       possible after removing the assumption that landmarks don't overlap
