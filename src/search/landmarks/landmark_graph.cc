@@ -89,11 +89,6 @@ LandmarkNode *LandmarkGraph::add_node(Landmark &&landmark) {
 }
 
 LandmarkNode &LandmarkGraph::add_landmark(Landmark &&landmark_to_add) {
-    assert(
-        landmark_to_add.type == CONJUNCTIVE ||
-        ranges::all_of(landmark_to_add.atoms, [&](const FactPair &atom) {
-            return !contains_landmark(atom);
-        }));
     /*
       TODO: Avoid having to fetch landmark after moving it. This will only be
       possible after removing the assumption that landmarks don't overlap
