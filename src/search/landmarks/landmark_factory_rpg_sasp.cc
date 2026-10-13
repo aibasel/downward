@@ -135,9 +135,8 @@ static void add_binary_variable_conditions(
         if (!precondition_variables.contains(var_id) &&
             effect_atom.get_variable().get_domain_size() == 2) {
             for (const FactPair &atom : landmark.atoms) {
-                if (atom.var == var_id &&
-                    initial_state[var_id].get_value() != atom.value) {
-                    result.insert(initial_state[var_id].get_pair());
+                if (atom.var == var_id && initial_state[var_id] != atom.value) {
+                    result.insert(initial_state.get_fact(var_id).get_pair());
                     break;
                 }
             }
@@ -543,7 +542,7 @@ void LandmarkFactoryRpgSasp::generate_disjunctive_precondition_landmarks(
            they should not hold in the initial state. */
         if (preconditions.size() < 5 &&
             ranges::none_of(preconditions, [&](const FactPair &atom) {
-                return initial_state[atom.var].get_value() == atom.value;
+                return initial_state[atom.var] == atom.value;
             })) {
             add_disjunctive_landmark_and_ordering(
                 preconditions, *node, OrderingType::GREEDY_NECESSARY);
@@ -674,7 +673,7 @@ void LandmarkFactoryRpgSasp::approximate_lookahead_orderings(
 
     const FactPair landmark_atom = landmark.atoms[0];
     const FactPair init_atom =
-        task_proxy.get_initial_state()[landmark_atom.var].get_pair();
+        task_proxy.get_initial_state().get_fact(landmark_atom.var).get_pair();
     vector<int> critical_predecessors = get_critical_predecessor_values(
         init_atom.value, landmark_atom.value, reached[landmark_atom.var],
         domain_transition_graphs.get_graph(landmark_atom.var));
