@@ -179,7 +179,7 @@ public:
                 "https://doi.org/10.1609/aaai.v28i1.9036",
                 "Proceedings of the Twenty-Eighth AAAI Conference"
                 " on Artificial Intelligence (AAAI 2014)",
-                "2395-2402", "AAAI Press", "2014"));
+                "2395-2401", "AAAI Press", "2014"));
 
         add_list_option<shared_ptr<TaskIndependentEvaluator>>(
             "evaluators",
