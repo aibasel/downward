@@ -311,7 +311,7 @@ public:
                 " Intelligence (AAAI 2014)",
                 "2358-2366", "AAAI Press", "2014") +
             "For a more general discussion of label reduction, see the "
-            "following paper:" +
+            "following article:" +
             utils::format_journal_reference(
                 {"Silvan Sievers", "Malte Helmert"},
                 "Merge-and-Shrink: A Compositional Theory of Transformations "

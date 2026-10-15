@@ -82,7 +82,7 @@ public:
                 "Automated Planning and Scheduling (ICAPS 2014)",
                 "289-297", "AAAI Press", "2014") +
             "For more details on Cartesian CEGAR and saturated cost partitioning, "
-            "see the journal paper" +
+            "see the article" +
             utils::format_journal_reference(
                 {"Jendrik Seipp", "Malte Helmert"},
                 "Counterexample-Guided Cartesian Abstraction Refinement for "

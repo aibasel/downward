@@ -113,7 +113,7 @@ public:
         document_title("DFP scoring");
         document_synopsis(
             "This scoring function computes the 'DFP' score as described in the "
-            "following paper:" +
+            "following article:" +
             utils::format_journal_reference(
                 {"Klaus Dräger", "Bernd Finkbeiner", "Andreas Podelski"},
                 "Directed model checking with distance-preserving "

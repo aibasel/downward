@@ -256,7 +256,7 @@ public:
             "default the constraints encode an easy-to-compute relaxation of h^+^. "
             "With the right settings, these constraints can be used to compute the "
             "optimal delete-relaxation heuristic h^+^ (see example below). "
-            "For details, see" +
+            "For details, see the article" +
             utils::format_journal_reference(
                 {"Tatsuya Imai", "Alex Fukunaga"},
                 "On a Practical, Integer-Linear Programming Model for Delete-Free "

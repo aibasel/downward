@@ -146,7 +146,7 @@ public:
         document_synopsis(
             "This heuristic implements the merge-and-shrink algorithm. For a "
             "comprehensive description of merge-and-shrink, see the following "
-            "paper:" +
+            "article:" +
             utils::format_journal_reference(
                 {"Silvan Sievers", "Malte Helmert"},
                 "Merge-and-Shrink: A Compositional Theory of Transformations "
@@ -173,7 +173,7 @@ public:
             "Note",
             "Conditional effects are supported directly. Note, however, that "
             "for tasks that are not factored (in the sense of the JAIR 2021 "
-            "merge-and-shrink paper), the atomic transition systems on which "
+            "merge-and-shrink article), the atomic transition systems on which "
             "merge-and-shrink heuristics are based are nondeterministic, "
             "which can lead to poor heuristics even when only perfect shrinking "
             "is performed.");

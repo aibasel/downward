@@ -128,7 +128,7 @@ public:
             "History Note",
             "Formerly known as the landmark heuristic or landmark count "
             "heuristic.\n"
-            "See the papers" +
+            "See the article" +
                 utils::format_journal_reference(
                     {"Silvia Richter", "Matthias Westphal"},
                     "The LAMA Planner: Guiding Cost-Based Anytime Planning "
@@ -136,7 +136,7 @@ public:
                     "https://doi.org/10.1613/jair.2972",
                     "Journal of Artificial Intelligence Research", "39",
                     "127-177", "2010") +
-                "and" +
+                "and the paper" +
                 utils::format_conference_reference(
                     {"Silvia Richter", "Malte Helmert", "Matthias Westphal"},
                     "Landmarks Revisited",

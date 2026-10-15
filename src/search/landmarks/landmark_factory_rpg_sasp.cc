@@ -786,7 +786,7 @@ public:
                 "Intelligence (AAAI 2008)",
                 "975-982", "AAAI Press", "2008") +
             "The algorithm is described in more detail in the following "
-            "paper:" +
+            "article:" +
             utils::format_journal_reference(
                 {"Silvia Richter", "Matthias Westphal"},
                 "The LAMA Planner: Guiding Cost-Based Anytime Planning with "

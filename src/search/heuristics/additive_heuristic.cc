@@ -152,7 +152,7 @@ public:
     AdditiveHeuristicFeature() : TypedFeature("add") {
         document_title("Additive heuristic");
         document_synopsis(
-            "The additive heuristic is described in the following paper:" +
+            "The additive heuristic is described in the following article:" +
             utils::format_journal_reference(
                 {"Blai Bonet", "Hector Geffner"},
                 "Planning as heuristic search",

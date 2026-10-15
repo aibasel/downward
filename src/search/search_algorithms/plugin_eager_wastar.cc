@@ -13,7 +13,7 @@ public:
     EagerWAstarSearchFeature() : TypedFeature("eager_wastar") {
         document_title("Eager weighted A* search");
         document_synopsis(
-            "Weighted A* is described in the following paper:" +
+            "Weighted A* is described in the following article:" +
             utils::format_journal_reference(
                 {"Ira Pohl"},
                 "Heuristic Search Viewed as Path Finding in a Graph",

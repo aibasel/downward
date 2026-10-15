@@ -385,7 +385,7 @@ public:
         : TypedFeature("lm_reasonable_orders_hps") {
         document_title("HPS orders");
         document_synopsis(
-            "Adds reasonable orders described in the following paper" +
+            "Adds reasonable orders described in the following article:" +
             utils::format_journal_reference(
                 {"Jörg Hoffmann", "Julie Porteous", "Laura Sebastia"},
                 "Ordered Landmarks in Planning",

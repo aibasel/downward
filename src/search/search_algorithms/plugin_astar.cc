@@ -14,7 +14,7 @@ public:
         document_title("A* search (eager)");
         document_note(
             "Reference",
-            "The A* algorithm is described in the following paper:" +
+            "The A* algorithm is described in the following article:" +
                 utils::format_journal_reference(
                     {"Peter E. Hart", "Nils J. Nilsson", "Bertram Raphael"},
                     "A Formal Basis for the Heuristic Determination of "

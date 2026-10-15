@@ -214,7 +214,7 @@ public:
         document_title("No abstraction");
         document_synopsis(
             "Copies of the original task are used as subproblems. For "
-            "details, see the following papers:" +
+            "details, see the following publications:" +
             get_references());
         add_option<int>(
             "copies", "number of task copies", "1",
@@ -238,7 +238,7 @@ public:
         document_synopsis(
             "For each goal atom of the original task one subproblem is "
             "generated having only the atom as its goal. For details, see the "
-            "following papers:" +
+            "following publications:" +
             get_references());
         add_fact_order_option(*this);
     }
@@ -262,7 +262,7 @@ public:
             "For each fact landmark of the delete relaxation of the original "
             "task one subproblem is generated having only the landmark as "
             "goal. This is a generalization of abstractions by goals. For "
-            "details, see the following papers:" +
+            "details, see the following publications:" +
             get_references());
         add_fact_order_option(*this);
         add_option<bool>(

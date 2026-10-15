@@ -17,7 +17,7 @@ public:
         document_note(
             "Reference",
             "Lazy search (deferred evaluation) is described in the following "
-            "papers:" +
+            "publications:" +
                 utils::format_journal_reference(
                     {"Malte Helmert"}, "The Fast Downward Planning System",
                     "https://doi.org/10.1613/jair.1705",
@@ -32,7 +32,7 @@ public:
                     "Automated Planning and Scheduling (ICAPS 2009)",
                     "273-280", "AAAI Press", "2009") +
                 "Lazy weighted A* is used and described in the following "
-                "paper:" +
+                "article:" +
                 utils::format_journal_reference(
                     {"Silvia Richter", "Matthias Westphal"},
                     "The LAMA Planner: Guiding Cost-Based Anytime Planning "

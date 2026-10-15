@@ -108,7 +108,7 @@ public:
     HSPMaxHeuristicFeature() : TypedFeature("hmax") {
         document_title("Max heuristic");
         document_synopsis(
-            "The h^max heuristic is described in the following paper:" +
+            "The h^max heuristic is described in the following article:" +
             utils::format_journal_reference(
                 {"Blai Bonet", "Hector Geffner"},
                 "Planning as heuristic search",

@@ -92,7 +92,7 @@ public:
             "Tests for every atom if the relaxed planning task where all "
             "achievers of this atom are removed is solvable. If not, the atom "
             "is a landmark. For the concept of delete relaxation, see the "
-            "following paper:" +
+            "following article:" +
             utils::format_journal_reference(
                 {"Jörg Hoffmann", "Bernhard Nebel"},
                 "The FF Planning System: Fast Plan Generation Through "

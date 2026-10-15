@@ -16,7 +16,7 @@ public:
         document_title("Greedy search (lazy)");
         document_synopsis(
             "Lazy search (deferred evaluation) is described in the following "
-            "paper:" +
+            "article:" +
             utils::format_journal_reference(
                 {"Malte Helmert"}, "The Fast Downward Planning System",
                 "https://doi.org/10.1613/jair.1705",

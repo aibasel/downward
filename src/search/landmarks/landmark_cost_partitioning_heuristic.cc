@@ -110,7 +110,7 @@ public:
             "History Note",
             "Formerly known as the admissible landmark heuristic.\n"
             "The original landmark heuristic is described in the following "
-            "paper:" +
+            "article:" +
                 utils::format_journal_reference(
                     {"Silvia Richter", "Matthias Westphal"},
                     "The LAMA Planner: Guiding Cost-Based Anytime Planning "

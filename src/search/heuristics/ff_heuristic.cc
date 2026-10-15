@@ -76,7 +76,7 @@ public:
     FFHeuristicFeature() : TypedFeature("ff") {
         document_title("FF heuristic");
         document_synopsis(
-            "The FF heuristic was introduced in the following paper:" +
+            "The FF heuristic was introduced in the following article:" +
             utils::format_journal_reference(
                 {"Jörg Hoffmann", "Bernhard Nebel"},
                 "The FF Planning System: Fast Plan Generation Through "

@@ -272,7 +272,7 @@ public:
         document_title("Lazy enforced hill-climbing");
         document_synopsis(
             "Enforced hill-climbing search was introduced in the following "
-            "paper:" +
+            "article:" +
             utils::format_journal_reference(
                 {"Jörg Hoffmann", "Bernhard Nebel"},
                 "The FF Planning System: Fast Plan Generation Through "
@@ -281,7 +281,7 @@ public:
                 "Journal of Artificial Intelligence Research", "14", "253-302",
                 "2001") +
             "Note that the implementation differs from the algorithm "
-            "described in the paper in several ways. First, it evaluates "
+            "described in the article in several ways. First, it evaluates "
             "states lazily, i.e., it computes the heuristic value of a "
             "state only when it is removed from the open list. Second, it "
             "uses a global closed list instead of detecting duplicates only "
