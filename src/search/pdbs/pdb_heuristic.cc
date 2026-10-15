@@ -48,7 +48,7 @@ static basic_string<char> paper_references() {
                "https://ai.dmi.unibas.ch/papers/sievers-et-al-socs2012.pdf",
                "Proceedings of the Fifth Annual Symposium on Combinatorial"
                " Search (SoCS 2012)",
-               "105-111", "AAAI Press", "2012");
+               "49-56", "AAAI Press", "2012");
 }
 class PDBHeuristicFeature
     : public plugins::TypedFeature<TaskIndependentEvaluator> {

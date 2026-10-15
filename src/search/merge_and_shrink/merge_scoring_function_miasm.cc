@@ -117,16 +117,26 @@ public:
             "states. To compute this score, this class thus computes the product "
             "of all pairs of transition systems, potentially copying and shrinking "
             "the transition systems before if otherwise their product would exceed "
-            "the specified size limits. A stateless merge strategy using this "
+            "the specified size limits. The MIASM merge strategy was introduced "
+            "in the following paper:" +
+            utils::format_conference_reference(
+                {"Gaojian Fan", "Martin Müller", "Robert Holte"},
+                "Non-Linear Merging Strategies for Merge-and-Shrink Based on "
+                "Variable Interactions",
+                "https://doi.org/10.1609/socs.v5i1.18330",
+                "Proceedings of the Seventh Annual Symposium on Combinatorial "
+                "Search (SoCS 2014)",
+                "53-61", "AAAI Press", "2014") +
+            "A stateless merge strategy using this "
             "scoring function is called dyn-MIASM (nowadays also called sbMIASM "
             "for score-based MIASM) and is described in the following paper:" +
             utils::format_conference_reference(
                 {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
                 "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
                 "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
-                "Proceedings of the 26th International Conference on Planning and "
-                "Scheduling (ICAPS 2016)",
-                "2358-2366", "AAAI Press", "2016"));
+                "Proceedings of the 26th International Conference on Automated "
+                "Planning and Scheduling (ICAPS 2016)",
+                "294-298", "AAAI Press", "2016"));
 
         // TODO: use shrink strategy and limit options from
         // MergeAndShrinkHeuristic instead of having the identical options here

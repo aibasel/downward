@@ -144,18 +144,9 @@ public:
     MergeAndShrinkHeuristicFeature() : TypedFeature("merge_and_shrink") {
         document_title("Merge-and-shrink heuristic");
         document_synopsis(
-            "This heuristic implements the algorithm described in the following "
-            "paper:" +
-            utils::format_conference_reference(
-                {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
-                "Generalized Label Reduction for Merge-and-Shrink Heuristics",
-                "https://ai.dmi.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
-                "Proceedings of the 28th AAAI Conference on Artificial"
-                " Intelligence (AAAI 2014)",
-                "2358-2366", "AAAI Press", "2014") +
-            "\n" +
-            "For a more exhaustive description of merge-and-shrink, see the journal "
-            "paper" +
+            "This heuristic implements the merge-and-shrink algorithm. For a "
+            "comprehensive description of merge-and-shrink, see the following "
+            "article:" +
             utils::format_journal_reference(
                 {"Silvan Sievers", "Malte Helmert"},
                 "Merge-and-Shrink: A Compositional Theory of Transformations "
@@ -164,19 +155,8 @@ public:
                 "Journal of Artificial Intelligence Research", "71", "781-883",
                 "2021") +
             "\n" +
-            "The following paper describes how to improve the DFP merge strategy "
-            "with tie-breaking, and presents two new merge strategies (dyn-MIASM "
-            "and SCC-DFP):" +
-            utils::format_conference_reference(
-                {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
-                "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
-                "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
-                "Proceedings of the 26th International Conference on Automated "
-                "Planning and Scheduling (ICAPS 2016)",
-                "294-298", "AAAI Press", "2016") +
-            "\n" +
             "Details of the algorithms and the implementation are described in the "
-            "paper" +
+            "following paper:" +
             utils::format_conference_reference(
                 {"Silvan Sievers"},
                 "Merge-and-Shrink Heuristics for Classical Planning: Efficient "
@@ -192,8 +172,8 @@ public:
         document_note(
             "Note",
             "Conditional effects are supported directly. Note, however, that "
-            "for tasks that are not factored (in the sense of the JACM 2014 "
-            "merge-and-shrink paper), the atomic transition systems on which "
+            "for tasks that are not factored (in the sense of the JAIR 2021 "
+            "merge-and-shrink article), the atomic transition systems on which "
             "merge-and-shrink heuristics are based are nondeterministic, "
             "which can lead to poor heuristics even when only perfect shrinking "
             "is performed.");

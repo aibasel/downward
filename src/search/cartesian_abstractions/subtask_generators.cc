@@ -11,6 +11,7 @@
 #include "../tasks/modified_goals_task.h"
 #include "../utils/hash.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -189,13 +190,32 @@ static tuple<FactOrder, int> get_fact_order_arguments_from_options(
         utils::get_rng_arguments_from_options(opts));
 }
 
+static string get_references() {
+    return utils::format_conference_reference(
+               {"Jendrik Seipp", "Malte Helmert"},
+               "Diverse and Additive Cartesian Abstraction Heuristics",
+               "https://ai.dmi.unibas.ch/papers/seipp-helmert-icaps2014.pdf",
+               "Proceedings of the 24th International Conference on "
+               "Automated Planning and Scheduling (ICAPS 2014)",
+               "289-297", "AAAI Press", "2014") +
+           utils::format_journal_reference(
+               {"Jendrik Seipp", "Malte Helmert"},
+               "Counterexample-Guided Cartesian Abstraction Refinement for "
+               "Classical Planning",
+               "https://ai.dmi.unibas.ch/papers/seipp-helmert-jair2018.pdf",
+               "Journal of Artificial Intelligence Research", "62", "535-577",
+               "2018");
+}
+
 class TaskDuplicatorFeature
     : public plugins::TypedFeature<TaskIndependentSubtaskGenerator> {
 public:
     TaskDuplicatorFeature() : TypedFeature("original") {
         document_title("No abstraction");
         document_synopsis(
-            "Copies of the original task are used as subproblems.");
+            "Copies of the original task are used as subproblems. For "
+            "details, see the following publications:" +
+            get_references());
         add_option<int>(
             "copies", "number of task copies", "1",
             plugins::Bounds("1", "infinity"));
@@ -216,7 +236,10 @@ public:
     GoalDecompositionFeature() : TypedFeature("goals") {
         document_title("Abstraction by goals");
         document_synopsis(
-            "For each goal atom of the original task one subproblem is generated having only the atom as its goal.");
+            "For each goal atom of the original task one subproblem is "
+            "generated having only the atom as its goal. For details, see the "
+            "following publications:" +
+            get_references());
         add_fact_order_option(*this);
     }
 
@@ -236,7 +259,11 @@ public:
     LandmarkDecompositionFeature() : TypedFeature("landmarks") {
         document_title("Abstraction by landmarks");
         document_synopsis(
-            "For each fact landmark of the delete relaxation of the original task one subproblem is generated having only the landmark as goal. This is a generalization of abstractions by goals.");
+            "For each fact landmark of the delete relaxation of the original "
+            "task one subproblem is generated having only the landmark as "
+            "goal. This is a generalization of abstractions by goals. For "
+            "details, see the following publications:" +
+            get_references());
         add_fact_order_option(*this);
         add_option<bool>(
             "combine_facts", "combine landmark facts with domain abstraction",

@@ -8,6 +8,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 #include <vector>
 
@@ -88,8 +89,17 @@ public:
     LandmarkFactoryRpgExhaustFeature() : TypedFeature("lm_exhaust") {
         document_title("Exhaustive landmarks");
         document_synopsis(
-            "Exhaustively checks for each atom if it is a landmark."
-            "This check is done using relaxed planning.");
+            "Tests for every atom if the relaxed planning task where all "
+            "achievers of this atom are removed is solvable. If not, the atom "
+            "is a landmark. For the concept of delete relaxation, see the "
+            "following article:" +
+            utils::format_journal_reference(
+                {"Jörg Hoffmann", "Bernhard Nebel"},
+                "The FF Planning System: Fast Plan Generation Through "
+                "Heuristic Search",
+                "https://doi.org/10.1613/jair.855",
+                "Journal of Artificial Intelligence Research", "14", "253-302",
+                "2001"));
 
         add_option<bool>(
             "use_unary_relaxation",

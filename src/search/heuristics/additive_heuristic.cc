@@ -3,6 +3,7 @@
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 #include <cassert>
 #include <vector>
@@ -150,6 +151,22 @@ class AdditiveHeuristicFeature
 public:
     AdditiveHeuristicFeature() : TypedFeature("add") {
         document_title("Additive heuristic");
+        document_synopsis(
+            "The additive heuristic is described in the following article:" +
+            utils::format_journal_reference(
+                {"Blai Bonet", "Hector Geffner"},
+                "Planning as heuristic search",
+                "https://doi.org/10.1016/S0004-3702%2801%2900108-4",
+                "Artificial Intelligence", "129(1-2)", "5-33", "2001") +
+            "For a discussion of the heuristic in the context of planning "
+            "with action costs, see the following paper:" +
+            utils::format_conference_reference(
+                {"Emil Keyder", "Hector Geffner"},
+                "Heuristics for Planning with Action Costs Revisited",
+                "https://doi.org/10.3233/978-1-58603-891-5-588",
+                "Proceedings of the 18th European Conference on "
+                "Artificial Intelligence (ECAI 2008)",
+                "588-592", "IOS Press", "2008"));
 
         relaxation_heuristic::add_relaxation_heuristic_options_to_feature(
             *this, "add");

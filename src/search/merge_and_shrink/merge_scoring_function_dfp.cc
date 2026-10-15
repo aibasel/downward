@@ -113,9 +113,16 @@ public:
         document_title("DFP scoring");
         document_synopsis(
             "This scoring function computes the 'DFP' score as described in the "
-            "paper \"Directed model checking with distance-preserving abstractions\" "
-            "by Draeger, Finkbeiner and Podelski (SPIN 2006), adapted to planning in "
-            "the following paper:" +
+            "following article:" +
+            utils::format_journal_reference(
+                {"Klaus Dräger", "Bernd Finkbeiner", "Andreas Podelski"},
+                "Directed model checking with distance-preserving "
+                "abstractions",
+                "https://doi.org/10.1007/s10009-008-0092-z",
+                "International Journal on Software Tools for Technology "
+                "Transfer",
+                "11(1)", "27-37", "2009") +
+            "It was adapted to planning in the following paper:" +
             utils::format_conference_reference(
                 {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
                 "Generalized Label Reduction for Merge-and-Shrink Heuristics",

@@ -8,6 +8,7 @@
 #include "../plugins/plugin.h"
 #include "../task_utils/variable_order_finder.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/math.h"
 #include "../utils/timer.h"
 
@@ -57,6 +58,18 @@ class PatternGeneratorGreedyFeature
 public:
     PatternGeneratorGreedyFeature() : TypedFeature("greedy") {
         document_title("Greedy");
+        document_synopsis(
+            "This generator adds variables in the GOAL_CG_LEVEL order until "
+            "the size limit is reached. The variable ordering is described "
+            "in the following paper:" +
+            utils::format_conference_reference(
+                {"Malte Helmert", "Patrik Haslum", "Jörg Hoffmann"},
+                "Flexible Abstraction Heuristics for Optimal Sequential "
+                "Planning",
+                "https://cdn.aaai.org/ICAPS/2007/ICAPS07-023.pdf",
+                "Proceedings of the 17th International Conference on "
+                "Automated Planning and Scheduling (ICAPS 2007)",
+                "176-183", "AAAI Press", "2007"));
         add_option<int>(
             "max_states",
             "maximal number of abstract states in the pattern database.",

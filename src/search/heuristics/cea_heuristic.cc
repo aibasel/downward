@@ -5,6 +5,7 @@
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 #include <cassert>
 #include <limits>
@@ -455,6 +456,16 @@ class ContextEnhancedAdditiveHeuristicFeature
 public:
     ContextEnhancedAdditiveHeuristicFeature() : TypedFeature("cea") {
         document_title("Context-enhanced additive heuristic");
+        document_synopsis(
+            "The context-enhanced additive heuristic is described in the "
+            "following paper:" +
+            utils::format_conference_reference(
+                {"Malte Helmert", "Hector Geffner"},
+                "Unifying the Causal Graph and Additive Heuristics",
+                "https://cdn.aaai.org/ICAPS/2008/ICAPS08-018.pdf",
+                "Proceedings of the 18th International Conference on "
+                "Automated Planning and Scheduling (ICAPS 2008)",
+                "140-147", "AAAI Press", "2008"));
 
         tasks::add_axioms_option_to_feature(*this);
         add_heuristic_options_to_feature(*this, "cea");

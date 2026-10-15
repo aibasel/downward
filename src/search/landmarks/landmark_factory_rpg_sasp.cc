@@ -11,6 +11,7 @@
 #include "../plugins/plugin.h"
 #include "../utils/collections.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/system.h"
 
 #include <cassert>
@@ -774,8 +775,25 @@ class LandmarkFactoryRpgSaspFeature
 public:
     LandmarkFactoryRpgSaspFeature() : TypedFeature("lm_rhw") {
         document_title("RHW landmarks");
-        document_synopsis("The landmark generation method introduced by "
-                          "Richter, Helmert and Westphal (AAAI 2008).");
+        document_synopsis(
+            "The landmark generation method was introduced in the following "
+            "paper:" +
+            utils::format_conference_reference(
+                {"Silvia Richter", "Malte Helmert", "Matthias Westphal"},
+                "Landmarks Revisited",
+                "https://ai.dmi.unibas.ch/papers/richter-et-al-aaai2008.pdf",
+                "Proceedings of the 23rd AAAI Conference on Artificial "
+                "Intelligence (AAAI 2008)",
+                "975-982", "AAAI Press", "2008") +
+            "The algorithm is described in more detail in the following "
+            "article:" +
+            utils::format_journal_reference(
+                {"Silvia Richter", "Matthias Westphal"},
+                "The LAMA Planner: Guiding Cost-Based Anytime Planning with "
+                "Landmarks",
+                "https://doi.org/10.1613/jair.2972",
+                "Journal of Artificial Intelligence Research", "39", "127-177",
+                "2010"));
         add_option<bool>(
             "disjunctive_landmarks", "keep disjunctive landmarks", "true");
         add_use_orders_option_to_feature(*this);

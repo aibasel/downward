@@ -8,6 +8,7 @@
 #include "../plugins/plugin.h"
 #include "../task_utils/successor_generator.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/system.h"
 
 using namespace std;
@@ -269,7 +270,29 @@ class EnforcedHillClimbingSearchFeature
 public:
     EnforcedHillClimbingSearchFeature() : TypedFeature("ehc") {
         document_title("Lazy enforced hill-climbing");
-        document_synopsis("");
+        document_synopsis(
+            "Enforced hill-climbing search was introduced in the following "
+            "article:" +
+            utils::format_journal_reference(
+                {"Jörg Hoffmann", "Bernhard Nebel"},
+                "The FF Planning System: Fast Plan Generation Through "
+                "Heuristic Search",
+                "https://doi.org/10.1613/jair.855",
+                "Journal of Artificial Intelligence Research", "14", "253-302",
+                "2001") +
+            "Note that the implementation differs from the algorithm "
+            "described in the article in several ways. First, it evaluates "
+            "states lazily, i.e., it computes the heuristic value of a "
+            "state only when it is removed from the open list. Second, it "
+            "uses a global closed list instead of detecting duplicates only "
+            "within each local breadth-first search. As a result, it can "
+            "fail to find a solution even on tasks without dead ends. Third, "
+            "it orders states by their (adjusted) g value, i.e., it performs "
+            "uniform-cost search instead of breadth-first search in each "
+            "phase if the task has non-unit action costs. Fourth, instead of "
+            "the helpful actions of the FF planner, it can use the preferred "
+            "operators of arbitrary evaluators, either for pruning or for "
+            "ranking successors.");
 
         add_option<shared_ptr<TaskIndependentEvaluator>>("h", "heuristic");
         add_option<PreferredUsage>(

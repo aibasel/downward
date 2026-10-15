@@ -3,6 +3,7 @@
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 #include <cassert>
 
@@ -74,6 +75,25 @@ class FFHeuristicFeature
 public:
     FFHeuristicFeature() : TypedFeature("ff") {
         document_title("FF heuristic");
+        document_synopsis(
+            "The FF heuristic was introduced in the following article:" +
+            utils::format_journal_reference(
+                {"Jörg Hoffmann", "Bernhard Nebel"},
+                "The FF Planning System: Fast Plan Generation Through "
+                "Heuristic Search",
+                "https://doi.org/10.1613/jair.855",
+                "Journal of Artificial Intelligence Research", "14", "253-302",
+                "2001") +
+            "This implementation extracts the relaxed plan from the best "
+            "supporters of the additive heuristic, which takes action costs "
+            "into account. This variant is described in the following paper:" +
+            utils::format_conference_reference(
+                {"Emil Keyder", "Hector Geffner"},
+                "Heuristics for Planning with Action Costs Revisited",
+                "https://doi.org/10.3233/978-1-58603-891-5-588",
+                "Proceedings of the 18th European Conference on "
+                "Artificial Intelligence (ECAI 2008)",
+                "588-592", "IOS Press", "2008"));
 
         relaxation_heuristic::add_relaxation_heuristic_options_to_feature(
             *this, "ff");

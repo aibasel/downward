@@ -4,6 +4,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 #include "../utils/rng.h"
 #include "../utils/rng_options.h"
 
@@ -54,7 +55,15 @@ public:
         document_title("Single random");
         document_synopsis(
             "This scoring function assigns exactly one merge candidate a score of "
-            "0, chosen randomly, and infinity to all others.");
+            "0, chosen randomly, and infinity to all others. It is used in the "
+            "following paper:" +
+            utils::format_conference_reference(
+                {"Silvan Sievers", "Martin Wehrle", "Malte Helmert"},
+                "An Analysis of Merge Strategies for Merge-and-Shrink Heuristics",
+                "https://ai.dmi.unibas.ch/papers/sievers-et-al-icaps2016.pdf",
+                "Proceedings of the 26th International Conference on Automated "
+                "Planning and Scheduling (ICAPS 2016)",
+                "294-298", "AAAI Press", "2016"));
 
         utils::add_rng_options_to_feature(*this);
     }

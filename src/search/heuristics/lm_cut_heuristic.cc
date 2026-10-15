@@ -52,7 +52,7 @@ public:
                 "https://ai.dmi.unibas.ch/papers/helmert-domshlak-icaps2009.pdf",
                 "Proceedings of the 19th International Conference on Automated "
                 "Planning and Scheduling (ICAPS 2009)",
-                "162-169", "", "2009") +
+                "162-169", "AAAI Press", "2009") +
             "\n" +
             "The tie-breaking strategies for the precondition choice function "
             "(options {{{goal_zone_detection}}} and {{{border_detection}}}) "

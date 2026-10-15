@@ -2,6 +2,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 #include <iostream>
 using namespace std;
@@ -34,6 +35,16 @@ class GoalCountHeuristicFeature
 public:
     GoalCountHeuristicFeature() : TypedFeature("goalcount") {
         document_title("Goal count heuristic");
+        document_synopsis(
+            "Counts the goal facts that are not true in the current state. "
+            "An early use of the number of remaining goals to guide planning "
+            "search is described in the following article:" +
+            utils::format_journal_reference(
+                {"Richard E. Fikes", "Nils J. Nilsson"},
+                "STRIPS: A New Approach to the Application of Theorem Proving "
+                "to Problem Solving",
+                "https://doi.org/10.1016/0004-3702%2871%2990010-5",
+                "Artificial Intelligence", "2(3-4)", "189-208", "1971"));
 
         add_heuristic_options_to_feature(*this, "goalcount");
 

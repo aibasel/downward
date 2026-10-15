@@ -2,6 +2,7 @@
 
 #include "../plugins/plugin.h"
 #include "../utils/logging.h"
+#include "../utils/markup.h"
 
 using namespace std;
 
@@ -64,6 +65,20 @@ class LimitedPruningFeature
 public:
     LimitedPruningFeature() : TypedFeature("limited_pruning") {
         document_title("Limited pruning");
+        document_note(
+            "Reference",
+            "Disabling pruning based on the observed pruning ratio is "
+            "described in the following paper:" +
+                utils::format_conference_reference(
+                    {"Yusra Alkhazraji", "Michael Katz", "Robert Mattmüller",
+                     "Florian Pommerening", "Alexander Shleyfman",
+                     "Martin Wehrle"},
+                    "Metis: Arming Fast Downward with Pruning and Incremental "
+                    "Computation",
+                    "https://ai.dmi.unibas.ch/papers/alkhazraji-et-al-ipc2014.pdf",
+                    "Eighth International Planning Competition (IPC-8): "
+                    "Planner Abstracts",
+                    "88-92", "", "2014"));
         document_synopsis(
             "Limited pruning applies another pruning method and switches it off "
             "after a fixed number of expansions if the pruning ratio is below a "

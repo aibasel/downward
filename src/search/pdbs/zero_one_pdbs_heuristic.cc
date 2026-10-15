@@ -1,6 +1,7 @@
 #include "zero_one_pdbs_heuristic.h"
 
 #include "../plugins/plugin.h"
+#include "../utils/markup.h"
 
 #include <limits>
 
@@ -40,6 +41,47 @@ public:
     ZeroOnePDBsHeuristicFeature() : TypedFeature("zopdbs") {
         document_subcategory("heuristics_pdb");
         document_title("Zero-One PDB");
+        document_note(
+            "Reference",
+            "The idea of zero-one cost partitioning is described in the "
+            "following paper:" +
+                utils::format_conference_reference(
+                    {"Patrik Haslum", "Blai Bonet", "Hector Geffner"},
+                    "New Admissible Heuristics for Domain-Independent "
+                    "Planning",
+                    "https://cdn.aaai.org/AAAI/2005/AAAI05-184.pdf",
+                    "Proceedings of the 20th National Conference on "
+                    "Artificial Intelligence (AAAI 2005)",
+                    "1163-1168", "AAAI Press", "2005") +
+                "Greedy zero-one cost partitioning for pattern databases is "
+                "described in the following paper:" +
+                utils::format_conference_reference(
+                    {"Stefan Edelkamp"},
+                    "Symbolic Pattern Databases in Heuristic Search Planning",
+                    "https://cdn.aaai.org/AIPS/2002/AIPS02-028.pdf",
+                    "Proceedings of the Sixth International Conference on "
+                    "Artificial Intelligence Planning Systems "
+                    "(AIPS 2002)",
+                    "274-283", "AAAI Press", "2002") +
+                "It is discussed in the context of other cost partitioning "
+                "methods in the following paper:" +
+                utils::format_conference_reference(
+                    {"Jendrik Seipp", "Thomas Keller", "Malte Helmert"},
+                    "A Comparison of Cost Partitioning Algorithms for Optimal "
+                    "Classical Planning",
+                    "https://ai.dmi.unibas.ch/papers/seipp-et-al-icaps2017.pdf",
+                    "Proceedings of the 27th International Conference on "
+                    "Automated Planning and Scheduling (ICAPS 2017)",
+                    "259-268", "AAAI Press", "2017") +
+                "For implementation notes, see:" +
+                utils::format_conference_reference(
+                    {"Silvan Sievers", "Manuela Ortlieb", "Malte Helmert"},
+                    "Efficient Implementation of Pattern Database Heuristics "
+                    "for Classical Planning",
+                    "https://ai.dmi.unibas.ch/papers/sievers-et-al-socs2012.pdf",
+                    "Proceedings of the Fifth Annual Symposium on "
+                    "Combinatorial Search (SoCS 2012)",
+                    "49-56", "AAAI Press", "2012"));
         document_synopsis(
             "The zero/one pattern database heuristic is simply the sum of the "
             "heuristic values of all patterns in the pattern collection. In contrast "

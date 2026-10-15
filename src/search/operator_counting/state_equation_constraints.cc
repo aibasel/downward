@@ -136,24 +136,24 @@ public:
             utils::format_conference_reference(
                 {"Menkes van den Briel", "J. Benton", "Subbarao Kambhampati",
                  "Thomas Vossen"},
-                "An LP-based heuristic for optimal planning",
+                "An LP-Based Heuristic for Optimal Planning",
                 "http://link.springer.com/chapter/10.1007/978-3-540-74970-7_46",
                 "Proceedings of the Thirteenth International Conference on"
                 " Principles and Practice of Constraint Programming (CP 2007)",
                 "651-665", "Springer-Verlag", "2007") +
             utils::format_conference_reference(
                 {"Blai Bonet"},
-                "An admissible heuristic for SAS+ planning obtained from the"
-                " state equation",
+                "An Admissible Heuristic for SAS+ Planning Obtained from the"
+                " State Equation",
                 "http://ijcai.org/papers13/Papers/IJCAI13-335.pdf",
                 "Proceedings of the Twenty-Third International Joint"
                 " Conference on Artificial Intelligence (IJCAI 2013)",
                 "2268-2274", "AAAI Press", "2013") +
             utils::format_conference_reference(
-                {"Florian Pommerening", "Gabriele Roeger", "Malte Helmert",
+                {"Florian Pommerening", "Gabriele Röger", "Malte Helmert",
                  "Blai Bonet"},
-                "LP-based Heuristics for Cost-optimal Planning",
-                "http://www.aaai.org/ocs/index.php/ICAPS/ICAPS14/paper/view/7892/8031",
+                "LP-Based Heuristics for Cost-Optimal Planning",
+                "https://doi.org/10.1609/icaps.v24i1.13621",
                 "Proceedings of the Twenty-Fourth International Conference"
                 " on Automated Planning and Scheduling (ICAPS 2014)",
                 "226-234", "AAAI Press", "2014"));

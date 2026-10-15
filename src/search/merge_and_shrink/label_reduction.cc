@@ -309,7 +309,16 @@ public:
                 "https://ai.dmi.unibas.ch/papers/sievers-et-al-aaai2014.pdf",
                 "Proceedings of the 28th AAAI Conference on Artificial"
                 " Intelligence (AAAI 2014)",
-                "2358-2366", "AAAI Press", "2014"));
+                "2358-2366", "AAAI Press", "2014") +
+            "For a more general discussion of label reduction, see the "
+            "following article:" +
+            utils::format_journal_reference(
+                {"Silvan Sievers", "Malte Helmert"},
+                "Merge-and-Shrink: A Compositional Theory of Transformations "
+                "of Factored Transition Systems",
+                "https://ai.dmi.unibas.ch/papers/sievers-helmert-jair2021.pdf",
+                "Journal of Artificial Intelligence Research", "71", "781-883",
+                "2021"));
 
         add_option<bool>(
             "before_shrinking", "apply label reduction before shrinking");

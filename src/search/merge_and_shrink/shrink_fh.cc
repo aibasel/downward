@@ -196,7 +196,7 @@ public:
             "This shrink strategy implements the algorithm described in"
             " the paper:" +
             utils::format_conference_reference(
-                {"Malte Helmert", "Patrik Haslum", "Joerg Hoffmann"},
+                {"Malte Helmert", "Patrik Haslum", "Jörg Hoffmann"},
                 "Flexible Abstraction Heuristics for Optimal Sequential Planning",
                 "https://ai.dmi.unibas.ch/papers/helmert-et-al-icaps2007.pdf",
                 "Proceedings of the Seventeenth International Conference on"

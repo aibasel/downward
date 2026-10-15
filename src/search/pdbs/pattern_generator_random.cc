@@ -51,7 +51,7 @@ public:
         document_title("Random pattern");
         document_synopsis(
             "This pattern generator implements the 'single randomized "
-            "causal graph' algorithm described in experiments of the the paper" +
+            "causal graph' algorithm described in experiments of the paper" +
             get_rovner_et_al_reference() +
             "See below for a description of the algorithm and some implementation "
             "notes.");
