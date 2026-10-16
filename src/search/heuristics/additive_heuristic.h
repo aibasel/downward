@@ -4,7 +4,6 @@
 #include "relaxation_heuristic.h"
 
 #include "../algorithms/priority_queues.h"
-#include "../utils/collections.h"
 
 #include <cassert>
 
@@ -60,14 +59,13 @@ class AdditiveHeuristic : public relaxation_heuristic::RelaxationHeuristic {
 
     void write_overflow_warning();
 protected:
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 
     // Common part of h^add and h^ff computation.
     int compute_add_and_ff(const State &state);
 public:
     AdditiveHeuristic(
-        const std::shared_ptr<AbstractTask> &task,
-        tasks::AxiomHandlingType axioms, bool cache_estimates,
+        const std::shared_ptr<AbstractTask> &task, bool cache_estimates,
         const std::string &description, utils::Verbosity verbosity);
 
     /*

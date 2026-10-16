@@ -368,6 +368,7 @@ void PatternCollectionGeneratorHillclimbing::hill_climbing(
             samples_h_values.clear();
             sample_states(sampler, init_h, samples);
             for (const State &sample : samples) {
+                sample.unpack();
                 samples_h_values.push_back(current_pdbs->get_value(sample));
             }
 
