@@ -61,7 +61,7 @@ Many other common search configurations are also specified as aliases. To see th
 
     ./fast-downward.py --show-aliases
 
-To find out which actual search options the aliases corresponds to, check the source code of the `src/driver/aliases.py` module.
+To find out which actual search options the aliases corresponds to, check the source code of the `driver/aliases.py` module.
 
 For example to run the "LAMA 2011 configuration" of the planner, call:
 

@@ -64,7 +64,7 @@ The portfolios are available in several versions:
 
 ## How do I run an IPC configuration?
 
-The `src/fast-downward.py` script provides short aliases for the IPC
+The `fast-downward.py` script provides short aliases for the IPC
 configurations. To run e.g.  the LAMA-2011 configuration on the first gripper
 task run
 
@@ -77,7 +77,7 @@ available aliases run
 
 If you are interested in the actual parameter settings, look inside the
 
-    src/driver/aliases.py
+    driver/aliases.py
 
 module.
 
