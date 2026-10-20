@@ -584,6 +584,15 @@ create_fast_downward_library(
 )
 
 create_fast_downward_library(
+    NAME plan_improvement
+    HELP "Plan improvement methods"
+    SOURCES
+        plan_improvement/plan_improvement
+        plan_improvement/action_elimination
+    DEPENDS task_properties
+)
+
+create_fast_downward_library(
     NAME lazy_search
     HELP "Lazy search"
     SOURCES
