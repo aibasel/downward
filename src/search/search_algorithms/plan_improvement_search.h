@@ -1,4 +1,3 @@
-
 #ifndef SEARCH_ALGORITHMS_PLAN_IMPROVEMENT_SEARCH_H
 #define SEARCH_ALGORITHMS_PLAN_IMPROVEMENT_SEARCH_H
 
@@ -9,13 +8,12 @@
 #include <memory>
 
 namespace plan_improvement_search {
-
 class PlanImprovementSearch : public SearchAlgorithm {
     std::shared_ptr<TaskIndependentSearchAlgorithm> search_config;
 
     bool inner_complete_within_bound = false;
     std::shared_ptr<PlanImprovement> improvement;
-    SearchStatus step() override;
+    virtual SearchStatus step() override;
 
 public:
     PlanImprovementSearch(

@@ -1,11 +1,11 @@
-#ifndef PLAN_IMPROVEMENT_PLAN_IMPROVER_H
-#define PLAN_IMPROVEMENT_PLAN_IMPROVER_H
+#ifndef PLAN_IMPROVEMENT_H
+#define PLAN_IMPROVEMENT_H
 
-#include "../abstract_task.h"
 #include "../plan_manager.h"
 
 #include <memory>
 
+// TODO: Could extend something that reports statistics here.
 class TaskProxy;
 class StateRegistry;
 

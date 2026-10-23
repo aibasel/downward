@@ -13,47 +13,44 @@
 using namespace std;
 using namespace task_properties;
 
+// TODO: Check all the names if they make sense.
+// TODO: Check how I should do/add comments.
+// TODO: Do all the datatypes make sense? For example: Is set insertion O(1)
+namespace action_elimination {
 Plan ActionElimination::improve(
     const Plan &plan, const TaskProxy &task_proxy,
     StateRegistry &state_registry) {
     Plan reduced_plan = plan;
-    cout << "action_elimination is called\n";
     OperatorsProxy operators = task_proxy.get_operators();
     State initial_state = state_registry.get_initial_state();
-    // Stores the indices of all marked actions.
     set<size_t> marked_actions;
     State prefix_state = initial_state;
-    // AE: This is only true for action costs of 1. Remove later since its not
-    // necessary. Didn't find a corresponding function rn.
-    size_t plan_cost = plan.size();
-    cout << "Plan size in the beginning: " << plan_cost << "\n";
+    // TODO: Add here some output that indicates the cost before improvement.
+    size_t plan_cost = calculate_plan_cost(plan, task_proxy);
+    cout << "Plan cost in the beginning: " << plan_cost << "\n";
     size_t i = 0;
     while (i < reduced_plan.size()) {
         marked_actions.clear();
         State current_state = prefix_state;
         OperatorProxy prefix_operator = operators[reduced_plan.at(i)];
-        // cout << "Try to remove action and simulate rest of plan: " << i <<
-        // "\n";
         marked_actions.insert(i);
         for (size_t j = i + 1; j < reduced_plan.size(); j++) {
-            // cout << "Check first if a_j is applicable in current_state" <<
-            // "\n";
             OperatorProxy current_operator = operators[reduced_plan.at(j)];
             if (is_applicable(current_operator, current_state)) {
-                // cout << "Action was applicable, apply it and check next one"
-                // << "\n";
+                // TODO: This will add newly discovered states to the state
+                // registry, even though its not needed.
                 current_state = state_registry.get_successor_state(
                     current_state, current_operator);
             } else {
-                // cout
-                //<< "Action was not applicable, mark it and try the next one"
-                //<< "\n";
                 marked_actions.insert(j);
             }
         }
         if (is_goal_state(task_proxy, current_state)) {
-            cout << "FOUND A REDUCTION! Remove marked actions from plan"
-                 << "\n";
+            // TODO: Should there be output for each reduction found? Or only at
+            // the end the total reduced plan?
+            // TODO: Make this more efficient? Its O(n) work but only if a
+            // reduction is found. Not sure its worth it to increase the
+            // simulation effort to reduce work here.
             Plan improved_plan;
             for (size_t i = 0; i < reduced_plan.size(); i++) {
                 if (marked_actions.find(i) == marked_actions.end()) {
@@ -64,11 +61,6 @@ Plan ActionElimination::improve(
         } else {
             prefix_state = state_registry.get_successor_state(
                 prefix_state, prefix_operator);
-            /*cout
-                << "unmark all actions and apply action i to get a new
-               current state"
-                << "\n";
-            */
             i++;
         }
     }
@@ -76,13 +68,15 @@ Plan ActionElimination::improve(
 }
 
 class ActionEliminationFeature : public plugins::TypedFeature<PlanImprovement> {
-
+    // TODO: Add reference to Nahkost and Müller here.
 public:
     ActionEliminationFeature() : TypedFeature("action_elimination") {
         document_title("Action Elimination");
         document_synopsis("Improves plans by removing unnecessary actions.");
     }
 
+    // TODO: Removed the option opts currently, since there was a fd build
+    // warning.
     std::shared_ptr<PlanImprovement> create_component(
         const plugins::Options &) const override {
         return std::make_shared<ActionElimination>();
@@ -90,3 +84,4 @@ public:
 };
 
 static plugins::FeaturePlugin<ActionEliminationFeature> _plugin;
+}
