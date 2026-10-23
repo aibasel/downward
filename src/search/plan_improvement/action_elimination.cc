@@ -13,9 +13,6 @@
 using namespace std;
 using namespace task_properties;
 
-// TODO: Check all the names if they make sense.
-// TODO: Check how I should do/add comments.
-// TODO: Do all the datatypes make sense? For example: Is set insertion O(1)
 namespace action_elimination {
 Plan ActionElimination::improve(
     const Plan &plan, const TaskProxy &task_proxy,
@@ -25,12 +22,10 @@ Plan ActionElimination::improve(
     State initial_state = state_registry.get_initial_state();
     set<size_t> marked_actions;
     State prefix_state = initial_state;
-    // TODO: Add here some output that indicates the cost before improvement.
-    size_t plan_cost = calculate_plan_cost(plan, task_proxy);
-    cout << "Plan cost in the beginning: " << plan_cost << "\n";
     size_t i = 0;
     while (i < reduced_plan.size()) {
         marked_actions.clear();
+        reduction_attempts++;
         State current_state = prefix_state;
         OperatorProxy prefix_operator = operators[reduced_plan.at(i)];
         marked_actions.insert(i);
@@ -46,11 +41,7 @@ Plan ActionElimination::improve(
             }
         }
         if (is_goal_state(task_proxy, current_state)) {
-            // TODO: Should there be output for each reduction found? Or only at
-            // the end the total reduced plan?
-            // TODO: Make this more efficient? Its O(n) work but only if a
-            // reduction is found. Not sure its worth it to increase the
-            // simulation effort to reduce work here.
+            successfull_reductions++;
             Plan improved_plan;
             for (size_t i = 0; i < reduced_plan.size(); i++) {
                 if (marked_actions.find(i) == marked_actions.end()) {
@@ -65,6 +56,12 @@ Plan ActionElimination::improve(
         }
     }
     return reduced_plan;
+}
+
+void ActionElimination::print_statistics() const {
+    utils::g_log << "Action Elimination statistics:" << endl;
+    utils::g_log << "Reduction attempts: " << reduction_attempts << endl;
+    utils::g_log << "Successful reductions: " << successfull_reductions << endl;
 }
 
 class ActionEliminationFeature : public plugins::TypedFeature<PlanImprovement> {

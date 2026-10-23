@@ -5,7 +5,6 @@
 
 #include <memory>
 
-// TODO: Could extend something that reports statistics here.
 class TaskProxy;
 class StateRegistry;
 
@@ -14,7 +13,8 @@ public:
     virtual Plan improve(
         const Plan &plan, const TaskProxy &task_proxy,
         StateRegistry &state_registry) = 0;
-
+    virtual void print_statistics() const {
+    }
     virtual ~PlanImprovement() = default;
 };
 

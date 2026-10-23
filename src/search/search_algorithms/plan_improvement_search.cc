@@ -10,8 +10,6 @@
 
 using namespace std;
 
-// TODO: Currently needs a method to work. Else it aborts.
-// TODO: Store the plan before starting the improvement step.
 namespace plan_improvement_search {
 
 PlanImprovementSearch::PlanImprovementSearch(
@@ -34,14 +32,22 @@ SearchStatus PlanImprovementSearch::step() {
     if (inner_search->found_solution()) {
         Plan plan = inner_search->get_plan();
 
-        if (improvement) {
-            plan = improvement->improve(plan, task_proxy, state_registry);
-        }
+        initial_plan_length = plan.size();
+        initial_plan_cost = calculate_plan_cost(plan, task_proxy);
 
-        set_plan(plan);
+        improvement_timer.resume();
+
+        Plan improved_plan =
+            improvement->improve(plan, task_proxy, state_registry);
+
+        improvement_timer.stop();
+
+        final_plan_length = improved_plan.size();
+        final_plan_cost = calculate_plan_cost(improved_plan, task_proxy);
+
+        set_plan(improved_plan);
     }
-    // TODO: Change this to actually print what i want. This are the statistics
-    // that are printed in the end
+
     inner_search->print_statistics();
 
     const SearchStatistics &inner_stats = inner_search->get_statistics();
@@ -74,6 +80,15 @@ SearchStatus PlanImprovementSearch::step() {
 void PlanImprovementSearch::print_statistics() const {
     log << "Cumulative statistics:" << endl;
     statistics.print_detailed_statistics();
+    if (found_solution()) {
+        log << "Plan improvement statistics: " << endl;
+        log << "Initial plan length: " << initial_plan_length << endl;
+        log << "Final plan length: " << final_plan_length << endl;
+        log << "Initial plan cost: " << initial_plan_cost << endl;
+        log << "Final plan cost: " << final_plan_cost << endl;
+        log << "Plan improvement time: " << improvement_timer << endl;
+        improvement->print_statistics();
+    }
 }
 
 bool PlanImprovementSearch::is_complete_within_bound() const {

@@ -4,6 +4,7 @@
 #include "../search_algorithm.h"
 
 #include "../plan_improvement/plan_improvement.h"
+#include "../utils/timer.h"
 
 #include <memory>
 
@@ -14,6 +15,12 @@ class PlanImprovementSearch : public SearchAlgorithm {
     bool inner_complete_within_bound = false;
     std::shared_ptr<PlanImprovement> improvement;
     virtual SearchStatus step() override;
+    int initial_plan_length = 0;
+    int final_plan_length = 0;
+    int initial_plan_cost = 0;
+    int final_plan_cost = 0;
+
+    utils::Timer improvement_timer{false};
 
 public:
     PlanImprovementSearch(
