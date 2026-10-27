@@ -64,7 +64,7 @@ SearchStatus PlanImprovementSearch::step() {
     // TODO: Somebody that gets these solved etc better than i do should maybe
     // check this.
     SearchStatus inner_status = inner_search->get_finished_search_status();
-
+ 
     if (inner_status == SOLVED) {
         return SOLVED;
     }
