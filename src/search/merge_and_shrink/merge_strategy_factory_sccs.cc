@@ -105,20 +105,14 @@ public:
                 "Proceedings of the 26th International Conference on Automated "
                 "Planning and Scheduling (ICAPS 2016)",
                 "294-298", "AAAI Press", "2016") +
-            "In a nutshell, it computes the maximal strongly connected "
-            "components (SCCs) of the causal graph, "
-            "obtaining a partitioning of the task's variables. Every such "
-            "partition is then merged individually, using the score-based merge "
-            "strategy specified via the merge_selector option. Once all partitions "
-            "have been merged, the resulting product factors are merged according "
-            "to the score-based merge strategy.");
-        document_note(
-            "Note regarding how partitions are considered",
-            "Originally, SCC partitions are worked on 'one after the other' "
-            "in an order that could be specified and which defaulted to topological "
-            "order. In issue1171, this was changed to 'allowing working on any "
-            "partition', i.e., all pairs of factors in each partition form the set "
-            "of candidates scored by the score-based merge strategy.");
+            "In a nutshell, it computes the maximal strongly connected components "
+            "(SCCs) of the causal graph, obtaining a partitioning of the task's "
+            "variables. Every such partition is then merged individually, using the "
+            "score-based merge strategy specified via the merge_selector option. At "
+            "each iteration of the merge-and-shrink algorithm, all pairs of factors "
+            "in each partition form the set of merge candidates. Once each partition "
+            "has been merged to a single product factor, these resulting factors are "
+            "also merged according to the score-based merge strategy.");
         add_option<shared_ptr<TaskIndependentMergeSelector>>(
             "merge_selector", "the fallback merge strategy to use");
         add_merge_strategy_options_to_feature(*this);

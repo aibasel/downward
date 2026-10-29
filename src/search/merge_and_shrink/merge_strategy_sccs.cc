@@ -64,14 +64,9 @@ pair<int, int> MergeStrategySCCs::get_next() {
         // Remove the two merged indices from that cluster.
         vector<int> &affected_cluster =
             unfinished_clusters[affected_cluster_index];
-        for (vector<int>::iterator it = affected_cluster.begin();
-             it != affected_cluster.end();) {
-            if (*it == next_pair.first || *it == next_pair.second) {
-                it = affected_cluster.erase(it);
-            } else {
-                ++it;
-            }
-        }
+        erase_if(affected_cluster, [&](int elem) {
+            return elem == next_pair.first || elem == next_pair.second;
+        });
 
         if (affected_cluster.empty()) {
             // If the cluster got empty, remove it.
