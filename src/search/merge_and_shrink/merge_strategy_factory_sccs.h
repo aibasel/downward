@@ -6,15 +6,7 @@
 namespace merge_and_shrink {
 class MergeSelector;
 
-enum class OrderOfSCCs {
-    TOPOLOGICAL,
-    REVERSE_TOPOLOGICAL,
-    DECREASING,
-    INCREASING
-};
-
 class MergeStrategyFactorySCCs : public MergeStrategyFactory {
-    OrderOfSCCs order_of_sccs;
     std::shared_ptr<MergeSelector> merge_selector;
 protected:
     virtual std::string name() const override;
@@ -22,7 +14,6 @@ protected:
 public:
     MergeStrategyFactorySCCs(
         const std::shared_ptr<AbstractTask> &task,
-        const OrderOfSCCs &order_of_sccs,
         const std::shared_ptr<MergeSelector> &merge_selector,
         utils::Verbosity verbosity);
     virtual std::unique_ptr<MergeStrategy> compute_merge_strategy(
