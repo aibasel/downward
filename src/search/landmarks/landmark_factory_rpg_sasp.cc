@@ -799,7 +799,7 @@ public:
         add_use_orders_option_to_feature(*this);
         add_landmark_factory_options_to_feature(*this);
 
-        document_language_support("conditional_effects", "supported");
+        document_language_support("conditional effects", "supported");
     }
 
     virtual shared_ptr<TaskIndependentLandmarkFactory> create_component(
