@@ -11,7 +11,6 @@
 using namespace std;
 
 namespace plan_improvement_search {
-
 PlanImprovementSearch::PlanImprovementSearch(
     const shared_ptr<AbstractTask> &task,
     const shared_ptr<TaskIndependentSearchAlgorithm> &search_config,
@@ -24,7 +23,6 @@ PlanImprovementSearch::PlanImprovementSearch(
 }
 
 SearchStatus PlanImprovementSearch::step() {
-    // Create the task-specific search algorithm.
     shared_ptr<SearchAlgorithm> inner_search = search_config->bind_task(task);
 
     inner_search->search();

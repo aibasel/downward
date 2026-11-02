@@ -589,7 +589,6 @@ create_fast_downward_library(
     SOURCES
         plan_improvement/plan_improvement
         plan_improvement/action_elimination
-    DEPENDS task_properties
 )
 
 create_fast_downward_library(
