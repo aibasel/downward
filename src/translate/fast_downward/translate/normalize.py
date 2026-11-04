@@ -260,24 +260,16 @@ def eliminate_universal_quantifiers(task):
     new_axioms_by_condition = {}
     objects_by_type = {}
 
-    # Remove universal quantifiers in actions and goal.
-    for proxy in tuple(all_conditions(task, actions=True, axioms=False,
-                                      goal=True)):
-        # Cannot use generator because we add new axioms on the fly.
-        if proxy.condition.has_universal_part():
-            type_map = proxy.get_type_map()
-            proxy.set(recurse(proxy.condition))
-
-    # Remove universal quantifiers in axioms.
     sccs = stratifiability_sccs(task.axioms)
-    for proxy in tuple(all_conditions(task, actions=False, axioms=True,
-                                      goal=False)):
+    for proxy in tuple(all_conditions(task)):
         # Cannot use generator because we add new axioms on the fly.
         if proxy.condition.has_universal_part():
             type_map = proxy.get_type_map()
-            head_predicate = proxy.owner.name
-            proxy.set(recurse(proxy.condition,
-                              axiom_head_dependencies=sccs[head_predicate]))
+            if isinstance(proxy, AxiomConditionProxy):
+                head_predicate = proxy.owner.name
+                proxy.set(recurse(proxy.condition, sccs[head_predicate]))
+            else:
+                proxy.set(recurse(proxy.condition))
 
 # [2] Simplifies conditions according to the selected strategy.
 # After the simplification only conjuncitons
