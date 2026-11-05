@@ -6,8 +6,6 @@
 
 #include "../plugins/plugin.h"
 #include "../task_utils/successor_generator.h"
-#include "../tasks/cost_adapted_task.h"
-#include "../tasks/root_task.h"
 #include "../utils/markup.h"
 
 using namespace std;
@@ -63,25 +61,6 @@ static bool landmark_graph_has_cycle_of_natural_orderings(
 void LandmarkHeuristic::initialize(
     const shared_ptr<LandmarkFactory> &landmark_factory, bool prog_goal,
     bool prog_gn, bool prog_r) {
-    /*
-      Actually, we should test if this is the root task or a task that *only*
-      transforms costs and/or adds negated axioms. However, there is currently
-      no good way to do this, so we use this incomplete, slightly less safe
-      test.
-
-      issue1208 update the comment after removing the task transformation code.
-      The check can hopefully just be removed.
-    */
-    if (task != tasks::g_root_task &&
-        dynamic_cast<tasks::CostAdaptedTask *>(task.get()) == nullptr &&
-        dynamic_cast<tasks::DefaultValueAxiomsTask *>(task.get()) == nullptr) {
-        cerr << "The landmark heuristics currently only support "
-             << "task transformations that modify the operator costs "
-             << "or add negated axioms. See issues 845, 686 and 454 "
-             << "for details." << endl;
-        utils::exit_with(utils::ExitCode::SEARCH_UNSUPPORTED);
-    }
-
     compute_landmark_graph(landmark_factory);
     landmark_status_manager = make_unique<LandmarkStatusManager>(
         *landmark_graph, prog_goal, prog_gn, prog_r);
@@ -181,7 +160,7 @@ void LandmarkHeuristic::generate_preferred_operators(
     }
 }
 
-int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
+int LandmarkHeuristic::compute_heuristic(const State &state) {
     /*
       The path-dependent landmark heuristics are somewhat ill-defined for states
       not reachable from the initial state of a planning task. We therefore
@@ -206,22 +185,24 @@ int LandmarkHeuristic::compute_heuristic(const State &ancestor_state) {
     if (initial_landmark_graph_has_cycle_of_natural_orderings) {
         return DEAD_END;
     }
-    int h = get_heuristic_value(ancestor_state);
+    int h = get_heuristic_value(state);
     if (use_preferred_operators) {
         ConstBitsetView future =
-            landmark_status_manager->get_future_landmarks(ancestor_state);
-        State state = convert_ancestor_state(ancestor_state);
+            landmark_status_manager->get_future_landmarks(state);
         generate_preferred_operators(state, future);
     }
     return h;
 }
 
 void LandmarkHeuristic::notify_initial_state(const State &initial_state) {
+    assert(initial_state.get_task() == TaskProxy(*task));
     landmark_status_manager->progress_initial_state(initial_state);
 }
 
 void LandmarkHeuristic::notify_state_transition(
     const State &parent_state, OperatorID op_id, const State &state) {
+    assert(parent_state.get_task() == TaskProxy(*task));
+    assert(state.get_task() == TaskProxy(*task));
     landmark_status_manager->progress(parent_state, op_id, state);
     if (cache_evaluator_values) {
         /* TODO:  It may be more efficient to check that the past landmark

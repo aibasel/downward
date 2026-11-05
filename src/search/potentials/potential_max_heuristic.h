@@ -16,7 +16,7 @@ class PotentialMaxHeuristic : public Heuristic {
     std::vector<std::unique_ptr<PotentialFunction>> functions;
 
 protected:
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 
 public:
     PotentialMaxHeuristic(

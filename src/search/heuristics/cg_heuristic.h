@@ -4,7 +4,6 @@
 #include "../heuristic.h"
 
 #include "../algorithms/priority_queues.h"
-#include "../tasks/default_value_axioms_task.h"
 
 #include <memory>
 #include <string>
@@ -39,12 +38,12 @@ class CGHeuristic : public Heuristic {
         const State &state, domain_transition_graph::DomainTransitionGraph *dtg,
         int to);
 protected:
-    virtual int compute_heuristic(const State &ancestor_state) override;
+    virtual int compute_heuristic(const State &state) override;
 public:
     CGHeuristic(
         const std::shared_ptr<AbstractTask> &task, int max_cache_size,
-        tasks::AxiomHandlingType axiom_hanlding, bool cache_estimates,
-        const std::string &description, utils::Verbosity verbosity);
+        bool cache_estimates, const std::string &description,
+        utils::Verbosity verbosity);
     virtual bool is_safe() const override;
 };
 }

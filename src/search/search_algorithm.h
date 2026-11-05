@@ -15,8 +15,6 @@
 #include "utils/logging.h"
 
 #include <limits>
-#include <vector>
-
 namespace plugins {
 class Options;
 class Feature;
@@ -48,7 +46,7 @@ class SearchAlgorithm : public components::TaskSpecificComponent {
 protected:
     mutable utils::LogProxy log;
     PlanManager plan_manager;
-    StateRegistry state_registry;
+    ExplicitStateRegistry state_registry;
     const successor_generator::SuccessorGenerator &successor_generator;
     SearchSpace search_space;
     SearchProgress search_progress;

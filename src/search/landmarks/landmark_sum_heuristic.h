@@ -20,14 +20,13 @@ class LandmarkSumHeuristic : public LandmarkHeuristic {
         const std::unordered_set<int> &achievers) const;
     void compute_landmark_costs();
 
-    int get_heuristic_value(const State &ancestor_state) override;
+    int get_heuristic_value(const State &state) override;
 public:
     LandmarkSumHeuristic(
         const std::shared_ptr<AbstractTask> &task,
         const std::shared_ptr<LandmarkFactory> &lm_factory, bool pref,
         bool prog_goal, bool prog_gn, bool prog_r, bool cache_estimates,
-        const std::string &description, utils::Verbosity verbosity,
-        tasks::AxiomHandlingType axioms);
+        const std::string &description, utils::Verbosity verbosity);
 
     virtual bool is_safe() const override;
 };

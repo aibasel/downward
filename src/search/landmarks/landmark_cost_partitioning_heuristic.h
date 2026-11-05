@@ -22,7 +22,7 @@ class LandmarkCostPartitioningHeuristic : public LandmarkHeuristic {
         CostPartitioningMethod cost_partitioning, lp::LPSolverType lpsolver,
         bool use_action_landmarks);
 
-    int get_heuristic_value(const State &ancestor_state) override;
+    int get_heuristic_value(const State &state) override;
 public:
     LandmarkCostPartitioningHeuristic(
         const std::shared_ptr<AbstractTask> &task,
