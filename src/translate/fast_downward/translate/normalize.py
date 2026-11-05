@@ -220,7 +220,8 @@ def eliminate_universal_quantifiers(task):
                 for obj_tuple in product(*objects_for_instantations):
                     instantiations = dict(zip(parameter_names, obj_tuple))
                     conjuncts.append(
-                            quantified_part.rename_variables(instantiations))
+                            quantified_part.partially_instantiate(
+                                instantiations))
                 return pddl.Conjunction(conjuncts).simplified()
 
             # Normal elimination replacing the universally quantified part via

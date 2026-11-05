@@ -61,20 +61,22 @@ class Condition:
             return self.__class__([part.uniquify_variables(type_map, renamings)
                                    for part in self.parts])
 
-    def rename_variables(self, renamings):
-        # Cannot use _postorder_visit because this requires preorder
-        # for quantified effects.
-        if not self.parts:
-            return self
-        else:
-            return self.__class__([part.rename_variables(renamings)
-                                   for part in self.parts])
-
     def to_untyped_strips(self):
         raise ValueError("Not a STRIPS condition: %s" % self.__class__.__name__)
 
     def instantiate(self, var_mapping, init_facts, fluent_facts, result):
         raise ValueError("Cannot instantiate condition: not normalized")
+
+    def partially_instantiate(self, instantiations):
+        # In contrast to instantiate this function does not assume that the
+        # condition is normalized.
+        # Cannot use _postorder_visit because this requires preorder
+        # for quantified effects.
+        if not self.parts:
+            return self
+        else:
+            return self.__class__([part.partially_instantiate(instantiations)
+                                   for part in self.parts])
 
     def free_variables(self):
         result = set()
@@ -250,11 +252,12 @@ class QuantifiedCondition(Condition):
         new_parts = (self.parts[0].uniquify_variables(type_map, renamings),)
         return self.__class__(new_parameters, new_parts)
 
-    def rename_variables(self, renamings):
-        # Assumes that uniquify_variables was called beforehand. Without
-        # uniquified variables we would need to remove entries from renamings
-        # for variables shadowed by self.parameters.
-        new_parts = (self.parts[0].rename_variables(renamings),)
+    def partially_instantiate(self, instantiations):
+        parameter_names = set(par.name for par in self.parameters)
+        instantiations = {variable: instantiation for variable, instantiation
+                          in instantiations.items() if variable not in
+                          parameter_names}
+        new_parts = (self.parts[0].partially_instantiate(instantiations),)
         return self.__class__(self.parameters, new_parts)
 
     def free_variables(self):
@@ -343,6 +346,12 @@ class Literal(Condition):
 
     def uniquify_variables(self, type_map, renamings={}):
         return self.rename_variables(renamings)
+
+    def partially_instantiate(self, instantiations):
+        assert not any(instantiation.startswith('?') for
+                       instantiation in instantiations.values()), \
+               "Cannot instantiate a variable with another variable."
+        return self.rename_variables(instantiations)
 
     def rename_variables(self, renamings):
         new_args = tuple(renamings.get(arg, arg) for arg in self.args)
