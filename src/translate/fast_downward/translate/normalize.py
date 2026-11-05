@@ -171,11 +171,11 @@ def eliminate_universal_quantifiers(task):
     def recurse(condition, axiom_head_dependencies=[]):
         # Uses new_axioms_by_condition, objects_by_type, and type_map from
         # surrounding scope.
-        # axiom_head_dependencies contains for each head predicate of an axiom
-        # the derived predicates that must be in the same axiom stratum as the
-        # head predicate. If an axiom mentions one of those predicates in its
-        # condition then it depends, possibly recursively, on its head
-        # predicate.
+        # axiom_head_dependencies contains the derived predicates that must be
+        # in the same axiom stratum as the head predicate of the axiom whose
+        # body is given by condition. If condition mentions one of those
+        # predicates then the head predicate depends, possibly recursively, on
+        # itself.
         if isinstance(condition, pddl.UniversalCondition):
             if axiom_head_dependencies:
                 pos_preds, _ = condition.pos_and_neg_predicates()
@@ -183,49 +183,17 @@ def eliminate_universal_quantifiers(task):
                         axiom_head_dependencies)
             else:
                 head_dependencies_in_condition = set()
+            # If condition is part of an axiom body and the axiom depends on
+            # its own head predicate, possibly recursively, then we cannot
+            # eliminate universal quantifiers the usual way via double negation
+            # and a new axiom. This would make the axioms unstratifiable by
+            # introducing a cyclic dependency through negation.
             if head_dependencies_in_condition:
-                # If condition is part of an axiom body and mentions the
-                # axiom's head predicate, possibly recursively, then we cannot
-                # eliminate universal quantifiers the usual way via double
-                # negation and a new axiom. This would make the axioms
-                # unstratifiable by introducing a cyclic dependency through
-                # negation. Instead replace the universally quantified part
-                # with a conjunction where in each conjunct the originally
-                # quantified variables are instantiated with objects (of
-                # fitting types).
-                quantified_part = recurse(condition.parts[0],
-                                          head_dependencies_in_condition)
-
-                # To determine the objects for instantiating the quantified
-                # variables we only use type information. The number of
-                # instantiations could be reduced, i.e. improved, with further
-                # analysis, e.g. based on unary relaxation (cf. BSc thesis by
-                # Pascal Lauer).
-                for par in condition.parameters:
-                    if par.type_name in objects_by_type:
-                        continue
-                    subtype_names = {par.type_name} | {t.name for t in
-                                                       task.types if
-                                                       par.type_name in
-                                                       t.supertype_names}
-                    objects_by_type[par.type_name] = {obj.name for obj in
-                                                      task.objects if
-                                                      obj.type_name in
-                                                      subtype_names}
-
-                parameter_names = [par.name for par in condition.parameters]
-                objects_for_instantations = (objects_by_type[par.type_name] for
-                                             par in condition.parameters)
-                conjuncts = []
-                for obj_tuple in product(*objects_for_instantations):
-                    instantiations = dict(zip(parameter_names, obj_tuple))
-                    conjuncts.append(
-                            quantified_part.partially_instantiate(
-                                instantiations))
-                return pddl.Conjunction(conjuncts).simplified()
+                return recurse_with_partial_instantiation(
+                        condition, head_dependencies_in_condition)
 
             # Normal elimination replacing the universally quantified part via
-            # double negation and a new axiom
+            # double negation and a new axiom.
             axiom_condition = condition.negate()
             parameters = sorted(axiom_condition.free_variables())
             typed_parameters = tuple(
@@ -241,6 +209,39 @@ def eliminate_universal_quantifiers(task):
             new_parts = [recurse(part, axiom_head_dependencies) for part in
                          condition.parts]
             return condition.change_parts(new_parts)
+
+    def recurse_with_partial_instantiation(condition,
+                                           head_dependencies_in_condition):
+        # Uses objects_by_type from surrounding scope.
+        # Recurse and then replace the universally quantified part with a
+        # conjunction where in each conjunct the originally quantified
+        # variables are instantiated with objects (of fitting types).
+        quantified_part = recurse(condition.parts[0],
+                                  head_dependencies_in_condition)
+
+        # To determine the objects for instantiating the quantified variables
+        # we only use type information. The number of instantiations could be
+        # reduced, i.e. improved, with further analysis, e.g. based on unary
+        # relaxation (cf. BSc thesis by Pascal Lauer).
+        for par in condition.parameters:
+            if par.type_name in objects_by_type:
+                continue
+            subtype_names = {par.type_name} | {t.name for t in task.types if
+                                               par.type_name in
+                                               t.supertype_names}
+            objects_by_type[par.type_name] = {obj.name for obj in task.objects
+                                              if obj.type_name in
+                                              subtype_names}
+
+        parameter_names = [par.name for par in condition.parameters]
+        objects_for_instantations = (objects_by_type[par.type_name] for
+                                     par in condition.parameters)
+        conjuncts = []
+        for obj_tuple in product(*objects_for_instantations):
+            instantiations = dict(zip(parameter_names, obj_tuple))
+            conjuncts.append(quantified_part.partially_instantiate(
+                instantiations))
+        return pddl.Conjunction(conjuncts).simplified()
 
     def stratifiability_sccs(axioms):
         # Determine positive dependencies of derived predicates.
