@@ -45,7 +45,7 @@ static shared_ptr<OpenListFactory> create_ehc_open_list_factory(
             g_evaluator,
             make_shared<PrefEval>(task, "ehc.pref_eval", verbosity)};
         return make_shared<tiebreaking_open_list::TieBreakingOpenListFactory>(
-            task, evals, false, true);
+            task, evals, true, false);
     }
 }
 
