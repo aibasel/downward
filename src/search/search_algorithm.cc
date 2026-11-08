@@ -70,6 +70,9 @@ SearchStatus SearchAlgorithm::get_status() const {
 SearchStatus SearchAlgorithm::get_finished_search_status() const {
     if (found_solution()) {
         return SOLVED;
+    } else if (status == TIMEOUT) {
+        log << "Search timed out!" << endl;
+        return TIMEOUT;
     } else if (is_unbounded() && is_complete_within_bound()) {
         log << "Search terminated -- no plan exists!" << endl;
         return UNSOLVABLE;
