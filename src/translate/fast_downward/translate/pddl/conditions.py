@@ -53,7 +53,7 @@ class Condition:
         return self._postorder_visit("_untyped")
 
     def uniquify_variables(self, type_map, renamings={}):
-        # Cannot used _postorder_visit because this requires preorder
+        # Cannot use _postorder_visit because this requires preorder
         # for quantified effects.
         if not self.parts:
             return self
@@ -67,11 +67,31 @@ class Condition:
     def instantiate(self, var_mapping, init_facts, fluent_facts, result):
         raise ValueError("Cannot instantiate condition: not normalized")
 
+    def partially_instantiate(self, instantiations):
+        # In contrast to instantiate this function does not assume that the
+        # condition is normalized.
+        # Cannot use _postorder_visit because this requires preorder
+        # for quantified effects.
+        if not self.parts:
+            return self
+        else:
+            return self.__class__([part.partially_instantiate(instantiations)
+                                   for part in self.parts])
+
     def free_variables(self):
         result = set()
         for part in self.parts:
             result |= part.free_variables()
         return result
+
+    def pos_and_neg_predicates(self):
+        pos, neg = set(), set()
+        self._collect_predicates(pos, neg)
+        return (pos, neg)
+
+    def _collect_predicates(self, pos, neg):
+        for p in self.parts:
+            p._collect_predicates(pos, neg)
 
     def has_disjunction(self):
         for part in self.parts:
@@ -232,6 +252,14 @@ class QuantifiedCondition(Condition):
         new_parts = (self.parts[0].uniquify_variables(type_map, renamings),)
         return self.__class__(new_parameters, new_parts)
 
+    def partially_instantiate(self, instantiations):
+        parameter_names = set(par.name for par in self.parameters)
+        instantiations = {variable: instantiation for variable, instantiation
+                          in instantiations.items() if variable not in
+                          parameter_names}
+        new_parts = (self.parts[0].partially_instantiate(instantiations),)
+        return self.__class__(self.parameters, new_parts)
+
     def free_variables(self):
         result = Condition.free_variables(self)
         for par in self.parameters:
@@ -319,6 +347,12 @@ class Literal(Condition):
     def uniquify_variables(self, type_map, renamings={}):
         return self.rename_variables(renamings)
 
+    def partially_instantiate(self, instantiations):
+        assert not any(instantiation.startswith('?') for
+                       instantiation in instantiations.values()), \
+               "Cannot instantiate a variable with another variable."
+        return self.rename_variables(instantiations)
+
     def rename_variables(self, renamings):
         new_args = tuple(renamings.get(arg, arg) for arg in self.args)
         return self.__class__(self.predicate, new_args)
@@ -334,6 +368,9 @@ class Literal(Condition):
 
 class Atom(Literal):
     negated = False
+
+    def _collect_predicates(self, pos, neg):
+        pos.add(self.predicate)
 
     def to_untyped_strips(self):
         return [self]
@@ -355,6 +392,9 @@ class Atom(Literal):
 
 class NegatedAtom(Literal):
     negated = True
+
+    def _collect_predicates(self, pos, neg):
+        neg.add(self.predicate)
 
     def _relaxed(self, parts):
         return Truth()
