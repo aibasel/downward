@@ -15,11 +15,10 @@ using namespace task_properties;
 
 namespace action_elimination {
 Plan ActionElimination::improve(
-    const Plan &plan, const TaskProxy &task_proxy,
-    StateRegistry &state_registry) {
+    const Plan &plan, const TaskProxy &task_proxy, StateRegistry &) {
     Plan reduced_plan = plan;
     OperatorsProxy operators = task_proxy.get_operators();
-    State initial_state = state_registry.get_initial_state();
+    State initial_state = task_proxy.get_initial_state();
     set<size_t> marked_actions;
     State prefix_state = initial_state;
     size_t i = 0;
@@ -34,8 +33,8 @@ Plan ActionElimination::improve(
             if (is_applicable(current_operator, current_state)) {
                 // TODO: This will add newly discovered states to the state
                 // registry, even though its not needed.
-                current_state = state_registry.get_successor_state(
-                    current_state, current_operator);
+                current_state =
+                    current_state.get_unregistered_successor(current_operator);
             } else {
                 marked_actions.insert(j);
             }
@@ -50,8 +49,8 @@ Plan ActionElimination::improve(
             }
             reduced_plan = improved_plan;
         } else {
-            prefix_state = state_registry.get_successor_state(
-                prefix_state, prefix_operator);
+            prefix_state =
+                prefix_state.get_unregistered_successor(prefix_operator);
             i++;
         }
     }

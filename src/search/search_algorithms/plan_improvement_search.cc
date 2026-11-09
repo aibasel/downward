@@ -45,7 +45,6 @@ SearchStatus PlanImprovementSearch::step() {
 
         set_plan(improved_plan);
     }
-
     inner_search->print_statistics();
 
     const SearchStatistics &inner_stats = inner_search->get_statistics();
