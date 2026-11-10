@@ -24,12 +24,33 @@ PlanImprovementSearch::PlanImprovementSearch(
 
 SearchStatus PlanImprovementSearch::step() {
     shared_ptr<SearchAlgorithm> inner_search = search_config->bind_task(task);
-
+    if (bound < inner_search->get_bound()) {
+        inner_search->set_bound(bound);
+    }
     inner_search->search();
 
-    if (inner_search->found_solution()) {
-        Plan plan = inner_search->get_plan();
+    SearchStatus inner_status = inner_search->get_finished_search_status();
+    bool found_inner_solution = inner_search->found_solution();
 
+    Plan plan;
+    if (found_inner_solution) {
+        plan = inner_search->get_plan();
+    }
+
+    int inner_bound = inner_search->get_bound();
+    inner_complete_within_bound =
+        inner_search->is_complete_within_bound() && inner_bound >= bound;
+    const SearchStatistics &inner_stats = inner_search->get_statistics();
+    statistics.inc_expanded(inner_stats.get_expanded());
+    statistics.inc_evaluated_states(inner_stats.get_evaluated_states());
+    statistics.inc_evaluations(inner_stats.get_evaluations());
+    statistics.inc_generated(inner_stats.get_generated());
+    statistics.inc_generated_ops(inner_stats.get_generated_ops());
+    statistics.inc_reopened(inner_stats.get_reopened());
+    inner_search->print_statistics();
+    inner_search.reset();
+
+    if (found_inner_solution) {
         initial_plan_length = plan.size();
         initial_plan_cost = calculate_plan_cost(plan, task_proxy);
 
@@ -45,32 +66,12 @@ SearchStatus PlanImprovementSearch::step() {
 
         set_plan(improved_plan);
     }
-    inner_search->print_statistics();
-
-    const SearchStatistics &inner_stats = inner_search->get_statistics();
-    statistics.inc_expanded(inner_stats.get_expanded());
-    statistics.inc_evaluated_states(inner_stats.get_evaluated_states());
-    statistics.inc_evaluations(inner_stats.get_evaluations());
-    statistics.inc_generated(inner_stats.get_generated());
-    statistics.inc_generated_ops(inner_stats.get_generated_ops());
-    statistics.inc_reopened(inner_stats.get_reopened());
-
-    inner_complete_within_bound = inner_search->is_complete_within_bound() &&
-                                  inner_search->get_bound() >= bound;
-
-    // TODO: Somebody that gets these solved etc better than i do should maybe
-    // check this.
-    SearchStatus inner_status = inner_search->get_finished_search_status();
- 
     if (inner_status == SOLVED) {
         return SOLVED;
     }
-
-    if (inner_status == UNSOLVABLE_WITHIN_BOUND &&
-        inner_search->get_bound() < bound) {
+    if (inner_status == UNSOLVABLE_WITHIN_BOUND && inner_bound < bound) {
         return FAILED;
     }
-
     return inner_status;
 }
 
@@ -128,20 +129,29 @@ public:
 
 class PlanImprovementSearchFeature
     : public plugins::TypedFeature<TaskIndependentSearchAlgorithm> {
-    // TODO: Add some document notes here?
 public:
     PlanImprovementSearchFeature() : TypedFeature("plan_improvement") {
         document_title("Plan improvement search");
         document_synopsis(
-            "Wrapper search that runs another search and provides a method for post-processing solutions.");
+            "Runs a specified search algorithm to find an initial plan and"
+            "applies a plan improvement method to the resulting solution");
         add_option<shared_ptr<TaskIndependentSearchAlgorithm>>(
-            "search", "search algorithm to execute", "");
+            "search", "Search algorithm to find the initial plan", "");
         add_option<shared_ptr<PlanImprovement>>(
-            "method", "plan improvement method to apply", "");
+            "method",
+            "Post-processing plan improvement method applied to the initial plan",
+            "");
         add_search_algorithm_options_to_feature(*this, "plan_improvement");
+        // TODO: Check if this is correct.
+        document_note(
+            "Usage",
+            "The configuration\n```\n"
+            "--search \"plan_improvement("
+            "search=lazy_greedy([ff()]),"
+            "method=action_elimination())\"\n"
+            "```\nwould run lazy_greedy search with the ff heuristic to find an initial plan, then try to improve that plan with action elimintion\n\n"
+            "```");
     }
-    // TODO: Currently just has a search and a method. Do we need additional
-    // options?
     shared_ptr<TaskIndependentSearchAlgorithm> create_component(
         const plugins::Options &opts) const override {
         return components::make_shared_from_arg_tuples<

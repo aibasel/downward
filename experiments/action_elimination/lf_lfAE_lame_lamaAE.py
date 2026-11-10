@@ -46,132 +46,72 @@ else:
 # Planner configuration
 # ---------------------------------------------------------------------------
 
-LAMA_FIRST_SEARCH = (
-    "let(hlm,"
-        "eval_modify_costs("
-            "landmark_sum("
-                "lm_factory=lm_reasonable_orders_hps(lm_rhw()),"
-                "pref=false"
-            "),"
-            "cost_type=one"
-        "),"
-        "let(hff,"
-            "eval_modify_costs(ff(),cost_type=one),"
-            "lazy_greedy("
-                "[hff,hlm],"
-                "preferred=[hff,hlm],"
-                "cost_type=one,"
-                "reopen_closed=false"
-            ")"
-        ")"
-    ")"
-)
-
-LF_AE = (
-    "plan_improvement("
-    f"search={LAMA_FIRST_SEARCH},"
-    "method=action_elimination()"
-    ")"
-)
-
-# Full LAMA uses one-cost heuristics for its first phase
-# and plusone-cost heuristics for weighted A*.
-
-HLM_PLUSONE = (
-    "eval_modify_costs("
-        "landmark_sum("
-            "lm_factory=lm_reasonable_orders_hps(lm_rhw()),"
-            "pref=false"
-        "),"
-        "cost_type=plusone"
-    ")"
-)
-
-HFF_PLUSONE = "eval_modify_costs(ff(),cost_type=plusone)"
-
-
-def make_lama_full(with_ae=False):
-    first = (
-        "lazy_greedy("
-            "[hff1,hlm1],"
-            "preferred=[hff1,hlm1],"
-            "cost_type=one,"
-            "reopen_closed=false"
-        ")"
-    )
-
-    phases = [first]
-
-    for weight in [5, 3, 2, 1]:
-        phases.append(
-            "lazy_wastar("
-                "[hff2,hlm2],"
-                "preferred=[hff2,hlm2],"
-                f"w={weight},"
-                "cost_type=plusone"
-            ")"
-        )
-
-    if with_ae:
-        phases = [
-            "plan_improvement("
-                f"search={phase},"
-                "method=action_elimination()"
-            ")"
-            for phase in phases
-        ]
-
-    search = (
-        "iterated(["
-        + ",".join(phases)
-        + "],repeat_last=false)"
-    )
-
-    # Define the heuristics once and share them between phases.
-    heuristic_definitions = [
-        ("hlm1", (
-            "eval_modify_costs("
-                "landmark_sum("
-                    "lm_factory=lm_reasonable_orders_hps(lm_rhw()),"
-                    "pref=false"
-                "),"
-                "cost_type=one"
-            ")"
-        )),
-        ("hff1", "eval_modify_costs(ff(),cost_type=one)"),
-        ("hlm2", HLM_PLUSONE),
-        ("hff2", HFF_PLUSONE),
-    ]
-
-    for name, expression in reversed(heuristic_definitions):
-        search = f"let({name},{expression},{search})"
-
-    return search
-
-
-LAMA_FULL = make_lama_full(with_ae=False)
-LAMA_FULL_AE = make_lama_full(with_ae=True)
-
-
 CONFIGS = [
     (
-        "1_lf",
-        ["--search", LAMA_FIRST_SEARCH],
+        "1_wastar",
+        [
+            "--search",
+            "let(h,ipdb(),lazy_wastar([h],w=10))",
+        ],
     ),
     (
-        "2_lf_ae",
-        ["--search", LF_AE],
+        "2_wastar_ae",
+        [
+            "--search",
+            "let(h,ipdb(),"
+                "plan_improvement("
+                    "search=lazy_wastar([h],w=10),"
+                    "method=action_elimination()"
+                ")"
+            ")",
+        ],
     ),
     (
-        "3_lama",
-        ["--search", LAMA_FULL],
+        "3_iterated",
+        [
+            "--search",
+            "let(h,ipdb(),"
+                "iterated(["
+                    "lazy_wastar([h],w=10),"
+                    "lazy_wastar([h],w=5),"
+                    "lazy_wastar([h],w=3),"
+                    "lazy_wastar([h],w=2),"
+                    "lazy_wastar([h],w=1)"
+                "],repeat_last=false)"
+            ")",
+        ],
     ),
     (
-        "4_lama_ae",
-        ["--search", LAMA_FULL_AE],
+        "4_iterated_ae",
+        [
+            "--search",
+            "let(h,ipdb(),"
+                "iterated(["
+                    "plan_improvement("
+                        "search=lazy_wastar([h],w=10),"
+                        "method=action_elimination()"
+                    "),"
+                    "plan_improvement("
+                        "search=lazy_wastar([h],w=5),"
+                        "method=action_elimination()"
+                    "),"
+                    "plan_improvement("
+                        "search=lazy_wastar([h],w=3),"
+                        "method=action_elimination()"
+                    "),"
+                    "plan_improvement("
+                        "search=lazy_wastar([h],w=2),"
+                        "method=action_elimination()"
+                    "),"
+                    "plan_improvement("
+                        "search=lazy_wastar([h],w=1),"
+                        "method=action_elimination()"
+                    ")"
+                "],repeat_last=false)"
+            ")",
+        ],
     ),
 ]
-
 
 
 # ---------------------------------------------------------------------------
