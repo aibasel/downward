@@ -23,9 +23,9 @@ if project.REMOTE:
 
     ENV = project.BaselSlurmEnvironment(
         partition="infai_2",
-        memory_per_cpu="9000M",
+        memory_per_cpu="2000M",
         cpus_per_task=1,
-        time_limit_per_task="00:31:00",
+        time_limit_per_task="00:01:30",
     )
 
 else:
@@ -172,9 +172,9 @@ BUILD_OPTIONS = []
 
 DRIVER_OPTIONS = [
     "--overall-time-limit",
-    "30m",
+    "1m",
     "--overall-memory-limit",
-    "8G",
+    "1G",
 ]
 
 
@@ -221,7 +221,7 @@ exp = project.FastDownwardExperiment(
 )
 
 
-for config_nick, config in CONFIGS:
+for config_nick, config in CONFIGS.items():
     for revision, revision_nick in REV_NICKS:
 
         if revision_nick:
