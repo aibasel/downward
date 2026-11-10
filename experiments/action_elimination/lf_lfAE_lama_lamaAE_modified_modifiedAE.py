@@ -23,9 +23,9 @@ if project.REMOTE:
 
     ENV = project.BaselSlurmEnvironment(
         partition="infai_2",
-        memory_per_cpu="2000M",
+        memory_per_cpu="9000M",
         cpus_per_task=1,
-        time_limit_per_task="00:01:30",
+        time_limit_per_task="00:31:00",
     )
 
 else:
@@ -159,6 +159,86 @@ CONFIGS = {
         "],repeat_last=true)))))",
         "--always",
     ],
+    "4_lama_no_w5": [
+        "--search",
+        "--if-unit-cost",
+        "let(hlm, landmark_sum(lm_reasonable_orders_hps(lm_rhw()),pref=false),"
+        "let(hff, ff(),"
+        "iterated(["
+        "lazy_greedy([hff,hlm],preferred=[hff,hlm]),"
+        "lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3),"
+        "lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2),"
+        "lazy_wastar([hff,hlm],preferred=[hff,hlm],w=1)"
+        "],repeat_last=true)))",
+        "--if-non-unit-cost",
+        "let(hlm1, eval_modify_costs("
+        "landmark_sum(lm_reasonable_orders_hps(lm_rhw()),pref=false),"
+        "cost_type=one),"
+        "let(hff1, eval_modify_costs(ff(),cost_type=one),"
+        "let(hlm2, eval_modify_costs("
+        "landmark_sum(lm_reasonable_orders_hps(lm_rhw()),pref=false),"
+        "cost_type=plusone),"
+        "let(hff2, eval_modify_costs(ff(),cost_type=plusone),"
+        "iterated(["
+        "lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],"
+        "cost_type=one,reopen_closed=false),"
+        "lazy_greedy([hff2,hlm2],preferred=[hff2,hlm2],"
+        "reopen_closed=false),"
+        "lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=3),"
+        "lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=2),"
+        "lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=1)"
+        "],repeat_last=true)))))",
+        "--always",
+    ],
+    "5_lama_no_w5_ae": [
+        "--search",
+        "--if-unit-cost",
+        "let(hlm, landmark_sum(lm_reasonable_orders_hps(lm_rhw()),pref=false),"
+        "let(hff, ff(),"
+        "iterated(["
+        "plan_improvement("
+        "search=lazy_greedy([hff,hlm],preferred=[hff,hlm]),"
+        "improvement_method=action_elimination()),"
+        "plan_improvement("
+        "search=lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3),"
+        "improvement_method=action_elimination()),"
+        "plan_improvement("
+        "search=lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2),"
+        "improvement_method=action_elimination()),"
+        "plan_improvement("
+        "search=lazy_wastar([hff,hlm],preferred=[hff,hlm],w=1),"
+        "improvement_method=action_elimination())"
+        "],repeat_last=true)))",
+        "--if-non-unit-cost",
+        "let(hlm1, eval_modify_costs("
+        "landmark_sum(lm_reasonable_orders_hps(lm_rhw()),pref=false),"
+        "cost_type=one),"
+        "let(hff1, eval_modify_costs(ff(),cost_type=one),"
+        "let(hlm2, eval_modify_costs("
+        "landmark_sum(lm_reasonable_orders_hps(lm_rhw()),pref=false),"
+        "cost_type=plusone),"
+        "let(hff2, eval_modify_costs(ff(),cost_type=plusone),"
+        "iterated(["
+        "plan_improvement("
+        "search=lazy_greedy([hff1,hlm1],preferred=[hff1,hlm1],"
+        "cost_type=one,reopen_closed=false),"
+        "improvement_method=action_elimination()),"
+        "plan_improvement("
+        "search=lazy_greedy([hff2,hlm2],preferred=[hff2,hlm2],"
+        "reopen_closed=false),"
+        "improvement_method=action_elimination()),"
+        "plan_improvement("
+        "search=lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=3),"
+        "improvement_method=action_elimination()),"
+        "plan_improvement("
+        "search=lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=2),"
+        "improvement_method=action_elimination()),"
+        "plan_improvement("
+        "search=lazy_wastar([hff2,hlm2],preferred=[hff2,hlm2],w=1),"
+        "improvement_method=action_elimination())"
+        "],repeat_last=true)))))",
+        "--always",
+    ],
 }
 
 
@@ -172,9 +252,9 @@ BUILD_OPTIONS = []
 
 DRIVER_OPTIONS = [
     "--overall-time-limit",
-    "1m",
+    "30m",
     "--overall-memory-limit",
-    "1G",
+    "8G",
 ]
 
 
