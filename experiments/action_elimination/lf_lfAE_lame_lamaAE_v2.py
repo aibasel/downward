@@ -23,9 +23,9 @@ if project.REMOTE:
 
     ENV = project.BaselSlurmEnvironment(
         partition="infai_2",
-        memory_per_cpu="9000M",
+        memory_per_cpu="1500M",
         cpus_per_task=1,
-        time_limit_per_task="00:35:00",
+        time_limit_per_task="00:3:00",
     )
 
 else:
@@ -123,9 +123,9 @@ BUILD_OPTIONS = []
 
 DRIVER_OPTIONS = [
     "--overall-time-limit",
-    "30m",
+    "2m",
     "--overall-memory-limit",
-    "8G",
+    "1G",
 ]
 
 
