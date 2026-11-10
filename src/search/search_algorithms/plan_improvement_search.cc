@@ -23,10 +23,12 @@ PlanImprovementSearch::PlanImprovementSearch(
 }
 
 SearchStatus PlanImprovementSearch::step() {
-    shared_ptr<SearchAlgorithm> inner_search = search_config->bind_task(task);
+    inner_search = search_config->bind_task(task);
+
     if (bound < inner_search->get_bound()) {
         inner_search->set_bound(bound);
     }
+
     inner_search->search();
 
     SearchStatus inner_status = inner_search->get_finished_search_status();
@@ -47,8 +49,6 @@ SearchStatus PlanImprovementSearch::step() {
     statistics.inc_generated(inner_stats.get_generated());
     statistics.inc_generated_ops(inner_stats.get_generated_ops());
     statistics.inc_reopened(inner_stats.get_reopened());
-    inner_search->print_statistics();
-    inner_search.reset();
 
     if (found_inner_solution) {
         initial_plan_length = plan.size();
@@ -125,6 +125,13 @@ public:
           description(description),
           verbosity(verbosity) {
     }
+
+    void get_task_preserving_subcomponents(
+        vector<components::TaskIndependentComponentBase *> &components)
+        const override {
+        components.push_back(search_config.get());
+        search_config->get_task_preserving_subcomponents(components);
+    }
 };
 
 class PlanImprovementSearchFeature
@@ -142,7 +149,6 @@ public:
             "Post-processing plan improvement method applied to the initial plan",
             "");
         add_search_algorithm_options_to_feature(*this, "plan_improvement");
-        // TODO: Check if this is correct.
         document_note(
             "Usage",
             "The configuration\n```\n"

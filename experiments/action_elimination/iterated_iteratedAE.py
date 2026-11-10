@@ -25,7 +25,7 @@ if project.REMOTE:
         partition="infai_2",
         memory_per_cpu="1500M",
         cpus_per_task=1,
-        time_limit_per_task="00:3:00",
+        time_limit_per_task="00:01:30",
     )
 
 else:
@@ -48,26 +48,7 @@ else:
 
 CONFIGS = [
     (
-        "1_wastar",
-        [
-            "--search",
-            "let(h,ipdb(),lazy_wastar([h],w=10))",
-        ],
-    ),
-    (
-        "2_wastar_ae",
-        [
-            "--search",
-            "let(h,ipdb(),"
-                "plan_improvement("
-                    "search=lazy_wastar([h],w=10),"
-                    "method=action_elimination()"
-                ")"
-            ")",
-        ],
-    ),
-    (
-        "3_iterated",
+        "0_iterated",
         [
             "--search",
             "let(h,ipdb(),"
@@ -82,7 +63,7 @@ CONFIGS = [
         ],
     ),
     (
-        "4_iterated_ae",
+        "1_iterated_ae",
         [
             "--search",
             "let(h,ipdb(),"
@@ -123,7 +104,7 @@ BUILD_OPTIONS = []
 
 DRIVER_OPTIONS = [
     "--overall-time-limit",
-    "2m",
+    "1m",
     "--overall-memory-limit",
     "1G",
 ]

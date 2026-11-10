@@ -6,6 +6,7 @@
 
 #include "../plugins/plugin.h"
 #include "../task_utils/task_properties.h"
+#include "../utils/markup.h"
 
 #include <iostream>
 #include <set>
@@ -31,8 +32,6 @@ Plan ActionElimination::improve(
         for (size_t j = i + 1; j < reduced_plan.size(); j++) {
             OperatorProxy current_operator = operators[reduced_plan.at(j)];
             if (is_applicable(current_operator, current_state)) {
-                // TODO: This will add newly discovered states to the state
-                // registry, even though its not needed.
                 current_state =
                     current_state.get_unregistered_successor(current_operator);
             } else {
@@ -64,15 +63,18 @@ void ActionElimination::print_statistics() const {
 }
 
 class ActionEliminationFeature : public plugins::TypedFeature<PlanImprovement> {
-    // TODO: Add reference to Nahkost and Müller here.
 public:
     ActionEliminationFeature() : TypedFeature("action_elimination") {
         document_title("Action Elimination");
-        document_synopsis("Improves plans by removing unnecessary actions.");
+        document_synopsis(
+            "The algorithm was introduced in the following paper:" +
+            utils::format_conference_reference(
+                {"Hootan Nakhost ", " Martin Müller"},
+                "Action Elimination and Plan Neighborhood Graph Search: Two Algorithms for Plan Improvement",
+                "https://ai.dmi.unibas.ch/research/reading_group/nakhost-mueller-icaps2010.pdf",
+                "Proceedings of the 20th International Conference on Automated Planning and Scheduling (ICAPS 2010)",
+                "121-128", "AAAI Press", "2010"));
     }
-
-    // TODO: Removed the option opts currently, since there was a fd build
-    // warning.
     std::shared_ptr<PlanImprovement> create_component(
         const plugins::Options &) const override {
         return std::make_shared<ActionElimination>();

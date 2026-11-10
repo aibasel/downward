@@ -14,6 +14,7 @@ class PlanImprovementSearch : public SearchAlgorithm {
 
     bool inner_complete_within_bound = false;
     std::shared_ptr<PlanImprovement> improvement;
+    std::shared_ptr<SearchAlgorithm> inner_search;
     virtual SearchStatus step() override;
     int initial_plan_length = 0;
     int final_plan_length = 0;
