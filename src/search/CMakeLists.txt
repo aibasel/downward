@@ -577,16 +577,10 @@ create_fast_downward_library(
 )
 
 create_fast_downward_library(
-    NAME plan_improvement_search
-    HELP "Plan Improvement search"
+    NAME plan_improvement
+    HELP "Plan improvement search and methods"
     SOURCES
         search_algorithms/plan_improvement_search
-)
-
-create_fast_downward_library(
-    NAME plan_improvement
-    HELP "Plan improvement methods"
-    SOURCES
         plan_improvement/plan_improvement
         plan_improvement/action_elimination
 )

@@ -53,6 +53,7 @@ SearchStatus PlanImprovementSearch::step() {
     if (found_inner_solution) {
         initial_plan_length = plan.size();
         initial_plan_cost = calculate_plan_cost(plan, task_proxy);
+        set_plan(plan);
 
         improvement_timer.resume();
 
@@ -145,7 +146,7 @@ public:
         add_option<shared_ptr<TaskIndependentSearchAlgorithm>>(
             "search", "Search algorithm to find the initial plan", "");
         add_option<shared_ptr<PlanImprovement>>(
-            "method",
+            "improvement_method",
             "Post-processing plan improvement method applied to the initial plan",
             "");
         add_search_algorithm_options_to_feature(*this, "plan_improvement");
@@ -154,7 +155,7 @@ public:
             "The configuration\n```\n"
             "--search \"plan_improvement("
             "search=lazy_greedy([ff()]),"
-            "method=action_elimination())\"\n"
+            "improvement_method=action_elimination())\"\n"
             "```\nwould run lazy_greedy search with the ff heuristic to find an initial plan, then try to improve that plan with action elimintion\n\n"
             "```");
     }
@@ -163,7 +164,7 @@ public:
         return components::make_shared_from_arg_tuples<
             TaskIndependentPlanImprovementSearch>(
             opts.get<shared_ptr<TaskIndependentSearchAlgorithm>>("search"),
-            opts.get<shared_ptr<PlanImprovement>>("method"),
+            opts.get<shared_ptr<PlanImprovement>>("improvement_method"),
             get_search_algorithm_arguments_from_options(opts));
     }
 };
