@@ -577,6 +577,15 @@ create_fast_downward_library(
 )
 
 create_fast_downward_library(
+    NAME plan_improvement
+    HELP "Plan improvement search and methods"
+    SOURCES
+        search_algorithms/plan_improvement_search
+        plan_improvement/plan_improvement
+        plan_improvement/action_elimination
+)
+
+create_fast_downward_library(
     NAME lazy_search
     HELP "Lazy search"
     SOURCES
