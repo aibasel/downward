@@ -140,7 +140,7 @@ FactPair StubbornSetsAtomCentric::select_fact(
           choose it. Otherwise, choose the first unsatisfied fact.
         */
         for (const FactPair &condition : facts) {
-            if (state[condition.var].get_value() != condition.value) {
+            if (state[condition.var] != condition.value) {
                 if (marked_producers[condition.var][condition.value]) {
                     fact = condition;
                     break;
@@ -152,7 +152,7 @@ FactPair StubbornSetsAtomCentric::select_fact(
     } else if (atom_selection_strategy == AtomSelectionStrategy::STATIC_SMALL) {
         int min_count = numeric_limits<int>::max();
         for (const FactPair &condition : facts) {
-            if (state[condition.var].get_value() != condition.value) {
+            if (state[condition.var] != condition.value) {
                 int count = achievers[condition.var][condition.value].size();
                 if (count < min_count) {
                     fact = condition;
@@ -164,7 +164,7 @@ FactPair StubbornSetsAtomCentric::select_fact(
         atom_selection_strategy == AtomSelectionStrategy::DYNAMIC_SMALL) {
         int min_count = numeric_limits<int>::max();
         for (const FactPair &condition : facts) {
-            if (state[condition.var].get_value() != condition.value) {
+            if (state[condition.var] != condition.value) {
                 const vector<int> &ops =
                     achievers[condition.var][condition.value];
                 int count = count_if(ops.begin(), ops.end(), [&](int op) {
