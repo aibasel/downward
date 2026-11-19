@@ -4,7 +4,6 @@
 #include "utils/hash.h"
 
 #include <cstdint>
-#include <functional>
 
 class AbstractTask;
 

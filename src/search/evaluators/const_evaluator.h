@@ -8,8 +8,7 @@ class ConstEvaluator : public Evaluator {
     int value;
 
 protected:
-    virtual EvaluationResult compute_result(
-        EvaluationContext &eval_context) override;
+    virtual EvaluationResult compute_result(EvaluatorCall &call) override;
 
 public:
     ConstEvaluator(

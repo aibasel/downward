@@ -97,6 +97,7 @@ create_fast_downward_library(
         evaluation_context
         evaluation_result
         evaluator
+        evaluator_call
         evaluator_cache
         heuristic
         open_list
@@ -349,12 +350,31 @@ create_fast_downward_library(
 )
 
 create_fast_downward_library(
+    NAME state_forwarding_evaluator
+    HELP "Evaluator that uses a transformed task with the same set of states"
+    SOURCES
+        evaluators/state_forwarding_evaluator
+)
+
+create_fast_downward_library(
+    NAME axiom_handling_evaluator
+    HELP "Evaluator modifying axioms to handle negative values"
+    SOURCES
+        evaluators/axiom_handling_evaluator
+    DEPENDS
+        default_value_axioms_task
+        state_forwarding_evaluator
+        task_properties
+)
+
+create_fast_downward_library(
     NAME modify_costs_evaluator
     HELP "Evaluator modifying the costs"
     SOURCES
         evaluators/modify_costs_evaluator
     DEPENDS
         core_tasks
+        state_forwarding_evaluator
         task_properties
 )
 
@@ -731,7 +751,7 @@ create_fast_downward_library(
     SOURCES
         tasks/cost_adapted_task
         tasks/delegating_task
-        tasks/root_task
+        tasks/explicit_task
     CORE_LIBRARY
 )
 

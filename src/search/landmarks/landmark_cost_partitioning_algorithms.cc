@@ -132,15 +132,13 @@ double UniformCostPartitioningAlgorithm::third_pass(
 }
 
 double UniformCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
-    const LandmarkStatusManager &landmark_status_manager,
-    const State &ancestor_state) {
+    const LandmarkStatusManager &landmark_status_manager, const State &state) {
     vector<int> landmarks_achieved_by_operator(operator_costs.size(), 0);
     vector<bool> action_landmarks(operator_costs.size(), false);
 
-    ConstBitsetView past =
-        landmark_status_manager.get_past_landmarks(ancestor_state);
+    ConstBitsetView past = landmark_status_manager.get_past_landmarks(state);
     ConstBitsetView future =
-        landmark_status_manager.get_future_landmarks(ancestor_state);
+        landmark_status_manager.get_future_landmarks(state);
 
     const double cost_of_action_landmarks = first_pass(
         landmarks_achieved_by_operator, action_landmarks, past, future);
@@ -262,15 +260,13 @@ bool OptimalCostPartitioningAlgorithm::define_constraint_matrix(
 }
 
 double OptimalCostPartitioningAlgorithm::get_cost_partitioned_heuristic_value(
-    const LandmarkStatusManager &landmark_status_manager,
-    const State &ancestor_state) {
+    const LandmarkStatusManager &landmark_status_manager, const State &state) {
     /* TODO: We could also do the same thing with action landmarks we do in the
         uniform cost partitioning case. */
 
-    ConstBitsetView past =
-        landmark_status_manager.get_past_landmarks(ancestor_state);
+    ConstBitsetView past = landmark_status_manager.get_past_landmarks(state);
     ConstBitsetView future =
-        landmark_status_manager.get_future_landmarks(ancestor_state);
+        landmark_status_manager.get_future_landmarks(state);
 
     const int num_cols = landmark_graph.get_num_landmarks();
     set_lp_bounds(future, num_cols);

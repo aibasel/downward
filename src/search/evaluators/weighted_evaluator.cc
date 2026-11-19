@@ -1,7 +1,7 @@
 #include "weighted_evaluator.h"
 
-#include "../evaluation_context.h"
 #include "../evaluation_result.h"
+#include "../evaluator_call.h"
 
 #include "../plugins/plugin.h"
 #include "../utils/component_errors.h"
@@ -31,11 +31,10 @@ bool WeightedEvaluator::is_safe() const {
     return evaluator->is_safe();
 }
 
-EvaluationResult WeightedEvaluator::compute_result(
-    EvaluationContext &eval_context) {
+EvaluationResult WeightedEvaluator::compute_result(EvaluatorCall &call) {
     // Note that this produces no preferred operators.
     EvaluationResult result;
-    int value = eval_context.get_evaluator_value_or_infinity(evaluator.get());
+    int value = call[evaluator.get()].get_evaluator_value();
     if (value != EvaluationResult::INFTY) {
         // TODO: Check for overflow?
         value *= weight;

@@ -1,7 +1,7 @@
 #include "g_evaluator.h"
 
-#include "../evaluation_context.h"
 #include "../evaluation_result.h"
+#include "../evaluator_call.h"
 
 #include "../plugins/plugin.h"
 
@@ -14,9 +14,9 @@ GEvaluator::GEvaluator(
     : Evaluator(task, false, false, false, description, verbosity) {
 }
 
-EvaluationResult GEvaluator::compute_result(EvaluationContext &eval_context) {
+EvaluationResult GEvaluator::compute_result(EvaluatorCall &call) {
     EvaluationResult result;
-    result.set_evaluator_value(eval_context.get_g_value());
+    result.set_evaluator_value(call.get_g_value());
     return result;
 }
 

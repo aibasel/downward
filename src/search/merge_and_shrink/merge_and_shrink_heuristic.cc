@@ -8,7 +8,6 @@
 #include "types.h"
 
 #include "../plugins/plugin.h"
-#include "../task_utils/task_properties.h"
 #include "../utils/markup.h"
 #include "../utils/system.h"
 
@@ -123,8 +122,7 @@ void MergeAndShrinkHeuristic::extract_factors(FactoredTransitionSystem &fts) {
     }
 }
 
-int MergeAndShrinkHeuristic::compute_heuristic(const State &ancestor_state) {
-    State state = convert_ancestor_state(ancestor_state);
+int MergeAndShrinkHeuristic::compute_heuristic(const State &state) {
     int heuristic = 0;
     for (const unique_ptr<MergeAndShrinkRepresentation> &mas_representation :
          mas_representations) {

@@ -6,8 +6,6 @@
 #include "task_utils/causal_graph.h"
 #include "task_utils/task_properties.h"
 
-#include <iostream>
-
 using namespace std;
 
 State::State(
